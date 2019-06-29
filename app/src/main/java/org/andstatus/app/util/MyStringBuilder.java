@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 import androidx.annotation.NonNull;
 
 /** Adds convenience methods to {@link StringBuilder} */
-public class MyStringBuilder implements CharSequence {
+public class MyStringBuilder implements CharSequence, IsEmpty {
     public final StringBuilder builder;
 
     public static MyStringBuilder of(CharSequence text) {
@@ -169,4 +169,8 @@ public class MyStringBuilder implements CharSequence {
         return this;
     }
 
+    @Override
+    public boolean isEmpty() {
+        return length() == 0;
+    }
 }

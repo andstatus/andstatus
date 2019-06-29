@@ -46,6 +46,7 @@ import org.andstatus.app.net.social.Note;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
@@ -329,23 +330,21 @@ public class NoteEditorData implements IsEmpty {
 
     private void addActorsBeforeText(List<Actor> toMention) {
         toMention.add(0, Actor.load(myContext, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, getInReplyToNoteId())));
-        List<Long> mentioned = new ArrayList<>();
-        mentioned.add(ma.getActorId());  // Don't mention an author of this note
-        String mentions = "";
+        List<String> mentionedNames = new ArrayList<>();
+        mentionedNames.add(ma.getActor().getUniqueName());  // Don't mention the author of this note
+        MyStringBuilder mentions = new MyStringBuilder();
         for(Actor actor : toMention) {
-            if (actor.actorId != 0 && !mentioned.contains(actor.actorId)) {
-                mentioned.add(actor.actorId);
-                String name = actor.getUniqueName();
-                if (!StringUtils.isEmpty(name)) {
-                    String mentionText = "@" + name + " ";
-                    if (StringUtils.isEmpty(getContent()) || !(getContent() + " ").contains(mentionText)) {
-                        mentions = mentions.trim() + " " + mentionText;
-                    }
+            String name = actor.getUniqueName();
+            if (!StringUtils.isEmpty(name) && !mentionedNames.contains(name)) {
+                mentionedNames.add(name);
+                String mentionText = "@" + name;
+                if (StringUtils.isEmpty(getContent()) || !(getContent() + " ").contains(mentionText + " ")) {
+                    mentions.withSpace(mentionText);
                 }
             }
         }
-        if (!StringUtils.isEmpty(mentions)) {
-            setContent(mentions.trim() + " " + getContent(), TextMediaType.HTML);
+        if (mentions.nonEmpty()) {
+            setContent(mentions.toString() + " " + getContent(), TextMediaType.HTML);
         }
     }
 
