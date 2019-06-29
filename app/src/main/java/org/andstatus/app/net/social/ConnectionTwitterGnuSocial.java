@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
 import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
+import static org.andstatus.app.util.UriUtils.nonRealOid;
 
 /**
  * Specific implementation of the Twitter API in GNU Social
@@ -160,7 +161,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
 
     @Override
     public List<AActivity> getConversation(String conversationOid) throws ConnectionException {
-        if (StringUtils.isEmpty(conversationOid)) {
+        if (nonRealOid(conversationOid)) {
             return new ArrayList<>();
         } else {
             Uri uri = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);

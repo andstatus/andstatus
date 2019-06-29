@@ -56,6 +56,7 @@ import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
+import static org.andstatus.app.util.UriUtils.isRealOid;
 
 /**
  * Handles connection to the API of the Social Network (i.e. to the "Origin")
@@ -332,6 +333,10 @@ public abstract class Connection implements IsEmpty {
 
     /** See {@link #getNote(String)} */
     protected abstract AActivity getNote1(String noteOid) throws ConnectionException;
+
+    public boolean canGetConversation(String conversationOid) {
+        return isRealOid(conversationOid) && hasApiEndpoint(Connection.ApiRoutineEnum.GET_CONVERSATION);
+    }
 
     public List<AActivity> getConversation(String conversationOid) throws ConnectionException {
         throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getConversation oid=" + conversationOid);

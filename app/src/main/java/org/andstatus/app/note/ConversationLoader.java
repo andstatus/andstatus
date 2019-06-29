@@ -221,9 +221,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
             noteId = noteId_in;
             conversationOid = MyQuery.noteIdToConversationOid(noteId);
         }
-        if (StringUtils.nonEmpty(conversationOid) && (
-                ma.getConnection().hasApiEndpoint(Connection.ApiRoutineEnum.GET_CONVERSATION) ||
-                        UriUtils.isDownloadable(UriUtils.fromString(conversationOid)))) {
+        if (ma.getConnection().canGetConversation(conversationOid)) {
             conversationSyncRequested = true;
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "Conversation oid=" +  conversationOid + " for noteId=" + noteId

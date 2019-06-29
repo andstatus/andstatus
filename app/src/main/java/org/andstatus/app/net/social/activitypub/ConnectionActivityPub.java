@@ -182,6 +182,12 @@ public class ConnectionActivityPub extends Connection {
     }
 
     @Override
+    public boolean canGetConversation(String conversationOid) {
+        Uri uri = UriUtils.fromString(conversationOid);
+        return UriUtils.isDownloadable(uri);
+    }
+
+    @Override
     public List<AActivity> getConversation(String conversationOid) throws ConnectionException {
         Uri uri = UriUtils.fromString(conversationOid);
         if (UriUtils.isDownloadable(uri)) {

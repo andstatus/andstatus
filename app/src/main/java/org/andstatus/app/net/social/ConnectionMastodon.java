@@ -42,6 +42,8 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 import io.vavr.control.CheckedFunction;
 
+import static org.andstatus.app.util.UriUtils.nonRealOid;
+
 /**
  * See <a href="https://github.com/tootsuite/documentation/blob/master/Using-the-API/API.md">API</a>
  */
@@ -233,7 +235,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     @Override
     public List<AActivity> getConversation(String conversationOid) throws ConnectionException {
         List<AActivity> timeline = new ArrayList<>();
-        if (StringUtils.isEmpty(conversationOid)) {
+        if (nonRealOid(conversationOid)) {
             return timeline;
         }
         Uri uri = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);

@@ -60,7 +60,7 @@ public class ConnectionPumpio extends Connection {
     static final String CONTENT_PROPERTY = "content";
     static final String VIDEO_OBJECT = "stream";
     static final String IMAGE_OBJECT = "image";
-    public static final String FULL_IMAGE_OBJECT = "fullImage";
+    static final String FULL_IMAGE_OBJECT = "fullImage";
 
     @Override
     public Connection setAccountConnectionData(AccountConnectionData connectionData) {
@@ -291,7 +291,7 @@ public class ConnectionPumpio extends Connection {
                 }
             }
         }
-        MyLog.d(TAG, "getTimeline '" + builder.build() + "' " + activities.size() + " notes");
+        MyLog.d(TAG, "getTimeline '" + builder.build() + "' " + activities.size() + " activities");
         return activities;
     }
 
