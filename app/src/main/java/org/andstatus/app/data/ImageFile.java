@@ -153,7 +153,7 @@ public abstract class ImageFile implements IsEmpty {
                     private boolean logged = false;
 
                     @Override
-                    protected CachedImage doInBackground2(Void... params) {
+                    protected CachedImage doInBackground2(Void aVoid) {
                         if (skip()) {
                             return null;
                         }
@@ -227,7 +227,7 @@ public abstract class ImageFile implements IsEmpty {
                 new MyAsyncTask<Void, Void, Void>(getTaskId(taskSuffix), MyAsyncTask.PoolEnum.QUICK_UI) {
 
                     @Override
-                    protected Void doInBackground2(Void... params) {
+                    protected Void doInBackground2(Void aVoid) {
                         CachedImage image = ImageCaches.loadAndGetImage(cacheName, ImageFile.this);
                         if (image == null) {
                             logResult("Failed to preload", taskSuffix);

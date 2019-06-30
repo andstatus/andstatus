@@ -16,8 +16,6 @@
 
 package org.andstatus.app.timeline.meta;
 
-import androidx.annotation.NonNull;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
@@ -30,6 +28,8 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.TriState;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import androidx.annotation.NonNull;
 
 /**
  * Save changes to Timelines not on UI thread.
@@ -58,7 +58,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground2(Void... params) {
+    protected Void doInBackground2(Void aVoid) {
         executeSynchronously();
         return null;
     }

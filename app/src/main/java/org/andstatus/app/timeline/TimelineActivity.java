@@ -431,7 +431,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 new MyAsyncTask<Void, Void, Void>("clearNotifications" + timeline.getId(),
                         MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
-                    protected Void doInBackground2(Void... params) {
+                    protected Void doInBackground2(Void aVoid) {
                         timelineActivity.myContext.clearNotifications(timeline);
                         return null;
                     }

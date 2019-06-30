@@ -61,7 +61,7 @@ public abstract class DataChecker {
                 MyAsyncTask.PoolEnum.LONG_UI) {
 
                     @Override
-                    protected Void doInBackground2(Void... params) {
+                    protected Void doInBackground2(Void aVoid) {
                         fixData(logger, includeLong, countOnly);
                         DbUtils.waitMs(DataChecker.class, 3000);
                         MyContextHolder.release(() -> "fixDataAsync");

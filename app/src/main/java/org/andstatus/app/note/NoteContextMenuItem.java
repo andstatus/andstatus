@@ -428,7 +428,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         AsyncTaskLauncher.execute(TAG, true,
                 new MyAsyncTask<Void, Void, NoteEditorData>(TAG + name(), MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
-                    protected NoteEditorData doInBackground2(Void... params) {
+                    protected NoteEditorData doInBackground2(Void aVoid) {
                         MyLog.v(NoteContextMenuItem.this, () ->
                                 "execute async started. noteId=" + menu.getNoteId());
                         return executeAsync(menu);

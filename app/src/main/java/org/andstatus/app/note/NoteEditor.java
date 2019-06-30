@@ -636,8 +636,7 @@ public class NoteEditor {
                     volatile NoteEditorLock lock = NoteEditorLock.EMPTY;
 
                     @Override
-                    protected NoteEditorData doInBackground2(Long... params) {
-                        long noteId = params[0];
+                    protected NoteEditorData doInBackground2(Long noteId) {
                         MyLog.v(NoteEditorData.TAG, () -> "loadCurrentDraft started, noteId=" + noteId);
                         NoteEditorLock potentialLock = new NoteEditorLock(false, noteId);
                         if (!potentialLock.acquire(true)) {

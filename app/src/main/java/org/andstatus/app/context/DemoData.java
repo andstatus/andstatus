@@ -177,7 +177,7 @@ public final class DemoData {
         }
 
         @Override
-        protected Void doInBackground2(Void... voids) {
+        protected Void doInBackground2(Void aVoid) {
             MyLog.i(TAG_ASYNC, method + ": started");
             if (progressCallback != null) {
                 DbUtils.waitMs(TAG_ASYNC, 1000);

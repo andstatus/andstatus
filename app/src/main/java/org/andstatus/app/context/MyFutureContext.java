@@ -71,10 +71,10 @@ public class MyFutureContext extends MyAsyncTask<Object, Void, MyContext> {
     }
 
     @Override
-    protected MyContext doInBackground2(Object... params) {
-        MyLog.d(this, "Starting initialization by " + params[0]);
+    protected MyContext doInBackground2(Object obj) {
+        MyLog.d(this, "Starting initialization by " + obj);
         releaseGlobal();
-        return previousContext.newInitialized(params[0]);
+        return previousContext.newInitialized(obj);
     }
 
     private void releaseGlobal() {

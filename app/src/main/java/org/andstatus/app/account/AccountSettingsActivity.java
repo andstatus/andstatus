@@ -876,7 +876,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
 
         @Override
-        protected TaskResult doInBackground2(Void... arg0) {
+        protected TaskResult doInBackground2(Void aVoid) {
             boolean succeeded = false;
             String connectionErrorMessage = "";
             try {
@@ -970,7 +970,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
 
         @Override
-        protected TaskResult doInBackground2(Void... arg0) {
+        protected TaskResult doInBackground2(Void aVoid) {
             ResultStatus resultStatus = ResultStatus.NONE;
             String stepErrorMessage = "";
             String connectionErrorMessage = "";
@@ -1085,7 +1085,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
 
         @Override
-        protected TaskResult doInBackground2(Uri... uris) {
+        protected TaskResult doInBackground2(Uri uri) {
             String message = "";
             String accessToken = "";
             String accessSecret = "";
@@ -1096,7 +1096,6 @@ public class AccountSettingsActivity extends MyActivity {
                 MyLog.e(this, message);
             } else {
                 // We don't need to worry about any saved states: we can reconstruct the state
-                Uri uri = uris[0];
                 if (uri != null && HttpConnection.CALLBACK_URI.getHost() != null &&
                         HttpConnection.CALLBACK_URI.getHost().equals(uri.getHost())) {
 
@@ -1213,7 +1212,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
 
         @Override
-        protected TaskResult doInBackground2(Void... arg0) {
+        protected TaskResult doInBackground2(Void aVoid) {
             if (skip) return new TaskResult(ResultStatus.NONE);
 
             ResultStatus status = ResultStatus.ACCOUNT_INVALID;

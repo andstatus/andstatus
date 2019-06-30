@@ -16,8 +16,6 @@
 
 package org.andstatus.app.os;
 
-import androidx.annotation.NonNull;
-
 import org.andstatus.app.util.MyLog;
 
 import java.util.Arrays;
@@ -31,6 +29,11 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -96,13 +99,19 @@ public class AsyncTaskLauncher<Params> {
         }
     }
 
-    public static boolean execute(Object objTag, boolean throwOnFail, MyAsyncTask<Void, ?, ?> asyncTask) {
-        AsyncTaskLauncher<Void> launcher = new AsyncTaskLauncher<>();
-        return launcher.execute(objTag, throwOnFail, asyncTask, (Void) null);
+    public static <Params, Result> boolean execute(Params params,
+                                 Function<Params, Try<Result>> backgroundFunc,
+                                 Function<Params, Consumer<Try<Result>>> uiConsumer) {
+        MyAsyncTask<Params, Void, Try<Result>> asyncTask = MyAsyncTask.fromFunc(params, backgroundFunc, uiConsumer);
+        return new AsyncTaskLauncher<Params>().execute(params, false, asyncTask, params);
     }
 
-    public boolean execute(Object objTag, boolean throwOnFail, MyAsyncTask<Params, ?, ?> asyncTask,
-                           Params... params) {
+    public static boolean execute(Object objTag, boolean throwOnFail, MyAsyncTask<Void, ?, ?> asyncTask) {
+        AsyncTaskLauncher<Void> launcher = new AsyncTaskLauncher<>();
+        return launcher.execute(objTag, throwOnFail, asyncTask, null);
+    }
+
+    public boolean execute(Object objTag, boolean throwOnFail, MyAsyncTask<Params, ?, ?> asyncTask, Params params) {
         MyLog.v(objTag, () -> asyncTask.toString() + " Launching task");
         boolean launched = false;
         try {
@@ -110,7 +119,9 @@ public class AsyncTaskLauncher<Params> {
             if (asyncTask.isSingleInstance() && foundUnfinished(asyncTask)) {
                 skippedCount.incrementAndGet();
             } else {
-                asyncTask.executeOnExecutor(getExecutor(asyncTask.pool), params);
+                @SuppressWarnings("unchecked")
+                Params[] paramsArray = (Params[]) new Object[] {params};
+                asyncTask.executeOnExecutor(getExecutor(asyncTask.pool), paramsArray);
                 launchedTasks.add(asyncTask);
                 launchedCount.incrementAndGet();
                 launched = true;

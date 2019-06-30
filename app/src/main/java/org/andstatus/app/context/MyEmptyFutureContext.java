@@ -29,7 +29,7 @@ public class MyEmptyFutureContext extends MyFutureContext {
     }
 
     @Override
-    protected MyContext doInBackground2(Object... params) {
+    protected MyContext doInBackground2(Object obj) {
         return previousContext;
     }
 

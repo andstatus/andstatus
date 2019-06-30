@@ -46,8 +46,8 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
     }
 
     @Override
-    protected NoteEditorData doInBackground2(NoteEditorCommand... params) {
-        command = params[0];
+    protected NoteEditorData doInBackground2(NoteEditorCommand commandIn) {
+        command = commandIn;
         MyLog.v(NoteEditorData.TAG, () -> "Started: " + command);
         if (!command.acquireLock(true)) {
             return command.currentData;

@@ -115,8 +115,8 @@ public class BackupActivity extends MyActivity implements ProgressLogger.Progres
         }
 
         @Override
-        protected Void doInBackground2(File... params) {
-            MyBackupManager.backupInteractively(params[0], activity, activity);
+        protected Void doInBackground2(File file) {
+            MyBackupManager.backupInteractively(file, activity, activity);
             return null;
         }
     }

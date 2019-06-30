@@ -10,9 +10,27 @@ import io.vavr.control.Try;
  * @author yvolk@yurivolkov.com
  */
 public class TryUtils {
+    private static final NoSuchElementException NOT_FOUND = new NoSuchElementException("Not found");
+    private static final NoSuchElementException OPTIONAL_IS_EMPTY = new NoSuchElementException("Optional is empty");
+    private static final NoSuchElementException VALUE_IS_NULL = new NoSuchElementException("Value is null");
 
     private TryUtils() {
         // Empty
+    }
+
+
+    /**
+     * Creates a Try from nullable value.
+     *
+     * @param value success value if not null
+     * @param <T>      Component type
+     * @return {@code Success(value} if the value is not null,
+     *   otherwise returns {@code Failure} holding {@link NoSuchElementException}
+     */
+    public static <T> Try<T> ofNullable(T value) {
+        return value == null
+            ? Try.failure(VALUE_IS_NULL)
+            : Try.success(value);
     }
 
     /**
@@ -25,7 +43,7 @@ public class TryUtils {
      * @throws NullPointerException if {@code optional} is null
      */
     public static <T> Try<T> fromOptional(Optional<T> optional) {
-        return fromOptional(optional, () -> new NoSuchElementException("Optional is empty"));
+        return fromOptional(optional, () -> OPTIONAL_IS_EMPTY);
     }
 
     /**
@@ -43,6 +61,6 @@ public class TryUtils {
     }
 
     public static <T> Try<T> notFound() {
-        return Try.failure(new NoSuchElementException());
+        return Try.failure(NOT_FOUND);
     }
 }

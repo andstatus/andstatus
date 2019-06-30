@@ -127,7 +127,7 @@ public class StorageSwitch {
         }
 
         @Override
-        protected TaskResult doInBackground2(Void... params) {
+        protected TaskResult doInBackground2(Void aVoid) {
             TaskResult result = new TaskResult();
             if (!checkAndSetDataBeingMoved()) {
                 return result;
@@ -140,7 +140,7 @@ public class StorageSwitch {
                 }
             }
             result.messageBuilder.insert(0, " Move " + strSucceeded(result.success));
-            MyLog.v(this, () -> result.getMessage());
+            MyLog.v(this, result::getMessage);
             return result;
         }
 

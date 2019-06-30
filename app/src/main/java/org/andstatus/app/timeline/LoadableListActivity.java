@@ -235,9 +235,9 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         }
 
         @Override
-        protected SyncLoader doInBackground2(Bundle... params) {
+        protected SyncLoader doInBackground2(Bundle bundle) {
             publishProgress("...");
-            SyncLoader loader = newSyncLoader(BundleUtils.toBundle(params[0], IntentExtra.INSTANCE_ID.key, instanceId));
+            SyncLoader loader = newSyncLoader(BundleUtils.toBundle(bundle, IntentExtra.INSTANCE_ID.key, instanceId));
             loader.allowLoadingFromInternet();
             loader.load(this);
             return loader;
@@ -441,8 +441,8 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                 new MyAsyncTask<CommandData, Void, String>("ShowSyncing" + getInstanceId(), MyAsyncTask.PoolEnum.QUICK_UI) {
 
                     @Override
-                    protected String doInBackground2(CommandData... commandData) {
-                        return commandData[0].toCommandSummary(myContext);
+                    protected String doInBackground2(CommandData commandData) {
+                        return commandData.toCommandSummary(myContext);
                     }
 
                     @Override

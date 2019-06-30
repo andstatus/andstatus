@@ -55,7 +55,7 @@ class NoteContextMenuData {
                     NoteContextMenuData.class.getSimpleName() + noteId, MyAsyncTask.PoolEnum.QUICK_UI) {
 
                 @Override
-                protected AccountToNote doInBackground2(Void... params) {
+                protected AccountToNote doInBackground2(Void aVoid) {
                     @NonNull final MyAccount selectedMyAccount = noteContextMenu.getSelectedActingAccount();
                     MyAccount currentMyAccount = menuContainer.getActivity().getMyContext().accounts().getCurrentAccount();
                     AccountToNote accountToNote = AccountToNote.getAccountToActOnNote(

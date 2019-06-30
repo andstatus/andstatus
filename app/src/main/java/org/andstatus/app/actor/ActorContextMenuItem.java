@@ -192,7 +192,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         AsyncTaskLauncher.execute(TAG, true,
                 new MyAsyncTask<Void, Void, NoteEditorData>(TAG + name(), MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
-                    protected NoteEditorData doInBackground2(Void... params2) {
+                    protected NoteEditorData doInBackground2(Void aVoid) {
                         MyLog.v(this, "execute async started. "
                                 + params.menu.getViewItem().actor.getUniqueNameWithOrigin());
                         return executeAsync(params);

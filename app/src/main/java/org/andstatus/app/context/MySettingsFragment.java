@@ -42,13 +42,17 @@ import org.andstatus.app.nosupport.util.DialogFactory;
 import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.notification.NotificationMethodType;
 import org.andstatus.app.origin.PersistentOriginList;
+import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.timeline.meta.ManageTimelines;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineTitle;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TryUtils;
 import org.andstatus.app.util.UriUtils;
+
+import java.util.Optional;
 
 import androidx.fragment.app.FragmentActivity;
 import androidx.preference.CheckBoxPreference;
@@ -56,6 +60,7 @@ import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import io.vavr.control.Try;
 
 import static org.andstatus.app.util.I18n.formatBytes;
 
@@ -332,12 +337,21 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
     }
 
     private void showMaximumSizeOfCachedMedia() {
-        Preference preference = findPreference(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB);
-        if (preference != null) {
-            preference.setSummary(Formatter.formatShortFileSize(getActivity(),
+        showMaximumSizeOfCachedMedia(Optional.empty());
+        AsyncTaskLauncher.execute(this,
+                fragment -> Try.success(Optional.of(MyStorage.getMediaFilesSize())),
+                fragment -> size -> size.onSuccess(fragment::showMaximumSizeOfCachedMedia));
+    }
+
+    private void showMaximumSizeOfCachedMedia(Optional<Long> size) {
+        TryUtils.ofNullable(findPreference(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB))
+            .map(preference -> {
+                preference.setSummary(Formatter.formatShortFileSize(getActivity(),
                     MyPreferences.getMaximumSizeOfCachedMediaBytes()) +
-                    " (" + getText(R.string.reltime_just_now) + ": " + formatBytes(MyStorage.getMediaFilesSize()) + ")");
-        }
+                    size.map(s -> " (" + getText(R.string.reltime_just_now) + ": " + formatBytes(s) + ")")
+                        .orElse(""));
+                return true;
+            });
     }
 
     private void showListPreference(String key) {

@@ -518,7 +518,7 @@ public class MyService extends Service {
         }
 
         @Override
-        protected Boolean doInBackground2(Void... arg0) {
+        protected Boolean doInBackground2(Void aVoid) {
             commandQueue.load();
             MyLog.d(this, "Started, " + commandQueue.totalSizeToExecute() + " commands to process");
             String breakReason = "";
@@ -638,7 +638,7 @@ public class MyService extends Service {
         }
 
         @Override
-        protected Void doInBackground2(Void... arg0) {
+        protected Void doInBackground2(Void aVoid) {
             MyLog.v(this, () -> "Started instance " + instanceId);
             String breakReason = "";
             for (long iteration = 1; iteration < 10000; iteration++) {

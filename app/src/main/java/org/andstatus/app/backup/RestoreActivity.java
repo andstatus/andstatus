@@ -119,8 +119,8 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
         }
 
         @Override
-        protected Void doInBackground2(File... params) {
-            MyBackupManager.restoreInteractively(params[0], activity, activity);
+        protected Void doInBackground2(File file) {
+            MyBackupManager.restoreInteractively(file, activity, activity);
             return null;
         }
     }

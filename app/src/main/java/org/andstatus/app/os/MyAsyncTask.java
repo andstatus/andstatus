@@ -20,7 +20,6 @@ import android.database.sqlite.SQLiteDatabaseLockedException;
 import android.database.sqlite.SQLiteDiskIOException;
 import android.os.AsyncTask;
 import android.os.Looper;
-import androidx.annotation.NonNull;
 
 import org.acra.ACRA;
 import org.andstatus.app.context.MyContextHolder;
@@ -29,6 +28,12 @@ import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtils;
+
+import java.util.function.Consumer;
+import java.util.function.Function;
+
+import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
 import static org.andstatus.app.os.ExceptionsCounter.onDiskIoException;
 
@@ -117,7 +122,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
         currentlyExecutingSince = backgroundStartedAt;
         try {
             if (!isCancelled()) {
-                return doInBackground2(params);
+                return doInBackground2(params != null && params.length > 0 ? params[0] : null);
             }
         } catch (SQLiteDiskIOException e) {
             logSystemInfo(e);
@@ -141,7 +146,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
         logError(systemInfo, throwable);
     }
 
-    protected abstract Result doInBackground2(Params... params);
+    protected abstract Result doInBackground2(Params params);
 
     @Override
     final protected void onPostExecute(Result result) {
@@ -299,5 +304,24 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     // See http://stackoverflow.com/questions/11411022/how-to-check-if-current-thread-is-not-main-thread
     public static boolean isUiThread() {
         return Looper.myLooper() == Looper.getMainLooper();
+    }
+
+    public static <Params, Progress, Result> MyAsyncTask<Params, Progress, Try<Result>> fromFunc(Params params,
+        Function<Params, Try<Result>> backgroundFunc,
+        Function<Params, Consumer<Try<Result>>> uiConsumer) {
+        return new MyAsyncTask<Params, Progress, Try<Result>>(params, PoolEnum.LONG_UI) {
+            @Override
+            protected Try<Result> doInBackground2(Params params) {
+                return backgroundFunc.apply(params);
+            }
+
+            @Override
+            protected void onFinish(Try<Result> results, boolean success) {
+                Try<Result> results2 = success
+                        ? results
+                        : (results.isFailure() ? results : Try.failure(new Exception("Failed to execute Async task")));
+                uiConsumer.apply(params).accept(results2);
+            }
+        };
     }
 }

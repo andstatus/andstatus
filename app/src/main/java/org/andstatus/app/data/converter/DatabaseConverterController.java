@@ -122,7 +122,7 @@ public class DatabaseConverterController {
         }
 
         @Override
-        protected Void doInBackground2(Void... activity) {
+        protected Void doInBackground2(Void aVoid) {
             syncUpgrade();
             return null;
         }

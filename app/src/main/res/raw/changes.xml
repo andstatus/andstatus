@@ -29,6 +29,17 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="50.03" android:versionCode="292"
+             versionDate="2019-06-30"
+             versionTitle="Bugfixes">
+        <changes>
+            <change>Avoid duplicated mentions</change>
+            <change>Selecting "Discard" Options menu item during draft editing actually discards (deletes) the draft</change>
+            <change>Make notification visible in a timeline even if we couldn't find our Actor, who should be notified.</change>
+            <change>Clear "Outbox" notification, when an activity has been successfully sent</change>
+            <change>Better way to find out if conversation can be downloaded. Pump.io get at leastprevious activity of the conversation.</change>
+        </changes>
+    </release>
     <release android:versionName="50.01" android:versionCode="290"
              versionDate="2019-06-01"
              versionTitle="Sensitive flag and CW/Summary for a Toot/Note">
