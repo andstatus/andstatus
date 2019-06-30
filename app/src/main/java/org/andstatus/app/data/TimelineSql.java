@@ -89,7 +89,7 @@ public class TimelineSql {
                 break;
             case INTERACTIONS:
                 actWhere.append(ActivityTable.INTERACTED, "=" + TriState.TRUE.id)
-                        .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
+                        .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.notifiedActorIdsOfTimeline(timeline));
                 break;
             case PUBLIC:
                 noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.PUBLIC, "!=" + TriState.FALSE.id);
@@ -112,11 +112,11 @@ public class TimelineSql {
             case UNREAD_NOTIFICATIONS:
                 actWhere.append(ActivityTable.NOTIFIED, "=" + TriState.TRUE.id)
                         .append(ActivityTable.NEW_NOTIFICATION_EVENT, "!=0")
-                        .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
+                        .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.notifiedActorIdsOfTimeline(timeline));
                 break;
             case NOTIFICATIONS:
                 actWhere.append(ActivityTable.NOTIFIED, "=" + TriState.TRUE.id)
-                        .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
+                        .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.notifiedActorIdsOfTimeline(timeline));
                 break;
             default:
                 break;

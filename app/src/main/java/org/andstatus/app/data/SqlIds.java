@@ -16,8 +16,6 @@
 
 package org.andstatus.app.data;
 
-import androidx.annotation.NonNull;
-
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -26,6 +24,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import androidx.annotation.NonNull;
 
 import static java.util.stream.Collectors.toList;
 
@@ -36,6 +36,15 @@ import static java.util.stream.Collectors.toList;
 public class SqlIds {
     public static final SqlIds EMPTY = new SqlIds();
     private final Set<Long> ids;
+
+    /** We may not have our actor in some origin... ?! */
+    public static SqlIds notifiedActorIdsOfTimeline(@NonNull Timeline timeline) {
+        if (timeline.isCombined()) {
+            return SqlIds.EMPTY;
+        } else {
+            return actorIdsOfTimelineActor(timeline);
+        }
+    }
 
     public static SqlIds actorIdsOfTimelineActor(@NonNull Timeline timeline) {
         if (timeline.isCombined()) {

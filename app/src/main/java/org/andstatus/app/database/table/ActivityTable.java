@@ -52,8 +52,8 @@ public final class ActivityTable implements BaseColumns {
     /** {@link #NOTIFIED_ACTOR_ID} should be notified of this action */
     public static final String NOTIFIED = "notified";
     public static final String NOTIFIED_ACTOR_ID = "notified_actor_id";
-    // TODO: Add "is mine" flag/ID... to easily make "SENT/ACTOR" timelines
-    /** {@link NotificationEventType}, is not 0, if the notification is active */
+    // TODO: Add "is mine" flag/ID... to easily make "SENT/ACTOR" timelines.
+    /** {@link NotificationEventType}, it is not 0 if the notification is active */
     public static final String NEW_NOTIFICATION_EVENT = "new_notification_event";
 
     public static final String UPDATED_DATE = "activity_updated_date";

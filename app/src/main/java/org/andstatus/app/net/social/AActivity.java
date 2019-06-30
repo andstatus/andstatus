@@ -510,7 +510,11 @@ public class AActivity extends AObject {
         switch (event) {
             case MENTION:
                 return myContext.users().myActors.values().stream()
-                        .filter(actor -> getNote().audience().contains(actor)).findFirst().orElse(Actor.EMPTY);
+                    .filter(actor -> getNote().audience().contains(actor.actorId)).findFirst()
+                    .orElse(
+                        myContext.users().myActors.values().stream().filter(a -> a.origin.equals(accountActor.origin))
+                            .findFirst().orElse(Actor.EMPTY)
+                    );
             case ANNOUNCE:
             case LIKE:
                 return getAuthor();
