@@ -545,6 +545,8 @@ public class AActivity extends AObject {
         }
         if (notified.known) {
             values.put(ActivityTable.NOTIFIED, notified.id);
+        }
+        if (newNotificationEventType.nonEmpty()) {
             values.put(ActivityTable.NEW_NOTIFICATION_EVENT, newNotificationEventType.id);
         }
         if (notifiedActor.nonEmpty()) {

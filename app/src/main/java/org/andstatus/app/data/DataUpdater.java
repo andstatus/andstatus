@@ -22,6 +22,7 @@ import android.net.Uri;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.http.ConnectionException;
@@ -117,6 +118,11 @@ public class DataUpdater {
             && (activity.isMyActorOrAuthor(execContext.myContext)
                 || activity.getNote().audience().containsMe(execContext.myContext))) {
             activity.setSubscribedByMe(TriState.TRUE);
+        }
+        if (activity.isNotified().unknown && execContext.myContext.users().isMe(activity.getActor()) &&
+                activity.getNote().getStatus().isPresentAtServer() &&
+            MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()).isTrue) {
+            activity.setNotified(TriState.FALSE);
         }
         activity.save(execContext.getMyContext());
         lum.onNewActorActivity(new ActorActivity(activity.getActor().actorId, activity.getId(), activity.getUpdatedDate()));

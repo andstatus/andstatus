@@ -17,6 +17,7 @@
 package org.andstatus.app.notification;
 
 import org.andstatus.app.R;
+import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
 
@@ -29,7 +30,7 @@ import androidx.annotation.NonNull;
 /**
  * Types of events, about which a User may be notified and which are shown in the "Notifications" timeline
  */
-public enum NotificationEventType {
+public enum NotificationEventType implements IsEmpty {
     ANNOUNCE(1, "notifications_announce", true, R.string.notification_events_announce),
     FOLLOW(2, "notifications_follow", true, R.string.notification_events_follow),
     LIKE(3, "notifications_like", true, R.string.notification_events_like),
@@ -82,7 +83,7 @@ public enum NotificationEventType {
     private static List<NotificationEventType> validValues() {
         List<NotificationEventType> validValues = new ArrayList<>();
         for (NotificationEventType event : values()) {
-            if (event != EMPTY) {
+            if (event.nonEmpty()) {
                 validValues.add(event);
             }
         }
