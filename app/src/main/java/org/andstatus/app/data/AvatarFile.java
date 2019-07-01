@@ -29,6 +29,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.MyLog;
 
 import androidx.annotation.NonNull;
 
@@ -81,8 +82,10 @@ public class AvatarFile extends ImageFile {
     public void requestDownload() {
         if (getActor().actorId == 0 || !getActor().hasAvatar() || !contentType.getDownloadMediaOfThisType()) return;
 
+        MyLog.v(this, () -> "Requesting download " + getActor() + "\n" + this);
         MyServiceManager.sendCommand(
-                CommandData.newActorCommand(CommandEnum.GET_AVATAR, getActor().actorId, getActor().getUsername()));
+                CommandData.newActorCommandAtOrigin(CommandEnum.GET_AVATAR, getActor().actorId,
+                        getActor().getUsername(), getActor().origin));
     }
 
     @Override

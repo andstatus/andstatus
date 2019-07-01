@@ -29,6 +29,13 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="50.04" android:versionCode="293"
+             versionDate="2019-07-02"
+             versionTitle="Bugfixes">
+        <changes>
+            <change>Fix commands for an Actor at specific Social Network (e.g. Get Actor information, Download Avatar)</change>
+        </changes>
+    </release>
     <release android:versionName="50.03" android:versionCode="292"
              versionDate="2019-06-30"
              versionTitle="Bugfixes">

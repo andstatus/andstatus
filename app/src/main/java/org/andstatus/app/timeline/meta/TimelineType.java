@@ -17,8 +17,6 @@
 package org.andstatus.app.timeline.meta;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
 
 import org.andstatus.app.R;
 import org.andstatus.app.database.table.FriendshipTable;
@@ -31,6 +29,9 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 
 import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.ACTOR_TIMELINE;
 import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.DUMMY_API;
@@ -54,6 +55,7 @@ public enum TimelineType implements SelectableEnum {
     /** Notes by the selected Actor (where he is an Author or an Actor only (e.g. for Reblog/Retweet).
      * This Actor is not necessarily one of our Accounts */
     SENT(ListScope.USER, "sent", R.string.sent, R.string.menu_item_user_messages, ACTOR_TIMELINE),
+    SENT_AT_ORIGIN(ListScope.ACTOR_AT_ORIGIN, "sent_at_origin", R.string.sent, R.string.menu_item_user_messages, ACTOR_TIMELINE),
     /** Latest notes of every Friend of this Actor
      * (i.e of every actor, followed by this Actor).
      * So this is essentially a list of "Friends". See {@link FriendshipTable} */
@@ -189,6 +191,7 @@ public enum TimelineType implements SelectableEnum {
             case MANAGE_TIMELINES:
             case UNKNOWN:
             case ACTORS:
+            case SENT_AT_ORIGIN:
                 return false;
             default:
                 return true;
@@ -215,11 +218,11 @@ public enum TimelineType implements SelectableEnum {
     ).collect(Collectors.toSet());
 
     public boolean isAtOrigin() {
-        return scope == ListScope.ORIGIN;
+        return scope == ListScope.ORIGIN || scope == ListScope.ACTOR_AT_ORIGIN;
     }
 
     public boolean isForUser() {
-        return scope == ListScope.USER;
+        return scope == ListScope.USER || scope == ListScope.ACTOR_AT_ORIGIN;
     }
 
     public boolean canBeCombinedForOrigins() {
@@ -259,6 +262,7 @@ public enum TimelineType implements SelectableEnum {
             case MANAGE_TIMELINES:
             case UNKNOWN:
             case ACTORS:
+            case SENT_AT_ORIGIN:
                 return false;
             default:
                 return true;
@@ -279,6 +283,7 @@ public enum TimelineType implements SelectableEnum {
             case PUBLIC:
             case SEARCH:
             case SENT:
+            case SENT_AT_ORIGIN:
             case UNREAD_NOTIFICATIONS:
                 return true;
             case FAVORITES:

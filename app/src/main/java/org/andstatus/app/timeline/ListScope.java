@@ -21,7 +21,8 @@ import org.andstatus.app.context.MyContext;
 
 public enum ListScope {
     ORIGIN(R.string.combined_timeline_off_origin),
-    USER(R.string.combined_timeline_off_account);
+    USER(R.string.combined_timeline_off_account),
+    ACTOR_AT_ORIGIN(0);
 
     private final int timelinePrepositionResId;
 
@@ -30,7 +31,7 @@ public enum ListScope {
     }
 
     public CharSequence timelinePreposition(MyContext myContext) {
-        return myContext == null || myContext.context() == null
+        return myContext == null || myContext.context() == null || timelinePrepositionResId == 0
                 ? ""
                 : myContext.context().getText(timelinePrepositionResId);
     }

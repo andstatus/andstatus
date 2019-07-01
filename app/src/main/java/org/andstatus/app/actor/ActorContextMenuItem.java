@@ -41,9 +41,10 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     GET_ACTOR(true) {
         @Override
         NoteEditorData executeAsync(Params params) {
-            CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_ACTOR,
+            CommandData commandData = CommandData.newActorCommandAtOrigin(CommandEnum.GET_ACTOR,
                     params.menu.getViewItem().getActorId(),
-                    params.menu.getViewItem().actor.getUsername());
+                    params.menu.getViewItem().actor.getUsername(),
+                    params.menu.getViewItem().actor.origin);
             MyServiceManager.sendManualForegroundCommand(commandData);
             return super.executeAsync(params);
         }

@@ -39,6 +39,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandResult;
+import org.andstatus.app.timeline.ListScope;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.IsEmpty;
@@ -391,8 +392,10 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public Timeline fromIsCombined(MyContext myContext, boolean isCombinedNew) {
-        if (isCombined == isCombinedNew
-                || (!isCombined && timelineType.isForUser() && actor.user.isMyUser() != TriState.TRUE) ) return this;
+        if (isCombined == isCombinedNew || (
+                !isCombined && timelineType.isForUser() && !timelineType.isAtOrigin() &&
+                    actor.user.isMyUser() != TriState.TRUE
+        )) return this;
         return myContext.timelines().get(timelineType,
                 isCombinedNew ? 0 : myContext.accounts().getCurrentAccount().getActorId(),
                 isCombinedNew ? Origin.EMPTY : myContext.accounts().getCurrentAccount().getOrigin(),
@@ -401,7 +404,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
 
     public Timeline fromMyAccount(MyContext myContext, MyAccount myAccountNew) {
         if (isCombined() || myAccountToSync.equals(myAccountNew)
-                || (timelineType.isForUser() && actor.user.isMyUser() != TriState.TRUE)) return this;
+                || (timelineType.isForUser() && !timelineType.isAtOrigin() && actor.user.isMyUser() != TriState.TRUE)) return this;
         return myContext.timelines().get(
                 timelineType,
                 myAccountNew.getActorId(),
@@ -577,7 +580,8 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         builder.append("Timeline{");
         if (timelineType.isAtOrigin()) {
             builder.append(origin.isValid() ? origin.getName() : "(all origins)");
-        } else {
+        }
+        if (timelineType.isForUser()) {
             if (actor.isEmpty()) {
                 builder.append("(all accounts)");
             } else if (myAccountToSync.isValid()) {
@@ -1051,7 +1055,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
             return isCombined();
         } else if (isTimelineCombined == TriState.FALSE && isCombined()) {
             return false;
-        } else if (timelineType == TimelineType.UNKNOWN) {
+        } else if (timelineType == TimelineType.UNKNOWN || timelineType.scope == ListScope.ACTOR_AT_ORIGIN) {
             return (actor.actorId == 0 || actor.actorId == getActorId())
                     && (origin.isEmpty() || origin.equals(getOrigin())) ;
         } else if (timelineType.isAtOrigin()) {

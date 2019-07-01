@@ -21,7 +21,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
@@ -50,6 +49,8 @@ import org.andstatus.app.util.StringUtils;
 
 import java.util.Objects;
 import java.util.Queue;
+
+import androidx.annotation.NonNull;
 
 /**
  * Command data store
@@ -115,8 +116,14 @@ public class CommandData implements Comparable<CommandData> {
 
     @NonNull
     public static CommandData newActorCommand(CommandEnum command, long actorId, String username) {
+        return newActorCommandAtOrigin(command, actorId, username, Origin.EMPTY);
+    }
+
+    @NonNull
+    public static CommandData newActorCommandAtOrigin(CommandEnum command, long actorId, String username, Origin origin) {
         CommandData commandData = newTimelineCommand(command,
-                MyContextHolder.get().timelines().get(TimelineType.SENT, actorId, Origin.EMPTY));
+                MyContextHolder.get().timelines().get(
+                        origin.isEmpty() ? TimelineType.SENT : TimelineType.SENT_AT_ORIGIN, actorId, origin));
         commandData.setUsername(username);
         commandData.description = commandData.getUsername();
         return commandData;

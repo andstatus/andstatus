@@ -865,7 +865,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (canGetActor()) {
             MyLog.v(this, () -> "Actor " + this + " will be loaded from the Internet");
             MyServiceManager.sendForegroundCommand(
-                    CommandData.newActorCommand(CommandEnum.GET_ACTOR, actorId, getUsername()));
+                    CommandData.newActorCommandAtOrigin(CommandEnum.GET_ACTOR, actorId, getUsername(), origin));
         } else {
             MyLog.v(this, () -> "Cannot get Actor " + this);
         }
