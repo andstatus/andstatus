@@ -385,7 +385,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         if (!mFinishing && !MyContextHolder.initializeThenRestartMe(this)) {
             myServiceReceiver.registerReceiver(this);
             myContext.setInForeground(true);
-            if (getListData().size() == 0 && !isLoading()) {
+            if (!isLoading()) {
                 showList(WhichPage.ANY);
             }
         }
@@ -404,6 +404,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         super.onPause();
         myServiceReceiver.unregisterReceiver(this);
         MyContextHolder.get().setInForeground(false);
+        getListAdapter().setPositionRestored(false);
     }
     
     @Override
