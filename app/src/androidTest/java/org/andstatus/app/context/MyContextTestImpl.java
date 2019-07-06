@@ -150,7 +150,7 @@ public class MyContextTestImpl extends MyContextImpl {
 
     @Override
     public String toString() {
-        return MyLog.getInstanceTag(this) + " http=" + getHttpConnectionMock() + ", "
+        return getInstanceTag() + " http=" + getHttpConnectionMock() + ", "
                 + super.toString();
     }
 }

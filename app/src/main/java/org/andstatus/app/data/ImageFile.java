@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2017-2019 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.andstatus.app.data;
 
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -28,13 +29,17 @@ import org.andstatus.app.graphics.IdentifiableImageView;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.graphics.MediaMetadata;
 import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.util.IdentifiableInstance;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TryUtils;
+
+import java.util.function.Consumer;
 
 import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
-public abstract class ImageFile implements IsEmpty {
+public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
     private final DownloadFile downloadFile;
     private volatile MediaMetadata mediaMetadata;
     protected volatile MyContentType contentType;
@@ -92,7 +97,8 @@ public abstract class ImageFile implements IsEmpty {
             }
             logResult("Show blank", taskSuffix);
             showBlankImage(imageView);
-            showImageAsync(myActivity, imageView);
+            AsyncTaskLauncher.execute(new ImageLoader(this, myActivity, imageView),
+                    ImageLoader::load, loader -> loader::set);
         } else {
             logResult("No image file", taskSuffix);
             onNoImage(imageView);
@@ -130,11 +136,8 @@ public abstract class ImageFile implements IsEmpty {
 
     public void preloadImageAsync(CacheName cacheName) {
         CachedImage image = getImageFromCache(cacheName);
-        if (image != null) {
-            return;
-        }
-        if (downloadFile.existed) {
-            preloadAsync(cacheName);
+        if (image == null && downloadFile.existed) {
+            AsyncTaskLauncher.execute(new ImagePreLoader(this, cacheName), ImagePreLoader::load);
         }
     }
 
@@ -146,73 +149,67 @@ public abstract class ImageFile implements IsEmpty {
         return null;
     }
 
-    private void showImageAsync(final MyActivity myActivity, @NonNull final IdentifiableImageView imageView) {
-        final String taskSuffix = "-asyn-" + imageView.myViewId;
-        AsyncTaskLauncher.execute(this, false,
-                new MyAsyncTask<Void, Void, CachedImage>(getTaskId(taskSuffix), MyAsyncTask.PoolEnum.QUICK_UI) {
-                    private boolean logged = false;
+    private static class ImageLoader extends AbstractImageLoader {
+        private final MyActivity myActivity;
+        private final IdentifiableImageView imageView;
+        private volatile boolean logged = false;
 
-                    @Override
-                    protected CachedImage doInBackground2(Void aVoid) {
-                        if (skip()) {
-                            return null;
-                        }
-                        return ImageCaches.loadAndGetImage(imageView.getCacheName(), ImageFile.this);
+        private ImageLoader(ImageFile imageFile, MyActivity myActivity, IdentifiableImageView imageView) {
+            super(imageFile, "-asyn-" + imageView.myViewId);
+            this.myActivity = myActivity;
+            this.imageView = imageView;
+        }
+
+        Try<CachedImage> load() {
+            return TryUtils.ofNullable(
+                skip()
+                    ? null
+                    : ImageCaches.loadAndGetImage(imageView.getCacheName(), imageFile));
+        }
+
+        void set(Try<CachedImage> tryImage) {
+            if (skip()) return;
+
+            tryImage.onSuccess(image -> {
+                if (image.id != imageFile.getId()) {
+                    logResult("Loaded wrong image.id:" + image.id);
+                    return;
+                }
+                try {
+                    if (imageView instanceof AttachedImageView) {
+                        ((AttachedImageView) imageView).setMeasuresLocked(true);
                     }
+                    imageView.setImageDrawable(image.getDrawable());
+                    imageView.setLoaded();
+                    logResult("Loaded");
+                } catch (Exception e) {
+                    MyLog.d(imageFile, imageFile.getMsgLog("Error on setting image", taskSuffix), e);
+                }
+            }).onFailure( e -> logResult("No success onFinish"));
+        }
 
-                    @Override
-                    protected void onFinish(CachedImage image, boolean success) {
-                        if (!success) {
-                            logResult("No success onFinish");
-                            return;
-                        }
-                        if (image == null) {
-                            logResult("Failed to load");
-                            return;
-                        }
-                        if (skip()) {
-                            return;
-                        }
-                        if (image.id != getId()) {
-                            logResult("Loaded wrong image.id:" + image.id);
-                            return;
-                        }
-                        try {
-                            if (imageView instanceof AttachedImageView) {
-                                ((AttachedImageView) imageView).setMeasuresLocked(true);
-                            }
-                            imageView.setImageDrawable(image.getDrawable());
-                            imageView.setLoaded();
-                            logResult("Loaded");
-                        } catch (Exception e) {
-                            MyLog.d(ImageFile.this, getMsgLog("Error on setting image", taskSuffix), e);
-                        }
-                    }
+        private boolean skip() {
+            if (!myActivity.isMyResumed()) {
+                logResult("Skipped not resumed activity");
+                return true;
+            }
+            if (imageView.isLoaded()) {
+                logResult("Skipped already loaded");
+                return true;
+            }
+            if (imageView.getImageId() != imageFile.getId()) {
+                logResult("Skipped view.imageId:" + imageView.getImageId());
+                return true;
+            }
+            return false;
+        }
 
-                    private boolean skip() {
-                        if (!myActivity.isMyResumed()) {
-                            logResult("Skipped not resumed activity");
-                            return true;
-                        }
-                        if (imageView.isLoaded()) {
-                            logResult("Skipped already loaded");
-                            return true;
-                        }
-                        if (imageView.getImageId() != getId()) {
-                            logResult("Skipped view.imageId:" + imageView.getImageId());
-                            return true;
-                        }
-                        return false;
-                    }
-
-                    private void logResult(String msgLog) {
-                        if (!logged) {
-                            logged = true;
-                            MyLog.v(ImageFile.this, () -> getMsgLog(msgLog, taskSuffix));
-                        }
-                    }
-
-                });
+        private void logResult(String msgLog) {
+            if (!logged) {
+                logged = true;
+                imageFile.logResult(msgLog, taskSuffix);
+            }
+        }
     }
 
     @NonNull
@@ -220,34 +217,92 @@ public abstract class ImageFile implements IsEmpty {
         return getTaskId(taskSuffix) + "; " + msgLog + " " + downloadFile.getFilePath();
     }
 
+    private static class ImagePreLoader extends AbstractImageLoader {
+        private final CacheName cacheName;
 
-    private void preloadAsync(CacheName cacheName) {
-        final String taskSuffix = "-prel";
-        AsyncTaskLauncher.execute(this, false,
-                new MyAsyncTask<Void, Void, Void>(getTaskId(taskSuffix), MyAsyncTask.PoolEnum.QUICK_UI) {
+        private ImagePreLoader(ImageFile imageFile, CacheName cacheName) {
+            super(imageFile, "-prel");
+            this.cacheName = cacheName;
+        }
 
-                    @Override
-                    protected Void doInBackground2(Void aVoid) {
-                        CachedImage image = ImageCaches.loadAndGetImage(cacheName, ImageFile.this);
-                        if (image == null) {
-                            logResult("Failed to preload", taskSuffix);
-                        } else if (image.id != getId()) {
-                            logResult("Loaded wrong image.id:" + image.id, taskSuffix);
-                        } else {
-                            logResult("Preloaded", taskSuffix);
-                        }
-                        return null;
-                    }
-                });
+        void load() {
+            CachedImage image = ImageCaches.loadAndGetImage(cacheName, imageFile);
+            if (image == null) {
+                imageFile.logResult("Failed to preload", taskSuffix);
+            } else if (image.id != imageFile.getId()) {
+                imageFile.logResult("Loaded wrong image.id:" + image.id, taskSuffix);
+            } else {
+                imageFile.logResult("Preloaded", taskSuffix);
+            }
+        }
+    }
+
+    public void loadDrawable(Consumer<Drawable> consumer) {
+        final String taskSuffix = "-syncd-" + consumer.hashCode();
+        if (downloadStatus != DownloadStatus.LOADED || !downloadFile.existed) {
+            logResult("No image file", taskSuffix);
+            requestDownload();
+            consumer.accept(null);
+            return;
+        }
+        CacheName cacheName = this instanceof AvatarFile ? CacheName.AVATAR : CacheName.ATTACHED_IMAGE;
+        CachedImage cachedImage = getImageFromCache(cacheName);
+        if (cachedImage == CachedImage.BROKEN) {
+            logResult("Broken", taskSuffix);
+            consumer.accept(null);
+            return;
+        } else if (cachedImage != null && !cachedImage.isExpired()) {
+            logResult("Set", taskSuffix);
+            consumer.accept(cachedImage.getDrawable());
+            return;
+        }
+        logResult("Show default", taskSuffix);
+        consumer.accept(null);
+        AsyncTaskLauncher.execute(new DrawableLoader(this, cacheName),
+                DrawableLoader::load, loader -> drawableTry -> drawableTry.onSuccess(consumer));
+    }
+
+    private static class DrawableLoader extends AbstractImageLoader {
+        private final CacheName cacheName;
+
+        private DrawableLoader(ImageFile imageFile, CacheName cacheName) {
+            super(imageFile, "-asynd");
+            this.cacheName = cacheName;
+        }
+
+        Try<Drawable> load() {
+            return TryUtils.ofNullable(ImageCaches.loadAndGetImage(cacheName, imageFile))
+                    .map(CachedImage::getDrawable);
+        }
+    }
+
+    private static class AbstractImageLoader implements IdentifiableInstance {
+        final ImageFile imageFile;
+        final String taskSuffix;
+
+        private AbstractImageLoader(ImageFile imageFile, String taskSuffix) {
+            this.imageFile = imageFile;
+            this.taskSuffix = taskSuffix;
+        }
+
+        @Override
+        public long getInstanceId() {
+            return imageFile.getId();
+        }
+
+        @Override
+        public String getInstanceIdString() {
+            return IdentifiableInstance.super.getInstanceIdString() + taskSuffix;
+        }
     }
 
     private void logResult(String msgLog, String taskSuffix) {
-        MyLog.v(ImageFile.this, () -> getMsgLog(msgLog, taskSuffix));
+        MyLog.v(this, () -> getMsgLog(msgLog, taskSuffix));
     }
 
     @NonNull
     private String getTaskId(String taskSuffix) {
-        return MyLog.objToTag(this) + "-" + getId() + "-load" + taskSuffix;
+        return getInstanceTag() + "-load" + taskSuffix;
     }
 
     public Point getSize() {
@@ -263,7 +318,12 @@ public abstract class ImageFile implements IsEmpty {
 
     @Override
     public String toString() {
-        return MyLog.objToTag(this) + ":{id=" + getId() + ", " + downloadFile + "}";
+        return getInstanceTag() + ":" + downloadFile;
+    }
+
+    @Override
+    public long getInstanceId() {
+        return getId();
     }
 
     public long getId() {

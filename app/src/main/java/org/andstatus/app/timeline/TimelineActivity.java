@@ -677,6 +677,11 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         getNoteEditor().updateScreen();
         updateTitle(mRateLimitText);
         mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome());
+        if (getParamsLoaded().isAtHome()) {
+            myContext.accounts().getCurrentAccount().getActor().avatarFile.loadDrawable(mDrawerToggle::setHomeAsUpIndicator);
+        } else {
+            mDrawerToggle.setHomeAsUpIndicator(null);
+        }
         showRecentAccounts();
         ViewUtils.showView(
                 findViewById(R.id.switchToDefaultTimelineButton), !getParamsLoaded().isAtHome());

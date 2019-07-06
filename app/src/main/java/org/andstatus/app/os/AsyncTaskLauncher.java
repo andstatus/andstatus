@@ -99,6 +99,10 @@ public class AsyncTaskLauncher<Params> {
         }
     }
 
+    public static <Params, Result> boolean execute(Params params, Consumer<Params> backgroundFunc) {
+        return execute(params, p -> {backgroundFunc.accept(p); return null;}, p -> r -> {});
+    }
+
     public static <Params, Result> boolean execute(Params params,
                                  Function<Params, Try<Result>> backgroundFunc,
                                  Function<Params, Consumer<Try<Result>>> uiConsumer) {

@@ -16,10 +16,25 @@
 
 package org.andstatus.app.util;
 
+import static org.andstatus.app.util.MyLog.MAX_TAG_LENGTH;
+
 /**
  * Helps easier distinguish instances of a class e.g. in log messages
  * @author yvolk@yurivolkov.com
  */
 public interface IdentifiableInstance {
+
     long getInstanceId();
+
+    default String getInstanceIdString() {
+        return String.valueOf(getInstanceId());
+    }
+
+    default String getInstanceTag() {
+        String className = getClass().getSimpleName();
+        String idString = getInstanceIdString();
+        int maxClassNameLength = MAX_TAG_LENGTH - idString.length();
+        return (className.length() > maxClassNameLength ? className.substring(0, maxClassNameLength) : className)
+                + idString;
+    }
 }

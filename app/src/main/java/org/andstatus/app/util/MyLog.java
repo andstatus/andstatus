@@ -76,7 +76,7 @@ import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
  */
 public class MyLog {
     private static final String TAG = MyLog.class.getSimpleName();
-    private static final int MAX_TAG_LENGTH = 23;
+    public static final int MAX_TAG_LENGTH = 23;
 
     /**
      * Use this tag to change logging level of the whole application
@@ -269,8 +269,8 @@ public class MyLog {
         final String tag;
         if (objTag == null) {
             tag = "(null)";
-        } else if (IdentifiableInstance.class.isAssignableFrom(objTag.getClass())) {
-            tag = getInstanceTag((IdentifiableInstance) objTag);
+        } else if (objTag instanceof IdentifiableInstance) {
+            tag = ((IdentifiableInstance) objTag).getInstanceTag();
         } else if (objTag instanceof String) {
             tag = (String) objTag;
         } else if (objTag instanceof Enum<?>) {
@@ -284,15 +284,6 @@ public class MyLog {
             return "(empty)";
         }
         return tag;
-    }
-
-    // TODO: Java8 Move to Interface
-    public static String getInstanceTag(IdentifiableInstance identifiableInstance) {
-        String className = identifiableInstance.getClass().getSimpleName();
-        String idString = String.valueOf(identifiableInstance.getInstanceId());
-        int maxClassNameLength = MAX_TAG_LENGTH - idString.length();
-        return (className. length() > maxClassNameLength ? className.substring(0, maxClassNameLength) : className)
-                + idString;
     }
 
     public static boolean isDebugEnabled() {
