@@ -317,9 +317,13 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
 
             @Override
             protected void onFinish(Try<Result> results, boolean success) {
-                Try<Result> results2 = success
+                Try<Result> results2 = results == null
+                    ? Try.failure(new Exception("No results of the Async task"))
+                    : success
                         ? results
-                        : (results.isFailure() ? results : Try.failure(new Exception("Failed to execute Async task")));
+                        : (results.isFailure()
+                            ? results
+                            : Try.failure(new Exception("Failed to execute Async task")));
                 uiConsumer.apply(params).accept(results2);
             }
         };
