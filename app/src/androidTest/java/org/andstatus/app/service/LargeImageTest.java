@@ -74,7 +74,7 @@ public class LargeImageTest {
         InputStream inputStream = InstrumentationRegistry.getInstrumentation().getContext().getResources()
                 .openRawResource(org.andstatus.app.tests.R.raw.large_image);
         connMock.getHttpMock().setResponseFileStream(inputStream);
-        loader.connectionMock = connMock.connection;
+        loader.setConnectionMock(connMock.connection);
         loader.load(commandData);
         inputStream.close();
         assertEquals("Requested", 1, connMock.getHttpMock().getRequestsCounter());

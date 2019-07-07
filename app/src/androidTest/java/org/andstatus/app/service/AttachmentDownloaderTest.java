@@ -87,9 +87,9 @@ public class AttachmentDownloaderTest {
         FileDownloader loader = FileDownloader.newForDownloadData(dataIn);
         MyAccount ma = demoData.getGnuSocialAccount();
         if (mockNetworkError) {
-            loader.connectionMock = ConnectionMock.newFor(ma)
+            loader.setConnectionMock(ConnectionMock.newFor(ma)
                     .withException(new ConnectionException("Mocked IO exception"))
-                    .connection;
+                    .connection);
         } else {
             ma.setConnection();
         }

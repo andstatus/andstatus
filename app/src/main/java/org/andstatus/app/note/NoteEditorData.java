@@ -424,7 +424,7 @@ public class NoteEditorData implements IsEmpty {
 
         activity.getNote().setSensitive(true);
         StringUtils.optNotEmpty(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, getInReplyToNoteId()))
-                .map(this::setSummary);
+                .ifPresent(this::setSummary);
         return this;
     }
 }

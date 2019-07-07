@@ -185,9 +185,9 @@ public class AvatarDownloaderTest {
         final Actor actor = Actor.load(MyContextHolder.get(), ma.getActor().actorId);
         FileDownloader loader = new AvatarDownloader(actor);
         if (mockNetworkError) {
-            loader.connectionMock = ConnectionMock.newFor(ma)
+            loader.setConnectionMock(ConnectionMock.newFor(ma)
                     .withException(new ConnectionException("Mocked IO exception"))
-                    .connection;
+                    .connection);
         } else {
             ma.setConnection();
         }

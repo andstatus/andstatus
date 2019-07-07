@@ -66,7 +66,7 @@ public class ActorProfileViewer {
     }
 
     public void populateView() {
-        final ActorViewItem item = getActivity().getListData().actorViewItem;
+        final ActorViewItem item = getActivity().getListData().getActorViewItem();
         populator.populateView(profileView, item, 0);
         showOrigin(item);
         MyUrlSpan.showText(profileView, R.id.profileAge, RelativeTime.getDifference(

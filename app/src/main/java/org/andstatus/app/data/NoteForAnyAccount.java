@@ -44,7 +44,7 @@ public class NoteForAnyAccount {
     @NonNull
     public final Origin origin;
     public final long noteId;
-    public String noteOid = "";
+    private String noteOid = "";
     public final DownloadStatus status;
     public final Actor author;
     public final Actor actor;

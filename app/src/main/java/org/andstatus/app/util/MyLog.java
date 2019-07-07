@@ -560,7 +560,7 @@ public class MyLog {
         if (jsonMessage != null && MyPreferences.isLogNetworkLevelMessages()) {
             String fileName = getSeparateLogFileName(namePrefix, objTag);
             logJson(objTag, namePrefix, jsonMessage, fileName);
-            StringUtils.optNotEmpty(textData).map(txt -> writeStringToFile(txt, fileName + ".txt"));
+            StringUtils.optNotEmpty(textData).ifPresent(txt -> writeStringToFile(txt, fileName + ".txt"));
         }
     }
    

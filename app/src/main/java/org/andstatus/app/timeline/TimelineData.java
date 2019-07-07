@@ -39,7 +39,7 @@ public class TimelineData<T extends ViewItem<T>> {
     protected final List<TimelinePage<T>> pages; // Contains at least one Page
     final long updatedAt = MyLog.uniqueCurrentTimeMS();
     public final TimelineParameters params;
-    public volatile ActorViewItem actorViewItem;
+    private volatile ActorViewItem actorViewItem;
     final boolean isSameTimeline;
     private final DuplicatesCollapser<T> duplicatesCollapser;
 
@@ -254,6 +254,10 @@ public class TimelineData<T extends ViewItem<T>> {
         if (params.timeline.hasActorProfile()) {
             findActorViewItem(params.timeline.actor, preferredOrigin).onSuccess(a -> actorViewItem = a);
         }
+    }
+
+    public ActorViewItem getActorViewItem() {
+        return actorViewItem;
     }
 
     @NonNull

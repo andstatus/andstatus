@@ -10,10 +10,9 @@
  */
 package oauth.signpost.commonshttp;
 
-import java.io.IOException;
+import org.andstatus.app.util.MyLog;
 
-import oauth.signpost.AbstractOAuthProvider;
-import oauth.signpost.http.HttpRequest;
+import java.io.IOException;
 
 import cz.msebera.android.httpclient.HttpEntity;
 import cz.msebera.android.httpclient.HttpResponse;
@@ -21,6 +20,8 @@ import cz.msebera.android.httpclient.client.HttpClient;
 import cz.msebera.android.httpclient.client.methods.HttpPost;
 import cz.msebera.android.httpclient.client.methods.HttpUriRequest;
 import cz.msebera.android.httpclient.impl.client.DefaultHttpClient;
+import oauth.signpost.AbstractOAuthProvider;
+import oauth.signpost.http.HttpRequest;
 
 /**
  * This implementation uses the Apache Commons {@link HttpClient} 4.x HTTP
@@ -66,18 +67,16 @@ public class CommonsHttpOAuthProvider extends AbstractOAuthProvider {
     }
 
     @Override
-    protected void closeConnection(HttpRequest request, oauth.signpost.http.HttpResponse response)
-            throws Exception {
-        if (response != null) {
-            HttpEntity entity = ((HttpResponse) response.unwrap()).getEntity();
-            if (entity != null) {
-                try {
-                    // free the connection
-                    entity.consumeContent();
-                } catch (IOException e) {
-                    // this means HTTP keep-alive is not possible
-                    e.printStackTrace();
-                }
+    protected void closeConnection(HttpRequest request, oauth.signpost.http.HttpResponse response) {
+        if (response == null) return;
+
+        HttpEntity entity = ((HttpResponse) response.unwrap()).getEntity();
+        if (entity != null) {
+            try {
+                // free the connection
+                entity.consumeContent();
+            } catch (IOException e) {
+                MyLog.v(this, "HTTP keep-alive is not possible", e);
             }
         }
     }

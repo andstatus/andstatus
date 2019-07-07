@@ -17,19 +17,22 @@
 package org.andstatus.app.os;
 
 import android.app.Dialog;
-import androidx.annotation.MainThread;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.DialogFactory;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+import androidx.annotation.MainThread;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class ExceptionsCounter {
 
-    private static volatile long diskIoExceptionsCount = 0;
-    private static volatile long diskIoExceptionsCountShown = 0;
+    private static final AtomicLong diskIoExceptionsCount = new AtomicLong();
+    private static final AtomicLong diskIoExceptionsCountShown = new AtomicLong();
     private static volatile Dialog diskIoDialog = null;
 
     private ExceptionsCounter() {
@@ -37,27 +40,27 @@ public class ExceptionsCounter {
     }
 
     public static long getDiskIoExceptionsCount() {
-        return diskIoExceptionsCount;
+        return diskIoExceptionsCount.get();
     }
 
     public static void onDiskIoException() {
-        diskIoExceptionsCount++;
+        diskIoExceptionsCount.incrementAndGet();
     }
 
     public static void forget() {
         DialogFactory.dismissSafely(diskIoDialog);
-        diskIoExceptionsCount = 0;
-        diskIoExceptionsCountShown = 0;
+        diskIoExceptionsCount.set(0);
+        diskIoExceptionsCountShown.set(0);
     }
 
     @MainThread
     public static void showErrorDialogIfErrorsPresent() {
-        if (diskIoExceptionsCountShown == diskIoExceptionsCount ) return;
+        if (diskIoExceptionsCountShown.get() == diskIoExceptionsCount.get() ) return;
 
-        diskIoExceptionsCountShown = diskIoExceptionsCount;
+        diskIoExceptionsCountShown.set(diskIoExceptionsCount.get());
         DialogFactory.dismissSafely(diskIoDialog);
         final String text = String.format(MyContextHolder.get().context().getText(R.string.database_disk_io_error).toString(),
-                diskIoExceptionsCount);
+                diskIoExceptionsCount.get());
         diskIoDialog = DialogFactory.showOkAlertDialog(ExceptionsCounter.class, MyContextHolder.get().context(),
                 R.string.app_name, text);
     }

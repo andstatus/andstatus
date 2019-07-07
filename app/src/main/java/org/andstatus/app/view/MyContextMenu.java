@@ -64,7 +64,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
     private void saveContextOfSelectedItem(View v) {
         viewOfTheContext = v;
         ViewItem viewItem = menuGroup == MENU_GROUP_ACTOR_PROFILE
-                ? listActivity.getListData().actorViewItem
+                ? listActivity.getListData().getActorViewItem()
                 : listActivity.saveContextOfSelectedItem(v);
         if (viewItem.isEmpty() || mViewItem.isEmpty() || mViewItem.getId() != viewItem.getId()) {
             selectedActingAccount = MyAccount.EMPTY;

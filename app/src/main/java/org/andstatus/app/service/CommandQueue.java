@@ -21,7 +21,6 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDiskIOException;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -36,7 +35,10 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+
+import androidx.annotation.NonNull;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -77,17 +79,17 @@ public class CommandQueue {
 
     private static class OneQueue {
         Queue<CommandData> queue = new PriorityBlockingQueue<>(INITIAL_CAPACITY);
-        volatile int savedCount = 0;
+        final AtomicInteger savedCount = new AtomicInteger();
         volatile boolean savedForegroundTasks = false;
 
         public void clear() {
             queue.clear();
-            savedCount = 0;
+            savedCount.set(0);
             savedForegroundTasks = false;
         }
 
         public boolean isEmpty() {
-            return queue.isEmpty() && savedCount == 0;
+            return queue.isEmpty() && savedCount.get() == 0;
         }
 
         private boolean hasForegroundTasks() {
@@ -105,7 +107,7 @@ public class CommandQueue {
         }
 
         public int size() {
-            return queue.size() + savedCount;
+            return queue.size() + savedCount.get();
         }
     }
 
@@ -187,7 +189,7 @@ public class CommandQueue {
             DbUtils.closeSilently(c);
         }
         MyLog.d(context, method + "; loaded " + count + " commands from '" + queueType + "'");
-        oneQueue.savedCount = 0;
+        oneQueue.savedCount.set(0);
         oneQueue.savedForegroundTasks = false;
         return count;
     }
@@ -218,7 +220,7 @@ public class CommandQueue {
         int count = 0;
         try {
             if (loaded) {
-                oneQueue.savedCount = 0;
+                oneQueue.savedCount.set(0);
                 oneQueue.savedForegroundTasks = false;
             }
             if (!queue.isEmpty()) {
@@ -253,7 +255,7 @@ public class CommandQueue {
                 throw new IllegalStateException(msgLog, e);
             }
         }
-        oneQueue.savedCount += count;
+        oneQueue.savedCount.addAndGet(count);
         return count;
     }
 
@@ -306,9 +308,7 @@ public class CommandQueue {
     }
 
     void addToQueue(QueueType queueType, CommandData commandData) {
-        if (get(queueType).contains(commandData)) {
-            get(queueType).remove(commandData);
-        }
+        get(queueType).remove(commandData);
         if (!get(queueType).offer(commandData)) {
             MyLog.e(this, queueType.name() + " is full?");
         }

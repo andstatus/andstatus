@@ -34,7 +34,7 @@ import java.io.File;
 
 public abstract class FileDownloader {
     protected final DownloadData data;
-    public volatile Connection connectionMock;
+    private Connection connectionMock;
     private ConnectionRequired connectionRequired = ConnectionRequired.ANY;
 
     static FileDownloader newForDownloadData(DownloadData data) {
@@ -135,5 +135,10 @@ public abstract class FileDownloader {
     public static void load(DownloadData downloadData, CommandData commandData) {
         FileDownloader downloader = FileDownloader.newForDownloadData(downloadData);
         downloader.load(commandData);
+    }
+
+    public FileDownloader setConnectionMock(Connection connectionMock) {
+        this.connectionMock = connectionMock;
+        return this;
     }
 }

@@ -50,6 +50,7 @@ import org.andstatus.app.util.TriState;
 import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import androidx.annotation.NonNull;
 
@@ -107,25 +108,25 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     private volatile long selectorOrder = 0;
 
     /** When this timeline was last time successfully synced */
-    private volatile long syncSucceededDate = 0;
+    private final AtomicLong syncSucceededDate = new AtomicLong();
     /** When last sync error occurred */
-    private volatile long syncFailedDate = 0;
+    private final AtomicLong syncFailedDate = new AtomicLong();
     /** Error message at {@link #syncFailedDate} */
     private volatile String errorMessage = "";
 
     /** Number of successful sync operations: "Synced {@link #syncedTimesCount} times" */
-    private volatile long syncedTimesCount = 0;
+    private final AtomicLong syncedTimesCount = new AtomicLong();
     /** Number of failed sync operations */
-    private volatile long syncFailedTimesCount = 0;
-    private volatile long downloadedItemsCount = 0;
-    private volatile long newItemsCount = 0;
-    private volatile long countSince = System.currentTimeMillis();
+    private final AtomicLong syncFailedTimesCount = new AtomicLong();
+    private final AtomicLong downloadedItemsCount = new AtomicLong();
+    private final AtomicLong newItemsCount = new AtomicLong();
+    private final AtomicLong countSince = new AtomicLong(System.currentTimeMillis());
 
     /** Accumulated numbers for statistics. They are reset by a user's request */
-    private volatile long syncedTimesCountTotal = 0;
-    private volatile long syncFailedTimesCountTotal = 0;
-    private volatile long downloadedItemsCountTotal = 0;
-    private volatile long newItemsCountTotal = 0;
+    private final AtomicLong syncedTimesCountTotal = new AtomicLong();
+    private final AtomicLong syncFailedTimesCountTotal = new AtomicLong();
+    private final AtomicLong downloadedItemsCountTotal = new AtomicLong();
+    private final AtomicLong newItemsCountTotal = new AtomicLong();
 
     /** Timeline position of the youngest ever downloaded message */
     @NonNull
@@ -172,19 +173,19 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         timeline.setSyncedAutomatically(DbUtils.getBoolean(cursor, TimelineTable.IS_SYNCED_AUTOMATICALLY));
         timeline.isDisplayedInSelector = DisplayedInSelector.load(DbUtils.getString(cursor, TimelineTable.DISPLAYED_IN_SELECTOR));
 
-        timeline.syncSucceededDate = DbUtils.getLong(cursor, TimelineTable.SYNC_SUCCEEDED_DATE);
-        timeline.syncFailedDate = DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_DATE);
+        timeline.syncSucceededDate.set(DbUtils.getLong(cursor, TimelineTable.SYNC_SUCCEEDED_DATE));
+        timeline.syncFailedDate.set(DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_DATE));
         timeline.errorMessage = DbUtils.getString(cursor, TimelineTable.ERROR_MESSAGE);
 
-        timeline.syncedTimesCount = DbUtils.getLong(cursor, TimelineTable.SYNCED_TIMES_COUNT);
-        timeline.syncFailedTimesCount = DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_TIMES_COUNT);
-        timeline.downloadedItemsCount = DbUtils.getLong(cursor, TimelineTable.DOWNLOADED_ITEMS_COUNT);
-        timeline.newItemsCount = DbUtils.getLong(cursor, TimelineTable.NEW_ITEMS_COUNT);
-        timeline.countSince = DbUtils.getLong(cursor, TimelineTable.COUNT_SINCE);
-        timeline.syncedTimesCountTotal = DbUtils.getLong(cursor, TimelineTable.SYNCED_TIMES_COUNT_TOTAL);
-        timeline.syncFailedTimesCountTotal = DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_TIMES_COUNT_TOTAL);
-        timeline.downloadedItemsCountTotal = DbUtils.getLong(cursor, TimelineTable.DOWNLOADED_ITEMS_COUNT_TOTAL);
-        timeline.newItemsCountTotal = DbUtils.getLong(cursor, TimelineTable.NEW_ITEMS_COUNT_TOTAL);
+        timeline.syncedTimesCount.set(DbUtils.getLong(cursor, TimelineTable.SYNCED_TIMES_COUNT));
+        timeline.syncFailedTimesCount.set(DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_TIMES_COUNT));
+        timeline.downloadedItemsCount.set(DbUtils.getLong(cursor, TimelineTable.DOWNLOADED_ITEMS_COUNT));
+        timeline.newItemsCount.set(DbUtils.getLong(cursor, TimelineTable.NEW_ITEMS_COUNT));
+        timeline.countSince.set(DbUtils.getLong(cursor, TimelineTable.COUNT_SINCE));
+        timeline.syncedTimesCountTotal.set(DbUtils.getLong(cursor, TimelineTable.SYNCED_TIMES_COUNT_TOTAL));
+        timeline.syncFailedTimesCountTotal.set(DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_TIMES_COUNT_TOTAL));
+        timeline.downloadedItemsCountTotal.set(DbUtils.getLong(cursor, TimelineTable.DOWNLOADED_ITEMS_COUNT_TOTAL));
+        timeline.newItemsCountTotal.set(DbUtils.getLong(cursor, TimelineTable.NEW_ITEMS_COUNT_TOTAL));
 
         timeline.youngestPosition = DbUtils.getString(cursor, TimelineTable.YOUNGEST_POSITION);
         timeline.youngestItemDate = DbUtils.getLong(cursor, TimelineTable.YOUNGEST_ITEM_DATE);
@@ -270,7 +271,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         this.selectorOrder = selectorOrder;
     }
 
-    protected long getDefaultSelectorOrder() {
+    long getDefaultSelectorOrder() {
         return (timelineType.ordinal() + 1L) * 2 + (isCombined ? 1 : 0);
     }
 
@@ -349,19 +350,19 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         values.put(TimelineTable.DISPLAYED_IN_SELECTOR, isDisplayedInSelector.save());
         values.put(TimelineTable.SELECTOR_ORDER, selectorOrder);
 
-        values.put(TimelineTable.SYNC_SUCCEEDED_DATE, syncSucceededDate);
-        values.put(TimelineTable.SYNC_FAILED_DATE, syncFailedDate);
+        values.put(TimelineTable.SYNC_SUCCEEDED_DATE, syncSucceededDate.get());
+        values.put(TimelineTable.SYNC_FAILED_DATE, syncFailedDate.get());
         values.put(TimelineTable.ERROR_MESSAGE, errorMessage);
 
-        values.put(TimelineTable.SYNCED_TIMES_COUNT, syncedTimesCount);
-        values.put(TimelineTable.SYNC_FAILED_TIMES_COUNT, syncFailedTimesCount);
-        values.put(TimelineTable.DOWNLOADED_ITEMS_COUNT, downloadedItemsCount);
-        values.put(TimelineTable.NEW_ITEMS_COUNT, newItemsCount);
-        values.put(TimelineTable.COUNT_SINCE, countSince);
-        values.put(TimelineTable.SYNCED_TIMES_COUNT_TOTAL, syncedTimesCountTotal);
-        values.put(TimelineTable.SYNC_FAILED_TIMES_COUNT_TOTAL, syncFailedTimesCountTotal);
-        values.put(TimelineTable.DOWNLOADED_ITEMS_COUNT_TOTAL, downloadedItemsCountTotal);
-        values.put(TimelineTable.NEW_ITEMS_COUNT_TOTAL, newItemsCountTotal);
+        values.put(TimelineTable.SYNCED_TIMES_COUNT, syncedTimesCount.get());
+        values.put(TimelineTable.SYNC_FAILED_TIMES_COUNT, syncFailedTimesCount.get());
+        values.put(TimelineTable.DOWNLOADED_ITEMS_COUNT, downloadedItemsCount.get());
+        values.put(TimelineTable.NEW_ITEMS_COUNT, newItemsCount.get());
+        values.put(TimelineTable.COUNT_SINCE, countSince.get());
+        values.put(TimelineTable.SYNCED_TIMES_COUNT_TOTAL, syncedTimesCountTotal.get());
+        values.put(TimelineTable.SYNC_FAILED_TIMES_COUNT_TOTAL, syncFailedTimesCountTotal.get());
+        values.put(TimelineTable.DOWNLOADED_ITEMS_COUNT_TOTAL, downloadedItemsCountTotal.get());
+        values.put(TimelineTable.NEW_ITEMS_COUNT_TOTAL, newItemsCountTotal.get());
 
         values.put(TimelineTable.YOUNGEST_POSITION, youngestPosition);
         values.put(TimelineTable.YOUNGEST_ITEM_DATE, youngestItemDate);
@@ -736,8 +737,8 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         }
 
         setSyncSucceededDate(0);
-        if (syncFailedDate > 0) {
-            syncFailedDate = 0;
+        if (syncFailedDate.get() > 0) {
+            syncFailedDate.set(0);
             setChanged();
         }
     }
@@ -872,20 +873,19 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     private Timeline onSyncedSimultaneously(Timeline other) {
-        if (syncFailedDate < other.syncFailedDate) {
-            syncFailedDate = other.syncFailedDate;
+        if (setIfLess(syncFailedDate, other.syncFailedDate)) {
             errorMessage = other.errorMessage;
         }
-        if (syncFailedTimesCount < other.syncFailedTimesCount) syncFailedTimesCount = other.syncFailedTimesCount;
-        if (syncFailedTimesCountTotal < other.syncFailedTimesCountTotal) syncFailedTimesCountTotal = other.syncFailedTimesCountTotal;
-        if (syncSucceededDate < other.syncSucceededDate) syncSucceededDate = other.syncSucceededDate;
-        if (syncedTimesCount < other.syncedTimesCount) syncedTimesCount = other.syncedTimesCount;
-        if (syncedTimesCountTotal < other.syncedTimesCountTotal) syncedTimesCountTotal = other.syncedTimesCountTotal;
+        setIfLess(syncFailedTimesCount, other.syncFailedTimesCount);
+        setIfLess(syncFailedTimesCountTotal, other.syncFailedTimesCountTotal);
+        setIfLess(syncSucceededDate, other.syncSucceededDate);
+        setIfLess(syncedTimesCount, other.syncedTimesCount);
+        setIfLess(syncedTimesCountTotal, other.syncedTimesCountTotal);
 
-        if (newItemsCount < other.newItemsCount) newItemsCount = other.newItemsCount;
-        if (newItemsCountTotal < other.newItemsCountTotal) newItemsCountTotal = other.newItemsCountTotal;
-        if (downloadedItemsCount < other.downloadedItemsCount) downloadedItemsCount = other.downloadedItemsCount;
-        if (downloadedItemsCountTotal < other.downloadedItemsCountTotal) downloadedItemsCountTotal = other.downloadedItemsCountTotal;
+        setIfLess(newItemsCount, other.newItemsCount);
+        setIfLess(newItemsCountTotal, other.newItemsCountTotal);
+        setIfLess(downloadedItemsCount, other.downloadedItemsCount);
+        setIfLess(downloadedItemsCountTotal, other.downloadedItemsCountTotal);
 
         onNewMsg(other.youngestItemDate, other.youngestPosition);
         onNewMsg(other.oldestItemDate, other.oldestPosition);
@@ -893,6 +893,14 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         setOldestSyncedDate(other.oldestSyncedDate);
 
         return this;
+    }
+
+    private static boolean setIfLess(AtomicLong value, AtomicLong other) {
+        if (value.get() < other.get()) {
+            value.set(other.get());
+            return true;
+        }
+        return false;
     }
 
     private boolean isSyncedSimultaneously(Timeline timeline) {
@@ -907,36 +915,36 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
 
     private Timeline onSyncEnded(CommandResult result) {
         if (result.hasError()) {
-            syncFailedDate = System.currentTimeMillis();
+            syncFailedDate.set(System.currentTimeMillis());
             if (!StringUtils.isEmpty(result.getMessage())) {
                 errorMessage = result.getMessage();
             }
-            syncFailedTimesCount++;
-            syncFailedTimesCountTotal++;
+            syncFailedTimesCount.incrementAndGet();
+            syncFailedTimesCountTotal.incrementAndGet();
         } else {
-            syncSucceededDate = System.currentTimeMillis();
-            syncedTimesCount++;
-            syncedTimesCountTotal++;
+            syncSucceededDate.set(System.currentTimeMillis());
+            syncedTimesCount.incrementAndGet();
+            syncedTimesCountTotal.incrementAndGet();
         }
         if (result.getNewCount() > 0) {
-            newItemsCount += result.getNewCount();
-            newItemsCountTotal += result.getNewCount();
+            newItemsCount.addAndGet(result.getNewCount());
+            newItemsCountTotal.addAndGet(result.getNewCount());
         }
         if (result.getDownloadedCount() > 0) {
-            downloadedItemsCount += result.getDownloadedCount();
-            downloadedItemsCountTotal += result.getDownloadedCount();
+            downloadedItemsCount.addAndGet(result.getDownloadedCount());
+            downloadedItemsCountTotal.addAndGet(result.getDownloadedCount());
         }
         setChanged();
         return this;
     }
 
     public long getSyncSucceededDate() {
-        return syncSucceededDate;
+        return syncSucceededDate.get();
     }
 
     public void setSyncSucceededDate(long syncSucceededDate) {
-        if(this.syncSucceededDate != syncSucceededDate) {
-            this.syncSucceededDate = syncSucceededDate;
+        if(this.syncSucceededDate.get() != syncSucceededDate) {
+            this.syncSucceededDate.set(syncSucceededDate);
             setChanged();
         }
     }
@@ -966,23 +974,23 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public long getDownloadedItemsCount(boolean isTotal) {
-        return isTotal ? downloadedItemsCountTotal : downloadedItemsCount;
+        return isTotal ? downloadedItemsCountTotal.get() : downloadedItemsCount.get();
     }
 
     public long getNewItemsCount(boolean isTotal) {
-        return isTotal ? newItemsCountTotal : newItemsCount;
+        return isTotal ? newItemsCountTotal.get() : newItemsCount.get();
     }
 
     public long getSyncedTimesCount(boolean isTotal) {
-        return isTotal ? syncedTimesCountTotal : syncedTimesCount;
+        return isTotal ? syncedTimesCountTotal.get() : syncedTimesCount.get();
     }
 
     public long getSyncFailedDate() {
-        return syncFailedDate;
+        return syncFailedDate.get();
     }
 
     public long getSyncFailedTimesCount(boolean isTotal) {
-        return isTotal ? syncFailedTimesCountTotal : syncFailedTimesCount;
+        return isTotal ? syncFailedTimesCountTotal.get() : syncFailedTimesCount.get();
     }
 
     public String getErrorMessage() {
@@ -1008,22 +1016,22 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
 
     public void resetCounters(boolean all) {
         if (all) {
-            syncFailedTimesCountTotal = 0;
-            syncedTimesCountTotal = 0;
-            downloadedItemsCountTotal = 0;
-            newItemsCountTotal = 0;
+            syncFailedTimesCountTotal.set(0);
+            syncedTimesCountTotal.set(0);
+            downloadedItemsCountTotal.set(0);
+            newItemsCountTotal.set(0);
         }
         errorMessage = "";
-        syncFailedTimesCount = 0;
-        syncedTimesCount = 0;
-        downloadedItemsCount = 0;
-        newItemsCount = 0;
-        countSince = System.currentTimeMillis();
+        syncFailedTimesCount.set(0);
+        syncedTimesCount.set(0);
+        downloadedItemsCount.set(0);
+        newItemsCount.set(0);
+        countSince.set(System.currentTimeMillis());
         changed = true;
     }
 
     public long getCountSince() {
-        return countSince;
+        return countSince.get();
     }
 
     public Uri getUri() {

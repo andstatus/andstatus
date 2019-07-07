@@ -22,7 +22,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.MyLog;
@@ -40,6 +39,8 @@ import java.io.Writer;
 import java.nio.channels.FileChannel;
 import java.util.Random;
 import java.util.function.Supplier;
+
+import androidx.annotation.NonNull;
 
 public final class DbUtils {
     private static final int MS_BETWEEN_RETRIES = 500;
@@ -118,7 +119,7 @@ public final class DbUtils {
     public static boolean waitMs(Object tag, int delayMs) {
         boolean wasInterrupted = false;
         if (delayMs > 1) {
-            long delay = (delayMs/2) + new Random().nextInt(delayMs);
+            int delay = (delayMs/2) + new Random().nextInt(delayMs);
             StopWatch stopWatch = StopWatch.createStarted();
             while (stopWatch.getTime() < delay) {
                 long remainingDelay = delay - stopWatch.getTime();
