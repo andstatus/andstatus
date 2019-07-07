@@ -29,6 +29,17 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="50.05" android:versionCode="294"
+             versionDate="2019-07-07"
+             versionTitle="Refresh Timeline on navigating Back">
+        <changes>
+            <change>In a case a User navigates "back", the Timeline (or any loadable list...) being reappearing
+                (from the Android stack") should be updated as if it was just opened. This will lead to the Timeline loading
+                delay though, but will ensure the content is up to date.</change>
+            <change>Fixed crash in the cancelled async execution</change>
+            <change>Fixed crash on opening Timeline selector or other "selectors"</change>
+        </changes>
+    </release>
     <release android:versionName="50.04" android:versionCode="293"
              versionDate="2019-07-02"
              versionTitle="Bugfixes">
