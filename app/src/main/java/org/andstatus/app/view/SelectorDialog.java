@@ -40,6 +40,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyTheme;
+import org.andstatus.app.util.MyLog;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -146,13 +147,17 @@ public class SelectorDialog extends DialogFragment {
     }
 
     public void show(FragmentActivity fragmentActivity) {
-        FragmentTransaction ft = fragmentActivity.getSupportFragmentManager().beginTransaction();
-        Fragment prev = fragmentActivity.getSupportFragmentManager().findFragmentByTag(dialogTag);
-        if (prev != null) {
-            ft.remove(prev);
+        try {
+            FragmentTransaction ft = fragmentActivity.getSupportFragmentManager().beginTransaction();
+            Fragment prev = fragmentActivity.getSupportFragmentManager().findFragmentByTag(dialogTag);
+            if (prev != null) {
+                ft.remove(prev);
+            }
+            ft.addToBackStack(null);
+            show(ft, dialogTag);
+        } catch (Exception e) {
+            MyLog.w(fragmentActivity, "Failed to show " + MyLog.objToTag(this) , e);
         }
-        ft.addToBackStack(null);
-        show(ft, dialogTag);
     }
 
     @NonNull
