@@ -92,6 +92,7 @@
                     android:id="@+id/summary_edit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:inputType="textShortMessage|textAutoCorrect|textAutoComplete"
                     android:hint="@string/summaryCw"/>
 
                 <org.andstatus.app.note.NoteEditorBodyView
@@ -103,7 +104,7 @@
                     android:dropDownWidth="wrap_content"
                     android:hint="@string/message_edit_hint"
                     android:imeOptions="actionSend|flagNoEnterAction"
-                    android:inputType="textShortMessage|textAutoCorrect|textCapSentences|textMultiLine|textImeMultiLine"
+                    android:inputType="textShortMessage|textAutoCorrect|textAutoComplete|textCapSentences|textMultiLine|textImeMultiLine"
                     android:maxLength="5000"
                     android:maxLines="8"/>
             </LinearLayout>
