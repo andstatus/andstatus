@@ -29,6 +29,16 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="50.06" android:versionCode="295"
+             versionDate="2019-07-13"
+             versionTitle="Word suggestions in the Note Editor">
+        <changes>
+            <change>As it was reported that on some devices there are no word suggestions during Note composing,
+                we added another tweak (android:inputType = "textAutoComplete" actually)
+                to explicitly instruct keyboard to show them.
+            </change>
+        </changes>
+    </release>
     <release android:versionName="50.05" android:versionCode="294"
              versionDate="2019-07-07"
              versionTitle="Refresh Timeline on navigating Back">
