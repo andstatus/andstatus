@@ -20,6 +20,7 @@ import android.content.ContentValues;
 import android.net.Uri;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
@@ -340,7 +341,7 @@ public class DataUpdater {
         fixActorUpdatedDate(activity, objActor);
         objActor.lookupActorId();
 
-        if (objActor.actorId != 0 && objActor.isPartiallyDefined() && objActor.followedByMe.unknown
+        if (objActor.actorId != 0 && objActor.isPartiallyDefined() && objActor.isMyFriend.unknown
                 && activity.followedByActor().unknown) {
             MyLog.v(this, () -> method + "; Skipping partially defined: " + objActor);
             return;
@@ -459,18 +460,20 @@ public class DataUpdater {
 
     private void updateFriendship(AActivity activity, MyAccount me) {
         Actor objActor = activity.getObjActor();
-        if (objActor.followedByMe.known) {
+        if (objActor.isMyFriend.known) {
             MyLog.v(this, () -> "Account " + me.getActor().getUniqueNameWithOrigin() + " "
-                    + (objActor.followedByMe.isTrue ? "follows " : "stopped following ")
+                    + (objActor.isMyFriend.isTrue ? "follows " : "stopped following ")
                     + objActor.getUniqueNameWithOrigin());
-            Friendship.setFollowed(execContext.myContext, me.getActor(), objActor.followedByMe, objActor);
+            GroupMembership.setMember(execContext.myContext, me.getActor(), GroupType.FRIENDS,
+                    objActor.isMyFriend, objActor);
             execContext.myContext.users().reload(me.getActor());
         }
         if (activity.followedByActor().known) {
             MyLog.v(this, () -> "Actor " + activity.getActor().getUniqueNameWithOrigin() + " "
                     + (activity.followedByActor().isTrue ? "follows " : "stopped following ")
                     + objActor.getUniqueNameWithOrigin());
-            Friendship.setFollowed(execContext.myContext, activity.getActor(), activity.followedByActor(), objActor);
+            GroupMembership.setMember(execContext.myContext, activity.getActor(), GroupType.FRIENDS,
+                    activity.followedByActor(), objActor);
             execContext.myContext.users().reload(activity.getActor());
         }
     }

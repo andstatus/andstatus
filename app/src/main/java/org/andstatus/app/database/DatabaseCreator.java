@@ -26,7 +26,7 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.database.table.FriendshipTable;
+import org.andstatus.app.database.table.GroupMembersTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.database.table.TimelineTable;
@@ -41,6 +41,7 @@ public class DatabaseCreator {
      * Current database scheme version, defined by AndStatus developers.
      * This is used to check (and upgrade if necessary) existing database after application update.
      *
+     * v.51 2019-07-23 ActorTable holds Groups also. GroupMembersTable instead of FriendshipTable
      * v.50 2019-05-26 Summary and "Sensitive" properties added. https://github.com/andstatus/andstatus/issues/507
      * v.48 2019-04-21 Accounts renamed to: username@hostName/originTypeOrOriginName
      * v.47 2019-02-24 Username for Pump.io and ActivityPub doesn't have "@host" anymore, but "uniqueNameInOrigin" does.
@@ -75,7 +76,7 @@ public class DatabaseCreator {
      *      All messages are in the same table.
      *      Allows to have multiple User Accounts in different Originating systems (twitter.com etc. )
      */
-    public static final int DATABASE_VERSION = 50;
+    public static final int DATABASE_VERSION = 51;
     public static final long ORIGIN_ID_TWITTER =  1L;
 
     private final SQLiteDatabase db;
@@ -95,7 +96,7 @@ public class DatabaseCreator {
         UserTable.create(db);
         ActorTable.create(db);
         AudienceTable.create(db);
-        FriendshipTable.create(db);
+        GroupMembersTable.create(db);
         DownloadTable.create(db);
         TimelineTable.create(db);
         ActivityTable.create(db);

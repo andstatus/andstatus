@@ -141,7 +141,7 @@ public class ConnectionPumpio extends Connection {
         actor.setUpdatedDate(dateFromJson(jso, "updated"));
         JSONObject pumpIo = jso.optJSONObject("pump_io");
         if (pumpIo != null && !pumpIo.isNull("followed")) {
-            actor.followedByMe = TriState.fromBoolean(pumpIo.optBoolean("followed"));
+            actor.isMyFriend = TriState.fromBoolean(pumpIo.optBoolean("followed"));
         }
         JSONObject links = jso.optJSONObject("links");
         if (links != null) {

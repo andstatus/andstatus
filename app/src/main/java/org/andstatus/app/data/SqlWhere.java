@@ -16,9 +16,9 @@
 
 package org.andstatus.app.data;
 
-import androidx.annotation.NonNull;
-
 import org.andstatus.app.util.StringUtils;
+
+import androidx.annotation.NonNull;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -27,7 +27,7 @@ public class SqlWhere {
     private String where = "";
 
     public SqlWhere append(String field, SqlIds actorIds) {
-        return append(field, actorIds.getSql());
+        return actorIds.isEmpty() ? this : append(field, actorIds.getSql());
     }
 
     public SqlWhere append(String field, String condition) {

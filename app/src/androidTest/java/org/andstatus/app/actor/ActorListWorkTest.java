@@ -59,8 +59,8 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
     }
 
     @Test
-    public void testFollowersList() throws InterruptedException {
-        final String method = "testFollowersList";
+    public void testFriendsList() throws InterruptedException {
+        final String method = "testFriendsList";
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<ActorList> helper = new ListActivityTestHelper<>(getActivity(), FollowersList.class);
 
@@ -70,15 +70,15 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
         Actor actor = ActorListTest.getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
 
         assertTrue("Invoked Context menu for " + actor, helper.invokeContextMenuAction4ListItemId(
-                method, actor.actorId, ActorContextMenuItem.FOLLOWERS, 0));
+                method, actor.actorId, ActorContextMenuItem.FRIENDS, 0));
 
         FollowersList actorList = (FollowersList) helper.waitForNextActivity(method, 15000);
         TestSuite.waitForListLoaded(actorList, 1);
 
-        List<ActorViewItem> followersItems = actorList.getListLoader().getList();
+        List<ActorViewItem> items = actorList.getListLoader().getList();
         ListActivityTestHelper<FollowersList> followersHelper = new ListActivityTestHelper<>(actorList);
         followersHelper.clickListAtPosition(method,
-                followersHelper.getPositionOfListItemId(followersItems.get(0).getActorId()));
+                followersHelper.getPositionOfListItemId(items.get(0).getActorId()));
         DbUtils.waitMs(method, 500);
     }
 }

@@ -20,6 +20,7 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import org.andstatus.app.account.AccountName;
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ActorSql;
@@ -67,10 +68,13 @@ import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 public class Actor implements Comparable<Actor>, IsEmpty {
     public static final Actor EMPTY = newUnknown(Origin.EMPTY).setUsername("Empty");
     public static final Actor PUBLIC = fromOid(Origin.EMPTY,
-            "https://www.w3.org/ns/activitystreams#Public").setUsername("Public");
+        "https://www.w3.org/ns/activitystreams#Public").setGroupType(GroupType.PUBLIC).setUsername("Public");
 
     @NonNull
     public final String oid;
+    private GroupType groupType = GroupType.UNKNOWN;
+    private LazyVal<Actor> parentActor = LazyVal.of(() -> EMPTY);
+
     private String username = "";
 
     private String webFingerId = "";
@@ -97,8 +101,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     private AActivity latestActivity = null;
 
-    // Hack for Twitter like origins...
-    public TriState followedByMe = TriState.UNKNOWN;
+    // Hack for Twitter-like origins...
+    public TriState isMyFriend = TriState.UNKNOWN;
 
     // In our system
     @NonNull
@@ -385,6 +389,11 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             }
         }
         return Optional.empty();
+    }
+
+    private Actor setGroupType(GroupType groupType) {
+        this.groupType = groupType;
+        return this;
     }
 
     public Actor setUsername(String username) {
@@ -872,7 +881,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
    public boolean isPublic() {
-        return PUBLIC.equals(this);
+        return groupType == GroupType.PUBLIC;
     }
 
     public boolean nonPublic() {

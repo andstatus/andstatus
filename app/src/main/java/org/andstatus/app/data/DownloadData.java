@@ -385,21 +385,21 @@ public class DownloadData implements IsEmpty {
         MyLog.v(this, message + "; " + actorNoteUriToString(), e);
     }
     
-    public void deleteOtherOfThisActor() {
-        deleteOtherOfThisActor(actorId, downloadId);
+    public void deleteOtherOfThisActor(MyContext myContext) {
+        deleteOtherOfThisActor(myContext, actorId, downloadId);
     }
 
-    public static void deleteAllOfThisActor(long actorId) {
-        deleteOtherOfThisActor(actorId, 0);
+    public static void deleteAllOfThisActor(MyContext myContext, long actorId) {
+        deleteOtherOfThisActor(myContext, actorId, 0);
     }
     
-    private static void deleteOtherOfThisActor(long actorId, long rowId) {
+    private static void deleteOtherOfThisActor(MyContext myContext, long actorId, long rowId) {
         if (actorId == 0) return;
 
         final String method = "deleteOtherOfThisActor actorId=" + actorId + (rowId != 0 ? ", downloadId=" + rowId : "");
         String where = DownloadTable.ACTOR_ID + "=" + actorId
-                + (rowId == 0 ? "" : " AND " + DownloadTable._ID + "<>" + Long.toString(rowId)) ;
-        deleteSelected(method, MyContextHolder.get().getDatabase(), where);
+                + (rowId == 0 ? "" : " AND " + DownloadTable._ID + "<>" + rowId) ;
+        deleteSelected(method, myContext.getDatabase(), where);
     }
 
     private static void deleteSelected(final String method, SQLiteDatabase db, String where) {
@@ -418,7 +418,7 @@ public class DownloadData implements IsEmpty {
                     long rowIdOld = DbUtils.getLong(cursor, DownloadTable._ID);
                     new DownloadFile(DbUtils.getString(cursor, DownloadTable.FILE_NAME)).delete();
                     rowsDeleted += db.delete(DownloadTable.TABLE_NAME, DownloadTable._ID
-                            + "=" + Long.toString(rowIdOld), null);
+                            + "=" + rowIdOld, null);
                 }
                 done = true;
             } catch (SQLiteException e) {

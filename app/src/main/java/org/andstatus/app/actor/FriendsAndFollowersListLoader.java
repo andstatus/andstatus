@@ -17,7 +17,7 @@
 package org.andstatus.app.actor;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.database.table.FriendshipTable;
+import org.andstatus.app.data.GroupMembership;
 import org.andstatus.app.origin.Origin;
 
 /**
@@ -33,21 +33,8 @@ public class FriendsAndFollowersListLoader extends ActorListLoader {
     }
 
     protected String getSqlActorIds() {
-        String sql = "SELECT ";
-        switch (mActorListType) {
-            case FOLLOWERS:
-                sql += FriendshipTable.ACTOR_ID
-                        + " FROM " + FriendshipTable.TABLE_NAME
-                        + " WHERE " + FriendshipTable.FRIEND_ID + "=" + actorId;
-                break;
-            default:
-                sql += FriendshipTable.FRIEND_ID
-                        + " FROM " + FriendshipTable.TABLE_NAME
-                        + " WHERE " + FriendshipTable.ACTOR_ID + "=" + actorId;
-                break;
-        }
-        sql += " AND " + FriendshipTable.FOLLOWED + "=1";
-        return " IN (" + sql + ")";
+        GroupType groupType = mActorListType == ActorListType.FOLLOWERS ? GroupType.FOLLOWERS : GroupType.FRIENDS;
+        return GroupMembership.getMembersSqlIds(actorId, groupType);
     }
 
     @Override

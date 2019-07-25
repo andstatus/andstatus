@@ -2,13 +2,14 @@ package org.andstatus.app.user;
 
 import android.database.Cursor;
 
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.ActorSql;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.GroupMembership;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.SqlIds;
 import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.database.table.FriendshipTable;
+import org.andstatus.app.database.table.GroupMembersTable;
 import org.andstatus.app.database.table.TimelineTable;
 import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.net.social.Actor;
@@ -73,19 +74,18 @@ public class CachedUsersAndActors {
     }
 
     private void initializeFriendsOfMyActors() {
+        final String FOLLOWER_ID = "followerId";
         friendsOfMyActors.clear();
         final String sql = "SELECT DISTINCT " + ActorSql.select()
-                + ", " + FriendshipTable.TABLE_NAME + "." + FriendshipTable.ACTOR_ID + " AS " + FriendshipTable.FOLLOWER_ID
+                + ", friends." + ActorTable.PARENT_ACTOR_ID + " AS " + FOLLOWER_ID
                 + " FROM (" + ActorSql.tables() + ")"
-                + " INNER JOIN " + FriendshipTable.TABLE_NAME
-                + " ON " + FriendshipTable.FRIEND_ID + "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID
-                + " AND " + FriendshipTable.FOLLOWED + "=1"
-                + " AND " + FriendshipTable.TABLE_NAME + "." + FriendshipTable.ACTOR_ID
-                + SqlIds.fromIds(myActors.keySet()).getSql();
+                + " INNER JOIN (" + GroupMembership.selectMemberIds(myActors.keySet(), GroupType.FRIENDS, true)
+                + " ) as friends ON friends." + GroupMembersTable.MEMBER_ID +
+                "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID;
 
         final Function<Cursor, Void> function = cursor -> {
             Actor friend = Actor.fromCursor(myContext, cursor);
-            Actor me = Actor.load(myContext, DbUtils.getLong(cursor, FriendshipTable.FOLLOWER_ID));
+            Actor me = Actor.load(myContext, DbUtils.getLong(cursor, FOLLOWER_ID));
             friendsOfMyActors.compute(friend.actorId, CollectionsUtil.addValue(me.actorId));
             return null;
         };
@@ -112,7 +112,7 @@ public class CachedUsersAndActors {
         friendsOfMyActors.entrySet().stream().filter( entry -> entry.getValue().contains(actor.actorId))
                 .forEach(entry ->
                         friendsOfMyActors.compute(entry.getKey(), CollectionsUtil.removeValue(actor.actorId)));
-        MyQuery.getFriendsIds(myContext, actor.actorId)
+        MyQuery.getGroupMemberIds(myContext, actor.actorId, GroupType.FRIENDS)
                 .forEach(friendId -> friendsOfMyActors.compute(friendId, CollectionsUtil.addValue(actor.actorId))
         );
     }

@@ -115,7 +115,7 @@ public class DataPruner {
                         Long.toString(latestTimestamp));
                 sa.addSelection(sqlNotMyActivity);
                 sa.addSelection(sqlNotLatestActivityByActor);
-                nDeletedTime = mContentResolver.delete(MatchedUri.ACTIVITY_CONTENT_URI, sa.selection, sa.selectionArgs);
+                nDeletedTime = MyProvider.deleteActivities(myContext.getDatabase(), sa.selection, sa.selectionArgs, false);
             }
 
             if (maxSize > 0) {
@@ -136,8 +136,7 @@ public class DataPruner {
                                 Long.toString(latestTimestampSize));
                         sa.addSelection(sqlNotMyActivity);
                         sa.addSelection(sqlNotLatestActivityByActor);
-                        nDeletedSize = mContentResolver.delete(MatchedUri.ACTIVITY_CONTENT_URI, sa.selection,
-                                sa.selectionArgs);
+                        nDeletedSize = MyProvider.deleteActivities(myContext.getDatabase(), sa.selection, sa.selectionArgs, false);
                     }
                 }
             }

@@ -19,7 +19,6 @@ package org.andstatus.app.timeline.meta;
 import android.content.Context;
 
 import org.andstatus.app.R;
-import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.notification.NotificationEventType;
@@ -58,7 +57,7 @@ public enum TimelineType implements SelectableEnum {
     SENT_AT_ORIGIN(ListScope.ACTOR_AT_ORIGIN, "sent_at_origin", R.string.sent, R.string.menu_item_user_messages, ACTOR_TIMELINE),
     /** Latest notes of every Friend of this Actor
      * (i.e of every actor, followed by this Actor).
-     * So this is essentially a list of "Friends". See {@link FriendshipTable} */
+     * So this is essentially a list of "Friends". See {@link org.andstatus.app.database.table.GroupMembersTable} */
     FRIENDS(ListScope.USER, "friends", R.string.friends, R.string.friends_of, GET_FRIENDS),
     FOLLOWERS(ListScope.USER, "followers", R.string.followers, R.string.followers_of, GET_FOLLOWERS),
     PUBLIC(ListScope.ORIGIN, "public", R.string.timeline_title_public, 0, PUBLIC_TIMELINE),

@@ -69,7 +69,7 @@ public class AvatarDownloaderTest {
     private void loadForOneMyAccount(MyAccount ma, String urlStringInitial) {
         changeAvatarUrl(ma.getActor(), urlStringInitial);
 
-        AvatarData.deleteAllOfThisActor(ma.getActorId());
+        AvatarData.deleteAllOfThisActor(ma.getOrigin().myContext, ma.getActorId());
         FileDownloader loader = new AvatarDownloader(ma.getActor());
         assertEquals("Not loaded yet", DownloadStatus.ABSENT, loader.getStatus());
 
@@ -142,7 +142,7 @@ public class AvatarDownloaderTest {
         assertTrue("Is File" + data.getFilename(), data.getFile().getFile().isFile());
 
         DownloadFile avatarFile = data.getFile();
-        AvatarData.deleteAllOfThisActor(ma.getActorId());
+        AvatarData.deleteAllOfThisActor(ma.getOrigin().myContext, ma.getActorId());
         assertFalse(avatarFile.existsNow());
 
         loadAndAssertStatusForMa(ma, "", DownloadStatus.LOADED, DownloadStatus.LOADED, false);

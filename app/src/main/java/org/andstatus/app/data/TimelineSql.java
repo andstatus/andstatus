@@ -20,13 +20,14 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.database.table.FriendshipTable;
+import org.andstatus.app.database.table.GroupMembersTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -57,21 +58,13 @@ public class TimelineSql {
         switch (timeline.getTimelineType()) {
             case FOLLOWERS:
             case FRIENDS:
-                String fActorIdColumnName = FriendshipTable.FRIEND_ID;
-                String fActorLinkedActorIdColumnName = FriendshipTable.ACTOR_ID;
-                if (timeline.getTimelineType() == TimelineType.FOLLOWERS) {
-                    fActorIdColumnName = FriendshipTable.ACTOR_ID;
-                    fActorLinkedActorIdColumnName = FriendshipTable.FRIEND_ID;
-                }
                 // Select only the latest note from each Friend's timeline
                 String activityIds = "SELECT " + ActorTable.ACTOR_ACTIVITY_ID
                         + " FROM " + ActorTable.TABLE_NAME + " AS u1"
-                        + " INNER JOIN " + FriendshipTable.TABLE_NAME
-                        + " ON (" + FriendshipTable.TABLE_NAME + "." + fActorIdColumnName + "=u1." + BaseColumns._ID
-                        + " AND " + FriendshipTable.TABLE_NAME + "."
-                        + fActorLinkedActorIdColumnName + SqlIds.actorIdsOfTimelineActor(timeline).getSql()
-                        + " AND " + FriendshipTable.FOLLOWED + "=1"
-                        + ")";
+                        + " INNER JOIN (" + GroupMembership.selectMemberIds(SqlIds.actorIdsOfTimelineActor(timeline),
+                        timeline.getTimelineType() == TimelineType.FOLLOWERS ? GroupType.FOLLOWERS : GroupType.FRIENDS,
+                        false) + ") AS activity_ids" +
+                        " ON activity_ids." + GroupMembersTable.MEMBER_ID + "=u1." + BaseColumns._ID;
                 actWhere.append(BaseColumns._ID + " IN (" + activityIds + ")");
                 break;
             case HOME:

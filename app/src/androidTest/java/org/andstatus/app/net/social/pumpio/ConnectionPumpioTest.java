@@ -213,12 +213,12 @@ public class ConnectionPumpioTest {
         activity = timeline.get(ind);
         assertEquals("Is not FOLLOW " + activity, ActivityType.FOLLOW, activity.type);
         assertEquals("Actor", "acct:jpope@io.jpope.org", activity.getActor().oid);
-        assertEquals("Actor not followed by me", TriState.TRUE, activity.getActor().followedByMe);
+        assertEquals("Actor is not my friend", TriState.TRUE, activity.getActor().isMyFriend);
         assertEquals("Activity Object", AObjectType.ACTOR, activity.getObjectType());
         Actor objActor = activity.getObjActor();
         assertEquals("objActor followed", "acct:atalsta@microca.st", objActor.oid);
         assertEquals("WebFinger ID", "atalsta@microca.st", objActor.getWebFingerId());
-        assertEquals("Actor followed by me", TriState.FALSE, objActor.followedByMe);
+        assertEquals("Actor is my friend", TriState.FALSE, objActor.isMyFriend);
 
         ind++;
         activity = timeline.get(ind);
@@ -227,7 +227,7 @@ public class ConnectionPumpioTest {
         objActor = activity.getObjActor();
         assertEquals("Url of the actor", "https://identi.ca/t131t", activity.getActor().getProfileUrl());
         assertEquals("WebFinger ID", "t131t@identi.ca", activity.getActor().getWebFingerId());
-        assertEquals("Following", TriState.TRUE, objActor.followedByMe);
+        assertEquals("Actor is not my friend", TriState.TRUE, objActor.isMyFriend);
         assertEquals("Url of objActor", "https://fmrl.me/grdryn", objActor.getProfileUrl());
 
         ind++;

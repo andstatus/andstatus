@@ -23,7 +23,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
@@ -57,12 +56,7 @@ public class DragItem {
         Bitmap bitmap = Bitmap.createBitmap(clickedView.getWidth(), clickedView.getHeight(), Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(bitmap);
         clickedView.draw(canvas);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            dragView.setBackground(new BitmapDrawable(clickedView.getResources(), bitmap));
-        } else {
-            //noinspection deprecation
-            dragView.setBackgroundDrawable(new BitmapDrawable(clickedView.getResources(), bitmap));
-        }
+        dragView.setBackground(new BitmapDrawable(clickedView.getResources(), bitmap));
     }
 
     public void onMeasureDragView(View clickedView, View dragView) {
@@ -112,10 +106,10 @@ public class DragItem {
         onMeasureDragView(startFromView, mDragView);
         onStartDragAnimation(mDragView);
 
-        float startX = startFromView.getX() - (mDragView.getMeasuredWidth() - startFromView.getMeasuredWidth()) / 2 + mDragView
-                .getMeasuredWidth() / 2;
-        float startY = startFromView.getY() - (mDragView.getMeasuredHeight() - startFromView.getMeasuredHeight()) / 2 + mDragView
-                .getMeasuredHeight() / 2;
+        float startX = startFromView.getX() - (mDragView.getMeasuredWidth() - startFromView.getMeasuredWidth()) / 2 +
+                mDragView.getMeasuredWidth() / 2;
+        float startY = startFromView.getY() - (mDragView.getMeasuredHeight() - startFromView.getMeasuredHeight()) / 2 +
+                mDragView.getMeasuredHeight() / 2;
 
         if (mSnapToTouch) {
             mPosTouchDx = 0;

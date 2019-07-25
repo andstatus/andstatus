@@ -425,7 +425,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         actor.followersCount = jso.optLong("followers_count");
         actor.setCreatedDate(dateFromJson(jso, "created_at"));
         if (!jso.isNull("following")) {
-            actor.followedByMe = TriState.fromBoolean(jso.optBoolean("following"));
+            actor.isMyFriend = TriState.fromBoolean(jso.optBoolean("following"));
         }
         return actor;
     }

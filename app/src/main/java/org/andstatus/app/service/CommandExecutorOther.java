@@ -271,7 +271,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             try {
                 activity = getConnection().follow(actor.oid, follow);
                 final Actor friend = activity.getObjActor();
-                friend.followedByMe = TriState.UNKNOWN; // That "hack" attribute may only confuse us here as it can show outdated info
+                friend.isMyFriend = TriState.UNKNOWN; // That "hack" attribute may only confuse us here as it can show outdated info
                 logIfActorIsEmpty(method, friend);
             } catch (ConnectionException e) {
                 logConnectionException(e, method + actorInfoLogged(actor));

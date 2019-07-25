@@ -48,6 +48,14 @@ public final class ActorTable implements BaseColumns {
      * The id is not unique for this table, because we have IDs from different systems in one column.
      */
     public static final String ACTOR_OID = "actor_oid";
+
+    /** {@link org.andstatus.app.actor.GroupType} */
+    public static final String GROUP_TYPE = "group_type";
+    /** For {@link org.andstatus.app.actor.GroupType#FRIENDS}, {@link org.andstatus.app.actor.GroupType#FOLLOWERS}
+     * and {@link org.andstatus.app.actor.GroupType#ACTOR_OWNED}
+     * denotes the Actor, whose the Group is */
+    public static final String PARENT_ACTOR_ID = "parent_actor_id";
+
     /** This is called "screen_name" in Twitter API, "login" or "username" in others, "preferredUsername" in ActivityPub */
     public static final String USERNAME = "username";
     /** It looks like an email address with your nickname then "@" then your server */
@@ -114,6 +122,8 @@ public final class ActorTable implements BaseColumns {
                 + USER_ID + " INTEGER NOT NULL,"
                 + ORIGIN_ID + " INTEGER NOT NULL,"
                 + ACTOR_OID + " TEXT NOT NULL,"
+                + GROUP_TYPE + " INTEGER NOT NULL DEFAULT 0,"
+                + PARENT_ACTOR_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + USERNAME + " TEXT NOT NULL,"
                 + WEBFINGER_ID + " TEXT NOT NULL,"
                 + REAL_NAME + " TEXT,"

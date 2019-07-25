@@ -17,10 +17,11 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.R;
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ActorActivity;
 import org.andstatus.app.data.DataUpdater;
-import org.andstatus.app.data.Friendship;
+import org.andstatus.app.data.GroupMembership;
 import org.andstatus.app.data.LatestActorActivities;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
@@ -117,7 +118,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     + " and " + Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS);
         }
 
-        Set<Long> actorIdsOld = MyQuery.getFollowersIds(getActor().actorId);
+        Set<Long> actorIdsOld = MyQuery.getGroupMemberIds(execContext.myContext, getActor().actorId, GroupType.FOLLOWERS);
         execContext.getResult().incrementDownloadedCount();
         broadcastProgress(execContext.getContext().getText(R.string.followers).toString()
                 + ": " + actorIdsOld.size() + " -> " + actorsNew.size(), false);
@@ -126,10 +127,11 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
 
         for (Actor actor : actorsNew) {
             actorIdsOld.remove(actor.actorId);
-            Friendship.setFollowed(execContext.myContext, actor, TriState.TRUE, getActor());
+            GroupMembership.setMember(execContext.myContext, getActor(), GroupType.FOLLOWERS, TriState.TRUE, actor);
         }
         for (long actorIdOld : actorIdsOld) {
-            Friendship.setFollowed(execContext.myContext, Actor.load(execContext.myContext, actorIdOld), TriState.FALSE, getActor());
+            GroupMembership.setMember(execContext.myContext, getActor(), GroupType.FOLLOWERS,
+                    TriState.FALSE, Actor.load(execContext.myContext, actorIdOld));
         }
         execContext.myContext.users().reload(getActor());
     }
@@ -146,7 +148,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                             + " and " + Connection.ApiRoutineEnum.GET_FRIENDS_IDS);
         }
 
-        Set<Long> actorIdsOld = MyQuery.getFriendsIds(execContext.myContext, getActor().actorId);
+        Set<Long> actorIdsOld = MyQuery.getGroupMemberIds(execContext.myContext, getActor().actorId, GroupType.FRIENDS);
         execContext.getResult().incrementDownloadedCount();
         broadcastProgress(execContext.getContext().getText(R.string.friends).toString()
                 + ": " + actorIdsOld.size() + " -> " + actorsNew.size(), false);
@@ -155,11 +157,11 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
 
         for (Actor actor : actorsNew) {
             actorIdsOld.remove(actor.actorId);
-            Friendship.setFollowed(execContext.myContext, getActor(), TriState.TRUE, actor);
+            GroupMembership.setMember(execContext.myContext, getActor(), GroupType.FRIENDS, TriState.TRUE, actor);
         }
         for (long actorIdOld : actorIdsOld) {
-            Friendship.setFollowed(execContext.myContext, getActor(), TriState.FALSE,
-                    Actor.load(execContext.myContext, actorIdOld));
+            GroupMembership.setMember(execContext.myContext, getActor(), GroupType.FRIENDS,
+                    TriState.FALSE, Actor.load(execContext.myContext, actorIdOld));
         }
         execContext.myContext.users().reload(getActor());
     }

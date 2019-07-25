@@ -87,7 +87,7 @@ public class DataUpdaterTest {
         String actorOid = OriginPumpio.ACCOUNT_PREFIX + username;
         Actor somebody = Actor.fromOid(accountActor.origin, actorOid);
         somebody.setUsername(username);
-        somebody.followedByMe = TriState.FALSE;
+        somebody.isMyFriend = TriState.FALSE;
         somebody.setProfileUrl("http://identi.ca/somebody");
         somebody.build();
         di.onActivity(accountActor.update(somebody));
@@ -134,20 +134,19 @@ public class DataUpdaterTest {
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = ActivityTable.getTimelineSortOrder(TimelineType.FRIENDS, false);
         sa.addSelection(ActivityTable.ACTOR_ID + "=?", Long.toString(somebody.actorId));
-        String[] PROJECTION = new String[] {
-                NoteTable._ID
-        };
-        Cursor cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
+        String[] projection = new String[] {NoteTable._ID};
+        Cursor cursor = context.getContentResolver().query(contentUri, projection, sa.selection,
                 sa.selectionArgs, sortOrder);
-        assertTrue("No notes of this actor in the Friends timeline", cursor != null && cursor.getCount() == 0);
+        assertTrue("No cursor of Friends timeline", cursor != null);
+        assertEquals("Should be no notes of this actor in the Friends timeline", 0, cursor.getCount());
         cursor.close();
 
-        somebody.followedByMe = TriState.TRUE;
+        somebody.isMyFriend = TriState.TRUE;
         somebody.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
         di.onActivity(accountActor.update(somebody));
         DemoConversationInserter.assertIfActorIsMyFriend(somebody, true, ma);
 
-        cursor = context.getContentResolver().query(contentUri, PROJECTION, sa.selection,
+        cursor = context.getContentResolver().query(contentUri, projection, sa.selection,
                 sa.selectionArgs, sortOrder);
         assertTrue("Note by actor=" + somebody + " is not in the Friends timeline of " + ma,
                 cursor != null && cursor.getCount() > 0);

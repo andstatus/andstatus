@@ -32,8 +32,8 @@ public class StringUtils {
         return toTempOidIf(true, oid);
     }
 
-    public static String toTempOidIf(boolean condition, String oid) {
-        return !condition || isTemp(oid) ? oid : TEMP_OID_PREFIX + oid;
+    public static String toTempOidIf(boolean transformToTempOid, String oid) {
+        return !transformToTempOid || isTemp(oid) ? oid : TEMP_OID_PREFIX + oid;
     }
 
     public static boolean nonEmptyNonTemp(String string) {

@@ -17,6 +17,7 @@
 package org.andstatus.app.data;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
@@ -81,7 +82,7 @@ public class DemoConversationInserter {
                         "&gt;&gt; Greater than<br />" +
                         "&lt;&lt; Less than, let&apos;s try!",
                 selected, null);
-        author3.followedByMe = TriState.TRUE;
+        author3.isMyFriend = TriState.TRUE;
 
         AActivity reply1Copy = buildActivity(accountActor,
                 Actor.fromOid(reply1.accountActor.origin, reply1.getAuthor().oid),
@@ -126,7 +127,7 @@ public class DemoConversationInserter {
                 reply5.getNote().audience().getActors(), not(hasItem(author2)));
 
         Actor reblogger1 = buildActorFromOid("acct:reblogger@" + demoData.pumpioMainHost);
-        reblogger1.setAvatarUrl("http://www.avatarsdb.com/avatars/cow_face.jpg");
+        reblogger1.setAvatarUrl("http://www.large-icons.com/stock-icons/free-large-android/48x48/dog-robot.gif");
         AActivity reblogOf5 = buildActivity(reblogger1, ActivityType.ANNOUNCE);
         reblogOf5.setNote(reply5.getNote().shallowCopy());
         reblogOf5.setSubscribedByMe(TriState.TRUE);
@@ -166,13 +167,13 @@ public class DemoConversationInserter {
 
         // Note downloaded by another account
         final MyAccount ma2 = demoData.getMyAccount(demoData.conversationAccountSecondName);
-        author3.followedByMe = TriState.TRUE;
+        author3.isMyFriend = TriState.TRUE;
         author3.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
         AActivity reply10 = buildActivity(ma2.getActor(), author3, "", "Reply 10 to Reply 8", reply8,
                 null, DownloadStatus.LOADED);
         assertEquals("The third is a note Author", author3,  reply10.getAuthor());
         addActivity(reply10);
-        author3.followedByMe = TriState.UNKNOWN;
+        author3.isMyFriend = TriState.UNKNOWN;
         author3.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
 
         DemoConversationInserter.assertIfActorIsMyFriend(author3, true, ma2);
@@ -215,14 +216,22 @@ public class DemoConversationInserter {
         AActivity reply15 = buildActivity(author4, "", "Reply 15 to not loaded 1", notLoaded1, null);
         addActivity(reply15);
 
-        AActivity followsMe = buildActivity(getAuthor1(), ActivityType.FOLLOW);
-        followsMe.setObjActor(accountActor);
-        addActivity(followsMe);
-        DemoNoteInserter.assertInteraction(followsMe, NotificationEventType.FOLLOW, TriState.TRUE);
+        AActivity followsMe1 = buildActivity(getAuthor1(), ActivityType.FOLLOW);
+        followsMe1.setObjActor(accountActor);
+        addActivity(followsMe1);
+        DemoNoteInserter.assertInteraction(followsMe1, NotificationEventType.FOLLOW, TriState.TRUE);
 
         AActivity reply16 = buildActivity(author2, "", "<a href='" + author4.getProfileUrl() + "'>" +
                 "@" + author4.getUsername() + "</a> Reply 16 to Reply 15", reply15, null);
         addActivity(reply16);
+
+        AActivity followsMe3 = new DemoNoteInserter(accountActor).buildActivity(author3, ActivityType.FOLLOW, "");
+        followsMe3.setObjActor(accountActor);
+        DemoNoteInserter.onActivityS(followsMe3);
+
+        AActivity followsAuthor4 = new DemoNoteInserter(accountActor).buildActivity(author3, ActivityType.FOLLOW, "");
+        followsAuthor4.setObjActor(author4);
+        DemoNoteInserter.onActivityS(followsAuthor4);
     }
 
     private Actor getAuthor1() {
@@ -264,7 +273,8 @@ public class DemoConversationInserter {
     }
 
     static void assertIfActorIsMyFriend(Actor actor, boolean isFriendOf, MyAccount ma) {
-        boolean isFollowing = MyQuery.isFollowing(ma.getActor().actorId, actor.actorId);
-        assertEquals("Actor " + actor + " is a friend of " + ma, isFriendOf, isFollowing);
+        boolean isFriend = MyQuery.isGroupMember(ma.getOrigin().myContext, ma.getActor().actorId,
+                GroupType.FRIENDS, actor.actorId);
+        assertEquals("Actor " + actor + " is a friend of " + ma, isFriendOf, isFriend);
     }
 }

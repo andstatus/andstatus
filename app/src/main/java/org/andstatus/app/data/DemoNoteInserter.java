@@ -17,6 +17,7 @@
 package org.andstatus.app.data;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
@@ -234,11 +235,13 @@ public class DemoNoteInserter {
                 break;
             case FOLLOW:
                 assertTrue("Friend not found: " + activity,
-                        MyQuery.isFollowing(actor.actorId, activity.getObjActor().actorId));
+                        MyQuery.isGroupMember(origin.myContext, actor.actorId,
+                                GroupType.FRIENDS, activity.getObjActor().actorId));
                 break;
             case UNDO_FOLLOW:
                 assertFalse("Friend found: " + activity,
-                        MyQuery.isFollowing(actor.actorId, activity.getObjActor().actorId));
+                        MyQuery.isGroupMember(origin.myContext, actor.actorId,
+                                GroupType.FRIENDS, activity.getObjActor().actorId));
                 break;
             default:
                 break;

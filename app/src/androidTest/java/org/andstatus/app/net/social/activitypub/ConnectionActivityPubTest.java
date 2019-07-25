@@ -104,18 +104,18 @@ public class ConnectionActivityPubTest {
         activity = timeline.get(3);
         assertEquals("Is not FOLLOW " + activity, ActivityType.FOLLOW, activity.type);
         assertEquals("Actor", "https://pleroma.site/users/ActivityPubTester", activity.getActor().oid);
-        assertEquals("Actor followed by me", TriState.UNKNOWN, activity.getActor().followedByMe);
+        assertEquals("Actor is my friend", TriState.UNKNOWN, activity.getActor().isMyFriend);
         assertEquals("Activity Object", AObjectType.ACTOR, activity.getObjectType());
         Actor objActor = activity.getObjActor();
         assertEquals("objActor followed", "https://pleroma.site/users/AndStatus", objActor.oid);
-        assertEquals("Actor followed by me", TriState.UNKNOWN, objActor.followedByMe);
+        assertEquals("Actor is my friend", TriState.UNKNOWN, objActor.isMyFriend);
 
         for (int ind = 0; ind < 3; ind++) {
             activity = timeline.get(ind);
             assertEquals("Is not UPDATE " + activity, ActivityType.UPDATE, activity.type);
             assertEquals("Actor", AObjectType.ACTOR, activity.getObjectType());
             objActor = activity.getObjActor();
-            assertEquals("Following", TriState.UNKNOWN, objActor.followedByMe);
+            assertEquals("Actor is my friend", TriState.UNKNOWN, objActor.isMyFriend);
             assertEquals("Url of objActor", "https://pleroma.site/users/AndStatus", objActor.getProfileUrl());
             assertEquals("WebFinger ID", "andstatus@pleroma.site", objActor.getWebFingerId());
             assertEquals("Avatar", "https://pleroma.site/media/c5f60f06-6620-46b6-b676-f9f4571b518e/bfa1745b8c221225cc6551805d9eaa8bebe5f36fc1856b4924bcfda5d620334d.png",

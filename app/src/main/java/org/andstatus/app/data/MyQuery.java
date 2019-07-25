@@ -22,18 +22,17 @@ import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
 
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.database.table.FriendshipTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
@@ -678,24 +677,13 @@ public class MyQuery {
         return id;
     }
 
-    @NonNull
-    public static Set<Long> getFollowersIds(long actorId) {
-        String where = FriendshipTable.FRIEND_ID + "=" + actorId
-                + " AND " + FriendshipTable.FOLLOWED + "=1";
-        String sql = "SELECT " + FriendshipTable.ACTOR_ID
-                + " FROM " + FriendshipTable.TABLE_NAME
-                + " WHERE " + where;
-        return getLongs(sql);
+    public static boolean isGroupMember(MyContext myContext, long parentActorId, GroupType groupType, long memberId) {
+        return getGroupMemberIds(myContext, parentActorId, groupType).contains(memberId);
     }
 
     @NonNull
-    public static Set<Long> getFriendsIds(MyContext myContext, long actorId) {
-        String where = FriendshipTable.ACTOR_ID + "=" + actorId
-                + " AND " + FriendshipTable.FOLLOWED + "=1";
-        String sql = "SELECT " + FriendshipTable.FRIEND_ID
-                + " FROM " + FriendshipTable.TABLE_NAME
-                + " WHERE " + where;
-        return getLongs(myContext, sql);
+    public static Set<Long> getGroupMemberIds(MyContext myContext, long parentActorId, GroupType groupType) {
+        return getLongs(myContext, GroupMembership.selectMemberIds(parentActorId, groupType,false));
     }
 
     public static long getCountOfActivities(@NonNull String condition) {
@@ -761,29 +749,6 @@ public class MyQuery {
             MyLog.i(TAG, method + "; SQL:'" + sql + "'", e);
         }
         return result;
-    }
-
-    /** IDs of my users' actors, who follow the specified Actor */
-    @NonNull
-    public static Set<Long> getMyFollowersOf(long friendId) {
-        String where = FriendshipTable.ACTOR_ID + SqlIds.actorIdsOfTimelineActor(Timeline.EMPTY).getSql()
-                + " AND " + FriendshipTable.FRIEND_ID + "=" + friendId
-                + " AND " + FriendshipTable.FOLLOWED + "=1";
-        String sql = "SELECT " + FriendshipTable.ACTOR_ID
-                + " FROM " + FriendshipTable.TABLE_NAME
-                + " WHERE " + where;
-        return getLongs(sql);
-    }
-
-    public static boolean isFollowing(long followerId, long friendId) {
-        String where = FriendshipTable.ACTOR_ID + "=" + followerId
-                + " AND " + FriendshipTable.FRIEND_ID + "=" + friendId
-                + " AND " + FriendshipTable.FOLLOWED + "=1";
-        String sql = "SELECT " + FriendshipTable.ACTOR_ID
-                + " FROM " + FriendshipTable.TABLE_NAME
-                + " WHERE " + where;
-
-        return !getLongs(sql).isEmpty();
     }
 
     public static String noteInfoForLog(long noteId) {

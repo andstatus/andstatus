@@ -19,9 +19,11 @@ package org.andstatus.app.data;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.util.IsEmpty;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,7 +35,7 @@ import static java.util.stream.Collectors.toList;
  * Helper class to construct sql WHERE clause selecting by Ids
  * @author yvolk@yurivolkov.com
  */
-public class SqlIds {
+public class SqlIds implements IsEmpty {
     public static final SqlIds EMPTY = new SqlIds();
     private final Set<Long> ids;
 
@@ -67,6 +69,10 @@ public class SqlIds {
         return new SqlIds(actors.stream().map(actor -> actor.actorId).collect(toList()));
     }
 
+    public static SqlIds fromId(long id) {
+        return new SqlIds(Collections.singleton(id));
+    }
+
     public static SqlIds fromIds(@NonNull Collection<Long> ids) {
         return new SqlIds(ids);
     }
@@ -96,12 +102,16 @@ public class SqlIds {
 
     public String getSql() {
         if (size() == 0) {
-            return "";
+            return getInexistentId();
         } else if (size() == 1) {
             return "=" + ids.iterator().next();
         } else {
             return " IN (" + getList() + ")";
         }
+    }
+
+    public static String getInexistentId() {
+        return "=" + Long.MIN_VALUE;
     }
 
     public String getNotSql() {
@@ -112,5 +122,10 @@ public class SqlIds {
         } else {
             return " NOT IN (" + getList() + ")";
         }
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return ids.isEmpty();
     }
 }

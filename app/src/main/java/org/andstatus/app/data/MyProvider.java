@@ -77,38 +77,9 @@ public class MyProvider extends ContentProvider {
         return MatchedUri.fromUri(uri).getMimeType();
     }
 
-    /**
-     * Delete a record(s) from the database.
-     * 
-     * @see android.content.ContentProvider#delete(android.net.Uri,
-     *      java.lang.String, java.lang.String[])
-     */
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
-        if (db == null) {
-            MyLog.databaseIsNull(() -> "Delete " + this);
-            return 0;
-        }
-        int count;
-        ParsedUri uriParser = ParsedUri.fromUri(uri);
-        switch (uriParser.matched()) {
-            case ACTIVITY:
-                count = deleteActivities(db, selection, selectionArgs, false);
-                break;
-
-            case ACTOR:
-                count = deleteActors(db, selection, selectionArgs);
-                break;
-
-            case ACTOR_ITEM:
-                count = deleteActors(db, BaseColumns._ID + "=" + uriParser.getActorId(), null);
-                break;
-
-            default:
-                throw new IllegalArgumentException(uriParser.toString());
-        }
-        return count;
+        throw new IllegalArgumentException("Delete method is not implemented " + uri.toString());
     }
 
     /** @return Number of deleted activities of this note */
@@ -117,7 +88,7 @@ public class MyProvider extends ContentProvider {
         return deleteActivities(context.getDatabase(), ActivityTable.NOTE_ID + "=" + noteId, null, true);
     }
 
-    private static int deleteActivities(SQLiteDatabase db, String selection, String[] selectionArgs, boolean inTransaction) {
+    public static int deleteActivities(SQLiteDatabase db, String selection, String[] selectionArgs, boolean inTransaction) {
         int count = 0;
         String sqlDesc = "";
         if (!inTransaction) {
