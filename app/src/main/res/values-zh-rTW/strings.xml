@@ -177,10 +177,10 @@
   <string name="followed">關注</string>
   <string name="followed_by">正被追蹤</string>
   <string name="followers">粉絲</string>
-  <string name="followers_of">“%1s” 的關注者</string>
+  <string name="followers_of">\"%1s\" 的關注者</string>
   <string name="forget_sync_events">忘記同步事件和日期</string>
   <string name="friends">朋友</string>
-  <string name="friends_of">“%1”的朋友</string>
+  <string name="friends_of">\"%1s\" 的朋友</string>
   <string name="gestures">手勢設置</string>
   <string name="gestures_summary">觸摸機制。 
 用戶如何與應用程序交互</string>
