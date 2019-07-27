@@ -53,7 +53,10 @@ public class NotificationData {
     }
 
     PendingIntent getPendingIntent(MyContext myContext) {
-        Timeline timeline = myContext.timelines().get(TimelineType.from(event), myActor.actorId, Origin.EMPTY)
+        TimelineType timelineType = TimelineType.from(event);
+        // When clicking on notifications, always open Combine timeline for Unread notifications
+        Timeline timeline = myContext.timelines().get(timelineType,
+                timelineType == TimelineType.UNREAD_NOTIFICATIONS ? 0 : myActor.actorId, Origin.EMPTY)
                 .orElse(myContext.timelines().getDefault());
         Intent intent = new Intent(myContext.context(), FirstActivity.class);
         // "rnd" is necessary to actually bring Extra to the target intent

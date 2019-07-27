@@ -94,7 +94,7 @@ public class CachedUsersAndActors {
 
     public Actor load(long actorId) {
         Actor actor = Actor.load(myContext, actorId, false, Actor::getEmpty);
-        if (isMe(actor)) updateFriendsOfMy(actor);
+        if (isMe(actor)) loadFriendsOfMy(actor);
         return actor;
     }
 
@@ -104,11 +104,11 @@ public class CachedUsersAndActors {
 
     public Actor reload(long actorId) {
         Actor reloaded = Actor.load(myContext, actorId, true, Actor::getEmpty);
-        if (isMe(reloaded)) updateFriendsOfMy(reloaded);
+        if (isMe(reloaded)) loadFriendsOfMy(reloaded);
         return reloaded;
     }
 
-    private void updateFriendsOfMy(Actor actor) {
+    private void loadFriendsOfMy(Actor actor) {
         friendsOfMyActors.entrySet().stream().filter( entry -> entry.getValue().contains(actor.actorId))
                 .forEach(entry ->
                         friendsOfMyActors.compute(entry.getKey(), CollectionsUtil.removeValue(actor.actorId)));
