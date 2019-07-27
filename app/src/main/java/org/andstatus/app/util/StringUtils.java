@@ -16,6 +16,10 @@
 
 package org.andstatus.app.util;
 
+import android.content.Context;
+
+import java.util.Arrays;
+import java.util.IllegalFormatException;
 import java.util.Optional;
 
 /**
@@ -116,4 +120,35 @@ public class StringUtils {
     public static boolean isNewFilledValue(String oldValue, String newValue) {
         return isFilled(newValue) && (oldValue == null || !oldValue.equals(newValue));
     }
+
+    /** Doesn't throw exceptions */
+    public static String format(Context context, int resourceId, Object ... params) {
+        if (resourceId == 0) return "";
+        if (context == null) return "Error showing resourceId=" + resourceId + paramsToString(params);
+        try {
+            String format = context.getText(resourceId).toString();
+            if (params == null || params.length == 0) {
+                return format;
+            }
+            try {
+                return String.format(format, params);
+            } catch (IllegalFormatException e) {
+                MyLog.e(context, "Error formatting resourceId=" + resourceId, e);
+                return format + paramsToString(params);
+            }
+        } catch (Exception e2) {
+            String msg = "Error formatting resourceId=" + resourceId;
+            MyLog.e(context, msg, e2);
+            return msg;
+        }
+    }
+
+    private static String paramsToString(Object[] params) {
+        return params == null
+            ? ""
+            : " " + (params.length == 1
+                ? params[0].toString()
+                : Arrays.toString(params));
+    }
+
 }

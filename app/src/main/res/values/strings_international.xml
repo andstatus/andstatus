@@ -19,4 +19,8 @@
     <string name="appwidget_new_home_format">{0}</string>
     <string name="appwidget_new_directmessage_format">{0}</string>
     <string name="appwidget_new_mention_format">{0}</string>
+
+    <string name="format_test_quotes">“%1s” 的關注者</string>
+    <string name="format_test_quotes2">“%1”的朋友</string>
+
 </resources>

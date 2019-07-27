@@ -23,8 +23,8 @@ import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.timeline.ListScope;
+import org.andstatus.app.util.StringUtils;
 
-import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -151,13 +151,7 @@ public enum TimelineType implements SelectableEnum {
     }
 
     public CharSequence title(Context context, Object ... params) {
-        if (titleResWithParamsId == 0 || context == null) {
-            return title(context) + " " + (params.length == 1
-                    ? params[0]
-                    : Arrays.toString(params));
-        } else {
-            return String.format(context.getText(titleResWithParamsId).toString(), params);
-        }
+        return StringUtils.format(context, titleResWithParamsId, params);
     }
 
     public boolean isSyncable() {
