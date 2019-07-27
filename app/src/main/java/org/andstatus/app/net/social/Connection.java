@@ -429,10 +429,7 @@ public abstract class Connection implements IsEmpty {
     }
 
     public OAuthService getOAuthService() {
-        if (data.isOAuth() && OAuthService.class.isAssignableFrom(http.getClass())) {
-            return (OAuthService) http;
-        }
-        return null;
+        return (http instanceof OAuthService) ? (OAuthService) http : null;
     }
 
     public void registerClientForAccount() throws ConnectionException {

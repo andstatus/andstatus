@@ -53,7 +53,7 @@ class StateOfAccountChangeProcess {
     private static final String REQUEST_SECRET_KEY = "request_secret";
 
     private String accountAction = Intent.ACTION_DEFAULT;
-    boolean actionCompleted = true;
+    volatile boolean actionCompleted = true;
     boolean actionSucceeded = true;
     AccountAuthenticatorResponse authenticatorResponse = null;
 
@@ -70,8 +70,8 @@ class StateOfAccountChangeProcess {
     boolean accountShouldBeSelected = false;
     boolean originShouldBeSelected = false;
 
-    private String requestToken = null;
-    private String requestSecret = null;
+    private volatile String requestToken = null;
+    private volatile String requestSecret = null;
     
     private StateOfAccountChangeProcess(Bundle bundle) {
         if (bundle != null && bundle.containsKey(ACTION_COMPLETED_KEY)) {

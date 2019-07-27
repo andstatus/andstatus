@@ -71,6 +71,7 @@ import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.view.EnumSelector;
 
@@ -78,6 +79,7 @@ import java.util.List;
 import java.util.Optional;
 
 import androidx.annotation.IdRes;
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import oauth.signpost.OAuth;
 import oauth.signpost.OAuthConsumer;
@@ -106,19 +108,30 @@ public class AccountSettingsActivity extends MyActivity {
         final ResultStatus status;
         final CharSequence message;
         final Optional<Uri> whoAmI;
+        @NonNull
+        final Uri authUri;
+
+        static TaskResult withWhoAmI(ResultStatus status, CharSequence message, Optional<Uri> whoAmI) {
+            return new TaskResult(status, message, whoAmI, Uri.EMPTY);
+        }
+
+        static TaskResult withAuthUri(ResultStatus status, CharSequence message, Uri authUri) {
+            return new TaskResult(status, message, Optional.empty(), authUri);
+        }
 
         TaskResult(ResultStatus status) {
-            this(status, "", Optional.empty());
+            this(status, "", Optional.empty(), Uri.EMPTY);
         }
 
         TaskResult(ResultStatus status, CharSequence message) {
-            this(status, message, Optional.empty());
+            this(status, message, Optional.empty(), Uri.EMPTY);
         }
 
-        TaskResult(ResultStatus status, CharSequence message, Optional<Uri> whoAmI) {
+        private TaskResult(ResultStatus status, CharSequence message, Optional<Uri> whoAmI, Uri autUri) {
             this.status = status;
             this.message = message;
             this.whoAmI = whoAmI;
+            this.authUri = autUri;
         }
 
         boolean isSuccess() {
@@ -359,8 +372,8 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void startMyPreferenceActivity() {
-        finish();
         startActivity(new Intent(this, MySettingsActivity.class));
+        finish();
     }
     
     private void updateScreen() {
@@ -714,7 +727,7 @@ public class AccountSettingsActivity extends MyActivity {
                     if (!ma.areClientKeysPresent()) {
                         AsyncTaskLauncher.execute(this, true, new OAuthRegisterClientTask());
                     } else {
-                        AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask());
+                        AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask(this));
                         activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
                     }
                 }
@@ -912,11 +925,12 @@ public class AccountSettingsActivity extends MyActivity {
         @Override
         protected void onPostExecute2(TaskResult result) {
             DialogFactory.dismissSafely(dlg);
-            if (result != null) {
+            if (result != null && !AccountSettingsActivity.this.isFinishing()) {
                 if (result.isSuccess()) {
                     state.builder.rebuildMyAccount();
                     updateScreen();
-                    AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask());
+                    AsyncTaskLauncher.execute(this, true,
+                            new OAuthAcquireRequestTokenTask(AccountSettingsActivity.this));
                     activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
                 } else {
                     appendError(result.message);
@@ -950,18 +964,20 @@ public class AccountSettingsActivity extends MyActivity {
      *         this code from OAuthActivity here in order to be able to show
      *         ProgressDialog and to get rid of any "Black blank screens"
      */
-    private class OAuthAcquireRequestTokenTask extends MyAsyncTask<Void, Void, TaskResult> {
+    private static class OAuthAcquireRequestTokenTask extends MyAsyncTask<Void, Void, TaskResult> {
+        private final AccountSettingsActivity activity;
         private ProgressDialog dlg;
 
-        OAuthAcquireRequestTokenTask() {
+        OAuthAcquireRequestTokenTask(AccountSettingsActivity activity) {
             super(PoolEnum.LONG_UI);
+            this.activity = activity;
         }
 
         @Override
         protected void onPreExecute() {
-            dlg = ProgressDialog.show(AccountSettingsActivity.this,
-                    getText(R.string.dialog_title_acquiring_a_request_token),
-                    getText(R.string.dialog_summary_acquiring_a_request_token),
+            dlg = ProgressDialog.show(activity,
+                    activity.getText(R.string.dialog_title_acquiring_a_request_token),
+                    activity.getText(R.string.dialog_summary_acquiring_a_request_token),
                     // indeterminate duration
                     true, 
                     // not cancelable
@@ -971,11 +987,11 @@ public class AccountSettingsActivity extends MyActivity {
 
         @Override
         protected TaskResult doInBackground2(Void aVoid) {
-            ResultStatus resultStatus = ResultStatus.NONE;
             String stepErrorMessage = "";
             String connectionErrorMessage = "";
+            Uri authUri = Uri.EMPTY;
             try {
-                Connection connection = state.builder.getConnection();
+                Connection connection = activity.state.builder.getConnection();
                 MyLog.v(this, "Retrieving request token for " + connection);
                 OAuthService oAuthService = connection.getOAuthService();
                 if (oAuthService == null) {
@@ -983,10 +999,9 @@ public class AccountSettingsActivity extends MyActivity {
                 } else if ( !connection.areOAuthClientKeysPresent()) {
                     connectionErrorMessage = "No Client keys for " + connection;
                 } else {
-                    String authUrl;
                     if (oAuthService.isOAuth2()) {
                         final OAuth20Service service = oAuthService.getService(true);
-                        authUrl = service.getAuthorizationUrl();
+                        authUri = UriUtils.fromString(service.getAuthorizationUrl());
                     } else {
                         OAuthConsumer consumer = oAuthService.getConsumer();
 
@@ -995,20 +1010,14 @@ public class AccountSettingsActivity extends MyActivity {
                         // like I registered when I wrote this example, you need to send
                         // null as the callback Uri in this function call. Then
                         // Twitter will correctly process your callback redirection
-                        authUrl = oAuthService.getProvider()
-                                .retrieveRequestToken(consumer, HttpConnection.CALLBACK_URI.toString());
-                        state.setRequestTokenWithSecret(consumer.getToken(), consumer.getTokenSecret());
+                        authUri = UriUtils.fromString(oAuthService.getProvider()
+                                .retrieveRequestToken(consumer, HttpConnection.CALLBACK_URI.toString()));
+                        activity.state.setRequestTokenWithSecret(consumer.getToken(), consumer.getTokenSecret());
                     }
 
                     // This is needed in order to complete the process after redirect
                     // from the Browser to the same activity.
-                    state.actionCompleted = false;
-
-                    // Start Web view (looking just like Web Browser)
-                    Intent i = new Intent(AccountSettingsActivity.this, AccountSettingsWebActivity.class);
-                    i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, authUrl);
-                    AccountSettingsActivity.this.startActivity(i);
-                    resultStatus = ResultStatus.SUCCESS;
+                    activity.state.actionCompleted = false;
                 }
             } catch (OAuthMessageSignerException | OAuthNotAuthorizedException
                     | OAuthExpectationFailedException
@@ -1016,35 +1025,44 @@ public class AccountSettingsActivity extends MyActivity {
                     | ConnectionException e) {
                 connectionErrorMessage = e.getMessage();
                 MyLog.e(this, e);
+                authUri = Uri.EMPTY;
             }
 
+            ResultStatus resultStatus = UriUtils.isDownloadable(authUri)
+                    ? ResultStatus.SUCCESS : ResultStatus.CONNECTION_EXCEPTION;
             if (resultStatus != ResultStatus.SUCCESS) {
-                stepErrorMessage = AccountSettingsActivity.this
-                        .getString(R.string.acquiring_a_request_token_failed);
+                stepErrorMessage = activity.getString(R.string.acquiring_a_request_token_failed);
                 if (StringUtils.nonEmpty(connectionErrorMessage)) {
                     stepErrorMessage += ": " + connectionErrorMessage;
                 }
                 MyLog.d(TAG, stepErrorMessage);
 
-                state.builder.clearClientKeys();
+                activity.state.builder.clearClientKeys();
             }
-            return new TaskResult(resultStatus, stepErrorMessage);
+            return TaskResult.withAuthUri(resultStatus, stepErrorMessage, authUri);
         }
 
         // This is in the UI thread, so we can mess with the UI
         @Override
         protected void onPostExecute2(TaskResult result) {
             DialogFactory.dismissSafely(dlg);
-            if (result != null) {
+            if (result != null && !activity.isFinishing()) {
                 if (result.isSuccess()) {
+                    activity.activityOnFinish = ActivityOnFinish.NONE;
+
+                    MyLog.d(activity, "Starting Web view at " + result.authUri);
+                    Intent i = new Intent(activity, AccountSettingsWebActivity.class);
+                    i.putExtra(AccountSettingsWebActivity.EXTRA_URLTOOPEN, result.authUri.toString());
+                    activity.startActivity(i);
+
                     // Finish this activity in order to start properly
                     // after redirection from Browser
                     // Because of initializations in onCreate...
-                    AccountSettingsActivity.this.finish();
+                    activity.finish();
                 } else {
-                    appendError(result.message);
-                    state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
-                    updateScreen();
+                    activity.appendError(result.message);
+                    activity.state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
+                    activity.updateScreen();
                 }
             }
             MyLog.v(this, I18n.succeededText(result != null && result.isSuccess()));
@@ -1146,7 +1164,7 @@ public class AccountSettingsActivity extends MyActivity {
                     }
                 }
             }
-            return new TaskResult(
+            return TaskResult.withWhoAmI(
                     StringUtils.nonEmpty(accessToken) && StringUtils.nonEmpty(accessSecret)
                             ? ResultStatus.SUCCESS : ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT,
                     message,
@@ -1158,7 +1176,7 @@ public class AccountSettingsActivity extends MyActivity {
         @Override
         protected void onPostExecute2(TaskResult result) {
             DialogFactory.dismissSafely(dlg);
-            if (result != null) {
+            if (result != null && !AccountSettingsActivity.this.isFinishing()) {
                 if (result.isSuccess()) {
                     // Credentials are present, so we may verify them
                     // This is needed even for OAuth - to know Twitter Username
@@ -1258,6 +1276,8 @@ public class AccountSettingsActivity extends MyActivity {
         @Override
         protected void onPostExecute2(TaskResult resultIn) {
             DialogFactory.dismissSafely(dlg);
+            if (AccountSettingsActivity.this.isFinishing()) return;
+
             TaskResult result = resultIn == null ? new TaskResult(ResultStatus.NONE) : resultIn;
             CharSequence errorMessage = "";
             switch (result.status) {
