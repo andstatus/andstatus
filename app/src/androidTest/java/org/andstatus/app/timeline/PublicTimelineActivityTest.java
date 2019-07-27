@@ -29,6 +29,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.note.BaseNoteViewItem;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.MyServiceManager;
@@ -65,7 +66,8 @@ public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityVie
         assertTrue(origin.toString(), origin.isValid());
         MyLog.i(this, "setUp ended");
 
-        return new Intent(Intent.ACTION_VIEW, MyContextHolder.get().timelines().get(TimelineType.PUBLIC, 0, origin).getUri());
+        return new Intent(Intent.ACTION_VIEW, MyContextHolder.get().timelines()
+                .get(TimelineType.PUBLIC, Actor.EMPTY, origin).getUri());
     }
 
     @Test

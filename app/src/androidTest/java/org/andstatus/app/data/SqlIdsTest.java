@@ -51,8 +51,9 @@ public class SqlIdsTest {
         assertNotEquals("No actors for " + timelineCombined,0, SqlIds.actorIdsOfTimelineActor(timelineCombined).size());
 
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, myAccount.getOriginId(),  demoData.conversationAuthorSecondActorOid);
+        Actor actor = Actor.load(MyContextHolder.get(),actorId);
         assertNotEquals("No actor for " + demoData.conversationAuthorSecondActorOid,0, actorId);
-        Timeline timelineUser = MyContextHolder.get().timelines().get(TimelineType.SENT, actorId, myAccount.getOrigin());
+        Timeline timelineUser = MyContextHolder.get().timelines().get(TimelineType.SENT, actor, myAccount.getOrigin());
         assertNotEquals("No actors for " + timelineUser,0, SqlIds.actorIdsOfTimelineActor(timelineCombined).size());
     }
 }

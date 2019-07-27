@@ -19,6 +19,7 @@ package org.andstatus.app.actor;
 import android.os.Bundle;
 
 import org.andstatus.app.R;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -43,8 +44,8 @@ public class FollowersList extends ActorList {
         CommandEnum command = mActorListType == ActorListType.FOLLOWERS ?
                 CommandEnum.GET_FOLLOWERS : CommandEnum.GET_FRIENDS;
         MyServiceManager.sendForegroundCommand(
-                (CommandData.newActorCommand(command,
-                        getFollowedActorId(), "")).setManuallyLaunched(manuallyLaunched));
+                CommandData.newActorCommand(command, Actor.load(myContext, getFollowedActorId()), "")
+                    .setManuallyLaunched(manuallyLaunched));
     }
 
     @Override

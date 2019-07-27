@@ -26,6 +26,7 @@ import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.graphics.ImageCaches;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.timeline.TimelinePage;
@@ -53,7 +54,7 @@ public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
                 new TimelinePage<>(
                     new TimelineParameters(contextMenu.getMyContext(),
                         contextMenu.getActivity().getMyContext().timelines()
-                            .get(TimelineType.CONVERSATION, 0, origin), WhichPage.EMPTY),
+                            .get(TimelineType.CONVERSATION, Actor.EMPTY, origin), WhichPage.EMPTY),
                     oMsgs
                 )
             )

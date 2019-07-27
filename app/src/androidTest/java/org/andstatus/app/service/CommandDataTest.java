@@ -23,6 +23,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -33,6 +34,8 @@ import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -45,7 +48,7 @@ public class CommandDataTest {
     }
 
     @Test
-    public void testQueue() throws InterruptedException {
+    public void testQueue() {
         long time0 = System.currentTimeMillis(); 
         CommandData commandData = CommandData.newUpdateStatus(demoData.getPumpioConversationAccount(), 1, 4);
         testQueueOneCommandData(commandData, time0);
@@ -58,8 +61,7 @@ public class CommandDataTest {
         testQueueOneCommandData(commandData, time0);
     }
 
-    private void testQueueOneCommandData(CommandData commandData, long time0)
-            throws InterruptedException {
+    private void testQueueOneCommandData(CommandData commandData, long time0) {
         final String method = "testQueueOneCommandData";
         assertEquals(0, commandData.getResult().getExecutionCount());
         assertEquals(0, commandData.getResult().getLastExecutedDate());
@@ -123,8 +125,8 @@ public class CommandDataTest {
     public void testPriority() {
         Queue<CommandData> queue = new PriorityBlockingQueue<>(100);
         final MyAccount ma = demoData.getGnuSocialAccount();
-        queue.add(CommandData.newActorCommand(CommandEnum.GET_FRIENDS, 123, ""));
-        queue.add(CommandData.newActorCommand(CommandEnum.GET_TIMELINE, ma.getActorId(), ma.getUsername()));
+        queue.add(CommandData.newActorCommand(CommandEnum.GET_FRIENDS, Actor.fromId(ma.getOrigin(), 123), ""));
+        queue.add(CommandData.newActorCommand(CommandEnum.GET_TIMELINE, ma.getActor(), ma.getUsername()));
         queue.add(CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), ma.getOrigin(), "q1"));
         queue.add(CommandData.newUpdateStatus(MyAccount.EMPTY, 2, 5));
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.INTERACTIONS));
@@ -165,12 +167,13 @@ public class CommandDataTest {
         assertTrue(ma.isValid());
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().getId(),
                 demoData.conversationAuthorThirdActorOid);
+        Actor actor = Actor.load(ma.getOrigin().myContext, actorId);
         CommandData data = CommandData.actOnActorCommand(
-                command, demoData.getPumpioConversationAccount(), actorId, "");
+                command, demoData.getPumpioConversationAccount(), actor, "");
         String summary = data.toCommandSummary(MyContextHolder.get());
         String msgLog = command.name() + "; Summary:'" + summary + "'";
         MyLog.v(this, msgLog);
-        assertTrue(msgLog, summary.contains(command.getTitle(MyContextHolder.get(),
+        assertThat(msgLog, summary, containsString(command.getTitle(MyContextHolder.get(),
                 ma.getAccountName()) + " " + MyQuery.actorIdToWebfingerId(actorId)));
     }
 

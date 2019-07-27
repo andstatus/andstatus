@@ -28,6 +28,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.note.ConversationActivity;
 import org.andstatus.app.note.NoteContextMenuItem;
 import org.andstatus.app.origin.Origin;
@@ -56,7 +57,7 @@ public class ActAsTest extends TimelineActivityTest<ActivityViewItem> {
         MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         MyLog.i(this, "setUp ended");
-        final Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.EVERYTHING, 0, ma.getOrigin());
+        final Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.getOrigin());
         timeline.forgetPositionsAndDates();
         return new Intent(Intent.ACTION_VIEW, timeline.getUri());
     }

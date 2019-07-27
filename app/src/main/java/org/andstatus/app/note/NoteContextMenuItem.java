@@ -283,7 +283,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
             Uri uri = MatchedUri.getTimelineItemUri(
-                    menu.getMyContext().timelines().get(TimelineType.EVERYTHING, 0, menu.getOrigin()),
+                    menu.getMyContext().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, menu.getOrigin()),
                     menu.getNoteId());
             String action = menu.getActivity().getIntent().getAction();
             if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
@@ -453,7 +453,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     
     void sendActOnActorCommand(CommandEnum command, MyAccount myAccount, Actor actor) {
         MyServiceManager.sendManualForegroundCommand(
-                CommandData.actOnActorCommand(command, myAccount, actor.actorId, actor.getUsername()));
+                CommandData.actOnActorCommand(command, myAccount, actor, actor.getUsername()));
     }
 
     void sendNoteCommand(CommandEnum command, NoteEditorData editorData) {

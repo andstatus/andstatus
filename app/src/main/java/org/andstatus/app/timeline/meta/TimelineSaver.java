@@ -156,7 +156,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
         for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
             if (origin.getOriginType().isTimelineTypeSyncable(timelineType)
                     || timelineType.equals(TimelineType.EVERYTHING)) {
-                timelines().get(timelineType, 0, origin).save(myContext);
+                timelines().get(timelineType, Actor.EMPTY, origin).save(myContext);
             }
         }
     }
@@ -164,7 +164,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
     public void addDefaultCombined() {
         for (TimelineType timelineType : TimelineType.values()) {
             if (timelineType.isCombinedRequired()) {
-                timelines().get(timelineType, 0, Origin.EMPTY).save(myContext);
+                timelines().get(timelineType, Actor.EMPTY, Origin.EMPTY).save(myContext);
             }
         }
     }

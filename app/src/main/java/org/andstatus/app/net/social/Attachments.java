@@ -59,7 +59,7 @@ public class Attachments implements IsEmpty {
                 default:
                     if (UriUtils.isDownloadable(dd.getUri())) {
                         if (attachment.contentType.getDownloadMediaOfThisType()) {
-                            dd.requestDownload();
+                            dd.requestDownload(execContext.myContext);
                         }
                     } else {
                         AttachmentDownloader.load(dd, execContext.getCommandData());

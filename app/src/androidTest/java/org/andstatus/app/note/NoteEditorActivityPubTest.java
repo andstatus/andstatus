@@ -67,7 +67,7 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
 
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW,
-                MyContextHolder.get().timelines().get(TimelineType.HOME, ma.getActorId(), Origin.EMPTY).getUri());
+                MyContextHolder.get().timelines().get(TimelineType.HOME, ma.getActor(), Origin.EMPTY).getUri());
     }
 
     @Test

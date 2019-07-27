@@ -19,7 +19,6 @@ package org.andstatus.app.notification;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.context.MyContext;
@@ -27,6 +26,8 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
+
+import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
@@ -56,7 +57,7 @@ public class NotificationData {
         TimelineType timelineType = TimelineType.from(event);
         // When clicking on notifications, always open Combine timeline for Unread notifications
         Timeline timeline = myContext.timelines().get(timelineType,
-                timelineType == TimelineType.UNREAD_NOTIFICATIONS ? 0 : myActor.actorId, Origin.EMPTY)
+                timelineType == TimelineType.UNREAD_NOTIFICATIONS ? Actor.EMPTY : myActor, Origin.EMPTY)
                 .orElse(myContext.timelines().getDefault());
         Intent intent = new Intent(myContext.context(), FirstActivity.class);
         // "rnd" is necessary to actually bring Extra to the target intent

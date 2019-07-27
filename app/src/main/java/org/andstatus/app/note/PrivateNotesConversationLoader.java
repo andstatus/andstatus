@@ -25,6 +25,7 @@ import org.andstatus.app.data.ProjectionMap;
 import org.andstatus.app.data.SqlIds;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -47,7 +48,7 @@ public class PrivateNotesConversationLoader<T extends ConversationItem<T>> exten
         Audience audience = Audience.fromNoteId(ma.getOrigin(), nonLoaded.getNoteId());
         String selection = getSelectionForActorAndAudience("=" + Long.toString(actorId),
                 SqlIds.actorIdsOf(audience.getActors()).getSql());
-        Uri uri = myContext.timelines().get(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri();
+        Uri uri = myContext.timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.getOrigin()).getUri();
         try (Cursor cursor = myContext.context().getContentResolver()
                 .query(uri, nonLoaded.getProjection().toArray(new String[]{}), selection, null, null)) {
             while (cursor != null && cursor.moveToNext()) {

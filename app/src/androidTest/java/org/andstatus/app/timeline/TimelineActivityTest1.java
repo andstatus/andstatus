@@ -75,7 +75,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
 
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW, MyContextHolder.get().timelines()
-                .get(TimelineType.HOME, ma.getActorId(), Origin.EMPTY).getUri());
+                .get(TimelineType.HOME, ma.getActor(), Origin.EMPTY).getUri());
     }
 
     @Test

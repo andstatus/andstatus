@@ -226,10 +226,12 @@ public class ConnectionTwitterTest {
         assertEquals("Wrong username returned " + activity, "LPirro93", friend.getUsername());
 
         MyAccount ma = demoData.getMyAccount(connection.getData().getAccountName().toString());
+        Actor friend2 = Actor.fromId(ma.getOrigin(), 123);
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                CommandData.actOnActorCommand(CommandEnum.FOLLOW, ma, 123, ""));
+                CommandData.actOnActorCommand(CommandEnum.FOLLOW, ma, friend2, ""));
         DataUpdater di = new DataUpdater(executionContext);
         di.onActivity(activity);
+
         long friendId = MyQuery.oidToId(MyContextHolder.get(), OidEnum.ACTOR_OID, ma.getOriginId(), actorOid);
 
         assertNotEquals("Followed Actor was not added " + activity, 0, friendId);

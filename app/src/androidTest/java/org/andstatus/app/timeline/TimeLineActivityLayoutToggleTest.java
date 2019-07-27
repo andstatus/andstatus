@@ -73,7 +73,7 @@ public class TimeLineActivityLayoutToggleTest extends TimelineActivityTest<Activ
         MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         logStartStop("setUp ended");
-        return new Intent(Intent.ACTION_VIEW, MyContextHolder.get().timelines().get(TimelineType.HOME, ma.getActorId(),
+        return new Intent(Intent.ACTION_VIEW, MyContextHolder.get().timelines().get(TimelineType.HOME, ma.getActor(),
                 Origin.EMPTY).getUri());
     }
 

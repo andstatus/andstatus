@@ -22,6 +22,7 @@ import android.net.Uri;
 import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -82,7 +83,7 @@ public class ParsedUriTest {
     }
 
     private void oneSearchQuery(String searchQuery) {
-        final Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.SEARCH, 0,
+        final Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.SEARCH, Actor.EMPTY,
                 MyContextHolder.get().origins().firstOfType(OriginType.GNUSOCIAL), searchQuery);
         final Uri clickUri = timeline.getClickUri();
         ParsedUri parsedUri = ParsedUri.fromUri(clickUri);

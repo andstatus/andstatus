@@ -29,7 +29,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.checker.CheckConversations;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.list.SyncLoader;
-import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -39,7 +39,6 @@ import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
-import org.andstatus.app.util.UriUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -172,7 +171,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
             return cachedItem;
         }
         Uri uri = MatchedUri.getTimelineItemUri(
-                myContext.timelines().get(TimelineType.EVERYTHING, 0, ma.getOrigin()), item.getNoteId());
+                myContext.timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.getOrigin()), item.getNoteId());
         try (Cursor cursor = myContext.context().getContentResolver()
                 .query(uri, item.getProjection().toArray(new String[]{}), null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {

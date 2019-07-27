@@ -33,6 +33,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.list.SyncLoader;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.LoadableListActivity;
@@ -162,7 +163,7 @@ public class ManageTimelines extends LoadableListActivity {
     protected BaseTimelineAdapter newListAdapter() {
 
         return new BaseTimelineAdapter<ManageTimelinesViewItem>(myContext,
-                myContext.timelines().get(TimelineType.MANAGE_TIMELINES, 0, Origin.EMPTY),
+                myContext.timelines().get(TimelineType.MANAGE_TIMELINES, Actor.EMPTY, Origin.EMPTY),
                 getLoaded().getList()) {
             Timeline defaultTimeline = myContext.timelines().getDefault();
 

@@ -27,6 +27,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.AActivity;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.util.MyLog;
@@ -93,7 +94,7 @@ public class AttachmentDownloaderTest {
         } else {
             ma.setConnection();
         }
-        CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, 0, "someActor");
+        CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, Actor.EMPTY, "someActor");
         loader.load(commandData);
 
         DownloadData data = DownloadData.fromId(dataIn.getDownloadId());

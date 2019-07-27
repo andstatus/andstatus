@@ -183,7 +183,7 @@ public class PersistentTimelinesTest {
         Timeline timeline1 = myContext.timelines()
                 .filter(true, TriState.FALSE, timelineType, ma1.getActor(), ma1.getOrigin())
                 .findFirst().orElseGet(() ->
-                        myContext.timelines().get(timelineType, ma1.getActorId(), ma1.getOrigin())
+                        myContext.timelines().get(timelineType, ma1.getActor(), ma1.getOrigin())
                 );
         assertEquals("Should be not combined " + timeline1, false, timeline1.isCombined());
         Timeline timeline2 = timeline1.fromMyAccount(myContext, ma2);
@@ -199,13 +199,14 @@ public class PersistentTimelinesTest {
     }
 
     @Test
-    public void testUserTimelines() throws Exception {
+    public void testUserTimelines() {
         final MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
         myContext.accounts().setCurrentAccount(ma);
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOriginId(), demoData.conversationAuthorSecondActorOid);
+        Actor actor = Actor.fromId(ma.getOrigin(), actorId);
 
-        final Timeline timeline = myContext.timelines().get(TimelineType.SENT, actorId, ma.getOrigin());
+        final Timeline timeline = myContext.timelines().get(TimelineType.SENT, actor, ma.getOrigin());
         assertEquals("Should not be combined: " + timeline, false, timeline.isCombined());
 
         Collection<Timeline> timelines = myContext.timelines().stream()

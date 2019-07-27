@@ -69,7 +69,7 @@ public class RepeatingFailingCommandTest extends MyServiceTest {
 
     // We need to generate new command in order to have new unique ID for it. This is how it works in app itself
     private void setAndSendGetAvatarCommand(Actor actor, boolean manuallyLaunched) {
-        final CommandData command = CommandData.newActorCommand(CommandEnum.GET_AVATAR, actor.actorId, "");
+        final CommandData command = CommandData.newActorCommand(CommandEnum.GET_AVATAR, actor, "");
         if (manuallyLaunched) {
             command.setManuallyLaunched(true);
         }

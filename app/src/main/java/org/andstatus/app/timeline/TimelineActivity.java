@@ -54,6 +54,7 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.list.SyncLoader;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.note.NoteAdapter;
 import org.andstatus.app.note.NoteContextMenu;
 import org.andstatus.app.note.NoteContextMenuContainer;
@@ -468,7 +469,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         if (drawerView == null) {
             return;
         }
-        TextView item = (TextView) drawerView.findViewById(R.id.timelineTypeButton);
+        TextView item = drawerView.findViewById(R.id.timelineTypeButton);
         if (item !=  null) {
             item.setText(timelineTypeButtonText());
         }
@@ -547,7 +548,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         if (item.getNoteId() <= 0) return;
 
         Uri uri = MatchedUri.getTimelineItemUri(
-                myContext.timelines().get(TimelineType.EVERYTHING, 0, item.getOrigin()),
+                myContext.timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, item.getOrigin()),
                 item.getNoteId());
 
         String action = getIntent().getAction();
@@ -637,9 +638,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 timeline.setSyncSucceededDate(System.currentTimeMillis()); // To avoid repetition
                 MyServiceManager.setServiceAvailable();
                 MyServiceManager.sendManualForegroundCommand(
-                        CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline));
+                    CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline));
                 MyServiceManager.sendCommand(
-                        CommandData.newActorCommand(CommandEnum.GET_FRIENDS, timeline.myAccountToSync.getActor().actorId, ""));
+                    CommandData.newActorCommand(CommandEnum.GET_FRIENDS, timeline.myAccountToSync.getActor(), ""));
             } else {
                 onNoRowsLoaded(timeline);
             }

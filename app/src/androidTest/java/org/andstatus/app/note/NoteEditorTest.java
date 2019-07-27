@@ -99,7 +99,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
 
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW,
-                MyContextHolder.get().timelines().get(TimelineType.HOME, ma.getActorId(), Origin.EMPTY).getUri());
+                MyContextHolder.get().timelines().get(TimelineType.HOME, ma.getActor(), Origin.EMPTY).getUri());
     }
 
     private NoteEditorData getStaticData(MyAccount ma) {

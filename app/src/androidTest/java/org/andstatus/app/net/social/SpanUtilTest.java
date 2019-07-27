@@ -107,9 +107,13 @@ public class SpanUtilTest {
         final SpanUtil.Region region = regions.get(index);
         final Optional<MyUrlSpan> urlSpan = region.urlSpan;
         final Optional<Actor> actor = urlSpan.flatMap(u -> u.data.actor);
+        final Optional<MyAccount> accountToSync = actor.map(a ->
+                a.origin.myContext.accounts().toSyncThatActor(a));
         assertTrue("Region " + index + " should be a mention " + region + "\n" + message, actor.isPresent());
         assertEquals("Region " + index + " " + message,
-                "content://timeline.app.andstatus.org/note/0/lt/sent/origin/0/actor/0",
+                "content://timeline.app.andstatus.org/note/" +
+                        accountToSync.map(MyAccount::getActorId).orElse(0L) +
+                        "/lt/sent/origin/0/actor/0",
                 urlSpan.map(MyUrlSpan::getURL).orElse(""));
         assertEquals("Username in region " + index + " " + message,
                 username.toUpperCase(), actor.map(Actor::getUsername).orElse("").toUpperCase());

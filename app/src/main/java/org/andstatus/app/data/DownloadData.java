@@ -11,6 +11,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.MediaMetadata;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -503,13 +504,13 @@ public class DownloadData implements IsEmpty {
         return uri;
     }
 
-    public void requestDownload() {
+    public void requestDownload(MyContext myContext) {
         if (!hardError && downloadId == 0) {
             saveToDatabase();
         }
         if ((!DownloadStatus.LOADED.equals(status) || !fileStored.existed) && !hardError && uri != Uri.EMPTY) {
             MyServiceManager.sendCommand(actorId != 0
-                    ? CommandData.newActorCommand(CommandEnum.GET_AVATAR, actorId, "")
+                    ? CommandData.newActorCommand(CommandEnum.GET_AVATAR, Actor.load(myContext, actorId), "")
                     : CommandData.newFetchAttachment(noteId, downloadId));
         }
     }

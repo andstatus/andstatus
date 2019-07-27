@@ -16,6 +16,7 @@ import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.http.HttpReadResult;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.service.MyServiceTestHelper;
 import org.andstatus.app.timeline.ListActivityTestHelper;
 import org.andstatus.app.timeline.TimelineActivity;
@@ -48,7 +49,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
         MyContextHolder.get().accounts().setCurrentAccount(ma);
 
         return new Intent(Intent.ACTION_VIEW,
-                MyContextHolder.get().timelines().get(TimelineType.EVERYTHING, 0, ma.getOrigin()).getUri());
+                MyContextHolder.get().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.getOrigin()).getUri());
     }
 
     @After

@@ -191,8 +191,7 @@ public class AvatarDownloaderTest {
         } else {
             ma.setConnection();
         }
-        CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, actor.actorId,
-                actor.getUsername());
+        CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, actor, actor.getUsername());
         loader.load(commandData);
 
         DownloadData data = AvatarData.getDisplayedForActor(actor);

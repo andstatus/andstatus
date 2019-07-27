@@ -84,7 +84,7 @@ public class AvatarFile extends ImageFile {
 
         MyLog.v(this, () -> "Requesting download " + getActor() + "\n" + this);
         MyServiceManager.sendCommand(
-                CommandData.newActorCommandAtOrigin(CommandEnum.GET_AVATAR, getActor().actorId,
+                CommandData.newActorCommandAtOrigin(CommandEnum.GET_AVATAR, getActor(),
                         getActor().getUsername(), getActor().origin));
     }
 

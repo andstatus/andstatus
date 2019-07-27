@@ -163,7 +163,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
                 myContext,
                 DbUtils.getLong(cursor, TimelineTable._ID),
                 TimelineType.load(DbUtils.getString(cursor, TimelineTable.TIMELINE_TYPE)),
-                DbUtils.getLong(cursor, TimelineTable.ACTOR_ID),
+                Actor.load(myContext, DbUtils.getLong(cursor, TimelineTable.ACTOR_ID)),
                 myContext.origins().fromId(DbUtils.getLong(cursor, TimelineTable.ORIGIN_ID)),
                 DbUtils.getString(cursor, TimelineTable.SEARCH_QUERY),
                 DbUtils.getLong(cursor, TimelineTable.SELECTOR_ORDER));
@@ -207,7 +207,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         return myContext.timelines().get(
                 DbUtils.getLong(cursor, CommandTable.TIMELINE_ID),
                 TimelineType.load(DbUtils.getString(cursor, CommandTable.TIMELINE_TYPE)),
-                DbUtils.getLong(cursor, CommandTable.ACTOR_ID),
+                Actor.load(myContext, DbUtils.getLong(cursor, CommandTable.ACTOR_ID)),
                 myContext.origins().fromId(DbUtils.getLong(cursor, CommandTable.ORIGIN_ID)),
                 DbUtils.getString(cursor, CommandTable.SEARCH_QUERY)
         );
@@ -220,7 +220,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
                 ? timeline
                 : myContext.timelines().get(
                     TimelineType.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)),
-                    bundle.getLong(IntentExtra.ACTOR_ID.key),
+                    Actor.load(myContext, bundle.getLong(IntentExtra.ACTOR_ID.key)),
                     myContext.origins().fromId(BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)),
                     BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY));
     }
@@ -228,7 +228,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     public static Timeline fromParsedUri(MyContext myContext, ParsedUri parsedUri, String searchQueryIn) {
         Timeline timeline = myContext.timelines().get(
                 parsedUri.getTimelineType(),
-                parsedUri.getActorId(),
+                Actor.load(myContext, parsedUri.getActorId()),
                 parsedUri.getOrigin(myContext),
                 StringUtils.isEmpty(searchQueryIn) ? parsedUri.getSearchQuery() : searchQueryIn
         );
@@ -253,14 +253,15 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     Timeline(MyContext myContext, long id, @NonNull TimelineType timelineType,
-             long actorId, @NonNull Origin origin, String searchQuery, long selectorOrder) {
+             @NonNull Actor actor, @NonNull Origin origin, String searchQuery, long selectorOrder) {
         Objects.requireNonNull(timelineType);
+        Objects.requireNonNull(actor);
         Objects.requireNonNull(origin);
         this.myContext = myContext;
         this.id = id;
-        this.actor = fixedActor(myContext, timelineType, actorId);
+        this.actor = fixedActor(timelineType, actor);
         this.origin = fixedOrigin(timelineType, origin);
-        this.myAccountToSync = calcAccountToSync(myContext, timelineType, this.origin, actor);
+        this.myAccountToSync = calcAccountToSync(myContext, timelineType, this.origin, this.actor);
         this.searchQuery = StringUtils.optNotEmpty(searchQuery).orElse("");
         this.isCombined = calcIsCombined(timelineType, this.origin);
         this.timelineType = fixedTimelineType(timelineType);
@@ -304,8 +305,8 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
                 : myContext.accounts().toSyncThatActor(actor);
     }
 
-    private Actor fixedActor(MyContext myContext, TimelineType timelineType, long actorId) {
-        return timelineType.isForUser() ? Actor.load(myContext, actorId) : Actor.EMPTY;
+    private Actor fixedActor(TimelineType timelineType, Actor actor) {
+        return timelineType.isForUser() ? actor : Actor.EMPTY;
     }
 
     @NonNull
@@ -388,7 +389,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
 
     public Timeline fromSearch(MyContext myContext, boolean globalSearch) {
         return globalSearch
-                ? myContext.timelines().get(TimelineType.SEARCH, getActorId(), origin, searchQuery)
+                ? myContext.timelines().get(TimelineType.SEARCH, actor, origin, searchQuery)
                 : this;
     }
 
@@ -398,7 +399,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
                     actor.user.isMyUser() != TriState.TRUE
         )) return this;
         return myContext.timelines().get(timelineType,
-                isCombinedNew ? 0 : myContext.accounts().getCurrentAccount().getActorId(),
+                isCombinedNew ? Actor.EMPTY : myContext.accounts().getCurrentAccount().getActor(),
                 isCombinedNew ? Origin.EMPTY : myContext.accounts().getCurrentAccount().getOrigin(),
                 searchQuery);
     }
@@ -408,7 +409,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
                 || (timelineType.isForUser() && !timelineType.isAtOrigin() && actor.user.isMyUser() != TriState.TRUE)) return this;
         return myContext.timelines().get(
                 timelineType,
-                myAccountNew.getActorId(),
+                myAccountNew.getActor(),
                 myAccountNew.getOrigin(), searchQuery);
     }
 
@@ -848,11 +849,11 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public Timeline cloneForAccount(MyContext myContext, MyAccount ma) {
-        return myContext.timelines().get(0, getTimelineType(), ma.getActorId(), Origin.EMPTY, getSearchQuery());
+        return myContext.timelines().get(0, getTimelineType(), ma.getActor(), Origin.EMPTY, getSearchQuery());
     }
 
     public Timeline cloneForOrigin(MyContext myContext, Origin origin) {
-        return myContext.timelines().get(0, getTimelineType(), 0, origin, getSearchQuery());
+        return myContext.timelines().get(0, getTimelineType(), Actor.EMPTY, origin, getSearchQuery());
     }
 
     @NonNull

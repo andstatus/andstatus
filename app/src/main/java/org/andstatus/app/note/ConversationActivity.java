@@ -31,6 +31,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.list.SyncLoader;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.QueueViewer;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
@@ -189,7 +190,7 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
 
     @Override
     public Timeline getTimeline() {
-        return myContext.timelines().get(TimelineType.EVERYTHING, 0, origin);
+        return myContext.timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, origin);
     }
 
     @SuppressWarnings("unchecked")

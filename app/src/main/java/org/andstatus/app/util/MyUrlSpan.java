@@ -79,7 +79,7 @@ public class MyUrlSpan extends URLSpan {
 
         public Timeline getTimeline() {
             return searchQuery.map(s ->
-                    MyContextHolder.get().timelines().get(TimelineType.SEARCH, 0, Origin.EMPTY, s))
+                    MyContextHolder.get().timelines().get(TimelineType.SEARCH, Actor.EMPTY, Origin.EMPTY, s))
                     .orElse(actor.map(a -> MyContextHolder.get().timelines().forUserAtHomeOrigin(TimelineType.SENT, a))
                             .orElse(Timeline.EMPTY));
         }

@@ -96,30 +96,30 @@ public class PersistentTimelines {
     }
 
     @NonNull
-    public Timeline forUser(@NonNull TimelineType timelineType, Actor actor) {
-        return get(0, timelineType, actor.actorId, Origin.EMPTY, "");
+    public Timeline forUser(@NonNull TimelineType timelineType, @NonNull Actor actor) {
+        return get(0, timelineType, actor, Origin.EMPTY, "");
     }
 
     @NonNull
-    public Timeline get(@NonNull TimelineType timelineType, long actorId, @NonNull Origin origin) {
-        return get(0, timelineType, actorId, origin, "");
+    public Timeline get(@NonNull TimelineType timelineType, @NonNull Actor actor, @NonNull Origin origin) {
+        return get(0, timelineType, actor, origin, "");
     }
 
     @NonNull
-    public Timeline get(@NonNull TimelineType timelineType, long actorId, @NonNull Origin origin, String searchQuery) {
-        return get(0, timelineType, actorId, origin, searchQuery);
+    public Timeline get(@NonNull TimelineType timelineType, @NonNull Actor actor, @NonNull Origin origin, String searchQuery) {
+        return get(0, timelineType, actor, origin, searchQuery);
     }
 
     @NonNull
     public Timeline get(long id, @NonNull TimelineType timelineType,
-                        long actorId, @NonNull Origin origin, String searchQuery) {
+                        @NonNull Actor actor, @NonNull Origin origin, String searchQuery) {
         if (timelineType == TimelineType.UNKNOWN) return Timeline.EMPTY;
 
-        Timeline newTimeline = new Timeline(myContext, id, timelineType, actorId, origin, searchQuery, 0);
+        Timeline newTimeline = new Timeline(myContext, id, timelineType, actor, origin, searchQuery, 0);
         return stream().filter(timeline -> newTimeline.getId() == 0
                 ? newTimeline.duplicates(timeline)
                 : timeline.getId() == newTimeline.getId())
-                .findAny().orElseGet(() -> newTimeline);
+                .findAny().orElse(newTimeline);
     }
 
     public Stream<Timeline> stream() {

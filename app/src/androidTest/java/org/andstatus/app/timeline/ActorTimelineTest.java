@@ -25,6 +25,7 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
@@ -45,9 +46,10 @@ public class ActorTimelineTest extends TimelineActivityTest<ActivityViewItem> {
         assertTrue(ma.isValid());
         MyContextHolder.get().accounts().setCurrentAccount(ma);
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOriginId(), demoData.conversationAuthorSecondActorOid);
+        Actor actor = Actor.fromId(ma.getOrigin(), actorId);
 
         MyLog.i(this, "setUp ended");
-        final Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.SENT, actorId, ma.getOrigin());
+        final Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.SENT, actor, ma.getOrigin());
         timeline.forgetPositionsAndDates();
         return new Intent(Intent.ACTION_VIEW, timeline.getUri());
     }
