@@ -219,8 +219,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         getActivity().getApplicationContext().startActivity(intent1);
 
-        Activity selectorActivity = getInstrumentation()
-                .waitForMonitorWithTimeout(activityMonitor, 15000);
+        Activity selectorActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 25000);
         assertTrue(selectorActivity != null);
         ActivityTestHelper.waitViewInvisible(method, editorView);
         DbUtils.waitMs(method, 10000);

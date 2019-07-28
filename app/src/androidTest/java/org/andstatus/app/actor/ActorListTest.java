@@ -100,7 +100,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         assertTrue("Found " + demoData.conversationAuthorThirdActorOid
                 + " cached " + MyContextHolder.get().users().actors, actorE.nonEmpty());
         Actor actorA = getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
-        assertNotNull("Found " + demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA);
+        assertTrue("Not found " + demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA.nonEmpty());
         compareAttributes(actorE, actorA, false);
 
         ListActivityTestHelper<ActorList> actorListHelper = new ListActivityTestHelper<>(actorList);
@@ -161,6 +161,6 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
                 return item.actor;
             }
         }
-        return null;
+        return Actor.EMPTY;
     }
 }

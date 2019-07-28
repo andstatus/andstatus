@@ -46,9 +46,7 @@ class CheckTimelines extends DataChecker {
                     cursor -> Timeline.fromCursor(myContext, cursor)
             ).forEach(timeline -> {
                 if (!timeline.isValid()) {
-                    String logMsg = "Invalid timeline: " + timeline;
-                    MyLog.i(this, logMsg);
-                    logger.logProgress(logMsg);
+                    logger.logProgress("Invalid timeline: " + timeline);
                     DbUtils.waitMs(this, 1000);
                     toDelete.add(timeline);
                 }
@@ -66,7 +64,7 @@ class CheckTimelines extends DataChecker {
         myContext.timelines().saveChanged();
         logger.logProgress(deletedCount == 0
                 ? "No invalid timelines found"
-                : (countOnly ? "To delete " : "Deleted ") + deletedCount + " invalid of " + size1 + " timelines");
+                : (countOnly ? "To delete " : "Deleted ") + deletedCount + " invalid timelines. Valid timelines: " + size1);
         DbUtils.waitMs(this, deletedCount == 0 ? 1000 : 3000);
         return deletedCount;
     }

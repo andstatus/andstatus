@@ -68,6 +68,7 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
         assertEquals(listItems.toString(), 5, listItems.size());
 
         Actor actor = ActorListTest.getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
+        assertTrue("Not found " + demoData.conversationAuthorThirdActorOid, actor.nonEmpty());
 
         assertTrue("Invoked Context menu for " + actor, helper.invokeContextMenuAction4ListItemId(
                 method, actor.actorId, ActorContextMenuItem.FRIENDS, 0));

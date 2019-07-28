@@ -77,10 +77,10 @@ class CheckUsers extends DataChecker {
             MyLog.d(this, "No problems found");
             return;
         }
-        MyLog.d(this, "Problems found: " + results.problems.size());
+        MyLog.i(this, "Problems found: " + results.problems.size());
         IntStream.range(0, results.problems.size())
                 .mapToObj(i -> Integer.toString(i + 1) + ". " + results.problems.get(i))
-                .forEachOrdered(s -> MyLog.d(this, s));
+                .forEachOrdered(s -> MyLog.i(this, s));
     }
 
     private CheckResults getResults() {
