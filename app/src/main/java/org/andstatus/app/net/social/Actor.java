@@ -153,6 +153,11 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 myContext.origins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
                     DbUtils.getLong(cursor, ActorTable.ACTOR_ID),
                     DbUtils.getString(cursor, ActorTable.ACTOR_OID));
+
+        actor.setGroupType(GroupType.fromId(DbUtils.getLong(cursor, ActorTable.GROUP_TYPE)));
+        long parentActorId = DbUtils.getLong(cursor, ActorTable.PARENT_ACTOR_ID);
+        actor.parentActor = LazyVal.of(() -> Actor.load(myContext, parentActorId));
+
         actor.setRealName(DbUtils.getString(cursor, ActorTable.REAL_NAME));
         actor.setUsername(DbUtils.getString(cursor, ActorTable.USERNAME));
         actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
@@ -172,7 +177,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         actor.setCreatedDate(DbUtils.getLong(cursor, ActorTable.CREATED_DATE));
         actor.setUpdatedDate(updatedDate);
 
-        actor.user = User.fromCursor(myContext, cursor);
+        actor.user = actor.isGroupDefinitely() ? User.EMPTY : User.fromCursor(myContext, cursor);
         actor.avatarFile = AvatarFile.fromCursor(actor, cursor);
         Actor cachedActor = myContext.users().actors.getOrDefault(actor.actorId, Actor.EMPTY);
         if (actor.isBetterToCacheThan(cachedActor)) {
@@ -391,7 +396,15 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return Optional.empty();
     }
 
-    private Actor setGroupType(GroupType groupType) {
+    public GroupType getGroupType() {
+        return groupType;
+    }
+
+    public boolean isGroupDefinitely() {
+        return groupType != GroupType.UNKNOWN && groupType != GroupType.NOT_A_GROUP;
+    }
+
+    public Actor setGroupType(GroupType groupType) {
         this.groupType = groupType;
         return this;
     }

@@ -91,7 +91,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
     protected void loadInternal() {
         Uri mContentUri = MatchedUri.getActorListUri(mActorListType, origin.getId(), mCentralItemId, searchQuery);
         try (Cursor c = myContext.context().getContentResolver()
-                    .query(mContentUri, ActorSql.projection(), getSelection(), null, null)) {
+                    .query(mContentUri, ActorSql.baseProjection(), getSelection(), null, null)) {
             while (c != null && c.moveToNext()) {
                 populateItem(c);
             }

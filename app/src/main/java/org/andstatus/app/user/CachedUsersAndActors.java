@@ -152,6 +152,10 @@ public class CachedUsersAndActors {
     }
 
     public Actor lookupUser(Actor actor) {
+        if (actor.isGroupDefinitely()) {
+            return actor;
+        }
+
         if (actor.user == User.EMPTY && actor.actorId != 0) {
             actor.user = User.load(myContext, actor.actorId);
         }

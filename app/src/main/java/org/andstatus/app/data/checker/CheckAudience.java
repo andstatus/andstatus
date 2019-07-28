@@ -37,7 +37,7 @@ import org.andstatus.app.util.TriState;
 class CheckAudience extends DataChecker {
 
     @Override
-    long fixInternal(boolean countOnly) {
+    long fixInternal() {
         return myContext.origins().collection().stream().mapToInt(o -> fixOneOrigin(o, countOnly)).sum();
     }
 

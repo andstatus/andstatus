@@ -100,7 +100,7 @@ public class CheckConversations extends DataChecker {
     }
 
     @Override
-    long fixInternal(boolean countOnly) {
+    long fixInternal() {
         loadNotes();
         if (noteIdsOfOneConversation.isEmpty()) {
             fixConversationsUsingReplies();

@@ -69,8 +69,9 @@ class Convert50 extends ConvertOneStep {
         DbUtils.execSQL(db, sql);
 
         progressLogger.logProgress(stepTitle + ": Converting Friendship into GroupMembers");
+
         sql = "CREATE TABLE group_members (group_id INTEGER NOT NULL,member_id INTEGER NOT NULL," +
-                "is_member BOOLEAN NOT NULL, CONSTRAINT pk_group_members PRIMARY KEY (group_id, member_id))";
+                " CONSTRAINT pk_group_members PRIMARY KEY (group_id, member_id))";
         DbUtils.execSQL(db, sql);
         sql = "CREATE INDEX idx_membership ON group_members (member_id, group_id)";
         DbUtils.execSQL(db, sql);

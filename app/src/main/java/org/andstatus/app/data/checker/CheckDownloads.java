@@ -41,7 +41,7 @@ class CheckDownloads extends DataChecker {
     }
 
     @Override
-    long fixInternal(boolean countOnly) {
+    long fixInternal() {
         Results results = getResults();
         if (countOnly) return results.toFix.size();
 

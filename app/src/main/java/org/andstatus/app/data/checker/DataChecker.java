@@ -33,6 +33,7 @@ public abstract class DataChecker {
     MyContext myContext;
     ProgressLogger logger = new ProgressLogger(null);
     boolean includeLong = false;
+    boolean countOnly = false;
 
     static String getSomeOfTotal(long some, long total) {
         return (some == 0
@@ -81,11 +82,12 @@ public abstract class DataChecker {
                 });
     }
 
-    public static void fixData(final ProgressLogger logger, final boolean includeLong, boolean countOnly) {
+    public static long fixData(final ProgressLogger logger, final boolean includeLong, boolean countOnly) {
+        long counter = 0;
         MyContext myContext = MyContextHolder.get();
         if (!myContext.isReady()) {
             MyLog.w(DataChecker.class, "fixData skipped: context is not ready " + myContext);
-            return;
+            return counter;
         }
         try {
             MyLog.i(DataChecker.class, "fixData started" + (includeLong ? ", including long tasks" : ""));
@@ -99,15 +101,23 @@ public abstract class DataChecker {
                     new SearchIndexUpdate(),
             }) {
                 MyServiceManager.setServiceUnavailable();
-                checker.setMyContext(myContext).setIncludeLong(includeLong).setLogger(logger).fix(countOnly);
+                counter += checker.setMyContext(myContext).setIncludeLong(includeLong).setLogger(logger)
+                        .setCountOnly(countOnly)
+                        .fix();
             }
         } finally {
             MyServiceManager.setServiceAvailable();
         }
+        return counter;
     }
 
     private DataChecker setIncludeLong(boolean includeLong) {
         this.includeLong = includeLong;
+        return this;
+    }
+
+    public DataChecker setCountOnly(boolean countOnly) {
+        this.countOnly = countOnly;
         return this;
     }
 
@@ -116,26 +126,11 @@ public abstract class DataChecker {
     }
 
     /**
-     * @return number of changed items
+     * @return number of changed items (or needed to change)
      */
     public long fix() {
-        return fix(false);
-    }
-
-    /**
-     * @return number of items that need to be changed
-     */
-    public long countChanges() {
-        return fix(true);
-    }
-
-    /**
-     * @return number of changed items (or needed to change)
-     * @param countOnly
-     */
-    private long fix(boolean countOnly) {
         logger.logProgress(checkerName() + " checker started");
-        long changedCount = fixInternal(countOnly);
+        long changedCount = fixInternal();
         logger.logProgress(checkerName() + " checker ended, " + (changedCount > 0
                 ? (countOnly ? "need to change " : "changed ") + changedCount + " items"
                 : " no changes were needed"));
@@ -143,5 +138,5 @@ public abstract class DataChecker {
         return changedCount;
     }
 
-    abstract long fixInternal(boolean countOnly);
+    abstract long fixInternal();
 }

@@ -18,6 +18,7 @@ package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
 
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.data.ActorSql;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyProvider;
@@ -51,7 +52,7 @@ class CheckUsers extends DataChecker {
     }
 
     @Override
-    long fixInternal(boolean countOnly) {
+    long fixInternal() {
         CheckResults results = getResults();
         logResults(results);
         if (countOnly) return results.problems.size();
@@ -102,6 +103,7 @@ class CheckUsers extends DataChecker {
                         DbUtils.getString(c, ActorTable.ACTOR_OID)
                         );
                 final String webFingerId = DbUtils.getString(c, ActorTable.WEBFINGER_ID);
+                actor.setGroupType(GroupType.fromId(DbUtils.getLong(c, ActorTable.GROUP_TYPE)));
                 actor.setWebFingerId(webFingerId);
                 actor.setProfileUrl(DbUtils.getString(c, ActorTable.PROFILE_PAGE));
                 actor.setUsername(DbUtils.getString(c, ActorTable.USERNAME));
@@ -123,7 +125,7 @@ class CheckUsers extends DataChecker {
                     actor.user.setIsMyUser(TriState.TRUE);
                     results.usersToSave.add(actor.user);
                     results.problems.add("Fix user isMy: " + actor);
-                } else if (actor.user.userId == 0) {
+                } else if (actor.user.userId == 0 && !actor.isGroupDefinitely()) {
                     results.usersToSave.add(actor.user);
                     results.problems.add("Fix userId==0: " + actor);
                 }

@@ -27,6 +27,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DemoConversationInserter;
 import org.andstatus.app.data.DemoGnuSocialConversationInserter;
 import org.andstatus.app.data.checker.CheckConversations;
+import org.andstatus.app.data.checker.DataChecker;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.DemoOriginInserter;
 import org.andstatus.app.origin.Origin;
@@ -234,10 +235,15 @@ public final class DemoData {
                     .findFirst().orElse(Timeline.EMPTY);
             assertThat(defaultTimeline.getTimelineType(), is(TimelineType.EVERYTHING));
             MyContextHolder.get().timelines().setDefault(defaultTimeline);
+
             MyLog.v(TAG_ASYNC, "Before initialize 3");
             MyContextHolder.initialize(myContext.context(), method);
-            demoData.assertConversations();
             MyLog.v(TAG_ASYNC, "After initialize 3");
+
+            assertEquals("Data errors exist", 0 ,
+                    DataChecker.fixData(new ProgressLogger(progressCallback), true, true));
+            MyLog.v(TAG_ASYNC, "After data checker");
+
             if (progressCallback != null) {
                 progressCallback.onProgressMessage("Demo data is ready");
                 DbUtils.waitMs(TAG_ASYNC, 500);
@@ -266,8 +272,11 @@ public final class DemoData {
     }
 
     public void assertConversations() {
-        assertEquals("Conversations need fixes", 0, new CheckConversations()
-                        .setMyContext(MyContextHolder.get()).setLogger(ProgressLogger.getEmpty()).countChanges());
+        assertEquals("Conversations need fixes", 0,
+                new CheckConversations()
+                        .setMyContext(MyContextHolder.get()).setLogger(ProgressLogger.getEmpty())
+                        .setCountOnly(true)
+                        .fix());
     }
 
     private void setSuccessfulAccountAsCurrent() {

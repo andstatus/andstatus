@@ -48,7 +48,7 @@ import androidx.annotation.NonNull;
 class MergeActors extends DataChecker {
 
     @Override
-    long fixInternal(boolean countOnly) {
+    long fixInternal() {
         int changedCount = 0;
         final List<AActivity> actorsToMerge = new ArrayList<>(getActorsToMerge());
         for (AActivity activity : actorsToMerge) {

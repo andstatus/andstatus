@@ -36,7 +36,7 @@ import static org.andstatus.app.data.MyQuery.quoteIfNotQuoted;
 class SearchIndexUpdate extends DataChecker {
 
     @Override
-    long fixInternal(boolean countOnly) {
+    long fixInternal() {
         String sql = Note.getSqlToLoadContent(0) +
                 " ORDER BY " + NoteTable._ID + " DESC" +
                 (includeLong ? "" : " LIMIT 0, 10000");

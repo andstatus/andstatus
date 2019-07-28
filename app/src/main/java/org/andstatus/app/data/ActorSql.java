@@ -45,6 +45,9 @@ public class ActorSql {
         baseProjectionMap.put(ActorTable.ORIGIN_ID, ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID);
         baseProjectionMap.put(ActorTable.ACTOR_OID, ActorTable.TABLE_NAME + "." + ActorTable.ACTOR_OID);
 
+        fullProjectionMap.put(ActorTable.GROUP_TYPE, ActorTable.TABLE_NAME + "." + ActorTable.GROUP_TYPE);
+        fullProjectionMap.put(ActorTable.PARENT_ACTOR_ID, ActorTable.TABLE_NAME + "." + ActorTable.PARENT_ACTOR_ID);
+
         baseProjectionMap.put(ActorTable.REAL_NAME, ActorTable.TABLE_NAME + "." + ActorTable.REAL_NAME);
         baseProjectionMap.put(ActorTable.USERNAME, ActorTable.TABLE_NAME + "." + ActorTable.USERNAME);
         baseProjectionMap.put(ActorTable.WEBFINGER_ID, ActorTable.TABLE_NAME + "." + ActorTable.WEBFINGER_ID);
@@ -88,7 +91,7 @@ public class ActorSql {
         // Empty
     }
 
-    public static String[] projection() {
+    public static String[] baseProjection() {
         return (MyPreferences.getShowAvatars()
                     ? Stream.concat(baseProjectionMap.keySet().stream(), avatarProjectionMap.keySet().stream())
                     : baseProjectionMap.keySet().stream())
