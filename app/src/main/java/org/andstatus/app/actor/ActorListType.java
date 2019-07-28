@@ -17,12 +17,12 @@
 package org.andstatus.app.actor;
 
 import android.content.Context;
-import androidx.annotation.StringRes;
 
 import org.andstatus.app.R;
 import org.andstatus.app.timeline.ListScope;
+import org.andstatus.app.util.StringUtils;
 
-import java.util.Arrays;
+import androidx.annotation.StringRes;
 
 /**
  * These values define different named UserList filters
@@ -72,13 +72,7 @@ public enum ActorListType {
     }
 
     public CharSequence title(Context context, Object ... params) {
-        if (titleResWithParamsId == 0 || context == null) {
-            return title(context) + " " + (params.length == 1
-                    ? params[0]
-                    : Arrays.toString(params));
-        } else {
-            return String.format(context.getText(titleResWithParamsId).toString(), params);
-        }
+        return StringUtils.format(context, titleResWithParamsId, params);
     }
 
     /**

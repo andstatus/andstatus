@@ -522,13 +522,13 @@ public class NoteEditor {
                 ? "" : MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, editorData.getInReplyToNoteId(),
                 MyPreferences.getActorInTimeline());
         if (StringUtils.nonEmpty(replyToName)) {
-            noteDetails.withSpace(String.format(getActivity().getText(R.string.message_source_in_reply_to).toString(), replyToName));
+            noteDetails.withSpace(StringUtils.format(getActivity(), R.string.message_source_in_reply_to, replyToName));
         }
         if (editorData.activity.getNote().audience().hasNonPublic()) {
             String recipientNames = editorData.activity.getNote().audience().getUsernames();
             if (StringUtils.nonEmpty(recipientNames) && !recipientNames.equals(replyToName) ) {
                 noteDetails.atNewLine(
-                        String.format(getActivity().getText(R.string.message_source_to).toString(), recipientNames));
+                        StringUtils.format(getActivity(), R.string.message_source_to, recipientNames));
             }
         }
         if (editorData.getAttachment().nonEmpty()) {

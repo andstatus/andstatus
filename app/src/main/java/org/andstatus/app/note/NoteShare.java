@@ -112,7 +112,7 @@ public class NoteShare {
         return new StringBuilder()
                 .append(noteContent)
                 .append(
-                        String.format(
+                        StringUtils.format(
                                 isHtml ? SIGNATURE_FORMAT_HTML
                                         : SIGNATURE_PLAIN_TEXT,
                                 MyQuery.noteIdToUsername(

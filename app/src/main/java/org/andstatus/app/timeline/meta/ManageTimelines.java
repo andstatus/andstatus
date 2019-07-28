@@ -247,7 +247,7 @@ public class ManageTimelines extends LoadableListActivity {
         if (isTotal) {
             title.append(getText(R.string.total_counters));
         } else if (countersSince > 0) {
-            title.append(String.format(getText(R.string.since).toString(),
+            title.append(StringUtils.format(this, R.string.since,
                     RelativeTime.getDifference(this, countersSince)));
         }
         return title;

@@ -82,6 +82,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.view.MyContextMenu;
@@ -921,7 +922,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 ? R.string.sync_younger_messages
                 : R.string.options_menu_sync).toString();
         MyUrlSpan.showText(syncYoungerView, R.id.sync_younger_button,
-                String.format(format,
+                StringUtils.format(format,
                     stats.syncSucceededDate > SOME_TIME_AGO
                             ? RelativeTime.getDifference(this, stats.syncSucceededDate)
                             : getText(R.string.never),
@@ -950,9 +951,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
         SyncStats stats = SyncStats.fromOldestDates(myContext.timelines().toTimelinesToSync(getParamsLoaded().getTimeline()));
         MyUrlSpan.showText(syncOlderView, R.id.sync_older_button,
-                String.format(getText(stats.itemDate > SOME_TIME_AGO
+                StringUtils.format(this, stats.itemDate > SOME_TIME_AGO
                                 ? R.string.sync_older_messages
-                                : R.string.options_menu_sync).toString(),
+                                : R.string.options_menu_sync,
                         DateUtils.getRelativeTimeSpanString(this, stats.itemDate)),
                 false,
                 false);

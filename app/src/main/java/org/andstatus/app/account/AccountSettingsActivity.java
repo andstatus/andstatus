@@ -433,14 +433,14 @@ public class AccountSettingsActivity extends MyActivity {
                 nameEditable.setVisibility(View.GONE);
             } else {
                 nameEditable.setVisibility(View.VISIBLE);
-                nameEditable.setHint(String.format(
-                        getText(origin.hasHost()
-                            ? R.string.summary_preference_username
-                            : R.string.summary_preference_username_webfinger_id).toString(),
+                nameEditable.setHint(StringUtils.format(this,
+                        origin.hasHost()
+                                ? R.string.summary_preference_username
+                                : R.string.summary_preference_username_webfinger_id,
                         origin.getName(),
                         origin.hasHost()
-                            ? OriginType.SIMPLE_USERNAME_EXAMPLES
-                            : origin.getOriginType().uniqueNameExamples
+                                ? OriginType.SIMPLE_USERNAME_EXAMPLES
+                                : origin.getOriginType().uniqueNameExamples
                 ));
                 nameEditable.addTextChangedListener(textWatcher);
                 if (nameEditable.getText().length() == 0) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2016-2019 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package org.andstatus.app.util;
 import android.content.Context;
 
 import java.util.Arrays;
-import java.util.IllegalFormatException;
 import java.util.Optional;
 
 /**
@@ -122,33 +121,39 @@ public class StringUtils {
     }
 
     /** Doesn't throw exceptions */
-    public static String format(Context context, int resourceId, Object ... params) {
+    public static String format(Context context, int resourceId, Object ... args) {
         if (resourceId == 0) return "";
-        if (context == null) return "Error showing resourceId=" + resourceId + paramsToString(params);
+        if (context == null) return "Error no context resourceId=" + resourceId + argsToString(args);
         try {
-            String format = context.getText(resourceId).toString();
-            if (params == null || params.length == 0) {
-                return format;
-            }
-            try {
-                return String.format(format, params);
-            } catch (IllegalFormatException e) {
-                MyLog.e(context, "Error formatting resourceId=" + resourceId, e);
-                return format + paramsToString(params);
-            }
+            return format(context.getText(resourceId).toString(), args);
         } catch (Exception e2) {
-            String msg = "Error formatting resourceId=" + resourceId;
+            String msg = "Error formatting resourceId=" + resourceId + argsToString(args);
             MyLog.e(context, msg, e2);
             return msg;
         }
     }
 
-    private static String paramsToString(Object[] params) {
-        return params == null
+    /** Doesn't throw exceptions */
+    public static String format(String format, Object ... args) {
+        if (args == null || args.length == 0) {
+            return format;
+        }
+        if (nonEmpty(format)) {
+            try {
+                return String.format(format, args);
+            } catch (Exception e) {
+                MyLog.e(StringUtils.class, "Error formatting \"" + format + "\"" + argsToString(args), e);
+            }
+        }
+        return notEmpty(format, "(no format)") + argsToString(args);
+    }
+
+    private static String argsToString(Object[] args) {
+        return args == null
             ? ""
-            : " " + (params.length == 1
-                ? params[0].toString()
-                : Arrays.toString(params));
+            : " " + (args.length == 1
+                ? args[0].toString()
+                : Arrays.toString(args));
     }
 
 }

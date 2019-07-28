@@ -28,6 +28,7 @@ import org.andstatus.app.note.NoteEditorContainer;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.ContextMenuHeader;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.view.MyContextMenu;
 
 import androidx.annotation.NonNull;
@@ -61,21 +62,19 @@ public class ActorContextMenu extends MyContextMenu {
             String shortName = actor.getUsername();
             if (actor.isIdentified()) {
                 ActorContextMenuItem.NOTES_BY_ACTOR.addTo(menu, menuGroup, order++,
-                        String.format(getActivity().getText(R.string.menu_item_user_messages).toString(), shortName));
+                        StringUtils.format(getActivity(), R.string.menu_item_user_messages, shortName));
                 ActorContextMenuItem.FRIENDS.addTo(menu, menuGroup, order++,
-                        String.format(
-                                getActivity().getText(R.string.friends_of).toString(), shortName));
+                        StringUtils.format(getActivity(), R.string.friends_of, shortName));
                 ActorContextMenuItem.FOLLOWERS.addTo(menu, menuGroup, order++,
-                        String.format(
-                                getActivity().getText(R.string.followers_of).toString(), shortName));
+                        StringUtils.format(getActivity(), R.string.followers_of, shortName));
 
                 if (getActingAccount().getActor().notSameUser(actor)) {
                     if (getActingAccount().isFollowing(actor)) {
                         ActorContextMenuItem.STOP_FOLLOWING.addTo(menu, menuGroup, order++,
-                                String.format(getActivity().getText(R.string.menu_item_stop_following_user).toString(), shortName));
+                                StringUtils.format(getActivity(), R.string.menu_item_stop_following_user, shortName));
                     } else {
                         ActorContextMenuItem.FOLLOW.addTo(menu, menuGroup, order++,
-                                String.format(getActivity().getText(R.string.menu_item_follow_user).toString(), shortName));
+                                StringUtils.format(getActivity(), R.string.menu_item_follow_user, shortName));
                     }
                 }
                 if (!menuContainer.getNoteEditor().isVisible()) {
@@ -89,8 +88,8 @@ public class ActorContextMenu extends MyContextMenu {
                         break;
                     case 2:
                         ActorContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT.addTo(menu, menuGroup, order++,
-                            String.format(
-                                getActivity().getText(R.string.menu_item_act_as_user).toString(),
+                                StringUtils.format(
+                                getActivity(), R.string.menu_item_act_as_user,
                                 getMyContext().accounts()
                                     .firstOtherSucceededForSameUser(actor, getActingAccount())
                                     .getShortestUniqueAccountName()));

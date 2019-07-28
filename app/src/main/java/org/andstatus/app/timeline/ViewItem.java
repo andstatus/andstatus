@@ -28,6 +28,7 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -119,7 +120,7 @@ public class ViewItem<T extends ViewItem<T>> implements IsEmpty {
         if (showReceivedTime && updatedDate > SOME_TIME_AGO && insertedDate > updatedDate) {
             final String receivedDifference = RelativeTime.getDifference(context, insertedDate);
             if (!receivedDifference.equals(difference)) {
-                builder.withSpace("(" + String.format(context.getText(R.string.received_sometime_ago).toString(),
+                builder.withSpace("(" + StringUtils.format(context, R.string.received_sometime_ago,
                         receivedDifference) + ")");
             }
         }

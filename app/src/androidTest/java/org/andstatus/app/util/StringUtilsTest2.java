@@ -58,17 +58,23 @@ public class StringUtilsTest2 {
         }
         assertEquals("Conversion = '”'", error);
 
-        String noContext = StringUtils.format(null, R.string.format_test_quotes2, "Person");
-        assertThat(noContext, containsString("Error showing resourceId="));
+        String noContext = StringUtils.format((Context) null, R.string.format_test_quotes2, "Person");
+        assertThat(noContext, containsString("Error no context resourceId="));
         assertThat(noContext, containsString("Person"));
 
-        String noContextAndParameter = StringUtils.format(null, R.string.format_test_quotes2);
-        assertThat(noContextAndParameter, containsString("Error showing resourceId="));
+        String noContextAndParameter = StringUtils.format((Context) null, R.string.format_test_quotes2);
+        assertThat(noContextAndParameter, containsString("Error no context resourceId="));
 
         String noParameter = StringUtils.format(context, R.string.format_test_quotes2);
         assertEquals("“%1”的朋友", noParameter);
 
         String unneededParameter = StringUtils.format(context, R.string.app_name, "Person");
         assertEquals("AndStatus", unneededParameter);
+
+        String invalidResource = StringUtils.format(context, -12, "Person");
+        assertEquals("Error formatting resourceId=-12 Person", invalidResource);
+
+        String noFormat = StringUtils.format(null, "Person");
+        assertEquals("(no format) Person", noFormat);
     }
 }
