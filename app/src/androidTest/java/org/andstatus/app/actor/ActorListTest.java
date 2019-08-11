@@ -77,7 +77,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(), ActorList.class);
         String content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
-        String logMsg = MyQuery.noteInfoForLog(noteId);
+        String logMsg = MyQuery.noteInfoForLog(getActivity().getMyContext(), noteId);
 
         List<Actor> actors = Actor.newUnknown(demoData.getPumpioConversationAccount().getOrigin())
                 .extractActorsFromContent(content, Actor.EMPTY);

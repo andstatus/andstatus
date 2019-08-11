@@ -181,7 +181,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     MyLog.i(this, "Failed to identify an Actor for oid=" + actorOidNew, e);
                 } else {
                     actor = Actor.fromTwoIds(execContext.getMyAccount().getOrigin(), actorId, actorOidNew);
-                    actor.setWebFingerId(MyQuery.actorIdToWebfingerId(actorId));
+                    actor.setWebFingerId(MyQuery.actorIdToWebfingerId(execContext.myContext, actorId));
                     MyLog.v(this, "Server doesn't return Actor object for " + actor , e);
                 }
             }

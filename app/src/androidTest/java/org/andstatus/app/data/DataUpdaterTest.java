@@ -22,7 +22,6 @@ import android.net.Uri;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
@@ -81,7 +80,7 @@ public class DataUpdaterTest {
         DemoNoteInserter.deleteOldNote(accountActor.origin, noteOid);
 
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                CommandData.newAccountCommand(CommandEnum.EMPTY, ma));
+                myContext, CommandData.newAccountCommand(CommandEnum.EMPTY, ma));
         DataUpdater di = new DataUpdater(executionContext);
         String username = "somebody" + demoData.testRunUid + "@identi.ca";
         String actorOid = OriginPumpio.ACCOUNT_PREFIX + username;
@@ -130,7 +129,7 @@ public class DataUpdaterTest {
         assertEquals("Latest activity of " + somebody, activity.getId(),
                 MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, somebody.actorId));
 
-        Uri contentUri = MyContextHolder.get().timelines().get(TimelineType.FRIENDS, ma.getActor(), Origin.EMPTY).getUri();
+        Uri contentUri = myContext.timelines().get(TimelineType.FRIENDS, ma.getActor(), Origin.EMPTY).getUri();
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = ActivityTable.getTimelineSortOrder(TimelineType.FRIENDS, false);
         sa.addSelection(ActivityTable.ACTOR_ID + "=?", Long.toString(somebody.actorId));
@@ -243,7 +242,7 @@ public class DataUpdaterTest {
                 MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId));
 
         // TODO: Below is actually a timeline query test, so maybe expand / move...
-        Uri contentUri = MyContextHolder.get().timelines()
+        Uri contentUri = myContext.timelines()
                 .get(TimelineType.EVERYTHING, Actor.EMPTY, ma.getOrigin()).getUri();
         SelectionAndArgs sa = new SelectionAndArgs();
         String sortOrder = ActivityTable.getTimelineSortOrder(TimelineType.EVERYTHING, false);
@@ -354,7 +353,7 @@ public class DataUpdaterTest {
         AActivity activity = ConnectionGnuSocialTest.getNoteWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext());
 
-        MyAccount ma = MyContextHolder.get().accounts().getFirstSucceededForOrigin(activity.getActor().origin);
+        MyAccount ma = myContext.accounts().getFirstSucceededForOrigin(activity.getActor().origin);
         assertTrue("Account is valid " + ma, ma.isValid());
         DataUpdater di = new DataUpdater(ma);
         long noteId = di.onActivity(activity).getNote().noteId;
@@ -366,9 +365,9 @@ public class DataUpdaterTest {
     }
 
     @Test
-    public void testUnsentNoteWithAttachment() throws Exception {
+    public void testUnsentNoteWithAttachment() {
         final String method = "testUnsentNoteWithAttachment";
-        MyAccount ma = MyContextHolder.get().accounts().getFirstSucceeded();
+        MyAccount ma = myContext.accounts().getFirstSucceeded();
         Actor accountActor = ma.getActor();
         AActivity activity = AActivity.newPartialNote(accountActor, accountActor, "",
                 System.currentTimeMillis(), DownloadStatus.SENDING);
@@ -533,9 +532,9 @@ public class DataUpdaterTest {
 
         addOneNote4testReplyInContent(ma, buddyName, "Oh, " + content, true);
 
-        long actorId1 = MyQuery.webFingerIdToId(ma.getOriginId(), buddyName);
+        long actorId1 = MyQuery.webFingerIdToId(myContext, ma.getOriginId(), buddyName);
         assertEquals("Actor should have temp Oid", Actor.toTempOid(buddyName, ""),
-                MyQuery.idToOid(OidEnum.ACTOR_OID, actorId1, 0));
+                MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId1, 0));
 
         String realBuddyOid = "acc:" + buddyName;
         Actor actor = Actor.fromOid(ma.getOrigin(), realBuddyOid);
@@ -544,7 +543,7 @@ public class DataUpdaterTest {
         long actorId2 = di.onActivity(ma.getActor().update(actor)).getObjActor().actorId;
         assertEquals(actorId1, actorId2);
         assertEquals("TempOid should be replaced with real", realBuddyOid,
-                MyQuery.idToOid(OidEnum.ACTOR_OID, actorId1, 0));
+                MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId1, 0));
 
         addOneNote4testReplyInContent(ma, buddyName, "<a href=\"http://example.com/a\">@" +
                 buddyName + "</a>, this is an HTML <i>formatted</i> note", true);
@@ -691,7 +690,7 @@ public class DataUpdaterTest {
         AActivity activity3 = di.onActivity(activity2);
         Note note3 = activity3.getNote();
         assertEquals("The same note should be updated " + activity3, note1.noteId, note3.noteId);
-        assertEquals("Note oid " + activity3, note2.oid, MyQuery.idToOid(OidEnum.NOTE_OID, note3.noteId, 0));
+        assertEquals("Note oid " + activity3, note2.oid, MyQuery.idToOid(myContext, OidEnum.NOTE_OID, note3.noteId, 0));
         assertTrue("Activity should be added " + activity3, activity3.getId() != 0);
         assertEquals("Note " + note3, DownloadStatus.SENT, note3.getStatus());
     }

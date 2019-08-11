@@ -174,7 +174,7 @@ public class CommandDataTest {
         String msgLog = command.name() + "; Summary:'" + summary + "'";
         MyLog.v(this, msgLog);
         assertThat(msgLog, summary, containsString(command.getTitle(MyContextHolder.get(),
-                ma.getAccountName()) + " " + MyQuery.actorIdToWebfingerId(actorId)));
+                ma.getAccountName()) + " " + MyQuery.actorIdToWebfingerId(MyContextHolder.get(), actorId)));
     }
 
 }

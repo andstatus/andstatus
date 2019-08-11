@@ -135,13 +135,14 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
     private void getConversation(long noteId) {
         final String method = "getConversation";
-        String conversationOid = MyQuery.noteIdToConversationOid(noteId);
+        String conversationOid = MyQuery.noteIdToConversationOid(execContext.myContext, noteId);
         if (StringUtils.isEmpty(conversationOid)) {
-            logExecutionError(true, method + " empty conversationId " + MyQuery.noteInfoForLog(noteId));
+            logExecutionError(true, method + " empty conversationId " +
+                    MyQuery.noteInfoForLog(execContext.myContext, noteId));
         } else {
             Set<Long> noteIds = onActivities(method,
                     () -> getConnection().getConversation(conversationOid),
-                    () -> MyQuery.noteInfoForLog(noteId))
+                    () -> MyQuery.noteInfoForLog(execContext.myContext, noteId))
                     .stream().map(activity -> activity.getNote().noteId).collect(Collectors.toSet());
             if (noteIds.size() > 1) {
                 if (new CheckConversations().setNoteIdsOfOneConversation(noteIds)
@@ -214,7 +215,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 }
                 logIfEmptyNote(method, noteId, activity.getNote());
             } catch (ConnectionException e) {
-                logConnectionException(e, method + "; " + MyQuery.noteInfoForLog(noteId));
+                logConnectionException(e, method + "; " + MyQuery.noteInfoForLog(execContext.myContext, noteId));
             }
         }
         if (noErrors() && activity != null) {
@@ -239,7 +240,8 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     // so let's try another time...
                     // This is safe, because "delete favorite"
                     // works even for the "Unfavorited" tweet :-)
-                    logExecutionError(false, method + "; Favorited flag didn't change yet. " + MyQuery.noteInfoForLog(noteId));
+                    logExecutionError(false, method + "; Favorited flag didn't change yet. " +
+                            MyQuery.noteInfoForLog(execContext.myContext, noteId));
                 }
             }
 
@@ -253,10 +255,10 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
     @NonNull
     private String getNoteOid(String method, long noteId, boolean required) {
-        String oid = MyQuery.idToOid(OidEnum.NOTE_OID, noteId, 0);
+        String oid = MyQuery.idToOid(execContext.myContext, OidEnum.NOTE_OID, noteId, 0);
         if (required && StringUtils.isEmpty(oid)) {
             logExecutionError(true, method + "; no note ID in the Social Network "
-                    + MyQuery.noteInfoForLog(noteId));
+                    + MyQuery.noteInfoForLog(execContext.myContext, noteId));
         }
         return oid;
     }
@@ -330,20 +332,22 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 execContext.getMyContext().getDatabase(), noteId, actorId);
         if (reblogAndType.second != ActivityType.ANNOUNCE) {
             logExecutionError(true, "No local Reblog of "
-                    + MyQuery.noteInfoForLog(noteId) + " by " + execContext.getMyAccount() );
+                    + MyQuery.noteInfoForLog(execContext.myContext, noteId) +
+                    " by " + execContext.getMyAccount() );
             return;
         }
-        String reblogOid = MyQuery.idToOid(OidEnum.REBLOG_OID, noteId, actorId);
+        String reblogOid = MyQuery.idToOid(execContext.myContext, OidEnum.REBLOG_OID, noteId, actorId);
         try {
             if (!getConnection().undoAnnounce(reblogOid)) {
                 logExecutionError(false, "Connection returned 'false' " + method
-                        + MyQuery.noteInfoForLog(noteId));
+                        + MyQuery.noteInfoForLog(execContext.myContext, noteId));
             }
         } catch (ConnectionException e) {
             // "Not found" means that there is no such "Status", so we may
             // assume that it's Ok!
             if (e.getStatusCode() != StatusCode.NOT_FOUND) {
-                logConnectionException(e, method + "; reblogOid:" + reblogOid + ", " + MyQuery.noteInfoForLog(noteId));
+                logConnectionException(e, method + "; reblogOid:" + reblogOid + ", " +
+                        MyQuery.noteInfoForLog(execContext.myContext, noteId));
             }
         }
         if (noErrors()) {
@@ -365,13 +369,13 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 AActivity activity = getConnection().getNote(oid);
                 if (activity.isEmpty()) {
                     logExecutionError(false, "Received Note is empty, "
-                            + MyQuery.noteInfoForLog(noteId));
+                            + MyQuery.noteInfoForLog(execContext.myContext, noteId));
                 } else {
                     try {
                         new DataUpdater(execContext).onActivity(activity);
                     } catch (Exception e) {
                         logExecutionError(false, "Error while saving to the local cache,"
-                                + MyQuery.noteInfoForLog(noteId) + ", " + e.getMessage());
+                                + MyQuery.noteInfoForLog(execContext.myContext, noteId) + ", " + e.getMessage());
                     }
                 }
             } catch (ConnectionException e) {
@@ -380,7 +384,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                     // This means that there is no such "Status"
                     // TODO: so we don't need to retry this command
                 }
-                logConnectionException(e, method + " " + MyQuery.noteInfoForLog(noteId));
+                logConnectionException(e, method + " " + MyQuery.noteInfoForLog(execContext.myContext, noteId));
             }
         }
         MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
@@ -430,7 +434,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void logIfEmptyNote(String method, long noteId, Note note) {
         if (note == null || note.isEmpty()) {
             logExecutionError(false, method + "; Received note is empty, "
-                    + MyQuery.noteInfoForLog(noteId));
+                    + MyQuery.noteInfoForLog(execContext.myContext, noteId));
         }
     }
 

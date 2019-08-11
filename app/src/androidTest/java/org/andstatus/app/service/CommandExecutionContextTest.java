@@ -24,7 +24,7 @@ public class CommandExecutionContextTest {
     @Test
     public void testMentionsAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
-                CommandData.newTimelineCommand( CommandEnum.GET_TIMELINE, ma, TimelineType.INTERACTIONS));
+            MyContextHolder.get(), CommandData.newTimelineCommand( CommandEnum.GET_TIMELINE, ma, TimelineType.INTERACTIONS));
         assertEquals(TimelineType.INTERACTIONS, execContext.getTimeline().getTimelineType());
         
         final int noteCount = 4;
@@ -44,7 +44,7 @@ public class CommandExecutionContextTest {
     @Test
     public void testPrivateAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
-                CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE));
+            MyContextHolder.get(), CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE));
         final int privateCount = 4;
         for (int ind=0; ind < privateCount; ind++) {
             execContext.getResult().onNotificationEvent(NotificationEventType.PRIVATE);

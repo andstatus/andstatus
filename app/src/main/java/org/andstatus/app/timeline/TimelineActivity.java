@@ -362,7 +362,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 }
             } else { 
                 MyLog.v(this, () ->
-                        method + "; Finishing this Activity because there is no Account selected");
+                        method + "; Finishing this Activity and going Home because there is no Account selected");
+                goHome(this);
                 finish();
             }
         }

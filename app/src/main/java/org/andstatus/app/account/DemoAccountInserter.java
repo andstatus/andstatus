@@ -115,7 +115,7 @@ public class DemoAccountInserter {
         assertTrue("Account " + actorOid + " is persistent", ma.isValid());
         assertTrue("Account actorOid", ma.getActorOid().equalsIgnoreCase(actorOid));
         assertEquals("No WebFingerId stored " + actor,
-                actor.getWebFingerId(), MyQuery.actorIdToWebfingerId(actor.actorId));
+                actor.getWebFingerId(), MyQuery.actorIdToWebfingerId(myContext, actor.actorId));
         assertEquals("Account is not successfully verified",
                 CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
         assertAccountIsAddedToAccountManager(ma);

@@ -73,7 +73,12 @@ public class DataUpdater {
     }
 
     public DataUpdater(MyAccount ma) {
-        this(new CommandExecutionContext(CommandData.newAccountCommand(CommandEnum.EMPTY, ma)));
+        this(new CommandExecutionContext(
+                ma.getOrigin().myContext.isEmptyOrExpired()
+                    ? MyContextHolder.get()
+                    : ma.getOrigin().myContext,
+                CommandData.newAccountCommand(CommandEnum.EMPTY, ma)
+        ));
     }
     
     public DataUpdater(CommandExecutionContext execContext) {
@@ -148,7 +153,7 @@ public class DataUpdater {
         final String method = "updateNote1";
         final Note note = activity.getNote();
         try {
-            MyAccount me = execContext.getMyContext().accounts().fromActorOfSameOrigin(activity.accountActor);
+            MyAccount me = execContext.myContext.accounts().fromActorOfSameOrigin(activity.accountActor);
             if (me.nonValid()) {
                 MyLog.w(this, method +"; my account is invalid, skipping: " + activity.toString());
                 return;
@@ -184,7 +189,8 @@ public class DataUpdater {
             boolean isFirstTimeSent = !isFirstTimeLoaded && note.noteId != 0 &&
                     StringUtils.nonEmptyNonTemp(note.oid) &&
                     statusStored.isUnsentDraft() &&
-                    StringUtils.isEmptyOrTemp(MyQuery.idToOid(OidEnum.NOTE_OID, note.noteId, 0));
+                    StringUtils.isEmptyOrTemp(MyQuery.idToOid(execContext.myContext,
+                            OidEnum.NOTE_OID, note.noteId, 0));
             if (note.getStatus() == DownloadStatus.UNKNOWN && isFirstTimeSent) {
                 note.setStatus(DownloadStatus.SENT);
             }

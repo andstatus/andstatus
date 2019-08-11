@@ -898,12 +898,6 @@ public class AccountSettingsActivity extends MyActivity {
                     state.builder.registerClient();
                 } 
                 succeeded = state.getAccount().areClientKeysPresent();
-
-                if (succeeded) {
-                    state.builder.myContext().users().initialize();
-                    state.builder.myContext().accounts().initialize();
-                    state.builder.myContext().timelines().initialize();
-                }
             } catch (ConnectionException e) {
                 connectionErrorMessage = e.getMessage();
                 MyLog.e(this, e);
@@ -927,11 +921,15 @@ public class AccountSettingsActivity extends MyActivity {
             DialogFactory.dismissSafely(dlg);
             if (result != null && !AccountSettingsActivity.this.isFinishing()) {
                 if (result.isSuccess()) {
-                    state.builder.rebuildMyAccount();
-                    updateScreen();
-                    AsyncTaskLauncher.execute(this, true,
-                            new OAuthAcquireRequestTokenTask(AccountSettingsActivity.this));
-                    activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
+                    state.builder.myContext().setExpired(() -> "Client registered");
+                    MyContextHolder.getMyFutureContext(AccountSettingsActivity.this, this, false)
+                            .thenRun( myContext -> {
+                        state.builder.rebuildMyAccount(myContext);
+                        updateScreen();
+                        AsyncTaskLauncher.execute(this, true,
+                                new OAuthAcquireRequestTokenTask(AccountSettingsActivity.this));
+                        activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
+                    });
                 } else {
                     appendError(result.message);
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);

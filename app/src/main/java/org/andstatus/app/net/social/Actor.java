@@ -566,21 +566,21 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             actorId = MyQuery.oidToId(origin.myContext, OidEnum.ACTOR_OID, origin.getId(), oid);
         }
         if (actorId == 0 && isWebFingerIdValid()) {
-            actorId = MyQuery.webFingerIdToId(origin.getId(), webFingerId);
+            actorId = MyQuery.webFingerIdToId(origin.myContext, origin.getId(), webFingerId);
         }
         if (actorId == 0 && StringUtils.nonEmpty(username)) {
-            long actorId2 = MyQuery.usernameToId(origin.getId(), username);
+            long actorId2 = MyQuery.usernameToId(origin.myContext, origin.getId(), username);
             if (actorId2 != 0) {
                 boolean skip2 = false;
                 if (isWebFingerIdValid()) {
-                    String webFingerId2 = MyQuery.actorIdToWebfingerId(actorId2);
+                    String webFingerId2 = MyQuery.actorIdToWebfingerId(origin.myContext, actorId2);
                     if (isWebFingerIdValid(webFingerId2)) {
                         skip2 = !webFingerId.equalsIgnoreCase(webFingerId2);
                         if (!skip2) actorId = actorId2;
                     }
                 }
                 if (actorId == 0 && !skip2 && isOidReal()) {
-                    String oid2 = MyQuery.idToOid(OidEnum.ACTOR_OID, actorId2, 0);
+                    String oid2 = MyQuery.idToOid(origin.myContext, OidEnum.ACTOR_OID, actorId2, 0);
                     if (UriUtils.isRealOid(oid2)) skip2 = !oid.equalsIgnoreCase(oid2);
                 }
                 if (actorId == 0 && !skip2) {

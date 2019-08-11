@@ -88,7 +88,7 @@ public class VerifyCredentialsTest {
         assertEquals("Account actorOid", builder.getAccount().getActorOid(), actor.oid);
         assertEquals("Actor in the database for id=" + actorId,
                 actor.oid,
-                MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0));
+                MyQuery.idToOid(MyContextHolder.get(), OidEnum.ACTOR_OID, actorId, 0));
 
         String noteOid = "383296535213002752";
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), noteOid) ;

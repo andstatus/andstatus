@@ -176,8 +176,8 @@ public class MyQuery {
      *         {@link NoteTable#NOTE_OID} empty string in case of an error
      */
     @NonNull
-    public static String idToOid(OidEnum oe, long entityId, long rebloggerActorId) {
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+    public static String idToOid(MyContext myContext, OidEnum oe, long entityId, long rebloggerActorId) {
+        SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.databaseIsNull(() -> "idToOid, oe=" + oe + " id=" + entityId);
             return "";
@@ -426,8 +426,8 @@ public class MyQuery {
     }
 
     @NonNull
-    public static String actorIdToWebfingerId(long actorId) {
-        return actorIdToName(MyContext.EMPTY, actorId, ActorInTimeline.WEBFINGER_ID);
+    public static String actorIdToWebfingerId(MyContext myContext, long actorId) {
+        return actorIdToName(myContext, actorId, ActorInTimeline.WEBFINGER_ID);
     }
 
     @NonNull
@@ -629,8 +629,8 @@ public class MyQuery {
                         + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC LIMIT 1");
     }
 
-    public static long webFingerIdToId(long originId, String webFingerId) {
-        return actorColumnValueToId(originId, ActorTable.WEBFINGER_ID, webFingerId);
+    public static long webFingerIdToId(MyContext myContext, long originId, String webFingerId) {
+        return actorColumnValueToId(myContext, originId, ActorTable.WEBFINGER_ID, webFingerId);
     }
     
     /**
@@ -641,13 +641,13 @@ public class MyQuery {
      * @return - id in our System (i.e. in the table, e.g.
      *         {@link ActorTable#_ID} ), 0 if not found
      */
-    public static long usernameToId(long originId, String username) {
-        return actorColumnValueToId(originId, ActorTable.USERNAME, username);
+    public static long usernameToId(MyContext myContext, long originId, String username) {
+        return actorColumnValueToId(myContext, originId, ActorTable.USERNAME, username);
     }
 
-    private static long actorColumnValueToId(long originId, String columnName, String columnValue) {
+    private static long actorColumnValueToId(MyContext myContext, long originId, String columnName, String columnValue) {
         final String method = "actor" + columnName + "ToId";
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.databaseIsNull(() -> method);
             return 0;
@@ -751,14 +751,14 @@ public class MyQuery {
         return result;
     }
 
-    public static String noteInfoForLog(long noteId) {
+    public static String noteInfoForLog(MyContext myContext, long noteId) {
         MyStringBuilder builder = new MyStringBuilder();
         builder.withComma("noteId", noteId);
-        String oid = idToOid(OidEnum.NOTE_OID, noteId, 0);
+        String oid = idToOid(myContext, OidEnum.NOTE_OID, noteId, 0);
         builder.withCommaQuoted("oid", StringUtils.isEmpty(oid) ? "empty" : oid, StringUtils.nonEmpty(oid));
         String content = MyHtml.htmlToCompactPlainText(noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
         builder.withCommaQuoted("content", content, true);
-        Origin origin = MyContextHolder.get().origins().fromId(noteIdToLongColumnValue(NoteTable.ORIGIN_ID, noteId));
+        Origin origin = myContext.origins().fromId(noteIdToLongColumnValue(NoteTable.ORIGIN_ID, noteId));
         builder.atNewLine(origin.toString());
         return builder.toString();
     }
@@ -770,7 +770,7 @@ public class MyQuery {
     }
 
     @NonNull
-    public static String noteIdToConversationOid(long noteId) {
+    public static String noteIdToConversationOid(MyContext myContext, long noteId) {
         if (noteId == 0) {
             return "";
         }
@@ -780,13 +780,13 @@ public class MyQuery {
         }
         long conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, noteId);
         if (conversationId == 0) {
-            return idToOid(OidEnum.NOTE_OID, noteId, 0);
+            return idToOid(myContext, OidEnum.NOTE_OID, noteId, 0);
         }
         oid = noteIdToStringColumnValue(NoteTable.CONVERSATION_OID, conversationId);
         if (!StringUtils.isEmpty(oid)) {
             return oid;
         }
-        return idToOid(OidEnum.NOTE_OID, conversationId, 0);
+        return idToOid(myContext, OidEnum.NOTE_OID, conversationId, 0);
     }
 
     public static boolean dExists(SQLiteDatabase db, String sql) {

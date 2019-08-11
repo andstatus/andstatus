@@ -215,10 +215,10 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
             return true;
         }
         long noteId = selectedNoteId;
-        String conversationOid = MyQuery.noteIdToConversationOid(noteId);
+        String conversationOid = MyQuery.noteIdToConversationOid(myContext, noteId);
         if (StringUtils.isEmpty(conversationOid) && noteId_in != noteId) {
             noteId = noteId_in;
-            conversationOid = MyQuery.noteIdToConversationOid(noteId);
+            conversationOid = MyQuery.noteIdToConversationOid(myContext, noteId);
         }
         if (ma.getConnection().canGetConversation(conversationOid)) {
             conversationSyncRequested = true;

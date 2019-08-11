@@ -91,6 +91,7 @@ public class MyLog {
     private static final int IGNORED = VERBOSE - 1;
 
     private static volatile boolean initialized = false;
+    private static String logMessagePrefix = "andstatusMyLog ";
     
     /** 
      * Cached value of the persistent preference
@@ -132,49 +133,49 @@ public class MyLog {
     public static int e(Object objTag, String msg, Throwable tr) {
         String tag = objToTruncatedTag(objTag);
         logToFile(ERROR, tag, msg, tr);
-        return Log.e(tag, msg, tr);
+        return Log.e(tag, withPrefix(msg), tr);
     }
 
     public static int e(Object objTag, Throwable tr) {
         String tag = objToTruncatedTag(objTag);
         logToFile(ERROR, tag, null, tr);
-        return Log.e(tag, "", tr);
+        return Log.e(tag, withPrefix(""), tr);
     }
     
     public static int e(Object objTag, String msg) {
         String tag = objToTruncatedTag(objTag);
         logToFile(ERROR, tag, msg, null);
-        return Log.e(tag, msg);
+        return Log.e(tag, withPrefix(msg));
     }
 
     public static int i(Object objTag, String msg, Throwable tr) {
         String tag = objToTruncatedTag(objTag);
         logToFile(INFO, tag, msg, tr);
-        return Log.i(tag, msg, tr);
+        return Log.i(tag, withPrefix(msg), tr);
     }
     
     public static int i(Object objTag, Throwable tr) {
         String tag = objToTruncatedTag(objTag);
         logToFile(INFO, tag, null, tr);
-        return Log.i(tag, "", tr);
+        return Log.i(tag, withPrefix(""), tr);
     }
     
     public static int i(Object objTag, String msg) {
         String tag = objToTruncatedTag(objTag);
         logToFile(INFO, tag, msg, null);
-        return Log.i(tag, msg);
+        return Log.i(tag, withPrefix(msg));
     }
 
     public static int w(Object objTag, String msg) {
         String tag = objToTruncatedTag(objTag);
         logToFile(WARN, tag, msg, null);
-        return Log.w(tag, msg);
+        return Log.w(tag, withPrefix(msg));
     }
 
     public static int w(Object objTag, String msg, Throwable tr) {
         String tag = objToTruncatedTag(objTag);
         logToFile(WARN, tag, msg, tr);
-        return Log.w(tag, msg, tr);
+        return Log.w(tag, withPrefix(msg), tr);
     }
 
     /**
@@ -185,7 +186,7 @@ public class MyLog {
         int i = 0;
         if (isLoggable(tag, DEBUG)) {
             logToFile(DEBUG, tag, msg, null);
-            i = Log.d(tag, msg);
+            i = Log.d(tag, withPrefix(msg));
         }
         return i;
     }
@@ -198,7 +199,7 @@ public class MyLog {
         int i = 0;
         if (isLoggable(tag, DEBUG)) {
             logToFile(DEBUG, tag, msg, tr);
-            i = Log.d(tag, msg, tr);
+            i = Log.d(tag, withPrefix(msg), tr);
         }
         return i;
     }
@@ -211,7 +212,7 @@ public class MyLog {
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, null, tr);
-            i = Log.v(tag, "", tr);
+            i = Log.v(tag, withPrefix(""), tr);
         }
         return i;
     }
@@ -221,7 +222,7 @@ public class MyLog {
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, msg, null);
-            i = Log.v(tag, msg);
+            i = Log.v(tag, withPrefix(msg));
         }
         return i;
     }
@@ -232,7 +233,7 @@ public class MyLog {
 
         String msg = supplier.get();
         logToFile(VERBOSE, tag, msg, null);
-        return Log.v(tag, msg);
+        return Log.v(tag, withPrefix(msg));
     }
 
     public static int v(Object objTag, String msg, Throwable tr) {
@@ -240,7 +241,7 @@ public class MyLog {
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, msg, tr);
-            i = Log.v(tag, msg, tr);
+            i = Log.v(tag, withPrefix(msg), tr);
         }
         return i;
     }
@@ -252,9 +253,13 @@ public class MyLog {
         String tag = objToTruncatedTag(objTag);
         int i = 0;
         if (isLoggable(tag, IGNORED)) {
-            i = Log.i(tag, "", tr);
+            i = Log.i(tag, withPrefix(""), tr);
         }
         return i;
+    }
+
+    private static String withPrefix(String msg) {
+        return logMessagePrefix + msg;
     }
 
     /** Truncated to {@link #MAX_TAG_LENGTH} */

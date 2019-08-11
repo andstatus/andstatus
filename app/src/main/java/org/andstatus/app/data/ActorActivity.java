@@ -114,7 +114,8 @@ public final class ActorActivity {
      * @return true if succeeded
      */
     public boolean save() {
-        MyLog.v(this, () -> "actorId " + actorId + ": " + MyQuery.actorIdToWebfingerId(actorId)
+        MyLog.v(this, () -> "actorId " + actorId + ": " +
+                        MyQuery.actorIdToWebfingerId(MyContextHolder.get(), actorId)
                 + " Latest activity update at " + (new Date(getLastActivityDate()).toString())
                 + (changed ? "" : " not changed")
                 );
@@ -128,7 +129,7 @@ public final class ActorActivity {
             lastActivityDate = activityDate;
             lastActivityId = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId);
             MyLog.v(this, () -> "There is newer information in the database. Actor " + actorId + ": "
-                    + MyQuery.actorIdToWebfingerId(actorId)
+                    + MyQuery.actorIdToWebfingerId(MyContextHolder.get(), actorId)
                     + " Latest activity at " + (new Date(getLastActivityDate()).toString()));
             changed = false;
             return true;

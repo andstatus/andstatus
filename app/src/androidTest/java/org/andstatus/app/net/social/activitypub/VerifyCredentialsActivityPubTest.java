@@ -65,7 +65,7 @@ public class VerifyCredentialsActivityPubTest {
         assertEquals("Account actorOid", "https://pleroma.site/users/AndStatus" , actor.oid);
         assertEquals("Actor in the database for id=" + actorId,
                 actor.oid,
-                MyQuery.idToOid(OidEnum.ACTOR_OID, actorId, 0));
+                MyQuery.idToOid(MyContextHolder.get(), OidEnum.ACTOR_OID, actorId, 0));
 
         assertEquals("Username", "AndStatus", actor.getUsername());
         assertEquals("Name", "AndStatus", actor.getRealName());

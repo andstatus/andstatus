@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net.social.activitypub;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.MyContentType;
@@ -270,6 +271,7 @@ public class ConnectionActivityPubTest {
         });
 
         CommandExecutionContext executionContext = new CommandExecutionContext(
+                MyContextHolder.get(),
                 CommandData.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT));
         DataUpdater di = new DataUpdater(executionContext);
         di.onActivity(activity);

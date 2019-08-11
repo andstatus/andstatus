@@ -160,7 +160,7 @@ public class CachedUsersAndActors {
             actor.user = User.load(myContext, actor.actorId);
         }
         if (actor.user == User.EMPTY && actor.isWebFingerIdValid()) {
-            actor.user = User.load(myContext, MyQuery.webFingerIdToId(0, actor.getWebFingerId()));
+            actor.user = User.load(myContext, MyQuery.webFingerIdToId(myContext, 0, actor.getWebFingerId()));
         }
         if (actor.user == User.EMPTY) {
             actor.user = User.getNew();

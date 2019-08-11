@@ -128,7 +128,7 @@ public class NoteEditorData implements IsEmpty {
             }
             final AActivity inReplyTo = AActivity.newPartialNote(getMyAccount().getActor(),
                     Actor.load(myContext, inReplyToActorId),
-                    MyQuery.idToOid(OidEnum.NOTE_OID, inReplyToNoteId, 0), 0, UNKNOWN);
+                    MyQuery.idToOid(myContext, OidEnum.NOTE_OID, inReplyToNoteId, 0), 0, UNKNOWN);
             final Note inReplyToNote = inReplyTo.getNote();
             inReplyToNote.noteId = inReplyToNoteId;
             inReplyToNote.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, inReplyToNoteId));

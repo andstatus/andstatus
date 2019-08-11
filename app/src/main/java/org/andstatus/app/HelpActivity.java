@@ -317,11 +317,13 @@ public class HelpActivity extends MyActivity implements ProgressLogger.ProgressC
             intent.putExtra(HelpActivity.EXTRA_IS_FIRST_ACTIVITY, true);
         }
         intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, pageIndex);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.getApplicationContext().startActivity(intent);
         if (context instanceof Activity) {
+            context.startActivity(intent);
             MyLog.v(TAG, () -> "Finishing " + context.getClass().getSimpleName() + " and starting " + TAG);
             ((Activity) context).finish();
+        } else {
+            MyLog.v(TAG, () -> "Starting " + TAG + " from " + context.getApplicationContext().getClass().getName());
+            context.getApplicationContext().startActivity(intent);
         }
     }
 

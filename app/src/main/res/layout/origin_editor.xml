@@ -40,6 +40,7 @@
 	
 	    <org.andstatus.app.widget.LongHintEditText
 	        android:id="@+id/host"
+			android:inputType="textNoSuggestions|textMultiLine"
 	        android:layout_width="match_parent"
 	        android:layout_height="wrap_content"
 	        android:ems="10"
@@ -53,6 +54,7 @@
 
 		<org.andstatus.app.widget.LongHintEditText
 			android:id="@+id/origin_name"
+			android:inputType="textNoSuggestions|textMultiLine"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:ems="10"

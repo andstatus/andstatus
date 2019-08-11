@@ -525,7 +525,8 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             if (myAccount.isValid()) {
                 MyLog.v(TAG, () -> method + " Loaded " + this.toString());
             } else {
-                MyLog.i(TAG, method + " Failed to load: Invalid account; " + this);
+                MyLog.i(TAG, method + " Failed to load: Invalid account; " + this + "\n" +
+                        MyLog.getStackTrace(new Exception()));
             }
         }
 
@@ -546,8 +547,8 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             return this;
         }
 
-        void rebuildMyAccount() {
-            rebuildMyAccount(getOrigin(), getUniqueName());
+        void rebuildMyAccount(MyContext myContext) {
+            rebuildMyAccount(myContext.origins().fromName(getOrigin().getName()), getUniqueName());
         }
 
         private void rebuildMyAccount(Origin origin, String uniqueName) {
@@ -762,7 +763,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         }
 
         private void assignActorId() {
-            myAccount.actor.actorId = MyQuery.usernameToId(myAccount.getOriginId(), myAccount.getUsername());
+            myAccount.actor.actorId = MyQuery.usernameToId(myContext(), myAccount.getOriginId(), myAccount.getUsername());
             if (myAccount.actor.actorId == 0) {
                 DataUpdater di = new DataUpdater(myAccount);
                 try {

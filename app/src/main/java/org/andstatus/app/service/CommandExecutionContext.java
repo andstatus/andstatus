@@ -4,7 +4,6 @@ import android.content.Context;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.timeline.meta.Timeline;
 
@@ -13,10 +12,6 @@ import androidx.annotation.NonNull;
 public class CommandExecutionContext {
     private CommandData commandData;
     public final MyContext myContext;
-
-    public CommandExecutionContext(CommandData commandData) {
-        this(MyContextHolder.get(), commandData);
-    }
 
     public CommandExecutionContext(MyContext myContext, CommandData commandData) {
         if (commandData == null) {

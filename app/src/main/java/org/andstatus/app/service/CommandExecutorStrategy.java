@@ -31,7 +31,8 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     protected long lastProgressBroadcastAt  = 0;
 
     static void executeCommand(CommandData commandData, CommandExecutorParent parent) {
-        CommandExecutorStrategy strategy = getStrategy(new CommandExecutionContext(commandData)).setParent(parent);
+        CommandExecutorStrategy strategy = getStrategy(
+            new CommandExecutionContext(commandData.myAccount.getOrigin().myContext, commandData)).setParent(parent);
         commandData.getResult().prepareForLaunch();
         logLaunch(strategy);
         // This may cause recursive calls to executors...
@@ -74,7 +75,8 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     }
 
     static CommandExecutorStrategy getStrategy(CommandData commandData, CommandExecutorParent parent) {
-        return getStrategy(new CommandExecutionContext(commandData)).setParent(parent);
+        return getStrategy(
+                new CommandExecutionContext(commandData.myAccount.getOrigin().myContext, commandData)).setParent(parent);
     }
 
     private static CommandExecutorStrategy getStrategy(CommandExecutionContext execContext) {

@@ -146,7 +146,9 @@ public class MyAccounts implements IsEmpty {
         for (android.accounts.Account androidAccount : AccountUtils.getCurrentAccounts(myContext.context())) {
             if (accountName.toString().equals(androidAccount.name)) {
                 MyAccount myAccount = Builder.loadFromAndroidAccount(myContext, androidAccount).getAccount();
-                myAccounts.add(myAccount);
+                if (myAccount.isValid()) {
+                    myAccounts.add(myAccount);
+                }
                 MyPreferences.onPreferencesChanged();
                 return myAccount;
             }

@@ -150,7 +150,7 @@ public class AllowHtmlContentTest {
 
         MyAccount ma = demoData.getGnuSocialAccount();
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
+                MyContextHolder.get(), CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
         DataUpdater di = new DataUpdater(executionContext);
         di.onActivity(activity);
 

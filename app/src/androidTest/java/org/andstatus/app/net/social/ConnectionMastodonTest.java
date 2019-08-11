@@ -103,7 +103,7 @@ public class ConnectionMastodonTest {
         timeline.forEach(act -> act.setUpdatedNow(0));
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME));
+                MyContextHolder.get(), CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME));
         DataUpdater di = new DataUpdater(executionContext);
         di.onActivity(activity);
     }
@@ -217,7 +217,7 @@ public class ConnectionMastodonTest {
 
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
+                MyContextHolder.get(), CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
         DataUpdater di = new DataUpdater(executionContext);
         di.onActivity(activity);
 
@@ -262,7 +262,7 @@ public class ConnectionMastodonTest {
 
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
+                MyContextHolder.get(), CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
         DataUpdater di = new DataUpdater(executionContext);
         di.onActivity(activity);
 
@@ -295,7 +295,7 @@ public class ConnectionMastodonTest {
 
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                CommandData.newItemCommand(CommandEnum.GET_CONVERSATION, ma, 123));
+                MyContextHolder.get(), CommandData.newItemCommand(CommandEnum.GET_CONVERSATION, ma, 123));
         DataUpdater di = new DataUpdater(executionContext);
         di.onActivity(activity);
 
