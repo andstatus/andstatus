@@ -1002,8 +1002,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     }
 
     protected void startMyPreferenceActivity() {
-        finish();
         startActivity(new Intent(this, MySettingsActivity.class));
+        finish();
     }
 
     @Override

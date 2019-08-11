@@ -318,11 +318,11 @@ public class HelpActivity extends MyActivity implements ProgressLogger.ProgressC
         }
         intent.putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, pageIndex);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        if (Activity.class.isAssignableFrom(context.getClass())) {
+        context.getApplicationContext().startActivity(intent);
+        if (context instanceof Activity) {
             MyLog.v(TAG, () -> "Finishing " + context.getClass().getSimpleName() + " and starting " + TAG);
             ((Activity) context).finish();
         }
-        context.getApplicationContext().startActivity(intent);
     }
 
     @Override
