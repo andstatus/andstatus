@@ -264,27 +264,41 @@ public class TimelineData<T extends ViewItem<T>> {
     public Try<ActorViewItem> findActorViewItem(Actor actor, Origin preferredOrigin) {
         for (TimelinePage<T> page : pages) {
             for (T item : page.items) {
-                Try<ActorViewItem> found = findInOneItem(item, actor, preferredOrigin);
+                Try<ActorViewItem> found = findInOneItemWithChildren(item, actor, preferredOrigin);
                 if (found.isSuccess()) return found;
             }
         }
         return TryUtils.notFound();
     }
 
-    private Try<ActorViewItem> findInOneItem(T item, Actor actor, Origin preferredOrigin) {
-        if (item instanceof BaseNoteViewItem) {
-            return filterSameActorAtOtigin(((BaseNoteViewItem) item).getAuthor(), actor, preferredOrigin);
-        } else if (item instanceof ActivityViewItem) {
-            return filterSameActorAtOtigin(((ActivityViewItem) item).getObjActorItem(), actor, preferredOrigin)
-                    .recoverWith(NoSuchElementException.class, e -> filterSameActorAtOtigin(
-                            ((ActivityViewItem) item).noteViewItem.getAuthor(), actor, preferredOrigin));
+    private Try<ActorViewItem> findInOneItemWithChildren(T item, Actor actor, Origin preferredOrigin) {
+        Try<ActorViewItem> found = findInOneItem(item, actor, preferredOrigin);
+        if (found.isSuccess()) return found;
+
+        for (T child: item.getChildren()) {
+            Try<ActorViewItem> foundChild = findInOneItem(child, actor, preferredOrigin);
+            if (foundChild.isSuccess()) return foundChild;
         }
         return TryUtils.notFound();
     }
 
-    private Try<ActorViewItem> filterSameActorAtOtigin(ActorViewItem actorViewItem, Actor otherActor, Origin origin) {
-        Actor actor = actorViewItem.getActor();
-        return actor.origin.equals(origin) && actor.isSame(otherActor)
+    private Try<ActorViewItem> findInOneItem(T item, Actor actor, Origin preferredOrigin) {
+        if (item instanceof BaseNoteViewItem) {
+            return filterSameActorAtOrigin(actor, preferredOrigin, ((BaseNoteViewItem) item).getAuthor());
+        } else if (item instanceof ActivityViewItem) {
+            ActivityViewItem activityViewItem = (ActivityViewItem) item;
+            return filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.getObjActorItem())
+                    .recoverWith(NoSuchElementException.class, e ->
+                            filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.noteViewItem.getAuthor()))
+                    .recoverWith(NoSuchElementException.class, e ->
+                            filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.getActor()));
+        }
+        return TryUtils.notFound();
+    }
+
+    private Try<ActorViewItem> filterSameActorAtOrigin(Actor actor, Origin origin, ActorViewItem actorViewItem) {
+        Actor otherActor = actorViewItem.getActor();
+        return otherActor.origin.equals(origin) && otherActor.isSame(actor)
                 ? Try.success(actorViewItem)
                 : TryUtils.notFound();
     }

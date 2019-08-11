@@ -168,6 +168,10 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         );
     }
 
+    public ActorViewItem getActor() {
+        return actor;
+    }
+
     public ActorViewItem getObjActorItem() {
         return objActorItem;
     }
