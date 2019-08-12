@@ -29,14 +29,17 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="51.00" android:versionCode="296"
-             versionDate="2019-07-28"
+    <release android:versionName="51.01" android:versionCode="297"
+             versionDate="2019-08-12"
              versionTitle="Preparation for Group support">
         <changes>
             <change>Group is a special type of Actor. "Friends" and "Followers" groups automatically created
                 based on existing information.
                 New groups will be added, when we figure out, how to discover them and how to deal with them...
                 <a href="https://github.com/andstatus/andstatus/issues/248">#248</a>
+            </change>
+            <change>Fixed new account addition, including a case when a User adds new Mastodon instance AND immediately
+                adds an account in it.
             </change>
         </changes>
     </release>

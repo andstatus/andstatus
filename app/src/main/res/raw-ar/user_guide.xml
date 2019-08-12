@@ -18,7 +18,7 @@
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
 xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../res-src/fb2/FictionBook.xsd">
+xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd ../../../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>
@@ -39,7 +39,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
             <home-page>http://www.andstatus.org</home-page>
             <email>andstatus@gmail.com</email>
         </author>
-        <date>2015-08-16</date>
+        <date>2019-03-16</date>
         <id></id>
         <version>2</version>
     </document-info>
@@ -57,6 +57,7 @@ xsi:schemaLocation="http://www.gribuser.ru/xml/fictionbook/2.0 ../../../../../re
     <p>ربط هذا الدليل متوفر في شريط المهام-&gt;مساعدة.</p>
     <p>التغير في سجل الصفحة التالية سوف يسمح لك رؤية الوصف
         و روابط مناقشات لكل ميزات AndStatus.</p>
+    <p>.</p>
 </section>
 <section>
     <title>
