@@ -205,8 +205,21 @@ public class DragItemRecyclerView extends RecyclerView implements AutoScroller.A
                 throw new RuntimeException("Adapter must have stable ids");
             }
         }
-
         super.setAdapter(adapter);
+        mAdapter = (DragItemAdapter) adapter;
+    }
+
+    @Override
+    public void swapAdapter(Adapter adapter, boolean r) {
+        if (!isInEditMode()) {
+            if (!(adapter instanceof DragItemAdapter)) {
+                throw new RuntimeException("Adapter must extend DragItemAdapter");
+            }
+            if (!adapter.hasStableIds()) {
+                throw new RuntimeException("Adapter must have stable ids");
+            }
+        }
+        super.swapAdapter(adapter, r);
         mAdapter = (DragItemAdapter) adapter;
     }
 
@@ -305,7 +318,7 @@ public class DragItemRecyclerView extends RecyclerView implements AutoScroller.A
                 mDragItemPosition = newPos;
 
                 // Since notifyItemMoved scrolls the list we need to scroll back to where we were after the position change.
-                if (layoutManager.getOrientation() == RecyclerView.VERTICAL) {
+                if (layoutManager.getOrientation() == LinearLayoutManager.VERTICAL) {
                     int topMargin = ((MarginLayoutParams) posView.getLayoutParams()).topMargin;
                     layoutManager.scrollToPositionWithOffset(pos, posView.getTop() - topMargin);
                 } else {
@@ -325,7 +338,7 @@ public class DragItemRecyclerView extends RecyclerView implements AutoScroller.A
         ViewHolder firstChild = findViewHolderForLayoutPosition(0);
 
         // Check if first or last item has been reached
-        if (layoutManager.getOrientation() == RecyclerView.VERTICAL) {
+        if (layoutManager.getOrientation() == LinearLayoutManager.VERTICAL) {
             if (lastChild != null && lastChild.itemView.getBottom() <= bottom) {
                 lastItemReached = true;
             }
@@ -342,7 +355,7 @@ public class DragItemRecyclerView extends RecyclerView implements AutoScroller.A
         }
 
         // Start auto scroll if at the edge
-        if (layoutManager.getOrientation() == RecyclerView.VERTICAL) {
+        if (layoutManager.getOrientation() == LinearLayoutManager.VERTICAL) {
             if (mDragItem.getY() > getHeight() - view.getHeight() / 2 && !lastItemReached) {
                 mAutoScroller.startAutoScroll(AutoScroller.ScrollDirection.UP);
             } else if (mDragItem.getY() < view.getHeight() / 2 && !firstItemReached) {
@@ -434,7 +447,9 @@ public class DragItemRecyclerView extends RecyclerView implements AutoScroller.A
                 // Sometimes the holder will be null if a holder has not yet been set for the position
                 final RecyclerView.ViewHolder holder = findViewHolderForAdapterPosition(mDragItemPosition);
                 if (holder != null) {
-                    getItemAnimator().endAnimation(holder);
+                    if (getItemAnimator() != null) {
+                        getItemAnimator().endAnimation(holder);
+                    }
                     mDragItem.endDrag(holder.itemView, new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
