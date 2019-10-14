@@ -124,12 +124,21 @@ public class PersistentOrigins {
     public List<Origin> fromOriginInAccountName(String originInAccountName) {
         return StringUtils.optNotEmpty(originInAccountName).map(name -> {
             OriginType originType = OriginType.fromTitle(name);
-            if (originType == OriginType.UNKNOWN) {
-                return mOrigins.values().stream().filter(origin -> origin.getName().equalsIgnoreCase(name))
+            List<Origin> originsOfType =  originType == OriginType.UNKNOWN
+                    ? Collections.emptyList()
+                    : mOrigins.values().stream().filter(origin -> origin.getOriginType() == originType)
                         .collect(Collectors.toList());
+            if (originsOfType.size() == 1) {
+                return originsOfType;
             }
-            return mOrigins.values().stream().filter(origin -> origin.getOriginType() == originType)
+
+            List<Origin> originsWithName = mOrigins.values().stream()
+                    .filter(origin -> origin.getName().equalsIgnoreCase(name)
+                        && (originType == OriginType.UNKNOWN || origin.getOriginType() == originType))
                     .collect(Collectors.toList());
+            return originsWithName.size() == 0
+                    ? originsOfType
+                    : originsWithName;
         })
         .orElse(Collections.emptyList());
     }
