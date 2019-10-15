@@ -136,7 +136,7 @@ public class DemoGnuSocialConversationInserter {
         final Attachments attachments = activity.getNote().attachments;
         attachments.add(
                 Attachment.fromUriAndMimeType("https://gnusocial.example.com/api/statuses/update.json",
-                        "text/html; charset=utf-8"));
+                        "application/json; charset=utf-8"));
         attachments.add(
                 Attachment.fromUriAndMimeType("https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html",
                         "text/html; charset=iso-8859-1"));
@@ -144,11 +144,13 @@ public class DemoGnuSocialConversationInserter {
                 Attachment.fromUriAndMimeType("https://www.w3.org/2008/site/images/logo-w3c-mobile-lg",
                         "image"));
         addActivity(activity);
+        assertEquals(attachments.toString(), 3, attachments.size());
+
         final Attachment attachment0 = attachments.list.get(0);
         final Attachment attachment2 = attachments.list.get(2);
         assertEquals("Image should be the first " + attachments, 0,
                 attachment2.getDownloadNumber());
-        assertEquals("Download number should change " + attachments, 1,
+        assertEquals("Download number should change " + attachments, 2,
                 attachment0.getDownloadNumber());
         assertEquals("Image attachment should be number 2 " + attachments, "image",
                 attachment2.mimeType);

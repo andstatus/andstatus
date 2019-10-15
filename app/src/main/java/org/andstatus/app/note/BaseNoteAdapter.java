@@ -150,11 +150,14 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         item.author.showAvatar(contextMenu.getActivity(), view.findViewById(R.id.avatar_image));
     }
 
+    // TODO Extend to multiple images
     private void showAttachedImage(View view, T item) {
         final View parent = view.findViewById(R.id.attached_image_wrapper);
         if (parent == null) return;
 
-        final AttachedImageFile attachedImageFile = item.getAttachedImageFile();
+        final AttachedImageFile attachedImageFile = item.attachedImageFiles.isEmpty()
+                ? AttachedImageFile.EMPTY
+                : item.attachedImageFiles.list.get(0);
         final boolean imageMayBeShown = attachedImageFile.imageMayBeShown();
         final boolean showWrapper = contextMenu.getActivity().isMyResumed() &&
                 (!item.isSensitive() || MyPreferences.isShowSensitiveContent()) &&

@@ -15,8 +15,6 @@ package org.andstatus.app.service;
  * limitations under the License.
  */
 
-import android.net.Uri;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.AttachedImageFile;
@@ -29,7 +27,6 @@ import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.ConnectionMock;
-import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -90,9 +87,7 @@ public class LargeImageTest {
     }
 
     private void loadingTest(DownloadData dd) {
-        CachedImage image = new AttachedImageFile(dd.getDownloadId(), dd.getFilename(), dd.mediaMetadata,
-            dd.getStatus(), MyLog.uniqueCurrentTimeMS(), dd.getUri(), Uri.EMPTY, false)
-                .loadAndGetImage(CacheName.ATTACHED_IMAGE);
+        CachedImage image = new AttachedImageFile(dd).loadAndGetImage(CacheName.ATTACHED_IMAGE);
         int width = image.getImageSize().x;
         assertTrue("Not wide already " + width, width < 4000 && width > 10);
         int height = image.getImageSize().y;

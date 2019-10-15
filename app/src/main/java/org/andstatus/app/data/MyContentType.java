@@ -31,7 +31,8 @@ public enum MyContentType {
     IMAGE("image/*", 2, 1),
     TEXT("text/*", 3, 3),
     VIDEO("video/*", 4, 2),
-    UNKNOWN("*/*", 0, 4);
+    APPLICATION("application/*", 5, 4),
+    UNKNOWN("*/*", 0, 5);
     
     private static final String TAG = MyContentType.class.getSimpleName();
     
@@ -58,6 +59,8 @@ public enum MyContentType {
             return VIDEO;
         } else if (mimeType.startsWith("text")) {
             return TEXT;
+        } else if (mimeType.startsWith("application")) {
+            return APPLICATION;
         } else {
             return UNKNOWN;
         }

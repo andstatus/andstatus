@@ -716,6 +716,18 @@ public class MyQuery {
     }
 
     /**
+     * @return Empty list on UI thread
+     */
+    @NonNull
+    public static <T> List<T> getList(@NonNull MyContext myContext, @NonNull String sql, Function<Cursor, T> fromCursor) {
+        return foldLeft(myContext,
+                sql,
+                new ArrayList<>(),
+                t -> cursor -> { t.add(fromCursor.apply(cursor)); return t; }
+        );
+    }
+
+    /**
      * @return identity on UI thread
      */
     @NonNull

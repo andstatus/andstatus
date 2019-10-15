@@ -26,7 +26,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.GroupMembersTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -125,33 +124,6 @@ public class TimelineSql {
                 + " ON (" + NOTE_TABLE_ALIAS + "." + BaseColumns._ID + "="
                     + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID
                     + noteWhere.getAndWhere() + ")";
-        if (columns.contains(DownloadTable.IMAGE_FILE_NAME)) {
-            tables = "(" + tables + ") LEFT OUTER JOIN ("
-                    + "SELECT "
-                    + DownloadTable._ID + ", "
-                    + DownloadTable.NOTE_ID + ", "
-                    + DownloadTable.DOWNLOAD_TYPE + ", "
-                    + DownloadTable.CONTENT_TYPE + ", "
-                    + DownloadTable.DOWNLOAD_NUMBER + ", "
-                    + DownloadTable.PREVIEW_OF_DOWNLOAD_ID + ", "
-                    + DownloadTable.DOWNLOAD_STATUS + ", "
-                    + DownloadTable.WIDTH + ", "
-                    + DownloadTable.HEIGHT + ", "
-                    + DownloadTable.DURATION + ", "
-                    + DownloadTable.URL + ", "
-                    + DownloadTable.FILE_NAME
-                    + " FROM " + DownloadTable.TABLE_NAME
-                    + ") AS " + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS
-                    +  " ON "
-                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.NOTE_ID
-                    + "=" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID + " AND "
-                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_TYPE
-                    + "=" + DownloadType.ATTACHMENT.save() + " AND "
-                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.CONTENT_TYPE
-                    + " IN(" + MyContentType.IMAGE.save() + ", " + MyContentType.VIDEO.save() + ") AND "
-                    + ProjectionMap.ATTACHMENT_IMAGE_TABLE_ALIAS + "." + DownloadTable.DOWNLOAD_NUMBER
-                    + "=0";
-        }
         return tables;
     }
 
@@ -211,14 +183,7 @@ public class TimelineSql {
         columnNames.add(NoteTable.VIA);
         columnNames.add(NoteTable.REBLOGGED);
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
-            columnNames.add(DownloadTable.IMAGE_ID);
-            columnNames.add(DownloadTable.IMAGE_URI);
-            columnNames.add(DownloadTable.IMAGE_FILE_NAME);
-            columnNames.add(DownloadTable.PREVIEW_OF_DOWNLOAD_ID);
-            columnNames.add(DownloadTable.DOWNLOAD_STATUS);
-            columnNames.add(DownloadTable.WIDTH);
-            columnNames.add(DownloadTable.HEIGHT);
-            columnNames.add(DownloadTable.DURATION);
+            columnNames.add(NoteTable.ATTACHMENTS_COUNT);
         }
         if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_MARK_REPLIES_TO_ME_IN_TIMELINE, true)
                 || SharedPreferencesUtil.getBoolean(

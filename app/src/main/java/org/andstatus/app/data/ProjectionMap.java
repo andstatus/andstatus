@@ -85,6 +85,7 @@ public class ProjectionMap {
         TIMELINE.put(NoteTable.UPDATED_DATE, NoteTable.UPDATED_DATE);
         TIMELINE.put(NoteTable.NOTE_STATUS, NoteTable.NOTE_STATUS);
         TIMELINE.put(NoteTable.INS_DATE, NoteTable.INS_DATE);
+        TIMELINE.put(NoteTable.ATTACHMENTS_COUNT, NoteTable.ATTACHMENTS_COUNT);
     }
 
     private ProjectionMap() {

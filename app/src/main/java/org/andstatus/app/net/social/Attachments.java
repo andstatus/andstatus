@@ -30,12 +30,9 @@ import java.util.stream.Collectors;
 public class Attachments implements IsEmpty {
     public final List<Attachment> list = new ArrayList<>();
 
-    private void renumber() {
-        List<Attachment> copy = new ArrayList<>(list);
-        Collections.sort(copy);
-        for (int ind = 0; ind < copy.size(); ind++) {
-            copy.get(ind).downloadNumber = ind;
-        }
+    public void add(Attachment attachment) {
+        if (!attachment.isValid() || list.contains(attachment)) return;
+        list.add(attachment);
     }
 
     public void save(CommandExecutionContext execContext, long noteId) {
@@ -71,13 +68,16 @@ public class Attachments implements IsEmpty {
                 downloads.stream().map(DownloadData::getDownloadId).collect(Collectors.toList()));
     }
 
-    public boolean isEmpty() {
-        return list.isEmpty();
+    private void renumber() {
+        List<Attachment> copy = new ArrayList<>(list);
+        Collections.sort(copy);
+        for (int ind = 0; ind < copy.size(); ind++) {
+            copy.get(ind).downloadNumber = ind;
+        }
     }
 
-    public void add(Attachment attachment) {
-        if (!attachment.isValid() || list.contains(attachment)) return;
-        list.add(attachment);
+    public boolean isEmpty() {
+        return list.isEmpty();
     }
 
     public void clear() {
@@ -96,7 +96,7 @@ public class Attachments implements IsEmpty {
 
     @Override
     public String toString() {
-        return "Attachments{" +
+        return this.getClass().getSimpleName() + "{" +
                 list +
                 '}';
     }

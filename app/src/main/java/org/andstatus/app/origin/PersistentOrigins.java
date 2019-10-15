@@ -103,8 +103,16 @@ public class PersistentOrigins {
     }
 
     public Origin fromOriginInAccountNameAndHost(String originInAccountName, String host) {
-        return allFromOriginInAccountNameAndHost(originInAccountName, host)
-            .stream().findAny().orElse(Origin.EMPTY);
+        List<Origin> origins = allFromOriginInAccountNameAndHost(originInAccountName, host);
+        switch (origins.size()) {
+            case 0:
+                return Origin.EMPTY;
+            case 1:
+                return origins.get(0);
+            default:
+                // Select Origin that was added earlier
+                return origins.stream().min((o1, o2) -> Long.signum(o1.id - o2.id)).orElse(Origin.EMPTY);
+        }
     }
 
     public List<Origin> allFromOriginInAccountNameAndHost(String originInAccountName, String host) {
@@ -136,7 +144,7 @@ public class PersistentOrigins {
                     .filter(origin -> origin.getName().equalsIgnoreCase(name)
                         && (originType == OriginType.UNKNOWN || origin.getOriginType() == originType))
                     .collect(Collectors.toList());
-            return originsWithName.size() == 0
+            return originsOfType.size() > originsWithName.size()
                     ? originsOfType
                     : originsWithName;
         })

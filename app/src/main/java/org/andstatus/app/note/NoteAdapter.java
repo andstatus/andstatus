@@ -21,7 +21,6 @@ import android.view.ViewGroup;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.TimelineData;
 import org.andstatus.app.util.MyUrlSpan;
@@ -64,7 +63,7 @@ public class NoteAdapter extends BaseNoteAdapter<NoteViewItem> {
             NoteViewItem item = getItem(positionToPreload);
             if (!preloadedImages.contains(item.getNoteId())) {
                 preloadedImages.add(item.getNoteId());
-                item.getAttachedImageFile().preloadImageAsync(CacheName.ATTACHED_IMAGE);
+                item.attachedImageFiles.preloadImagesAsync();
                 break;
             }
         }

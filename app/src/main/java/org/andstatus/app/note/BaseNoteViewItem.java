@@ -27,7 +27,7 @@ import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.AttachedImageFile;
+import org.andstatus.app.data.AttachedImageFiles;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.TextMediaType;
@@ -95,17 +95,20 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     Map<Long, String> rebloggers = new HashMap<>();
     boolean reblogged = false;
 
-    AttachedImageFile attachedImageFile = AttachedImageFile.EMPTY;
+    final long attachmentsCount;
+    final AttachedImageFiles attachedImageFiles;
 
     private MyAccount linkedMyAccount = MyAccount.EMPTY;
     public final StringBuilder detailsSuffix = new StringBuilder();
 
     protected BaseNoteViewItem(boolean isEmpty, long updatedDate) {
         super(isEmpty, updatedDate);
+        attachmentsCount = 0;
+        attachedImageFiles = AttachedImageFiles.EMPTY;
     }
 
     BaseNoteViewItem(MyContext myContext, Cursor cursor) {
-        this(false, DbUtils.getLong(cursor, NoteTable.UPDATED_DATE));
+        super(false, DbUtils.getLong(cursor, NoteTable.UPDATED_DATE));
         activityId = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID);
         setNoteId(DbUtils.getLong(cursor, ActivityTable.NOTE_ID));
         setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
@@ -113,7 +116,13 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         this.myContext = myContext;
 
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
-            attachedImageFile = AttachedImageFile.fromCursor(myContext, cursor);
+            attachmentsCount = DbUtils.getLong(cursor, NoteTable.ATTACHMENTS_COUNT);
+            attachedImageFiles = (attachmentsCount) == 0
+                    ? AttachedImageFiles.EMPTY
+                    : AttachedImageFiles.load(myContext, noteId);
+        } else {
+            attachmentsCount = 0;
+            attachedImageFiles = AttachedImageFiles.EMPTY;
         }
     }
 
@@ -269,10 +278,6 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         if (noteStatus != DownloadStatus.LOADED) {
             noteDetails.withSpace("(").append(noteStatus.getTitle(context)).append(")");
         }
-    }
-
-    public AttachedImageFile getAttachedImageFile() {
-        return attachedImageFile;
     }
 
     public BaseNoteViewItem setName(String name) {

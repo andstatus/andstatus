@@ -16,6 +16,7 @@
 
 package org.andstatus.app.account;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.StringUtils;
@@ -62,4 +63,14 @@ public class AccountNameTest {
                 );
         assertEquals(expected, accountName.getUniqueName());
     }
+
+    @Test
+    public void testUniqueAccountName() {
+        AccountName accountName1 = AccountName.fromAccountName(MyContextHolder.get(), "someTester/Pump.io");
+        assertEquals(accountName1.toString(), accountName1.origin.getName(), "Pump.io");
+
+        AccountName accountName2 = AccountName.fromAccountName(MyContextHolder.get(), "someTester/PumpioTest");
+        assertEquals(accountName2.toString(), accountName2.origin.getName(), "PumpioTest");
+    }
+
 }
