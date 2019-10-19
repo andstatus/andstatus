@@ -16,6 +16,7 @@
 
 package org.andstatus.app.data;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 
@@ -112,5 +113,25 @@ public class AttachedImageFile extends ImageFile {
         this.previewOfDownloadId = previewFile.previewOfDownloadId;
         this.previewOfUri = other.uri;
         this.previewOfIsVideo = other.contentType == MyContentType.VIDEO;
+    }
+
+    public boolean imageOrLinkMayBeShown() {
+        return contentType == MyContentType.IMAGE &&
+                (super.imageMayBeShown() || uri != Uri.EMPTY);
+    }
+
+    public Intent intentToView() {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        final Uri mediaFileUri = downloadFile.existsNow()
+                ? FileProvider.downloadFilenameToUri(downloadFile.getFilename())
+                : uri;
+        if (UriUtils.isEmpty(mediaFileUri)) {
+            intent.setType("text/*");
+        } else {
+            intent.setDataAndType(mediaFileUri, contentType.generalMimeType);
+            intent.putExtra(Intent.EXTRA_STREAM, mediaFileUri);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
+        return intent;
     }
 }

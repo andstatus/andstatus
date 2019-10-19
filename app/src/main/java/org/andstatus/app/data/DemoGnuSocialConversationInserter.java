@@ -93,17 +93,17 @@ public class DemoGnuSocialConversationInserter {
         final AActivity reply5 = buildActivity(author2, "Reply 5 to Reply 4", reply4, null);
         addWithMultipleAttachments(reply5);
 
-        addActivity(buildActivity(author3, "Reply 6 to Reply 4 - the second", reply4, null));
+        addWithMultipleImages(buildActivity(author3, "Reply 6 to Reply 4 - the second, with 2 images", reply4, null), 2);
 
         AActivity reply7 = buildActivity(author1, "Reply 7 to Reply 2 is about "
         + demoData.publicNoteText + " and something else", reply2, null);
         addPublicNote(reply7, TriState.TRUE);
         
         AActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
-        AActivity reply9 = buildActivity(author2, "Reply 9 to Reply 7", reply7, null);
-        addActivity(reply9);
-        AActivity reply10 = buildActivity(author3, "Reply 10 to Reply 8", reply8, null);
-        addActivity(reply10);
+        AActivity reply9 = buildActivity(author2, "Reply 9 to Reply 7, 3 images", reply7, null);
+        addWithMultipleImages(reply9, 3);
+        AActivity reply10 = buildActivity(author3, "Reply 10 to Reply 8, number of images: 1", reply8, null);
+        addWithMultipleImages(reply10, 1);
         AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + demoData.globalPublicNoteText
                 + " text", reply7, null);
         addPublicNote(reply11, TriState.TRUE);
@@ -154,6 +154,39 @@ public class DemoGnuSocialConversationInserter {
                 attachment0.getDownloadNumber());
         assertEquals("Image attachment should be number 2 " + attachments, "image",
                 attachment2.mimeType);
+    }
+
+    private void addWithMultipleImages(AActivity activity, int numberOfImages) {
+        final Attachments attachments = activity.getNote().attachments;
+        for (int ind = 0; ind < numberOfImages; ind++) {
+            switch (ind) {
+                case (0):
+                    attachments.add(Attachment.fromUriAndMimeType(
+                            "https://thumbs.dreamstime.com/b/amazing-lake-arboretum-amazing-lake-arboretum-ataturk-arboretum-botanic-park-istanbul-160236958.jpg", "image"));
+                    attachments.add(Attachment.fromUriAndMimeType(
+                            "https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html",
+                                    "text/html; charset=iso-8859-1"));
+                    break;
+                case (1):
+                    attachments.add(Attachment.fromUriAndMimeType(
+                            "https://thumbs.dreamstime.com/b/tribal-women-farmers-paddy-rice-terraces-agricultural-fields-countryside-yen-bai-mountain-hills-valley-south-east-160537176.jpg",
+                            "image"));
+                    attachments.add(
+                            Attachment.fromUriAndMimeType("https://gnusocial.example.com/api/statuses/update.json",
+                                    "application/json; charset=utf-8"));
+                    break;
+                case (2):
+                    attachments.add(Attachment.fromUriAndMimeType(
+                            "https://thumbs.dreamstime.com/b/concept-two-birds-chickadee-creeper-flew-branch-garden-under-banner-word-autumn-carved-red-maple-leaves-160997265.jpg",
+                            "image"));
+                    attachments.add(
+                            Attachment.fromUriAndMimeType("https://gnusocial.example.com/api/statuses/update2.json",
+                                    "application/json; charset=utf-8"));
+                    break;
+            }
+        }
+        addActivity(activity);
+        assertEquals(attachments.toString(), 2 * numberOfImages, attachments.size());
     }
 
     private void addPublicNote(AActivity activity, TriState isPublic) {

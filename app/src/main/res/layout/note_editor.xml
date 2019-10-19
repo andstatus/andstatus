@@ -117,7 +117,7 @@
             android:orientation="vertical">
 
             <ImageView
-                android:id="@+id/attached_image"
+                android:id="@+id/attachment_image"
                 android:layout_width="160dip"
                 android:layout_height="90dip"
                 android:contentDescription="@string/attachments"

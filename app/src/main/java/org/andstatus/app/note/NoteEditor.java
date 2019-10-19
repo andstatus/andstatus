@@ -546,7 +546,7 @@ public class NoteEditor {
     }
 
     private void showAttachedImage() {
-        ImageView imageView = editorView.findViewById(R.id.attached_image);
+        ImageView imageView = editorView.findViewById(R.id.attachment_image);
         if (editorData.image == null || screenToggleState == ScreenToggleState.SHOW_TIMELINE) {
             imageView.setVisibility(View.GONE);
         } else {

@@ -16,12 +16,12 @@
 
 package org.andstatus.app.note;
 
-import android.net.Uri;
 import android.text.SpannableString;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import org.andstatus.app.R;
@@ -78,7 +78,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         showAvatarEtc(view, item);
 
         if (showAttachedImages) {
-            showAttachedImage(view, item);
+            showAttachedImages(view, item);
         }
         if (markRepliesToMe) {
             removeReplyToMeMarkerView(view);
@@ -150,36 +150,47 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         item.author.showAvatar(contextMenu.getActivity(), view.findViewById(R.id.avatar_image));
     }
 
-    // TODO Extend to multiple images
-    private void showAttachedImage(View view, T item) {
-        final View parent = view.findViewById(R.id.attached_image_wrapper);
-        if (parent == null) return;
+    private void showAttachedImages(View view, T item) {
+        final LinearLayout attachmentsList = view.findViewById(R.id.attachments_wrapper);
+        if (attachmentsList == null) return;
 
-        final AttachedImageFile attachedImageFile = item.attachedImageFiles.isEmpty()
-                ? AttachedImageFile.EMPTY
-                : item.attachedImageFiles.list.get(0);
-        final boolean imageMayBeShown = attachedImageFile.imageMayBeShown();
-        final boolean showWrapper = contextMenu.getActivity().isMyResumed() &&
-                (!item.isSensitive() || MyPreferences.isShowSensitiveContent()) &&
-                (imageMayBeShown || attachedImageFile.uri != Uri.EMPTY) ;
-        parent.setVisibility(showWrapper ? View.VISIBLE : View.GONE);
-        if (!showWrapper) return;
+        if (!contextMenu.getActivity().isMyResumed() ||
+            item.isSensitive() && !MyPreferences.isShowSensitiveContent() ||
+            !item.attachedImageFiles.imageOrLinkMayBeShown()) {
 
-        IdentifiableImageView imageView = parent.findViewById(R.id.attached_image);
-        if (imageMayBeShown) {
-            preloadedImages.add(item.getNoteId());
-            attachedImageFile.showImage(contextMenu.getActivity(), imageView);
-            setOnButtonClick(imageView, 0, NoteContextMenuItem.VIEW_MEDIA);
-        } else {
-            imageView.setVisibility(View.GONE);
+            attachmentsList.setVisibility(View.GONE);
+            return;
         }
-        MyUrlSpan.showText(parent, R.id.attachment_link,
-                imageMayBeShown ? "" : attachedImageFile.getTargetUri().toString(), true, false);
 
-        final View playImage = parent.findViewById(R.id.play_image);
-        if (playImage != null) {
-            playImage.setVisibility(imageMayBeShown && attachedImageFile.isTargetVideo() ? View.VISIBLE : View.GONE);
+        attachmentsList.removeAllViewsInLayout();
+
+        for (AttachedImageFile imageFile: item.attachedImageFiles.list) {
+            if (!imageFile.imageOrLinkMayBeShown()) continue;
+
+            int attachmentLayout = imageFile.imageMayBeShown()
+                    ? (imageFile.isTargetVideo() ? R.layout.attachment_video_preview : R.layout.attachment_image)
+                    : R.layout.attachment_link;
+            final View attachmentView = LayoutInflater.from(contextMenu.getActivity())
+                    .inflate(attachmentLayout, attachmentsList, false);
+            if (imageFile.imageMayBeShown()) {
+                IdentifiableImageView imageView = attachmentView.findViewById(R.id.attachment_image);
+                preloadedImages.add(item.getNoteId());
+                imageFile.showImage(contextMenu.getActivity(), imageView);
+                setOnImageClick(imageView, imageFile);
+            } else {
+                MyUrlSpan.showText(attachmentView, R.id.attachment_link,
+                        imageFile.getTargetUri().toString(), true, false);
+            }
+            attachmentsList.addView(attachmentView);
         }
+
+        attachmentsList.setVisibility(View.VISIBLE);
+    }
+
+    private void setOnImageClick(View imageView, AttachedImageFile imageFile) {
+        imageView.setOnClickListener(view -> {
+            contextMenu.menuContainer.getActivity().startActivity(imageFile.intentToView());
+        });
     }
 
     public void removeReplyToMeMarkerView(ViewGroup view) {
@@ -212,30 +223,26 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
                 setOnButtonClick(buttons, R.id.reblog_button_tinted, NoteContextMenuItem.UNDO_ANNOUNCE);
                 setOnButtonClick(buttons, R.id.favorite_button, NoteContextMenuItem.LIKE);
                 setOnButtonClick(buttons, R.id.favorite_button_tinted, NoteContextMenuItem.UNDO_LIKE);
-                setOnButtonClick(buttons, R.id.more_button, NoteContextMenuItem.UNKNOWN);
+                setOnClickShowContextMenu(buttons, R.id.more_button);
             }
         }
     }
 
-    private void setOnButtonClick(final View viewGroup, int buttonId, final NoteContextMenuItem menuItem) {
-        (buttonId == 0 ? viewGroup : viewGroup.findViewById(buttonId)).setOnClickListener(
-                v -> {
-                    if (menuItem.equals(NoteContextMenuItem.UNKNOWN)) {
-                        viewGroup.showContextMenu();
-                    } else {
-                        onButtonClick(v, menuItem);
-                    }
-                }
-        );
+    private void setOnButtonClick(View viewGroup, int buttonId, NoteContextMenuItem menuItem) {
+        viewGroup.findViewById(buttonId).setOnClickListener(view -> {
+            T item = getItem(view);
+            if (item != null && (item.noteStatus == DownloadStatus.LOADED || menuItem.appliedToUnsentNotesAlso)) {
+                contextMenu.onCreateContextMenu(null, view, null, contextMenu -> {
+                    contextMenu.onContextItemSelected(menuItem, item.getNoteId());
+                });
+            }
+        });
     }
 
-    private void onButtonClick(View v, NoteContextMenuItem contextMenuItemIn) {
-        T item = getItem(v);
-        if (item != null && (item.noteStatus == DownloadStatus.LOADED || contextMenuItemIn.appliedToUnsentNotesAlso)) {
-            contextMenu.onCreateContextMenu(null, v, null, (contextMenu) -> {
-                contextMenu.onContextItemSelected(contextMenuItemIn, item.getNoteId());
-            });
-        }
+    private void setOnClickShowContextMenu(final View viewGroup, int buttonId) {
+        viewGroup.findViewById(buttonId).setOnClickListener(view -> {
+            viewGroup.showContextMenu();
+        });
     }
 
     protected void showButtonsBelowNote(View view, T item) {

@@ -58,6 +58,15 @@ public class AttachedImageFiles implements IsEmpty {
         return new AttachedImageFiles(imageFiles2);
     }
 
+    public boolean imageOrLinkMayBeShown() {
+        for (AttachedImageFile imageFile: list) {
+            if (imageFile.imageOrLinkMayBeShown()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public String toString() {
         return this.getClass().getSimpleName() + "{" +
