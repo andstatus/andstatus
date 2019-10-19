@@ -21,6 +21,7 @@ import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.util.IsEmpty;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -51,11 +52,31 @@ public class AttachedImageFiles implements IsEmpty {
                 " IN(" + MyContentType.IMAGE.save() + ", " + MyContentType.VIDEO.save() + ")" +
                 " ORDER BY " + DownloadTable.DOWNLOAD_NUMBER;
         List<AttachedImageFile> imageFiles1 = MyQuery.getList(myContext, sql, AttachedImageFile::fromCursor);
-        List<AttachedImageFile> imageFiles2 = imageFiles1.stream()
-                .filter(ImageFile::nonEmpty)
-                .map(imageFile -> imageFile.resolvePreviews(imageFiles1))
-                .collect(Collectors.toList());
+        List<AttachedImageFile> imageFiles2 = foldPreviews(imageFiles1);
         return new AttachedImageFiles(imageFiles2);
+    }
+
+    private static List<AttachedImageFile> foldPreviews(List<AttachedImageFile> imageFiles) {
+        List<AttachedImageFile> out = new ArrayList<>();
+        List<Long> toSkip = imageFiles.stream().map(i -> i.previewOfDownloadId).filter(i -> i != 0)
+                .collect(Collectors.toList());
+        for(AttachedImageFile imageFile: imageFiles) {
+            if (imageFile.isEmpty() || toSkip.contains(imageFile.downloadId)) continue;
+
+            if (imageFile.previewOfDownloadId == 0) {
+                out.add(imageFile);
+            } else {
+                AttachedImageFile fullImage = AttachedImageFile.EMPTY;
+                for(AttachedImageFile other: imageFiles) {
+                    if (other.downloadId == imageFile.previewOfDownloadId) {
+                        fullImage = other;
+                        break;
+                    }
+                }
+                out.add(new AttachedImageFile(imageFile, fullImage));
+            }
+        }
+        return out;
     }
 
     public boolean imageOrLinkMayBeShown() {

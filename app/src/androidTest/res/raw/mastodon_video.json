@@ -1,5 +1,6 @@
 [
   {
+    "//comment": "Downloaded from https://mastodon.social/api/v1/statuses/101629250444919927",
     "id": "101629250444919927",
     "created_at": "2019-02-21T08:54:44.000Z",
     "in_reply_to_id": null,
@@ -8,15 +9,15 @@
     "spoiler_text": "",
     "visibility": "public",
     "language": "ca",
-    "uri": "https:\/\/mastodont.cat\/users\/kim\/statuses\/101629249723336744",
-    "content": "<p>Ja estan aquí <a href=\"https:\/\/mastodont.cat\/tags\/vaga21f\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>vaga21f<\/span><\/a><\/p>",
-    "url": "https:\/\/mastodont.cat\/@kim\/101629249723336744",
+    "uri": "https://mastodont.cat/users/kim/statuses/101629249723336744",
+    "url": "https://mastodont.cat/@kim/101629249723336744",
     "replies_count": 2,
     "reblogs_count": 2,
     "favourites_count": 0,
     "favourited": false,
     "reblogged": false,
     "muted": false,
+    "content": "\u003cp\u003eJa estan aquí \u003ca href=\"https://mastodont.cat/tags/vaga21f\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\"\u003e#\u003cspan\u003evaga21f\u003c/span\u003e\u003c/a\u003e\u003c/p\u003e",
     "reblog": null,
     "account": {
       "id": "263975",
@@ -26,20 +27,26 @@
       "locked": false,
       "bot": false,
       "created_at": "2017-12-19T08:55:21.303Z",
-      "note": "<p>Gnu\/Linux · ♥ dels gats · Privacitat, programari i cultura lliure · <a href=\"https:\/\/mastodont.cat\/tags\/faircoop\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>Faircoop<\/span><\/a><br>Creador de surtdelcercle.cat, webetica.cat i masto.cat<br><a href=\"https:\/\/mastodont.cat\/tags\/nobot\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\">#<span>nobot<\/span><\/a><\/p>",
-      "url": "https:\/\/mastodont.cat\/@kim",
-      "avatar": "https:\/\/files.mastodon.social\/accounts\/avatars\/000\/263\/975\/original\/bcb9abc1648df9e2.jpeg",
-      "avatar_static": "https:\/\/files.mastodon.social\/accounts\/avatars\/000\/263\/975\/original\/bcb9abc1648df9e2.jpeg",
-      "header": "https:\/\/files.mastodon.social\/accounts\/headers\/000\/263\/975\/original\/b75016d68f953519.jpeg",
-      "header_static": "https:\/\/files.mastodon.social\/accounts\/headers\/000\/263\/975\/original\/b75016d68f953519.jpeg",
-      "followers_count": 545,
-      "following_count": 516,
-      "statuses_count": 7891,
+      "note": "\u003cp\u003eGnu/Linux · ♥ dels gats · Privacitat, programari i cultura lliure\u003cbr\u003e\u003ca href=\"https://mastodont.cat/tags/nobot\" class=\"mention hashtag\" rel=\"nofollow noopener\" target=\"_blank\"\u003e#\u003cspan\u003enobot\u003c/span\u003e\u003c/a\u003e\u003c/p\u003e",
+      "url": "https://mastodont.cat/@kim",
+      "avatar": "https://files.mastodon.social/accounts/avatars/000/263/975/original/bcb9abc1648df9e2.jpeg",
+      "avatar_static": "https://files.mastodon.social/accounts/avatars/000/263/975/original/bcb9abc1648df9e2.jpeg",
+      "header": "https://files.mastodon.social/accounts/headers/000/263/975/original/b75016d68f953519.jpeg",
+      "header_static": "https://files.mastodon.social/accounts/headers/000/263/975/original/b75016d68f953519.jpeg",
+      "followers_count": 557,
+      "following_count": 456,
+      "statuses_count": 9201,
+      "last_status_at": "2019-10-19T16:54:03.490Z",
       "emojis": [],
       "fields": [
         {
-          "name": "xmpp",
-          "value": "kim@suchat.org",
+          "name": "blog",
+          "value": "\u003ca href=\"http://jr5kf3grd2rei4tv.onion.ws\" rel=\"nofollow noopener\" target=\"_blank\"\u003e\u003cspan class=\"invisible\"\u003ehttp://\u003c/span\u003e\u003cspan class=\"\"\u003ejr5kf3grd2rei4tv.onion.ws\u003c/span\u003e\u003cspan class=\"invisible\"\u003e\u003c/span\u003e\u003c/a\u003e",
+          "verified_at": null
+        },
+        {
+          "name": "cats",
+          "value": "dat://837050f69d945cd483540dbb388b1b8de950e3ca469291e36c4a21a52d3cdc86/",
           "verified_at": null
         }
       ]
@@ -48,9 +55,9 @@
       {
         "id": "11640109",
         "type": "video",
-        "url": "https:\/\/files.mastodon.social\/media_attachments\/files\/011\/640\/109\/original\/2e846bfc7de88f79.mp4",
-        "preview_url": "https:\/\/files.mastodon.social\/media_attachments\/files\/011\/640\/109\/small\/2e846bfc7de88f79.png",
-        "remote_url": "https:\/\/mastodont.cat\/system\/media_attachments\/files\/000\/684\/914\/original\/7424effb937d991c.mp4",
+        "url": "https://mastodon.social/media_proxy/11640109/original",
+        "preview_url": "https://mastodon.social/media_proxy/11640109/small",
+        "remote_url": "https://mastodont.cat/system/media_attachments/files/000/684/914/original/7424effb937d991c.mp4",
         "text_url": null,
         "meta": {
           "length": "0:00:08.43",
@@ -60,13 +67,13 @@
           "width": 1920,
           "height": 1080,
           "aspect": 1.7777777777777777,
-          "audio_encode": "aac (LC) (mp4a \/ 0x6134706D)",
+          "audio_encode": "aac (LC) (mp4a / 0x6134706D)",
           "audio_bitrate": "48000 Hz",
           "audio_channels": "stereo",
           "original": {
             "width": 1920,
             "height": 1080,
-            "frame_rate": "7500000\/251551",
+            "frame_rate": "7500000/251551",
             "duration": 8.427,
             "bitrate": 20603587
           },
@@ -77,17 +84,19 @@
             "aspect": 1.7777777777777777
           }
         },
-        "description": null
+        "description": null,
+        "blurhash": null
       }
     ],
     "mentions": [],
     "tags": [
       {
         "name": "vaga21f",
-        "url": "https:\/\/mastodon.social\/tags\/vaga21f"
+        "url": "https://mastodon.social/tags/vaga21f"
       }
     ],
     "emojis": [],
-    "card": null
+    "card": null,
+    "poll": null
   }
 ]

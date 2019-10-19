@@ -59,7 +59,7 @@ public class AvatarFile extends ImageFile {
 
     private AvatarFile(Actor actor, String filename, MediaMetadata mediaMetadata, DownloadStatus downloadStatus,
                        long downloadedDate) {
-        super(filename, mediaMetadata, 0, downloadStatus, downloadedDate);
+        super(filename, MyContentType.IMAGE, mediaMetadata, 0, downloadStatus, downloadedDate);
         this.actor = actor;
     }
 

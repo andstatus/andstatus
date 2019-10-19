@@ -23,6 +23,7 @@ import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.NoteForAnyAccount;
+import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
@@ -273,9 +274,23 @@ public class ConnectionMastodonTest {
     @Test
     public void tootWithVideoAttachment() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_video);
+        assertOneTootWithVideo("263975",
+                "https://mastodon.social/media_proxy/11640109/original",
+                "https://mastodon.social/media_proxy/11640109/small");
+    }
 
+
+    @Test
+    public void originalTootWithVideoAttachment() throws IOException {
+        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_video_original);
+        assertOneTootWithVideo("10496",
+                "https://mastodont.cat/system/media_attachments/files/000/684/914/original/7424effb937d991c.mp4?1550739268",
+                "https://mastodont.cat/system/media_attachments/files/000/684/914/small/7424effb937d991c.png?1550739268");
+    }
+
+    private void assertOneTootWithVideo(String actorOid, String videoUri, String previewUri) throws ConnectionException {
         List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.ACTOR_TIMELINE,
-                TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, Actor.fromOid(mock.getData().getOrigin(), "263975"));
+                TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, Actor.fromOid(mock.getData().getOrigin(), actorOid));
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 1, timeline.size());
 
@@ -285,11 +300,11 @@ public class ConnectionMastodonTest {
         assertEquals("Media attachments " + note.attachments, 2, note.attachments.size());
         Attachment video = note.attachments.list.get(0);
         assertEquals("Content type", MyContentType.VIDEO, video.contentType);
-        assertEquals("Media URI", UriUtils.fromString("https://files.mastodon.social/media_attachments/files/011/640/109/original/2e846bfc7de88f79.mp4"),
+        assertEquals("Media URI", UriUtils.fromString(videoUri),
                 video.getUri());
         Attachment preview = note.attachments.list.get(1);
         assertEquals("Content type", MyContentType.IMAGE, preview.contentType);
-        assertEquals("Media URI", UriUtils.fromString("https://files.mastodon.social/media_attachments/files/011/640/109/small/2e846bfc7de88f79.png"),
+        assertEquals("Media URI", UriUtils.fromString(previewUri),
                 preview.getUri());
         assertEquals("Preview of", preview.previewOf, video);
 
@@ -313,10 +328,10 @@ public class ConnectionMastodonTest {
         NoteForAnyAccount nfa = new NoteForAnyAccount(MyContextHolder.get(),
                 activity.getId(), activity.getNote().noteId);
         assertEquals(preview.uri, nfa.downloads.getFirstForTimeline().getUri());
-        assertEquals(MyContentType.IMAGE , nfa.downloads.getFirstForTimeline().getContentType());
+        assertEquals(MyContentType.IMAGE, nfa.downloads.getFirstForTimeline().getContentType());
         assertEquals(dVideo.getDownloadId(), nfa.downloads.getFirstForTimeline().getPreviewOfDownloadId());
         assertEquals(video.uri, nfa.downloads.getFirstToShare().getUri());
-        assertEquals(MyContentType.VIDEO , nfa.downloads.getFirstToShare().getContentType());
+        assertEquals(MyContentType.VIDEO, nfa.downloads.getFirstToShare().getContentType());
     }
 
 }

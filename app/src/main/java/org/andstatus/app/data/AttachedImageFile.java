@@ -27,23 +27,19 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.UriUtils;
 
-import java.util.Collection;
-
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
 public class AttachedImageFile extends ImageFile {
     public static final AttachedImageFile EMPTY = new AttachedImageFile();
     public final Uri uri;
-    private final long previewOfDownloadId;
-    private final Uri previewOfUri;
-    private final boolean previewOfIsVideo;
+    final long previewOfDownloadId;
+    private final AttachedImageFile previewOf;
 
     private AttachedImageFile() {
-        super("", MediaMetadata.EMPTY, 0, DownloadStatus.ABSENT, DATETIME_MILLIS_NEVER);
-        this.uri = Uri.EMPTY;
-        this.previewOfDownloadId = 0;
-        this.previewOfUri = Uri.EMPTY;
-        this.previewOfIsVideo = false;
+        super("", MyContentType.UNKNOWN, MediaMetadata.EMPTY, 0, DownloadStatus.ABSENT, DATETIME_MILLIS_NEVER);
+        uri = Uri.EMPTY;
+        previewOfDownloadId = 0;
+        previewOf = AttachedImageFile.EMPTY;
     }
 
     public static AttachedImageFile fromCursor(Cursor cursor) {
@@ -55,21 +51,21 @@ public class AttachedImageFile extends ImageFile {
 
     private AttachedImageFile(long downloadId, Cursor cursor) {
         super(DbUtils.getString(cursor, DownloadTable.FILE_NAME),
+                MyContentType.load(DbUtils.getLong(cursor, DownloadTable.CONTENT_TYPE)),
                 MediaMetadata.fromCursor(cursor), downloadId,
                 DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
                 DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE));
-        this.uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URL));
-        this.previewOfDownloadId = DbUtils.getLong(cursor, DownloadTable.PREVIEW_OF_DOWNLOAD_ID);
-        this.previewOfUri = Uri.EMPTY;
-        this.previewOfIsVideo = false;
+        uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URL));
+        previewOfDownloadId = DbUtils.getLong(cursor, DownloadTable.PREVIEW_OF_DOWNLOAD_ID);
+        previewOf = AttachedImageFile.EMPTY;
     }
 
     public AttachedImageFile(DownloadData data) {
-        super(data.getFilename(), data.mediaMetadata, data.getDownloadId(), data.getStatus(), data.getDownloadedDate());
+        super(data.getFilename(), data.getContentType(), data.mediaMetadata, data.getDownloadId(), data.getStatus(),
+                data.getDownloadedDate());
         this.uri = data.getUri();
         this.previewOfDownloadId = 0;
-        this.previewOfUri = Uri.EMPTY;
-        this.previewOfIsVideo = false;
+        previewOf = AttachedImageFile.EMPTY;
     }
 
     @Override
@@ -78,11 +74,11 @@ public class AttachedImageFile extends ImageFile {
     }
 
     public Uri getTargetUri() {
-        return previewOfUri == Uri.EMPTY ? uri : previewOfUri;
+        return previewOf.isEmpty() ? uri : previewOf.uri;
     }
 
     public boolean isTargetVideo() {
-        return previewOfUri == Uri.EMPTY ? isVideo() : previewOfIsVideo;
+        return previewOf.isEmpty() ? isVideo() : previewOf.isVideo();
     }
 
     @Override
@@ -92,27 +88,16 @@ public class AttachedImageFile extends ImageFile {
         MyServiceManager.sendCommand(CommandData.newFetchAttachment(0, downloadId));
     }
 
-    AttachedImageFile resolvePreviews(Collection<AttachedImageFile> imageFiles) {
-        if (previewOfDownloadId != 0) {
-            for(AttachedImageFile other: imageFiles) {
-                if(previewOfDownloadId == other.downloadId) {
-                    return new AttachedImageFile(this, other);
-                }
-            }
-        }
-        return this;
-    }
-
-    private AttachedImageFile(AttachedImageFile previewFile, AttachedImageFile other) {
+    AttachedImageFile(AttachedImageFile previewFile, AttachedImageFile previewOf) {
         super(previewFile.downloadFile.getFilename(),
+                previewFile.contentType,
                 previewFile.mediaMetadata,
                 previewFile.downloadId,
                 previewFile.downloadStatus,
                 previewFile.downloadedDate);
         uri = previewFile.uri;
         this.previewOfDownloadId = previewFile.previewOfDownloadId;
-        this.previewOfUri = other.uri;
-        this.previewOfIsVideo = other.contentType == MyContentType.VIDEO;
+        this.previewOf = previewOf;
     }
 
     public boolean imageOrLinkMayBeShown() {
@@ -122,13 +107,14 @@ public class AttachedImageFile extends ImageFile {
 
     public Intent intentToView() {
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        final Uri mediaFileUri = downloadFile.existsNow()
-                ? FileProvider.downloadFilenameToUri(downloadFile.getFilename())
-                : uri;
+        AttachedImageFile fileToView = previewOf.isEmpty() ? this : previewOf;
+        final Uri mediaFileUri = fileToView.downloadFile.existsNow()
+                ? FileProvider.downloadFilenameToUri(fileToView.downloadFile.getFilename())
+                : fileToView.uri;
         if (UriUtils.isEmpty(mediaFileUri)) {
             intent.setType("text/*");
         } else {
-            intent.setDataAndType(mediaFileUri, contentType.generalMimeType);
+            intent.setDataAndType(mediaFileUri, fileToView.contentType.generalMimeType);
             intent.putExtra(Intent.EXTRA_STREAM, mediaFileUri);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }

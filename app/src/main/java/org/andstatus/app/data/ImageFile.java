@@ -47,9 +47,11 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
     public final DownloadStatus downloadStatus;
     public final long downloadedDate;
 
-    ImageFile(String filename, MediaMetadata mediaMetadata, long downloadId, DownloadStatus downloadStatus,
+    ImageFile(String filename, MyContentType contentType, MediaMetadata mediaMetadata, long downloadId,
+              DownloadStatus downloadStatus,
               long downloadedDate) {
         downloadFile = new DownloadFile(filename);
+        this.contentType = contentType;
         setMediaMetadata(mediaMetadata);
         this.downloadId = downloadId;
         this.downloadStatus = downloadStatus;
@@ -58,12 +60,10 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
 
     public void setMediaMetadata(MediaMetadata mediaMetadata) {
         this.mediaMetadata = mediaMetadata;
-        // TODO: This is too simplified...
-        contentType = mediaMetadata.duration > 0 ? MyContentType.VIDEO : MyContentType.IMAGE;
     }
 
     public boolean isVideo() {
-        return mediaMetadata.duration > 0;
+        return contentType == MyContentType.VIDEO;
     }
 
     public void showImage(@NonNull MyActivity myActivity, IdentifiableImageView imageView) {
