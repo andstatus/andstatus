@@ -25,7 +25,8 @@ public enum ActorEndpointType {
     API_FOLLOWERS(5),
     API_LIKED(6),
     BANNER(7),
-    API_SHARED_INBOX(8);
+    API_SHARED_INBOX(8),
+    API_UPLOAD_MEDIA(9);
 
     public final long id;
 
@@ -63,11 +64,12 @@ public enum ActorEndpointType {
             case ANNOUNCE:
             case DELETE_NOTE:
             case UPDATE_NOTE:
-            case UPDATE_NOTE_WITH_MEDIA:
             case ACTOR_TIMELINE:
                 return API_OUTBOX;
             case PUBLIC_TIMELINE:
                 return API_SHARED_INBOX;
+            case UPDATE_NOTE_WITH_MEDIA:
+                return API_UPLOAD_MEDIA;
             default:
                 return EMPTY;
         }
