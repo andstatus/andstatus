@@ -36,7 +36,6 @@ import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.graphics.CacheName;
-import org.andstatus.app.graphics.CachedImage;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Attachment;
@@ -48,7 +47,6 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +55,6 @@ import java.util.stream.Collectors;
 
 import androidx.annotation.NonNull;
 
-import static org.andstatus.app.data.DownloadStatus.LOADED;
 import static org.andstatus.app.data.DownloadStatus.UNKNOWN;
 import static org.andstatus.app.util.MyLog.COMMA;
 
@@ -66,10 +63,7 @@ public class NoteEditorData implements IsEmpty {
     static final NoteEditorData EMPTY = NoteEditorData.newEmpty(MyAccount.EMPTY);
 
     public final AActivity activity;
-
     private AttachedImageFiles attachedImageFiles = AttachedImageFiles.EMPTY;
-    // TODO: List<CachedImage> image = ...;
-    CachedImage image = null;
 
     private boolean replyToConversationParticipants = false;
     private boolean replyToMentionedActors = false;
@@ -140,13 +134,9 @@ public class NoteEditorData implements IsEmpty {
         }
 
         attachedImageFiles = AttachedImageFiles.load(myContext, noteId);
-        attachedImageFiles.list.forEach( att -> {
-            if (att.downloadStatus == LOADED) {
-                image = att.loadAndGetImage(CacheName.ATTACHED_IMAGE);
-                note.attachments.add(Attachment.fromUri(att.uri));
-            } else {
-                // TODO
-            }
+        attachedImageFiles.list.forEach( imageFile -> {
+            imageFile.preloadImageAsync(CacheName.ATTACHED_IMAGE);
+            note.attachments.add(Attachment.fromAttachedImageFile(imageFile));
         });
         MyLog.v(TAG, () -> "Loaded " + this);
     }
@@ -232,7 +222,6 @@ public class NoteEditorData implements IsEmpty {
             NoteEditorData data = new NoteEditorData(ma, MyContextHolder.get(), activity,
                     activity.getNote().getInReplyTo().getNote().noteId, false);
             data.attachedImageFiles = attachedImageFiles;
-            data.image = image;
             data.replyToConversationParticipants = replyToConversationParticipants;
             return data;
         } else {
@@ -240,14 +229,11 @@ public class NoteEditorData implements IsEmpty {
         }
     }
 
-    // TODO: Explicitly add in a separate method
-    public void save(Uri imageUriToSave, Optional<String> mediaType) {
-        Note note = activity.getNote();
-        note.attachments.clear();
-        attachedImageFiles.list.forEach(item -> note.attachments.add(Attachment.fromAttachedImageFile(item)));
-        if (UriUtils.nonEmpty(imageUriToSave)) {
-            note.attachments.add(Attachment.fromUriAndMimeType(imageUriToSave, mediaType.orElse("")));
-        }
+    public void addAttachment(Uri uri, Optional<String> mediaType) {
+        activity.getNote().attachments.add(Attachment.fromUriAndMimeType(uri, mediaType.orElse("")));
+    }
+
+    public void save() {
         new DataUpdater(getMyAccount()).onActivity(activity);
         // TODO: Delete previous draft activities of this note
     }

@@ -32,7 +32,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,10 +42,12 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorAutoCompleteAdapter;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.graphics.IdentifiableImageView;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -453,7 +455,7 @@ public class NoteEditor {
                 editorData.activity.getNote().getInReplyTo().getNote().getContent(), TextMediaType.HTML,
                 false, false);
         mCharsLeftText.setText(String.valueOf(editorData.getMyAccount().charactersLeftForNote(editorData.getContent())));
-        showAttachedImage();
+        showAttachedImages();
     }
 
     static boolean subjectHasAdditionalContent(Optional<String> name, Optional<String> content) {
@@ -543,14 +545,36 @@ public class NoteEditor {
         return getActivity().getMyContext().accounts().size() > 1;
     }
 
-    private void showAttachedImage() {
-        ImageView imageView = editorView.findViewById(R.id.attachment_image);
-        if (editorData.image == null || screenToggleState == ScreenToggleState.SHOW_TIMELINE) {
-            imageView.setVisibility(View.GONE);
-        } else {
-            imageView.setImageDrawable(editorData.image.getDrawable());
-            imageView.setVisibility(View.VISIBLE);
+    private void showAttachedImages() {
+        final LinearLayout attachmentsList = editorView.findViewById(R.id.attachments_wrapper);
+        if (attachmentsList == null) return;
+
+        if (!getActivity().isMyResumed() || screenToggleState == ScreenToggleState.SHOW_TIMELINE) {
+            attachmentsList.setVisibility(View.GONE);
+            return;
         }
+
+        attachmentsList.removeAllViewsInLayout();
+
+        for (AttachedImageFile imageFile: editorData.getAttachedImageFiles().list) {
+            if (!imageFile.imageOrLinkMayBeShown()) continue;
+
+            int attachmentLayout = imageFile.imageMayBeShown()
+                    ? (imageFile.isTargetVideo() ? R.layout.attachment_video_preview : R.layout.attachment_image)
+                    : R.layout.attachment_link;
+            final View attachmentView = LayoutInflater.from(getActivity())
+                    .inflate(attachmentLayout, attachmentsList, false);
+            if (imageFile.imageMayBeShown()) {
+                IdentifiableImageView imageView = attachmentView.findViewById(R.id.attachment_image);
+                imageFile.showImage(getActivity(), imageView);
+            } else {
+                MyUrlSpan.showText(attachmentView, R.id.attachment_link,
+                        imageFile.getTargetUri().toString(), true, false);
+            }
+            attachmentsList.addView(attachmentView);
+        }
+
+        attachmentsList.setVisibility(View.VISIBLE);
     }
 
     private void sendAndHide() {
@@ -744,6 +768,6 @@ public class NoteEditor {
                 bodyView.setMaxLines(8);
                 break;
         }
-        showAttachedImage();
+        showAttachedImages();
     }
 }

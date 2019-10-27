@@ -127,4 +127,8 @@ public class NoteEditorCommand implements IsEmpty {
     public Optional<String> getMediaType() {
         return mediaType;
     }
+
+    public boolean hasMedia() {
+        return UriUtils.nonEmpty(mediaUri);
+    }
 }

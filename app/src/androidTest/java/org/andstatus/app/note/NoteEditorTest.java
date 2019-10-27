@@ -22,6 +22,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -187,11 +188,18 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         MyLog.v(this, method + " ended");
     }
 
-    // TODO: Test two attachments
+    @Test
+    public void attachOneImage() throws InterruptedException {
+        attachImages(1);
+    }
 
     @Test
-    public void testAttachImage() throws InterruptedException {
-        final String method = "testAttachImage";
+    public void attachTwoImages() throws InterruptedException {
+        attachImages(2);
+    }
+
+    private void attachImages(int numberOfAttachments) throws InterruptedException {
+        final String method = "attachImages" + numberOfAttachments;
         MyLog.v(this, method + " started");
 
         ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
@@ -203,12 +211,33 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         assertTextCleared();
 
         TestSuite.waitForIdleSync();
-        final String noteName = "A note can have a title (name)";
-        final String content = "Note with an attachment " + demoData.testRunUid;
+        final String noteName = "A note " + numberOfAttachments + " can have a title (name)";
+        final String content = "Note with " + numberOfAttachments + " attachment" +
+                (numberOfAttachments == 1 ? "" : "s") + " " +
+                demoData.testRunUid;
         onView(withId(R.id.note_name_edit)).perform(new TypeTextAction(noteName));
         onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(content));
+
+        attachImage(editorView, demoData.localImageTestUri2);
+        if (numberOfAttachments == 2) {
+            attachImage(editorView, demoData.localImageTestUri);
+        }
+        final NoteEditor editor = getActivity().getNoteEditor();
+        assertEquals("All image attached " + editor.getData().getAttachedImageFiles(), numberOfAttachments,
+                editor.getData().getAttachedImageFiles().list.size());
+
+        onView(withId(R.id.noteBodyEditText)).check(matches(withText(content + " ")));
+        onView(withId(R.id.note_name_edit)).check(matches(withText(noteName)));
+        helper.clickMenuItem(method + " clicker save draft", R.id.saveDraftButton);
+
+        MyLog.v(this, method + " ended");
+    }
+
+    private void attachImage(View editorView, Uri imageUri) throws InterruptedException {
+        final String method = "attachImage";
         TestSuite.waitForIdleSync();
 
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
         getActivity().setSelectorActivityMock(helper);
         helper.clickMenuItem(method + " clicker attach_menu_id", R.id.attach_menu_id);
         assertNotNull(helper.waitForSelectorStart(method, ActivityRequestCode.ATTACH.id));
@@ -229,7 +258,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
 
         MyLog.i(method, "Callback from a selector");
         Intent intent2 = new Intent();
-        intent2.setDataAndType(demoData.localImageTestUri2, MyContentType.IMAGE.generalMimeType);
+        intent2.setDataAndType(imageUri, MyContentType.IMAGE.generalMimeType);
         getActivity().runOnUiThread(() -> {
             getActivity().onActivityResult(ActivityRequestCode.ATTACH.id, Activity.RESULT_OK, intent2);
         });
@@ -238,7 +267,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         for (int attempt=0; attempt < 4; attempt++) {
             ActivityTestHelper.waitViewVisible(method, editorView);
             // Due to a race the editor may open before this change first.
-            if (editor.getData().getAttachedImageFiles().forUri(demoData.localImageTestUri2).isPresent()) {
+            if (editor.getData().getAttachedImageFiles().forUri(imageUri).isPresent()) {
                 break;
             }
             if (DbUtils.waitMs(method, 2000)) {
@@ -246,12 +275,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
             }
         }
         assertTrue("Image attached", editor.getData().getAttachedImageFiles()
-                .forUri(demoData.localImageTestUri2).isPresent());
-        onView(withId(R.id.noteBodyEditText)).check(matches(withText(content + " ")));
-        onView(withId(R.id.note_name_edit)).check(matches(withText(noteName)));
-        helper.clickMenuItem(method + " clicker save draft", R.id.saveDraftButton);
-
-        MyLog.v(this, method + " ended");
+                .forUri(imageUri).isPresent());
     }
 
     private void assertInitialText(final String description) throws InterruptedException {
