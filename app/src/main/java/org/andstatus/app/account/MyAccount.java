@@ -49,6 +49,7 @@ import org.andstatus.app.timeline.meta.TimelineSaver;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 import org.json.JSONObject;
@@ -342,7 +343,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
     @Override
     public String toString() {
         if (EMPTY == this) {
-            return MyLog.formatKeyValue(TAG, "EMPTY");
+            return MyStringBuilder.formatKeyValue(TAG, "EMPTY");
         }
 
         String members = (isValid() ? "" : "(invalid) ") + "accountName:" + data.accountName + ",";
@@ -380,7 +381,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         } catch (Exception e) {
             MyLog.v(this, members, e);
         }
-        return MyLog.formatKeyValue(this, members);
+        return MyStringBuilder.formatKeyValue(this, members);
     }
     
     public JSONObject toJson() {

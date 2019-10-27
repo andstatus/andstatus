@@ -264,7 +264,7 @@ public class MyLog {
 
     /** Truncated to {@link #MAX_TAG_LENGTH} */
     @NonNull
-    private static String objToTruncatedTag(Object objTag) {
+    static String objToTruncatedTag(Object objTag) {
         final String tag = objToTag(objTag);
         return (tag.length() > MAX_TAG_LENGTH) ? tag.substring(0, MAX_TAG_LENGTH) : tag;
     }
@@ -417,34 +417,6 @@ public class MyLog {
             return null; 
         }
         return new File(dir1, filename);
-    }
-
-    public static String formatKeyValue(Object keyIn, Object valueIn) {
-        String key = objToTruncatedTag(keyIn);
-        if (keyIn == null) {
-            return key;
-        }
-        String value = "null";
-        if (valueIn != null) {
-            value = valueIn.toString();
-        }
-        return formatKeyValue(key, value);
-    }
-
-    /** Strips value from leading and trailing commas */
-    public static String formatKeyValue(Object key, String value) {
-        String out = "";
-        if (!StringUtils.isEmpty(value)) {
-            out = value.trim();
-            if (out.substring(0, 1).equals(COMMA)) {
-                out = out.substring(1);
-            }
-            int ind = out.lastIndexOf(COMMA);
-            if (ind > 0 && ind == out.length()-1) {
-                out = out.substring(0, ind);
-            }
-        }
-        return objToTag(key) + ":{" + out + "}";
     }
 
     public static void setNextLogFileName() {

@@ -61,6 +61,7 @@ import androidx.annotation.NonNull;
 import static org.andstatus.app.net.social.Patterns.USERNAME_CHARS;
 import static org.andstatus.app.net.social.Patterns.WEBFINGER_ID_CHARS;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
+import static org.junit.Assert.fail;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -236,6 +237,10 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return mbActivity;
     }
 
+    public boolean isConstant() {
+        return this == EMPTY || this == PUBLIC;
+    }
+
     @Override
     public boolean isEmpty() {
         if (this == EMPTY) return true;
@@ -320,7 +325,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         .withComma("avatarFile", avatarFile, this::hasAvatarFile)
         .withComma("banner", endpoints.findFirst(ActorEndpointType.BANNER).orElse(null))
         .withComma("", "latest note present", this::hasLatestNote);
-        return MyLog.formatKeyValue(this, members);
+        return MyStringBuilder.formatKeyValue(this, members);
     }
 
     public String getUsername() {
@@ -562,6 +567,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     /** Lookup the application's id from other IDs */
     public void lookupActorId() {
+        if (isConstant()) return;
+
         if (actorId == 0 && isOidReal()) {
             actorId = MyQuery.oidToId(origin.myContext, OidEnum.ACTOR_OID, origin.getId(), oid);
         }
@@ -932,5 +939,15 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 : type == ActorEndpointType.API_PROFILE
                     ? UriUtils.toDownloadableOptional(oid)
                     : Optional.empty();
+    }
+
+    public void assertContext() {
+        if (isConstant()) return;
+
+        try {
+            origin.assertContext();
+        } catch (Throwable e) {
+            fail("Failed on " + this + "\n" + e.getMessage());
+        }
     }
 }

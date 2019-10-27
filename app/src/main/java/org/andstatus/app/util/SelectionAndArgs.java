@@ -75,7 +75,7 @@ public final class SelectionAndArgs {
 
     @Override
     public String toString() {
-        return MyLog.formatKeyValue(this, selection + ", args:" + Arrays.toString(selectionArgs));
+        return MyStringBuilder.formatKeyValue(this, selection + ", args:" + Arrays.toString(selectionArgs));
     }
 
 }

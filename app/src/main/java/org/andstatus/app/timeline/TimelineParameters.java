@@ -31,6 +31,7 @@ import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineTitle;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.StringUtils;
 
@@ -138,7 +139,7 @@ public class TimelineParameters {
 
     @Override
     public String toString() {
-        return MyLog.formatKeyValue(this,
+        return MyStringBuilder.formatKeyValue(this,
                 toSummary()
                 + ", account=" + timeline.myAccountToSync.getAccountName()
                 + (timeline.getActorId() == 0 ? "" : ", selectedActorId=" + timeline.getActorId())

@@ -25,9 +25,8 @@ import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.actor.ActorsOfNoteListLoader;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.AttachedImageFile;
+import org.andstatus.app.data.AttachedImageFiles;
 import org.andstatus.app.data.DataUpdater;
-import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.DownloadType;
 import org.andstatus.app.data.MyQuery;
@@ -49,6 +48,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +67,8 @@ public class NoteEditorData implements IsEmpty {
 
     public final AActivity activity;
 
-    private DownloadData attachment = DownloadData.EMPTY;
+    private AttachedImageFiles attachedImageFiles = AttachedImageFiles.EMPTY;
+    // TODO: List<CachedImage> image = ...;
     CachedImage image = null;
 
     private boolean replyToConversationParticipants = false;
@@ -138,11 +139,15 @@ public class NoteEditorData implements IsEmpty {
             note.setInReplyTo(inReplyTo);
         }
 
-        attachment = DownloadData.getSingleAttachment(noteId);
-        if (attachment.getStatus() == LOADED) {
-            image = new AttachedImageFile(attachment).loadAndGetImage(CacheName.ATTACHED_IMAGE);
-            note.attachments.add(Attachment.fromUri(attachment.getUri()));
-        }
+        attachedImageFiles = AttachedImageFiles.load(myContext, noteId);
+        attachedImageFiles.list.forEach( att -> {
+            if (att.downloadStatus == LOADED) {
+                image = att.loadAndGetImage(CacheName.ATTACHED_IMAGE);
+                note.attachments.add(Attachment.fromUri(att.uri));
+            } else {
+                // TODO
+            }
+        });
         MyLog.v(TAG, () -> "Loaded " + this);
     }
 
@@ -160,7 +165,7 @@ public class NoteEditorData implements IsEmpty {
         final int prime = 31;
         int result = 1;
         result = prime * result + ma.hashCode();
-        result = prime * result + attachment.getUri().hashCode();
+        result = prime * result + attachedImageFiles.hashCode();
         result = prime * result + activity.hashCode();
         return result;
     }
@@ -174,22 +179,22 @@ public class NoteEditorData implements IsEmpty {
         NoteEditorData other = (NoteEditorData) o;
         if (!ma.equals(other.ma))
             return false;
-        if (!attachment.getUri().equals(other.attachment.getUri()))
+        if (!attachedImageFiles.equals(other.attachedImageFiles))
             return false;
         return activity.equals(other.activity);
     }
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder(activity.toString() + COMMA);
-        if(attachment.nonEmpty()) {
-            builder.append("attachment:" + attachment + COMMA);
+        MyStringBuilder builder = MyStringBuilder.of(activity.toString());
+        if(attachedImageFiles.nonEmpty()) {
+            builder.withComma(attachedImageFiles.toString());
         }
         if(replyToConversationParticipants) {
-            builder.append("ReplyAll" + COMMA);
+            builder.withComma("ReplyAll");
         }
-        builder.append("ma:" + ma.getAccountName() + COMMA);
-        return MyLog.formatKeyValue(this, builder.toString());
+        builder.withComma("ma", ma.getAccountName());
+        return MyStringBuilder.formatKeyValue(this, builder);
     }
 
     public String toVisibleSummary() {
@@ -199,8 +204,8 @@ public class NoteEditorData implements IsEmpty {
         values.put(NoteTable.SUMMARY, activity.getNote().getSummary());
         values.put(NoteTable.SENSITIVE, activity.getNote().isSensitive());
         values.put(NoteTable.CONTENT, activity.getNote().getContent());
-        if(attachment.nonEmpty()) {
-            values.put(DownloadType.ATTACHMENT.name(), attachment.getUri().toString());
+        if(attachedImageFiles.nonEmpty()) {
+            values.put(DownloadType.ATTACHMENT.name(), attachedImageFiles.list.toString());
         }
         if(replyToConversationParticipants) {
             values.put("Reply", "all");
@@ -226,7 +231,7 @@ public class NoteEditorData implements IsEmpty {
         if (this.isValid()) {
             NoteEditorData data = new NoteEditorData(ma, MyContextHolder.get(), activity,
                     activity.getNote().getInReplyTo().getNote().noteId, false);
-            data.attachment = attachment;
+            data.attachedImageFiles = attachedImageFiles;
             data.image = image;
             data.replyToConversationParticipants = replyToConversationParticipants;
             return data;
@@ -235,11 +240,14 @@ public class NoteEditorData implements IsEmpty {
         }
     }
 
+    // TODO: Explicitly add in a separate method
     public void save(Uri imageUriToSave, Optional<String> mediaType) {
         Note note = activity.getNote();
-        Uri mediaUri = imageUriToSave.equals(Uri.EMPTY) ? attachment.getUri() : imageUriToSave;
         note.attachments.clear();
-        if (!mediaUri.equals(Uri.EMPTY)) note.attachments.add(Attachment.fromUriAndMimeType(mediaUri, mediaType.orElse("")));
+        attachedImageFiles.list.forEach(item -> note.attachments.add(Attachment.fromAttachedImageFile(item)));
+        if (UriUtils.nonEmpty(imageUriToSave)) {
+            note.attachments.add(Attachment.fromUriAndMimeType(imageUriToSave, mediaType.orElse("")));
+        }
         new DataUpdater(getMyAccount()).onActivity(activity);
         // TODO: Delete previous draft activities of this note
     }
@@ -272,8 +280,8 @@ public class NoteEditorData implements IsEmpty {
     }
 
     @NonNull
-    public DownloadData getAttachment() {
-        return attachment;
+    public AttachedImageFiles getAttachedImageFiles() {
+        return attachedImageFiles;
     }
 
     public NoteEditorData setNoteId(long noteId) {

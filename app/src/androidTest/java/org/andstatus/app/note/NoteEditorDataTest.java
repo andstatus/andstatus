@@ -5,6 +5,7 @@ import android.net.Uri;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.AttachedImageFiles;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.TextMediaType;
@@ -53,7 +54,7 @@ public class NoteEditorDataTest {
         assertEquals(recipientId, data.activity.getNote().audience().getFirstNonPublic().actorId);
         assertMentionedActor(data, inReplyToActorId, true);
         assertMentionedActor(data, memberActorId, replyAll);
-        assertEquals(data.toString(), Uri.EMPTY, data.getAttachment().getUri());
+        assertEquals(data.toString(), AttachedImageFiles.EMPTY, data.getAttachedImageFiles());
     }
 
     private void assertMentionedActor(NoteEditorData data, long mentionedActorId, boolean isMentionedExpected) {

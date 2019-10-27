@@ -26,6 +26,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.List;
@@ -155,6 +156,6 @@ public abstract class BaseTimelineAdapter<T extends ViewItem<T>> extends BaseAda
 
     @Override
     public String toString() {
-        return MyLog.formatKeyValue(this, listData);
+        return MyStringBuilder.formatKeyValue(this, listData);
     }
 }

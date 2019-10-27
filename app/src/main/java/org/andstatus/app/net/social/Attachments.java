@@ -28,7 +28,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Attachments implements IsEmpty {
-    public final List<Attachment> list = new ArrayList<>();
+    public static final Attachments EMPTY = new Attachments(true);
+    public final List<Attachment> list;
+
+    public Attachments() {
+        this(false);
+    }
+
+    private Attachments(boolean isEmpty) {
+        list = isEmpty ? Collections.emptyList() : new ArrayList<>();
+    }
 
     public void add(Attachment attachment) {
         if (!attachment.isValid() || list.contains(attachment)) return;

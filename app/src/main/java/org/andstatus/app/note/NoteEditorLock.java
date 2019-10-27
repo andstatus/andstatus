@@ -19,6 +19,7 @@ package org.andstatus.app.note;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
@@ -91,16 +92,15 @@ class NoteEditorLock implements IsEmpty {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
+        MyStringBuilder builder = new MyStringBuilder();
         if (isSave) {
-            builder.append("save,");
+            builder.withComma("save");
         }
         if (noteId != 0) {
-            builder.append("msgId:" + noteId + ",");
+            builder.withComma("noteId", noteId);
         }
-        builder.append("started:" + new Date(startedAt));
-        return MyLog.formatKeyValue(this, builder.toString());
-
+        builder.withComma("started", new Date(startedAt));
+        return MyStringBuilder.formatKeyValue(this, builder.toString());
     }
 
     boolean expired() {

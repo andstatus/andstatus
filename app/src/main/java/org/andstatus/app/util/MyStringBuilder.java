@@ -46,6 +46,34 @@ public class MyStringBuilder implements CharSequence, IsEmpty {
         return content.map(MyStringBuilder::of).orElse(new MyStringBuilder());
     }
 
+    public static String formatKeyValue(Object keyIn, Object valueIn) {
+        String key = MyLog.objToTruncatedTag(keyIn);
+        if (keyIn == null) {
+            return key;
+        }
+        String value = "null";
+        if (valueIn != null) {
+            value = valueIn.toString();
+        }
+        return formatKeyValue(key, value);
+    }
+
+    /** Strips value from leading and trailing commas */
+    public static String formatKeyValue(Object key, String value) {
+        String out = "";
+        if (!StringUtils.isEmpty(value)) {
+            out = value.trim();
+            if (out.substring(0, 1).equals(MyLog.COMMA)) {
+                out = out.substring(1);
+            }
+            int ind = out.lastIndexOf(MyLog.COMMA);
+            if (ind > 0 && ind == out.length()-1) {
+                out = out.substring(0, ind);
+            }
+        }
+        return MyLog.objToTag(key) + ":{" + out + "}";
+    }
+
     @NonNull
     public <T> MyStringBuilder withCommaNonEmpty(CharSequence label, T obj) {
         return withComma(label, obj, MyStringBuilder::nonEmptyObj);

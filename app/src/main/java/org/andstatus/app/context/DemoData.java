@@ -217,8 +217,10 @@ public final class DemoData {
                             + "\nAccounts: " + MyContextHolder.get().accounts(),
                     size2 >= size);
 
-            originInserter.checkDefaultTimelinesForOrigins();
-            accountInserter.checkDefaultTimelinesForAccounts();
+            assertOriginsContext();
+            DemoOriginInserter.assertDefaultTimelinesForOrigins();
+            DemoAccountInserter.assertDefaultTimelinesForAccounts();
+
             demoData.insertPumpIoConversation("");
             new DemoGnuSocialConversationInserter().insertConversation();
             if (progressCallback != null) {
@@ -239,6 +241,10 @@ public final class DemoData {
             MyLog.v(TAG_ASYNC, "Before initialize 3");
             MyContextHolder.initialize(myContext.context(), method);
             MyLog.v(TAG_ASYNC, "After initialize 3");
+
+            assertOriginsContext();
+            DemoOriginInserter.assertDefaultTimelinesForOrigins();
+            DemoAccountInserter.assertDefaultTimelinesForAccounts();
 
             assertEquals("Data errors exist", 0 ,
                     DataChecker.fixData(new ProgressLogger(progressCallback), true, true));
@@ -345,5 +351,9 @@ public final class DemoData {
             MyLog.e(supplier, "Initiating crash test exception");
             throw new NullPointerException("This is a test crash event");
         }
+    }
+
+    private static void assertOriginsContext() {
+        MyContextHolder.get().origins().collection().forEach(Origin::assertContext);
     }
 }

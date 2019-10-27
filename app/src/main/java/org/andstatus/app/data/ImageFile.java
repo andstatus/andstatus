@@ -42,7 +42,7 @@ import io.vavr.control.Try;
 public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
     final DownloadFile downloadFile;
     volatile MediaMetadata mediaMetadata;
-    protected volatile MyContentType contentType;
+    public volatile MyContentType contentType;
     public final long downloadId;
     public final DownloadStatus downloadStatus;
     public final long downloadedDate;

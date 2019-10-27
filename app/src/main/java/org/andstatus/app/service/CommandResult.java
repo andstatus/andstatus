@@ -26,7 +26,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.notification.NotificationEventType;
-import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtils;
 
@@ -169,7 +169,7 @@ public final class CommandResult implements Parcelable {
     
     @Override
     public String toString() {
-        return MyLog.formatKeyValue("CommandResult", toSummaryBuilder());
+        return MyStringBuilder.formatKeyValue(this, toSummaryBuilder());
     }
 
     public String toSummary() {

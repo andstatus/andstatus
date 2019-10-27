@@ -2,6 +2,7 @@ package org.andstatus.app.origin;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -88,7 +89,8 @@ public final class DemoOriginInserter {
         assertEquals(allowHtml, origin.isHtmlContentAllowed());
     }
 
-    public void checkDefaultTimelinesForOrigins() {
+    public static void assertDefaultTimelinesForOrigins() {
+        MyContext myContext = MyContextHolder.get();
         for (Origin origin : myContext.origins().collection()) {
             MyAccount myAccount = myContext.accounts().
                     getFirstSucceededForOrigin(origin);

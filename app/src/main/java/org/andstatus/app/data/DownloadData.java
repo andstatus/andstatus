@@ -536,7 +536,7 @@ public class DownloadData implements IsEmpty {
             builder.withComma("size", fileSize);
             if (mediaMetadata.nonEmpty()) builder.withComma(mediaMetadata.toString());
         }
-        return MyLog.formatKeyValue(this, builder.toString());
+        return MyStringBuilder.formatKeyValue(this, builder.toString());
     }
 
     public Uri mediaUriToBePosted() {

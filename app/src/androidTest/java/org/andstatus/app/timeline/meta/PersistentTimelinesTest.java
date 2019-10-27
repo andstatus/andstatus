@@ -118,12 +118,12 @@ public class PersistentTimelinesTest {
 
     @Test
     public void testDefaultTimelinesForAccounts() {
-        new DemoAccountInserter(myContext).checkDefaultTimelinesForAccounts();
+        new DemoAccountInserter(myContext).assertDefaultTimelinesForAccounts();
     }
 
     @Test
     public void testDefaultTimelinesForOrigins() {
-        new DemoOriginInserter(myContext).checkDefaultTimelinesForOrigins();
+        new DemoOriginInserter(myContext).assertDefaultTimelinesForOrigins();
     }
 
     @Test

@@ -20,6 +20,7 @@ import android.content.ContentResolver;
 import android.net.Uri;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadType;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.IsEmpty;
@@ -61,6 +62,12 @@ public class Attachment implements Comparable<Attachment>, IsEmpty {
         Objects.requireNonNull(uriIn);
         Objects.requireNonNull(mimeTypeIn);
         return new Attachment(MyContextHolder.get().context().getContentResolver(), uriIn, mimeTypeIn);
+    }
+
+    public static Attachment fromAttachedImageFile(AttachedImageFile imageFile) {
+        return imageFile.isEmpty() ? EMPTY
+                : new Attachment(MyContextHolder.get().context().getContentResolver(),
+                    imageFile.uri, imageFile.contentType.generalMimeType);   // TODO: Concrete MiMe type lost
     }
 
     Attachment setPreviewOf(@NonNull Attachment previewOf) {

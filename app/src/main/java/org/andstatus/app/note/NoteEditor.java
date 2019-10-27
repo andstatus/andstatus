@@ -24,7 +24,6 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.text.format.Formatter;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -531,11 +530,10 @@ public class NoteEditor {
                         StringUtils.format(getActivity(), R.string.message_source_to, recipientNames));
             }
         }
-        if (editorData.getAttachment().nonEmpty()) {
+        if (editorData.getAttachedImageFiles().nonEmpty()) {
             noteDetails.withSpace("("
                     + getActivity().getText(R.string.label_with_media).toString() + " "
-                    + editorData.getAttachment().mediaMetadata.toDetails() + ", "
-                    + Formatter.formatShortFileSize(getActivity(), editorData.getAttachment().fileSize)
+                    + editorData.getAttachedImageFiles().toMediaSummary(getActivity())
                     + ")");
         }
         MyUrlSpan.showText(editorView, R.id.noteEditDetails, noteDetails.toString(), false, false);
@@ -563,8 +561,8 @@ public class NoteEditor {
             Toast.makeText(getActivity(), R.string.cannot_send_empty_message, Toast.LENGTH_SHORT).show();
         } else if (editorData.getMyAccount().charactersLeftForNote(editorData.getContent()) < 0) {
             Toast.makeText(getActivity(), R.string.message_is_too_long, Toast.LENGTH_SHORT).show();
-        } else if (editorData.getAttachment().nonEmpty()
-                && editorData.getAttachment().fileSize > MyPreferences.getMaximumSizeOfAttachmentBytes()) {
+        } else if (editorData.getAttachedImageFiles()
+                    .tooLargeAttachment(MyPreferences.getMaximumSizeOfAttachmentBytes()).isPresent()) {
             Toast.makeText(getActivity(), R.string.attachment_is_too_large, Toast.LENGTH_SHORT).show();
         } else {
             NoteEditorCommand command = new NoteEditorCommand(editorData.copy());

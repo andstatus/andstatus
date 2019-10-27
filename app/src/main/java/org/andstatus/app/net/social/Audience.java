@@ -232,4 +232,11 @@ public class Audience implements IsEmpty {
     public TriState getPublic() {
         return isPublic;
     }
+
+    public void assertContext() {
+        if (this == EMPTY) return;
+
+        origin.assertContext();
+        actors.forEach(Actor::assertContext);
+    }
 }

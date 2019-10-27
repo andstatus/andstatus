@@ -39,6 +39,7 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
@@ -614,16 +615,16 @@ public class MyService extends Service {
 
         @Override
         public String toString() {
-            StringBuilder sb = new StringBuilder(64);
+            MyStringBuilder sb = new MyStringBuilder();
             if (currentlyExecuting != null && currentlyExecutingSince > 0) {
-                sb.append("currentlyExecuting: " + currentlyExecuting + ", ");
-                sb.append("since: " + RelativeTime.getDifference(getBaseContext(), currentlyExecutingSince) + ", ");
+                sb.withComma("currentlyExecuting",currentlyExecuting);
+                sb.withComma("since",RelativeTime.getDifference(getBaseContext(), currentlyExecutingSince));
             }
             if (isStopping()) {
-                sb.append("stopping, ");
+                sb.withComma("stopping");
             }
-            sb.append(super.toString());
-            return MyLog.formatKeyValue(this, sb.toString());
+            sb.withComma(super.toString());
+            return MyStringBuilder.formatKeyValue(this, sb);
         }
 
     }

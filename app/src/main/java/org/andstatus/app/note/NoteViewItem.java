@@ -22,8 +22,6 @@ import android.text.Html;
 import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
@@ -32,7 +30,7 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
@@ -85,7 +83,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
 
     @Override
     public String toString() {
-        return MyLog.formatKeyValue(this, I18n.trimTextAt(getContent().toString(), 40) + ","
+        return MyStringBuilder.formatKeyValue(this, I18n.trimTextAt(getContent().toString(), 40) + ","
                 + getDetails(getMyContext().context(), false));
     }
 }

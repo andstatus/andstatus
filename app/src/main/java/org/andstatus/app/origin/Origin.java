@@ -49,6 +49,8 @@ import java.util.regex.Pattern;
 import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
+import static org.junit.Assert.fail;
+
 /**
  * Social network (twitter.com, identi.ca, ... ) where notes are being
  * created (it's the "Origin" of the notes)
@@ -419,6 +421,18 @@ public class Origin implements Comparable<Origin>, IsEmpty {
     @Override
     public int compareTo(@NonNull Origin o) {
         return getName().compareToIgnoreCase(o.getName());
+    }
+
+
+    public void assertContext() {
+        if (!myContext.isReady()) {
+            fail("Origin context should be ready " + this +
+                    "\ncontext: " + myContext);
+        }
+        if (myContext.getDatabase() == null) {
+            fail("Origin context should have database " + this +
+                    "\ncontext: " + myContext);
+        }
     }
 
     public static final class Builder {

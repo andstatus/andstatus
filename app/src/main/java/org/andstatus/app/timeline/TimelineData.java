@@ -22,6 +22,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.note.BaseNoteViewItem;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.TryUtils;
 
 import java.util.ArrayList;
@@ -225,11 +226,11 @@ public class TimelineData<T extends ViewItem<T>> {
 
     @Override
     public String toString() {
-        String s = "pages:" + pages.size() + ", total items:" + size() + ",";
+        MyStringBuilder builder = MyStringBuilder.of("pages:" + pages.size() + ", total items:" + size());
         for (TimelinePage page : pages) {
-            s += "\nPage size:" + page.items.size() + ", params: " + page.params + ",";
+            builder.atNewLine("Page size:" + page.items.size() + ", params: " + page.params);
         }
-        return MyLog.formatKeyValue(this, s);
+        return MyStringBuilder.formatKeyValue(this, builder);
     }
 
     public boolean isCollapseDuplicates() {

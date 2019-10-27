@@ -36,6 +36,7 @@ import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -143,9 +144,9 @@ public class Note extends AObject {
     private Note(Origin origin, String oid) {
         this.origin = origin;
         this.oid = oid;
-        audience = new Audience(origin);
-        replies = new ArrayList<>();
-        attachments = new Attachments();
+        audience = origin.isEmpty() ? Audience.EMPTY : new Audience(origin);
+        replies = origin.isEmpty() ? Collections.emptyList() : new ArrayList<>();
+        attachments = origin.isEmpty() ? Attachments.EMPTY : new Attachments();
     }
 
     @NonNull
@@ -296,7 +297,7 @@ public class Note extends AObject {
     @Override
     public String toString() {
         if (this == EMPTY) {
-            return MyLog.formatKeyValue(this, "EMPTY");
+            return MyStringBuilder.formatKeyValue(this, "EMPTY");
         }
         MyStringBuilder builder = new MyStringBuilder();
         builder.withComma("","empty", this::isEmpty);
@@ -325,7 +326,7 @@ public class Note extends AObject {
         if(replies.size() > 0) {
             builder.atNewLine("Replies", replies.toString());
         }
-        return MyLog.formatKeyValue(this, builder.toString());
+        return MyStringBuilder.formatKeyValue(this, builder.toString());
     }
 
     @NonNull

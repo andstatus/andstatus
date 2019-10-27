@@ -120,4 +120,22 @@ public class AttachedImageFile extends ImageFile {
         }
         return intent;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AttachedImageFile imageFile = (AttachedImageFile) o;
+
+        if (previewOfDownloadId != imageFile.previewOfDownloadId) return false;
+        return uri.equals(imageFile.uri);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = uri.hashCode();
+        result = 31 * result + (int) (previewOfDownloadId ^ (previewOfDownloadId >>> 32));
+        return result;
+    }
 }

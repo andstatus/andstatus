@@ -17,7 +17,6 @@
 package org.andstatus.app.timeline;
 
 import android.database.Cursor;
-import androidx.annotation.NonNull;
 
 import org.andstatus.app.actor.ActorListLoader;
 import org.andstatus.app.actor.ActorListType;
@@ -25,10 +24,13 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StopWatch;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.NonNull;
 
 /**
 * @author yvolk@yurivolkov.com
@@ -171,7 +173,7 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
 
     @Override
     public String toString() {
-        return MyLog.formatKeyValue(this, getParams().toString());
+        return MyStringBuilder.formatKeyValue(this, getParams());
     }
 
     @NonNull

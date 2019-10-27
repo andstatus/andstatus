@@ -280,15 +280,12 @@ public class CommandData implements Comparable<CommandData> {
         return timeline.getSearchQuery();
     }
 
-    /**
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString() {
-        if (this == EMPTY) return MyLog.formatKeyValue(this, "EMPTY");
+        if (this == EMPTY) return MyStringBuilder.formatKeyValue(this, "EMPTY");
 
         MyStringBuilder builder = new MyStringBuilder();
-        builder.append("command:" + command.save());
+        builder.withComma("command", command.save());
         if (mManuallyLaunched) {
             builder.withComma("manual");
         }
@@ -306,7 +303,7 @@ public class CommandData implements Comparable<CommandData> {
         }
         builder.withComma("created:" + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate()));
         builder.withComma(CommandResult.toString(commandResult));
-        return MyLog.formatKeyValue(this, builder);
+        return MyStringBuilder.formatKeyValue(this, builder);
     }
 
 

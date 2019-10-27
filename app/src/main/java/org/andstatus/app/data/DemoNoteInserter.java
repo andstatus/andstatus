@@ -166,6 +166,7 @@ public class DemoNoteInserter {
         final TimelineType timelineType = activity.getNote().getPublic().isFalse ? TimelineType.PRIVATE : TimelineType.HOME;
         DataUpdater di = new DataUpdater(new CommandExecutionContext(origin.myContext,
                         CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType)));
+        activity.audience().assertContext();
         di.onActivity(activity);
         checkActivityRecursively(activity, 1);
     }

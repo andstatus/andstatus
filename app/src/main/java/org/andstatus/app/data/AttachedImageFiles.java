@@ -16,14 +16,20 @@
 
 package org.andstatus.app.data;
 
+import android.content.Context;
+import android.net.Uri;
+import android.text.format.Formatter;
+
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.util.IsEmpty;
+import org.andstatus.app.util.MyStringBuilder;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class AttachedImageFiles implements IsEmpty {
@@ -90,9 +96,7 @@ public class AttachedImageFiles implements IsEmpty {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "{" +
-                list +
-                '}';
+        return MyStringBuilder.formatKeyValue(this, list);
     }
 
     public void preloadImagesAsync() {
@@ -101,5 +105,38 @@ public class AttachedImageFiles implements IsEmpty {
                 imageFile.preloadImageAsync(CacheName.ATTACHED_IMAGE);
             }
         }
+    }
+
+    public String toMediaSummary(Context context) {
+        MyStringBuilder builder = new MyStringBuilder();
+        list.forEach( item -> {
+            builder.withComma(
+            item.mediaMetadata.toDetails() + " "
+                    + Formatter.formatShortFileSize(context, item.downloadFile.getSize()));
+        });
+        return builder.toString();
+    }
+
+    public Optional<AttachedImageFile> tooLargeAttachment(long maxBytes) {
+        return list.stream().filter(item -> item.downloadFile.getSize() > maxBytes).findAny();
+    }
+
+    public Optional<AttachedImageFile> forUri(Uri uri) {
+        return list.stream().filter(item -> uri.equals(item.uri)).findAny();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        AttachedImageFiles that = (AttachedImageFiles) o;
+
+        return list.equals(that.list);
+    }
+
+    @Override
+    public int hashCode() {
+        return list.hashCode();
     }
 }

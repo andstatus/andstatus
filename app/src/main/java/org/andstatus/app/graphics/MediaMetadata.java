@@ -30,6 +30,7 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.util.concurrent.TimeUnit;
@@ -97,7 +98,7 @@ public class MediaMetadata implements IsEmpty {
         if (width > 0) builder.append("width:" + width + ",");
         if (height > 0) builder.append("height:" + height + ",");
         if (duration > 0) builder.append("duration:" + height + ",");
-        return MyLog.formatKeyValue(this, builder.toString());
+        return MyStringBuilder.formatKeyValue(this, builder.toString());
     }
 
     public String toDetails() {
