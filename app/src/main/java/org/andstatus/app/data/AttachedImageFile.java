@@ -33,7 +33,7 @@ public class AttachedImageFile extends ImageFile {
     public static final AttachedImageFile EMPTY = new AttachedImageFile();
     public final Uri uri;
     final long previewOfDownloadId;
-    private final AttachedImageFile previewOf;
+    public final AttachedImageFile previewOf;
 
     private AttachedImageFile() {
         super("", MyContentType.UNKNOWN, MediaMetadata.EMPTY, 0, DownloadStatus.ABSENT, DATETIME_MILLIS_NEVER);

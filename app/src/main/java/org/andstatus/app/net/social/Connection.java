@@ -348,13 +348,13 @@ public abstract class Connection implements IsEmpty {
      *
      * @param note
      * @param inReplyToOid   The ID of an existing Note that the update is in reply to.
-     * @param mediaUri
+     * @param attachments
      *
      * @see <a
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/update">Twitter
      *      POST statuses/update</a>
      */
-    public abstract AActivity updateNote(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException;
+    public abstract AActivity updateNote(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException;
 
     /**
      * Post Reblog ("retweet")

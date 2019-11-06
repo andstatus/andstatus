@@ -16,15 +16,20 @@
 
 package org.andstatus.app.net.social;
 
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DownloadData;
+import org.andstatus.app.note.NoteDownloads;
 import org.andstatus.app.service.AttachmentDownloader;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.util.IsEmpty;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Attachments implements IsEmpty {
@@ -39,9 +44,12 @@ public class Attachments implements IsEmpty {
         list = isEmpty ? Collections.emptyList() : new ArrayList<>();
     }
 
-    public void add(Attachment attachment) {
-        if (!attachment.isValid() || list.contains(attachment)) return;
-        list.add(attachment);
+    public Attachments add(Attachment attachment) {
+        if (!attachment.isValid() || list.contains(attachment)) return this;
+        Attachments attachments = new Attachments(false);
+        attachments.list.addAll(list);
+        attachments.list.add(attachment);
+        return attachments;
     }
 
     public void save(CommandExecutionContext execContext, long noteId) {
@@ -108,5 +116,32 @@ public class Attachments implements IsEmpty {
         return this.getClass().getSimpleName() + "{" +
                 list +
                 '}';
+    }
+
+    public static Attachments load(MyContext myContext, long noteId) {
+        if (myContext.isEmptyOrExpired() || noteId == 0) return Attachments.EMPTY;
+
+        NoteDownloads downloads = NoteDownloads.fromNoteId(myContext, noteId);
+        if (downloads.isEmpty()) return Attachments.EMPTY;
+
+        Map<Long, Attachment> map = new HashMap<>();
+        for (DownloadData downloadData : downloads.list) {
+            map.put(downloadData.getDownloadId(), new Attachment(downloadData));
+        }
+
+        Attachments attachments = new Attachments();
+        for (DownloadData downloadData : downloads.list) {
+            Attachment attachment = map.get(downloadData.getDownloadId());
+            if (downloadData.getPreviewOfDownloadId() != 0) {
+                Attachment target = map.get(downloadData.getPreviewOfDownloadId());
+                if (target == null) {
+                    MyLog.e(downloadData, "Couldn't find target of preview " + downloadData);
+                } else {
+                    attachment.setPreviewOf(target);
+                }
+            }
+            attachments = attachments.add(attachment);
+        }
+        return attachments;
     }
 }

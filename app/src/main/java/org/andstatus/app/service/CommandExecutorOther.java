@@ -16,8 +16,6 @@
 
 package org.andstatus.app.service;
 
-import android.net.Uri;
-
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadData;
@@ -33,6 +31,7 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.RateLimitStatus;
 import org.andstatus.app.support.java.util.function.SupplierWithException;
@@ -397,11 +396,12 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         DemoData.crashTest(() -> note.getContent().startsWith("Crash me on sending 2015-04-10"));
 
         String content = note.getContentToPost();
-        Uri mediaUri = DownloadData.getSingleAttachment(noteId).mediaUriToBePosted();
+        // TODO: Add attachments to Note right here
+        Attachments attachments = Attachments.load(execContext.myContext, noteId);
         String msgLog = (StringUtils.nonEmpty(note.getName()) ? "name:'" + note.getName() + "'; " : "")
                 + (StringUtils.nonEmpty(note.getSummary()) ? "summary:'" + note.getSummary() + "'; " : "")
                 + (StringUtils.nonEmpty(content) ? "content:'" + MyLog.trimmedString(content, 80) + "'" : "")
-                + (mediaUri.equals(Uri.EMPTY) ? "" : "; mediaUri:'" + mediaUri + "'");
+                + (attachments.isEmpty() ? "" : "; " + attachments);
 
         AActivity activity = AActivity.EMPTY;
         try {
@@ -413,7 +413,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             }
             long inReplyToNoteId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
             String inReplyToNoteOid = getNoteOid(method, inReplyToNoteId, false);
-            activity = getConnection().updateNote(note, inReplyToNoteOid, mediaUri);
+            activity = getConnection().updateNote(note, inReplyToNoteOid, attachments);
             logIfEmptyNote(method, noteId, activity.getNote());
         } catch (ConnectionException e) {
             logConnectionException(e, method + "; " + msgLog);

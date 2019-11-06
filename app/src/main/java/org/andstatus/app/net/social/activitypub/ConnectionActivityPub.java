@@ -28,6 +28,7 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
@@ -170,10 +171,10 @@ public class ConnectionActivityPub extends Connection {
     }
 
     @Override
-    public AActivity updateNote(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
         ActivitySender sender = ActivitySender.fromContent(this, note);
         sender.setInReplyTo(inReplyToOid);
-        sender.setMediaUri(mediaUri);
+        sender.setAttachments(attachments);
         return sender.send(ActivityType.CREATE);
     }
 
@@ -401,10 +402,6 @@ public class ConnectionActivityPub extends Connection {
 
             addRecipients(activity, jso);
 
-            ObjectOrId.of(jso, "attachment")
-                .mapAll(this::attachmentFromJson, Attachment::fromUri)
-                .forEach(note.attachments::add);
-
             // If the Note is a Reply to the other note
             ObjectOrId.of(jso, "inReplyTo")
                     .mapOne(this::activityFromJson, this::activityFromOid)
@@ -422,13 +419,17 @@ public class ConnectionActivityPub extends Connection {
                     }
                 }
             }
+
+            ObjectOrId.of(jso, "attachment")
+                    .mapAll(ConnectionActivityPub::attachmentFromJson, Attachment::fromUri)
+                    .forEach(activity::addAttachment);
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing note", e, jso);
         }
     }
 
     @NonNull
-    private Attachment attachmentFromJson(JSONObject jso) {
+    private static Attachment attachmentFromJson(JSONObject jso) {
         return Attachment.fromUriAndMimeType(UriUtils.fromJson(jso, "url"), jso.optString("mediaType"));
     }
 

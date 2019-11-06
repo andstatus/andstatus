@@ -101,7 +101,7 @@ public class DemoConversationInserter {
 
         AActivity reply3 = buildActivity(getAuthor1(), "Another note title",
                 "Reply 3 to selected by the same author", selected, null);
-        reply3.getNote().attachments.add(
+        reply3.addAttachment(
                 Attachment.fromUri("http://www.publicdomainpictures.net/pictures/100000/nahled/broadcasting-tower-14081029181fC.jpg"));
         addActivity(reply3);
         addActivity(reply1);
@@ -152,7 +152,7 @@ public class DemoConversationInserter {
 
         AActivity reply9 = buildActivity(author2, "", "Reply 9 to Reply 7", reply7, null);
         reply9.setSubscribedByMe(TriState.TRUE);
-        reply9.getNote().attachments.add(Attachment.fromUri(
+        reply9.addAttachment(Attachment.fromUri(
                 "http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg"));
         addActivity(reply9);
         final AActivity duplicateOfReply9 = buildActivity(author4, "", "A duplicate of " + reply9.getNote().getContent(),

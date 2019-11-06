@@ -19,7 +19,9 @@ package org.andstatus.app.net.http;
 import android.net.Uri;
 
 import org.andstatus.app.account.AccountDataWriter;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.service.ConnectionRequired;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.TriState;
@@ -77,9 +79,10 @@ public interface HttpConnectionInterface {
             return Try.failure(new IllegalArgumentException("URL is empty"));
         }
         HttpReadResult result = new HttpReadResult(path, formParams).setLegacyHttpProtocol(isLegacyHttpProtocol);
-        result.formParams.ifPresent(params ->
-            MyLog.logNetworkLevelMessage("post", getData().getLogName(), params, "")
-        );
+        if (MyPreferences.isLogNetworkLevelMessages()) {
+            JSONObject jso = JsonUtils.put(result.formParams.orElseGet(JSONObject::new), "URL", result.getUrlObj());
+            MyLog.logNetworkLevelMessage("post", getData().getLogName(), jso, "");
+        }
         return Try.success(result)
                 .map(this::postRequest)
                 .map(r -> r.logResponse(getData().getLogName()))

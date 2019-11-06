@@ -51,8 +51,7 @@ class ApacheHttpClientUtils {
                 httpEntityToBytes(httpEntity));
     }
 
-    static HttpEntity multiPartFormEntity(JSONObject formParams) throws
-            ConnectionException {
+    static HttpEntity multiPartFormEntity(JSONObject formParams) throws ConnectionException {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         Uri mediaUri = null;
         String mediaPartName = "";

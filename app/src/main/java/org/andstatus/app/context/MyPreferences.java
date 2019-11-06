@@ -305,7 +305,7 @@ public class MyPreferences {
     }
 
     public static boolean isActivityPubEnabled() {
-        return SharedPreferencesUtil.getBoolean(KEY_ENABLE_ACTIVITYPUB, false);
+        return SharedPreferencesUtil.getBoolean(KEY_ENABLE_ACTIVITYPUB, true);
     }
 
     public static boolean isBackupLogFiles() {

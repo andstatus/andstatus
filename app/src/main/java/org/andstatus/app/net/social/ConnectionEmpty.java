@@ -66,7 +66,7 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public AActivity updateNote(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
         return AActivity.EMPTY;
     }
 

@@ -133,17 +133,18 @@ public class DemoGnuSocialConversationInserter {
     }
 
     private void addWithMultipleAttachments(AActivity activity) {
-        final Attachments attachments = activity.getNote().attachments;
-        attachments.add(
+        activity.addAttachment(
                 Attachment.fromUriAndMimeType("https://gnusocial.example.com/api/statuses/update.json",
                         "application/json; charset=utf-8"));
-        attachments.add(
+        activity.addAttachment(
                 Attachment.fromUriAndMimeType("https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html",
                         "text/html; charset=iso-8859-1"));
-        attachments.add(
+        activity.addAttachment(
                 Attachment.fromUriAndMimeType("https://www.w3.org/2008/site/images/logo-w3c-mobile-lg",
                         "image"));
         addActivity(activity);
+
+        final Attachments attachments = activity.getNote().attachments;
         assertEquals(attachments.toString(), 3, attachments.size());
 
         final Attachment attachment0 = attachments.list.get(0);
@@ -157,35 +158,35 @@ public class DemoGnuSocialConversationInserter {
     }
 
     private void addWithMultipleImages(AActivity activity, int numberOfImages) {
-        final Attachments attachments = activity.getNote().attachments;
         for (int ind = 0; ind < numberOfImages; ind++) {
             switch (ind) {
                 case (0):
-                    attachments.add(Attachment.fromUriAndMimeType(
+                    activity.addAttachment(Attachment.fromUriAndMimeType(
                             "https://thumbs.dreamstime.com/b/amazing-lake-arboretum-amazing-lake-arboretum-ataturk-arboretum-botanic-park-istanbul-160236958.jpg", "image"));
-                    attachments.add(Attachment.fromUriAndMimeType(
+                    activity.addAttachment(Attachment.fromUriAndMimeType(
                             "https://www.w3.org/Protocols/rfc1341/7_2_Multipart.html",
                                     "text/html; charset=iso-8859-1"));
                     break;
                 case (1):
-                    attachments.add(Attachment.fromUriAndMimeType(
+                    activity.addAttachment(Attachment.fromUriAndMimeType(
                             "https://thumbs.dreamstime.com/b/tribal-women-farmers-paddy-rice-terraces-agricultural-fields-countryside-yen-bai-mountain-hills-valley-south-east-160537176.jpg",
                             "image"));
-                    attachments.add(
+                    activity.addAttachment(
                             Attachment.fromUriAndMimeType("https://gnusocial.example.com/api/statuses/update.json",
                                     "application/json; charset=utf-8"));
                     break;
                 case (2):
-                    attachments.add(Attachment.fromUriAndMimeType(
+                    activity.addAttachment(Attachment.fromUriAndMimeType(
                             "https://thumbs.dreamstime.com/b/concept-two-birds-chickadee-creeper-flew-branch-garden-under-banner-word-autumn-carved-red-maple-leaves-160997265.jpg",
                             "image"));
-                    attachments.add(
+                    activity.addAttachment(
                             Attachment.fromUriAndMimeType("https://gnusocial.example.com/api/statuses/update2.json",
                                     "application/json; charset=utf-8"));
                     break;
             }
         }
         addActivity(activity);
+        final Attachments attachments = activity.getNote().attachments;
         assertEquals(attachments.toString(), 2 * numberOfImages, attachments.size());
     }
 

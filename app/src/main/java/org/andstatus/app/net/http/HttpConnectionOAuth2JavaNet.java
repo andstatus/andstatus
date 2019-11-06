@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -113,7 +114,18 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                             Iterator<String> iterator = params.keys();
                             while (iterator.hasNext()) {
                                 String key = iterator.next();
-                                request.addBodyParameter(key, params.optString(key));
+                                try {
+                                    Object value = params.get(key);
+                                    if (value != null) {
+                                        if (value instanceof List) {
+                                            ((List<String>) value).forEach( v -> request.addBodyParameter(key, v));
+                                        } else {
+                                            request.addBodyParameter(key, value.toString());
+                                        }
+                                    }
+                                } catch (JSONException e) {
+                                    MyLog.w(this, "Failed to get key " + key, e);
+                                }
                             }
                         }
                     }

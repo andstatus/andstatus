@@ -260,9 +260,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
 
     @Override
-    protected AActivity updateNote2(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    protected AActivity updateNote2(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
         JSONObject obj = new JSONObject();
-        JSONObject mediaObject = null;
         try {
             obj.put(SUMMARY_PROPERTY, note.getSummary());
             obj.put(SENSITIVE_PROPERTY, note.isSensitive());
@@ -270,14 +269,18 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             if ( !StringUtils.isEmpty(inReplyToOid)) {
                 obj.put("in_reply_to_id", inReplyToOid);
             }
-            if (!UriUtils.isEmpty(mediaUri)) {
-                mediaObject = uploadMedia(mediaUri);
+            List<String> ids = new ArrayList<>();
+            for (Attachment attachment : attachments.list) {
+                JSONObject mediaObject = uploadMedia(attachment.uri);
                 if (mediaObject != null && mediaObject.has("id")) {
-                    obj.put("media_ids[]", mediaObject.get("id"));
+                    ids.add(mediaObject.get("id").toString());
                 }
+            };
+            if (!ids.isEmpty()) {
+                obj.put("media_ids[]", ids);
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Error updating note '" + mediaUri + "'", e, mediaObject);
+            throw ConnectionException.loggedJsonException(this, "Error updating note '" + attachments + "'", e, obj);
         }
         return postRequest(ApiRoutineEnum.UPDATE_NOTE, obj).map(HttpReadResult::getJsonObject)
                 .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
@@ -405,7 +408,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 }
             }
             ObjectOrId.of(jso, ATTACHMENTS_FIELD_NAME).mapObjects(jsonToAttachments(method))
-                    .forEach(attachments -> attachments.forEach(note.attachments::add));
+                    .forEach(attachments -> attachments.forEach(activity::addAttachment));
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing note", e, jso);
         } catch (Exception e) {

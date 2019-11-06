@@ -30,6 +30,7 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.net.social.Note;
@@ -51,6 +52,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.UriUtilsTest.assertEndpoint;
@@ -291,7 +293,7 @@ public class ConnectionPumpioTest {
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
                 .setName(name).setContentPosted(content);
-        connection.updateNote(note, inReplyToId, null);
+        connection.updateNote(note, inReplyToId, Attachments.EMPTY);
         JSONObject activity = mock.getHttpMock().getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
@@ -307,7 +309,7 @@ public class ConnectionPumpioTest {
         String content2 = "Testing the application...";
         Note note2 = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
                 .setName(name2).setContentPosted(content2);
-        connection.updateNote(note2, "", null);
+        connection.updateNote(note2, "", Attachments.EMPTY);
         activity = mock.getHttpMock().getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         obj = activity.getJSONObject("object");
@@ -374,7 +376,9 @@ public class ConnectionPumpioTest {
 
         Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
                 .setContentPosted("Test post note with media");
-        AActivity activity = connection.updateNote(note, "", demoData.localImageTestUri);
+        AActivity activity = connection.updateNote(note, "",
+                new Attachments().add(Attachment.fromUriAndMimeType(demoData.localImageTestUri,
+                        MyContentType.IMAGE.generalMimeType)));
     }
 
     @Test
@@ -389,7 +393,9 @@ public class ConnectionPumpioTest {
         Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
                 .setName(name).setContentPosted(content);
 
-        AActivity activity = connection.updateNote(note, "", demoData.localVideoTestUri);
+        AActivity activity = connection.updateNote(note, "",
+                new Attachments().add(Attachment.fromUriAndMimeType(demoData.localVideoTestUri,
+                        MyContentType.VIDEO.generalMimeType)));
         assertEquals("Responses counter " + mock.getHttpMock(), 3, mock.getHttpMock().responsesCounter);
         Note note2 = activity.getNote();
         assertEquals("Note name " + activity, name, note2.getName());
@@ -407,7 +413,7 @@ public class ConnectionPumpioTest {
 
         Note note = connection.getNote("https://io.jpope.org/api/activity/w9wME-JVQw2GQe6POK7FSQ").getNote();
         if (uniqueUid) {
-            note = note.copy(note.oid + "_" + demoData.testRunUid);
+            note = note.copy(Optional.of(note.oid + "_" + demoData.testRunUid), Optional.empty());
         }
         assertNotNull("note returned", note);
         assertEquals("has attachment", 1, note.attachments.size());

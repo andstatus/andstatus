@@ -112,21 +112,21 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     }
 
     @Override
-    protected AActivity updateNote2(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    protected AActivity updateNote2(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             super.updateNoteSetFields(note, inReplyToOid, formParams);
             if (note.isSensitive()) {
                 formParams.put(SENSITIVE_PROPERTY, note.isSensitive());
             }
-            if (UriUtils.nonEmpty(mediaUri)) {
+            if (attachments.nonEmpty()) {
                 formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media[]");
-                formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
+                formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachments.list.get(0).uri.toString());
             }
         } catch (JSONException e) {
             throw ConnectionException.hardConnectionException("Exception while preparing post params " + note, e);
         }
-        return postRequest(UriUtils.isEmpty(mediaUri)
+        return postRequest(attachments.isEmpty()
                         ? ApiRoutineEnum.UPDATE_NOTE
                         : ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA,
                     formParams)
@@ -208,7 +208,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                             UriUtils.fromAlternativeTags((JSONObject) jArr.get(ind),
                                     "media_url_https", "media_url_http"));
                     if (attachment.isValid()) {
-                        activity.getNote().attachments.add(attachment);
+                        activity.addAttachment(attachment);
                     } else {
                         MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
                     }

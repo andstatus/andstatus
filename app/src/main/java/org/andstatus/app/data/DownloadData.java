@@ -77,7 +77,7 @@ public class DownloadData implements IsEmpty {
     }
 
     public static DownloadData fromAttachment(long noteId, Attachment attachment) {
-        return new DownloadData(null, 0, 0, noteId,
+        return new DownloadData(null, attachment.getDownloadId(), 0, noteId,
                 attachment.contentType, attachment.mimeType, DownloadType.ATTACHMENT, attachment.uri);
     }
 

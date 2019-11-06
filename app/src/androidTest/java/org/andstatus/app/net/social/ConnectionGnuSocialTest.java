@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import androidx.annotation.NonNull;
@@ -171,7 +172,8 @@ public class ConnectionGnuSocialTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
         Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
                 .setContentPosted("Test post note with media");
-        AActivity activity = mock.connection.updateNote(note, "", demoData.localImageTestUri);
+        AActivity activity = mock.connection.updateNote(note, "",
+                new Attachments().add(Attachment.fromUri(demoData.localImageTestUri)));
         assertEquals("Note returned",
                 privateGetNoteWithAttachment(false).getNote(), activity.getNote());
     }
@@ -187,7 +189,8 @@ public class ConnectionGnuSocialTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
         AActivity activity = mock.connection.getNote(NOTE_OID);
         if (uniqueUid) {
-            activity.setNote(activity.getNote().copy(activity.getNote().oid + "_" + demoData.testRunUid));
+            activity.setNote(activity.getNote().copy(
+                    Optional.of(activity.getNote().oid + "_" + demoData.testRunUid), Optional.empty()));
         }
         assertNotNull("note returned", activity);
         assertEquals("conversationOid", "1956322", activity.getNote().conversationOid);

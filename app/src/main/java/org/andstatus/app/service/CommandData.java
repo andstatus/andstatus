@@ -87,7 +87,7 @@ public class CommandData implements Comparable<CommandData> {
                                         MyContext myContext, Origin origin, String queryString) {
         if (searchObjects == SearchObjects.NOTES) {
             Timeline timeline =  myContext.timelines().get(TimelineType.SEARCH, Actor.EMPTY, origin, queryString);
-            return new CommandData(0, CommandEnum.GET_TIMELINE, MyAccount.EMPTY, timeline, 0);
+            return new CommandData(0, CommandEnum.GET_TIMELINE, timeline.myAccountToSync, timeline, 0);
         } else {
             return newActorCommand(CommandEnum.SEARCH_ACTORS, Actor.EMPTY, queryString);
         }

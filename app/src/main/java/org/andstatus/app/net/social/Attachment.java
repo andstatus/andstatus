@@ -20,7 +20,7 @@ import android.content.ContentResolver;
 import android.net.Uri;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.data.AttachedImageFile;
+import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadType;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.IsEmpty;
@@ -37,8 +37,18 @@ public class Attachment implements Comparable<Attachment>, IsEmpty {
     public final String mimeType;
     @NonNull
     public final MyContentType contentType;
-    int downloadNumber = 0;
+    long downloadId = 0;
+    long downloadNumber = 0;
     Attachment previewOf = Attachment.EMPTY;
+
+    /** #previewOf cannot be set here **/
+    Attachment(@NonNull DownloadData downloadData) {
+        uri = downloadData.getUri();
+        mimeType = downloadData.getMimeType();
+        contentType = downloadData.getContentType();
+        downloadId = downloadData.getDownloadId();
+        downloadNumber = downloadData.getDownloadNumber();
+    }
 
     private Attachment(ContentResolver contentResolver, @NonNull Uri uri, @NonNull String mimeType) {
         this.uri = uri;
@@ -64,12 +74,6 @@ public class Attachment implements Comparable<Attachment>, IsEmpty {
         return new Attachment(MyContextHolder.get().context().getContentResolver(), uriIn, mimeTypeIn);
     }
 
-    public static Attachment fromAttachedImageFile(AttachedImageFile imageFile) {
-        return imageFile.isEmpty() ? EMPTY
-                : new Attachment(MyContextHolder.get().context().getContentResolver(),
-                    imageFile.uri, imageFile.contentType.generalMimeType);   // TODO: Concrete MiMe type lost
-    }
-
     Attachment setPreviewOf(@NonNull Attachment previewOf) {
         this.previewOf = previewOf;
         return this;
@@ -89,7 +93,7 @@ public class Attachment implements Comparable<Attachment>, IsEmpty {
         return result;
     }
 
-    public int getDownloadNumber() {
+    public long getDownloadNumber() {
         return downloadNumber;
     }
 
@@ -123,5 +127,9 @@ public class Attachment implements Comparable<Attachment>, IsEmpty {
     @Override
     public boolean isEmpty() {
         return uri == Uri.EMPTY;
+    }
+
+    public long getDownloadId() {
+        return downloadId;
     }
 }

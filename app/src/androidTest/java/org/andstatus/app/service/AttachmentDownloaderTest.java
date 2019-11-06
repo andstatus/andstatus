@@ -59,7 +59,7 @@ public class AttachmentDownloaderTest {
         DemoNoteInserter inserter = new DemoNoteInserter(ma);
         AActivity activity = inserter.buildActivity(inserter.buildActor(), "", body,
                 null, null, DownloadStatus.LOADED);
-        activity.getNote().attachments.add(Attachment.fromUri(
+        activity.addAttachment(Attachment.fromUri(
                 "http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"));
         inserter.onActivity(activity);
         

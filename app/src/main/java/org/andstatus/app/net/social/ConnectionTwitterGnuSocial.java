@@ -119,7 +119,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    protected AActivity updateNote2(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    protected AActivity updateNote2(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
             super.updateNoteSetFields(note, inReplyToOid, formParams);
@@ -127,9 +127,9 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
             // This parameter was removed from Twitter API, but it still is in GNUsocial
             formParams.put("source", HttpConnection.USER_AGENT);
 
-            if (!UriUtils.isEmpty(mediaUri)) {
+            if (attachments.nonEmpty()) {
                 formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media");
-                formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
+                formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachments.list.get(0).uri.toString());
             }
         } catch (JSONException e) {
             MyLog.e(this, e);
@@ -196,7 +196,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                     Uri uri = UriUtils.fromAlternativeTags(jsonAttachment, "url", "thumb_url");
                     Attachment attachment =  Attachment.fromUriAndMimeType(uri, jsonAttachment.optString("mimetype"));
                     if (attachment.isValid()) {
-                        note.attachments.add(attachment);
+                        activity.addAttachment(attachment);
                     } else {
                         MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
                     }

@@ -59,7 +59,7 @@ public class AActivity extends AObject {
 
     // Objects of the Activity may be of several types...
     @NonNull
-    private Note note = Note.EMPTY;
+    private volatile Note note = Note.EMPTY;
     @NonNull
     private Actor objActor = Actor.EMPTY;
     private AActivity aActivity = AActivity.EMPTY;
@@ -265,6 +265,11 @@ public class AActivity extends AObject {
             default:
                 return Note.EMPTY;
         }
+    }
+
+    public void addAttachment(Attachment attachment) {
+        Attachments attachments = getNote().attachments.add(attachment);
+        setNote(getNote().copy(Optional.empty(), Optional.of(attachments)));
     }
 
     public void setNote(Note note) {

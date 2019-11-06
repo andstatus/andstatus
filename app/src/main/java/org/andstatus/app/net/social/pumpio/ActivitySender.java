@@ -16,13 +16,13 @@
 
 package org.andstatus.app.net.social.pumpio;
 
-import android.net.Uri;
-
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.Note;
@@ -52,7 +52,7 @@ class ActivitySender {
     String name = "";
     String summary = "";
     String content = "";
-    Uri mMediaUri = null;
+    Attachments attachments = Attachments.EMPTY;
 
     ActivitySender(ConnectionPumpio connection, String objectId, Audience audience) {
         this.connection = connection;
@@ -77,8 +77,8 @@ class ActivitySender {
         return this;
     }
     
-    ActivitySender setMediaUri(Uri mediaUri) {
-        mMediaUri = mediaUri;
+    ActivitySender setAttachments(Attachments attachments) {
+        this.attachments = attachments;
         return this;
     }
     
@@ -124,7 +124,11 @@ class ActivitySender {
     private JSONObject buildActivityToSend(PActivityType activityType) throws JSONException, ConnectionException {
         JSONObject activity = newActivityOfThisAccount(activityType);
         JSONObject obj = buildObject(activity);
-        if (UriUtils.nonEmpty(mMediaUri)) {
+        if (attachments.nonEmpty()) {
+            if (attachments.size() > 1) {
+                MyLog.w(this, "Sending only the first attachment: " + attachments);  // TODO
+            }
+            Attachment attachment = attachments.list.get(0);
             PObjectType objectType = PObjectType.fromJson(obj);
             if (isExisting()
                     && (!PObjectType.IMAGE.equals(objectType) || !PObjectType.VIDEO.equals(objectType))
@@ -132,7 +136,7 @@ class ActivitySender {
                 throw ConnectionException.hardConnectionException(
                         "Cannot update '" + objectType + "' to " + PObjectType.IMAGE, null);
             }
-            JSONObject mediaObject = uploadMedia();
+            JSONObject mediaObject = uploadMedia(attachment);
             PObjectType mediaObjectType = PObjectType.fromJson(mediaObject);
             if (isExisting() && mediaObjectType.equals(objectType)) {
                 if (objectType == PObjectType.VIDEO) {
@@ -230,24 +234,24 @@ class ActivitySender {
      *  We simplified it a bit...
      */
     @NonNull
-    private JSONObject uploadMedia() throws ConnectionException {
+    private JSONObject uploadMedia(Attachment attachment) throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {
-            formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mMediaUri.toString());
+            formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachment.uri.toString());
             ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA,
                     connection.getData().getAccountActor());
             Try<HttpReadResult> result = connection.postRequest(conu.uri, formParams);
             if (result.map(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
                 result = Try.failure(new ConnectionException(
-                        "Error uploading '" + mMediaUri + "': null response returned"));
+                        "Error uploading '" + attachment + "': null response returned"));
             }
             result.filter(r -> MyLog.isVerboseEnabled()).map(HttpReadResult::getJsonObject)
                 .map(jso -> jso.toString(2))
-                .onSuccess(message -> MyLog.v(this, "uploaded '" + mMediaUri + "' " + message));
+                .onSuccess(message -> MyLog.v(this, "uploaded '" + attachment + "' " + message));
             return result.map(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of);
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this,
-                    "Error uploading '" + mMediaUri.toString() + "'", e, formParams);
+                    "Error uploading '" + attachment + "'", e, formParams);
         }
     }
 
@@ -257,7 +261,7 @@ class ActivitySender {
             obj.put("id", objectId);
             obj.put("objectType", connection.oidToObjectType(objectId));
         } else {
-            if (StringUtils.isEmpty(name) && StringUtils.isEmpty(content) && UriUtils.isEmpty(mMediaUri)) {
+            if (StringUtils.isEmpty(name) && StringUtils.isEmpty(content) && attachments.isEmpty()) {
                 throw new IllegalArgumentException("Nothing to send");
             }
             obj.put("author", activity.getJSONObject("actor"));

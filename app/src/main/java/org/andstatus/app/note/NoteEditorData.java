@@ -39,6 +39,7 @@ import org.andstatus.app.graphics.CacheName;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -136,8 +137,8 @@ public class NoteEditorData implements IsEmpty {
         attachedImageFiles = AttachedImageFiles.load(myContext, noteId);
         attachedImageFiles.list.forEach( imageFile -> {
             imageFile.preloadImageAsync(CacheName.ATTACHED_IMAGE);
-            note.attachments.add(Attachment.fromAttachedImageFile(imageFile));
         });
+        activity.setNote(note.copy(Optional.empty(), Optional.of(Attachments.load(myContext, noteId))));
         MyLog.v(TAG, () -> "Loaded " + this);
     }
 
@@ -230,7 +231,7 @@ public class NoteEditorData implements IsEmpty {
     }
 
     public void addAttachment(Uri uri, Optional<String> mediaType) {
-        activity.getNote().attachments.add(Attachment.fromUriAndMimeType(uri, mediaType.orElse("")));
+        activity.addAttachment(Attachment.fromUriAndMimeType(uri, mediaType.orElse("")));
     }
 
     public void save() {

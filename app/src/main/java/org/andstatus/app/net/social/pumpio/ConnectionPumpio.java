@@ -28,6 +28,7 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
@@ -218,10 +219,10 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public AActivity updateNote(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
         ActivitySender sender = ActivitySender.fromContent(this, note);
         sender.setInReplyTo(inReplyToOid);
-        sender.setMediaUri(mediaUri);
+        sender.setAttachments(attachments);
         return sender.send(PActivityType.POST);
     }
 
@@ -430,25 +431,6 @@ public class ConnectionPumpio extends Connection {
             setVia(note, jso);
             note.url = jso.optString("url");
 
-            if (jso.has(VIDEO_OBJECT)) {
-                Uri uri = UriUtils.fromJson(jso, VIDEO_OBJECT + "/url");
-                Attachment mbAttachment =  Attachment.fromUriAndMimeType(uri, MyContentType.VIDEO.generalMimeType);
-                if (mbAttachment.isValid()) {
-                    note.attachments.add(mbAttachment);
-                } else {
-                    MyLog.d(this, "Invalid video attachment; " + jso.toString());
-                }
-            }
-            if (jso.has(FULL_IMAGE_OBJECT) || jso.has(IMAGE_OBJECT)) {
-                Uri uri = UriUtils.fromAlternativeTags(jso, FULL_IMAGE_OBJECT + "/url", IMAGE_OBJECT + "/url");
-                Attachment mbAttachment =  Attachment.fromUriAndMimeType(uri, MyContentType.IMAGE.generalMimeType);
-                if (mbAttachment.isValid()) {
-                    note.attachments.add(mbAttachment);
-                } else {
-                    MyLog.d(this, "Invalid image attachment; " + jso.toString());
-                }
-            }
-
             // If the Msg is a Reply to other note
             if (jso.has("inReplyTo")) {
                 note.setInReplyTo(activityFromJson(jso.getJSONObject("inReplyTo")));
@@ -467,6 +449,25 @@ public class ConnectionPumpio extends Connection {
                                     "Parsing list of replies", e, null);
                         }
                     }
+                }
+            }
+
+            if (jso.has(VIDEO_OBJECT)) {
+                Uri uri = UriUtils.fromJson(jso, VIDEO_OBJECT + "/url");
+                Attachment mbAttachment =  Attachment.fromUriAndMimeType(uri, MyContentType.VIDEO.generalMimeType);
+                if (mbAttachment.isValid()) {
+                    activity.addAttachment(mbAttachment);
+                } else {
+                    MyLog.d(this, "Invalid video attachment; " + jso.toString());
+                }
+            }
+            if (jso.has(FULL_IMAGE_OBJECT) || jso.has(IMAGE_OBJECT)) {
+                Uri uri = UriUtils.fromAlternativeTags(jso, FULL_IMAGE_OBJECT + "/url", IMAGE_OBJECT + "/url");
+                Attachment mbAttachment =  Attachment.fromUriAndMimeType(uri, MyContentType.IMAGE.generalMimeType);
+                if (mbAttachment.isValid()) {
+                    activity.addAttachment(mbAttachment);
+                } else {
+                    MyLog.d(this, "Invalid image attachment; " + jso.toString());
                 }
             }
         } catch (JSONException e) {

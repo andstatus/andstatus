@@ -38,6 +38,7 @@ import org.andstatus.app.util.UriUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
@@ -378,13 +379,15 @@ public class Note extends AObject {
         return note;
     }
 
-    public Note copy(String oidNew) {
-        return new Note(this, oidNew);
+    public Note copy(Optional<String> oidNew, Optional<Attachments> attachments) {
+        return oidNew.filter(StringUtils::nonEmpty).isPresent() || attachments.filter(Attachments::nonEmpty).isPresent()
+            ? new Note(this, oidNew, attachments)
+            : this;
     }
 
-    private Note(Note note, String oidNew) {
+    private Note(Note note, Optional<String> oidNew, Optional<Attachments> attachments) {
         origin = note.origin;
-        oid = fixedOid(oidNew);
+        oid = fixedOid(oidNew.orElse(note.oid));
         status = fixedStatus(oid, note.status);
         audience = note.audience.copy();
         noteId = note.noteId;
@@ -397,7 +400,7 @@ public class Note extends AObject {
         conversationOid = note.conversationOid;
         via = note.via;
         url = note.url;
-        attachments = note.attachments.copy();
+        this.attachments = attachments.orElseGet(note.attachments::copy);
         conversationId = note.conversationId;
     }
 

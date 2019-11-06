@@ -569,14 +569,14 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
     
     @Override
-    public AActivity updateNote(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException {
+    public AActivity updateNote(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
         if (StringUtils.isEmpty(inReplyToOid) && note.audience().hasNonPublic() && note.audience().getPublic().isFalse) {
-            return updatePrivateNote(note, note.audience().getFirstNonPublic().oid, mediaUri);
+            return updatePrivateNote(note, note.audience().getFirstNonPublic().oid, attachments);
         }
-        return updateNote2(note, inReplyToOid, mediaUri);
+        return updateNote2(note, inReplyToOid, attachments);
     }
 
-    abstract AActivity updateNote2(Note note, String inReplyToOid, Uri mediaUri) throws ConnectionException;
+    abstract AActivity updateNote2(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException;
 
     void updateNoteSetFields(Note note, String inReplyToOid, JSONObject formParams) throws JSONException {
         if (StringUtils.nonEmpty(note.getContentToPost())) {
@@ -587,7 +587,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         }
     }
 
-    private AActivity updatePrivateNote(Note note, String recipientOid, Uri mediaUri)
+    private AActivity updatePrivateNote(Note note, String recipientOid, Attachments attachments)
             throws ConnectionException {
         JSONObject formParams = new JSONObject();
         try {

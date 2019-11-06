@@ -40,6 +40,7 @@
 		android:title="@string/backup_log_files" />
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="enable_activitypub"
 		android:title="Enable Social Networks of the ActivityPub type"
+		android:defaultValue="true"
 	    android:summary="This is an early implementation of ActivityPub Client to Server protocol,
 	    	tested so far at Pleroma instances only. It's not ready for general use yet" />
 	<Preference android:key="report_bug"

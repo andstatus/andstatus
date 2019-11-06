@@ -331,6 +331,8 @@ public class Origin implements Comparable<Origin>, IsEmpty {
     }
     
     public boolean hasChildren() {
+        if (isEmpty()) return false;
+
         long count = 0;
         Cursor cursor = null;
         SQLiteDatabase db = myContext.getDatabase();
