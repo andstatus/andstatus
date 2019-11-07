@@ -345,7 +345,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
     }
 
     private void showMaximumSizeOfCachedMedia(Optional<Long> size) {
-        TryUtils.ofNullable(findPreference(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB))
+        TryUtils.<Preference>ofNullable(findPreference(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB))
             .map(preference -> {
                 preference.setSummary(Formatter.formatShortFileSize(getActivity(),
                     MyPreferences.getMaximumSizeOfCachedMediaBytes()) +

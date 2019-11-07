@@ -33,22 +33,22 @@ buildscript {
         // Lookup the latest here: https://mvnrepository.com/
         acraVersion = '4.11'              // https://github.com/ACRA/acra/wiki/AdvancedUsage
         annotationVersion = '1.0.1'
-        appCompatVersion = '1.0.2'        // https://mvnrepository.com/artifact/androidx.appcompat/appcompat
+        appCompatVersion = '1.1.0'        // https://mvnrepository.com/artifact/androidx.appcompat/appcompat
         commonsCodecVersion = '20041127.091804'
         commonsLangVersion = '3.9'      // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
         espressoCoreVersion = '3.1.1'
-        httpMimeVersion = '4.5.8'
+        httpMimeVersion = '4.5.10'
         httpclientVersion = '4.5.8'     // https://github.com/smarek/httpclient-android
         jcipAnnotationsVersion = '1.0-1'  // http://stephenc.github.io/jcip-annotations/dependency-info.html
-        junitVersion = '4.13-beta-3'
+        junitVersion = '4.13-rc-1'
         materialVersion = '1.0.0'         // https://mvnrepository.com/artifact/com.google.android.material/material
-        preferenceVersion = '1.0.0'
+        preferenceVersion = '1.1.0'
         recyclerViewVersion = '1.0.0'
-        scribejavaCoreVersion = '6.6.2'   // https://github.com/scribejava/scribejava
+        scribejavaCoreVersion = '6.9.0'   // https://github.com/scribejava/scribejava
         signPostVersion = '1.2.1.2'       // https://mvnrepository.com/artifact/oauth.signpost/signpost-core
         testRulesVersion = '1.1.1'
         testRunnerVersion = '1.1.1'
-        vavrVersion = '1.0.0-alpha-2'     // https://github.com/vavr-io/vavr/tree/v1.0.0
+        vavrVersion = '1.0.0-alpha-2'     // https://github.com/vavr-io/vavr
     }
 }
 
