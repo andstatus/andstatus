@@ -53,8 +53,8 @@ enum ApObjectType {
     private String id;
     private ApObjectType compatibleType = this;
 
-    ApObjectType(String fieldName, ApObjectType compatibleType) {
-        this.id = fieldName;
+    ApObjectType(String id, ApObjectType compatibleType) {
+        this.id = id;
         if (compatibleType != null) {
             this.compatibleType = compatibleType;
         }

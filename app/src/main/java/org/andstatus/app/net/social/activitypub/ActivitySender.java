@@ -39,7 +39,6 @@ import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.net.social.activitypub.ConnectionActivityPub.CONTENT_PROPERTY;
-import static org.andstatus.app.net.social.activitypub.ConnectionActivityPub.FULL_IMAGE_OBJECT;
 import static org.andstatus.app.net.social.activitypub.ConnectionActivityPub.NAME_PROPERTY;
 import static org.andstatus.app.net.social.activitypub.ConnectionActivityPub.SENSITIVE_PROPERTY;
 import static org.andstatus.app.net.social.activitypub.ConnectionActivityPub.SUMMARY_PROPERTY;
@@ -125,42 +124,7 @@ class ActivitySender {
     private JSONObject buildActivityToSend(ActivityType activityType) throws JSONException, ConnectionException {
         JSONObject activity = newActivityOfThisAccount(activityType);
         JSONObject obj = buildObject(activity);
-        if (attachments.nonEmpty()) {
-            if (attachments.size() > 1) {
-                MyLog.w(this, "Sending only the first attachment: " + attachments);  // TODO
-            }
-            Attachment attachment = attachments.list.get(0);
-            ApObjectType objectType = ApObjectType.fromJson(obj);
-            if (isExisting()
-                    && (!ApObjectType.IMAGE.equals(objectType) || !ApObjectType.VIDEO.equals(objectType))
-                    ) {
-                throw ConnectionException.hardConnectionException(
-                        "Cannot update '" + objectType + "' to " + ApObjectType.IMAGE, null);
-            }
-            JSONObject mediaObject = uploadMedia(attachment);
-            ApObjectType mediaObjectType = ApObjectType.fromJson(mediaObject);
-            if (isExisting() && mediaObjectType.equals(objectType)) {
-                if (objectType == ApObjectType.VIDEO) {
-                    JSONObject video = mediaObject.optJSONObject(ConnectionActivityPub.VIDEO_OBJECT);
-                    if (video != null) {
-                        // Replace the video in the existing object
-                        obj.put(ConnectionActivityPub.VIDEO_OBJECT, video);
-                    }
-                } else {
-                    JSONObject image = mediaObject.optJSONObject(ConnectionActivityPub.IMAGE_OBJECT);
-                    if (image != null) {
-                        // Replace an image in the existing object
-                        obj.put(ConnectionActivityPub.IMAGE_OBJECT, image);
-                        JSONObject fullImage = mediaObject.optJSONObject(FULL_IMAGE_OBJECT);
-                        if (fullImage != null) {
-                            obj.put(FULL_IMAGE_OBJECT, fullImage);
-                        }
-                    }
-                }
-            } else {
-                obj = mediaObject;
-            }
-        }
+        addAttachments(obj);
         if (StringUtils.nonEmpty(note.getName())) {
             obj.put(NAME_PROPERTY, note.getName());
         }
@@ -178,6 +142,17 @@ class ActivitySender {
         }
         activity.put("object", obj);
         return activity;
+    }
+
+    private void addAttachments(JSONObject obj) throws ConnectionException, JSONException {
+        if (attachments.isEmpty()) return;
+
+        JSONArray jsoAttachments = new JSONArray();
+        for (Attachment attachment: attachments.list) {
+            JSONObject mediaObject = uploadMedia(attachment);
+            jsoAttachments.put(mediaObject);
+        }
+        obj.put("attachment", jsoAttachments);
     }
 
     private boolean contentNotPosted(ActivityType activityType, JSONObject jsActivity) {
