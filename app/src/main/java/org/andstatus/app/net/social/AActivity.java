@@ -39,6 +39,7 @@ import java.util.Optional;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
+import static org.andstatus.app.origin.OriginConfig.MAX_ATTACHMENTS_DEFAULT;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
@@ -268,7 +269,14 @@ public class AActivity extends AObject {
     }
 
     public void addAttachment(Attachment attachment) {
+        addAttachment(attachment, MAX_ATTACHMENTS_DEFAULT);
+    }
+
+    public void addAttachment(Attachment attachment, int maxAttachments) {
         Attachments attachments = getNote().attachments.add(attachment);
+        if ( attachments.size() > maxAttachments) {
+            attachments.list.remove(0);
+        }
         setNote(getNote().copy(Optional.empty(), Optional.of(attachments)));
     }
 

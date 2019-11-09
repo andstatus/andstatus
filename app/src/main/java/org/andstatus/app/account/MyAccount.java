@@ -651,7 +651,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             if (config.nonEmpty()) {
                 Origin.Builder originBuilder = new Origin.Builder(myAccount.getOrigin());
                 originBuilder.save(config);
-                MyLog.v(this, "Get Origin config succeeded");
+                MyLog.v(this, "Get Origin config succeeded " + config);
             }
         }
 

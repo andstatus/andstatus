@@ -46,6 +46,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import static org.andstatus.app.origin.OriginConfig.MASTODON_TEXT_LIMIT_DEFAULT;
+
 public enum OriginType implements SelectableEnum {
     /**
      * Origin type for Twitter system 
@@ -297,7 +299,7 @@ public enum OriginType implements SelectableEnum {
                 shouldSetNewUsernameManuallyNoOAuth = true;
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
                 uniqueNameExamples = "AndStatus@mastodon.social somebody@mstdn.io";
-                textLimitDefault = 500;
+                textLimitDefault = MASTODON_TEXT_LIMIT_DEFAULT;
                 basicPath = BASIC_PATH_DEFAULT;
                 oauthPath = OAUTH_PATH_DEFAULT;
                 originFactory = myContext -> new OriginMastodon(myContext, this);
@@ -475,5 +477,9 @@ public enum OriginType implements SelectableEnum {
 
     public Optional<String> getContentType() {
         return Optional.empty();
+    }
+
+    public int getMaxAttachmentsToSend() {
+        return OriginConfig.getMaxAttachmentsToSend(this);
     }
 }

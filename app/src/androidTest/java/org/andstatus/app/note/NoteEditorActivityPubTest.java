@@ -48,6 +48,7 @@ import androidx.test.espresso.action.ReplaceTextAction;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.note.NoteEditorTest.attachImages;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isIn;
 import static org.junit.Assert.assertTrue;
@@ -120,4 +121,15 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
         }
         assertTrue("The content should be sent: " + content, result.isPresent());
     }
+
+    @Test
+    public void attachOneImage() throws InterruptedException {
+        attachImages(this,1, 1);
+    }
+
+    @Test
+    public void attachTwoImages() throws InterruptedException {
+        attachImages(this,2, 2);
+    }
+
 }

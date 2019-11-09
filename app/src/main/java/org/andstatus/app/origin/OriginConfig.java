@@ -19,6 +19,10 @@ package org.andstatus.app.origin;
 import org.andstatus.app.util.IsEmpty;
 
 public class OriginConfig implements IsEmpty {
+    public static final int MASTODON_TEXT_LIMIT_DEFAULT = 500;
+    public static final int MAX_ATTACHMENTS_DEFAULT = 10;
+    public static final int MAX_ATTACHMENTS_MASTODON = 4;
+
     private boolean isEmpty = true;
     
     public int shortUrlLength = 0;
@@ -40,8 +44,28 @@ public class OriginConfig implements IsEmpty {
     private OriginConfig() {
         // Empty
     }
-    
+
     public boolean isEmpty() {
         return isEmpty;
+    }
+
+    @Override
+    public String toString() {
+        return "OriginConfig{" +
+                "shortUrlLength=" + shortUrlLength +
+                ", textLimit=" + textLimit +
+                ", uploadLimit=" + uploadLimit +
+                '}';
+    }
+
+    static int getMaxAttachmentsToSend(OriginType originType) {
+        switch (originType) {
+            case ACTIVITYPUB:
+                return MAX_ATTACHMENTS_DEFAULT;
+            case MASTODON:
+                return MAX_ATTACHMENTS_MASTODON;
+            default:
+                return 1;
+        }
     }
 }

@@ -231,7 +231,10 @@ public class NoteEditorData implements IsEmpty {
     }
 
     public void addAttachment(Uri uri, Optional<String> mediaType) {
-        activity.addAttachment(Attachment.fromUriAndMimeType(uri, mediaType.orElse("")));
+        activity.addAttachment(
+                Attachment.fromUriAndMimeType(uri, mediaType.orElse("")),
+                ma.getOrigin().getOriginType().getMaxAttachmentsToSend()
+        );
     }
 
     public void save() {

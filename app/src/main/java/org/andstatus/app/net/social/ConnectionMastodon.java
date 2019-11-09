@@ -23,6 +23,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.note.KeywordsFilter;
+import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.ObjectOrId;
@@ -42,10 +43,11 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 import io.vavr.control.CheckedFunction;
 
+import static org.andstatus.app.context.MyPreferences.BYTES_IN_MB;
 import static org.andstatus.app.util.UriUtils.nonRealOid;
 
 /**
- * See <a href="https://github.com/tootsuite/documentation/blob/master/Using-the-API/API.md">API</a>
+ * See <a href="https://source.joinmastodon.org/mastodon/docs">API</a>
  */
 public class ConnectionMastodon extends ConnectionTwitterLike {
     private static final String ATTACHMENTS_FIELD_NAME = "media_attachments";
@@ -53,13 +55,17 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     private static final String SUMMARY_PROPERTY = "spoiler_text";
     private static final String CONTENT_PROPERTY_UPDATE = "status";
     private static final String CONTENT_PROPERTY = "content";
+    /** Only Pleroma has this, see https://github.com/tootsuite/mastodon/issues/4915 */
+    private final static String TEXT_LIMIT_KEY = "max_toot_chars";
 
     @NonNull
     @Override
     protected String getApiPathFromOrigin(ApiRoutineEnum routine) {
         String url;
-        // See https://github.com/tootsuite/documentation/blob/master/Using-the-API/API.md
         switch (routine) {
+            case GET_CONFIG:
+                url = "/api/v1/instance";  // https://docs.joinmastodon.org/api/rest/instances/
+                break;
             case HOME_TIMELINE:
                 url = "v1/timelines/home";
                 break;
@@ -504,5 +510,16 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         int limit = 400;
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
         return jArrToActors(http.getRequestAsArray(builder.build()), apiRoutine, builder.build());
+    }
+
+    @Override
+    public OriginConfig getConfig() throws ConnectionException {
+        JSONObject result = getRequest(getApiPath(ApiRoutineEnum.GET_CONFIG));
+        // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/spec/validators/status_length_validator_spec.rb
+        int textLimit = result == null || result.optInt(TEXT_LIMIT_KEY) < 1
+                ? OriginConfig.MASTODON_TEXT_LIMIT_DEFAULT
+                : result.optInt(TEXT_LIMIT_KEY);
+        // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/app/models/media_attachment.rb
+        return OriginConfig.fromTextLimit(textLimit, 10 * BYTES_IN_MB);
     }
 }

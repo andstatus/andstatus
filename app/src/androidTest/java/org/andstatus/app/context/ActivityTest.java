@@ -51,11 +51,11 @@ public abstract class ActivityTest<T extends Activity> {
         return null;
     }
 
-    protected T getActivity() {
+    public T getActivity() {
         return mActivityRule.getActivity();
     }
 
-    protected Instrumentation getInstrumentation() {
+    public Instrumentation getInstrumentation() {
         return InstrumentationRegistry.getInstrumentation();
     }
 }

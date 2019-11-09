@@ -182,7 +182,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         ActivityTestHelper.waitViewInvisible(method + "; Editor is hidden again", editorView);
         helper.clickMenuItem(method + " clicker 5", R.id.createNoteButton);
         ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
-        assertTextCleared();
+        assertTextCleared(this);
         helper.clickMenuItem(method + " click Discard", R.id.discardButton);
         ActivityTestHelper.waitViewInvisible(method + "; Editor hidden after discard", editorView);
         MyLog.v(this, method + " ended");
@@ -190,67 +190,67 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
 
     @Test
     public void attachOneImage() throws InterruptedException {
-        attachImages(1);
+        attachImages(this, 1, 1);
     }
 
     @Test
     public void attachTwoImages() throws InterruptedException {
-        attachImages(2);
+        attachImages(this,2, 1);
     }
 
-    private void attachImages(int numberOfAttachments) throws InterruptedException {
-        final String method = "attachImages" + numberOfAttachments;
-        MyLog.v(this, method + " started");
+    static void attachImages(TimelineActivityTest<ActivityViewItem> test, int toAdd, int toExpect) throws InterruptedException {
+        final String method = "attachImages" + toAdd;
+        MyLog.v(test, method + " started");
 
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(test.getActivity());
         helper.clickMenuItem(method + " hide editor", R.id.saveDraftButton);
 
-        View editorView = getActivity().findViewById(R.id.note_editor);
+        View editorView = test.getActivity().findViewById(R.id.note_editor);
         helper.clickMenuItem(method + " clicker createNoteButton", R.id.createNoteButton);
         ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
-        assertTextCleared();
+        assertTextCleared(test);
 
         TestSuite.waitForIdleSync();
-        final String noteName = "A note " + numberOfAttachments + " can have a title (name)";
-        final String content = "Note with " + numberOfAttachments + " attachment" +
-                (numberOfAttachments == 1 ? "" : "s") + " " +
+        final String noteName = "A note " + toAdd + " " + test.getClass().getSimpleName() + " can have a title (name)";
+        final String content = "Note with " + toExpect + " attachment" +
+                (toExpect == 1 ? "" : "s") + " " +
                 demoData.testRunUid;
         onView(withId(R.id.note_name_edit)).perform(new TypeTextAction(noteName));
         onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(content));
 
-        attachImage(editorView, demoData.localImageTestUri2);
-        if (numberOfAttachments == 2) {
-            attachImage(editorView, demoData.localImageTestUri);
+        attachImage(test, editorView, demoData.localImageTestUri2);
+        if (toAdd == 2) {
+            attachImage(test, editorView, demoData.localImageTestUri);
         }
-        final NoteEditor editor = getActivity().getNoteEditor();
-        assertEquals("All image attached " + editor.getData().getAttachedImageFiles(), numberOfAttachments,
+        final NoteEditor editor = test.getActivity().getNoteEditor();
+        assertEquals("All image attached " + editor.getData().getAttachedImageFiles(), toExpect,
                 editor.getData().getAttachedImageFiles().list.size());
 
         onView(withId(R.id.noteBodyEditText)).check(matches(withText(content + " ")));
         onView(withId(R.id.note_name_edit)).check(matches(withText(noteName)));
         helper.clickMenuItem(method + " clicker save draft", R.id.saveDraftButton);
 
-        MyLog.v(this, method + " ended");
+        MyLog.v(test, method + " ended");
     }
 
-    private void attachImage(View editorView, Uri imageUri) throws InterruptedException {
+    private static void attachImage(TimelineActivityTest<ActivityViewItem> test, View editorView, Uri imageUri) throws InterruptedException {
         final String method = "attachImage";
         TestSuite.waitForIdleSync();
 
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
-        getActivity().setSelectorActivityMock(helper);
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(test.getActivity());
+        test.getActivity().setSelectorActivityMock(helper);
         helper.clickMenuItem(method + " clicker attach_menu_id", R.id.attach_menu_id);
         assertNotNull(helper.waitForSelectorStart(method, ActivityRequestCode.ATTACH.id));
-        getActivity().setSelectorActivityMock(null);
+        test.getActivity().setSelectorActivityMock(null);
 
-        Instrumentation.ActivityMonitor activityMonitor = getInstrumentation()
+        Instrumentation.ActivityMonitor activityMonitor = test.getInstrumentation()
                 .addMonitor(HelpActivity.class.getName(), null, false);
 
-        Intent intent1 = new Intent(getActivity(), HelpActivity.class);
+        Intent intent1 = new Intent(test.getActivity(), HelpActivity.class);
         intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        getActivity().getApplicationContext().startActivity(intent1);
+        test.getActivity().getApplicationContext().startActivity(intent1);
 
-        Activity selectorActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 25000);
+        Activity selectorActivity = test.getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 25000);
         assertTrue(selectorActivity != null);
         ActivityTestHelper.waitViewInvisible(method, editorView);
         DbUtils.waitMs(method, 10000);
@@ -259,11 +259,11 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         MyLog.i(method, "Callback from a selector");
         Intent intent2 = new Intent();
         intent2.setDataAndType(imageUri, MyContentType.IMAGE.generalMimeType);
-        getActivity().runOnUiThread(() -> {
-            getActivity().onActivityResult(ActivityRequestCode.ATTACH.id, Activity.RESULT_OK, intent2);
+        test.getActivity().runOnUiThread(() -> {
+            test.getActivity().onActivityResult(ActivityRequestCode.ATTACH.id, Activity.RESULT_OK, intent2);
         });
 
-        final NoteEditor editor = getActivity().getNoteEditor();
+        final NoteEditor editor = test.getActivity().getNoteEditor();
         for (int attempt=0; attempt < 4; attempt++) {
             ActivityTestHelper.waitViewVisible(method, editorView);
             // Due to a race the editor may open before this change first.
@@ -286,11 +286,11 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         assertEquals(description, data.toVisibleSummary(), editor.getData().toVisibleSummary());
     }
 
-    private void assertTextCleared() {
-        final NoteEditor editor = getActivity().getNoteEditor();
+    private static void assertTextCleared(TimelineActivityTest<ActivityViewItem> test) {
+        final NoteEditor editor = test.getActivity().getNoteEditor();
         assertTrue("Editor is not null", editor != null);
         assertEquals(NoteEditorData.newEmpty(
-                getActivity().getMyContext().accounts().getCurrentAccount()).toVisibleSummary(),
+                test.getActivity().getMyContext().accounts().getCurrentAccount()).toVisibleSummary(),
                 editor.getData().toVisibleSummary());
     }
 
