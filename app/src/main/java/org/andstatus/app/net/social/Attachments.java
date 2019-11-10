@@ -144,4 +144,12 @@ public class Attachments implements IsEmpty {
         }
         return attachments;
     }
+
+    public long toUploadCount() {
+        return list.stream().filter(a -> !UriUtils.isDownloadable(a.uri)).count();
+    }
+
+    public Attachment getFirstToUpload() {
+        return list.stream().filter(a -> !UriUtils.isDownloadable(a.uri)).findFirst().orElse(Attachment.EMPTY);
+    }
 }

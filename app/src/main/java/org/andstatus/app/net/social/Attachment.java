@@ -30,7 +30,7 @@ import java.util.Objects;
 import androidx.annotation.NonNull;
 
 public class Attachment implements Comparable<Attachment>, IsEmpty {
-    private static final Attachment EMPTY = new Attachment(null, Uri.EMPTY, "");
+    public static final Attachment EMPTY = new Attachment(null, Uri.EMPTY, "");
     @NonNull
     public final Uri uri;
     @NonNull

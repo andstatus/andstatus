@@ -127,9 +127,9 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
             // This parameter was removed from Twitter API, but it still is in GNUsocial
             formParams.put("source", HttpConnection.USER_AGENT);
 
-            if (attachments.nonEmpty()) {
+            if (attachments.toUploadCount() > 0) {
                 formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media");
-                formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachments.list.get(0).uri.toString());
+                formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachments.getFirstToUpload().uri.toString());
             }
         } catch (JSONException e) {
             MyLog.e(this, e);

@@ -277,9 +277,14 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             }
             List<String> ids = new ArrayList<>();
             for (Attachment attachment : attachments.list) {
-                JSONObject mediaObject = uploadMedia(attachment.uri);
-                if (mediaObject != null && mediaObject.has("id")) {
-                    ids.add(mediaObject.get("id").toString());
+                if (UriUtils.isDownloadable(attachment.uri)) {
+                    // TODO
+                    MyLog.i(this, "Skipped downloadable " + attachment);
+                } else {
+                    JSONObject mediaObject = uploadMedia(attachment.uri);
+                    if (mediaObject != null && mediaObject.has("id")) {
+                        ids.add(mediaObject.get("id").toString());
+                    }
                 }
             };
             if (!ids.isEmpty()) {

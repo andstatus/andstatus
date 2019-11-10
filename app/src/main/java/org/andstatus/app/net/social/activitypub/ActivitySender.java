@@ -149,8 +149,13 @@ class ActivitySender {
 
         JSONArray jsoAttachments = new JSONArray();
         for (Attachment attachment: attachments.list) {
-            JSONObject mediaObject = uploadMedia(attachment);
-            jsoAttachments.put(mediaObject);
+            if (UriUtils.isDownloadable(attachment.uri)) {
+                // TODO
+                MyLog.i(this, "Skipped downloadable " + attachment);
+            } else {
+                JSONObject mediaObject = uploadMedia(attachment);
+                jsoAttachments.put(mediaObject);
+            }
         }
         obj.put("attachment", jsoAttachments);
     }

@@ -124,11 +124,11 @@ class ActivitySender {
     private JSONObject buildActivityToSend(PActivityType activityType) throws JSONException, ConnectionException {
         JSONObject activity = newActivityOfThisAccount(activityType);
         JSONObject obj = buildObject(activity);
-        if (attachments.nonEmpty()) {
-            if (attachments.size() > 1) {
+        Attachment attachment = attachments.getFirstToUpload();
+        if (attachment.nonEmpty()) {
+            if (attachments.toUploadCount() > 1) {
                 MyLog.w(this, "Sending only the first attachment: " + attachments);  // TODO
             }
-            Attachment attachment = attachments.list.get(0);
             PObjectType objectType = PObjectType.fromJson(obj);
             if (isExisting()
                     && (!PObjectType.IMAGE.equals(objectType) || !PObjectType.VIDEO.equals(objectType))

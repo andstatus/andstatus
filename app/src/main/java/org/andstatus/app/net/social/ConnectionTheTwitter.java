@@ -119,14 +119,14 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
             if (note.isSensitive()) {
                 formParams.put(SENSITIVE_PROPERTY, note.isSensitive());
             }
-            if (attachments.nonEmpty()) {
+            if (attachments.toUploadCount() > 0) {
                 formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media[]");
-                formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachments.list.get(0).uri.toString());
+                formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachments.getFirstToUpload().uri.toString());
             }
         } catch (JSONException e) {
             throw ConnectionException.hardConnectionException("Exception while preparing post params " + note, e);
         }
-        return postRequest(attachments.isEmpty()
+        return postRequest(attachments.toUploadCount() > 0
                         ? ApiRoutineEnum.UPDATE_NOTE
                         : ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA,
                     formParams)

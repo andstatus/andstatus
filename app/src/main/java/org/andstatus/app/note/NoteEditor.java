@@ -442,8 +442,8 @@ public class NoteEditor {
                 body += " ";
             }
             if (!TextUtils.isEmpty(bodyView.getText()) && !StringUtils.isEmpty(body)) {
-                MyLog.v(NoteEditorData.TAG, "Body updated '" + bodyView.getText()
-                + "' to '" + body + "'", new IllegalStateException());
+                MyLog.v(NoteEditorData.TAG, "Body updated\n'" + bodyView.getText()
+                + "' to \n'" + body + "'", new Exception());
             }
             bodyView.setText(body);
             bodyView.setSelection(bodyView.getText().toString().length());
