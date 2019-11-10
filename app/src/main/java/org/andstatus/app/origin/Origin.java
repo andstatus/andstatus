@@ -470,9 +470,13 @@ public class Origin implements Comparable<Origin>, IsEmpty {
             if (originType1.shortUrlLengthDefault == 0) {
                 origin.shortUrlLength = DbUtils.getInt(cursor, OriginTable.SHORT_URL_LENGTH);
             }
-            if (originType1.textLimitDefault == 0) {
-                setTextLimit(DbUtils.getInt(cursor, OriginTable.TEXT_LIMIT));
-            }
+
+            int textLimit = DbUtils.getInt(cursor, OriginTable.TEXT_LIMIT);
+            setTextLimit(textLimit > 0
+                    ? textLimit
+                    : (originType1.textLimitDefault > 0
+                        ? originType1.textLimitDefault
+                        : OriginType.TEXT_LIMIT_MAXIMUM));
             origin.setInCombinedGlobalSearch(DbUtils.getBoolean(cursor,
                     OriginTable.IN_COMBINED_GLOBAL_SEARCH));
             origin.setInCombinedPublicReload(DbUtils.getBoolean(cursor,

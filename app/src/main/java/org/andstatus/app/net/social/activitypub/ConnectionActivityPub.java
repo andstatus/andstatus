@@ -430,7 +430,15 @@ public class ConnectionActivityPub extends Connection {
 
     @NonNull
     private static Attachment attachmentFromJson(JSONObject jso) {
-        return Attachment.fromUriAndMimeType(UriUtils.fromJson(jso, "url"), jso.optString("mediaType"));
+        return ObjectOrId.of(jso, "url")
+                .mapAll(ConnectionActivityPub::attachmentFromUrlObject,
+                        url -> Attachment.fromUriAndMimeType(url, jso.optString("mediaType")))
+                .stream().findFirst().orElse(Attachment.EMPTY);
+    }
+
+    @NonNull
+    private static Attachment attachmentFromUrlObject(JSONObject jso) {
+        return Attachment.fromUriAndMimeType(jso.optString("href"), jso.optString("mediaType"));
     }
 
     @NonNull

@@ -893,11 +893,13 @@ public class AccountSettingsActivity extends MyActivity {
             boolean succeeded = false;
             String connectionErrorMessage = "";
             try {
-                state.builder.getOriginConfig();
                 if (!state.getAccount().areClientKeysPresent()) {
                     state.builder.registerClient();
                 } 
-                succeeded = state.getAccount().areClientKeysPresent();
+                if (state.getAccount().areClientKeysPresent()) {
+                    state.builder.getOriginConfig();
+                    succeeded = true;
+                }
             } catch (ConnectionException e) {
                 connectionErrorMessage = e.getMessage();
                 MyLog.e(this, e);

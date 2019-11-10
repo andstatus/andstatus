@@ -1,0 +1,43 @@
+{
+  "@context": [
+    "https:\/\/www.w3.org\/ns\/activitystreams",
+    "https:\/\/queer.hacktivis.me\/schemas\/litepub-0.1.jsonld",
+    {
+      "@language": "und"
+    }
+  ],
+  "actor": "https:\/\/queer.hacktivis.me\/users\/AndStatus",
+  "attachment": [
+    {
+      "mediaType": null,
+      "name": "\/document\/image:1529.png",
+      "type": "Document",
+      "url": [
+        {
+          "href": "https:\/\/queer.hacktivis.me\/media\/7403acc1-5dd3-4ea3-aeac-9bffa2ef59c7\/\/document\/image%3A1529.png?name=\/document\/image%3A1529.png",
+          "mediaType": "image\/png",
+          "type": "Link"
+        }
+      ]
+    }
+  ],
+  "attributedTo": "https:\/\/queer.hacktivis.me\/users\/AndStatus",
+  "bcc": [],
+  "bto": [],
+  "cc": [
+    "https:\/\/queer.hacktivis.me\/users\/AndStatus\/followers"
+  ],
+  "content": "With attachment",
+  "context": "https:\/\/queer.hacktivis.me\/contexts\/00517171-56b6-4aea-b971-9234157adfa9",
+  "conversation": "https:\/\/queer.hacktivis.me\/contexts\/00517171-56b6-4aea-b971-9234157adfa9",
+  "id": "https:\/\/queer.hacktivis.me\/objects\/afc8092f-d25e-40a5-9dfe-5a067fb2e67d",
+  "name": "TestPost003",
+  "published": "2019-11-10T10:44:37.364885Z",
+  "sensitive": false,
+  "summary": "TestPost003Subject",
+  "tag": [],
+  "to": [
+    "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+  ],
+  "type": "Note"
+}

@@ -145,10 +145,6 @@ public class ObjectOrId implements IsEmpty {
             return Try.success(object.get()).map(fromObject).map(Collections::singletonList)
                     .getOrElse(Collections.emptyList());
         }
-        if (id.isPresent()) {
-            return Try.success(id.get()).map(fromId).map(Collections::singletonList)
-                    .getOrElse(Collections.emptyList());
-        }
         if (array.isPresent()) {
             return Try.success(array.get()).map(arrayOfTo -> {
                 List<T> list = new ArrayList<>();
@@ -159,6 +155,10 @@ public class ObjectOrId implements IsEmpty {
                 }
                 return list;
             }).getOrElse(Collections.emptyList());
+        }
+        if (id.isPresent()) {
+            return Try.success(id.get()).map(fromId).map(Collections::singletonList)
+                    .getOrElse(Collections.emptyList());
         }
         return Collections.emptyList();
     }

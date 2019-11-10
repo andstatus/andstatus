@@ -26,6 +26,7 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.ConnectionMock;
@@ -50,10 +51,10 @@ import static org.andstatus.app.net.social.activitypub.VerifyCredentialsActivity
 import static org.andstatus.app.net.social.activitypub.VerifyCredentialsActivityPubTest.UNIQUE_NAME_IN_ORIGIN;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class ConnectionActivityPubTest {
@@ -284,4 +285,52 @@ public class ConnectionActivityPubTest {
 
     }
 
+    @Test
+    public void getNoteWithAttachment() throws IOException {
+        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_with_attachment_pleroma);
+        String noteOid = "https://queer.hacktivis.me/objects/afc8092f-d25e-40a5-9dfe-5a067fb2e67d";
+        AActivity activity = mock.connection.getNote(noteOid);
+        assertEquals("Updating " + activity, ActivityType.UPDATE, activity.type);
+        assertEquals("Acting on a Note " + activity, AObjectType.NOTE, activity.getObjectType());
+        Note note = activity.getNote();
+        assertEquals("Note oid " + note, noteOid, note.oid);
+        Actor author = activity.getAuthor();
+        assertEquals("Author's oid " + activity, "https://queer.hacktivis.me/users/AndStatus", author.oid);
+        assertThat("Note name " + note, note.getName(), is("TestPost003"));
+        assertThat("Note summary " + note, note.getSummary(), is("TestPost003Subject"));
+        assertThat("Note body " + note, note.getContent(), is("With attachment"));
+        assertEquals("Note updated at " + TestSuite.utcTime(note.getUpdatedDate()),
+                TestSuite.utcTime(2019, Calendar.NOVEMBER, 10, 10, 44, 37).toString(),
+                TestSuite.utcTime(note.getUpdatedDate()).toString());
+
+        Audience audience = activity.audience();
+        assertEquals("Audience of " + activity, TriState.TRUE, audience.getPublic());
+        List<String> oids = Arrays.asList(
+                "https://queer.hacktivis.me/users/AndStatus/followers",
+                "https://www.w3.org/ns/activitystreams#Public");
+        oids.forEach(oid -> {
+            assertTrue("Audience should contain " + oid + "\n " + activity + "\n " + audience, audience.containsOid(oid));
+        });
+
+        Attachments attachments = activity.getNote().attachments;
+        assertTrue("Attachments of " + activity, attachments.nonEmpty());
+
+        CommandExecutionContext executionContext = new CommandExecutionContext(
+                MyContextHolder.get(),
+                CommandData.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT));
+        DataUpdater di = new DataUpdater(executionContext);
+        di.onActivity(activity);
+
+        Attachments attachmentsStored = Attachments.load(MyContextHolder.get(), activity.getNote().noteId);
+        assertTrue("Attachments should be stored of " + activity + "\n " + attachmentsStored + "\n",
+                attachmentsStored.nonEmpty());
+        assertEquals("Attachment stored of " + activity + "\n " + attachmentsStored + "\n",
+                attachments.list, attachmentsStored.list);
+
+        Audience audienceStored = Audience.fromNoteId(mock.getData().getOrigin(), note.noteId);
+        oids.forEach(oid -> {
+            assertTrue("Audience should contain " + oid + "\n " + activity + "\n " + audienceStored, audienceStored.containsOid(oid));
+        });
+        assertTrue("Audience of " + activity + "\n " + audienceStored, audienceStored.hasNonPublic());
+    }
 }

@@ -64,7 +64,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         String url;
         switch (routine) {
             case GET_CONFIG:
-                url = "/api/v1/instance";  // https://docs.joinmastodon.org/api/rest/instances/
+                url = "v1/instance";  // https://docs.joinmastodon.org/api/rest/instances/
                 break;
             case HOME_TIMELINE:
                 url = "v1/timelines/home";
