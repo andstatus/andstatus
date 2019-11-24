@@ -29,12 +29,12 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="52.01" android:versionCode="300"
-        versionDate="2019-11-09"
+    <release android:versionName="52.02" android:versionCode="301"
+        versionDate="2019-11-24"
         versionTitle="Multiple attachments">
         <changes>
             <change>Show multiple attachments for incoming notes.
-                Create notes with multiple attachments for ActivityPub C2S and for Mastodon.
+                Create notes with multiple attachments for ActivityPub C2S, for Mastodon and Twitter.
                 <a href="https://github.com/andstatus/andstatus/issues/189">#189</a>
             </change>
             <change>Get max note size for Pleroma from instance config.
