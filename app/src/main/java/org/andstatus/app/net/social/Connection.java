@@ -18,6 +18,8 @@ package org.andstatus.app.net.social;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.account.MyAccount;
@@ -52,7 +54,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
@@ -90,8 +91,8 @@ public abstract class Connection implements IsEmpty {
         GET_OPEN_INSTANCES,
         GET_ACTOR,
         UPDATE_NOTE,
-        UPDATE_NOTE_WITH_MEDIA,
         UPDATE_PRIVATE_NOTE,
+        UPLOAD_MEDIA,
         ANNOUNCE,
         UNDO_ANNOUNCE,
         DELETE_NOTE,

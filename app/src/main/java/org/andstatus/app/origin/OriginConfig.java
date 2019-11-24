@@ -22,6 +22,7 @@ public class OriginConfig implements IsEmpty {
     public static final int MASTODON_TEXT_LIMIT_DEFAULT = 500;
     public static final int MAX_ATTACHMENTS_DEFAULT = 10;
     public static final int MAX_ATTACHMENTS_MASTODON = 4;
+    public static final int MAX_ATTACHMENTS_TWITTER = 4;
 
     private boolean isEmpty = true;
     
@@ -64,6 +65,8 @@ public class OriginConfig implements IsEmpty {
                 return MAX_ATTACHMENTS_DEFAULT;
             case MASTODON:
                 return MAX_ATTACHMENTS_MASTODON;
+            case TWITTER:
+                return MAX_ATTACHMENTS_TWITTER;
             default:
                 return 1;
         }

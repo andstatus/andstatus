@@ -44,6 +44,7 @@ import static org.andstatus.app.util.MyHtmlTest.twitterBodyHtml;
 import static org.andstatus.app.util.MyHtmlTest.twitterBodyToPost;
 import static org.andstatus.app.util.UriUtilsTest.assertEndpoint;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
@@ -157,12 +158,27 @@ public class ConnectionTwitterTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_media);
 
         Note note = connection.getNote("503799441900314624").getNote();
-        assertNotNull("note returned", note);
+        assertFalse("note returned", note.isEmpty());
         assertEquals("has attachment", 1, note.attachments.size());
         assertEquals("attachment",  Attachment.fromUri("https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg"),
                 note.attachments.list.get(0));
         assertNotSame("attachment", Attachment.fromUri("https://pbs.twimg.com/media/Bv4a7EsCAAIgigY.jpg"),
                 note.attachments.list.get(0));
+    }
+
+    @Test
+    public void getNoteWithTwoAttachments() throws IOException {
+        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_two_attachments);
+
+        Note note = connection.getNote("1198619196260790272").getNote();
+        assertFalse("note returned " + note, note.isEmpty());
+        assertEquals("Body of this note " + note, "Test uploading two images via #AndStatus https://t.co/lJn9QBpWyn",
+                note.getContent());
+        assertEquals("has two attachments", 2, note.attachments.size());
+        assertEquals("attachment",  Attachment.fromUri("https://pbs.twimg.com/media/EKJZzZPWoAICygS.jpg"),
+                note.attachments.list.get(0));
+        assertEquals("attachment",  Attachment.fromUri("https://pbs.twimg.com/media/EKJZzkYWsAELO-o.jpg"),
+                note.attachments.list.get(1));
     }
 
     @Test

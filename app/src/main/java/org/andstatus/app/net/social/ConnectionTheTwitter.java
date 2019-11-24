@@ -17,6 +17,9 @@
 package org.andstatus.app.net.social;
 
 import android.net.Uri;
+import android.os.Build;
+
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
@@ -28,9 +31,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import androidx.annotation.NonNull;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of current API of the twitter.com
@@ -88,8 +92,13 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
             case ANNOUNCE:
                 url = "statuses/retweet/%noteId%.json?tweet_mode=extended";
                 break;
-            case UPDATE_NOTE_WITH_MEDIA:
-                url = "statuses/update_with_media.json?tweet_mode=extended";
+            case UPLOAD_MEDIA:
+                // Trying to allow setting alternative Twitter host...
+                if (http.data.originUrl.getHost().equals("api.twitter.com")) {
+                    url = "https://upload.twitter.com/1.1/media/upload.json";
+                } else {
+                    url = "media/upload.json";
+                }
                 break;
             case SEARCH_NOTES:
                 // https://dev.twitter.com/docs/api/1.1/get/search/tweets
@@ -111,27 +120,60 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         return prependWithBasicPath(url);
     }
 
+    /**
+     * https://developer.twitter.com/en/docs/tweets/post-and-engage/api-reference/post-statuses-update
+     */
     @Override
     protected AActivity updateNote2(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
-        JSONObject formParams = new JSONObject();
+        JSONObject obj = new JSONObject();
         try {
-            super.updateNoteSetFields(note, inReplyToOid, formParams);
+            super.updateNoteSetFields(note, inReplyToOid, obj);
             if (note.isSensitive()) {
-                formParams.put(SENSITIVE_PROPERTY, note.isSensitive());
+                obj.put(SENSITIVE_PROPERTY, note.isSensitive());
             }
-            if (attachments.toUploadCount() > 0) {
-                formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media[]");
-                formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachments.getFirstToUpload().uri.toString());
+            List<String> ids = new ArrayList<>();
+            for (Attachment attachment : attachments.list) {
+                if (UriUtils.isDownloadable(attachment.uri)) {
+                    MyLog.i(this, "Skipped downloadable " + attachment);
+                } else {
+                    // https://developer.twitter.com/en/docs/media/upload-media/api-reference/post-media-upload
+                    JSONObject mediaObject = uploadMedia(attachment.uri);
+                    if (mediaObject != null && mediaObject.has("media_id_string")) {
+                        ids.add(mediaObject.get("media_id_string").toString());
+                    }
+                }
+            };
+            if (!ids.isEmpty()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    obj.put("media_ids", String.join(",", ids));
+                } else {
+                    obj.put("media_ids", ids.stream().collect(Collectors.joining(",")));
+                }
             }
         } catch (JSONException e) {
             throw ConnectionException.hardConnectionException("Exception while preparing post params " + note, e);
         }
-        return postRequest(attachments.toUploadCount() > 0
-                        ? ApiRoutineEnum.UPDATE_NOTE
-                        : ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA,
-                    formParams)
+        return postRequest(ApiRoutineEnum.UPDATE_NOTE, obj)
                 .map(HttpReadResult::getJsonObject)
                 .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
+    }
+
+    private JSONObject uploadMedia(Uri mediaUri) throws ConnectionException {
+        JSONObject formParams = new JSONObject();
+        try {
+            formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media");
+            formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
+            return postRequest(ApiRoutineEnum.UPLOAD_MEDIA, formParams)
+                    .map(HttpReadResult::getJsonObject)
+                    .filter(Objects::nonNull)
+                    .onSuccess(jso -> {
+                        if (MyLog.isVerboseEnabled()) {
+                            MyLog.v(this, "uploaded '" + mediaUri.toString() + "' " + jso.toString());
+                        }
+                    }).getOrElseThrow(ConnectionException::of);
+        } catch (JSONException e) {
+            throw ConnectionException.loggedJsonException(this, "Error uploading '" + mediaUri + "'", e, formParams);
+        }
     }
 
     @Override
@@ -191,17 +233,23 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     @Override
     @NonNull
     AActivity activityFromJson2(JSONObject jso) throws ConnectionException {
-        if (jso == null) {
-            return AActivity.EMPTY;
-        }
-        final String method = "activityFromJson2";
+        if (jso == null) return AActivity.EMPTY;
+
         AActivity activity = super.activityFromJson2(jso);
         Note note =  activity.getNote();
         note.setSensitive(jso.optBoolean(SENSITIVE_PROPERTY));
-        // See https://dev.twitter.com/docs/entities
-        JSONObject entities = jso.optJSONObject("entities");
-        if (entities != null && entities.has(ATTACHMENTS_FIELD_NAME)) {
-            try {
+        if (!addAttachmentsFromJson(jso, activity, "extended_entities")) {
+            // See https://dev.twitter.com/docs/entities
+            addAttachmentsFromJson(jso, activity, "entities");
+        }
+        return activity;
+    }
+
+    private boolean addAttachmentsFromJson(JSONObject jso, AActivity activity, String sectionName) {
+        final String method = "addAttachmentsFromJson";
+        try {
+            JSONObject entities = jso.optJSONObject(sectionName);
+            if (entities != null && entities.has(ATTACHMENTS_FIELD_NAME)) {
                 JSONArray jArr = entities.getJSONArray(ATTACHMENTS_FIELD_NAME);
                 for (int ind = 0; ind < jArr.length(); ind++) {
                     Attachment attachment = Attachment.fromUri(
@@ -213,11 +261,12 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                         MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
                     }
                 }
-            } catch (JSONException e) {
-                MyLog.d(this, method, e);
+                return true;
             }
+        } catch (JSONException e) {
+            MyLog.d(this, method, e);
         }
-        return activity;
+        return false;
     }
 
     @Override

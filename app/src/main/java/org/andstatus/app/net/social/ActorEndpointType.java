@@ -68,7 +68,7 @@ public enum ActorEndpointType {
                 return API_OUTBOX;
             case PUBLIC_TIMELINE:
                 return API_SHARED_INBOX;
-            case UPDATE_NOTE_WITH_MEDIA:
+            case UPLOAD_MEDIA:
                 return API_UPLOAD_MEDIA;
             default:
                 return EMPTY;

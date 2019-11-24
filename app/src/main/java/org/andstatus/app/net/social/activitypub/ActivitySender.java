@@ -209,7 +209,7 @@ class ActivitySender {
         try {
             formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "file");
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachment.uri.toString());
-            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA,
+            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA,
                     connection.getData().getAccountActor());
             Try<HttpReadResult> result = connection.postRequest(conu.uri, formParams);
             if (result.map(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {

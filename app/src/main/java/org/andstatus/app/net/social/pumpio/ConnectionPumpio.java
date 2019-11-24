@@ -18,6 +18,8 @@ package org.andstatus.app.net.social.pumpio;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
@@ -46,8 +48,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import androidx.annotation.NonNull;
 
 /**
  * Implementation of pump.io API: <a href="https://github.com/e14n/pump.io/blob/master/API.md">https://github.com/e14n/pump.io/blob/master/API.md</a>  
@@ -97,7 +97,7 @@ public class ConnectionPumpio extends Connection {
             case LIKED_TIMELINE:
                 url = "user/%username%/favorites";
                 break;
-            case UPDATE_NOTE_WITH_MEDIA:
+            case UPLOAD_MEDIA:
                 url = "user/%username%/uploads";
                 break;
             case LIKE:

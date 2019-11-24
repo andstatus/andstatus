@@ -18,6 +18,8 @@ package org.andstatus.app.net.social;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
@@ -40,7 +42,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.CheckedFunction;
 
 import static org.andstatus.app.context.MyPreferences.BYTES_IN_MB;
@@ -90,7 +91,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             case UPDATE_NOTE:
                 url = "v1/statuses";
                 break;
-            case UPDATE_NOTE_WITH_MEDIA:
+            case UPLOAD_MEDIA:
                 url = "v1/media";
                 break;
             case GET_NOTE:
@@ -302,7 +303,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         try {
             formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "file");
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
-            return postRequest(ApiRoutineEnum.UPDATE_NOTE_WITH_MEDIA, formParams)
+            return postRequest(ApiRoutineEnum.UPLOAD_MEDIA, formParams)
                 .map(HttpReadResult::getJsonObject)
                 .filter(Objects::nonNull)
                 .onSuccess(jso -> {
