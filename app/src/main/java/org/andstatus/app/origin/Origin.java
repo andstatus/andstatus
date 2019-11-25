@@ -25,6 +25,9 @@ import android.text.SpannableString;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
@@ -46,9 +49,6 @@ import java.net.URL;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
-
 import static org.junit.Assert.fail;
 
 /**
@@ -65,9 +65,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
     private static final Pattern INVALID_NAME_PART_PATTERN = Pattern.compile("[^" + VALID_NAME_CHARS + "]+");
     private static final Pattern DOTS_PATTERN = Pattern.compile("[.]+");
 
-    /** See {@link OriginType#shortUrlLengthDefault} */
-    protected int shortUrlLength = 0;
-
+    protected final int shortUrlLength;
     public final MyContext myContext;
     private final OriginType originType;
 
@@ -102,6 +100,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
     Origin(MyContext myContext, OriginType originType) {
         this.myContext = myContext;
         this.originType = originType;
+        shortUrlLength = originType.shortUrlLengthDefault.value;
     }
     
     public OriginType getOriginType() {
@@ -372,7 +371,6 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         origin.url = origin.originType.getUrlDefault();
         origin.ssl = origin.originType.sslDefault;
         origin.allowHtml = origin.originType.allowHtmlDefault;
-        origin.shortUrlLength = origin.originType.shortUrlLengthDefault;
         origin.textLimit = origin.originType.textLimitDefault;
         origin.setInCombinedGlobalSearch(true);
         origin.setInCombinedPublicReload(true);
@@ -467,9 +465,6 @@ public class Origin implements Comparable<Origin>, IsEmpty {
             setSslMode(SslModeEnum.fromId(DbUtils.getLong(cursor, OriginTable.SSL_MODE)));
             
             origin.allowHtml = DbUtils.getBoolean(cursor, OriginTable.ALLOW_HTML);
-            if (originType1.shortUrlLengthDefault == 0) {
-                origin.shortUrlLength = DbUtils.getInt(cursor, OriginTable.SHORT_URL_LENGTH);
-            }
 
             int textLimit = DbUtils.getInt(cursor, OriginTable.TEXT_LIMIT);
             setTextLimit(textLimit > 0
@@ -501,7 +496,6 @@ public class Origin implements Comparable<Origin>, IsEmpty {
             setSsl(original.ssl);
             setSslMode(original.sslMode);
             setHtmlContentAllowed(original.allowHtml);
-            origin.shortUrlLength = original.shortUrlLength;
             setTextLimit(original.getTextLimit());
             setInCombinedGlobalSearch(original.inCombinedGlobalSearch);
             setInCombinedPublicReload(original.inCombinedPublicReload);
@@ -594,7 +588,6 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         }
         
         public Builder save(OriginConfig config) {
-            origin.shortUrlLength = config.shortUrlLength;
             setTextLimit(config.textLimit);
             save();
             return this;
@@ -624,7 +617,6 @@ public class Origin implements Comparable<Origin>, IsEmpty {
             values.put(OriginTable.SSL, origin.ssl);
             values.put(OriginTable.SSL_MODE, origin.getSslMode().id);
             values.put(OriginTable.ALLOW_HTML, origin.allowHtml);
-            values.put(OriginTable.SHORT_URL_LENGTH, origin.shortUrlLength);
             values.put(OriginTable.TEXT_LIMIT, origin.getTextLimit());
             values.put(OriginTable.IN_COMBINED_GLOBAL_SEARCH, origin.inCombinedGlobalSearch);
             values.put(OriginTable.IN_COMBINED_PUBLIC_RELOAD, origin.inCombinedPublicReload);

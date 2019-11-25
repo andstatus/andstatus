@@ -24,6 +24,7 @@ import androidx.annotation.NonNull;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpReadResult;
+import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.UriUtils;
@@ -35,6 +36,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static org.andstatus.app.context.MyPreferences.BYTES_IN_MB;
 
 /**
  * Implementation of current API of the twitter.com
@@ -174,6 +177,13 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Error uploading '" + mediaUri + "'", e, formParams);
         }
+    }
+
+    @Override
+    public OriginConfig getConfig() throws ConnectionException {
+        // There is https://developer.twitter.com/en/docs/developer-utilities/configuration/api-reference/get-help-configuration
+        // but it doesn't have this 280 chars limit...
+        return new OriginConfig(280, 5 * BYTES_IN_MB);
     }
 
     @Override

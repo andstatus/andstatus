@@ -114,29 +114,28 @@ public class DatabaseCreator {
                 + OriginTable.SSL + ","
                 + OriginTable.SSL_MODE + ","
                 + OriginTable.ALLOW_HTML + ","
-                + OriginTable.TEXT_LIMIT + ","
-                + OriginTable.SHORT_URL_LENGTH
+                + OriginTable.TEXT_LIMIT
                 + ") VALUES ("
                 + "%s"
                 + ")";
         String[] values = {
                 Long.toString(ORIGIN_ID_TWITTER) +
-                ",   1,'Twitter',        'https://api.twitter.com',  1, 1, 0,  280, 23",
-                " 2, 2,'Pump.io',        '',                         1, 1, 1,    0,  0",
-  // turned off " 3, 3,'Quitter.se',     'https://quitter.se',       1, 1, 1,    0,  0",
-                " 4, 3,'LoadAverage',    'https://loadaverage.org',  1, 1, 1,    0,  0",
-                " 6, 3,'GNUsocial.de',   'https://gnusocial.de',     1, 1, 1,    0,  0",
-                " 7, 3,'GNUsocial.no',   'https://gnusocial.no',     1, 1, 1,    0,  0",
-  // turned off " 8, 3,'Quitter.no',     'https://quitter.no',       1, 1, 1,    0,  0",
-                " 9, 3,'Quitter.is',     'https://quitter.is',       1, 1, 1,    0,  0",
-                "10, 3,'Quitter.Espana', 'https://quitter.es',       1, 1, 1,    0,  0",
-                "11, 4,'Mastodon.social','https://mastodon.social',  1, 1, 1,    0,  0",
-                "12, 4,'Mastodon.cloud', 'https://mastodon.cloud',   1, 1, 1,    0,  0",
-                "13, 4,'mstdn.jp',       'https://mstdn.jp',         1, 1, 1,    0,  0",
-                "14, 4,'Pawoo',          'https://pawoo.net',        1, 1, 1,    0,  0",
-                "15, 4,'friends.nico',   'https://friends.nico',     1, 1, 1,    0,  0",
-                "16, 4,'Mastodon.xyz',   'https://mastodon.xyz',     1, 1, 1,    0,  0",
-                "17, 5,'ActivityPub',    '',                         1, 1, 1,    0,  0"
+                ",   1,'Twitter',        'https://api.twitter.com',  1, 1, 0,  280",
+                " 2, 2,'Pump.io',        '',                         1, 1, 1,    0",
+  // turned off " 3, 3,'Quitter.se',     'https://quitter.se',       1, 1, 1,    0",
+                " 4, 3,'LoadAverage',    'https://loadaverage.org',  1, 1, 1,    0",
+                " 6, 3,'GNUsocial.de',   'https://gnusocial.de',     1, 1, 1,    0",
+                " 7, 3,'GNUsocial.no',   'https://gnusocial.no',     1, 1, 1,    0",
+  // turned off " 8, 3,'Quitter.no',     'https://quitter.no',       1, 1, 1,    0",
+                " 9, 3,'Quitter.is',     'https://quitter.is',       1, 1, 1,    0",
+                "10, 3,'Quitter.Espana', 'https://quitter.es',       1, 1, 1,    0",
+                "11, 4,'Mastodon.social','https://mastodon.social',  1, 1, 1,    0",
+                "12, 4,'Mastodon.cloud', 'https://mastodon.cloud',   1, 1, 1,    0",
+                "13, 4,'mstdn.jp',       'https://mstdn.jp',         1, 1, 1,    0",
+                "14, 4,'Pawoo',          'https://pawoo.net',        1, 1, 1,    0",
+                "15, 4,'friends.nico',   'https://friends.nico',     1, 1, 1,    0",
+                "16, 4,'Mastodon.xyz',   'https://mastodon.xyz',     1, 1, 1,    0",
+                "17, 5,'ActivityPub',    '',                         1, 1, 1,    0"
         };
         for (String value : values) {
             DbUtils.execSQL(db, sqlIns.replace("%s", value));

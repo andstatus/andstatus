@@ -25,14 +25,14 @@ buildscript {
     }
 
     ext {
-        compileSdkVersion = 28 as int
-        buildToolsVersion = '28.0.3'
+        compileSdkVersion = 29 as int
+        buildToolsVersion = '29.0.2'
         minSdkVersion = 24 as int
-        targetSdkVersion = 28 as int
+        targetSdkVersion = 29 as int
 
         // Lookup the latest here: https://mvnrepository.com/
         acraVersion = '4.11'              // https://github.com/ACRA/acra/wiki/AdvancedUsage
-        annotationVersion = '1.0.1'
+        annotationVersion = '1.1.0'
         appCompatVersion = '1.1.0'        // https://mvnrepository.com/artifact/androidx.appcompat/appcompat
         commonsCodecVersion = '20041127.091804'
         commonsLangVersion = '3.9'      // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3

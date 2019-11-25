@@ -16,7 +16,10 @@
 
 package org.andstatus.app.origin;
 
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.IsEmpty;
+
+import static org.andstatus.app.origin.OriginType.TEXT_LIMIT_MAXIMUM;
 
 public class OriginConfig implements IsEmpty {
     public static final int MASTODON_TEXT_LIMIT_DEFAULT = 500;
@@ -24,26 +27,24 @@ public class OriginConfig implements IsEmpty {
     public static final int MAX_ATTACHMENTS_MASTODON = 4;
     public static final int MAX_ATTACHMENTS_TWITTER = 4;
 
-    private boolean isEmpty = true;
+    private final boolean isEmpty;
     
-    public int shortUrlLength = 0;
-    public int textLimit = 0;
-    public int uploadLimit = 0;
+    public final int textLimit;
+    public final long uploadLimit;
     
     public static OriginConfig getEmpty() {
-        return new OriginConfig();
+        return new OriginConfig(-1, 0);
     }
 
-    public static OriginConfig fromTextLimit(int textLimit, int uploadLimit) {
-        OriginConfig config = new OriginConfig();
-        config.textLimit = textLimit;
-        config.uploadLimit = uploadLimit;
-        config.isEmpty = false;
+    public static OriginConfig fromTextLimit(int textLimit, long uploadLimit) {
+        OriginConfig config = new OriginConfig(textLimit, uploadLimit);
         return config;
     }
     
-    private OriginConfig() {
-        // Empty
+    public OriginConfig(int textLimit, long uploadLimit) {
+        isEmpty = textLimit < 0;
+        this.textLimit = textLimit > 0 ? textLimit : TEXT_LIMIT_MAXIMUM;
+        this.uploadLimit = uploadLimit > 0 ? uploadLimit : MyPreferences.getMaximumSizeOfAttachmentBytes();
     }
 
     public boolean isEmpty() {
@@ -53,8 +54,7 @@ public class OriginConfig implements IsEmpty {
     @Override
     public String toString() {
         return "OriginConfig{" +
-                "shortUrlLength=" + shortUrlLength +
-                ", textLimit=" + textLimit +
+                "textLimit=" + textLimit +
                 ", uploadLimit=" + uploadLimit +
                 '}';
     }

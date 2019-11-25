@@ -45,7 +45,6 @@ public final class OriginTable implements BaseColumns {
     public static final String SSL_MODE = "ssl_mode";
     public static final String ALLOW_HTML = "allow_html";
     public static final String TEXT_LIMIT = "text_limit";
-    public static final String SHORT_URL_LENGTH = "short_url_length";
     public static final String MENTION_AS_WEBFINGER_ID = "mention_as_webfinger_id";
     public static final String USE_LEGACY_HTTP = "use_legacy_http";
     /**
@@ -67,7 +66,6 @@ public final class OriginTable implements BaseColumns {
                 + SSL_MODE + " INTEGER NOT NULL DEFAULT " + SslModeEnum.SECURE.id +","
                 + ALLOW_HTML + " BOOLEAN NOT NULL DEFAULT 1,"
                 + TEXT_LIMIT + " INTEGER NOT NULL,"
-                + SHORT_URL_LENGTH + " INTEGER NOT NULL DEFAULT 0,"
                 + MENTION_AS_WEBFINGER_ID + " INTEGER NOT NULL DEFAULT " + TriState.UNKNOWN.id + ","
                 + USE_LEGACY_HTTP + " INTEGER NOT NULL DEFAULT " + TriState.UNKNOWN.id + ","
                 + IN_COMBINED_GLOBAL_SEARCH + " BOOLEAN NOT NULL DEFAULT 1,"

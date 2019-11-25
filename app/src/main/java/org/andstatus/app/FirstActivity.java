@@ -24,6 +24,9 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
@@ -37,9 +40,6 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.concurrent.atomic.AtomicReference;
-
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 /** Activity to be started, when Application is not initialised yet (or needs re-initialization).
  * It allows to avoid "Application not responding" errors.
@@ -58,7 +58,11 @@ public class FirstActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.loading);
+        try {
+            setContentView(R.layout.loading);
+        } catch (Throwable e) {
+            MyLog.w(this, "Couldn't setContentView", e);
+        }
         startNextActivity(getIntent());
     }
 

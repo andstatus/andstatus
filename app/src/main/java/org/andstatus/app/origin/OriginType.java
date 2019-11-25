@@ -54,7 +54,7 @@ public enum OriginType implements SelectableEnum {
      * <a href="https://dev.twitter.com/docs">Twitter Developers' documentation</a>
      */
     TWITTER(1, "Twitter", ApiEnum.TWITTER1P1, NoteName.NO, NoteSummary.NO,
-            PublicChangeAllowed.NO, SensitiveChangeAllowed.NO),
+            PublicChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(23)),
     /**
      * Origin type for the pump.io system 
      * Till July of 2013 (and v.1.16 of AndStatus) the API was: 
@@ -62,14 +62,14 @@ public enum OriginType implements SelectableEnum {
      * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
      */
     PUMPIO(2, "Pump.io", ApiEnum.PUMPIO, NoteName.YES, NoteSummary.NO,
-            PublicChangeAllowed.YES, SensitiveChangeAllowed.NO),
+            PublicChangeAllowed.YES, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)),
     GNUSOCIAL(3, "GnuSocial", ApiEnum.GNUSOCIAL_TWITTER, NoteName.NO, NoteSummary.NO,
-            PublicChangeAllowed.NO, SensitiveChangeAllowed.NO),
+            PublicChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)),
     /** <a href="https://github.com/Gargron/mastodon">Mastodon at GitHub</a> */
     MASTODON(4, "Mastodon", ApiEnum.MASTODON, NoteName.NO, NoteSummary.YES,
-            PublicChangeAllowed.NO, SensitiveChangeAllowed.YES),
+            PublicChangeAllowed.NO, SensitiveChangeAllowed.YES, ShortUrlLength.of(0)),
     ACTIVITYPUB(5, "ActivityPub", ApiEnum.ACTIVITYPUB, NoteName.YES, NoteSummary.YES,
-            PublicChangeAllowed.YES, SensitiveChangeAllowed.YES) {
+            PublicChangeAllowed.YES, SensitiveChangeAllowed.YES, ShortUrlLength.of(0)) {
 
         @Override
         public boolean isSelectable() {
@@ -81,7 +81,8 @@ public enum OriginType implements SelectableEnum {
             return Optional.of("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"");
         }
     },
-    UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO, NoteSummary.NO, PublicChangeAllowed.NO, SensitiveChangeAllowed.NO);
+    UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO, NoteSummary.NO, PublicChangeAllowed.NO, SensitiveChangeAllowed.NO,
+            ShortUrlLength.of(0));
 
     public static final String SIMPLE_USERNAME_EXAMPLES = "AndStatus user357 peter";
 
@@ -89,6 +90,18 @@ public enum OriginType implements SelectableEnum {
     private enum NoteSummary { YES, NO}
     private enum PublicChangeAllowed { YES, NO}
     private enum SensitiveChangeAllowed { YES, NO}
+
+    static class ShortUrlLength {
+        final int value;
+
+        static ShortUrlLength of(int length) {
+            return new ShortUrlLength(length);
+        }
+
+        private ShortUrlLength(int length) {
+            value = length;
+        }
+    }
 
     /**
      * Connection APIs known
@@ -112,7 +125,7 @@ public enum OriginType implements SelectableEnum {
     private static final String BASIC_PATH_DEFAULT = "api";
     private static final String OAUTH_PATH_DEFAULT = "oauth";
     public static final OriginType ORIGIN_TYPE_DEFAULT = TWITTER;
-    public static final int TEXT_LIMIT_MAXIMUM = 5000;
+    public static final int TEXT_LIMIT_MAXIMUM = 100000;
 
     private final long id;
     private final String title;
@@ -143,7 +156,7 @@ public enum OriginType implements SelectableEnum {
      * 0 means that length doesn't change
      * For Twitter.com see <a href="https://dev.twitter.com/docs/api/1.1/get/help/configuration">GET help/configuration</a>
      */
-    protected int shortUrlLengthDefault = 0;
+    final ShortUrlLength shortUrlLengthDefault;
     
     protected boolean sslDefault = true;
     protected boolean canChangeSsl = false;
@@ -176,13 +189,15 @@ public enum OriginType implements SelectableEnum {
     }
 
     OriginType(long id, String title, ApiEnum api, NoteName noteName, NoteSummary noteSummary,
-               PublicChangeAllowed publicChangeAllowed, SensitiveChangeAllowed sensitiveChangeAllowed) {
+               PublicChangeAllowed publicChangeAllowed, SensitiveChangeAllowed sensitiveChangeAllowed,
+               ShortUrlLength shortUrlLength) {
         this.id = id;
         this.title = title;
         hasNoteName = noteName == NoteName.YES;
         hasNoteSummary = noteSummary == NoteSummary.YES;
         isPublicChangeAllowed = publicChangeAllowed == PublicChangeAllowed.YES;
         isSensitiveChangeAllowed = sensitiveChangeAllowed == SensitiveChangeAllowed.YES;
+        shortUrlLengthDefault = shortUrlLength;
 
         switch (api) {
             case TWITTER1P1:
@@ -192,8 +207,6 @@ public enum OriginType implements SelectableEnum {
                 originHasUrl = true;
                 shouldSetNewUsernameManuallyIfOAuth = false;
                 shouldSetNewUsernameManuallyNoOAuth = true;
-                // TODO: Read from Config
-                shortUrlLengthDefault = 23; 
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN;
                 uniqueNameExamples = SIMPLE_USERNAME_EXAMPLES;
                 textLimitDefault = 280;

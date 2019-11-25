@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.origin.OriginType.TEXT_LIMIT_MAXIMUM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -46,9 +47,8 @@ public class OriginTest {
                 || charactersLeft == 142);
         assertFalse(origin.isMentionAsWebFingerId());
 
-        origin = MyContextHolder.get().origins()
-                .firstOfType(OriginType.PUMPIO);
-        textLimit = 5000;
+        origin = MyContextHolder.get().origins().firstOfType(OriginType.PUMPIO);
+        textLimit = TEXT_LIMIT_MAXIMUM;
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
         assertEquals("Short URL length", 0, origin.shortUrlLength);
         assertEquals("Characters left",
@@ -56,8 +56,7 @@ public class OriginTest {
                 origin.charactersLeftForNote(body));
         assertTrue(origin.isMentionAsWebFingerId());
 
-        origin = MyContextHolder.get().origins()
-                .firstOfType(OriginType.GNUSOCIAL);
+        origin = MyContextHolder.get().origins().firstOfType(OriginType.GNUSOCIAL);
         textLimit = Origin.TEXT_LIMIT_FOR_WEBFINGER_ID;
         int uploadLimit = 0;
         OriginConfig config = OriginConfig.fromTextLimit(textLimit, uploadLimit);
@@ -77,13 +76,11 @@ public class OriginTest {
         textLimit = 0;
         config = OriginConfig.fromTextLimit(textLimit, uploadLimit);
         assertTrue(config.nonEmpty());
-        config.shortUrlLength = 24;
         origin = new Origin.Builder(origin).save(config).build();
-        assertEquals("Textlimit", OriginType.TEXT_LIMIT_MAXIMUM, origin.getTextLimit());
-        assertEquals("Short URL length", config.shortUrlLength, origin.shortUrlLength);
-        assertEquals("Characters left",
+        assertEquals("Textlimit", TEXT_LIMIT_MAXIMUM, origin.getTextLimit());
+        assertEquals("Characters left " + origin,
                 origin.getTextLimit() - body.length()
-                        - config.shortUrlLength + urlString.length(),
+                        + (origin.shortUrlLength > 0 ? origin.shortUrlLength - urlString.length() : 0),
                 origin.charactersLeftForNote(body));
         assertTrue(origin.isMentionAsWebFingerId());
     }
