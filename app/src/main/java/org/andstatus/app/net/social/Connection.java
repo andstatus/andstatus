@@ -222,11 +222,17 @@ public abstract class Connection implements IsEmpty {
             return Optional.empty();
         }
         Optional<Uri> fromActor = data.getAccountActor().getEndpoint(ActorEndpointType.from(routine));
-        return fromActor.isPresent() ? fromActor
-                : Optional.of(getApiPathFromOrigin(routine)).filter(StringUtils::nonEmpty)
-                    .flatMap(path -> UrlUtils.pathToUrl(data.getOriginUrl(), path))
-                    .map(URL::toExternalForm)
-                    .flatMap(UriUtils::toDownloadableOptional);
+        return fromActor.isPresent()
+                ? fromActor
+                : Optional.of(getApiPathFromOrigin(routine)).flatMap(this::pathToUri);
+    }
+
+    public Optional<Uri> pathToUri(String path) {
+        return Optional.ofNullable(path)
+                .filter(StringUtils::nonEmpty)
+                .flatMap(path2 -> UrlUtils.pathToUrl(data.getOriginUrl(), path2))
+                .map(URL::toExternalForm)
+                .flatMap(UriUtils::toDownloadableOptional);
     }
 
     /**
@@ -541,6 +547,10 @@ public abstract class Connection implements IsEmpty {
         return unixDate;
     }
 
+    public final Try<HttpReadResult> tryGetRequest(Uri uri) {
+        return Try.of(() -> http.getRequestCommon(uri, true));
+    }
+
     public final JSONObject getRequest(Uri uri) throws ConnectionException {
         return http.getRequest(uri);
     }
@@ -571,11 +581,12 @@ public abstract class Connection implements IsEmpty {
         return data;
     }
 
-    protected String prependWithBasicPath(String url) {
-        if (!StringUtils.isEmpty(url) && !url.contains("://")) {
-            url = http.data.getAccountName().getOrigin().getOriginType().getBasicPath() + "/" + url;
+    @NonNull
+    public String partialPathToApiPath(String partialPath) {
+        if (!StringUtils.isEmpty(partialPath) && !partialPath.contains("://")) {
+            partialPath = http.data.getAccountName().getOrigin().getOriginType().getBasicPath() + "/" + partialPath;
         }
-        return url;
+        return partialPath;
     }
 
     @NonNull

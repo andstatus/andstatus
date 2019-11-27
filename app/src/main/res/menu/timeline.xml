@@ -63,4 +63,10 @@
         app:showAsAction="ifRoom"
         android:title="@string/options_menu_help">
     </item>
+    <item
+        android:id="@+id/debug_api"
+        app:showAsAction="never"
+        android:visible="false"
+        android:title="Debug Social network API">
+    </item>
 </menu>

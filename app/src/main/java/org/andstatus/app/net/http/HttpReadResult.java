@@ -18,6 +18,8 @@ import android.net.Uri;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -47,7 +49,6 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 public class HttpReadResult {
@@ -188,6 +189,10 @@ public class HttpReadResult {
     
     public JSONObject getJsonObject() throws ConnectionException {
         return innerGetJsonObject(strResponse);
+    }
+
+    public String getResponse() {
+        return strResponse;
     }
 
     private JSONObject innerGetJsonObject(String strJson) throws ConnectionException {

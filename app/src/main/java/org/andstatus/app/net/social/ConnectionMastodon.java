@@ -138,7 +138,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 break;
         }
 
-        return prependWithBasicPath(url);
+        return partialPathToApiPath(url);
     }
 
     @NonNull

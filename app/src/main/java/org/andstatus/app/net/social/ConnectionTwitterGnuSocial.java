@@ -18,6 +18,8 @@ package org.andstatus.app.net.social;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.ConnectionException;
@@ -37,8 +39,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.andstatus.app.util.UriUtils.nonRealOid;
@@ -83,7 +83,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         if (StringUtils.isEmpty(url)) {
             return super.getApiPathFromOrigin(routine);
         } 
-        return prependWithBasicPath(url);
+        return partialPathToApiPath(url);
     }
 
     @Override

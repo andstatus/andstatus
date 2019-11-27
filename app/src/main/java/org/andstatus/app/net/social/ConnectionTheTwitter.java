@@ -120,7 +120,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         if (StringUtils.isEmpty(url)) {
             return super.getApiPathFromOrigin(routine);
         }
-        return prependWithBasicPath(url);
+        return partialPathToApiPath(url);
     }
 
     /**

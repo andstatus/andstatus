@@ -18,6 +18,8 @@ package org.andstatus.app.net.social.activitypub;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
@@ -46,7 +48,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
@@ -84,7 +85,7 @@ public class ConnectionActivityPub extends Connection {
                 url = "";
                 break;
         }
-        return prependWithBasicPath(url);
+        return partialPathToApiPath(url);
     }
 
     @Override

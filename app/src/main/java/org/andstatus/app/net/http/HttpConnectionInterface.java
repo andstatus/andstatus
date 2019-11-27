@@ -105,6 +105,7 @@ public interface HttpConnectionInterface {
         if (UriUtils.isEmpty(uri)) {
             throw new IllegalArgumentException("URL is empty");
         }
+        MyLog.v(this, () -> "getRequest; URL='" + uri + "'");
         HttpReadResult result = new HttpReadResult(uri, new JSONObject());
         result.authenticate = authenticated;
         getRequest(result);

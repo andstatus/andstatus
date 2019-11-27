@@ -22,13 +22,20 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.Toast;
+
 import androidx.annotation.StringRes;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import android.view.WindowManager;
-import android.widget.Toast;
+
+import com.google.android.material.textfield.TextInputLayout;
 
 import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.R;
+
+import java.util.function.Consumer;
 
 public class DialogFactory {
     public static final String OK_DIALOG_TAG = "ok";
@@ -48,15 +55,9 @@ public class DialogFactory {
         final AlertDialog dialog = new AlertDialog.Builder(context)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle(titleId)
-                .setMessage(summary)
-                .setPositiveButton(android.R.string.ok,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog,
-                                                int whichButton) {
-                                dialog.dismiss();
-                            }
-                        }).create();
+                .setMessage(I18n.trimTextAt(summary, 1000))
+                .setPositiveButton(android.R.string.ok, (dialog1, whichButton) -> dialog1.dismiss())
+                .create();
         if (!Activity.class.isAssignableFrom(context.getClass())) {
             // See http://stackoverflow.com/questions/32224452/android-unable-to-add-window-permission-denied-for-this-window-type
             // and maybe http://stackoverflow.com/questions/17059545/show-dialog-alert-from-a-non-activity-class-in-android
@@ -75,7 +76,7 @@ public class DialogFactory {
         return dialog;
     }
 
-    public static void dismissSafely (Dialog dlg) {
+    public static void dismissSafely (DialogInterface dlg) {
         if (dlg != null) {
             try {
                 dlg.dismiss();
@@ -107,12 +108,8 @@ public class DialogFactory {
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setTitle(title)
                     .setMessage(message)
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, null);
-                        }
-                    })
+                    .setPositiveButton(android.R.string.ok, (dialog, which) ->
+                        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, null))
                     .create();
         }
     }
@@ -145,22 +142,40 @@ public class DialogFactory {
         Dialog dlg;
         AlertDialog.Builder builder = new AlertDialog.Builder(dialogFragment.getActivity());
         builder.setTitle(title)
-                .setMessage(message)
-                .setPositiveButton(dialogFragment.getText(android.R.string.yes),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialogFragment.getTargetFragment().onActivityResult(dialogFragment.getTargetRequestCode(), Activity.RESULT_OK, null);                                
-                            }
-                        })
-                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialogFragment.getTargetFragment().onActivityResult(dialogFragment.getTargetRequestCode(), Activity.RESULT_CANCELED, null);                                
-                    }
-                });
+            .setMessage(message)
+            .setPositiveButton(dialogFragment.getText(android.R.string.yes), (dialog, id) ->
+                    dialogFragment.getTargetFragment().onActivityResult(
+                        dialogFragment.getTargetRequestCode(), Activity.RESULT_OK, null))
+            .setNegativeButton(android.R.string.cancel, (dialog, id) ->
+                    dialogFragment.getTargetFragment().onActivityResult(
+                        dialogFragment.getTargetRequestCode(), Activity.RESULT_CANCELED, null));
         dlg = builder.create();
         return dlg;
     }
 
+    public static void showTextInputBox(Context context, String title, String message, Consumer<String> textConsumer,
+                                        String initialValue) {
+        TextInputLayout textInputLayout = new TextInputLayout(context);
+        textInputLayout.setPadding(
+                context.getResources().getDimensionPixelOffset(R.dimen.dialog_text_padding), 0,
+                context.getResources().getDimensionPixelOffset(R.dimen.dialog_text_padding), 0);
+        EditText input = new EditText(context);
+        if (StringUtils.nonEmpty(initialValue)) {
+            input.setText(initialValue);
+        }
+        textInputLayout.addView(input);
+
+         AlertDialog alert = new AlertDialog.Builder(context)
+        .setTitle(title)
+        .setView(textInputLayout)
+        .setMessage(message)
+        .setPositiveButton(context.getText(android.R.string.ok), ( dialog, which) -> {
+                textConsumer.accept(input.getText().toString());
+                dismissSafely(dialog);
+            })
+        .setNegativeButton(context.getText(android.R.string.cancel), (dialog, which) -> dismissSafely(dialog))
+        .create();
+
+        alert.show();
+    }
 }

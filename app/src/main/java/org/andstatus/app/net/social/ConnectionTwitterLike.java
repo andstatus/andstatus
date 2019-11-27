@@ -18,6 +18,8 @@ package org.andstatus.app.net.social;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpReadResult;
@@ -34,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 /**
@@ -115,7 +116,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                 url = "";
                 break;
         }
-        return prependWithBasicPath(url);
+        return partialPathToApiPath(url);
     }
 
     @Override

@@ -2,4 +2,5 @@
 <resources>
     <dimen name="my_action_button_min_height">48dp</dimen>
     <dimen name="my_action_button_min_width">48dp</dimen>
+    <dimen name="dialog_text_padding">19dp</dimen>
 </resources>

@@ -114,7 +114,7 @@ public class ConnectionPumpio extends Connection {
                 url = "";
                 break;
         }
-        return prependWithBasicPath(url);
+        return partialPathToApiPath(url);
     }
 
     @Override

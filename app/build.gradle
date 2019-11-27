@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         versionCode 301
-        versionName "52.02"
+        versionName "52.03"
 
         applicationId "org.andstatus.app"
         minSdkVersion rootProject.minSdkVersion

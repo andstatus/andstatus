@@ -127,7 +127,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
     }
 
     @Override
-    public void getRequest(HttpReadResult result) throws ConnectionException {
+    public void getRequest(HttpReadResult result) {
         new HttpConnectionApacheCommon(this, data).getRequest(result);
     }
 }

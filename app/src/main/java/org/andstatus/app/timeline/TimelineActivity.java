@@ -33,6 +33,10 @@ import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;
@@ -55,6 +59,7 @@ import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.graphics.AvatarView;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.ApiDebugger;
 import org.andstatus.app.note.NoteAdapter;
 import org.andstatus.app.note.NoteContextMenu;
 import org.andstatus.app.note.NoteContextMenuContainer;
@@ -91,10 +96,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.drawerlayout.widget.DrawerLayout;
 
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
@@ -410,6 +411,12 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         prepareMarkAllAsReadButton(menu);
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.timeline, menu);
+        if (MyLog.isVerboseEnabled()) {
+            MenuItem item = menu.findItem(R.id.debug_api);
+            if (item != null) {
+                item.setVisible(true);
+            }
+        }
         return true;
     }
 
@@ -524,6 +531,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 break;
             case R.id.help_menu_id:
                 onHelp();
+                break;
+            case R.id.debug_api:
+                new ApiDebugger(myContext, this).debugGet();
                 break;
             default:
                 return super.onOptionsItemSelected(item);
