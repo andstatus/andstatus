@@ -258,9 +258,11 @@
     <string-array name="search_objects_entries">
         <item>@string/messages</item>
         <item>@string/users</item>
+        <item>@string/groups</item>
     </string-array>
     <string-array name="search_objects_values">
         <item>NOTES</item>
         <item>ACTORS</item>
+        <item>GROUPS</item>
     </string-array>
 </resources>

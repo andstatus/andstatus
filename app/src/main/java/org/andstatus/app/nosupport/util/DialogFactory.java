@@ -104,11 +104,8 @@ public class DialogFactory {
     public static void showYesCancelDialog(Fragment fragment, int titleId, int messageId, final ActivityRequestCode requestCode) {
         DialogFragment dialog = new YesCancelDialog();
         Bundle args = new Bundle();
-        args.putCharSequence(DIALOG_TITLE_KEY,
-                fragment.getText(titleId));
-        args.putCharSequence(
-                DIALOG_MESSAGE_KEY,
-                fragment.getText(messageId));
+        args.putCharSequence(DIALOG_TITLE_KEY, fragment.getText(titleId));
+        args.putCharSequence(DIALOG_MESSAGE_KEY, fragment.getText(messageId));
         dialog.setArguments(args);
         dialog.setTargetFragment(fragment, requestCode.id);
         dialog.show(fragment.getFragmentManager(), YES_CANCEL_DIALOG_TAG);
@@ -130,19 +127,12 @@ public class DialogFactory {
         AlertDialog.Builder builder = new AlertDialog.Builder(dialogFragment.getActivity());
         builder.setTitle(title)
                 .setMessage(message)
-                .setPositiveButton(dialogFragment.getText(android.R.string.yes),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialogFragment.getTargetFragment().onActivityResult(dialogFragment.getTargetRequestCode(), Activity.RESULT_OK, null);
-                            }
-                        })
-                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialogFragment.getTargetFragment().onActivityResult(dialogFragment.getTargetRequestCode(), Activity.RESULT_CANCELED, null);
-                    }
-                });
+                .setPositiveButton(dialogFragment.getText(android.R.string.yes), (dialog, id) ->
+                        dialogFragment.getTargetFragment()
+                            .onActivityResult(dialogFragment.getTargetRequestCode(), Activity.RESULT_OK, null))
+                .setNegativeButton(android.R.string.no, (dialog, id) ->
+                        dialogFragment.getTargetFragment()
+                            .onActivityResult(dialogFragment.getTargetRequestCode(), Activity.RESULT_CANCELED, null));
         dlg = builder.create();
         return dlg;
     }

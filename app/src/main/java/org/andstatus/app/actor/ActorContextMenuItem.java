@@ -243,8 +243,8 @@ public enum ActorContextMenuItem implements ContextMenuItem {
                 actorListType,
                 menu.getOrigin().getId(),
                 menu.getViewItem().getActorId(), "");
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.d(this, "startFollowersList, uri:" + uri);
+        if (MyLog.isDebugEnabled()) {
+            MyLog.d(this, "startActorList, " + actorListType + ", uri:" + uri);
         }
         menu.getActivity().startActivity(MyAction.VIEW_FOLLOWERS.getIntent(uri));
     }

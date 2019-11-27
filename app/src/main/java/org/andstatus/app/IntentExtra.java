@@ -117,6 +117,7 @@ public enum IntentExtra{
     SYNC("SYNC"),
 
     CHECK_DATA("CHECK_DATA"),
+    CHECK_SCOPE("CHECK_SCOPE"),
     FULL_CHECK("FULL_CHECK"),
     COUNT_ONLY("COUNT_ONLY"),
 

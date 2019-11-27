@@ -25,6 +25,10 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import androidx.annotation.NonNull;
+
+import org.andstatus.app.actor.ActorListType;
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.ActivityTable;
@@ -46,8 +50,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import androidx.annotation.NonNull;
 
 /**
  * Database provider for the MyDatabase database.
@@ -411,16 +413,20 @@ public class MyProvider extends ContentProvider {
                 tables = Collections.singletonList(ActorSql.tables());
                 qb.setProjectionMap(ActorSql.fullProjectionMap);
                 rawQuery = uriParser.getSearchQuery();
-                if (StringUtils.nonEmpty(rawQuery)) {
-                    selection = "(" + ActorTable.WEBFINGER_ID + " LIKE ? OR " + ActorTable.REAL_NAME + " LIKE ? )" +
-                        (StringUtils.nonEmpty(selectionIn)
-                            ? " AND (" + selectionIn + ")"
-                            : "");
-                    selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
-                    selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
-                } else {
-                    selection = selectionIn;
+                SqlWhere actorWhere = new SqlWhere().append(selectionIn);
+                if (uriParser.getActorListType() == ActorListType.GROUPS_AT_ORIGIN) {
+                    actorWhere.append(ActorTable.GROUP_TYPE +
+                            " NOT IN (" + GroupType.NOT_A_GROUP.id + ", " + GroupType.UNKNOWN.id + ")");
                 }
+                if (StringUtils.nonEmpty(rawQuery)) {
+                    actorWhere.append(ActorTable.WEBFINGER_ID + " LIKE ?" +
+                        " OR " + ActorTable.REAL_NAME + " LIKE ?" +
+                        " OR " + ActorTable.USERNAME + " LIKE ?");
+                    selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
+                    selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
+                    selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
+                }
+                selection = actorWhere.getCondition();
                 where = "";
                 limit =  String.valueOf(PAGE_SIZE);
                 break;

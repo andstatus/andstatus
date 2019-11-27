@@ -19,7 +19,6 @@ package org.andstatus.app.widget;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import androidx.annotation.NonNull;
 import android.util.AttributeSet;
 import android.view.CollapsibleActionView;
 import android.view.KeyEvent;
@@ -32,6 +31,8 @@ import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
@@ -226,12 +227,19 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
     }
 
     private Uri getUri() {
-        if (getSearchObjects() == SearchObjects.NOTES) {
-            return timeline.fromSearch(parentActivity.getMyContext(), isInternetSearch())
-                                    .fromIsCombined(parentActivity.getMyContext(), isCombined()).getUri();
-        }
-        return MatchedUri.getActorListUri(ActorListType.ACTORS_AT_ORIGIN,
+        switch (getSearchObjects()) {
+            case NOTES:
+                return timeline.fromSearch(parentActivity.getMyContext(), isInternetSearch())
+                        .fromIsCombined(parentActivity.getMyContext(), isCombined()).getUri();
+            case ACTORS:
+                return MatchedUri.getActorListUri(ActorListType.ACTORS_AT_ORIGIN,
                         isCombined() ? 0 : getOrigin().getId(), 0, "");
+            case GROUPS:
+                return MatchedUri.getActorListUri(ActorListType.GROUPS_AT_ORIGIN,
+                        isCombined() ? 0 : getOrigin().getId(), 0, "");
+            default:
+                return Uri.EMPTY;
+        }
     }
 
     SearchObjects getSearchObjects() {

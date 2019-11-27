@@ -25,7 +25,7 @@ import org.andstatus.app.util.StringUtils;
 import androidx.annotation.StringRes;
 
 /**
- * These values define different named UserList filters
+ * These values define different named filters for lists of Actors / Users / Groups
  */
 public enum ActorListType {
     UNKNOWN("unknown", R.string.unknown_userlist, 0, ListScope.ORIGIN),
@@ -33,7 +33,8 @@ public enum ActorListType {
     ACTORS_OF_NOTE("actors_of_note", R.string.users_of_message, 0, ListScope.ORIGIN),
     FOLLOWERS("followers", R.string.followers, R.string.followers_of, ListScope.USER),
     FRIENDS("friends", R.string.friends, R.string.friends_of, ListScope.USER),
-    ACTORS_AT_ORIGIN("actors", R.string.user_list, 0, ListScope.ORIGIN);
+    ACTORS_AT_ORIGIN("actors", R.string.user_list, 0, ListScope.ORIGIN),
+    GROUPS_AT_ORIGIN("groups", R.string.groups, 0, ListScope.ORIGIN);
 
     /** code of the enum that is used in notes */
     private final String code;

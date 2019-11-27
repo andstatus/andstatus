@@ -2,6 +2,8 @@ package org.andstatus.app.user;
 
 import android.database.Cursor;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.ActorSql;
@@ -24,8 +26,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
@@ -156,13 +156,13 @@ public class CachedUsersAndActors {
             return actor;
         }
 
-        if (actor.user == User.EMPTY && actor.actorId != 0) {
+        if (actor.user.isEmpty() && actor.actorId != 0) {
             actor.user = User.load(myContext, actor.actorId);
         }
-        if (actor.user == User.EMPTY && actor.isWebFingerIdValid()) {
+        if (actor.user.isEmpty() && actor.isWebFingerIdValid()) {
             actor.user = User.load(myContext, MyQuery.webFingerIdToId(myContext, 0, actor.getWebFingerId()));
         }
-        if (actor.user == User.EMPTY) {
+        if (actor.user.isEmpty()) {
             actor.user = User.getNew();
         } else {
             updateCache(actor);

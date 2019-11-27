@@ -23,7 +23,8 @@ import org.andstatus.app.actor.ActorList;
 
 public enum SearchObjects {
     NOTES(TimelineActivity.class),
-    ACTORS(ActorList.class);
+    ACTORS(ActorList.class),
+    GROUPS(ActorList.class);
 
     private final Class<?> aClass;
 

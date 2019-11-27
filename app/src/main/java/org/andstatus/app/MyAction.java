@@ -47,7 +47,8 @@ public enum MyAction {
     private final String action;
     
     MyAction(String actionOrSuffix) {
-        this.action = actionOrSuffix.contains(".") ? actionOrSuffix
+        this.action = actionOrSuffix.contains(".")
+                ? actionOrSuffix
                 : ClassInApplicationPackage.PACKAGE_NAME + ".action." + actionOrSuffix;
     }
 

@@ -25,6 +25,10 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -91,15 +95,22 @@ public abstract class DataChecker {
         }
         try {
             MyLog.i(DataChecker.class, "fixData started" + (includeLong ? ", including long tasks" : ""));
-            for(DataChecker checker : new DataChecker[]{
+            List<DataChecker> allCheckers = Arrays.asList(
                     new CheckTimelines(),
                     new CheckDownloads(),
                     new MergeActors(),
                     new CheckUsers(),
                     new CheckConversations(),
                     new CheckAudience(),
-                    new SearchIndexUpdate(),
-            }) {
+                    new SearchIndexUpdate());
+
+            // TODO: define scope in parameters
+            String scope = "CheckUsers";
+            List<DataChecker> selectedCheckers = allCheckers.stream()
+                    .filter(c -> scope.contains("All") || scope.contains(c.getClass().getSimpleName()))
+                    .collect(Collectors.toList());
+
+            for(DataChecker checker : selectedCheckers) {
                 MyServiceManager.setServiceUnavailable();
                 counter += checker.setMyContext(myContext).setIncludeLong(includeLong).setLogger(logger)
                         .setCountOnly(countOnly)

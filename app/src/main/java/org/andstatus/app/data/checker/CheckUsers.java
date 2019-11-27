@@ -31,7 +31,6 @@ import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,6 +46,7 @@ class CheckUsers extends DataChecker {
     private static class CheckResults {
         Map<String, Set<Actor>> actorsToMergeUsers = new HashMap<>();
         Set<User> usersToSave = new HashSet<>();
+        Set<Actor> actorsWithoutUsers = new HashSet<>();
         Set<Actor> actorsToFixWebFingerId = new HashSet<>();
         List<String> problems = new ArrayList<>();
     }
@@ -66,6 +66,14 @@ class CheckUsers extends DataChecker {
         for (Actor actor : results.actorsToFixWebFingerId) {
             String sql = "UPDATE " + ActorTable.TABLE_NAME + " SET " + ActorTable.WEBFINGER_ID + "='"
                     + actor.getWebFingerId() + "' WHERE " + ActorTable._ID + "=" + actor.actorId;
+            myContext.getDatabase().execSQL(sql);
+            changedCount++;
+        }
+        for (Actor actor1 : results.actorsWithoutUsers) {
+            Actor actor = actor1.lookupUser();
+            actor.saveUser();
+            String sql = "UPDATE " + ActorTable.TABLE_NAME + " SET " + ActorTable.USER_ID + "="
+                    + actor.user.userId + " WHERE " + ActorTable._ID + "=" + actor.actorId;
             myContext.getDatabase().execSQL(sql);
             changedCount++;
         }
@@ -119,14 +127,14 @@ class CheckUsers extends DataChecker {
                                 DbUtils.getLong(c, UserTable.USER_ID),
                                 actor.getWebFingerId(),
                                 TriState.FALSE,
-                                Collections.emptySet()));
+                                new HashSet<>()));
                 if (myContext.accounts().fromWebFingerId(actor.getWebFingerId()).isValid()
                         && actor.user.isMyUser().untrue) {
                     actor.user.setIsMyUser(TriState.TRUE);
                     results.usersToSave.add(actor.user);
                     results.problems.add("Fix user isMy: " + actor);
                 } else if (actor.user.userId == 0 && !actor.isGroupDefinitely()) {
-                    results.usersToSave.add(actor.user);
+                    results.actorsWithoutUsers.add(actor);
                     results.problems.add("Fix userId==0: " + actor);
                 }
 
@@ -146,9 +154,11 @@ class CheckUsers extends DataChecker {
             }
         }
 
-        logger.logProgress("Check completed, " + rowsCount + " actors checked. "
-                + results.actorsToMergeUsers.size() + " users of actors to be merged, "
-                + results.actorsToFixWebFingerId.size() + " to fix WebfingerId"
+        logger.logProgress("Check completed, " + rowsCount + " actors checked." +
+                " Users of actors to be merged: " + results.actorsToMergeUsers.size() +
+                ", to fix WebfingerId: " +results.actorsToFixWebFingerId.size() +
+                ", to add users: " + results.actorsWithoutUsers.size() +
+                ", to save users: " + results.usersToSave.size()
         );
         return results;
     }

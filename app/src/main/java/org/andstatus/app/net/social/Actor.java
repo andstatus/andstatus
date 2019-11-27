@@ -19,6 +19,8 @@ package org.andstatus.app.net.social;
 import android.database.Cursor;
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
@@ -55,8 +57,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import androidx.annotation.NonNull;
 
 import static org.andstatus.app.net.social.Patterns.USERNAME_CHARS;
 import static org.andstatus.app.net.social.Patterns.WEBFINGER_ID_CHARS;
@@ -111,7 +111,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     public volatile long actorId = 0L;
     public AvatarFile avatarFile = AvatarFile.EMPTY;
 
-    public User user = User.EMPTY;
+    public volatile User user = User.EMPTY;
 
     private volatile TriState isPartiallyDefined = TriState.UNKNOWN;
 

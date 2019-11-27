@@ -118,7 +118,7 @@ public class ActorSql {
 
     @NonNull
     public static String tables() {
-        return tables(false, false);
+        return tables(false, true);
     }
 
     @NonNull
