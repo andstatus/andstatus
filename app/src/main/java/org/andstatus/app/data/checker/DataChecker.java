@@ -63,7 +63,7 @@ public abstract class DataChecker {
                 logger.callback,
                 false,
                 new MyAsyncTask<Void, Void, Void>(DataChecker.class.getSimpleName(),
-                MyAsyncTask.PoolEnum.LONG_UI) {
+                MyAsyncTask.PoolEnum.thatCannotBeShutDown()) {
 
                     @Override
                     protected Void doInBackground2(Void aVoid) {

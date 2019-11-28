@@ -21,6 +21,8 @@ import android.database.sqlite.SQLiteDiskIOException;
 import android.os.AsyncTask;
 import android.os.Looper;
 
+import androidx.annotation.NonNull;
+
 import org.acra.ACRA;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.IdentifiableInstance;
@@ -32,7 +34,6 @@ import org.andstatus.app.util.StringUtils;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.os.ExceptionsCounter.onDiskIoException;
@@ -77,6 +78,13 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
             this.corePoolSize = corePoolSize;
             this.maxCommandExecutionSeconds = maxCommandExecutionSeconds;
             this.mayBeShutDown = mayBeShutDown;
+        }
+
+        public static PoolEnum thatCannotBeShutDown() {
+            for (PoolEnum pool: PoolEnum.values()) {
+                if (!pool.mayBeShutDown) return pool;
+            }
+            throw new IllegalStateException("All pools may be shut down");
         }
     }
 

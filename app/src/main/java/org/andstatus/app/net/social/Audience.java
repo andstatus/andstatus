@@ -83,7 +83,7 @@ public class Audience implements IsEmpty {
                 + AudienceTable.TABLE_NAME + "." + AudienceTable.ACTOR_ID + "="
                 + ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + " AND " + AudienceTable.NOTE_ID + "=" + noteId;
-        final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(origin.myContext, cursor);
+        final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(origin.myContext, cursor, true);
         audience.actors.addAll(MyQuery.get(origin.myContext, sql, function));
         audience.setPublic(MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId));
         return audience;

@@ -142,13 +142,13 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         final String sql = "SELECT " + ActorSql.select()
                 + " FROM " + ActorSql.tables()
                 + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;
-        final Function<Cursor, Actor> function = cursor -> fromCursor(myContext, cursor);
+        final Function<Cursor, Actor> function = cursor -> fromCursor(myContext, cursor, true);
         return MyQuery.get(myContext, sql, function).stream().findFirst().orElseGet(supplier);
     }
 
     /** Updates cache on load */
     @NonNull
-    public static Actor fromCursor(MyContext myContext, Cursor cursor) {
+    public static Actor fromCursor(MyContext myContext, Cursor cursor, boolean useCache) {
         final long updatedDate = DbUtils.getLong(cursor, ActorTable.UPDATED_DATE);
         Actor actor = Actor.fromTwoIds(
                 myContext.origins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
@@ -178,14 +178,18 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         actor.setCreatedDate(DbUtils.getLong(cursor, ActorTable.CREATED_DATE));
         actor.setUpdatedDate(updatedDate);
 
-        actor.user = actor.isGroupDefinitely() ? User.EMPTY : User.fromCursor(myContext, cursor);
+        actor.user = actor.isGroupDefinitely() ? User.EMPTY : User.fromCursor(myContext, cursor, true);
         actor.avatarFile = AvatarFile.fromCursor(actor, cursor);
-        Actor cachedActor = myContext.users().actors.getOrDefault(actor.actorId, Actor.EMPTY);
-        if (actor.isBetterToCacheThan(cachedActor)) {
-            myContext.users().updateCache(actor);
+        if (useCache) {
+            Actor cachedActor = myContext.users().actors.getOrDefault(actor.actorId, Actor.EMPTY);
+            if (actor.isBetterToCacheThan(cachedActor)) {
+                myContext.users().updateCache(actor);
+                return actor;
+            }
+            return cachedActor;
+        } else {
             return actor;
         }
-        return cachedActor;
     }
 
     public static Actor newUnknown(@NonNull Origin origin) {
@@ -325,6 +329,9 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         .withComma("avatarFile", avatarFile, this::hasAvatarFile)
         .withComma("banner", endpoints.findFirst(ActorEndpointType.BANNER).orElse(null))
         .withComma("", "latest note present", this::hasLatestNote);
+        if (parentActor.isEvaluated() && parentActor.get().nonEmpty()) {
+            members.withComma("parent", parentActor.get());
+        }
         return MyStringBuilder.formatKeyValue(this, members);
     }
 
@@ -949,5 +956,9 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         } catch (Throwable e) {
             fail("Failed on " + this + "\n" + e.getMessage());
         }
+    }
+
+    public Actor getParent() {
+        return parentActor.get();
     }
 }

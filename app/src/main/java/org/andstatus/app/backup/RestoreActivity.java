@@ -114,7 +114,7 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
         private final RestoreActivity activity;
 
         RestoreTask(RestoreActivity activity) {
-            super(PoolEnum.QUICK_UI);
+            super(PoolEnum.thatCannotBeShutDown());
             this.activity = activity;
         }
 

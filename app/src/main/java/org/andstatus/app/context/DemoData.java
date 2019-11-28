@@ -170,7 +170,7 @@ public final class DemoData {
         final DemoData demoData;
 
         private MyAsyncTaskDemoData(ProgressLogger.ProgressCallback progressCallback, String method, MyContext myContext, DemoData demoData) {
-            super(method, MyAsyncTask.PoolEnum.QUICK_UI);
+            super(method, MyAsyncTask.PoolEnum.thatCannotBeShutDown());
             this.progressCallback = progressCallback;
             this.method = method;
             this.myContext = myContext;

@@ -151,7 +151,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     @Override
     @NonNull
     public ActorViewItem fromCursor(MyContext myContext, @NonNull Cursor cursor) {
-        Actor actor = Actor.fromCursor(myContext, cursor);
+        Actor actor = Actor.fromCursor(myContext, cursor, true);
         ActorViewItem item = new ActorViewItem(actor, false);
         item.populated = true;
         return item;

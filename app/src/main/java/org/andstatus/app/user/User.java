@@ -61,14 +61,16 @@ public class User implements IsEmpty {
         final String sql = "SELECT " + ActorSql.select(true, false)
                 + " FROM " + ActorSql.tables(true, false)
                 + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;
-        final Function<Cursor, User> function = cursor -> fromCursor(myContext, cursor);
+        final Function<Cursor, User> function = cursor -> fromCursor(myContext, cursor, true);
         return MyQuery.get(myContext, sql, function).stream().findFirst().orElse(EMPTY);
     }
 
     @NonNull
-    public static User fromCursor(MyContext myContext, Cursor cursor) {
+    public static User fromCursor(MyContext myContext, Cursor cursor, boolean useCache) {
         final long userId = DbUtils.getLong(cursor, ActorTable.USER_ID);
-        User user1 = myContext.users().users.getOrDefault(userId, User.EMPTY);
+        User user1 = useCache
+            ? myContext.users().users.getOrDefault(userId, User.EMPTY)
+            : User.EMPTY ;
         return user1.nonEmpty() ? user1
                 : new User(userId, DbUtils.getString(cursor, UserTable.KNOWN_AS),
                     DbUtils.getTriState(cursor, UserTable.IS_MY),

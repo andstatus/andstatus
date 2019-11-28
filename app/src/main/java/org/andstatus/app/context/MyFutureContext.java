@@ -57,7 +57,7 @@ public class MyFutureContext extends MyAsyncTask<Object, Void, MyContext> {
     }
 
     MyFutureContext(@NonNull MyContext previousContext) {
-        super(MyFutureContext.class.getSimpleName(), PoolEnum.QUICK_UI);
+        super(MyFutureContext.class.getSimpleName(), PoolEnum.thatCannotBeShutDown());
         Objects.requireNonNull(previousContext);
         this.previousContext = previousContext;
     }

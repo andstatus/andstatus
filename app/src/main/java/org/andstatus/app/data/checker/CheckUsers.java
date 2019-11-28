@@ -18,12 +18,10 @@ package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
 
-import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.data.ActorSql;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.user.User;
 import org.andstatus.app.util.MyLog;
@@ -38,6 +36,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import static org.andstatus.app.util.StringUtils.toTempOid;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -48,6 +48,7 @@ class CheckUsers extends DataChecker {
         Set<User> usersToSave = new HashSet<>();
         Set<Actor> actorsWithoutUsers = new HashSet<>();
         Set<Actor> actorsToFixWebFingerId = new HashSet<>();
+        Set<Actor> actorsWithoutOrigin = new HashSet<>();
         List<String> problems = new ArrayList<>();
     }
 
@@ -63,6 +64,24 @@ class CheckUsers extends DataChecker {
             changedCount++;
         }
         changedCount += results.actorsToMergeUsers.values().stream().mapToLong(this::mergeUsers).sum();
+        for (Actor actor : results.actorsWithoutOrigin) {
+            Actor parent = actor.getParent();
+            if (parent.nonEmpty()) {
+                // The error affects development database only
+                String groupUsername = actor.getGroupType().name + ".of." + parent.getUsername() + "." + parent.actorId;
+                String groupTempOid = toTempOid(groupUsername);
+
+                String sql = "UPDATE " + ActorTable.TABLE_NAME + " SET " +
+                        ActorTable.ORIGIN_ID + "=" + parent.origin.getId() + ", " +
+                        ActorTable.USERNAME + "='" + groupUsername + "', " +
+                        ActorTable.ACTOR_OID + "='" + groupTempOid + "'" +
+                        " WHERE " + ActorTable._ID + "=" + actor.actorId;
+                myContext.getDatabase().execSQL(sql);
+                changedCount++;
+            } else {
+                MyLog.w(this, "Couldn't fix origin for " + actor);
+            }
+        }
         for (Actor actor : results.actorsToFixWebFingerId) {
             String sql = "UPDATE " + ActorTable.TABLE_NAME + " SET " + ActorTable.WEBFINGER_ID + "='"
                     + actor.getWebFingerId() + "' WHERE " + ActorTable._ID + "=" + actor.actorId;
@@ -105,29 +124,13 @@ class CheckUsers extends DataChecker {
             Set<Actor> actors = new HashSet<>();
             while (c.moveToNext()) {
                 rowsCount++;
-                final Actor actor = Actor.fromTwoIds(
-                        myContext.origins().fromId(DbUtils.getLong(c, ActorTable.ORIGIN_ID)),
-                        DbUtils.getLong(c, ActorTable._ID),
-                        DbUtils.getString(c, ActorTable.ACTOR_OID)
-                        );
+                final Actor actor = Actor.fromCursor(myContext, c, false);
                 final String webFingerId = DbUtils.getString(c, ActorTable.WEBFINGER_ID);
-                actor.setGroupType(GroupType.fromId(DbUtils.getLong(c, ActorTable.GROUP_TYPE)));
-                actor.setWebFingerId(webFingerId);
-                actor.setProfileUrl(DbUtils.getString(c, ActorTable.PROFILE_PAGE));
-                actor.setUsername(DbUtils.getString(c, ActorTable.USERNAME));
-                actor.build();
-
                 if (actor.isWebFingerIdValid() && !actor.getWebFingerId().equals(webFingerId)) {
                     results.actorsToFixWebFingerId.add(actor);
                     results.problems.add("Fix webfingerId: '" + webFingerId + "' " + actor);
                 }
 
-                actor.user = myContext.users().userFromActorId(actor.actorId,
-                        () -> new User(
-                                DbUtils.getLong(c, UserTable.USER_ID),
-                                actor.getWebFingerId(),
-                                TriState.FALSE,
-                                new HashSet<>()));
                 if (myContext.accounts().fromWebFingerId(actor.getWebFingerId()).isValid()
                         && actor.user.isMyUser().untrue) {
                     actor.user.setIsMyUser(TriState.TRUE);
@@ -136,6 +139,11 @@ class CheckUsers extends DataChecker {
                 } else if (actor.user.userId == 0 && !actor.isGroupDefinitely()) {
                     results.actorsWithoutUsers.add(actor);
                     results.problems.add("Fix userId==0: " + actor);
+                }
+
+                if (actor.origin.isEmpty()) {
+                    results.actorsWithoutOrigin.add(actor);
+                    results.problems.add("Fix no Origin: " + actor);
                 }
 
                 if (StringUtils.isEmpty(key) || !actor.getWebFingerId().equals(key)) {

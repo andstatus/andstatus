@@ -69,7 +69,7 @@ public class CachedUsersAndActors {
         final String sql = "SELECT " + ActorSql.select()
                 + " FROM " + ActorSql.tables()
                 + " WHERE " + UserTable.IS_MY + "=" + TriState.TRUE.id;
-        final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor);
+        final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor, true);
         MyQuery.get(myContext, sql, function).forEach(this::updateCache);
     }
 
@@ -84,7 +84,7 @@ public class CachedUsersAndActors {
                 "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID;
 
         final Function<Cursor, Void> function = cursor -> {
-            Actor friend = Actor.fromCursor(myContext, cursor);
+            Actor friend = Actor.fromCursor(myContext, cursor, true);
             Actor me = Actor.load(myContext, DbUtils.getLong(cursor, FOLLOWER_ID));
             friendsOfMyActors.compute(friend.actorId, CollectionsUtil.addValue(me.actorId));
             return null;
@@ -124,7 +124,7 @@ public class CachedUsersAndActors {
                 + " SELECT DISTINCT " + TimelineTable.ACTOR_ID
                 + " FROM " + TimelineTable.TABLE_NAME
                 + ")";
-        final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor);
+        final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor, true);
         MyQuery.get(myContext, sql, function);
     }
 
