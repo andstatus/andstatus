@@ -29,6 +29,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
 import org.andstatus.app.account.AccountName;
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
@@ -47,8 +48,10 @@ import org.andstatus.app.util.UrlUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
+import static org.andstatus.app.net.social.Patterns.USERNAME_CHARS;
 import static org.junit.Assert.fail;
 
 /**
@@ -433,6 +436,48 @@ public class Origin implements Comparable<Origin>, IsEmpty {
             fail("Origin context should have database " + this +
                     "\ncontext: " + myContext);
         }
+    }
+
+
+    /**
+     * The reference may be in the form of @username, @webfingerId, or wibfingerId, without "@" before it
+     * @return index of the first position, where the username/webfingerId may start, -1 if not found
+     */
+    public ActorReference getActorReference(String text, int textStart) {
+        if (StringUtils.isEmpty(text) || textStart >= text.length()) return ActorReference.EMPTY;
+
+        int indexOfReference = text.indexOf(actorReferenceChar(), textStart);
+        GroupType groupType = GroupType.UNKNOWN;
+        if (groupActorReferenceChar().isPresent()) {
+            int indexOfGroupReference = text.indexOf(groupActorReferenceChar().get(), textStart);
+            if (indexOfGroupReference >= textStart && indexOfGroupReference < indexOfReference) {
+                indexOfReference = indexOfGroupReference;
+                groupType = GroupType.GENERIC;
+            }
+        }
+        if (indexOfReference < textStart) return ActorReference.EMPTY;
+
+        if (indexOfReference == textStart) return new ActorReference(textStart + 1, groupType);
+
+        if (USERNAME_CHARS.indexOf(text.charAt(indexOfReference - 1)) < 0) {
+            return new ActorReference(indexOfReference + 1, groupType);
+        }
+
+        // username part of WebfingerId before @ ?
+        int ind = indexOfReference - 1;
+        while (ind > textStart) {
+            if (USERNAME_CHARS.indexOf(text.charAt(ind - 1)) < 0) break;
+            ind--;
+        }
+        return new ActorReference(ind, groupType);
+    }
+
+    public char actorReferenceChar() {
+        return '@';
+    }
+
+    public Optional<Character> groupActorReferenceChar() {
+        return Optional.empty();
     }
 
     public static final class Builder {

@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net.social;
 
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.Origin;
@@ -27,7 +28,6 @@ import java.util.List;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class ActorTest {
 
@@ -41,18 +41,23 @@ public class ActorTest {
         Origin origin = MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName);
         String anotherUser2 = "anotherUser@somedomain.org";
         String shortUsername3 = "shortusername";
-        String body = "@" + demoData.gnusocialTestAccountUsername
-                + " @" + demoData.gnusocialTestAccount2Username
-                + " Please take this into account\n@" + anotherUser2
-                + " @" + demoData.gnusocialTestAccount2Username
-                + " And let me mention: @" + shortUsername3;
-        List<Actor> actors = Actor.newUnknown(origin).extractActorsFromContent(body, Actor.EMPTY);
+        String groupname1 = "gnusocial";
+        String body = "@" + demoData.gnusocialTestAccountUsername +
+                " @" + demoData.gnusocialTestAccount2Username +
+                " Please take this into account\n@" + anotherUser2 +
+                " @" + demoData.gnusocialTestAccount2Username +
+                " And we also send this to the group !" + groupname1 +
+                " And let me mention: @" + shortUsername3;
+        List<Actor> actors = Actor.newUnknown(origin, GroupType.UNKNOWN).extractActorsFromContent(body, Actor.EMPTY);
         String msgLog = body + " ->\n" + actors;
-        assertEquals(msgLog, 5, actors.size());
+        assertEquals(msgLog, 6, actors.size());
         assertEquals(msgLog, demoData.gnusocialTestAccountUsername, actors.get(0).getUsername());
         assertEquals(msgLog, demoData.gnusocialTestAccount2Username, actors.get(1).getUsername());
         assertEquals(msgLog, anotherUser2.toLowerCase(), actors.get(2).getWebFingerId());
-        assertEquals(msgLog, shortUsername3, actors.get(4).getUsername());
+        assertEquals(msgLog, GroupType.UNKNOWN, actors.get(3).groupType);
+        assertEquals(msgLog, groupname1, actors.get(4).getUsername());
+        assertEquals(msgLog, GroupType.GENERIC, actors.get(4).groupType);
+        assertEquals(msgLog, shortUsername3, actors.get(5).getUsername());
     }
 
     @Test
@@ -63,11 +68,12 @@ public class ActorTest {
         final String USERNAME4 = "djjerekwerwewer";
 
         Origin origin = MyContextHolder.get().origins().fromName(demoData.twitterTestOriginName);
-        String body = "Starting post @ #ThisIsTagofsome-event-and entertainment"
-                + " by @" + USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3
-                + " &amp; @" + USERNAME4
-                + " https://t.co/djkdfeowefPh";
-        List<Actor> actors = Actor.newUnknown(origin).extractActorsFromContent(body, Actor.EMPTY);
+        String body = "Starting post @ #ThisIsTagofsome-event-and entertainment by @" +
+                USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3 +
+                " &amp; @" + USERNAME4 +
+                " No reference !skippedGroupName" +
+                " https://t.co/djkdfeowefPh";
+        List<Actor> actors = Actor.newUnknown(origin, GroupType.UNKNOWN).extractActorsFromContent(body, Actor.EMPTY);
         String msgLog = body + " -> " + actors;
         assertEquals(msgLog, 2, actors.size());
         Actor actor0 = actors.get(0);
@@ -125,7 +131,7 @@ public class ActorTest {
     public void extractActorsFromContent() {
         String content = "<a href=\"https://loadaverage.org/andstatus\">AndStatus</a> started following" +
                 " <a href=\"https://gnusocial.no/mcscx2\">ex mcscx2@quitter.no</a>.";
-        List<Actor> actors = Actor.newUnknown(demoData.getPumpioConversationAccount().getOrigin())
+        List<Actor> actors = Actor.newUnknown(demoData.getPumpioConversationAccount().getOrigin(), GroupType.UNKNOWN)
                 .extractActorsFromContent(content, Actor.EMPTY);
         assertEquals("Actors: " + actors, 1, actors.size());
         assertEquals("Actors: " + actors, "mcscx2@quitter.no", actors.get(0).getWebFingerId());

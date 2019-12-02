@@ -68,7 +68,7 @@ class CheckUsers extends DataChecker {
             Actor parent = actor.getParent();
             if (parent.nonEmpty()) {
                 // The error affects development database only
-                String groupUsername = actor.getGroupType().name + ".of." + parent.getUsername() + "." + parent.actorId;
+                String groupUsername = actor.groupType.name + ".of." + parent.getUsername() + "." + parent.actorId;
                 String groupTempOid = toTempOid(groupUsername);
 
                 String sql = "UPDATE " + ActorTable.TABLE_NAME + " SET " +

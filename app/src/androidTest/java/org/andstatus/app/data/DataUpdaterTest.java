@@ -627,10 +627,13 @@ public class DataUpdaterTest {
         Actor myAuthor1 = Actor.fromOid(accountActor.origin, actorFromAnotherOrigin.oid + "22");
         myAuthor1.setUsername(actorFromAnotherOrigin.getUsername());
         myAuthor1.setWebFingerId(actorFromAnotherOrigin.getWebFingerId());
+        assertTrue("Should be unknown if it's mine" + myAuthor1, myAuthor1.user.isMyUser().unknown);
         myAuthor1.build();
+        assertTrue("After build should be unknown if it's mine" + myAuthor1, myAuthor1.user.isMyUser().unknown);
         AActivity activity1 = newLoadedNote(accountActor, myAuthor1,
                 "My account's first note from another Social Network " + demoData.testRunUid);
         assertTrue("Activity should be added", di.onActivity(activity1).getId() != 0);
+        assertTrue("Author should be mine " + activity1.getAuthor(), activity1.getAuthor().user.isMyUser().isTrue);
 
         Actor author2 = Actor.fromOid(accountActor.origin, "replier" + demoData.testRunUid);
         author2.setUsername("replier@anotherdoman.com");

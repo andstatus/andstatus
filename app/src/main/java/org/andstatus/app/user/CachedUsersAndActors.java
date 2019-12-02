@@ -152,19 +152,27 @@ public class CachedUsersAndActors {
     }
 
     public Actor lookupUser(Actor actor) {
-        if (actor.isGroupDefinitely()) {
+        if (actor.isGroupDefinitely() || actor.user.nonEmpty()) {
+            updateCache(actor);
             return actor;
         }
 
-        if (actor.user.isEmpty() && actor.actorId != 0) {
-            actor.user = User.load(myContext, actor.actorId);
+        User user2 = User.EMPTY;
+        if (user2.isEmpty() && actor.actorId != 0) {
+            user2 = User.load(myContext, actor.actorId);
         }
-        if (actor.user.isEmpty() && actor.isWebFingerIdValid()) {
-            actor.user = User.load(myContext, MyQuery.webFingerIdToId(myContext, 0, actor.getWebFingerId()));
+        if (user2.isEmpty() && actor.isWebFingerIdValid()) {
+            user2 = User.load(myContext, MyQuery.webFingerIdToId(myContext, 0, actor.getWebFingerId()));
         }
-        if (actor.user.isEmpty()) {
-            actor.user = User.getNew();
-        } else {
+        if (user2.isEmpty()) {
+            user2 = User.getNew();
+        }
+        if (actor.user.isMyUser().known) {
+            user2.setIsMyUser(actor.user.isMyUser());
+        }
+        actor.user = user2;
+
+        if (actor.user.nonEmpty()) {
             updateCache(actor);
         }
         return actor;

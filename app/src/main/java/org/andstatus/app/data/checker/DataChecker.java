@@ -105,7 +105,7 @@ public abstract class DataChecker {
                     new SearchIndexUpdate());
 
             // TODO: define scope in parameters
-            String scope = "CheckUsers";
+            String scope = "All";
             List<DataChecker> selectedCheckers = allCheckers.stream()
                     .filter(c -> scope.contains("All") || scope.contains(c.getClass().getSimpleName()))
                     .collect(Collectors.toList());

@@ -19,6 +19,9 @@ package org.andstatus.app.net.social;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import androidx.annotation.NonNull;
+
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ActorSql;
@@ -39,8 +42,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import androidx.annotation.NonNull;
 
 public class Audience implements IsEmpty {
     public final static Audience EMPTY = new Audience(Origin.EMPTY);
@@ -68,6 +69,7 @@ public class Audience implements IsEmpty {
                 + " WHERE " + where;
         Audience audience = new Audience(origin);
         final Function<Cursor, Actor> function = cursor -> Actor.fromTwoIds(origin,
+                GroupType.UNKNOWN,
                 DbUtils.getLong(cursor, AudienceTable.ACTOR_ID),
                 DbUtils.getString(cursor, ActorTable.ACTOR_OID));
         audience.actors.addAll(MyQuery.get(MyContextHolder.get(), sql, function));

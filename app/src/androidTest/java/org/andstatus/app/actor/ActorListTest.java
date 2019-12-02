@@ -46,7 +46,6 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
@@ -79,7 +78,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         String content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
         String logMsg = MyQuery.noteInfoForLog(getActivity().getMyContext(), noteId);
 
-        List<Actor> actors = Actor.newUnknown(demoData.getPumpioConversationAccount().getOrigin())
+        List<Actor> actors = Actor.newUnknown(demoData.getPumpioConversationAccount().getOrigin(), GroupType.UNKNOWN)
                 .extractActorsFromContent(content, Actor.EMPTY);
         assertEquals(logMsg, 3, actors.size());
         assertEquals(logMsg, "unknownUser", actors.get(2).getUsername());

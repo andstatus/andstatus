@@ -23,6 +23,7 @@ import org.andstatus.app.util.MyLog;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Optional;
 
 class OriginGnuSocial extends Origin {
 
@@ -42,5 +43,10 @@ class OriginGnuSocial extends Origin {
             MyLog.d(this, "Malformed URL from '" + url.toExternalForm() + "'", e);
         }
         return "";
+    }
+
+    @Override
+    public Optional<Character> groupActorReferenceChar() {
+        return Optional.of('!');
     }
 }

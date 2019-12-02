@@ -55,4 +55,12 @@ public enum GroupType {
                 return false;
         }
     }
+
+    public boolean isSameActor(GroupType other) {
+        if (this == other) return true;
+        if ( this == UNKNOWN || other == UNKNOWN) return true;
+        if (this == NOT_A_GROUP || this == PUBLIC || this == FRIENDS || this == FOLLOWERS) return false;
+
+        return true;
+    }
 }

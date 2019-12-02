@@ -32,6 +32,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.origin.ActorReference;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.os.MyAsyncTask;
@@ -58,7 +59,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static org.andstatus.app.net.social.Patterns.USERNAME_CHARS;
 import static org.andstatus.app.net.social.Patterns.WEBFINGER_ID_CHARS;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.junit.Assert.fail;
@@ -67,13 +67,13 @@ import static org.junit.Assert.fail;
  * @author yvolk@yurivolkov.com
  */
 public class Actor implements Comparable<Actor>, IsEmpty {
-    public static final Actor EMPTY = newUnknown(Origin.EMPTY).setUsername("Empty");
-    public static final Actor PUBLIC = fromOid(Origin.EMPTY,
-        "https://www.w3.org/ns/activitystreams#Public").setGroupType(GroupType.PUBLIC).setUsername("Public");
+    public static final Actor EMPTY = newUnknown(Origin.EMPTY, GroupType.UNKNOWN).setUsername("Empty");
+    public static final Actor PUBLIC = fromTwoIds(Origin.EMPTY, GroupType.PUBLIC, 0,
+        "https://www.w3.org/ns/activitystreams#Public").setUsername("Public");
 
     @NonNull
     public final String oid;
-    private GroupType groupType = GroupType.UNKNOWN;
+    public final GroupType groupType;
     private LazyVal<Actor> parentActor = LazyVal.of(() -> EMPTY);
 
     private String username = "";
@@ -152,10 +152,10 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         final long updatedDate = DbUtils.getLong(cursor, ActorTable.UPDATED_DATE);
         Actor actor = Actor.fromTwoIds(
                 myContext.origins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
-                    DbUtils.getLong(cursor, ActorTable.ACTOR_ID),
-                    DbUtils.getString(cursor, ActorTable.ACTOR_OID));
+                GroupType.fromId(DbUtils.getLong(cursor, ActorTable.GROUP_TYPE)),
+                DbUtils.getLong(cursor, ActorTable.ACTOR_ID),
+                DbUtils.getString(cursor, ActorTable.ACTOR_OID));
 
-        actor.setGroupType(GroupType.fromId(DbUtils.getLong(cursor, ActorTable.GROUP_TYPE)));
         long parentActorId = DbUtils.getLong(cursor, ActorTable.PARENT_ACTOR_ID);
         actor.parentActor = LazyVal.of(() -> Actor.load(myContext, parentActorId));
 
@@ -192,24 +192,25 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         }
     }
 
-    public static Actor newUnknown(@NonNull Origin origin) {
-        return fromTwoIds(origin, 0, "");
+    public static Actor newUnknown(@NonNull Origin origin, GroupType groupType) {
+        return fromTwoIds(origin, groupType, 0, "");
     }
 
     public static Actor fromId(@NonNull Origin origin, long actorId) {
-        return fromTwoIds(origin, actorId, "");
+        return fromTwoIds(origin, GroupType.UNKNOWN, actorId, "");
     }
 
     public static Actor fromOid(@NonNull Origin origin, String actorOid) {
-        return fromTwoIds(origin, 0, actorOid);
+        return fromTwoIds(origin, GroupType.UNKNOWN, 0, actorOid);
     }
 
-    public static Actor fromTwoIds(@NonNull Origin origin, long actorId, String actorOid) {
-        return new Actor(origin, actorId, actorOid);
+    public static Actor fromTwoIds(@NonNull Origin origin, GroupType groupType, long actorId, String actorOid) {
+        return new Actor(origin, groupType, actorId, actorOid);
     }
 
-    private Actor(@NonNull Origin origin, long actorId, String actorOid) {
+    private Actor(@NonNull Origin origin, GroupType groupType, long actorId, String actorOid) {
         this.origin = origin;
+        this.groupType = groupType;
         this.actorId = actorId;
         this.oid = StringUtils.isEmpty(actorOid) ? "" : actorOid;
         endpoints = ActorEndpoints.from(origin.myContext, actorId);
@@ -323,6 +324,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 : isWebFingerIdValid() ? webFingerId : "(invalid webFingerId)")
         .withComma("username", username)
         .withComma("realName", realName)
+        .withComma("groupType", groupType == GroupType.UNKNOWN ? "" : groupType)
         .withComma("", user, user::nonEmpty)
         .withComma("profileUri", profileUri, UriUtils::nonEmpty)
         .withComma("avatar", avatarUri, this::hasAvatar)
@@ -408,17 +410,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return Optional.empty();
     }
 
-    public GroupType getGroupType() {
-        return groupType;
-    }
-
     public boolean isGroupDefinitely() {
         return groupType != GroupType.UNKNOWN && groupType != GroupType.NOT_A_GROUP;
-    }
-
-    public Actor setGroupType(GroupType groupType) {
-        this.groupType = groupType;
-        return this;
     }
 
     public Actor setUsername(String username) {
@@ -487,6 +480,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             if (webFingerId.equals(other.webFingerId)) return true;
             if (other.isWebFingerIdValid) return false;
         }
+        if (!this.groupType.isSameActor(other.groupType)) return false;
+
         return isUsernameValid() && other.isUsernameValid() && username.equalsIgnoreCase(other.username);
     }
 
@@ -646,17 +641,17 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     private List<Actor> _extractActorsFromContent(String text, int textStart, List<Actor> actors, Actor inReplyToActor) {
-        int start = indexOfActorReference(text, textStart);
-        if (start < textStart) return actors;
+        ActorReference actorReference = origin.getActorReference(text, textStart);
+        if (actorReference.index < textStart) return actors;
 
         String validUsername = "";
         String validWebFingerId = "";
-        int ind = start;
+        int ind = actorReference.index;
         for (; ind < text.length(); ind++) {
             if (WEBFINGER_ID_CHARS.indexOf(text.charAt(ind)) < 0 ) {
                 break;
             }
-            String username = text.substring(start, ind + 1);
+            String username = text.substring(actorReference.index, ind + 1);
             if (origin.isUsernameValid(username)) {
                 validUsername = username;
             }
@@ -665,7 +660,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             }
         }
         if (StringUtils.nonEmpty(validWebFingerId) || StringUtils.nonEmpty(validUsername)) {
-            addExtractedActor(actors, validWebFingerId, validUsername, inReplyToActor);
+            addExtractedActor(actors, validWebFingerId, validUsername, actorReference.groupType, inReplyToActor);
         }
         return _extractActorsFromContent(text, ind + 1, actors, inReplyToActor);
     }
@@ -680,31 +675,9 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return StringUtils.nonEmptyNonTemp(username) && origin.isUsernameValid(username);
     }
 
-    /**
-     * The reference may be in the form of @username, @webfingerId, or wibfingerId, without "@" before it
-     * @return index of the first position, where the username/webfingerId may start, -1 if not found
-     */
-    private int indexOfActorReference(String text, int textStart) {
-        if (StringUtils.isEmpty(text) || textStart >= text.length()) return -1;
-
-        int indexOfAt = text.indexOf('@', textStart);
-        if (indexOfAt < textStart) return -1;
-
-        if (indexOfAt == textStart) return textStart + 1;
-
-        if (USERNAME_CHARS.indexOf(text.charAt(indexOfAt - 1)) < 0) return indexOfAt + 1;
-
-        // username part of WebfingerId before @ ?
-        int ind = indexOfAt - 1;
-        while (ind > textStart) {
-            if (USERNAME_CHARS.indexOf(text.charAt(ind - 1)) < 0) break;
-            ind--;
-        }
-        return ind;
-    }
-
-    private void addExtractedActor(List<Actor> actors, String webFingerId, String validUsername, Actor inReplyToActor) {
-        Actor actor = Actor.newUnknown(origin);
+    private void addExtractedActor(List<Actor> actors, String webFingerId, String validUsername, GroupType groupType,
+                                   Actor inReplyToActor) {
+        Actor actor = Actor.newUnknown(origin, groupType);
         if (Actor.isWebFingerIdValid(webFingerId)) {
             actor.setWebFingerId(webFingerId);
             actor.setUsername(validUsername);

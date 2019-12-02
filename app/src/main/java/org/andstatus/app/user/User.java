@@ -18,6 +18,7 @@ package org.andstatus.app.user;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
@@ -45,7 +46,7 @@ import java.util.stream.Collectors;
  * @author yvolk@yurivolkov.com
  */
 public class User implements IsEmpty {
-    public static final User EMPTY = new User(0, "(empty)", TriState.FALSE, Collections.emptySet());
+    public static final User EMPTY = new User(0, "(empty)", TriState.UNKNOWN, Collections.emptySet());
     public long userId = 0L;
     private String knownAs = "";
     private TriState isMyUser = TriState.UNKNOWN;
