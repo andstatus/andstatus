@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2014-2019 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,11 @@
 package org.andstatus.app.backup;
 
 import android.app.backup.BackupDataOutput;
+import android.content.Context;
 
+import androidx.documentfile.provider.DocumentFile;
+
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,7 +29,6 @@ import org.json.JSONObject;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -41,19 +44,29 @@ public class MyBackupDataOutput {
     static final String KEY_DATA_SIZE = "data_size";
     static final String KEY_ORDINAL_NUMBER = "ordinal_number";
     static final String KEY_FILE_EXTENSION = "file_extension";
-    private File dataFolder;
+    private final Context context;
+    private File dataFolder = null; // TODO we don't need this!
+    private DocumentFile docFolder = null;
     private BackupDataOutput backupDataOutput;
     private int sizeToWrite = 0;
     private int sizeWritten = 0;
     private File dataFile = null;
+    private DocumentFile docFile = null;
     private int headerOrdinalNumber = 0;
 
-    public MyBackupDataOutput(BackupDataOutput backupDataOutput) {
+    public MyBackupDataOutput(Context context, BackupDataOutput backupDataOutput) {
+        this.context = context;
         this.backupDataOutput = backupDataOutput;
     }
-    
+
     public MyBackupDataOutput(File dataFolder) {
+        this.context = MyContextHolder.get().context();
         this.dataFolder = dataFolder;
+    }
+
+    public MyBackupDataOutput(Context context, DocumentFile docFolder) {
+        this.context = context;
+        this.docFolder = docFolder;
     }
 
     /** {@link BackupDataOutput#writeEntityHeader(String, int)} */
@@ -76,8 +89,6 @@ public class MyBackupDataOutput {
     }
 
     private void writeHeaderFile(String key, int dataSize, String fileExtension) throws IOException {
-        File headerFile = new File(dataFolder, key + HEADER_FILE_SUFFIX);
-        createFileIfNeeded(dataSize, headerFile);
         JSONObject jso = new JSONObject();
         try {
             jso.put(KEY_KEYNAME, key);
@@ -85,24 +96,30 @@ public class MyBackupDataOutput {
             jso.put(KEY_DATA_SIZE, dataSize);
             jso.put(KEY_FILE_EXTENSION, fileExtension);
             byte[] bytes = jso.toString(2).getBytes(StandardCharsets.UTF_8);
-            appendBytesToFile(headerFile, bytes, bytes.length);
+            appendBytesToChild(key + HEADER_FILE_SUFFIX, bytes, bytes.length);
         } catch (JSONException e) {
             throw new IOException(e);
         }
     }
 
-    private void createFileIfNeeded(int dataSize, File file) throws IOException {
+    private File createFileIfNeeded(int dataSize, String childName) throws IOException {
+        File file = new File(dataFolder, childName);
         if (file.exists() && !file.delete()) {
             throw new FileNotFoundException("Couldn't delete " + file.getAbsolutePath());
         }
         if (dataSize >= 0 && !file.createNewFile()) {
             throw new FileNotFoundException("Couldn't create " + file.getAbsolutePath());
         }
+        return file;
     }
     
     private void createDataFile(String key, int dataSize, String fileExtension) throws IOException {
-        dataFile = new File(dataFolder, key + DATA_FILE_SUFFIX + fileExtension);
-        createFileIfNeeded(dataSize, dataFile);
+        String childName = key + DATA_FILE_SUFFIX + fileExtension;
+        if (docFolder == null) {
+            dataFile = createFileIfNeeded(dataSize, childName);
+        } else {
+            docFile = createDocumentIfNeeded(dataSize, childName);
+        }
     }
 
     /** {@link BackupDataOutput#writeEntityData(byte[], int)} */
@@ -115,13 +132,17 @@ public class MyBackupDataOutput {
     }
 
     private int writeEntityData2(byte[] data, int size) throws IOException {
-        if (!dataFile.exists()) {
-            throw new FileNotFoundException("Output file doesn't exist " + dataFile.getAbsolutePath());
+        if (docFile == null) {
+            if (!dataFile.exists()) {
+                throw new FileNotFoundException("Output file doesn't exist " + dataFile.getAbsolutePath());
+            }
+        } else if (!docFile.exists()) {
+            throw new FileNotFoundException("Output document doesn't exist " + docFile.getUri());
         }
         if (size < 0) {
             throw new FileNotFoundException("Wrong number of bytes to write: " + size);
         }
-        appendBytesToFile(dataFile, data, size);
+        appendBytesToFile(data, size);
         sizeWritten += size;
         if (sizeWritten >= sizeToWrite) {
             try {
@@ -137,12 +158,48 @@ public class MyBackupDataOutput {
         return size;
     }
 
-    private void appendBytesToFile(File file, byte[] data, int size) throws IOException {
-        MyLog.v(this, "Appending data to file='" + file.getName() + "', size=" + size);
-        try (FileOutputStream fileOutputStream = newFileOutputStreamWithRetry(file, true);
-            OutputStream out = new BufferedOutputStream(fileOutputStream)) {
+    private void appendBytesToFile(byte[] data, int size) throws IOException {
+        try (OutputStream fileOutputStream = getOutputStreamAppend(size);
+             OutputStream out = new BufferedOutputStream(fileOutputStream)) {
             out.write(data, 0, size);
         }
+    }
+
+    private OutputStream getOutputStreamAppend(int size) throws IOException {
+        if (docFolder == null) {
+            MyLog.v(this, "Appending data to file='" + dataFile.getName() + "', size=" + size);
+            return newFileOutputStreamWithRetry(dataFile, true);
+        } else {
+            MyLog.v(this, "Appending data to document='" + docFile.getName() + "', size=" + size);
+            return context.getContentResolver().openOutputStream(docFile.getUri(), "wa");
+        }
+    }
+
+    private void appendBytesToChild(String childName, byte[] data, int size) throws IOException {
+        MyLog.v(this, "Appending data to file='" + childName + "', size=" + size);
+        try (OutputStream outputStream = getOutputStreamAppend(childName, size);
+             OutputStream out = new BufferedOutputStream(outputStream)) {
+            out.write(data, 0, size);
+        }
+    }
+
+    private OutputStream getOutputStreamAppend(String childName, int size) throws IOException {
+        if (docFolder == null) {
+            return newFileOutputStreamWithRetry(createFileIfNeeded(size, childName), true);
+        } else {
+            return context.getContentResolver().openOutputStream(createDocumentIfNeeded(size, childName).getUri(), "wa");
+        }
+    }
+
+    private DocumentFile createDocumentIfNeeded(int dataSize, String childName) throws IOException {
+        DocumentFile documentFile = docFolder.findFile(childName);
+        if (documentFile == null) {
+            documentFile = docFolder.createFile("", childName);
+        }
+        if (documentFile == null) {
+            throw  new IOException("Couldn't create '" + childName + "' document inside '" + docFolder.getUri() + "'");
+        }
+        return documentFile;
     }
 
     File getDataFolder() {

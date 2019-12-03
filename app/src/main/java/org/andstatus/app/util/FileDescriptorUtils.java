@@ -16,8 +16,6 @@
 
 package org.andstatus.app.util;
 
-import android.text.TextUtils;
-
 import org.andstatus.app.data.DbUtils;
 import org.json.JSONException;
 import org.json.JSONObject;

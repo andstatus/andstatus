@@ -94,7 +94,7 @@ public class MyBackupAgent extends BackupAgent {
         }
         onBackup(
                 MyBackupDescriptor.fromOldParcelFileDescriptor(oldState, ProgressLogger.getEmpty()),
-                new MyBackupDataOutput(data),
+                new MyBackupDataOutput(getContext(), data),
                 MyBackupDescriptor.fromEmptyParcelFileDescriptor(newState,
                         ProgressLogger.getEmpty()));
     }
@@ -120,7 +120,7 @@ public class MyBackupAgent extends BackupAgent {
             } else {
                 boolean isServiceAvailableStored = checkAndSetServiceUnavailable();
                 doBackup(data);
-                backupDescriptor.save();
+                backupDescriptor.save(getContext());
                 MyLog.v(this, () -> method + "; newState: " + backupDescriptor.toString());
                 if (isServiceAvailableStored) {
                     MyServiceManager.setServiceAvailable();
@@ -151,7 +151,7 @@ public class MyBackupAgent extends BackupAgent {
         MyContextHolder.release(() -> "doBackup");
         sharedPreferencesBackedUp = backupFile(data,
                 SHARED_PREFERENCES_KEY,
-                SharedPreferencesUtil.defaultSharedPreferencesPath(MyContextHolder.get().context()));
+                SharedPreferencesUtil.defaultSharedPreferencesPath(getContext()));
         if (MyPreferences.isBackupDownloads()) {
             foldersBackedUp += backupFolder(data, DOWNLOADS_KEY,
                     MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS));
@@ -231,7 +231,8 @@ public class MyBackupAgent extends BackupAgent {
     @Override
     public void onRestore(BackupDataInput data, int appVersionCode, ParcelFileDescriptor newState)
             throws IOException {
-        onRestore(new MyBackupDataInput(data), appVersionCode, MyBackupDescriptor.fromOldParcelFileDescriptor(newState, ProgressLogger.getEmpty()));
+        onRestore(new MyBackupDataInput(getContext(), data), appVersionCode,
+                MyBackupDescriptor.fromOldParcelFileDescriptor(newState, ProgressLogger.getEmpty()));
     }
 
     public void onRestore(MyBackupDataInput data, int appVersionCode, MyBackupDescriptor newDescriptor)
@@ -240,9 +241,9 @@ public class MyBackupAgent extends BackupAgent {
         backupDescriptor = newDescriptor;
         MyLog.i(this, method + " started" +
                 ", from app version code '" + appVersionCode + "'" +
-                (data != null && data.getDataFolder() != null
-                    ? ", folder:'" + data.getDataFolder().getAbsolutePath() + "'"
-                    : "") +
+                (data == null
+                    ? ""
+                    : ", folder:'" + data.getDataFolderName() + "'") +
                 ", " + (newDescriptor.saved()
                     ? " newState:" + newDescriptor.toString()
                     : "no new state"));
@@ -305,7 +306,7 @@ public class MyBackupAgent extends BackupAgent {
         }
         DataPruner.setDataPrunedNow();
 
-        data.setMyContext(MyContextHolder.get());
+        data.setMyContext(MyContextHolder.get(getContext()));
         assertNextHeader(data, KEY_ACCOUNT);
         accountsRestored += data.getMyContext().accounts().onRestore(data, backupDescriptor);
 

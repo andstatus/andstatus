@@ -28,6 +28,13 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.text.format.Formatter;
 
+import androidx.fragment.app.FragmentActivity;
+import androidx.preference.CheckBoxPreference;
+import androidx.preference.EditTextPreference;
+import androidx.preference.ListPreference;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
@@ -55,12 +62,6 @@ import org.andstatus.app.util.UriUtils;
 
 import java.util.Optional;
 
-import androidx.fragment.app.FragmentActivity;
-import androidx.preference.CheckBoxPreference;
-import androidx.preference.EditTextPreference;
-import androidx.preference.ListPreference;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.util.I18n.formatBytes;

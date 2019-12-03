@@ -16,27 +16,28 @@
 
 package org.andstatus.app.backup;
 
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.documentfile.provider.DocumentFile;
+
+import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
-import org.andstatus.app.util.SimpleFileDialog;
-
-import java.io.File;
-
-import androidx.annotation.NonNull;
 
 public class RestoreActivity extends MyActivity implements ProgressLogger.ProgressCallback {
     private static final int MAX_RESTORE_SECONDS = 600;
-    File backupFolder = null;
+    DocumentFile backupFolder = null;
     RestoreTask asyncTask = null;
     private int progressCounter = 0;
 
@@ -59,42 +60,51 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
             asyncTask = (RestoreTask) new RestoreTask(RestoreActivity.this)
                     .setMaxCommandExecutionSeconds(MAX_RESTORE_SECONDS)
                     .setCancelable(false);
-            new AsyncTaskLauncher<File>().execute(this, true, asyncTask, getBackupFolder());
+            new AsyncTaskLauncher<DocumentFile>().execute(this, true, asyncTask, getBackupFolder());
         }
     }
 
     private void selectBackupFolder(View v) {
-        new SimpleFileDialog(RestoreActivity.this,
-                    SimpleFileDialog.TypeOfSelection.FOLDER_CHOOSE,
-                    chosenFolder -> setBackupFolder(new File(chosenFolder)))
-                .chooseFileOrDir(getBackupFolder().getAbsolutePath());
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, getBackupFolder().getUri());
+        }
+        startActivityForResult(intent, ActivityRequestCode.SELECT_BACKUP_FOLDER.id);
     }
 
     @NonNull
-    private File getBackupFolder() {
-        File folder;
+    private DocumentFile getBackupFolder() {
         if (backupFolder != null && backupFolder.exists()) {
-            folder = backupFolder;
-        } else {
-            folder = MyBackupManager.getDefaultBackupFolder(this);
+            return backupFolder;
         }
-        if (!folder.exists() || !folder.isDirectory()) {
-            folder = new File(FileUtils.ROOT_FOLDER);
-        }
-        return folder;
+        return MyBackupManager.getDefaultBackupFolder(this);
     }
 
-    void setBackupFolder(File backupFolder) {
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (ActivityRequestCode.fromId(requestCode)) {
+            case SELECT_BACKUP_FOLDER:
+                if (resultCode == RESULT_OK) {
+                  setBackupFolder(DocumentFile.fromTreeUri(this, data.getData()));
+                }
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
+    }
+
+    void setBackupFolder(DocumentFile backupFolder) {
         if ( backupFolder == null ) {
             MyLog.d(this, "No backup folder selected");
             return;
-        } else if ( backupFolder.exists() ) {
+        } else if (backupFolder.exists() ) {
             if (!backupFolder.isDirectory()) {
-                MyLog.d(this, "Is not a folder '" + backupFolder.getAbsolutePath() + "'");
+                MyLog.d(this, "Is not a folder '" + backupFolder.getUri().getPath() + "'");
                 return;
             }
         } else {
-            MyLog.i(this, "The folder doesn't exist: '" + backupFolder.getAbsolutePath() + "'");
+            MyLog.i(this, "The folder doesn't exist: '" + backupFolder.getUri().getPath() + "'");
             return;
         }
         this.backupFolder = backupFolder;
@@ -105,12 +115,12 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
     private void showBackupFolder() {
         TextView view = findViewById(R.id.backup_folder);
         if (view != null) {
-            File folder = getBackupFolder();
-            view.setText(MyBackupManager.isBackupFolder(folder) ? folder.getAbsolutePath() : getText(R.string.not_set));
+            DocumentFile folder = getBackupFolder();
+            view.setText(MyBackupManager.isBackupFolder(folder) ? folder.getUri().getPath() : getText(R.string.not_set));
         }
     }
 
-    private static class RestoreTask extends MyAsyncTask<File, CharSequence, Void> {
+    private static class RestoreTask extends MyAsyncTask<DocumentFile, CharSequence, Void> {
         private final RestoreActivity activity;
 
         RestoreTask(RestoreActivity activity) {
@@ -119,7 +129,7 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
         }
 
         @Override
-        protected Void doInBackground2(File file) {
+        protected Void doInBackground2(DocumentFile file) {
             MyBackupManager.restoreInteractively(file, activity, activity);
             return null;
         }

@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2014-2019 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,15 @@
 package org.andstatus.app.backup;
 
 import android.app.backup.BackupDataInput;
+import android.content.Context;
+
+import androidx.annotation.NonNull;
+import androidx.documentfile.provider.DocumentFile;
 
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyStorage;
+import org.andstatus.app.util.DocumentFileUtils;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONObject;
@@ -33,10 +39,12 @@ import java.util.TreeSet;
 
 public class MyBackupDataInput {
     private static final String ENTITY_HEADER_NOT_READ = "Entity header not read";
+    private final Context context;
     private MyContext myContext;
     private BackupDataInput backupDataInput;
 
-    private File dataFolder = null;
+    private File fileFolder = null;
+    private DocumentFile docFolder = null;
     private Set<BackupHeader> headers = new TreeSet<BackupHeader>();
     private Iterator<BackupHeader> keysIterator;
     private boolean mHeaderReady = false;
@@ -124,16 +132,30 @@ public class MyBackupDataInput {
         }
     }
     
-    MyBackupDataInput(BackupDataInput backupDataInput) {
+    MyBackupDataInput(Context context, BackupDataInput backupDataInput) {
+        this.context = context;
         this.backupDataInput = backupDataInput;
     }
 
-    MyBackupDataInput(File dataFolder) throws IOException {
-        this.dataFolder = dataFolder;
-        for (String filename : this.dataFolder.list()) {
+    MyBackupDataInput(File fileFolder) throws IOException {
+        this.context = MyContextHolder.get().context();
+        this.fileFolder = fileFolder;
+        for (String filename : this.fileFolder.list()) {
             if (filename.endsWith(MyBackupDataOutput.HEADER_FILE_SUFFIX)) {
-                File headerFile = new File(dataFolder, filename);
+                File headerFile = new File(fileFolder, filename);
                 headers.add(BackupHeader.fromJson(FileUtils.getJSONObject(headerFile)));
+            }
+        }
+        keysIterator = headers.iterator();
+    }
+
+    MyBackupDataInput(Context context, DocumentFile fileFolder) throws IOException {
+        this.context = context;
+        this.docFolder = fileFolder;
+        for (DocumentFile file : this.docFolder.listFiles()) {
+            String filename = file.getName();
+            if (filename != null && filename.endsWith(MyBackupDataOutput.HEADER_FILE_SUFFIX)) {
+                headers.add(BackupHeader.fromJson(DocumentFileUtils.getJSONObject(context, file)));
             }
         }
         keysIterator = headers.iterator();
@@ -216,8 +238,7 @@ public class MyBackupDataInput {
         } else if (size < 1 || dataOffset >= header.dataSize) {
             // skip
         } else if (mHeaderReady) {
-            File dataFile = new File(dataFolder, header.key + MyBackupDataOutput.DATA_FILE_SUFFIX + header.fileExtension);
-            byte[] readData = FileUtils.getBytes(dataFile, dataOffset, size);
+            byte[] readData = getBytes(size);
             bytesRead = readData.length;
             System.arraycopy(readData, 0, data, offset, bytesRead);
         } else {
@@ -226,6 +247,20 @@ public class MyBackupDataInput {
         MyLog.v(this, "key=" + header.key + ", offset=" + dataOffset + ", bytes read=" + bytesRead);
         dataOffset += bytesRead;
         return bytesRead;
+    }
+
+    private byte[] getBytes(int size) throws IOException {
+        String childName = header.key + MyBackupDataOutput.DATA_FILE_SUFFIX + header.fileExtension;
+        if (docFolder == null) {
+            File dataFile = new File(fileFolder, childName);
+            return FileUtils.getBytes(dataFile, dataOffset, size);
+        } else {
+            DocumentFile childDocFile = docFolder.findFile(childName);
+            if (childDocFile == null) {
+                throw new IOException("File '" + childName + "' not found in folder '" + docFolder.getName() + "'");
+            }
+            return DocumentFileUtils.getBytes(context, childDocFile, dataOffset, size);
+        }
     }
 
     /** {@link BackupDataInput#skipEntityData()}  */
@@ -244,9 +279,12 @@ public class MyBackupDataInput {
             throw new IllegalStateException("Entity header not read");
         }
     }
-    
-    File getDataFolder() {
-        return dataFolder;
+
+    @NonNull
+    String getDataFolderName() {
+        return fileFolder == null
+                ? (docFolder == null ? "(empty)" : docFolder.getUri().toString())
+                : fileFolder.getAbsolutePath();
     }
     
     void setMyContext(MyContext myContext) {

@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2014 yvolk (Yuri Volkov), http://yurivolkov.com
+/*
+ * Copyright (C) 2014-2019 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,17 @@
 
 package org.andstatus.app.backup;
 
+import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.ParcelFileDescriptor;
 
+import androidx.documentfile.provider.DocumentFile;
+
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.DatabaseCreator;
+import org.andstatus.app.util.DocumentFileUtils;
 import org.andstatus.app.util.FileDescriptorUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
@@ -34,8 +38,10 @@ import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 
 public class MyBackupDescriptor {
     private static final Object TAG = MyBackupDescriptor.class;
@@ -61,11 +67,12 @@ public class MyBackupDescriptor {
     private long createdDate = 0;
     private boolean saved = false;
     private FileDescriptor fileDescriptor = null;
+    private DocumentFile docDescriptor = null;
 
     private long accountsCount = 0;
 
     private final ProgressLogger progressLogger;
-    
+
     private MyBackupDescriptor(ProgressLogger progressLogger) {
         this.progressLogger = progressLogger;
     }
@@ -73,49 +80,74 @@ public class MyBackupDescriptor {
     static MyBackupDescriptor getEmpty() {
         return new MyBackupDescriptor(ProgressLogger.getEmpty());
     }
-    
+
     static MyBackupDescriptor fromOldParcelFileDescriptor(ParcelFileDescriptor parcelFileDescriptor,
                                                           ProgressLogger progressLogger) {
         MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLogger);
         if (parcelFileDescriptor != null) {
             myBackupDescriptor.fileDescriptor = parcelFileDescriptor.getFileDescriptor();
             JSONObject jso = FileDescriptorUtils.getJSONObject(parcelFileDescriptor.getFileDescriptor());
-            myBackupDescriptor.backupSchemaVersion = jso.optInt(KEY_BACKUP_SCHEMA_VERSION,
-                    myBackupDescriptor.backupSchemaVersion);
-            myBackupDescriptor.createdDate = jso.optLong(KEY_CREATED_DATE, myBackupDescriptor.createdDate);
-            myBackupDescriptor.saved = myBackupDescriptor.createdDate != 0;
-            myBackupDescriptor.applicationVersionCode = jso.optInt(KEY_APPLICATION_VERSION_CODE,
-                    myBackupDescriptor.applicationVersionCode);
-            myBackupDescriptor.applicationVersionName = jso.optString(KEY_APPLICATION_VERSION_NAME,
-                    myBackupDescriptor.applicationVersionName);
-            myBackupDescriptor.accountsCount = jso.optLong(KEY_ACCOUNTS_COUNT, myBackupDescriptor.accountsCount);
-            if (myBackupDescriptor.backupSchemaVersion != BACKUP_SCHEMA_VERSION) {
-                try {
-                    MyLog.w(TAG, "Bad backup descriptor: " + jso.toString(2) );
-                } catch (JSONException e) {
-                    MyLog.d(TAG, "Bad backup descriptor: " + jso.toString(), e);
-                }
-            }
+            myBackupDescriptor.setJson(jso);
         }
         return myBackupDescriptor;
+    }
+
+    static MyBackupDescriptor fromOldDocFileDescriptor(Context context, DocumentFile parcelFileDescriptor,
+                                                          ProgressLogger progressLogger) {
+        MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLogger);
+        if (parcelFileDescriptor != null) {
+            myBackupDescriptor.docDescriptor = parcelFileDescriptor;
+            myBackupDescriptor.setJson(DocumentFileUtils.getJSONObject(context, parcelFileDescriptor));
+        }
+        return myBackupDescriptor;
+    }
+
+    void setJson(JSONObject jso) {
+        backupSchemaVersion = jso.optInt(KEY_BACKUP_SCHEMA_VERSION,
+        backupSchemaVersion);
+        createdDate = jso.optLong(KEY_CREATED_DATE, createdDate);
+        saved = createdDate != 0;
+        applicationVersionCode = jso.optInt(KEY_APPLICATION_VERSION_CODE, applicationVersionCode);
+        applicationVersionName = jso.optString(KEY_APPLICATION_VERSION_NAME, applicationVersionName);
+        accountsCount = jso.optLong(KEY_ACCOUNTS_COUNT, accountsCount);
+        if (backupSchemaVersion != BACKUP_SCHEMA_VERSION) {
+            try {
+                MyLog.w(TAG, "Bad backup descriptor: " + jso.toString(2) );
+            } catch (JSONException e) {
+                MyLog.d(TAG, "Bad backup descriptor: " + jso.toString(), e);
+            }
+        }
     }
 
     static MyBackupDescriptor fromEmptyParcelFileDescriptor(ParcelFileDescriptor parcelFileDescriptor,
                                                             ProgressLogger progressLoggerIn) throws IOException {
         MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLoggerIn);
         myBackupDescriptor.fileDescriptor = parcelFileDescriptor.getFileDescriptor();
+        myBackupDescriptor.setEmptyFields(MyContextHolder.get().context());
         myBackupDescriptor.backupSchemaVersion = BACKUP_SCHEMA_VERSION;
+        return myBackupDescriptor;
+    }
 
-        PackageManager pm = MyContextHolder.get().context().getPackageManager();
+    static MyBackupDescriptor fromEmptyDocFileDescriptor(Context context, DocumentFile documentFile,
+                                                            ProgressLogger progressLoggerIn) throws IOException {
+        MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLoggerIn);
+        myBackupDescriptor.docDescriptor = documentFile;
+        myBackupDescriptor.setEmptyFields(context);
+        return myBackupDescriptor;
+    }
+
+    private void setEmptyFields(Context context) throws IOException {
+        backupSchemaVersion = BACKUP_SCHEMA_VERSION;
+
+        PackageManager pm = context.getPackageManager();
         PackageInfo pi;
         try {
-            pi = pm.getPackageInfo(MyContextHolder.get().context().getPackageName(), 0);
+            pi = pm.getPackageInfo(context.getPackageName(), 0);
         } catch (NameNotFoundException e) {
             throw new IOException(e);
         }
-        myBackupDescriptor.applicationVersionCode = pi.versionCode;
-        myBackupDescriptor.applicationVersionName = pi.versionName;
-        return myBackupDescriptor;
+        applicationVersionCode = pi.versionCode;
+        applicationVersionName = pi.versionName;
     }
     
     int getBackupSchemaVersion() {
@@ -135,16 +167,19 @@ public class MyBackupDescriptor {
     }
 
     boolean isEmpty() {
-        return fileDescriptor == null;
+        return fileDescriptor == null && docDescriptor == null;
     }
 
-    void save() throws IOException {
+    void save(Context context) throws IOException {
         if (isEmpty()) {
             throw new FileNotFoundException("MyBackupDescriptor is empty");
         }
-        try {
+        try (OutputStream outputStream = docDescriptor == null
+                ? new FileOutputStream(fileDescriptor)
+                : context.getContentResolver().openOutputStream(docDescriptor.getUri())
+        ) {
             if (createdDate == 0) createdDate = System.currentTimeMillis();
-            writeStringToFileDescriptor(toJson().toString(2), fileDescriptor, true);
+            writeStringToStream(toJson().toString(2), outputStream);
             saved = true;
         } catch (JSONException e) {
             throw new IOException(e);
@@ -166,18 +201,16 @@ public class MyBackupDescriptor {
         return jso;
     }
 
-    private void writeStringToFileDescriptor(String string, FileDescriptor fd, boolean logged) throws IOException {
+    private void writeStringToStream(String string, OutputStream outputStream) throws IOException {
         final String method = "writeStringToFileDescriptor";
-        try (FileOutputStream fileOutputStream = new FileOutputStream(fd);
-             Writer out = new BufferedWriter(new OutputStreamWriter(fileOutputStream, "UTF-8"))
-        ) {
+        try (Writer out = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8))) {
             out.write(string);
         } catch (IOException e) {
-            if (logged) MyLog.d(this, method, e);
+            MyLog.d(this, method, e);
             throw new FileNotFoundException(method + "; " + e.getLocalizedMessage());
         }
     }
-    
+
     @Override
     public String toString() {
         return "MyBackupDescriptor " + toJson().toString();

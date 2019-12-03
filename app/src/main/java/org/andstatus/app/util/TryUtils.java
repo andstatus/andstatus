@@ -2,6 +2,7 @@ package org.andstatus.app.util;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 import io.vavr.control.Try;
@@ -12,6 +13,7 @@ import io.vavr.control.Try;
 public class TryUtils {
     private static final NoSuchElementException NOT_FOUND = new NoSuchElementException("Not found");
     private static final NoSuchElementException OPTIONAL_IS_EMPTY = new NoSuchElementException("Optional is empty");
+    private static final NoSuchElementException CALLABLE_IS_NULL = new NoSuchElementException("Callable is null");
     private static final NoSuchElementException VALUE_IS_NULL = new NoSuchElementException("Value is null");
 
     private TryUtils() {
@@ -31,6 +33,14 @@ public class TryUtils {
         return value == null
             ? Try.failure(VALUE_IS_NULL)
             : Try.success(value);
+    }
+
+    public static <T> Try<T> ofNullableCallable(Callable<? extends T> callable) {
+        if (callable == null) return Try.failure(CALLABLE_IS_NULL);
+
+        return Try.of(callable).flatMap(value -> value == null
+                ? Try.failure(VALUE_IS_NULL)
+                : Try.success(value));
     }
 
     /**

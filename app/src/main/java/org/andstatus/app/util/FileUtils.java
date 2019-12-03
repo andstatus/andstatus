@@ -110,24 +110,26 @@ public class FileUtils {
     
     /** Reads up to 'size' bytes, starting from 'offset' */
     public static byte[] getBytes(File file, int offset, int size) throws IOException {
-        if (file != null) {
-            InputStream is = new FileInputStream(file);
-            byte[] readBuffer = new byte[size];
-            try {
-                long bytesSkipped = is.skip(offset);
-                if (bytesSkipped < offset) {
-                    throw new FileNotFoundException("Skipped only " + bytesSkipped 
-                            + " of " + offset + " bytes in file='" + file.getAbsolutePath() + "'");
-                }
-                int bytesRead = is.read(readBuffer, 0, size);
-                if (bytesRead == readBuffer.length) {
-                    return readBuffer;
-                } else if (bytesRead > 0) {
-                    return Arrays.copyOf(readBuffer, bytesRead);
-                }
-            } finally {
-                DbUtils.closeSilently(is);
-            }
+        if (file == null) return new byte[0];
+
+        try (InputStream is = new FileInputStream(file)) {
+            return getBytes(is, file.getAbsolutePath(), offset, size);
+        }
+    }
+
+    /** Reads up to 'size' bytes, starting from 'offset' */
+    public static byte[] getBytes(InputStream is, String path, int offset, int size) throws IOException {
+        byte[] readBuffer = new byte[size];
+        long bytesSkipped = is.skip(offset);
+        if (bytesSkipped < offset) {
+            throw new FileNotFoundException("Skipped only " + bytesSkipped
+                    + " of " + offset + " bytes in path='" + path + "'");
+        }
+        int bytesRead = is.read(readBuffer, 0, size);
+        if (bytesRead == readBuffer.length) {
+            return readBuffer;
+        } else if (bytesRead > 0) {
+            return Arrays.copyOf(readBuffer, bytesRead);
         }
         return new byte[0];
     }
