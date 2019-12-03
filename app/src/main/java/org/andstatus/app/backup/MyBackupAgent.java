@@ -103,11 +103,10 @@ public class MyBackupAgent extends BackupAgent {
             MyBackupDescriptor newDescriptor) throws IOException {
         final String method = "onBackup";
         // Ignore oldDescriptor for now...
-        MyLog.i(this, method + " started"
-                + (data != null && data.getDataFolder() != null ? ", folder='"
-                        + data.getDataFolder().getAbsolutePath() + "'" : "")
-                + ", " + (oldDescriptor.saved() ? "oldState:" + oldDescriptor.toString()
-                        : "no old state"));
+        MyLog.i(this, method + " started" + (data != null
+                ? ", folder='" + data.getDataFolderName() + "'" : "") +
+                    ", " + (oldDescriptor.saved() ? "oldState:" + oldDescriptor.toString()
+                : "no old state"));
         MyContextHolder.initialize(this, this);
         backupDescriptor = newDescriptor;
         try {

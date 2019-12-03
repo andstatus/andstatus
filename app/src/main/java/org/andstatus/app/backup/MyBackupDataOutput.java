@@ -19,9 +19,9 @@ package org.andstatus.app.backup;
 import android.app.backup.BackupDataOutput;
 import android.content.Context;
 
+import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,8 +33,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
-import static org.andstatus.app.util.FileUtils.newFileOutputStreamWithRetry;
-
 /** Allowing to instantiate and to mock BackupDataOutput class */
 public class MyBackupDataOutput {
     static final String HEADER_FILE_SUFFIX = "_header.json";
@@ -45,23 +43,16 @@ public class MyBackupDataOutput {
     static final String KEY_ORDINAL_NUMBER = "ordinal_number";
     static final String KEY_FILE_EXTENSION = "file_extension";
     private final Context context;
-    private File dataFolder = null; // TODO we don't need this!
     private DocumentFile docFolder = null;
     private BackupDataOutput backupDataOutput;
     private int sizeToWrite = 0;
     private int sizeWritten = 0;
-    private File dataFile = null;
     private DocumentFile docFile = null;
     private int headerOrdinalNumber = 0;
 
     public MyBackupDataOutput(Context context, BackupDataOutput backupDataOutput) {
         this.context = context;
         this.backupDataOutput = backupDataOutput;
-    }
-
-    public MyBackupDataOutput(File dataFolder) {
-        this.context = MyContextHolder.get().context();
-        this.dataFolder = dataFolder;
     }
 
     public MyBackupDataOutput(Context context, DocumentFile docFolder) {
@@ -102,24 +93,9 @@ public class MyBackupDataOutput {
         }
     }
 
-    private File createFileIfNeeded(int dataSize, String childName) throws IOException {
-        File file = new File(dataFolder, childName);
-        if (file.exists() && !file.delete()) {
-            throw new FileNotFoundException("Couldn't delete " + file.getAbsolutePath());
-        }
-        if (dataSize >= 0 && !file.createNewFile()) {
-            throw new FileNotFoundException("Couldn't create " + file.getAbsolutePath());
-        }
-        return file;
-    }
-    
     private void createDataFile(String key, int dataSize, String fileExtension) throws IOException {
         String childName = key + DATA_FILE_SUFFIX + fileExtension;
-        if (docFolder == null) {
-            dataFile = createFileIfNeeded(dataSize, childName);
-        } else {
-            docFile = createDocumentIfNeeded(dataSize, childName);
-        }
+        docFile = createDocumentIfNeeded(dataSize, childName);
     }
 
     /** {@link BackupDataOutput#writeEntityData(byte[], int)} */
@@ -132,11 +108,7 @@ public class MyBackupDataOutput {
     }
 
     private int writeEntityData2(byte[] data, int size) throws IOException {
-        if (docFile == null) {
-            if (!dataFile.exists()) {
-                throw new FileNotFoundException("Output file doesn't exist " + dataFile.getAbsolutePath());
-            }
-        } else if (!docFile.exists()) {
+        if (!docFile.exists()) {
             throw new FileNotFoundException("Output document doesn't exist " + docFile.getUri());
         }
         if (size < 0) {
@@ -151,7 +123,7 @@ public class MyBackupDataOutput {
                             + ", expected=" + sizeToWrite );
                 }
             } finally {
-                dataFile = null;
+                docFile = null;
                 sizeWritten = 0;
             }
         }
@@ -166,13 +138,8 @@ public class MyBackupDataOutput {
     }
 
     private OutputStream getOutputStreamAppend(int size) throws IOException {
-        if (docFolder == null) {
-            MyLog.v(this, "Appending data to file='" + dataFile.getName() + "', size=" + size);
-            return newFileOutputStreamWithRetry(dataFile, true);
-        } else {
-            MyLog.v(this, "Appending data to document='" + docFile.getName() + "', size=" + size);
-            return context.getContentResolver().openOutputStream(docFile.getUri(), "wa");
-        }
+        MyLog.v(this, "Appending data to document='" + docFile.getName() + "', size=" + size);
+        return context.getContentResolver().openOutputStream(docFile.getUri(), "wa");
     }
 
     private void appendBytesToChild(String childName, byte[] data, int size) throws IOException {
@@ -184,11 +151,7 @@ public class MyBackupDataOutput {
     }
 
     private OutputStream getOutputStreamAppend(String childName, int size) throws IOException {
-        if (docFolder == null) {
-            return newFileOutputStreamWithRetry(createFileIfNeeded(size, childName), true);
-        } else {
-            return context.getContentResolver().openOutputStream(createDocumentIfNeeded(size, childName).getUri(), "wa");
-        }
+        return context.getContentResolver().openOutputStream(createDocumentIfNeeded(size, childName).getUri(), "wa");
     }
 
     private DocumentFile createDocumentIfNeeded(int dataSize, String childName) throws IOException {
@@ -202,8 +165,9 @@ public class MyBackupDataOutput {
         return documentFile;
     }
 
-    File getDataFolder() {
-        return dataFolder;
+    @NonNull
+    String getDataFolderName() {
+        return docFolder == null ? "(empty)" : docFolder.getUri().toString();
     }
 
     static String getDataFileExtension(File dataFile) {

@@ -23,14 +23,11 @@ import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.util.DocumentFileUtils;
-import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
@@ -43,7 +40,6 @@ public class MyBackupDataInput {
     private MyContext myContext;
     private BackupDataInput backupDataInput;
 
-    private File fileFolder = null;
     private DocumentFile docFolder = null;
     private Set<BackupHeader> headers = new TreeSet<BackupHeader>();
     private Iterator<BackupHeader> keysIterator;
@@ -135,18 +131,6 @@ public class MyBackupDataInput {
     MyBackupDataInput(Context context, BackupDataInput backupDataInput) {
         this.context = context;
         this.backupDataInput = backupDataInput;
-    }
-
-    MyBackupDataInput(File fileFolder) throws IOException {
-        this.context = MyContextHolder.get().context();
-        this.fileFolder = fileFolder;
-        for (String filename : this.fileFolder.list()) {
-            if (filename.endsWith(MyBackupDataOutput.HEADER_FILE_SUFFIX)) {
-                File headerFile = new File(fileFolder, filename);
-                headers.add(BackupHeader.fromJson(FileUtils.getJSONObject(headerFile)));
-            }
-        }
-        keysIterator = headers.iterator();
     }
 
     MyBackupDataInput(Context context, DocumentFile fileFolder) throws IOException {
@@ -251,16 +235,11 @@ public class MyBackupDataInput {
 
     private byte[] getBytes(int size) throws IOException {
         String childName = header.key + MyBackupDataOutput.DATA_FILE_SUFFIX + header.fileExtension;
-        if (docFolder == null) {
-            File dataFile = new File(fileFolder, childName);
-            return FileUtils.getBytes(dataFile, dataOffset, size);
-        } else {
-            DocumentFile childDocFile = docFolder.findFile(childName);
-            if (childDocFile == null) {
-                throw new IOException("File '" + childName + "' not found in folder '" + docFolder.getName() + "'");
-            }
-            return DocumentFileUtils.getBytes(context, childDocFile, dataOffset, size);
+        DocumentFile childDocFile = docFolder.findFile(childName);
+        if (childDocFile == null) {
+            throw new IOException("File '" + childName + "' not found in folder '" + docFolder.getName() + "'");
         }
+        return DocumentFileUtils.getBytes(context, childDocFile, dataOffset, size);
     }
 
     /** {@link BackupDataInput#skipEntityData()}  */
@@ -282,9 +261,7 @@ public class MyBackupDataInput {
 
     @NonNull
     String getDataFolderName() {
-        return fileFolder == null
-                ? (docFolder == null ? "(empty)" : docFolder.getUri().toString())
-                : fileFolder.getAbsolutePath();
+        return docFolder == null ? "(empty)" : docFolder.getUri().toString();
     }
     
     void setMyContext(MyContext myContext) {
