@@ -18,10 +18,13 @@ package org.andstatus.app.context;
 
 import android.app.backup.BackupManager;
 import android.content.Context;
+import android.net.Uri;
+import android.os.Build;
 
 import org.andstatus.app.R;
 import org.andstatus.app.timeline.TapOnATimelineTitleBehaviour;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.UriUtils;
 
 /**
  * This is a central point of accessing SharedPreferences
@@ -106,6 +109,8 @@ public class MyPreferences {
     public static final String KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB = "maximum_size_of_cached_media_mb";
     public static final String KEY_ENABLE_ANDROID_BACKUP = "enable_android_backup";
     public static final String KEY_BACKUP_DOWNLOADS = "backup_downloads";
+    public static final String KEY_LAST_BACKUP_URI = "last_backup_uri";
+    public static final String KEY_APP_INSTANCE_NAME = "app_instance_name";
 
     // ----------------------------------------------------------
     // Information
@@ -314,5 +319,19 @@ public class MyPreferences {
 
     public static boolean isLogNetworkLevelMessages() {
         return SharedPreferencesUtil.getBoolean(KEY_LOG_NETWORK_LEVEL_MESSAGES, false);
+    }
+
+    public static void setLastBackupUri(Uri backupUri) {
+        SharedPreferencesUtil.putString(KEY_LAST_BACKUP_URI, UriUtils.isEmpty(backupUri) ? "" : backupUri.toString());
+    }
+
+    public static Uri getLastBackupUri() {
+        return UriUtils.fromString(SharedPreferencesUtil.getString(KEY_LAST_BACKUP_URI,
+                "content://com.android.externalstorage.documents/tree/primary%3Abackups%2FAndStatus"));
+    }
+
+    public static String getAppInstanceName() {
+        return SharedPreferencesUtil.getString(KEY_APP_INSTANCE_NAME,
+                (Build.BRAND + "-" + Build.MODEL).replaceAll(" ", "-"));
     }
 }

@@ -106,9 +106,10 @@ public class MyBackupAgentTest {
     private DocumentFile testBackup(DocumentFile backupFolder) throws Throwable {
         MyBackupManager backupManager = new MyBackupManager(null, null);
         backupManager.prepareForBackup(backupFolder);
-        assertTrue("Data folder created: '" + backupManager.getDataFolder() + "'",
-                backupManager.getDataFolder().exists());
-        Try<DocumentFile> existingDescriptorFile = backupManager.getExistingDescriptorFile();
+        DocumentFile dataFolder = backupManager.getDataFolder();
+
+        assertTrue("Data folder created: '" + dataFolder + "'", dataFolder.exists());
+        Try<DocumentFile> existingDescriptorFile = MyBackupManager.getExistingDescriptorFile(dataFolder);
         assertTrue("Descriptor file created: " + existingDescriptorFile.map(DocumentFile::getUri),
                 existingDescriptorFile.map(DocumentFile::exists).getOrElse(false));
         backupManager.backup();
@@ -119,7 +120,7 @@ public class MyBackupAgentTest {
         assertEquals("Accounts backed up", backupManager.getBackupAgent().getAccountsBackedUp(), MyContextHolder.get()
                 .accounts().size());
 
-        Try<DocumentFile> descriptorFile2 = backupManager.getExistingDescriptorFile();
+        Try<DocumentFile> descriptorFile2 = MyBackupManager.getExistingDescriptorFile(dataFolder);
         JSONObject jso = DocumentFileUtils.getJSONObject(MyContextHolder.get().context(), descriptorFile2.get());
         assertEquals(MyBackupDescriptor.BACKUP_SCHEMA_VERSION, jso.getInt(MyBackupDescriptor.KEY_BACKUP_SCHEMA_VERSION));
         assertTrue(jso.getLong(MyBackupDescriptor.KEY_CREATED_DATE) > System.currentTimeMillis() - 1000000);
@@ -127,18 +128,18 @@ public class MyBackupAgentTest {
         MyBackupDescriptor backupDescriptor = backupManager.getBackupAgent().getBackupDescriptor();
         assertEquals(MyBackupDescriptor.BACKUP_SCHEMA_VERSION, backupDescriptor.getBackupSchemaVersion());
         
-        DocumentFile accountHeader = backupManager.getDataFolder().createFile("", "account_header.json");
+        DocumentFile accountHeader = dataFolder.createFile("", "account_header.json");
         assertTrue(accountHeader.exists());
         jso = DocumentFileUtils.getJSONObject(MyContextHolder.get().context(), accountHeader);
         assertTrue(jso.getInt(MyBackupDataOutput.KEY_DATA_SIZE) > 10);
         assertEquals(".json", jso.getString(MyBackupDataOutput.KEY_FILE_EXTENSION));
 
-        DocumentFile accountData = backupManager.getDataFolder().createFile("", "account_data.json");
+        DocumentFile accountData = dataFolder.createFile("", "account_data.json");
         assertTrue(accountData.exists());
         JSONArray jsa = DocumentFileUtils.getJSONArray(MyContextHolder.get().context(), accountData);
         assertTrue(jsa.length() > 2);
         
-        return backupManager.getDataFolder();
+        return dataFolder;
     }
 
     private void deleteApplicationData() throws IOException {

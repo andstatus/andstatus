@@ -128,8 +128,8 @@ public class MyBackupDescriptor {
         return myBackupDescriptor;
     }
 
-    static MyBackupDescriptor fromEmptyDocFileDescriptor(Context context, DocumentFile documentFile,
-                                                            ProgressLogger progressLoggerIn) throws IOException {
+    static MyBackupDescriptor fromEmptyDocumentFile(Context context, DocumentFile documentFile,
+                                                    ProgressLogger progressLoggerIn) throws IOException {
         MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLoggerIn);
         myBackupDescriptor.docDescriptor = documentFile;
         myBackupDescriptor.setEmptyFields(context);

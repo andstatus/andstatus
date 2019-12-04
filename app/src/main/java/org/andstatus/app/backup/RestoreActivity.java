@@ -32,12 +32,13 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
+
+import io.vavr.control.Try;
 
 public class RestoreActivity extends MyActivity implements ProgressLogger.ProgressCallback {
     private static final int MAX_RESTORE_SECONDS = 600;
-    DocumentFile backupFolder = null;
+    DocumentFile dataFolder = null;
     RestoreTask asyncTask = null;
     private int progressCounter = 0;
 
@@ -51,7 +52,7 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
         findViewById(R.id.button_restore).setOnClickListener(this::doRestore);
         findViewById(R.id.backup_folder).setOnClickListener(this::selectBackupFolder);
         findViewById(R.id.button_select_backup_folder).setOnClickListener(this::selectBackupFolder);
-        showBackupFolder();
+        showDataFolder();
     }
 
     private void doRestore(View v) {
@@ -60,22 +61,22 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
             asyncTask = (RestoreTask) new RestoreTask(RestoreActivity.this)
                     .setMaxCommandExecutionSeconds(MAX_RESTORE_SECONDS)
                     .setCancelable(false);
-            new AsyncTaskLauncher<DocumentFile>().execute(this, true, asyncTask, getBackupFolder());
+            new AsyncTaskLauncher<DocumentFile>().execute(this, true, asyncTask, getDataFolder());
         }
     }
 
     private void selectBackupFolder(View v) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, getBackupFolder().getUri());
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, getDataFolder().getUri());
         }
         startActivityForResult(intent, ActivityRequestCode.SELECT_BACKUP_FOLDER.id);
     }
 
     @NonNull
-    private DocumentFile getBackupFolder() {
-        if (backupFolder != null && backupFolder.exists()) {
-            return backupFolder;
+    private DocumentFile getDataFolder() {
+        if (dataFolder != null && dataFolder.exists()) {
+            return dataFolder;
         }
         return MyBackupManager.getDefaultBackupFolder(this);
     }
@@ -85,7 +86,7 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
         switch (ActivityRequestCode.fromId(requestCode)) {
             case SELECT_BACKUP_FOLDER:
                 if (resultCode == RESULT_OK) {
-                  setBackupFolder(DocumentFile.fromTreeUri(this, data.getData()));
+                  setDataFolder(DocumentFile.fromTreeUri(this, data.getData()));
                 }
                 break;
             default:
@@ -94,29 +95,38 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
         }
     }
 
-    void setBackupFolder(DocumentFile backupFolder) {
-        if ( backupFolder == null ) {
-            MyLog.d(this, "No backup folder selected");
+    void setDataFolder(DocumentFile selectedFolder) {
+        resetProgress();
+        if ( selectedFolder == null ) {
+            addProgressMessage("No backup data folder selected");
             return;
-        } else if (backupFolder.exists() ) {
-            if (!backupFolder.isDirectory()) {
-                MyLog.d(this, "Is not a folder '" + backupFolder.getUri().getPath() + "'");
+        } else if (selectedFolder.exists() ) {
+            if (!selectedFolder.isDirectory()) {
+                addProgressMessage("Is not a folder: '" + selectedFolder.getUri().getPath() + "'");
                 return;
             }
         } else {
-            MyLog.i(this, "The folder doesn't exist: '" + backupFolder.getUri().getPath() + "'");
+            addProgressMessage("The folder doesn't exist: '" + selectedFolder.getUri().getPath() + "'");
             return;
         }
-        this.backupFolder = backupFolder;
-        showBackupFolder();
+        Try<DocumentFile> descriptorFile = MyBackupManager.getExistingDescriptorFile(selectedFolder);
+        if (descriptorFile.isFailure()) {
+            addProgressMessage("This is not an AndStatus backup folder." +
+                    " Descriptor file " + MyBackupManager.DESCRIPTOR_FILE_NAME +
+                    " doesn't exist in: '" + selectedFolder.getUri().getPath() + "'");
+            return;
+        }
+
+        this.dataFolder = selectedFolder;
+        showDataFolder();
         resetProgress();
     }
 
-    private void showBackupFolder() {
+    private void showDataFolder() {
         TextView view = findViewById(R.id.backup_folder);
         if (view != null) {
-            DocumentFile folder = getBackupFolder();
-            view.setText(MyBackupManager.isBackupFolder(folder) ? folder.getUri().getPath() : getText(R.string.not_set));
+            DocumentFile folder = getDataFolder();
+            view.setText(MyBackupManager.isDataFolder(folder) ? folder.getUri().getPath() : getText(R.string.not_set));
         }
     }
 
@@ -129,8 +139,8 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
         }
 
         @Override
-        protected Void doInBackground2(DocumentFile file) {
-            MyBackupManager.restoreInteractively(file, activity, activity);
+        protected Void doInBackground2(DocumentFile dataFolder) {
+            MyBackupManager.restoreInteractively(dataFolder, activity, activity);
             return null;
         }
     }

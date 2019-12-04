@@ -30,9 +30,9 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.Permissions;
 
 public class BackupActivity extends MyActivity implements ProgressLogger.ProgressCallback {
@@ -92,19 +92,21 @@ public class BackupActivity extends MyActivity implements ProgressLogger.Progres
     }
 
     void setBackupFolder(DocumentFile backupFolder) {
+        resetProgress();
         if ( backupFolder == null ) {
-            MyLog.d(this, "No backup folder selected");
+            addProgressMessage("No backup folder selected");
             return;
         } else if ( backupFolder.exists() ) {
             if (!backupFolder.isDirectory()) {
-                MyLog.d(this, "Is not a folder '" + backupFolder.getUri() + "'");
+                addProgressMessage("Is not a folder '" + backupFolder.getUri() + "'");
                 return;
             }
         } else {
-            MyLog.i(this, "The folder doesn't exist: '" + backupFolder.getUri() + "'");
+            addProgressMessage("The folder doesn't exist: '" + backupFolder.getUri() + "'");
             return;
         }
         this.backupFolder = backupFolder;
+        MyPreferences.setLastBackupUri(backupFolder.getUri());
         showBackupFolder();
         resetProgress();
     }

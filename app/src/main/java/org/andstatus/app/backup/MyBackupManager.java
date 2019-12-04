@@ -25,9 +25,9 @@ import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TryUtils;
-import org.andstatus.app.util.UriUtils;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -49,7 +49,7 @@ import static java.util.function.UnaryOperator.identity;
  * @author yvolk (Yuri Volkov), http://yurivolkov.com
  */
 class MyBackupManager {
-    private static final String DESCRIPTOR_FILE_NAME = "_descriptor.json";
+    public static final String DESCRIPTOR_FILE_NAME = "_descriptor.json";
     private DocumentFile dataFolder = null;
     private MyBackupDescriptor newDescriptor = MyBackupDescriptor.getEmpty();
 
@@ -75,50 +75,43 @@ class MyBackupManager {
     }
     
     void prepareForBackup(DocumentFile backupFolder) throws IOException {
-        progressLogger.logProgress("Data folder will be created inside:'"
+        progressLogger.logProgress("Data folder will be created inside: '"
                 + backupFolder.getUri() + "'");
-        if (backupFolder.exists() && dataFolderToDescriptorFile(backupFolder).isSuccess()) {
-            throw new FileNotFoundException("Wrong folder, descriptor file exists here:'"
-                    + dataFolderToDescriptorFile(backupFolder).get().getUri() + "'");
+        if (backupFolder.exists() && getExistingDescriptorFile(backupFolder).isSuccess()) {
+            throw new FileNotFoundException("Wrong folder, backup descriptor file '" + DESCRIPTOR_FILE_NAME + "'" +
+                    " already exists here: '" + backupFolder.getUri().getPath() + "'");
         }
-        final String backupFileNamePrefix = MyLog.currentDateTimeFormatted() + "-AndStatusBackup";
-        DocumentFile dataFolderToBe = backupFolder.createDirectory(backupFileNamePrefix);
+        final String dataFolderName = MyLog.currentDateTimeFormatted() + "-AndStatusBackup-" +
+                MyPreferences.getAppInstanceName();
+
+        DocumentFile dataFolderToBe = backupFolder.createDirectory(dataFolderName);
         if (dataFolderToBe == null) {
-            throw new IOException("Couldn't create subfolder '" + backupFileNamePrefix + "'" +
+            throw new IOException("Couldn't create subfolder '" + dataFolderName + "'" +
                     " inside '" + backupFolder.getUri() + "'");
         }
         if (dataFolderToBe.listFiles().length > 0) {
-            throw new IOException("Data folder already exists:'" + dataFolderToBe.getUri() + "'");
+            throw new IOException("Data folder is not empty: '" + dataFolderToBe.getUri() + "'");
+        }
+        DocumentFile descriptorFile = dataFolderToBe.createFile("", DESCRIPTOR_FILE_NAME);
+        if (descriptorFile == null) {
+            throw new IOException("Couldn't create descriptor file '" + DESCRIPTOR_FILE_NAME + "'" +
+                    " inside '" + dataFolderToBe.getUri() + "'");
         }
         dataFolder = dataFolderToBe;
-
-        if (getExistingDescriptorFile().isSuccess()) {
-            throw new IOException("Descriptor file already exists:'" +
-                    getExistingDescriptorFile().get().getUri() + "'");
-        }
-        DocumentFile descriptorDocfile = dataFolder.createFile("", DESCRIPTOR_FILE_NAME);
-        if (descriptorDocfile == null) {
-            throw new IOException("Couldn't create descriptor file '" + DESCRIPTOR_FILE_NAME + "'" +
-                    " inside '" + dataFolder.getUri() + "'");
-        }
     }
 
     DocumentFile getDataFolder() {
         return dataFolder;
     }
 
-    Try<DocumentFile> getExistingDescriptorFile() {
-        return dataFolderToDescriptorFile(dataFolder);
-    }
-
-    static boolean isBackupFolder(DocumentFile dataFolder) {
+    static boolean isDataFolder(DocumentFile dataFolder) {
         if (dataFolder != null && dataFolder.exists() && dataFolder.isDirectory() ) {
-            return dataFolderToDescriptorFile(dataFolder).isSuccess();
+            return getExistingDescriptorFile(dataFolder).isSuccess();
         }
         return false;
     }
 
-    private static Try<DocumentFile> dataFolderToDescriptorFile(DocumentFile dataFolder) {
+    static Try<DocumentFile> getExistingDescriptorFile(DocumentFile dataFolder) {
         return TryUtils.ofNullableCallable(() -> dataFolder.findFile(DESCRIPTOR_FILE_NAME));
     }
 
@@ -130,23 +123,27 @@ class MyBackupManager {
         backupAgent.setActivity(activity);
 
         MyBackupDataOutput dataOutput = new MyBackupDataOutput(context, dataFolder);
-        Try<MyBackupDescriptor> descriptorFile = getExistingDescriptorFile()
-            .map( df -> {
-            newDescriptor = MyBackupDescriptor.fromEmptyDocFileDescriptor(context, df, progressLogger);
-            backupAgent.onBackup(MyBackupDescriptor.getEmpty(), dataOutput, newDescriptor);
-            progressLogger.logSuccess();
-            return newDescriptor;
-        });
-        if (descriptorFile.isFailure()) {
-            throw descriptorFile.getCause();
-        }
+
+        getExistingDescriptorFile(dataFolder)
+        .map( df -> {
+                newDescriptor = MyBackupDescriptor.fromEmptyDocumentFile(context, df, progressLogger);
+                backupAgent.onBackup(MyBackupDescriptor.getEmpty(), dataOutput, newDescriptor);
+                progressLogger.logSuccess();
+                return true;
+            })
+        .get(); // Return Try instead of throwing
     }
 
-    static void restoreInteractively(DocumentFile backupFile, Activity activity, ProgressLogger.ProgressCallback progressCallback) {
+    static void restoreInteractively(DocumentFile dataFolder, Activity activity, ProgressLogger.ProgressCallback progressCallback) {
         MyBackupManager backupManager = new MyBackupManager(activity, progressCallback);
         try {
-            backupManager.prepareForRestore(backupFile);
+            backupManager.prepareForRestore(dataFolder);
             backupManager.restore();
+
+            DocumentFile backupFolder = dataFolder.getParentFile();
+            if (backupFolder != null) {
+                MyPreferences.setLastBackupUri(backupFolder.getUri());
+            }
         } catch (Throwable e) {
             MyLog.ignored(backupManager, e);
             backupManager.progressLogger.logProgress(e.getMessage());
@@ -154,23 +151,20 @@ class MyBackupManager {
         }
     }
 
-    void prepareForRestore(DocumentFile dataFolderOrFile) throws Throwable {
-        if (dataFolderOrFile == null) {
-            throw new FileNotFoundException("Data folder or file is not selected");
+    void prepareForRestore(DocumentFile dataFolder) throws Throwable {
+        if (dataFolder == null) {
+            throw new FileNotFoundException("Data folder is not selected");
         }
-        if (!dataFolderOrFile.exists()) {
-            throw new FileNotFoundException("Data file doesn't exist:'" + dataFolderOrFile.getUri() + "'");
+        if (!dataFolder.exists()) {
+            throw new FileNotFoundException("Data folder doesn't exist:'" + dataFolder.getUri() + "'");
         }
-        if (dataFolderOrFile.isDirectory()) {
-            this.dataFolder = dataFolderOrFile;
-        } else {
-            this.dataFolder = dataFolderOrFile.getParentFile();
-        }
-        Try<DocumentFile> descriptorFile = getExistingDescriptorFile();
+        Try<DocumentFile> descriptorFile = getExistingDescriptorFile(dataFolder);
         if (descriptorFile.isFailure()) {
-            throw new FileNotFoundException("Descriptor file doesn't exist: '" + descriptorFile.toString() + "'");
+            throw new FileNotFoundException("Descriptor file " + DESCRIPTOR_FILE_NAME +
+                    " doesn't exist: '" + descriptorFile.getCause().getMessage() + "'");
         }
 
+        this.dataFolder = dataFolder;
         newDescriptor = descriptorFile.map(df -> {
             MyBackupDescriptor descriptor = MyBackupDescriptor.fromOldDocFileDescriptor(
                     MyContextHolder.get(activity).context(), df, progressLogger);
@@ -178,7 +172,7 @@ class MyBackupManager {
                 throw new FileNotFoundException(
                         "Unsupported backup schema version: " + descriptor.getBackupSchemaVersion() +
                                 "; created with " + descriptor.appVersionNameAndCode() +
-                                "\nData folder:'" + dataFolder.getUri().getPath() + "'." +
+                                "\nData folder:'" + this.dataFolder.getUri().getPath() + "'." +
                                 "\nPlease use older AndStatus version to restore this backup."
                 );
             }
@@ -204,11 +198,10 @@ class MyBackupManager {
 
     @NonNull
     static DocumentFile getDefaultBackupFolder(Context context) {
-        DocumentFile parentFolder = DocumentFile.fromTreeUri(context,
-                UriUtils.fromString("content://com.android.externalstorage.documents/tree/primary%3Abackups%2FAndStatus"));
-        return parentFolder == null
+        DocumentFile backupFolder = DocumentFile.fromTreeUri(context, MyPreferences.getLastBackupUri());
+        return backupFolder == null || !backupFolder.exists()
                 ? DocumentFile.fromFile(Environment.getExternalStoragePublicDirectory(""))
-                : parentFolder;
+                : backupFolder;
     }
 
     MyBackupAgent getBackupAgent() {
