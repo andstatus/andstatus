@@ -101,7 +101,7 @@ public class ActorSql {
 
     @NonNull
     public static String select() {
-        return select(false, false);
+        return select(false, true);
     }
 
     @NonNull

@@ -19,6 +19,8 @@ package org.andstatus.app.data;
 import android.content.ContentValues;
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContextHolder;
@@ -44,8 +46,6 @@ import org.andstatus.app.util.TriState;
 
 import java.util.Date;
 import java.util.List;
-
-import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.andstatus.app.util.UriUtils.nonEmptyOid;
@@ -348,7 +348,7 @@ public class DataUpdater {
         objActor.lookupActorId();
 
         if (objActor.actorId != 0 && objActor.isPartiallyDefined() && objActor.isMyFriend.unknown
-                && activity.followedByActor().unknown) {
+                && activity.followedByActor().unknown && objActor.groupType == GroupType.UNKNOWN) {
             MyLog.v(this, () -> method + "; Skipping partially defined: " + objActor);
             return;
         }
@@ -400,6 +400,9 @@ public class DataUpdater {
                 // End of required attributes
             }
 
+            if (actor.groupType.isGroup.known) {
+                values.put(ActorTable.GROUP_TYPE, actor.groupType.id);
+            }
             if (actor.hasAvatar()) {
                 values.put(ActorTable.AVATAR_URL, actor.getAvatarUrl());
             }

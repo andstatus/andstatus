@@ -121,7 +121,7 @@ public class Audience implements IsEmpty {
 
     public void extractActorsFromContent(@NonNull String content, @NonNull Actor author, @NonNull Actor inReplyToActor) {
         author.extractActorsFromContent(content, inReplyToActor).forEach(this::add);
-        actors.forEach(Actor::lookupActorId);
+        actors.forEach(actor -> actor.lookupActorId());
     }
 
     public void add(@NonNull Actor actor) {

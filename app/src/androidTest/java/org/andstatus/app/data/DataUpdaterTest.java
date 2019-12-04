@@ -20,8 +20,12 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
+import androidx.test.platform.app.InstrumentationRegistry;
+
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
@@ -50,8 +54,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
-
-import androidx.test.platform.app.InstrumentationRegistry;
+import java.util.Optional;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -558,6 +561,10 @@ public class DataUpdaterTest {
                 "Reply to myaccount @" + buddyName4 + " should add me as a recipient", true);
         addOneNote4testReplyInContent(ma, buddyName3,
                 "Reply to myaccount @" + buddyName4 + " should not add other buddy as a recipient", false);
+
+        String groupName1 = "gnutestgroup";
+        addOneNote4testReplyInContent(ma, groupName1,
+                "Sending a note to the !" + groupName1 + " group", false);
     }
 
     private void addOneNote4testReplyInContent(MyAccount ma, String buddyUniqueName, String content, boolean isReply) {
@@ -595,17 +602,21 @@ public class DataUpdaterTest {
     }
 
     @Test
-    public void testMention() {
+    public void testGnuSocialMention() {
         MyAccount ma = demoData.getGnuSocialAccount();
         Actor accountActor = ma.getActor();
         MyAccount myMentionedAccount = demoData.getMyAccount(demoData.gnusocialTestAccount2Name);
-        Actor myMentionedUser = myMentionedAccount.getActor().setUsername(myMentionedAccount.getUsername()).build();
+        Actor myMentionedActor = myMentionedAccount.getActor();
         Actor author1 = Actor.fromOid(accountActor.origin, "sam" + demoData.testRunUid);
         author1.setUsername("samBrook");
         author1.build();
 
+        String groupname = "gnutestgroup";
+
         AActivity activity1 = newLoadedNote(accountActor, author1,
-                "@" + myMentionedUser.getUsername() + " I mention your another account");
+                "@" + myMentionedActor.getUsername() + " I'm mentioning your another account" +
+                        " and sending the content to !" + groupname + " group" +
+                        " " + demoData.testRunUid);
 
         AActivity activity2 = AActivity.from(accountActor, ActivityType.UPDATE);
         activity2.setActor(author1);
@@ -614,6 +625,18 @@ public class DataUpdaterTest {
         DataUpdater di = new DataUpdater(ma);
         long noteId = di.onActivity(activity2).getNote().noteId;
         assertTrue("Note should be added", noteId != 0);
+
+        Audience audience = activity1.audience();
+        assertEquals("Audience should contain two actors: " + audience, 2, audience.getActors().size());
+
+        Optional<Actor> group = audience.getActors().stream().filter(a -> groupname.equals(a.getUsername())).findAny();
+        assertTrue("Group should be in audience: " + audience, group.isPresent());
+        assertEquals("Group type: " + group, GroupType.GENERIC, group.get().groupType);
+        assertNotEquals("Group id: " + group, 0, group.get().actorId);
+
+        Actor savedGroup = Actor.loadFromDatabase(MyContextHolder.get(), group.get().actorId, () -> Actor.EMPTY, false);
+        assertEquals("Saved group: " + savedGroup, groupname, savedGroup.getUsername());
+        assertEquals("Saved group type: " + savedGroup, GroupType.GENERIC, savedGroup.groupType);
     }
 
     @Test

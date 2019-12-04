@@ -204,7 +204,9 @@ public class CachedUsersAndActors {
         final long userId = user.userId;
         final long actorId = actor.actorId;
         if (actorId != 0) {
-            user.actorIds.add(actorId);
+            if (userId != 0) {
+                user.actorIds.add(actorId);
+            }
             updateCachedActor(actors, actor);
             if (user.isMyUser().isTrue) updateCachedActor(myActors, actor);
         }

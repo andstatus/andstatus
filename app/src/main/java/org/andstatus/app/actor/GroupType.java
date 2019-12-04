@@ -16,24 +16,28 @@
 
 package org.andstatus.app.actor;
 
+import org.andstatus.app.util.TriState;
+
 /** See https://www.w3.org/TR/activitystreams-vocabulary/#dfn-group
  * @author yvolk@yurivolkov.com
  */
 public enum GroupType {
-    NOT_A_GROUP("NotAGroup", 1),
-    PUBLIC("Public", 2),
-    FRIENDS("Friends", 3),
-    FOLLOWERS("Followers", 4),
-    ACTOR_OWNED("ActorOwned", 5),
-    GENERIC("Generic", 6),
-    UNKNOWN("Unknown", 0);
+    NOT_A_GROUP("NotAGroup", 1, TriState.FALSE),
+    PUBLIC("Public", 2, TriState.TRUE),
+    FRIENDS("Friends", 3, TriState.TRUE),
+    FOLLOWERS("Followers", 4, TriState.TRUE),
+    ACTOR_OWNED("ActorOwned", 5, TriState.TRUE),
+    GENERIC("Generic", 6, TriState.TRUE),
+    UNKNOWN("Unknown", 0, TriState.UNKNOWN);
 
     public final long id;
     public final String name;
+    public final TriState isGroup;
 
-    GroupType(String name, long id) {
+    GroupType(String name, long id, TriState isGroup) {
         this.name = name;
         this.id = id;
+        this.isGroup = isGroup;
     }
 
     public static GroupType fromId(long id) {

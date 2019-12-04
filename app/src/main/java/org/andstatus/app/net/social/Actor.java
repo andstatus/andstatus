@@ -60,6 +60,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.andstatus.app.net.social.Patterns.WEBFINGER_ID_CHARS;
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.junit.Assert.fail;
 
@@ -97,8 +98,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     public long followingCount = 0;
     public long followersCount = 0;
 
-    private long createdDate = 0;
-    private long updatedDate = 0;
+    private long createdDate = DATETIME_MILLIS_NEVER;
+    private long updatedDate = DATETIME_MILLIS_NEVER;
 
     private AActivity latestActivity = null;
 
@@ -130,7 +131,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
         Actor cached = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
         return MyAsyncTask.nonUiThread() && (cached.isPartiallyDefined() || reloadFirst)
-                ? loadFromDatabase(myContext, actorId, supplier).betterToCache(cached)
+                ? loadFromDatabase(myContext, actorId, supplier, true).betterToCache(cached)
                 : cached;
     }
 
@@ -138,11 +139,12 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return isBetterToCacheThan(other) ?  this : other;
     }
 
-    private static Actor loadFromDatabase(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier) {
+    public static Actor loadFromDatabase(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier,
+                                         boolean useCache) {
         final String sql = "SELECT " + ActorSql.select()
                 + " FROM " + ActorSql.tables()
                 + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;
-        final Function<Cursor, Actor> function = cursor -> fromCursor(myContext, cursor, true);
+        final Function<Cursor, Actor> function = cursor -> fromCursor(myContext, cursor, useCache);
         return MyQuery.get(myContext, sql, function).stream().findFirst().orElseGet(supplier);
     }
 
@@ -411,7 +413,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public boolean isGroupDefinitely() {
-        return groupType != GroupType.UNKNOWN && groupType != GroupType.NOT_A_GROUP;
+        return groupType.isGroup.isTrue;
     }
 
     public Actor setUsername(String username) {
@@ -591,6 +593,22 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 if (actorId == 0 && !skip2 && isOidReal()) {
                     String oid2 = MyQuery.idToOid(origin.myContext, OidEnum.ACTOR_OID, actorId2, 0);
                     if (UriUtils.isRealOid(oid2)) skip2 = !oid.equalsIgnoreCase(oid2);
+                }
+                if (actorId == 0 && !skip2 && groupType != GroupType.UNKNOWN) {
+                    GroupType groupTypeStored = GroupType.fromId(MyQuery.idToLongColumnValue(
+                            origin.myContext.getDatabase(), ActorTable.TABLE_NAME, ActorTable.GROUP_TYPE, actorId2));
+                    if (groupType != groupTypeStored) {
+                        if (groupTypeStored == GroupType.UNKNOWN ||
+                                (groupType.isGroup.isTrue && groupTypeStored.isGroup.isFalse)) {
+                            long updatedDateStored = MyQuery.actorIdToLongColumnValue(ActorTable.UPDATED_DATE, actorId2);
+                            if (updatedDate <= updatedDateStored) {
+                                updatedDate = Math.max(updatedDateStored + 1, SOME_TIME_AGO + 1);
+                            }
+                        } else {
+                            MyLog.i(this, "Different groupTypes for " + this +
+                                    ", stored: " + groupTypeStored + ", id: " + actorId2);
+                        }
+                    }
                 }
                 if (actorId == 0 && !skip2) {
                     actorId = actorId2;

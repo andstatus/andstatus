@@ -450,7 +450,8 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         GroupType groupType = GroupType.UNKNOWN;
         if (groupActorReferenceChar().isPresent()) {
             int indexOfGroupReference = text.indexOf(groupActorReferenceChar().get(), textStart);
-            if (indexOfGroupReference >= textStart && indexOfGroupReference < indexOfReference) {
+            if (indexOfGroupReference >= textStart &&
+                    (indexOfReference < textStart || indexOfGroupReference < indexOfReference)) {
                 indexOfReference = indexOfGroupReference;
                 groupType = GroupType.GENERIC;
             }
