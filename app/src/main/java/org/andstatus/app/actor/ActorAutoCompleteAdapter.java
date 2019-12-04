@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2017-2019 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package org.andstatus.app.actor;
 
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,22 +23,23 @@ import android.widget.BaseAdapter;
 import android.widget.Filter;
 import android.widget.Filterable;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import org.andstatus.app.R;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.graphics.AvatarView;
+import org.andstatus.app.note.NoteBodyTokenizer;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
+import org.andstatus.app.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable {
     private final Origin origin;
@@ -47,7 +47,7 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
     private final LayoutInflater mInflater;
 
     private ArrayFilter mFilter;
-    private List<ActorViewItem> items = new ArrayList<>();
+    private FilteredValues items = FilteredValues.EMPTY;
 
     public ActorAutoCompleteAdapter(@NonNull LoadableListActivity myActivity, @NonNull Origin origin) {
         this.origin = origin;
@@ -61,13 +61,13 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
 
     @Override
     public int getCount() {
-        return items.size();
+        return items.viewItems.size();
     }
 
     @Override
     public @Nullable
     ActorViewItem getItem(int position) {
-        return items.get(position);
+        return items.viewItems.get(position);
     }
 
     @Override
@@ -114,37 +114,64 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
         return mFilter;
     }
 
+    private static class FilteredValues {
+        final static FilteredValues EMPTY = new FilteredValues(false, "", Collections.emptyList());
+
+        final boolean matchGroupsOnly;
+        final String referenceChar;
+        final List<ActorViewItem> viewItems;
+
+        private FilteredValues(boolean matchGroupsOnly, String referenceChar, List<ActorViewItem> viewItems) {
+            this.matchGroupsOnly = matchGroupsOnly;
+            this.referenceChar = referenceChar;
+            this.viewItems = viewItems;
+        }
+    }
+
     /**
      * <p>An array filter constrains the content of the array adapter with
      * a prefix. Each item that does not start with the supplied prefix
      * is removed from the list.</p>
      */
     private class ArrayFilter extends Filter {
+
         @Override
-        protected FilterResults performFiltering(CharSequence prefix) {
-            List<ActorViewItem> filteredValues = new ArrayList<>();
-            if (!TextUtils.isEmpty(prefix)) {
-                final String prefixString = prefix.toString().toLowerCase();
-                filteredValues = loadFiltered(prefixString);
-                CollectionsUtil.sort(filteredValues);
+        protected FilterResults performFiltering(CharSequence prefixWithReferenceChar) {
+            if (!origin.isValid() || StringUtils.isEmpty(prefixWithReferenceChar) ||
+                    prefixWithReferenceChar.length() < NoteBodyTokenizer.MIN_LENGHT_TO_SEARCH + 1) {
+                final FilterResults results = new FilterResults();
+                results.values = FilteredValues.EMPTY;
+                results.count = 0;
+                return results;
             }
+            char referenceChar = prefixWithReferenceChar.charAt(0);
+            String prefixString = prefixWithReferenceChar.toString().substring(1);
+            boolean matchGroupsOnly = origin.groupActorReferenceChar().map(c -> c == referenceChar).orElse(false);
+
+            List<ActorViewItem> viewItems = loadFiltered(matchGroupsOnly, prefixString.toLowerCase());
+            CollectionsUtil.sort(viewItems);
+
             final FilterResults results = new FilterResults();
-            results.values = filteredValues;
-            results.count = filteredValues.size();
+            results.values = new FilteredValues(matchGroupsOnly, String.valueOf(referenceChar), viewItems);
+            results.count = viewItems.size();
             return results;
         }
 
-        private List<ActorViewItem> loadFiltered(final String prefixString) {
-            if (!origin.isValid()) {
-                return Collections.emptyList();
-            }
+        private List<ActorViewItem> loadFiltered(boolean matchGroupsOnly, String prefixString) {
             ActorListLoader loader = new ActorListLoader(myActivity.getMyContext(), ActorListType.ACTORS_AT_ORIGIN,
                     origin, 0, "") {
                 @NonNull
                 @Override
                 protected String getSelection() {
-                    return ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + origin.getId() + " AND "
-                            + ActorTable.TABLE_NAME + "." + ActorTable.WEBFINGER_ID + " LIKE '" + prefixString + "%'";
+                    if (matchGroupsOnly) {
+                        return ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + origin.getId() + " AND " +
+                                ActorTable.TABLE_NAME + "." + ActorTable.GROUP_TYPE +
+                                " IN (" + GroupType.GENERIC.id + ", " + GroupType.ACTOR_OWNED.id + ") AND " +
+                                ActorTable.TABLE_NAME + "." + ActorTable.USERNAME + " LIKE '" + prefixString + "%'";
+                    } else {
+                        return ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + origin.getId() + " AND "
+                                + ActorTable.TABLE_NAME + "." + ActorTable.WEBFINGER_ID + " LIKE '" + prefixString + "%'";
+                    }
                 }
             };
             loader.load(null);
@@ -157,8 +184,8 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
 
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            //noinspection unchecked
-            items = (List<ActorViewItem>) results.values;
+            //noinspection
+            items = (FilteredValues) results.values;
             if (results.count > 0) {
                 notifyDataSetChanged();
             } else {
@@ -172,11 +199,13 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
                 return "";
             }
             ActorViewItem item = (ActorViewItem) resultValue;
-            return item.getActor().isEmpty()
+            return items.referenceChar +
+                (item.getActor().isEmpty()
                     ? ""
-                    : origin.isMentionAsWebFingerId()
+                    : origin.isMentionAsWebFingerId() && !items.matchGroupsOnly
                         ? item.getUniqueName()
-                        : item.actor.getUsername();
+                        : item.actor.getUsername()
+                );
         }
     }
 }

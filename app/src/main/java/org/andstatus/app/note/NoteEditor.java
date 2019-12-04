@@ -75,6 +75,7 @@ public class NoteEditor {
 
     private final NoteEditorContainer editorContainer;
     private final android.view.ViewGroup editorView;
+    private final NoteBodyTokenizer noteBodyTokenizer = new NoteBodyTokenizer();
 
     private enum ScreenToggleState {
         SHOW_TIMELINE(null, true),
@@ -191,7 +192,7 @@ public class NoteEditor {
             return false;
         });
 
-        bodyView.setTokenizer(new NoteBodyTokenizer());
+        bodyView.setTokenizer(noteBodyTokenizer);
     }
 
     private void setupFullscreenToggle() {
@@ -732,6 +733,7 @@ public class NoteEditor {
     public void showData(NoteEditorData data) {
         if (data.isValid()) {
             editorData = data;
+            noteBodyTokenizer.setOrigin(data.ma.getOrigin());
             updateScreen();
             show();
         }

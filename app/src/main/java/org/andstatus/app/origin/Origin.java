@@ -473,6 +473,18 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         return new ActorReference(ind, groupType);
     }
 
+    public boolean isReferenceChar(CharSequence text, int cursor) {
+        if (text == null || cursor < 0 || cursor >= text.length()) {
+            return false;
+        }
+        return isReferenceChar(text.charAt(cursor));
+    }
+
+    public boolean isReferenceChar(char c) {
+        if (c == actorReferenceChar()) return true;
+        return groupActorReferenceChar().map(rc -> rc == c).orElse(false);
+    }
+
     public char actorReferenceChar() {
         return '@';
     }
