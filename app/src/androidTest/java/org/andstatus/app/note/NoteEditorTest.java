@@ -28,6 +28,9 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.test.espresso.action.ReplaceTextAction;
+import androidx.test.espresso.action.TypeTextAction;
+
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.HelpActivity;
@@ -60,9 +63,6 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
-
-import androidx.test.espresso.action.ReplaceTextAction;
-import androidx.test.espresso.action.TypeTextAction;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -447,6 +447,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
                 MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, draftNoteId));
 
         Audience audience = Audience.fromNoteId(data.getMyAccount().getOrigin(), draftNoteId);
-        assertTrue("Audience of a reply to " + viewItem + "\n " + audience, audience.contains(viewItem.noteViewItem.author.getActor()));
+        assertTrue("Audience of a reply to " + viewItem + "\n " + audience,
+                audience.findSame(viewItem.noteViewItem.author.getActor()).isSuccess());
     }
 }

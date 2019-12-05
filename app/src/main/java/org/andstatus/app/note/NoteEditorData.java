@@ -19,6 +19,8 @@ package org.andstatus.app.note;
 import android.content.ContentValues;
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.actor.ActorViewItem;
@@ -53,8 +55,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import androidx.annotation.NonNull;
 
 import static org.andstatus.app.data.DownloadStatus.UNKNOWN;
 import static org.andstatus.app.util.MyLog.COMMA;
@@ -238,8 +238,18 @@ public class NoteEditorData implements IsEmpty {
     }
 
     public void save() {
+        recreateAudience(activity);
         new DataUpdater(getMyAccount()).onActivity(activity);
         // TODO: Delete previous draft activities of this note
+    }
+
+    public static void recreateAudience(AActivity activity) {
+        Audience audience = new Audience(activity.accountActor.origin);
+        audience.add(activity.getNote().getInReplyTo().getActor());
+        audience.addActorsFromContent(activity.getNote().getContent(),
+                activity.getAuthor(), activity.getNote().getInReplyTo().getActor());
+        audience.setPublic(activity.getNote().audience().getPublic());
+        activity.getNote().setAudience(audience);
     }
 
     MyAccount getMyAccount() {

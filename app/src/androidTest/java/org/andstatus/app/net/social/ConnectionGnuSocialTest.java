@@ -112,7 +112,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Timeline position", "2664346", activity.getTimelinePosition().getPosition());
         assertEquals("Note Oid", "2664346", activity.getNote().oid);
         assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
-        assertTrue("Does not have a recipient", activity.audience().isEmpty());
+        assertEquals("Should have a recipient " + activity, 1, activity.audience().getActors().size());
         assertNotEquals("Is a reblog", ActivityType.ANNOUNCE,  activity.type);
 
         final AActivity inReplyTo = activity.getNote().getInReplyTo();

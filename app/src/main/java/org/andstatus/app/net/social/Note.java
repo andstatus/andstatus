@@ -18,6 +18,9 @@ package org.andstatus.app.net.social;
 
 import android.database.Cursor;
 
+import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
+
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
@@ -40,9 +43,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import androidx.annotation.NonNull;
-import androidx.core.util.Pair;
-
 import static org.andstatus.app.util.UriUtils.isEmptyOid;
 import static org.andstatus.app.util.UriUtils.isRealOid;
 import static org.andstatus.app.util.UriUtils.nonRealOid;
@@ -58,14 +58,13 @@ public class Note extends AObject {
     
     public final String oid;
     private long updatedDate = 0;
-    private Audience audience;
+    private volatile Audience audience;
     private String name = "";
     private String summary = "";
     private boolean isSensitive = false;
     private String content = "";
     private final LazyVal<String> contentToSearch = LazyVal.of(this::evalContentToSearch);
 
-    @NonNull
     private AActivity inReplyTo = AActivity.EMPTY;
     public final List<AActivity> replies;
     public String conversationOid="";
@@ -332,7 +331,7 @@ public class Note extends AObject {
 
     @NonNull
     public AActivity getInReplyTo() {
-        return inReplyTo;
+        return inReplyTo == null ? AActivity.EMPTY : inReplyTo;
     }
 
     public void setInReplyTo(AActivity activity) {

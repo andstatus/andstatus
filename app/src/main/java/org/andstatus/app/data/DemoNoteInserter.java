@@ -27,6 +27,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
+import org.andstatus.app.note.NoteEditorData;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
@@ -161,6 +162,8 @@ public class DemoNoteInserter {
     }
 
     public void onActivity(final AActivity activity) {
+        NoteEditorData.recreateAudience(activity);
+
         MyAccount ma = origin.myContext.accounts().fromActorId(accountActor.actorId);
         assertTrue("Persistent account exists for " + accountActor + " " + activity, ma.isValid());
         final TimelineType timelineType = activity.getNote().getPublic().isFalse ? TimelineType.PRIVATE : TimelineType.HOME;

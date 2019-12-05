@@ -21,6 +21,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -42,8 +44,6 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import androidx.annotation.NonNull;
-
 /**
  * Clean database from outdated information
  * old Notes, log files...
@@ -60,6 +60,8 @@ public class DataPruner {
     static final long MAX_DAYS_UNUSED_TIMELINES_TO_KEEP = 31;
     private static final long PRUNE_MIN_PERIOD_DAYS = 1;
     private static final double ATTACHMENTS_SIZE_PART = 0.90;
+
+    private long latestTimestamp;
 
     public static void prune(@NonNull MyContext myContext) {
         SQLiteDatabase db = myContext.getDatabase();
@@ -81,12 +83,31 @@ public class DataPruner {
      */
     public boolean prune() {
         final String method = "prune";
-        boolean pruned = false;
         if (!isTimeToPrune()) {
-            return pruned;
+            return false;
         }
         MyLog.v(this, () -> method + " started");
+        boolean pruned = pruneActivities();
 
+        if (mDeleted > 0) {
+            pruneParentlessAttachments();
+        }
+        deleteTempFiles();
+        pruneMedia();
+        pruneTimelines(Long.max(latestTimestamp, getLatestTimestamp(MAX_DAYS_UNUSED_TIMELINES_TO_KEEP)));
+        pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
+        pruneTempActors();
+        setDataPrunedNow();
+
+        MyLog.v(this, method + " " + (pruned ? "succeeded" : "failed"));
+        return pruned;
+    }
+
+    private boolean pruneActivities() {
+        final String method = "pruneActivities";
+        MyLog.v(this, () -> method + " started");
+
+        boolean pruned = false;
         mDeleted = 0;
         int nDeletedTime = 0;
         // We're using global preferences here
@@ -100,7 +121,7 @@ public class DataPruner {
                 + " SELECT " + ActorTable.ACTOR_ACTIVITY_ID + " FROM " + ActorTable.TABLE_NAME + ")";
 
         long maxDays = Integer.parseInt(sp.getString(MyPreferences.KEY_HISTORY_TIME, "3"));
-        long latestTimestamp = getLatestTimestamp(maxDays);
+        latestTimestamp = getLatestTimestamp(maxDays);
 
         long nActivities = 0;
         long nToDeleteSize = 0;
@@ -147,18 +168,10 @@ public class DataPruner {
             DbUtils.closeSilently(cursor);
         }
         mDeleted = nDeletedTime + nDeletedSize;
-        if (mDeleted > 0) {
-            pruneParentlessAttachments();
-        }
-        deleteTempFiles();
-        pruneMedia();
-        pruneTimelines(Long.max(latestTimestamp, getLatestTimestamp(MAX_DAYS_UNUSED_TIMELINES_TO_KEEP)));
-        pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
-        setDataPrunedNow();
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this,
                     method + " " + (pruned ? "succeeded" : "failed") + "; History time=" + maxDays + " days; deleted " + nDeletedTime
-                    + " , before " + new Date(latestTimestamp).toString());
+                            + " , before " + new Date(latestTimestamp).toString());
             MyLog.v(this, method + "; History size=" + maxSize + " notes; deleted "
                     + nDeletedSize + " of " + nActivities + " notes, before " + new Date(latestTimestampSize).toString());
         }
@@ -271,6 +284,14 @@ public class DataPruner {
                     + ", skipped " + skippedCount + ", couldn't delete " + errorCount);
         }
         return deletedCount;
+    }
+
+
+    private void pruneTempActors() {
+        String sql = "";
+
+        // TODO: Implement
+
     }
 
     /**

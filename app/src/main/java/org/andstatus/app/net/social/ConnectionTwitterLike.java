@@ -329,6 +329,8 @@ public abstract class ConnectionTwitterLike extends Connection {
                     note.setInReplyTo(inReplyTo);
                 }
             }
+            activity.getNote().audience().addActorsFromContent(activity.getNote().getContent(),
+                    activity.getAuthor(), activity.getNote().getInReplyTo().getActor());
 
             if (!jso.isNull("favorited")) {
                 note.addFavoriteBy(data.getAccountActor(),

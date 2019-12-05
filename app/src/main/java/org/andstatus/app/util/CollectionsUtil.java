@@ -19,12 +19,16 @@ package org.andstatus.app.util;
 import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import io.vavr.control.Try;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -67,6 +71,15 @@ public class CollectionsUtil {
         return (key, valuesNullable) -> valuesNullable != null && valuesNullable.contains(toRemove)
                 ? valuesNullable.stream().filter(key2 -> key2 != toRemove).collect(Collectors.toSet())
                 : valuesNullable;
+    }
+
+    public static <T> Try<T> findAny(Collection<T> collection, Predicate<T> predicate) {
+        for (T item : collection) {
+            if (predicate.test(item)) {
+                return Try.success(item);
+            }
+        }
+        return TryUtils.notFound();
     }
 
 }

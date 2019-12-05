@@ -109,7 +109,7 @@ public class ConnectionTwitterTest {
         activity = timeline.get(ind);
         Note note = activity.getNote();
         assertTrue("Note is loaded", note.getStatus() == DownloadStatus.LOADED);
-        assertTrue("Does not have a recipient", note.audience().isEmpty());
+        assertEquals("Should have a recipient " + activity, 1, note.audience().getActors().size());
         assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertTrue("Is a reply", note.getInReplyTo().nonEmpty());
         assertEquals("Reply to the note id", "17176774678", note.getInReplyTo().getNote().oid);

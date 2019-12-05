@@ -39,6 +39,7 @@ import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.ConnectionGnuSocialTest;
 import org.andstatus.app.net.social.Note;
+import org.andstatus.app.note.NoteEditorData;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginPumpio;
@@ -580,6 +581,7 @@ public class DataUpdaterTest {
         noteIn.setContentPosted(content);
         noteIn.via = "MyCoolClient";
 
+        NoteEditorData.recreateAudience(activityIn);
         final AActivity activity = new DataUpdater(ma).onActivity(activityIn);
         final Note note = activity.getNote();
         assertTrue("Note was not added: " + activity, note.noteId != 0);
@@ -621,6 +623,7 @@ public class DataUpdaterTest {
         AActivity activity2 = AActivity.from(accountActor, ActivityType.UPDATE);
         activity2.setActor(author1);
         activity2.setActivity(activity1);
+        NoteEditorData.recreateAudience(activity2);
 
         DataUpdater di = new DataUpdater(ma);
         long noteId = di.onActivity(activity2).getNote().noteId;

@@ -16,6 +16,8 @@
 
 package org.andstatus.app.data.checker;
 
+import android.database.Cursor;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DbUtils;
@@ -25,11 +27,11 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.TriState;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -64,34 +66,9 @@ class CheckAudience extends DataChecker {
                 " AND " + NoteTable.NOTE_STATUS + "=" + DownloadStatus.LOADED.save() +
                 " ORDER BY " + NoteTable._ID + " DESC" +
                 (includeLong ? "" : " LIMIT 0, 500");
-        FixSummary summary = MyQuery.foldLeft(myContext, sql, new FixSummary(), s -> cursor -> {
-            s.rowsCount++;
-            long noteId = DbUtils.getLong(cursor, NoteTable._ID);
-            long insDate = DbUtils.getLong(cursor, NoteTable.INS_DATE);
-            TriState isPublic = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
-            String content = DbUtils.getString(cursor, NoteTable.CONTENT);
-            Actor author = Actor.fromId(origin, DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
-            Actor inReplyToActor = Actor.fromId(origin, DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
 
-            Audience audience = Audience.fromNoteId(origin, noteId, isPublic);
-            audience.extractActorsFromContent(content, author, inReplyToActor);
-            if (!countOnly) {
-                audience.getActors().stream().filter(a -> a.actorId == 0).forEach(actor ->
-                    dataUpdater.updateObjActor(ma.getActor().update(actor), 0)
-                );
-            }
-            if (audience.save(myContext, origin, noteId, isPublic, countOnly)) {
-                s.toFixCount += 1;
-            }
-            if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
-                logger.logProgress(origin.getName() + ": need to fix " + s.toFixCount +
-                        " of " + s.rowsCount + " audiences;\n" +
-                        RelativeTime.getDifference(myContext.context(), insDate) + ", " +
-                        I18n.trimTextAt(MyHtml.htmlToCompactPlainText(content), 120));
-                MyServiceManager.setServiceUnavailable();
-            }
-            return s;
-        });
+        FixSummary summary = MyQuery.foldLeft(myContext, sql, new FixSummary(),
+                s -> cursor -> foldOneNote(ma, dataUpdater, countOnly, s, cursor));
 
         logger.logProgress(origin.getName() + ": " +
                 (summary.toFixCount == 0
@@ -100,5 +77,43 @@ class CheckAudience extends DataChecker {
                         " of " + summary.rowsCount + " notes"));
         DbUtils.waitMs(this, 1000);
         return summary.toFixCount;
+    }
+
+    private FixSummary foldOneNote(MyAccount ma, DataUpdater dataUpdater, boolean countOnly, FixSummary s, Cursor cursor) {
+        Origin origin = ma.getOrigin();
+        s.rowsCount++;
+        long noteId = DbUtils.getLong(cursor, NoteTable._ID);
+        long insDate = DbUtils.getLong(cursor, NoteTable.INS_DATE);
+        String content = DbUtils.getString(cursor, NoteTable.CONTENT);
+        Actor author = Actor.load(myContext, DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
+        Actor inReplyToActor = Actor.load(myContext, DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
+
+        if (origin.getOriginType() == OriginType.GNUSOCIAL || origin.getOriginType() == OriginType.TWITTER) {
+
+            // See org.andstatus.app.note.NoteEditorData.recreateAudience
+            Audience prevAudience = Audience.load(origin, noteId);
+            Audience audience = new Audience(origin);
+            audience.add(inReplyToActor);
+            audience.addActorsFromContent(content, author, inReplyToActor);
+            audience.setPublic(prevAudience.getPublic());
+            audience.lookupUsers();
+
+            if (!countOnly) {
+                audience.getActors().stream().filter(a -> a.actorId == 0).forEach(actor ->
+                        dataUpdater.updateObjActor(ma.getActor().update(actor), 0)
+                );
+            }
+            if (audience.save(myContext, origin, noteId, audience.getPublic(), countOnly)) {
+                s.toFixCount += 1;
+            }
+        }
+        if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
+            logger.logProgress(origin.getName() + ": need to fix " + s.toFixCount +
+                    " of " + s.rowsCount + " audiences;\n" +
+                    RelativeTime.getDifference(myContext.context(), insDate) + ", " +
+                    I18n.trimTextAt(MyHtml.htmlToCompactPlainText(content), 120));
+            MyServiceManager.setServiceUnavailable();
+        }
+        return s;
     }
 }

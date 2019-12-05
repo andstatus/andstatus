@@ -33,15 +33,19 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import io.vavr.control.Try;
 
 public class Audience implements IsEmpty {
     public final static Audience EMPTY = new Audience(Origin.EMPTY);
@@ -61,15 +65,16 @@ public class Audience implements IsEmpty {
         if (noteId == 0) return Audience.EMPTY;
 
         String where = AudienceTable.NOTE_ID + "=" + noteId;
-        String sql = "SELECT " + AudienceTable.ACTOR_ID + "," + ActorTable.ACTOR_OID
-                + " FROM " + AudienceTable.TABLE_NAME
-                + " INNER JOIN " + ActorTable.TABLE_NAME + " ON "
-                + AudienceTable.TABLE_NAME + "." + AudienceTable.ACTOR_ID + "="
-                + ActorTable.TABLE_NAME + "." + ActorTable._ID
-                + " WHERE " + where;
+        String sql = "SELECT " + ActorTable.GROUP_TYPE + "," +
+                AudienceTable.ACTOR_ID + "," + ActorTable.ACTOR_OID +
+                " FROM " + AudienceTable.TABLE_NAME +
+                " INNER JOIN " + ActorTable.TABLE_NAME + " ON " +
+                AudienceTable.TABLE_NAME + "." + AudienceTable.ACTOR_ID + "=" +
+                ActorTable.TABLE_NAME + "." + ActorTable._ID +
+                " WHERE " + where;
         Audience audience = new Audience(origin);
         final Function<Cursor, Actor> function = cursor -> Actor.fromTwoIds(origin,
-                GroupType.UNKNOWN,
+                GroupType.fromId(DbUtils.getLong(cursor, ActorTable.GROUP_TYPE)),
                 DbUtils.getLong(cursor, AudienceTable.ACTOR_ID),
                 DbUtils.getString(cursor, ActorTable.ACTOR_OID));
         audience.actors.addAll(MyQuery.get(MyContextHolder.get(), sql, function));
@@ -119,9 +124,19 @@ public class Audience implements IsEmpty {
         return audience;
     }
 
-    public void extractActorsFromContent(@NonNull String content, @NonNull Actor author, @NonNull Actor inReplyToActor) {
+    public void addActorsFromContent(@NonNull String content, @NonNull Actor author, @NonNull Actor inReplyToActor) {
         author.extractActorsFromContent(content, inReplyToActor).forEach(this::add);
-        actors.forEach(actor -> actor.lookupActorId());
+    }
+
+    public void lookupUsers() {
+        actors.forEach(Actor::lookupActorId);
+        deduplicate();
+    }
+
+    private void deduplicate() {
+        List<Actor> prevActors = new ArrayList<>(actors);
+        actors.clear();
+        prevActors.forEach(this::add);
     }
 
     public void add(@NonNull Actor actor) {
@@ -143,8 +158,8 @@ public class Audience implements IsEmpty {
         return myContext.users().containsMe(actors);
     }
 
-    public boolean contains(Actor actor) {
-        return actors.contains(actor);
+    public Try<Actor> findSame(Actor actor) {
+        return CollectionsUtil.findAny(getActors(), actor::isSame);
     }
 
     public boolean contains(long actorId) {
@@ -160,18 +175,18 @@ public class Audience implements IsEmpty {
         if (!origin.isValid() || noteId == 0) {
             return false;
         }
-        Audience prevAudience = Audience.fromNoteId(origin, noteId, isPublic);
+        Audience prevAudience = Audience.load(origin, noteId);
         Set<Actor> toDelete = new HashSet<>();
         Set<Actor> toAdd = new HashSet<>();
         for (Actor actor : prevAudience.getActors()) {
             if (actor.isPublic()) continue;
-            if (!getActors().contains(actor)) {
+            if (findSame(actor).isFailure()) {
                 toDelete.add(actor);
             }
         }
         for (Actor actor : getActors()) {
             if (actor.isPublic()) continue;
-            if (!prevAudience.getActors().contains(actor)) {
+            if (prevAudience.findSame(actor).isFailure()) {
                 if (actor.actorId == 0) {
                     MyLog.w(this, "No actorId for " + actor);
                 } else {
@@ -182,7 +197,7 @@ public class Audience implements IsEmpty {
         if (!countOnly) try {
             if (!toDelete.isEmpty()) {
                 MyProvider.delete(myContext, AudienceTable.TABLE_NAME, AudienceTable.NOTE_ID + "=" + noteId
-                        + " AND " + AudienceTable.ACTOR_ID + SqlIds.actorIdsOf(toDelete).getSql(), null);
+                        + " AND " + AudienceTable.ACTOR_ID + SqlIds.actorIdsOf(toDelete).getSql());
             }
             toAdd.forEach(actor -> MyProvider.insert(myContext, AudienceTable.TABLE_NAME, toContentValues(noteId, actor)));
         } catch (Exception e) {
