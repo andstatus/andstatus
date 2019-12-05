@@ -23,15 +23,16 @@ import android.database.sqlite.SQLiteDatabase;
 
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.timeline.meta.DisplayedInSelector;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -41,8 +42,9 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.io.File;
 import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import java.util.function.Function;
 
 /**
  * Clean database from outdated information
@@ -95,8 +97,8 @@ public class DataPruner {
         deleteTempFiles();
         pruneMedia();
         pruneTimelines(Long.max(latestTimestamp, getLatestTimestamp(MAX_DAYS_UNUSED_TIMELINES_TO_KEEP)));
-        pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
         pruneTempActors();
+        pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
         setDataPrunedNow();
 
         MyLog.v(this, method + " " + (pruned ? "succeeded" : "failed"));
@@ -114,9 +116,8 @@ public class DataPruner {
         SharedPreferences sp = SharedPreferencesUtil.getDefaultSharedPreferences();
 
         // Don't delete my activities
-        final SqlIds accountIds = SqlIds.fromIds(MyContextHolder.get().accounts().get().stream()
-                .map(MyAccount::getActorId).collect(Collectors.toList()));
-        String sqlNotMyActivity = ActivityTable.TABLE_NAME + "." + ActivityTable.ACTOR_ID + accountIds.getNotSql();
+        final SqlIds myActorIds = SqlIds.myActorsIds();
+        String sqlNotMyActivity = ActivityTable.TABLE_NAME + "." + ActivityTable.ACTOR_ID + myActorIds.getNotSql();
         String sqlNotLatestActivityByActor = ActivityTable.TABLE_NAME + "." + ActivityTable._ID + " NOT IN("
                 + " SELECT " + ActorTable.ACTOR_ACTIVITY_ID + " FROM " + ActorTable.TABLE_NAME + ")";
 
@@ -286,12 +287,25 @@ public class DataPruner {
         return deletedCount;
     }
 
-
     private void pruneTempActors() {
-        String sql = "";
-
-        // TODO: Implement
-
+        final SqlIds myActorIds = SqlIds.myActorsIds();
+        String sql = "SELECT " + ActorTable._ID + " AS actorId, " + ActorTable.ACTOR_OID + ", " +
+                ActorTable.ORIGIN_ID + ", " + ActorTable.GROUP_TYPE + ", " +
+                ActorTable.USERNAME + ", " + ActorTable.WEBFINGER_ID +
+                " FROM " + ActorTable.TABLE_NAME +
+                " WHERE actorId" + myActorIds.getNotSql() +
+                " AND " + ActorTable.GROUP_TYPE +
+                    SqlIds.fromIds(GroupType.FRIENDS.id, GroupType.FOLLOWERS.id).getNotSql() +
+                " AND " + ActorTable.ACTOR_OID + " LIKE ('andstatustemp:%')" +
+                " AND NOT EXISTS (SELECT * FROM " + AudienceTable.TABLE_NAME +
+                    " WHERE " + AudienceTable.ACTOR_ID + " = actorId)" +
+                " AND NOT EXISTS (SELECT * FROM " + ActivityTable.TABLE_NAME +
+                    " WHERE " + ActivityTable.ACTOR_ID + " = actorId)";
+        final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor, true);
+        Set<Actor> actors = MyQuery.get(myContext, sql, function);
+        MyLog.v(this, "To delete: " + actors.size() + " temporary unused actors");
+        actors.forEach( actor -> MyProvider.deleteActor(myContext, actor.actorId));
+        MyLog.v(this, "Deleted " + actors.size() + " temporary unused actors");
     }
 
     /**

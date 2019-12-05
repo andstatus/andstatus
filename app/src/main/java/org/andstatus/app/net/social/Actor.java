@@ -180,7 +180,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         actor.setCreatedDate(DbUtils.getLong(cursor, ActorTable.CREATED_DATE));
         actor.setUpdatedDate(updatedDate);
 
-        actor.user = actor.isGroupDefinitely() ? User.EMPTY : User.fromCursor(myContext, cursor, true);
+        actor.user = actor.isGroupDefinitely() ? User.EMPTY : User.fromCursor(myContext, cursor, useCache);
         actor.avatarFile = AvatarFile.fromCursor(actor, cursor);
         if (useCache) {
             Actor cachedActor = myContext.users().actors.getOrDefault(actor.actorId, Actor.EMPTY);

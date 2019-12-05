@@ -50,12 +50,16 @@ public class SqlIds implements IsEmpty {
 
     public static SqlIds actorIdsOfTimelineActor(@NonNull Timeline timeline) {
         if (timeline.isCombined()) {
-            return SqlIds.fromIds(MyContextHolder.get().users().myActors.keySet());
+            return myActorsIds();
         } else if (timeline.getTimelineType().isAtOrigin()) {
             return SqlIds.EMPTY;
         } else {
             return SqlIds.fromIds(timeline.actor.user.actorIds);
         }
+    }
+
+    public static SqlIds myActorsIds() {
+        return SqlIds.fromIds(MyContextHolder.get().users().myActors.keySet());
     }
 
     public static SqlIds actorIdsOfTimelineAccount(@NonNull Timeline timeline) {
@@ -75,6 +79,10 @@ public class SqlIds implements IsEmpty {
 
     public static SqlIds fromIds(@NonNull Collection<Long> ids) {
         return new SqlIds(ids);
+    }
+
+    public static SqlIds fromIds(Long ... ids) {
+        return new SqlIds(Arrays.asList(ids));
     }
 
     private SqlIds(@NonNull Collection<Long> ids) {

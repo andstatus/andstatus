@@ -32,8 +32,10 @@ import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.ActivityTable;
+import org.andstatus.app.database.table.ActorEndpointTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
+import org.andstatus.app.database.table.GroupMembersTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.note.KeywordsFilter;
@@ -44,6 +46,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.util.TriState;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -142,11 +145,28 @@ public class MyProvider extends ContentProvider {
         return count;
     }
 
-    private int deleteActors(SQLiteDatabase db, String selection, String[] selectionArgs) {
-        int count;
-        // TODO: Delete related records also... 
-        count = db.delete(ActorTable.TABLE_NAME, selection, selectionArgs);
-        return count;
+    public static void deleteActor(MyContext myContext, long actorIdToDelete) {
+        deleteActor(myContext, actorIdToDelete, 0);
+    }
+
+    private static void deleteActor(MyContext myContext, long actorId, long recursionLevel) {
+        if (recursionLevel < 3) {
+            MyQuery.foldLeft(myContext, "SELECT " + ActorTable._ID + " FROM " +
+                            ActorTable.TABLE_NAME + " WHERE " + ActorTable.PARENT_ACTOR_ID + "=" + actorId,
+                    new ArrayList<Long>(),
+                    id -> cursor -> {
+                        id.add(DbUtils.getLong(cursor, ActorTable._ID));
+                        return id;
+                    }
+            ).forEach(childActorId -> deleteActor(myContext, childActorId, recursionLevel + 1));
+        }
+
+        delete(myContext, AudienceTable.TABLE_NAME, AudienceTable.ACTOR_ID, actorId);
+        delete(myContext, GroupMembersTable.TABLE_NAME, GroupMembersTable.GROUP_ID, actorId);
+        delete(myContext, GroupMembersTable.TABLE_NAME, GroupMembersTable.MEMBER_ID, actorId);
+        DownloadData.deleteAllOfThisActor(myContext, actorId);
+        delete(myContext, ActorEndpointTable.TABLE_NAME, ActorEndpointTable.ACTOR_ID, actorId);
+        delete(myContext, ActorTable.TABLE_NAME, ActorTable._ID, actorId);
     }
 
     public static void delete(@NonNull MyContext myContext, @NonNull String tableName, @NonNull String column, Object value) {

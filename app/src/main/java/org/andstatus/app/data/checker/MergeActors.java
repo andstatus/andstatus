@@ -18,16 +18,12 @@ package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
 
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.DownloadData;
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.ActorEndpointTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
-import org.andstatus.app.database.table.GroupMembersTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
@@ -39,8 +35,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.IntStream;
-
-import androidx.annotation.NonNull;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -137,31 +131,7 @@ class MergeActors extends DataChecker {
 
         updateColumn(logMsg, activity, AudienceTable.TABLE_NAME, AudienceTable.ACTOR_ID, true);
 
-        deleteActor(myContext, activity.getObjActor().actorId);
-    }
-
-    public static void deleteActor(MyContext myContext, long actorIdToDelete) {
-        deleteActor(myContext, actorIdToDelete, 0);
-    }
-
-    private static void deleteActor(MyContext myContext, long actorId, long recursionLevel) {
-        if (recursionLevel < 3) {
-            MyQuery.foldLeft(myContext, "SELECT " + ActorTable._ID + " FROM " +
-                            ActorTable.TABLE_NAME + " WHERE " + ActorTable.PARENT_ACTOR_ID + "=" + actorId,
-                    new ArrayList<Long>(),
-                    id -> cursor -> {
-                        id.add(DbUtils.getLong(cursor, ActorTable._ID));
-                        return id;
-                    }
-            ).forEach(childActorId -> deleteActor(myContext, childActorId, recursionLevel + 1));
-        }
-
-        MyProvider.delete(myContext, AudienceTable.TABLE_NAME, AudienceTable.ACTOR_ID, actorId);
-        MyProvider.delete(myContext, GroupMembersTable.TABLE_NAME, GroupMembersTable.GROUP_ID, actorId);
-        MyProvider.delete(myContext, GroupMembersTable.TABLE_NAME, GroupMembersTable.MEMBER_ID, actorId);
-        DownloadData.deleteAllOfThisActor(myContext, actorId);
-        MyProvider.delete(myContext, ActorEndpointTable.TABLE_NAME, ActorEndpointTable.ACTOR_ID, actorId);
-        MyProvider.delete(myContext, ActorTable.TABLE_NAME, ActorTable._ID, actorId);
+        MyProvider.deleteActor(myContext, activity.getObjActor().actorId);
     }
 
     private void updateColumn(String logMsg, AActivity activity, String tableName, String column, boolean ignoreError) {
