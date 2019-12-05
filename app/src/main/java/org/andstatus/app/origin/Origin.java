@@ -462,6 +462,9 @@ public class Origin implements Comparable<Origin>, IsEmpty {
 
         if (USERNAME_CHARS.indexOf(text.charAt(indexOfReference - 1)) < 0) {
             return new ActorReference(indexOfReference + 1, groupType);
+        } else if (groupType == GroupType.GENERIC) {
+            // Group reference shouldn't have username chars before it
+            return getActorReference(text, indexOfReference + 1);
         }
 
         // username part of WebfingerId before @ ?

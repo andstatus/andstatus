@@ -618,6 +618,8 @@ public class DataUpdaterTest {
         AActivity activity1 = newLoadedNote(accountActor, author1,
                 "@" + myMentionedActor.getUsername() + " I'm mentioning your another account" +
                         " and sending the content to !" + groupname + " group" +
+                        " But Hello! is not a group name" +
+                        " and!thisisnot also" +
                         " " + demoData.testRunUid);
 
         AActivity activity2 = AActivity.from(accountActor, ActivityType.UPDATE);
