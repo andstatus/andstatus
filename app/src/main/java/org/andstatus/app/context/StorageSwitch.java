@@ -20,24 +20,24 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.R;
 import org.andstatus.app.database.DatabaseHolder;
-import org.andstatus.app.nosupport.util.DialogFactory;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
+import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
 import java.io.File;
-
-import androidx.annotation.NonNull;
 
 public class StorageSwitch {
 
