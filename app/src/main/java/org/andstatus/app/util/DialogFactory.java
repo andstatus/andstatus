@@ -38,11 +38,10 @@ import org.andstatus.app.R;
 import java.util.function.Consumer;
 
 public class DialogFactory {
-    public static final String OK_DIALOG_TAG = "ok";
-    public static final String YES_CANCEL_DIALOG_TAG = "yes_cancel";
+    private static final String YES_CANCEL_DIALOG_TAG = "yes_cancel";
 
-    public static final String DIALOG_TITLE_KEY = "title";
-    public static final String DIALOG_MESSAGE_KEY = "message";
+    private static final String DIALOG_TITLE_KEY = "title";
+    private static final String DIALOG_MESSAGE_KEY = "message";
 
     private DialogFactory() {
     }
@@ -86,71 +85,34 @@ public class DialogFactory {
         }
     }
 
-    /** See http://stackoverflow.com/questions/10285047/showdialog-deprecated-whats-the-alternative */
-    public static void showOkDialog(Fragment fragment, int titleId, int messageId, final int requestCode) {
-        DialogFragment dialog = new OkDialogFragment();
+    public static void showYesCancelDialog(Fragment fragment, int titleId, int messageId, final ActivityRequestCode requestCode) {
+        DialogFragment dialog = new YesCancelDialogFragment();
         Bundle args = new Bundle();
         args.putCharSequence(DIALOG_TITLE_KEY, fragment.getText(titleId));
         args.putCharSequence(DIALOG_MESSAGE_KEY, fragment.getText(messageId));
-        dialog.setArguments(args);
-        dialog.setTargetFragment(fragment, requestCode);
-        dialog.show(fragment.getFragmentManager(), OK_DIALOG_TAG);
-    }
-
-    public static class OkDialogFragment extends DialogFragment {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            Bundle args = getArguments();
-            String title = args.getString(DIALOG_TITLE_KEY, "");
-            String message = args.getString(DIALOG_MESSAGE_KEY, "");
-
-            return new AlertDialog.Builder(getActivity())
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setTitle(title)
-                    .setMessage(message)
-                    .setPositiveButton(android.R.string.ok, (dialog, which) ->
-                        getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, null))
-                    .create();
-        }
-    }
-
-    public static void showYesCancelDialog(Fragment fragment, int titleId, int messageId, final ActivityRequestCode requestCode) {
-        DialogFragment dialog = new YesCancelDialog();
-        Bundle args = new Bundle();
-        args.putCharSequence(DIALOG_TITLE_KEY,
-                fragment.getText(titleId));
-        args.putCharSequence(
-                DIALOG_MESSAGE_KEY,
-                fragment.getText(messageId));
         dialog.setArguments(args);
         dialog.setTargetFragment(fragment, requestCode.id);
         dialog.show(fragment.getFragmentManager(), YES_CANCEL_DIALOG_TAG);
     }
 
-    public static class YesCancelDialog extends DialogFragment {
+    public static class YesCancelDialogFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             Bundle args = getArguments();
             String title = args.getString(DIALOG_TITLE_KEY, "");
             String message = args.getString(DIALOG_MESSAGE_KEY, "");
 
-            return newYesCancelDialog(this, title, message);
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(getText(android.R.string.yes), (dialog, id) ->
+                        getTargetFragment().onActivityResult(
+                            getTargetRequestCode(), Activity.RESULT_OK, null))
+                .setNegativeButton(android.R.string.cancel, (dialog, id) ->
+                        getTargetFragment().onActivityResult(
+                            getTargetRequestCode(), Activity.RESULT_CANCELED, null));
+            return builder.create();
         }
-    }
-
-    public static Dialog newYesCancelDialog(final DialogFragment dialogFragment, String title, String message) {
-        Dialog dlg;
-        AlertDialog.Builder builder = new AlertDialog.Builder(dialogFragment.getActivity());
-        builder.setTitle(title)
-            .setMessage(message)
-            .setPositiveButton(dialogFragment.getText(android.R.string.yes), (dialog, id) ->
-                    dialogFragment.getTargetFragment().onActivityResult(
-                        dialogFragment.getTargetRequestCode(), Activity.RESULT_OK, null))
-            .setNegativeButton(android.R.string.cancel, (dialog, id) ->
-                    dialogFragment.getTargetFragment().onActivityResult(
-                        dialogFragment.getTargetRequestCode(), Activity.RESULT_CANCELED, null));
-        dlg = builder.create();
-        return dlg;
     }
 
     public static void showTextInputBox(Context context, String title, String message, Consumer<String> textConsumer,

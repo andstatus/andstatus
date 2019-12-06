@@ -76,6 +76,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
     private static final String KEY_BACKUP_RESTORE = "backup_restore";
     private static final String KEY_CHANGE_LOG = "change_log";
     private static final String KEY_CHECK_DATA = "check_data";
+    private static final String KEY_DELETE_OLD_DATA = "delete_old_data";
     static final String KEY_MANAGE_ACCOUNTS = "manage_accounts_internally";
     private static final String KEY_MANAGE_ACCOUNTS_ANDROID = "manage_accounts_android";
     private static final String KEY_MANAGE_ORIGIN_SYSTEMS = "manage_origin_systems";
@@ -374,6 +375,9 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                 break;
             case KEY_ADD_NEW_ACCOUNT:
                 AccountSettingsActivity.startAddNewAccount(getActivity());
+                break;
+            case KEY_DELETE_OLD_DATA:
+                // TODO: Implement
                 break;
             case KEY_MANAGE_ACCOUNTS:
                 startActivity(new Intent(getActivity(), ManageAccountsActivity.class));

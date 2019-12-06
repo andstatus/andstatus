@@ -39,6 +39,9 @@
         android:singleLine="true"
         android:defaultValue="1000"
         android:title="@string/maximum_size_of_cached_media_mb" />
+	<Preference android:key="delete_old_data"
+		android:persistent="false"
+		android:title="@string/delete_old_data" />
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="enable_android_backup"
 		android:title="@string/title_preference_enable_android_backup"
 		android:summaryOff="@string/summary_preference_enable_android_backup_off"
