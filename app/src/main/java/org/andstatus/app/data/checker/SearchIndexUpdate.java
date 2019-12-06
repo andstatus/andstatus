@@ -27,6 +27,7 @@ import org.andstatus.app.util.MyLog;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.andstatus.app.data.MyQuery.quoteIfNotQuoted;
 
@@ -41,20 +42,17 @@ class SearchIndexUpdate extends DataChecker {
                 " ORDER BY " + NoteTable._ID + " DESC" +
                 (includeLong ? "" : " LIMIT 0, 10000");
         List<Note> notesToFix = new ArrayList<>();
-        long rowsCount = 0;
+        AtomicInteger counter = new AtomicInteger();
         try (Cursor cursor = myContext.getDatabase().rawQuery(sql, null)) {
             while (cursor.moveToNext()) {
-                rowsCount++;
+                counter.incrementAndGet();
                 Note note = Note.contentFromCursor(myContext, cursor);
                 String contentToSearchStored = DbUtils.getString(cursor, NoteTable.CONTENT_TO_SEARCH);
                 if (!contentToSearchStored.equals(note.getContentToSearch())) {
                     notesToFix.add(note);
-                    if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
-                        logger.logProgress("Need to fix " + notesToFix.size() + " of " + rowsCount + " notes, "
-                                + ", id=" + note.noteId + "; "
-                                + I18n.trimTextAt(note.getContentToSearch(), 120));
-                        MyServiceManager.setServiceUnavailable();
-                    }
+                    logger.logProgressIfLongProcess(() -> "Need to fix " + notesToFix.size() + " of " + counter.get() + " notes, "
+                            + ", id=" + note.noteId + "; "
+                            + I18n.trimTextAt(note.getContentToSearch(), 120));
                 }
             }
         } catch (Exception e) {
@@ -66,8 +64,8 @@ class SearchIndexUpdate extends DataChecker {
         if (!countOnly) notesToFix.forEach(this::fixOneNote);
 
         logger.logProgress(notesToFix.isEmpty()
-                ? "No changes to search index were needed. " + rowsCount + " notes"
-                : "Updated search index for " + notesToFix.size() + " of " + rowsCount + " notes");
+                ? "No changes to search index were needed. " + counter + " notes"
+                : "Updated search index for " + notesToFix.size() + " of " + counter + " notes");
         return notesToFix.size();
     }
 
@@ -79,13 +77,11 @@ class SearchIndexUpdate extends DataChecker {
                     + NoteTable.CONTENT_TO_SEARCH + "=" + quoteIfNotQuoted(note.getContentToSearch())
                     + " WHERE " + NoteTable._ID + "=" + note.noteId;
             myContext.getDatabase().execSQL(sql);
-            if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
-                logger.logProgress("Updating search index for " +
-                        I18n.trimTextAt(note.getContentToSearch(), 120) +
-                        " id=" + note.noteId
-                );
-                MyServiceManager.setServiceUnavailable();
-            }
+            logger.logProgressIfLongProcess(() -> "Updating search index for " +
+                    I18n.trimTextAt(note.getContentToSearch(), 120) +
+                    " id=" + note.noteId
+            );
+            MyServiceManager.setServiceUnavailable();
         } catch (Exception e) {
             String logMsg = "Error: " + e.getMessage() + ", SQL:" + sql;
             logger.logProgress(logMsg);

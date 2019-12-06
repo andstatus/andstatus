@@ -69,10 +69,8 @@ class CheckDownloads extends DataChecker {
             if (!dd.getFile().existsNow()) {
                 results.toFix.add(new Result(dd.getDownloadId()));
             }
-            if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
-                logger.logProgress("Will mark " +
-                        getSomeOfTotal(results.toFix.size(), results.totalCount) + " downloads as absent");
-            }
+            logger.logProgressIfLongProcess(() -> "Will mark " +
+                    getSomeOfTotal(results.toFix.size(), results.totalCount) + " downloads as absent");
             return results;
         });
     }

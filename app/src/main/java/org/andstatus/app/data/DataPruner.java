@@ -23,7 +23,6 @@ import android.database.sqlite.SQLiteDatabase;
 
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
@@ -45,6 +44,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
@@ -52,13 +52,14 @@ import java.util.function.Function;
  * old Notes, log files...
  */
 public class DataPruner {
+    public static final String TAG = DataPruner.class.getSimpleName();
     public static final long ATTACHMENTS_TO_STORE_MIN = 5;
     @NonNull
     private final MyContext myContext;
     private final SQLiteDatabase db;
     private final ContentResolver mContentResolver;
     private boolean pruneNow = false;
-    private ProgressLogger logger = ProgressLogger.getEmpty("DataPruner");
+    private ProgressLogger logger = ProgressLogger.getEmpty(TAG);
     private long mDeleted = 0;
     static final long MAX_DAYS_LOGS_TO_KEEP = 10;
     static final long MAX_DAYS_UNUSED_TIMELINES_TO_KEEP = 31;
@@ -291,23 +292,27 @@ public class DataPruner {
     }
 
     private void pruneTempActors() {
+        logger.logProgress("Delete temporary unused actors started");
         final SqlIds myActorIds = SqlIds.myActorsIds();
-        String sql = "SELECT " + ActorTable._ID + " AS actorId, " + ActorTable.ACTOR_OID + ", " +
-                ActorTable.ORIGIN_ID + ", " + ActorTable.GROUP_TYPE + ", " +
-                ActorTable.USERNAME + ", " + ActorTable.WEBFINGER_ID +
-                " FROM " + ActorTable.TABLE_NAME +
-                " WHERE actorId" + myActorIds.getNotSql() +
-                " AND " + ActorTable.GROUP_TYPE +
-                    SqlIds.fromIds(GroupType.FRIENDS.id, GroupType.FOLLOWERS.id).getNotSql() +
-                " AND " + ActorTable.ACTOR_OID + " LIKE ('andstatustemp:%')" +
+        String sql = "SELECT " + ActorSql.select()
+                + " FROM " + ActorSql.tables() +
+                " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable.PARENT_ACTOR_ID + " = 0" +
+                " AND " + ActorTable.TABLE_NAME + "." + ActorTable.ACTOR_OID + " LIKE ('andstatustemp:%')" +
+                " AND " + ActorTable.TABLE_NAME + "." + ActorTable._ID + myActorIds.getNotSql() +
                 " AND NOT EXISTS (SELECT * FROM " + AudienceTable.TABLE_NAME +
-                    " WHERE " + AudienceTable.ACTOR_ID + " = actorId)" +
+                    " WHERE " + AudienceTable.ACTOR_ID + " = " + ActorTable.TABLE_NAME + "." + ActorTable._ID + ")" +
                 " AND NOT EXISTS (SELECT * FROM " + ActivityTable.TABLE_NAME +
-                    " WHERE " + ActivityTable.ACTOR_ID + " = actorId)";
+                    " WHERE " + ActivityTable.ACTOR_ID + " = " + ActorTable.TABLE_NAME + "." + ActorTable._ID + ")";
         final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor, true);
         Set<Actor> actors = MyQuery.get(myContext, sql, function);
-        MyLog.v(logger.logTag, "To delete: " + actors.size() + " temporary unused actors");
-        actors.forEach( actor -> MyProvider.deleteActor(myContext, actor.actorId));
+        logger.logProgress("To delete: " + actors.size() + " temporary unused actors");
+        AtomicInteger counter = new AtomicInteger();
+        actors.forEach( actor -> {
+            counter.incrementAndGet();
+            MyLog.v(TAG, () -> (counter.get() + ". Deleting: " + actor.getUniqueName()) + "; " + actor);
+            MyProvider.deleteActor(myContext, actor.actorId);
+            logger.logProgressIfLongProcess(() -> counter.get() + ". Deleting: " + actor.getUniqueName());
+        });
         logger.logProgress("Deleted " + actors.size() + " temporary unused actors");
     }
 

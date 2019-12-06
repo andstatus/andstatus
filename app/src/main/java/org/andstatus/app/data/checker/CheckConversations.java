@@ -17,13 +17,13 @@
 package org.andstatus.app.data.checker;
 
 import android.database.Cursor;
+
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.SqlIds;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 
@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -155,7 +156,7 @@ public class CheckConversations extends DataChecker {
     }
 
     private void fixConversationsUsingReplies() {
-        int counter = 0;
+        AtomicInteger counter = new AtomicInteger();
         for (NoteItem item : items.values()) {
             if (item.inReplyToId != 0) {
                 NoteItem parent = items.get(item.inReplyToId);
@@ -170,15 +171,13 @@ public class CheckConversations extends DataChecker {
                     }
                 }
             }
-            counter++;
-            if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
-                logger.logProgress("Checked replies for " + counter + " notes of " + items.size());
-            }
+            counter.incrementAndGet();
+            logger.logProgressIfLongProcess(() -> "Checked replies for " + counter.get() + " notes of " + items.size());
         }
     }
 
     private void fixConversationsUsingConversationOid() {
-        int counter = 0;
+        AtomicInteger counter = new AtomicInteger();
         Map<Long, Map<String, NoteItem>> origins = new ConcurrentHashMap<>();
         for (NoteItem item : items.values()) {
             if (!StringUtils.isEmpty(item.conversationOid)) {
@@ -197,10 +196,8 @@ public class CheckConversations extends DataChecker {
                     }
                 }
             }
-            counter++;
-            if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
-                logger.logProgress("Checked conversations for " + counter + " notes of " + items.size());
-            }
+            counter.incrementAndGet();
+            logger.logProgressIfLongProcess(() -> "Checked conversations for " + counter + " notes of " + items.size());
         }
     }
 
@@ -230,12 +227,12 @@ public class CheckConversations extends DataChecker {
     }
 
     private int saveChanges(boolean countOnly) {
-        int changedCount = 0;
+        AtomicInteger counter = new AtomicInteger();
         for (NoteItem item : items.values()) {
             if (item.isChanged()) {
                 String sql = "";
                 try {
-                    if (changedCount < 5 && MyLog.isVerboseEnabled()) {
+                    if (counter.get() < 5 && MyLog.isVerboseEnabled()) {
                         MyLog.v(this, "noteId=" + item.id + "; "
                             + (item.isInReplyToIdChanged() ? "inReplyToId changed from "
                                 + item.inReplyToId_initial + " to " + item.inReplyToId : "")
@@ -255,11 +252,8 @@ public class CheckConversations extends DataChecker {
                                 + " WHERE " + NoteTable._ID + "=" + item.id;
                         myContext.getDatabase().execSQL(sql);
                     }
-                    changedCount++;
-                    if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
-                        logger.logProgress("Saved changes for " + changedCount + " notes");
-                        MyServiceManager.setServiceUnavailable();
-                    }
+                    counter.incrementAndGet();
+                    logger.logProgressIfLongProcess(() -> "Saved changes for " + counter + " notes");
                 } catch (Exception e) {
                     String logMsg = "Error: " + e.getMessage() + ", SQL:" + sql;
                     logger.logProgress(logMsg);
@@ -267,7 +261,7 @@ public class CheckConversations extends DataChecker {
                 }
             }
         }
-        return changedCount;
+        return counter.get();
     }
 
 }

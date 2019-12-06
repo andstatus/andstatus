@@ -23,8 +23,10 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtils;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class ProgressLogger {
+    public static final int PROGRESS_REPORT_PERIOD_SECONDS = 20;
     private volatile long lastLoggedAt = 0L;
     private volatile boolean makeServiceUnavalable = false;
     public final Optional<ProgressCallback> callback;
@@ -66,6 +68,13 @@ public class ProgressLogger {
     public ProgressLogger makeServiceUnavalable() {
         this.makeServiceUnavalable = true;
         return this;
+    }
+
+    public void logProgressIfLongProcess(Supplier<CharSequence> supplier) {
+        if (loggedMoreSecondsAgoThan(ProgressLogger.PROGRESS_REPORT_PERIOD_SECONDS)) {
+            MyServiceManager.setServiceUnavailable();
+            logProgress(supplier.get());
+        }
     }
 
     public void logProgressAndPause(CharSequence message, long pauseIfPositive) {

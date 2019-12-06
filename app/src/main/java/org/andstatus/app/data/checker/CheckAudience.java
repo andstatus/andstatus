@@ -28,7 +28,6 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.RelativeTime;
@@ -107,13 +106,10 @@ class CheckAudience extends DataChecker {
                 s.toFixCount += 1;
             }
         }
-        if (logger.loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS)) {
-            logger.logProgress(origin.getName() + ": need to fix " + s.toFixCount +
-                    " of " + s.rowsCount + " audiences;\n" +
-                    RelativeTime.getDifference(myContext.context(), insDate) + ", " +
-                    I18n.trimTextAt(MyHtml.htmlToCompactPlainText(content), 120));
-            MyServiceManager.setServiceUnavailable();
-        }
+        logger.logProgressIfLongProcess(() -> origin.getName() + ": need to fix " + s.toFixCount +
+                " of " + s.rowsCount + " audiences;\n" +
+                RelativeTime.getDifference(myContext.context(), insDate) + ", " +
+                I18n.trimTextAt(MyHtml.htmlToCompactPlainText(content), 120));
         return s;
     }
 }

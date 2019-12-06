@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
  * @author yvolk@yurivolkov.com
  */
 public abstract class DataChecker {
-    static final int PROGRESS_REPORT_PERIOD_SECONDS = 20;
     MyContext myContext;
     ProgressLogger logger = ProgressLogger.getEmpty("DataChecker");
     boolean includeLong = false;
