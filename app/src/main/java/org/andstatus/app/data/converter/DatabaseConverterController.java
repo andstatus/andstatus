@@ -19,9 +19,13 @@ package org.andstatus.app.data.converter;
 import android.app.Activity;
 import android.database.sqlite.SQLiteDatabase;
 
+import androidx.annotation.NonNull;
+
 import net.jcip.annotations.GuardedBy;
 
+import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.backup.DefaultProgressCallback;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.checker.DataChecker;
@@ -29,8 +33,6 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
-
-import androidx.annotation.NonNull;
 
 public class DatabaseConverterController {
     private static final String TAG = DatabaseConverterController.class.getSimpleName();
@@ -114,10 +116,12 @@ public class DatabaseConverterController {
             super(PoolEnum.LONG_UI);
             this.upgradeRequestor = upgradeRequestor;
             this.isRestoring = isRestoring;
-            if (upgradeRequestor instanceof ProgressLogger.ProgressCallback) {
-                progressLogger = new ProgressLogger((ProgressLogger.ProgressCallback) upgradeRequestor);
+            if (upgradeRequestor instanceof MyActivity) {
+                ProgressLogger.ProgressCallback callback =
+                        new DefaultProgressCallback((MyActivity) upgradeRequestor, R.string.label_upgrading);
+                progressLogger = new ProgressLogger(callback, "ConvertDatabase");
             } else {
-                progressLogger = new ProgressLogger(ProgressLogger.getEmptyCallback());
+                progressLogger = ProgressLogger.getEmpty("ConvertDatabase");
             }
         }
 

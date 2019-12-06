@@ -16,14 +16,19 @@
 
 package org.andstatus.app.backup;
 
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.StringUtils;
+
+import java.util.Optional;
 
 public class ProgressLogger {
     private volatile long lastLoggedAt = 0L;
     private volatile boolean makeServiceUnavalable = false;
-    public final ProgressCallback callback;
+    public final Optional<ProgressCallback> callback;
+    public final String logTag;
 
     @FunctionalInterface
     public interface ProgressCallback {
@@ -31,12 +36,14 @@ public class ProgressLogger {
         default void onComplete(boolean success) {}
     }
 
-    public static ProgressCallback getEmptyCallback() {
-        return message -> {};
+    public ProgressLogger(ProgressCallback callback, String logTag) {
+        this.callback = Optional.ofNullable(callback);
+        this.logTag = StringUtils.notEmpty(logTag, ProgressLogger.class.getSimpleName());
     }
 
-    public ProgressLogger(ProgressCallback callback) {
-        this.callback = callback;
+    private ProgressLogger(String logTag) {
+        this.callback = Optional.empty();
+        this.logTag = StringUtils.notEmpty(logTag, ProgressLogger.class.getSimpleName());
     }
 
     public void logSuccess() {
@@ -48,8 +55,8 @@ public class ProgressLogger {
     }
 
     public void onComplete(boolean success) {
-        logProgress(success ?"Completed successfully" : "Failed");
-        if (callback != null) callback.onComplete(success);
+        logProgressAndPause(success ? "Completed successfully" : "Failed", 1);
+        callback.ifPresent(c -> c.onComplete(success));
     }
 
     public boolean loggedMoreSecondsAgoThan(long secondsAgo) {
@@ -61,18 +68,25 @@ public class ProgressLogger {
         return this;
     }
 
+    public void logProgressAndPause(CharSequence message, long pauseIfPositive) {
+        logProgress(message);
+        if (pauseIfPositive > 0 && callback.isPresent()) {
+            DbUtils.waitMs(this, 2000);
+        }
+    }
+
     public void logProgress(CharSequence message) {
         updateLastLoggedTime();
-        MyLog.i(this, "Progress: " + message);
+        MyLog.i(logTag, "Progress: " + message);
         if (makeServiceUnavalable) MyServiceManager.setServiceUnavailable();
-        if (callback != null) callback.onProgressMessage(message);
+        callback.ifPresent(c -> c.onProgressMessage(message));
     }
 
     public void updateLastLoggedTime() {
         lastLoggedAt = System.currentTimeMillis();
     }
 
-    public static ProgressLogger getEmpty() {
-        return new ProgressLogger(getEmptyCallback());
+    public static ProgressLogger getEmpty(String logTag) {
+        return new ProgressLogger(logTag);
     }
 }

@@ -24,6 +24,7 @@ import android.database.sqlite.SQLiteDatabase;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.actor.GroupType;
+import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyStorage;
@@ -54,9 +55,10 @@ public class DataPruner {
     public static final long ATTACHMENTS_TO_STORE_MIN = 5;
     @NonNull
     private final MyContext myContext;
-    @NonNull
     private final SQLiteDatabase db;
     private final ContentResolver mContentResolver;
+    private boolean pruneNow = false;
+    private ProgressLogger logger = ProgressLogger.getEmpty("DataPruner");
     private long mDeleted = 0;
     static final long MAX_DAYS_LOGS_TO_KEEP = 10;
     static final long MAX_DAYS_UNUSED_TIMELINES_TO_KEEP = 31;
@@ -65,19 +67,20 @@ public class DataPruner {
 
     private long latestTimestamp;
 
-    public static void prune(@NonNull MyContext myContext) {
-        SQLiteDatabase db = myContext.getDatabase();
-        if (db == null) {
-            MyLog.databaseIsNull(() -> DataPruner.class);
-        } else {
-            new DataPruner(myContext, db).prune();
-        }
+    public DataPruner(@NonNull MyContext myContext) {
+        this.myContext = myContext;
+        this.db = myContext.getDatabase();
+        mContentResolver = myContext.context().getContentResolver();
     }
 
-    public DataPruner(@NonNull MyContext myContext, @NonNull SQLiteDatabase db) {
-        this.myContext = myContext;
-        this.db = db;
-        mContentResolver = myContext.context().getContentResolver();
+    public DataPruner setPruneNow() {
+        this.pruneNow = true;
+        return this;
+    }
+
+    public DataPruner setLogger(ProgressLogger logger) {
+        this.logger = logger;
+        return this;
     }
 
     /**
@@ -85,10 +88,14 @@ public class DataPruner {
      */
     public boolean prune() {
         final String method = "prune";
-        if (!isTimeToPrune()) {
+        if (db == null) {
+            MyLog.databaseIsNull(() -> DataPruner.class);
             return false;
         }
-        MyLog.v(this, () -> method + " started");
+        if (!mayPruneNow()) {
+            return false;
+        }
+        logger.logProgress(method + " started");
         boolean pruned = pruneActivities();
 
         if (mDeleted > 0) {
@@ -101,13 +108,13 @@ public class DataPruner {
         pruneLogs(MAX_DAYS_LOGS_TO_KEEP);
         setDataPrunedNow();
 
-        MyLog.v(this, method + " " + (pruned ? "succeeded" : "failed"));
+        logger.onComplete(pruned);
         return pruned;
     }
 
     private boolean pruneActivities() {
         final String method = "pruneActivities";
-        MyLog.v(this, () -> method + " started");
+        logger.logProgress(method + " started");
 
         boolean pruned = false;
         mDeleted = 0;
@@ -164,18 +171,16 @@ public class DataPruner {
             }
             pruned = true;
         } catch (Exception e) {
-            MyLog.i(this, method + " failed", e);
+            MyLog.i(logger.logTag, method + " failed", e);
         } finally {
             DbUtils.closeSilently(cursor);
         }
         mDeleted = nDeletedTime + nDeletedSize;
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this,
-                    method + " " + (pruned ? "succeeded" : "failed") + "; History time=" + maxDays + " days; deleted " + nDeletedTime
-                            + " , before " + new Date(latestTimestamp).toString());
-            MyLog.v(this, method + "; History size=" + maxSize + " notes; deleted "
-                    + nDeletedSize + " of " + nActivities + " notes, before " + new Date(latestTimestampSize).toString());
-        }
+        logger.logProgressAndPause(
+            method + " " + (pruned ? "succeeded" : "failed") + "; History time=" + maxDays +
+                    " days; deleted " + nDeletedTime + " , before " + new Date(latestTimestamp).toString() + "\n" +
+            "History size=" + maxSize + " notes; deleted " +
+              nDeletedSize + " of " + nActivities + " notes, before " + new Date(latestTimestampSize).toString(), mDeleted);
         return pruned;
     }
 
@@ -188,7 +193,7 @@ public class DataPruner {
         long maxSize = MyPreferences.getMaximumSizeOfCachedMediaBytes();
         final long bytesToPrune = dirSize - maxSize;
         long bytesToPruneMin = ATTACHMENTS_TO_STORE_MIN * MyPreferences.getMaximumSizeOfAttachmentBytes();
-        MyLog.i(this, "Size of media files: " + I18n.formatBytes(dirSize)
+        logger.logProgress("Size of media files: " + I18n.formatBytes(dirSize)
         + (bytesToPrune > bytesToPruneMin
                         ? " exceeds"
                         : " less than")
@@ -198,14 +203,14 @@ public class DataPruner {
 
         DownloadData.ConsumedSummary pruned1 = DownloadData.pruneFiles(myContext, DownloadType.ATTACHMENT,
                 Math.round(maxSize * ATTACHMENTS_SIZE_PART));
-
-        MyLog.i(this, "Pruned " + pruned1.consumedCount + " attachment files, "
-                + I18n.formatBytes(pruned1.consumedSize));
         DownloadData.ConsumedSummary pruned2 = DownloadData.pruneFiles(myContext, DownloadType.AVATAR,
                 Math.round(maxSize * (1 - ATTACHMENTS_SIZE_PART)));
-        MyLog.i(this, "Pruned " + pruned2.consumedCount + " avatar files, "
-                + I18n.formatBytes(pruned2.consumedSize));
-        return pruned1.consumedCount + pruned2.consumedCount;
+
+        long prunedCount = pruned1.consumedCount + pruned2.consumedCount;
+        logger.logProgressAndPause("Pruned " + pruned1.consumedCount + " attachment files, " +
+                I18n.formatBytes(pruned1.consumedSize) + "\n" +
+                "Pruned " + pruned2.consumedCount + " avatar files, " + I18n.formatBytes(pruned2.consumedSize), prunedCount);
+        return prunedCount;
     }
 
     public static long getLatestTimestamp(long maxDays) {
@@ -225,9 +230,7 @@ public class DataPruner {
             DownloadData.deleteAllOfThisNote(db, noteId);
             nDeleted++;
         }
-        if (nDeleted > 0 && MyLog.isVerboseEnabled()) {
-            MyLog.v(this, method + "; Attachments deleted for " + nDeleted + " notes");
-        }
+        logger.logProgressAndPause(method + "; Attachments deleted for " + nDeleted + " notes", nDeleted);
         return nDeleted;
     }
 
@@ -241,10 +244,13 @@ public class DataPruner {
         SharedPreferencesUtil.putLong(MyPreferences.KEY_DATA_PRUNED_DATE, System.currentTimeMillis());
     }
 
-    private boolean isTimeToPrune()	{
-        return !myContext.isInForeground() && RelativeTime.moreSecondsAgoThan(
-                SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE),
-                TimeUnit.DAYS.toSeconds(PRUNE_MIN_PERIOD_DAYS));
+    private boolean mayPruneNow()	{
+        if (pruneNow) return true;
+
+        return !myContext.isInForeground() &&
+                RelativeTime.moreSecondsAgoThan(
+                    SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE),
+                    TimeUnit.DAYS.toSeconds(PRUNE_MIN_PERIOD_DAYS));
     }
 
     long pruneLogs(long maxDaysToKeep) {
@@ -263,27 +269,24 @@ public class DataPruner {
                 if (file.delete()) {
                     deletedCount++;
                     if (deletedCount < 10 && MyLog.isVerboseEnabled()) {
-                        MyLog.v(this, method + "; deleted: " + file.getName());
+                        MyLog.v(logger.logTag, method + "; deleted: " + file.getName());
                     }
                 } else {
                     errorCount++;
                     if (errorCount < 10 && MyLog.isVerboseEnabled()) {
-                        MyLog.v(this, method + "; couldn't delete: " + file.getAbsolutePath());
+                        MyLog.v(logger.logTag, method + "; couldn't delete: " + file.getAbsolutePath());
                     }
                 }
             } else {
                 skippedCount++;
                 if (skippedCount < 10 && MyLog.isVerboseEnabled()) {
-                    MyLog.v(this, method + "; skipped: " + file.getName() + ", modified " + new Date(file.lastModified()).toString());
+                    MyLog.v(logger.logTag, method + "; skipped: " + file.getName() + ", modified " + new Date(file.lastModified()).toString());
                 }
             }
         }
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this,
-                    method + "; deleted " + deletedCount
+        logger.logProgressAndPause(method + "; deleted " + deletedCount
                     + " files, before " + new Date(latestTimestamp).toString()
-                    + ", skipped " + skippedCount + ", couldn't delete " + errorCount);
-        }
+                    + ", skipped " + skippedCount + ", couldn't delete " + errorCount, deletedCount);
         return deletedCount;
     }
 
@@ -303,9 +306,9 @@ public class DataPruner {
                     " WHERE " + ActivityTable.ACTOR_ID + " = actorId)";
         final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor, true);
         Set<Actor> actors = MyQuery.get(myContext, sql, function);
-        MyLog.v(this, "To delete: " + actors.size() + " temporary unused actors");
+        MyLog.v(logger.logTag, "To delete: " + actors.size() + " temporary unused actors");
         actors.forEach( actor -> MyProvider.deleteActor(myContext, actor.actorId));
-        MyLog.v(this, "Deleted " + actors.size() + " temporary unused actors");
+        logger.logProgress("Deleted " + actors.size() + " temporary unused actors");
     }
 
     /**

@@ -93,10 +93,9 @@ public class MyBackupAgent extends BackupAgent {
             throw new IOException(logmsg);
         }
         onBackup(
-                MyBackupDescriptor.fromOldParcelFileDescriptor(oldState, ProgressLogger.getEmpty()),
+                MyBackupDescriptor.fromOldParcelFileDescriptor(oldState, ProgressLogger.getEmpty("")),
                 new MyBackupDataOutput(getContext(), data),
-                MyBackupDescriptor.fromEmptyParcelFileDescriptor(newState,
-                        ProgressLogger.getEmpty()));
+                MyBackupDescriptor.fromEmptyParcelFileDescriptor(newState, ProgressLogger.getEmpty("")));
     }
 
     public void onBackup(MyBackupDescriptor oldDescriptor, MyBackupDataOutput data,
@@ -231,7 +230,7 @@ public class MyBackupAgent extends BackupAgent {
     public void onRestore(BackupDataInput data, int appVersionCode, ParcelFileDescriptor newState)
             throws IOException {
         onRestore(new MyBackupDataInput(getContext(), data), appVersionCode,
-                MyBackupDescriptor.fromOldParcelFileDescriptor(newState, ProgressLogger.getEmpty()));
+                MyBackupDescriptor.fromOldParcelFileDescriptor(newState, ProgressLogger.getEmpty("")));
     }
 
     public void onRestore(MyBackupDataInput data, int appVersionCode, MyBackupDescriptor newDescriptor)

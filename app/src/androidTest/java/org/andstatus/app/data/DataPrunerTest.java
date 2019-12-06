@@ -45,7 +45,7 @@ public class DataPrunerTest {
         MyLog.setLogToFile(false);
         assertTrue(logFile1.exists());
         clearPrunedDate();
-        DataPruner dp = new DataPruner(MyContextHolder.get(), MyContextHolder.get().getDatabase());
+        DataPruner dp = new DataPruner(MyContextHolder.get());
         assertTrue("Pruned", dp.prune());
         
         assertTrue("File is fresh", logFile1.exists());
@@ -90,7 +90,7 @@ public class DataPrunerTest {
 
     @Test
     public void testPruneParentlessAttachments() {
-        DataPruner dp = new DataPruner(MyContextHolder.get(), MyContextHolder.get().getDatabase());
+        DataPruner dp = new DataPruner(MyContextHolder.get());
         dp.pruneParentlessAttachments();
         DownloadData dd = DownloadData.fromAttachment(-555L,
                 Attachment.fromUriAndMimeType(Uri.parse("http://example.com/image.png"), ""));
@@ -117,7 +117,7 @@ public class DataPrunerTest {
         SharedPreferencesUtil.putLong(MyPreferences.KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB, newSizeOfAttachmentMb);
         SharedPreferencesUtil.putLong(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, maximumSizeOfStoredMediaMb);
 
-        DataPruner dp = new DataPruner(MyContextHolder.get(), MyContextHolder.get().getDatabase());
+        DataPruner dp = new DataPruner(MyContextHolder.get());
         long prunedCount1 = dp.pruneMedia();
         long dirSize2 = MyStorage.getMediaFilesSize();
         long prunedCount2 = dp.pruneMedia();

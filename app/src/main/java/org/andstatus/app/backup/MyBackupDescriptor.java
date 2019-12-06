@@ -78,7 +78,7 @@ public class MyBackupDescriptor {
     }
 
     static MyBackupDescriptor getEmpty() {
-        return new MyBackupDescriptor(ProgressLogger.getEmpty());
+        return new MyBackupDescriptor(ProgressLogger.getEmpty(""));
     }
 
     static MyBackupDescriptor fromOldParcelFileDescriptor(ParcelFileDescriptor parcelFileDescriptor,

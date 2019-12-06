@@ -19,7 +19,6 @@ package org.andstatus.app;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,14 +29,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.PagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 
 import org.andstatus.app.account.AccountSettingsActivity;
+import org.andstatus.app.backup.DefaultProgressCallback;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.context.ExecutionMode;
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.checker.DataChecker;
@@ -49,16 +54,9 @@ import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.widget.WebViewFragment;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentPagerAdapter;
-import androidx.viewpager.widget.PagerAdapter;
-import androidx.viewpager.widget.ViewPager;
-
 import static org.andstatus.app.context.DemoData.demoData;
 
-public class HelpActivity extends MyActivity implements ProgressLogger.ProgressCallback, DialogInterface.OnDismissListener {
+public class HelpActivity extends MyActivity {
     public static final String TAG = HelpActivity.class.getSimpleName();
 
     /**
@@ -80,7 +78,7 @@ public class HelpActivity extends MyActivity implements ProgressLogger.ProgressC
     /** Stores state of {@link #EXTRA_IS_FIRST_ACTIVITY} */
     private boolean mIsFirstActivity = false;
     private boolean wasPaused = false;
-    private volatile ProgressDialog progress = null;
+    private final DefaultProgressCallback progressCallback = new DefaultProgressCallback(this, R.string.app_name);
     private static volatile boolean generatingDemoData = false;
 
     @Override
@@ -102,7 +100,7 @@ public class HelpActivity extends MyActivity implements ProgressLogger.ProgressC
                 && MyContextHolder.getExecutionMode() == ExecutionMode.ROBO_TEST
                 && !generatingDemoData) {
             generatingDemoData = true;
-            demoData.addAsync("GenerateDemoData", MyContextHolder.get(), HelpActivity.this);
+            demoData.addAsync("GenerateDemoData", MyContextHolder.get(), progressCallback);
         }
 
         showRestoreButton();
@@ -110,7 +108,7 @@ public class HelpActivity extends MyActivity implements ProgressLogger.ProgressC
         setupHelpFlipper();
 
         if (getIntent().hasExtra(IntentExtra.CHECK_DATA.key) && savedInstanceState == null) {
-            DataChecker.fixDataAsync(new ProgressLogger(this),
+            DataChecker.fixDataAsync(new ProgressLogger(progressCallback, "DataChecker"),
                     getIntent().getBooleanExtra(IntentExtra.FULL_CHECK.key, false),
                     getIntent().getBooleanExtra(IntentExtra.COUNT_ONLY.key, false)
             );
@@ -340,81 +338,14 @@ public class HelpActivity extends MyActivity implements ProgressLogger.ProgressC
         super.finish();
     }
 
-    @Override
-    public void onProgressMessage(final CharSequence message) {
-        final String method = "onProgressMessage";
-        try {
-            this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    boolean shown = false;
-                    if (isMyResumed()) {
-                        try {
-                            if (progress == null) {
-                                progress = new ProgressDialog(HelpActivity.this, ProgressDialog.STYLE_SPINNER);
-                                progress.setOnDismissListener(HelpActivity.this);
-                                progress.setTitle(MyContextHolder.get().state() == MyContextState.UPGRADING ?
-                                        R.string.label_upgrading : R.string.app_name);
-                                progress.setMessage(message);
-                                progress.show();
-                            } else {
-                                progress.setMessage(message);
-                            }
-                            shown = true;
-                        } catch (Exception e) {
-                            MyLog.d(this, method + " '" + message + "'", e);
-                        }
-                    }
-                    if (!shown) {
-                        try {
-                            Toast.makeText(MyContextHolder.get().context(),
-                                    getText(R.string.app_name) + "\n"
-                                    + MyContextHolder.getVersionText(getBaseContext())
-                                    + (MyContextHolder.get().state() == MyContextState.UPGRADING ?
-                                            "\n" + getText(R.string.label_upgrading) : "")
-                                    + "\n\n" + message,
-                                    Toast.LENGTH_LONG).show();
-                        } catch (Exception e2) {
-                            MyLog.e(method, "Couldn't send toast with the text: " + method, e2);
-                        }
-                    }
-                }
-            });
-        } catch (Exception e) {
-            MyLog.d(this, method + " '" + message + "'", e);
-        }
-    }
-
-    @Override
-    public void onComplete(final boolean success) {
-        try {
-            this.runOnUiThread(() -> {
-                TimelineActivity.goHome(HelpActivity.this);
-                finish();
-            });
-        } catch (Exception e) {
-            MyLog.d(this, "onComplete " + success, e);
-        }
-    }
-
     private void cleanOnFinish() {
         try {
             this.runOnUiThread(() -> {
-                if (progress != null) {
-                    DialogFactory.dismissSafely(progress);
-                    progress = null;
-                }
+                progressCallback.onDismiss(null);
                 generatingDemoData = false;
             });
         } catch (Exception e) {
             MyLog.d(this, "cleanOnFinish", e);
         }
-    }
-
-    @Override
-    public void onDismiss(DialogInterface dialog) {
-        DialogFactory.dismissSafely(progress);
-        progress = null;
-        MyLog.v(this, "Progress dialog dismissed");
     }
 }

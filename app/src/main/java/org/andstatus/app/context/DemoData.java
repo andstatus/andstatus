@@ -18,6 +18,8 @@ package org.andstatus.app.context;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.account.CredentialsVerificationStatus;
 import org.andstatus.app.account.DemoAccountInserter;
@@ -45,8 +47,6 @@ import org.andstatus.app.util.TriState;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
-
-import androidx.annotation.NonNull;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -247,7 +247,7 @@ public final class DemoData {
             DemoAccountInserter.assertDefaultTimelinesForAccounts();
 
             assertEquals("Data errors exist", 0 ,
-                    DataChecker.fixData(new ProgressLogger(progressCallback), true, true));
+                    DataChecker.fixData(new ProgressLogger(progressCallback, TAG_ASYNC), true, true));
             MyLog.v(TAG_ASYNC, "After data checker");
 
             if (progressCallback != null) {
@@ -280,7 +280,7 @@ public final class DemoData {
     public void assertConversations() {
         assertEquals("Conversations need fixes", 0,
                 new CheckConversations()
-                        .setMyContext(MyContextHolder.get()).setLogger(ProgressLogger.getEmpty())
+                        .setMyContext(MyContextHolder.get()).setLogger(ProgressLogger.getEmpty("CheckConversations"))
                         .setCountOnly(true)
                         .fix());
     }

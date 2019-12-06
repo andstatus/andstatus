@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 public abstract class DataChecker {
     static final int PROGRESS_REPORT_PERIOD_SECONDS = 20;
     MyContext myContext;
-    ProgressLogger logger = new ProgressLogger(null);
+    ProgressLogger logger = ProgressLogger.getEmpty("DataChecker");
     boolean includeLong = false;
     boolean countOnly = false;
 

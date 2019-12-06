@@ -16,6 +16,8 @@
 
 package org.andstatus.app.os;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.util.MyLog;
 
 import java.util.Arrays;
@@ -32,7 +34,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 /**
@@ -99,8 +100,8 @@ public class AsyncTaskLauncher<Params> {
         }
     }
 
-    public static <Params, Result> boolean execute(Params params, Consumer<Params> backgroundFunc) {
-        return execute(params, p -> {backgroundFunc.accept(p); return null;}, p -> r -> {});
+    public static boolean execute(Runnable backgroundFunc) {
+        return execute(null, p -> {backgroundFunc.run(); return null;}, p -> r -> {});
     }
 
     public static <Params, Result> boolean execute(Params params,

@@ -60,7 +60,7 @@ public class StorageSwitch {
 
     public void showSwitchStorageDialog(final ActivityRequestCode requestCode, boolean useExternalStorageNew) {
         this.mUseExternalStorageNew = useExternalStorageNew;
-        DialogFactory.showYesCancelDialog(parentFragment, R.string.dialog_title_external_storage,
+        DialogFactory.showOkCancelDialog(parentFragment, R.string.dialog_title_external_storage,
                 useExternalStorageNew ? R.string.summary_preference_storage_external_on
                         : R.string.summary_preference_storage_external_off, 
                         requestCode);

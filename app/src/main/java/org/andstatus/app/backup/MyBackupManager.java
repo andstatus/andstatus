@@ -59,7 +59,7 @@ class MyBackupManager {
 
     MyBackupManager(Activity activity, ProgressLogger.ProgressCallback progressCallback) {
         this.activity = activity;
-        this.progressLogger = new ProgressLogger(progressCallback);
+        this.progressLogger = new ProgressLogger(progressCallback, "MyBackupManager");
     }
 
     static void backupInteractively(DocumentFile backupFolder, Activity activity, ProgressLogger.ProgressCallback progressCallback) {

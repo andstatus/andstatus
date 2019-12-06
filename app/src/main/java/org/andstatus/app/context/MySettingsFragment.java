@@ -38,11 +38,15 @@ import androidx.preference.PreferenceFragmentCompat;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.IntentExtra;
+import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.account.ManageAccountsActivity;
 import org.andstatus.app.backup.BackupActivity;
+import org.andstatus.app.backup.DefaultProgressCallback;
+import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.backup.RestoreActivity;
+import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.note.KeywordsFilter;
@@ -377,7 +381,14 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                 AccountSettingsActivity.startAddNewAccount(getActivity());
                 break;
             case KEY_DELETE_OLD_DATA:
-                // TODO: Implement
+                DialogFactory.showOkCancelDialog(getActivity(), this.getText(R.string.delete_old_data), "",
+                        ok -> {
+                    if (ok) AsyncTaskLauncher.execute(() -> new DataPruner(MyContextHolder.get())
+                            .setLogger(new ProgressLogger(new DefaultProgressCallback(
+                                            (MyActivity) getActivity(), R.string.delete_old_data), "DataPruner"))
+                            .setPruneNow()
+                            .prune());
+                });
                 break;
             case KEY_MANAGE_ACCOUNTS:
                 startActivity(new Intent(getActivity(), ManageAccountsActivity.class));
@@ -401,7 +412,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                 break;
             case KEY_CHECK_DATA:
                 preference.setEnabled(false);
-                DialogFactory.showYesCancelDialog(this, R.string.check_and_fix_data,
+                DialogFactory.showOkCancelDialog(this, R.string.check_and_fix_data,
                         R.string.full_check, ActivityRequestCode.CHECK_DATA_INCLUDE_LONG);
                 break;
             case KEY_MANAGE_ORIGIN_SYSTEMS:
@@ -546,7 +557,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                 break;
             case CHECK_DATA_INCLUDE_LONG:
                 checkDataIncludeLong = resultCode == Activity.RESULT_OK;
-                DialogFactory.showYesCancelDialog(this, R.string.check_and_fix_data,
+                DialogFactory.showOkCancelDialog(this, R.string.check_and_fix_data,
                         R.string.count_only, ActivityRequestCode.CHECK_DATA_COUNT_ONLY);
                 break;
             case CHECK_DATA_COUNT_ONLY:

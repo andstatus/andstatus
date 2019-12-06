@@ -82,8 +82,8 @@ public class DialogFactory {
         }
     }
 
-    public static void showYesCancelDialog(Fragment fragment, int titleId, int messageId, final ActivityRequestCode requestCode) {
-        DialogFragment dialog = new YesCancelDialogFragment();
+    public static void showOkCancelDialog(Fragment fragment, int titleId, int messageId, final ActivityRequestCode requestCode) {
+        DialogFragment dialog = new OkCancelDialogFragment();
         Bundle args = new Bundle();
         args.putCharSequence(DIALOG_TITLE_KEY, fragment.getText(titleId));
         args.putCharSequence(DIALOG_MESSAGE_KEY, fragment.getText(messageId));
@@ -92,7 +92,7 @@ public class DialogFactory {
         dialog.show(fragment.getFragmentManager(), YES_CANCEL_DIALOG_TAG);
     }
 
-    public static class YesCancelDialogFragment extends DialogFragment {
+    public static class OkCancelDialogFragment extends DialogFragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             Bundle args = getArguments();
@@ -102,7 +102,7 @@ public class DialogFactory {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle(title)
                 .setMessage(message)
-                .setPositiveButton(getText(android.R.string.yes), (dialog, id) ->
+                .setPositiveButton(getText(android.R.string.ok), (dialog, id) ->
                         getTargetFragment().onActivityResult(
                             getTargetRequestCode(), Activity.RESULT_OK, null))
                 .setNegativeButton(android.R.string.cancel, (dialog, id) ->
@@ -112,6 +112,24 @@ public class DialogFactory {
         }
     }
 
+    public static void showOkCancelDialog(Context context, CharSequence title, CharSequence message,
+                                          Consumer<Boolean> okCancelConsumer) {
+        AlertDialog theBox = new AlertDialog.Builder(context)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton(context.getText(android.R.string.ok), ( dialog, which) -> {
+                okCancelConsumer.accept(true);
+                dismissSafely(dialog);
+            })
+            .setNegativeButton(context.getText(android.R.string.cancel), (dialog, which) -> {
+                okCancelConsumer.accept(false);
+                dismissSafely(dialog);
+            })
+            .create();
+
+        theBox.show();
+    }
+
     public static void showTextInputBox(Context context, String title, String message, Consumer<String> textConsumer,
                                         String initialValue) {
         EditText input = new EditText(context);
@@ -119,17 +137,17 @@ public class DialogFactory {
             input.setText(initialValue);
         }
 
-         AlertDialog alert = new AlertDialog.Builder(context)
-        .setTitle(title)
-        .setView(input)
-        .setMessage(message)
-        .setPositiveButton(context.getText(android.R.string.ok), ( dialog, which) -> {
-                textConsumer.accept(input.getText().toString());
-                dismissSafely(dialog);
-            })
-        .setNegativeButton(context.getText(android.R.string.cancel), (dialog, which) -> dismissSafely(dialog))
-        .create();
+        AlertDialog theBox = new AlertDialog.Builder(context)
+            .setTitle(title)
+            .setView(input)
+            .setMessage(message)
+            .setPositiveButton(context.getText(android.R.string.ok), ( dialog, which) -> {
+                    textConsumer.accept(input.getText().toString());
+                    dismissSafely(dialog);
+                })
+            .setNegativeButton(context.getText(android.R.string.cancel), (dialog, which) -> dismissSafely(dialog))
+            .create();
 
-        alert.show();
+        theBox.show();
     }
 }

@@ -21,6 +21,8 @@ import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.graphics.AttachedImageView;
 import org.andstatus.app.graphics.CacheName;
@@ -36,7 +38,6 @@ import org.andstatus.app.util.TryUtils;
 
 import java.util.function.Consumer;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
@@ -137,7 +138,7 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
     public void preloadImageAsync(CacheName cacheName) {
         CachedImage image = getImageFromCache(cacheName);
         if (image == null && downloadFile.existed) {
-            AsyncTaskLauncher.execute(new ImagePreLoader(this, cacheName), ImagePreLoader::load);
+            AsyncTaskLauncher.execute(() -> preloadImage(this, cacheName));
         }
     }
 
@@ -217,23 +218,15 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
         return getTaskId(taskSuffix) + "; " + msgLog + " " + downloadFile.getFilePath();
     }
 
-    private static class ImagePreLoader extends AbstractImageLoader {
-        private final CacheName cacheName;
-
-        private ImagePreLoader(ImageFile imageFile, CacheName cacheName) {
-            super(imageFile, "-prel");
-            this.cacheName = cacheName;
-        }
-
-        void load() {
-            CachedImage image = ImageCaches.loadAndGetImage(cacheName, imageFile);
-            if (image == null) {
-                imageFile.logResult("Failed to preload", taskSuffix);
-            } else if (image.id != imageFile.getId()) {
-                imageFile.logResult("Loaded wrong image.id:" + image.id, taskSuffix);
-            } else {
-                imageFile.logResult("Preloaded", taskSuffix);
-            }
+    static void preloadImage(ImageFile imageFile, CacheName cacheName) {
+        String taskSuffix = "-prel";
+        CachedImage image = ImageCaches.loadAndGetImage(cacheName, imageFile);
+        if (image == null) {
+            imageFile.logResult("Failed to preload", taskSuffix);
+        } else if (image.id != imageFile.getId()) {
+            imageFile.logResult("Loaded wrong image.id:" + image.id, taskSuffix);
+        } else {
+            imageFile.logResult("Preloaded", taskSuffix);
         }
     }
 

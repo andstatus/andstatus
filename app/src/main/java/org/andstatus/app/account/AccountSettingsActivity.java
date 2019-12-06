@@ -359,7 +359,7 @@ public class AccountSettingsActivity extends MyActivity {
                 startMyPreferenceActivity();
                 break;
             case R.id.remove_account_menu_id:
-                DialogFactory.showYesCancelDialog(
+                DialogFactory.showOkCancelDialog(
                         getSupportFragmentManager().findFragmentById(R.id.fragmentOne),
                         R.string.remove_account_dialog_title,
                         R.string.remove_account_dialog_text, 
