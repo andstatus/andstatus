@@ -17,13 +17,16 @@
 package org.andstatus.app.data;
 
 import android.content.ContentValues;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseLockedException;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.GroupMembersTable;
+import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
@@ -37,6 +40,7 @@ import static org.andstatus.app.util.StringUtils.toTempOid;
  * @author yvolk@yurivolkov.com
  */
 public class GroupMembership {
+    private static final String TAG = GroupMembership.class.getSimpleName();
     private final long parentActorId;
     private final long groupId;
     private final GroupType groupType;
@@ -123,10 +127,18 @@ public class GroupMembership {
                 GroupMembersTable.MEMBER_ID + "=" + memberId, null);
         } else {
             long groupIdNew = groupIdOld == 0 ? addGroup(myContext, parentActorId, groupType) : groupIdOld;
+            if (groupIdNew == 0) {
+                return;
+            }
             ContentValues cv = new ContentValues();
             cv.put(GroupMembersTable.GROUP_ID, groupIdNew);
             cv.put(GroupMembersTable.MEMBER_ID, memberId);
-            db.insert(GroupMembersTable.TABLE_NAME, null, cv);
+            try {
+                db.insert(GroupMembersTable.TABLE_NAME, null, cv);
+            } catch (SQLiteConstraintException e) {
+                MyLog.w(TAG, "Error adding a member to group " + groupType + ", parentActor id:" + parentActorId +
+                        "; " + cv);
+            }
         }
     }
 
@@ -135,16 +147,22 @@ public class GroupMembership {
         String parentUsername = MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, parentActorId);
         String groupUsername = groupType.name + ".of." + parentUsername + "." + parentActorId;
 
-        ContentValues values = new ContentValues();
-        values.put(ActorTable.PARENT_ACTOR_ID, parentActorId);
-        values.put(ActorTable.GROUP_TYPE, groupType.id);
-        values.put(ActorTable.ORIGIN_ID, originId);
-        values.put(ActorTable.USER_ID, 0);
-        values.put(ActorTable.ACTOR_OID, toTempOid(groupUsername));
-        values.put(ActorTable.USERNAME, groupUsername);
-        values.put(ActorTable.WEBFINGER_ID, "");
-        values.put(ActorTable.INS_DATE, System.currentTimeMillis());
-        return myContext.getDatabase().insert("actor", "", values);
+        Actor group = Actor.fromTwoIds(
+                myContext.origins().fromId(originId),
+                groupType,
+                0,
+                toTempOid(groupUsername)
+        );
+        group.setUsername(groupUsername);
+        group.setParentActorId(myContext, parentActorId);
+
+        MyAccount myAccount = myContext.accounts().getFirstSucceededForOrigin(group.origin);
+        AActivity activity = myAccount.getActor().update(group);
+        new DataUpdater(myAccount).updateObjActor(activity, 0);
+        if (group.actorId == 0) {
+            MyLog.w(TAG, "Failed to add new group " + groupUsername + "; " + activity);
+        }
+        return group.actorId;
     }
 
 }

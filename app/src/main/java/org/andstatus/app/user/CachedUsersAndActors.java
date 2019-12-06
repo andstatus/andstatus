@@ -152,7 +152,7 @@ public class CachedUsersAndActors {
     }
 
     public Actor lookupUser(Actor actor) {
-        if (actor.isGroupDefinitely() || actor.user.nonEmpty()) {
+        if (actor.user.nonEmpty()) {
             updateCache(actor);
             return actor;
         }

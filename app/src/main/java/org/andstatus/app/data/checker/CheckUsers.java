@@ -136,7 +136,7 @@ class CheckUsers extends DataChecker {
                     actor.user.setIsMyUser(TriState.TRUE);
                     results.usersToSave.add(actor.user);
                     results.problems.add("Fix user isMy: " + actor);
-                } else if (actor.user.userId == 0 && !actor.isGroupDefinitely()) {
+                } else if (actor.user.userId == 0) {
                     results.actorsWithoutUsers.add(actor);
                     results.problems.add("Fix userId==0: " + actor);
                 }

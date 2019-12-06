@@ -75,6 +75,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     @NonNull
     public final String oid;
     public final GroupType groupType;
+    private long parentActorId = 0;
     private LazyVal<Actor> parentActor = LazyVal.of(() -> EMPTY);
 
     private String username = "";
@@ -158,8 +159,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 DbUtils.getLong(cursor, ActorTable.ACTOR_ID),
                 DbUtils.getString(cursor, ActorTable.ACTOR_OID));
 
-        long parentActorId = DbUtils.getLong(cursor, ActorTable.PARENT_ACTOR_ID);
-        actor.parentActor = LazyVal.of(() -> Actor.load(myContext, parentActorId));
+        actor.setParentActorId(myContext, DbUtils.getLong(cursor, ActorTable.PARENT_ACTOR_ID));
 
         actor.setRealName(DbUtils.getString(cursor, ActorTable.REAL_NAME));
         actor.setUsername(DbUtils.getString(cursor, ActorTable.USERNAME));
@@ -180,7 +180,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         actor.setCreatedDate(DbUtils.getLong(cursor, ActorTable.CREATED_DATE));
         actor.setUpdatedDate(updatedDate);
 
-        actor.user = actor.isGroupDefinitely() ? User.EMPTY : User.fromCursor(myContext, cursor, useCache);
+        actor.user = User.fromCursor(myContext, cursor, useCache);
         actor.avatarFile = AvatarFile.fromCursor(actor, cursor);
         if (useCache) {
             Actor cachedActor = myContext.users().actors.getOrDefault(actor.actorId, Actor.EMPTY);
@@ -335,6 +335,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         .withComma("", "latest note present", this::hasLatestNote);
         if (parentActor.isEvaluated() && parentActor.get().nonEmpty()) {
             members.withComma("parent", parentActor.get());
+        } else if (parentActorId != 0) {
+            members.withComma("parentId", parentActorId);
         }
         return MyStringBuilder.formatKeyValue(this, members);
     }
@@ -410,10 +412,6 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             }
         }
         return Optional.empty();
-    }
-
-    public boolean isGroupDefinitely() {
-        return groupType.isGroup.isTrue;
     }
 
     public Actor setUsername(String username) {
@@ -947,6 +945,21 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         } catch (Throwable e) {
             fail("Failed on " + this + "\n" + e.getMessage());
         }
+    }
+
+
+    public Actor setParentActorId(MyContext myContext, long parentActorId) {
+        if (this.parentActorId != parentActorId) {
+            this.parentActorId = parentActorId;
+            this.parentActor = parentActorId == 0
+                    ? LazyVal.of(() -> Actor.EMPTY)
+                    : LazyVal.of(() -> Actor.load(myContext, parentActorId));
+        }
+        return this;
+    }
+
+    public long getParentActorId() {
+        return parentActorId;
     }
 
     public Actor getParent() {

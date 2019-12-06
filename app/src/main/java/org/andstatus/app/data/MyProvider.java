@@ -436,7 +436,7 @@ public class MyProvider extends ContentProvider {
                 SqlWhere actorWhere = new SqlWhere().append(selectionIn);
                 if (uriParser.getActorListType() == ActorListType.GROUPS_AT_ORIGIN) {
                     actorWhere.append(ActorTable.GROUP_TYPE +
-                            " IN (" + GroupType.GENERIC.id + ", " + GroupType.ACTOR_OWNED.id + ")");
+                        SqlIds.fromIds(GroupType.GENERIC.id, GroupType.ACTOR_OWNED.id).getSql());
                 }
                 if (StringUtils.nonEmpty(rawQuery)) {
                     actorWhere.append(ActorTable.WEBFINGER_ID + " LIKE ?" +

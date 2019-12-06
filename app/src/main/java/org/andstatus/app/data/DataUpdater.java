@@ -402,6 +402,9 @@ public class DataUpdater {
             if (actor.groupType.isGroup.known) {
                 values.put(ActorTable.GROUP_TYPE, actor.groupType.id);
             }
+            if (actor.getParentActorId() != 0) {
+                values.put(ActorTable.PARENT_ACTOR_ID, actor.getParentActorId());
+            }
             if (actor.hasAvatar()) {
                 values.put(ActorTable.AVATAR_URL, actor.getAvatarUrl());
             }
