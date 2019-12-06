@@ -18,6 +18,8 @@ package org.andstatus.app.data;
 
 import android.provider.BaseColumns;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.DownloadTable;
@@ -27,8 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import androidx.annotation.NonNull;
 
 public class ActorSql {
     public static final String AVATAR_IMAGE_TABLE_ALIAS = "av";
@@ -45,7 +45,7 @@ public class ActorSql {
         baseProjectionMap.put(ActorTable.ORIGIN_ID, ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID);
         baseProjectionMap.put(ActorTable.ACTOR_OID, ActorTable.TABLE_NAME + "." + ActorTable.ACTOR_OID);
 
-        fullProjectionMap.put(ActorTable.GROUP_TYPE, ActorTable.TABLE_NAME + "." + ActorTable.GROUP_TYPE);
+        baseProjectionMap.put(ActorTable.GROUP_TYPE, ActorTable.TABLE_NAME + "." + ActorTable.GROUP_TYPE);
         fullProjectionMap.put(ActorTable.PARENT_ACTOR_ID, ActorTable.TABLE_NAME + "." + ActorTable.PARENT_ACTOR_ID);
 
         baseProjectionMap.put(ActorTable.REAL_NAME, ActorTable.TABLE_NAME + "." + ActorTable.REAL_NAME);

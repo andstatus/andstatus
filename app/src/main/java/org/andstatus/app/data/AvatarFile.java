@@ -19,6 +19,8 @@ package org.andstatus.app.data;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.table.DownloadTable;
@@ -30,8 +32,6 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
-
-import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
@@ -75,7 +75,11 @@ public class AvatarFile extends ImageFile {
 
     @Override
     public CachedImage getDefaultImage() {
-        return ImageCaches.getStyledImage(R.drawable.ic_person_black_36dp, R.drawable.ic_person_white_36dp);
+        if (actor.groupType.isGroup.isTrue) {
+            return ImageCaches.getStyledImage(R.drawable.ic_people_black_24dp, R.drawable.ic_people_white_24dp);
+        } else {
+            return ImageCaches.getStyledImage(R.drawable.ic_person_black_36dp, R.drawable.ic_person_white_36dp);
+        }
     }
 
     @Override
