@@ -30,10 +30,7 @@ import androidx.annotation.StringRes;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.material.textfield.TextInputLayout;
-
 import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.R;
 
 import java.util.function.Consumer;
 
@@ -117,19 +114,14 @@ public class DialogFactory {
 
     public static void showTextInputBox(Context context, String title, String message, Consumer<String> textConsumer,
                                         String initialValue) {
-        TextInputLayout textInputLayout = new TextInputLayout(context);
-        textInputLayout.setPadding(
-                context.getResources().getDimensionPixelOffset(R.dimen.dialog_text_padding), 0,
-                context.getResources().getDimensionPixelOffset(R.dimen.dialog_text_padding), 0);
         EditText input = new EditText(context);
         if (StringUtils.nonEmpty(initialValue)) {
             input.setText(initialValue);
         }
-        textInputLayout.addView(input);
 
          AlertDialog alert = new AlertDialog.Builder(context)
         .setTitle(title)
-        .setView(textInputLayout)
+        .setView(input)
         .setMessage(message)
         .setPositiveButton(context.getText(android.R.string.ok), ( dialog, which) -> {
                 textConsumer.accept(input.getText().toString());

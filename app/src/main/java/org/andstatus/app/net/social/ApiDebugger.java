@@ -43,7 +43,7 @@ public class ApiDebugger {
 
     public void debugGet() {
         DialogFactory.showTextInputBox(activityContext,"Debug Social network API",
-                "Type API path to GET e.g. statusnet/conversation/12345.json or complete URL",
+                "Type API path to GET e.g.\nstatusnet/conversation/12345.json\nor complete URL",
                 this::debugGet, previousValue);
     }
 
