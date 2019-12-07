@@ -37,17 +37,17 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
-import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSettingsActivity;
 import org.andstatus.app.account.ManageAccountsActivity;
 import org.andstatus.app.backup.BackupActivity;
-import org.andstatus.app.backup.DefaultProgressCallback;
+import org.andstatus.app.backup.DefaultProgressListener;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.MatchedUri;
+import org.andstatus.app.data.checker.DataChecker;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.notification.NotificationMethodType;
@@ -381,14 +381,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                 AccountSettingsActivity.startAddNewAccount(getActivity());
                 break;
             case KEY_DELETE_OLD_DATA:
-                DialogFactory.showOkCancelDialog(getActivity(), this.getText(R.string.delete_old_data), "",
-                        ok -> {
-                    if (ok) AsyncTaskLauncher.execute(() -> new DataPruner(MyContextHolder.get())
-                            .setLogger(new ProgressLogger(new DefaultProgressCallback(
-                                            (MyActivity) getActivity(), R.string.delete_old_data), "DataPruner"))
-                            .setPruneNow()
-                            .prune());
-                });
+                DialogFactory.showOkCancelDialog(getActivity(), this.getText(R.string.delete_old_data), "", this::launchDataPruner);
                 break;
             case KEY_MANAGE_ACCOUNTS:
                 startActivity(new Intent(getActivity(), ManageAccountsActivity.class));
@@ -440,6 +433,19 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                 break;
         }
         return super.onPreferenceTreeClick(preference);
+    }
+
+    private void launchDataPruner(boolean doLaunch) {
+        if (!doLaunch) return;
+
+        DefaultProgressListener progressListener = new DefaultProgressListener(
+                (MyActivity) getActivity(), R.string.delete_old_data, "DataPruner");
+        progressListener.setCancelable(true);
+        DataPruner pruner = new DataPruner(MyContextHolder.get())
+            .setLogger(new ProgressLogger(progressListener))
+            .setPruneNow();
+
+        AsyncTaskLauncher.execute(pruner::prune);
     }
 
     private void pickRingtone() {
@@ -561,12 +567,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                         R.string.count_only, ActivityRequestCode.CHECK_DATA_COUNT_ONLY);
                 break;
             case CHECK_DATA_COUNT_ONLY:
-                startActivity(new Intent(getActivity(), HelpActivity.class)
-                        .putExtra(IntentExtra.CHECK_DATA.key, "1")
-                        .putExtra(IntentExtra.FULL_CHECK.key, checkDataIncludeLong)
-                        .putExtra(IntentExtra.COUNT_ONLY.key, resultCode == Activity.RESULT_OK)
-                        .putExtra(HelpActivity.EXTRA_HELP_PAGE_INDEX, HelpActivity.PAGE_LOGO)
-                );
+                launchDataChecker(resultCode);
                 break;
             case PICK_RINGTONE:
                 if (resultCode == Activity.RESULT_OK) {
@@ -582,5 +583,14 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
         }
+    }
+
+    private void launchDataChecker(int resultCode) {
+        ProgressLogger.ProgressListener progressListener = new DefaultProgressListener(
+                (MyActivity) getActivity(), R.string.app_name, "DataChecker");
+        progressListener.setCancelable(true);
+        DataChecker.fixDataAsync(new ProgressLogger(progressListener),
+                checkDataIncludeLong,
+                resultCode == Activity.RESULT_OK);
     }
 }

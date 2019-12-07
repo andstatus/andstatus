@@ -25,7 +25,7 @@ import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.backup.DefaultProgressCallback;
+import org.andstatus.app.backup.DefaultProgressListener;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.checker.DataChecker;
@@ -117,9 +117,9 @@ public class DatabaseConverterController {
             this.upgradeRequestor = upgradeRequestor;
             this.isRestoring = isRestoring;
             if (upgradeRequestor instanceof MyActivity) {
-                ProgressLogger.ProgressCallback callback =
-                        new DefaultProgressCallback((MyActivity) upgradeRequestor, R.string.label_upgrading);
-                progressLogger = new ProgressLogger(callback, "ConvertDatabase");
+                ProgressLogger.ProgressListener progressListener =
+                        new DefaultProgressListener((MyActivity) upgradeRequestor, R.string.label_upgrading, "ConvertDatabase");
+                progressLogger = new ProgressLogger(progressListener);
             } else {
                 progressLogger = ProgressLogger.getEmpty("ConvertDatabase");
             }
@@ -187,7 +187,7 @@ public class DatabaseConverterController {
             MyServiceManager.stopService();
             if (isRestoring) return;
 
-            DataChecker.fixData(progressLogger,false, false);
+            DataChecker.fixData(progressLogger, false, false);
             MyContextHolder.release(() -> "onUpgradeSucceeded2");
             MyContextHolder.initialize(upgradeRequestor, upgradeRequestor);
             MyServiceManager.setServiceAvailable();

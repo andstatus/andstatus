@@ -64,6 +64,8 @@ class CheckDownloads extends DataChecker {
                 + " FROM " + DownloadTable.TABLE_NAME
                 + " WHERE " + DownloadTable.DOWNLOAD_STATUS + "=" + DownloadStatus.LOADED.save();
         return MyQuery.foldLeft(myContext, sql, new Results(), results -> cursor -> {
+            if (logger.isCancelled()) return results;
+
             DownloadData dd = DownloadData.fromCursor(cursor);
             results.totalCount++;
             if (!dd.getFile().existsNow()) {

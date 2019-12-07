@@ -57,7 +57,6 @@ import static org.junit.Assert.fail;
 public final class DemoData {
     public static volatile DemoData demoData = new DemoData();
     private static final String TAG = DemoData.class.getSimpleName();
-    private static final String TAG_ASYNC = TAG + "Async";
     private static final String HTTP = "http://";
 
     public final String testRunUid = MyLog.uniqueDateTimeFormatted();
@@ -146,7 +145,7 @@ public final class DemoData {
         final String method = "add";
         dataPath = dataPathIn;
         MyLog.v(TAG, method + ": started");
-        final MyAsyncTask<Void, Void, Void> asyncTask = addAsync(method, myContext, null);
+        final MyAsyncTask<Void, Void, Void> asyncTask = addAsync(method, myContext, ProgressLogger.EMPTY_LISTENER);
         long count = 200;
         while (count > 0) {
             boolean completedWork = asyncTask.completedBackgroundWork();
@@ -164,30 +163,30 @@ public final class DemoData {
     }
 
     private static class MyAsyncTaskDemoData extends MyAsyncTask<Void, Void, Void> {
-        final ProgressLogger.ProgressCallback progressCallback;
-        final String method;
+        final ProgressLogger.ProgressListener progressListener;
+        final String logTag;
         final MyContext myContext;
         final DemoData demoData;
 
-        private MyAsyncTaskDemoData(ProgressLogger.ProgressCallback progressCallback, String method, MyContext myContext, DemoData demoData) {
-            super(method, MyAsyncTask.PoolEnum.thatCannotBeShutDown());
-            this.progressCallback = progressCallback;
-            this.method = method;
+        private MyAsyncTaskDemoData(ProgressLogger.ProgressListener progressListener, MyContext myContext, DemoData demoData) {
+            super(progressListener.getLogTag(), MyAsyncTask.PoolEnum.thatCannotBeShutDown());
+            this.progressListener = progressListener;
+            this.logTag = progressListener.getLogTag();
             this.myContext = myContext;
             this.demoData = demoData;
         }
 
         @Override
         protected Void doInBackground2(Void aVoid) {
-            MyLog.i(TAG_ASYNC, method + ": started");
-            if (progressCallback != null) {
-                DbUtils.waitMs(TAG_ASYNC, 1000);
-                progressCallback.onProgressMessage("Generating demo data...");
-                DbUtils.waitMs(TAG_ASYNC, 500);
-            }
-            MyLog.v(TAG_ASYNC, "Before initialize 1");
-            MyContextHolder.initialize(myContext.context(), method);
-            MyLog.v(TAG_ASYNC, "After initialize 1");
+            MyLog.i(logTag, logTag + ": started");
+
+            DbUtils.waitMs(logTag, 1000);
+            progressListener.onProgressMessage("Generating demo data...");
+            DbUtils.waitMs(logTag, 500);
+
+            MyLog.v(logTag, "Before initialize 1");
+            MyContextHolder.initialize(myContext.context(), logTag);
+            MyLog.v(logTag, "After initialize 1");
             MyServiceManager.setServiceUnavailable();
             DemoOriginInserter originInserter = new DemoOriginInserter(myContext);
             originInserter.insert();
@@ -197,14 +196,14 @@ public final class DemoData {
 
             MyPreferences.onPreferencesChanged();
             MyContextHolder.setExpiredIfConfigChanged();
-            MyLog.v(TAG_ASYNC, "Before initialize 2");
-            MyContextHolder.initialize(myContext.context(), method);
-            MyLog.v(TAG_ASYNC, "After initialize 2");
+            MyLog.v(logTag, "Before initialize 2");
+            MyContextHolder.initialize(myContext.context(), logTag);
+            MyLog.v(logTag, "After initialize 2");
             MyServiceManager.setServiceUnavailable();
-            if (progressCallback != null) {
-                progressCallback.onProgressMessage("Demo accounts added...");
-                DbUtils.waitMs(TAG_ASYNC, 500);
-            }
+
+            progressListener.onProgressMessage("Demo accounts added...");
+            DbUtils.waitMs(logTag, 500);
+
             assertTrue("Context is not ready " + MyContextHolder.get(), MyContextHolder.get().isReady());
             demoData.checkDataPath();
             int size = MyContextHolder.get().accounts().size();
@@ -223,10 +222,10 @@ public final class DemoData {
 
             demoData.insertPumpIoConversation("");
             new DemoGnuSocialConversationInserter().insertConversation();
-            if (progressCallback != null) {
-                progressCallback.onProgressMessage("Demo notes added...");
-                DbUtils.waitMs(TAG_ASYNC, 500);
-            }
+
+            progressListener.onProgressMessage("Demo notes added...");
+            DbUtils.waitMs(logTag, 500);
+
             if (MyContextHolder.get().accounts().size() == 0) {
                 fail("No persistent accounts");
             }
@@ -238,38 +237,37 @@ public final class DemoData {
             assertThat(defaultTimeline.getTimelineType(), is(TimelineType.EVERYTHING));
             MyContextHolder.get().timelines().setDefault(defaultTimeline);
 
-            MyLog.v(TAG_ASYNC, "Before initialize 3");
-            MyContextHolder.initialize(myContext.context(), method);
-            MyLog.v(TAG_ASYNC, "After initialize 3");
+            MyLog.v(logTag, "Before initialize 3");
+            MyContextHolder.initialize(myContext.context(), logTag);
+            MyLog.v(logTag, "After initialize 3");
 
             assertOriginsContext();
             DemoOriginInserter.assertDefaultTimelinesForOrigins();
             DemoAccountInserter.assertDefaultTimelinesForAccounts();
 
-            assertEquals("Data errors exist", 0 ,
-                    DataChecker.fixData(new ProgressLogger(progressCallback, TAG_ASYNC), true, true));
-            MyLog.v(TAG_ASYNC, "After data checker");
+            assertEquals("Data errors exist", 0 , DataChecker.fixData(
+                    new ProgressLogger(progressListener), true, true));
+            MyLog.v(logTag, "After data checker");
 
-            if (progressCallback != null) {
-                progressCallback.onProgressMessage("Demo data is ready");
-                DbUtils.waitMs(TAG_ASYNC, 500);
-            }
-            MyLog.i(TAG_ASYNC, method + ": ended");
+            progressListener.onProgressMessage("Demo data is ready");
+            DbUtils.waitMs(logTag, 500);
+
+            MyLog.i(logTag, logTag + ": ended");
             return null;
         }
 
         @Override
         protected void onFinish(Void aVoid, boolean success) {
             FirstActivity.checkAndUpdateLastOpenedAppVersion(myContext.context(), true);
-            if (progressCallback != null) progressCallback.onComplete(success);
+            if (progressListener != null) progressListener.onComplete(success);
         }
     }
 
     @NonNull
-    public MyAsyncTask<Void, Void, Void> addAsync(final String method, final MyContext myContext,
-                                                          final ProgressLogger.ProgressCallback progressCallback) {
-        MyAsyncTaskDemoData asyncTask = new MyAsyncTaskDemoData(progressCallback, method, myContext, this);
-        AsyncTaskLauncher.execute(method, true, asyncTask);
+    public MyAsyncTask<Void, Void, Void> addAsync(final String logTag, final MyContext myContext,
+                                                  final ProgressLogger.ProgressListener progressListener) {
+        MyAsyncTaskDemoData asyncTask = new MyAsyncTaskDemoData(progressListener, myContext, this);
+        AsyncTaskLauncher.execute(progressListener.getLogTag(), true, asyncTask);
         return asyncTask;
     }
 

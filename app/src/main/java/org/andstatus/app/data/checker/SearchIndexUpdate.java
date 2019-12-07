@@ -45,6 +45,8 @@ class SearchIndexUpdate extends DataChecker {
         AtomicInteger counter = new AtomicInteger();
         try (Cursor cursor = myContext.getDatabase().rawQuery(sql, null)) {
             while (cursor.moveToNext()) {
+                if (logger.isCancelled()) break;
+
                 counter.incrementAndGet();
                 Note note = Note.contentFromCursor(myContext, cursor);
                 String contentToSearchStored = DbUtils.getString(cursor, NoteTable.CONTENT_TO_SEARCH);
@@ -70,6 +72,8 @@ class SearchIndexUpdate extends DataChecker {
     }
 
     private void fixOneNote(Note note) {
+        if (logger.isCancelled()) return;
+
         String sql = "";
         try {
             sql = "UPDATE " + NoteTable.TABLE_NAME

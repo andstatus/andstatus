@@ -36,7 +36,7 @@ import org.andstatus.app.util.Permissions;
 
 import io.vavr.control.Try;
 
-public class RestoreActivity extends MyActivity implements ProgressLogger.ProgressCallback {
+public class RestoreActivity extends MyActivity implements ProgressLogger.ProgressListener {
     private static final int MAX_RESTORE_SECONDS = 600;
     DocumentFile dataFolder = null;
     RestoreTask asyncTask = null;

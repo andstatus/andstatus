@@ -17,7 +17,6 @@
 package org.andstatus.app;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -38,14 +37,13 @@ import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import org.andstatus.app.account.AccountSettingsActivity;
-import org.andstatus.app.backup.DefaultProgressCallback;
+import org.andstatus.app.backup.DefaultProgressListener;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.context.ExecutionMode;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
-import org.andstatus.app.data.checker.DataChecker;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
@@ -78,7 +76,7 @@ public class HelpActivity extends MyActivity {
     /** Stores state of {@link #EXTRA_IS_FIRST_ACTIVITY} */
     private boolean mIsFirstActivity = false;
     private boolean wasPaused = false;
-    private final DefaultProgressCallback progressCallback = new DefaultProgressCallback(this, R.string.app_name);
+    private volatile ProgressLogger.ProgressListener progressListener = ProgressLogger.EMPTY_LISTENER;
     private static volatile boolean generatingDemoData = false;
 
     @Override
@@ -99,20 +97,16 @@ public class HelpActivity extends MyActivity {
         if (MyContextHolder.get().accounts().getCurrentAccount().nonValid()
                 && MyContextHolder.getExecutionMode() == ExecutionMode.ROBO_TEST
                 && !generatingDemoData) {
+            progressListener.cancel();
+
             generatingDemoData = true;
-            demoData.addAsync("GenerateDemoData", MyContextHolder.get(), progressCallback);
+            progressListener = new DefaultProgressListener(this, R.string.app_name, "GenerateDemoData");
+            demoData.addAsync("GenerateDemoData", MyContextHolder.get(), progressListener);
         }
 
         showRestoreButton();
         showGetStartedButton();
         setupHelpFlipper();
-
-        if (getIntent().hasExtra(IntentExtra.CHECK_DATA.key) && savedInstanceState == null) {
-            DataChecker.fixDataAsync(new ProgressLogger(progressCallback, "DataChecker"),
-                    getIntent().getBooleanExtra(IntentExtra.FULL_CHECK.key, false),
-                    getIntent().getBooleanExtra(IntentExtra.COUNT_ONLY.key, false)
-            );
-        }
     }
 
     @Override
@@ -334,18 +328,9 @@ public class HelpActivity extends MyActivity {
 
     @Override
     public void finish() {
-        cleanOnFinish();
+        progressListener.onActivityFinish();
+        generatingDemoData = false;
         super.finish();
     }
 
-    private void cleanOnFinish() {
-        try {
-            this.runOnUiThread(() -> {
-                progressCallback.onDismiss(null);
-                generatingDemoData = false;
-            });
-        } catch (Exception e) {
-            MyLog.d(this, "cleanOnFinish", e);
-        }
-    }
 }

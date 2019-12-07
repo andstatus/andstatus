@@ -48,6 +48,8 @@ class CheckAudience extends DataChecker {
     }
 
     private int fixOneOrigin(Origin origin, boolean countOnly) {
+        if (logger.isCancelled()) return 0;
+
         MyAccount ma = myContext.accounts().getFirstSucceededForOrigin(origin);
         if (ma.isEmpty()) return 0;
 
@@ -79,6 +81,8 @@ class CheckAudience extends DataChecker {
     }
 
     private FixSummary foldOneNote(MyAccount ma, DataUpdater dataUpdater, boolean countOnly, FixSummary s, Cursor cursor) {
+        if (logger.isCancelled()) return s;
+
         Origin origin = ma.getOrigin();
         s.rowsCount++;
         long noteId = DbUtils.getLong(cursor, NoteTable._ID);

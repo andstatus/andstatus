@@ -57,13 +57,13 @@ class MyBackupManager {
     private final Activity activity;
     private final ProgressLogger progressLogger;
 
-    MyBackupManager(Activity activity, ProgressLogger.ProgressCallback progressCallback) {
+    MyBackupManager(Activity activity, ProgressLogger.ProgressListener progressListener) {
         this.activity = activity;
-        this.progressLogger = new ProgressLogger(progressCallback, "MyBackupManager");
+        this.progressLogger = new ProgressLogger(progressListener);
     }
 
-    static void backupInteractively(DocumentFile backupFolder, Activity activity, ProgressLogger.ProgressCallback progressCallback) {
-        MyBackupManager backupManager = new MyBackupManager(activity, progressCallback);
+    static void backupInteractively(DocumentFile backupFolder, Activity activity, ProgressLogger.ProgressListener progressListener) {
+        MyBackupManager backupManager = new MyBackupManager(activity, progressListener);
         try {
             backupManager.prepareForBackup(backupFolder);
             backupManager.backup();
@@ -134,8 +134,8 @@ class MyBackupManager {
         .get(); // Return Try instead of throwing
     }
 
-    static void restoreInteractively(DocumentFile dataFolder, Activity activity, ProgressLogger.ProgressCallback progressCallback) {
-        MyBackupManager backupManager = new MyBackupManager(activity, progressCallback);
+    static void restoreInteractively(DocumentFile dataFolder, Activity activity, ProgressLogger.ProgressListener progressListener) {
+        MyBackupManager backupManager = new MyBackupManager(activity, progressListener);
         try {
             backupManager.prepareForRestore(dataFolder);
             backupManager.restore();

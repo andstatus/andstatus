@@ -23,29 +23,56 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtils;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
 public class ProgressLogger {
     public static final int PROGRESS_REPORT_PERIOD_SECONDS = 20;
+    private static final String TAG = ProgressLogger.class.getSimpleName();
     private volatile long lastLoggedAt = 0L;
     private volatile boolean makeServiceUnavalable = false;
-    public final Optional<ProgressCallback> callback;
+    public final Optional<ProgressListener> progressListener;
     public final String logTag;
 
-    @FunctionalInterface
-    public interface ProgressCallback {
-        void onProgressMessage(CharSequence message);
-        default void onComplete(boolean success) {}
+    public static AtomicLong startedAt = new AtomicLong(0);
+
+    public static long newStartingTime() {
+        final long iStartedAt = MyLog.uniqueCurrentTimeMS();
+        startedAt.set(iStartedAt);
+        return iStartedAt;
     }
 
-    public ProgressLogger(ProgressCallback callback, String logTag) {
-        this.callback = Optional.ofNullable(callback);
-        this.logTag = StringUtils.notEmpty(logTag, ProgressLogger.class.getSimpleName());
+    @FunctionalInterface
+    public interface ProgressListener {
+        void onProgressMessage(CharSequence message);
+        default void onComplete(boolean success) {}
+        default void onActivityFinish() {}
+        default void setCancelable(boolean isCancelable) {}
+        default void cancel() {}
+        default boolean isCancelled() { return false; }
+        default String getLogTag() { return TAG; }
+    }
+
+    private static class EmptyListener implements ProgressListener {
+        @Override
+        public void onProgressMessage(CharSequence message) {
+            // Empty
+        }
+    }
+    public static ProgressListener EMPTY_LISTENER = new EmptyListener();
+
+    public ProgressLogger(ProgressListener progressListener) {
+        this.progressListener = Optional.ofNullable(progressListener);
+        this.logTag = this.progressListener.map(ProgressListener::getLogTag).orElse(TAG);
     }
 
     private ProgressLogger(String logTag) {
-        this.callback = Optional.empty();
-        this.logTag = StringUtils.notEmpty(logTag, ProgressLogger.class.getSimpleName());
+        this.progressListener = Optional.empty();
+        this.logTag = StringUtils.notEmpty(logTag, TAG);
+    }
+
+    public boolean isCancelled() {
+        return progressListener.map(ProgressListener::isCancelled).orElse(false);
     }
 
     public void logSuccess() {
@@ -58,7 +85,7 @@ public class ProgressLogger {
 
     public void onComplete(boolean success) {
         logProgressAndPause(success ? "Completed successfully" : "Failed", 1);
-        callback.ifPresent(c -> c.onComplete(success));
+        progressListener.ifPresent(c -> c.onComplete(success));
     }
 
     public boolean loggedMoreSecondsAgoThan(long secondsAgo) {
@@ -79,16 +106,16 @@ public class ProgressLogger {
 
     public void logProgressAndPause(CharSequence message, long pauseIfPositive) {
         logProgress(message);
-        if (pauseIfPositive > 0 && callback.isPresent()) {
+        if (pauseIfPositive > 0 && progressListener.isPresent()) {
             DbUtils.waitMs(this, 2000);
         }
     }
 
     public void logProgress(CharSequence message) {
         updateLastLoggedTime();
-        MyLog.i(logTag, "Progress: " + message);
+        MyLog.i(logTag, message.toString());
         if (makeServiceUnavalable) MyServiceManager.setServiceUnavailable();
-        callback.ifPresent(c -> c.onProgressMessage(message));
+        progressListener.ifPresent(c -> c.onProgressMessage(message));
     }
 
     public void updateLastLoggedTime() {

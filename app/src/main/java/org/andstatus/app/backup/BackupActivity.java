@@ -35,7 +35,7 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.Permissions;
 
-public class BackupActivity extends MyActivity implements ProgressLogger.ProgressCallback {
+public class BackupActivity extends MyActivity implements ProgressLogger.ProgressListener {
     DocumentFile backupFolder = null;
     BackupTask asyncTask = null;
     private int progressCounter = 0;

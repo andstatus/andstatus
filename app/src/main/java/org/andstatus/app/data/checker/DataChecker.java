@@ -59,10 +59,9 @@ public abstract class DataChecker {
 
     public static void fixDataAsync(ProgressLogger logger, boolean includeLong, boolean countOnly) {
         AsyncTaskLauncher.execute(
-                logger.callback,
+                logger.logTag,
                 false,
-                new MyAsyncTask<Void, Void, Void>(DataChecker.class.getSimpleName(),
-                MyAsyncTask.PoolEnum.thatCannotBeShutDown()) {
+                new MyAsyncTask<Void, Void, Void>(logger.logTag, MyAsyncTask.PoolEnum.thatCannotBeShutDown()) {
 
                     @Override
                     protected Void doInBackground2(Void aVoid) {
@@ -110,6 +109,8 @@ public abstract class DataChecker {
                     .collect(Collectors.toList());
 
             for(DataChecker checker : selectedCheckers) {
+                if (logger.isCancelled()) break;
+
                 MyServiceManager.setServiceUnavailable();
                 counter += checker.setMyContext(myContext).setIncludeLong(includeLong).setLogger(logger)
                         .setCountOnly(countOnly)
@@ -118,6 +119,7 @@ public abstract class DataChecker {
         } finally {
             MyServiceManager.setServiceAvailable();
         }
+        MyLog.i(DataChecker.class, "fixData ended, counted: " + counter);
         return counter;
     }
 
