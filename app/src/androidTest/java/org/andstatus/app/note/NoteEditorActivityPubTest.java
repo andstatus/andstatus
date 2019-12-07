@@ -19,6 +19,8 @@ package org.andstatus.app.note;
 import android.content.Intent;
 import android.view.View;
 
+import androidx.test.espresso.action.ReplaceTextAction;
+
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
@@ -42,8 +44,6 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import androidx.test.espresso.action.ReplaceTextAction;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -107,7 +107,7 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
         DownloadStatus status = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
         assertThat(status, isIn(expected));
 
-        Audience audience = Audience.load(mock.getData().getOrigin(), noteId);
+        Audience audience = Audience.load(mock.getData().getOrigin(), noteId, Optional.empty());
         assertTrue("Audience should contain " + actorUniqueName +  "\n " + audience,
                 audience.getActors().stream().anyMatch(a -> actorUniqueName.equals(a.getUniqueName())));
 

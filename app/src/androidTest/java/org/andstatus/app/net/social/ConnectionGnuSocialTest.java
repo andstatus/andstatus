@@ -339,7 +339,7 @@ public class ConnectionGnuSocialTest {
         di.onActivity(activity);
 
         assertAudience(activity, activity.audience(), numberOfMembers);
-        Audience storedAudience = Audience.load(activity.getNote().origin, activity.getNote().noteId);
+        Audience storedAudience = Audience.load(activity.getNote().origin, activity.getNote().noteId, Optional.empty());
         assertAudience(activity, storedAudience, numberOfMembers);
         return activity;
     }

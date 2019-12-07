@@ -133,7 +133,7 @@ public class Note extends AObject {
     }
 
     private Note loadAudience() {
-        audience = Audience.load(origin, noteId);
+        audience = Audience.load(origin, noteId, Optional.empty());
         return this;
     }
 

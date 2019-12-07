@@ -112,7 +112,7 @@ public class NoteEditorData implements IsEmpty {
         note.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, noteId));
         note.setSensitive(MyQuery.noteIdToLongColumnValue(NoteTable.SENSITIVE, noteId) == 1);
         note.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
-        note.setAudience(Audience.load(activity.accountActor.origin, noteId));
+        note.setAudience(Audience.load(activity.accountActor.origin, noteId, Optional.empty()));
 
         long inReplyToNoteId = inReplyToNoteIdIn == 0
                 ? MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId)

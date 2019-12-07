@@ -31,6 +31,7 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.TriState;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -87,6 +88,7 @@ class CheckAudience extends DataChecker {
         s.rowsCount++;
         long noteId = DbUtils.getLong(cursor, NoteTable._ID);
         long insDate = DbUtils.getLong(cursor, NoteTable.INS_DATE);
+        TriState isPublic = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
         String content = DbUtils.getString(cursor, NoteTable.CONTENT);
         Actor author = Actor.load(myContext, DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
         Actor inReplyToActor = Actor.load(myContext, DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
@@ -94,11 +96,10 @@ class CheckAudience extends DataChecker {
         if (origin.getOriginType() == OriginType.GNUSOCIAL || origin.getOriginType() == OriginType.TWITTER) {
 
             // See org.andstatus.app.note.NoteEditorData.recreateAudience
-            Audience prevAudience = Audience.load(origin, noteId);
             Audience audience = new Audience(origin);
             audience.add(inReplyToActor);
             audience.addActorsFromContent(content, author, inReplyToActor);
-            audience.setPublic(prevAudience.getPublic());
+            audience.setPublic(isPublic);
             audience.lookupUsers();
 
             if (!countOnly) {

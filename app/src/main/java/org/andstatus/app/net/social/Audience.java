@@ -41,6 +41,7 @@ import org.andstatus.app.util.TriState;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -82,7 +83,7 @@ public class Audience implements IsEmpty {
         return audience;
     }
 
-    public static Audience load(@NonNull Origin origin, long noteId) {
+    public static Audience load(@NonNull Origin origin, long noteId, Optional<TriState> isPublic) {
         Audience audience = new Audience(origin);
         final String sql = "SELECT " + ActorSql.select()
                 + " FROM (" + ActorSql.tables()
@@ -92,7 +93,7 @@ public class Audience implements IsEmpty {
                 + " AND " + AudienceTable.NOTE_ID + "=" + noteId;
         final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(origin.myContext, cursor, true);
         audience.actors.addAll(MyQuery.get(origin.myContext, sql, function));
-        audience.setPublic(MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId));
+        audience.setPublic(isPublic.orElseGet(() -> MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId)));
         return audience;
     }
 
@@ -175,7 +176,7 @@ public class Audience implements IsEmpty {
         if (!origin.isValid() || noteId == 0) {
             return false;
         }
-        Audience prevAudience = Audience.load(origin, noteId);
+        Audience prevAudience = Audience.load(origin, noteId, Optional.of(isPublic));
         Set<Actor> toDelete = new HashSet<>();
         Set<Actor> toAdd = new HashSet<>();
         for (Actor actor : prevAudience.getActors()) {
