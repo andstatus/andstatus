@@ -575,11 +575,10 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             actorId = MyQuery.oidToId(origin.myContext, OidEnum.ACTOR_OID, origin.getId(), oid);
         }
         if (actorId == 0 && isWebFingerIdValid()) {
-            actorId = MyQuery.webFingerIdToId(origin.myContext, origin.getId(), webFingerId);
+            actorId = MyQuery.webFingerIdToId(origin.myContext, origin.getId(), webFingerId, true);
         }
         if (actorId == 0 && StringUtils.nonEmpty(username)) {
-            // TODO: Cache it:
-            long actorId2 = MyQuery.usernameToId(origin.myContext, origin.getId(), username);
+            long actorId2 = origin.usernameToId(username);
             if (actorId2 != 0) {
                 boolean skip2 = false;
                 if (isWebFingerIdValid()) {
@@ -594,9 +593,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                     if (UriUtils.isRealOid(oid2)) skip2 = !oid.equalsIgnoreCase(oid2);
                 }
                 if (actorId == 0 && !skip2 && groupType != GroupType.UNKNOWN) {
-                    // TODO: Cache it:
-                    GroupType groupTypeStored = GroupType.fromId(MyQuery.idToLongColumnValue(
-                            origin.myContext.getDatabase(), ActorTable.TABLE_NAME, ActorTable.GROUP_TYPE, actorId2));
+                    GroupType groupTypeStored = origin.myContext.users().idToGroupType(actorId2);
                     if (groupType != groupTypeStored) {
                         if (groupTypeStored == GroupType.UNKNOWN ||
                                 (groupType.isGroup.isTrue && groupTypeStored.isGroup.isFalse)) {

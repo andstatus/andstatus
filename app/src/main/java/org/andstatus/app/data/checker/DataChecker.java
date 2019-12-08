@@ -24,9 +24,11 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StopWatch;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -91,6 +93,7 @@ public abstract class DataChecker {
             MyLog.w(DataChecker.class, "fixData skipped: context is not ready " + myContext);
             return counter;
         }
+        StopWatch stopWatch = StopWatch.createStarted();
         try {
             MyLog.i(DataChecker.class, "fixData started" + (includeLong ? ", including long tasks" : ""));
             List<DataChecker> allCheckers = Arrays.asList(
@@ -119,7 +122,7 @@ public abstract class DataChecker {
         } finally {
             MyServiceManager.setServiceAvailable();
         }
-        MyLog.i(DataChecker.class, "fixData ended, counted: " + counter);
+        MyLog.i(DataChecker.class, "fixData ended in " + stopWatch.getTime(TimeUnit.MINUTES) + " min, counted: " + counter);
         return counter;
     }
 
@@ -141,9 +144,11 @@ public abstract class DataChecker {
      * @return number of changed items (or needed to change)
      */
     public long fix() {
+        StopWatch stopWatch = StopWatch.createStarted();
         logger.logProgress(checkerName() + " checker started");
         long changedCount = fixInternal();
-        logger.logProgress(checkerName() + " checker ended, " + (changedCount > 0
+        logger.logProgress(checkerName() + " checker ended in " + stopWatch.getTime(TimeUnit.SECONDS) + " sec, " +
+            (changedCount > 0
                 ? (countOnly ? "need to change " : "changed ") + changedCount + " items"
                 : " no changes were needed"));
         DbUtils.waitMs(checkerName(), changedCount == 0 ? 1000 : 3000);

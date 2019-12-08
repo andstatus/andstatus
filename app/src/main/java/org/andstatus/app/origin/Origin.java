@@ -164,6 +164,19 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         return StringUtils.nonEmpty(username) && originType.usernameRegExPattern.matcher(username).matches();
     }
 
+    public long usernameToId(String username) {
+        if (StringUtils.isEmpty(username)) return 0;
+
+        String key = getId() + ";" + username;
+        Long cachedId = myContext.users().originIdAndUsernameToActorId.get(key);
+        if (cachedId != null) return cachedId;
+        long storedId = MyQuery.usernameToId(myContext, getId(), username, true);
+        if (storedId != 0) {
+            myContext.users().originIdAndUsernameToActorId.put(key, storedId);
+        }
+        return storedId;
+    }
+
     /**
      * Calculates number of Characters left for this note taking shortened
      * URL's length into account.

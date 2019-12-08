@@ -22,6 +22,9 @@ import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
 
+import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
+
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContext;
@@ -44,9 +47,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-
-import androidx.annotation.NonNull;
-import androidx.core.util.Pair;
 
 public class MyQuery {
     private static final String TAG = MyQuery.class.getSimpleName();
@@ -629,8 +629,8 @@ public class MyQuery {
                         + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC LIMIT 1");
     }
 
-    public static long webFingerIdToId(MyContext myContext, long originId, String webFingerId) {
-        return actorColumnValueToId(myContext, originId, ActorTable.WEBFINGER_ID, webFingerId);
+    public static long webFingerIdToId(MyContext myContext, long originId, String webFingerId, boolean checkOid) {
+        return actorColumnValueToId(myContext, originId, ActorTable.WEBFINGER_ID, webFingerId, checkOid);
     }
     
     /**
@@ -638,14 +638,16 @@ public class MyQuery {
      * 
      * @param originId - see {@link NoteTable#ORIGIN_ID}, 0 - for all Origin-s
      * @param username - see {@link ActorTable#USERNAME}
+     * @param checkOid true to try to retrieve a user with a realOid first
      * @return - id in our System (i.e. in the table, e.g.
      *         {@link ActorTable#_ID} ), 0 if not found
      */
-    public static long usernameToId(MyContext myContext, long originId, String username) {
-        return actorColumnValueToId(myContext, originId, ActorTable.USERNAME, username);
+    public static long usernameToId(MyContext myContext, long originId, String username, boolean checkOid) {
+        return actorColumnValueToId(myContext, originId, ActorTable.USERNAME, username, checkOid);
     }
 
-    private static long actorColumnValueToId(MyContext myContext, long originId, String columnName, String columnValue) {
+    private static long actorColumnValueToId(MyContext myContext, long originId, String columnName, String columnValue,
+                                             boolean checkOid) {
         final String method = "actor" + columnName + "ToId";
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
@@ -656,12 +658,17 @@ public class MyQuery {
         SQLiteStatement prog = null;
         String sql = "";
         try {
-            sql = "SELECT " + BaseColumns._ID + " FROM " + ActorTable.TABLE_NAME
-                    + " WHERE "
-                    + (originId == 0 ? "" : ActorTable.ORIGIN_ID + "=" + originId + " AND ")
-                    + columnName + "='" + columnValue + "'";
-            prog = db.compileStatement(sql);
-            id = prog.simpleQueryForLong();
+            if (checkOid) {
+                sql = sql4actorColumnValueToId(originId, columnName, columnValue, true);
+                prog = db.compileStatement(sql);
+                id = prog.simpleQueryForLong();
+                if (id == 0) DbUtils.closeSilently(prog);
+            }
+            if (id == 0) {
+                sql = sql4actorColumnValueToId(originId, columnName, columnValue, false);
+                prog = db.compileStatement(sql);
+                id = prog.simpleQueryForLong();
+            }
         } catch (SQLiteDoneException e) {
             MyLog.ignored(MyQuery.TAG, e);
             id = 0;
@@ -675,6 +682,16 @@ public class MyQuery {
             MyLog.v(MyQuery.TAG, method + ":" + originId + "+" + columnValue + " -> " + id);
         }
         return id;
+    }
+
+    private static String sql4actorColumnValueToId(long originId, String columnName, String value, boolean checkOid) {
+      return "SELECT " + ActorTable._ID +
+                    " FROM " + ActorTable.TABLE_NAME +
+                    " WHERE " +
+                    (originId == 0 ? "" : ActorTable.ORIGIN_ID + "=" + originId + " AND ") +
+                    (checkOid ? ActorTable.ACTOR_OID + " NOT LIKE('andstatustemp:%') AND " : "") +
+                    columnName + "='" + value + "'" +
+                    " ORDER BY " + ActorTable._ID;
     }
 
     public static boolean isGroupMember(MyContext myContext, long parentActorId, GroupType groupType, long memberId) {

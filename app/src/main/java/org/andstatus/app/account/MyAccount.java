@@ -23,6 +23,8 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SearchObjects;
@@ -31,7 +33,6 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.OriginTable;
@@ -57,7 +58,6 @@ import org.json.JSONObject;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 /**
@@ -764,7 +764,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         }
 
         private void assignActorId() {
-            myAccount.actor.actorId = MyQuery.usernameToId(myContext(), myAccount.getOriginId(), myAccount.getUsername());
+            myAccount.actor.actorId = myAccount.getOrigin().usernameToId(myAccount.getUsername());
             if (myAccount.actor.actorId == 0) {
                 DataUpdater di = new DataUpdater(myAccount);
                 try {

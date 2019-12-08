@@ -49,7 +49,14 @@ import java.util.stream.Collectors;
 import io.vavr.control.Try;
 
 public class Audience implements IsEmpty {
+    private static final String TAG = Audience.class.getSimpleName();
     public final static Audience EMPTY = new Audience(Origin.EMPTY);
+    private static final String LOAD_SQL = "SELECT " + ActorSql.select()
+            + " FROM (" + ActorSql.tables()
+            + ") INNER JOIN " + AudienceTable.TABLE_NAME + " ON "
+            + AudienceTable.TABLE_NAME + "." + AudienceTable.ACTOR_ID + "="
+            + ActorTable.TABLE_NAME + "." + ActorTable._ID
+            + " AND " + AudienceTable.NOTE_ID + "=";
     public final Origin origin;
     private final Set<Actor> actors = new HashSet<>();
     private TriState isPublic = TriState.UNKNOWN;
@@ -83,14 +90,20 @@ public class Audience implements IsEmpty {
         return audience;
     }
 
+    public static Audience loadIds(@NonNull Origin origin, long noteId, Optional<TriState> isPublic) {
+        Audience audience = new Audience(origin);
+        final String sql = "SELECT " + AudienceTable.ACTOR_ID +
+                " FROM " + AudienceTable.TABLE_NAME +
+                " WHERE " + AudienceTable.NOTE_ID + "=" + noteId;
+        final Function<Cursor, Actor> function = cursor -> Actor.fromId(origin, cursor.getLong(0));
+        audience.actors.addAll(MyQuery.get(origin.myContext, sql, function));
+        audience.setPublic(isPublic.orElseGet(() -> MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId)));
+        return audience;
+    }
+
     public static Audience load(@NonNull Origin origin, long noteId, Optional<TriState> isPublic) {
         Audience audience = new Audience(origin);
-        final String sql = "SELECT " + ActorSql.select()
-                + " FROM (" + ActorSql.tables()
-                + ") INNER JOIN " + AudienceTable.TABLE_NAME + " ON "
-                + AudienceTable.TABLE_NAME + "." + AudienceTable.ACTOR_ID + "="
-                + ActorTable.TABLE_NAME + "." + ActorTable._ID
-                + " AND " + AudienceTable.NOTE_ID + "=" + noteId;
+        final String sql = LOAD_SQL + noteId;
         final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(origin.myContext, cursor, true);
         audience.actors.addAll(MyQuery.get(origin.myContext, sql, function));
         audience.setPublic(isPublic.orElseGet(() -> MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId)));
@@ -176,7 +189,7 @@ public class Audience implements IsEmpty {
         if (!origin.isValid() || noteId == 0) {
             return false;
         }
-        Audience prevAudience = Audience.load(origin, noteId, Optional.of(isPublic));
+        Audience prevAudience = Audience.loadIds(origin, noteId, Optional.of(isPublic));
         Set<Actor> toDelete = new HashSet<>();
         Set<Actor> toAdd = new HashSet<>();
         for (Actor actor : prevAudience.getActors()) {
@@ -194,6 +207,14 @@ public class Audience implements IsEmpty {
                     toAdd.add(actor);
                 }
             }
+        }
+        if (!toDelete.isEmpty() || !toAdd.isEmpty()) {
+            MyLog.i(TAG, "Audience differs, noteId:" + noteId + "," +
+                    "\nprev: " + prevAudience +
+                    "\nnew: " + this +
+                    (!toDelete.isEmpty() ? "\ntoDelete: " + toDelete : "") +
+                    (!toAdd.isEmpty() ? "\ntoAdd: " + toAdd : "")
+            );
         }
         if (!countOnly) try {
             if (!toDelete.isEmpty()) {

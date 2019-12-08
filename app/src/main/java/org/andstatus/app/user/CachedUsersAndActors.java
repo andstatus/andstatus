@@ -33,6 +33,8 @@ public class CachedUsersAndActors {
     private final MyContext myContext;
     public final Map<Long, User> users = new ConcurrentHashMap<>();
     public final Map<Long, Actor> actors = new ConcurrentHashMap<>();
+    public final Map<Long, GroupType> actorGroupTypes = new ConcurrentHashMap<>();
+    public final Map<String, Long> originIdAndUsernameToActorId = new ConcurrentHashMap<>();
     public final Map<Long, User> myUsers = new ConcurrentHashMap<>();
     public final Map<Long, Actor> myActors = new ConcurrentHashMap<>();
     /** key - friendId, set of values - IDs of my actors  */
@@ -162,7 +164,7 @@ public class CachedUsersAndActors {
             user2 = User.load(myContext, actor.actorId);
         }
         if (user2.isEmpty() && actor.isWebFingerIdValid()) {
-            user2 = User.load(myContext, MyQuery.webFingerIdToId(myContext, 0, actor.getWebFingerId()));
+            user2 = User.load(myContext, MyQuery.webFingerIdToId(myContext, 0, actor.getWebFingerId(), false));
         }
         if (user2.isEmpty()) {
             user2 = User.getNew();
@@ -195,6 +197,16 @@ public class CachedUsersAndActors {
         return user1.nonEmpty()
                 ? user1
                 : users.values().stream().filter(user -> user.actorIds.contains(actorId)).findFirst().orElseGet(userSupplier);
+    }
+
+    public GroupType idToGroupType(long actorId) {
+        GroupType groupTypeCached = actorGroupTypes.get(actorId);
+        if (groupTypeCached != null) return groupTypeCached;
+
+        GroupType groupTypeStored = GroupType.fromId(MyQuery.idToLongColumnValue(
+                myContext.getDatabase(), ActorTable.TABLE_NAME, ActorTable.GROUP_TYPE, actorId));
+        actorGroupTypes.put(actorId, groupTypeStored);
+        return groupTypeStored;
     }
 
     public void updateCache(@NonNull Actor actor) {
@@ -234,6 +246,10 @@ public class CachedUsersAndActors {
         }
         if (actor.isBetterToCacheThan(actors.get(actor.actorId))) {
             actors.put(actor.actorId, actor);
+            actorGroupTypes.put(actor.actorId, actor.groupType);
+            if (actor.isOidReal()) {
+                originIdAndUsernameToActorId.put(actor.origin.getId() + ";" + actor.getUsername(), actor.actorId);
+            }
             myActors.computeIfPresent(actor.actorId, (id, actor1) -> actor);
         }
     }
