@@ -6,7 +6,7 @@ android {
     buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        versionCode 301
+        versionCode 302
         versionName "52.03"
 
         applicationId "org.andstatus.app"
