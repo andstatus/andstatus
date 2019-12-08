@@ -75,7 +75,7 @@ public class AvatarFile extends ImageFile {
 
     @Override
     public CachedImage getDefaultImage() {
-        if (actor.groupType.isGroup.isTrue) {
+        if (getActor().groupType.isGroup.isTrue) {
             return ImageCaches.getStyledImage(R.drawable.ic_people_black_24dp, R.drawable.ic_people_white_24dp);
         } else {
             return ImageCaches.getStyledImage(R.drawable.ic_person_black_36dp, R.drawable.ic_person_white_36dp);
