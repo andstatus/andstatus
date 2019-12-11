@@ -26,6 +26,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.GroupMembersTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -34,7 +35,6 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -50,9 +50,9 @@ public class TimelineSql {
 
     private static String tablesForTimeline(Uri uri, String[] projection, int subQueryIndex) {
         Timeline timeline = Timeline.fromParsedUri(MyContextHolder.get(), ParsedUri.fromUri(uri), "");
-        Collection<String> columns = new java.util.HashSet<>(Arrays.asList(projection));
         SqlWhere actWhere = new SqlWhere().append(ActivityTable.UPDATED_DATE, ">0");
         SqlWhere noteWhere = new SqlWhere();
+        SqlWhere audienceWhere = new SqlWhere();
 
         switch (timeline.getTimelineType()) {
             case FOLLOWERS:
@@ -101,6 +101,10 @@ public class TimelineSql {
                     noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.AUTHOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
                 }
                 break;
+            case GROUP:
+                audienceWhere.append(AudienceTable.TABLE_NAME + "." + AudienceTable.ACTOR_ID,
+                        SqlIds.actorIdsOfTimelineActor(timeline));
+                break;
             case UNREAD_NOTIFICATIONS:
                 actWhere.append(ActivityTable.NOTIFIED, "=" + TriState.TRUE.id)
                         .append(ActivityTable.NEW_NOTIFICATION_EVENT, "!=0")
@@ -124,6 +128,12 @@ public class TimelineSql {
                 + " ON (" + NOTE_TABLE_ALIAS + "." + BaseColumns._ID + "="
                     + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID
                     + noteWhere.getAndWhere() + ")";
+        if (audienceWhere.nonEmpty()) {
+            tables = tables + " INNER JOIN " + AudienceTable.TABLE_NAME + " ON (" +
+                    NOTE_TABLE_ALIAS + "." + BaseColumns._ID + "=" +
+                    AudienceTable.TABLE_NAME + "." + AudienceTable.NOTE_ID
+                    + audienceWhere.getAndWhere() + ")";
+        }
         return tables;
     }
 

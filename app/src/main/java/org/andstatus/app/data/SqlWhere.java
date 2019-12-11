@@ -16,14 +16,15 @@
 
 package org.andstatus.app.data;
 
-import org.andstatus.app.util.StringUtils;
-
 import androidx.annotation.NonNull;
+
+import org.andstatus.app.util.IsEmpty;
+import org.andstatus.app.util.StringUtils;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class SqlWhere {
+public class SqlWhere implements IsEmpty {
     private String where = "";
 
     public SqlWhere append(String field, SqlIds actorIds) {

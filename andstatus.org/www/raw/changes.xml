@@ -29,6 +29,21 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="53.00" android:versionCode="304"
+        versionDate="2019-12-11"
+        versionTitle="The first step of Groups support">
+        <changes>
+            <change>Groups as a kind of "Actors" appeared. Group's timeline type added.
+                Actual groups as kind of recipients are now discovered in GNU Social notes
+                by "!groupname" references. #AndStatus can discover groups in previously downloaded notes using
+                "Settings - Thoubleshooting - Check and fix data" procedure (that may be quite log though...).
+                We're expecting to extend Groups support in #GNUSocial, #ActivityPub, etc. as server-side developers
+                extend related client-to-server APIs...
+                More details and discussion here:
+                <a href="https://github.com/andstatus/andstatus/issues/248">#248</a>
+            </change>
+        </changes>
+    </release>
     <release android:versionName="52.02" android:versionCode="301"
         versionDate="2019-11-24"
         versionTitle="Multiple attachments">

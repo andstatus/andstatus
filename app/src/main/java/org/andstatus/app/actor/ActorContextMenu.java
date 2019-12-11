@@ -20,6 +20,8 @@ import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
@@ -30,8 +32,6 @@ import org.andstatus.app.timeline.ContextMenuHeader;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtils;
 import org.andstatus.app.view.MyContextMenu;
-
-import androidx.annotation.NonNull;
 
 public class ActorContextMenu extends MyContextMenu {
     public final NoteEditorContainer menuContainer;
@@ -60,6 +60,10 @@ public class ActorContextMenu extends MyContextMenu {
                     .setTitle(actor.toActorTitle())
                     .setSubtitle(getActingAccount().getAccountName());
             String shortName = actor.getUsername();
+            if (actor.groupType.isGroup.isTrue) {
+                ActorContextMenuItem.GROUP_NOTES.addTo(menu, menuGroup, order++,
+                        StringUtils.format(getActivity(), R.string.group_notes, shortName));
+            }
             if (actor.isIdentified()) {
                 ActorContextMenuItem.NOTES_BY_ACTOR.addTo(menu, menuGroup, order++,
                         StringUtils.format(getActivity(), R.string.menu_item_user_messages, shortName));

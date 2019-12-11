@@ -18,6 +18,9 @@ package org.andstatus.app.timeline.meta;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+
 import org.andstatus.app.R;
 import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.net.social.Connection;
@@ -28,9 +31,6 @@ import org.andstatus.app.util.StringUtils;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
 
 import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.ACTOR_TIMELINE;
 import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.DUMMY_API;
@@ -60,6 +60,7 @@ public enum TimelineType implements SelectableEnum {
      * So this is essentially a list of "Friends". See {@link org.andstatus.app.database.table.GroupMembersTable} */
     FRIENDS(ListScope.USER, "friends", R.string.friends, R.string.friends_of, GET_FRIENDS),
     FOLLOWERS(ListScope.USER, "followers", R.string.followers, R.string.followers_of, GET_FOLLOWERS),
+    GROUP(ListScope.USER, "group", R.string.group, R.string.group_notes, DUMMY_API),
     PUBLIC(ListScope.ORIGIN, "public", R.string.timeline_title_public, 0, PUBLIC_TIMELINE),
     /** Private notes (direct tweets, dents...) */
     EVERYTHING(ListScope.ORIGIN, "everything", R.string.timeline_title_everything, 0, DUMMY_API),
@@ -268,6 +269,7 @@ public enum TimelineType implements SelectableEnum {
             case EVERYTHING:
             case FOLLOWERS:
             case FRIENDS:
+            case GROUP:
             case HOME:
             case INTERACTIONS:
             case NOTIFICATIONS:
@@ -307,6 +309,7 @@ public enum TimelineType implements SelectableEnum {
             case FOLLOWERS:
             case FRIENDS:
             case SENT:
+            case GROUP:
                 return true;
             default:
                 return false;

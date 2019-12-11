@@ -81,6 +81,18 @@ public enum ActorContextMenuItem implements ContextMenuItem {
             return super.executeAsync(params);
         }
     },
+    GROUP_NOTES(true) {
+        @Override
+        NoteEditorData executeAsync(Params params) {
+            TimelineActivity.startForTimeline(
+                    params.menu.getActivity().getMyContext(),
+                    params.menu.getActivity(),
+                    params.menu.getActivity().getMyContext().timelines()
+                            .forUserAtHomeOrigin(TimelineType.GROUP, params.menu.getViewItem().getActor())
+            );
+            return super.executeAsync(params);
+        }
+    },
     FOLLOW() {
         @Override
         void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
