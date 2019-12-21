@@ -70,7 +70,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         origin = MyContextHolder.get().origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
         activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
         insertedDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
-        actor = ActorViewItem.fromActor(Actor.fromId(origin, DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)));
+        actor = ActorViewItem.fromActor(Actor.fromId(origin, DbUtils.getLong(cursor, ActivityTable.ACT_ACTOR_ID)));
         noteId = DbUtils.getLong(cursor, ActivityTable.NOTE_ID);
         objActorId = DbUtils.getLong(cursor, ActivityTable.OBJ_ACTOR_ID);
         if (objActorId != 0) {

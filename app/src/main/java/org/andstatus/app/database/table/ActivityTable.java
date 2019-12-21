@@ -36,11 +36,11 @@ public final class ActivityTable implements BaseColumns {
     public static final String ACCOUNT_ID = "account_id";
     /** ID of {@link ActivityType} */
     public static final String ACTIVITY_TYPE = "activity_type";
-    public static final String ACTOR_ID = "actor_id";
+    public static final String ACTOR_ID = "actor_id";   // TODO: rename to "activity_actor_id" and remove alias
     /** Note as Object */
     public static final String NOTE_ID = "activity_" + NoteTable.NOTE_ID;
     /** Actor as Object */
-    public static final String OBJ_ACTOR_ID = "activity_" + ActorTable.ACTOR_ID;
+    public static final String OBJ_ACTOR_ID = "activity_" + ActorTable.ACTOR_ID;  // TODO: rename to "obj_actor_id"
     /** Inner Activity as Object */
     public static final String OBJ_ACTIVITY_ID = "obj_activity_id";
 
@@ -63,6 +63,8 @@ public final class ActivityTable implements BaseColumns {
 
     // Aliases
     public static final String ACTIVITY_ID = "activity_id";
+    /** {@link #ACTOR_ID} with unique column name **/
+    public static final String ACT_ACTOR_ID = "act_actor_id";
     public static final String AUTHOR_ID = "author_id";
     public static final String LAST_UPDATE_ID = "last_update_id";
 

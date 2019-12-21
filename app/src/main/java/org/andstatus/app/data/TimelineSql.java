@@ -174,7 +174,7 @@ public class TimelineSql {
     public static Set<String> getTimelineProjection() {
         Set<String> columnNames = new HashSet<>();
         columnNames.add(ActivityTable.ACTIVITY_ID);
-        columnNames.add(ActivityTable.ACTOR_ID);
+        columnNames.add(ActivityTable.ACT_ACTOR_ID);
         columnNames.add(ActivityTable.NOTE_ID);
         columnNames.add(ActivityTable.ORIGIN_ID);
         columnNames.add(NoteTable.NAME);
