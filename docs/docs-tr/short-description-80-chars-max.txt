@@ -1,1 +1,1 @@
-﻿Low traffic social networking client with tree-like threaded conversations
+Open Source multiple accounts client for multiple social networks

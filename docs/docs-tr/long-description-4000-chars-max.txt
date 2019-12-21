@@ -1,21 +1,20 @@
-AndStatus ağaç dizisi konuşmalarla bir Açık Kaynaklı düşük trafik ağı istemcisidir.
-Aşağıdakiler dahil farklı Sosyal ağları destekler. Bunlar,
-GNU social (örn. Quitter.se, LoadAverage, Vinilox, etc.), Twitter ve Pump.io.
-AndStatus tüm ağlardaki geri beslemelerinizi bir Zaman Çizelgesi'nde birleştirebilir,
-ve çevrimdışı olduğunuzda bile okumanıza ve post göndermenize izin verir.
+AndStatus birden fazla sosyal ağı, birden fazla hesapla kullanmanıza izen veren açık bir kaynak bir istemcidir
+GNU social, Mastodon, Twitter ve Pump.io.
+AndStatus tüm ağlardaki akışları bir Zaman Çizelgesi'nde birleştirebilir,
+çevrimdışı olduğunuzda bile okumanıza ve ileti göndermenize izin verir.
 
 Android v.7.0+ cihazlar için.
 
 AndStatus'un ayırt edici özellikleri:
 
-1. Farklı Sosyal Ağlardaki bir çok hesap. Hepsinde "Siz" olarak her birinde bir kaç hesabınız olabilir, yazabilir/cevaplayabilirsiniz ve hesaplarla sistemler arasında paylaşabilirsiniz.
+1. Farklı Sosyal Ağlardaki bir çok hesap. Her birinde "Siz" olarak birkaç hesap açabilir, yazabilir/cevaplayabilir ve hesaplar/ağlar arasında paylaşabilirsiniz.
 2. Zaman çizelgelerini okumak ve güncellemelerinizi göndermek için çevrimiçi olmanız gerekmez: taslaklar ve gönderilmemiş postlar sistem yeniden başladıktan sonra bile tutulur. Cihazınız Çevrimiçi olduğunda gönderilmiş olacaklar.
 3. Kullanışlı ağaçsı "Konuşma penceresi".
-4. "Global arama" bir sorgu ile bütün ağlardaki açık mesajları aramanıza izin veriyor.
-5. Kullanıcı Listeleri ve Zaman Çizelgeleri olarak sunulmuş Arkadaş ve Takipçi Listeleri (her kullanıcının son mesajı ile)
-6. Cihazınızın iyi bir bağlantısı olduğunda, Tweetler/mesajlar/avatarlar/ekli görüntüler bir arka planda senkronize ediliyor. Varsayılan olarak, ekler sadece WiFi ile indirilir.
+4. "Genel arama", tüm ağlardaki genel notları tek bir sorguda aramanıza olanak sağlar.
+5. Lists of Friends and Followers, presented as User Lists and as Timelines (with the latest note by each User).
+6. Notlar (tweetler)/avatarlar/ekli görüntüler, cihazınız iyi bir bağlantıya sahip olduğunda arka planda senkronize edilir. Varsayılan olarak, ekler sadece WiFi ile indirilir.
 7. Önbelleğe alınmış veriler yıllarca veya sadece bir kaç günlüğüne saklanabilir - bu sizin seçiminiz.
-8. Cihzlarınız arasında hesaplarınızı ve mesajlarınızı yedekleme ve geri yükleme. Kendi verileriniz!
+8. Hesapları ve notları yedekleyin ve cihazlarınızdan birinde geri yükleyin. Sizin verileriniz!
 9. Ücretsiz ve reklamsız, topluluk destekli.
 
 AndStatus'un tüm özelliklerinin açıklamaları için tartışmalara bağlantılar içeren bir Değişiklik Günlüğü'ne bakın:
