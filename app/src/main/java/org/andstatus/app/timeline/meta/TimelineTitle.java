@@ -22,7 +22,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 /**
  * Data to show on UI. May be created on UI thread
@@ -136,10 +136,10 @@ public class TimelineTitle {
     }
 
     public void updateActivityTitle(MyActivity activity, String additionalTitleText) {
-        activity.setTitle(StringUtils.nonEmpty(additionalTitleText) && StringUtils.isEmpty(subTitle)
+        activity.setTitle(StringUtil.nonEmpty(additionalTitleText) && StringUtil.isEmpty(subTitle)
                 ? MyStringBuilder.of(title).withSpace(additionalTitleText)
                 : title);
-        activity.setSubtitle(StringUtils.isEmpty(subTitle)
+        activity.setSubtitle(StringUtil.isEmpty(subTitle)
                 ? ""
                 : MyStringBuilder.of(subTitle).withSpace(additionalTitleText));
         MyLog.v(activity, () -> "Title: " + toString());

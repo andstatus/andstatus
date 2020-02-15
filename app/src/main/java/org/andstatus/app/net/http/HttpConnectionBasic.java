@@ -20,7 +20,7 @@ import android.util.Base64;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -73,8 +73,8 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
 
     @Override
     public boolean getCredentialsPresent() {
-        return !StringUtils.isEmpty(data.getAccountName().getUniqueName())
-                && !StringUtils.isEmpty(mPassword);
+        return !StringUtil.isEmpty(data.getAccountName().getUniqueName())
+                && !StringUtil.isEmpty(mPassword);
     }
 
     @Override

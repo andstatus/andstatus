@@ -44,7 +44,7 @@ public class FileUtils {
     public static JSONArray getJSONArray(File file) throws IOException {
         JSONArray jso = null;
         String fileString = utf8File2String(file);
-        if (!StringUtils.isEmpty(fileString)) {
+        if (!StringUtil.isEmpty(fileString)) {
             try {
                 jso = new JSONArray(fileString);
             } catch (JSONException e) {
@@ -61,7 +61,7 @@ public class FileUtils {
     public static JSONObject getJSONObject(File file) throws IOException {
         JSONObject jso = null;
         String fileString = utf8File2String(file);
-        if (!StringUtils.isEmpty(fileString)) {
+        if (!StringUtil.isEmpty(fileString)) {
             try {
                 jso = new JSONObject(fileString);
             } catch (JSONException e) {

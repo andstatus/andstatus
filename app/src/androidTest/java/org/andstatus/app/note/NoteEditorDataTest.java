@@ -11,7 +11,7 @@ import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -64,7 +64,7 @@ public class NoteEditorDataTest {
         String expectedName = MyQuery.actorIdToStringColumnValue(
                 data.ma.getOrigin().isMentionAsWebFingerId() ? ActorTable.WEBFINGER_ID
                         : ActorTable.USERNAME, mentionedActorId);
-        assertTrue(!StringUtils.isEmpty(expectedName));
+        assertTrue(!StringUtil.isEmpty(expectedName));
         boolean isMentioned = data.getContent().contains("@" + expectedName);
         assertEquals(data.toString() + "; expected name:" + expectedName, isMentionedExpected, isMentioned);
     }

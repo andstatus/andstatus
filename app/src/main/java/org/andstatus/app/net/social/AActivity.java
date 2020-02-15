@@ -31,7 +31,7 @@ import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.Optional;
@@ -100,8 +100,8 @@ public class AActivity extends AObject {
         AActivity activity = from(accountActor, ActivityType.UPDATE);
         activity.setActor(actor);
         activity.setTimelinePosition(
-                StringUtils.toTempOidIf(StringUtils.isEmptyOrTemp(note.oid),
-                    activity.getActorPrefix() + StringUtils.stripTempPrefix(note.oid)));
+                StringUtil.toTempOidIf(StringUtil.isEmptyOrTemp(note.oid),
+                    activity.getActorPrefix() + StringUtil.stripTempPrefix(note.oid)));
         activity.setNote(note);
         note.setUpdatedDate(updatedDate);
         activity.setUpdatedDate(updatedDate);
@@ -204,24 +204,24 @@ public class AActivity extends AObject {
     }
 
     public AActivity setTimelinePosition(String strPosition) {
-        this.timelinePosition = new TimelinePosition(StringUtils.isEmpty(strPosition) ? getTempPositionString() : strPosition);
+        this.timelinePosition = new TimelinePosition(StringUtil.isEmpty(strPosition) ? getTempPositionString() : strPosition);
         return this;
     }
 
     @NonNull
     private String getTempPositionString() {
-        return StringUtils.toTempOid(
+        return StringUtil.toTempOid(
                     getActorPrefix() +
                     type.name().toLowerCase() + "-" +
-                    (StringUtils.nonEmpty(getNote().oid) ? getNote().oid + "-" : "") +
+                    (StringUtil.nonEmpty(getNote().oid) ? getNote().oid + "-" : "") +
                     MyLog.uniqueDateTimeFormatted());
     }
 
     @NonNull
     private String getActorPrefix() {
-        return StringUtils.nonEmpty(actor.oid)
+        return StringUtil.nonEmpty(actor.oid)
                 ? actor.oid + "-"
-                : (StringUtils.nonEmpty(accountActor.oid)
+                : (StringUtil.nonEmpty(accountActor.oid)
                     ? accountActor.oid + "-"
                     : "");
     }

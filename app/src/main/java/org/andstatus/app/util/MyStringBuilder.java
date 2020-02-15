@@ -16,14 +16,15 @@
 
 package org.andstatus.app.util;
 
+import androidx.annotation.NonNull;
+
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import androidx.annotation.NonNull;
-
 /** Adds convenience methods to {@link StringBuilder} */
 public class MyStringBuilder implements CharSequence, IsEmpty {
+    public static final String COMMA = ",";
     public final StringBuilder builder;
 
     public static MyStringBuilder of(CharSequence text) {
@@ -46,8 +47,9 @@ public class MyStringBuilder implements CharSequence, IsEmpty {
         return content.map(MyStringBuilder::of).orElse(new MyStringBuilder());
     }
 
+    @NonNull
     public static String formatKeyValue(Object keyIn, Object valueIn) {
-        String key = MyLog.objToTruncatedTag(keyIn);
+        String key = objToTag(keyIn);
         if (keyIn == null) {
             return key;
         }
@@ -59,19 +61,42 @@ public class MyStringBuilder implements CharSequence, IsEmpty {
     }
 
     /** Strips value from leading and trailing commas */
+    @NonNull
     public static String formatKeyValue(Object key, String value) {
         String out = "";
-        if (!StringUtils.isEmpty(value)) {
+        if (!StringUtil.isEmpty(value)) {
             out = value.trim();
-            if (out.substring(0, 1).equals(MyLog.COMMA)) {
+            if (out.substring(0, 1).equals(COMMA)) {
                 out = out.substring(1);
             }
-            int ind = out.lastIndexOf(MyLog.COMMA);
+            int ind = out.lastIndexOf(COMMA);
             if (ind > 0 && ind == out.length()-1) {
                 out = out.substring(0, ind);
             }
         }
-        return MyLog.objToTag(key) + ":{" + out + "}";
+        return objToTag(key) + ":{" + out + "}";
+    }
+
+    @NonNull
+    public static String objToTag(Object objTag) {
+        final String tag;
+        if (objTag == null) {
+            tag = "(null)";
+        } else if (objTag instanceof IdentifiableInstance) {
+            tag = ((IdentifiableInstance) objTag).getInstanceTag();
+        } else if (objTag instanceof String) {
+            tag = (String) objTag;
+        } else if (objTag instanceof Enum<?>) {
+            tag = objTag.toString();
+        } else if (objTag instanceof Class<?>) {
+            tag = ((Class<?>) objTag).getSimpleName();
+        }else {
+            tag = objTag.getClass().getSimpleName();
+        }
+        if (tag.trim().isEmpty()) {
+            return "(empty)";
+        }
+        return tag;
     }
 
     @NonNull
@@ -88,7 +113,7 @@ public class MyStringBuilder implements CharSequence, IsEmpty {
     public static <T> boolean isEmptyObj(T obj) {
         if (obj instanceof IsEmpty) return ((IsEmpty) obj).isEmpty();
         if (obj instanceof Number) return ((Number) obj).longValue() == 0;
-        if (obj instanceof String) return StringUtils.isEmpty((String) obj);
+        if (obj instanceof String) return StringUtil.isEmpty((String) obj);
         return obj == null;
     }
 
@@ -144,10 +169,10 @@ public class MyStringBuilder implements CharSequence, IsEmpty {
         if (obj == null) return this;
 
         String text = obj.toString();
-        if (StringUtils.isEmpty(text)) return this;
+        if (StringUtil.isEmpty(text)) return this;
 
         if (builder.length() > 0) builder.append(separator);
-        if (StringUtils.nonEmpty(label)) builder.append(label).append(": ");
+        if (StringUtil.nonEmpty(label)) builder.append(label).append(": ");
         if (quoted) builder.append("\"");
         builder.append(text);
         if (quoted) builder.append("\"");
@@ -156,7 +181,7 @@ public class MyStringBuilder implements CharSequence, IsEmpty {
 
     @NonNull
     public MyStringBuilder append(CharSequence text) {
-        if (StringUtils.nonEmpty(text)) {
+        if (StringUtil.nonEmpty(text)) {
             builder.append(text);
         }
         return this;

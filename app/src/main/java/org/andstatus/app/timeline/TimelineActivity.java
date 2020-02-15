@@ -84,10 +84,11 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.view.MyContextMenu;
@@ -154,7 +155,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     public static void goHome(Activity activity) {
         try {
-            MyLog.v(TimelineActivity.class, () -> "goHome from " + MyLog.objToTag(activity));
+            MyLog.v(TimelineActivity.class, () -> "goHome from " + MyStringBuilder.objToTag(activity));
             Intent intent = new Intent(activity, FirstActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             activity.startActivity(intent);
@@ -933,7 +934,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 ? R.string.sync_younger_messages
                 : R.string.options_menu_sync).toString();
         MyUrlSpan.showText(syncYoungerView, R.id.sync_younger_button,
-                StringUtils.format(format,
+                StringUtil.format(format,
                     stats.syncSucceededDate > SOME_TIME_AGO
                             ? RelativeTime.getDifference(this, stats.syncSucceededDate)
                             : getText(R.string.never),
@@ -962,7 +963,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         }
         SyncStats stats = SyncStats.fromOldestDates(myContext.timelines().toTimelinesToSync(getParamsLoaded().getTimeline()));
         MyUrlSpan.showText(syncOlderView, R.id.sync_older_button,
-                StringUtils.format(this, stats.itemDate > SOME_TIME_AGO
+                StringUtil.format(this, stats.itemDate > SOME_TIME_AGO
                                 ? R.string.sync_older_messages
                                 : R.string.options_menu_sync,
                         DateUtils.getRelativeTimeSpanString(this, stats.itemDate)),

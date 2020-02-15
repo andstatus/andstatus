@@ -34,7 +34,7 @@ import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.NullUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.Collections;
 import java.util.stream.Stream;
@@ -70,7 +70,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     }
 
     public static ActorViewItem newEmpty(String description) {
-        Actor actor = StringUtils.isEmpty(description) ? Actor.EMPTY :
+        Actor actor = StringUtil.isEmpty(description) ? Actor.EMPTY :
                 Actor.newUnknown(Origin.EMPTY, GroupType.UNKNOWN).setSummary(description);
         return fromActor(actor);
     }
@@ -96,7 +96,7 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         if (MyPreferences.getShowOrigin() && actor.nonEmpty()) {
             String name = actor.getTimelineUsername() + " / " + actor.origin.getName();
             if (actor.origin.getOriginType() == OriginType.GNUSOCIAL && MyPreferences.isShowDebuggingInfoInUi()
-                    && StringUtils.nonEmpty(actor.oid)) {
+                    && StringUtil.nonEmpty(actor.oid)) {
                 return name + " oid:" + actor.oid;
             } else return name;
         } else return actor.getTimelineUsername();

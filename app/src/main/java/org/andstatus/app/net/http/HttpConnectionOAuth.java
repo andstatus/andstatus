@@ -24,7 +24,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.Map;
@@ -59,11 +59,11 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
     @Override
     public boolean getCredentialsPresent() {
         boolean yes = data.oauthClientKeys.areKeysPresent()
-            && StringUtils.nonEmpty(userToken)
-            && StringUtils.nonEmpty(userSecret);
+            && StringUtil.nonEmpty(userToken)
+            && StringUtil.nonEmpty(userSecret);
         if (!yes && logMe) {
             MyLog.v(this, () -> "Credentials presence: clientKeys:" + data.oauthClientKeys.areKeysPresent()
-                    + "; userKeys:" + !StringUtils.isEmpty(userToken) + "," + !StringUtils.isEmpty(userSecret));
+                    + "; userKeys:" + !StringUtil.isEmpty(userToken) + "," + !StringUtil.isEmpty(userSecret));
         }
         return yes;
     }
@@ -87,7 +87,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
                 url = "";
                 break;
         }
-        if (!StringUtils.isEmpty(url)) {
+        if (!StringUtil.isEmpty(url)) {
             url = pathToUrlString(url);
         }
         return UriUtils.fromString(url);
@@ -119,8 +119,8 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
             userSecret = secret;
         }
         if (logMe) {
-            MyLog.v(this, () -> "Credentials set?: " + !StringUtils.isEmpty(token)
-                    + ", " + !StringUtils.isEmpty(secret));
+            MyLog.v(this, () -> "Credentials set?: " + !StringUtil.isEmpty(token)
+                    + ", " + !StringUtil.isEmpty(secret));
         }
     }
 
@@ -143,7 +143,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
                 ) {
             changed = true;
 
-            if (StringUtils.isEmpty(userToken)) {
+            if (StringUtil.isEmpty(userToken)) {
                 dw.setDataString(userTokenKey(), "");
                 if (logMe) {
                     MyLog.d(TAG, "Clearing OAuth Token");
@@ -154,7 +154,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
                     MyLog.d(TAG, "Saving OAuth Token: " + userToken);
                 }
             }
-            if (StringUtils.isEmpty(userSecret)) {
+            if (StringUtil.isEmpty(userSecret)) {
                 dw.setDataString(userSecretKey(), "");
                 if (logMe) {
                     MyLog.d(TAG, "Clearing OAuth Secret");

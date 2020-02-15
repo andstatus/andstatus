@@ -21,7 +21,8 @@ import androidx.annotation.NonNull;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.MyStringBuilder;
+import org.andstatus.app.util.StringUtil;
 
 import java.io.File;
 import java.util.Objects;
@@ -37,7 +38,7 @@ public class DownloadFile implements IsEmpty {
     public DownloadFile(String filename) {
         Objects.requireNonNull(filename);
         this.filename = filename;
-        if (StringUtils.isEmpty(filename)) {
+        if (StringUtil.isEmpty(filename)) {
             file = null;
             existed = false;
         } else {
@@ -91,7 +92,7 @@ public class DownloadFile implements IsEmpty {
 
     @Override
     public String toString() {
-        return MyLog.objToTag(this)
+        return MyStringBuilder.objToTag(this)
                 + " filename:" + filename
                 + (existed ? ", existed" : "");
     }

@@ -33,7 +33,7 @@ import org.andstatus.app.util.TriState;
 
 import java.util.Collection;
 
-import static org.andstatus.app.util.StringUtils.toTempOid;
+import static org.andstatus.app.util.StringUtil.toTempOid;
 
 /**
  * Helper class to update Group membership information (see {@link org.andstatus.app.database.table.GroupMembersTable})

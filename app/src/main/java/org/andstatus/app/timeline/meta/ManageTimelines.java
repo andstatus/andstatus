@@ -44,7 +44,7 @@ import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.view.EnumSelector;
 
 import java.util.stream.Collectors;
@@ -122,7 +122,7 @@ public class ManageTimelines extends LoadableListActivity {
             }
             TextView textView = (TextView) view;
             String text = textView.getText().toString();
-            if (!StringUtils.isEmpty(text) && "▲▼↑↓".indexOf(text.charAt(0)) >= 0) {
+            if (!StringUtil.isEmpty(text) && "▲▼↑↓".indexOf(text.charAt(0)) >= 0) {
                 text = text.substring(1);
                 textView.setText(text);
             }
@@ -247,7 +247,7 @@ public class ManageTimelines extends LoadableListActivity {
         if (isTotal) {
             title.append(getText(R.string.total_counters));
         } else if (countersSince > 0) {
-            title.append(StringUtils.format(this, R.string.since,
+            title.append(StringUtil.format(this, R.string.since,
                     RelativeTime.getDifference(this, countersSince)));
         }
         return title;

@@ -28,8 +28,9 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.IdentifiableInstance;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -112,7 +113,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     }
 
     public MyAsyncTask(@NonNull Object taskId, PoolEnum pool) {
-        this.taskId = MyLog.objToTag(taskId);
+        this.taskId = MyStringBuilder.objToTag(taskId);
         this.pool = pool;
         maxCommandExecutionSeconds = pool.maxCommandExecutionSeconds;
     }
@@ -299,7 +300,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
 
     private void logError(String msgLog, Throwable tr) {
         MyLog.e(this, msgLog, tr);
-        if (!StringUtils.isEmpty(firstError) || tr == null) {
+        if (!StringUtil.isEmpty(firstError) || tr == null) {
             return;
         }
         firstError = MyLog.getStackTrace(tr);

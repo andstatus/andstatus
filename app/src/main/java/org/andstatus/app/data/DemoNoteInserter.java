@@ -37,7 +37,7 @@ import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -73,7 +73,7 @@ public class DemoNoteInserter {
     }
 
     final Actor buildActorFromOid(String actorOid) {
-        if (StringUtils.isEmpty(actorOid)) throw  new IllegalArgumentException("Actor oid cannot be empty");
+        if (StringUtil.isEmpty(actorOid)) throw  new IllegalArgumentException("Actor oid cannot be empty");
         Actor actor = Actor.fromOid(origin, actorOid);
         String username;
         String profileUrl;
@@ -115,7 +115,7 @@ public class DemoNoteInserter {
                                    String noteOidIn, DownloadStatus noteStatus) {
         final String method = "buildActivity";
         String noteOid = noteOidIn;
-        if (StringUtils.isEmpty(noteOid) && noteStatus != DownloadStatus.SENDING) {
+        if (StringUtil.isEmpty(noteOid) && noteStatus != DownloadStatus.SENDING) {
             if (origin.getOriginType() == OriginType.PUMPIO) {
                 noteOid = (UrlUtils.hasHost(UrlUtils.fromString(author.getProfileUrl()))
                           ? author.getProfileUrl()
@@ -144,7 +144,7 @@ public class DemoNoteInserter {
     public AActivity buildActivity(@NonNull Actor actor, @NonNull ActivityType type, String noteOid) {
         AActivity activity = AActivity.from(accountActor, type);
         activity.setTimelinePosition(
-                (StringUtils.isEmpty(noteOid) ?  MyLog.uniqueDateTimeFormatted() : noteOid)
+                (StringUtil.isEmpty(noteOid) ?  MyLog.uniqueDateTimeFormatted() : noteOid)
                 + "-" + activity.type.name().toLowerCase());
         activity.setActor(actor);
         activity.setUpdatedDate(System.currentTimeMillis());
@@ -201,19 +201,19 @@ public class DemoNoteInserter {
                 assertEquals("Note permalink has the same host as origin, " + note.toString(),
                         origin.getUrl().getHost(), urlPermalink.getHost());
             }
-            if (StringUtils.nonEmpty(note.getName())) {
+            if (StringUtil.nonEmpty(note.getName())) {
                 assertEquals("Note name " + activity, note.getName(),
                         MyQuery.noteIdToStringColumnValue(NoteTable.NAME, note.noteId));
             }
-            if (StringUtils.nonEmpty(note.getSummary())) {
+            if (StringUtil.nonEmpty(note.getSummary())) {
                 assertEquals("Note summary " + activity, note.getSummary(),
                         MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, note.noteId));
             }
-            if (StringUtils.nonEmpty(note.getContent())) {
+            if (StringUtil.nonEmpty(note.getContent())) {
                 assertEquals("Note content " + activity, note.getContent(),
                         MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, note.noteId));
             }
-            if (StringUtils.nonEmpty(note.url)) {
+            if (StringUtil.nonEmpty(note.url)) {
                 assertEquals("Note permalink", note.url, origin.getNotePermalink(note.noteId));
             }
 
@@ -274,7 +274,7 @@ public class DemoNoteInserter {
 
         long id = actor.actorId;
 
-        if (StringUtils.nonEmpty(actor.oid)) {
+        if (StringUtil.nonEmpty(actor.oid)) {
             assertEquals("oid " + actor, actor.oid,
                     MyQuery.actorIdToStringColumnValue(ActorTable.ACTOR_OID, id));
         }
@@ -286,14 +286,14 @@ public class DemoNoteInserter {
 
         String webFingerIdActual = MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, id);
         if (actor.getWebFingerId().isEmpty()) {
-            assertTrue("WebFingerID=" + webFingerIdActual + " for " + actor, StringUtils.isEmpty(webFingerIdActual)
+            assertTrue("WebFingerID=" + webFingerIdActual + " for " + actor, StringUtil.isEmpty(webFingerIdActual)
                     || Actor.isWebFingerIdValid(webFingerIdActual));
         } else {
             assertEquals("WebFingerID=" + webFingerIdActual + " for " + actor, actor.getWebFingerId(), webFingerIdActual);
             assertTrue("Invalid WebFingerID " + actor, Actor.isWebFingerIdValid(webFingerIdActual));
         }
 
-        if (StringUtils.nonEmpty(actor.getRealName())) {
+        if (StringUtil.nonEmpty(actor.getRealName())) {
             assertEquals("Display name " + actor, actor.getRealName(),
                     MyQuery.actorIdToStringColumnValue(ActorTable.REAL_NAME, id));
         }

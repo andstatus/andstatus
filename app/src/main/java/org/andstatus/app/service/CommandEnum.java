@@ -23,7 +23,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 /**
  * The command to the MyService or to MyAppWidgetProvider as a
@@ -115,7 +115,7 @@ public enum CommandEnum {
      * Returns the enum for a String action code or UNKNOWN
      */
     public static CommandEnum load(String strCode) {
-        if (!StringUtils.isEmpty(strCode)) {
+        if (!StringUtil.isEmpty(strCode)) {
             for (CommandEnum serviceCommand : CommandEnum.values()) {
                 if (serviceCommand.code.equals(strCode)) {
                     return serviceCommand;

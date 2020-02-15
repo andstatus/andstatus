@@ -45,7 +45,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.view.SuggestionsAdapter;
 
 /**
@@ -77,7 +77,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     String query = v.getText().toString();
-                    if (StringUtils.nonEmpty(query)) {
+                    if (StringUtil.nonEmpty(query)) {
                         onQueryTextSubmit(query);
                         return true;
                     }
@@ -202,7 +202,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
 
 
     private void launchActivity(String query) {
-        if (StringUtils.isEmpty(query)) {
+        if (StringUtil.isEmpty(query)) {
             return;
         }
         Intent intent = new Intent(Intent.ACTION_SEARCH, getUri(), getContext(), getSearchObjects().getActivityClass());

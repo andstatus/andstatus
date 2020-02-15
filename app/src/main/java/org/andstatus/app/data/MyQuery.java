@@ -39,7 +39,7 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
@@ -85,7 +85,7 @@ public class MyQuery {
     }
 
     public static long oidToId(@NonNull MyContext myContext, OidEnum oidEnum, long originId, String oid) {
-        if (StringUtils.isEmpty(oid)) {
+        if (StringUtil.isEmpty(oid)) {
             return 0;
         }
         String msgLog = "oidToId; " + oidEnum + ", origin=" + originId + ", oid=" + oid;
@@ -113,13 +113,13 @@ public class MyQuery {
     }
 
     public static long sqlToLong(SQLiteDatabase databaseIn, String msgLogIn, String sql) {
-        String msgLog = StringUtils.notNull(msgLogIn);
+        String msgLog = StringUtil.notNull(msgLogIn);
         SQLiteDatabase db = databaseIn == null ? MyContextHolder.get().getDatabase() : databaseIn;
         if (db == null) {
             MyLog.databaseIsNull(() -> msgLog);
             return 0;
         }
-        if (StringUtils.isEmpty(sql)) {
+        if (StringUtil.isEmpty(sql)) {
             MyLog.v(TAG, () -> msgLog + "; sql is empty");
             return 0;
         }
@@ -148,7 +148,7 @@ public class MyQuery {
      * @return two single quotes for empty/null strings (Use single quotes!)
      */
     public static String quoteIfNotQuoted(String original) {
-        if (StringUtils.isEmpty(original)) {
+        if (StringUtil.isEmpty(original)) {
             return "\'\'";
         }
         String quoted = original.trim();
@@ -233,7 +233,7 @@ public class MyQuery {
                 prog = db.compileStatement(sql);
                 oid = prog.simpleQueryForString();
                 
-                if (StringUtils.isEmpty(oid) && oe == OidEnum.REBLOG_OID) {
+                if (StringUtil.isEmpty(oid) && oe == OidEnum.REBLOG_OID) {
                     // This not reblogged note
                     oid = idToOid(db, OidEnum.NOTE_OID, entityId, 0);
                 }
@@ -469,11 +469,11 @@ public class MyQuery {
                                                   String tableName, String columnName, String condition) {
         String sql = "SELECT t." + columnName +
                 " FROM " + tableName + " AS t" +
-                (StringUtils.isEmpty(condition) ? "" : " WHERE " + condition);
+                (StringUtil.isEmpty(condition) ? "" : " WHERE " + condition);
         long columnValue = 0;
-        if (StringUtils.isEmpty(tableName)) {
+        if (StringUtil.isEmpty(tableName)) {
             throw new IllegalArgumentException("tableName is empty: " + sql);
-        } else if (StringUtils.isEmpty(columnName)) {
+        } else if (StringUtil.isEmpty(columnName)) {
             throw new IllegalArgumentException("columnName is empty: " + sql);
         } else {
             columnValue = sqlToLong(databaseIn, msgLog, sql);
@@ -515,9 +515,9 @@ public class MyQuery {
         }
         String sql = "SELECT " + columnName + " FROM " + tableName + " WHERE " + condition;
         String columnValue = "";
-        if (StringUtils.isEmpty(tableName) || StringUtils.isEmpty(columnName)) {
+        if (StringUtil.isEmpty(tableName) || StringUtil.isEmpty(columnName)) {
             throw new IllegalArgumentException(method + " tableName or columnName are empty");
-        } else if (StringUtils.isEmpty(columnName)) {
+        } else if (StringUtil.isEmpty(columnName)) {
             throw new IllegalArgumentException("columnName is empty: " + sql);
         } else {
             try (SQLiteStatement prog = db.compileStatement(sql)) {
@@ -532,7 +532,7 @@ public class MyQuery {
                 MyLog.v(TAG, method + "; '" + sql + "' -> " + columnValue );
             }
         }
-        return StringUtils.isEmpty(columnValue) ? "" : columnValue;
+        return StringUtil.isEmpty(columnValue) ? "" : columnValue;
     }
 
     public static long noteIdToActorId(String noteActorIdColumnName, long systemId) {
@@ -705,7 +705,7 @@ public class MyQuery {
 
     public static long getCountOfActivities(@NonNull String condition) {
         String sql = "SELECT COUNT(*) FROM " + ActivityTable.TABLE_NAME
-                + (StringUtils.isEmpty(condition) ? "" : " WHERE " + condition);
+                + (StringUtil.isEmpty(condition) ? "" : " WHERE " + condition);
         Set<Long> numbers = getLongs(sql);
         return numbers.isEmpty() ? 0 : numbers.iterator().next();
     }
@@ -784,7 +784,7 @@ public class MyQuery {
         MyStringBuilder builder = new MyStringBuilder();
         builder.withComma("noteId", noteId);
         String oid = idToOid(myContext, OidEnum.NOTE_OID, noteId, 0);
-        builder.withCommaQuoted("oid", StringUtils.isEmpty(oid) ? "empty" : oid, StringUtils.nonEmpty(oid));
+        builder.withCommaQuoted("oid", StringUtil.isEmpty(oid) ? "empty" : oid, StringUtil.nonEmpty(oid));
         String content = MyHtml.htmlToCompactPlainText(noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
         builder.withCommaQuoted("content", content, true);
         Origin origin = myContext.origins().fromId(noteIdToLongColumnValue(NoteTable.ORIGIN_ID, noteId));
@@ -804,7 +804,7 @@ public class MyQuery {
             return "";
         }
         String oid = noteIdToStringColumnValue(NoteTable.CONVERSATION_OID, noteId);
-        if (!StringUtils.isEmpty(oid)) {
+        if (!StringUtil.isEmpty(oid)) {
             return oid;
         }
         long conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, noteId);
@@ -812,7 +812,7 @@ public class MyQuery {
             return idToOid(myContext, OidEnum.NOTE_OID, noteId, 0);
         }
         oid = noteIdToStringColumnValue(NoteTable.CONVERSATION_OID, conversationId);
-        if (!StringUtils.isEmpty(oid)) {
+        if (!StringUtil.isEmpty(oid)) {
             return oid;
         }
         return idToOid(myContext, OidEnum.NOTE_OID, conversationId, 0);

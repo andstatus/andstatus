@@ -22,7 +22,7 @@ import android.text.SpannableString;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -116,7 +116,7 @@ public class SpanUtil {
     }
 
     public static Spannable textToSpannable(String text, TextMediaType mediaType, Audience audience) {
-        return StringUtils.isEmpty(text)
+        return StringUtil.isEmpty(text)
                 ? EMPTY
                 : spansModifier(audience).apply(MyUrlSpan.toSpannable(
                     mediaType == TextMediaType.PLAIN ? text : MyHtml.prepareForView(text),

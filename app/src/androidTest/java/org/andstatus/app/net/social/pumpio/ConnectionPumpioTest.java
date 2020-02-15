@@ -38,7 +38,7 @@ import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
@@ -92,7 +92,7 @@ public class ConnectionPumpioTest {
     
     @After
     public void tearDown() {
-        if (!StringUtils.isEmpty(keyStored)) {
+        if (!StringUtil.isEmpty(keyStored)) {
             mock.getHttp().data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);
         }
     }

@@ -15,7 +15,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -220,7 +220,7 @@ public class MyAccounts implements IsEmpty {
     /** Doesn't take origin into account */
     @NonNull
     public MyAccount fromWebFingerId(String webFingerId) {
-        if (StringUtils.isEmpty(webFingerId)) return MyAccount.EMPTY;
+        if (StringUtil.isEmpty(webFingerId)) return MyAccount.EMPTY;
         return myAccounts.stream().filter(myAccount -> myAccount.getWebFingerId().equals(webFingerId))
                 .findFirst()
                 .orElse(MyAccount.EMPTY);

@@ -31,7 +31,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
@@ -72,7 +72,7 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         reblogged = DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE;
 
         String via = DbUtils.getString(cursor, NoteTable.VIA);
-        if (!StringUtils.isEmpty(via)) {
+        if (!StringUtil.isEmpty(via)) {
             noteSource = Html.fromHtml(via).toString().trim();
         }
 

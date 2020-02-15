@@ -20,7 +20,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -68,7 +68,7 @@ public class ProgressLogger {
 
     private ProgressLogger(String logTag) {
         this.progressListener = Optional.empty();
-        this.logTag = StringUtils.notEmpty(logTag, TAG);
+        this.logTag = StringUtil.notEmpty(logTag, TAG);
     }
 
     public boolean isCancelled() {

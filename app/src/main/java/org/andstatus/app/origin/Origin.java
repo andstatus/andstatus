@@ -41,7 +41,7 @@ import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -161,11 +161,11 @@ public class Origin implements Comparable<Origin>, IsEmpty {
     }
 
     public boolean isUsernameValid(String username) {
-        return StringUtils.nonEmpty(username) && originType.usernameRegExPattern.matcher(username).matches();
+        return StringUtil.nonEmpty(username) && originType.usernameRegExPattern.matcher(username).matches();
     }
 
     public long usernameToId(String username) {
-        if (StringUtils.isEmpty(username)) return 0;
+        if (StringUtil.isEmpty(username)) return 0;
 
         String key = getId() + ";" + username;
         Long cachedId = myContext.users().originIdAndUsernameToActorId.get(key);
@@ -185,7 +185,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
      */
     public int charactersLeftForNote(String html) {
         int textLength = 0;
-        if (!StringUtils.isEmpty(html)) {
+        if (!StringUtil.isEmpty(html)) {
             String textToPost = MyHtml.fromContentStored(html, originType.textMediaTypeToPost);
             textLength = textToPost.length();
 
@@ -211,7 +211,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
 
     public String getNotePermalink(long noteId) {
         String msgUrl = MyQuery.noteIdToStringColumnValue(NoteTable.URL, noteId);
-        if (!StringUtils.isEmpty(msgUrl)) {
+        if (!StringUtil.isEmpty(msgUrl)) {
             try {
                 return new URL(msgUrl).toExternalForm();
             } catch (MalformedURLException e) {
@@ -234,7 +234,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
     }
 
     public boolean isNameValid(String originNameToCheck) {
-        return StringUtils.nonEmpty(originNameToCheck) && VALID_NAME_PATTERN.matcher(originNameToCheck).matches();
+        return StringUtil.nonEmpty(originNameToCheck) && VALID_NAME_PATTERN.matcher(originNameToCheck).matches();
     }
 
     public URL getUrl() {
@@ -418,7 +418,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
         Origin origin = (Origin) o;
 
         if (id != origin.id) return false;
-        return StringUtils.equalsNotEmpty(name, origin.name);
+        return StringUtil.equalsNotEmpty(name, origin.name);
     }
 
     @Override
@@ -457,7 +457,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
      * @return index of the first position, where the username/webfingerId may start, -1 if not found
      */
     public ActorReference getActorReference(String text, int textStart) {
-        if (StringUtils.isEmpty(text) || textStart >= text.length()) return ActorReference.EMPTY;
+        if (StringUtil.isEmpty(text) || textStart >= text.length()) return ActorReference.EMPTY;
 
         int indexOfReference = text.indexOf(actorReferenceChar(), textStart);
         GroupType groupType = GroupType.UNKNOWN;
@@ -595,7 +595,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
             if (origin.isNameValid(nameIn)) {
                 return nameIn;
             }
-            if (StringUtils.isEmpty(nameIn)) {
+            if (StringUtil.isEmpty(nameIn)) {
                 return "";
             }
             // Test with: http://www.regexplanet.com/advanced/java/index.html

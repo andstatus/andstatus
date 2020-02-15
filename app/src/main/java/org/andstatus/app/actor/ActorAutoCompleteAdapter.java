@@ -36,7 +36,7 @@ import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -137,7 +137,7 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
 
         @Override
         protected FilterResults performFiltering(CharSequence prefixWithReferenceChar) {
-            if (!origin.isValid() || StringUtils.isEmpty(prefixWithReferenceChar) ||
+            if (!origin.isValid() || StringUtil.isEmpty(prefixWithReferenceChar) ||
                     prefixWithReferenceChar.length() < NoteBodyTokenizer.MIN_LENGHT_TO_SEARCH + 1) {
                 final FilterResults results = new FilterResults();
                 results.values = FilteredValues.EMPTY;

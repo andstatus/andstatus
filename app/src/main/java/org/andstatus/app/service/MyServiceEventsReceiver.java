@@ -26,6 +26,7 @@ import org.andstatus.app.MyAction;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -40,7 +41,7 @@ public final class MyServiceEventsReceiver extends BroadcastReceiver {
         this.myContext = myContext;
         this.listener = listener;
         MyLog.v(this, () -> "Created, instanceId=" + mInstanceId
-                + (listener == null ? "" : "; listener=" + MyLog.objToTag(listener)));
+                + (listener == null ? "" : "; listener=" + MyStringBuilder.objToTag(listener)));
     }
     
     public void registerReceiver(Context context) {
@@ -61,7 +62,7 @@ public final class MyServiceEventsReceiver extends BroadcastReceiver {
         MyServiceEvent event = MyServiceEvent.load(intent.getStringExtra(IntentExtra.SERVICE_EVENT.key));
         if (event == MyServiceEvent.UNKNOWN) return;
 
-        MyLog.v(this, () -> "onReceive " + event + " for " + MyLog.objToTag(listener)
+        MyLog.v(this, () -> "onReceive " + event + " for " + MyStringBuilder.objToTag(listener)
                 + ", instanceId:" + mInstanceId);
         listener.onReceive(CommandData.fromIntent(myContext, intent), event);
     }

@@ -61,7 +61,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
@@ -439,10 +439,10 @@ public class NoteEditor {
                 editorData.ma.getOrigin().getOriginType().hasNoteSummary);
         String body = MyHtml.fromContentStored(editorData.getContent(), editorContentMediaType);
         if (!body.equals(bodyView.getText().toString().trim())) {
-            if (!StringUtils.isEmpty(body)) {
+            if (!StringUtil.isEmpty(body)) {
                 body += " ";
             }
-            if (!TextUtils.isEmpty(bodyView.getText()) && !StringUtils.isEmpty(body)) {
+            if (!TextUtils.isEmpty(bodyView.getText()) && !StringUtil.isEmpty(body)) {
                 MyLog.v(NoteEditorData.TAG, "Body updated\n'" + bodyView.getText()
                 + "' to \n'" + body + "'", new Exception());
             }
@@ -470,7 +470,7 @@ public class NoteEditor {
      * Strips e.g. "Note - " or "Note:"
      */
     static String stripBeginning(String textIn) {
-        if (StringUtils.isEmpty(textIn)) {
+        if (StringUtil.isEmpty(textIn)) {
             return "";
         }
         int ind = textIn.indexOf("-");
@@ -491,7 +491,7 @@ public class NoteEditor {
     }
 
     static String stripEllipsis(String textIn) {
-        if (StringUtils.isEmpty(textIn)) {
+        if (StringUtil.isEmpty(textIn)) {
             return "";
         }
         int ind = textIn.length() - 1;
@@ -523,14 +523,14 @@ public class NoteEditor {
         String replyToName = editorData.getInReplyToNoteId() == 0
                 ? "" : MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, editorData.getInReplyToNoteId(),
                 MyPreferences.getActorInTimeline());
-        if (StringUtils.nonEmpty(replyToName)) {
-            noteDetails.withSpace(StringUtils.format(getActivity(), R.string.message_source_in_reply_to, replyToName));
+        if (StringUtil.nonEmpty(replyToName)) {
+            noteDetails.withSpace(StringUtil.format(getActivity(), R.string.message_source_in_reply_to, replyToName));
         }
         if (editorData.activity.getNote().audience().hasNonPublic()) {
             String recipientNames = editorData.activity.getNote().audience().getUsernames();
-            if (StringUtils.nonEmpty(recipientNames) && !recipientNames.equals(replyToName) ) {
+            if (StringUtil.nonEmpty(recipientNames) && !recipientNames.equals(replyToName) ) {
                 noteDetails.atNewLine(
-                        StringUtils.format(getActivity(), R.string.message_source_to, recipientNames));
+                        StringUtil.format(getActivity(), R.string.message_source_to, recipientNames));
             }
         }
         if (editorData.getAttachedImageFiles().nonEmpty()) {

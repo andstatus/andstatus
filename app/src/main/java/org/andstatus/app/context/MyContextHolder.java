@@ -185,7 +185,7 @@ public final class MyContextHolder {
 
     private static void requireNonNullContext(Context context, Object calledBy, String message) {
         if (context == null) {
-            throw new IllegalStateException(TAG + ": " + message + ", called by " + MyLog.objToTag(calledBy));
+            throw new IllegalStateException(TAG + ": " + message + ", called by " + MyStringBuilder.objToTag(calledBy));
         }
     }
 

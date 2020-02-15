@@ -33,6 +33,7 @@ import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 
 public class DatabaseConverterController {
     private static final String TAG = DatabaseConverterController.class.getSimpleName();
@@ -58,7 +59,7 @@ public class DatabaseConverterController {
     static final int UPGRADE_LENGTH_SECONDS_MAX = 90;
 
     public static void attemptToTriggerDatabaseUpgrade(@NonNull Activity upgradeRequestorIn) {
-        String requestorName = MyLog.objToTag(upgradeRequestorIn);
+        String requestorName = MyStringBuilder.objToTag(upgradeRequestorIn);
         boolean skip = false;
         if (isUpgrading()) {
             MyLog.v(TAG, "Attempt to trigger database upgrade by " + requestorName 
@@ -148,7 +149,7 @@ public class DatabaseConverterController {
                 synchronized(UPGRADE_LOCK) {
                     mProgressLogger = progressLogger;
                 }
-                MyLog.i(TAG, "Upgrade triggered by " + MyLog.objToTag(upgradeRequestor));
+                MyLog.i(TAG, "Upgrade triggered by " + MyStringBuilder.objToTag(upgradeRequestor));
                 MyServiceManager.setServiceUnavailable();
                 MyContextHolder.release(() -> "doUpgrade");
                 // Upgrade will occur inside this call synchronously

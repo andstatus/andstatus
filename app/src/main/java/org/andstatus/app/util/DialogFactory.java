@@ -133,7 +133,7 @@ public class DialogFactory {
     public static void showTextInputBox(Context context, String title, String message, Consumer<String> textConsumer,
                                         String initialValue) {
         EditText input = new EditText(context);
-        if (StringUtils.nonEmpty(initialValue)) {
+        if (StringUtil.nonEmpty(initialValue)) {
             input.setText(initialValue);
         }
 

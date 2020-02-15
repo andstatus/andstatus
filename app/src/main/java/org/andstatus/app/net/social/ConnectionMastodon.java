@@ -30,7 +30,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.ObjectOrId;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
@@ -208,7 +208,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                                        TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
-        if (StringUtils.isEmpty(tag)) {
+        if (StringUtil.isEmpty(tag)) {
             return new ArrayList<>();
         }
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.TAG_TIMELINE;
@@ -223,7 +223,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     @Override
     public List<Actor> searchActors(int limit, String searchQuery) throws ConnectionException {
         String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
-        if (StringUtils.isEmpty(tag)) {
+        if (StringUtil.isEmpty(tag)) {
             return new ArrayList<>();
         }
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_ACTORS;
@@ -273,7 +273,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             obj.put(SUMMARY_PROPERTY, note.getSummary());
             obj.put(SENSITIVE_PROPERTY, note.isSensitive());
             obj.put(CONTENT_PROPERTY_UPDATE, note.getContentToPost());
-            if ( !StringUtils.isEmpty(inReplyToOid)) {
+            if ( !StringUtil.isEmpty(inReplyToOid)) {
                 obj.put("in_reply_to_id", inReplyToOid);
             }
             List<String> ids = new ArrayList<>();
@@ -324,7 +324,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         }
         String oid = jso.optString("id");
         String username = jso.optString("username");
-        if (StringUtils.isEmpty(oid) || StringUtils.isEmpty(username)) {
+        if (StringUtil.isEmpty(oid) || StringUtil.isEmpty(username)) {
             throw ConnectionException.loggedJsonException(this, "Id or username is empty", null, jso);
         }
         Actor actor = Actor.fromOid(data.getOrigin(), oid);
@@ -432,7 +432,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     private CheckedFunction<JSONObject, List<Attachment>> jsonToAttachments(String method) {
         return jsoAttachment -> {
-            String type = StringUtils.notEmpty(jsoAttachment.optString("type"), "unknown");
+            String type = StringUtil.notEmpty(jsoAttachment.optString("type"), "unknown");
             if ("unknown".equals(type)) {
                 // When the type is "unknown", it is likely only remote_url is available and local url is missing
                 Uri remoteUri = UriUtils.fromJson(jsoAttachment, "remote_url");

@@ -30,7 +30,7 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import static org.andstatus.app.timeline.meta.Timeline.TIMELINE_CLICK_HOST;
 
@@ -194,7 +194,7 @@ public enum MatchedUri {
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + timeline.getOrigin().getId());
         uri = Uri.withAppendedPath(uri, ACTOR_SEGMENT);
         uri = ContentUris.withAppendedId(uri, timeline.getActorId());
-        if (!StringUtils.isEmpty(timeline.getSearchQuery())) {
+        if (!StringUtil.isEmpty(timeline.getSearchQuery())) {
             uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT);
             uri = Uri.withAppendedPath(uri, Uri.encode(timeline.getSearchQuery()));
         }
@@ -216,7 +216,7 @@ public enum MatchedUri {
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + originId);
         uri = Uri.withAppendedPath(uri, CENTRAL_ITEM_SEGMENT);
         uri = ContentUris.withAppendedId(uri, centralItemId);
-        if (!StringUtils.isEmpty(searchQuery)) {
+        if (!StringUtil.isEmpty(searchQuery)) {
             uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT);
             uri = Uri.withAppendedPath(uri, Uri.encode(searchQuery));
         }

@@ -29,7 +29,7 @@ import org.andstatus.app.database.DatabaseCreator;
 import org.andstatus.app.util.DocumentFileUtils;
 import org.andstatus.app.util.FileDescriptorUtils;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -235,7 +235,7 @@ public class MyBackupDescriptor {
 
     public String appVersionNameAndCode() {
         return "app version name:'" +
-            (StringUtils.isEmpty(getApplicationVersionName()) ? "???" : getApplicationVersionName()) + "'" +
+            (StringUtil.isEmpty(getApplicationVersionName()) ? "???" : getApplicationVersionName()) + "'" +
             ", version code:'" + getApplicationVersionCode() + "'";
 
     }

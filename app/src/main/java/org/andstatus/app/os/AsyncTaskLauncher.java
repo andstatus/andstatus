@@ -19,6 +19,7 @@ package org.andstatus.app.os;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -137,7 +138,7 @@ public class AsyncTaskLauncher<Params> {
                     + "\n" + threadPoolInfo();
             MyLog.w(objTag, msgLog, e);
             if (throwOnFail) {
-                throw new RejectedExecutionException(MyLog.objToTag(objTag) + "; "
+                throw new RejectedExecutionException(MyStringBuilder.objToTag(objTag) + "; "
                         + msgLog, e);
             }
         }

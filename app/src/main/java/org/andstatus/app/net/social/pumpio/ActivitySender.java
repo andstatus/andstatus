@@ -27,7 +27,7 @@ import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -160,13 +160,13 @@ class ActivitySender {
                 obj = mediaObject;
             }
         }
-        if (StringUtils.nonEmpty(name)) {
+        if (StringUtil.nonEmpty(name)) {
             obj.put(NAME_PROPERTY, name);
         }
-        if (StringUtils.nonEmpty(content)) {
+        if (StringUtil.nonEmpty(content)) {
             obj.put(CONTENT_PROPERTY, content);
         }
-        if (!StringUtils.isEmpty(inReplyToId)) {
+        if (!StringUtil.isEmpty(inReplyToId)) {
             JSONObject inReplyToObject = new JSONObject();
             inReplyToObject.put("id", inReplyToId);
             inReplyToObject.put("objectType", connection.oidToObjectType(inReplyToId));
@@ -179,8 +179,8 @@ class ActivitySender {
     private boolean contentNotPosted(PActivityType activityType, JSONObject jsActivity) {
         JSONObject objPosted = jsActivity.optJSONObject("object");
         return PActivityType.POST.equals(activityType) && objPosted != null
-                && (StringUtils.nonEmpty(content) && StringUtils.isEmpty(objPosted.optString(CONTENT_PROPERTY))
-                    || StringUtils.nonEmpty(name) && StringUtils.isEmpty(objPosted.optString(NAME_PROPERTY)));
+                && (StringUtil.nonEmpty(content) && StringUtil.isEmpty(objPosted.optString(CONTENT_PROPERTY))
+                    || StringUtil.nonEmpty(name) && StringUtil.isEmpty(objPosted.optString(NAME_PROPERTY)));
     }
 
     private JSONObject newActivityOfThisAccount(PActivityType activityType) throws JSONException, ConnectionException {
@@ -206,7 +206,7 @@ class ActivitySender {
 
     private void setAudience(JSONObject activity, PActivityType activityType) throws JSONException {
         audience.getActors().forEach(actor -> addToAudience(activity, "to", actor));
-        if (audience.isEmpty() && StringUtils.isEmpty(inReplyToId)
+        if (audience.isEmpty() && StringUtil.isEmpty(inReplyToId)
                 && (activityType.equals(PActivityType.POST) || activityType.equals(PActivityType.UPDATE))) {
             addToAudience(activity, "to", Actor.PUBLIC);
         }
@@ -216,7 +216,7 @@ class ActivitySender {
         String recipientId = actor.equals(Actor.PUBLIC)
                 ? ConnectionPumpio.PUBLIC_COLLECTION_ID
                 : actor.getBestUri();
-        if (StringUtils.isEmpty(recipientId)) return;
+        if (StringUtil.isEmpty(recipientId)) return;
         JSONObject recipient = new JSONObject();
         try {
             recipient.put("id", recipientId);
@@ -261,11 +261,11 @@ class ActivitySender {
             obj.put("id", objectId);
             obj.put("objectType", connection.oidToObjectType(objectId));
         } else {
-            if (StringUtils.isEmpty(name) && StringUtils.isEmpty(content) && attachments.isEmpty()) {
+            if (StringUtil.isEmpty(name) && StringUtil.isEmpty(content) && attachments.isEmpty()) {
                 throw new IllegalArgumentException("Nothing to send");
             }
             obj.put("author", activity.getJSONObject("actor"));
-            PObjectType objectType = StringUtils.isEmpty(inReplyToId) ? PObjectType.NOTE : PObjectType.COMMENT;
+            PObjectType objectType = StringUtil.isEmpty(inReplyToId) ? PObjectType.NOTE : PObjectType.COMMENT;
             obj.put("objectType", objectType.id());
         }
         return obj;

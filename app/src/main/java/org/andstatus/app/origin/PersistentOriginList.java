@@ -26,7 +26,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 public class PersistentOriginList extends OriginList {
 
@@ -85,7 +85,7 @@ public class PersistentOriginList extends OriginList {
             case SELECT_OPEN_INSTANCE:
                 if (resultCode == Activity.RESULT_OK) {
                     String originName = data.getStringExtra(IntentExtra.ORIGIN_NAME.key);
-                    if (!StringUtils.isEmpty(originName)) {
+                    if (!StringUtil.isEmpty(originName)) {
                         onAddOriginSelected(originName);
                     }
                 }

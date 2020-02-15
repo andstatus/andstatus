@@ -28,7 +28,7 @@ import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -102,7 +102,7 @@ public class HttpReadResult {
     private HttpReadResult setHeaders(@NonNull Map<String, List<String>> headers) {
         this.headers = headers;
         this.location = Optional.ofNullable(this.headers.get("Location")).orElse(Collections.emptyList()).stream()
-                .filter(StringUtils::nonEmpty)
+                .filter(StringUtil::nonEmpty)
                 .findFirst()
                 .map(l -> l.replace("%3F", "?"));
         return this;
@@ -126,8 +126,8 @@ public class HttpReadResult {
     }
 
     public final HttpReadResult setUrl(String urlIn) {
-        if (!StringUtils.isEmpty(urlIn) && !urlString.contentEquals(urlIn)) {
-            redirected = !StringUtils.isEmpty(urlString);
+        if (!StringUtil.isEmpty(urlIn) && !urlString.contentEquals(urlIn)) {
+            redirected = !StringUtil.isEmpty(urlString);
             urlString = urlIn;
             try {
                 url = new URL(urlIn);
@@ -173,7 +173,7 @@ public class HttpReadResult {
     @Override
     public String toString() {
         return logMsg()
-                + ((statusCode == StatusCode.OK) || StringUtils.isEmpty(statusLine)
+                + ((statusCode == StatusCode.OK) || StringUtil.isEmpty(statusLine)
                         ? "" : "; statusLine:'" + statusLine + "'")
                 + (intStatusCode == 0 ? "" : "; statusCode:" + statusCode + " (" + intStatusCode + ")") 
                 + "; url:'" + urlString + "'"
@@ -181,7 +181,7 @@ public class HttpReadResult {
                 + (authenticate ? "; authenticated" : "")
                 + (redirected ? "; redirected from:'" + uriInitial + "'" : "")
                 + formParams.map(params -> "; posted:'" + params + "'").orElse("")
-                + (StringUtils.isEmpty(strResponse) ? "" : "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
+                + (StringUtil.isEmpty(strResponse) ? "" : "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
                 + location.map(str -> "; location:'" + str + "'").orElse("")
                 + (exception == null ? "" : "; \nexception: " + exception.toString())
                 + (fileResult == null ? "" : "; saved to file");
@@ -199,7 +199,7 @@ public class HttpReadResult {
         String method = "getJsonObject; ";
         JSONObject jso = null;
         try {
-            if (StringUtils.isEmpty(strJson)) {
+            if (StringUtil.isEmpty(strJson)) {
                 jso = new JSONObject();
             } else {
                 jso = new JSONObject(strJson);
@@ -218,7 +218,7 @@ public class HttpReadResult {
 
     JSONArray getJsonArray(String arrayKey) throws ConnectionException {
         String method = "getJsonArray; ";
-        if (StringUtils.isEmpty(strResponse)) {
+        if (StringUtil.isEmpty(strResponse)) {
             MyLog.v(this, () -> method + "; response is empty");
             return new JSONArray();
         }
@@ -299,7 +299,7 @@ public class HttpReadResult {
             }
             MyLog.v(this, this::toString);
         } else {
-            if (!StringUtils.isEmpty(strResponse)) {
+            if (!StringUtil.isEmpty(strResponse)) {
                 throw getExceptionFromJsonErrorResponse();
             } else {
                 throw ConnectionException.fromStatusCodeAndThrowable(statusCode, toString(), exception);

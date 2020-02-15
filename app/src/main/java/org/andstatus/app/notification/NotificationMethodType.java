@@ -21,7 +21,7 @@ import android.provider.Settings;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import androidx.annotation.NonNull;
 
@@ -46,10 +46,10 @@ public enum NotificationMethodType {
     }
 
     public boolean isEnabled() {
-        if (StringUtils.isEmpty(preferenceKey) ) return false;
+        if (StringUtil.isEmpty(preferenceKey) ) return false;
         switch (this) {
             case SOUND:
-                return StringUtils.nonEmpty(SharedPreferencesUtil.getString(preferenceKey, ""));
+                return StringUtil.nonEmpty(SharedPreferencesUtil.getString(preferenceKey, ""));
             default:
                 return SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue);
         }
@@ -61,7 +61,7 @@ public enum NotificationMethodType {
             case SOUND:
                 String uriString = SharedPreferencesUtil.getString(preferenceKey,
                         Settings.System.DEFAULT_NOTIFICATION_URI.toString());
-                return StringUtils.isEmpty(uriString)
+                return StringUtil.isEmpty(uriString)
                         ? Uri.EMPTY
                         : Uri.parse(uriString);
             default:
@@ -70,7 +70,7 @@ public enum NotificationMethodType {
     }
 
     void setEnabled(boolean enabled) {
-        if (StringUtils.nonEmpty(preferenceKey)) SharedPreferencesUtil.putBoolean(preferenceKey, enabled);
+        if (StringUtil.nonEmpty(preferenceKey)) SharedPreferencesUtil.putBoolean(preferenceKey, enabled);
     }
 
     /** @return the enum or {@link #EMPTY} */

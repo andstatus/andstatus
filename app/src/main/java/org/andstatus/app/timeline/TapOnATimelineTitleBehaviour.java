@@ -17,7 +17,7 @@
 package org.andstatus.app.timeline;
 
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 public enum TapOnATimelineTitleBehaviour {
     SWITCH_TO_DEFAULT_TIMELINE(1),
@@ -43,7 +43,7 @@ public enum TapOnATimelineTitleBehaviour {
      */
     public static TapOnATimelineTitleBehaviour load(String strCode) {
         try {
-            if (!StringUtils.isEmpty(strCode)) {
+            if (!StringUtil.isEmpty(strCode)) {
                 return load(Long.parseLong(strCode));
             }
         } catch (NumberFormatException e) {

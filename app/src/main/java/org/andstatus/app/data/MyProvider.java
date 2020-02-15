@@ -43,7 +43,7 @@ import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
@@ -263,7 +263,7 @@ public class MyProvider extends ContentProvider {
             MyLog.databaseIsNull(() -> method);
             return;
         }
-        String sql = "UPDATE " + tableName + " SET " + set + (StringUtils.isEmpty(where) ? "" : " WHERE " + where);
+        String sql = "UPDATE " + tableName + " SET " + set + (StringUtil.isEmpty(where) ? "" : " WHERE " + where);
         try {
             db.execSQL(sql);
         } catch (Exception e) {
@@ -407,10 +407,10 @@ public class MyProvider extends ContentProvider {
                 tables = TimelineSql.tablesForTimeline(uri, projection);
                 qb.setProjectionMap(ProjectionMap.TIMELINE);
                 String rawQuery = uriParser.getSearchQuery();
-                if (StringUtils.nonEmpty(rawQuery)) {
+                if (StringUtil.nonEmpty(rawQuery)) {
                     KeywordsFilter searchQuery  = new KeywordsFilter(rawQuery);
                     selection = "(" + searchQuery.getSqlSelection(NoteTable.CONTENT_TO_SEARCH) + ")" +
-                            (StringUtils.nonEmpty(selectionIn)
+                            (StringUtil.nonEmpty(selectionIn)
                                 ? " AND (" + selectionIn + ")"
                                 : "");
                     selectionArgs = searchQuery.prependSqlSelectionArgs(selectionArgs);
@@ -438,13 +438,13 @@ public class MyProvider extends ContentProvider {
                     actorWhere.append(ActorTable.GROUP_TYPE +
                         SqlIds.fromIds(GroupType.GENERIC.id, GroupType.ACTOR_OWNED.id).getSql());
                 }
-                if (StringUtils.nonEmpty(rawQuery)) {
+                if (StringUtil.nonEmpty(rawQuery)) {
                     actorWhere.append(ActorTable.WEBFINGER_ID + " LIKE ?" +
                         " OR " + ActorTable.REAL_NAME + " LIKE ?" +
                         " OR " + ActorTable.USERNAME + " LIKE ?");
-                    selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
-                    selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
-                    selectionArgs = StringUtils.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
+                    selectionArgs = StringUtil.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
+                    selectionArgs = StringUtil.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
+                    selectionArgs = StringUtil.addBeforeArray(selectionArgs, "%" + rawQuery + "%");
                 }
                 selection = actorWhere.getCondition();
                 where = "";
@@ -471,7 +471,7 @@ public class MyProvider extends ContentProvider {
 
         // If no sort order is specified use the default
         final String sortOrder;
-        if (StringUtils.isEmpty(sortOrderIn)) {
+        if (StringUtil.isEmpty(sortOrderIn)) {
             switch (uriParser.matched()) {
                 case TIMELINE:
                 case TIMELINE_ITEM:
@@ -500,7 +500,7 @@ public class MyProvider extends ContentProvider {
             SQLiteDatabase db = MyContextHolder.get().getDatabase();
             boolean logQuery = MyLog.isDebugEnabled();
             try {
-                if (StringUtils.nonEmpty(where)) {
+                if (StringUtil.nonEmpty(where)) {
                     qb.appendWhere(where);
                 }
                 if (sql.length() == 0) {
@@ -577,7 +577,7 @@ public class MyProvider extends ContentProvider {
                 long rowId = uriParser.getNoteId();
                 if (values.size() > 0) {
                     count = db.update(NoteTable.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
-                            + (StringUtils.nonEmpty(selection) ? " AND (" + selection + ')' : ""),
+                            + (StringUtil.nonEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }
                 break;
@@ -590,7 +590,7 @@ public class MyProvider extends ContentProvider {
                 long selectedActorId = uriParser.getActorId();
                 if (values.size() > 0) {
                     count = db.update(ActorTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedActorId
-                                    + (StringUtils.nonEmpty(selection) ? " AND (" + selection + ')' : ""),
+                                    + (StringUtil.nonEmpty(selection) ? " AND (" + selection + ')' : ""),
                             selectionArgs);
                 }
                 break;

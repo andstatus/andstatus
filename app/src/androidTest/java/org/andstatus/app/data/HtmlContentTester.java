@@ -26,7 +26,7 @@ import org.andstatus.app.net.social.Note;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyHtml;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.MyHtml.LINEBREAK_HTML;
@@ -69,7 +69,7 @@ public class HtmlContentTester {
             assertHtmlNoteContentAllowed(author, bodyString, noteOid, true);
         } else {
             assertHtmlNoteContentAllowed(author, bodyString + " no HTML",
-                    StringUtils.isEmpty(noteOid) ? null : noteOid + "-noHtml", false);
+                    StringUtil.isEmpty(noteOid) ? null : noteOid + "-noHtml", false);
         }
     }
 

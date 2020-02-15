@@ -38,6 +38,7 @@ import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.user.CachedUsersAndActors;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -81,7 +82,7 @@ public class MyContextImpl implements MyContext {
     private final Notifier notifier = new Notifier(this);
 
     MyContextImpl(MyContextImpl parent, Context context, Object initializer) {
-        initializedBy = MyLog.objToTag(initializer);
+        initializedBy = MyStringBuilder.objToTag(initializer);
         this.context = calcContextToUse(parent, context);
         if (parent != null) {
             lastDatabaseError = parent.getLastDatabaseError();

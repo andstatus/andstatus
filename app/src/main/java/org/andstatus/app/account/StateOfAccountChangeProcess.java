@@ -26,7 +26,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -108,7 +108,7 @@ class StateOfAccountChangeProcess {
             
             // Maybe we received MyAccount name as a parameter?!
             String accountName = extras.getString(IntentExtra.ACCOUNT_NAME.key);
-            if (!StringUtils.isEmpty(accountName)) {
+            if (!StringUtil.isEmpty(accountName)) {
                 state.builder.rebuildMyAccount(
                         AccountName.fromAccountName(MyContextHolder.get(), accountName));
                 state.useThisState = state.builder.isPersistent();
@@ -168,18 +168,18 @@ class StateOfAccountChangeProcess {
     
     /** null means to clear the old values */
     void setRequestTokenWithSecret(String token, String secret) {
-        if (StringUtils.isEmpty(token)) {
+        if (StringUtil.isEmpty(token)) {
             requestToken = null;
         } else {
             requestToken = token;
         }
-        MyLog.d(TAG, StringUtils.isEmpty(token) ? "Clearing Request Token" : "Saving Request Token: " + token);
-        if (StringUtils.isEmpty(secret)) {
+        MyLog.d(TAG, StringUtil.isEmpty(token) ? "Clearing Request Token" : "Saving Request Token: " + token);
+        if (StringUtil.isEmpty(secret)) {
             requestSecret = null;
         } else {
             requestSecret = secret;
         }
-        MyLog.d(TAG, StringUtils.isEmpty(secret) ? "Clearing Request Secret" : "Saving Request Secret: " + secret);
+        MyLog.d(TAG, StringUtil.isEmpty(secret) ? "Clearing Request Secret" : "Saving Request Secret: " + secret);
     }
     
     /**
@@ -223,7 +223,7 @@ class StateOfAccountChangeProcess {
     }
 
     void setAccountAction(String accountAction) {
-        if (StringUtils.isEmpty(accountAction)) {
+        if (StringUtil.isEmpty(accountAction)) {
             this.accountAction = Intent.ACTION_DEFAULT;
         } else {
             this.accountAction = accountAction;

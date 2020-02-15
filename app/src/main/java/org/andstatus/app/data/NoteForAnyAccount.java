@@ -29,7 +29,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import androidx.annotation.NonNull;
@@ -106,6 +106,6 @@ public class NoteForAnyAccount {
     }
 
     public boolean isPresentAtServer() {
-        return status.isPresentAtServer() || StringUtils.nonEmptyNonTemp(noteOid);
+        return status.isPresentAtServer() || StringUtil.nonEmptyNonTemp(noteOid);
     }
 }

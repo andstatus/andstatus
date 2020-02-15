@@ -26,7 +26,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 public class ParsedUri {
     private final Uri uri;
@@ -191,19 +191,19 @@ public class ParsedUri {
     }
 
     public boolean isSearch() {
-        return StringUtils.nonEmpty(getSearchQuery());
+        return StringUtil.nonEmpty(getSearchQuery());
     }
 
     @NonNull
     public String getSearchQuery() {
-        if (StringUtils.nonEmpty(searchQuery)) {
+        if (StringUtil.nonEmpty(searchQuery)) {
             return searchQuery;
         }
         try {
             switch (matchedUri) {
                 case TIMELINE_SEARCH:
                 case ACTORLIST_SEARCH:
-                    return StringUtils.notNull(uri.getPathSegments().get(9));
+                    return StringUtil.notNull(uri.getPathSegments().get(9));
                 default:
                     break;
             }

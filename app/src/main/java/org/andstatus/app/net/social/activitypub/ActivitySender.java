@@ -29,7 +29,7 @@ import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -125,19 +125,19 @@ class ActivitySender {
         JSONObject activity = newActivityOfThisAccount(activityType);
         JSONObject obj = buildObject(activity);
         addAttachments(obj);
-        if (StringUtils.nonEmpty(note.getName())) {
+        if (StringUtil.nonEmpty(note.getName())) {
             obj.put(NAME_PROPERTY, note.getName());
         }
-        if (StringUtils.nonEmpty(note.getSummary())) {
+        if (StringUtil.nonEmpty(note.getSummary())) {
             obj.put(SUMMARY_PROPERTY, note.getSummary());
         }
         if (note.isSensitive()) {
             obj.put(SENSITIVE_PROPERTY, note.isSensitive());
         }
-        if (StringUtils.nonEmpty(note.getContent())) {
+        if (StringUtil.nonEmpty(note.getContent())) {
             obj.put(CONTENT_PROPERTY, note.getContentToPost());
         }
-        if (!StringUtils.isEmpty(inReplyToId)) {
+        if (!StringUtil.isEmpty(inReplyToId)) {
             obj.put("inReplyTo", inReplyToId);
         }
         activity.put("object", obj);
@@ -163,9 +163,9 @@ class ActivitySender {
     private boolean contentNotPosted(ActivityType activityType, JSONObject jsActivity) {
         JSONObject objPosted = jsActivity.optJSONObject("object");
         return ActivityType.CREATE.equals(activityType) && objPosted != null &&
-            (StringUtils.nonEmpty(note.getContent()) && StringUtils.isEmpty(objPosted.optString(CONTENT_PROPERTY))
-                || StringUtils.nonEmpty(note.getName()) && StringUtils.isEmpty(objPosted.optString(NAME_PROPERTY))
-                || StringUtils.nonEmpty(note.getSummary()) && StringUtils.isEmpty(objPosted.optString(SUMMARY_PROPERTY))
+            (StringUtil.nonEmpty(note.getContent()) && StringUtil.isEmpty(objPosted.optString(CONTENT_PROPERTY))
+                || StringUtil.nonEmpty(note.getName()) && StringUtil.isEmpty(objPosted.optString(NAME_PROPERTY))
+                || StringUtil.nonEmpty(note.getSummary()) && StringUtil.isEmpty(objPosted.optString(SUMMARY_PROPERTY))
             );
     }
 
@@ -193,7 +193,7 @@ class ActivitySender {
         String recipientId = actor.equals(Actor.PUBLIC)
                 ? ConnectionActivityPub.PUBLIC_COLLECTION_ID
                 : actor.getBestUri();
-        if (StringUtils.isEmpty(recipientId)) return;
+        if (StringUtil.isEmpty(recipientId)) return;
         try {
             JSONArray field = activity.has(recipientField) ? activity.getJSONArray(recipientField) : new JSONArray();
             field.put(recipientId);

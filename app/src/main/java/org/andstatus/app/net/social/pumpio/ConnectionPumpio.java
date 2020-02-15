@@ -37,7 +37,7 @@ import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
@@ -66,7 +66,7 @@ public class ConnectionPumpio extends Connection {
     @Override
     public Connection setAccountConnectionData(AccountConnectionData connectionData) {
         final String host = connectionData.getAccountActor().getConnectionHost();
-        if (StringUtils.nonEmpty(host)) {
+        if (StringUtil.nonEmpty(host)) {
             connectionData.setOriginUrl(UrlUtils.buildUrl(host, connectionData.isSsl()));
         }
         return super.setAccountConnectionData(connectionData);
@@ -132,7 +132,7 @@ public class ConnectionPumpio extends Connection {
         String oid = jso.optString("id");
         Actor actor = Actor.fromOid(data.getOrigin(), oid);
         String username = jso.optString("preferredUsername");
-        actor.setUsername(StringUtils.isEmpty(username) ? actorOidToUsername(oid) : username);
+        actor.setUsername(StringUtil.isEmpty(username) ? actorOidToUsername(oid) : username);
         actor.setRealName(jso.optString(NAME_PROPERTY));
         actor.setAvatarUrl(JsonUtils.optStringInside(jso, "image", "url"));
         actor.location = JsonUtils.optStringInside(jso, "location", NAME_PROPERTY);
@@ -252,7 +252,7 @@ public class ConnectionPumpio extends Connection {
                 }
             }
         }
-        if (StringUtils.isEmpty(objectType)) {
+        if (StringUtil.isEmpty(objectType)) {
             objectType = "unknown object type: " + oid;
             MyLog.e(this, objectType);
         }
@@ -326,7 +326,7 @@ public class ConnectionPumpio extends Connection {
 
     private AActivity parseActivity(AActivity activity, JSONObject jsoActivity) throws JSONException, ConnectionException {
         String oid = jsoActivity.optString("id");
-        if (StringUtils.isEmpty(oid)) {
+        if (StringUtil.isEmpty(oid)) {
             MyLog.d(this, "Pumpio activity has no id:" + jsoActivity.toString(2));
             return AActivity.EMPTY;
         }
@@ -382,7 +382,7 @@ public class ConnectionPumpio extends Connection {
     }
 
     private void setVia(Note note, JSONObject activity) throws JSONException {
-        if (StringUtils.isEmpty(note.via) && activity.has(Properties.GENERATOR.code)) {
+        if (StringUtil.isEmpty(note.via) && activity.has(Properties.GENERATOR.code)) {
             JSONObject generator = activity.getJSONObject(Properties.GENERATOR.code);
             if (generator.has(NAME_PROPERTY)) {
                 note.via = generator.getString(NAME_PROPERTY);
@@ -393,7 +393,7 @@ public class ConnectionPumpio extends Connection {
     private void noteFromJsonComment(AActivity parentActivity, JSONObject jso) throws ConnectionException {
         try {
             String oid = jso.optString("id");
-            if (StringUtils.isEmpty(oid)) {
+            if (StringUtil.isEmpty(oid)) {
                 MyLog.d(TAG, "Pumpio object has no id:" + jso.toString(2));
                 return;
             }
@@ -479,7 +479,7 @@ public class ConnectionPumpio extends Connection {
      * 2014-01-22 According to the crash reports, actorId may not have "acct:" prefix
      */
     public String actorOidToUsername(String actorId) {
-        if (StringUtils.isEmpty(actorId)) return "";
+        if (StringUtil.isEmpty(actorId)) return "";
 
         int indexOfColon = actorId.indexOf(':');
         String webfingerLike = (indexOfColon >= 0)
@@ -492,7 +492,7 @@ public class ConnectionPumpio extends Connection {
     }
 
     public String actorOidToHost(String actorId) {
-        if (StringUtils.isEmpty(actorId)) return "";
+        if (StringUtil.isEmpty(actorId)) return "";
 
         int indexOfAt = actorId.indexOf('@');
         return (indexOfAt < 0) ? "" : actorId.substring(indexOfAt + 1);

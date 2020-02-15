@@ -43,7 +43,7 @@ public class DocumentFileUtils {
     public static JSONObject getJSONObject(Context context, DocumentFile fileDescriptor) {
         JSONObject jso = null;
         String fileString = uri2String(context, fileDescriptor.getUri());
-        if (!StringUtils.isEmpty(fileString)) {
+        if (!StringUtil.isEmpty(fileString)) {
             try {
                 jso = new JSONObject(fileString);
             } catch (JSONException e) {
@@ -79,7 +79,7 @@ public class DocumentFileUtils {
     public static JSONArray getJSONArray(Context context, DocumentFile fileDescriptor) {
         JSONArray jso = null;
         String fileString = uri2String(context, fileDescriptor.getUri());
-        if (!StringUtils.isEmpty(fileString)) {
+        if (!StringUtil.isEmpty(fileString)) {
             try {
                 jso = new JSONArray(fileString);
             } catch (JSONException e) {

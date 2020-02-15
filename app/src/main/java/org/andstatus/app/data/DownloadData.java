@@ -20,7 +20,7 @@ import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
@@ -143,7 +143,7 @@ public class DownloadData implements IsEmpty {
         if (contentType == MyContentType.UNKNOWN) {
             contentType = MyContentType.load(DbUtils.getLong(cursor, DownloadTable.CONTENT_TYPE));
         }
-        if (StringUtils.isEmpty(mimeType)) {
+        if (StringUtil.isEmpty(mimeType)) {
             mimeType = DbUtils.getString(cursor, DownloadTable.MEDIA_TYPE,
                     () -> MyContentType.uri2MimeType(null, Uri.parse(fileStored.getFilename())));
         }
@@ -251,13 +251,13 @@ public class DownloadData implements IsEmpty {
 
     private String getExtension() {
         final String fileExtension = MyContentType.mimeToFileExtension(mimeType);
-        if (StringUtils.nonEmpty(fileExtension)) return fileExtension;
+        if (StringUtil.nonEmpty(fileExtension)) return fileExtension;
 
         final String fileExtension2 = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
-        if (StringUtils.nonEmpty(fileExtension2)) return fileExtension2;
+        if (StringUtil.nonEmpty(fileExtension2)) return fileExtension2;
 
         final String fileExtension3 = MimeTypeMap.getFileExtensionFromUrl(fileStored.getFilename());
-        if (StringUtils.nonEmpty(fileExtension3)) return fileExtension3;
+        if (StringUtil.nonEmpty(fileExtension3)) return fileExtension3;
 
         MyLog.d(this, "Failed to find file extension " + this);
         return "png";

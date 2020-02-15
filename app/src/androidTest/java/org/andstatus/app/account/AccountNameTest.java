@@ -19,7 +19,7 @@ package org.andstatus.app.account;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,7 +53,7 @@ public class AccountNameTest {
     public void assertInputValues(Origin origin, String uniqueName) {
         AccountName accountName = AccountName.fromOriginAndUniqueName(origin, uniqueName);
         assertEquals(origin, accountName.origin);
-        String expected = StringUtils.isEmpty(uniqueName)
+        String expected = StringUtil.isEmpty(uniqueName)
                 ? ""
                 : ( uniqueName.contains("@")
                     ? uniqueName

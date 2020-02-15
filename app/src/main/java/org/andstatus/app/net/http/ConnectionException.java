@@ -17,6 +17,7 @@
 package org.andstatus.app.net.http;
 
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.UrlUtils;
 
 import java.io.IOException;
@@ -125,7 +126,7 @@ public class ConnectionException extends IOException {
             }
             MyLog.logJson(objTag, "json_exception", jso, fileName);
         }
-        return new ConnectionException(StatusCode.OK, MyLog.objToTag(objTag) + ": " + detailMessage, e, null, isHard);
+        return new ConnectionException(StatusCode.OK, MyStringBuilder.objToTag(objTag) + ": " + detailMessage, e, null, isHard);
     }
 
     public static ConnectionException fromStatusCode(StatusCode statusCode, final String detailMessage) {

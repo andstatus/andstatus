@@ -32,7 +32,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.Collections;
@@ -99,7 +99,7 @@ public class User implements IsEmpty {
 
     @Override
     public boolean isEmpty() {
-        return this == EMPTY || (userId == 0 && StringUtils.isEmpty(knownAs));
+        return this == EMPTY || (userId == 0 && StringUtil.isEmpty(knownAs));
     }
 
     @Override
@@ -109,7 +109,7 @@ public class User implements IsEmpty {
         }
         String str = User.class.getSimpleName();
         String members = "id=" + userId;
-        if (!StringUtils.isEmpty(knownAs)) {
+        if (!StringUtil.isEmpty(knownAs)) {
             members += "; knownAs=" + knownAs;
         }
         if (isMyUser.known) {
@@ -136,7 +136,7 @@ public class User implements IsEmpty {
 
     private ContentValues toContentValues(MyContext myContext) {
         ContentValues values = new ContentValues();
-        if (StringUtils.nonEmpty(knownAs)) values.put(UserTable.KNOWN_AS, knownAs);
+        if (StringUtil.nonEmpty(knownAs)) values.put(UserTable.KNOWN_AS, knownAs);
         if (isMyUser.known) values.put(UserTable.IS_MY, isMyUser.id);
         return values;
     }

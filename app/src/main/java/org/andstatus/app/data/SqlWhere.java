@@ -19,7 +19,7 @@ package org.andstatus.app.data;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -32,17 +32,17 @@ public class SqlWhere implements IsEmpty {
     }
 
     public SqlWhere append(String field, String condition) {
-        if (StringUtils.isEmpty(condition)) {
+        if (StringUtil.isEmpty(condition)) {
             return this;
         }
         return append(field + condition);
     }
 
     public SqlWhere append(String condition) {
-        if (StringUtils.isEmpty(condition)) {
+        if (StringUtil.isEmpty(condition)) {
             return this;
         }
-        if (!StringUtils.isEmpty(where)) {
+        if (!StringUtil.isEmpty(where)) {
             where += " AND ";
         }
         where += "(" + condition + ")";
@@ -56,15 +56,15 @@ public class SqlWhere implements IsEmpty {
 
     @NonNull
     public String getWhere() {
-        return StringUtils.isEmpty(where) ? "" : " WHERE (" + where + ")";
+        return StringUtil.isEmpty(where) ? "" : " WHERE (" + where + ")";
     }
 
     @NonNull
     public String getAndWhere() {
-        return StringUtils.isEmpty(where) ? "" : " AND " + where;
+        return StringUtil.isEmpty(where) ? "" : " AND " + where;
     }
 
     public boolean isEmpty() {
-        return StringUtils.isEmpty(where);
+        return StringUtil.isEmpty(where);
     }
 }

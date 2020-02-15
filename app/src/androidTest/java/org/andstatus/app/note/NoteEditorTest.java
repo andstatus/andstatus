@@ -58,7 +58,7 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyHtmlTest;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
@@ -328,7 +328,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
             return "";
         }
         ClipData.Item item = reader.clip.getItemAt(0);
-        return (StringUtils.isEmpty(item.getHtmlText()) ? item.getText() : item.getHtmlText())
+        return (StringUtil.isEmpty(item.getHtmlText()) ? item.getText() : item.getHtmlText())
                 .toString();
     }
 

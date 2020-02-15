@@ -38,7 +38,7 @@ import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -216,7 +216,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         }
         long noteId = selectedNoteId;
         String conversationOid = MyQuery.noteIdToConversationOid(myContext, noteId);
-        if (StringUtils.isEmpty(conversationOid) && noteId_in != noteId) {
+        if (StringUtil.isEmpty(conversationOid) && noteId_in != noteId) {
             noteId = noteId_in;
             conversationOid = MyQuery.noteIdToConversationOid(myContext, noteId);
         }

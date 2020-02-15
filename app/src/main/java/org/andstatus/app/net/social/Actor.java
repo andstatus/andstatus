@@ -47,7 +47,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.NullUtil;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
@@ -214,7 +214,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         this.origin = origin;
         this.groupType = groupType;
         this.actorId = actorId;
-        this.oid = StringUtils.isEmpty(actorOid) ? "" : actorOid;
+        this.oid = StringUtil.isEmpty(actorOid) ? "" : actorOid;
         endpoints = ActorEndpoints.from(origin.myContext, actorId);
     }
 
@@ -253,7 +253,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (this == EMPTY) return true;
         if (this == PUBLIC) return false;
         return !origin.isValid() ||
-                (actorId == 0 && UriUtils.nonRealOid(oid) && StringUtils.isEmpty(webFingerId) && !isUsernameValid());
+                (actorId == 0 && UriUtils.nonRealOid(oid) && StringUtil.isEmpty(webFingerId) && !isUsernameValid());
     }
 
     public boolean dontStore() {
@@ -263,7 +263,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     public boolean isPartiallyDefined() {
         if (isPartiallyDefined.unknown) {
             isPartiallyDefined = TriState.fromBoolean(!origin.isValid() || UriUtils.nonRealOid(oid) ||
-                    StringUtils.isEmpty(webFingerId) ||
+                    StringUtil.isEmpty(webFingerId) ||
                     !isUsernameValid());
         }
         return isPartiallyDefined.isTrue;
@@ -310,7 +310,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public boolean canGetActor() {
-        return (isOidReal() || isUsernameValid()) && StringUtils.nonEmpty(getConnectionHost());
+        return (isOidReal() || isUsernameValid()) && StringUtil.nonEmpty(getConnectionHost());
     }
 
     @Override
@@ -321,7 +321,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         MyStringBuilder members = MyStringBuilder.of("origin:" + origin.getName())
         .withComma("id", actorId)
         .withComma("oid", oid)
-        .withComma(isWebFingerIdValid() ? "webFingerId" : "", StringUtils.isEmpty(webFingerId)
+        .withComma(isWebFingerIdValid() ? "webFingerId" : "", StringUtil.isEmpty(webFingerId)
                 ? ""
                 : isWebFingerIdValid() ? webFingerId : "(invalid webFingerId)")
         .withComma("username", username)
@@ -350,15 +350,15 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public String getUniqueName() {
-        if (StringUtils.nonEmptyNonTemp(username)) return username + getOptAtHostForUniqueName();
-        if (StringUtils.nonEmptyNonTemp(realName)) return realName + getOptAtHostForUniqueName();
-        if (StringUtils.nonEmptyNonTemp(oid)) return oid;
+        if (StringUtil.nonEmptyNonTemp(username)) return username + getOptAtHostForUniqueName();
+        if (StringUtil.nonEmptyNonTemp(realName)) return realName + getOptAtHostForUniqueName();
+        if (StringUtil.nonEmptyNonTemp(oid)) return oid;
         return "id:" + actorId + getOptAtHostForUniqueName();
     }
 
     private String getOptAtHostForUniqueName() {
         return origin.getOriginType().uniqueNameHasHost()
-                ? (StringUtils.isEmpty(getIdHost()) ? "" : "@" + getIdHost())
+                ? (StringUtil.isEmpty(getIdHost()) ? "" : "@" + getIdHost())
                 : "";
     }
 
@@ -369,7 +369,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public static Optional<String> uniqueNameToUsername(Origin origin, String uniqueName) {
-        if (StringUtils.nonEmpty(uniqueName)) {
+        if (StringUtil.nonEmpty(uniqueName)) {
             if (uniqueName.contains("@")) {
                 final String nameBeforeTheLastAt = uniqueName.substring(0, uniqueName.lastIndexOf("@"));
                 if (isWebFingerIdValid(uniqueName)) {
@@ -392,7 +392,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public static Optional<String> uniqueNameToWebFingerId(Origin origin, String uniqueName) {
-        if (StringUtils.nonEmpty(uniqueName)) {
+        if (StringUtil.nonEmpty(uniqueName)) {
             if (uniqueName.contains("@")) {
                 final String nameBeforeTheLastAt = uniqueName.substring(0, uniqueName.lastIndexOf("@"));
                 if (isWebFingerIdValid(uniqueName)) {
@@ -418,7 +418,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (this == EMPTY) {
             throw new IllegalStateException("Cannot set username of EMPTY Actor");
         }
-        this.username = StringUtils.isEmpty(username) ? "" : username.trim();
+        this.username = StringUtil.isEmpty(username) ? "" : username.trim();
         return this;
     }
 
@@ -501,7 +501,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (this == EMPTY) return this;
 
         connectionHost.reset();
-        if (StringUtils.isEmpty(username) || isWebFingerIdValid) return this;
+        if (StringUtil.isEmpty(username) || isWebFingerIdValid) return this;
 
         if (username.contains("@")) {
             setWebFingerId(username);
@@ -517,7 +517,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public Actor setWebFingerId(String webFingerIdIn) {
-        if (StringUtils.isEmpty(webFingerIdIn) || !webFingerIdIn.contains("@")) return this;
+        if (StringUtil.isEmpty(webFingerIdIn) || !webFingerIdIn.contains("@")) return this;
 
         String potentialUsername = webFingerIdIn;
         final String nameBeforeTheLastAt = webFingerIdIn.substring(0, webFingerIdIn.lastIndexOf("@"));
@@ -551,14 +551,14 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public static boolean isWebFingerIdValid(String webFingerId) {
-        return StringUtils.nonEmpty(webFingerId) && Patterns.WEBFINGER_ID_REGEX_PATTERN.matcher(webFingerId).matches();
+        return StringUtil.nonEmpty(webFingerId) && Patterns.WEBFINGER_ID_REGEX_PATTERN.matcher(webFingerId).matches();
     }
 
     public String getBestUri() {
-        if (!StringUtils.isEmptyOrTemp(oid)) {
+        if (!StringUtil.isEmptyOrTemp(oid)) {
             return oid;
         }
-        if (isUsernameValid() && StringUtils.nonEmpty(getIdHost())) {
+        if (isUsernameValid() && StringUtil.nonEmpty(getIdHost())) {
             return OriginPumpio.ACCOUNT_PREFIX + getUsername() + "@" + getIdHost();
         }
         if (isWebFingerIdValid()) {
@@ -577,7 +577,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (actorId == 0 && isWebFingerIdValid()) {
             actorId = MyQuery.webFingerIdToId(origin.myContext, origin.getId(), webFingerId, true);
         }
-        if (actorId == 0 && StringUtils.nonEmpty(username)) {
+        if (actorId == 0 && StringUtil.nonEmpty(username)) {
             long actorId2 = origin.usernameToId(username);
             if (actorId2 != 0) {
                 boolean skip2 = false;
@@ -621,7 +621,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public boolean hasAltTempOid() {
-        return !toTempOid().equals(toAltTempOid()) && StringUtils.nonEmpty(username);
+        return !toTempOid().equals(toAltTempOid()) && StringUtil.nonEmpty(username);
     }
 
     public boolean hasLatestNote() {
@@ -637,7 +637,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public static String toTempOid(String webFingerId, String validUserName) {
-        return StringUtils.toTempOid(isWebFingerIdValid(webFingerId) ? webFingerId : validUserName);
+        return StringUtil.toTempOid(isWebFingerIdValid(webFingerId) ? webFingerId : validUserName);
     }
 
     /** Tries to find this actor in the home origin (the same host...).
@@ -674,7 +674,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 validWebFingerId = username;
             }
         }
-        if (StringUtils.nonEmpty(validWebFingerId) || StringUtils.nonEmpty(validUsername)) {
+        if (StringUtil.nonEmpty(validWebFingerId) || StringUtil.nonEmpty(validUsername)) {
             addExtractedActor(actors, validWebFingerId, validUsername, actorReference.groupType, inReplyToActor);
         }
         return _extractActorsFromContent(text, ind + 1, actors, inReplyToActor);
@@ -687,7 +687,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public boolean isUsernameValid() {
-        return StringUtils.nonEmptyNonTemp(username) && origin.isUsernameValid(username);
+        return StringUtil.nonEmptyNonTemp(username) && origin.isUsernameValid(username);
     }
 
     private void addExtractedActor(List<Actor> actors, String webFingerId, String validUsername, GroupType groupType,
@@ -719,7 +719,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (origin.shouldHaveUrl()) {
             return origin.getHost();
         }
-        if (StringUtils.nonEmpty(profileUri.getHost())) {
+        if (StringUtil.nonEmpty(profileUri.getHost())) {
             return profileUri.getHost();
         }
         return UrlUtils.getHost(oid).orElseGet(() -> {
@@ -745,7 +745,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                     return getWebFingerId().substring(pos + 1);
                 }
             }
-            if (StringUtils.nonEmpty(profileUri.getHost())) {
+            if (StringUtil.nonEmpty(profileUri.getHost())) {
                 return profileUri.getHost();
             }
             return "";
@@ -830,10 +830,10 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     public String toActorTitle() {
         StringBuilder builder = new StringBuilder();
         final String uniqueName = getUniqueName();
-        if (StringUtils.nonEmpty(uniqueName)) {
+        if (StringUtil.nonEmpty(uniqueName)) {
             builder.append("@" + uniqueName);
         }
-        if (StringUtils.nonEmpty(getRealName())) {
+        if (StringUtil.nonEmpty(getRealName())) {
             MyStringBuilder.appendWithSpace(builder, "(" + getRealName() + ")");
         }
         return builder.toString();
@@ -841,23 +841,23 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     public String getTimelineUsername() {
         String name1 = getTimelineUsername1();
-        return StringUtils.nonEmpty(name1) ? name1 : getUniqueNameWithOrigin();
+        return StringUtil.nonEmpty(name1) ? name1 : getUniqueNameWithOrigin();
     }
 
     private String getTimelineUsername1() {
         switch (MyPreferences.getActorInTimeline()) {
             case AT_USERNAME:
-                return StringUtils.isEmpty(username) ? "" : "@" + username;
+                return StringUtil.isEmpty(username) ? "" : "@" + username;
             case WEBFINGER_ID:
                 return isWebFingerIdValid ? webFingerId : "";
             case REAL_NAME:
                 return realName;
             case REAL_NAME_AT_USERNAME:
-                return StringUtils.nonEmpty(realName) && StringUtils.nonEmpty(username)
+                return StringUtil.nonEmpty(realName) && StringUtil.nonEmpty(username)
                     ? realName + " @" + username
                     : username;
             case REAL_NAME_AT_WEBFINGER_ID:
-                return StringUtils.nonEmpty(realName) && StringUtils.nonEmpty(webFingerId)
+                return StringUtil.nonEmpty(realName) && StringUtil.nonEmpty(webFingerId)
                         ? realName + " @" + webFingerId
                         : webFingerId;
             default:

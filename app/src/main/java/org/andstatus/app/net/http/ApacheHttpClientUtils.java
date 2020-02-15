@@ -22,7 +22,7 @@ import android.net.Uri;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.FileUtils;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONObject;
 
@@ -70,7 +70,7 @@ class ApacheHttpClientUtils {
             }
         }
         final ContentResolver contentResolver = MyContextHolder.get().context().getContentResolver();
-        if (!StringUtils.isEmpty(mediaPartName) && !UriUtils.isEmpty(mediaUri) && contentResolver != null) {
+        if (!StringUtil.isEmpty(mediaPartName) && !UriUtils.isEmpty(mediaUri) && contentResolver != null) {
             try (InputStream ins = contentResolver.openInputStream(mediaUri)) {
                 ContentType mediaContentType = ContentType.create(
                         MyContentType.uri2MimeType(contentResolver, mediaUri));
@@ -99,7 +99,7 @@ class ApacheHttpClientUtils {
         while (iterator.hasNext()) {
             String name = iterator.next();
             String value = jso.optString(name);
-            if (!StringUtils.isEmpty(value)) {
+            if (!StringUtil.isEmpty(value)) {
                 formParams.add(new BasicNameValuePair(name, value));
             }
         }

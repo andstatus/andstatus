@@ -34,7 +34,7 @@ import org.andstatus.app.util.LazyVal;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
@@ -92,7 +92,7 @@ public class Note extends AObject {
     }
 
     private static DownloadStatus fixedStatus(String oid, DownloadStatus status) {
-        if (StringUtils.isEmpty(oid) && status == DownloadStatus.LOADED) {
+        if (StringUtil.isEmpty(oid) && status == DownloadStatus.LOADED) {
             return DownloadStatus.UNKNOWN;
         }
         return status;
@@ -138,7 +138,7 @@ public class Note extends AObject {
     }
 
     private static String getTempOid() {
-        return StringUtils.toTempOid("note:" + MyLog.uniqueCurrentTimeMS());
+        return StringUtil.toTempOid("note:" + MyLog.uniqueCurrentTimeMS());
     }
 
     private Note(Origin origin, String oid) {
@@ -194,8 +194,8 @@ public class Note extends AObject {
 
     private String evalContentToSearch() {
         return MyHtml.getContentToSearch(
-                (StringUtils.nonEmpty(name) ? name + " " : "") +
-                        (StringUtils.nonEmpty(summary) ? summary + " " : "") +
+                (StringUtil.nonEmpty(name) ? name + " " : "") +
+                        (StringUtil.nonEmpty(summary) ? summary + " " : "") +
                         content);
     }
 
@@ -226,7 +226,7 @@ public class Note extends AObject {
     }
 
     public Note setConversationOid(String conversationOid) {
-        if (StringUtils.isEmpty(conversationOid)) {
+        if (StringUtil.isEmpty(conversationOid)) {
             this.conversationOid = "";
         } else {
             this.conversationOid = conversationOid;
@@ -235,7 +235,7 @@ public class Note extends AObject {
     }
 
     public long lookupConversationId() {
-        if (conversationId == 0  && !StringUtils.isEmpty(conversationOid)) {
+        if (conversationId == 0  && !StringUtil.isEmpty(conversationOid)) {
             conversationId = MyQuery.conversationOidToId(origin.getId(), conversationOid);
         }
         if (conversationId == 0 && noteId != 0) {
@@ -273,7 +273,7 @@ public class Note extends AObject {
     }
 
     public boolean hasSomeContent() {
-        return StringUtils.nonEmpty(name) || StringUtils.nonEmpty(summary) || StringUtils.nonEmpty(content) ||
+        return StringUtil.nonEmpty(name) || StringUtil.nonEmpty(summary) || StringUtil.nonEmpty(content) ||
                 attachments.nonEmpty();
     }
 
@@ -379,7 +379,7 @@ public class Note extends AObject {
     }
 
     public Note copy(Optional<String> oidNew, Optional<Attachments> attachments) {
-        return oidNew.filter(StringUtils::nonEmpty).isPresent() || attachments.filter(Attachments::nonEmpty).isPresent()
+        return oidNew.filter(StringUtil::nonEmpty).isPresent() || attachments.filter(Attachments::nonEmpty).isPresent()
             ? new Note(this, oidNew, attachments)
             : this;
     }

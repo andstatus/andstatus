@@ -37,7 +37,7 @@ import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.ObjectOrId;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
@@ -67,7 +67,7 @@ public class ConnectionActivityPub extends Connection {
     @Override
     public Connection setAccountConnectionData(AccountConnectionData connectionData) {
         final String host = connectionData.getAccountActor().getConnectionHost();
-        if (StringUtils.nonEmpty(host)) {
+        if (StringUtil.nonEmpty(host)) {
             connectionData.setOriginUrl(UrlUtils.buildUrl(host, connectionData.isSsl()));
         }
         return super.setAccountConnectionData(connectionData);
@@ -258,7 +258,7 @@ public class ConnectionActivityPub extends Connection {
 
     @NonNull
     AActivity activityFromOid(String oid) {
-        if (StringUtils.isEmptyOrTemp(oid)) return AActivity.EMPTY;
+        if (StringUtil.isEmptyOrTemp(oid)) return AActivity.EMPTY;
         return AActivity.from(data.getAccountActor(), ActivityType.UPDATE).setTimelinePosition(oid);
     }
 
@@ -275,7 +275,7 @@ public class ConnectionActivityPub extends Connection {
 
     private AActivity parseActivity(AActivity activity, JSONObject jsoActivity) throws JSONException, ConnectionException {
         String oid = jsoActivity.optString("id");
-        if (StringUtils.isEmpty(oid)) {
+        if (StringUtil.isEmpty(oid)) {
             MyLog.d(this, "Activity has no id:" + jsoActivity.toString(2));
             return AActivity.EMPTY;
         }
@@ -361,7 +361,7 @@ public class ConnectionActivityPub extends Connection {
     private void noteFromJson(AActivity parentActivity, JSONObject jso) throws ConnectionException {
         try {
             String oid = jso.optString("id");
-            if (StringUtils.isEmpty(oid)) {
+            if (StringUtil.isEmpty(oid)) {
                 MyLog.d(TAG, "ActivityPub object has no id:" + jso.toString(2));
                 return;
             }
@@ -398,7 +398,7 @@ public class ConnectionActivityPub extends Connection {
             note.setSummary(jso.optString(SUMMARY_PROPERTY));
             note.setContentPosted(jso.optString(CONTENT_PROPERTY));
 
-            note.setConversationOid(StringUtils.optNotEmpty(jso.optString("conversation"))
+            note.setConversationOid(StringUtil.optNotEmpty(jso.optString("conversation"))
                     .orElseGet(() -> jso.optString("context")));
 
             addRecipients(activity, jso);

@@ -26,7 +26,7 @@ public class NullUtil {
 
     public static boolean nonEmpty(@Nullable Object object) {
         if (object instanceof IsEmpty) return ((IsEmpty)object).nonEmpty();
-        if (object instanceof String) return StringUtils.nonEmpty((String)object);
+        if (object instanceof String) return StringUtil.nonEmpty((String)object);
 
         return (object != null);
     }

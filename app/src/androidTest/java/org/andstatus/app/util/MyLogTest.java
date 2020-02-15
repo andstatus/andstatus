@@ -41,13 +41,13 @@ public class MyLogTest {
     @Test
     public void testObjTag() {
        Object tag = this;
-       assertEquals("MyLogTest", MyLog.objToTag(tag));
+       assertEquals("MyLogTest", MyStringBuilder.objToTag(tag));
        tag = this.getClass();
-       assertEquals("MyLogTest", MyLog.objToTag(tag));
+       assertEquals("MyLogTest", MyStringBuilder.objToTag(tag));
        tag = "Other tag";
-       assertEquals(tag.toString(), MyLog.objToTag(tag));
+       assertEquals(tag.toString(), MyStringBuilder.objToTag(tag));
        tag = null;
-       assertEquals("(null)", MyLog.objToTag(tag));
+       assertEquals("(null)", MyStringBuilder.objToTag(tag));
     }
 
     @Test
@@ -56,13 +56,13 @@ public class MyLogTest {
         boolean isLogEnabled = MyLog.isLogToFileEnabled();
 
         MyLog.setLogToFile(true);
-        assertFalse(StringUtils.isEmpty(MyLog.getLogFilename()));
+        assertFalse(StringUtil.isEmpty(MyLog.getLogFilename()));
         MyLog.v(this, method);
         File file = MyLog.getFileInLogDir(MyLog.getLogFilename(), true);
         assertTrue(file.exists());
         
         MyLog.setLogToFile(false);
-        assertTrue(StringUtils.isEmpty(MyLog.getLogFilename()));
+        assertTrue(StringUtil.isEmpty(MyLog.getLogFilename()));
         assertTrue(file.delete());
         MyLog.v(this, method);
         assertEquals(null, MyLog.getLogFilename());

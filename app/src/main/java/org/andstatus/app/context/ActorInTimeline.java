@@ -17,7 +17,7 @@
 package org.andstatus.app.context;
 
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 /** How to show an Actor in a Timeline */
 public enum ActorInTimeline {
@@ -46,7 +46,7 @@ public enum ActorInTimeline {
      */
     public static ActorInTimeline load(String strCode) {
         try {
-            if (!StringUtils.isEmpty(strCode)) {
+            if (!StringUtil.isEmpty(strCode)) {
                 return load(Long.parseLong(strCode));
             }
         } catch (NumberFormatException e) {

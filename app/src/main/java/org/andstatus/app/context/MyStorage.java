@@ -20,7 +20,7 @@ import android.os.Environment;
 
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.io.File;
@@ -97,7 +97,7 @@ public class MyStorage {
                 }
             } else {
                 dir = myContext.context().getFilesDir();
-                if (!StringUtils.isEmpty(type)) {
+                if (!StringUtil.isEmpty(type)) {
                     dir = new File(dir, type);
                 }
             }

@@ -34,7 +34,7 @@ import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
@@ -98,7 +98,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     }
 
     private boolean isActorOidEmpty() {
-        if (StringUtils.isEmpty(getActor().oid)) {
+        if (StringUtil.isEmpty(getActor().oid)) {
             execContext.getResult().incrementParseExceptions();
             MyLog.e(this, "No actorOid not for: " + getActor());
             return true;

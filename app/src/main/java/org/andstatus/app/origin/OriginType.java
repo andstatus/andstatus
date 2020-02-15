@@ -36,7 +36,7 @@ import org.andstatus.app.net.social.Patterns;
 import org.andstatus.app.net.social.activitypub.ConnectionActivityPub;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -429,7 +429,7 @@ public enum OriginType implements SelectableEnum {
     }
 
     public static OriginType fromTitle(String titleIn) {
-        return StringUtils.optNotEmpty(titleIn)
+        return StringUtil.optNotEmpty(titleIn)
             .flatMap(title -> Arrays.stream(values())
                     .filter(value -> value.getTitle().equalsIgnoreCase(title))
                     .findAny())

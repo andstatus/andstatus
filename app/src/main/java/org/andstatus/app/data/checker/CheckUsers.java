@@ -25,7 +25,7 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.user.User;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import static org.andstatus.app.util.StringUtils.toTempOid;
+import static org.andstatus.app.util.StringUtil.toTempOid;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -146,7 +146,7 @@ class CheckUsers extends DataChecker {
                     results.problems.add("Fix no Origin: " + actor);
                 }
 
-                if (StringUtils.isEmpty(key) || !actor.getWebFingerId().equals(key)) {
+                if (StringUtil.isEmpty(key) || !actor.getWebFingerId().equals(key)) {
                     if (shouldMerge(actors)) {
                         results.actorsToMergeUsers.put(key, actors);
                         results.problems.add("Fix merge users 1 \"" + key + "\": " + actors);

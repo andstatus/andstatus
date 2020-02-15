@@ -20,7 +20,7 @@ import android.content.Context;
 
 import org.andstatus.app.R;
 import org.andstatus.app.timeline.ListScope;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import androidx.annotation.StringRes;
 
@@ -73,7 +73,7 @@ public enum ActorListType {
     }
 
     public CharSequence title(Context context, Object ... params) {
-        return StringUtils.format(context, titleResWithParamsId, params);
+        return StringUtil.format(context, titleResWithParamsId, params);
     }
 
     /**

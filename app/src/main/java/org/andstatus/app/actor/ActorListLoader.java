@@ -21,7 +21,7 @@ import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StopWatch;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import androidx.annotation.NonNull;
 
@@ -102,7 +102,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
     protected String getSelection() {
         SqlWhere where = new SqlWhere();
         String sqlActorIds = getSqlActorIds();
-        if (StringUtils.nonEmpty(sqlActorIds)) {
+        if (StringUtil.nonEmpty(sqlActorIds)) {
             where.append(ActorTable.TABLE_NAME + "." + BaseColumns._ID + sqlActorIds);
         } else if (origin.isValid()) {
             where.append(ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + origin.getId());

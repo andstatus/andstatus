@@ -48,7 +48,7 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.view.MyContextMenu;
 
 import androidx.annotation.NonNull;
@@ -393,7 +393,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
 
     protected void copyNoteText(NoteEditorData editorData) {
         MyLog.v(this, () -> "text='" + editorData.getContent() + "'");
-        if (!StringUtils.isEmpty(editorData.getContent())) {
+        if (!StringUtil.isEmpty(editorData.getContent())) {
             // http://developer.android.com/guide/topics/text/copy-paste.html
             ClipboardManager clipboard = (ClipboardManager) editorData.myContext.context().
                     getSystemService(Context.CLIPBOARD_SERVICE);

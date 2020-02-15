@@ -33,7 +33,7 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.SelectionAndArgs;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.Set;
 
@@ -147,7 +147,7 @@ public class TimelineParameters {
                 + (minDate > 0 ? ", minDate=" + MyLog.formatDateTime(minDate) : "")
                 + (maxDate > 0 ? ", maxDate=" + MyLog.formatDateTime(maxDate) : "")
                 + (selectionAndArgs.isEmpty() ? "" : ", sa=" + selectionAndArgs)
-                + (StringUtils.isEmpty(sortOrderAndLimit) ? "" : ", sortOrder=" + sortOrderAndLimit)
+                + (StringUtil.isEmpty(sortOrderAndLimit) ? "" : ", sortOrder=" + sortOrderAndLimit)
                 + (isLoaded  ? ", loaded" : "")
                 + (mLoaderCallbacks == null ? "" : ", loaderCallbacks=" + mLoaderCallbacks)
         );

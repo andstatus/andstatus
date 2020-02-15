@@ -40,7 +40,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ImageFile;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.io.File;
 import java.util.Queue;
@@ -121,7 +121,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
 
     @Nullable
     private CachedImage getImage(ImageFile imageFile, boolean fromCacheOnly) {
-        if (StringUtils.isEmpty(imageFile.getPath())) {
+        if (StringUtil.isEmpty(imageFile.getPath())) {
             return null;
         }
         CachedImage image = get(imageFile.getPath());

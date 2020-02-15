@@ -36,7 +36,7 @@ import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.RateLimitStatus;
 import org.andstatus.app.support.java.util.function.SupplierWithException;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 
@@ -114,7 +114,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         final String method = "searchActors";
         String msgLog = method + "; query='" + searchQuery + "'";
         List<Actor> actors = null;
-        if (StringUtils.nonEmpty(searchQuery)) {
+        if (StringUtil.nonEmpty(searchQuery)) {
             try {
                 final DataUpdater dataUpdater = new DataUpdater(execContext);
                 final Actor myAccountActor = execContext.getMyAccount().getActor();
@@ -135,7 +135,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     private void getConversation(long noteId) {
         final String method = "getConversation";
         String conversationOid = MyQuery.noteIdToConversationOid(execContext.myContext, noteId);
-        if (StringUtils.isEmpty(conversationOid)) {
+        if (StringUtil.isEmpty(conversationOid)) {
             logExecutionError(true, method + " empty conversationId " +
                     MyQuery.noteInfoForLog(execContext.myContext, noteId));
         } else {
@@ -255,7 +255,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     @NonNull
     private String getNoteOid(String method, long noteId, boolean required) {
         String oid = MyQuery.idToOid(execContext.myContext, OidEnum.NOTE_OID, noteId, 0);
-        if (required && StringUtils.isEmpty(oid)) {
+        if (required && StringUtil.isEmpty(oid)) {
             logExecutionError(true, method + "; no note ID in the Social Network "
                     + MyQuery.noteInfoForLog(execContext.myContext, noteId));
         }
@@ -302,7 +302,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String oid = getNoteOid(method, noteId, false);
         DownloadStatus statusStored = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
         try {
-            if (noteId == 0 || StringUtils.isEmpty(oid) || statusStored != DownloadStatus.LOADED) {
+            if (noteId == 0 || StringUtil.isEmpty(oid) || statusStored != DownloadStatus.LOADED) {
                 ok = true;
                 MyLog.i(this, method + "; OID='" + oid + "', status='" + statusStored + "' for noteId=" + noteId);
             } else {
@@ -398,9 +398,9 @@ class CommandExecutorOther extends CommandExecutorStrategy{
         String content = note.getContentToPost();
         // TODO: Add attachments to Note right here
         Attachments attachments = Attachments.load(execContext.myContext, noteId);
-        String msgLog = (StringUtils.nonEmpty(note.getName()) ? "name:'" + note.getName() + "'; " : "")
-                + (StringUtils.nonEmpty(note.getSummary()) ? "summary:'" + note.getSummary() + "'; " : "")
-                + (StringUtils.nonEmpty(content) ? "content:'" + MyLog.trimmedString(content, 80) + "'" : "")
+        String msgLog = (StringUtil.nonEmpty(note.getName()) ? "name:'" + note.getName() + "'; " : "")
+                + (StringUtil.nonEmpty(note.getSummary()) ? "summary:'" + note.getSummary() + "'; " : "")
+                + (StringUtil.nonEmpty(content) ? "content:'" + MyLog.trimmedString(content, 80) + "'" : "")
                 + (attachments.isEmpty() ? "" : "; " + attachments);
 
         AActivity activity = AActivity.EMPTY;

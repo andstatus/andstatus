@@ -39,7 +39,7 @@ import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.view.MyContextMenu;
 
 /**
@@ -153,7 +153,7 @@ public class ActorList extends NoteEditorListActivity {
                 title.withSpace(mActorListType.title(this, actor.getTimelineUsername()));
             }
         }
-        if (StringUtils.nonEmpty(getParsedUri().getSearchQuery())) {
+        if (StringUtil.nonEmpty(getParsedUri().getSearchQuery())) {
             title.withSpace("'" + getParsedUri().getSearchQuery() + "'");
         }
         return title.toString();

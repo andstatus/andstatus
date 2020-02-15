@@ -24,7 +24,7 @@ import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 
@@ -39,13 +39,13 @@ class ConnectionAndUrl {
 
     public static ConnectionAndUrl fromActor(ConnectionPumpio connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
         String username = actor.getUsername();
-        if (StringUtils.isEmpty(username)) {
+        if (StringUtil.isEmpty(username)) {
             throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine + ": username is required");
         }
         Uri uri = UriUtils.map(connection.getApiPath(apiRoutine), s -> s.replace("%username%", username));
         HttpConnection httpConnection = connection.getHttp();
         String host = actor.getConnectionHost();
-        if (StringUtils.isEmpty(host)) {
+        if (StringUtil.isEmpty(host)) {
             throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
                     ": host is empty for " + actor);
         } else if (connection.getHttp().data.originUrl == null ||

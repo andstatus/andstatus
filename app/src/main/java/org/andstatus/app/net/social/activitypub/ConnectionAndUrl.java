@@ -25,7 +25,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UrlUtils;
 
 import java.util.Optional;
@@ -60,7 +60,7 @@ class ConnectionAndUrl {
                                                 Actor actor) throws ConnectionException {
         HttpConnection httpConnection = connection.getHttp();
         String host = actor.getConnectionHost();
-        if (StringUtils.isEmpty(host)) {
+        if (StringUtil.isEmpty(host)) {
             throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
                     ": host is empty for " + actor);
         } else if (connection.getHttp().data.originUrl == null || host.compareToIgnoreCase(

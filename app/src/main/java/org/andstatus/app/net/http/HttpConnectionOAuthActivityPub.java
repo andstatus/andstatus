@@ -22,7 +22,7 @@ import com.github.scribejava.core.model.OAuthConstants;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
 import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.HashMap;
@@ -47,7 +47,7 @@ public class HttpConnectionOAuthActivityPub extends HttpConnectionOAuth2JavaNet 
                 break;
         }
 
-        if (!StringUtils.isEmpty(url)) {
+        if (!StringUtil.isEmpty(url)) {
             url = pathToUrlString(url);
         }
 

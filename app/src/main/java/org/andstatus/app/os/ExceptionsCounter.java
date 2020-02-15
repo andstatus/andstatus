@@ -21,7 +21,7 @@ import android.app.Dialog;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.DialogFactory;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -60,7 +60,7 @@ public class ExceptionsCounter {
 
         diskIoExceptionsCountShown.set(diskIoExceptionsCount.get());
         DialogFactory.dismissSafely(diskIoDialog);
-        final String text = StringUtils.format(MyContextHolder.get().context(), R.string.database_disk_io_error,
+        final String text = StringUtil.format(MyContextHolder.get().context(), R.string.database_disk_io_error,
                 diskIoExceptionsCount.get());
         diskIoDialog = DialogFactory.showOkAlertDialog(ExceptionsCounter.class, MyContextHolder.get().context(),
                 R.string.app_name, text);

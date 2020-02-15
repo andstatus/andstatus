@@ -51,7 +51,7 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.json.JSONObject;
 
@@ -233,7 +233,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                 && actor.actorId != 0
                 && connection != null
                 && data.accountName.isValid
-                && !StringUtils.isEmpty(actor.oid);
+                && !StringUtil.isEmpty(actor.oid);
     }
 
     private void setOAuth(TriState isOAuthTriState) {
@@ -421,13 +421,13 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
 
         MyAccount myAccount = (MyAccount) o;
         if (!data.accountName.equals(myAccount.data.accountName)) return false;
-        return StringUtils.equalsNotEmpty(actor.oid, myAccount.actor.oid);
+        return StringUtil.equalsNotEmpty(actor.oid, myAccount.actor.oid);
     }
 
     @Override
     public int hashCode() {
         int result = data.accountName.hashCode();
-        if (!StringUtils.isEmpty(actor.oid)) {
+        if (!StringUtil.isEmpty(actor.oid)) {
             result = 31 * result + actor.oid.hashCode();
         }
         return result;
@@ -670,14 +670,14 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         }
 
         public void onCredentialsVerified(@NonNull Actor actor, ConnectionException e) throws ConnectionException {
-            boolean ok = e == null && !actor.isEmpty() && StringUtils.nonEmpty(actor.oid)
+            boolean ok = e == null && !actor.isEmpty() && StringUtil.nonEmpty(actor.oid)
                     && actor.isUsernameValid();
             boolean errorSettingUsername = !ok;
 
             boolean credentialsOfOtherAccount = false;
             // We are comparing usernames ignoring case, but we fix correct case
             // as the Originating system tells us.
-            if (ok && !StringUtils.isEmpty(myAccount.getUsername())
+            if (ok && !StringUtil.isEmpty(myAccount.getUsername())
                     && myAccount.data.accountName.username.compareToIgnoreCase(actor.getUsername()) != 0) {
                 // Credentials belong to other Account ??
                 ok = false;
@@ -757,7 +757,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         }
 
         public void setPassword(String password) {
-            if (StringUtils.notEmpty(password, "").compareTo(getConnection().getPassword()) != 0) {
+            if (StringUtil.notEmpty(password, "").compareTo(getConnection().getPassword()) != 0) {
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
                 getConnection().setPassword(password);
             }

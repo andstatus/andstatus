@@ -41,7 +41,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.Optional;
@@ -304,7 +304,7 @@ public final class DemoData {
     }
 
     public void checkDataPath() {
-        if (!StringUtils.isEmpty(dataPath)) {
+        if (!StringUtil.isEmpty(dataPath)) {
             assertEquals("Data path. " + MyContextHolder.get(), dataPath,
                     MyContextHolder.get().context().getDatabasePath("andstatus").getPath());
         }

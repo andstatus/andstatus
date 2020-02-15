@@ -28,7 +28,7 @@ import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -80,7 +80,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                 url = "";
                 break;
         }
-        if (StringUtils.isEmpty(url)) {
+        if (StringUtil.isEmpty(url)) {
             return super.getApiPathFromOrigin(routine);
         } 
         return partialPathToApiPath(url);

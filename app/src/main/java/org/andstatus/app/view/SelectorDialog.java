@@ -41,6 +41,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -156,7 +157,7 @@ public class SelectorDialog extends DialogFragment {
             ft.addToBackStack(null);
             show(ft, dialogTag);
         } catch (Exception e) {
-            MyLog.w(fragmentActivity, "Failed to show " + MyLog.objToTag(this) , e);
+            MyLog.w(fragmentActivity, "Failed to show " + MyStringBuilder.objToTag(this) , e);
         }
     }
 

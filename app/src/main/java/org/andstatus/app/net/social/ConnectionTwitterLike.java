@@ -25,7 +25,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
@@ -228,7 +228,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, Actor actor) throws ConnectionException {
         Uri.Builder builder = this.getApiPath(apiRoutine).buildUpon();
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        if (!StringUtils.isEmpty(actor.oid)) {
+        if (!StringUtil.isEmpty(actor.oid)) {
             builder.appendQueryParameter("user_id", actor.oid);
         }
         return builder;
@@ -281,7 +281,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         AActivity activity;
         try {
             String oid = jso.optString("id_str");
-            if (StringUtils.isEmpty(oid)) {
+            if (StringUtil.isEmpty(oid)) {
                 // This is for the Status.net
                 oid = jso.optString("id");
             }
@@ -440,7 +440,7 @@ public abstract class ConnectionTwitterLike extends Connection {
             throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_NOTES;
         Uri.Builder builder = this.getApiPath(apiRoutine).buildUpon();
-        if (!StringUtils.isEmpty(searchQuery)) {
+        if (!StringUtil.isEmpty(searchQuery)) {
             builder.appendQueryParameter("q", searchQuery);
         }
         appendPositionParameters(builder, youngestPosition, oldestPosition);
@@ -573,7 +573,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     
     @Override
     public AActivity updateNote(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
-        if (StringUtils.isEmpty(inReplyToOid) && note.audience().hasNonPublic() && note.audience().getPublic().isFalse) {
+        if (StringUtil.isEmpty(inReplyToOid) && note.audience().hasNonPublic() && note.audience().getPublic().isFalse) {
             return updatePrivateNote(note, note.audience().getFirstNonPublic().oid, attachments);
         }
         return updateNote2(note, inReplyToOid, attachments);
@@ -582,10 +582,10 @@ public abstract class ConnectionTwitterLike extends Connection {
     abstract AActivity updateNote2(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException;
 
     void updateNoteSetFields(Note note, String inReplyToOid, JSONObject formParams) throws JSONException {
-        if (StringUtils.nonEmpty(note.getContentToPost())) {
+        if (StringUtil.nonEmpty(note.getContentToPost())) {
             formParams.put("status", note.getContentToPost());
         }
-        if (StringUtils.nonEmpty(inReplyToOid)) {
+        if (StringUtil.nonEmpty(inReplyToOid)) {
             formParams.put("in_reply_to_status_id", inReplyToOid);
         }
     }
@@ -595,7 +595,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("text", note.getContentToPost());
-            if ( !StringUtils.isEmpty(recipientOid)) {
+            if ( !StringUtil.isEmpty(recipientOid)) {
                 formParams.put("user_id", recipientOid);
             }
         } catch (JSONException e) {

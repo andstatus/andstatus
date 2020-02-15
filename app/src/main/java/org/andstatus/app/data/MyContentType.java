@@ -22,7 +22,7 @@ import android.webkit.MimeTypeMap;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 
 import androidx.annotation.NonNull;
@@ -43,7 +43,7 @@ public enum MyContentType {
 
     @NonNull
     public static MyContentType fromPathOfSavedFile(String mediaFilePath) {
-        return StringUtils.isEmpty(mediaFilePath)
+        return StringUtil.isEmpty(mediaFilePath)
                 ? UNKNOWN
                 : fromUri(DownloadType.UNKNOWN, null, Uri.parse(mediaFilePath), UNKNOWN.generalMimeType);
     }
@@ -113,11 +113,11 @@ public enum MyContentType {
     }
 
     private static String getDefaultValue(String defaultValue) {
-        return StringUtils.isEmpty(defaultValue) ? UNKNOWN.generalMimeType : defaultValue;
+        return StringUtil.isEmpty(defaultValue) ? UNKNOWN.generalMimeType : defaultValue;
     }
 
     public static boolean isEmptyMime(String mimeType) {
-        return StringUtils.isEmpty(mimeType) || mimeType.startsWith("*");
+        return StringUtil.isEmpty(mimeType) || mimeType.startsWith("*");
     }
 
     /** @return empty string if no extension found */
@@ -125,12 +125,12 @@ public enum MyContentType {
     public static String mimeToFileExtension(String mimeType) {
         if (isEmptyMime(mimeType)) return "";
         String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
-        return StringUtils.isEmpty(extension) ? "" : extension;
+        return StringUtil.isEmpty(extension) ? "" : extension;
     }
 
     @NonNull
     private static String path2MimeType(String path, @NonNull String defaultValue) {
-        if (StringUtils.isEmpty(path)) return defaultValue;
+        if (StringUtil.isEmpty(path)) return defaultValue;
         String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(path));
         return isEmptyMime(mimeType) ? defaultValue : mimeType;
     }

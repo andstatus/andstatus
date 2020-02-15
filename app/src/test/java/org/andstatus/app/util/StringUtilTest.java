@@ -20,12 +20,12 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class StringUtilsTest {
+public class StringUtilTest {
 
     @Test
     public void test() {
-        assertEquals("a", StringUtils.notNull("a"));
-        assertEquals("", StringUtils.notNull(""));
-        assertEquals("", StringUtils.notNull(null));
+        assertEquals("a", StringUtil.notNull("a"));
+        assertEquals("", StringUtil.notNull(""));
+        assertEquals("", StringUtil.notNull(null));
     }
 }

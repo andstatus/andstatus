@@ -26,7 +26,7 @@ import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.junit.After;
@@ -67,7 +67,7 @@ public class VerifyCredentialsTest {
 
     @After
     public void tearDown() {
-        if (!StringUtils.isEmpty(keyStored)) {
+        if (!StringUtil.isEmpty(keyStored)) {
             mock.getHttp().data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);
         }
     }

@@ -34,7 +34,8 @@ import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.MyStringBuilder;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.TryUtils;
 import org.andstatus.app.util.UriUtils;
@@ -229,7 +230,7 @@ public abstract class Connection implements IsEmpty {
 
     public Optional<Uri> pathToUri(String path) {
         return Optional.ofNullable(path)
-                .filter(StringUtils::nonEmpty)
+                .filter(StringUtil::nonEmpty)
                 .flatMap(path2 -> UrlUtils.pathToUrl(data.getOriginUrl(), path2))
                 .map(URL::toExternalForm)
                 .flatMap(UriUtils::toDownloadableOptional);
@@ -467,7 +468,7 @@ public abstract class Connection implements IsEmpty {
     }
 
     public List<Server> getOpenInstances() throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, MyLog.objToTag(this));
+        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, MyStringBuilder.objToTag(this));
     }
     
     /**
@@ -488,13 +489,13 @@ public abstract class Connection implements IsEmpty {
      * @return Unix time. Returns 0 in a case of an error
      */
     public long parseDate(String stringDate) {
-        if(StringUtils.isEmpty(stringDate)) {
+        if(StringUtil.isEmpty(stringDate)) {
             return 0;
         }
         long unixDate = 0;
         String[] formats = {"", "E MMM d HH:mm:ss Z yyyy", "E, d MMM yyyy HH:mm:ss Z"};
         for (String format : formats) {
-            if (StringUtils.isEmpty(format)) {
+            if (StringUtil.isEmpty(format)) {
                 try {
                     unixDate = Date.parse(stringDate);
                 } catch (IllegalArgumentException e) {
@@ -583,7 +584,7 @@ public abstract class Connection implements IsEmpty {
 
     @NonNull
     public String partialPathToApiPath(String partialPath) {
-        if (!StringUtils.isEmpty(partialPath) && !partialPath.contains("://")) {
+        if (!StringUtil.isEmpty(partialPath) && !partialPath.contains("://")) {
             partialPath = http.data.getAccountName().getOrigin().getOriginType().getBasicPath() + "/" + partialPath;
         }
         return partialPath;

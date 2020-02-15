@@ -44,7 +44,7 @@ import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.Date;
@@ -230,7 +230,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
                 parsedUri.getTimelineType(),
                 Actor.load(myContext, parsedUri.getActorId()),
                 parsedUri.getOrigin(myContext),
-                StringUtils.isEmpty(searchQueryIn) ? parsedUri.getSearchQuery() : searchQueryIn
+                StringUtil.isEmpty(searchQueryIn) ? parsedUri.getSearchQuery() : searchQueryIn
         );
         if (timeline.getTimelineType() == TimelineType.UNKNOWN && parsedUri.getActorListType() == ActorListType.UNKNOWN) {
             MyLog.e(Timeline.class, "fromParsedUri; uri:" + parsedUri.getUri() + "; " + timeline);
@@ -262,7 +262,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         this.actor = fixedActor(timelineType, actor);
         this.origin = fixedOrigin(timelineType, origin);
         this.myAccountToSync = calcAccountToSync(myContext, timelineType, this.origin, this.actor);
-        this.searchQuery = StringUtils.optNotEmpty(searchQuery).orElse("");
+        this.searchQuery = StringUtil.optNotEmpty(searchQuery).orElse("");
         this.isCombined = calcIsCombined(timelineType, this.origin);
         this.timelineType = fixedTimelineType(timelineType);
         this.isSyncable = calcIsSyncable(myAccountToSync);
@@ -539,7 +539,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
 
     private boolean needToLoadActorInTimeline() {
         return actor.nonEmpty()
-                && StringUtils.isEmptyOrTemp(actorInTimeline)
+                && StringUtil.isEmptyOrTemp(actorInTimeline)
                 && actor.user.isMyUser().untrue;
     }
 
@@ -598,7 +598,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         if (timelineType != TimelineType.UNKNOWN) {
             builder.append(", type:" + timelineType.save());
         }
-        if (StringUtils.nonEmpty(actorInTimeline)) {
+        if (StringUtil.nonEmpty(actorInTimeline)) {
             builder.append(", actor:'" + actorInTimeline + "'");
         } else if (actor.nonEmpty()) {
             builder.append(", actor:" + actor);
@@ -645,7 +645,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         }
         if (!origin.equals(that.origin)) return false;
         if (!actor.equals(that.actor)) return false;
-        return StringUtils.equalsNotEmpty(searchQuery, that.searchQuery);
+        return StringUtil.equalsNotEmpty(searchQuery, that.searchQuery);
     }
 
     public boolean duplicates(Timeline that) {
@@ -654,7 +654,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         if (timelineType != that.timelineType) return false;
         if (!origin.equals(that.origin)) return false;
         if (!actor.isSame(that.actor)) return false;
-        return StringUtils.equalsNotEmpty(searchQuery, that.searchQuery);
+        return StringUtil.equalsNotEmpty(searchQuery, that.searchQuery);
     }
 
     @Override
@@ -663,7 +663,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         if (id != 0) result = 31 * result + Long.hashCode(id);
         result = 31 * result + origin.hashCode();
         result = 31 * result + actor.hashCode();
-        if (!StringUtils.isEmpty(searchQuery)) result = 31 * result + searchQuery.hashCode();
+        if (!StringUtil.isEmpty(searchQuery)) result = 31 * result + searchQuery.hashCode();
         return result;
     }
 
@@ -672,7 +672,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public boolean hasSearchQuery() {
-        return !StringUtils.isEmpty(getSearchQuery());
+        return !StringUtil.isEmpty(getSearchQuery());
     }
 
     @NonNull
@@ -711,7 +711,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public void forgetPositionsAndDates() {
-        if (!StringUtils.isEmpty(youngestPosition)) {
+        if (!StringUtil.isEmpty(youngestPosition)) {
             youngestPosition = "";
             setChanged();
         }
@@ -724,7 +724,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
             setChanged();
         }
 
-        if (!StringUtils.isEmpty(oldestPosition)) {
+        if (!StringUtil.isEmpty(oldestPosition)) {
             oldestPosition = "";
             setChanged();
         }
@@ -745,17 +745,17 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public void onNewMsg(long newDate, String newPosition) {
-        if (newDate <= SOME_TIME_AGO || StringUtils.isEmpty(newPosition)) {
+        if (newDate <= SOME_TIME_AGO || StringUtil.isEmpty(newPosition)) {
             return;
         }
         if (youngestItemDate < newDate ||
-                ( youngestItemDate == newDate && StringUtils.isNewFilledValue(youngestPosition, newPosition))) {
+                ( youngestItemDate == newDate && StringUtil.isNewFilledValue(youngestPosition, newPosition))) {
             youngestItemDate = newDate;
             youngestPosition = newPosition;
             setChanged();
         }
         if (oldestItemDate <= SOME_TIME_AGO || oldestItemDate > newDate ||
-                (oldestItemDate == newDate && StringUtils.isNewFilledValue(oldestPosition, newPosition))) {
+                (oldestItemDate == newDate && StringUtil.isNewFilledValue(oldestPosition, newPosition))) {
             oldestItemDate = newDate;
             oldestPosition = newPosition;
             setChanged();
@@ -917,7 +917,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     private Timeline onSyncEnded(CommandResult result) {
         if (result.hasError()) {
             syncFailedDate.set(System.currentTimeMillis());
-            if (!StringUtils.isEmpty(result.getMessage())) {
+            if (!StringUtil.isEmpty(result.getMessage())) {
                 errorMessage = result.getMessage();
             }
             syncFailedTimesCount.incrementAndGet();
@@ -1004,7 +1004,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
 
     @NonNull
     public String getActorInTimeline() {
-        if (StringUtils.isEmpty(actorInTimeline)) {
+        if (StringUtil.isEmpty(actorInTimeline)) {
             if (needToLoadActorInTimeline()) {
                 return "...";
             } else {

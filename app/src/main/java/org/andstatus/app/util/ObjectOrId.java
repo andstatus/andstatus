@@ -50,7 +50,7 @@ public class ObjectOrId implements IsEmpty {
                 : Optional.of(jsonArray);
         id = object.isPresent() || jsonArray != null
                 ? Optional.empty()
-                : StringUtils.optNotEmpty(parentObject.optString(propertyName));
+                : StringUtil.optNotEmpty(parentObject.optString(propertyName));
         error = Optional.empty();
     }
 
@@ -70,7 +70,7 @@ public class ObjectOrId implements IsEmpty {
                 ? Optional.empty() : jsonArray;
         id = object.isPresent() || jsonArray.isPresent()
                 ? Optional.empty()
-                : jso.flatMap(js -> js instanceof String ? StringUtils.optNotEmpty(js) : Optional.empty());
+                : jso.flatMap(js -> js instanceof String ? StringUtil.optNotEmpty(js) : Optional.empty());
         error = Optional.empty();
     }
 

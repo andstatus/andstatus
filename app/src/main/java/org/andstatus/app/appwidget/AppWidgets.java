@@ -9,7 +9,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.notification.NotificationEvents;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -94,17 +94,17 @@ public class AppWidgets {
     private RemoteViews constructRemoteViews(Context context, MyRemoteViewData viewData) {
         RemoteViews views = new RemoteViews(context.getPackageName(),
                 R.layout.appwidget);
-        if (StringUtils.isEmpty(viewData.widgetText)) {
+        if (StringUtil.isEmpty(viewData.widgetText)) {
             views.setViewVisibility(R.id.appwidget_text, android.view.View.GONE);
         }
-        if (StringUtils.isEmpty(viewData.widgetComment)) {
+        if (StringUtil.isEmpty(viewData.widgetComment)) {
             views.setViewVisibility(R.id.appwidget_comment, android.view.View.GONE);
         }
-        if (!StringUtils.isEmpty(viewData.widgetText)) {
+        if (!StringUtil.isEmpty(viewData.widgetText)) {
             views.setViewVisibility(R.id.appwidget_text, android.view.View.VISIBLE);
             views.setTextViewText(R.id.appwidget_text, viewData.widgetText);
         }
-        if (!StringUtils.isEmpty(viewData.widgetComment)) {
+        if (!StringUtil.isEmpty(viewData.widgetComment)) {
             views.setViewVisibility(R.id.appwidget_comment,
                     android.view.View.VISIBLE);
             views.setTextViewText(R.id.appwidget_comment, viewData.widgetComment);

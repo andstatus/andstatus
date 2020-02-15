@@ -37,7 +37,7 @@ public class FileDescriptorUtils {
     public static JSONObject getJSONObject(FileDescriptor fileDescriptor) {
         JSONObject jso = null;
         String fileString = utf8FileDescriptor2String(fileDescriptor);
-        if (!StringUtils.isEmpty(fileString)) {
+        if (!StringUtil.isEmpty(fileString)) {
             try {
                 jso = new JSONObject(fileString);
             } catch (JSONException e) {

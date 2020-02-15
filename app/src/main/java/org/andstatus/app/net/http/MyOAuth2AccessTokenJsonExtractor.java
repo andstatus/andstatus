@@ -24,7 +24,7 @@ import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.model.Response;
 
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 
 import java.io.IOException;
@@ -49,7 +49,7 @@ public class MyOAuth2AccessTokenJsonExtractor extends OAuth2AccessTokenJsonExtra
 
     public static Optional<Uri> extractWhoAmI(String response) {
         return extractParameter(response, ME_TOKEN_REGEX_PATTERN)
-                .filter(StringUtils::nonEmptyNonTemp)
+                .filter(StringUtil::nonEmptyNonTemp)
                 .flatMap(UriUtils::toDownloadableOptional);
     }
 

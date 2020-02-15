@@ -27,7 +27,7 @@ import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.GregorianCalendar;
@@ -46,7 +46,7 @@ public class DemoConversationInserter {
     private String bodySuffix = "";
 
     public void insertConversation(String bodySuffixIn) {
-        bodySuffix = StringUtils.isEmpty(bodySuffixIn)
+        bodySuffix = StringUtil.isEmpty(bodySuffixIn)
                 ? ""
                 : " " + bodySuffixIn;
         iteration = demoData.conversationIterationCounter.incrementAndGet();
@@ -264,7 +264,7 @@ public class DemoConversationInserter {
     private AActivity buildActivity(Actor accountActor, Actor author, String name, String content, AActivity inReplyTo,
                                     String noteOidIn, DownloadStatus status) {
         return new DemoNoteInserter(accountActor).buildActivity(author, name,
-            StringUtils.isEmpty(content) ? "" : content + (inReplyTo != null ? " it" + iteration : "") + bodySuffix,
+            StringUtil.isEmpty(content) ? "" : content + (inReplyTo != null ? " it" + iteration : "") + bodySuffix,
             inReplyTo, noteOidIn, status);
     }
 

@@ -26,7 +26,7 @@ import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -117,7 +117,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                 url = "";
                 break;
         }
-        if (StringUtils.isEmpty(url)) {
+        if (StringUtil.isEmpty(url)) {
             return super.getApiPathFromOrigin(routine);
         }
         return partialPathToApiPath(url);
@@ -219,7 +219,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
             throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_NOTES;
         Uri.Builder builder = getApiPath(apiRoutine).buildUpon();
-        if (!StringUtils.isEmpty(searchQuery)) {
+        if (!StringUtil.isEmpty(searchQuery)) {
             builder.appendQueryParameter("q", searchQuery);
         }
         appendPositionParameters(builder, youngestPosition, oldestPosition);
@@ -233,7 +233,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     public List<Actor> searchActors(int limit, String searchQuery) throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_ACTORS;
         Uri.Builder builder = getApiPath(apiRoutine).buildUpon();
-        if (!StringUtils.isEmpty(searchQuery)) {
+        if (!StringUtil.isEmpty(searchQuery)) {
             builder.appendQueryParameter("q", searchQuery);
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
@@ -295,7 +295,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     List<Actor> getActors(Actor actor, ApiRoutineEnum apiRoutine) throws ConnectionException {
         Uri.Builder builder = getApiPath(apiRoutine).buildUpon();
         int limit = 200;
-        if (!StringUtils.isEmpty(actor.oid)) {
+        if (!StringUtil.isEmpty(actor.oid)) {
             builder.appendQueryParameter("user_id", actor.oid);
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));

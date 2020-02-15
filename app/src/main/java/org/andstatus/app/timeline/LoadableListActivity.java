@@ -46,7 +46,7 @@ import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.widget.MySearchView;
 
@@ -359,7 +359,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     
     protected void updateTitle(String progress) {
         StringBuilder title = new StringBuilder(getCustomTitle());
-        if (!StringUtils.isEmpty(progress)) {
+        if (!StringUtil.isEmpty(progress)) {
             MyStringBuilder.appendWithSpace(title, progress);
         }
         setTitle(title.toString());

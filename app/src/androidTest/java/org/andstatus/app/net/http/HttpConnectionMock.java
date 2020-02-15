@@ -22,7 +22,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RawResourceUtils;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONObject;
 
@@ -172,7 +172,7 @@ public class HttpConnectionMock extends HttpConnection {
 
     @Override
     public boolean getCredentialsPresent() {
-        return !StringUtils.isEmpty(password) || ( !TextUtils.isDigitsOnly(userToken) && !StringUtils.isEmpty(userSecret));
+        return !StringUtil.isEmpty(password) || ( !TextUtils.isDigitsOnly(userToken) && !StringUtil.isEmpty(userSecret));
     }
 
     public JSONObject getPostedJSONObject() {

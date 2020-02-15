@@ -19,7 +19,7 @@ package org.andstatus.app.notification;
 import org.andstatus.app.R;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,12 +61,12 @@ public enum NotificationEventType implements IsEmpty {
     }
 
     public boolean isEnabled() {
-        return StringUtils.nonEmpty(preferenceKey) ? SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue) :
+        return StringUtil.nonEmpty(preferenceKey) ? SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue) :
                 defaultValue;
     }
 
     void setEnabled(boolean enabled) {
-        if (StringUtils.nonEmpty(preferenceKey)) SharedPreferencesUtil.putBoolean(preferenceKey, enabled);
+        if (StringUtil.nonEmpty(preferenceKey)) SharedPreferencesUtil.putBoolean(preferenceKey, enabled);
     }
 
     /** @return the enum or {@link #EMPTY} */

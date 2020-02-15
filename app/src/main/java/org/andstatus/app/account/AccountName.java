@@ -22,7 +22,7 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import androidx.annotation.NonNull;
 
@@ -100,7 +100,7 @@ public class AccountName {
     }
 
     private static String fixUniqueName(String uniqueNameIn, Origin origin) {
-        String nonNullName = StringUtils.notNull(uniqueNameIn).trim();
+        String nonNullName = StringUtil.notNull(uniqueNameIn).trim();
         String uniqueName = nonNullName +
                 (!nonNullName.contains("@") && origin.shouldHaveUrl() ? "@" + origin.getAccountNameHost() : "");
         if (Actor.uniqueNameToUsername(origin, uniqueName).isPresent()) {
@@ -125,7 +125,7 @@ public class AccountName {
         this.uniqueName = uniqueName;
         String originInAccountName = origin.getOriginInAccountName(host);
         name = uniqueName + ORIGIN_SEPARATOR + originInAccountName;
-        isValid = origin.isPersistent() && origin.isUsernameValid(username) && StringUtils.nonEmpty(originInAccountName);
+        isValid = origin.isPersistent() && origin.isUsernameValid(username) && StringUtil.nonEmpty(originInAccountName);
     }
 
     public String getName() {
@@ -175,13 +175,13 @@ public class AccountName {
         AccountName that = (AccountName) o;
 
         if (!origin.equals(that.origin)) return false;
-        return StringUtils.equalsNotEmpty(uniqueName, that.uniqueName);
+        return StringUtil.equalsNotEmpty(uniqueName, that.uniqueName);
     }
 
     @Override
     public int hashCode() {
         int result = origin.hashCode();
-        if (!StringUtils.isEmpty(uniqueName)) {
+        if (!StringUtil.isEmpty(uniqueName)) {
             result = 31 * result + uniqueName.hashCode();
         }
         return result;

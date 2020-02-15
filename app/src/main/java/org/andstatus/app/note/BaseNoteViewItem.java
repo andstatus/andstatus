@@ -43,7 +43,7 @@ import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
@@ -251,12 +251,12 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     protected void setInReplyTo(Context context, MyStringBuilder noteDetails) {
         if (inReplyToNoteId == 0 || inReplyToActor.isEmpty()) return;
 
-        noteDetails.withSpace(StringUtils.format(context, R.string.message_source_in_reply_to, inReplyToActor.getName()));
+        noteDetails.withSpace(StringUtil.format(context, R.string.message_source_in_reply_to, inReplyToActor.getName()));
     }
 
     private void setAudience(Context context, MyStringBuilder noteDetails) {
         if (isPublic.isFalse && !audienceToShow.isEmpty()) {
-            noteDetails.withSpace(StringUtils.format(context, R.string.message_source_to,
+            noteDetails.withSpace(StringUtil.format(context, R.string.message_source_to,
                     audienceToShow.stream().map(ActorViewItem::getName).collect(joining(", "))));
         }
     }
@@ -264,7 +264,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     private void setNoteSource(Context context, MyStringBuilder noteDetails) {
         if (!SharedPreferencesUtil.isEmpty(noteSource) && !"ostatus".equals(noteSource)
                 && !"unknown".equals(noteSource)) {
-            noteDetails.withSpace(StringUtils.format(context, R.string.message_source_from, noteSource));
+            noteDetails.withSpace(StringUtil.format(context, R.string.message_source_from, noteSource));
         }
     }
 

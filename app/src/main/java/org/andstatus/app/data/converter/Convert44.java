@@ -20,7 +20,7 @@ import android.database.Cursor;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -40,7 +40,7 @@ class Convert44 extends ConvertOneStep {
 
         static Optional<Data> fromCursor(Cursor cursor) {
             final String username = DbUtils.getString(cursor, "username");
-            int index = StringUtils.isEmpty(username)
+            int index = StringUtil.isEmpty(username)
                     ? -1
                     : username.indexOf("@");
             return  (index > 0)

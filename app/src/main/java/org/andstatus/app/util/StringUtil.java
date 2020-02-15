@@ -24,7 +24,7 @@ import java.util.Optional;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class StringUtils {
+public class StringUtil {
     private static final String TEMP_OID_PREFIX = "andstatustemp:";
 
     public static String stripTempPrefix(String oid) {
@@ -65,7 +65,7 @@ public class StringUtils {
     }
 
     public static String notEmpty(String value, String valueIfEmpty) {
-        return StringUtils.isEmpty(value) ? valueIfEmpty : value;
+        return StringUtil.isEmpty(value) ? valueIfEmpty : value;
     }
 
     public static Optional<String> optNotEmpty(Object value) {
@@ -113,7 +113,7 @@ public class StringUtils {
     }
 
     public static boolean isFilled(String value) {
-        return !StringUtils.isEmpty(value);
+        return !StringUtil.isEmpty(value);
     }
 
     public static boolean isNewFilledValue(String oldValue, String newValue) {
@@ -142,7 +142,7 @@ public class StringUtils {
             try {
                 return String.format(format, args);
             } catch (Exception e) {
-                MyLog.e(StringUtils.class, "Error formatting \"" + format + "\"" + argsToString(args), e);
+                MyLog.e(StringUtil.class, "Error formatting \"" + format + "\"" + argsToString(args), e);
             }
         }
         return notEmpty(format, "(no format)") + argsToString(args);

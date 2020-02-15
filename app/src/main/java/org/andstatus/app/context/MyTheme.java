@@ -26,7 +26,7 @@ import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import androidx.annotation.NonNull;
 
@@ -78,7 +78,7 @@ public class MyTheme {
 
     private static int getStyleId(Context context, String styleName, int defaultId) {
         int styleId = 0;
-        if (!StringUtils.isEmpty(styleName)) {
+        if (!StringUtil.isEmpty(styleName)) {
             styleId = context.getResources().getIdentifier(styleName, "style", "org.andstatus.app");
             if (styleId == 0 || MyLog.isVerboseEnabled()) {
                 String text = "getStyleId; name:\"" + styleName + "\"; id:" + Integer.toHexString(styleId)

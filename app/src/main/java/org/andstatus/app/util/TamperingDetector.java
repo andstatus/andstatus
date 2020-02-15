@@ -79,7 +79,7 @@ public class TamperingDetector {
     }
 
     public static boolean hasKnownAppSignature() {
-        return !StringUtils.isEmpty(knownAppSignature);
+        return !StringUtil.isEmpty(knownAppSignature);
     }
 
     public static String getAppSignatureInfo() {

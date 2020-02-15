@@ -24,7 +24,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.notification.NotificationEvents;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 /**
  * Maintains the appWidget instance (defined by {@link #appWidgetId}): - state
@@ -136,7 +136,7 @@ public class MyAppWidgetData {
                 (events.isEmpty() ? "" : ", notifications:" + events) +
                 (dateLastChecked > 0 ? ", checked:" + dateLastChecked : "") +
                 (dateSince > 0 ? ", since:" + dateSince : "") +
-                (StringUtils.isEmpty(nothingPref) ? "" : ", nothing:" + nothingPref) +
+                (StringUtil.isEmpty(nothingPref) ? "" : ", nothing:" + nothingPref) +
             "}";
     }
 

@@ -70,7 +70,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.view.EnumSelector;
@@ -433,7 +433,7 @@ public class AccountSettingsActivity extends MyActivity {
                 nameEditable.setVisibility(View.GONE);
             } else {
                 nameEditable.setVisibility(View.VISIBLE);
-                nameEditable.setHint(StringUtils.format(this,
+                nameEditable.setHint(StringUtil.format(this,
                         origin.hasHost()
                                 ? R.string.summary_preference_username
                                 : R.string.summary_preference_username_webfinger_id,
@@ -447,7 +447,7 @@ public class AccountSettingsActivity extends MyActivity {
                     nameEditable.requestFocus();
                 }
             }
-            String nameShown = StringUtils.nonEmptyNonTemp(state.getAccount().getUsername())
+            String nameShown = StringUtil.nonEmptyNonTemp(state.getAccount().getUsername())
                     ? (origin.hasHost()
                         ? state.getAccount().getUsername()
                         : state.getAccount().getActor().getUniqueName())
@@ -483,7 +483,7 @@ public class AccountSettingsActivity extends MyActivity {
         StringBuilder labelBuilder = new StringBuilder();
         if (isNeeded) {
             labelBuilder.append(this.getText(R.string.summary_preference_password));
-            if (StringUtils.isEmpty(ma.getPassword())) {
+            if (StringUtil.isEmpty(ma.getPassword())) {
                 labelBuilder.append(": (" + this.getText(R.string.not_set) + ")");
             }
         }
@@ -545,7 +545,7 @@ public class AccountSettingsActivity extends MyActivity {
         boolean addAccountEnabled = !state.isUsernameNeededToStartAddingNewAccount() ||
                 state.getAccount().isUsernameValid();
         if (addAccountEnabled) {
-            if (!state.builder.isOAuth() && StringUtils.isEmpty(state.builder.getPassword())) {
+            if (!state.builder.isOAuth() && StringUtil.isEmpty(state.builder.getPassword())) {
                 addAccountEnabled = false;
                 error = getText(R.string.title_preference_password);
             }
@@ -638,7 +638,7 @@ public class AccountSettingsActivity extends MyActivity {
 
                 @Override
                 public void afterTextChanged(Editable s) {
-                    long value = StringUtils.toLong(s.toString());
+                    long value = StringUtil.toLong(s.toString());
                     state.builder.setSyncFrequencySeconds(value > 0 ? value * 60 : 0);
                 }
             });
@@ -909,7 +909,7 @@ public class AccountSettingsActivity extends MyActivity {
             if (!succeeded) {
                 stepErrorMessage = AccountSettingsActivity.this
                         .getString(R.string.client_registration_failed);
-                if (!StringUtils.isEmpty(connectionErrorMessage)) {
+                if (!StringUtil.isEmpty(connectionErrorMessage)) {
                     stepErrorMessage += ": " + connectionErrorMessage;
                 }
                 MyLog.d(TAG, stepErrorMessage);
@@ -1032,7 +1032,7 @@ public class AccountSettingsActivity extends MyActivity {
                     ? ResultStatus.SUCCESS : ResultStatus.CONNECTION_EXCEPTION;
             if (resultStatus != ResultStatus.SUCCESS) {
                 stepErrorMessage = activity.getString(R.string.acquiring_a_request_token_failed);
-                if (StringUtils.nonEmpty(connectionErrorMessage)) {
+                if (StringUtil.nonEmpty(connectionErrorMessage)) {
                     stepErrorMessage += ": " + connectionErrorMessage;
                 }
                 MyLog.d(TAG, stepErrorMessage);
@@ -1165,7 +1165,7 @@ public class AccountSettingsActivity extends MyActivity {
                 }
             }
             return TaskResult.withWhoAmI(
-                    StringUtils.nonEmpty(accessToken) && StringUtils.nonEmpty(accessSecret)
+                    StringUtil.nonEmpty(accessToken) && StringUtil.nonEmpty(accessSecret)
                             ? ResultStatus.SUCCESS : ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT,
                     message,
                     whoAmI
@@ -1184,7 +1184,7 @@ public class AccountSettingsActivity extends MyActivity {
                 } else {
                     String stepErrorMessage = AccountSettingsActivity.this
                         .getString(R.string.acquiring_an_access_token_failed) +
-                            (StringUtils.nonEmpty(result.message) ? ": " + result.message : "");
+                            (StringUtil.nonEmpty(result.message) ? ": " + result.message : "");
                     appendError(stepErrorMessage);
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
                     updateScreen();

@@ -104,7 +104,7 @@ public class I18n {
     }
 
     public static String localeToLanguage(String locale) {
-        if (StringUtils.isEmpty(locale)) {
+        if (StringUtil.isEmpty(locale)) {
             return "";
         }
         int indHyphen = locale.indexOf('-');
@@ -115,7 +115,7 @@ public class I18n {
     }
 
     public static String localeToCountry(String locale) {
-        if (StringUtils.isEmpty(locale)) {
+        if (StringUtil.isEmpty(locale)) {
             return "";
         }
         int indHyphen = locale.indexOf("-r");

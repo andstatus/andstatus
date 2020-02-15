@@ -10,7 +10,7 @@ import org.andstatus.app.net.http.HttpConnectionMock;
 import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import static org.junit.Assert.assertEquals;
@@ -35,7 +35,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             MyServiceManager.stopService();
 
             MyAccountTest.fixPersistentAccounts(myContext);
-            boolean isSingleMockedInstance = StringUtils.isEmpty(accountName);
+            boolean isSingleMockedInstance = StringUtil.isEmpty(accountName);
             if (isSingleMockedInstance) {
                 httpConnectionMock = new HttpConnectionMock();
                 TestSuite.setHttpConnectionMockInstance(httpConnectionMock);

@@ -23,7 +23,7 @@ import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 class AndroidAccountData implements AccountDataReader {
     private AccountManager am;
@@ -95,7 +95,7 @@ class AndroidAccountData implements AccountDataReader {
     public String getDataString(String key, String defValue) {
         String value = defValue;
         String str = am.getUserData(androidAccount, key);
-        if (!StringUtils.isEmpty(str)) {
+        if (!StringUtil.isEmpty(str)) {
             value = str;
         }
         return value;

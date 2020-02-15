@@ -36,7 +36,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -108,7 +108,7 @@ public class FirstActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, TimelineActivity.class);
                 if (myIntent != null) {
                     String action = myIntent.getAction();
-                    if (!StringUtils.isEmpty(action)) {
+                    if (!StringUtil.isEmpty(action)) {
                         intent.setAction(action);
                     }
                     Uri data = myIntent.getData();

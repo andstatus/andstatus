@@ -102,8 +102,6 @@ public class MyLog {
     @GuardedBy("logToFileEnabled")
     private static String logFileName = null;
 
-    public static final String COMMA = ",";
-
     private MyLog() {
         // Empty
     }
@@ -265,30 +263,8 @@ public class MyLog {
     /** Truncated to {@link #MAX_TAG_LENGTH} */
     @NonNull
     static String objToTruncatedTag(Object objTag) {
-        final String tag = objToTag(objTag);
+        final String tag = MyStringBuilder.objToTag(objTag);
         return (tag.length() > MAX_TAG_LENGTH) ? tag.substring(0, MAX_TAG_LENGTH) : tag;
-    }
-
-    @NonNull
-    public static String objToTag(Object objTag) {
-        final String tag;
-        if (objTag == null) {
-            tag = "(null)";
-        } else if (objTag instanceof IdentifiableInstance) {
-            tag = ((IdentifiableInstance) objTag).getInstanceTag();
-        } else if (objTag instanceof String) {
-            tag = (String) objTag;
-        } else if (objTag instanceof Enum<?>) {
-            tag = objTag.toString();
-        } else if (objTag instanceof Class<?>) {
-            tag = ((Class<?>) objTag).getSimpleName();
-        }else {
-            tag = objTag.getClass().getSimpleName();
-        }
-        if (tag.trim().isEmpty()) {
-            return "(empty)";
-        }
-        return tag;
     }
 
     public static boolean isDebugEnabled() {
@@ -317,7 +293,7 @@ public class MyLog {
             return true;
         } else {
             String tag = objToTruncatedTag(objTag);
-            if (StringUtils.isEmpty(tag)) {
+            if (StringUtil.isEmpty(tag)) {
                 tag = APPTAG;
             }
             return Log.isLoggable(tag, level);
@@ -383,7 +359,7 @@ public class MyLog {
     
     private static boolean writeStringToFile(String string, String filename, boolean append, boolean logged) {
         boolean ok = false;
-        if (StringUtils.isEmpty(filename)) {
+        if (StringUtil.isEmpty(filename)) {
             if (logged) {
                 MyLog.v("writeStringToFile", "Empty filename");
             }
@@ -457,7 +433,7 @@ public class MyLog {
         builder.append("/");
         builder.append(tag);
         builder.append(":");
-        if (!StringUtils.isEmpty(msg)) {
+        if (!StringUtil.isEmpty(msg)) {
             builder.append(" ");
             builder.append(msg);
         }
@@ -537,17 +513,17 @@ public class MyLog {
         if (jsonMessage != null && MyPreferences.isLogNetworkLevelMessages()) {
             String fileName = getSeparateLogFileName(namePrefix, objTag);
             logJson(objTag, namePrefix, jsonMessage, fileName);
-            StringUtils.optNotEmpty(textData).ifPresent(txt -> writeStringToFile(txt, fileName + ".txt"));
+            StringUtil.optNotEmpty(textData).ifPresent(txt -> writeStringToFile(txt, fileName + ".txt"));
         }
     }
    
     public static void logJson(Object objTag, String namePrefix, @NonNull Object jso, String fileName) {
-        String logFileName = StringUtils.notEmpty(fileName, getSeparateLogFileName(namePrefix, objTag));
+        String logFileName = StringUtil.notEmpty(fileName, getSeparateLogFileName(namePrefix, objTag));
         try {
             boolean isEmpty = false;
             Object jso2 = jso;
             if (jso instanceof String) {
-                if (StringUtils.isEmpty((String) jso)) {
+                if (StringUtil.isEmpty((String) jso)) {
                     return;
                 }
                 jso2 = (new JSONTokener((String) jso)).nextValue();
@@ -581,7 +557,7 @@ public class MyLog {
     }
 
     private static String getSeparateLogFileName(String namePrefix, Object objTag) {
-        return uniqueDateTimeFormatted() + "_" + namePrefix + "_" + objToTag(objTag);
+        return uniqueDateTimeFormatted() + "_" + namePrefix + "_" + MyStringBuilder.objToTag(objTag);
     }
 
     public static String uniqueDateTimeFormatted() {

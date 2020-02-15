@@ -30,7 +30,7 @@ import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TamperingDetector;
 
 import java.io.File;
@@ -127,7 +127,7 @@ public class MyApplication extends Application {
                 }
             }
         }
-        return StringUtils.isEmpty(processName) ? "?" : processName;
+        return StringUtil.isEmpty(processName) ? "?" : processName;
     }
 
 }

@@ -41,7 +41,7 @@ import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.Date;
@@ -187,9 +187,9 @@ public class DataUpdater {
             final boolean isFirstTimeLoaded = (note.getStatus() == DownloadStatus.LOADED || note.noteId == 0) &&
                     statusStored != DownloadStatus.LOADED;
             boolean isFirstTimeSent = !isFirstTimeLoaded && note.noteId != 0 &&
-                    StringUtils.nonEmptyNonTemp(note.oid) &&
+                    StringUtil.nonEmptyNonTemp(note.oid) &&
                     statusStored.isUnsentDraft() &&
-                    StringUtils.isEmptyOrTemp(MyQuery.idToOid(execContext.myContext,
+                    StringUtil.isEmptyOrTemp(MyQuery.idToOid(execContext.myContext,
                             OidEnum.NOTE_OID, note.noteId, 0));
             if (note.getStatus() == DownloadStatus.UNKNOWN && isFirstTimeSent) {
                 note.setStatus(DownloadStatus.SENT);
@@ -236,10 +236,10 @@ public class DataUpdater {
                 updateObjActor(activity.getActor().update(activity.accountActor, actor), recursing + 1);
             }
 
-            if (!StringUtils.isEmpty(note.via)) {
+            if (!StringUtil.isEmpty(note.via)) {
                 values.put(NoteTable.VIA, note.via);
             }
-            if (!StringUtils.isEmpty(note.url)) {
+            if (!StringUtil.isEmpty(note.url)) {
                 values.put(NoteTable.URL, note.url);
             }
             if (note.getPublic().known) {
@@ -309,7 +309,7 @@ public class DataUpdater {
 
     private void updateInReplyTo(AActivity activity, ContentValues values) {
         final AActivity inReply = activity.getNote().getInReplyTo();
-        if (StringUtils.nonEmpty(inReply.getNote().oid)) {
+        if (StringUtil.nonEmpty(inReply.getNote().oid)) {
             if (nonRealOid(inReply.getNote().conversationOid)) {
                 inReply.getNote().setConversationOid(activity.getNote().conversationOid);
             }
@@ -387,7 +387,7 @@ public class DataUpdater {
                 // Substitute required empty values with some temporary for a new entry only!
                 String username = actor.getUsername();
                 if (SharedPreferencesUtil.isEmpty(username)) {
-                    username = StringUtils.toTempOid(actorOid);
+                    username = StringUtil.toTempOid(actorOid);
                 }
                 values.put(ActorTable.USERNAME, username);
                 values.put(ActorTable.WEBFINGER_ID, actor.getWebFingerId());

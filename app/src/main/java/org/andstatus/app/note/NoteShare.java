@@ -32,7 +32,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 
 public class NoteShare {
@@ -75,10 +75,10 @@ public class NoteShare {
         String noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
 
         CharSequence subjectString = noteName;
-        if (StringUtils.nonEmpty(noteSummary)) {
-            subjectString = subjectString + (StringUtils.nonEmpty(subjectString) ? ". " : "") + noteSummary;
+        if (StringUtil.nonEmpty(noteSummary)) {
+            subjectString = subjectString + (StringUtil.nonEmpty(subjectString) ? ". " : "") + noteSummary;
         }
-        if (StringUtils.isEmpty(subjectString)) {
+        if (StringUtil.isEmpty(subjectString)) {
             subjectString = I18n.trimTextAt(MyHtml.htmlToCompactPlainText(noteContent), 80);
         }
         subjectString = (isSensitive ? "(" + MyContextHolder.get().context().getText(R.string.sensitive) + ")" : "") +
@@ -112,7 +112,7 @@ public class NoteShare {
         return new StringBuilder()
                 .append(noteContent)
                 .append(
-                        StringUtils.format(
+                        StringUtil.format(
                                 isHtml ? SIGNATURE_FORMAT_HTML
                                         : SIGNATURE_PLAIN_TEXT,
                                 MyQuery.noteIdToUsername(
@@ -132,7 +132,7 @@ public class NoteShare {
     }
 
     public static boolean openLink(Context context, String urlString) {
-        if (StringUtils.isEmpty(urlString)) {
+        if (StringUtil.isEmpty(urlString)) {
             return false;
         } else {
             Intent intent = new Intent(Intent.ACTION_VIEW);

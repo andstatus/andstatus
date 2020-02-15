@@ -46,7 +46,7 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.Objects;
 import java.util.Queue;
@@ -141,7 +141,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public static CommandData actOnActorCommand(CommandEnum command, MyAccount myAccount, Actor actor, String username) {
-        if (myAccount.nonValid() || (actor.isEmpty() && StringUtils.isEmpty(username))) return CommandData.EMPTY;
+        if (myAccount.nonValid() || (actor.isEmpty() && StringUtil.isEmpty(username))) return CommandData.EMPTY;
 
         CommandData commandData = actor.isEmpty()
                 ? newAccountCommand(command, myAccount)
@@ -291,7 +291,7 @@ public class CommandData implements Comparable<CommandData> {
         }
         builder.withComma("account", myAccount.getAccountName(), myAccount::nonEmpty);
         builder.withComma("username", username);
-        if (StringUtils.nonEmpty(description) && !description.equals(username)) {
+        if (StringUtil.nonEmpty(description) && !description.equals(username)) {
             builder.withSpaceQuoted(description);
         }
         if (getTimeline().isValid()) {
@@ -411,7 +411,7 @@ public class CommandData implements Comparable<CommandData> {
                 break;
             case GET_ACTOR:
             case SEARCH_ACTORS:
-                if (StringUtils.nonEmpty(getUsername())) builder.withSpaceQuoted(getUsername());
+                if (StringUtil.nonEmpty(getUsername())) builder.withSpaceQuoted(getUsername());
                 break;
             default:
                 appendScopeName(myContext, builder);
@@ -443,7 +443,7 @@ public class CommandData implements Comparable<CommandData> {
 
     @NonNull
     private static CharSequence trimConditionally(String text, boolean trim) {
-        if ( StringUtils.isEmpty(text)) {
+        if ( StringUtil.isEmpty(text)) {
             return "";
         } else if (trim) {
             return I18n.trimTextAt(MyHtml.htmlToCompactPlainText(text), 40);
@@ -521,7 +521,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public void setUsername(String username) {
-        if (StringUtils.isEmpty(this.username) && !StringUtils.isEmpty(username)) {
+        if (StringUtil.isEmpty(this.username) && !StringUtil.isEmpty(username)) {
             this.username = username;
         }
     }

@@ -1,7 +1,7 @@
 package org.andstatus.app.origin;
 
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.Collection;
 import java.util.List;
@@ -44,7 +44,7 @@ public class DiscoveredOrigins {
     }
 
     public static Origin fromName(String originName) {
-        if (!StringUtils.isEmpty(originName) && mOrigins.containsKey(originName)) {
+        if (!StringUtil.isEmpty(originName) && mOrigins.containsKey(originName)) {
             return mOrigins.get(originName);
         } else {
             return Origin.EMPTY;

@@ -28,7 +28,7 @@ import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -200,7 +200,7 @@ public final class CommandResult implements Parcelable {
         notificationEventCounts.forEach( (event, count) -> {
             if (count.get() > 0) message.append(event.name() + ":" + count.get() + ", ");
         });
-        if (StringUtils.nonEmpty(mMessage)) {
+        if (StringUtil.nonEmpty(mMessage)) {
             message.append(" \n" + mMessage);
         }
         return message;

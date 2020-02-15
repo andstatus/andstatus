@@ -51,7 +51,7 @@ public final class SelectionAndArgs {
 
     public int addSelection(String selectionAdd, String[] selectionArgsAdd) {
         int nArgsAdd = selectionArgsAdd == null ? 0 : selectionArgsAdd.length;
-        if (!StringUtils.isEmpty(selectionAdd)) {
+        if (!StringUtil.isEmpty(selectionAdd)) {
             if (selection.length() == 0) {
                 selection = selectionAdd;
             } else {

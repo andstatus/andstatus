@@ -20,7 +20,7 @@ import android.content.Intent;
 import android.net.Uri;
 
 import org.andstatus.app.data.TextMediaType;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.Optional;
@@ -36,13 +36,13 @@ public class SharedNote {
 
     public static Optional<SharedNote> fromIntent(Intent intent) {
         SharedNote shared = new SharedNote();
-        shared.name = StringUtils.optNotEmpty(intent.getStringExtra(Intent.EXTRA_SUBJECT));
-        Optional<String> html = StringUtils.optNotEmpty(intent.getStringExtra(Intent.EXTRA_HTML_TEXT));
+        shared.name = StringUtil.optNotEmpty(intent.getStringExtra(Intent.EXTRA_SUBJECT));
+        Optional<String> html = StringUtil.optNotEmpty(intent.getStringExtra(Intent.EXTRA_HTML_TEXT));
         if (html.isPresent()) {
             shared.content = html;
             shared.textMediaType = TextMediaType.HTML;
         } else {
-            shared.content = StringUtils.optNotEmpty(intent.getStringExtra(Intent.EXTRA_TEXT));
+            shared.content = StringUtil.optNotEmpty(intent.getStringExtra(Intent.EXTRA_TEXT));
             shared.textMediaType = TextMediaType.PLAIN;
         }
         shared.mediaUri = Optional.ofNullable(intent.getParcelableExtra(Intent.EXTRA_STREAM))

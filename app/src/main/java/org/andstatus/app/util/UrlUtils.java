@@ -44,7 +44,7 @@ public final class UrlUtils {
     }
 
     public static boolean hostIsValid(String host) {
-        return !StringUtils.isEmpty(host) && validHostnameRegexPattern.matcher(host).matches();
+        return !StringUtil.isEmpty(host) && validHostnameRegexPattern.matcher(host).matches();
     }
 
     public static boolean hasHost(URL url) {
@@ -52,12 +52,12 @@ public final class UrlUtils {
     }
 
     public static boolean isHostOnly(URL url) {
-        return url != null && StringUtils.isEmpty(url.getFile())
+        return url != null && StringUtil.isEmpty(url.getFile())
                 && url.getHost().contentEquals(url.getAuthority());
     }
 
     public static URL fromString(String strUrl) {
-        if (StringUtils.isEmpty(strUrl)) return null;
+        if (StringUtil.isEmpty(strUrl)) return null;
 
         try {
             return new URL(strUrl);
@@ -75,7 +75,7 @@ public final class UrlUtils {
     }
     
     public static URL fromJson(JSONObject jso, String urlTag) throws JSONException {
-        if (jso != null && !StringUtils.isEmpty(urlTag) && jso.has(urlTag)) {
+        if (jso != null && !StringUtil.isEmpty(urlTag) && jso.has(urlTag)) {
             String strUrl = jso.getString(urlTag);
             try {
                 return new URL(strUrl);
@@ -87,7 +87,7 @@ public final class UrlUtils {
     }
 
     public static URL buildUrl(String hostOrUrl, boolean isSsl) {
-        if (StringUtils.isEmpty(hostOrUrl)) {
+        if (StringUtil.isEmpty(hostOrUrl)) {
             return null;
         }
         String corrected = correctedHostOrUrl(hostOrUrl); 
@@ -102,7 +102,7 @@ public final class UrlUtils {
     }
 
     private static String correctedHostOrUrl(String hostOrUrl) {
-        if (StringUtils.isEmpty(hostOrUrl)) {
+        if (StringUtil.isEmpty(hostOrUrl)) {
             return "";
         }
         // Test with: http://www.regexplanet.com/advanced/java/index.html

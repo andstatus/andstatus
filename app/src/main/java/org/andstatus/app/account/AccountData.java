@@ -33,7 +33,7 @@ import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.json.JSONObject;
 
 import androidx.annotation.NonNull;
@@ -276,7 +276,7 @@ public class AccountData implements Parcelable, AccountDataWriter, IdentifiableI
 
     @Override
     public void setDataString(String key, String value) {
-        if (StringUtils.isEmpty(value)) {
+        if (StringUtil.isEmpty(value)) {
             data = JsonUtils.remove(data, key);
         } else {
             data = JsonUtils.put(data, key, value);

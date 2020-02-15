@@ -179,7 +179,7 @@ public class MyUrlSpan extends URLSpan {
     }
 
     public static Spannable toSpannable(String text, TextMediaType mediaType, boolean linkify) {
-        if (StringUtils.isEmpty(text)) return EMPTY_SPANNABLE;
+        if (StringUtil.isEmpty(text)) return EMPTY_SPANNABLE;
 
         // Android 6 bug, see https://github.com/andstatus/andstatus/issues/334
         // Setting setMovementMethod to not null causes a crash if text is SOFT_HYPHEN only:

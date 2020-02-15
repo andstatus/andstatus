@@ -50,10 +50,10 @@ public class MyHtml {
     }
 
     public static String prepareForView(String html) {
-        if (StringUtils.isEmpty(html)) return "";
+        if (StringUtil.isEmpty(html)) return "";
 
         String endWith = html.endsWith("</p>") ? "</p>" : html.endsWith("</p>\n") ? "</p>\n" : "";
-        if (StringUtils.nonEmpty(endWith) && StringUtils.countOfOccurrences(html, "<p") == 1) {
+        if (StringUtil.nonEmpty(endWith) && StringUtil.countOfOccurrences(html, "<p") == 1) {
            return html.replaceAll("<p[^>]*>","").replaceAll(endWith,"");
         }
         return html;
@@ -62,7 +62,7 @@ public class MyHtml {
     /** Following ActivityStreams convention, default mediaType for content is "text/html" */
     @NonNull
     public static String toContentStored(String text, TextMediaType inputMediaType, boolean isHtmlContentAllowed) {
-        if (StringUtils.isEmpty(text)) return "";
+        if (StringUtil.isEmpty(text)) return "";
 
         TextMediaType mediaType = inputMediaType == TextMediaType.UNKNOWN
                 ? calcTextMediaType(text)
@@ -95,7 +95,7 @@ public class MyHtml {
     }
 
     private static TextMediaType calcTextMediaType(String text) {
-        if (StringUtils.isEmpty(text)) return TextMediaType.PLAIN;
+        if (StringUtil.isEmpty(text)) return TextMediaType.PLAIN;
 
         if (hasHtmlMarkup(text)) return TextMediaType.HTML;
 
@@ -104,7 +104,7 @@ public class MyHtml {
 
     @NonNull
     public static String fromContentStored(String html, TextMediaType outputMediaType) {
-        if (StringUtils.isEmpty(html)) return "";
+        if (StringUtil.isEmpty(html)) return "";
 
         switch (outputMediaType) {
             case HTML:
@@ -132,7 +132,7 @@ public class MyHtml {
     /** Strips ALL markup from the String, excluding line breaks */
     @NonNull
     public static String htmlToPlainText(String html) {
-        if (StringUtils.isEmpty(html)) return "";
+        if (StringUtil.isEmpty(html)) return "";
 
         String str0 = HTML_LINEBREAK_PATTERN.matcher(html).replaceAll("\n");
         String str1 = hasHtmlMarkup(str0)
@@ -143,7 +143,7 @@ public class MyHtml {
     }
 
     private static String unescapeHtml(String textEscaped) {
-        return StringUtils.isEmpty(textEscaped)
+        return StringUtil.isEmpty(textEscaped)
                 ? ""
                 :  UNESCAPE_HTML.translate(textEscaped)
                     // This is needed to avoid visible text truncation,
@@ -161,7 +161,7 @@ public class MyHtml {
             );
 
     private static String escapeHtmlExceptLineBreaksAndSpace(String plainText) {
-        return StringUtils.isEmpty(plainText)
+        return StringUtil.isEmpty(plainText)
             ? ""
             : SPACE_ESCAPED_PATTERN.matcher(
                     LINEBREAK_ESCAPED_PATTERN.matcher(Html.escapeHtml(plainText)).replaceAll(LINEBREAK_PLAIN)
@@ -170,7 +170,7 @@ public class MyHtml {
 
     @NonNull
     static String stripExcessiveLineBreaks(String plainText) {
-        if (StringUtils.isEmpty(plainText)) {
+        if (StringUtil.isEmpty(plainText)) {
             return "";
         } else {
             String text2 = THREE_LINEBREAKS_PATTERN.matcher(plainText.trim()).replaceAll(DOUBLE_LINEBREAK_REPLACE).trim();
@@ -182,7 +182,7 @@ public class MyHtml {
     }
 
     static String normalizeWordsForSearch(String text) {
-        if (StringUtils.isEmpty(text)) {
+        if (StringUtil.isEmpty(text)) {
             return "";
         } else {
             return MENTION_HASH_PREFIX_PATTERN.matcher(
@@ -197,7 +197,7 @@ public class MyHtml {
 
     /** Very simple method */
     public static boolean hasHtmlMarkup(String text) {
-        if (StringUtils.isEmpty(text)) return false;
+        if (StringUtil.isEmpty(text)) return false;
 
         return text.contains("<") && text.contains(">");
     }

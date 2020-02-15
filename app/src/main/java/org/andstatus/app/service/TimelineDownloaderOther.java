@@ -25,7 +25,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.Date;
@@ -135,7 +135,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
             }
         } else {
             Actor actor = Actor.load(execContext.myContext, getActor().actorId);
-            if (StringUtils.isEmpty(actor.oid)) {
+            if (StringUtil.isEmpty(actor.oid)) {
                 throw new ConnectionException("No ActorOid for " + actor + ", timeline:" + getTimeline());
             }
             return actor;

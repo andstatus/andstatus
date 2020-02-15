@@ -48,7 +48,7 @@ import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.andstatus.app.data.DownloadStatus.UNKNOWN;
-import static org.andstatus.app.util.MyLog.COMMA;
+import static org.andstatus.app.util.MyStringBuilder.COMMA;
 
 public class NoteEditorData implements IsEmpty {
     public static final String TAG = NoteEditorData.class.getSimpleName();
@@ -204,8 +204,8 @@ public class NoteEditorData implements IsEmpty {
         if(activity.getNote().getInReplyTo().nonEmpty()) {
             String name = activity.getNote().getInReplyTo().getNote().getName();
             String summary = activity.getNote().getInReplyTo().getNote().getSummary();
-            values.put("InReplyTo", (StringUtils.nonEmpty(name) ? name + COMMA : "") +
-                    (StringUtils.nonEmpty(summary) ? summary + COMMA : "") +
+            values.put("InReplyTo", (StringUtil.nonEmpty(name) ? name + COMMA : "") +
+                    (StringUtil.nonEmpty(summary) ? summary + COMMA : "") +
                     activity.getNote().getInReplyTo().getNote().getContent());
         }
         values.put("audience", activity.getNote().audience().getUsernames());
@@ -340,10 +340,10 @@ public class NoteEditorData implements IsEmpty {
         MyStringBuilder mentions = new MyStringBuilder();
         for(Actor actor : toMention) {
             String name = actor.getUniqueName();
-            if (!StringUtils.isEmpty(name) && !mentionedNames.contains(name)) {
+            if (!StringUtil.isEmpty(name) && !mentionedNames.contains(name)) {
                 mentionedNames.add(name);
                 String mentionText = "@" + name;
-                if (StringUtils.isEmpty(getContent()) || !(getContent() + " ").contains(mentionText + " ")) {
+                if (StringUtil.isEmpty(getContent()) || !(getContent() + " ").contains(mentionText + " ")) {
                     mentions.withSpace(mentionText);
                 }
             }
@@ -359,9 +359,9 @@ public class NoteEditorData implements IsEmpty {
 
     public NoteEditorData appendMentionedActorToText(Actor mentionedActor) {
         String name = mentionedActor.getUniqueName();
-        if (!StringUtils.isEmpty(name)) {
+        if (!StringUtil.isEmpty(name)) {
             String bodyText2 = "@" + name + " ";
-            if (!StringUtils.isEmpty(getContent()) && !(getContent() + " ").contains(bodyText2)) {
+            if (!StringUtil.isEmpty(getContent()) && !(getContent() + " ").contains(bodyText2)) {
                 bodyText2 = getContent().trim() + " " + bodyText2;
             }
             setContent(bodyText2, TextMediaType.HTML);
@@ -428,7 +428,7 @@ public class NoteEditorData implements IsEmpty {
         if (MyQuery.noteIdToLongColumnValue(NoteTable.SENSITIVE, getInReplyToNoteId()) != 1) return this;
 
         activity.getNote().setSensitive(true);
-        StringUtils.optNotEmpty(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, getInReplyToNoteId()))
+        StringUtil.optNotEmpty(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, getInReplyToNoteId()))
                 .ifPresent(this::setSummary);
         return this;
     }

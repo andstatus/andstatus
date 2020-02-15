@@ -23,7 +23,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,7 +52,7 @@ public class MyAccountTest {
     }
     
     private void createAccountOfOriginType(String username, String host, OriginType originType) {
-        String uniqueName = StringUtils.isEmpty(username) ? "" : username + "@" + host;
+        String uniqueName = StringUtil.isEmpty(username) ? "" : username + "@" + host;
         MyContext myContext = MyContextHolder.get();
         String logMsg = "Creating account '" + uniqueName + "' for '" + originType + "'";
         MyLog.v(this, logMsg);
@@ -64,7 +64,7 @@ public class MyAccountTest {
         assertEquals(logMsg, origin, builder.getAccount().getOrigin());
         assertEquals(logMsg, accountNameString, builder.getAccount().getAccountName());
         assertEquals(logMsg, username, builder.getAccount().getUsername());
-        if (StringUtils.isEmpty(uniqueName)) {
+        if (StringUtil.isEmpty(uniqueName)) {
             assertEquals(logMsg, "", builder.getAccount().getWebFingerId());
         } else {
             assertNotEquals(logMsg, uniqueName, builder.getAccount().getUsername());

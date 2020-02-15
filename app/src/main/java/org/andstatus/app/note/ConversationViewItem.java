@@ -25,7 +25,6 @@ import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
@@ -34,7 +33,7 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.Set;
@@ -56,7 +55,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
         audience = Audience.fromNoteId(getOrigin(), getNoteId());
         noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
         String via = DbUtils.getString(cursor, NoteTable.VIA);
-        if (!StringUtils.isEmpty(via)) {
+        if (!StringUtil.isEmpty(via)) {
             noteSource = Html.fromHtml(via).toString().trim();
         }
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);

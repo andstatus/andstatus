@@ -30,7 +30,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static org.andstatus.app.util.StringUtils.toTempOid;
+import static org.andstatus.app.util.StringUtil.toTempOid;
 
 class Convert50 extends ConvertOneStep {
     Convert50() {

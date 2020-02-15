@@ -27,7 +27,7 @@ import org.andstatus.app.context.MyContextImpl;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.OriginTable;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -96,7 +96,7 @@ public class PersistentOrigins {
      */
     public Origin fromName(String originName) {
         Origin origin = null;
-        if (!StringUtils.isEmpty(originName)) {
+        if (!StringUtil.isEmpty(originName)) {
             origin = mOrigins.get(originName);
         }
         return origin == null ? Origin.EMPTY : origin;
@@ -130,7 +130,7 @@ public class PersistentOrigins {
     }
 
     public List<Origin> fromOriginInAccountName(String originInAccountName) {
-        return StringUtils.optNotEmpty(originInAccountName).map(name -> {
+        return StringUtil.optNotEmpty(originInAccountName).map(name -> {
             OriginType originType = OriginType.fromTitle(name);
             List<Origin> originsOfType =  originType == OriginType.UNKNOWN
                     ? Collections.emptyList()

@@ -60,7 +60,7 @@ import org.andstatus.app.timeline.meta.TimelineTitle;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TryUtils;
 import org.andstatus.app.util.UriUtils;
 
@@ -192,7 +192,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
         Preference preference = findPreference(MyPreferences.KEY_DONT_SYNCHRONIZE_OLD_NOTES);
         if (preference != null) {
             preference.setSummary( hours > 0 ?
-                    StringUtils.format(this.getContext(), R.string.dont_synchronize_old_messages_summary,
+                    StringUtil.format(this.getContext(), R.string.dont_synchronize_old_messages_summary,
                             Long.toString(hours)) : getString(R.string.this_option_is_turned_off));
         }
     }
@@ -322,7 +322,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
         Timeline timeline = MyContextHolder.get().timelines().getDefault();
         Preference preference = findPreference(KEY_MANAGE_TIMELINES);
         if (preference != null) {
-            preference.setSummary(StringUtils.format(getContext(), R.string.default_timeline_summary,
+            preference.setSummary(StringUtil.format(getContext(), R.string.default_timeline_summary,
                     TimelineTitle.from(MyContextHolder.get(), timeline).toString()));
         }
     }

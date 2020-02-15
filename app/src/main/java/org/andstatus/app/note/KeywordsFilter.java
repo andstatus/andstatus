@@ -20,7 +20,7 @@ import androidx.annotation.NonNull;
 
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyHtml;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ public class KeywordsFilter implements IsEmpty {
         Keyword(String value, boolean contains) {
             this.value = value;
             this.contains = contains;
-            nonEmpty = StringUtils.nonEmpty(value);
+            nonEmpty = StringUtil.nonEmpty(value);
         }
 
         @Override
@@ -75,7 +75,7 @@ public class KeywordsFilter implements IsEmpty {
     @NonNull
     private List<String> parseFilterString(String text) {
         List<String> keywords = new ArrayList<>();
-        if (StringUtils.isEmpty(text)) {
+        if (StringUtil.isEmpty(text)) {
             return keywords;
         }
         boolean inQuote = false;
@@ -85,7 +85,7 @@ public class KeywordsFilter implements IsEmpty {
                 break;
             }
             String item = text.substring(atPos, separatorInd);
-            if (!StringUtils.isEmpty(item) && !keywords.contains(item)) {
+            if (!StringUtil.isEmpty(item) && !keywords.contains(item)) {
                 keywords.add(item);
             }
             if (separatorInd < text.length() && text.charAt(separatorInd) == '"') {
@@ -135,7 +135,7 @@ public class KeywordsFilter implements IsEmpty {
     }
 
     public boolean matchedAny(String s) {
-        if (keywordsToFilter.isEmpty() || StringUtils.isEmpty(s)) {
+        if (keywordsToFilter.isEmpty() || StringUtil.isEmpty(s)) {
             return false;
         }
         for (Keyword keyword : keywordsToFilter) {
@@ -147,7 +147,7 @@ public class KeywordsFilter implements IsEmpty {
     }
 
     public boolean matchedAll(String s) {
-        if (keywordsToFilter.isEmpty() || StringUtils.isEmpty(s)) {
+        if (keywordsToFilter.isEmpty() || StringUtil.isEmpty(s)) {
             return false;
         }
         for (Keyword keyword : keywordsToFilter) {
@@ -177,7 +177,7 @@ public class KeywordsFilter implements IsEmpty {
     public String[] prependSqlSelectionArgs(String[] selectionArgs) {
         String[] selectionArgsOut = selectionArgs;
         for (Keyword keyword : keywordsToFilter) {
-            selectionArgsOut = StringUtils.addBeforeArray(selectionArgsOut, "%" + keyword.value + "%");
+            selectionArgsOut = StringUtil.addBeforeArray(selectionArgsOut, "%" + keyword.value + "%");
         }
         return selectionArgsOut;
     }

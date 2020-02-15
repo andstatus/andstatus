@@ -57,12 +57,12 @@ public class UriUtils {
 
     @NonNull
     public static Uri fromJson(JSONObject jsoIn, String pathIn) {
-        if (jsoIn == null || StringUtils.isEmpty(pathIn)) return Uri.EMPTY;
+        if (jsoIn == null || StringUtil.isEmpty(pathIn)) return Uri.EMPTY;
 
         String[] path = pathIn.split("/");
         JSONObject jso = path.length == 2 ? jsoIn.optJSONObject(path[0]) : jsoIn;
         String urlTag = path.length == 2 ? path[1] : pathIn;
-        if (jso != null && !StringUtils.isEmpty(urlTag) && jso.has(urlTag)) {
+        if (jso != null && !StringUtil.isEmpty(urlTag) && jso.has(urlTag)) {
             return fromString(jso.optString(urlTag));
         }
         return Uri.EMPTY;
@@ -80,7 +80,7 @@ public class UriUtils {
 
     @NonNull
     public static Optional<Uri> toOptional(String uriString) {
-        return StringUtils.isEmpty(uriString)
+        return StringUtil.isEmpty(uriString)
                 ? Optional.empty()
                 : Optional.of(Uri.parse(uriString));
     }
@@ -147,7 +147,7 @@ public class UriUtils {
     }
 
     public static boolean nonRealOid(String oid) {
-        return StringUtils.isEmptyOrTemp(oid);
+        return StringUtil.isEmptyOrTemp(oid);
     }
 
     public static boolean nonEmptyOid(String oid) {

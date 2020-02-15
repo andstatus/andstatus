@@ -25,7 +25,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.SqlIds;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -180,7 +180,7 @@ public class CheckConversations extends DataChecker {
         AtomicInteger counter = new AtomicInteger();
         Map<Long, Map<String, NoteItem>> origins = new ConcurrentHashMap<>();
         for (NoteItem item : items.values()) {
-            if (!StringUtils.isEmpty(item.conversationOid)) {
+            if (!StringUtil.isEmpty(item.conversationOid)) {
                 Map<String, NoteItem> firstConversationMembers = origins.get(item.originId);
                 if (firstConversationMembers == null) {
                     firstConversationMembers = new ConcurrentHashMap<>();

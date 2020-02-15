@@ -33,7 +33,7 @@ import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 
@@ -180,7 +180,7 @@ public class DemoAccountInserter {
         assertTrue("Account " + actor.getUniqueNameWithOrigin() + " has ActorId", actorId != 0);
         assertEquals("Account actorOid", ma.getActorOid(), actor.oid);
         String oid = MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0);
-        if (StringUtils.isEmpty(oid)) {
+        if (StringUtil.isEmpty(oid)) {
             String message = "Couldn't find an Actor in the database for id=" + actorId + " oid=" + actor.oid;
             MyLog.v(this, message);
             fail(message);

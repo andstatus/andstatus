@@ -27,7 +27,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.ConnectionLocal;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtils;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 
 import java.io.File;
@@ -57,7 +57,7 @@ public abstract class FileDownloader {
                 loadUrl();
                 break;
         }
-        if (data.isError() && StringUtils.nonEmpty(data.getMessage())) {
+        if (data.isError() && StringUtil.nonEmpty(data.getMessage())) {
             commandData.getResult().setMessage(data.getMessage());
         }
         if (data.isHardError()) {
