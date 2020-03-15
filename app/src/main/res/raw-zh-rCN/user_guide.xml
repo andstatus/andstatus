@@ -54,7 +54,9 @@ xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd 
 AndStatus 可将来自所有社交网络的所有帐户的消息整合至一条时间线中，且即使在离线状态下也可以阅读和发布消息。</p>
     <p>"操作栏” -&gt; “帮助" 中提供了指向本指南的链接。</p>
     <p>下一页的更新日志包含 AndStatus 所有功能的说明，以及讨论的链接。</p>
-    <p>.</p>
+    <p>用户的多数<strong>问题</strong>都已经在相应的“Issues"话题中得以解答，尤其是带有
+        “Questions&amp;Answers”标签的那些。请在<a xlink:href="https://github.com/andstatus/andstatus/issues?q=label%3AQuestions%26Answers%20">问题和回答</a>中查看和搜索它们
+.</p>
 </section>
 <section>
     <title>
