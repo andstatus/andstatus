@@ -23,11 +23,13 @@ import android.content.res.Configuration;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
+
 import androidx.annotation.NonNull;
 
 import org.acra.ACRA;
-import org.acra.ReportingInteractionMode;
-import org.acra.annotation.ReportsCrashes;
+import org.acra.annotation.AcraCore;
+import org.acra.annotation.AcraDialog;
+import org.acra.annotation.AcraMailSender;
 import org.andstatus.app.R;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
@@ -36,12 +38,12 @@ import org.andstatus.app.util.TamperingDetector;
 import java.io.File;
 import java.util.List;
 
-@ReportsCrashes(mode = ReportingInteractionMode.DIALOG,
-        mailTo = "andstatus@gmail.com",
-        resDialogIcon = R.drawable.icon,
-        resDialogText = R.string.crash_dialog_text,
-        resDialogCommentPrompt = R.string.crash_dialog_comment_prompt,
-        alsoReportToAndroidFramework = true)
+@AcraMailSender(mailTo = "andstatus@gmail.com")
+@AcraDialog(
+        resIcon = R.drawable.icon,
+        resText = R.string.crash_dialog_text,
+        resCommentPrompt = R.string.crash_dialog_comment_prompt)
+@AcraCore(alsoReportToAndroidFramework = true)
 public class MyApplication extends Application {
     public volatile boolean isAcraProcess = false;
 

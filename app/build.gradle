@@ -70,22 +70,24 @@ configurations {
 }
 
 dependencies {
-    implementation "com.github.stephenc.jcip:jcip-annotations:$jcipAnnotationsVersion"
-    // http://stephenc.github.io/jcip-annotations/dependency-info.html
-    implementation "androidx.appcompat:appcompat:$appCompatVersion"
-    implementation "com.google.android.material:material:$materialVersion"
-    implementation "ch.acra:acra:$acraVersion" // https://github.com/ACRA/acra/wiki/AdvancedUsage
-    implementation "cz.msebera.android:httpclient:$httpclientVersion" // https://github.com/smarek/httpclient-android
-    implementation "org.apache.httpcomponents:httpmime:$httpMimeVersion"
-    implementation "oauth.signpost:signpost-core:$signPostVersion"
-    implementation "commons-codec:commons-codec:$commonsCodecVersion"
-    implementation "org.apache.commons:commons-lang3:$commonsLangVersion"
-    implementation project(':draglistview')
-    implementation "com.github.scribejava:scribejava-core:$scribejavaCoreVersion"
-    implementation "junit:junit:$junitVersion"
     implementation "androidx.annotation:annotation:$annotationVersion"
+    implementation "androidx.appcompat:appcompat:$appCompatVersion"
+    implementation "androidx.documentfile:documentfile:$documentfileVersion" // https://developer.android.com/jetpack/androidx/releases/documentfile
     implementation "androidx.preference:preference:$preferenceVersion"
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:$swiperefreshlayoutVersion" // https://developer.android.com/jetpack/androidx/releases/swiperefreshlayout
+    implementation "ch.acra:acra-dialog:$acraVersion" // https://github.com/ACRA/acra/wiki/AdvancedUsage
+    implementation "ch.acra:acra-mail:$acraVersion"
+    implementation "com.github.scribejava:scribejava-core:$scribejavaCoreVersion"
+    implementation "com.github.stephenc.jcip:jcip-annotations:$jcipAnnotationsVersion" // http://stephenc.github.io/jcip-annotations/dependency-info.html
+    implementation "com.google.android.material:material:$materialVersion"
+    implementation "commons-codec:commons-codec:$commonsCodecVersion"
+    implementation "cz.msebera.android:httpclient:$httpclientVersion" // https://github.com/smarek/httpclient-android
     implementation "io.vavr:vavr:$vavrVersion"
+    implementation "junit:junit:$junitVersion"
+    implementation "oauth.signpost:signpost-core:$signPostVersion"
+    implementation "org.apache.commons:commons-lang3:$commonsLangVersion"
+    implementation "org.apache.httpcomponents:httpmime:$httpMimeVersion"
+    implementation project(':draglistview')
 
     androidTestImplementation "androidx.test:runner:$testRunnerVersion"
     androidTestImplementation "androidx.test:rules:$testRulesVersion"

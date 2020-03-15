@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.3'
+        classpath 'com.android.tools.build:gradle:3.6.1'
         // See https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.1"
 
@@ -31,21 +31,23 @@ buildscript {
         targetSdkVersion = 29 as int
 
         // Lookup the latest here: https://mvnrepository.com/
-        acraVersion = '4.11'              // https://github.com/ACRA/acra/wiki/AdvancedUsage
+        acraVersion = '5.5.0'              // https://github.com/ACRA/acra/wiki/AdvancedUsage
         annotationVersion = '1.1.0'
         appCompatVersion = '1.1.0'        // https://mvnrepository.com/artifact/androidx.appcompat/appcompat
         commonsCodecVersion = '20041127.091804'
         commonsLangVersion = '3.9'      // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+        documentfileVersion = '1.0.1'
         espressoCoreVersion = '3.1.1'
-        httpMimeVersion = '4.5.10'
+        httpMimeVersion = '4.5.11'
         httpclientVersion = '4.5.8'     // https://github.com/smarek/httpclient-android
         jcipAnnotationsVersion = '1.0-1'  // http://stephenc.github.io/jcip-annotations/dependency-info.html
-        junitVersion = '4.13-rc-1'
-        materialVersion = '1.0.0'         // https://mvnrepository.com/artifact/com.google.android.material/material
+        junitVersion = '4.13'
+        materialVersion = '1.1.0'         // https://mvnrepository.com/artifact/com.google.android.material/material
         preferenceVersion = '1.1.0'
         recyclerViewVersion = '1.0.0'
         scribejavaCoreVersion = '6.9.0'   // https://github.com/scribejava/scribejava
         signPostVersion = '1.2.1.2'       // https://mvnrepository.com/artifact/oauth.signpost/signpost-core
+        swiperefreshlayoutVersion = '1.0.0'
         testRulesVersion = '1.1.1'
         testRunnerVersion = '1.1.1'
         vavrVersion = '1.0.0-alpha-2'     // https://github.com/vavr-io/vavr
