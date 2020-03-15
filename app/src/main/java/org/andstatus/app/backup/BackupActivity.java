@@ -57,7 +57,7 @@ public class BackupActivity extends MyActivity implements ProgressLogger.Progres
         if (asyncTask == null || asyncTask.completedBackgroundWork()) {
             resetProgress();
             asyncTask = new BackupTask(BackupActivity.this);
-            new AsyncTaskLauncher<DocumentFile>().execute(this, true, asyncTask, getBackupFolder());
+            new AsyncTaskLauncher<DocumentFile>().execute(this, asyncTask, getBackupFolder());
         }
     }
 

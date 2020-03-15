@@ -151,7 +151,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                     msgLog.append(", Ignored " + mWorkingLoader);
                 } else {
                     AsyncLoader newLoader = new AsyncLoader(getInstanceTag());
-                    if (new AsyncTaskLauncher<Bundle>().execute(this, true, newLoader, args)) {
+                    if (new AsyncTaskLauncher<Bundle>().execute(this, newLoader, args).isSuccess()) {
                         mWorkingLoader = newLoader;
                         loaderIsWorking = true;
                         refreshNeededSince.set(0);
@@ -438,7 +438,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     }
 
     private void showSyncing(final CommandData commandData) {
-        new AsyncTaskLauncher<CommandData>().execute(this, true,
+        new AsyncTaskLauncher<CommandData>().execute(this,
                 new MyAsyncTask<CommandData, Void, String>("ShowSyncing" + getInstanceId(), MyAsyncTask.PoolEnum.QUICK_UI) {
 
                     @Override

@@ -202,7 +202,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
     }
     
     private void executeAsync1(final Params params) {
-        AsyncTaskLauncher.execute(TAG, true,
+        AsyncTaskLauncher.execute(TAG,
                 new MyAsyncTask<Void, Void, NoteEditorData>(TAG + name(), MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override
                     protected NoteEditorData doInBackground2(Void aVoid) {

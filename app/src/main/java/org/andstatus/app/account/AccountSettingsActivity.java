@@ -691,7 +691,7 @@ public class AccountSettingsActivity extends MyActivity {
                 getIntent().setData(null);
                 // This activity was started by Twitter ("Service Provider")
                 // so start second step of OAuth Authentication process
-                new AsyncTaskLauncher<Uri>().execute(this, true, new OAuthAcquireAccessTokenTask(), uri);
+                new AsyncTaskLauncher<Uri>().execute(this, new OAuthAcquireAccessTokenTask(), uri);
                 activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
             }
         }
@@ -718,16 +718,19 @@ public class AccountSettingsActivity extends MyActivity {
             if (ma.getCredentialsPresent()) {
                 // Credentials are present, so we may verify them
                 // This is needed even for OAuth - to know Username
-                AsyncTaskLauncher.execute(this, true,
-                        new VerifyCredentialsTask(ma.getActor().getEndpoint(ActorEndpointType.API_PROFILE)));
+                AsyncTaskLauncher.execute(this,
+                        new VerifyCredentialsTask(ma.getActor().getEndpoint(ActorEndpointType.API_PROFILE)))
+                        .onFailure( e -> appendError(e.getMessage()));
             } else {
                 if (state.builder.isOAuth() && reVerify) {
                     // Credentials are not present,
                     // so start asynchronous OAuth Authentication process 
                     if (!ma.areClientKeysPresent()) {
-                        AsyncTaskLauncher.execute(this, true, new OAuthRegisterClientTask());
+                        AsyncTaskLauncher.execute(this, new OAuthRegisterClientTask())
+                                .onFailure( e -> appendError(e.getMessage()));
                     } else {
-                        AsyncTaskLauncher.execute(this, true, new OAuthAcquireRequestTokenTask(this));
+                        AsyncTaskLauncher.execute(this, new OAuthAcquireRequestTokenTask(this))
+                                .onFailure( e -> appendError(e.getMessage()));
                         activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
                     }
                 }
@@ -928,8 +931,9 @@ public class AccountSettingsActivity extends MyActivity {
                             .thenRun( myContext -> {
                         state.builder.rebuildMyAccount(myContext);
                         updateScreen();
-                        AsyncTaskLauncher.execute(this, true,
-                                new OAuthAcquireRequestTokenTask(AccountSettingsActivity.this));
+                        AsyncTaskLauncher.execute(this,
+                                new OAuthAcquireRequestTokenTask(AccountSettingsActivity.this))
+                                .onFailure( e -> appendError(e.getMessage()));
                         activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
                     });
                 } else {
@@ -1180,7 +1184,8 @@ public class AccountSettingsActivity extends MyActivity {
                 if (result.isSuccess()) {
                     // Credentials are present, so we may verify them
                     // This is needed even for OAuth - to know Twitter Username
-                    AsyncTaskLauncher.execute(this, true, new VerifyCredentialsTask(result.whoAmI));
+                    AsyncTaskLauncher.execute(this, new VerifyCredentialsTask(result.whoAmI))
+                            .onFailure( e -> appendError(e.getMessage()));
                 } else {
                     String stepErrorMessage = AccountSettingsActivity.this
                         .getString(R.string.acquiring_an_access_token_failed) +

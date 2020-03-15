@@ -19,7 +19,6 @@ package org.andstatus.app.os;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,7 +27,6 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -78,7 +76,7 @@ public class AsyncTaskLauncher<Params> {
         if (executor == null) {
             MyLog.v(TAG, () -> "Creating pool " + pool.name());
             executor = new ThreadPoolExecutor(pool.corePoolSize, pool.corePoolSize + 1,
-                    1, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(128));
+                    1, TimeUnit.SECONDS, new LinkedBlockingQueue<>(128));
             setExecutor(pool, executor);
         }
         return executor;
@@ -101,48 +99,43 @@ public class AsyncTaskLauncher<Params> {
         }
     }
 
-    public static boolean execute(Runnable backgroundFunc) {
+    public static Try<Void> execute(Runnable backgroundFunc) {
         return execute(null, p -> {backgroundFunc.run(); return null;}, p -> r -> {});
     }
 
-    public static <Params, Result> boolean execute(Params params,
+    public static <Params, Result> Try<Void> execute(Params params,
                                  Function<Params, Try<Result>> backgroundFunc,
                                  Function<Params, Consumer<Try<Result>>> uiConsumer) {
         MyAsyncTask<Params, Void, Try<Result>> asyncTask = MyAsyncTask.fromFunc(params, backgroundFunc, uiConsumer);
-        return new AsyncTaskLauncher<Params>().execute(params, false, asyncTask, params);
+        return new AsyncTaskLauncher<Params>().execute(params, asyncTask, params);
     }
 
-    public static boolean execute(Object objTag, boolean throwOnFail, MyAsyncTask<Void, ?, ?> asyncTask) {
+    public static Try<Void> execute(Object objTag, MyAsyncTask<Void, ?, ?> asyncTask) {
         AsyncTaskLauncher<Void> launcher = new AsyncTaskLauncher<>();
-        return launcher.execute(objTag, throwOnFail, asyncTask, null);
+        return launcher.execute(objTag, asyncTask, null);
     }
 
-    public boolean execute(Object objTag, boolean throwOnFail, MyAsyncTask<Params, ?, ?> asyncTask, Params params) {
+    public Try<Void> execute(Object objTag, MyAsyncTask<Params, ?, ?> asyncTask, Params params) {
         MyLog.v(objTag, () -> asyncTask.toString() + " Launching task");
-        boolean launched = false;
         try {
             cancelStalledTasks();
             if (asyncTask.isSingleInstance() && foundUnfinished(asyncTask)) {
                 skippedCount.incrementAndGet();
+                return Try.failure(new IllegalStateException("Single instance and found unfinished task"));
             } else {
                 @SuppressWarnings("unchecked")
                 Params[] paramsArray = (Params[]) new Object[] {params};
                 asyncTask.executeOnExecutor(getExecutor(asyncTask.pool), paramsArray);
                 launchedTasks.add(asyncTask);
                 launchedCount.incrementAndGet();
-                launched = true;
             }
             removeFinishedTasks();
-        } catch (RejectedExecutionException e) {
-            String msgLog = asyncTask.toString() + " Launching task"
-                    + "\n" + threadPoolInfo();
+            return Try.success(null);
+        } catch (Exception e) {
+            String msgLog = asyncTask.toString() + " Launching task\n" + threadPoolInfo();
             MyLog.w(objTag, msgLog, e);
-            if (throwOnFail) {
-                throw new RejectedExecutionException(MyStringBuilder.objToTag(objTag) + "; "
-                        + msgLog, e);
-            }
+            return Try.failure(new Exception("" + e.getMessage() +  "\n" + msgLog, e));
         }
-        return launched;
     }
 
     private static void cancelStalledTasks() {

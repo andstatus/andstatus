@@ -65,7 +65,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
 
     public void executeNotOnUiThread() {
         if (isUiThread()) {
-            AsyncTaskLauncher.execute(this, false, this);
+            AsyncTaskLauncher.execute(this, this);
         } else {
             executeSynchronously();
         }

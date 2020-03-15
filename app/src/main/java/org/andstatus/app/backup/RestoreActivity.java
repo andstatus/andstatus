@@ -61,7 +61,7 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
             asyncTask = (RestoreTask) new RestoreTask(RestoreActivity.this)
                     .setMaxCommandExecutionSeconds(MAX_RESTORE_SECONDS)
                     .setCancelable(false);
-            new AsyncTaskLauncher<DocumentFile>().execute(this, true, asyncTask, getDataFolder());
+            new AsyncTaskLauncher<DocumentFile>().execute(this, asyncTask, getDataFolder());
         }
     }
 

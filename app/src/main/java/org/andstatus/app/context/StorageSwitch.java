@@ -69,7 +69,7 @@ public class StorageSwitch {
     void move() {
         MyServiceManager.setServiceUnavailable();
         if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
-            AsyncTaskLauncher.execute(this, true, new MoveDataBetweenStoragesTask());
+            AsyncTaskLauncher.execute(this, new MoveDataBetweenStoragesTask());
         } else {
             MyServiceManager.stopService();
             Toast.makeText(parentFragment.getActivity(),

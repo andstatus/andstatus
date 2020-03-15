@@ -631,7 +631,7 @@ public class NoteEditor {
         hide();
         if (command.nonEmpty()) {
             MyLog.v(NoteEditorData.TAG, () -> "Requested: " + command);
-            new AsyncTaskLauncher<NoteEditorCommand>().execute(this, true,
+            new AsyncTaskLauncher<NoteEditorCommand>().execute(this,
                     new NoteSaver(this), command);
         } else {
             if (command.showAfterSave) {
@@ -653,7 +653,7 @@ public class NoteEditor {
             return;
         }
         MyLog.v(NoteEditorData.TAG, () -> "loadCurrentDraft requested, noteId=" + noteId);
-        new AsyncTaskLauncher<Long>().execute(this, true,
+        new AsyncTaskLauncher<Long>().execute(this,
                 new MyAsyncTask<Long, Void, NoteEditorData>(NoteEditor.this.toString(),
                         MyAsyncTask.PoolEnum.QUICK_UI) {
                     volatile NoteEditorLock lock = NoteEditorLock.EMPTY;

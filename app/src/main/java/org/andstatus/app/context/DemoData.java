@@ -267,7 +267,7 @@ public final class DemoData {
     public MyAsyncTask<Void, Void, Void> addAsync(final String logTag, final MyContext myContext,
                                                   final ProgressLogger.ProgressListener progressListener) {
         MyAsyncTaskDemoData asyncTask = new MyAsyncTaskDemoData(progressListener, myContext, this);
-        AsyncTaskLauncher.execute(progressListener.getLogTag(), true, asyncTask);
+        AsyncTaskLauncher.execute(progressListener.getLogTag(), asyncTask);
         return asyncTask;
     }
 

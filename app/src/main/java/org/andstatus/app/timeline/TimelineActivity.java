@@ -438,7 +438,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     private static <T extends ViewItem<T>> void clearNotifications(TimelineActivity<T> timelineActivity) {
         final Timeline timeline = timelineActivity.getParamsLoaded().getTimeline();
-        AsyncTaskLauncher.execute(timelineActivity, true,
+        AsyncTaskLauncher.execute(timelineActivity,
                 new MyAsyncTask<Void, Void, Void>("clearNotifications" + timeline.getId(),
                         MyAsyncTask.PoolEnum.QUICK_UI) {
                     @Override

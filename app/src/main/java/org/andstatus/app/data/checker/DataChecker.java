@@ -62,7 +62,6 @@ public abstract class DataChecker {
     public static void fixDataAsync(ProgressLogger logger, boolean includeLong, boolean countOnly) {
         AsyncTaskLauncher.execute(
                 logger.logTag,
-                false,
                 new MyAsyncTask<Void, Void, Void>(logger.logTag, MyAsyncTask.PoolEnum.thatCannotBeShutDown()) {
 
                     @Override
