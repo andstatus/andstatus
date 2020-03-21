@@ -694,15 +694,6 @@ public class MyQuery {
                     " ORDER BY " + ActorTable._ID;
     }
 
-    public static boolean isGroupMember(MyContext myContext, long parentActorId, GroupType groupType, long memberId) {
-        return getGroupMemberIds(myContext, parentActorId, groupType).contains(memberId);
-    }
-
-    @NonNull
-    public static Set<Long> getGroupMemberIds(MyContext myContext, long parentActorId, GroupType groupType) {
-        return getLongs(myContext, GroupMembership.selectMemberIds(parentActorId, groupType,false));
-    }
-
     public static long getCountOfActivities(@NonNull String condition) {
         String sql = "SELECT COUNT(*) FROM " + ActivityTable.TABLE_NAME
                 + (StringUtil.isEmpty(condition) ? "" : " WHERE " + condition);

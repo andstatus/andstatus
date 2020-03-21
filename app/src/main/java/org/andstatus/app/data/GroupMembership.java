@@ -21,19 +21,21 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseLockedException;
 
-import org.andstatus.app.account.MyAccount;
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.GroupMembersTable;
-import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
-import static org.andstatus.app.util.StringUtil.toTempOid;
+import static org.andstatus.app.actor.Group.getActorsGroup;
 
 /**
  * Helper class to update Group membership information (see {@link org.andstatus.app.database.table.GroupMembersTable})
@@ -41,9 +43,8 @@ import static org.andstatus.app.util.StringUtil.toTempOid;
  */
 public class GroupMembership {
     private static final String TAG = GroupMembership.class.getSimpleName();
-    private final long parentActorId;
-    private final long groupId;
-    private final GroupType groupType;
+    private final Actor parentActor;
+    private final Actor group;
     private final long memberId;
     private final TriState isMember;
 
@@ -54,25 +55,15 @@ public class GroupMembership {
                 ? TriState.FALSE
                 : isMember;
 
-        GroupMembership membership = new GroupMembership(parentActor.actorId, 0, groupType, member.actorId, isMember2);
+        Actor group = getActorsGroup(parentActor, groupType, "");
+
+        GroupMembership membership = new GroupMembership(parentActor, group, member.actorId, isMember2);
         membership.save(myContext);
     }
 
-    public static String getMembersSqlIds(long parentActorId, GroupType groupType) {
-        return " IN (" + selectMemberIds(parentActorId, groupType, false) + ")";
-    }
-
-    static String selectMemberIds(long parentActorId, GroupType groupType, boolean includeParentId) {
-        return selectMemberIds(SqlIds.fromId(parentActorId), groupType, includeParentId);
-    }
-
-    public static String selectMemberIds(Collection<Long> parentActorIds, GroupType groupType, boolean includeParentId) {
-        return selectMemberIds(SqlIds.fromIds(parentActorIds), groupType, includeParentId);
-    }
-
-    static String selectMemberIds(SqlIds parentActorSqlIds, GroupType groupType, boolean parentIdColumn) {
+    static String selectMemberIds(SqlIds parentActorSqlIds, GroupType groupType, boolean includeParentId) {
         return "SELECT members." + GroupMembersTable.MEMBER_ID +
-            (parentIdColumn ? ", grp." + ActorTable.PARENT_ACTOR_ID : "") +
+            (includeParentId ? ", grp." + ActorTable.PARENT_ACTOR_ID : "") +
             " FROM " + ActorTable.TABLE_NAME + " AS grp" +
             " INNER JOIN " + GroupMembersTable.TABLE_NAME + " AS members" +
             " ON grp." + ActorTable._ID + "= members." + GroupMembersTable.GROUP_ID +
@@ -80,19 +71,43 @@ public class GroupMembership {
             " AND grp." + ActorTable.PARENT_ACTOR_ID + parentActorSqlIds.getSql();
     }
 
-    private GroupMembership(long parentActorId, long groupId, GroupType groupType, long memberId, TriState isMember) {
-        this.parentActorId = parentActorId;
-        this.groupId = groupId;
-        this.groupType = groupType;
+    private GroupMembership(Actor parentActor, Actor group, long memberId, TriState isMember) {
+        this.parentActor = parentActor;
+        this.group = group;
         this.memberId = memberId;
         this.isMember =  isMember;
+    }
+
+    static boolean isGroupMember(Actor parentActor, GroupType groupType, long memberId) {
+        Actor group = getActorsGroup(parentActor, groupType, "");
+        return group.nonEmpty() && isGroupMember(parentActor.origin.myContext, group.actorId, memberId);
+    }
+
+    private static boolean isGroupMember(MyContext myContext, long groupId, long memberId) {
+        return MyQuery.dExists(myContext.getDatabase(), selectMembership(groupId, memberId));
+    }
+
+    private static String selectMembership(long groupId, long memberId) {
+        return "SELECT * " +
+                " FROM " + GroupMembersTable.TABLE_NAME +
+                " WHERE " + GroupMembersTable.GROUP_ID + "=" + groupId +
+                " AND " +  GroupMembersTable.MEMBER_ID + "=" + memberId;
+    }
+
+    @NonNull
+    public static Set<Long> getGroupMemberIds(MyContext myContext, long parentActorId, GroupType groupType) {
+        return MyQuery.getLongs(myContext, selectMemberIds(Collections.singletonList(parentActorId), groupType, false));
+    }
+
+    public static String selectMemberIds(Collection<Long> parentActorIds, GroupType groupType, boolean includeParentId) {
+        return selectMemberIds(SqlIds.fromIds(parentActorIds), groupType, includeParentId);
     }
 
     /**
      * Update information in the database 
      */
     private void save(MyContext myContext) {
-        if (isMember.unknown || (parentActorId == 0 && groupId == 0) || memberId == 0 || myContext == null ||
+        if (isMember.unknown || group.actorId == 0 || memberId == 0 || myContext == null ||
                 myContext.getDatabase() == null) return;
 
         for (int pass=0; pass<5; pass++) {
@@ -112,57 +127,26 @@ public class GroupMembership {
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) return;
 
-        boolean isMemberOld = MyQuery.isGroupMember(myContext, parentActorId, groupType, memberId);
+        boolean isMemberOld = isGroupMember(myContext, group.actorId, memberId);
         if (isMemberOld == isMember) return;
-        long groupIdOld = groupId == 0
-            ? MyQuery.getLongs(myContext, "SELECT " + ActorTable._ID +
-                " FROM " + ActorTable.TABLE_NAME +
-                " WHERE " + ActorTable.PARENT_ACTOR_ID + "=" + parentActorId +
-                " AND " + ActorTable.GROUP_TYPE + "=" + groupType.id)
-                .stream().findAny().orElse(0L)
-            : groupId;
+
         if (isMemberOld) {
             db.delete(GroupMembersTable.TABLE_NAME,
-                GroupMembersTable.GROUP_ID + "=" + groupIdOld + " AND " +
+                GroupMembersTable.GROUP_ID + "=" + group.actorId + " AND " +
                 GroupMembersTable.MEMBER_ID + "=" + memberId, null);
         } else {
-            long groupIdNew = groupIdOld == 0 ? addGroup(myContext, parentActorId, groupType) : groupIdOld;
-            if (groupIdNew == 0) {
+            if (group.groupType.isGroup.isFalse) {
                 return;
             }
             ContentValues cv = new ContentValues();
-            cv.put(GroupMembersTable.GROUP_ID, groupIdNew);
+            cv.put(GroupMembersTable.GROUP_ID, group.actorId);
             cv.put(GroupMembersTable.MEMBER_ID, memberId);
             try {
                 db.insert(GroupMembersTable.TABLE_NAME, null, cv);
             } catch (SQLiteConstraintException e) {
-                MyLog.w(TAG, "Error adding a member to group " + groupType + ", parentActor id:" + parentActorId +
+                MyLog.w(TAG, "Error adding a member to group " + group + ", parentActor:" + parentActor +
                         "; " + cv);
             }
         }
     }
-
-    private long addGroup(MyContext myContext, long parentActorId, GroupType groupType) {
-        long originId = MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID, parentActorId);
-        String parentUsername = MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, parentActorId);
-        String groupUsername = groupType.name + ".of." + parentUsername + "." + parentActorId;
-
-        Actor group = Actor.fromTwoIds(
-                myContext.origins().fromId(originId),
-                groupType,
-                0,
-                toTempOid(groupUsername)
-        );
-        group.setUsername(groupUsername);
-        group.setParentActorId(myContext, parentActorId);
-
-        MyAccount myAccount = myContext.accounts().getFirstSucceededForOrigin(group.origin);
-        AActivity activity = myAccount.getActor().update(group);
-        new DataUpdater(myAccount).updateObjActor(activity, 0);
-        if (group.actorId == 0) {
-            MyLog.w(TAG, "Failed to add new group " + groupUsername + "; " + activity);
-        }
-        return group.actorId;
-    }
-
 }

@@ -16,6 +16,9 @@
 
 package org.andstatus.app.net.social.activitypub;
 
+import androidx.annotation.NonNull;
+
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
@@ -35,7 +38,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.net.social.activitypub.ConnectionActivityPub.CONTENT_PROPERTY;
@@ -190,10 +192,16 @@ class ActivitySender {
     }
 
     private void addToAudience(JSONObject activity, String recipientField, Actor actor) {
-        String recipientId = actor.equals(Actor.PUBLIC)
-                ? ConnectionActivityPub.PUBLIC_COLLECTION_ID
-                : actor.getBestUri();
+        String recipientId;
+        if (actor.equals(Actor.PUBLIC)) {
+            recipientId = ConnectionActivityPub.PUBLIC_COLLECTION_ID;
+        } else if (actor.groupType == GroupType.FOLLOWERS) {
+            recipientId = ""; // TODO
+        } else {
+            recipientId = actor.getBestUri();
+        }
         if (StringUtil.isEmpty(recipientId)) return;
+
         try {
             JSONArray field = activity.has(recipientField) ? activity.getJSONArray(recipientField) : new JSONArray();
             field.put(recipientId);

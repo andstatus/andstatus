@@ -118,7 +118,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     + " and " + Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS);
         }
 
-        Set<Long> actorIdsOld = MyQuery.getGroupMemberIds(execContext.myContext, getActor().actorId, GroupType.FOLLOWERS);
+        Set<Long> actorIdsOld = GroupMembership.getGroupMemberIds(execContext.myContext, getActor().actorId, GroupType.FOLLOWERS);
         execContext.getResult().incrementDownloadedCount();
         broadcastProgress(execContext.getContext().getText(R.string.followers).toString()
                 + ": " + actorIdsOld.size() + " -> " + actorsNew.size(), false);
@@ -148,7 +148,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                             + " and " + Connection.ApiRoutineEnum.GET_FRIENDS_IDS);
         }
 
-        Set<Long> actorIdsOld = MyQuery.getGroupMemberIds(execContext.myContext, getActor().actorId, GroupType.FRIENDS);
+        Set<Long> actorIdsOld = GroupMembership.getGroupMemberIds(execContext.myContext, getActor().actorId, GroupType.FRIENDS);
         execContext.getResult().incrementDownloadedCount();
         broadcastProgress(execContext.getContext().getText(R.string.friends).toString()
                 + ": " + actorIdsOld.size() + " -> " + actorsNew.size(), false);

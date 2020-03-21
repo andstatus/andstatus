@@ -16,6 +16,8 @@
 
 package org.andstatus.app.data;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.database.table.ActivityTable;
@@ -43,8 +45,6 @@ import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
 import java.util.List;
-
-import androidx.annotation.NonNull;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -239,13 +239,11 @@ public class DemoNoteInserter {
                 break;
             case FOLLOW:
                 assertTrue("Friend not found: " + activity,
-                        MyQuery.isGroupMember(origin.myContext, actor.actorId,
-                                GroupType.FRIENDS, activity.getObjActor().actorId));
+                        GroupMembership.isGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId));
                 break;
             case UNDO_FOLLOW:
                 assertFalse("Friend found: " + activity,
-                        MyQuery.isGroupMember(origin.myContext, actor.actorId,
-                                GroupType.FRIENDS, activity.getObjActor().actorId));
+                        GroupMembership.isGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId));
                 break;
             default:
                 break;

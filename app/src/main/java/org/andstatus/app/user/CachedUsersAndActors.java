@@ -114,7 +114,7 @@ public class CachedUsersAndActors {
         friendsOfMyActors.entrySet().stream().filter( entry -> entry.getValue().contains(actor.actorId))
                 .forEach(entry ->
                         friendsOfMyActors.compute(entry.getKey(), CollectionsUtil.removeValue(actor.actorId)));
-        MyQuery.getGroupMemberIds(myContext, actor.actorId, GroupType.FRIENDS)
+        GroupMembership.getGroupMemberIds(myContext, actor.actorId, GroupType.FRIENDS)
                 .forEach(friendId -> friendsOfMyActors.compute(friendId, CollectionsUtil.addValue(actor.actorId))
         );
     }

@@ -20,6 +20,8 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.GroupMembership;
 import org.andstatus.app.origin.Origin;
 
+import java.util.Collections;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -34,7 +36,7 @@ public class FriendsAndFollowersListLoader extends ActorListLoader {
 
     protected String getSqlActorIds() {
         GroupType groupType = mActorListType == ActorListType.FOLLOWERS ? GroupType.FOLLOWERS : GroupType.FRIENDS;
-        return GroupMembership.getMembersSqlIds(actorId, groupType);
+        return " IN (" + GroupMembership.selectMemberIds(Collections.singletonList(actorId), groupType, false) + ")";
     }
 
     @Override

@@ -273,8 +273,7 @@ public class DemoConversationInserter {
     }
 
     static void assertIfActorIsMyFriend(Actor actor, boolean isFriendOf, MyAccount ma) {
-        boolean isFriend = MyQuery.isGroupMember(ma.getOrigin().myContext, ma.getActor().actorId,
-                GroupType.FRIENDS, actor.actorId);
-        assertEquals("Actor " + actor + " is a friend of " + ma, isFriendOf, isFriend);
+        boolean actualIsFriend = GroupMembership.isGroupMember(ma.getActor(), GroupType.FRIENDS, actor.actorId);
+        assertEquals("Actor " + actor + " is a friend of " + ma, isFriendOf, actualIsFriend);
     }
 }
