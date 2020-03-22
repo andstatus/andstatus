@@ -52,7 +52,13 @@ import static org.andstatus.app.util.UriUtils.nonRealOid;
  */
 public class ConnectionMastodon extends ConnectionTwitterLike {
     private static final String ATTACHMENTS_FIELD_NAME = "media_attachments";
+
     private static final String VISIBILITY_PROPERTY = "visibility";
+    private static final String VISIBILITY_PUBLIC = "public";
+    private static final String VISIBILITY_UNLISTED = "unlisted";
+    private static final String VISIBILITY_PRIVATE = "private";
+    private static final String VISIBILITY_DIRECT = "direct";
+
     private static final String SENSITIVE_PROPERTY = "sensitive";
     private static final String SUMMARY_PROPERTY = "spoiler_text";
     private static final String CONTENT_PROPERTY_UPDATE = "status";
@@ -272,6 +278,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         JSONObject obj = new JSONObject();
         try {
             obj.put(SUMMARY_PROPERTY, note.getSummary());
+            obj.put(VISIBILITY_PROPERTY, getVisibility(note));
             obj.put(SENSITIVE_PROPERTY, note.isSensitive());
             obj.put(CONTENT_PROPERTY_UPDATE, note.getContentToPost());
             if ( !StringUtil.isEmpty(inReplyToOid)) {
@@ -297,6 +304,13 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         }
         return postRequest(ApiRoutineEnum.UPDATE_NOTE, obj).map(HttpReadResult::getJsonObject)
                 .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
+    }
+
+    private String getVisibility(Note note) {
+        if (note.audience().getPublic().isTrue) {
+            return VISIBILITY_PUBLIC;
+        }
+        return note.audience().isFollowers() ? VISIBILITY_PRIVATE : VISIBILITY_DIRECT;
     }
 
     private JSONObject uploadMedia(Uri mediaUri) throws ConnectionException {
@@ -385,16 +399,16 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             note.url = jso.optString("url");
             if (jso.has(VISIBILITY_PROPERTY)) {
                 switch (jso.getString(VISIBILITY_PROPERTY)) {
-                    case "public":
-                    case "unlisted":
+                    case VISIBILITY_PUBLIC:
+                    case VISIBILITY_UNLISTED:
                         note.audience().setPublic(TriState.TRUE);
                         note.audience().setFollowers(true);
                         break;
-                    case "private":
+                    case VISIBILITY_PRIVATE:
                         note.audience().setPublic(TriState.FALSE);
                         note.audience().setFollowers(true);
                         break;
-                    case "direct":
+                    case VISIBILITY_DIRECT:
                         note.audience().setPublic(TriState.FALSE);
                         note.audience().setFollowers(false);
                         break;
