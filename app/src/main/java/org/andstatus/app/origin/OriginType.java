@@ -54,7 +54,7 @@ public enum OriginType implements SelectableEnum {
      * <a href="https://dev.twitter.com/docs">Twitter Developers' documentation</a>
      */
     TWITTER(1, "Twitter", ApiEnum.TWITTER1P1, NoteName.NO, NoteSummary.NO,
-            PublicChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(23)),
+            PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(23)),
     /**
      * Origin type for the pump.io system 
      * Till July of 2013 (and v.1.16 of AndStatus) the API was: 
@@ -62,14 +62,14 @@ public enum OriginType implements SelectableEnum {
      * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
      */
     PUMPIO(2, "Pump.io", ApiEnum.PUMPIO, NoteName.YES, NoteSummary.NO,
-            PublicChangeAllowed.YES, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)),
+            PublicChangeAllowed.YES, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)),
     GNUSOCIAL(3, "GnuSocial", ApiEnum.GNUSOCIAL_TWITTER, NoteName.NO, NoteSummary.NO,
-            PublicChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)),
+            PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)),
     /** <a href="https://github.com/Gargron/mastodon">Mastodon at GitHub</a> */
     MASTODON(4, "Mastodon", ApiEnum.MASTODON, NoteName.NO, NoteSummary.YES,
-            PublicChangeAllowed.NO, SensitiveChangeAllowed.YES, ShortUrlLength.of(0)),
+            PublicChangeAllowed.YES, FollowersChangeAllowed.YES, SensitiveChangeAllowed.YES, ShortUrlLength.of(0)),
     ACTIVITYPUB(5, "ActivityPub", ApiEnum.ACTIVITYPUB, NoteName.YES, NoteSummary.YES,
-            PublicChangeAllowed.YES, SensitiveChangeAllowed.YES, ShortUrlLength.of(0)) {
+            PublicChangeAllowed.YES, FollowersChangeAllowed.YES, SensitiveChangeAllowed.YES, ShortUrlLength.of(0)) {
 
         @Override
         public boolean isSelectable() {
@@ -81,7 +81,7 @@ public enum OriginType implements SelectableEnum {
             return Optional.of("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"");
         }
     },
-    UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO, NoteSummary.NO, PublicChangeAllowed.NO, SensitiveChangeAllowed.NO,
+    UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO, NoteSummary.NO, PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO,
             ShortUrlLength.of(0));
 
     public static final String SIMPLE_USERNAME_EXAMPLES = "AndStatus user357 peter";
@@ -89,6 +89,7 @@ public enum OriginType implements SelectableEnum {
     private enum NoteName { YES, NO}
     private enum NoteSummary { YES, NO}
     private enum PublicChangeAllowed { YES, NO}
+    private enum FollowersChangeAllowed { YES, NO}
     private enum SensitiveChangeAllowed { YES, NO}
 
     static class ShortUrlLength {
@@ -182,6 +183,7 @@ public enum OriginType implements SelectableEnum {
     public final boolean hasNoteName;
     public final boolean hasNoteSummary;
     public final boolean isPublicChangeAllowed;
+    public final boolean isFollowersChangeAllowed;
     public final boolean isSensitiveChangeAllowed;
 
     public boolean uniqueNameHasHost() {
@@ -189,13 +191,15 @@ public enum OriginType implements SelectableEnum {
     }
 
     OriginType(long id, String title, ApiEnum api, NoteName noteName, NoteSummary noteSummary,
-               PublicChangeAllowed publicChangeAllowed, SensitiveChangeAllowed sensitiveChangeAllowed,
+               PublicChangeAllowed publicChangeAllowed, FollowersChangeAllowed followersChangeAllowed,
+               SensitiveChangeAllowed sensitiveChangeAllowed,
                ShortUrlLength shortUrlLength) {
         this.id = id;
         this.title = title;
         hasNoteName = noteName == NoteName.YES;
         hasNoteSummary = noteSummary == NoteSummary.YES;
         isPublicChangeAllowed = publicChangeAllowed == PublicChangeAllowed.YES;
+        isFollowersChangeAllowed = followersChangeAllowed == FollowersChangeAllowed.YES;
         isSensitiveChangeAllowed = sensitiveChangeAllowed == SensitiveChangeAllowed.YES;
         shortUrlLengthDefault = shortUrlLength;
 
@@ -324,7 +328,7 @@ public enum OriginType implements SelectableEnum {
                 isPrivateTimelineSyncable = false;
                 isPublicTimeLineSyncable = true;
                 allowEditing = false;
-                isPrivateNoteAllowsReply = false;
+                isPrivateNoteAllowsReply = true;
                 isSelectable = true;
 
                 textMediaTypePosted = TextMediaType.HTML;
@@ -339,7 +343,7 @@ public enum OriginType implements SelectableEnum {
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
                 mAllowAttachmentForPrivateNote = false;
                 allowEditing = false;
-                isPrivateNoteAllowsReply = false;
+                isPrivateNoteAllowsReply = true;
                 uniqueNameExamples = "userName@hostName.org";
                 isSelectable = false;
 

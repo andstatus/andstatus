@@ -21,6 +21,7 @@ import android.database.Cursor;
 
 import androidx.annotation.NonNull;
 
+import org.andstatus.app.actor.Group;
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -37,6 +38,7 @@ import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.TryUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -60,6 +62,7 @@ public class Audience implements IsEmpty {
     public final Origin origin;
     private final Set<Actor> actors = new HashSet<>();
     private TriState isPublic = TriState.UNKNOWN;
+    private boolean isFollowers = false;
 
     public Audience(Origin origin) {
         this.origin = origin;
@@ -173,6 +176,16 @@ public class Audience implements IsEmpty {
     }
 
     public Try<Actor> findSame(Actor actor) {
+        if (actor.groupType.isGroup.isTrue && actor.groupType.parentActorRequired()) {
+            Actor sameActor = actors.stream().filter(a -> a.groupType == actor.groupType).findAny()
+                .orElseGet( () -> { switch(actor.groupType) {
+                    case FOLLOWERS:
+                        return isFollowers ? Group.getActorsGroup(actor, actor.groupType, "") : Actor.EMPTY;
+                    default:
+                        return Actor.EMPTY;
+                }});
+            return sameActor.nonEmpty() ? Try.success(sameActor) : TryUtils.notFound();
+        }
         return CollectionsUtil.findAny(getActors(), actor::isSame);
     }
 
@@ -270,6 +283,21 @@ public class Audience implements IsEmpty {
 
     public TriState getPublic() {
         return isPublic;
+    }
+
+    public void setFollowers(boolean isFollowers) {
+        if (isFollowers == isFollowers()) return;
+
+        this.isFollowers = isFollowers;  // We don't add the group immediately in order not to cause ANR
+        if (!isFollowers) {
+            List<Actor> toRemove = actors.stream().filter(actor -> actor.groupType == GroupType.FOLLOWERS)
+                    .collect(Collectors.toList());
+            actors.removeAll(toRemove);
+        }
+    }
+
+    public boolean isFollowers() {
+        return isFollowers || actors.stream().anyMatch(actor -> actor.groupType == GroupType.FOLLOWERS);
     }
 
     public void assertContext() {

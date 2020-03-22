@@ -249,6 +249,7 @@ public class NoteEditorData implements IsEmpty {
         audience.addActorsFromContent(activity.getNote().getContent(),
                 activity.getAuthor(), activity.getNote().getInReplyTo().getActor());
         audience.setPublic(activity.getNote().audience().getPublic());
+        audience.setFollowers(activity.getNote().audience().isFollowers());
         activity.getNote().setAudience(audience);
     }
 
@@ -389,6 +390,17 @@ public class NoteEditorData implements IsEmpty {
         return this;
     }
 
+    public boolean isFollowers() {
+        return activity.getNote().audience().isFollowers();
+    }
+
+    public NoteEditorData setFollowers(boolean isFollowers) {
+        if (canChangeIsFollowers()) {
+            this.activity.getNote().audience().setFollowers(isFollowers);
+        }
+        return this;
+    }
+
     public NoteEditorData setTimeline(Timeline timeline) {
         this.timeline = timeline;
         return this;
@@ -406,6 +418,11 @@ public class NoteEditorData implements IsEmpty {
 
     public boolean canChangeIsPublic() {
         return ma.getOrigin().getOriginType().isPublicChangeAllowed
+                && (getInReplyToNoteId() == 0 || ma.getOrigin().getOriginType().isPrivateNoteAllowsReply());
+    }
+
+    public boolean canChangeIsFollowers() {
+        return ma.getOrigin().getOriginType().isFollowersChangeAllowed
                 && (getInReplyToNoteId() == 0 || ma.getOrigin().getOriginType().isPrivateNoteAllowsReply());
     }
 

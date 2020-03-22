@@ -27,11 +27,8 @@ import org.andstatus.app.origin.Origin;
 public class ConversationLoaderFactory<T extends ConversationItem<T>> {
 
     public ConversationLoader<T> getLoader(T emptyItem, MyContext myContext, Origin origin, long noteId, boolean sync) {
-        // TODO: to clarify...
-        boolean recursiveLoader = origin.getOriginType().isPrivateNoteAllowsReply();
-        if (!recursiveLoader) {
-            recursiveLoader = MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId).notFalse;
-        }
+        boolean recursiveLoader = origin.getOriginType().isPrivateNoteAllowsReply() ||
+                MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId).notFalse;
         if (recursiveLoader) {
             return new RecursiveConversationLoader<>(emptyItem, myContext, origin, noteId, sync);
         }  else {

@@ -430,6 +430,8 @@ public class NoteEditor {
         setAdapter();
         ViewUtils.showView(editorView, R.id.is_public, editorData.canChangeIsPublic());
         MyCheckBox.set(getActivity(), R.id.is_public, editorData.getPublic().isTrue, true);
+        ViewUtils.showView(editorView, R.id.is_followers, editorData.canChangeIsFollowers());
+        MyCheckBox.set(getActivity(), R.id.is_followers, editorData.isFollowers(), true);
         ViewUtils.showView(editorView, R.id.is_sensitive, editorData.canChangeIsSensitive());
         MyCheckBox.set(getActivity(), R.id.is_sensitive, editorData.getSensitive(), true);
 
@@ -597,11 +599,12 @@ public class NoteEditor {
     }
 
     private void updateDataFromScreen() {
-        editorData.setName(MyUrlSpan.getText(editorView, R.id.note_name_edit));
-        editorData.setSummary(MyUrlSpan.getText(editorView, R.id.summary_edit));
-        editorData.setContent(bodyView.getText().toString(), editorContentMediaType);
-        editorData.setPublic(MyCheckBox.isChecked(getActivity(), R.id.is_public, false));
-        editorData.setSensitive(MyCheckBox.isChecked(getActivity(), R.id.is_sensitive, false));
+        editorData.setName(MyUrlSpan.getText(editorView, R.id.note_name_edit))
+            .setSummary(MyUrlSpan.getText(editorView, R.id.summary_edit))
+            .setContent(bodyView.getText().toString(), editorContentMediaType)
+            .setPublic(MyCheckBox.isChecked(getActivity(), R.id.is_public, false))
+            .setFollowers(MyCheckBox.isChecked(getActivity(), R.id.is_followers, false))
+            .setSensitive(MyCheckBox.isChecked(getActivity(), R.id.is_sensitive, false));
     }
 
     private void discardAndHide() {

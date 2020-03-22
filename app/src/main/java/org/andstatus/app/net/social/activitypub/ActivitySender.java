@@ -16,6 +16,8 @@
 
 package org.andstatus.app.net.social.activitypub;
 
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.actor.GroupType;
@@ -26,6 +28,7 @@ import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
@@ -196,7 +199,7 @@ class ActivitySender {
         if (actor.equals(Actor.PUBLIC)) {
             recipientId = ConnectionActivityPub.PUBLIC_COLLECTION_ID;
         } else if (actor.groupType == GroupType.FOLLOWERS) {
-            recipientId = ""; // TODO
+            recipientId = actor.getEndpoint(ActorEndpointType.API_FOLLOWERS).orElse(Uri.EMPTY).toString();
         } else {
             recipientId = actor.getBestUri();
         }

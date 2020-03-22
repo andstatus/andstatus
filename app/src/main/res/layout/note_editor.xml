@@ -137,6 +137,15 @@
                     tools:visibility="visible"/>
 
                 <CheckBox
+                    android:id="@+id/is_followers"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/followers"
+                    android:visibility="gone"
+                    android:layout_marginEnd="10dp"
+                    tools:visibility="visible"/>
+
+                <CheckBox
                     android:id="@+id/is_sensitive"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
