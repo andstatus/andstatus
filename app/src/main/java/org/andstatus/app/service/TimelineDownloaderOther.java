@@ -76,7 +76,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
         TimelinePosition previousPosition = syncTracker.getPreviousPosition();
         syncTracker.onTimelineDownloaded();
 
-        DataUpdater di = new DataUpdater(execContext);
+        DataUpdater dataUpdater = new DataUpdater(execContext);
         for (int loopCounter=0; loopCounter < 100; loopCounter++ ) {
             try {
                 int limit = getConnection().fixedDownloadLimit(
@@ -107,7 +107,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                             ) {
                         activity.setSubscribedByMe(TriState.TRUE);
                     }
-                    di.onActivity(activity, false);
+                    dataUpdater.onActivity(activity, false);
                 }
                 if (toDownload <= 0 || activities.isEmpty() || previousPosition.equals(syncTracker.getPreviousPosition())) {
                     break;
@@ -124,7 +124,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                 previousPosition = TimelinePosition.EMPTY;
             }
         }
-        di.saveLum();
+        dataUpdater.saveLum();
     }
 
     @NonNull

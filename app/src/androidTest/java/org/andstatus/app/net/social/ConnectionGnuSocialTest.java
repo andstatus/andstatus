@@ -335,8 +335,7 @@ public class ConnectionGnuSocialTest {
 
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 MyContextHolder.get(), CommandData.newItemCommand(CommandEnum.GET_NOTE, mock.getData().getMyAccount(), 123));
-        DataUpdater di = new DataUpdater(executionContext);
-        di.onActivity(activity);
+        new DataUpdater(executionContext).onActivity(activity);
 
         assertAudience(activity, activity.audience(), numberOfMembers);
         Audience storedAudience = Audience.load(activity.getNote().origin, activity.getNote().noteId, Optional.empty());

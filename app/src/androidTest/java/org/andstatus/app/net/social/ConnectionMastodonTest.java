@@ -107,8 +107,7 @@ public class ConnectionMastodonTest {
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 MyContextHolder.get(), CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME));
-        DataUpdater di = new DataUpdater(executionContext);
-        di.onActivity(activity);
+        new DataUpdater(executionContext).onActivity(activity);
     }
 
     @Test
@@ -241,8 +240,7 @@ public class ConnectionMastodonTest {
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 MyContextHolder.get(), CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
-        DataUpdater di = new DataUpdater(executionContext);
-        di.onActivity(activity);
+        new DataUpdater(executionContext).onActivity(activity);
 
         assertOneRecipient(activity, "AndStatus", "https://mastodon.example.com/@AndStatus",
                 "andstatus@" + accountActor.origin.getHost());
@@ -286,8 +284,7 @@ public class ConnectionMastodonTest {
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 MyContextHolder.get(), CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
-        DataUpdater di = new DataUpdater(executionContext);
-        di.onActivity(activity);
+        new DataUpdater(executionContext).onActivity(activity);
 
         assertNotEquals("Activity wasn't saved " + activity, 0,  activity.getId());
         assertNotEquals("Reblogged note wasn't saved " + activity, 0,  activity.getNote().noteId);
@@ -333,8 +330,7 @@ public class ConnectionMastodonTest {
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 MyContextHolder.get(), CommandData.newItemCommand(CommandEnum.GET_CONVERSATION, ma, 123));
-        DataUpdater di = new DataUpdater(executionContext);
-        di.onActivity(activity);
+        new DataUpdater(executionContext).onActivity(activity);
 
         List<DownloadData> downloads = DownloadData.fromNoteId(MyContextHolder.get(), note.noteId);
         assertEquals("Saved downloads " + downloads, 2, downloads.size());

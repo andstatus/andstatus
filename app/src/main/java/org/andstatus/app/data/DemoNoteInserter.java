@@ -167,10 +167,10 @@ public class DemoNoteInserter {
         MyAccount ma = origin.myContext.accounts().fromActorId(accountActor.actorId);
         assertTrue("Persistent account exists for " + accountActor + " " + activity, ma.isValid());
         final TimelineType timelineType = activity.getNote().getPublic().isFalse ? TimelineType.PRIVATE : TimelineType.HOME;
-        DataUpdater di = new DataUpdater(new CommandExecutionContext(origin.myContext,
-                        CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType)));
+        CommandExecutionContext execContext = new CommandExecutionContext(origin.myContext,
+                CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType));
         activity.audience().assertContext();
-        di.onActivity(activity);
+        new DataUpdater(execContext).onActivity(activity);
         checkActivityRecursively(activity, 1);
     }
 

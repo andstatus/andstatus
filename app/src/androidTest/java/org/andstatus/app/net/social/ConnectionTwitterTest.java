@@ -197,8 +197,7 @@ public class ConnectionTwitterTest {
         MyAccount ma = demoData.getMyAccount(connection.getData().getAccountName().toString());
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 MyContextHolder.get(), CommandData.newAccountCommand(CommandEnum.GET_NOTE, ma));
-        DataUpdater di = new DataUpdater(executionContext);
-        di.onActivity(activity);
+        new DataUpdater(executionContext).onActivity(activity);
         assertNotEquals("Note was not added " + activity, 0, note.noteId);
         assertNotEquals("Activity was not added " + activity, 0, activity.getId());
     }
@@ -225,8 +224,7 @@ public class ConnectionTwitterTest {
         MyAccount ma = demoData.getMyAccount(connection.getData().getAccountName().toString());
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 MyContextHolder.get(), CommandData.newAccountCommand(CommandEnum.GET_NOTE, ma));
-        DataUpdater di = new DataUpdater(executionContext);
-        di.onActivity(activity);
+        new DataUpdater(executionContext).onActivity(activity);
         assertNotEquals("Note was not added " + activity, 0, note.noteId);
         assertNotEquals("Activity was not added " + activity, 0, activity.getId());
     }
@@ -245,8 +243,7 @@ public class ConnectionTwitterTest {
         Actor friend2 = Actor.fromId(ma.getOrigin(), 123);
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 MyContextHolder.get(), CommandData.actOnActorCommand(CommandEnum.FOLLOW, ma, friend2, ""));
-        DataUpdater di = new DataUpdater(executionContext);
-        di.onActivity(activity);
+        new DataUpdater(executionContext).onActivity(activity);
 
         long friendId = MyQuery.oidToId(MyContextHolder.get(), OidEnum.ACTOR_OID, ma.getOriginId(), actorOid);
 

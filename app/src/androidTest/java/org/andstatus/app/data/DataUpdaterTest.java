@@ -85,7 +85,7 @@ public class DataUpdaterTest {
 
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 myContext, CommandData.newAccountCommand(CommandEnum.EMPTY, ma));
-        DataUpdater di = new DataUpdater(executionContext);
+        DataUpdater dataUpdater = new DataUpdater(executionContext);
         String username = "somebody" + demoData.testRunUid + "@identi.ca";
         String actorOid = OriginPumpio.ACCOUNT_PREFIX + username;
         Actor somebody = Actor.fromOid(accountActor.origin, actorOid);
@@ -93,7 +93,7 @@ public class DataUpdaterTest {
         somebody.isMyFriend = TriState.FALSE;
         somebody.setProfileUrl("http://identi.ca/somebody");
         somebody.build();
-        di.onActivity(accountActor.update(somebody));
+        dataUpdater.onActivity(accountActor.update(somebody));
 
         somebody.actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, accountActor.origin.getId(), actorOid);
         assertTrue("Actor " + username + " added", somebody.actorId != 0);
@@ -107,7 +107,7 @@ public class DataUpdaterTest {
         note.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB";
 
         TestSuite.clearAssertions();
-        long noteId = di.onActivity(activity).getNote().noteId;
+        long noteId = dataUpdater.onActivity(activity).getNote().noteId;
         assertNotEquals("Note added", 0, noteId);
         assertNotEquals("Activity added", 0, activity.getId());
         AssertionData data = TestSuite.getMyContextForTest().getAssertionData(DataUpdater.MSG_ASSERTION_KEY);
@@ -146,7 +146,7 @@ public class DataUpdaterTest {
 
         somebody.isMyFriend = TriState.TRUE;
         somebody.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
-        di.onActivity(accountActor.update(somebody));
+        dataUpdater.onActivity(accountActor.update(somebody));
         DemoConversationInserter.assertIfActorIsMyFriend(somebody, true, ma);
 
         cursor = context.getContentResolver().query(contentUri, projection, sa.selection,
@@ -216,8 +216,7 @@ public class DataUpdaterTest {
         otherActor.build();
         AActivity likeActivity = AActivity.fromInner(otherActor, ActivityType.LIKE, activity);
 
-        DataUpdater di = new DataUpdater(ma);
-        long noteId = di.onActivity(likeActivity).getNote().noteId;
+        long noteId = new DataUpdater(ma).onActivity(likeActivity).getNote().noteId;
         assertNotEquals("Note added", 0, noteId);
         assertNotEquals("First activity added", 0, activity.getId());
         assertNotEquals("LIKE activity added", 0, likeActivity.getId());
@@ -310,8 +309,7 @@ public class DataUpdaterTest {
                 inReplyToOid, 0, DownloadStatus.UNKNOWN);
         note.setInReplyTo(inReplyTo);
 
-        DataUpdater di = new DataUpdater(ma);
-        long noteId = di.onActivity(activity).getNote().noteId;
+        long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;
         assertNotEquals("Note added " + activity.getNote(), 0, noteId);
         assertNotEquals("Activity added " + accountActor, 0, activity.getId());
         if (!favorited) {
@@ -359,8 +357,7 @@ public class DataUpdaterTest {
 
         MyAccount ma = myContext.accounts().getFirstSucceededForOrigin(activity.getActor().origin);
         assertTrue("Account is valid " + ma, ma.isValid());
-        DataUpdater di = new DataUpdater(ma);
-        long noteId = di.onActivity(activity).getNote().noteId;
+        long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;
         assertNotEquals("Note added " + activity.getNote(), 0, noteId);
         assertNotEquals("Activity added " + activity, 0, activity.getId());
 
@@ -425,15 +422,15 @@ public class DataUpdaterTest {
         actor1.setProfileUrl("https://" + demoData.gnusocialTestOriginName + ".example.com/");
         actor1.build();
 
-        DataUpdater di = new DataUpdater(ma);
-        long actorId1 = di.onActivity(accountActor.update(actor1)).getObjActor().actorId;
+        DataUpdater dataUpdater = new DataUpdater(ma);
+        long actorId1 = dataUpdater.onActivity(accountActor.update(actor1)).getObjActor().actorId;
         assertTrue("Actor added", actorId1 != 0);
         assertEquals("username stored", actor1.getUsername(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1));
 
         Actor actor1partial = Actor.fromOid(actor1.origin, actor1.oid);
         assertTrue("Partially defined", actor1partial.isPartiallyDefined());
-        long actorId1partial = di.onActivity(accountActor.update(actor1partial)).getObjActor().actorId;
+        long actorId1partial = dataUpdater.onActivity(accountActor.update(actor1partial)).getObjActor().actorId;
         assertEquals("Same Actor", actorId1, actorId1partial);
         assertEquals("Partially defined Actor shouldn't change Username", actor1.getUsername(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1));
@@ -444,13 +441,13 @@ public class DataUpdaterTest {
 
         actor1.setUsername(actor1.getUsername() + "renamed");
         actor1.build();
-        long actorId1Renamed = di.onActivity(accountActor.update(actor1)).getObjActor().actorId;
+        long actorId1Renamed = dataUpdater.onActivity(accountActor.update(actor1)).getObjActor().actorId;
         assertEquals("Same Actor renamed", actorId1, actorId1Renamed);
         assertEquals("Actor should not be renamed, if updatedDate didn't change", username,
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1));
 
         actor1.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
-        long actorId2Renamed = di.onActivity(accountActor.update(actor1)).getObjActor().actorId;
+        long actorId2Renamed = dataUpdater.onActivity(accountActor.update(actor1)).getObjActor().actorId;
         assertEquals("Same Actor renamed", actorId1, actorId2Renamed);
         assertEquals("Same Actor renamed", actor1.getUsername(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1));
@@ -459,7 +456,7 @@ public class DataUpdaterTest {
                 + demoData.testRunUid);
         actor2SameOldUsername.setUsername(username);
         actor2SameOldUsername.build();
-        long actorId2 = di.onActivity(accountActor.update(actor2SameOldUsername)).getObjActor().actorId;
+        long actorId2 = dataUpdater.onActivity(accountActor.update(actor2SameOldUsername)).getObjActor().actorId;
         assertTrue("Other Actor with the same Actor name as old name of Actor", actorId1 != actorId2);
         assertEquals("Username stored", actor2SameOldUsername.getUsername(),
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId2));
@@ -469,7 +466,7 @@ public class DataUpdaterTest {
         actor3SameNewUsername.setUsername(actor1.getUsername());
         actor3SameNewUsername.setProfileUrl("https://" + demoData.gnusocialTestOriginName + ".other.example.com/");
         actor3SameNewUsername.build();
-        long actorId3 = di.onActivity(accountActor.update(actor3SameNewUsername)).getObjActor().actorId;
+        long actorId3 = dataUpdater.onActivity(accountActor.update(actor3SameNewUsername)).getObjActor().actorId;
         assertTrue("Actor added " + actor3SameNewUsername, actorId3 != 0);
         assertTrue("Other Actor with the same username as the new name of actor1, but different WebFingerId", actorId1 != actorId3);
         assertEquals("username stored for actorId=" + actorId3, actor3SameNewUsername.getUsername(),
@@ -495,9 +492,8 @@ public class DataUpdaterTest {
     }
 
     private void updateActor(MyAccount ma, Actor actor) {
-        DataUpdater di = new DataUpdater(ma);
         Actor accountActor = ma.getActor();
-        long id = di.onActivity(accountActor.update(actor)).getObjActor().actorId;
+        long id = new DataUpdater(ma).onActivity(accountActor.update(actor)).getObjActor().actorId;
         assertTrue("Actor added", id != 0);
 
         DemoNoteInserter.checkStoredActor(actor);
@@ -544,8 +540,7 @@ public class DataUpdaterTest {
         String realBuddyOid = "acc:" + buddyName;
         Actor actor = Actor.fromOid(ma.getOrigin(), realBuddyOid);
         actor.withUniqueName(buddyName);
-        DataUpdater di = new DataUpdater(ma);
-        long actorId2 = di.onActivity(ma.getActor().update(actor)).getObjActor().actorId;
+        long actorId2 = new DataUpdater(ma).onActivity(ma.getActor().update(actor)).getObjActor().actorId;
         assertEquals(actorId1, actorId2);
         assertEquals("TempOid should be replaced with real", realBuddyOid,
                 MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId1, 0));
@@ -627,8 +622,7 @@ public class DataUpdaterTest {
         activity2.setActivity(activity1);
         NoteEditorData.recreateAudience(activity2);
 
-        DataUpdater di = new DataUpdater(ma);
-        long noteId = di.onActivity(activity2).getNote().noteId;
+        long noteId = new DataUpdater(ma).onActivity(activity2).getNote().noteId;
         assertTrue("Note should be added", noteId != 0);
 
         Audience audience = activity1.audience();
@@ -647,7 +641,7 @@ public class DataUpdaterTest {
     @Test
     public void replyToOneOfMyActorsWithTheSameUsername() {
         MyAccount ma = demoData.getMyAccount(demoData.gnusocialTestAccount2Name);
-        DataUpdater di = new DataUpdater(ma);
+        DataUpdater dataUpdater = new DataUpdater(ma);
         Actor accountActor = ma.getActor();
 
         Actor actorFromAnotherOrigin = demoData.getMyAccount(demoData.twitterTestAccountName).getActor();
@@ -660,7 +654,7 @@ public class DataUpdaterTest {
         assertTrue("After build should be unknown if it's mine" + myAuthor1, myAuthor1.user.isMyUser().unknown);
         AActivity activity1 = newLoadedNote(accountActor, myAuthor1,
                 "My account's first note from another Social Network " + demoData.testRunUid);
-        assertTrue("Activity should be added", di.onActivity(activity1).getId() != 0);
+        assertTrue("Activity should be added", dataUpdater.onActivity(activity1).getId() != 0);
         assertTrue("Author should be mine " + activity1.getAuthor(), activity1.getAuthor().user.isMyUser().isTrue);
 
         Actor author2 = Actor.fromOid(accountActor.origin, "replier" + demoData.testRunUid);
@@ -669,7 +663,7 @@ public class DataUpdaterTest {
         AActivity activity2 = newLoadedNote(accountActor, author2,
                 "@" + demoData.t131tUsername + " Replying to my user from another instance");
         activity2.getNote().setInReplyTo(activity1);
-        assertTrue("Activity should be added", di.onActivity(activity2).getId() != 0);
+        assertTrue("Activity should be added", dataUpdater.onActivity(activity2).getId() != 0);
 
         assertEquals("Audience should contain one actor " + activity2.getNote().audience(),
                 1, activity2.getNote().audience().getActors().size());
@@ -689,7 +683,7 @@ public class DataUpdaterTest {
     @Test
     public void sendingNoteActivityPub() {
         MyAccount ma = demoData.getMyAccount(demoData.activityPubTestAccountName);
-        DataUpdater di = new DataUpdater(ma);
+        DataUpdater dataUpdater = new DataUpdater(ma);
         Actor accountActor = ma.getActor();
         String content = "My note from ActivityPub " + demoData.testRunUid;
 
@@ -697,7 +691,7 @@ public class DataUpdaterTest {
                 System.currentTimeMillis(), DownloadStatus.SENDING);
         activity0.getNote().setContentPosted(content);
 
-        AActivity activity1 = di.onActivity(activity0);
+        AActivity activity1 = dataUpdater.onActivity(activity0);
         Note note1 = activity1.getNote();
         assertTrue("Note should be added " + activity1, note1.noteId != 0);
         assertTrue("Activity should be added " + activity1, activity1.getId() != 0);
@@ -719,7 +713,7 @@ public class DataUpdaterTest {
         activity2.setId(activity1.getId());
         activity2.getNote().noteId = note1.noteId;
 
-        AActivity activity3 = di.onActivity(activity2);
+        AActivity activity3 = dataUpdater.onActivity(activity2);
         Note note3 = activity3.getNote();
         assertEquals("The same note should be updated " + activity3, note1.noteId, note3.noteId);
         assertEquals("Note oid " + activity3, note2.oid, MyQuery.idToOid(myContext, OidEnum.NOTE_OID, note3.noteId, 0));

@@ -274,8 +274,7 @@ public class ConnectionActivityPubTest {
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 MyContextHolder.get(),
                 CommandData.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT));
-        DataUpdater di = new DataUpdater(executionContext);
-        di.onActivity(activity);
+        new DataUpdater(executionContext).onActivity(activity);
 
         Audience audienceStored = Audience.fromNoteId(mock.getData().getOrigin(), note.noteId);
         oids.forEach(oid -> {
@@ -318,8 +317,7 @@ public class ConnectionActivityPubTest {
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 MyContextHolder.get(),
                 CommandData.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT));
-        DataUpdater di = new DataUpdater(executionContext);
-        di.onActivity(activity);
+        new DataUpdater(executionContext).onActivity(activity);
 
         Attachments attachmentsStored = Attachments.load(MyContextHolder.get(), activity.getNote().noteId);
         assertTrue("Attachments should be stored of " + activity + "\n " + attachmentsStored + "\n",

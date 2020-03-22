@@ -766,9 +766,8 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         private void assignActorId() {
             myAccount.actor.actorId = myAccount.getOrigin().usernameToId(myAccount.getUsername());
             if (myAccount.actor.actorId == 0) {
-                DataUpdater di = new DataUpdater(myAccount);
                 try {
-                    di.onActivity(myAccount.actor.update(myAccount.actor));
+                    new DataUpdater(myAccount).onActivity(myAccount.actor.update(myAccount.actor));
                 } catch (Exception e) {
                     MyLog.e(TAG, "assignUserId", e);
                 }
