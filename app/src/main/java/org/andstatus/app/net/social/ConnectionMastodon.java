@@ -96,6 +96,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 url = "v1/accounts/verify_credentials";
                 break;
             case UPDATE_NOTE:
+            case UPDATE_PRIVATE_NOTE:
                 url = "v1/statuses";
                 break;
             case UPLOAD_MEDIA:
@@ -272,6 +273,10 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         return timeline;
     }
 
+    @Override
+    public AActivity updateNote(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
+        return updateNote2(note, inReplyToOid, attachments);
+    }
 
     @Override
     protected AActivity updateNote2(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
