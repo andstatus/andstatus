@@ -60,7 +60,7 @@ public class AttachmentDownloaderTest {
         AActivity activity = inserter.buildActivity(inserter.buildActor(), "", body,
                 null, null, DownloadStatus.LOADED);
         activity.addAttachment(Attachment.fromUri(
-                "http://www.publicdomainpictures.net/pictures/60000/nahled/landscape-1376582205Yno.jpg"));
+                "https://i.picsum.photos/id/124/536/354.jpg"));
         inserter.onActivity(activity);
         
         DownloadData dd = DownloadData.getSingleAttachment(activity.getNote().noteId);

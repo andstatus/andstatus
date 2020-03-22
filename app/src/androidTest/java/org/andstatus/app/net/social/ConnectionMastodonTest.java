@@ -40,6 +40,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.data.DemoNoteInserter.assertVisibility;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -78,7 +79,7 @@ public class ConnectionMastodonTest {
                 .fromActorOfSameOrigin(activity.accountActor).isValid());
         assertEquals("Is not a note " + activity, AObjectType.NOTE, activity.getObjectType());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, note.getFavoritedBy(activity.accountActor));
-        assertEquals("Should be public " + activity, TriState.TRUE, note.getPublic());
+        assertVisibility(note.audience(), TriState.TRUE, true);
 
         Actor actor = activity.getActor();
         String stringDate = "2017-04-16T11:13:12.133Z";
@@ -113,21 +114,18 @@ public class ConnectionMastodonTest {
     @Test
     public void testIncomingVisibility() throws IOException {
         String response = RawResourceUtils.getString(org.andstatus.app.tests.R.raw.mastodon_home_timeline);
-        assertVisibility(response, TriState.TRUE, true);
+        oneVisibility(response, TriState.TRUE, true);
         String pattern = "\"visibility\": \"public\"";
-        assertVisibility(response.replace(pattern, "\"visibility\": \"unlisted\""), TriState.TRUE, true);
-        assertVisibility(response.replace(pattern, "\"visibility\": \"private\""), TriState.FALSE, true);
-        assertVisibility(response.replace(pattern, "\"visibility\": \"direct\""), TriState.FALSE, false);
+        oneVisibility(response.replace(pattern, "\"visibility\": \"unlisted\""), TriState.TRUE, true);
+        oneVisibility(response.replace(pattern, "\"visibility\": \"private\""), TriState.FALSE, true);
+        oneVisibility(response.replace(pattern, "\"visibility\": \"direct\""), TriState.FALSE, false);
     }
 
-    private void assertVisibility(String stringResponse, TriState isPublic, boolean isFollowers) throws ConnectionException {
+    private void oneVisibility(String stringResponse, TriState isPublic, boolean isFollowers) throws ConnectionException {
         mock.getHttpMock().addResponse(stringResponse);
         List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
                 new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActor);
-        AActivity activity = timeline.get(0);
-        Note note = activity.getNote();
-        assertEquals("Public check " + activity + "\n", isPublic, note.getPublic());
-        assertEquals("Followers check " + activity + "\n", isFollowers, note.audience().isFollowers());
+        assertVisibility(timeline.get(0).getNote().audience(), isPublic, isFollowers);
     }
 
     @Test
@@ -246,6 +244,12 @@ public class ConnectionMastodonTest {
                 "andstatus@" + accountActor.origin.getHost());
         assertOneRecipient(activity, "qwertystop", "https://wandering.shop/@qwertystop",
                 "qwertystop@wandering.shop");
+
+        assertVisibility(activity.getNote().audience(), TriState.TRUE, true);
+
+        Audience audience = Audience.fromNoteId(accountActor.origin, activity.getNote().noteId);
+        assertVisibility(audience, TriState.TRUE, true);
+
     }
 
     private void assertOneRecipient(AActivity activity, String username, String profileUrl, String webFingerId) {
@@ -255,7 +259,6 @@ public class ConnectionMastodonTest {
         assertTrue(username + " should be mentioned: " + activity, actor.nonEmpty());
         assertEquals("Mentioned user: " + activity, profileUrl, actor.getProfileUrl());
         assertEquals("Mentioned user: " + activity, webFingerId, actor.getWebFingerId());
-        assertEquals("Audience size: " + activity, 2, audience.getActors().size());
     }
 
     @Test

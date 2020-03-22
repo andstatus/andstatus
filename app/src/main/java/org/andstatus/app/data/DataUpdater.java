@@ -283,7 +283,7 @@ public class DataUpdater {
                 MyLog.v("Note", () -> "Updated " + note);
             }
             if (note.getStatus().mayUpdateContent()) {
-                note.audience().save(execContext.getMyContext(), note.origin, note.noteId, note.getPublic(), false);
+                note.audience().save(activity.getActor(), execContext.getMyContext(), note.noteId, note.getPublic(), false);
 
                 if (shouldSaveAttachments(isFirstTimeLoaded, isDraftUpdated)) {
                     note.attachments.save(execContext, note.noteId);

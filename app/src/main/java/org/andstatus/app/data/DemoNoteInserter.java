@@ -27,6 +27,7 @@ import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.note.NoteEditorData;
@@ -339,5 +340,10 @@ public class DemoNoteInserter {
                     notified,
                     MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()));
         }
+    }
+
+    public static void assertVisibility(Audience audience, TriState isPublic, boolean isFollowers) {
+        assertEquals("Public check " + audience + "\n", isPublic, audience.getPublic());
+        assertEquals("Followers check " + audience + "\n", isFollowers, audience.isFollowers());
     }
 }

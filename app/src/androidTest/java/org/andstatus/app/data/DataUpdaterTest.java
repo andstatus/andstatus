@@ -30,7 +30,6 @@ import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
@@ -58,6 +57,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.data.DemoNoteInserter.assertVisibility;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -77,7 +77,7 @@ public class DataUpdaterTest {
     }
 
     @Test
-    public void testFriends() throws ConnectionException {
+    public void testFriends() {
         MyAccount ma = demoData.getPumpioConversationAccount();
         Actor accountActor = ma.getActor();
         String noteOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB";
@@ -157,7 +157,7 @@ public class DataUpdaterTest {
     }
 
     @Test
-    public void testPrivateNoteToMyAccount() throws ConnectionException {
+    public void testPrivateNoteToMyAccount() {
         MyAccount ma = demoData.getPumpioConversationAccount();
         Actor accountActor = ma.getActor();
 
@@ -191,10 +191,11 @@ public class DataUpdaterTest {
         assertEquals("Recipient " + ma.getAccountName() + "; " + audience.getActors(),
                 ma.getActorId(), audience.getFirstNonPublic().actorId);
         assertEquals("Number of audience for " + activity, 1, audience.getActors().size());
+        assertVisibility(audience, TriState.FALSE, false);
     }
 
     @Test
-    public void noteFavoritedByOtherActor() throws ConnectionException {
+    public void noteFavoritedByOtherActor() {
         MyAccount ma = demoData.getPumpioConversationAccount();
         Actor accountActor = ma.getActor();
 
@@ -209,6 +210,7 @@ public class DataUpdaterTest {
         Note note = activity.getNote();
         note.setContentPosted("This test note will be favorited by First Reader from http://pumpity.net");
         note.via = "SomeOtherClient";
+        note.setPublic(TriState.TRUE);
 
         String otherUsername = "firstreader@identi.ca";
         Actor otherActor = Actor.fromOid(accountActor.origin, OriginPumpio.ACCOUNT_PREFIX + otherUsername);
@@ -244,6 +246,9 @@ public class DataUpdaterTest {
         assertEquals("Note is reblogged", TriState.UNKNOWN,
                 MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId));
 
+        Audience audience = Audience.fromNoteId(accountActor.origin, noteId);
+        assertVisibility(audience, TriState.TRUE, false);
+
         // TODO: Below is actually a timeline query test, so maybe expand / move...
         Uri contentUri = myContext.timelines()
                 .get(TimelineType.EVERYTHING, Actor.EMPTY, ma.getOrigin()).getUri();
@@ -277,7 +282,7 @@ public class DataUpdaterTest {
     }
 
     @Test
-    public void testReplyNoteFavoritedByMyActor() throws ConnectionException {
+    public void testReplyNoteFavoritedByMyActor() {
         oneReplyNoteFavoritedByMyActor("_it1", true);
         oneReplyNoteFavoritedByMyActor("_it2", false);
         oneReplyNoteFavoritedByMyActor("_it2", true);
@@ -697,6 +702,9 @@ public class DataUpdaterTest {
         assertTrue("Activity should be added " + activity1, activity1.getId() != 0);
         assertEquals("Note " + note1, DownloadStatus.SENDING, note1.getStatus());
 
+        Audience audience = Audience.fromNoteId(accountActor.origin, note1.noteId);
+        assertVisibility(audience, TriState.UNKNOWN, false);
+
         // Response from a server
         AActivity activity2 = AActivity.from(accountActor, ActivityType.CREATE);
         activity2.setId(activity1.getId());
@@ -719,5 +727,32 @@ public class DataUpdaterTest {
         assertEquals("Note oid " + activity3, note2.oid, MyQuery.idToOid(myContext, OidEnum.NOTE_OID, note3.noteId, 0));
         assertTrue("Activity should be added " + activity3, activity3.getId() != 0);
         assertEquals("Note " + note3, DownloadStatus.SENT, note3.getStatus());
+    }
+
+    @Test
+    public void noteToFollowersOnly() {
+        MyAccount ma = demoData.getMyAccount(demoData.activityPubTestAccountName);
+        Actor accountActor = ma.getActor();
+
+        String authorUsername = "author101";
+        Actor author = Actor.fromOid(accountActor.origin, "https://activitypub.org/users/" + authorUsername);
+        author.setUsername(authorUsername);
+        author.build();
+
+        AActivity activity = AActivity.newPartialNote(accountActor,
+                author, "https://activitypub.org/note/sdajklsdkiewwpdsldkfsdasdjWED" +  demoData.testRunUid,
+                13312698000L, DownloadStatus.LOADED);
+        Note note = activity.getNote();
+        note.setContentPosted("This test note was sent to Followers only");
+        note.via = "SomeApClient";
+        note.audience().setPublic(TriState.FALSE);
+        note.audience().setFollowers(true);
+
+        long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;
+        assertNotEquals("Note added", 0, noteId);
+        assertNotEquals("First activity added", 0, activity.getId());
+
+        Audience audience = Audience.fromNoteId(accountActor.origin, noteId);
+        assertVisibility(audience, TriState.FALSE, true);
     }
 }

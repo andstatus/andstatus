@@ -179,12 +179,7 @@ public class Audience implements IsEmpty {
     public Try<Actor> findSame(Actor actor) {
         if (actor.groupType.isGroup.isTrue && actor.groupType.parentActorRequired()) {
             Actor sameActor = actors.stream().filter(a -> a.groupType == actor.groupType).findAny()
-                .orElseGet( () -> { switch(actor.groupType) {
-                    case FOLLOWERS:
-                        return isFollowers ? Group.getActorsGroup(actor, actor.groupType, "") : Actor.EMPTY;
-                    default:
-                        return Actor.EMPTY;
-                }});
+                .orElse(Actor.EMPTY);
             return sameActor.nonEmpty() ? Try.success(sameActor) : TryUtils.notFound();
         }
         return CollectionsUtil.findAny(getActors(), actor::isSame);
@@ -199,28 +194,28 @@ public class Audience implements IsEmpty {
     }
 
     /** @return true if data changed */
-    public boolean save(@NonNull MyContext myContext, @NonNull Origin origin, long noteId, TriState isPublic, boolean countOnly) {
-        if (!origin.isValid() || noteId == 0) {
+    public boolean save(Actor activityActor, @NonNull MyContext myContext, long noteId, TriState isPublic, boolean countOnly) {
+        if (!activityActor.origin.isValid() || noteId == 0 || activityActor.actorId == 0) {
             return false;
         }
-        Audience prevAudience = Audience.loadIds(origin, noteId, Optional.of(isPublic));
+        if (isFollowers && actors.stream().noneMatch(actor ->
+                actor.groupType == GroupType.FOLLOWERS && actor.getParentActorId() == activityActor.actorId)) {
+            actors.add(Group.getActorsGroup(activityActor, GroupType.FOLLOWERS, ""));
+        }
+        Audience prevAudience = Audience.loadIds(activityActor.origin, noteId, Optional.of(isPublic));
         Set<Actor> toDelete = new HashSet<>();
         Set<Actor> toAdd = new HashSet<>();
         for (Actor actor : prevAudience.getActors()) {
             if (actor.isPublic()) continue;
-            if (findSame(actor).isFailure()) {
-                toDelete.add(actor);
-            }
+            findSame(actor).onFailure(e -> toDelete.add(actor));
         }
         for (Actor actor : getActors()) {
             if (actor.isPublic()) continue;
-            if (prevAudience.findSame(actor).isFailure()) {
-                if (actor.actorId == 0) {
-                    MyLog.w(this, "No actorId for " + actor);
-                } else {
-                    toAdd.add(actor);
-                }
+            if (actor.actorId == 0) {
+                MyLog.w(this, "No actorId for " + actor);
+                continue;
             }
+            prevAudience.findSame(actor).onFailure( e -> toAdd.add(actor));
         }
         if (!toDelete.isEmpty() || !toAdd.isEmpty()) {
             MyLog.i(TAG, "Audience differs, noteId:" + noteId + "," +
