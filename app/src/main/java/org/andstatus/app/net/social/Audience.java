@@ -136,8 +136,9 @@ public class Audience implements IsEmpty {
 
     public Audience copy() {
         Audience audience = new Audience(origin);
-        audience.actors.addAll(actors);
+        actors.forEach(audience::add);
         audience.setPublic(getPublic());
+        audience.setFollowers(isFollowers());
         return audience;
     }
 

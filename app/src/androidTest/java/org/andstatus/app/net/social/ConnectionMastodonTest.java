@@ -29,6 +29,7 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.RawResourceUtils;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.junit.Before;
@@ -77,8 +78,9 @@ public class ConnectionMastodonTest {
                 .fromActorOfSameOrigin(activity.accountActor).isValid());
         assertEquals("Is not a note " + activity, AObjectType.NOTE, activity.getObjectType());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, note.getFavoritedBy(activity.accountActor));
-        Actor actor = activity.getActor();
+        assertEquals("Should be public " + activity, TriState.TRUE, note.getPublic());
 
+        Actor actor = activity.getActor();
         String stringDate = "2017-04-16T11:13:12.133Z";
         long parsedDate = mock.connection.parseDate(stringDate);
         assertEquals("Parsing " + stringDate, 4, new Date(parsedDate).getMonth() + 1);
@@ -107,6 +109,26 @@ public class ConnectionMastodonTest {
                 MyContextHolder.get(), CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME));
         DataUpdater di = new DataUpdater(executionContext);
         di.onActivity(activity);
+    }
+
+    @Test
+    public void testIncomingVisibility() throws IOException {
+        String response = RawResourceUtils.getString(org.andstatus.app.tests.R.raw.mastodon_home_timeline);
+        assertVisibility(response, TriState.TRUE, true);
+        String pattern = "\"visibility\": \"public\"";
+        assertVisibility(response.replace(pattern, "\"visibility\": \"unlisted\""), TriState.TRUE, true);
+        assertVisibility(response.replace(pattern, "\"visibility\": \"private\""), TriState.FALSE, true);
+        assertVisibility(response.replace(pattern, "\"visibility\": \"direct\""), TriState.FALSE, false);
+    }
+
+    private void assertVisibility(String stringResponse, TriState isPublic, boolean isFollowers) throws ConnectionException {
+        mock.getHttpMock().addResponse(stringResponse);
+        List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
+                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActor);
+        AActivity activity = timeline.get(0);
+        Note note = activity.getNote();
+        assertEquals("Public check " + activity + "\n", isPublic, note.getPublic());
+        assertEquals("Followers check " + activity + "\n", isFollowers, note.audience().isFollowers());
     }
 
     @Test

@@ -52,6 +52,7 @@ import static org.andstatus.app.util.UriUtils.nonRealOid;
  */
 public class ConnectionMastodon extends ConnectionTwitterLike {
     private static final String ATTACHMENTS_FIELD_NAME = "media_attachments";
+    private static final String VISIBILITY_PROPERTY = "visibility";
     private static final String SENSITIVE_PROPERTY = "sensitive";
     private static final String SUMMARY_PROPERTY = "spoiler_text";
     private static final String CONTENT_PROPERTY_UPDATE = "status";
@@ -382,6 +383,25 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             note.setSensitive(jso.optBoolean(SENSITIVE_PROPERTY));
             note.setContentPosted(jso.optString(CONTENT_PROPERTY));
             note.url = jso.optString("url");
+            if (jso.has(VISIBILITY_PROPERTY)) {
+                switch (jso.getString(VISIBILITY_PROPERTY)) {
+                    case "public":
+                    case "unlisted":
+                        note.audience().setPublic(TriState.TRUE);
+                        note.audience().setFollowers(true);
+                        break;
+                    case "private":
+                        note.audience().setPublic(TriState.FALSE);
+                        note.audience().setFollowers(true);
+                        break;
+                    case "direct":
+                        note.audience().setPublic(TriState.FALSE);
+                        note.audience().setFollowers(false);
+                        break;
+                    default:
+                        break;
+                }
+            }
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");
                 note.audience().add(actorFromJson(recipient));
