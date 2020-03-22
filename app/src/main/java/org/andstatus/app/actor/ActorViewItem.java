@@ -21,6 +21,7 @@ import android.database.Cursor;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.MyActivity;
+import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarFile;
@@ -93,6 +94,9 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     }
 
     public String getName() {
+        if (actor.groupType == GroupType.FOLLOWERS) {
+            return actor.origin.myContext.context().getText(R.string.followers).toString();
+        }
         if (MyPreferences.getShowOrigin() && actor.nonEmpty()) {
             String name = actor.getTimelineUsername() + " / " + actor.origin.getName();
             if (actor.origin.getOriginType() == OriginType.GNUSOCIAL && MyPreferences.isShowDebuggingInfoInUi()

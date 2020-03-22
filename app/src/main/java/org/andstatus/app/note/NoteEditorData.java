@@ -106,8 +106,8 @@ public class NoteEditorData implements IsEmpty {
         this.activity = activity;
         if (!andLoad) return;
 
-        long noteId = activity.getNote().noteId;
         Note note = activity.getNote();
+        long noteId = note.noteId;
         note.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId));
         note.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, noteId));
         note.setSensitive(MyQuery.noteIdToLongColumnValue(NoteTable.SENSITIVE, noteId) == 1);
@@ -129,9 +129,17 @@ public class NoteEditorData implements IsEmpty {
             inReplyToNote.noteId = inReplyToNoteId;
             inReplyToNote.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, inReplyToNoteId));
             inReplyToNote.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, inReplyToNoteId));
+            inReplyToNote.setPublic(MyQuery.noteIdToTriState(NoteTable.PUBLIC, inReplyToNoteId));
             inReplyToNote.setSensitive(MyQuery.noteIdToLongColumnValue(NoteTable.SENSITIVE, inReplyToNoteId) == 1);
             inReplyToNote.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId));
             note.setInReplyTo(inReplyTo);
+            TriState isPublic = inReplyTo.getNote().audience().getPublic();
+            if (isPublic.known) {
+                note.setPublic(isPublic);
+                if (ma.getOrigin().getOriginType().isFollowersChangeAllowed) {
+                    note.audience().setFollowers(isPublic.isTrue);
+                }
+            }
         }
 
         attachedImageFiles = AttachedImageFiles.load(myContext, noteId);
@@ -147,8 +155,16 @@ public class NoteEditorData implements IsEmpty {
     }
 
     public static NoteEditorData newReplyTo(long inReplyToNoteId, MyAccount myAccount) {
-        return new NoteEditorData(MyContextHolder.get(), myAccount, 0, inReplyToNoteId,
+        NoteEditorData data = new NoteEditorData(MyContextHolder.get(), myAccount, 0, inReplyToNoteId,
                 inReplyToNoteId != 0);
+        Note note = data.activity.getNote();
+        if (data.ma.getOrigin().getOriginType().isPublicChangeAllowed) {
+            note.setPublic(TriState.TRUE);
+        }
+        if (data.ma.getOrigin().getOriginType().isFollowersChangeAllowed) {
+            note.audience().setFollowers(true);
+        }
+        return data;
     }
 
     @Override
@@ -384,7 +400,7 @@ public class NoteEditorData implements IsEmpty {
     }
 
     public NoteEditorData setPublic(boolean isPublic) {
-        if (canChangeIsPublic() && (isPublic || this.activity.getNote().getPublic().known)) {
+        if (canChangeIsPublic()) {
             this.activity.getNote().setPublic(isPublic ? TriState.TRUE : TriState.FALSE);
         }
         return this;

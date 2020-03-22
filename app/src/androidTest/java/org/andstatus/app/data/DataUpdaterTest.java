@@ -741,7 +741,7 @@ public class DataUpdaterTest {
 
         AActivity activity = AActivity.newPartialNote(accountActor,
                 author, "https://activitypub.org/note/sdajklsdkiewwpdsldkfsdasdjWED" +  demoData.testRunUid,
-                13312698000L, DownloadStatus.LOADED);
+                System.currentTimeMillis(), DownloadStatus.LOADED);
         Note note = activity.getNote();
         note.setContentPosted("This test note was sent to Followers only");
         note.via = "SomeApClient";

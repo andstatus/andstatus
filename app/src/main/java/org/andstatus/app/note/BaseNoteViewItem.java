@@ -20,6 +20,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.text.Spannable;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorListLoader;
@@ -52,8 +54,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import androidx.annotation.NonNull;
 
 import static java.util.stream.Collectors.joining;
 import static org.andstatus.app.timeline.DuplicationLink.DUPLICATES;
@@ -259,6 +259,10 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
             noteDetails.withSpace(StringUtil.format(context, R.string.message_source_to,
                     audienceToShow.stream().map(ActorViewItem::getName).collect(joining(", "))));
         }
+        if (isPublic.isTrue) {
+            noteDetails.withSpace(StringUtil.format(context, R.string.message_source_to,
+                    context.getText(R.string.timeline_title_public)));
+        }
     }
 
     private void setNoteSource(Context context, MyStringBuilder noteDetails) {
@@ -358,8 +362,12 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         audience.getActors().forEach(actor -> {
                     ActorViewItem loaded = loader.getLoaded(ActorViewItem.fromActor(actor));
                     audienceNew.add(loaded.getActor());
-                    if (actor.nonPublic() && !actor.equals(inReplyToActor.getActor())) {
-                        audienceToShowNew.add(loaded);
+                    if (actor.nonPublic() && !actor.isSame(inReplyToActor.getActor())) {
+                        if (actor.groupType.isGroup.isTrue) {
+                            audienceToShowNew.add(0, loaded);
+                        } else {
+                            audienceToShowNew.add(loaded);
+                        }
                     }
                 }
         );

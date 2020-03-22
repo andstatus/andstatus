@@ -118,7 +118,7 @@ public class Audience implements IsEmpty {
     }
 
     public String getUsernames() {
-        return actors.stream().map(Actor::getTimelineUsername).reduce((a, b) -> a + ", " + b).orElse("");
+        return actors.stream().map(Actor::getTimelineUsername).sorted().reduce((a, b) -> a + ", " + b).orElse("");
     }
 
     public Set<Actor> getActors() {
