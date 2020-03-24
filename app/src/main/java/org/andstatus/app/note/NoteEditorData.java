@@ -72,14 +72,32 @@ public class NoteEditorData implements IsEmpty {
     public final MyAccount ma;
     public Timeline timeline = Timeline.EMPTY;
 
-    public NoteEditorData(MyContext myContext, @NonNull MyAccount myAccount, long noteId, boolean initialize,
+    public NoteEditorData(@NonNull MyAccount myAccount, long noteId, boolean initialize,
                           long inReplyToNoteId, boolean andLoad) {
-        this(myAccount, myContext, toActivity(myContext, myAccount, noteId, andLoad), initialize, inReplyToNoteId, andLoad);
+        this(myAccount, toActivity(myAccount, noteId, andLoad));
+        if (andLoad) {
+            load(inReplyToNoteId);
+        }
+        if (initialize) {
+            if (ma.getOrigin().getOriginType().isPublicChangeAllowed) {
+                activity.getNote().setPublic(TriState.TRUE);
+            }
+            if (ma.getOrigin().getOriginType().isFollowersChangeAllowed) {
+                activity.getNote().audience().setFollowers(true);
+            }
+
+            TriState isPublic = activity.getNote().getInReplyTo().getNote().audience().getPublic();
+            if (isPublic.known) {
+                activity.getNote().setPublic(isPublic);
+                if (ma.getOrigin().getOriginType().isFollowersChangeAllowed) {
+                    activity.getNote().audience().setFollowers(isPublic.isTrue);
+                }
+            }
+        }
     }
 
     @NonNull
-    private static AActivity toActivity(MyContext myContext, @NonNull MyAccount myAccount, long noteId, boolean andLoad) {
-        MyAccount ma = myAccount.isValid() ? myAccount : myContext.accounts().getCurrentAccount();
+    private static AActivity toActivity(@NonNull MyAccount ma, long noteId, boolean andLoad) {
         AActivity activity;
         if (noteId == 0 || !andLoad) {
             activity = AActivity.newPartialNote(ma.getActor(), ma.getActor(), "", System.currentTimeMillis(),
@@ -90,7 +108,8 @@ public class NoteEditorData implements IsEmpty {
                     ma.getActor(), noteOid,
                     System.currentTimeMillis(),
                     DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));
-            activity.setId(MyQuery.oidToId(myContext, OidEnum.ACTIVITY_OID, activity.accountActor.origin.getId(),
+            activity.setId(MyQuery.oidToId(ma.getOrigin().myContext, OidEnum.ACTIVITY_OID,
+                    activity.accountActor.origin.getId(),
                     activity.getTimelinePosition().getPosition()));
             if (activity.getId() == 0) {
                 activity.setId(MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, noteId));
@@ -100,22 +119,14 @@ public class NoteEditorData implements IsEmpty {
         return activity;
     }
 
-    private NoteEditorData(MyAccount myAccount, MyContext myContext, @NonNull AActivity activity,
-                           boolean initialize, long inReplyToNoteIdIn, boolean andLoad) {
-        ma = myAccount.isValid() ? myAccount : myContext.accounts().getCurrentAccount();
-        this.myContext = myContext;
+    private NoteEditorData(MyAccount myAccount, @NonNull AActivity activity) {
+        ma = myAccount;
+        this.myContext = ma.getOrigin().myContext;
         this.activity = activity;
-        Note note = activity.getNote();
-        if (initialize) {
-            if (ma.getOrigin().getOriginType().isPublicChangeAllowed) {
-                note.setPublic(TriState.TRUE);
-            }
-            if (ma.getOrigin().getOriginType().isFollowersChangeAllowed) {
-                note.audience().setFollowers(true);
-            }
-        }
-        if (!andLoad) return;
+    }
 
+    private void load(long inReplyToNoteIdIn) {
+        Note note = activity.getNote();
         long noteId = note.noteId;
         note.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId));
         note.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, noteId));
@@ -142,13 +153,6 @@ public class NoteEditorData implements IsEmpty {
             inReplyToNote.setSensitive(MyQuery.noteIdToLongColumnValue(NoteTable.SENSITIVE, inReplyToNoteId) == 1);
             inReplyToNote.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId));
             note.setInReplyTo(inReplyTo);
-            TriState isPublic = inReplyTo.getNote().audience().getPublic();
-            if (initialize && isPublic.known) {
-                note.setPublic(isPublic);
-                if (ma.getOrigin().getOriginType().isFollowersChangeAllowed) {
-                    note.audience().setFollowers(isPublic.isTrue);
-                }
-            }
         }
 
         attachedImageFiles = AttachedImageFiles.load(myContext, noteId);
@@ -163,8 +167,8 @@ public class NoteEditorData implements IsEmpty {
         return newReplyTo(0, myAccount);
     }
 
-    public static NoteEditorData newReplyTo(long inReplyToNoteId, MyAccount myAccount) {
-        return new NoteEditorData(MyContextHolder.get(), myAccount, 0, true,
+    static NoteEditorData newReplyTo(long inReplyToNoteId, MyAccount myAccount) {
+        return new NoteEditorData(myAccount.getValidOrCurrent(MyContextHolder.get()), 0, true,
                 inReplyToNoteId, inReplyToNoteId != 0);
     }
 
@@ -231,14 +235,14 @@ public class NoteEditorData implements IsEmpty {
     }
 
     static NoteEditorData load(MyContext myContext, Long noteId) {
-        return new NoteEditorData(myContext, myContext.accounts().fromActorId(
-                MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, noteId)), noteId, false, 0, true);
+        long authorId = MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, noteId);
+        MyAccount ma = myContext.accounts().fromActorId(authorId).getValidOrCurrent(myContext);
+        return new NoteEditorData(ma, noteId, false, 0, true);
     }
 
     NoteEditorData copy() {
         if (this.isValid()) {
-            NoteEditorData data = new NoteEditorData(ma, MyContextHolder.get(), activity,
-                    false, activity.getNote().getInReplyTo().getNote().noteId, false);
+            NoteEditorData data = new NoteEditorData(ma, activity);
             data.attachedImageFiles = attachedImageFiles;
             data.replyToConversationParticipants = replyToConversationParticipants;
             return data;

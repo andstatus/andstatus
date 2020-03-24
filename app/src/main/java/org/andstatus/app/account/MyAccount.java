@@ -135,6 +135,12 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         order = data.getDataInt(KEY_ORDER, 1);
     }
 
+    public MyAccount getValidOrCurrent(MyContext myContext) {
+        return isValid()
+                ? this
+                : myContext.accounts().getCurrentAccount();
+    }
+
     public AccountName getOAccountName() {
         return data.accountName;
     }

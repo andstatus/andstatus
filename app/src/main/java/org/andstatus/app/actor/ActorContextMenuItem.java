@@ -188,15 +188,15 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         menu.add(menuGroup, this.getId(), order, title);
     }
     
-    public boolean execute(ActorContextMenu menu, MyAccount ma) {
+    public boolean execute(ActorContextMenu menu) {
         Params params = new Params(menu);
         MyLog.v(this, "execute started");
         if (mIsAsync) {
             executeAsync1(params);
         } else {
-            executeOnUiThread(params.menu,
-                    new NoteEditorData(menu.getMyContext(),
-                            menu.getActingAccount(), 0, false, 0, false));
+            MyAccount myAccount = menu.getActingAccount().getValidOrCurrent(menu.getMyContext());
+            NoteEditorData editorData = new NoteEditorData(myAccount, 0, false, 0, false);
+            executeOnUiThread(params.menu, editorData);
         }
         return false;
     }
