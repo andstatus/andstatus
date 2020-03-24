@@ -419,7 +419,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
             executeAsync1(menu);
         } else {
             executeOnUiThread(menu, new NoteEditorData(menu.menuContainer.getActivity().getMyContext(),
-                    menu.getActingAccount(), menu.getNoteId(), 0, false));
+                    menu.getActingAccount(), menu.getNoteId(), false, 0, false));
         }
         return false;
     }

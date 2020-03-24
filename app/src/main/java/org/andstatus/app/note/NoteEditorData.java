@@ -72,8 +72,9 @@ public class NoteEditorData implements IsEmpty {
     public final MyAccount ma;
     public Timeline timeline = Timeline.EMPTY;
 
-    public NoteEditorData(MyContext myContext, @NonNull MyAccount myAccount, long noteId, long inReplyToNoteId, boolean andLoad) {
-        this(myAccount, myContext, toActivity(myContext, myAccount, noteId, andLoad), inReplyToNoteId, andLoad);
+    public NoteEditorData(MyContext myContext, @NonNull MyAccount myAccount, long noteId, boolean initialize,
+                          long inReplyToNoteId, boolean andLoad) {
+        this(myAccount, myContext, toActivity(myContext, myAccount, noteId, andLoad), initialize, inReplyToNoteId, andLoad);
     }
 
     @NonNull
@@ -100,13 +101,21 @@ public class NoteEditorData implements IsEmpty {
     }
 
     private NoteEditorData(MyAccount myAccount, MyContext myContext, @NonNull AActivity activity,
-                           long inReplyToNoteIdIn, boolean andLoad) {
+                           boolean initialize, long inReplyToNoteIdIn, boolean andLoad) {
         ma = myAccount.isValid() ? myAccount : myContext.accounts().getCurrentAccount();
         this.myContext = myContext;
         this.activity = activity;
+        Note note = activity.getNote();
+        if (initialize) {
+            if (ma.getOrigin().getOriginType().isPublicChangeAllowed) {
+                note.setPublic(TriState.TRUE);
+            }
+            if (ma.getOrigin().getOriginType().isFollowersChangeAllowed) {
+                note.audience().setFollowers(true);
+            }
+        }
         if (!andLoad) return;
 
-        Note note = activity.getNote();
         long noteId = note.noteId;
         note.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId));
         note.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, noteId));
@@ -134,7 +143,7 @@ public class NoteEditorData implements IsEmpty {
             inReplyToNote.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId));
             note.setInReplyTo(inReplyTo);
             TriState isPublic = inReplyTo.getNote().audience().getPublic();
-            if (isPublic.known) {
+            if (initialize && isPublic.known) {
                 note.setPublic(isPublic);
                 if (ma.getOrigin().getOriginType().isFollowersChangeAllowed) {
                     note.audience().setFollowers(isPublic.isTrue);
@@ -155,16 +164,8 @@ public class NoteEditorData implements IsEmpty {
     }
 
     public static NoteEditorData newReplyTo(long inReplyToNoteId, MyAccount myAccount) {
-        NoteEditorData data = new NoteEditorData(MyContextHolder.get(), myAccount, 0, inReplyToNoteId,
-                inReplyToNoteId != 0);
-        Note note = data.activity.getNote();
-        if (data.ma.getOrigin().getOriginType().isPublicChangeAllowed) {
-            note.setPublic(TriState.TRUE);
-        }
-        if (data.ma.getOrigin().getOriginType().isFollowersChangeAllowed) {
-            note.audience().setFollowers(true);
-        }
-        return data;
+        return new NoteEditorData(MyContextHolder.get(), myAccount, 0, true,
+                inReplyToNoteId, inReplyToNoteId != 0);
     }
 
     @Override
@@ -231,13 +232,13 @@ public class NoteEditorData implements IsEmpty {
 
     static NoteEditorData load(MyContext myContext, Long noteId) {
         return new NoteEditorData(myContext, myContext.accounts().fromActorId(
-                MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, noteId)), noteId, 0, true);
+                MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, noteId)), noteId, false, 0, true);
     }
 
     NoteEditorData copy() {
         if (this.isValid()) {
             NoteEditorData data = new NoteEditorData(ma, MyContextHolder.get(), activity,
-                    activity.getNote().getInReplyTo().getNote().noteId, false);
+                    false, activity.getNote().getInReplyTo().getNote().noteId, false);
             data.attachedImageFiles = attachedImageFiles;
             data.replyToConversationParticipants = replyToConversationParticipants;
             return data;

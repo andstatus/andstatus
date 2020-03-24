@@ -196,7 +196,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         } else {
             executeOnUiThread(params.menu,
                     new NoteEditorData(menu.getMyContext(),
-                            menu.getActingAccount(), 0, 0, false));
+                            menu.getActingAccount(), 0, false, 0, false));
         }
         return false;
     }
