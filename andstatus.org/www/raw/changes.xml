@@ -29,6 +29,23 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="53.02" android:versionCode="306"
+        versionDate="2020-03-26"
+        versionTitle="Explicit Public and Followers recipients. Mastodon's 'Status privacy'">
+        <changes>
+            <change>During Note composition we can now explicitly set <i>Public</i> and <i>Followers</i> groups
+                as the Note recipients.
+                Combination of the two groups' checkboxes corresponds to Mastodon's "Status privacy" (visibility) options:<br/>
+                Mastodon calls "private" messages, for which "Public" checkbox is cleared.<br/>
+                And it calls "Direct" messages, for which
+                "Followers" checkbox is cleared also (and thus the note/status will be sent only to users,
+                mentioned in the note's body).
+            </change>
+            <change>Addressing notes to Public and Followers groups is explicitly shown in timelines.
+                This is shown, in particular, for Mastodon notes.
+            </change>
+        </changes>
+    </release>
     <release android:versionName="53.00" android:versionCode="304"
         versionDate="2019-12-21"
         versionTitle="The first step of Groups support">
