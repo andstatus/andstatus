@@ -30,19 +30,19 @@ import org.andstatus.app.util.MyLog;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class RecursiveConversationLoader<T extends ConversationItem<T>> extends ConversationLoader<T> {
-    public RecursiveConversationLoader(T emptyItem, MyContext myContext, Origin origin,
+public class RecursiveConversationLoader extends ConversationLoader {
+    public RecursiveConversationLoader(ConversationViewItem emptyItem, MyContext myContext, Origin origin,
                                        long selectedNoteId, boolean sync) {
         super(emptyItem, myContext, origin, selectedNoteId, sync);
     }
 
     @Override
-    protected void load2(T nonLoaded) {
+    protected void load2(ConversationViewItem nonLoaded) {
         findPreviousNotesRecursively(nonLoaded);
     }
 
     @Override
-    void cacheConversation(T item) {
+    void cacheConversation(ConversationViewItem item) {
         if (conversationIds.contains(item.conversationId) || item.conversationId == 0) {
             return;
         }
@@ -60,17 +60,17 @@ public class RecursiveConversationLoader<T extends ConversationItem<T>> extends 
                 item.getProjection().toArray(new String[]{}),
                 selection, null, null)) {
             while (cursor != null && cursor.moveToNext()) {
-                T itemLoaded = item.fromCursor(myContext, cursor);
+                ConversationViewItem itemLoaded = item.fromCursor(myContext, cursor);
                 cachedConversationItems.put(itemLoaded.getNoteId(), itemLoaded);
             }
         }
     }
 
-    private void findPreviousNotesRecursively(T itemIn) {
+    private void findPreviousNotesRecursively(ConversationViewItem itemIn) {
         if (!addNoteIdToFind(itemIn.getNoteId())) {
             return;
         }
-        T item = loadItemFromDatabase(itemIn);
+        ConversationViewItem item = loadItemFromDatabase(itemIn);
         findRepliesRecursively(item);
         MyLog.v(this, () -> "findPreviousNotesRecursively id=" + item.getNoteId() + " replies:" + item.nReplies);
         if (item.isLoaded()) {
@@ -83,9 +83,9 @@ public class RecursiveConversationLoader<T extends ConversationItem<T>> extends 
         }
     }
 
-    private void findRepliesRecursively(T item) {
+    private void findRepliesRecursively(ConversationViewItem item) {
         MyLog.v(this, () -> "findReplies for id=" + item.getNoteId());
-        for (T reply : cachedConversationItems.values()) {
+        for (ConversationViewItem reply : cachedConversationItems.values()) {
             if (reply.inReplyToNoteId == item.getNoteId()) {
                 item.nReplies++;
                 reply.replyLevel = item.replyLevel + 1;

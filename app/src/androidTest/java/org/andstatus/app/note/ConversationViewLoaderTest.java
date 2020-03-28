@@ -33,8 +33,7 @@ public class ConversationViewLoaderTest implements ProgressPublisher {
 
     @Test
     public void testLoad() {
-        ConversationLoader<ConversationViewItem> loader =
-                new ConversationLoaderFactory<ConversationViewItem>().getLoader(
+        ConversationLoader loader = new ConversationLoaderFactory().getLoader(
                 ConversationViewItem.EMPTY, MyContextHolder.get(), origin, selectedNoteId, false);
         progressCounter = 0;
         loader.load(this);

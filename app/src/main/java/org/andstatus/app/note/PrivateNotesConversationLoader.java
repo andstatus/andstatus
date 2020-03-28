@@ -19,6 +19,8 @@ package org.andstatus.app.note;
 import android.database.Cursor;
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ProjectionMap;
@@ -31,19 +33,17 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.TriState;
 
-import androidx.annotation.NonNull;
-
 /**
  * @author yvolk@yurivolkov.com
  */
-public class PrivateNotesConversationLoader<T extends ConversationItem<T>> extends ConversationLoader<T> {
-    public PrivateNotesConversationLoader(T emptyItem, MyContext myContext, Origin origin,
+public class PrivateNotesConversationLoader extends ConversationLoader {
+    public PrivateNotesConversationLoader(ConversationViewItem emptyItem, MyContext myContext, Origin origin,
                                           long selectedNoteId, boolean sync) {
         super(emptyItem, myContext, origin, selectedNoteId, sync);
     }
 
     @Override
-    protected void load2(T nonLoaded) {
+    protected void load2(ConversationViewItem nonLoaded) {
         long actorId = MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, nonLoaded.getNoteId());
         Audience audience = Audience.fromNoteId(ma.getOrigin(), nonLoaded.getNoteId());
         String selection = getSelectionForActorAndAudience("=" + Long.toString(actorId),

@@ -24,6 +24,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.drawerlayout.widget.DrawerLayout;
+
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
@@ -42,9 +45,6 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyStringBuilder;
-
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.drawerlayout.widget.DrawerLayout;
 
 /**
  * One selected note and, optionally, the whole conversation
@@ -194,13 +194,13 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
     }
 
     @SuppressWarnings("unchecked")
-    private ConversationLoader<ConversationViewItem> getListLoader() {
-        return ((ConversationLoader<ConversationViewItem>)getLoaded());
+    private ConversationLoader getListLoader() {
+        return ((ConversationLoader)getLoaded());
     }
     
     @Override
     protected SyncLoader newSyncLoader(Bundle args) {
-        return new ConversationLoaderFactory<ConversationViewItem>().
+        return new ConversationLoaderFactory().
                 getLoader(ConversationViewItem.EMPTY,
                 getMyContext(), origin, centralItemId, BundleUtils.hasKey(args, IntentExtra.SYNC.key));
     }

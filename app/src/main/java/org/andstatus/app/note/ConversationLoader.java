@@ -19,6 +19,8 @@ package org.andstatus.app.note;
 import android.database.Cursor;
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorListLoader;
 import org.andstatus.app.actor.ActorListType;
@@ -50,9 +52,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import androidx.annotation.NonNull;
-
-public abstract class ConversationLoader<T extends ConversationItem<T>> extends SyncLoader<T> {
+public abstract class ConversationLoader extends SyncLoader<ConversationViewItem> {
     private static final int MAX_INDENT_LEVEL = 19;
     
     protected final MyContext myContext;
@@ -63,15 +63,15 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
     private boolean sync = false;
     private boolean conversationSyncRequested = false;
     boolean mAllowLoadingFromInternet = false;
-    private final ReplyLevelComparator<T> replyLevelComparator = new ReplyLevelComparator<>();
-    private final T emptyItem;
+    private final ReplyLevelComparator<ConversationViewItem> replyLevelComparator = new ReplyLevelComparator<>();
+    private final ConversationViewItem emptyItem;
 
-    final Map<Long, T> cachedConversationItems = new ConcurrentHashMap<>();
+    final Map<Long, ConversationViewItem> cachedConversationItems = new ConcurrentHashMap<>();
     LoadableListActivity.ProgressPublisher mProgress;
 
     final List<Long> idsOfItemsToFind = new ArrayList<>();
 
-    public ConversationLoader(T emptyItem, MyContext myContext, Origin origin, long selectedNoteId, boolean sync) {
+    public ConversationLoader(ConversationViewItem emptyItem, MyContext myContext, Origin origin, long selectedNoteId, boolean sync) {
         this.emptyItem = emptyItem;
         this.myContext = myContext;
         this.ma = myContext.accounts().getFirstSucceededForOrigin(origin);
@@ -86,7 +86,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         if (fixConversation) {
             new CheckConversations()
                     .setNoteIdsOfOneConversation(
-                            items.stream().map(ConversationItem::getNoteId).collect(Collectors.toSet()))
+                            items.stream().map(ConversationViewItem::getNoteId).collect(Collectors.toSet()))
                     .setMyContext(myContext).fix();
             load1();
         }
@@ -103,32 +103,32 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         if (sync) {
             requestConversationSync(selectedNoteId);
         }
-        final T nonLoaded = getItem(selectedNoteId,
+        final ConversationViewItem nonLoaded = getItem(selectedNoteId,
                 MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, selectedNoteId), 0);
         cacheConversation(nonLoaded);
         load2(nonLoaded);
         addMissedFromCache();
     }
 
-    protected abstract void load2(T nonLoaded);
+    protected abstract void load2(ConversationViewItem nonLoaded);
 
-    void cacheConversation(T item) {
+    void cacheConversation(ConversationViewItem item) {
         // Empty
     }
 
     private void addMissedFromCache() {
         if (cachedConversationItems.isEmpty()) return;
-        for (ConversationItem item : items) {
+        for (ConversationViewItem item : items) {
             cachedConversationItems.remove(item.getId());
             if (cachedConversationItems.isEmpty()) return;
         }
         MyLog.v(this, () -> cachedConversationItems.size() + " cached notes are not connected to selected");
-        for (T oNote : cachedConversationItems.values()) {
+        for (ConversationViewItem oNote : cachedConversationItems.values()) {
             addItemToList(oNote);
         }
     }
 
-    private void loadActors(List<T> items) {
+    private void loadActors(List<ConversationViewItem> items) {
         if (items.isEmpty()) return;
         ActorListLoader loader = new ActorListLoader(myContext, ActorListType.ACTORS_AT_ORIGIN,
                 ma.getOrigin(), 0, "");
@@ -151,8 +151,8 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
     }
 
     @NonNull
-    protected T getItem(long noteId, long conversationId, int replyLevel) {
-        T item = cachedConversationItems.get(noteId);
+    protected ConversationViewItem getItem(long noteId, long conversationId, int replyLevel) {
+        ConversationViewItem item = cachedConversationItems.get(noteId);
         if (item == null) {
             item = emptyItem.newNonLoaded(myContext, noteId);
             item.conversationId = conversationId;
@@ -162,11 +162,11 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
     }
 
     @NonNull
-    protected T loadItemFromDatabase(T item) {
+    protected ConversationViewItem loadItemFromDatabase(ConversationViewItem item) {
         if (item.isLoaded() || item.getNoteId() == 0) {
             return item;
         }
-        T cachedItem = cachedConversationItems.get(item.getNoteId());
+        ConversationViewItem cachedItem = cachedConversationItems.get(item.getNoteId());
         if (cachedItem != null) {
             return cachedItem;
         }
@@ -175,7 +175,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         try (Cursor cursor = myContext.context().getContentResolver()
                 .query(uri, item.getProjection().toArray(new String[]{}), null, null, null)) {
             if (cursor != null && cursor.moveToFirst()) {
-                T loadedItem = item.fromCursor(myContext, cursor);
+                ConversationViewItem loadedItem = item.fromCursor(myContext, cursor);
                 loadedItem.replyLevel = item.replyLevel;
                 cacheConversation(loadedItem);
                 MyLog.v(this, () -> "Loaded (" + loadedItem.isLoaded() + ")"
@@ -187,7 +187,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         return item;
     }
 
-    protected boolean addItemToList(T item) {
+    protected boolean addItemToList(ConversationViewItem item) {
         boolean added = false;
         if (items.contains(item)) {
             MyLog.v(this, () -> "Note id=" + item.getNoteId() + " is in the list already");
@@ -233,7 +233,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         return false;
     }
 
-    private static class ReplyLevelComparator<T extends ConversationItem> implements Comparator<T>, Serializable {
+    private static class ReplyLevelComparator<T extends ConversationViewItem> implements Comparator<T>, Serializable {
         private static final long serialVersionUID = 1L;
 
         @Override
@@ -261,13 +261,13 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
     
     private void enumerateNotes() {
         idsOfItemsToFind.clear();
-        for (ConversationItem item : items) {
+        for (ConversationViewItem item : items) {
             item.mListOrder = 0;
             item.historyOrder = 0;
         }
         OrderCounters order = new OrderCounters();
         for (int ind = items.size()-1; ind >= 0; ind--) {
-            ConversationItem oMsg = items.get(ind);
+            ConversationViewItem oMsg = items.get(ind);
             if (oMsg.mListOrder < 0 ) {
                 continue;
             }
@@ -275,7 +275,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
         }
     }
 
-    private void enumerateBranch(ConversationItem oMsg, OrderCounters order, int indent) {
+    private void enumerateBranch(ConversationViewItem oMsg, OrderCounters order, int indent) {
         if (!addNoteIdToFind(oMsg.getNoteId())) {
             return;
         }
@@ -288,7 +288,7 @@ public abstract class ConversationLoader<T extends ConversationItem<T>> extends 
             indentNext++;
         }
         for (int ind = items.size() - 1; ind >= 0; ind--) {
-           ConversationItem reply = items.get(ind);
+           ConversationViewItem reply = items.get(ind);
            if (reply.inReplyToNoteId == oMsg.getNoteId()) {
                reply.nParentReplies = oMsg.nReplies;
                enumerateBranch(reply, order, indentNext);

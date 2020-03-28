@@ -19,11 +19,11 @@ package org.andstatus.app.timeline;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.activity.ActivityViewItem;
+import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.note.ConversationViewItem;
 import org.andstatus.app.note.NoteViewItem;
 import org.andstatus.app.service.QueueData;
 import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.actor.ActorViewItem;
 
 public enum ViewItemType {
     ACTIVITY(ActivityViewItem.EMPTY),

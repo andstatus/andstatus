@@ -339,12 +339,12 @@ public class NoteEditorData implements IsEmpty {
     }
 
     private void addConversationParticipantsBeforeText() {
-        ConversationLoader<? extends ConversationMemberItem> loader =
-                new ConversationLoaderFactory<ConversationMemberItem>().getLoader(
-                ConversationMemberItem.EMPTY, MyContextHolder.get(), ma.getOrigin(), getInReplyToNoteId(), false);
+        ConversationLoader loader =
+                new ConversationLoaderFactory().getLoader(
+                ConversationViewItem.EMPTY, MyContextHolder.get(), ma.getOrigin(), getInReplyToNoteId(), false);
         loader.load(progress -> {});
         addActorsBeforeText(loader.getList().stream()
-                .filter(ConversationMemberItem::isActorAConversationParticipant)
+                .filter(ConversationViewItem::isActorAConversationParticipant)
                 .map(o -> o.author.getActor()).collect(Collectors.toList()));
     }
 

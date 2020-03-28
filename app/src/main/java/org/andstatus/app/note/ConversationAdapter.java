@@ -62,14 +62,14 @@ public class ConversationAdapter extends BaseNoteAdapter<ConversationViewItem> {
         this.context = this.contextMenu.getActivity();
         this.selectedNoteId = selectedNoteId;
         this.showThreads = showThreads;
-        for (ConversationItem oMsg : oMsgs) {
+        for (ConversationViewItem oMsg : oMsgs) {
             oMsg.setReversedListOrder(oldNotesFirst);
             setInReplyToViewItem(oMsgs, oMsg);
         }
         Collections.sort(oMsgs);
     }
 
-    private void setInReplyToViewItem(List<ConversationViewItem> oMsgs, ConversationItem viewItem) {
+    private void setInReplyToViewItem(List<ConversationViewItem> oMsgs, ConversationViewItem viewItem) {
         if (viewItem.inReplyToNoteId == 0) {
             return;
         }

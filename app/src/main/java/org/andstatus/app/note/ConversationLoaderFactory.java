@@ -24,15 +24,15 @@ import org.andstatus.app.origin.Origin;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ConversationLoaderFactory<T extends ConversationItem<T>> {
+public class ConversationLoaderFactory {
 
-    public ConversationLoader<T> getLoader(T emptyItem, MyContext myContext, Origin origin, long noteId, boolean sync) {
+    public ConversationLoader getLoader(ConversationViewItem emptyItem, MyContext myContext, Origin origin, long noteId, boolean sync) {
         boolean recursiveLoader = origin.getOriginType().isPrivateNoteAllowsReply() ||
                 MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId).notFalse;
         if (recursiveLoader) {
-            return new RecursiveConversationLoader<>(emptyItem, myContext, origin, noteId, sync);
+            return new RecursiveConversationLoader(emptyItem, myContext, origin, noteId, sync);
         }  else {
-            return new PrivateNotesConversationLoader<>(emptyItem, myContext, origin, noteId, sync);
+            return new PrivateNotesConversationLoader(emptyItem, myContext, origin, noteId, sync);
         }
     }
 }
