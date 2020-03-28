@@ -49,28 +49,7 @@ public class ConversationViewItem extends ConversationItem<ConversationViewItem>
 
     private ConversationViewItem(MyContext myContext, Cursor cursor) {
         super(myContext, cursor);
-        setName(DbUtils.getString(cursor, NoteTable.NAME));
-        setSummary(DbUtils.getString(cursor, NoteTable.SUMMARY));
-        setContent(DbUtils.getString(cursor, NoteTable.CONTENT));
-        audience = Audience.fromNoteId(getOrigin(), getNoteId());
-        noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
-        String via = DbUtils.getString(cursor, NoteTable.VIA);
-        if (!StringUtil.isEmpty(via)) {
-            noteSource = Html.fromHtml(via).toString().trim();
-        }
-        inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
-        inReplyToActor = ActorViewItem.fromActorId(getOrigin(),
-                DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
-        if (DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE) {
-            reblogged = true;
-        }
-        if (DbUtils.getTriState(cursor, NoteTable.FAVORITED) == TriState.TRUE) {
-            favorited = true;
-        }
-
-        for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getNoteId())) {
-            rebloggers.put(actor.actorId, actor.getWebFingerId());
-        }
+        setOtherViewProperties(cursor);
     }
 
     @Override

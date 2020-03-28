@@ -18,6 +18,7 @@ package org.andstatus.app.note;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.text.Html;
 import android.text.Spannable;
 
 import androidx.annotation.NonNull;
@@ -32,6 +33,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFiles;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
+import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
@@ -123,6 +125,32 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         } else {
             attachmentsCount = 0;
             attachedImageFiles = AttachedImageFiles.EMPTY;
+        }
+    }
+
+    void setOtherViewProperties(Cursor cursor) {
+        setName(DbUtils.getString(cursor, NoteTable.NAME));
+        setSummary(DbUtils.getString(cursor, NoteTable.SUMMARY));
+        setContent(DbUtils.getString(cursor, NoteTable.CONTENT));
+
+        inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
+        inReplyToActor = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
+        isPublic = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
+        audience = Audience.fromNoteId(getOrigin(), getNoteId(), isPublic);
+
+
+        noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
+
+        favorited = DbUtils.getTriState(cursor, NoteTable.FAVORITED) == TriState.TRUE;
+        reblogged = DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE;
+
+        String via = DbUtils.getString(cursor, NoteTable.VIA);
+        if (!StringUtil.isEmpty(via)) {
+            noteSource = Html.fromHtml(via).toString().trim();
+        }
+
+        for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getNoteId())) {
+            rebloggers.put(actor.actorId, actor.getWebFingerId());
         }
     }
 

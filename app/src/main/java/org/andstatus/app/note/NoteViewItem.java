@@ -55,30 +55,11 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
     private NoteViewItem (MyContext myContext, Cursor cursor) {
         super(myContext, cursor);
         setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
-
-        setName(DbUtils.getString(cursor, NoteTable.NAME));
-        setSummary(DbUtils.getString(cursor, NoteTable.SUMMARY));
-        setContent(DbUtils.getString(cursor, NoteTable.CONTENT));
         contentToSearch = DbUtils.getString(cursor, NoteTable.CONTENT_TO_SEARCH);
-        inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
-        inReplyToActor = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
-        isPublic = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
-        audience = Audience.fromNoteId(getOrigin(), getNoteId(), isPublic);
         insertedDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         activityUpdatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
-        noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
         author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
-        favorited = DbUtils.getTriState(cursor, NoteTable.FAVORITED) == TriState.TRUE;
-        reblogged = DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE;
-
-        String via = DbUtils.getString(cursor, NoteTable.VIA);
-        if (!StringUtil.isEmpty(via)) {
-            noteSource = Html.fromHtml(via).toString().trim();
-        }
-
-        for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getNoteId())) {
-            rebloggers.put(actor.actorId, actor.getWebFingerId());
-        }
+        setOtherViewProperties(cursor);
     }
 
     @Override
