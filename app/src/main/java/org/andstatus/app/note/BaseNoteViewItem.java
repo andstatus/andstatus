@@ -279,17 +279,19 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     protected void setInReplyTo(Context context, MyStringBuilder noteDetails) {
         if (inReplyToNoteId == 0 || inReplyToActor.isEmpty()) return;
 
-        noteDetails.withSpace(StringUtil.format(context, R.string.message_source_in_reply_to, inReplyToActor.getName()));
+        noteDetails.withSpace(StringUtil.format(context, R.string.message_source_in_reply_to,
+                inReplyToActor.getActor().getViewItemName()));
     }
 
-    private void setAudience(Context context, MyStringBuilder noteDetails) {
-        if (isPublic.isFalse && !audienceToShow.isEmpty()) {
-            noteDetails.withSpace(StringUtil.format(context, R.string.message_source_to,
-                    audienceToShow.stream().map(ActorViewItem::getName).collect(joining(", "))));
+    private void setAudience(Context context, MyStringBuilder builder) {
+        CharSequence strOut = "";
+        if (this.isPublic.isTrue) {
+            strOut = context.getText(R.string.timeline_title_public);
+        } else if (this.isPublic.isFalse) {
+            strOut = audienceToShow.stream().map(ActorViewItem::getActor).map(Actor::getViewItemName).collect(joining(", "));
         }
-        if (isPublic.isTrue) {
-            noteDetails.withSpace(StringUtil.format(context, R.string.message_source_to,
-                    context.getText(R.string.timeline_title_public)));
+        if (StringUtil.nonEmpty(strOut)) {
+            builder.withSpace(StringUtil.format(context, R.string.message_source_to, strOut));
         }
     }
 

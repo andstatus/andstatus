@@ -44,10 +44,9 @@ import org.andstatus.app.actor.ActorAutoCompleteAdapter;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.TextMediaType;
-import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.graphics.IdentifiableImageView;
+import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -521,27 +520,20 @@ public class NoteEditor {
     }
 
     private void showNoteDetails() {
-        MyStringBuilder noteDetails = new MyStringBuilder();
-        String replyToName = editorData.getInReplyToNoteId() == 0
-                ? "" : MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, editorData.getInReplyToNoteId(),
-                MyPreferences.getActorInTimeline());
-        if (StringUtil.nonEmpty(replyToName)) {
-            noteDetails.withSpace(StringUtil.format(getActivity(), R.string.message_source_in_reply_to, replyToName));
+        MyStringBuilder builder = new MyStringBuilder();
+        Actor inReplyToAuthor = editorData.activity.getNote().getInReplyTo().getAuthor();
+        if (inReplyToAuthor.nonEmpty()) {
+            builder.withSpace(StringUtil.format(getActivity(), R.string.message_source_in_reply_to,
+                    inReplyToAuthor.getTimelineUsername()));
         }
-        if (editorData.activity.getNote().audience().hasNonPublic()) {
-            String recipientNames = editorData.activity.getNote().audience().getUsernames();
-            if (StringUtil.nonEmpty(recipientNames) && !recipientNames.equals(replyToName) ) {
-                noteDetails.atNewLine(
-                        StringUtil.format(getActivity(), R.string.message_source_to, recipientNames));
-            }
-        }
+
         if (editorData.getAttachedImageFiles().nonEmpty()) {
-            noteDetails.withSpace("("
+            builder.withSpace("("
                     + getActivity().getText(R.string.label_with_media).toString() + " "
                     + editorData.getAttachedImageFiles().toMediaSummary(getActivity())
                     + ")");
         }
-        MyUrlSpan.showText(editorView, R.id.noteEditDetails, noteDetails.toString(), false, false);
+        MyUrlSpan.showText(editorView, R.id.noteEditDetails, builder.toString(), false, false);
     }
 
     private boolean shouldShowAccountName() {

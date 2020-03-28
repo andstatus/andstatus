@@ -21,14 +21,12 @@ import android.database.Cursor;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.MyActivity;
-import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AvatarFile;
 import org.andstatus.app.graphics.IdentifiableImageView;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
@@ -93,19 +91,6 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         return actor.actorId;
     }
 
-    public String getName() {
-        if (actor.groupType == GroupType.FOLLOWERS) {
-            return actor.origin.myContext.context().getText(R.string.followers).toString();
-        }
-        if (MyPreferences.getShowOrigin() && actor.nonEmpty()) {
-            String name = actor.getTimelineUsername() + " / " + actor.origin.getName();
-            if (actor.origin.getOriginType() == OriginType.GNUSOCIAL && MyPreferences.isShowDebuggingInfoInUi()
-                    && StringUtil.nonEmpty(actor.oid)) {
-                return name + " oid:" + actor.oid;
-            } else return name;
-        } else return actor.getTimelineUsername();
-    }
-
     public String getDescription() {
         StringBuilder builder = new StringBuilder(actor.getSummary());
         if (MyPreferences.isShowDebuggingInfoInUi()) {
@@ -135,13 +120,9 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         return actor.getUpdatedDate();
     }
 
-    public String getUniqueName() {
-        return actor.getUniqueName();
-    }
-
     @Override
     public int compareTo(@NonNull ActorViewItem o) {
-        return getUniqueName().compareTo(o.getUniqueName());
+        return actor.getUniqueName().compareTo(o.actor.getUniqueName());
     }
 
     public AvatarFile getAvatarFile() {

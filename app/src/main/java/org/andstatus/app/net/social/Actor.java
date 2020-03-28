@@ -21,6 +21,7 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
+import org.andstatus.app.R;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
@@ -35,6 +36,7 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.origin.ActorReference;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginPumpio;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -772,6 +774,19 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (!SharedPreferencesUtil.isEmpty(homepage)) {
             this.homepage = homepage;
         }
+    }
+
+    public String getViewItemName() {
+        if (groupType == GroupType.FOLLOWERS) {
+            return origin.myContext.context().getText(R.string.followers).toString();
+        }
+        if (MyPreferences.getShowOrigin() && nonEmpty()) {
+            String name = getTimelineUsername() + " / " + origin.getName();
+            if (origin.getOriginType() == OriginType.GNUSOCIAL && MyPreferences.isShowDebuggingInfoInUi()
+                    && StringUtil.nonEmpty(oid)) {
+                return name + " oid:" + oid;
+            } else return name;
+        } else return getTimelineUsername();
     }
 
     public String getRealName() {

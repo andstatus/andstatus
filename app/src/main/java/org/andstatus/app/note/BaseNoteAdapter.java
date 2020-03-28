@@ -68,7 +68,7 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
 
     public void populateView(ViewGroup view, T item, boolean showReceivedTime, int position) {
         showRebloggers(view, item);
-        MyUrlSpan.showText(view, R.id.note_author, item.author.getName(), false, false);
+        MyUrlSpan.showText(view, R.id.note_author, item.author.getActor().getViewItemName(), false, false);
         showNoteName(view, item);
         showNoteSummary(view, item);
         showNoteContent(view, item);
