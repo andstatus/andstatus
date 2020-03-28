@@ -91,10 +91,10 @@ public class DemoConversationInserter {
         AActivity reply12 = buildActivity(author2, "", "Reply 12 to 1 in Replies", reply1Copy, null);
         reply1.getNote().replies.add(reply12);
 
-        AActivity reply2 = buildActivity(author2, "Private reply", "Reply 2 to selected is private",
+        AActivity privateReply2 = buildActivity(author2, "Private reply", "Reply 2 to selected is private",
                 selected, null);
-        addPublicNote(reply2, TriState.FALSE);
-        DemoNoteInserter.assertInteraction(reply2, NotificationEventType.PRIVATE, TriState.TRUE);
+        addPublicNote(privateReply2, TriState.FALSE);
+        DemoNoteInserter.assertInteraction(privateReply2, NotificationEventType.PRIVATE, TriState.TRUE);
         assertEquals("Should be subscribed " + selected, TriState.TRUE,
                 MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, selected.getId()));
         DemoNoteInserter.assertInteraction(selected, NotificationEventType.HOME, TriState.TRUE);
@@ -106,7 +106,7 @@ public class DemoConversationInserter {
         addActivity(reply3);
         addActivity(reply1);
         DemoNoteInserter.assertInteraction(reply1, NotificationEventType.EMPTY, TriState.FALSE);
-        addActivity(reply2);
+        addActivity(privateReply2);
         AActivity reply4 = buildActivity(author4, "", "Reply 4 to Reply 1 other author", reply1, null);
         addActivity(reply4);
 
@@ -142,7 +142,7 @@ public class DemoConversationInserter {
         addActivity(likeOf6);
 
         AActivity reply7 = buildActivity(getAuthor1(), "", "Reply 7 to Reply 2 is about "
-        + demoData.publicNoteText + " and something else", reply2, null);
+        + demoData.publicNoteText + " and something else", privateReply2, null);
         addPublicNote(reply7, TriState.TRUE);
         
         AActivity reply8 = buildActivity(author4, "", "<b>Reply 8</b> to Reply 7", reply7, null);
@@ -186,9 +186,9 @@ public class DemoConversationInserter {
         addPublicNote(reply11, TriState.TRUE);
         DemoNoteInserter.assertInteraction(reply11, NotificationEventType.EMPTY, TriState.FALSE);
 
-        AActivity myReply13 = buildActivity(accountActor, "", "My reply to Reply 2", reply2, null);
-        AActivity reply14 = buildActivity(author3, "", "Reply to my note 13", myReply13, null);
-        addActivity(reply14);
+        AActivity myReply13 = buildActivity(accountActor, "", "My reply 13 to Reply 2", privateReply2, null);
+        AActivity reply14 = buildActivity(author3, "", "Publicly reply to my note 13", myReply13, null);
+        addPublicNote(reply14, TriState.TRUE);
         DemoNoteInserter.assertInteraction(reply14, NotificationEventType.MENTION, TriState.TRUE);
 
         AActivity reblogOf14 = buildActivity(author2, ActivityType.ANNOUNCE);
@@ -196,10 +196,11 @@ public class DemoConversationInserter {
         addActivity(reblogOf14);
         DemoNoteInserter.assertInteraction(reblogOf14, NotificationEventType.MENTION, TriState.TRUE);
 
-        AActivity reblogOfMy13 = buildActivity(author3, ActivityType.ANNOUNCE);
-        reblogOfMy13.setActivity(myReply13);
-        addActivity(reblogOfMy13);
-        DemoNoteInserter.assertInteraction(reblogOfMy13, NotificationEventType.ANNOUNCE, TriState.TRUE);
+        // Note: We cannot publicly Reblog private note. Yet
+        AActivity reblogOfMyPrivate13 = buildActivity(author3, ActivityType.ANNOUNCE);
+        reblogOfMyPrivate13.setActivity(myReply13);
+        addActivity(reblogOfMyPrivate13);
+        DemoNoteInserter.assertInteraction(reblogOfMyPrivate13, NotificationEventType.PRIVATE, TriState.TRUE);
 
         AActivity mentionOfAuthor3 = buildActivity(reblogger1, "", "@" + author3.getUsername() + " mention in reply to 4",
                 reply4, iteration == 1 ? demoData.conversationMentionOfAuthor3Oid : null);

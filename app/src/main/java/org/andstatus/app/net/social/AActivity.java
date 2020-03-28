@@ -19,6 +19,9 @@ package org.andstatus.app.net.social;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
@@ -28,6 +31,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.notification.NotificationEventType;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -35,9 +39,6 @@ import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.Optional;
-
-import androidx.annotation.NonNull;
-import androidx.core.util.Pair;
 
 import static org.andstatus.app.origin.OriginConfig.MAX_ATTACHMENTS_DEFAULT;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
@@ -111,6 +112,24 @@ public class AActivity extends AObject {
     private AActivity(Actor accountActor, ActivityType type) {
         this.accountActor = accountActor == null ? Actor.EMPTY : accountActor;
         this.type = type == null ? ActivityType.EMPTY : type;
+    }
+
+    public void initializePublicAndFollowers() {
+        OriginType originType = accountActor.origin.getOriginType();
+        if (originType.isPublicChangeAllowed) {
+            getNote().setPublic(TriState.TRUE);
+        }
+        if (originType.isFollowersChangeAllowed) {
+            getNote().audience().setFollowers(true);
+        }
+
+        TriState isPublic = getNote().getInReplyTo().getNote().audience().getPublic();
+        if (isPublic.known) {
+            getNote().setPublic(isPublic);
+            if (originType.isFollowersChangeAllowed) {
+                getNote().audience().setFollowers(isPublic.isTrue);
+            }
+        }
     }
 
     @NonNull

@@ -138,6 +138,7 @@ public class DemoNoteInserter {
         if (origin.getOriginType() == OriginType.PUMPIO) {
             note.url = note.oid;
         }
+        activity.initializePublicAndFollowers();
         DbUtils.waitMs(method, 10);
         return activity;
     }

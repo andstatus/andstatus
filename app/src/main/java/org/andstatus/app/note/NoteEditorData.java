@@ -79,20 +79,7 @@ public class NoteEditorData implements IsEmpty {
             load(inReplyToNoteId);
         }
         if (initialize) {
-            if (ma.getOrigin().getOriginType().isPublicChangeAllowed) {
-                activity.getNote().setPublic(TriState.TRUE);
-            }
-            if (ma.getOrigin().getOriginType().isFollowersChangeAllowed) {
-                activity.getNote().audience().setFollowers(true);
-            }
-
-            TriState isPublic = activity.getNote().getInReplyTo().getNote().audience().getPublic();
-            if (isPublic.known) {
-                activity.getNote().setPublic(isPublic);
-                if (ma.getOrigin().getOriginType().isFollowersChangeAllowed) {
-                    activity.getNote().audience().setFollowers(isPublic.isTrue);
-                }
-            }
+            activity.initializePublicAndFollowers();
         }
     }
 
