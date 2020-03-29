@@ -73,6 +73,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     public static final Actor EMPTY = newUnknown(Origin.EMPTY, GroupType.UNKNOWN).setUsername("Empty");
     public static final Actor PUBLIC = fromTwoIds(Origin.EMPTY, GroupType.PUBLIC, 0,
         "https://www.w3.org/ns/activitystreams#Public").setUsername("Public");
+    public static final Actor FOLLOWERS = fromTwoIds(Origin.EMPTY, GroupType.FOLLOWERS, 0,
+            "org.andstatus.app.net.social.Actor#Followers").setUsername("Followers");
 
     @NonNull
     public final String oid;
@@ -247,19 +249,19 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public boolean isConstant() {
-        return this == EMPTY || this == PUBLIC;
+        return this == EMPTY || this == PUBLIC || this == FOLLOWERS;
     }
 
     @Override
     public boolean isEmpty() {
         if (this == EMPTY) return true;
-        if (this == PUBLIC) return false;
+        if (isConstant()) return false;
         return !origin.isValid() ||
                 (actorId == 0 && UriUtils.nonRealOid(oid) && StringUtil.isEmpty(webFingerId) && !isUsernameValid());
     }
 
     public boolean dontStore() {
-        return isEmpty() || this == PUBLIC;
+        return isConstant();
     }
 
     public boolean isPartiallyDefined() {
@@ -910,8 +912,12 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         }
     }
 
-   public boolean isPublic() {
+    public boolean isPublic() {
         return groupType == GroupType.PUBLIC;
+    }
+
+    public boolean isFollowers() {
+        return groupType == GroupType.FOLLOWERS;
     }
 
     public boolean nonPublic() {

@@ -17,10 +17,12 @@
 package org.andstatus.app.net.social;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 
 import androidx.annotation.NonNull;
 
+import org.andstatus.app.R;
 import org.andstatus.app.actor.Group;
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
@@ -35,8 +37,9 @@ import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.CollectionsUtil;
-import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.TryUtils;
 
@@ -45,12 +48,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import io.vavr.control.Try;
 
-public class Audience implements IsEmpty {
+public class Audience {
     private static final String TAG = Audience.class.getSimpleName();
     public final static Audience EMPTY = new Audience(Origin.EMPTY);
     private static final String LOAD_SQL = "SELECT " + ActorSql.select()
@@ -60,9 +64,10 @@ public class Audience implements IsEmpty {
             + ActorTable.TABLE_NAME + "." + ActorTable._ID
             + " AND " + AudienceTable.NOTE_ID + "=";
     public final Origin origin;
-    private final Set<Actor> actors = new HashSet<>();
+
+    private List<Actor> actors = new ArrayList<>();
     private TriState isPublic = TriState.UNKNOWN;
-    private boolean isFollowers = false;
+    private Actor followers = Actor.EMPTY;
 
     public Audience(Origin origin) {
         this.origin = origin;
@@ -88,19 +93,8 @@ public class Audience implements IsEmpty {
                 GroupType.fromId(DbUtils.getLong(cursor, ActorTable.GROUP_TYPE)),
                 DbUtils.getLong(cursor, AudienceTable.ACTOR_ID),
                 DbUtils.getString(cursor, ActorTable.ACTOR_OID));
-        audience.actors.addAll(MyQuery.get(MyContextHolder.get(), sql, function));
+        MyQuery.get(MyContextHolder.get(), sql, function).forEach(audience::add);
         audience.setPublic(isPublic);
-        return audience;
-    }
-
-    public static Audience loadIds(@NonNull Origin origin, long noteId, Optional<TriState> isPublic) {
-        Audience audience = new Audience(origin);
-        final String sql = "SELECT " + AudienceTable.ACTOR_ID +
-                " FROM " + AudienceTable.TABLE_NAME +
-                " WHERE " + AudienceTable.NOTE_ID + "=" + noteId;
-        final Function<Cursor, Actor> function = cursor -> Actor.fromId(origin, cursor.getLong(0));
-        audience.actors.addAll(MyQuery.get(origin.myContext, sql, function));
-        audience.setPublic(isPublic.orElseGet(() -> MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId)));
         return audience;
     }
 
@@ -108,30 +102,54 @@ public class Audience implements IsEmpty {
         Audience audience = new Audience(origin);
         final String sql = LOAD_SQL + noteId;
         final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(origin.myContext, cursor, true);
-        audience.actors.addAll(MyQuery.get(origin.myContext, sql, function));
+        MyQuery.get(origin.myContext, sql, function).forEach(audience::add);
         audience.setPublic(isPublic.orElseGet(() -> MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId)));
         return audience;
     }
 
-    public Actor getFirstNonPublic() {
-        return actors.stream().filter(Actor::nonPublic).findFirst().orElse(Actor.EMPTY);
+    public Actor getFirstNonSpecial() {
+        return actors.stream().findFirst().orElse(Actor.EMPTY);
     }
 
-    public String getUsernames() {
-        return actors.stream().map(Actor::getTimelineUsername).sorted().reduce((a, b) -> a + ", " + b).orElse("");
+    public String toAudienceString(Actor inReplyToActor) {
+        if (this == EMPTY) return "(empty)";
+        if (noRecipients()) return "???";
+
+        Context context = origin.myContext.context();
+        MyStringBuilder builder = new MyStringBuilder();
+        MyStringBuilder toBuilder = new MyStringBuilder();
+        if (getPublic().isTrue) {
+            builder.withSpace(context.getText(R.string.timeline_title_public));
+        } else if (getPublic().isFalse) {
+            builder.withSpace(context.getText(R.string.timeline_title_private));
+        } else if (isFollowers()) {
+            toBuilder.withSpace(context.getText(R.string.followers));
+        }
+        actors.stream()
+                .filter(actor -> !actor.isSame(inReplyToActor))
+                .map(Actor::getViewItemName)
+                .sorted()
+                .forEach(toBuilder::withComma);
+        if (toBuilder.nonEmpty()) {
+            builder.withSpace(StringUtil.format(context, R.string.message_source_to, toBuilder.toString()));
+        }
+        if (inReplyToActor.nonEmpty()) {
+            builder.withSpace(StringUtil.format(context, R.string.message_source_in_reply_to,
+                    inReplyToActor.getViewItemName()));
+        }
+        return builder.toString();
     }
 
-    public Set<Actor> getActors() {
+    public List<Actor> getActors() {
         return actors;
     }
 
-    @Override
-    public boolean isEmpty() {
-        return this.equals(EMPTY) || actors.isEmpty();
+    public boolean noRecipients() {
+        return actors.isEmpty() && followers.isEmpty() && isPublic.untrue;
     }
 
-    public boolean hasNonPublic() {
-        return actors.stream().anyMatch(Actor::nonPublic);
+    public boolean hasNonSpecial() {
+        return actors.size() > 0;
     }
 
     public Audience copy() {
@@ -161,8 +179,14 @@ public class Audience implements IsEmpty {
         if (actor.isEmpty()) return;
 
         if (actor.isPublic()) {
-            isPublic = TriState.TRUE;
+            setPublic(TriState.TRUE);
+            return;
         }
+        if (actor.isFollowers()) {
+            followers = actor;
+            return;
+        }
+
         List<Actor> same = actors.stream().filter(actor::isSame).collect(Collectors.toList());
         Actor toStore =  actor;
         for (Actor other: same) {
@@ -177,40 +201,48 @@ public class Audience implements IsEmpty {
     }
 
     public Try<Actor> findSame(Actor actor) {
+        if (actor.isEmpty()) return TryUtils.notFound();
+        if (actor.isSame(followers)) return Try.success(followers);
+
         if (actor.groupType.isGroup.isTrue && actor.groupType.parentActorRequired()) {
-            Actor sameActor = actors.stream().filter(a -> a.groupType == actor.groupType).findAny()
-                .orElse(Actor.EMPTY);
-            return sameActor.nonEmpty() ? Try.success(sameActor) : TryUtils.notFound();
+            return TryUtils.fromOptional(actors.stream().filter(a -> a.groupType == actor.groupType).findAny());
         }
         return CollectionsUtil.findAny(getActors(), actor::isSame);
     }
 
-    public boolean contains(long actorId) {
-        return actors.stream().anyMatch(actor -> actor.actorId == actorId);
-    }
-
     public boolean containsOid(String oid) {
-        return actors.stream().anyMatch(actor -> actor.oid.equals(oid));
+        if (StringUtil.isEmpty(oid)) return false;
+        return oid.equals(followers.oid) || actors.stream().anyMatch(actor -> actor.oid.equals(oid));
     }
 
     /** @return true if data changed */
-    public boolean save(Actor activityActor, @NonNull MyContext myContext, long noteId, TriState isPublic, boolean countOnly) {
-        if (!activityActor.origin.isValid() || noteId == 0 || activityActor.actorId == 0) {
+    public boolean save(Actor activityActor, long noteId, TriState isPublic, boolean countOnly) {
+        if (!activityActor.origin.isValid() || noteId == 0 || activityActor.actorId == 0 || !origin.myContext.isReady()) {
             return false;
         }
-        if (isFollowers && actors.stream().noneMatch(actor ->
-                actor.groupType == GroupType.FOLLOWERS && actor.getParentActorId() == activityActor.actorId)) {
-            actors.add(Group.getActorsGroup(activityActor, GroupType.FOLLOWERS, ""));
+        if (followers == Actor.FOLLOWERS) {
+            followers = Group.getActorsGroup(activityActor, GroupType.FOLLOWERS, "");
         }
         Audience prevAudience = Audience.loadIds(activityActor.origin, noteId, Optional.of(isPublic));
         Set<Actor> toDelete = new HashSet<>();
         Set<Actor> toAdd = new HashSet<>();
+
         for (Actor actor : prevAudience.getActors()) {
             if (actor.isPublic()) continue;
+
+            if (actor.actorId == followers.actorId) {
+                continue;
+            }
+
             findSame(actor).onFailure(e -> toDelete.add(actor));
+        }
+
+        if (isFollowers()) {
+            prevAudience.findSame(followers).onFailure(e -> toAdd.add(followers));
         }
         for (Actor actor : getActors()) {
             if (actor.isPublic()) continue;
+
             if (actor.actorId == 0) {
                 MyLog.w(this, "No actorId for " + actor);
                 continue;
@@ -227,14 +259,25 @@ public class Audience implements IsEmpty {
         }
         if (!countOnly) try {
             if (!toDelete.isEmpty()) {
-                MyProvider.delete(myContext, AudienceTable.TABLE_NAME, AudienceTable.NOTE_ID + "=" + noteId
+                MyProvider.delete(origin.myContext, AudienceTable.TABLE_NAME, AudienceTable.NOTE_ID + "=" + noteId
                         + " AND " + AudienceTable.ACTOR_ID + SqlIds.actorIdsOf(toDelete).getSql());
             }
-            toAdd.forEach(actor -> MyProvider.insert(myContext, AudienceTable.TABLE_NAME, toContentValues(noteId, actor)));
+            toAdd.forEach(actor -> MyProvider.insert(origin.myContext, AudienceTable.TABLE_NAME, toContentValues(noteId, actor)));
         } catch (Exception e) {
             MyLog.e(this, "save, noteId:" + noteId + "; " + actors, e);
         }
         return  !toDelete.isEmpty() || !toAdd.isEmpty();
+    }
+
+    private static Audience loadIds(@NonNull Origin origin, long noteId, Optional<TriState> isPublic) {
+        Audience audience = new Audience(origin);
+        final String sql = "SELECT " + AudienceTable.ACTOR_ID +
+                " FROM " + AudienceTable.TABLE_NAME +
+                " WHERE " + AudienceTable.NOTE_ID + "=" + noteId;
+        final Function<Cursor, Actor> function = cursor -> Actor.fromId(origin, cursor.getLong(0));
+        MyQuery.get(origin.myContext, sql, function).forEach(audience::add);
+        audience.setPublic(isPublic.orElseGet(() -> MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId)));
+        return audience;
     }
 
     @NonNull
@@ -246,35 +289,12 @@ public class Audience implements IsEmpty {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Audience audience = (Audience) o;
-
-        return actors.equals(audience.actors);
-    }
-
-    @Override
-    public int hashCode() {
-        return actors.hashCode();
-    }
-
-    @Override
     public String toString() {
-        return actors.toString();
+        return toAudienceString(Actor.EMPTY);
     }
 
     public void setPublic(TriState isPublic) {
         this.isPublic = isPublic;
-        switch (isPublic) {
-            case TRUE:
-                actors.add(Actor.PUBLIC);
-                break;
-            default:
-                actors.remove(Actor.PUBLIC);
-                break;
-        }
     }
 
     public TriState getPublic() {
@@ -284,16 +304,11 @@ public class Audience implements IsEmpty {
     public void setFollowers(boolean isFollowers) {
         if (isFollowers == isFollowers()) return;
 
-        this.isFollowers = isFollowers;  // We don't add the group immediately in order not to cause ANR
-        if (!isFollowers) {
-            List<Actor> toRemove = actors.stream().filter(actor -> actor.groupType == GroupType.FOLLOWERS)
-                    .collect(Collectors.toList());
-            actors.removeAll(toRemove);
-        }
+        followers = isFollowers ? Actor.FOLLOWERS : Actor.EMPTY;
     }
 
     public boolean isFollowers() {
-        return isFollowers || actors.stream().anyMatch(actor -> actor.groupType == GroupType.FOLLOWERS);
+        return followers.nonEmpty();
     }
 
     public void assertContext() {
@@ -302,4 +317,19 @@ public class Audience implements IsEmpty {
         origin.assertContext();
         actors.forEach(Actor::assertContext);
     }
+
+    public void addActorsToLoad(Consumer<Actor> addActorToList) {
+        actors.forEach(addActorToList);
+        if (isFollowers() && !followers.isConstant()) {
+            addActorToList.accept(followers);
+        }
+    }
+
+    public void setLoadedActors(Function<Actor, Actor> getLoaded) {
+        if (isFollowers()) {
+            add(getLoaded.apply(followers));
+        }
+        new ArrayList<>(actors).forEach( actor -> add(getLoaded.apply(actor)));
+    }
+
 }

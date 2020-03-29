@@ -211,7 +211,7 @@ class ActivitySender {
 
     private void setAudience(JSONObject activity, PActivityType activityType) throws JSONException {
         audience.getActors().forEach(actor -> addToAudience(activity, "to", actor));
-        if (audience.isEmpty() && StringUtil.isEmpty(inReplyToId)
+        if (audience.noRecipients() && StringUtil.isEmpty(inReplyToId)
                 && (activityType.equals(PActivityType.POST) || activityType.equals(PActivityType.UPDATE))) {
             addToAudience(activity, "to", Actor.PUBLIC);
         }
@@ -219,7 +219,7 @@ class ActivitySender {
 
     private void addToAudience(JSONObject activity, String recipientField, Actor actor) {
         String recipientId;
-        if (actor.equals(Actor.PUBLIC)) {
+        if (actor == Actor.PUBLIC) {
             recipientId = ConnectionPumpio.PUBLIC_COLLECTION_ID;
         } else if (actor.groupType == GroupType.FOLLOWERS) {
             recipientId = actor.getEndpoint(ActorEndpointType.API_FOLLOWERS).orElse(Uri.EMPTY).toString();

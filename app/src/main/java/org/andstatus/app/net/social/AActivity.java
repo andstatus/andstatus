@@ -542,7 +542,7 @@ public class AActivity extends AObject {
         switch (event) {
             case MENTION:
                 return myContext.users().myActors.values().stream()
-                    .filter(actor -> getNote().audience().contains(actor.actorId)).findFirst()
+                    .filter(actor -> getNote().audience().findSame(actor).isSuccess()).findFirst()
                     .orElse(
                         myContext.users().myActors.values().stream().filter(a -> a.origin.equals(accountActor.origin))
                             .findFirst().orElse(Actor.EMPTY)

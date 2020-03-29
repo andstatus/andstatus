@@ -65,7 +65,7 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
         ListActivityTestHelper<ActorList> helper = new ListActivityTestHelper<>(getActivity(), FollowersList.class);
 
         List<ActorViewItem> listItems = getActivity().getListLoader().getList();
-        assertEquals(listItems.toString(), 6, listItems.size());
+        assertEquals(listItems.toString(), 5, listItems.size());
 
         Actor actor = ActorListTest.getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
         assertTrue("Not found " + demoData.conversationAuthorThirdActorOid, actor.nonEmpty());

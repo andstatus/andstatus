@@ -196,7 +196,7 @@ public class NoteEditorData implements IsEmpty {
         return MyStringBuilder.formatKeyValue(this, builder);
     }
 
-    public String toVisibleSummary() {
+    String toTestSummary() {
         ContentValues values = new ContentValues();
         values.put(ActorTable.WEBFINGER_ID, activity.getActor().getWebFingerId());
         values.put(NoteTable.NAME, activity.getNote().getName());
@@ -209,14 +209,15 @@ public class NoteEditorData implements IsEmpty {
         if(replyToConversationParticipants) {
             values.put("Reply", "all");
         }
-        if(activity.getNote().getInReplyTo().nonEmpty()) {
-            String name = activity.getNote().getInReplyTo().getNote().getName();
-            String summary = activity.getNote().getInReplyTo().getNote().getSummary();
+        AActivity inReplyTo = activity.getNote().getInReplyTo();
+        if(inReplyTo.nonEmpty()) {
+            String name = inReplyTo.getNote().getName();
+            String summary = inReplyTo.getNote().getSummary();
             values.put("InReplyTo", (StringUtil.nonEmpty(name) ? name + COMMA : "") +
                     (StringUtil.nonEmpty(summary) ? summary + COMMA : "") +
-                    activity.getNote().getInReplyTo().getNote().getContent());
+                    inReplyTo.getNote().getContent());
         }
-        values.put("audience", activity.getNote().audience().getUsernames());
+        values.put("audience", activity.getNote().audience().toAudienceString(inReplyTo.getAuthor()));
         values.put("ma", ma.getAccountName());
         return values.toString();
     }

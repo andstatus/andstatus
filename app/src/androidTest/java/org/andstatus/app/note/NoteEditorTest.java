@@ -283,15 +283,15 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         TextView textView = getActivity().findViewById(R.id.noteBodyEditText);
         ActivityTestHelper.waitTextInAView(description, textView,
                 MyHtml.fromContentStored(data.getContent(), TextMediaType.PLAIN));
-        assertEquals(description, data.toVisibleSummary(), editor.getData().toVisibleSummary());
+        assertEquals(description, data.toTestSummary(), editor.getData().toTestSummary());
     }
 
     private static void assertTextCleared(TimelineActivityTest<ActivityViewItem> test) {
         final NoteEditor editor = test.getActivity().getNoteEditor();
         assertTrue("Editor is not null", editor != null);
         assertEquals(NoteEditorData.newEmpty(
-                test.getActivity().getMyContext().accounts().getCurrentAccount()).toVisibleSummary(),
-                editor.getData().toVisibleSummary());
+                test.getActivity().getMyContext().accounts().getCurrentAccount()).toTestSummary(),
+                editor.getData().toTestSummary());
     }
 
     @Test

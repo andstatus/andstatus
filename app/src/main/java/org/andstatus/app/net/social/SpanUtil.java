@@ -19,6 +19,8 @@ package org.andstatus.app.net.social;
 import android.text.Spannable;
 import android.text.SpannableString;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyUrlSpan;
@@ -31,8 +33,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import androidx.annotation.NonNull;
 
 import static java.lang.Character.isLetterOrDigit;
 
@@ -143,7 +143,7 @@ public class SpanUtil {
     }
 
     private static boolean mentionAdded(Spannable spannable, Audience audience, Region region, String text) {
-        if (audience.nonEmpty() && text.contains("@")) {
+        if (audience.hasNonSpecial() && text.contains("@")) {
             String upperText = text.toUpperCase();
             Actor mentionedByAtWebfingerID = audience.getActors().stream()
                     .filter(actor -> actor.isWebFingerIdValid() &&

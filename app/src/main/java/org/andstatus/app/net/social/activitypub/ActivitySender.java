@@ -187,7 +187,7 @@ class ActivitySender {
 
     private void setAudience(JSONObject activity, ActivityType activityType) throws JSONException {
         audience.getActors().forEach(actor -> addToAudience(activity, "to", actor));
-        if (audience.isEmpty()) {
+        if (audience.noRecipients()) {
             // "clients must be aware that the server will only forward new Activities
             //   to addressees in the to, bto, cc, bcc, and audience fields"
             addToAudience(activity, "to", Actor.PUBLIC);
@@ -196,7 +196,7 @@ class ActivitySender {
 
     private void addToAudience(JSONObject activity, String recipientField, Actor actor) {
         String recipientId;
-        if (actor.equals(Actor.PUBLIC)) {
+        if (actor == Actor.PUBLIC) {
             recipientId = ConnectionActivityPub.PUBLIC_COLLECTION_ID;
         } else if (actor.groupType == GroupType.FOLLOWERS) {
             recipientId = actor.getEndpoint(ActorEndpointType.API_FOLLOWERS).orElse(Uri.EMPTY).toString();

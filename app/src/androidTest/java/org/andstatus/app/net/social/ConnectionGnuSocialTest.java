@@ -288,7 +288,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Actor Username", "fanta", activity.getActor().getUsername());
         assertEquals("Author Oid", "379323", activity.getAuthor().oid);
         assertEquals("Note Oid", "12940131", activity.getNote().oid);
-        assertTrue("Should not have a recipient", activity.audience().isEmpty());
+        assertTrue("Should not have a recipient", activity.audience().noRecipients());
 
         assertTrue("Content " + activity, activity.getNote().getContent().startsWith(contentPrefix));
 
@@ -344,7 +344,7 @@ public class ConnectionGnuSocialTest {
     }
 
     private void assertAudience(AActivity activity, Audience audience, int numberOfMembers) {
-        Set<Actor> actors = audience.getActors();
+        List<Actor> actors = audience.getActors();
         assertEquals("Wrong number of audience members " + audience + "\n" + activity, numberOfMembers, actors.size());
         assertEquals("All recipients should have valid usernames " + audience + "\n" + activity, Actor.EMPTY,
                 actors.stream().filter(actor -> !actor.isUsernameValid()).findAny().orElse(Actor.EMPTY));

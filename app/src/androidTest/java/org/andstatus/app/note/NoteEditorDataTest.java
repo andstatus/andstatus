@@ -51,7 +51,7 @@ public class NoteEditorDataTest {
                 .setContent("Some text here " + demoData.testRunUid, TextMediaType.UNKNOWN);
         assertFalse(data.toString(), data.getContent().contains("@"));
         data.addMentionsToText();
-        assertEquals(recipientId, data.activity.getNote().audience().getFirstNonPublic().actorId);
+        assertEquals(recipientId, data.activity.getNote().audience().getFirstNonSpecial().actorId);
         assertMentionedActor(data, inReplyToActorId, true);
         assertMentionedActor(data, memberActorId, replyAll);
         assertEquals(data.toString(), AttachedImageFiles.EMPTY, data.getAttachedImageFiles());

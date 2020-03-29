@@ -58,7 +58,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
-            if (editorData.activity.getNote().audience().hasNonPublic()) {
+            if (editorData.activity.getNote().audience().hasNonSpecial()) {
                 menu.menuContainer.getNoteEditor().startEditingNote(editorData);
             }
         }

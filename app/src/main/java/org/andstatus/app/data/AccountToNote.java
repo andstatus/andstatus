@@ -38,7 +38,6 @@ public class AccountToNote {
     private boolean isAuthorMySucceededMyAccount = false;
     @NonNull
     private final MyAccount myAccount;
-    private final long accountActorId;
     public boolean isSubscribed = false;
     public boolean isAuthor = false;
     public boolean isActor = false;
@@ -108,7 +107,6 @@ public class AccountToNote {
     public AccountToNote(@NonNull NoteForAnyAccount noteForAnyAccount, MyAccount myAccount) {
         this.noteForAnyAccount = noteForAnyAccount;
         this.myAccount = calculateMyAccount(noteForAnyAccount.origin, myAccount);
-        this.accountActorId = this.myAccount.getActorId();
         if (this.myAccount.isValid()) {
             getData();
         }
@@ -124,16 +122,16 @@ public class AccountToNote {
 
     private void getData() {
         final String method = "getData";
-        isRecipient = noteForAnyAccount.audience.contains(accountActorId);
-        isAuthor = (accountActorId == noteForAnyAccount.author.actorId);
+        isRecipient = noteForAnyAccount.audience.findSame(this.myAccount.getActor()).isSuccess();
+        isAuthor = (this.myAccount.getActorId() == noteForAnyAccount.author.actorId);
         isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded();
         ActorToNote actorToNote = MyQuery.favoritedAndReblogged(noteForAnyAccount.myContext,
-                noteForAnyAccount.noteId, accountActorId);
+                noteForAnyAccount.noteId, this.myAccount.getActorId());
         favorited = actorToNote.favorited;
         reblogged = actorToNote.reblogged;
         isSubscribed = actorToNote.subscribed;
         authorFollowed = myAccount.isFollowing(noteForAnyAccount.author);
-        isActor = noteForAnyAccount.actor.actorId == accountActorId;
+        isActor = noteForAnyAccount.actor.actorId == this.myAccount.getActorId();
         actorFollowed = !isActor && (noteForAnyAccount.actor.actorId == noteForAnyAccount.author.actorId
                 ? authorFollowed
                 : myAccount.isFollowing(noteForAnyAccount.actor));
@@ -168,7 +166,7 @@ public class AccountToNote {
                 "noteForAnyAccount=" + noteForAnyAccount +
                 ", isAuthorMySucceededMyAccount=" + isAuthorMySucceededMyAccount +
                 ", myAccount=" + myAccount.getAccountName() +
-                ", accountActorId=" + accountActorId +
+                ", accountActorId=" + this.myAccount.getActorId() +
                 ", isSubscribed=" + isSubscribed +
                 ", isAuthor=" + isAuthor +
                 ", isActor=" + isActor +

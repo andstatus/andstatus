@@ -189,7 +189,7 @@ public class DataUpdaterTest {
         Audience audience = Audience.fromNoteId(accountActor.origin, noteId);
         assertNotEquals("No audience for " + activity, 0, audience.getActors().size());
         assertEquals("Recipient " + ma.getAccountName() + "; " + audience.getActors(),
-                ma.getActorId(), audience.getFirstNonPublic().actorId);
+                ma.getActorId(), audience.getFirstNonSpecial().actorId);
         assertEquals("Number of audience for " + activity, 1, audience.getActors().size());
         assertVisibility(audience, TriState.FALSE, false);
     }
@@ -672,8 +672,8 @@ public class DataUpdaterTest {
 
         assertEquals("Audience should contain one actor " + activity2.getNote().audience(),
                 1, activity2.getNote().audience().getActors().size());
-        assertEquals("Audience", myAuthor1, activity2.getNote().audience().getFirstNonPublic());
-        assertEquals("Notified actor", myAuthor1, activity2.getNotifiedActor());
+        assertEquals("Audience", myAuthor1, activity2.getNote().audience().getFirstNonSpecial());
+        assertEquals("Notified actor", actorFromAnotherOrigin, activity2.getNotifiedActor());
     }
 
     private AActivity newLoadedNote(Actor accountActor, Actor author, String content) {

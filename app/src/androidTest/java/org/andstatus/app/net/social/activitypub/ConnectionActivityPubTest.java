@@ -265,8 +265,7 @@ public class ConnectionActivityPubTest {
             "https://pleroma.site/users/kaniini",
             "https://pawoo.net/users/pawooAndStatusTester",
             "https://pleroma.site/users/ActivityPubTester",
-            "https://pleroma.site/users/AndStatus/followers",
-            "https://www.w3.org/ns/activitystreams#Public");
+            "https://pleroma.site/users/AndStatus/followers");
         oids.forEach(oid -> {
             assertTrue("Audience should contain " + oid + "\n " + activity + "\n " + audience, audience.containsOid(oid));
         });
@@ -280,7 +279,7 @@ public class ConnectionActivityPubTest {
         oids.forEach(oid -> {
             assertTrue("Audience should contain " + oid + "\n " + activity + "\n " + audienceStored, audienceStored.containsOid(oid));
         });
-        assertTrue("Audience of " + activity + "\n " + audienceStored, audienceStored.hasNonPublic());
+        assertTrue("Audience of " + activity + "\n " + audienceStored, audienceStored.hasNonSpecial());
 
     }
 
@@ -305,8 +304,8 @@ public class ConnectionActivityPubTest {
         Audience audience = activity.audience();
         assertEquals("Audience of " + activity, TriState.TRUE, audience.getPublic());
         List<String> oids = Arrays.asList(
-                "https://queer.hacktivis.me/users/AndStatus/followers",
-                "https://www.w3.org/ns/activitystreams#Public");
+                "https://queer.hacktivis.me/users/AndStatus/followers"
+        );
         oids.forEach(oid -> {
             assertTrue("Audience should contain " + oid + "\n " + activity + "\n " + audience, audience.containsOid(oid));
         });
@@ -329,6 +328,6 @@ public class ConnectionActivityPubTest {
         oids.forEach(oid -> {
             assertTrue("Audience should contain " + oid + "\n " + activity + "\n " + audienceStored, audienceStored.containsOid(oid));
         });
-        assertTrue("Audience of " + activity + "\n " + audienceStored, audienceStored.hasNonPublic());
+        assertTrue("Audience of " + activity + "\n " + audienceStored, audienceStored.hasNonSpecial());
     }
 }

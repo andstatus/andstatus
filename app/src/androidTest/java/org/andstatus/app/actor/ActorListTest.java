@@ -91,7 +91,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
 
         List<ActorViewItem> listItems = actorList.getListLoader().getList();
 
-        assertEquals(listItems.toString(), 6, listItems.size());
+        assertEquals(listItems.toString(), 5, listItems.size());
 
         Actor actorE = MyContextHolder.get().users().actors.values().stream()
                 .filter(actor -> actor.oid.equals(demoData.conversationAuthorThirdActorOid))

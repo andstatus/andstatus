@@ -107,7 +107,7 @@ class CheckAudience extends DataChecker {
                         dataUpdater.updateObjActor(ma.getActor().update(actor), 0)
                 );
             }
-            if (audience.save(author, myContext, noteId, audience.getPublic(), countOnly)) {
+            if (audience.save(author, noteId, audience.getPublic(), countOnly)) {
                 s.toFixCount += 1;
             }
         }

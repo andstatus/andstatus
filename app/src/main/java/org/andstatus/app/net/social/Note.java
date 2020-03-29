@@ -307,16 +307,13 @@ public class Note extends AObject {
         builder.withCommaNonEmpty("name", name);
         builder.withCommaNonEmpty("summary", summary);
         builder.withCommaNonEmpty("content", content);
-        builder.withComma("", getPublic() == TriState.TRUE ? "public" : "nonpublic", () -> getPublic().known);
+        builder.atNewLine("audience", audience.toAudienceString(Actor.EMPTY));
         builder.withComma("oid", oid, () -> isRealOid(oid));
         builder.withComma("conversation_oid",conversationOid, () -> isRealOid(conversationOid));
         builder.withCommaNonEmpty("url", url);
         builder.withCommaNonEmpty("via", via);
         builder.withComma("updated", MyLog.debugFormatOfDate(updatedDate));
         builder.withComma("origin", origin.getName());
-        if(audience.nonEmpty()) {
-            builder.atNewLine("audience", audience.toString());
-        }
         if (attachments.nonEmpty()) {
             builder.atNewLine(attachments.toString());
         }

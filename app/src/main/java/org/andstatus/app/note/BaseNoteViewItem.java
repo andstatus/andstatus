@@ -50,14 +50,10 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.stream.Collectors.joining;
 import static org.andstatus.app.timeline.DuplicationLink.DUPLICATES;
 import static org.andstatus.app.timeline.DuplicationLink.IS_DUPLICATED;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
@@ -78,7 +74,6 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     TriState isPublic = TriState.UNKNOWN;
     boolean isSensitive = false;
     Audience audience = Audience.EMPTY;
-    private List<ActorViewItem> audienceToShow = Collections.emptyList();
 
     public long inReplyToNoteId = 0;
     ActorViewItem inReplyToActor = ActorViewItem.EMPTY;
@@ -137,10 +132,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         inReplyToActor = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
         isPublic = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
         audience = Audience.fromNoteId(getOrigin(), getNoteId(), isPublic);
-
-
         noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
-
         favorited = DbUtils.getTriState(cursor, NoteTable.FAVORITED) == TriState.TRUE;
         reblogged = DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE;
 
@@ -266,8 +258,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         if (isSensitive() && MyPreferences.isShowSensitiveContent()) {
             builder.prependWithSeparator(myContext.context().getText(R.string.sensitive), " ");
         }
-        setInReplyTo(context, builder);
-        setAudience(context, builder);
+        setAudience(builder);
         setNoteSource(context, builder);
         setAccountDownloaded(builder);
         setNoteStatus(context, builder);
@@ -276,23 +267,8 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         return builder;
     }
 
-    protected void setInReplyTo(Context context, MyStringBuilder noteDetails) {
-        if (inReplyToNoteId == 0 || inReplyToActor.isEmpty()) return;
-
-        noteDetails.withSpace(StringUtil.format(context, R.string.message_source_in_reply_to,
-                inReplyToActor.getActor().getViewItemName()));
-    }
-
-    private void setAudience(Context context, MyStringBuilder builder) {
-        CharSequence strOut = "";
-        if (this.isPublic.isTrue) {
-            strOut = context.getText(R.string.timeline_title_public);
-        } else if (this.isPublic.isFalse) {
-            strOut = audienceToShow.stream().map(ActorViewItem::getActor).map(Actor::getViewItemName).collect(joining(", "));
-        }
-        if (StringUtil.nonEmpty(strOut)) {
-            builder.withSpace(StringUtil.format(context, R.string.message_source_to, strOut));
-        }
+    private void setAudience(MyStringBuilder builder) {
+        builder.withSpace(audience.toAudienceString(inReplyToActor.getActor()));
     }
 
     private void setNoteSource(Context context, MyStringBuilder noteDetails) {
@@ -380,29 +356,14 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     public void addActorsToLoad(ActorListLoader loader) {
         loader.addActorToList(author.getActor());
         loader.addActorToList(inReplyToActor.getActor());
-        audience.getActors().forEach(loader::addActorToList);
+        audience.addActorsToLoad(loader::addActorToList);
     }
 
     @Override
     public void setLoadedActors(ActorListLoader loader) {
         if (author.getActor().nonEmpty()) author = loader.getLoaded(author);
         if (inReplyToActor.getActor().nonEmpty()) inReplyToActor = loader.getLoaded(inReplyToActor);
-        Audience audienceNew = new Audience((audience.origin));
-        List<ActorViewItem> audienceToShowNew = new ArrayList<>();
-        audience.getActors().forEach(actor -> {
-                    ActorViewItem loaded = loader.getLoaded(ActorViewItem.fromActor(actor));
-                    audienceNew.add(loaded.getActor());
-                    if (actor.nonPublic() && !actor.isSame(inReplyToActor.getActor())) {
-                        if (actor.groupType.isGroup.isTrue) {
-                            audienceToShowNew.add(0, loaded);
-                        } else {
-                            audienceToShowNew.add(loaded);
-                        }
-                    }
-                }
-        );
-        audience = audienceNew;
-        audienceToShow = audienceToShowNew;
+        audience.setLoadedActors((Actor actor) -> loader.getLoaded(ActorViewItem.fromActor(actor)).getActor());
         name = SpanUtil.textToSpannable(nameString, TextMediaType.PLAIN, audience);
         summary = SpanUtil.textToSpannable(summaryString, TextMediaType.PLAIN, audience);
         content = SpanUtil.textToSpannable(contentString, TextMediaType.HTML, audience);

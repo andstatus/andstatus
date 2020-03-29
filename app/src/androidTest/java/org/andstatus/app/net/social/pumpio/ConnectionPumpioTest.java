@@ -241,7 +241,7 @@ public class ConnectionPumpioTest {
                 TestSuite.utcTime(activity.getUpdatedDate()));
         note = activity.getNote();
         assertEquals("Author " + activity, "acct:lostson@fmrl.me", activity.getAuthor().oid);
-        assertTrue("Does not have a recipient", note.audience().isEmpty());
+        assertTrue("Does not have a recipient", note.audience().noRecipients());
         assertEquals("Note oid " + note, "https://fmrl.me/api/note/Dp-njbPQSiOfdclSOuAuFw", note.oid);
         assertEquals("Url of the note " + note, "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", note.url);
         assertThat("Note body " + note, note.getContent(), startsWith("My new <b>Firefox</b> OS phone arrived today"));
@@ -251,8 +251,8 @@ public class ConnectionPumpioTest {
 
         ind++;
         note = timeline.get(ind).getNote();
-        assertTrue("Have a recipient", note.audience().nonEmpty());
-        assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , note.audience().getFirstNonPublic().oid);
+        assertTrue("Have a recipient", note.audience().hasNonSpecial());
+        assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , note.audience().getFirstNonSpecial().oid);
 
         ind++;
         activity = timeline.get(ind);

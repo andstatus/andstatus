@@ -275,7 +275,7 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
                 }
             }
         }
-        fail(method + "didn't find " + description + " in " + getListAdapter());
+        fail(method + " didn't find '" + description + "' in " + getListAdapter());
         return EmptyViewItem.EMPTY;
     }
 

@@ -122,7 +122,7 @@ public class ConnectionTwitterTest {
         ind++;
         activity = timeline.get(ind);
         note = activity.getNote();
-        assertTrue("Does not have a recipient", note.audience().isEmpty());
+        assertTrue("Does not have a recipient", note.audience().noRecipients());
         assertEquals("Is not a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertTrue("Is not a reply", note.getInReplyTo().isEmpty());
         assertEquals("Reblog of the note id", "315088751183409153", note.oid);
@@ -143,7 +143,7 @@ public class ConnectionTwitterTest {
         ind++;
         activity = timeline.get(ind);
         note = activity.getNote();
-        assertTrue("Does not have a recipient", note.audience().isEmpty());
+        assertTrue("Does not have a recipient", note.audience().noRecipients());
         assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertTrue("Is not a reply", note.getInReplyTo().isEmpty());
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
