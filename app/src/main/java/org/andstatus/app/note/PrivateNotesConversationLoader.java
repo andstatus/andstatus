@@ -46,7 +46,7 @@ public class PrivateNotesConversationLoader extends ConversationLoader {
     protected void load2(ConversationViewItem nonLoaded) {
         long actorId = MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, nonLoaded.getNoteId());
         Audience audience = Audience.fromNoteId(ma.getOrigin(), nonLoaded.getNoteId());
-        String selection = getSelectionForActorAndAudience("=" + Long.toString(actorId),
+        String selection = getSelectionForActorAndAudience("=" + actorId,
                 SqlIds.actorIdsOf(audience.getNonSpecialActors()).getSql());
         Uri uri = myContext.timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.getOrigin()).getUri();
         try (Cursor cursor = myContext.context().getContentResolver()

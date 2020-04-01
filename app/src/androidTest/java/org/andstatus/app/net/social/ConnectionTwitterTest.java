@@ -44,12 +44,12 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.MyHtmlTest.twitterBodyHtml;
 import static org.andstatus.app.util.MyHtmlTest.twitterBodyToPost;
 import static org.andstatus.app.util.UriUtilsTest.assertEndpoint;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class ConnectionTwitterTest {

@@ -6,8 +6,8 @@ android {
     buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        versionCode 307
-        versionName "53.03"
+        versionCode 308
+        versionName "53.04"
 
         applicationId "org.andstatus.app"
         minSdkVersion rootProject.minSdkVersion
@@ -87,6 +87,8 @@ dependencies {
     implementation "oauth.signpost:signpost-core:$signPostVersion"
     implementation "org.apache.commons:commons-lang3:$commonsLangVersion"
     implementation "org.apache.httpcomponents:httpmime:$httpMimeVersion"
+    implementation "org.hamcrest:hamcrest:$hamcrestVersion"
+    implementation "org.hamcrest:hamcrest-library:$hamcrestVersion"
     implementation project(':draglistview')
 
     androidTestImplementation "androidx.test:runner:$testRunnerVersion"

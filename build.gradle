@@ -38,6 +38,7 @@ buildscript {
         commonsLangVersion = '3.9'      // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
         documentfileVersion = '1.0.1'
         espressoCoreVersion = '3.1.1'
+        hamcrestVersion = '2.2'         // http://hamcrest.org/JavaHamcrest/distributables#using-hamcrest-in-a-gradle-project
         httpMimeVersion = '4.5.11'
         httpclientVersion = '4.5.8'     // https://github.com/smarek/httpclient-android
         jcipAnnotationsVersion = '1.0-1'  // http://stephenc.github.io/jcip-annotations/dependency-info.html

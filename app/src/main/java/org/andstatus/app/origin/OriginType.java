@@ -302,7 +302,7 @@ public enum OriginType implements SelectableEnum {
                 mAllowAttachmentForPrivateNote = false;
                 isPublicTimeLineSyncable = true;
                 allowEditing = false;
-                isPrivateNoteAllowsReply = false;
+                isPrivateNoteAllowsReply = true;
                 isSelectable = true;
 
                 textMediaTypePosted = TextMediaType.PLAIN;
