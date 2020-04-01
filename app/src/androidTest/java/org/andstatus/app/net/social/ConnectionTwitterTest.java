@@ -31,6 +31,7 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.util.MyHtmlTest;
 import org.andstatus.app.util.TriState;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,6 +49,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class ConnectionTwitterTest {
@@ -109,7 +111,7 @@ public class ConnectionTwitterTest {
         activity = timeline.get(ind);
         Note note = activity.getNote();
         assertTrue("Note is loaded", note.getStatus() == DownloadStatus.LOADED);
-        assertEquals("Should have a recipient " + activity, 1, note.audience().getActors().size());
+        assertEquals("Should have a recipient " + activity, 1, note.audience().getNonSpecialActors().size());
         assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertTrue("Is a reply", note.getInReplyTo().nonEmpty());
         assertEquals("Reply to the note id", "17176774678", note.getInReplyTo().getNote().oid);
@@ -122,7 +124,7 @@ public class ConnectionTwitterTest {
         ind++;
         activity = timeline.get(ind);
         note = activity.getNote();
-        assertTrue("Does not have a recipient", note.audience().noRecipients());
+        assertThat("Should not have non special recipients", note.audience().getNonSpecialActors(), Matchers.is(Matchers.empty()));
         assertEquals("Is not a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertTrue("Is not a reply", note.getInReplyTo().isEmpty());
         assertEquals("Reblog of the note id", "315088751183409153", note.oid);
@@ -143,7 +145,7 @@ public class ConnectionTwitterTest {
         ind++;
         activity = timeline.get(ind);
         note = activity.getNote();
-        assertTrue("Does not have a recipient", note.audience().noRecipients());
+        assertThat("Should not have non special recipients", note.audience().getNonSpecialActors(), Matchers.is(Matchers.empty()));
         assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertTrue("Is not a reply", note.getInReplyTo().isEmpty());
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));

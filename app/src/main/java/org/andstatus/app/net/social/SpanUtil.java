@@ -145,21 +145,21 @@ public class SpanUtil {
     private static boolean mentionAdded(Spannable spannable, Audience audience, Region region, String text) {
         if (audience.hasNonSpecial() && text.contains("@")) {
             String upperText = text.toUpperCase();
-            Actor mentionedByAtWebfingerID = audience.getActors().stream()
+            Actor mentionedByAtWebfingerID = audience.getNonSpecialActors().stream()
                     .filter(actor -> actor.isWebFingerIdValid() &&
                             upperText.contains("@" + actor.getWebFingerId().toUpperCase())).findAny().orElse(Actor.EMPTY);
             if (mentionedByAtWebfingerID.nonEmpty()) {
                 return notesByActorSpanAdded(spannable, audience, region,
                         "@" + mentionedByAtWebfingerID.getWebFingerId(), mentionedByAtWebfingerID);
             } else {
-                Actor mentionedByWebfingerID = audience.getActors().stream()
+                Actor mentionedByWebfingerID = audience.getNonSpecialActors().stream()
                         .filter(actor -> actor.isWebFingerIdValid() &&
                                 upperText.contains(actor.getWebFingerId().toUpperCase())).findAny().orElse(Actor.EMPTY);
                 if (mentionedByWebfingerID.nonEmpty()) {
                     return notesByActorSpanAdded(spannable, audience, region,
                             mentionedByWebfingerID.getWebFingerId(), mentionedByWebfingerID);
                 } else {
-                    Actor mentionedByUsername = audience.getActors().stream()
+                    Actor mentionedByUsername = audience.getNonSpecialActors().stream()
                             .filter(actor -> actor.isUsernameValid() &&
                                     upperText.contains("@" + actor.getUsername().toUpperCase())).findAny().orElse(Actor.EMPTY);
                     if (mentionedByUsername.nonEmpty()) {

@@ -358,6 +358,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="preference_log_network_level_messages_title">Log network level messages to files</string>
   <string name="preference_true_black_title">True black background</string>
   <string name="preference_use_kitkat_media_chooser_title">Modern interface to select an attachment</string>
+  <string name="privacy_unknown">Public?</string>
   <string name="reblogged">reposted</string>
   <string name="reblogged_by">reposted by %1$s</string>
   <string name="reblogged_by_pumpio">shared by %1$s</string>

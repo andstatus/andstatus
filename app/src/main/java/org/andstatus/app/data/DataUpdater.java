@@ -232,7 +232,7 @@ public class DataUpdater {
 
             updateInReplyTo(activity, values);
             activity.getNote().audience().lookupUsers();
-            for ( Actor actor : note.audience().getActors()) {
+            for ( Actor actor : note.audience().getActorsToSave(activity.getAuthor())) {
                 updateObjActor(activity.getActor().update(activity.accountActor, actor), recursing + 1);
             }
 
@@ -283,7 +283,7 @@ public class DataUpdater {
                 MyLog.v("Note", () -> "Updated " + note);
             }
             if (note.getStatus().mayUpdateContent()) {
-                note.audience().save(activity.getActor(), note.noteId, note.getPublic(), false);
+                note.audience().save(activity.getAuthor(), note.noteId, note.getPublic(), false);
 
                 if (shouldSaveAttachments(isFirstTimeLoaded, isDraftUpdated)) {
                     note.attachments.save(execContext, note.noteId);

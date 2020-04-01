@@ -116,9 +116,7 @@ public class AActivity extends AObject {
 
     public void initializePublicAndFollowers() {
         OriginType originType = accountActor.origin.getOriginType();
-        if (originType.isPublicChangeAllowed) {
-            getNote().setPublic(TriState.TRUE);
-        }
+        getNote().setPublic(TriState.TRUE);
         if (originType.isFollowersChangeAllowed) {
             getNote().audience().setFollowers(true);
         }
@@ -521,7 +519,7 @@ public class AActivity extends AObject {
         if (myContext.users().isMe(getActor())) return NotificationEventType.EMPTY;
         if (getNote().getPublic().isFalse) {
             return NotificationEventType.PRIVATE;
-        } else if(myContext.users().containsMe(getNote().audience().getActors()) && !isMyActorOrAuthor(myContext)) {
+        } else if(myContext.users().containsMe(getNote().audience().getNonSpecialActors()) && !isMyActorOrAuthor(myContext)) {
             return NotificationEventType.MENTION;
         } else if (type == ActivityType.ANNOUNCE && myContext.users().isMe(getAuthor())) {
             return NotificationEventType.ANNOUNCE;

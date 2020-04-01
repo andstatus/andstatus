@@ -249,7 +249,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         Note note =  activity.getNote();
         note.setSensitive(jso.optBoolean(SENSITIVE_PROPERTY));
         if (!addAttachmentsFromJson(jso, activity, "extended_entities")) {
-            // See https://dev.twitter.com/docs/entities
+            // See https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/entities-object
             addAttachmentsFromJson(jso, activity, "entities");
         }
         return activity;

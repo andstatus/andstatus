@@ -103,7 +103,7 @@ class CheckAudience extends DataChecker {
             audience.lookupUsers();
 
             if (!countOnly) {
-                audience.getActors().stream().filter(a -> a.actorId == 0).forEach(actor ->
+                audience.getActorsToSave(author).stream().filter(a -> a.actorId == 0).forEach(actor ->
                         dataUpdater.updateObjActor(ma.getActor().update(actor), 0)
                 );
             }

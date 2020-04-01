@@ -291,10 +291,14 @@ public abstract class ConnectionTwitterLike extends Connection {
 
             Note note = activity.getNote();
             setNoteBodyFromJson(note, jso);
+
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");
                 note.audience().add(actorFromJson(recipient));
             }
+            // Tweets are public by default, see https://help.twitter.com/en/safety-and-security/public-and-protected-tweets
+            note.audience().setPublic(TriState.TRUE);
+
             if (jso.has("source")) {
                 note.via = jso.getString("source");
             }

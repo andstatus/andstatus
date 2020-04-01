@@ -41,7 +41,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import androidx.annotation.NonNull;
 
@@ -112,7 +111,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Timeline position", "2664346", activity.getTimelinePosition().getPosition());
         assertEquals("Note Oid", "2664346", activity.getNote().oid);
         assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
-        assertEquals("Should have a recipient " + activity, 1, activity.audience().getActors().size());
+        assertEquals("Should have a recipient " + activity, 1, activity.audience().getNonSpecialActors().size());
         assertNotEquals("Is a reblog", ActivityType.ANNOUNCE,  activity.type);
 
         final AActivity inReplyTo = activity.getNote().getInReplyTo();
@@ -134,7 +133,7 @@ public class ConnectionGnuSocialTest {
         activity = timeline.get(ind);
         author = activity.getAuthor();
         assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
-        assertEquals("Note not private", TriState.UNKNOWN, activity.getNote().getPublic());
+        assertEquals("Note not private", TriState.TRUE, activity.getNote().getPublic());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         assertEquals("MyAccount", accountActor.oid, activity.accountActor.oid);
         assertEquals("Actor", author.oid, activity.getActor().oid);
@@ -344,7 +343,7 @@ public class ConnectionGnuSocialTest {
     }
 
     private void assertAudience(AActivity activity, Audience audience, int numberOfMembers) {
-        List<Actor> actors = audience.getActors();
+        List<Actor> actors = audience.getNonSpecialActors();
         assertEquals("Wrong number of audience members " + audience + "\n" + activity, numberOfMembers, actors.size());
         assertEquals("All recipients should have valid usernames " + audience + "\n" + activity, Actor.EMPTY,
                 actors.stream().filter(actor -> !actor.isUsernameValid()).findAny().orElse(Actor.EMPTY));

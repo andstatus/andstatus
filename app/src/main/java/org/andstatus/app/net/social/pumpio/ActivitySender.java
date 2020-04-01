@@ -210,7 +210,7 @@ class ActivitySender {
     }
 
     private void setAudience(JSONObject activity, PActivityType activityType) throws JSONException {
-        audience.getActors().forEach(actor -> addToAudience(activity, "to", actor));
+        audience.getRecipients().forEach(actor -> addToAudience(activity, "to", actor));
         if (audience.noRecipients() && StringUtil.isEmpty(inReplyToId)
                 && (activityType.equals(PActivityType.POST) || activityType.equals(PActivityType.UPDATE))) {
             addToAudience(activity, "to", Actor.PUBLIC);

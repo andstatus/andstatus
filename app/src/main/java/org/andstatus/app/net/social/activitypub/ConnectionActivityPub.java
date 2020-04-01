@@ -31,6 +31,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Attachments;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
@@ -38,6 +39,7 @@ import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.ObjectOrId;
 import org.andstatus.app.util.StringUtil;
+import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
@@ -310,7 +312,7 @@ public class ConnectionActivityPub extends Connection {
         if (object.error.isPresent()) throw object.error.get();
 
         if (activity.getObjectType().equals(AObjectType.NOTE)) {
-            addRecipients(activity, jsoActivity);
+            setAudience(activity, jsoActivity);
             if(activity.getAuthor().isEmpty()) {
                 activity.setAuthor(activity.getActor());
             }
@@ -322,17 +324,19 @@ public class ConnectionActivityPub extends Connection {
         return ObjectOrId.of(parentObject, propertyName).mapOne(this::actorFromJson, this::actorFromOid);
     }
 
-    private void addRecipients(AActivity activity, JSONObject jso) {
+    private void setAudience(AActivity activity, JSONObject jso) {
+        Audience audience = activity.getNote().audience();
+        audience.setPublic(TriState.FALSE);
         ObjectOrId.of(jso, "to")
                 .mapAll(this::actorFromJson, this::actorFromOid)
-                .forEach(o -> addRecipient(activity, o));
+                .forEach(o -> addRecipient(o, audience));
         ObjectOrId.of(jso, "cc")
                 .mapAll(this::actorFromJson, this::actorFromOid)
-                .forEach(o -> addRecipient(activity, o));
+                .forEach(o -> addRecipient(o, audience));
     }
 
-    private void addRecipient(AActivity activity, Actor recipient) {
-        activity.getNote().audience().add(
+    private void addRecipient(Actor recipient, Audience audience) {
+        audience.add(
                 PUBLIC_COLLECTION_ID.equals(recipient.oid)
                         ? Actor.PUBLIC
                         : recipient);
@@ -401,7 +405,7 @@ public class ConnectionActivityPub extends Connection {
             note.setConversationOid(StringUtil.optNotEmpty(jso.optString("conversation"))
                     .orElseGet(() -> jso.optString("context")));
 
-            addRecipients(activity, jso);
+            setAudience(activity, jso);
 
             // If the Note is a Reply to the other note
             ObjectOrId.of(jso, "inReplyTo")

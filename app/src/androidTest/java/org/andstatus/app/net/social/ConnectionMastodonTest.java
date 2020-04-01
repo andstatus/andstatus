@@ -254,7 +254,7 @@ public class ConnectionMastodonTest {
 
     private void assertOneRecipient(AActivity activity, String username, String profileUrl, String webFingerId) {
         Audience audience = activity.getNote().audience();
-        Actor actor = audience.getActors().stream().filter(a ->
+        Actor actor = audience.getNonSpecialActors().stream().filter(a ->
                 a.getUsername().equals(username)).findAny().orElse(Actor.EMPTY);
         assertTrue(username + " should be mentioned: " + activity, actor.nonEmpty());
         assertEquals("Mentioned user: " + activity, profileUrl, actor.getProfileUrl());

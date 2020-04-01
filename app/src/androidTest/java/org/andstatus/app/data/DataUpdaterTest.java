@@ -187,10 +187,10 @@ public class DataUpdaterTest {
         DemoNoteInserter.assertInteraction(activity, NotificationEventType.PRIVATE, TriState.TRUE);
 
         Audience audience = Audience.fromNoteId(accountActor.origin, noteId);
-        assertNotEquals("No audience for " + activity, 0, audience.getActors().size());
-        assertEquals("Recipient " + ma.getAccountName() + "; " + audience.getActors(),
+        assertNotEquals("No audience for " + activity, 0, audience.getNonSpecialActors().size());
+        assertEquals("Recipient " + ma.getAccountName() + "; " + audience.getNonSpecialActors(),
                 ma.getActorId(), audience.getFirstNonSpecial().actorId);
-        assertEquals("Number of audience for " + activity, 1, audience.getActors().size());
+        assertEquals("Number of audience for " + activity, 1, audience.getNonSpecialActors().size());
         assertVisibility(audience, TriState.FALSE, false);
     }
 
@@ -587,7 +587,7 @@ public class DataUpdaterTest {
         assertTrue("Note was not added: " + activity, note.noteId != 0);
 
         Actor buddy = Actor.EMPTY;
-        for (Actor recipient : activity.audience().getActors()) {
+        for (Actor recipient : activity.audience().getNonSpecialActors()) {
             assertFalse("Audience member is empty: " + recipient + ",\n" + note, recipient.isEmpty());
             if (recipient.getUniqueName().equals(buddyUniqueName)) {
                 buddy = recipient;
@@ -595,7 +595,7 @@ public class DataUpdaterTest {
             }
         }
         if (isReply) {
-            assertNotEquals("'" + buddyUniqueName + "' should be a recipient " + activity.audience().getActors(),
+            assertNotEquals("'" + buddyUniqueName + "' should be a recipient " + activity.audience().getNonSpecialActors(),
                     Actor.EMPTY, buddy);
             assertNotEquals("'" + buddyUniqueName + "' is not added " + buddy, 0, buddy.actorId);
         } else {
@@ -631,9 +631,9 @@ public class DataUpdaterTest {
         assertTrue("Note should be added", noteId != 0);
 
         Audience audience = activity1.audience();
-        assertEquals("Audience should contain two actors: " + audience, 2, audience.getActors().size());
+        assertEquals("Audience should contain two actors: " + audience, 2, audience.getNonSpecialActors().size());
 
-        Optional<Actor> group = audience.getActors().stream().filter(a -> groupname.equals(a.getUsername())).findAny();
+        Optional<Actor> group = audience.getNonSpecialActors().stream().filter(a -> groupname.equals(a.getUsername())).findAny();
         assertTrue("Group should be in audience: " + audience, group.isPresent());
         assertEquals("Group type: " + group, GroupType.GENERIC, group.get().groupType);
         assertNotEquals("Group id: " + group, 0, group.get().actorId);
@@ -671,7 +671,7 @@ public class DataUpdaterTest {
         assertTrue("Activity should be added", dataUpdater.onActivity(activity2).getId() != 0);
 
         assertEquals("Audience should contain one actor " + activity2.getNote().audience(),
-                1, activity2.getNote().audience().getActors().size());
+                1, activity2.getNote().audience().getNonSpecialActors().size());
         assertEquals("Audience", myAuthor1, activity2.getNote().audience().getFirstNonSpecial());
         assertEquals("Notified actor", actorFromAnotherOrigin, activity2.getNotifiedActor());
     }

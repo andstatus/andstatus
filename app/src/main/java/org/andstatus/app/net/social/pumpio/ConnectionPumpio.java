@@ -31,6 +31,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Attachments;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
@@ -347,15 +348,18 @@ public class ConnectionPumpio extends Connection {
         }
         if (activity.getObjectType().equals(AObjectType.NOTE)) {
             if (jsoActivity.has("to")) {
+                Audience audience = activity.getNote().audience();
+                audience.setPublic(TriState.FALSE);
+
                 JSONObject to = jsoActivity.optJSONObject("to");
                 if ( to != null) {
-                    activity.getNote().audience().add(actorFromJson(to));
+                    audience.add(actorFromJson(to));
                 } else {
                     JSONArray arrayOfTo = jsoActivity.optJSONArray("to");
                     if (arrayOfTo != null && arrayOfTo.length() > 0) {
                         for (int ind = 0; ind < arrayOfTo.length(); ind++) {
                             Actor recipient = actorFromJson(arrayOfTo.optJSONObject(ind));
-                            activity.getNote().audience().add(
+                            audience.add(
                                     ConnectionPumpio.PUBLIC_COLLECTION_ID.equals(recipient.oid)
                                             ? Actor.PUBLIC
                                             : recipient

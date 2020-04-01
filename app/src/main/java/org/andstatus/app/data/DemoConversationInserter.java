@@ -122,9 +122,9 @@ public class DemoConversationInserter {
                 iteration == 1 ? demoData.conversationMentionsNoteOid : null);
         addActivity(reply5);
         assertThat("The user '" + author3.getUsername() + "' should be a recipient\n" + reply5.getNote(),
-                reply5.getNote().audience().getActors(), hasItem(author3));
+                reply5.getNote().audience().getNonSpecialActors(), hasItem(author3));
         assertThat("The user '" + author2.getUsername() + "' should not be a recipient\n" + reply5.getNote(),
-                reply5.getNote().audience().getActors(), not(hasItem(author2)));
+                reply5.getNote().audience().getNonSpecialActors(), not(hasItem(author2)));
 
         Actor reblogger1 = buildActorFromOid("acct:reblogger@" + demoData.pumpioMainHost);
         reblogger1.setAvatarUrl("http://www.large-icons.com/stock-icons/free-large-android/48x48/dog-robot.gif");
