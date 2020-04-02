@@ -102,8 +102,7 @@ class ActivitySender {
         JSONObject activity = null;
         try {
             activity = buildActivityToSend(activityType);
-            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPDATE_NOTE,
-                    connection.getData().getAccountActor());
+            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPDATE_NOTE, getActor());
             activityResponse = connection.postRequest(conu.uri, activity);
             if (activityResponse.map(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
                 return Try.failure(ConnectionException.hardConnectionException(msgLog + " returned no data", null));
@@ -124,6 +123,10 @@ class ActivitySender {
             throw ConnectionException.loggedJsonException(this, msgLog, e, activity);
         }
         return activityResponse;
+    }
+
+    private Actor getActor() {
+        return connection.getData().getAccountActor();
     }
 
     private JSONObject buildActivityToSend(PActivityType activityType) throws JSONException, ConnectionException {
@@ -202,7 +205,7 @@ class ActivitySender {
         setAudience(activity, activityType);
 
         JSONObject author = new JSONObject();
-        author.put("id", connection.getData().getAccountActor().oid);
+        author.put("id", getActor().oid);
         author.put("objectType", "person");
 
         activity.put("actor", author);
@@ -217,23 +220,23 @@ class ActivitySender {
         }
     }
 
-    private void addToAudience(JSONObject activity, String recipientField, Actor actor) {
+    private void addToAudience(JSONObject activity, String recipientField, Actor recipient) {
         String recipientId;
-        if (actor == Actor.PUBLIC) {
+        if (recipient == Actor.PUBLIC) {
             recipientId = ConnectionPumpio.PUBLIC_COLLECTION_ID;
-        } else if (actor.groupType == GroupType.FOLLOWERS) {
-            recipientId = actor.getEndpoint(ActorEndpointType.API_FOLLOWERS).orElse(Uri.EMPTY).toString();
+        } else if (recipient.groupType == GroupType.FOLLOWERS) {
+            recipientId = getActor().getEndpoint(ActorEndpointType.API_FOLLOWERS).orElse(Uri.EMPTY).toString();
         } else {
-            recipientId = actor.getBestUri();
+            recipientId = recipient.getBestUri();
         }
         if (StringUtil.isEmpty(recipientId)) return;
 
-        JSONObject recipient = new JSONObject();
+        JSONObject jsonRecipient = new JSONObject();
         try {
-            recipient.put("id", recipientId);
-            recipient.put("objectType", connection.oidToObjectType(recipientId));
+            jsonRecipient.put("id", recipientId);
+            jsonRecipient.put("objectType", connection.oidToObjectType(recipientId));
             JSONArray field = activity.has(recipientField) ? activity.getJSONArray(recipientField) : new JSONArray();
-            field.put(recipient);
+            field.put(jsonRecipient);
             activity.put(recipientField, field);
         } catch (JSONException e) {
             MyLog.e(this, e);
@@ -249,8 +252,7 @@ class ActivitySender {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachment.uri.toString());
-            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA,
-                    connection.getData().getAccountActor());
+            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA, getActor());
             Try<HttpReadResult> result = connection.postRequest(conu.uri, formParams);
             if (result.map(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
                 result = Try.failure(new ConnectionException(

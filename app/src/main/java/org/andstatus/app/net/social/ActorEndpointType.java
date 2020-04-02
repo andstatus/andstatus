@@ -16,6 +16,8 @@
 
 package org.andstatus.app.net.social;
 
+import org.andstatus.app.actor.GroupType;
+
 public enum ActorEndpointType {
     EMPTY(0),
     API_PROFILE(1),
@@ -75,4 +77,14 @@ public enum ActorEndpointType {
         }
     }
 
+    public static ActorEndpointType from(GroupType groupType) {
+        switch (groupType) {
+            case FOLLOWERS:
+                return API_FOLLOWERS;
+            case FRIENDS:
+                return API_FOLLOWING;
+            default:
+                return EMPTY;
+        }
+    }
 }

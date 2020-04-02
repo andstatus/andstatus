@@ -99,8 +99,7 @@ class ActivitySender {
         JSONObject activity = null;
         try {
             activity = buildActivityToSend(activityType);
-            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPDATE_NOTE,
-                    connection.getData().getAccountActor());
+            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPDATE_NOTE, getActor());
             activityResponse = connection.postRequest(conu.uri, activity);
             Try<JSONObject> jsonObject = activityResponse.map(HttpReadResult::getJsonObject)
                     .flatMap(jso -> jso == null
@@ -124,6 +123,10 @@ class ActivitySender {
             return Try.failure(ConnectionException.loggedJsonException(this, msgLog, e, activity));
         }
         return activityResponse;
+    }
+
+    private Actor getActor() {
+        return connection.getData().getAccountActor();
     }
 
     private JSONObject buildActivityToSend(ActivityType activityType) throws JSONException, ConnectionException {
@@ -181,12 +184,12 @@ class ActivitySender {
 
         setAudience(activity, activityType);
 
-        activity.put("actor", connection.getData().getAccountActor().oid);
+        activity.put("actor", getActor().oid);
         return activity;
     }
 
     private void setAudience(JSONObject activity, ActivityType activityType) throws JSONException {
-        audience.getRecipients().forEach(actor -> addToAudience(activity, "to", actor));
+        audience.getRecipients().forEach(recipient -> addToAudience(activity, "to", recipient));
         if (audience.noRecipients()) {
             // "clients must be aware that the server will only forward new Activities
             //   to addressees in the to, bto, cc, bcc, and audience fields"
@@ -194,14 +197,14 @@ class ActivitySender {
         }
     }
 
-    private void addToAudience(JSONObject activity, String recipientField, Actor actor) {
+    private void addToAudience(JSONObject activity, String recipientField, Actor recipient) {
         String recipientId;
-        if (actor == Actor.PUBLIC) {
+        if (recipient == Actor.PUBLIC) {
             recipientId = ConnectionActivityPub.PUBLIC_COLLECTION_ID;
-        } else if (actor.groupType == GroupType.FOLLOWERS) {
-            recipientId = actor.getEndpoint(ActorEndpointType.API_FOLLOWERS).orElse(Uri.EMPTY).toString();
+        } else if (recipient.groupType == GroupType.FOLLOWERS) {
+            recipientId = getActor().getEndpoint(ActorEndpointType.API_FOLLOWERS).orElse(Uri.EMPTY).toString();
         } else {
-            recipientId = actor.getBestUri();
+            recipientId = recipient.getBestUri();
         }
         if (StringUtil.isEmpty(recipientId)) return;
 
@@ -220,8 +223,7 @@ class ActivitySender {
         try {
             formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "file");
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachment.uri.toString());
-            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA,
-                    connection.getData().getAccountActor());
+            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA, getActor());
             Try<HttpReadResult> result = connection.postRequest(conu.uri, formParams);
             if (result.map(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
                 result = Try.failure(new ConnectionException(
@@ -246,7 +248,7 @@ class ActivitySender {
             if (!note.hasSomeContent() && attachments.isEmpty()) {
                 throw new IllegalArgumentException("Nothing to send");
             }
-            obj.put("attributedTo", connection.getData().getAccountActor().oid);
+            obj.put("attributedTo", getActor().oid);
             obj.put("type", ApObjectType.NOTE.id());
         }
         obj.put("to", activity.getJSONArray("to"));

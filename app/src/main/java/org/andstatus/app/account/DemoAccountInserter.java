@@ -18,6 +18,8 @@ package org.andstatus.app.account;
 
 import android.accounts.Account;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyQuery;
@@ -39,7 +41,6 @@ import org.andstatus.app.util.UrlUtils;
 
 import java.util.List;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.account.AccountName.ORIGIN_SEPARATOR;
@@ -97,10 +98,11 @@ public class DemoAccountInserter {
         }
         assertTrue("No WebfingerId " + actor, actor.isWebFingerIdValid());
         if (actor.origin.getOriginType() == OriginType.ACTIVITYPUB) {
-            actor.endpoints.add(ActorEndpointType.API_INBOX, "https://" + actor.getConnectionHost() +
-                    "/users/" + actor.getUsername() + "/inbox");
-            actor.endpoints.add(ActorEndpointType.API_OUTBOX, "https://" + actor.getConnectionHost() +
-                    "/users/" + actor.getUsername() + "/outbox");
+            String basePath = "https://" + actor.getConnectionHost() + "/users/" + actor.getUsername();
+            actor.endpoints.add(ActorEndpointType.API_INBOX, basePath + "/inbox");
+            actor.endpoints.add(ActorEndpointType.API_OUTBOX, basePath + "/outbox");
+            actor.endpoints.add(ActorEndpointType.API_FOLLOWING, basePath + "/following");
+            actor.endpoints.add(ActorEndpointType.API_FOLLOWERS, basePath + "/followers");
         }
         actor.setCreatedDate(MyLog.uniqueCurrentTimeMS());
         MyAccount ma = addAccountFromActor(actor, accountName);

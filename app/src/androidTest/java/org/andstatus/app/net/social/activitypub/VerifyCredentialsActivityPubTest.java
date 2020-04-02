@@ -66,7 +66,13 @@ public class VerifyCredentialsActivityPubTest {
         assertEquals("Actor in the database for id=" + actorId,
                 actor.oid,
                 MyQuery.idToOid(MyContextHolder.get(), OidEnum.ACTOR_OID, actorId, 0));
+        assertActor(actor);
 
+        Actor stored = Actor.loadFromDatabase(mock.getData().getOrigin().myContext, actorId, () -> Actor.EMPTY, false);
+        assertActor(stored);
+    }
+
+    private void assertActor(Actor actor) {
         assertEquals("Username", "AndStatus", actor.getUsername());
         assertEquals("Name", "AndStatus", actor.getRealName());
         assertEquals("Summary", "AndStatus - Open Source multiple accounts client for multiple social networks for Android<br><a href=\"http://andstatus.org/\">http://andstatus.org/</a>", actor.getSummary());

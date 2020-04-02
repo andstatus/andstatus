@@ -1,5 +1,7 @@
 package org.andstatus.app.actor;
 
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
@@ -9,6 +11,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
 
@@ -46,21 +49,22 @@ public final class Group {
             .stream().findAny().orElse(0L);
     }
 
-    private static long addActorsGroup(MyContext myContext, Actor parentActor, GroupType groupType, String oid) {
+    private static long addActorsGroup(MyContext myContext, Actor parentActor, GroupType groupType, String oidIn) {
         long originId = MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID, parentActor.actorId);
+        Origin origin = myContext.origins().fromId(originId);
         String parentUsername = MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, parentActor.actorId);
         String groupUsername = groupType.name + ".of." + parentUsername + "." + parentActor.actorId;
+        String oid = nonEmptyNonTemp(oidIn)
+                ? oidIn
+                : parentActor.getEndpoint(ActorEndpointType.from(groupType))
+                    .map(Uri::toString)
+                    .orElse(toTempOid(groupUsername));
 
-        Actor group = Actor.fromTwoIds(
-                myContext.origins().fromId(originId),
-                groupType,
-                0,
-                nonEmptyNonTemp(oid) ? oid : toTempOid(groupUsername)
-        );
+        Actor group = Actor.fromTwoIds(origin, groupType, 0, oid);
         group.setUsername(groupUsername);
         group.setParentActorId(myContext, parentActor.actorId);
 
-        MyAccount myAccount = myContext.accounts().getFirstSucceededForOrigin(group.origin);
+        MyAccount myAccount = myContext.accounts().getFirstSucceededForOrigin(origin);
         AActivity activity = myAccount.getActor().update(group);
         new DataUpdater(myAccount).updateObjActor(activity, 0);
         if (group.actorId == 0) {

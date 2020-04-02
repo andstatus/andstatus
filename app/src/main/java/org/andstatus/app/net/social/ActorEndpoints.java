@@ -89,7 +89,9 @@ public class ActorEndpoints {
     }
 
     public Optional<Uri> findFirst(ActorEndpointType type) {
-        return initialize().map.getOrDefault(type, Collections.emptyList()).stream().findFirst();
+        return type == ActorEndpointType.EMPTY
+            ? Optional.empty()
+            : initialize().map.getOrDefault(type, Collections.emptyList()).stream().findFirst();
     }
 
     public ActorEndpoints initialize() {
