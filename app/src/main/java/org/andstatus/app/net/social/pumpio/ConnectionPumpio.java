@@ -21,6 +21,7 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.AccountConnectionData;
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
@@ -38,6 +39,7 @@ import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.ObjectOrId;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UriUtils;
@@ -49,6 +51,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 
 /**
  * Implementation of pump.io API: <a href="https://github.com/e14n/pump.io/blob/master/API.md">https://github.com/e14n/pump.io/blob/master/API.md</a>  
@@ -127,11 +130,19 @@ public class ConnectionPumpio extends Connection {
 
     @NonNull
     protected Actor actorFromJson(JSONObject jso) throws ConnectionException {
-        if (!PObjectType.PERSON.isTypeOf(jso)) {
-            return Actor.EMPTY;
+        GroupType groupType;
+        switch (PObjectType.fromJson(jso)) {
+            case PERSON:
+                groupType = GroupType.NOT_A_GROUP;
+                break;
+            case COLLECTION:
+                groupType = GroupType.GENERIC;
+                break;
+            default:
+                return Actor.EMPTY;
         }
         String oid = jso.optString("id");
-        Actor actor = Actor.fromOid(data.getOrigin(), oid);
+        Actor actor = Actor.fromTwoIds(data.getOrigin(), groupType, 0, oid);
         String username = jso.optString("preferredUsername");
         actor.setUsername(StringUtil.isEmpty(username) ? actorOidToUsername(oid) : username);
         actor.setRealName(jso.optString(NAME_PROPERTY));
@@ -155,6 +166,10 @@ public class ConnectionPumpio extends Connection {
             .add(ActorEndpointType.API_FOLLOWERS, JsonUtils.optStringInside(jso, "followers", "url"))
             .add(ActorEndpointType.API_LIKED, JsonUtils.optStringInside(jso, "favorites", "url"));
         return actor.build();
+    }
+
+    private Actor actorFromOid(String id) {
+        return Actor.fromOid(data.getOrigin(), id);
     }
 
     @Override
@@ -347,33 +362,31 @@ public class ConnectionPumpio extends Connection {
             parseObjectOfActivity(activity, objectOfActivity);
         }
         if (activity.getObjectType().equals(AObjectType.NOTE)) {
-            if (jsoActivity.has("to")) {
-                Audience audience = activity.getNote().audience();
-                audience.setPublic(TriState.FALSE);
-
-                JSONObject to = jsoActivity.optJSONObject("to");
-                if ( to != null) {
-                    audience.add(actorFromJson(to));
-                } else {
-                    JSONArray arrayOfTo = jsoActivity.optJSONArray("to");
-                    if (arrayOfTo != null && arrayOfTo.length() > 0) {
-                        for (int ind = 0; ind < arrayOfTo.length(); ind++) {
-                            Actor recipient = actorFromJson(arrayOfTo.optJSONObject(ind));
-                            audience.add(
-                                    ConnectionPumpio.PUBLIC_COLLECTION_ID.equals(recipient.oid)
-                                            ? Actor.PUBLIC
-                                            : recipient
-                            );
-                        }
-                    }
-                }
-            }
+            setAudience(activity, jsoActivity);
             setVia(activity.getNote(), jsoActivity);
             if(activity.getAuthor().isEmpty()) {
                 activity.setAuthor(activity.getActor());
             }
         }
         return activity;
+    }
+
+    private void setAudience(AActivity activity, JSONObject jso) {
+        Audience audience = activity.getNote().audience();
+        audience.setPublic(TriState.FALSE);
+        ObjectOrId.of(jso, "to")
+                .mapAll(this::actorFromJson, this::actorFromOid)
+                .forEach(o -> addRecipient(o, audience));
+        ObjectOrId.of(jso, "cc")
+                .mapAll(this::actorFromJson, this::actorFromOid)
+                .forEach(o -> addRecipient(o, audience));
+    }
+
+    private void addRecipient(Actor recipient, Audience audience) {
+        audience.add(
+                PUBLIC_COLLECTION_ID.equals(recipient.oid)
+                        ? Actor.PUBLIC
+                        : recipient);
     }
 
     private AActivity parseObjectOfActivity(AActivity activity, JSONObject objectOfActivity) throws ConnectionException {
@@ -485,14 +498,39 @@ public class ConnectionPumpio extends Connection {
     public String actorOidToUsername(String actorId) {
         if (StringUtil.isEmpty(actorId)) return "";
 
-        int indexOfColon = actorId.indexOf(':');
-        String webfingerLike = (indexOfColon >= 0)
-                ? actorId.substring(indexOfColon+1)
-                : actorId;
-        int indexOfAt = webfingerLike.indexOf('@');
-        return (indexOfAt > 0)
-                ? webfingerLike.substring(0, indexOfAt)
-                : webfingerLike;
+        return UriUtils.toOptional(actorId)
+                .map(Uri::getPath)
+                .map(stripBefore("/api"))
+                .map(stripBefore("/"))
+            .orElse(Optional.of(actorId)
+                .map(stripBefore(":"))
+                .map(stripAfter("@"))
+                .orElse("")
+            );
+    }
+
+    @NonNull
+    public static UnaryOperator<String> stripBefore(String prefixEnd) {
+        return value -> {
+            if (StringUtil.isEmpty(value)) return "";
+
+            int index = value.indexOf(prefixEnd);
+            return (index >= 0)
+                    ? value.substring(index + prefixEnd.length())
+                    : value;
+        };
+    }
+
+    @NonNull
+    public static UnaryOperator<String> stripAfter(String suffixStart) {
+        return value -> {
+            if (StringUtil.isEmpty(value)) return "";
+
+            int index = value.indexOf(suffixStart);
+            return (index >= 0)
+                    ? value.substring(0, index)
+                    : value;
+        };
     }
 
     public String actorOidToHost(String actorId) {

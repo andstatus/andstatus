@@ -31,6 +31,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Attachments;
+import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.net.social.Note;
@@ -53,10 +54,12 @@ import java.net.URL;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.UriUtilsTest.assertEndpoint;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -211,6 +214,12 @@ public class ConnectionPumpioTest {
         assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
 
+        Audience audience = note.audience();
+        assertEquals("Is not public " + audience, TriState.TRUE, audience.getPublic());
+        assertThat(audience.getRecipients().toString(),
+                audience.getNonSpecialActors().stream().map(Actor::getUsername).collect(Collectors.toList()),
+                containsInAnyOrder("user/jpope/followers"));
+
         ind++;
         activity = timeline.get(ind);
         assertEquals("Is not FOLLOW " + activity, ActivityType.FOLLOW, activity.type);
@@ -241,7 +250,8 @@ public class ConnectionPumpioTest {
                 TestSuite.utcTime(activity.getUpdatedDate()));
         note = activity.getNote();
         assertEquals("Author " + activity, "acct:lostson@fmrl.me", activity.getAuthor().oid);
-        assertTrue("Does not have a recipient", note.audience().noRecipients());
+        assertTrue("Has a non special recipient " + note.audience().getRecipients(),
+                note.audience().getNonSpecialActors().isEmpty());
         assertEquals("Note oid " + note, "https://fmrl.me/api/note/Dp-njbPQSiOfdclSOuAuFw", note.oid);
         assertEquals("Url of the note " + note, "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", note.url);
         assertThat("Note body " + note, note.getContent(), startsWith("My new <b>Firefox</b> OS phone arrived today"));

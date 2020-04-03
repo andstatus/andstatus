@@ -22,14 +22,14 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.service.ConnectionState;
 import org.json.JSONObject;
 
 import java.net.URL;
 import java.util.Optional;
 import java.util.function.Function;
-
-import androidx.annotation.NonNull;
 
 public class UriUtils {
 
@@ -80,9 +80,12 @@ public class UriUtils {
 
     @NonNull
     public static Optional<Uri> toOptional(String uriString) {
-        return StringUtil.isEmpty(uriString)
+        if (StringUtil.isEmpty(uriString)) return Optional.empty();
+
+        Uri uri = fromString(uriString);
+        return uri == Uri.EMPTY
                 ? Optional.empty()
-                : Optional.of(Uri.parse(uriString));
+                : Optional.of(uri);
     }
 
     @NonNull
