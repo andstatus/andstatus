@@ -190,20 +190,21 @@ public abstract class Connection implements IsEmpty {
 
     /**
      * Full path of the API. Logged
+     * Use {@link #tryApiPath(Actor, ApiRoutineEnum)}
      * @return URL or throws a ConnectionException in case the API routine is not supported
      */
     @Deprecated
     @NonNull
     public final Uri getApiPath(ApiRoutineEnum routine) throws ConnectionException {
-        return tryApiPath(routine).getOrElseThrow(ConnectionException::of);
+        return tryApiPath(data.getAccountActor(), routine).getOrElseThrow(ConnectionException::of);
     }
 
     /**
      * Full path of the API. Logged
      */
     @NonNull
-    public final Try<Uri> tryApiPath(ApiRoutineEnum routine) {
-        return TryUtils.fromOptional(getApiUri(routine), () ->
+    public final Try<Uri> tryApiPath(Actor endpointActor, ApiRoutineEnum routine) {
+        return TryUtils.fromOptional(getApiUri(endpointActor, routine), () ->
                 new ConnectionException(StatusCode.UNSUPPORTED_API, this.getClass().getSimpleName() +
                     ": " + ("The API is not supported: '" + routine + "'")))
             .onSuccess(uri -> MyLog.v(this.getClass().getSimpleName(), () -> "API '" + routine + "' URI=" + uri));
@@ -215,14 +216,14 @@ public abstract class Connection implements IsEmpty {
      * @return true if supported
      */
     public boolean hasApiEndpoint(ApiRoutineEnum routine) {
-        return getApiUri(routine).isPresent();
+        return getApiUri(data.getAccountActor(), routine).isPresent();
     }
 
-    private Optional<Uri> getApiUri(ApiRoutineEnum routine) {
+    private Optional<Uri> getApiUri(Actor endpointActor, ApiRoutineEnum routine) {
         if (routine == null || routine == ApiRoutineEnum.DUMMY_API) {
             return Optional.empty();
         }
-        Optional<Uri> fromActor = data.getAccountActor().getEndpoint(ActorEndpointType.from(routine));
+        Optional<Uri> fromActor = endpointActor.getEndpoint(ActorEndpointType.from(routine));
         return fromActor.isPresent()
                 ? fromActor
                 : Optional.of(getApiPathFromOrigin(routine)).flatMap(this::pathToUri);

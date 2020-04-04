@@ -268,6 +268,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="menu_item_destroy_reblog_pumpio">Undo share</string>
   <string name="menu_item_destroy_reblog_twitter">Undo retweet</string>
   <string name="menu_item_destroy_status">Remove note</string>
+  <string name="menu_item_delete_note_from_local_cache">Delete note from local cache</string>
   <string name="menu_item_edit">Edit</string>
   <string name="menu_item_favorite">Favorite</string>
   <string name="menu_item_follow_user">Follow \"%1s\"</string>

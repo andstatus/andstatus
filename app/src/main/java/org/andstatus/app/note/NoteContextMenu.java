@@ -25,6 +25,8 @@ import android.view.SubMenu;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
@@ -46,8 +48,6 @@ import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.view.MyContextMenu;
 
 import java.util.function.Consumer;
-
-import androidx.annotation.NonNull;
 
 import static android.content.Context.ACCESSIBILITY_SERVICE;
 
@@ -224,18 +224,6 @@ public class NoteContextMenu extends MyContextMenu {
                 NoteContextMenuItem.OPEN_NOTE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink);
             }
 
-            if (accountToNote.isAuthorSucceededMyAccount()) {
-                if (noteForAnyAccount.isPresentAtServer()) {
-                    if (!accountToNote.reblogged && getActingAccount().getConnection()
-                            .hasApiEndpoint(Connection.ApiRoutineEnum.DELETE_NOTE)) {
-                        NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++,
-                                R.string.menu_item_destroy_status);
-                    }
-                } else {
-                    NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++, R.string.button_discard);
-                }
-            }
-
             if (noteForAnyAccount.isLoaded()) {
                 switch (getMyContext().accounts().succeededForSameOrigin(noteForAnyAccount.origin).size()) {
                     case 0:
@@ -256,6 +244,19 @@ public class NoteContextMenu extends MyContextMenu {
             }
             if (noteForAnyAccount.isPresentAtServer()) {
                 NoteContextMenuItem.GET_NOTE.addTo(menu, order, R.string.get_message);
+            }
+            if (accountToNote.isAuthorSucceededMyAccount()) {
+                if (noteForAnyAccount.isPresentAtServer()) {
+                    if (!accountToNote.reblogged && getActingAccount().getConnection()
+                            .hasApiEndpoint(Connection.ApiRoutineEnum.DELETE_NOTE)) {
+                        NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++,
+                                R.string.menu_item_destroy_status);
+                    }
+                } else {
+                    NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++, R.string.button_discard);
+                }
+            } else {
+                NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++, R.string.menu_item_delete_note_from_local_cache);
             }
         } catch (Exception e) {
             MyLog.e(this, method, e);

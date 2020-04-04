@@ -16,6 +16,9 @@
 
 package org.andstatus.app.service;
 
+import androidx.annotation.NonNull;
+import androidx.core.util.Pair;
+
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadData;
@@ -45,9 +48,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import androidx.annotation.NonNull;
-import androidx.core.util.Pair;
 
 class CommandExecutorOther extends CommandExecutorStrategy{
     private static final int ACTORS_LIMIT = 400;
@@ -298,11 +298,27 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
     private void deleteNote(long noteId) {
         final String method = "deleteNote";
+        if (noteId == 0) {
+            MyLog.d(this, method + " skipped as noteId == 0");
+            return;
+        }
+        boolean ok = true;
+        Actor author = Actor.load(execContext.getMyContext(), MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, noteId));
+        if (execContext.getMyAccount().getActor().isSame(author)) {
+            ok = deleteNoteAtServer(noteId, method);
+        }
+        if (ok) {
+            MyProvider.deleteNoteAndItsActivities(execContext.getMyContext(), noteId);
+        }
+        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
+    }
+
+    private boolean deleteNoteAtServer(long noteId, String method) {
         boolean ok = false;
         String oid = getNoteOid(method, noteId, false);
         DownloadStatus statusStored = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
         try {
-            if (noteId == 0 || StringUtil.isEmpty(oid) || statusStored != DownloadStatus.LOADED) {
+            if (StringUtil.isEmpty(oid) || statusStored != DownloadStatus.LOADED) {
                 ok = true;
                 MyLog.i(this, method + "; OID='" + oid + "', status='" + statusStored + "' for noteId=" + noteId);
             } else {
@@ -318,10 +334,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 logConnectionException(e, method + "; " + oid);
             }
         }
-        if (ok && noteId != 0) {
-            MyProvider.deleteNoteAndItsActivities(execContext.getMyContext(), noteId);
-        }
-        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
+        return ok;
     }
 
     private void undoAnnounce(long noteId) {

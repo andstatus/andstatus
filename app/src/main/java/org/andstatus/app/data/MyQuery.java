@@ -177,6 +177,8 @@ public class MyQuery {
      */
     @NonNull
     public static String idToOid(MyContext myContext, OidEnum oe, long entityId, long rebloggerActorId) {
+        if (entityId == 0) return "";
+
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.databaseIsNull(() -> "idToOid, oe=" + oe + " id=" + entityId);
