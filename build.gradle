@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.6.1'
+        classpath 'com.android.tools.build:gradle:3.6.2'
         // See https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.6.1"
 
@@ -35,11 +35,11 @@ buildscript {
         annotationVersion = '1.1.0'
         appCompatVersion = '1.1.0'        // https://mvnrepository.com/artifact/androidx.appcompat/appcompat
         commonsCodecVersion = '20041127.091804'
-        commonsLangVersion = '3.9'      // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+        commonsLangVersion = '3.10'      // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
         documentfileVersion = '1.0.1'
         espressoCoreVersion = '3.1.1'
         hamcrestVersion = '2.2'         // http://hamcrest.org/JavaHamcrest/distributables#using-hamcrest-in-a-gradle-project
-        httpMimeVersion = '4.5.11'
+        httpMimeVersion = '4.5.12'
         httpclientVersion = '4.5.8'     // https://github.com/smarek/httpclient-android
         jcipAnnotationsVersion = '1.0-1'  // http://stephenc.github.io/jcip-annotations/dependency-info.html
         junitVersion = '4.13'
