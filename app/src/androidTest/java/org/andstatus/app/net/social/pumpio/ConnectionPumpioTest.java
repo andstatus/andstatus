@@ -18,7 +18,9 @@ package org.andstatus.app.net.social.pumpio;
 
 import android.net.Uri;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
@@ -37,6 +39,10 @@ import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.Origin;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.CommandExecutionContext;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
@@ -57,11 +63,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
+import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.andstatus.app.util.UriUtilsTest.assertEndpoint;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -177,51 +188,10 @@ public class ConnectionPumpioTest {
 
         int ind = 0;
         assertEquals("Posting image", AObjectType.NOTE, timeline.get(ind).getObjectType());
-        AActivity activity = timeline.get(ind);
-        Note note = activity.getNote();
-        assertEquals("Note name " + note, "Wheel Stand", note.getName());
-        assertThat("Note body " + note, note.getContent(), startsWith("Wow! Fantastic wheel stand at #DragWeek2013 today."));
-        assertEquals("Note updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
-                TestSuite.utcTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 38),
-                TestSuite.utcTime(activity.getUpdatedDate()));
-        Actor actor = activity.getActor();
-        assertEquals("Sender's oid", "acct:jpope@io.jpope.org", actor.oid);
-        assertEquals("Sender's username", "jpope", actor.getUsername());
-        assertEquals("Sender's unique name in Origin", "jpope@io.jpope.org", actor.getUniqueName());
-        assertEquals("Sender's Display name", "jpope", actor.getRealName());
-        assertEquals("Sender's profile image URL", "https://io.jpope.org/uploads/jpope/2013/7/8/LPyLPw_thumb.png",
-                actor.getAvatarUrl());
-        assertEquals("Sender's profile URL", "https://io.jpope.org/jpope", actor.getProfileUrl());
-        assertEquals("Sender's Homepage", "https://io.jpope.org/jpope", actor.getHomepage());
-        assertEquals("Sender's WebFinger ID", "jpope@io.jpope.org", actor.getWebFingerId());
-        assertEquals("Description", "Does the Pope shit in the woods?", actor.getSummary());
-        assertEquals("Notes count", 0, actor.notesCount);
-        assertEquals("Favorites count", 0, actor.favoritesCount);
-        assertEquals("Following (friends) count", 0, actor.followingCount);
-        assertEquals("Followers count", 0, actor.followersCount);
-        assertEquals("Location", "/dev/null", actor.location);
-        assertEquals("Created at", 0, actor.getCreatedDate());
-        assertEquals("Updated at", TestSuite.utcTime(2013, Calendar.SEPTEMBER, 12, 17, 10, 44),
-                TestSuite.utcTime(actor.getUpdatedDate()));
-
-        assertEndpoint(ActorEndpointType.API_INBOX, "https://io.jpope.org/api/user/jpope/inbox", actor);
-        assertEndpoint(ActorEndpointType.API_PROFILE, "https://io.jpope.org/api/user/jpope/profile", actor);
-        assertEndpoint(ActorEndpointType.API_FOLLOWING, "https://io.jpope.org/api/user/jpope/following", actor);
-        assertEndpoint(ActorEndpointType.API_FOLLOWERS, "https://io.jpope.org/api/user/jpope/followers", actor);
-        assertEndpoint(ActorEndpointType.API_LIKED, "https://io.jpope.org/api/user/jpope/favorites", actor);
-
-        assertEquals("Actor is an Author", actor, activity.getAuthor());
-        assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
-        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
-
-        Audience audience = note.audience();
-        assertEquals("Is not public " + audience, TriState.TRUE, audience.getPublic());
-        assertThat(audience.getRecipients().toString(),
-                audience.getNonSpecialActors().stream().map(Actor::getUsername).collect(Collectors.toList()),
-                containsInAnyOrder("user/jpope/followers"));
+        assertActivity0FromTimeline(timeline.get(ind));
 
         ind++;
-        activity = timeline.get(ind);
+        AActivity activity = timeline.get(ind);
         assertEquals("Is not FOLLOW " + activity, ActivityType.FOLLOW, activity.type);
         assertEquals("Actor", "acct:jpope@io.jpope.org", activity.getActor().oid);
         assertEquals("Actor is not my friend", TriState.TRUE, activity.getActor().isMyFriend);
@@ -248,7 +218,7 @@ public class ConnectionPumpioTest {
         assertEquals("Activity updated " + activity,
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 20, 22, 20, 25),
                 TestSuite.utcTime(activity.getUpdatedDate()));
-        note = activity.getNote();
+        Note note = activity.getNote();
         assertEquals("Author " + activity, "acct:lostson@fmrl.me", activity.getAuthor().oid);
         assertTrue("Has a non special recipient " + note.audience().getRecipients(),
                 note.audience().getNonSpecialActors().isEmpty());
@@ -272,6 +242,71 @@ public class ConnectionPumpioTest {
         assertEquals("Is not a reply to this actor " + activity, "jankusanagi@identi.ca",
                 note.getInReplyTo().getAuthor().getUniqueName());
         assertEquals(TriState.UNKNOWN, note.getInReplyTo().isSubscribedByMe());
+    }
+
+    private void assertActivity0FromTimeline(AActivity activity) {
+        Note note = activity.getNote();
+        assertEquals("Note name " + note, "Wheel Stand", note.getName());
+        assertThat("Note body " + note, note.getContent(), startsWith("Wow! Fantastic wheel stand at #DragWeek2013 today."));
+        assertEquals("Note updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
+                TestSuite.utcTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 38),
+                TestSuite.utcTime(activity.getUpdatedDate()));
+        Actor actor = activity.getActor();
+        assertJpopeActor(actor, false);
+
+        assertEquals("Actor is an Author", actor, activity.getAuthor());
+        assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
+        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
+
+        Audience audience = note.audience();
+        assertEquals("Is not Public " + audience, TriState.TRUE, audience.getPublic());
+        assertFalse("Is to Followers. We shouldn't know this yet?! " + audience, audience.isFollowers());
+        assertThat(audience.getRecipients().toString(),
+                audience.getNonSpecialActors().stream().map(Actor::getUsername).collect(Collectors.toList()),
+                containsInAnyOrder("user/jpope/followers"));
+
+        CommandExecutionContext executionContext = new CommandExecutionContext(
+                MyContextHolder.get(),
+                CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, mock.getData().getMyAccount(), TimelineType.HOME));
+        new DataUpdater(executionContext).onActivity(activity);
+
+        Actor actorStored = Actor.loadFromDatabase(mock.getData().getOrigin().myContext, actor.actorId,
+                () -> Actor.EMPTY, false);
+        assertJpopeActor(actorStored, true);
+
+        Note noteStored = Note.loadContentById(mock.getData().getOrigin().myContext, note.noteId);
+
+        Audience audienceStored = noteStored.audience();
+        assertEquals("Is not Public " + audienceStored, TriState.TRUE, audienceStored.getPublic());
+        assertTrue("Is not to Followers " + audienceStored, audienceStored.isFollowers());
+        assertThat(audienceStored.getRecipients().toString(), audienceStored.getNonSpecialActors(), is(empty()));
+    }
+
+    private void assertJpopeActor(Actor actor, boolean stored) {
+        assertEquals("Sender's oid", "acct:jpope@io.jpope.org", actor.oid);
+        assertEquals("Sender's username", "jpope", actor.getUsername());
+        assertEquals("Sender's unique name in Origin", "jpope@io.jpope.org", actor.getUniqueName());
+        assertEquals("Sender's Display name", "jpope", actor.getRealName());
+        assertEquals("Sender's profile image URL", "https://io.jpope.org/uploads/jpope/2013/7/8/LPyLPw_thumb.png",
+                actor.getAvatarUrl());
+        assertEquals("Sender's profile URL", "https://io.jpope.org/jpope", actor.getProfileUrl());
+        assertEquals("Sender's Homepage", "https://io.jpope.org/jpope", actor.getHomepage());
+        assertEquals("Sender's WebFinger ID", "jpope@io.jpope.org", actor.getWebFingerId());
+        assertEquals("Description", "Does the Pope shit in the woods?", actor.getSummary());
+        assertEquals("Notes count", 0, actor.notesCount);
+        assertEquals("Favorites count", 0, actor.favoritesCount);
+        assertEquals("Following (friends) count", 0, actor.followingCount);
+        assertEquals("Followers count", 0, actor.followersCount);
+        assertEquals("Location", "/dev/null", actor.location);
+        assertEquals("Created at", stored ? SOME_TIME_AGO : DATETIME_MILLIS_NEVER, actor.getCreatedDate());
+        assertEquals("Updated at", TestSuite.utcTime(2013, Calendar.SEPTEMBER, 12, 17, 10, 44),
+                TestSuite.utcTime(actor.getUpdatedDate()));
+
+        assertEndpoint(ActorEndpointType.API_INBOX, "https://io.jpope.org/api/user/jpope/inbox", actor);
+        assertEndpoint(ActorEndpointType.API_PROFILE, "https://io.jpope.org/api/user/jpope/profile", actor);
+        assertEndpoint(ActorEndpointType.API_FOLLOWING, "https://io.jpope.org/api/user/jpope/following", actor);
+        assertEndpoint(ActorEndpointType.API_FOLLOWERS, "https://io.jpope.org/api/user/jpope/followers", actor);
+        assertEndpoint(ActorEndpointType.API_LIKED, "https://io.jpope.org/api/user/jpope/favorites", actor);
     }
 
     @Test

@@ -275,7 +275,7 @@ public class ConnectionActivityPubTest {
                 CommandData.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT));
         new DataUpdater(executionContext).onActivity(activity);
 
-        Audience audienceStored = Audience.fromNoteId(mock.getData().getOrigin(), note.noteId);
+        Audience audienceStored = Audience.fromNoteId(mock.getData().getOrigin(), note.noteId, note.getPublic());
         oids.forEach(oid -> {
             assertTrue("Audience should contain " + oid + "\n " + activity + "\n " + audienceStored, audienceStored.containsOid(oid));
         });

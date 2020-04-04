@@ -141,15 +141,38 @@ public class Audience {
         return builder.toString();
     }
 
-    public List<Actor> getActorsToSave(Actor noteAuthor) {
+    public List<Actor> getActorsToSave(Actor actorOnAudience) {
         if (followers == Actor.FOLLOWERS) {
-            followers = Group.getActorsGroup(noteAuthor, GroupType.FOLLOWERS, "");
+            followers = Group.getActorsGroup(actorOnAudience, GroupType.FOLLOWERS, "");
         }
-        List<Actor> toSave = new ArrayList<>(actors);
+        List<Actor> toSave = actors.stream()
+                .map(actor -> lookupInActorOnAudience(actorOnAudience, actor))
+                .collect(Collectors.toList());
         if (!followers.isConstant()) {
             toSave.add(0, followers);
         }
         return toSave;
+    }
+
+    private static Actor lookupInActorOnAudience(Actor actorOnAudience, Actor actor) {
+        if (actor.isEmpty()) return  Actor.EMPTY;
+        if (actorOnAudience.isSame(actor)) return actorOnAudience;
+
+        Optional<Actor> optFollowers = actorOnAudience.getEndpoint(ActorEndpointType.API_FOLLOWERS)
+            .flatMap(uri -> actor.oid.equals(uri.toString())
+                ? Optional.of(Group.getActorsGroup(actorOnAudience, GroupType.FOLLOWERS, actor.oid))
+                : Optional.empty()
+            );
+        if (optFollowers.isPresent()) return optFollowers.get();
+
+        Optional<Actor> optFriends = actorOnAudience.getEndpoint(ActorEndpointType.API_FOLLOWING)
+                .flatMap(uri -> actor.oid.equals(uri.toString())
+                        ? Optional.of(Group.getActorsGroup(actorOnAudience, GroupType.FRIENDS, actor.oid))
+                        : Optional.empty()
+                );
+        if (optFriends.isPresent()) return optFriends.get();
+
+        return actor;
     }
 
     public boolean noRecipients() {
@@ -223,14 +246,17 @@ public class Audience {
         return myContext.users().containsMe(actors);
     }
 
-    public Try<Actor> findSame(Actor actor) {
-        if (actor.isEmpty()) return TryUtils.notFound();
-        if (actor.isSame(followers)) return Try.success(followers);
+    public Try<Actor> findSame(Actor other) {
+        if (other.isEmpty()) return TryUtils.notFound();
+        if (other.isSame(followers)) return Try.success(followers);
+        if (other.isPublic()) return getPublic().isTrue ? Try.success(Actor.PUBLIC) : TryUtils.notFound();
 
-        if (actor.groupType.isGroup.isTrue && actor.groupType.parentActorRequired()) {
-            return TryUtils.fromOptional(actors.stream().filter(a -> a.groupType == actor.groupType).findAny());
+        List<Actor> nonSpecialActors = getNonSpecialActors();
+        if (other.groupType.isGroup.isTrue && other.groupType.parentActorRequired()) {
+            return TryUtils.fromOptional(nonSpecialActors.stream()
+                    .filter(a -> a.groupType == other.groupType).findAny());
         }
-        return CollectionsUtil.findAny(getNonSpecialActors(), actor::isSame);
+        return CollectionsUtil.findAny(nonSpecialActors, other::isSame);
     }
 
     public boolean containsOid(String oid) {
@@ -239,30 +265,21 @@ public class Audience {
     }
 
     /** TODO: Audience should belong to an Activity, not to a Note.
-     *        As it currently belongs to a Note, we need to use noteAuthor instead of activityActor here.
+     *        As audience currently belongs to a Note, we actually use noteAuthor instead of activityActor here.
      * @return true if data changed */
-    public boolean save(Actor noteAuthor, long noteId, TriState isPublic, boolean countOnly) {
-        if (!noteAuthor.origin.isValid() || noteId == 0 || noteAuthor.actorId == 0 || !origin.myContext.isReady()) {
+    public boolean save(Actor actorOnAudience, long noteId, TriState isPublic, boolean countOnly) {
+        if (!actorOnAudience.origin.isValid() || noteId == 0 || actorOnAudience.actorId == 0 || !origin.myContext.isReady()) {
             return false;
         }
-        Audience prevAudience = Audience.loadIds(noteAuthor.origin, noteId, Optional.of(isPublic));
-        List<Actor> actorsToSave = getActorsToSave(noteAuthor);
+        Audience prevAudience = Audience.loadIds(actorOnAudience.origin, noteId, Optional.of(isPublic));
+        List<Actor> actorsToSave = getActorsToSave(actorOnAudience);
         Set<Actor> toDelete = new HashSet<>();
         Set<Actor> toAdd = new HashSet<>();
 
-        for (Actor actor : prevAudience.getActorsToSave(noteAuthor)) {
-            if (actor.isPublic()) continue;
-
-            if (actor.actorId == followers.actorId) {
-                continue;
-            }
-
+        for (Actor actor : prevAudience.getActorsToSave(actorOnAudience)) {
             findSame(actor).onFailure(e -> toDelete.add(actor));
         }
-
         for (Actor actor : actorsToSave) {
-            if (actor.isPublic()) continue;
-
             if (actor.actorId == 0) {
                 MyLog.w(this, "No actorId for " + actor);
                 continue;
