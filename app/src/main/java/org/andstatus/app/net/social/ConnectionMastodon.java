@@ -212,19 +212,19 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @NonNull
     @Override
-    public List<AActivity> searchNotes(TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String searchQuery)
+    public InputTimelinePage searchNotes(boolean syncYounger, TimelinePosition youngestPosition,
+                                         TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
         if (StringUtil.isEmpty(tag)) {
-            return new ArrayList<>();
+            return InputTimelinePage.EMPTY;
         }
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.TAG_TIMELINE;
         Uri.Builder builder = getApiPathWithTag(apiRoutine, tag).buildUpon();
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
         JSONArray jArr = http.getRequestAsArray(builder.build());
-        return jArrToTimeline("", jArr, apiRoutine, builder.build());
+        return InputTimelinePage.of(jArrToTimeline("", jArr, apiRoutine, builder.build()));
     }
 
     @NonNull

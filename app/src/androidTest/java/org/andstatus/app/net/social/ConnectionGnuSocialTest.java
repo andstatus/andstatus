@@ -19,6 +19,8 @@ package org.andstatus.app.net.social;
 import android.content.Context;
 import android.text.Spannable;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
@@ -41,8 +43,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
-
-import androidx.annotation.NonNull;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
@@ -73,8 +73,8 @@ public class ConnectionGnuSocialTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.quitter_home);
 
         Actor accountActor = demoData.getAccountActorByOid(demoData.gnusocialTestAccountActorOid);
-        List<AActivity> timeline = mock.connection.getTimeline(ApiRoutineEnum.PUBLIC_TIMELINE,
-                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActor);
+        InputTimelinePage timeline = mock.connection.getTimeline(true, ApiRoutineEnum.PUBLIC_TIMELINE,
+                TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor);
         assertNotNull("timeline returned", timeline);
         int size = 3;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -158,8 +158,8 @@ public class ConnectionGnuSocialTest {
     @Test
     public void testSearch() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline);
-        
-        List<AActivity> timeline = mock.connection.searchNotes(new TimelinePosition(""), TimelinePosition.EMPTY, 20,
+
+        InputTimelinePage timeline = mock.connection.searchNotes(true, TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20,
                 demoData.globalPublicNoteText);
         assertNotNull("timeline returned", timeline);
         int size = 4;
@@ -259,8 +259,8 @@ public class ConnectionGnuSocialTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.loadaverage_favoriting_activity);
 
         Actor accountActor = demoData.getAccountActorByOid(demoData.gnusocialTestAccountActorOid);
-        List<AActivity> timeline = mock.connection.getTimeline(ApiRoutineEnum.SEARCH_NOTES,
-                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActor);
+        InputTimelinePage timeline = mock.connection.getTimeline(true, ApiRoutineEnum.SEARCH_NOTES,
+                TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor);
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 2, timeline.size());
 

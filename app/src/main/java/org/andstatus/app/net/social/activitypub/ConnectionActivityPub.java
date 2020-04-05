@@ -33,6 +33,7 @@ import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.InputTimelinePage;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.JsonUtils;
@@ -46,7 +47,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -197,7 +197,8 @@ public class ConnectionActivityPub extends Connection {
         Uri uri = UriUtils.fromString(conversationOid);
         if (UriUtils.isDownloadable(uri)) {
             return getActivities(ApiRoutineEnum.GET_CONVERSATION, ConnectionAndUrl
-                    .fromUriActor(uri, this, ApiRoutineEnum.GET_CONVERSATION, data.getAccountActor()));
+                    .fromUriActor(uri, this, ApiRoutineEnum.GET_CONVERSATION, data.getAccountActor()))
+                    .activities;
         } else {
             return super.getConversation(conversationOid);
         }
@@ -205,29 +206,23 @@ public class ConnectionActivityPub extends Connection {
 
     @NonNull
     @Override
-    public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, Actor actor)
+    public InputTimelinePage getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                         TimelinePosition oldestPosition, int limit, Actor actor)
             throws ConnectionException {
+        TimelinePosition requestedPosition = syncYounger ? youngestPosition : oldestPosition;
         ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, apiRoutine, actor);
-        Uri.Builder builder = conu.uri.buildUpon();
         // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
-//        if (youngestPosition.nonEmpty()) {
-//            // The "since" should point to the "Activity" on the timeline, not to the note
-//            // Otherwise we will always get "not found"
-//            builder.appendQueryParameter("min_id", youngestPosition.getPosition());
-//        } else if (oldestPosition.nonEmpty()) {
-//            builder.appendQueryParameter("max_id", oldestPosition.getPosition());
-//        }
-//        builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        return getActivities(apiRoutine, conu.withUri(builder.build()));
+        Uri uri =  UriUtils.toDownloadableOptional(requestedPosition.getPosition()).orElse(conu.uri);
+        return getActivities(apiRoutine, conu.withUri(uri));
     }
 
-    private List<AActivity> getActivities(ApiRoutineEnum apiRoutine, ConnectionAndUrl conu) throws ConnectionException {
+    private InputTimelinePage getActivities(ApiRoutineEnum apiRoutine, ConnectionAndUrl conu) throws ConnectionException {
         JSONObject root = conu.httpConnection.getRequest(conu.uri);
-        List<AActivity> activities = AJsonCollection.of(root)
-                .mapObjects(item -> activityFromJson(ObjectOrId.of(item)));
+        AJsonCollection jsonCollection = AJsonCollection.of(root);
+        List<AActivity> activities = jsonCollection.mapObjects(item ->
+                activityFromJson(ObjectOrId.of(item)).setTimelinePosition(jsonCollection.getId()));
         MyLog.d(TAG, "getTimeline " + apiRoutine + " '" + conu.uri + "' " + activities.size() + " activities");
-        return activities;
+        return InputTimelinePage.of(jsonCollection, activities);
     }
 
     @Override
@@ -261,7 +256,7 @@ public class ConnectionActivityPub extends Connection {
     @NonNull
     AActivity activityFromOid(String oid) {
         if (StringUtil.isEmptyOrTemp(oid)) return AActivity.EMPTY;
-        return AActivity.from(data.getAccountActor(), ActivityType.UPDATE).setTimelinePosition(oid);
+        return AActivity.from(data.getAccountActor(), ActivityType.UPDATE);
     }
 
     @NonNull
@@ -281,7 +276,6 @@ public class ConnectionActivityPub extends Connection {
             MyLog.d(this, "Activity has no id:" + jsoActivity.toString(2));
             return AActivity.EMPTY;
         }
-        activity.setTimelinePosition(oid);
         activity.setUpdatedDate(updatedOrCreatedDate(jsoActivity));
 
         actorFromProperty(jsoActivity, "actor").onSuccess(activity::setActor);
@@ -444,14 +438,6 @@ public class ConnectionActivityPub extends Connection {
     @NonNull
     private static Attachment attachmentFromUrlObject(JSONObject jso) {
         return Attachment.fromUriAndMimeType(jso.optString("href"), jso.optString("mediaType"));
-    }
-
-    @NonNull
-    @Override
-    public List<AActivity> searchNotes(TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String searchQuery)
-            throws ConnectionException {
-        return new ArrayList<>();
     }
 
     @Override

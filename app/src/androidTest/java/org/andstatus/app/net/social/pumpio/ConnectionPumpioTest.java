@@ -36,6 +36,7 @@ import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.ConnectionMock;
+import org.andstatus.app.net.social.InputTimelinePage;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.Origin;
@@ -180,8 +181,8 @@ public class ConnectionPumpioTest {
         final String webFingerId = "t131t@" + originUrl.getHost();
         Actor actor1 = Actor.fromOid(connection.getData().getOrigin(),"acct:" + webFingerId)
                 .setWebFingerId(webFingerId);
-        List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
-                new TimelinePosition(sinceId), TimelinePosition.EMPTY, 20, actor1);
+        InputTimelinePage timeline = connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
+                TimelinePosition.of(sinceId), TimelinePosition.EMPTY, 20, actor1);
         assertNotNull("timeline returned", timeline);
         int size = 6;
         assertEquals("Number of items in the Timeline", size, timeline.size());

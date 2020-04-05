@@ -375,17 +375,18 @@ public abstract class Connection implements IsEmpty {
 
     /**
      * Universal method for several Timeline Types...
+     * @param syncYounger
      * @param actor For the {@link ApiRoutineEnum#ACTOR_TIMELINE}, null for the other timelines
      */
     @NonNull
-    public abstract List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                                TimelinePosition oldestPosition, int limit, Actor actor)
+    public abstract InputTimelinePage getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                                  TimelinePosition oldestPosition, int limit, Actor actor)
             throws ConnectionException;
 
     @NonNull
-    public List<AActivity> searchNotes(TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String searchQuery) throws ConnectionException {
-        return new ArrayList<>();
+    public InputTimelinePage searchNotes(boolean syncYounger, TimelinePosition youngestPosition,
+                                         TimelinePosition oldestPosition, int limit, String searchQuery) throws ConnectionException {
+        return InputTimelinePage.EMPTY;
     }
 
     @NonNull

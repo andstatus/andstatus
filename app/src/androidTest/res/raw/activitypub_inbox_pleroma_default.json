@@ -1,0 +1,12 @@
+{
+  "@context": [
+    "https:\/\/www.w3.org\/ns\/activitystreams",
+    "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld",
+    {
+      "@language": "und"
+    }
+  ],
+  "first": "https:\/\/pleroma.site\/users\/AndStatus\/inbox?page=true",
+  "id": "https:\/\/pleroma.site\/users\/AndStatus\/inbox",
+  "type": "OrderedCollection"
+}

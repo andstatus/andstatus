@@ -16,8 +16,12 @@
 
 package org.andstatus.app.net.social;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.ObjectOrId;
+import org.andstatus.app.util.StringUtil;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -26,7 +30,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.CheckedFunction;
 
 /** https://www.w3.org/TR/activitystreams-core/#collections */
@@ -41,8 +44,10 @@ public class AJsonCollection implements IsEmpty {
         PAGE,
         ORDERED_PAGE,
     }
-    private static AJsonCollection EMPTY = AJsonCollection.of(null);
+    public final static AJsonCollection EMPTY = AJsonCollection.of("");
 
+    public final ObjectOrId objectOrId;
+    public final Optional<String> id;
     public final Type type;
     final ObjectOrId items;
     final AJsonCollection firstPage;
@@ -60,22 +65,42 @@ public class AJsonCollection implements IsEmpty {
         return EMPTY;
     }
 
+    public static AJsonCollection of(String strRoot) {
+        JSONObject parentObject;
+        try {
+            if (StringUtil.isEmpty(strRoot)) {
+                parentObject = new JSONObject();
+            } else {
+                parentObject = new JSONObject(strRoot);
+            }
+        } catch (JSONException e) {
+            parentObject = new JSONObject();
+        }
+
+        return AJsonCollection.of(parentObject);
+    }
+
     public static AJsonCollection of(JSONObject parentObject) {
-        return new AJsonCollection(Optional.ofNullable(parentObject));
+        return of(parentObject, "");
     }
 
     public static AJsonCollection of(JSONObject parentObject, String propertyName) {
-        return new AJsonCollection(Optional.ofNullable(parentObject.optJSONObject(propertyName)));
+        return new AJsonCollection(parentObject, propertyName);
     }
 
-    private AJsonCollection(Optional<JSONObject> parentObject) {
-        type = parentObject.map(AJsonCollection::calcType).orElse(Type.EMPTY);
-        items = parentObject.map(p -> calcItems(p, type)).orElse(ObjectOrId.empty());
-        firstPage = parentObject.map(p -> AJsonCollection.of(p, "first")).orElse(AJsonCollection.empty());
-        prevPage = parentObject.map(p -> AJsonCollection.of(p, "prev")).orElse(AJsonCollection.empty());
-        currentPage = parentObject.map(p -> AJsonCollection.of(p, "current")).orElse(AJsonCollection.empty());
-        nextPage = parentObject.map(p -> AJsonCollection.of(p, "next")).orElse(AJsonCollection.empty());
-        lastPage = parentObject.map(p -> AJsonCollection.of(p, "last")).orElse(AJsonCollection.empty());
+    private AJsonCollection(JSONObject parentObjectIn, String propertyName) {
+        objectOrId = StringUtil.isEmpty(propertyName)
+                ? ObjectOrId.of(parentObjectIn)
+                : ObjectOrId.of(parentObjectIn, propertyName);
+        Optional<JSONObject> parent = objectOrId.object;
+        id = objectOrId.id.isPresent() ? objectOrId.id : parent.flatMap(p -> ObjectOrId.of(p, "id").id);
+        type = parent.map(AJsonCollection::calcType).orElse(Type.EMPTY);
+        items = parent.map(p -> calcItems(p, type)).orElse(ObjectOrId.empty());
+        firstPage = parent.map(p -> AJsonCollection.of(p, "first")).orElse(AJsonCollection.empty());
+        prevPage = parent.map(p -> AJsonCollection.of(p, "prev")).orElse(AJsonCollection.empty());
+        currentPage = parent.map(p -> AJsonCollection.of(p, "current")).orElse(AJsonCollection.empty());
+        nextPage = parent.map(p -> AJsonCollection.of(p, "next")).orElse(AJsonCollection.empty());
+        lastPage = parent.map(p -> AJsonCollection.of(p, "last")).orElse(AJsonCollection.empty());
     }
 
     private static Type calcType(@NonNull JSONObject jso) {
@@ -130,5 +155,15 @@ public class AJsonCollection implements IsEmpty {
         list.addAll(nextPage.mapObjects(fromObject));
         list.addAll(lastPage.mapObjects(fromObject));
         return list.stream().filter(IsEmpty::nonEmpty).collect(Collectors.toList());
+    }
+
+    public String getId() {
+        return id.orElse("");
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return objectOrId.name + ":" + objectOrId.parentObject.map(Object::toString).orElse("(empty)");
     }
 }

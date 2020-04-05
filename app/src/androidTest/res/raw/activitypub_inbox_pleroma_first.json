@@ -1,0 +1,430 @@
+{
+  "@context": [
+    "https:\/\/www.w3.org\/ns\/activitystreams",
+    "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld",
+    {
+      "@language": "und"
+    }
+  ],
+  "id": "https:\/\/pleroma.site\/users\/AndStatus\/inbox?max_id=9jPPRXLA2WW7NDFvn6&page=true",
+  "next": "https:\/\/pleroma.site\/users\/AndStatus\/inbox?max_id=9tbdV7RTIsICDvrWoS&page=true",
+  "orderedItems": [
+    {
+      "@context": [
+        "https:\/\/www.w3.org\/ns\/activitystreams",
+        "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld",
+        {
+          "@language": "und"
+        }
+      ],
+      "actor": "https:\/\/pleroma.site\/users\/AndStatus",
+      "cc": [
+        "https:\/\/pleroma.site\/users\/AndStatus",
+        "https:\/\/pleroma.site\/users\/AndStatus\/followers"
+      ],
+      "context": "https:\/\/pleroma.site\/contexts\/36bff2b8-f288-44f5-ac73-81c05ff07c12",
+      "context_id": 41598453,
+      "id": "https:\/\/pleroma.site\/activities\/f69a9f79-41e8-4e9b-a9bd-d8585d71a1c6",
+      "object": {
+        "actor": "https:\/\/pleroma.site\/users\/AndStatus",
+        "attachment": [],
+        "attributedTo": "https:\/\/pleroma.site\/users\/AndStatus",
+        "bcc": [],
+        "bto": [],
+        "cc": [
+          "https:\/\/pleroma.site\/users\/AndStatus",
+          "https:\/\/pleroma.site\/users\/AndStatus\/followers"
+        ],
+        "content": "The test failed at #Pleroma side.<br \/>The bug reported https:\/\/git.pleroma.social\/pleroma\/pleroma\/issues\/954",
+        "context": "https:\/\/pleroma.site\/contexts\/36bff2b8-f288-44f5-ac73-81c05ff07c12",
+        "conversation": "https:\/\/pleroma.site\/contexts\/36bff2b8-f288-44f5-ac73-81c05ff07c12",
+        "id": "https:\/\/pleroma.site\/objects\/2f181ce4-279a-4d38-aae9-6b751bc6d7f7",
+        "inReplyTo": "https:\/\/pleroma.site\/objects\/b0e635d0-726e-4261-a3ac-d19e6bca77f6",
+        "inReplyToAtomUri": "https:\/\/pleroma.site\/objects\/b0e635d0-726e-4261-a3ac-d19e6bca77f6",
+        "published": "2019-06-01T16:49:56.270856Z",
+        "sensitive": false,
+        "summary": "",
+        "tag": [],
+        "to": [
+          "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+        ],
+        "type": "Note"
+      },
+      "published": "2019-06-01T16:49:56.268414Z",
+      "to": [
+        "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+      ],
+      "type": "Create"
+    },
+    {
+      "@context": [
+        "https:\/\/www.w3.org\/ns\/activitystreams",
+        "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld",
+        {
+          "@language": "und"
+        }
+      ],
+      "actor": "https:\/\/mastodon.social\/users\/AndStatus",
+      "cc": [
+        "https:\/\/pleroma.site\/users\/AndStatus",
+        "https:\/\/pleroma.site\/users\/kaniini",
+        "https:\/\/mastodon.juggler.jp\/users\/SubwayTooter",
+        "https:\/\/metalhead.club\/users\/mariusor",
+        "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+      ],
+      "context": "tag:mastodon.social,2019-05-30:objectId=105915785:objectType=Conversation",
+      "context_id": 41322435,
+      "id": "https:\/\/mastodon.social\/users\/AndStatus\/statuses\/102197738105960879\/activity",
+      "object": {
+        "actor": "https:\/\/mastodon.social\/users\/AndStatus",
+        "atomUri": "https:\/\/mastodon.social\/users\/AndStatus\/statuses\/102197738105960879",
+        "attachment": [],
+        "attributedTo": "https:\/\/mastodon.social\/users\/AndStatus",
+        "bcc": [],
+        "bto": [],
+        "cc": [
+          "https:\/\/mastodon.social\/users\/AndStatus\/followers",
+          "https:\/\/pleroma.site\/users\/AndStatus",
+          "https:\/\/pleroma.site\/users\/kaniini",
+          "https:\/\/mastodon.juggler.jp\/users\/SubwayTooter",
+          "https:\/\/metalhead.club\/users\/mariusor"
+        ],
+        "content": "<p><span class=\"h-card\"><a href=\"https:\/\/metalhead.club\/@mariusor\" class=\"u-url mention\">@<span>mariusor<\/span><\/a><\/span> Yes, I&apos;m dreaming about real <a href=\"https:\/\/mastodon.social\/tags\/activitypub\" class=\"mention hashtag\" rel=\"tag\">#<span>ActivityPub<\/span><\/a> service including Client to Server protocol. <br \/>And this already comes true step by step, see <a href=\"https:\/\/github.com\/andstatus\/andstatus\/issues\/499\" rel=\"nofollow noopener\" target=\"_blank\"><span class=\"invisible\">https:\/\/<\/span><span class=\"ellipsis\">github.com\/andstatus\/andstatus<\/span><span class=\"invisible\">\/issues\/499<\/span><\/a> and my posts via ActivityPub C2S <a href=\"https:\/\/pleroma.site\/users\/AndStatus\" rel=\"nofollow noopener\" target=\"_blank\"><span class=\"invisible\">https:\/\/<\/span><span class=\"\">pleroma.site\/users\/AndStatus<\/span><span class=\"invisible\"><\/span><\/a><br \/>The real power for a User comes with several accounts at different servers.<br \/><span class=\"h-card\"><a href=\"https:\/\/mastodon.juggler.jp\/@SubwayTooter\" class=\"u-url mention\">@<span>SubwayTooter<\/span><\/a><\/span> @tom79@mastodon.social <span class=\"h-card\"><a href=\"https:\/\/pleroma.site\/users\/kaniini\" class=\"u-url mention\">@<span>kaniini<\/span><\/a><\/span> <span class=\"h-card\"><a href=\"https:\/\/pleroma.site\/users\/AndStatus\" class=\"u-url mention\">@<span>AndStatus<\/span><\/a><\/span><\/p>",
+        "contentMap": {
+          "en": "<p><span class=\"h-card\"><a href=\"https:\/\/metalhead.club\/@mariusor\" class=\"u-url mention\">@<span>mariusor<\/span><\/a><\/span> Yes, I&apos;m dreaming about real <a href=\"https:\/\/mastodon.social\/tags\/activitypub\" class=\"mention hashtag\" rel=\"tag\">#<span>ActivityPub<\/span><\/a> service including Client to Server protocol. <br \/>And this already comes true step by step, see <a href=\"https:\/\/github.com\/andstatus\/andstatus\/issues\/499\" rel=\"nofollow noopener\" target=\"_blank\"><span class=\"invisible\">https:\/\/<\/span><span class=\"ellipsis\">github.com\/andstatus\/andstatus<\/span><span class=\"invisible\">\/issues\/499<\/span><\/a> and my posts via ActivityPub C2S <a href=\"https:\/\/pleroma.site\/users\/AndStatus\" rel=\"nofollow noopener\" target=\"_blank\"><span class=\"invisible\">https:\/\/<\/span><span class=\"\">pleroma.site\/users\/AndStatus<\/span><span class=\"invisible\"><\/span><\/a><br \/>The real power for a User comes with several accounts at different servers.<br \/><span class=\"h-card\"><a href=\"https:\/\/mastodon.juggler.jp\/@SubwayTooter\" class=\"u-url mention\">@<span>SubwayTooter<\/span><\/a><\/span> @tom79@mastodon.social <span class=\"h-card\"><a href=\"https:\/\/pleroma.site\/users\/kaniini\" class=\"u-url mention\">@<span>kaniini<\/span><\/a><\/span> <span class=\"h-card\"><a href=\"https:\/\/pleroma.site\/users\/AndStatus\" class=\"u-url mention\">@<span>AndStatus<\/span><\/a><\/span><\/p>"
+        },
+        "context": "tag:mastodon.social,2019-05-30:objectId=105915785:objectType=Conversation",
+        "conversation": "tag:mastodon.social,2019-05-30:objectId=105915785:objectType=Conversation",
+        "id": "https:\/\/mastodon.social\/users\/AndStatus\/statuses\/102197738105960879",
+        "inReplyTo": "https:\/\/metalhead.club\/users\/mariusor\/statuses\/102197581809802774",
+        "inReplyToAtomUri": "https:\/\/metalhead.club\/users\/mariusor\/statuses\/102197581809802774",
+        "published": "2019-06-01T18:28:48Z",
+        "replies": {
+          "first": {
+            "items": [],
+            "partOf": "https:\/\/mastodon.social\/users\/AndStatus\/statuses\/102197738105960879\/replies",
+            "type": "CollectionPage"
+          },
+          "id": "https:\/\/mastodon.social\/users\/AndStatus\/statuses\/102197738105960879\/replies",
+          "type": "Collection"
+        },
+        "sensitive": false,
+        "summary": "",
+        "tag": [
+          {
+            "href": "https:\/\/metalhead.club\/users\/mariusor",
+            "name": "@mariusor@metalhead.club",
+            "type": "Mention"
+          },
+          {
+            "href": "https:\/\/mastodon.juggler.jp\/users\/SubwayTooter",
+            "name": "@SubwayTooter@mastodon.juggler.jp",
+            "type": "Mention"
+          },
+          {
+            "href": "https:\/\/pleroma.site\/users\/kaniini",
+            "name": "@kaniini@pleroma.site",
+            "type": "Mention"
+          },
+          {
+            "href": "https:\/\/pleroma.site\/users\/AndStatus",
+            "name": "@AndStatus@pleroma.site",
+            "type": "Mention"
+          },
+          {
+            "href": "https:\/\/mastodon.social\/tags\/activitypub",
+            "name": "#activitypub",
+            "type": "Hashtag"
+          },
+          {
+            "href": "https:\/\/pleroma.site\/tags\/activitypub",
+            "name": "#activitypub",
+            "type": "Hashtag"
+          },
+          {
+            "href": "https:\/\/mastodon.juggler.jp\/users\/SubwayTooter",
+            "name": "@SubwayTooter@mastodon.juggler.jp",
+            "type": "Mention"
+          },
+          {
+            "href": "https:\/\/metalhead.club\/users\/mariusor",
+            "name": "@mariusor@metalhead.club",
+            "type": "Mention"
+          },
+          {
+            "href": "https:\/\/pleroma.site\/users\/AndStatus",
+            "name": "@AndStatus",
+            "type": "Mention"
+          },
+          {
+            "href": "https:\/\/pleroma.site\/users\/kaniini",
+            "name": "@kaniini",
+            "type": "Mention"
+          }
+        ],
+        "to": [
+          "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+        ],
+        "type": "Note",
+        "url": "https:\/\/mastodon.social\/@AndStatus\/102197738105960879"
+      },
+      "published": "2019-06-01T18:28:48Z",
+      "to": [
+        "https:\/\/mastodon.social\/users\/AndStatus\/followers"
+      ],
+      "type": "Create"
+    },
+    {
+      "@context": [
+        "https:\/\/www.w3.org\/ns\/activitystreams",
+        "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld",
+        {
+          "@language": "und"
+        }
+      ],
+      "actor": "https:\/\/pleroma.site\/users\/AndStatus",
+      "cc": [
+        "https:\/\/www.w3.org\/ns\/activitystreams#Public",
+        "https:\/\/pleroma.site\/users\/kaniini",
+        "https:\/\/mastodon.juggler.jp\/users\/SubwayTooter",
+        "https:\/\/metalhead.club\/users\/mariusor"
+      ],
+      "context": "tag:mastodon.social,2019-05-30:objectId=105915785:objectType=Conversation",
+      "id": "https:\/\/pleroma.site\/activities\/f05be254-cca9-4b12-9ef2-419fab7b7189",
+      "object": "https:\/\/mastodon.social\/users\/AndStatus\/statuses\/102197738105960879",
+      "published": "2019-06-01T18:56:36.604753Z",
+      "to": [
+        "https:\/\/pleroma.site\/users\/AndStatus\/followers",
+        "https:\/\/mastodon.social\/users\/AndStatus"
+      ],
+      "type": "Like"
+    },
+    {
+      "@context": [
+        "https:\/\/www.w3.org\/ns\/activitystreams",
+        "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld",
+        {
+          "@language": "und"
+        }
+      ],
+      "actor": "https:\/\/meow.social\/users\/BalooUriza",
+      "cc": [
+        "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+      ],
+      "context": "https:\/\/pleroma.site\/contexts\/36bff2b8-f288-44f5-ac73-81c05ff07c12",
+      "id": "https:\/\/meow.social\/users\/BalooUriza#likes\/252935",
+      "object": "https:\/\/pleroma.site\/objects\/b0e635d0-726e-4261-a3ac-d19e6bca77f6",
+      "published": "2019-06-04T17:34:18.444074Z",
+      "to": [
+        "https:\/\/meow.social\/users\/BalooUriza\/followers",
+        "https:\/\/pleroma.site\/users\/AndStatus"
+      ],
+      "type": "Like"
+    },
+    {
+      "@context": [
+        "https:\/\/www.w3.org\/ns\/activitystreams",
+        "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld",
+        {
+          "@language": "und"
+        }
+      ],
+      "actor": "https:\/\/meow.social\/users\/BalooUriza",
+      "cc": [
+        "https:\/\/www.w3.org\/ns\/activitystreams#Public",
+        "https:\/\/pleroma.site\/users\/AndStatus"
+      ],
+      "context": "https:\/\/pleroma.site\/contexts\/36bff2b8-f288-44f5-ac73-81c05ff07c12",
+      "id": "https:\/\/meow.social\/users\/BalooUriza#likes\/252943",
+      "object": "https:\/\/pleroma.site\/objects\/2f181ce4-279a-4d38-aae9-6b751bc6d7f7",
+      "published": "2019-06-04T17:45:03.562795Z",
+      "to": [
+        "https:\/\/meow.social\/users\/BalooUriza\/followers",
+        "https:\/\/pleroma.site\/users\/AndStatus"
+      ],
+      "type": "Like"
+    },
+    {
+      "@context": [
+        "https:\/\/www.w3.org\/ns\/activitystreams",
+        "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld",
+        {
+          "@language": "und"
+        }
+      ],
+      "actor": "https:\/\/gnusocial.club\/user\/9029",
+      "cc": [
+        "https:\/\/www.w3.org\/ns\/activitystreams#Public",
+        "https:\/\/pleroma.site\/users\/AndStatus",
+        "https:\/\/pleroma.site\/users\/kaniini",
+        "https:\/\/mastodon.juggler.jp\/users\/SubwayTooter",
+        "https:\/\/metalhead.club\/users\/mariusor"
+      ],
+      "context": "tag:mastodon.social,2019-05-30:objectId=105915785:objectType=Conversation",
+      "id": "tag:gnusocial.club,2019-08-10:fave:9029:comment:1306104:2019-08-11T00:24:50+01:00",
+      "object": "https:\/\/mastodon.social\/users\/AndStatus\/statuses\/102197738105960879",
+      "published": "2019-08-11T01:37:13.084780Z",
+      "to": [
+        "https:\/\/pleroma.site\/users\/ped@gnusocial.club\/followers",
+        "https:\/\/mastodon.social\/users\/AndStatus"
+      ],
+      "type": "Like"
+    },
+    {
+      "@context": [
+        "https:\/\/www.w3.org\/ns\/activitystreams",
+        "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld",
+        {
+          "@language": "und"
+        }
+      ],
+      "actor": "https:\/\/pleroma.site\/users\/AndStatus",
+      "cc": [
+        "https:\/\/pleroma.site\/users\/AndStatus\/followers"
+      ],
+      "context": "https:\/\/pleroma.site\/contexts\/01cc6e1c-1f9f-4869-9026-e21f24679415",
+      "context_id": 47837212,
+      "id": "https:\/\/pleroma.site\/activities\/ce7ef478-0d74-4413-a25d-3eeba27e3aae",
+      "object": {
+        "actor": "https:\/\/pleroma.site\/users\/AndStatus",
+        "attachment": [],
+        "attributedTo": "https:\/\/pleroma.site\/users\/AndStatus",
+        "bcc": [],
+        "bto": [],
+        "cc": [
+          "https:\/\/pleroma.site\/users\/AndStatus\/followers"
+        ],
+        "content": "In order to promote the new way of communicate I decided to turn #ActivityPub #C2S feature on in #AndStatus.<br \/>Only #Pleroma sites are currently supported, and even they implemented only small part of the specification...",
+        "context": "https:\/\/pleroma.site\/contexts\/01cc6e1c-1f9f-4869-9026-e21f24679415",
+        "conversation": "https:\/\/pleroma.site\/contexts\/01cc6e1c-1f9f-4869-9026-e21f24679415",
+        "id": "https:\/\/pleroma.site\/objects\/23718737-d686-4a79-b30c-b7b1a2415814",
+        "name": "Starting posting via #ActivityPub C2S",
+        "published": "2019-08-11T18:28:36.195071Z",
+        "sensitive": false,
+        "summary": "AndStatus app enables #ActivityPub C2S",
+        "tag": [],
+        "to": [
+          "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+        ],
+        "type": "Note"
+      },
+      "published": "2019-08-11T18:28:36.190835Z",
+      "to": [
+        "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+      ],
+      "type": "Create"
+    },
+    {
+      "@context": [
+        "https:\/\/www.w3.org\/ns\/activitystreams",
+        "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld",
+        {
+          "@language": "und"
+        }
+      ],
+      "actor": "https:\/\/pleroma.site\/users\/AndStatus",
+      "cc": [
+        "https:\/\/pleroma.site\/users\/AndStatus\/followers"
+      ],
+      "context": "https:\/\/pleroma.site\/contexts\/bd4f0353-43d6-4f89-b2de-d952ec3db9dc",
+      "context_id": 62611057,
+      "id": "https:\/\/pleroma.site\/activities\/4f29e444-f036-4015-a5d3-346b99fff1a2",
+      "object": {
+        "actor": "https:\/\/pleroma.site\/users\/AndStatus",
+        "attachment": [],
+        "attributedTo": "https:\/\/pleroma.site\/users\/AndStatus",
+        "bcc": [],
+        "bto": [],
+        "cc": [
+          "https:\/\/pleroma.site\/users\/AndStatus\/followers"
+        ],
+        "content": "Minimal \"client to server\" #ActivityPub implementation is available. It is tested at https:\/\/pleroma.site (and at other Pleroma instances also!) and can:<br \/>* read timelines, including notes with attached images; <br \/>* post notes, including attached images.<br \/><br \/>Latest #AndStatus version is here: https:\/\/github.com\/andstatus\/andstatus\/issues\/456",
+        "context": "https:\/\/pleroma.site\/contexts\/bd4f0353-43d6-4f89-b2de-d952ec3db9dc",
+        "conversation": "https:\/\/pleroma.site\/contexts\/bd4f0353-43d6-4f89-b2de-d952ec3db9dc",
+        "id": "https:\/\/pleroma.site\/objects\/bcea0a86-3825-420e-9dc6-db0f8b5cc241",
+        "name": "Does #ActivityPub #C2S still work at #Pleroma?",
+        "published": "2020-03-30T06:37:54.403471Z",
+        "sensitive": false,
+        "summary": "Note on current implementation of #ActivityPub #C2S (Client to Server) protocol in #AndStatus",
+        "tag": [],
+        "to": [
+          "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+        ],
+        "type": "Note"
+      },
+      "published": "2020-03-30T06:37:54.392242Z",
+      "to": [
+        "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+      ],
+      "type": "Create"
+    },
+    {
+      "@context": [
+        "https:\/\/www.w3.org\/ns\/activitystreams",
+        "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld",
+        {
+          "@language": "und"
+        }
+      ],
+      "actor": "https:\/\/pleroma.site\/users\/AndStatus",
+      "cc": [
+        "https:\/\/www.w3.org\/ns\/activitystreams#Public"
+      ],
+      "context": "https:\/\/pleroma.site\/contexts\/5e64bf86-17f7-4c07-9b09-54896d32d52e",
+      "id": "https:\/\/pleroma.site\/activities\/4e042286-8cff-448e-b98d-30fe0fd7c5ae",
+      "object": "https:\/\/pleroma.site\/objects\/68a37593-fa9f-4d84-80ba-0b0f6412f1f7",
+      "published": "2020-04-01T16:59:27.753265Z",
+      "to": [
+        "https:\/\/pleroma.site\/users\/AndStatus\/followers",
+        "https:\/\/pleroma.site\/users\/ActivityPubTester"
+      ],
+      "type": "Announce"
+    },
+    {
+      "@context": [
+        "https:\/\/www.w3.org\/ns\/activitystreams",
+        "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld",
+        {
+          "@language": "und"
+        }
+      ],
+      "actor": "https:\/\/pleroma.site\/users\/AndStatus",
+      "cc": [],
+      "context": "https:\/\/pleroma.site\/contexts\/2a162674-910b-4167-bf1a-885bcbbbc6a1",
+      "context_id": 62758981,
+      "directMessage": true,
+      "id": "https:\/\/pleroma.site\/activities\/58746ed3-6312-4eac-a2d6-537ddc8265d9",
+      "object": {
+        "actor": "https:\/\/pleroma.site\/users\/AndStatus",
+        "attachment": [],
+        "attributedTo": "https:\/\/pleroma.site\/users\/AndStatus",
+        "cc": [],
+        "content": "<span class=\"h-card\"><a data-user=\"9fhOFewP1lVyOF4J1c\" class=\"u-url mention\" href=\"https:\/\/pleroma.site\/users\/ActivityPubTester\" rel=\"ugc\">@<span>ActivityPubTester<\/span><\/a><\/span> Private post to you from Web UI",
+        "context": "https:\/\/pleroma.site\/contexts\/2a162674-910b-4167-bf1a-885bcbbbc6a1",
+        "conversation": "https:\/\/pleroma.site\/contexts\/2a162674-910b-4167-bf1a-885bcbbbc6a1",
+        "id": "https:\/\/pleroma.site\/objects\/b8b9a031-3745-4f53-aae4-d572b0a32fc7",
+        "published": "2020-04-01T17:05:00.228323Z",
+        "sensitive": false,
+        "summary": "",
+        "tag": [
+          {
+            "href": "https:\/\/pleroma.site\/users\/ActivityPubTester",
+            "name": "@ActivityPubTester",
+            "type": "Mention"
+          }
+        ],
+        "to": [
+          "https:\/\/pleroma.site\/users\/ActivityPubTester"
+        ],
+        "type": "Note"
+      },
+      "published": "2020-04-01T17:05:00.226646Z",
+      "to": [
+        "https:\/\/pleroma.site\/users\/ActivityPubTester"
+      ],
+      "type": "Create"
+    }
+  ],
+  "partOf": "https:\/\/pleroma.site\/users\/AndStatus\/inbox",
+  "type": "OrderedCollectionPage"
+}

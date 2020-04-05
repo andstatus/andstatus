@@ -34,6 +34,7 @@ import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.InputTimelinePage;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.origin.OriginPumpio;
@@ -282,8 +283,8 @@ public class ConnectionPumpio extends Connection {
 
     @NonNull
     @Override
-    public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, Actor actor)
+    public InputTimelinePage getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                         TimelinePosition oldestPosition, int limit, Actor actor)
             throws ConnectionException {
         ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, apiRoutine, actor);
         Uri.Builder builder = conu.uri.buildUpon();
@@ -309,7 +310,7 @@ public class ConnectionPumpio extends Connection {
             }
         }
         MyLog.d(TAG, "getTimeline '" + builder.build() + "' " + activities.size() + " activities");
-        return activities;
+        return InputTimelinePage.of(activities);
     }
 
     @Override
@@ -542,10 +543,9 @@ public class ConnectionPumpio extends Connection {
 
     @NonNull
     @Override
-    public List<AActivity> searchNotes(TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String searchQuery)
-            throws ConnectionException {
-        return new ArrayList<>();
+    public InputTimelinePage searchNotes(boolean syncYounger, TimelinePosition youngestPosition,
+                                         TimelinePosition oldestPosition, int limit, String searchQuery) {
+        return InputTimelinePage.EMPTY;
     }
 
     @Override

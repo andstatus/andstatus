@@ -38,7 +38,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.MyHtmlTest.twitterBodyHtml;
@@ -73,9 +72,9 @@ public class ConnectionTwitterTest {
     @Test
     public void testGetTimeline() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline);
-        
-        List<AActivity> timeline = connection.getTimeline(ApiRoutineEnum.HOME_TIMELINE,
-                new TimelinePosition("380925803053449216") , TimelinePosition.EMPTY, 20, connection.getData().getAccountActor());
+
+        InputTimelinePage timeline = connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
+                TimelinePosition.of("380925803053449216") , TimelinePosition.EMPTY, 20, connection.getData().getAccountActor());
         assertNotNull("timeline returned", timeline);
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());

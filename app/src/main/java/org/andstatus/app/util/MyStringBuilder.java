@@ -21,6 +21,7 @@ import androidx.annotation.NonNull;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /** Adds convenience methods to {@link StringBuilder} */
 public class MyStringBuilder implements CharSequence, IsEmpty {
@@ -220,6 +221,11 @@ public class MyStringBuilder implements CharSequence, IsEmpty {
             builder.insert(0, text);
         }
         return this;
+    }
+
+    @NonNull
+    public MyStringBuilder apply(UnaryOperator<MyStringBuilder> unaryOperator) {
+        return unaryOperator.apply(this);
     }
 
     @Override

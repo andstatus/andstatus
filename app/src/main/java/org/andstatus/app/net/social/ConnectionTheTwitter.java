@@ -214,8 +214,8 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
 
     @NonNull
     @Override
-    public List<AActivity> searchNotes(TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String searchQuery)
+    public InputTimelinePage searchNotes(boolean syncYounger, TimelinePosition youngestPosition,
+                                         TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_NOTES;
         Uri.Builder builder = getApiPath(apiRoutine).buildUpon();
@@ -225,7 +225,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         JSONArray jArr = getRequestArrayInObject(builder.build(), "statuses");
-        return jArrToTimeline("", jArr, apiRoutine, builder.build());
+        return InputTimelinePage.of(jArrToTimeline("", jArr, apiRoutine, builder.build()));
     }
 
     @NonNull

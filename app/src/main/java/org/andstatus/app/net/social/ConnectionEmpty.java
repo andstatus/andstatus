@@ -18,14 +18,12 @@ package org.andstatus.app.net.social;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
-
-import androidx.annotation.NonNull;
 
 public class ConnectionEmpty extends Connection {
     public static final ConnectionEmpty EMPTY = new ConnectionEmpty();
@@ -77,10 +75,9 @@ public class ConnectionEmpty extends Connection {
 
     @NonNull
     @Override
-    public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, Actor actor)
-            throws ConnectionException {
-        return new ArrayList<>();
+    public InputTimelinePage getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                         TimelinePosition oldestPosition, int limit, Actor actor) {
+        return InputTimelinePage.EMPTY;
     }
 
     @Override

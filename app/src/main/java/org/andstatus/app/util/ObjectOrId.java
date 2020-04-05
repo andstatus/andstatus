@@ -33,6 +33,8 @@ import io.vavr.control.Try;
 
 public class ObjectOrId implements IsEmpty {
     private final static ObjectOrId EMPTY = of(null);
+    public final Optional<Object> parentObject;
+    public final String name;
     public final Optional<JSONObject> object;
     public final Optional<JSONArray> array;
     public final Optional<String> id;
@@ -43,6 +45,8 @@ public class ObjectOrId implements IsEmpty {
     }
 
     private ObjectOrId(JSONObject parentObject, String propertyName) {
+        this.parentObject = Optional.of(parentObject);
+        this.name = propertyName;
         object = Optional.ofNullable(parentObject.optJSONObject(propertyName));
         final JSONArray jsonArray = parentObject.optJSONArray(propertyName);
         array = object.isPresent() || jsonArray == null || jsonArray.length() == 0
@@ -63,6 +67,8 @@ public class ObjectOrId implements IsEmpty {
     }
 
     private ObjectOrId(Optional<Object> jso) {
+        parentObject = jso;
+        name = "";
         object = jso.flatMap(js -> js instanceof JSONObject ? Optional.of((JSONObject) js) : Optional.empty());
         final Optional<JSONArray> jsonArray = jso.flatMap(js -> js instanceof JSONArray
                 ? Optional.of((JSONArray) js) : Optional.empty()).filter(a -> a.length() > 0);
@@ -75,6 +81,8 @@ public class ObjectOrId implements IsEmpty {
     }
 
     private ObjectOrId(ObjectOrId ooi, Exception e) {
+        parentObject = ooi.parentObject;
+        name = ooi.name;
         object = Optional.empty();
         array = Optional.empty();
         id = Optional.empty();

@@ -16,8 +16,13 @@
 
 package org.andstatus.app.service;
 
+import org.andstatus.app.net.social.InputTimelinePage;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.timeline.meta.Timeline;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Retrieves and saves information about times and positions in a Timeline of the youngest/oldest downloaded timeline items.
@@ -28,6 +33,9 @@ public class TimelineSyncTracker {
 
     private final Timeline timeline;
     private final boolean isSyncYounger;
+    List<TimelinePosition> requestedPositions = new ArrayList<>();
+    TimelinePosition firstPosition = TimelinePosition.EMPTY;
+    private TimelinePosition nextPosition = TimelinePosition.EMPTY;
 
     public TimelineSyncTracker(Timeline timeline, boolean syncYounger) {
         this.timeline = timeline;
@@ -35,7 +43,13 @@ public class TimelineSyncTracker {
     }
     
     public TimelinePosition getPreviousPosition() {
-        return new TimelinePosition(isSyncYounger ? timeline.getYoungestPosition() : timeline.getOldestPosition());
+        return requestedPositions.isEmpty()
+            ? getPreviousTimelinePosition()
+            : requestedPositions.get(requestedPositions.size() - 1);
+    }
+
+    private TimelinePosition getPreviousTimelinePosition() {
+        return TimelinePosition.of(isSyncYounger ? timeline.getYoungestPosition() : timeline.getOldestPosition());
     }
 
     /**
@@ -50,6 +64,20 @@ public class TimelineSyncTracker {
      */
     public long getPreviousSyncedDate() {
         return isSyncYounger ? timeline.getYoungestSyncedDate() : timeline.getOldestSyncedDate();
+    }
+
+    public void onPositionRequested(TimelinePosition position) {
+        requestedPositions.add(position);
+        if (position.isEmpty()) {
+            clearPosition();
+        }
+    }
+
+    public void onNewPage(InputTimelinePage page) {
+        if (page.firstPosition.nonEmpty()) {
+            firstPosition = page.firstPosition;
+        }
+        nextPosition = isSyncYounger ? page.youngerPosition : page.olderPosition;
     }
 
     /** A new Timeline Item was downloaded   */
@@ -68,7 +96,22 @@ public class TimelineSyncTracker {
             timeline.setOldestSyncedDate(System.currentTimeMillis());
         }
     }
-    
+
+    public Optional<TimelinePosition> getNextPositionToRequest() {
+        TimelinePosition candidate = nextPosition.isEmpty()
+            ? getPreviousTimelinePosition()
+            : nextPosition;
+        if (!requestedPositions.contains(candidate)) return Optional.of(candidate);
+
+        if (firstPosition.nonEmpty() && !requestedPositions.contains(firstPosition)) {
+            return Optional.of(firstPosition);
+        }
+
+        return requestedPositions.contains(TimelinePosition.EMPTY)
+                ? Optional.empty()
+                : Optional.of(TimelinePosition.EMPTY);
+    }
+
     @Override
     public String toString() {
         return TAG + "[" + timeline.toString()

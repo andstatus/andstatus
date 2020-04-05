@@ -215,13 +215,13 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     @NonNull
     @Override
-    public List<AActivity> getTimeline(ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, Actor actor)
+    public InputTimelinePage getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
+                                         TimelinePosition oldestPosition, int limit, Actor actor)
             throws ConnectionException {
         Uri.Builder builder = getTimelineUriBuilder(apiRoutine, limit, actor);
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         JSONArray jArr = http.getRequestAsArray(builder.build());
-        return jArrToTimeline("", jArr, apiRoutine, builder.build());
+        return InputTimelinePage.of(jArrToTimeline("", jArr, apiRoutine, builder.build()));
     }
 
     @NonNull
@@ -439,8 +439,8 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     @NonNull
     @Override
-    public List<AActivity> searchNotes(TimelinePosition youngestPosition,
-                                       TimelinePosition oldestPosition, int limit, String searchQuery)
+    public InputTimelinePage searchNotes(boolean syncYounger, TimelinePosition youngestPosition,
+                                         TimelinePosition oldestPosition, int limit, String searchQuery)
             throws ConnectionException {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_NOTES;
         Uri.Builder builder = this.getApiPath(apiRoutine).buildUpon();
@@ -450,7 +450,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         appendPositionParameters(builder, youngestPosition, oldestPosition);
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
         JSONArray jArr = http.getRequestAsArray(builder.build());
-        return jArrToTimeline("", jArr, apiRoutine, builder.build());
+        return InputTimelinePage.of(jArrToTimeline("", jArr, apiRoutine, builder.build()));
     }
 
     void appendPositionParameters(Uri.Builder builder, TimelinePosition youngest, TimelinePosition oldest) {

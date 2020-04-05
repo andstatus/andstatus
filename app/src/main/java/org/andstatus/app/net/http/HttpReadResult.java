@@ -329,7 +329,10 @@ public class HttpReadResult {
         Object objTag = "response";
         if (strResponse != null && MyPreferences.isLogNetworkLevelMessages()) {
             MyLog.logNetworkLevelMessage(objTag, namePrefix, strResponse,
-                    appendHeaders(MyStringBuilder.of("")).toString());
+                    MyStringBuilder.of("")
+                            .atNewLine("URL", urlString)
+                            .atNewLine("authenticate", Boolean.toString(authenticate))
+                            .apply(this::appendHeaders).toString());
         }
         return this;
     }

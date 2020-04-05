@@ -28,7 +28,15 @@ public class TimelinePosition implements IsEmpty {
     public static final TimelinePosition EMPTY = new TimelinePosition("");
     private final String position;
 
-    public TimelinePosition(String position) {
+    public static TimelinePosition of(String position) {
+        if (StringUtil.isEmpty(position)) {
+            return EMPTY;
+        } else {
+            return new TimelinePosition(position);
+        }
+    }
+
+    private TimelinePosition(String position) {
         if (StringUtil.isEmpty(position)) {
             this.position = "";
         } else {
@@ -58,7 +66,7 @@ public class TimelinePosition implements IsEmpty {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof TimelinePosition)) return false;
-        return hashCode() == o.hashCode();
+        return position.equals(((TimelinePosition) o).position);
     }
 
     @Override

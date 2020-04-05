@@ -64,8 +64,8 @@ public class ConnectionMastodonTest {
     public void testGetHomeTimeline() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_home_timeline);
 
-        List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
-                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActor);
+        InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.HOME_TIMELINE,
+                TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor);
         assertNotNull("timeline returned", timeline);
         int size = 1;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -104,7 +104,7 @@ public class ConnectionMastodonTest {
         assertEquals("Media URI", UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
                 attachment.getUri());
 
-        timeline.forEach(act -> act.setUpdatedNow(0));
+        timeline.activities.forEach(act -> act.setUpdatedNow(0));
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 MyContextHolder.get(), CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME));
@@ -123,8 +123,8 @@ public class ConnectionMastodonTest {
 
     private void oneVisibility(String stringResponse, TriState isPublic, boolean isFollowers) throws ConnectionException {
         mock.getHttpMock().addResponse(stringResponse);
-        List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.HOME_TIMELINE,
-                new TimelinePosition("2656388"), TimelinePosition.EMPTY, 20, accountActor);
+        InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.HOME_TIMELINE,
+                TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor);
         assertVisibility(timeline.get(0).getNote().audience(), isPublic, isFollowers);
     }
 
@@ -141,8 +141,8 @@ public class ConnectionMastodonTest {
     public void testGetNotifications() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_notifications);
 
-        List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
-                new TimelinePosition(""), TimelinePosition.EMPTY, 20, accountActor);
+        InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
+                TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, accountActor);
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 20, timeline.size());
 
@@ -311,7 +311,7 @@ public class ConnectionMastodonTest {
     }
 
     private void assertOneTootWithVideo(String actorOid, String videoUri, String previewUri) throws ConnectionException {
-        List<AActivity> timeline = mock.connection.getTimeline(Connection.ApiRoutineEnum.ACTOR_TIMELINE,
+        InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.ACTOR_TIMELINE,
                 TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, Actor.fromOid(mock.getData().getOrigin(), actorOid));
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 1, timeline.size());

@@ -221,7 +221,7 @@ public class AActivity extends AObject {
     }
 
     public AActivity setTimelinePosition(String strPosition) {
-        this.timelinePosition = new TimelinePosition(StringUtil.isEmpty(strPosition) ? getTempPositionString() : strPosition);
+        timelinePosition = TimelinePosition.of(StringUtil.isEmpty(strPosition) ? getTempPositionString() : strPosition);
         return this;
     }
 
@@ -343,7 +343,7 @@ public class AActivity extends AObject {
                 + (isEmpty() ? "(empty), " : "")
                 + type
                 + ", id:" + id
-                + ", oid:" + timelinePosition
+                + ", timelinePosition:" + timelinePosition
                 + ", updated:" + MyLog.debugFormatOfDate(updatedDate)
                 + ", me:" + (accountActor.isEmpty() ? "EMPTY" : accountActor.oid)
                 + (subscribedByMe.known ? (subscribedByMe == TriState.TRUE ? ", subscribed" : ", NOT subscribed") : "" )
@@ -384,7 +384,7 @@ public class AActivity extends AObject {
                 ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE)));
 
         activity.id = DbUtils.getLong(cursor, ActivityTable._ID);
-        activity.timelinePosition = new TimelinePosition(DbUtils.getString(cursor, ActivityTable.ACTIVITY_OID));
+        activity.timelinePosition = TimelinePosition.of(DbUtils.getString(cursor, ActivityTable.ACTIVITY_OID));
         activity.actor = Actor.fromId(activity.accountActor.origin,
                 DbUtils.getLong(cursor, ActivityTable.ACTOR_ID));
         activity.note = Note.fromOriginAndOid(activity.accountActor.origin, "", DownloadStatus.UNKNOWN);

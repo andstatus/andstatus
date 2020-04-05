@@ -501,8 +501,8 @@ public class DataUpdater {
 
     public void downloadOneNoteBy(Actor actor) throws ConnectionException {
         List<AActivity> activities = execContext.getConnection().getTimeline(
-                TimelineType.SENT.getConnectionApiRoutine(), TimelinePosition.EMPTY,
-                TimelinePosition.EMPTY, 1, actor);
+                true, TimelineType.SENT.getConnectionApiRoutine(), TimelinePosition.EMPTY,
+                TimelinePosition.EMPTY, 1, actor).activities;
         for (AActivity item : activities) {
             onActivity(item, false);
         }
