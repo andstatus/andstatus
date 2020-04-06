@@ -124,7 +124,6 @@ public class MyPreferences {
     public static final String KEY_DEBUGGING_INFO_IN_UI = "debugging_info_in_ui";
     public static final String KEY_LOG_NETWORK_LEVEL_MESSAGES = "log_network_level_messages";
     public static final String KEY_LOG_EVERYTHING_TO_FILE = "log_everything_to_file";
-    private static final String KEY_ENABLE_ACTIVITYPUB = "enable_activitypub";
     public static final String KEY_BACKUP_LOG_FILES = "backup_log_files";
 
     // ----------------------------------------------------------
@@ -307,10 +306,6 @@ public class MyPreferences {
 
     public static long getBeingEditedNoteId() {
         return SharedPreferencesUtil.getLong(KEY_BEING_EDITED_NOTE_ID, 0);
-    }
-
-    public static boolean isActivityPubEnabled() {
-        return SharedPreferencesUtil.getBoolean(KEY_ENABLE_ACTIVITYPUB, true);
     }
 
     public static boolean isBackupLogFiles() {

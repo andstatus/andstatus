@@ -92,11 +92,12 @@ public class ConnectionActivityPub extends Connection {
 
     @Override
     @NonNull
-    public Actor verifyCredentials(Optional<Uri> whoAmI) throws ConnectionException {
-        JSONObject actor = getRequest(
-                whoAmI.filter(UriUtils::isDownloadable).orElse(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS))
-        );
-        return actorFromJson(actor);
+    public Try<Actor> verifyCredentials(Optional<Uri> whoAmI) {
+        return Try.of(
+                () -> getRequest(whoAmI
+                        .filter(UriUtils::isDownloadable)
+                        .orElse(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS)))
+        ).map(this::actorFromJson);
     }
 
     @NonNull

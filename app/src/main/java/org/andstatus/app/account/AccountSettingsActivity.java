@@ -34,6 +34,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.IdRes;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
@@ -78,9 +82,8 @@ import org.andstatus.app.view.EnumSelector;
 import java.util.List;
 import java.util.Optional;
 
-import androidx.annotation.IdRes;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
+import io.vavr.control.NonFatalException;
+import io.vavr.control.Try;
 import oauth.signpost.OAuth;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.exception.OAuthCommunicationException;
@@ -1238,26 +1241,28 @@ public class AccountSettingsActivity extends MyActivity {
         protected TaskResult doInBackground2(Void aVoid) {
             if (skip) return new TaskResult(ResultStatus.NONE);
 
-            ResultStatus status = ResultStatus.ACCOUNT_INVALID;
-            String message = "";
-            try {
-                state.builder.getOriginConfig();
-                state.builder.verifyCredentials(whoAmI);
-                final MyAccount myAccount = state.builder.getAccount();
-                if (myAccount.isValidAndSucceeded()) {
-                    state.forget();
-                    MyContext myContext = MyContextHolder.initialize(MyContextHolder.get().context(),
-                            AccountSettingsActivity.this);
-                    FirstActivity.checkAndUpdateLastOpenedAppVersion(AccountSettingsActivity.this, true);
-                    status = ResultStatus.SUCCESS;
+            return Try.success(state.builder)
+            .map(MyAccount.Builder::getOriginConfig)
+            .flatMap(b -> b.getConnection().verifyCredentials(whoAmI))
+            .flatMap(state.builder::onCredentialsVerified)
+            .map(MyAccount.Builder::getAccount)
+            .filter(MyAccount::isValidAndSucceeded)
+            .onSuccess( myAccount -> {
+                state.forget();
+                MyContext myContext = MyContextHolder.initialize(MyContextHolder.get().context(),
+                        AccountSettingsActivity.this);
+                FirstActivity.checkAndUpdateLastOpenedAppVersion(AccountSettingsActivity.this, true);
 
-                    final Timeline timeline = myContext.timelines().forUser(TimelineType.HOME, myAccount.getActor());
-                    if (timeline.isTimeToAutoSync()) {
-                        initialSyncNeeded = true;
-                        activityOnFinish = ActivityOnFinish.HOME;
-                    }
+                final Timeline timeline = myContext.timelines().forUser(TimelineType.HOME, myAccount.getActor());
+                if (timeline.isTimeToAutoSync()) {
+                    initialSyncNeeded = true;
+                    activityOnFinish = ActivityOnFinish.HOME;
                 }
-            } catch (ConnectionException e) {
+            })
+            .map(ma -> new TaskResult(ResultStatus.SUCCESS, ""))
+            .recover(ConnectionException.class, e -> {
+                ResultStatus status = ResultStatus.ACCOUNT_INVALID;
+                String message = "";
                 switch (e.getStatusCode()) {
                     case AUTHENTICATION_ERROR:
                         status = ResultStatus.ACCOUNT_INVALID;
@@ -1271,8 +1276,10 @@ public class AccountSettingsActivity extends MyActivity {
                 }
                 message = e.toString();
                 MyLog.v(this, e);
-            }
-            return new TaskResult(status, message);
+                return new TaskResult(status, message);
+            })
+            .recover(NonFatalException.class, e -> new TaskResult(ResultStatus.CONNECTION_EXCEPTION, e.getMessage()))
+            .get();
         }
 
         /**

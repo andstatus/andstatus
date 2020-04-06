@@ -76,12 +76,12 @@ public class VerifyCredentialsTest {
     public void testVerifyCredentials() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.verify_credentials_twitter);
 
-        Actor actor = connection.verifyCredentials(Optional.empty());
+        Actor actor = connection.verifyCredentials(Optional.empty()).get();
         assertEquals("Actor's oid is actorOid of this account", demoData.twitterTestAccountActorOid, actor.oid);
 
         Origin origin = MyContextHolder.get().origins().firstOfType(OriginType.TWITTER);
         MyAccount.Builder builder = MyAccount.Builder.fromAccountName(mock.getData().getAccountName());
-        builder.onCredentialsVerified(actor, null);
+        builder.onCredentialsVerified(actor);
         assertTrue("Account is persistent", builder.isPersistent());
         long actorId = builder.getAccount().getActorId();
         assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0);

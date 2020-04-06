@@ -652,32 +652,18 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             }
         }
 
-        void getOriginConfig() throws ConnectionException {
+        Builder getOriginConfig() throws ConnectionException {
             OriginConfig config = getConnection().getConfig();
             if (config.nonEmpty()) {
                 Origin.Builder originBuilder = new Origin.Builder(myAccount.getOrigin());
                 originBuilder.save(config);
                 MyLog.v(this, "Get Origin config succeeded " + config);
             }
+            return this;
         }
 
-        /**
-         * Verify the account's credentials. Returns true if authentication was
-         * successful
-         *
-         * @see CredentialsVerificationStatus
-         */
-        void verifyCredentials(Optional<Uri> whoAmI) throws ConnectionException {
-            try {
-                onCredentialsVerified(getConnection().verifyCredentials(whoAmI), null);
-            } catch (ConnectionException e) {
-                onCredentialsVerified(Actor.EMPTY, e);
-            }
-        }
-
-        public void onCredentialsVerified(@NonNull Actor actor, ConnectionException e) throws ConnectionException {
-            boolean ok = e == null && !actor.isEmpty() && StringUtil.nonEmpty(actor.oid)
-                    && actor.isUsernameValid();
+        public Try<Builder> onCredentialsVerified(@NonNull Actor actor) {
+            boolean ok = actor.nonEmpty() && StringUtil.nonEmpty(actor.oid) && actor.isUsernameValid();
             boolean errorSettingUsername = !ok;
 
             boolean credentialsOfOtherAccount = false;
@@ -722,21 +708,19 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             }
             save();
 
-            if (e != null) {
-                throw e;
-            }
             if (credentialsOfOtherAccount) {
                 MyLog.e(TAG, myContext().context().getText(R.string.error_credentials_of_other_user) + ": " +
                         actor.getUniqueNameWithOrigin() +
                         " account name: " + myAccount.getAccountName() +
                         " vs username: " + actor.getUsername());
-                throw new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT, actor.getUniqueNameWithOrigin());
+                return Try.failure(new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT, actor.getUniqueNameWithOrigin()));
             }
             if (errorSettingUsername) {
                 String msg = myContext().context().getText(R.string.error_set_username) + " " + actor.getUsername();
                 MyLog.e(TAG, msg);
-                throw new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg);
+                return Try.failure(new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg));
             }
+            return Try.success(this);
         }
 
         public void setUserTokenWithSecret(String token, String secret) {

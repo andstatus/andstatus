@@ -54,11 +54,11 @@ public class VerifyCredentialsActivityPubTest {
     public void verifyCredentials() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_whoami_pleroma);
 
-        Actor actor = mock.connection.verifyCredentials(UriUtils.toDownloadableOptional(ACTOR_OID));
+        Actor actor = mock.connection.verifyCredentials(UriUtils.toDownloadableOptional(ACTOR_OID)).get();
         assertEquals("Actor's oid is actorOid of this account", ACTOR_OID, actor.oid);
 
         MyAccount.Builder builder = MyAccount.Builder.fromAccountName(mock.getData().getAccountName());
-        builder.onCredentialsVerified(actor, null);
+        builder.onCredentialsVerified(actor);
         assertTrue("Account is persistent", builder.isPersistent());
         long actorId = builder.getAccount().getActorId();
         assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0);

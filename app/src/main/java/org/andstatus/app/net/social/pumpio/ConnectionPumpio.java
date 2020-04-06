@@ -54,6 +54,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
+import io.vavr.control.Try;
+
 /**
  * Implementation of pump.io API: <a href="https://github.com/e14n/pump.io/blob/master/API.md">https://github.com/e14n/pump.io/blob/master/API.md</a>  
  * @author yvolk@yurivolkov.com
@@ -124,9 +126,9 @@ public class ConnectionPumpio extends Connection {
 
     @Override
     @NonNull
-    public Actor verifyCredentials(Optional<Uri> whoAmI) throws ConnectionException {
-        JSONObject actor = getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
-        return actorFromJson(actor);
+    public Try<Actor> verifyCredentials(Optional<Uri> whoAmI) {
+        return Try.of(() -> getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS)))
+                .map(this::actorFromJson);
     }
 
     @NonNull

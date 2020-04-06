@@ -24,7 +24,6 @@ import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.Actor;
@@ -166,16 +165,12 @@ public class DemoAccountInserter {
             builder.setPassword("samplePasswordFor" + actor.getUniqueName());
         }
         assertTrue("Credentials of " + actor + " are present, account: " + builder.getAccount(),
-                builder.getAccount().getCredentialsPresent());
-        try {
-            builder.onCredentialsVerified(actor, null);
-        } catch (ConnectionException e) {
-            MyLog.e(this, e);
-            fail(e.getMessage());
-        }
+        builder.getAccount().getCredentialsPresent());
+        Try<MyAccount> tryMyAccount =  builder.onCredentialsVerified(actor).map(MyAccount.Builder::getAccount);
+        assertTrue("Success " + tryMyAccount, tryMyAccount.isSuccess());
 
-        assertTrue("Account is persistent " + builder.getAccount(), builder.isPersistent());
-        MyAccount ma = builder.getAccount();
+        MyAccount ma = tryMyAccount.get();
+        assertTrue("Account is persistent " + ma, builder.isPersistent());
         assertEquals("Credentials of " + actor.getUniqueNameWithOrigin() + " successfully verified",
                 CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
         long actorId = ma.getActorId();

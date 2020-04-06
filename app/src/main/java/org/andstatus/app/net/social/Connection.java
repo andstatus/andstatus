@@ -280,7 +280,7 @@ public abstract class Connection implements IsEmpty {
     }
     
     @NonNull
-    public abstract Actor verifyCredentials(Optional<Uri> whoAmI) throws ConnectionException;
+    public abstract Try<Actor> verifyCredentials(Optional<Uri> whoAmI);
 
     public abstract AActivity undoLike(String noteOid) throws ConnectionException;
 

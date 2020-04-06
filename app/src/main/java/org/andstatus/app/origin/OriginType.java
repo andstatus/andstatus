@@ -20,7 +20,6 @@ import android.content.Context;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.lang.SelectableEnum;
 import org.andstatus.app.net.http.HttpConnectionBasic;
@@ -72,17 +71,18 @@ public enum OriginType implements SelectableEnum {
             PublicChangeAllowed.YES, FollowersChangeAllowed.YES, SensitiveChangeAllowed.YES, ShortUrlLength.of(0)) {
 
         @Override
-        public boolean isSelectable() {
-            return MyPreferences.isActivityPubEnabled();
-        }
-
-        @Override
         public Optional<String> getContentType() {
             return Optional.of("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"");
         }
     },
-    UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO, NoteSummary.NO, PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO,
-            ShortUrlLength.of(0));
+    UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO, NoteSummary.NO,
+            PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)) {
+
+        @Override
+        public boolean isSelectable() {
+            return false;
+        }
+    };
 
     public static final String SIMPLE_USERNAME_EXAMPLES = "AndStatus user357 peter";
 
@@ -179,7 +179,6 @@ public enum OriginType implements SelectableEnum {
     private boolean isPrivateTimelineSyncable = true;
     private boolean isInteractionsTimelineSyncable = true;
     private final boolean isPrivateNoteAllowsReply;
-    private final boolean isSelectable;
     public final boolean hasNoteName;
     public final boolean hasNoteSummary;
     public final boolean isPublicChangeAllowed;
@@ -224,7 +223,6 @@ public enum OriginType implements SelectableEnum {
                 mAllowAttachmentForPrivateNote = false;
                 allowEditing = false;
                 isPrivateNoteAllowsReply = false;
-                isSelectable = true;
 
                 textMediaTypePosted = TextMediaType.PLAIN_ESCAPED;
                 textMediaTypeToPost = TextMediaType.PLAIN;
@@ -251,7 +249,6 @@ public enum OriginType implements SelectableEnum {
                 isInteractionsTimelineSyncable = false;
                 allowEditing = true;
                 isPrivateNoteAllowsReply = true;
-                isSelectable = true;
 
                 textMediaTypePosted = TextMediaType.HTML;
                 textMediaTypeToPost = TextMediaType.HTML;
@@ -279,7 +276,6 @@ public enum OriginType implements SelectableEnum {
                 isInteractionsTimelineSyncable = false;
                 allowEditing = true;
                 isPrivateNoteAllowsReply = true;
-                isSelectable = true;
 
                 textMediaTypePosted = TextMediaType.HTML;
                 textMediaTypeToPost = TextMediaType.HTML;
@@ -303,7 +299,6 @@ public enum OriginType implements SelectableEnum {
                 isPublicTimeLineSyncable = true;
                 allowEditing = false;
                 isPrivateNoteAllowsReply = true;
-                isSelectable = true;
 
                 textMediaTypePosted = TextMediaType.PLAIN;
                 textMediaTypeToPost = TextMediaType.PLAIN;
@@ -329,7 +324,6 @@ public enum OriginType implements SelectableEnum {
                 isPublicTimeLineSyncable = true;
                 allowEditing = false;
                 isPrivateNoteAllowsReply = true;
-                isSelectable = true;
 
                 textMediaTypePosted = TextMediaType.HTML;
                 textMediaTypeToPost = TextMediaType.PLAIN;
@@ -345,7 +339,6 @@ public enum OriginType implements SelectableEnum {
                 allowEditing = false;
                 isPrivateNoteAllowsReply = true;
                 uniqueNameExamples = "userName@hostName.org";
-                isSelectable = false;
 
                 textMediaTypePosted = TextMediaType.PLAIN;
                 textMediaTypeToPost = TextMediaType.PLAIN;
@@ -367,7 +360,7 @@ public enum OriginType implements SelectableEnum {
 
     @Override
     public boolean isSelectable() {
-        return isSelectable;
+        return true;
     }
 
     @Override

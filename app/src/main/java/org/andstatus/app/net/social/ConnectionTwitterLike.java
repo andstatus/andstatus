@@ -617,9 +617,9 @@ public abstract class ConnectionTwitterLike extends Connection {
      */
     @Override
     @NonNull
-    public Actor verifyCredentials(Optional<Uri> whoAmI) throws ConnectionException {
-        JSONObject actor = getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS));
-        return actorFromJson(actor);
+    public Try<Actor> verifyCredentials(Optional<Uri> whoAmI) {
+        return Try.of(() -> getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS)))
+                .map(this::actorFromJson);
     }
 
     protected final Try<HttpReadResult> postRequest(ApiRoutineEnum apiRoutine, JSONObject formParams) {

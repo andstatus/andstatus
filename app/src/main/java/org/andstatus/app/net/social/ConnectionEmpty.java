@@ -22,8 +22,11 @@ import androidx.annotation.NonNull;
 
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
+import org.andstatus.app.util.TryUtils;
 
 import java.util.Optional;
+
+import io.vavr.control.Try;
 
 public class ConnectionEmpty extends Connection {
     public static final ConnectionEmpty EMPTY = new ConnectionEmpty();
@@ -39,8 +42,8 @@ public class ConnectionEmpty extends Connection {
 
     @Override
     @NonNull
-    public Actor verifyCredentials(Optional<Uri> whoAmI) throws ConnectionException {
-        return Actor.EMPTY;
+    public Try<Actor> verifyCredentials(Optional<Uri> whoAmI) {
+        return TryUtils.notFound();
     }
 
     @Override
