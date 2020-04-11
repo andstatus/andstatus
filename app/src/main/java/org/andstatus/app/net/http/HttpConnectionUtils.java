@@ -66,9 +66,12 @@ public class HttpConnectionUtils {
 
     public static Try<HttpReadResult> readStream(HttpReadResult result, InputStream in) throws IOException {
         if (in == null) {
-            return Try.failure(ConnectionException.fromStatusCode(ConnectionException.StatusCode.CLIENT_ERROR, "Input stream is null"));
+            ConnectionException exception = ConnectionException.fromStatusCode(
+                    ConnectionException.StatusCode.CLIENT_ERROR, "Input stream is null");
+            result.setException(exception);
+            return Try.failure(exception);
         }
-        return result.fileResult == null
+        return result.fileResult == null || !result.isStatusOk()
                 ? readStreamToString(result, in)
                 : readStreamToFile(result, in);
     }

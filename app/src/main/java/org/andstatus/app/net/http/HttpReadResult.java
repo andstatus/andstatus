@@ -315,7 +315,7 @@ public class HttpReadResult {
         return Try.success(this);
     }
 
-    private boolean isStatusOk() {
+    public boolean isStatusOk() {
         return exception == null && (statusCode == StatusCode.OK || statusCode == StatusCode.UNKNOWN);
     }
 

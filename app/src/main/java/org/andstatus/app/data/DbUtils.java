@@ -146,7 +146,7 @@ public final class DbUtils {
         if (closeable != null) {
             try {
                 closeLegacy(closeable, message);
-            } catch ( IOException e) {
+            } catch (Exception e) {
                 MyLog.ignored(closeable, e);
             }
         }

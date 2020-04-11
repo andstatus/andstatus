@@ -75,6 +75,7 @@ public class HttpConnectionApacheCommon {
     }
 
     protected void getRequest(HttpReadResult result) {
+        HttpResponse httpResponse = null;
         try {
             boolean stop = false;
             do {
@@ -84,7 +85,7 @@ public class HttpConnectionApacheCommon {
                     specific.httpApacheSetAuthorization(httpGet);
                 }
                 // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
-                HttpResponse httpResponse = specific.httpApacheGetResponse(httpGet);
+                httpResponse = specific.httpApacheGetResponse(httpGet);
                 setStatusCodeAndHeaders(result, httpResponse);
                 switch (result.getStatusCode()) {
                     case OK:
@@ -113,6 +114,8 @@ public class HttpConnectionApacheCommon {
             } while (!stop);
         } catch (Exception e) {
             result.setException(e);
+        } finally {
+            DbUtils.closeSilently(httpResponse);
         }
     }
 
