@@ -92,7 +92,7 @@ public class HttpConnectionApacheCommon {
                     case UNKNOWN:
                         HttpEntity entity = httpResponse.getEntity();
                         if (entity != null) {
-                            HttpConnectionUtils.readStream(result, entity.getContent());
+                            result.readStream("", o -> entity.getContent());
                         }
                         stop = true;
                         break;
@@ -102,7 +102,7 @@ public class HttpConnectionApacheCommon {
                     default:
                         entity = httpResponse.getEntity();
                         if (entity != null) {
-                            HttpConnectionUtils.readStream(result, entity.getContent());
+                            result.readStream("", o -> entity.getContent());
                         }
                         stop =  result.fileResult == null || !result.authenticate;
                         if (!stop) {

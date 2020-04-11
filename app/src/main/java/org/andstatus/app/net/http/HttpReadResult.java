@@ -36,6 +36,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import io.vavr.control.CheckedFunction;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.util.TryUtils.checkException;
@@ -134,7 +136,6 @@ public class HttpReadResult {
             try {
                 url = new URL(urlIn);
             } catch (MalformedURLException e) {
-                setException(new ConnectionException("Malformed URL; " + toString(), e));
                 url = UrlUtils.MALFORMED;
             }
         }
@@ -277,20 +278,21 @@ public class HttpReadResult {
         }
     }
 
-    public void setException(Throwable e) {
+    public HttpReadResult setException(Throwable e) {
         checkException(e);
-        if (exception != null) return;
-
-        exception = e instanceof Exception
-            ? (Exception) e
-            : new ConnectionException("Unexpected exception", e);
+        if (exception == null) {
+            exception = e instanceof Exception
+                    ? (Exception) e
+                    : new ConnectionException("Unexpected exception", e);
+        }
+        return this;
     }
 
     public Exception getException() {
         return exception;
     }
 
-    Try<HttpReadResult> tryToParse() {
+    public Try<HttpReadResult> tryToParse() {
         if (exception instanceof ConnectionException) {
             return Try.failure(exception);
         }
@@ -354,7 +356,12 @@ public class HttpReadResult {
 
     void onRetryWithoutAuthentication() {
         authenticate = false;
-        appendToLog("Retrying without authentication");
+        appendToLog("Retrying without authentication, exception: " + exception);
+        exception = null;
         MyLog.v(this, this::toString);
+    }
+
+    public Try<HttpReadResult> readStream(String msgLog, CheckedFunction<Void, InputStream> supplier) {
+        return HttpConnectionUtils.readStream(this, msgLog, supplier);
     }
 }

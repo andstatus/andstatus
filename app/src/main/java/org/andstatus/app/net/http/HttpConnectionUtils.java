@@ -22,6 +22,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.util.StopWatch;
+import org.andstatus.app.util.StringUtil;
 
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -35,6 +36,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import io.vavr.control.CheckedFunction;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.util.FileUtils.newFileOutputStreamWithRetry;
@@ -64,16 +66,20 @@ public class HttpConnectionUtils {
         }
     }
 
-    public static Try<HttpReadResult> readStream(HttpReadResult result, InputStream in) throws IOException {
-        if (in == null) {
-            ConnectionException exception = ConnectionException.fromStatusCode(
-                    ConnectionException.StatusCode.CLIENT_ERROR, "Input stream is null");
-            result.setException(exception);
-            return Try.failure(exception);
+    public static Try<HttpReadResult> readStream(HttpReadResult result, String msgLog, CheckedFunction<Void, InputStream> supplier) {
+        try (InputStream in = supplier.apply(null)) {
+            if (in == null) {
+                ConnectionException exception = ConnectionException.fromStatusCode(
+                        ConnectionException.StatusCode.CLIENT_ERROR,  msgLog + " Input stream is null");
+                return result.setException(exception).toFailure();
+            }
+            return result.fileResult == null || !result.isStatusOk()
+                    ? readStreamToString(result, in)
+                    : readStreamToFile(result, in);
+        } catch (Exception e) {
+            return result.setException(StringUtil.isEmpty(msgLog) ? e : new ConnectionException(msgLog, e))
+                    .toFailure();
         }
-        return result.fileResult == null || !result.isStatusOk()
-                ? readStreamToString(result, in)
-                : readStreamToFile(result, in);
     }
 
     private static Try<HttpReadResult> readStreamToString(HttpReadResult resultIn, InputStream in) throws IOException {

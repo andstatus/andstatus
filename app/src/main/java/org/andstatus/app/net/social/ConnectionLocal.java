@@ -19,15 +19,11 @@ package org.andstatus.app.net.social;
 import android.net.Uri;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.http.HttpConnectionUtils;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.service.ConnectionRequired;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
 import io.vavr.control.Try;
 
@@ -37,17 +33,11 @@ import io.vavr.control.Try;
 public class ConnectionLocal extends ConnectionEmpty {
 
     @Override
-    public Try<Void> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
-        try {
-            HttpReadResult result = new HttpReadResult(MyContextHolder.get(), ConnectionRequired.ANY,
-                    uri, file, new JSONObject());
-            InputStream ins = MyContextHolder.get().context().getContentResolver().openInputStream(uri);
-            HttpConnectionUtils.readStream(result, ins);
-        } catch (IOException e) {
-            Try.failure(ConnectionException.hardConnectionException("mediaUri='" + uri + "'", e));
-        } catch (SecurityException e) {
-            Try.failure(ConnectionException.hardConnectionException("mediaUri='" + uri + "'", e));
-        }
-        return Try.success(null);
+    public Try<HttpReadResult> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
+        HttpReadResult result = new HttpReadResult(MyContextHolder.get(), ConnectionRequired.ANY,
+                uri, file, new JSONObject());
+        return result.readStream("mediaUri='" + uri + "'",
+                o -> MyContextHolder.get().context().getContentResolver().openInputStream(uri))
+            .flatMap(HttpReadResult::tryToParse);
     }
 }

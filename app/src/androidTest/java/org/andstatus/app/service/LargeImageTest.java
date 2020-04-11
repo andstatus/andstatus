@@ -70,12 +70,11 @@ public class LargeImageTest {
                 Actor.fromId(ma.getOrigin(), 34234), "");
         AttachmentDownloader loader = new AttachmentDownloader(dd);
         ConnectionMock connMock = ConnectionMock.newFor(demoData.gnusocialTestAccountName);
-        InputStream inputStream = InstrumentationRegistry.getInstrumentation().getContext().getResources()
-                .openRawResource(org.andstatus.app.tests.R.raw.large_image);
-        connMock.getHttpMock().setResponseFileStream(inputStream);
+        connMock.getHttpMock().setResponseStreamSupplier(o ->
+                InstrumentationRegistry.getInstrumentation().getContext().getResources()
+                    .openRawResource(org.andstatus.app.tests.R.raw.large_image));
         loader.setConnectionMock(connMock.connection);
         loader.load(commandData);
-        inputStream.close();
         assertEquals("Requested", 1, connMock.getHttpMock().getRequestsCounter());
 
         DownloadData data = DownloadData.fromId(dd.getDownloadId());

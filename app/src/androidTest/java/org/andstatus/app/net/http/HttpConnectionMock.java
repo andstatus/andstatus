@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import io.vavr.control.CheckedFunction;
 import io.vavr.control.Try;
 
 public class HttpConnectionMock extends HttpConnection {
@@ -43,7 +44,7 @@ public class HttpConnectionMock extends HttpConnection {
     private final List<String> responses = new CopyOnWriteArrayList<>();
     public volatile int responsesCounter = 0;
     private boolean sameResponse = false;
-    private volatile InputStream responseFileStream = null;
+    private volatile CheckedFunction<Void, InputStream> responseStreamSupplier = null;
 
     private volatile RuntimeException runtimeException = null;
     private volatile ConnectionException exception = null;
@@ -76,8 +77,8 @@ public class HttpConnectionMock extends HttpConnection {
         responses.add(responseString);
     }
 
-    public void setResponseFileStream(InputStream inputStream) {
-        this.responseFileStream = inputStream;
+    public void setResponseStreamSupplier(CheckedFunction<Void, InputStream> responseStreamSupplier) {
+        this.responseStreamSupplier = responseStreamSupplier;
     }
 
     public void setRuntimeException(RuntimeException exception) {
@@ -129,12 +130,8 @@ public class HttpConnectionMock extends HttpConnection {
 
     private void onRequest(String method, HttpReadResult result) {
         result.strResponse = getNextResponse();
-        if (result.fileResult != null && responseFileStream != null) {
-            try {
-                HttpConnectionUtils.readStream(result, responseFileStream);
-            } catch (IOException e) {
-                result.setException(e);
-            }
+        if (responseStreamSupplier != null) {
+            result.readStream("", responseStreamSupplier);
         }
         results.add(result);
         MyLog.v(this, method + " num:" + results.size() + "; path:'" + result.getUrl()

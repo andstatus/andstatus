@@ -46,9 +46,6 @@ import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.basic.DefaultOAuthConsumer;
 import oauth.signpost.basic.DefaultOAuthProvider;
-import oauth.signpost.exception.OAuthCommunicationException;
-import oauth.signpost.exception.OAuthExpectationFailedException;
-import oauth.signpost.exception.OAuthMessageSignerException;
 
 public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     private static final String UTF_8 = "UTF-8";
@@ -85,19 +82,20 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             writer.close();
 
             HttpReadResult result = new HttpReadResult(uri, new JSONObject());
-            if(conn.getResponseCode() != 200) {
-                HttpConnectionUtils.readStream(result, conn.getErrorStream());
-                logmsg.atNewLine("Server returned an error response", result.strResponse);
-                logmsg.atNewLine("Response message from server", conn.getResponseMessage());
-                MyLog.i(this, logmsg.toString());
-            } else {
-                HttpConnectionUtils.readStream(result, conn.getInputStream());
+            setStatusCodeAndHeaders(result, conn);
+            if (result.isStatusOk()) {
+                result.readStream("", o -> conn.getInputStream());
                 JSONObject jso = new JSONObject(result.strResponse);
                 consumerKey = jso.getString("client_id");
                 consumerSecret = jso.getString("client_secret");
                 data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
+            } else {
+                result.readStream("", o -> conn.getErrorStream());
+                logmsg.atNewLine("Server returned an error response", result.strResponse);
+                logmsg.atNewLine("Response message from server", conn.getResponseMessage());
+                MyLog.i(this, logmsg.toString());
             }
-        } catch (IOException | JSONException e) {
+        } catch (Exception e) {
             logmsg.withComma("Exception", e.getMessage());
             MyLog.i(this, logmsg.toString(), e);
         } finally {
@@ -106,7 +104,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         if (data.oauthClientKeys.areKeysPresent()) {
             MyLog.v(this, () -> "Completed " + logmsg);
         } else {
-            Try.failure(ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,
+            return Try.failure(ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,
                     "Failed to obtain client keys for host; " + logmsg, data.originUrl));
         }
         return Try.success(null);
@@ -145,10 +143,10 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             setStatusCodeAndHeaders(result, conn);
             switch(result.getStatusCode()) {
                 case OK:
-                    HttpConnectionUtils.readStream(result, conn.getInputStream());
+                    result.readStream("", o -> conn.getInputStream());
                     break;
                 default:
-                    HttpConnectionUtils.readStream(result, conn.getErrorStream());
+                    result.readStream("", o -> conn.getErrorStream());
                     result.setException(result.getExceptionFromJsonErrorResponse());
             }
         } catch (Exception e) {
@@ -214,7 +212,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                 setStatusCodeAndHeaders(result, conn);
                 switch(result.getStatusCode()) {
                     case OK:
-                        HttpConnectionUtils.readStream(result, conn.getInputStream());
+                        result.readStream("", o -> conn.getInputStream());
                         stop = true;
                         break;
                     case MOVED:
@@ -223,7 +221,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                         conn.disconnect();
                         break;
                     default:
-                        HttpConnectionUtils.readStream(result, conn.getErrorStream());
+                        result.readStream("", o -> conn.getErrorStream());
                         stop = result.fileResult == null || !result.authenticate;
                         if (!stop) {
                             result.onRetryWithoutAuthentication();
@@ -238,11 +236,15 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
 
     private void setStatusCodeAndHeaders(HttpReadResult result, HttpURLConnection conn) throws IOException {
         result.setStatusCode(conn.getResponseCode());
-        result.setHeaders(
+        try {
+            result.setHeaders(
                 conn.getHeaderFields().entrySet().stream().flatMap(entry -> entry.getValue().stream()
                         .map(value -> new ImmutablePair<>(entry.getKey(), value))),
                 Map.Entry::getKey,
                 Map.Entry::getValue);
+        } catch (Exception ignored) {
+            // ignore
+        }
     }
 
     protected void signConnection(HttpURLConnection conn, OAuthConsumer consumer, boolean redirected)

@@ -56,7 +56,7 @@ public class HttpConnectionBasic extends HttpConnection implements HttpConnectio
             HttpResponse httpResponse = client.execute(postMethod);
             HttpConnectionApacheCommon.setStatusCodeAndHeaders(result, httpResponse);
             HttpEntity httpEntity = httpResponse.getEntity();
-            HttpConnectionUtils.readStream(result, httpEntity == null ? null : httpEntity.getContent());
+            result.readStream("", o -> httpEntity == null ? null : httpEntity.getContent());
         } catch (Exception e) {
             result.setException(e);
         } finally {

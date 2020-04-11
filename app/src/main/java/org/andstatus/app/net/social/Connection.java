@@ -586,7 +586,7 @@ public abstract class Connection implements IsEmpty {
         });
     }
 
-    public Try<Void> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
+    public Try<HttpReadResult> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
         return http.downloadFile(connectionRequired, uri, file);
     }
 

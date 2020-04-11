@@ -19,7 +19,6 @@ package org.andstatus.app.net.http;
 import android.net.Uri;
 
 import com.github.scribejava.core.builder.ServiceBuilder;
-import com.github.scribejava.core.exceptions.OAuthException;
 import com.github.scribejava.core.httpclient.jdk.JDKHttpClientConfig;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.model.OAuthConstants;
@@ -35,13 +34,11 @@ import org.andstatus.app.util.MyStringBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import io.vavr.control.Try;
 import oauth.signpost.OAuthConsumer;
@@ -145,7 +142,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             signRequest(request, service, false);
             final Response response = service.execute(request);
             setStatusCodeAndHeaders(result, response);
-            HttpConnectionUtils.readStream(result, response.getStream());
+            result.readStream("", o -> response.getStream());
             if (result.getStatusCode() != OK) {
                 result.setException(result.getExceptionFromJsonErrorResponse());
             }
@@ -174,7 +171,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                 setStatusCodeAndHeaders(result, response);
                 switch(result.getStatusCode()) {
                     case OK:
-                        HttpConnectionUtils.readStream(result, response.getStream());
+                        result.readStream("", o -> response.getStream());
                         stop = true;
                         break;
                     case MOVED:
@@ -183,7 +180,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                         // TODO: ?! ...disconnect();
                         break;
                     default:
-                        HttpConnectionUtils.readStream(result, response.getStream());
+                        result.readStream("", o -> response.getStream());
                         stop = result.fileResult == null || !result.authenticate;
                         if (!stop) {
                             result.onRetryWithoutAuthentication();

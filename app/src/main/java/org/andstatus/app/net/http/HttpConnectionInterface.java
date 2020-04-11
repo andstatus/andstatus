@@ -124,10 +124,10 @@ public interface HttpConnectionInterface {
         return getRequestCommon(uri, true).flatMap(r -> r.getJsonArray(parentKey));
     }
 
-    default Try<Void> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
+    default Try<HttpReadResult> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
         HttpReadResult result = new HttpReadResult(getData().getMyContext(), connectionRequired, uri, file, new JSONObject());
         getRequest(result);
-        return result.tryToParse().map(any -> null);
+        return result.tryToParse();
     }
     
     default void getRequest(HttpReadResult result) {
