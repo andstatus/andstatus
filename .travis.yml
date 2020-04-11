@@ -35,7 +35,7 @@ before_script:
 - ./gradlew clean
 script:
 - |
-  ./gradlew build assembleAndroidTest -PtestCoverageEnabled='true'
+  ./gradlew build assembleAndroidTest
   retval=$?
   if [ $retval -ne 0 ]; then
     echo "error on assembling, exit code: "$retval
@@ -47,7 +47,7 @@ script:
 # - ./gradlew connectedCheck -PdisablePreDex --continue --stacktrace --debug
 # run:
 - |
-  ./gradlew :app:installDebug :app:installDebugAndroidTest -PtestCoverageEnabled='true'
+  ./gradlew :app:installDebug :app:installDebugAndroidTest
   retval=$?
   if [ $retval -ne 0 ]; then
     echo "error on install, exit code: "$retval
@@ -61,9 +61,9 @@ script:
 # Run only tests, marked with a special annotation:
 # See https://developer.android.com/reference/android/test/InstrumentationTestRunner.html
 # For testing one method only:
-# - adb shell am instrument -w -r -e debug false -e coverage true -e class org.andstatus.app.service.CommandExecutorStrategyTest#testSearch org.andstatus.app.tests/androidx.test.runner.AndroidJUnitRunner
+# - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.service.CommandExecutorStrategyTest#testSearch org.andstatus.app.tests/androidx.test.runner.AndroidJUnitRunner
 - |
-  adb shell am instrument -w -r -e executionMode travisTest -e coverage true org.andstatus.app.tests/androidx.test.runner.AndroidJUnitRunner |& tee build/adb-test.log
+  adb shell am instrument -w -r -e executionMode travisTest org.andstatus.app.tests/androidx.test.runner.AndroidJUnitRunner |& tee build/adb-test.log
   retval=$?
   if [ $retval -ne 0 ]; then
     echo "error in adb, exit code: "$retval
@@ -81,14 +81,6 @@ script:
     cat build/adb-test.log | grep "OK ("
   fi
 
-# Copy coverage data from the emulator
-- |
-  adb shell "rm /sdcard/Download/coverage.ec"
-  adb shell "run-as org.andstatus.app cp /data/user/0/org.andstatus.app/files/coverage.ec /sdcard/Download"
-- cd app/build
-# copy to "build" folder, where it will be found by Sonar scanner
-- adb pull "/sdcard/Download/coverage.ec"
-- cd ../..
 notifications:
   email: false
 cache:
@@ -100,4 +92,4 @@ cache:
 before_install:
 - yes | sdkmanager "platforms;android-$ANDROID_API"
 after_success:
-  - ./gradlew sonarqube -Dsonar.host.url=https://sonarqube.com -Dsonar.login=$SONAR_TOKEN -Dsonar.verbose=true
+  - ./gradlew sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.verbose=true

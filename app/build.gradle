@@ -46,7 +46,9 @@ android {
 
 sonarqube {
     // See https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
+    // and https://plugins.gradle.org/plugin/org.sonarqube
     properties {
+        property "sonar.organization", "default"
         property "sonar.projectName", "AndStatus"
         property "sonar.projectKey", "andstatus"
         property "sonar.projectVersion", project.ext.versionName
@@ -58,8 +60,6 @@ sonarqube {
         property "sonar.import_unknown_files", true
 
         property "sonar.android.lint.report", "./build/outputs/lint-results.xml"
-        property "sonar.jacoco.reportPath", fileTree(dir: project.projectDir, includes: ['**/*.exec'])
-        property "sonar.jacoco.itReportPath", fileTree(dir: project.projectDir, includes: ['**/*.ec'])
     }
 }
 
