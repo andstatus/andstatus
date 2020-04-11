@@ -162,24 +162,13 @@ public abstract class ConnectionTwitterLike extends Connection {
      * Returns an array of numeric IDs for every actor the specified actor is following.
      * Current implementation is restricted to 5000 IDs (no paged cursors are used...)
      * @see <a href="https://dev.twitter.com/docs/api/1.1/get/friends/ids">GET friends/ids</a>
-     */
-    @Override
-    public Try<List<String>> getFriendsIds(String actorOid) {
-        return getFriendsOrFollowersIDs(ApiRoutineEnum.GET_FRIENDS_IDS, actorOid);
-    }
 
-    /**
      * Returns a cursored collection of actor IDs for every actor following the specified actor.
      * @see <a
      *      href="https://dev.twitter.com/rest/reference/get/followers/ids">GET followers/ids</a>
      */
-    @NonNull
     @Override
-    public Try<List<String>> getFollowersIds(String actorOid) {
-        return getFriendsOrFollowersIDs(ApiRoutineEnum.GET_FOLLOWERS_IDS, actorOid);
-    }
-
-    private Try<List<String>> getFriendsOrFollowersIDs(ApiRoutineEnum apiRoutineEnum, String actorOid) {
+    public Try<List<String>> getFriendsOrFollowersIds(ApiRoutineEnum apiRoutineEnum, String actorOid) {
         return getApiPath(apiRoutineEnum)
         .map(Uri::buildUpon)
         .map(builder -> builder.appendQueryParameter("user_id", actorOid))

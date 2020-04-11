@@ -34,7 +34,7 @@ public class ProgressLogger {
     public final Optional<ProgressListener> progressListener;
     public final String logTag;
 
-    public static AtomicLong startedAt = new AtomicLong(0);
+    public static final AtomicLong startedAt = new AtomicLong(0);
 
     public static long newStartingTime() {
         final long iStartedAt = MyLog.uniqueCurrentTimeMS();
@@ -59,7 +59,7 @@ public class ProgressLogger {
             // Empty
         }
     }
-    public static ProgressListener EMPTY_LISTENER = new EmptyListener();
+    public static final ProgressListener EMPTY_LISTENER = new EmptyListener();
 
     public ProgressLogger(ProgressListener progressListener) {
         this.progressListener = Optional.ofNullable(progressListener);

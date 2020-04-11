@@ -31,9 +31,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ActorSql {
-    public static final String AVATAR_IMAGE_TABLE_ALIAS = "av";
+    private static final String AVATAR_IMAGE_TABLE_ALIAS = "av";
 
-    public static final Map<String, String> fullProjectionMap = new HashMap<>();
+    static final Map<String, String> fullProjectionMap = new HashMap<>();
     private static final Map<String, String> userOnlyProjectionMap = new HashMap<>();
     private static final Map<String, String> baseProjectionMap = new HashMap<>();
     private static final Map<String, String> avatarProjectionMap = new HashMap<>();

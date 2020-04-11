@@ -31,9 +31,10 @@ import android.graphics.Shader;
 import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
-import androidx.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.LruCache;
+
+import androidx.annotation.Nullable;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
@@ -227,8 +228,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
 
     @Nullable
     private Bitmap videoPathToBitmap(ImageFile imageFile) {
-        try {
-            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        try (MediaMetadataRetriever retriever = new MediaMetadataRetriever()) {
             retriever.setDataSource(MyContextHolder.get().context(), Uri.parse(imageFile.getPath()));
             Bitmap source = retriever.getFrameAtTime();
             if (source == null) {

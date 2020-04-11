@@ -22,6 +22,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContextHolder;
@@ -36,6 +37,7 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import java.util.concurrent.TimeUnit;
 
 public class MediaMetadata implements IsEmpty {
+    private final static String TAG = MediaMetadata.class.getSimpleName();
     public static final MediaMetadata EMPTY = new MediaMetadata(0, 0, 0);
     public final int width;
     public final int height;
@@ -45,19 +47,20 @@ public class MediaMetadata implements IsEmpty {
     public static MediaMetadata fromFilePath(String path) {
         try {
             if (MyContentType.fromPathOfSavedFile(path) == MyContentType.VIDEO) {
-                MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-                retriever.setDataSource(MyContextHolder.get().context(), Uri.parse(path));
-                return new MediaMetadata(
+                try (MediaMetadataRetriever retriever = new MediaMetadataRetriever()) {
+                    retriever.setDataSource(MyContextHolder.get().context(), Uri.parse(path));
+                    return new MediaMetadata(
                         Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)),
                         Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)),
                         Long.parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)));
+                }
             }
             BitmapFactory.Options options = new BitmapFactory.Options();
             options.inJustDecodeBounds = true;
             BitmapFactory.decodeFile(path, options);
             return new MediaMetadata(options.outWidth, options.outHeight, 0);
         } catch (Exception e) {
-            MyLog.d("getImageSize", "path:'" + path + "'", e);
+            MyLog.d(TAG, "path:'" + path + "'", e);
         }
         return EMPTY;
     }

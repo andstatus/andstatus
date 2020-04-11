@@ -27,8 +27,8 @@ import java.util.concurrent.TimeUnit;
  * @author yvolk@yurivolkov.com
  */
 public class RelativeTime {
-    public static long DATETIME_MILLIS_NEVER = 0;
-    public static long SOME_TIME_AGO = 1; // We don't know exact date
+    public final static long DATETIME_MILLIS_NEVER = 0;
+    public final static long SOME_TIME_AGO = 1; // We don't know exact date
 
     private RelativeTime() {
         // Empty

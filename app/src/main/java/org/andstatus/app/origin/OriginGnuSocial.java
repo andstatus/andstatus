@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.Optional;
 
 class OriginGnuSocial extends Origin {
+    private static final Optional<Character> GROUP_ACTOR_REFERENCE_CHARACTER = Optional.of('!');
 
     OriginGnuSocial(MyContext myContext, OriginType originType) {
         super(myContext, originType);
@@ -47,6 +48,6 @@ class OriginGnuSocial extends Origin {
 
     @Override
     public Optional<Character> groupActorReferenceChar() {
-        return Optional.of('!');
+        return GROUP_ACTOR_REFERENCE_CHARACTER;
     }
 }

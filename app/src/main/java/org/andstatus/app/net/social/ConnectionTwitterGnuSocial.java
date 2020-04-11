@@ -90,16 +90,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    public Try<List<String>> getFriendsIds(String actorOid) {
-        return getFriendsOrFollowersIDs(ApiRoutineEnum.GET_FRIENDS_IDS, actorOid);
-    }
-
-    @Override
-    public Try<List<String>> getFollowersIds(String actorOid) {
-        return getFriendsOrFollowersIDs(ApiRoutineEnum.GET_FOLLOWERS_IDS, actorOid);
-    }
-
-    private Try<List<String>> getFriendsOrFollowersIDs(ApiRoutineEnum apiRoutineEnum, String actorOid) {
+    public Try<List<String>> getFriendsOrFollowersIds(ApiRoutineEnum apiRoutineEnum, String actorOid) {
         return getApiPath(apiRoutineEnum)
         .map(Uri::buildUpon)
         .map(builder -> builder.appendQueryParameter("user_id", actorOid))
