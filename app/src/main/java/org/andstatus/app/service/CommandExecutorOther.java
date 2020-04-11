@@ -36,18 +36,16 @@ import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Note;
-import org.andstatus.app.net.social.RateLimitStatus;
-import org.andstatus.app.support.java.util.function.SupplierWithException;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.TryUtils;
 import org.andstatus.app.util.UriUtils;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import io.vavr.control.Try;
 
 class CommandExecutorOther extends CommandExecutorStrategy{
     private static final int ACTORS_LIMIT = 400;
@@ -57,119 +55,94 @@ class CommandExecutorOther extends CommandExecutorStrategy{
     }
 
     @Override
-    public void execute() {
+    public Try<Boolean> execute() {
         switch (execContext.getCommandData().getCommand()) {
             case LIKE:
             case UNDO_LIKE:
-                createOrDestroyFavorite(execContext.getCommandData().itemId, 
+                return createOrDestroyFavorite(execContext.getCommandData().itemId,
                         execContext.getCommandData().getCommand() == CommandEnum.LIKE);
-                break;
             case FOLLOW:
             case UNDO_FOLLOW:
-                followOrStopFollowingActor(getActor(),
+                return followOrStopFollowingActor(getActor(),
                         execContext.getCommandData().getCommand() == CommandEnum.FOLLOW);
-                break;
             case UPDATE_NOTE:
-                updateNote(execContext.getCommandData().itemId);
-                break;
+                return updateNote(execContext.getCommandData().itemId);
             case DELETE_NOTE:
-                deleteNote(execContext.getCommandData().itemId);
-                break;
+                return deleteNote(execContext.getCommandData().itemId);
             case UNDO_ANNOUNCE:
-                undoAnnounce(execContext.getCommandData().itemId);
-                break;
+                return undoAnnounce(execContext.getCommandData().itemId);
             case GET_CONVERSATION:
-                getConversation(execContext.getCommandData().itemId);
-                break;
+                return getConversation(execContext.getCommandData().itemId);
             case GET_NOTE:
-                getNote(execContext.getCommandData().itemId);
-                break;
+                return getNote(execContext.getCommandData().itemId);
             case GET_ACTOR:
-                getActorCommand(getActor(), execContext.getCommandData().getUsername());
-                break;
+                return getActorCommand(getActor(), execContext.getCommandData().getUsername());
             case SEARCH_ACTORS:
-                searchActors(execContext.getCommandData().getUsername());
-                break;
+                return searchActors(execContext.getCommandData().getUsername());
             case ANNOUNCE:
-                reblog(execContext.getCommandData().itemId);
-                break;
+                return reblog(execContext.getCommandData().itemId);
             case RATE_LIMIT_STATUS:
-                rateLimitStatus();
-                break;
+                return rateLimitStatus();
             case GET_ATTACHMENT:
-                FileDownloader.newForDownloadData(DownloadData.fromId(execContext.getCommandData().itemId))
+                return FileDownloader.newForDownloadData(DownloadData.fromId(execContext.getCommandData().itemId))
                         .setConnectionRequired(ConnectionRequired.DOWNLOAD_ATTACHMENT)
                         .load(execContext.getCommandData());
-                break;
             case GET_AVATAR:
-                (new AvatarDownloader(getActor())).load(execContext.getCommandData());
-                break;
+                return (new AvatarDownloader(getActor())).load(execContext.getCommandData());
             default:
-                MyLog.e(this, "Unexpected command here " + execContext.getCommandData());
-                break;
+                return TryUtils.failure("Unexpected command here " + execContext.getCommandData());
         }
     }
 
-    private void searchActors(String searchQuery) {
+    private Try<Boolean> searchActors(String searchQuery) {
         final String method = "searchActors";
         String msgLog = method + "; query='" + searchQuery + "'";
-        List<Actor> actors = null;
-        if (StringUtil.nonEmpty(searchQuery)) {
-            try {
-                final DataUpdater dataUpdater = new DataUpdater(execContext);
-                final Actor myAccountActor = execContext.getMyAccount().getActor();
-                actors = getConnection().searchActors(ACTORS_LIMIT, searchQuery);
-                for (Actor actor : actors) {
-                    dataUpdater.onActivity(myAccountActor.update(actor));
-                }
-            } catch (ConnectionException e) {
-                logConnectionException(e, msgLog);
-            }
-        } else {
-            msgLog += ", empty query";
-            logExecutionError(true, msgLog);
+        if (StringUtil.isEmpty(searchQuery)) {
+            return logExecutionError(true, msgLog + ", empty query");
         }
-        MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
+
+        return getConnection()
+        .searchActors(ACTORS_LIMIT, searchQuery)
+        .map(actors -> {
+            final DataUpdater dataUpdater = new DataUpdater(execContext);
+            final Actor myAccountActor = execContext.getMyAccount().getActor();
+            for (Actor actor : actors) {
+                dataUpdater.onActivity(myAccountActor.update(actor));
+            }
+            return true;
+        })
+        .mapFailure(e -> ConnectionException.of(e).append(msgLog));
     }
 
-    private void getConversation(long noteId) {
+    private Try<Boolean> getConversation(long noteId) {
         final String method = "getConversation";
         String conversationOid = MyQuery.noteIdToConversationOid(execContext.myContext, noteId);
         if (StringUtil.isEmpty(conversationOid)) {
-            logExecutionError(true, method + " empty conversationId " +
+            return logExecutionError(true, method + " empty conversationId " +
                     MyQuery.noteInfoForLog(execContext.myContext, noteId));
-        } else {
-            Set<Long> noteIds = onActivities(method,
-                    () -> getConnection().getConversation(conversationOid),
-                    () -> MyQuery.noteInfoForLog(execContext.myContext, noteId))
-                    .stream().map(activity -> activity.getNote().noteId).collect(Collectors.toSet());
+        }
+        return getConnection()
+        .getConversation(conversationOid)
+        .onSuccess(activities -> {
+            DataUpdater.onActivities(execContext, activities);
+            MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
+        })
+        .onSuccess(activities -> {
+            Set<Long> noteIds = activities.stream()
+                    .map(activity -> activity.getNote().noteId)
+                    .collect(Collectors.toSet());
             if (noteIds.size() > 1) {
                 if (new CheckConversations().setNoteIdsOfOneConversation(noteIds)
                         .setMyContext(execContext.myContext).fix() > 0) {
                     execContext.getCommandData().getResult().incrementNewCount();
                 }
             }
-        }
+        })
+        .map(activities -> true)
+        .mapFailure(e -> ConnectionException.of(e).append(MyQuery.noteInfoForLog(execContext.myContext, noteId)));
     }
 
-    private List<AActivity> onActivities(String method, SupplierWithException<List<AActivity>, ConnectionException> supplier,
-                              Supplier<String> contextInfoSupplier) {
-        List<AActivity> activities;
-        try {
-            activities = supplier.get();
-            DataUpdater.onActivities(execContext, activities);
-            MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
-            return activities;
-        } catch (ConnectionException e) {
-            if (e.getStatusCode() == StatusCode.NOT_FOUND) {
-                execContext.getResult().incrementParseExceptions();
-            }
-            logConnectionException(e, method + "; " + contextInfoSupplier.get());
-        }
-        return Collections.emptyList();
-    }
-
-    private void getActorCommand(Actor actorIn, String username) {
+    private Try<Boolean> getActorCommand(Actor actorIn, String username) {
         final String method = "getActor";
         String msgLog = method + ";";
         Actor actorIn2 = UriUtils.nonRealOid(actorIn.oid) && actorIn.origin.isUsernameValid(username)
@@ -177,47 +150,38 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             ? Actor.fromId(actorIn.origin, actorIn.actorId).setUsername(username)
                 .setWebFingerId(actorIn.getWebFingerId())
             : actorIn;
-        Actor actor = null;
-        if (actorIn2.canGetActor()) {
-            try {
-                msgLog  = msgLog + "; username='" + actorIn2.getUsername() + "'";
-                actor = getConnection().getActor(actorIn2);
-                logIfActorIsEmpty(msgLog, actor);
-            } catch (ConnectionException e) {
-                logConnectionException(e, msgLog + actorInfoLogged(actorIn2));
-            }
-        } else {
+        if (!actorIn2.canGetActor()) {
             msgLog += ", cannot get Actor";
-            logExecutionError(true, msgLog + actorInfoLogged(actorIn2));
+            return logExecutionError(true, msgLog + actorInfoLogged(actorIn2));
         }
-        if (actor != null && noErrors()) {
-            new DataUpdater(execContext).onActivity(execContext.getMyAccount().getActor().update(actor));
-        } else {
-            actorIn2.requestAvatarDownload();
-        }
-        MyLog.d(this, (msgLog + (noErrors() ? " succeeded" : " failed") ));
+        String msgLog2  = msgLog + "; username='" + actorIn2.getUsername() + "'";
+
+        return getConnection()
+        .getActor(actorIn2)
+        .flatMap(actor ->
+            failIfActorIsEmpty(msgLog2, actor))
+        .map(actor -> {
+            AActivity activity = execContext.getMyAccount().getActor().update(actor);
+            new DataUpdater(execContext).onActivity(activity);
+            return true;
+        })
+        .onFailure(e -> actorIn2.requestAvatarDownload());
     }
 
     /**
      * @param create true - create, false - destroy
      */
-    private void createOrDestroyFavorite(long noteId, boolean create) {
+    private Try<Boolean> createOrDestroyFavorite(long noteId, boolean create) {
         final String method = (create ? "create" : "destroy") + "Favorite";
-        String oid = getNoteOid(method, noteId, true);
-        AActivity activity = null;
-        if (noErrors()) {
-            try {
-                if (create) {
-                    activity = getConnection().like(oid);
-                } else {
-                    activity = getConnection().undoLike(oid);
-                }
-                logIfEmptyNote(method, noteId, activity.getNote());
-            } catch (ConnectionException e) {
-                logConnectionException(e, method + "; " + MyQuery.noteInfoForLog(execContext.myContext, noteId));
-            }
-        }
-        if (noErrors() && activity != null) {
+        return getNoteOid(method, noteId, true)
+        .flatMap( oid -> create
+            ? getConnection().like(oid)
+            : getConnection().undoLike(oid)
+        )
+        .flatMap(activity ->
+                failIfEmptyNote(method, noteId, activity.getNote())
+                .map(b -> activity))
+        .flatMap(activity -> {
             if (!activity.type.equals(create ? ActivityType.LIKE : ActivityType.UNDO_LIKE)) {
                 /*
                  * yvolk: 2011-09-27 Twitter docs state that
@@ -229,180 +193,155 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 if (create) {
                     // For the case we created favorite, let's
                     // change the flag manually.
-                    activity = activity.getNote().act(activity.accountActor, activity.getActor(), ActivityType.LIKE);
-
+                    AActivity activity2 = activity.getNote().act(activity.accountActor, activity.getActor(), ActivityType.LIKE);
                     MyLog.d(this, method + "; Favorited flag didn't change yet.");
                     // Let's try to assume that everything was OK
+                    return Try.success(activity2);
                 } else {
                     // yvolk: 2011-09-27 Sometimes this
                     // twitter.com 'async' process doesn't work
                     // so let's try another time...
                     // This is safe, because "delete favorite"
                     // works even for the "Unfavorited" tweet :-)
-                    logExecutionError(false, method + "; Favorited flag didn't change yet. " +
+                    return logExecutionError(false, method + "; Favorited flag didn't change yet. " +
                             MyQuery.noteInfoForLog(execContext.myContext, noteId));
                 }
             }
-
-            if (noErrors()) {
-                // Please note that the Favorited note may be NOT in the Account's Home timeline!
-                new DataUpdater(execContext).onActivity(activity);
-            }
-        }
-        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
+            return Try.success(activity);
+        })
+        .map(activity -> {
+            // Please note that the Favorited note may be NOT in the Account's Home timeline!
+            new DataUpdater(execContext).onActivity(activity);
+            return true;
+        });
     }
 
     @NonNull
-    private String getNoteOid(String method, long noteId, boolean required) {
+    private Try<String> getNoteOid(String method, long noteId, boolean required) {
         String oid = MyQuery.idToOid(execContext.myContext, OidEnum.NOTE_OID, noteId, 0);
         if (required && StringUtil.isEmpty(oid)) {
-            logExecutionError(true, method + "; no note ID in the Social Network "
+            return logExecutionError(true, method + "; no note ID in the Social Network "
                     + MyQuery.noteInfoForLog(execContext.myContext, noteId));
         }
-        return oid;
+        return Try.success(oid);
     }
 
     /**
      * @param follow true - Follow, false - Stop following
      */
-    private void followOrStopFollowingActor(Actor actor, boolean follow) {
+    private Try<Boolean> followOrStopFollowingActor(Actor actor, boolean follow) {
         final String method = (follow ? "follow" : "stopFollowing") + "Actor";
-        AActivity activity = null;
-        if (noErrors()) {
-            try {
-                activity = getConnection().follow(actor.oid, follow);
-                final Actor friend = activity.getObjActor();
-                friend.isMyFriend = TriState.UNKNOWN; // That "hack" attribute may only confuse us here as it can show outdated info
-                logIfActorIsEmpty(method, friend);
-            } catch (ConnectionException e) {
-                logConnectionException(e, method + actorInfoLogged(actor));
-            }
-        }
-        if (activity != null && noErrors()) {
-            if (noErrors()) {
-                new DataUpdater(execContext).onActivity(activity);
-            }
-        }
-        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
+        return getConnection()
+        .follow(actor.oid, follow)
+        .flatMap(activity -> {
+            final Actor friend = activity.getObjActor();
+            friend.isMyFriend = TriState.UNKNOWN; // That "hack" attribute may only confuse us here as it can show outdated info
+            return failIfActorIsEmpty(method, friend)
+                .map(a -> {
+                    new DataUpdater(execContext).onActivity(activity);
+                    return true;
+                });
+        });
     }
 
-    private void logIfActorIsEmpty(String method, Actor actor) {
+    private Try<Actor> failIfActorIsEmpty(String method, Actor actor) {
         if (actor == null || actor.isEmpty()) {
-            logExecutionError(false, "Actor is empty, " + method);
+            return logExecutionError(false, "Actor is empty, " + method);
         }
+        return Try.success(actor);
     }
 
     private String actorInfoLogged(Actor actor) {
         return actor.toString();
     }
 
-    private void deleteNote(long noteId) {
+    private Try<Boolean> deleteNote(long noteId) {
         final String method = "deleteNote";
         if (noteId == 0) {
             MyLog.d(this, method + " skipped as noteId == 0");
-            return;
+            return Try.success(true);
         }
-        boolean ok = true;
         Actor author = Actor.load(execContext.getMyContext(), MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, noteId));
-        if (execContext.getMyAccount().getActor().isSame(author)) {
-            ok = deleteNoteAtServer(noteId, method);
-        }
-        if (ok) {
-            MyProvider.deleteNoteAndItsActivities(execContext.getMyContext(), noteId);
-        }
-        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
+        return (execContext.getMyAccount().getActor().isSame(author)
+                 ? deleteNoteAtServer(noteId, method)
+                 : Try.success(true))
+        .onSuccess(b -> MyProvider.deleteNoteAndItsActivities(execContext.getMyContext(), noteId));
     }
 
-    private boolean deleteNoteAtServer(long noteId, String method) {
-        boolean ok = false;
-        String oid = getNoteOid(method, noteId, false);
+    private Try<Boolean> deleteNoteAtServer(long noteId, String method) {
+        Try<String> tryOid = getNoteOid(method, noteId, false);
         DownloadStatus statusStored = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
-        try {
-            if (StringUtil.isEmpty(oid) || statusStored != DownloadStatus.LOADED) {
-                ok = true;
-                MyLog.i(this, method + "; OID='" + oid + "', status='" + statusStored + "' for noteId=" + noteId);
-            } else {
-                ok = getConnection().deleteNote(oid);
-                logOk(ok);
-            }
-        } catch (ConnectionException e) {
-            if (e.getStatusCode() == StatusCode.NOT_FOUND) {
-                // This means that there is no such "Status", so we may
-                // assume that it's Ok!
-                ok = true;
-            } else {
-                logConnectionException(e, method + "; " + oid);
-            }
+        if (tryOid.filter(StringUtil::nonEmptyNonTemp).isFailure() || statusStored != DownloadStatus.LOADED) {
+            MyLog.i(this, method + "; OID='" + tryOid + "', status='" + statusStored + "' for noteId=" + noteId);
+            return Try.success(true);
         }
-        return ok;
+        return tryOid
+            .flatMap(oid -> getConnection().deleteNote(oid))
+            .recoverWith(ConnectionException.class, e ->
+                // "Not found" means that there is no such "Status", so we may
+                // assume that it's Ok!
+                (e.getStatusCode() == StatusCode.NOT_FOUND)
+                        ? Try.success(true)
+                        : logException(e, method + "; noteOid:" + tryOid + ", " +
+                        MyQuery.noteInfoForLog(execContext.myContext, noteId)).map(any -> true)
+            );
     }
 
-    private void undoAnnounce(long noteId) {
+    private Try<Boolean> undoAnnounce(long noteId) {
         final String method = "destroyReblog";
         final long actorId = execContext.getMyAccount().getActorId();
         final Pair<Long, ActivityType> reblogAndType = MyQuery.noteIdToLastReblogging(
                 execContext.getMyContext().getDatabase(), noteId, actorId);
         if (reblogAndType.second != ActivityType.ANNOUNCE) {
-            logExecutionError(true, "No local Reblog of "
+            return logExecutionError(true, "No local Reblog of "
                     + MyQuery.noteInfoForLog(execContext.myContext, noteId) +
                     " by " + execContext.getMyAccount() );
-            return;
         }
         String reblogOid = MyQuery.idToOid(execContext.myContext, OidEnum.REBLOG_OID, noteId, actorId);
-        try {
-            if (!getConnection().undoAnnounce(reblogOid)) {
-                logExecutionError(false, "Connection returned 'false' " + method
-                        + MyQuery.noteInfoForLog(execContext.myContext, noteId));
-            }
-        } catch (ConnectionException e) {
+        return getConnection()
+        .undoAnnounce(reblogOid)
+        .recoverWith(ConnectionException.class, e ->
             // "Not found" means that there is no such "Status", so we may
             // assume that it's Ok!
-            if (e.getStatusCode() != StatusCode.NOT_FOUND) {
-                logConnectionException(e, method + "; reblogOid:" + reblogOid + ", " +
-                        MyQuery.noteInfoForLog(execContext.myContext, noteId));
-            }
-        }
-        if (noErrors()) {
-            try {
-                // And delete the reblog from local storage
-                MyProvider.deleteActivity(execContext.getMyContext(), reblogAndType.first, noteId, false);
-            } catch (Exception e) {
-                MyLog.e(this, "Error destroying reblog locally", e);
-            }
-        }
-        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
+            (e.getStatusCode() == StatusCode.NOT_FOUND)
+                ? Try.success(true)
+                : logException(e, method + "; reblogOid:" + reblogOid + ", " +
+                MyQuery.noteInfoForLog(execContext.myContext, noteId)).map(any -> true)
+        )
+        .onSuccess(b ->
+            // And delete the reblog from local storage
+            MyProvider.deleteActivity(execContext.getMyContext(), reblogAndType.first, noteId, false)
+        );
     }
 
-    private void getNote(long noteId) {
+    private Try<Boolean> getNote(long noteId) {
         final String method = "getNote";
-        String oid = getNoteOid(method, noteId, true);
-        if (noErrors()) {
-            try {
-                AActivity activity = getConnection().getNote(oid);
-                if (activity.isEmpty()) {
-                    logExecutionError(false, "Received Note is empty, "
-                            + MyQuery.noteInfoForLog(execContext.myContext, noteId));
-                } else {
-                    try {
-                        new DataUpdater(execContext).onActivity(activity);
-                    } catch (Exception e) {
-                        logExecutionError(false, "Error while saving to the local cache,"
-                                + MyQuery.noteInfoForLog(execContext.myContext, noteId) + ", " + e.getMessage());
-                    }
+        return getNoteOid(method, noteId, true)
+        .flatMap(oid -> getConnection().getNote(oid))
+        .flatMap(activity -> {
+            if (activity.isEmpty()) {
+                return logExecutionError(false, "Received Note is empty, "
+                        + MyQuery.noteInfoForLog(execContext.myContext, noteId));
+            } else {
+                try {
+                    new DataUpdater(execContext).onActivity(activity);
+                    return Try.success(true);
+                } catch (Exception e) {
+                    return logExecutionError(false, "Error while saving to the local cache,"
+                            + MyQuery.noteInfoForLog(execContext.myContext, noteId) + ", " + e.getMessage());
                 }
-            } catch (ConnectionException e) {
-                if (e.getStatusCode() == StatusCode.NOT_FOUND) {
-                    execContext.getResult().incrementParseExceptions();
-                    // This means that there is no such "Status"
-                    // TODO: so we don't need to retry this command
-                }
-                logConnectionException(e, method + " " + MyQuery.noteInfoForLog(execContext.myContext, noteId));
             }
-        }
-        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
+        })
+        .onFailure(e -> {
+            if (ConnectionException.of(e).getStatusCode() == StatusCode.NOT_FOUND) {
+                execContext.getResult().incrementParseExceptions();
+                // This means that there is no such "Status"
+                // TODO: so we don't need to retry this command
+            }
+        });
     }
 
-    private void updateNote(long activityId) {
+    private Try<Boolean> updateNote(long activityId) {
         final String method = "updateNote";
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, activityId);
         Note note = Note.loadContentById(execContext.myContext, noteId);
@@ -416,73 +355,61 @@ class CommandExecutorOther extends CommandExecutorStrategy{
                 + (StringUtil.nonEmpty(content) ? "content:'" + MyLog.trimmedString(content, 80) + "'" : "")
                 + (attachments.isEmpty() ? "" : "; " + attachments);
 
-        AActivity activity = AActivity.EMPTY;
-        try {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, () -> method + ";" + msgLog);
-            }
-            if (!note.getStatus().mayBeSent()) {
-                throw ConnectionException.hardConnectionException("Wrong note status: " + note.getStatus(), null);
-            }
-            long inReplyToNoteId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
-            String inReplyToNoteOid = getNoteOid(method, inReplyToNoteId, false);
-            activity = getConnection().updateNote(note, inReplyToNoteOid, attachments);
-            logIfEmptyNote(method, noteId, activity.getNote());
-        } catch (ConnectionException e) {
-            logConnectionException(e, method + "; " + msgLog);
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(this, () -> method + ";" + msgLog);
         }
-        if (noErrors() && activity.nonEmpty()) {
-            // The note was sent successfully, so now update unsent message
-            // New Actor's note should be put into the Account's Home timeline.
-            activity.setId(activityId);
-            activity.getNote().noteId = noteId;
-            new DataUpdater(execContext).onActivity(activity);
-            execContext.getResult().setItemId(noteId);
-        } else {
-            execContext.getMyContext().getNotifier().onUnsentActivity(activityId);
+        if (!note.getStatus().mayBeSent()) {
+            return Try.failure(ConnectionException.hardConnectionException("Wrong note status: " + note.getStatus(), null));
         }
-        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
+        long inReplyToNoteId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
+        Try<String> inReplyToNoteOid = getNoteOid(method, inReplyToNoteId, false);
+
+        return inReplyToNoteOid
+        .flatMap(oid -> getConnection().updateNote(note, oid, attachments))
+        .flatMap(activity ->
+            failIfEmptyNote(method, noteId, activity.getNote()).map(b -> {
+                // The note was sent successfully, so now update unsent message
+                // New Actor's note should be put into the Account's Home timeline.
+                activity.setId(activityId);
+                activity.getNote().noteId = noteId;
+                new DataUpdater(execContext).onActivity(activity);
+                execContext.getResult().setItemId(noteId);
+                return true;
+            })
+            .onFailure( e -> execContext.getMyContext().getNotifier().onUnsentActivity(activityId))
+        );
     }
 
-    private void logIfEmptyNote(String method, long noteId, Note note) {
+    private Try<Boolean> failIfEmptyNote(String method, long noteId, Note note) {
         if (note == null || note.isEmpty()) {
-            logExecutionError(false, method + "; Received note is empty, "
+            return logExecutionError(false, method + "; Received note is empty, "
                     + MyQuery.noteInfoForLog(execContext.myContext, noteId));
         }
+        return Try.success(true);
     }
 
-    private void reblog(long rebloggedNoteId) {
+    private Try<Boolean> reblog(long rebloggedNoteId) {
         final String method = "Reblog";
-        String oid = getNoteOid(method, rebloggedNoteId, true);
-        AActivity activity = AActivity.EMPTY;
-        if (noErrors()) {
-            try {
-                activity = getConnection().announce(oid);
-                logIfEmptyNote(method, rebloggedNoteId, activity.getNote());
-            } catch (ConnectionException e) {
-                logConnectionException(e, "Reblog " + oid);
-            }
-        }
-        if (noErrors()) {
+        return getNoteOid(method, rebloggedNoteId, true)
+        .flatMap(oid -> getConnection().announce(oid))
+        .map(activity -> {
+            failIfEmptyNote(method, rebloggedNoteId, activity.getNote());
             // The tweet was sent successfully
             // Reblog should be put into the Account's Home timeline!
             new DataUpdater(execContext).onActivity(activity);
             MyProvider.updateNoteReblogged(execContext.getMyContext(), activity.accountActor.origin, rebloggedNoteId);
-        }
-        MyLog.d(this, method + (noErrors() ? " succeeded" : " failed"));
+            return true;
+        });
     }
     
-    private void rateLimitStatus() {
-        try {
-            RateLimitStatus rateLimitStatus = getConnection().rateLimitStatus();
-            boolean ok = !rateLimitStatus.isEmpty();
-            if (ok) {
-                execContext.getResult().setRemainingHits(rateLimitStatus.remaining); 
+    private Try<Boolean> rateLimitStatus() {
+        return getConnection().rateLimitStatus()
+        .map(rateLimitStatus -> {
+            if (rateLimitStatus.nonEmpty()) {
+                execContext.getResult().setRemainingHits(rateLimitStatus.remaining);
                 execContext.getResult().setHourlyLimit(rateLimitStatus.limit);
-             }
-            logOk(ok);
-        } catch (ConnectionException e) {
-            logConnectionException(e, "rateLimitStatus");
-        }
+            }
+            return rateLimitStatus.nonEmpty();
+        });
     }
 }

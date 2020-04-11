@@ -295,7 +295,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
     }
 
     @Test
-    public void testContextMenuWhileEditing() throws InterruptedException {
+    public void testContextMenuWhileEditing1() throws InterruptedException {
         final String method = "testContextMenuWhileEditing";
         TestSuite.waitForListLoaded(getActivity(), 2);
         openEditor();
@@ -310,6 +310,25 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         String content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
         helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_TEXT, R.id.note_wrapper);
         assertEquals(logMsg, content, getClipboardText(method));
+
+        /* We see crash in the test...
+            java.lang.IllegalStateException: beginBroadcast() called while already in a broadcast
+            at android.os.RemoteCallbackList.beginBroadcast(RemoteCallbackList.java:241)
+            at com.android.server.clipboard.ClipboardService.setPrimaryClipInternal(ClipboardService.java:583)
+
+            So we split clipboard copying functions into two tests
+        */
+   }
+
+    @Test
+    public void testContextMenuWhileEditing2() throws InterruptedException {
+        final String method = "testContextMenuWhileEditing";
+        TestSuite.waitForListLoaded(getActivity(), 2);
+        openEditor();
+        ListActivityTestHelper<TimelineActivity> helper =
+                new ListActivityTestHelper<>(getActivity(), ConversationActivity.class);
+        long listItemId = helper.getListItemIdOfLoadedReply();
+        String logMsg = "listItemId=" + listItemId;
 
         helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_AUTHOR, R.id.note_wrapper);
         String text = getClipboardText(method);

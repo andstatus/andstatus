@@ -128,7 +128,7 @@ public enum CommandEnum {
     /** Localized title for UI 
      * @param accountName */
     public CharSequence getTitle(MyContext myContext, String accountName) {
-        if (titleResId == 0 || myContext == null) {
+        if (titleResId == 0 || myContext == null || myContext.context() == null) {
             return this.code;
         }
         int resId = titleResId;

@@ -38,6 +38,8 @@ import org.andstatus.app.util.MyLog;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.vavr.control.Try;
+
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -117,7 +119,7 @@ public class AvatarDownloaderTest {
 
         changeMaAvatarUrl(ma, urlStringInitial);
         long rowIdError = loadAndAssertStatusForMa(ma, "Restored avatar URL",
-                DownloadStatus.ABSENT, DownloadStatus.LOADED, true);
+                DownloadStatus.HARD_ERROR, DownloadStatus.LOADED, true);
         long rowIdRecovered = loadAndAssertStatusForMa(ma, "Reloading avatar",
                 DownloadStatus.LOADED, DownloadStatus.LOADED, false);
         assertEquals("Updated the same row ", rowIdError, rowIdRecovered);
@@ -186,13 +188,13 @@ public class AvatarDownloaderTest {
         FileDownloader loader = new AvatarDownloader(actor);
         if (mockNetworkError) {
             loader.setConnectionMock(ConnectionMock.newFor(ma)
-                    .withException(new ConnectionException("Mocked IO exception"))
+                    .withException(new ConnectionException(ConnectionException.StatusCode.NOT_FOUND,"Mocked IO exception"))
                     .connection);
         } else {
             ma.setConnection();
         }
         CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, actor, actor.getUsername());
-        loader.load(commandData);
+        Try<Boolean> loaded = loader.load(commandData);
 
         DownloadData data = AvatarData.getDisplayedForActor(actor);
         String logMsg = description + " Expecting load status: " + loadStatus + ", displayed: " + displayedStatus +
@@ -200,6 +202,9 @@ public class AvatarDownloaderTest {
                 ", error message:'" + commandData.getResult().getMessage() + "')"
                 + (mockNetworkError ? "mocked the error" : "");
 
+        if (mockNetworkError || loadStatus == DownloadStatus.HARD_ERROR) {
+            assertTrue("Load should be a failure: " + logMsg, loaded.isFailure());
+        }
         assertEquals("Checking load status: " + logMsg, loadStatus, loader.getStatus());
         if (DownloadStatus.LOADED.equals(loadStatus)) {
             assertFalse("Should be no errors: " + logMsg, commandData.getResult().hasError());

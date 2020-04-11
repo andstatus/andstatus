@@ -104,7 +104,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
     }
 
     @Override
-    public void getRequest(HttpReadResult result) throws ConnectionException {
+    public void getRequest(HttpReadResult result) {
         new HttpConnectionApacheCommon(this, data).getRequest(result);
     }
 }

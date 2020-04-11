@@ -28,8 +28,11 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
+import org.json.JSONObject;
 
 import java.util.Optional;
+
+import io.vavr.control.Try;
 
 class ConnectionAndUrl {
     public final Uri uri;
@@ -40,7 +43,7 @@ class ConnectionAndUrl {
         this.httpConnection = httpConnection;
     }
 
-    public static ConnectionAndUrl fromActor(ConnectionPumpio connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
+    public static Try<ConnectionAndUrl> fromActor(ConnectionPumpio connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) {
         final Optional<Uri> endpoint = actor.getEndpoint(ActorEndpointType.from(apiRoutine));
         Uri uri;
         String host;
@@ -50,7 +53,8 @@ class ConnectionAndUrl {
         } else {
             String username = actor.getUsername();
             if (StringUtil.isEmpty(username)) {
-                throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine + ": username is required");
+                return Try.failure(new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST,
+                        apiRoutine + ": username is required"));
             }
             uri = connection.tryApiPath(Actor.EMPTY, apiRoutine)
                 .map(u -> UriUtils.map(u, s -> s .replace("%username%", username))).getOrElse(Uri.EMPTY);
@@ -59,8 +63,8 @@ class ConnectionAndUrl {
 
         HttpConnection httpConnection = connection.getHttp();
         if (StringUtil.isEmpty(host)) {
-            throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
-                    ": host is empty for " + actor);
+            return Try.failure(new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
+                    ": host is empty for " + actor));
         } else if (connection.getHttp().data.originUrl == null ||
                 host.compareToIgnoreCase(connection.getHttp().data.originUrl.getHost()) != 0) {
             MyLog.v(connection, () -> "Requesting data from the host: " + host);
@@ -73,10 +77,15 @@ class ConnectionAndUrl {
         if (!httpConnection.data.areOAuthClientKeysPresent()) {
             httpConnection.registerClient();
             if (!httpConnection.getCredentialsPresent()) {
-                throw ConnectionException.fromStatusCodeAndHost(ConnectionException.StatusCode.NO_CREDENTIALS_FOR_HOST,
-                        "No credentials", httpConnection.data.originUrl);
+                return Try.failure(ConnectionException.fromStatusCodeAndHost(
+                        ConnectionException.StatusCode.NO_CREDENTIALS_FOR_HOST,
+                        "No credentials", httpConnection.data.originUrl));
             }
         }
-        return new ConnectionAndUrl(uri, httpConnection);
+        return Try.success(new ConnectionAndUrl(uri, httpConnection));
+    }
+
+    Try<JSONObject> getRequest() {
+        return httpConnection.getRequest(uri);
     }
 }

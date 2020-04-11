@@ -18,7 +18,6 @@ package org.andstatus.app.account;
 
 import android.accounts.Account;
 import android.content.ContentResolver;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -44,7 +43,6 @@ import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineSaver;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -55,7 +53,6 @@ import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.json.JSONObject;
 
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import io.vavr.control.Try;
@@ -652,14 +649,15 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             }
         }
 
-        Builder getOriginConfig() throws ConnectionException {
-            OriginConfig config = getConnection().getConfig();
-            if (config.nonEmpty()) {
-                Origin.Builder originBuilder = new Origin.Builder(myAccount.getOrigin());
-                originBuilder.save(config);
-                MyLog.v(this, "Get Origin config succeeded " + config);
-            }
-            return this;
+        Try<Builder> getOriginConfig() {
+            return getConnection().getConfig().map(config -> {
+                if (config.nonEmpty()) {
+                    Origin.Builder originBuilder = new Origin.Builder(myAccount.getOrigin());
+                    originBuilder.save(config);
+                    MyLog.v(this, "Get Origin config succeeded " + config);
+                }
+                return this;
+            });
         }
 
         public Try<Builder> onCredentialsVerified(@NonNull Actor actor) {

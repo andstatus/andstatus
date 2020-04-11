@@ -74,7 +74,7 @@ public class ConnectionGnuSocialTest {
 
         Actor accountActor = demoData.getAccountActorByOid(demoData.gnusocialTestAccountActorOid);
         InputTimelinePage timeline = mock.connection.getTimeline(true, ApiRoutineEnum.PUBLIC_TIMELINE,
-                TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor);
+                TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor).get();
         assertNotNull("timeline returned", timeline);
         int size = 3;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -159,8 +159,8 @@ public class ConnectionGnuSocialTest {
     public void testSearch() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline);
 
-        InputTimelinePage timeline = mock.connection.searchNotes(true, TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20,
-                demoData.globalPublicNoteText);
+        InputTimelinePage timeline = mock.connection.searchNotes(true,
+                TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, demoData.globalPublicNoteText).get();
         assertNotNull("timeline returned", timeline);
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -172,7 +172,7 @@ public class ConnectionGnuSocialTest {
         Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
                 .setContentPosted("Test post note with media");
         AActivity activity = mock.connection.updateNote(note, "",
-                new Attachments().add(Attachment.fromUri(demoData.localImageTestUri)));
+                new Attachments().add(Attachment.fromUri(demoData.localImageTestUri))).get();
         assertEquals("Note returned",
                 privateGetNoteWithAttachment(false).getNote(), activity.getNote());
     }
@@ -186,7 +186,7 @@ public class ConnectionGnuSocialTest {
         final String NOTE_OID = "2215662";
         // Originally downloaded from https://quitter.se/api/statuses/show.json?id=2215662
         mock.addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
-        AActivity activity = mock.connection.getNote(NOTE_OID);
+        AActivity activity = mock.connection.getNote(NOTE_OID).get();
         if (uniqueUid) {
             activity.setNote(activity.getNote().copy(
                     Optional.of(activity.getNote().oid + "_" + demoData.testRunUid), Optional.empty()));
@@ -206,7 +206,7 @@ public class ConnectionGnuSocialTest {
     public void testReblog() throws IOException {
         final String NOTE_OID = "10341561";
         mock.addResponse(org.andstatus.app.tests.R.raw.loadaverage_repost_response);
-        AActivity activity = mock.connection.announce(NOTE_OID);
+        AActivity activity = mock.connection.announce(NOTE_OID).get();
         assertEquals(ActivityType.ANNOUNCE, activity.type);
         Note note = activity.getNote();
         assertEquals("Note oid" + note, NOTE_OID, note.oid);
@@ -260,7 +260,7 @@ public class ConnectionGnuSocialTest {
 
         Actor accountActor = demoData.getAccountActorByOid(demoData.gnusocialTestAccountActorOid);
         InputTimelinePage timeline = mock.connection.getTimeline(true, ApiRoutineEnum.SEARCH_NOTES,
-                TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor);
+                TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor).get();
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 2, timeline.size());
 
@@ -320,7 +320,7 @@ public class ConnectionGnuSocialTest {
 
     private AActivity oneHtmlMentionsTest(String actorUsername, String noteOid, int responseResourceId, int numberOfMembers) throws IOException {
         mock.addResponse(responseResourceId);
-        AActivity activity = mock.connection.getNote(noteOid);
+        AActivity activity = mock.connection.getNote(noteOid).get();
 
         assertEquals("Received a note " + activity, AObjectType.NOTE, activity.getObjectType());
         assertEquals("Should be UPDATE " + activity, ActivityType.UPDATE,  activity.type);

@@ -48,14 +48,17 @@ public interface HttpConnectionInterface {
 
     HttpConnectionData getData();
 
-    default void registerClient() throws ConnectionException {
+    default Try<Void> registerClient() {
         // Do nothing in the default implementation
+        return Try.success(null);
     }
 
     void setHttpConnectionData(HttpConnectionData data);
 
-    default String pathToUrlString(String path) throws ConnectionException {
-        return UrlUtils.pathToUrlString(getData().originUrl, path, errorOnInvalidUrls());
+    default String pathToUrlString(String path) {
+        // TODO: return Try
+        return UrlUtils.pathToUrlString(getData().originUrl, path, errorOnInvalidUrls())
+            .getOrElse("");
     }
 
     default boolean errorOnInvalidUrls() {
@@ -86,49 +89,48 @@ public interface HttpConnectionInterface {
         return Try.success(result)
                 .map(this::postRequest)
                 .map(r -> r.logResponse(getData().getLogName()))
-                .map(HttpReadResult::parseAndThrow);
+                .flatMap(HttpReadResult::tryToParse);
     }
     
     default HttpReadResult postRequest(HttpReadResult result) {
         return result;
     }
 
-    default JSONObject getRequest(Uri uri) throws ConnectionException {
-        return getRequestCommon(uri, true).getJsonObject();
+    default Try<JSONObject> getRequest(Uri uri) {
+        return getRequestCommon(uri, true).flatMap(HttpReadResult::getJsonObject);
     }
 
-    default JSONObject getUnauthenticatedRequest(Uri path) throws ConnectionException {
-        return getRequestCommon(path, false).getJsonObject();
+    default Try<JSONObject> getUnauthenticatedRequest(Uri path) {
+        return getRequestCommon(path, false).flatMap(HttpReadResult::getJsonObject);
     }
 
-    default HttpReadResult getRequestCommon(Uri uri, boolean authenticated) throws ConnectionException {
+    default Try<HttpReadResult> getRequestCommon(Uri uri, boolean authenticated) {
         if (UriUtils.isEmpty(uri)) {
-            throw new IllegalArgumentException("URL is empty");
+            return Try.failure(new IllegalArgumentException("URL is empty"));
         }
         MyLog.v(this, () -> "getRequest; URL='" + uri + "'");
         HttpReadResult result = new HttpReadResult(uri, new JSONObject());
         result.authenticate = authenticated;
         getRequest(result);
         result.logResponse(getData().getLogName());
-        result.parseAndThrow();
-        return result;
+        return result.tryToParse();
     }
 
-    default JSONArray getRequestAsArray(Uri uri) throws ConnectionException {
+    default Try<JSONArray> getRequestAsArray(Uri uri) {
         return getRequestAsArray(uri, "items");
     }
 
-    default JSONArray getRequestAsArray(Uri uri, String parentKey) throws ConnectionException {
-        return getRequestCommon(uri, true).getJsonArray(parentKey);
+    default Try<JSONArray> getRequestAsArray(Uri uri, String parentKey) {
+        return getRequestCommon(uri, true).flatMap(r -> r.getJsonArray(parentKey));
     }
 
-    default void downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) throws ConnectionException {
+    default Try<Void> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
         HttpReadResult result = new HttpReadResult(getData().getMyContext(), connectionRequired, uri, file, new JSONObject());
         getRequest(result);
-        result.parseAndThrow();
+        return result.tryToParse().map(any -> null);
     }
     
-    default void getRequest(HttpReadResult result) throws ConnectionException {
+    default void getRequest(HttpReadResult result) {
         // Empty
     }
     

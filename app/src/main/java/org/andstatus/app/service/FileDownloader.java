@@ -32,6 +32,8 @@ import org.andstatus.app.util.UriUtils;
 
 import java.io.File;
 
+import io.vavr.control.Try;
+
 public abstract class FileDownloader {
     protected final DownloadData data;
     private Connection connectionMock;
@@ -49,7 +51,7 @@ public abstract class FileDownloader {
         data = dataIn;
     }
     
-    void load(CommandData commandData) {
+    Try<Boolean> load(CommandData commandData) {
         switch (data.getStatus()) {
             case LOADED:
                 break;
@@ -66,6 +68,10 @@ public abstract class FileDownloader {
         if (data.isSoftError()) {
             commandData.getResult().incrementNumIoExceptions();
         }
+        return commandData.getResult().hasError()
+            ? Try.failure(ConnectionException
+                .fromStatusCode(ConnectionException.StatusCode.UNKNOWN, commandData.getResult().toSummary()))
+            : Try.success(true);
     }
 
     private void loadUrl() {
@@ -82,22 +88,22 @@ public abstract class FileDownloader {
     private void downloadFile() {
         final String method = "downloadFile";
         DownloadFile fileTemp = new DownloadFile(MyStorage.TEMP_FILENAME_PREFIX + data.getFilenameNew());
-        try {
-            File file = fileTemp.getFile();
-            MyAccount ma = findBestAccountForDownload();
-            MyLog.v(this, () -> "About to download " + data.toString() + "; account:" + ma.getAccountName());
-            if (ma.isValidAndSucceeded()) {
-                ((connectionMock != null) ? connectionMock : getConnection(ma, data.getUri()))
-                        .downloadFile(connectionRequired, data.getUri(), file);
-            } else {
-                data.hardErrorLogged(method + ", No account to download the file", null);
-            }
-        } catch (ConnectionException e) {
-            if (e.isHardError()) {
-                data.hardErrorLogged(method, e);
-            } else {
-                data.softErrorLogged(method, e);
-            }
+        File file = fileTemp.getFile();
+        MyAccount ma = findBestAccountForDownload();
+        MyLog.v(this, () -> "About to download " + data.toString() + "; account:" + ma.getAccountName());
+        if (ma.isValidAndSucceeded()) {
+            ((connectionMock != null) ? Try.success(connectionMock) : getConnection(ma, data.getUri()))
+            .flatMap(connection -> connection.downloadFile(connectionRequired, data.getUri(), file))
+            .onFailure(e -> {
+                ConnectionException ce = ConnectionException.of(e);
+                if (ce.isHardError()) {
+                    data.hardErrorLogged(method, ce);
+                } else {
+                    data.softErrorLogged(method, ce);
+                }
+            });
+        } else {
+            data.hardErrorLogged(method + ", No account to download the file", null);
         }
         if (data.isError()) {
             fileTemp.delete();
@@ -115,14 +121,15 @@ public abstract class FileDownloader {
         return this;
     }
 
-    private Connection getConnection(MyAccount ma, Uri uri) throws ConnectionException {
+    private Try<Connection> getConnection(MyAccount ma, Uri uri) {
         if (UriUtils.isEmpty(uri)) {
-            throw new ConnectionException(ConnectionException.StatusCode.NOT_FOUND, "No Uri to (down)load from: '" + uri + "'");
+            return Try.failure(new ConnectionException(ConnectionException.StatusCode.NOT_FOUND,
+                    "No Uri to (down)load from: '" + uri + "'"));
         }
         if (UriUtils.isDownloadable(uri)) {
-            return ma.getConnection();
+            return Try.success(ma.getConnection());
         } else {
-            return new ConnectionLocal();
+            return Try.success(new ConnectionLocal());
         }
     }
 
@@ -132,9 +139,9 @@ public abstract class FileDownloader {
 
     protected abstract MyAccount findBestAccountForDownload();
 
-    public static void load(DownloadData downloadData, CommandData commandData) {
+    public static Try<Boolean> load(DownloadData downloadData, CommandData commandData) {
         FileDownloader downloader = FileDownloader.newForDownloadData(downloadData);
-        downloader.load(commandData);
+        return downloader.load(commandData);
     }
 
     public FileDownloader setConnectionMock(Connection connectionMock) {

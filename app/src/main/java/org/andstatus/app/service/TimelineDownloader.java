@@ -16,13 +16,12 @@
 
 package org.andstatus.app.service;
 
-import android.database.sqlite.SQLiteConstraintException;
-
 import org.andstatus.app.data.DataPruner;
 import org.andstatus.app.data.DataUpdater;
-import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
+
+import io.vavr.control.Try;
 
 /**
  * Downloads ("loads") different types of Timelines 
@@ -38,27 +37,21 @@ abstract class TimelineDownloader extends CommandExecutorStrategy {
     }
 
     @Override
-    void execute() {
-        try {
-            if (isApiSupported(execContext.getTimeline().getTimelineType().getConnectionApiRoutine())) {
-                MyLog.d(this, "Getting " + execContext.getCommandData().toCommandSummary(execContext.getMyContext()) +
-                        " by " + execContext.getMyAccount().getAccountName() );
-                download();
-                onSyncEnded();
-            } else {
-                MyLog.v(this, () -> execContext.getTimeline() + " is not supported for "
-                        + execContext.getMyAccount().getAccountName());
-            }
-            logOk(true);
-        } catch (ConnectionException e) {
-            logConnectionException(e, "Load Timeline");
-            onSyncEnded();
-        } catch (SQLiteConstraintException e) {
-            MyLog.e(this, execContext.getTimeline().toString(), e);
+    Try<Boolean> execute() {
+        if (!isApiSupported(execContext.getTimeline().getTimelineType().getConnectionApiRoutine())) {
+            MyLog.v(this, () -> execContext.getTimeline() + " is not supported for "
+                    + execContext.getMyAccount().getAccountName());
+            return Try.success(true);
         }
+        MyLog.d(this, "Getting " + execContext.getCommandData().toCommandSummary(execContext.getMyContext()) +
+                " by " + execContext.getMyAccount().getAccountName() );
+
+        return download()
+        .onSuccess(b -> onSyncEnded())
+        .onFailure(e -> onSyncEnded());
     }
 
-    public abstract void download() throws ConnectionException;
+    public abstract Try<Boolean> download();
 
     protected Timeline getTimeline() {
         return execContext.getTimeline();

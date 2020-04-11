@@ -28,6 +28,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import io.vavr.control.Try;
+
 public final class UrlUtils {
     private static final String TAG = UrlUtils.class.getSimpleName();
     // From http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address?rq=1
@@ -109,22 +111,20 @@ public final class UrlUtils {
         return hostOrUrl.replaceAll(" ","").toLowerCase(Locale.ENGLISH);
     }
     
-    public static String pathToUrlString(URL originUrl, String path, boolean throwOnInvalid)
-            throws ConnectionException {
+    public static Try<String> pathToUrlString(URL originUrl, String path, boolean failOnInvalid) {
         Optional<URL> url = pathToUrl(originUrl, path);
         if (!url.isPresent()) {
-            if (throwOnInvalid) {
-                throw ConnectionException.hardConnectionException("URL is unknown or malformed. System URL:'"
-                        + originUrl + "', path:'" + path + "'", null);
-            }
-            return "";
+            return failOnInvalid
+                ? Try.failure(ConnectionException.hardConnectionException("URL is unknown or malformed. System URL:'"
+                    + originUrl + "', path:'" + path + "'", null))
+                : Try.success("");
         }
         String host = url.map(URL::getHost).orElse("");
-        if (throwOnInvalid && (host.equals("example.com") || host.endsWith(".example.com"))) {
-            throw ConnectionException.fromStatusCode(ConnectionException.StatusCode.NOT_FOUND,
-                    "URL: '" + url.get().toExternalForm() + "'");
+        if (failOnInvalid && (host.equals("example.com") || host.endsWith(".example.com"))) {
+            return Try.failure(ConnectionException.fromStatusCode(ConnectionException.StatusCode.NOT_FOUND,
+                    "URL: '" + url.get().toExternalForm() + "'"));
         }
-        return url.get().toExternalForm();
+        return Try.of( () -> url.get().toExternalForm());
     }
 
     public static Optional<URL> pathToUrl(URL originUrl, String path) {

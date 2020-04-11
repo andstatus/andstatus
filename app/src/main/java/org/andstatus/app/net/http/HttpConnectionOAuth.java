@@ -68,7 +68,7 @@ abstract class HttpConnectionOAuth extends HttpConnection implements OAuthServic
         return yes;
     }
 
-    protected Uri getApiUri(ApiRoutineEnum routine) throws ConnectionException {
+    protected Uri getApiUri(ApiRoutineEnum routine) {
         String url;
         switch(routine) {
             case OAUTH_ACCESS_TOKEN:

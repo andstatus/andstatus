@@ -16,12 +16,14 @@
 
 package org.andstatus.app.net.social;
 
+import org.andstatus.app.util.IsEmpty;
+
 /**
  * Information of the Microblogging system 
  * of how many more requests are allowed 
  * and the limit of such requests
  */
-public class RateLimitStatus {
+public class RateLimitStatus implements IsEmpty {
     public int remaining = 0;
     public int limit = 0;
     

@@ -129,7 +129,7 @@ public class AllowHtmlContentTest {
         ConnectionMock mock = ConnectionMock.newFor(demoData.gnusocialTestAccountName);
         mock.addResponse(org.andstatus.app.tests.R.raw.gnusocial_note_with_html);
         final String noteOid = "4453144";
-        AActivity activity = mock.connection.getNote(noteOid);
+        AActivity activity = mock.connection.getNote(noteOid).get();
 
         assertEquals("Received a note " + activity, AObjectType.NOTE, activity.getObjectType());
         assertEquals("Should be UPDATE " + activity, ActivityType.UPDATE,  activity.type);

@@ -23,6 +23,9 @@ import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.TryUtils;
+
+import io.vavr.control.Try;
 
 class CommandExecutorStrategy implements CommandExecutorParent {
     final protected CommandExecutionContext execContext;
@@ -36,7 +39,12 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         commandData.getResult().prepareForLaunch();
         logLaunch(strategy);
         // This may cause recursive calls to executors...
-        strategy.execute();
+        strategy.execute()
+        .onSuccess(ok -> {
+            strategy.execContext.getResult().setSoftErrorIfNotOk(ok);
+            MyLog.d(strategy, strategy.execContext.getCommandSummary() + (ok ? " succeeded" : " soft errors"));
+        })
+        .onFailure(t -> strategy.logException(t, strategy.execContext.getCommandSummary()));
         commandData.getResult().afterExecutionEnded();
         logEnd(strategy);
     }
@@ -54,6 +62,12 @@ class CommandExecutorStrategy implements CommandExecutorParent {
             return true;
         }
         return false;
+    }
+
+    protected <T> Try<T> onParseException(String message) {
+        execContext.getResult().incrementParseExceptions();
+        MyLog.e(this, message);
+        return TryUtils.failure(message);
     }
 
     private static void logEnd(CommandExecutorStrategy strategy) {
@@ -146,16 +160,17 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         }
     }
 
-    void logConnectionException(ConnectionException e, String detailedMessage) {
-        boolean isHard = e != null && e.isHardError();
+    <T> Try<T> logException(Throwable t, String detailedMessage) {
+        ConnectionException e = ConnectionException.of(t);
+        boolean isHard = t != null && e.isHardError();
         MyStringBuilder builder = MyStringBuilder.of(detailedMessage);
-        if (e != null) {
+        if (t != null) {
             builder.atNewLine(e.toString());
         }
-        logExecutionError(isHard, builder.toString());
+        return logExecutionError(isHard, builder.toString());
     }
 
-    void logExecutionError(boolean isHard, String detailedMessage) {
+    <T> Try<T> logExecutionError(boolean isHard, String detailedMessage) {
         if (isHard) {
             execContext.getResult().incrementParseExceptions();
         } else {
@@ -164,14 +179,13 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         MyStringBuilder builder = MyStringBuilder.of(detailedMessage).atNewLine(execContext.toExceptionContext());
         execContext.getResult().setMessage(builder.toString());
         MyLog.e(this, builder.toString());
+        return TryUtils.failure(detailedMessage);
     }
 
-    void execute() {
+    /** @return Success and false means soft error occurred */
+    Try<Boolean> execute() {
         MyLog.d(this, "Doing nothing");
-    }
-
-    void logOk(boolean ok) {
-        execContext.getResult().setSoftErrorIfNotOk(ok);
+        return Try.success(true);
     }
 
     boolean noErrors() {

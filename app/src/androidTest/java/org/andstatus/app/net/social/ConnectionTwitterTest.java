@@ -74,7 +74,8 @@ public class ConnectionTwitterTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline);
 
         InputTimelinePage timeline = connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
-                TimelinePosition.of("380925803053449216") , TimelinePosition.EMPTY, 20, connection.getData().getAccountActor());
+                TimelinePosition.of("380925803053449216") , TimelinePosition.EMPTY, 20,
+                connection.getData().getAccountActor()).get();
         assertNotNull("timeline returned", timeline);
         int size = 4;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -158,7 +159,7 @@ public class ConnectionTwitterTest {
     public void getNoteWithAttachment() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_media);
 
-        Note note = connection.getNote("503799441900314624").getNote();
+        Note note = connection.getNote("503799441900314624").get().getNote();
         assertFalse("note returned", note.isEmpty());
         assertEquals("has attachment", 1, note.attachments.size());
         assertEquals("attachment",  Attachment.fromUri("https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg"),
@@ -171,7 +172,7 @@ public class ConnectionTwitterTest {
     public void getNoteWithTwoAttachments() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_two_attachments);
 
-        Note note = connection.getNote("1198619196260790272").getNote();
+        Note note = connection.getNote("1198619196260790272").get().getNote();
         assertFalse("note returned " + note, note.isEmpty());
         assertEquals("Body of this note " + note, "Test uploading two images via #AndStatus https://t.co/lJn9QBpWyn",
                 note.getContent());
@@ -188,7 +189,7 @@ public class ConnectionTwitterTest {
 
         String body = "Update: Streckensperrung zw. Berliner Tor &lt;&gt; Bergedorf. Ersatzverkehr mit Bussen und Taxis " +
                 "Störungsdauer bis ca. 10 Uhr. #hvv #sbahnhh";
-        AActivity activity = connection.getNote("834306097003581440");
+        AActivity activity = connection.getNote("834306097003581440").get();
         assertEquals("No note returned " + activity, AObjectType.NOTE, activity.getObjectType());
         Note note = activity.getNote();
         assertEquals("Body of this note", body, note.getContent());
@@ -214,7 +215,7 @@ public class ConnectionTwitterTest {
                 "4,apostrophe," +
                 "5,br,html,tag,br,/,and,without,/,br,";
 
-        AActivity activity = connection.getNote("1070738478198071296");
+        AActivity activity = connection.getNote("1070738478198071296").get();
         assertEquals("No note returned " + activity, AObjectType.NOTE, activity.getObjectType());
         Note note = activity.getNote();
         assertEquals("Body of this note", twitterBodyHtml, note.getContent());
@@ -235,7 +236,7 @@ public class ConnectionTwitterTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_follow);
 
         String actorOid = "96340134";
-        AActivity activity = connection.follow(actorOid, true);
+        AActivity activity = connection.follow(actorOid, true).get();
         assertEquals("No actor returned " + activity, AObjectType.ACTOR, activity.getObjectType());
         Actor friend = activity.getObjActor();
         assertEquals("Wrong username returned " + activity, "LPirro93", friend.getUsername());

@@ -31,7 +31,7 @@ import java.util.Map;
 public class HttpConnectionOAuthActivityPub extends HttpConnectionOAuth2JavaNet {
 
     @Override
-    public Uri getApiUri(Connection.ApiRoutineEnum routine) throws ConnectionException {
+    public Uri getApiUri(Connection.ApiRoutineEnum routine) {
         String url;
 
         switch (routine) {

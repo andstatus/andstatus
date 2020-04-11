@@ -41,6 +41,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.ObjectOrId;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.TryUtils;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
@@ -93,11 +94,11 @@ public class ConnectionActivityPub extends Connection {
     @Override
     @NonNull
     public Try<Actor> verifyCredentials(Optional<Uri> whoAmI) {
-        return Try.of(
-                () -> getRequest(whoAmI
-                        .filter(UriUtils::isDownloadable)
-                        .orElse(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS)))
-        ).map(this::actorFromJson);
+        return TryUtils.fromOptional(whoAmI)
+            .filter(UriUtils::isDownloadable)
+            .orElse(() -> getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS))
+            .flatMap(this::getRequest)
+            .map(this::actorFromJson);
     }
 
     @NonNull
@@ -132,50 +133,53 @@ public class ConnectionActivityPub extends Connection {
     }
 
     @Override
-    public AActivity undoLike(String noteOid) throws ConnectionException {
+    public Try<AActivity> undoLike(String noteOid) {
         return actOnNote(ActivityType.UNDO_LIKE, noteOid);
     }
 
     @Override
-    public AActivity like(String noteOid) throws ConnectionException {
+    public Try<AActivity> like(String noteOid) {
         return actOnNote(ActivityType.LIKE, noteOid);
     }
 
     @Override
-    public boolean deleteNote(String noteOid) throws ConnectionException {
-        return !actOnNote(ActivityType.DELETE, noteOid).isEmpty();
+    public Try<Boolean> deleteNote(String noteOid) {
+        return actOnNote(ActivityType.DELETE, noteOid).map(AActivity::isEmpty);
     }
 
-    private AActivity actOnNote(ActivityType activityType, String noteId) throws ConnectionException {
+    private Try<AActivity> actOnNote(ActivityType activityType, String noteId) {
         return ActivitySender.fromId(this, noteId).send(activityType);
     }
 
     @Override
-    public List<Actor> getFollowers(Actor actor) throws ConnectionException {
+    public Try<List<Actor>> getFollowers(Actor actor) {
         return getActors(actor, ApiRoutineEnum.GET_FOLLOWERS);
     }
 
     @Override
-    public List<Actor> getFriends(Actor actor) throws ConnectionException {
+    public Try<List<Actor>> getFriends(Actor actor) {
         return getActors(actor, ApiRoutineEnum.GET_FRIENDS);
     }
 
     @NonNull
-    private List<Actor> getActors(Actor actor, ApiRoutineEnum apiRoutine) throws ConnectionException {
-        ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, apiRoutine, actor);
-        JSONObject root = conu.httpConnection.getRequest(conu.uri);
-        List<Actor> actors = AJsonCollection.of(root).mapAll(this::actorFromJson, this::actorFromOid);
-        MyLog.v(TAG, () -> apiRoutine + " '" + conu.uri + "' " + actors.size() + " actors");
-        return actors;
+    private Try<List<Actor>> getActors(Actor actor, ApiRoutineEnum apiRoutine) {
+        return ConnectionAndUrl.fromActor(this, apiRoutine, actor)
+        .flatMap(conu ->
+            conu.getRequest().map(root -> {
+                List<Actor> actors = AJsonCollection.of(root).mapAll(this::actorFromJson, this::actorFromOid);
+                MyLog.v(TAG, () -> apiRoutine + " '" + conu.uri + "' " + actors.size() + " actors");
+                return actors;
+            })
+        );
     }
 
     @Override
-    protected AActivity getNote1(String noteOid) throws ConnectionException {
-        return activityFromJson(getRequest(UriUtils.fromString(noteOid)));
+    protected Try<AActivity> getNote1(String noteOid) {
+        return getRequest(UriUtils.fromString(noteOid)).map(this::activityFromJson);
     }
 
     @Override
-    public AActivity updateNote(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
+    public Try<AActivity> updateNote(Note note, String inReplyToOid, Attachments attachments) {
         ActivitySender sender = ActivitySender.fromContent(this, note);
         sender.setInReplyTo(inReplyToOid);
         sender.setAttachments(attachments);
@@ -183,7 +187,7 @@ public class ConnectionActivityPub extends Connection {
     }
 
     @Override
-    public AActivity announce(String rebloggedNoteOid) throws ConnectionException {
+    public Try<AActivity> announce(String rebloggedNoteOid) {
         return actOnNote(ActivityType.ANNOUNCE, rebloggedNoteOid);
     }
 
@@ -194,12 +198,13 @@ public class ConnectionActivityPub extends Connection {
     }
 
     @Override
-    public List<AActivity> getConversation(String conversationOid) throws ConnectionException {
+    public Try<List<AActivity>> getConversation(String conversationOid) {
         Uri uri = UriUtils.fromString(conversationOid);
         if (UriUtils.isDownloadable(uri)) {
-            return getActivities(ApiRoutineEnum.GET_CONVERSATION, ConnectionAndUrl
-                    .fromUriActor(uri, this, ApiRoutineEnum.GET_CONVERSATION, data.getAccountActor()))
-                    .activities;
+            return ConnectionAndUrl
+            .fromUriActor(uri, this, ApiRoutineEnum.GET_CONVERSATION, data.getAccountActor())
+            .flatMap(conu -> getActivities(ApiRoutineEnum.GET_CONVERSATION, conu))
+            .map(p -> p.activities);
         } else {
             return super.getConversation(conversationOid);
         }
@@ -207,23 +212,26 @@ public class ConnectionActivityPub extends Connection {
 
     @NonNull
     @Override
-    public InputTimelinePage getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                         TimelinePosition oldestPosition, int limit, Actor actor)
-            throws ConnectionException {
+    public Try<InputTimelinePage> getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine,
+                  TimelinePosition youngestPosition, TimelinePosition oldestPosition, int limit, Actor actor) {
         TimelinePosition requestedPosition = syncYounger ? youngestPosition : oldestPosition;
-        ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, apiRoutine, actor);
-        // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
-        Uri uri =  UriUtils.toDownloadableOptional(requestedPosition.getPosition()).orElse(conu.uri);
-        return getActivities(apiRoutine, conu.withUri(uri));
+        return ConnectionAndUrl.fromActor(this, apiRoutine, actor)
+            // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
+        .map(conu -> UriUtils.toDownloadableOptional(requestedPosition.getPosition())
+                        .map(conu::withUri)
+                        .orElse(conu)
+        )
+        .flatMap(conu -> getActivities(apiRoutine, conu));
     }
 
-    private InputTimelinePage getActivities(ApiRoutineEnum apiRoutine, ConnectionAndUrl conu) throws ConnectionException {
-        JSONObject root = conu.httpConnection.getRequest(conu.uri);
-        AJsonCollection jsonCollection = AJsonCollection.of(root);
-        List<AActivity> activities = jsonCollection.mapObjects(item ->
-                activityFromJson(ObjectOrId.of(item)).setTimelinePosition(jsonCollection.getId()));
-        MyLog.d(TAG, "getTimeline " + apiRoutine + " '" + conu.uri + "' " + activities.size() + " activities");
-        return InputTimelinePage.of(jsonCollection, activities);
+    private Try<InputTimelinePage> getActivities(ApiRoutineEnum apiRoutine, ConnectionAndUrl conu) {
+        return conu.getRequest().map(root -> {
+            AJsonCollection jsonCollection = AJsonCollection.of(root);
+            List<AActivity> activities = jsonCollection.mapObjects(item ->
+                    activityFromJson(ObjectOrId.of(item)).setTimelinePosition(jsonCollection.getId()));
+            MyLog.d(TAG, "getTimeline " + apiRoutine + " '" + conu.uri + "' " + activities.size() + " activities");
+            return InputTimelinePage.of(jsonCollection, activities);
+        });
     }
 
     @Override
@@ -442,19 +450,20 @@ public class ConnectionActivityPub extends Connection {
     }
 
     @Override
-    public AActivity follow(String actorOid, Boolean follow) throws ConnectionException {
+    public Try<AActivity> follow(String actorOid, Boolean follow) {
         return actOnActor(follow ? ActivityType.FOLLOW : ActivityType.UNDO_FOLLOW, actorOid);
     }
 
-    private AActivity actOnActor(ActivityType activityType, String actorId) throws ConnectionException {
+    private Try<AActivity> actOnActor(ActivityType activityType, String actorId) {
         return ActivitySender.fromId(this, actorId).send(activityType);
     }
 
     @Override
-    public Actor getActor2(Actor actorIn) throws ConnectionException {
-        ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, ApiRoutineEnum.GET_ACTOR, actorIn);
-        JSONObject jso = conu.httpConnection.getRequest(conu.uri);
-        return actorFromJson(jso);
+    public Try<Actor> getActor2(Actor actorIn) {
+        return ConnectionAndUrl
+        .fromActor(this, ApiRoutineEnum.GET_ACTOR, actorIn)
+        .flatMap(ConnectionAndUrl::getRequest)
+        .map(this::actorFromJson);
     }
 
 }

@@ -19,8 +19,11 @@ package org.andstatus.app.net.social;
 import java.util.Collections;
 import java.util.List;
 
+import io.vavr.control.Try;
+
 public class InputTimelinePage extends InputPage<AActivity> {
     public static final InputTimelinePage EMPTY = of(Collections.emptyList());
+    public static final Try<InputTimelinePage> TRY_EMPTY = Try.success(EMPTY);
 
     public static InputTimelinePage of(List<AActivity> activities) {
         return new InputTimelinePage(AJsonCollection.EMPTY, activities);

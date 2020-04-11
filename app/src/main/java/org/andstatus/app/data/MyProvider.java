@@ -188,6 +188,7 @@ public class MyProvider extends ContentProvider {
         }
     }
 
+    // TODO: return Try<Long>
     public static long deleteActivity(MyContext myContext, long activityId, long noteId, boolean inTransaction) {
         SQLiteDatabase db = MyContextHolder.get().getDatabase();
         if (db == null) {

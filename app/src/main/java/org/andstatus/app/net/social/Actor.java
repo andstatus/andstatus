@@ -61,6 +61,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import io.vavr.control.Try;
+
 import static org.andstatus.app.net.social.Patterns.WEBFINGER_ID_CHARS;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
@@ -71,6 +73,7 @@ import static org.junit.Assert.fail;
  */
 public class Actor implements Comparable<Actor>, IsEmpty {
     public static final Actor EMPTY = newUnknown(Origin.EMPTY, GroupType.UNKNOWN).setUsername("Empty");
+    public static final Try<Actor> TRY_EMPTY = Try.success(EMPTY);
     public static final Actor PUBLIC = fromTwoIds(Origin.EMPTY, GroupType.PUBLIC, 0,
         "https://www.w3.org/ns/activitystreams#Public").setUsername("Public");
     public static final Actor FOLLOWERS = fromTwoIds(Origin.EMPTY, GroupType.FOLLOWERS, 0,
@@ -944,7 +947,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public void requestAvatarDownload() {
-        if (MyPreferences.getShowAvatars() && hasAvatar() && avatarFile.downloadStatus != DownloadStatus.LOADED) {
+        if (hasAvatar() && MyPreferences.getShowAvatars() && avatarFile.downloadStatus != DownloadStatus.LOADED) {
             avatarFile.requestDownload();
         }
     }

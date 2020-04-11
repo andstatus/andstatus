@@ -18,6 +18,8 @@ package org.andstatus.app.net.http;
 
 import android.text.TextUtils;
 
+import androidx.annotation.RawRes;
+
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
@@ -33,7 +35,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
-import androidx.annotation.RawRes;
+import io.vavr.control.Try;
 
 public class HttpConnectionMock extends HttpConnection {
 
@@ -87,7 +89,7 @@ public class HttpConnectionMock extends HttpConnection {
     }
 
     @Override
-    public String pathToUrlString(String path) throws ConnectionException {
+    public String pathToUrlString(String path) {
         if (data.originUrl == null) {
             data.originUrl = UrlUtils.buildUrl("mocked.example.com", true);
         }
@@ -103,7 +105,7 @@ public class HttpConnectionMock extends HttpConnection {
 
     private void setExceptions(HttpReadResult result) {
         if (runtimeException != null) {
-            throw runtimeException;
+            result.setException(runtimeException);
         } else if (exception != null) {
             result.setException(exception);
         }
@@ -147,10 +149,10 @@ public class HttpConnectionMock extends HttpConnection {
                 : (responsesCounter < responses.size() ? responses.get(responsesCounter++) : "");
     }
 
-    private void getRequestInner(String method, HttpReadResult result) throws ConnectionException {
+    private Try<HttpReadResult> getRequestInner(String method, HttpReadResult result) {
         onRequest(method, result);
         setExceptions(result);
-        result.parseAndThrow();
+        return result.tryToParse();
     }
 
     @Override
@@ -224,7 +226,7 @@ public class HttpConnectionMock extends HttpConnection {
     }
 
     @Override
-    public void getRequest(HttpReadResult result) throws ConnectionException {
+    public void getRequest(HttpReadResult result) {
         getRequestInner("getRequest", result);
     }
 

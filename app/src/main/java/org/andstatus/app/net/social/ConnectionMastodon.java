@@ -32,6 +32,7 @@ import org.andstatus.app.util.ObjectOrId;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.TryUtils;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Objects;
 
 import io.vavr.control.CheckedFunction;
+import io.vavr.control.Try;
 
 import static org.andstatus.app.context.MyPreferences.BYTES_IN_MB;
 import static org.andstatus.app.util.UriUtils.nonRealOid;
@@ -151,9 +153,10 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @NonNull
     @Override
-    protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, Actor actor) throws ConnectionException {
-        return this.getApiPathWithActorId(apiRoutine, actor.oid).buildUpon()
-                .appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
+    protected Try<Uri.Builder> getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, Actor actor) {
+        return this.getApiPathWithActorId(apiRoutine, actor.oid)
+            .map(Uri::buildUpon)
+            .map(b -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)));
     }
 
     @Override
@@ -188,7 +191,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     @NonNull
-    protected ActivityType getType(JSONObject timelineItem) throws ConnectionException {
+    protected ActivityType getType(JSONObject timelineItem) {
         if (isNotification(timelineItem)) {
             switch (timelineItem.optString("type")) {
                 case "favourite":
@@ -212,59 +215,67 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @NonNull
     @Override
-    public InputTimelinePage searchNotes(boolean syncYounger, TimelinePosition youngestPosition,
-                                         TimelinePosition oldestPosition, int limit, String searchQuery)
-            throws ConnectionException {
+    public Try<InputTimelinePage> searchNotes(boolean syncYounger, TimelinePosition youngestPosition,
+                                         TimelinePosition oldestPosition, int limit, String searchQuery) {
         String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
         if (StringUtil.isEmpty(tag)) {
-            return InputTimelinePage.EMPTY;
+            return InputTimelinePage.TRY_EMPTY;
         }
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.TAG_TIMELINE;
-        Uri.Builder builder = getApiPathWithTag(apiRoutine, tag).buildUpon();
-        appendPositionParameters(builder, youngestPosition, oldestPosition);
-        builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
-        JSONArray jArr = http.getRequestAsArray(builder.build());
-        return InputTimelinePage.of(jArrToTimeline("", jArr, apiRoutine, builder.build()));
+        return getApiPath(apiRoutine).map(Uri::buildUpon)
+                .map(b -> appendPositionParameters(b, youngestPosition, oldestPosition))
+                .map(b -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)))
+                .map(Uri.Builder::build)
+                .flatMap(uri -> http.getRequestAsArray(uri)
+                    .flatMap(jsonArray -> jArrToTimeline("", jsonArray, apiRoutine, uri)))
+                .map(InputTimelinePage::of);
     }
 
     @NonNull
     @Override
-    public List<Actor> searchActors(int limit, String searchQuery) throws ConnectionException {
+    public Try<List<Actor>> searchActors(int limit, String searchQuery) {
         String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
         if (StringUtil.isEmpty(tag)) {
-            return new ArrayList<>();
+            return TryUtils.emptyList();
         }
+
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_ACTORS;
-        Uri.Builder builder = getApiPath(apiRoutine).buildUpon();
-        builder.appendQueryParameter("q", searchQuery);
-        builder.appendQueryParameter("resolve", "true");
-        builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
-        JSONArray jArr = http.getRequestAsArray(builder.build());
-        return jArrToActors(jArr, apiRoutine, builder.build());
+        return getApiPath(apiRoutine).map(Uri::buildUpon)
+        .map(b -> b.appendQueryParameter("q", searchQuery)
+                .appendQueryParameter("resolve", "true")
+                .appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)))
+        .map(Uri.Builder::build)
+        .flatMap(uri -> http.getRequestAsArray(uri).flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, uri)));
     }
 
-    protected Uri getApiPathWithTag(ApiRoutineEnum routineEnum, String tag) throws ConnectionException {
-        return UriUtils.map(getApiPath(routineEnum), s -> s.replace("%tag%", tag));
+    // TODO: Delete ?
+    protected Try<Uri> getApiPathWithTag(ApiRoutineEnum routineEnum, String tag) {
+        return getApiPath(routineEnum).map(uri -> UriUtils.map(uri, s -> s.replace("%tag%", tag)));
     }
 
     @Override
-    public List<AActivity> getConversation(String conversationOid) throws ConnectionException {
-        List<AActivity> timeline = new ArrayList<>();
+    public Try<List<AActivity>> getConversation(String conversationOid) {
         if (nonRealOid(conversationOid)) {
-            return timeline;
+            return TryUtils.emptyList();
         }
-        Uri uri = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
-        JSONObject mastodonContext = getRequest(uri);
+        return getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid)
+            .flatMap(uri -> getRequest(uri)
+                .map(mastodonContext -> getConversationActivities(uri, mastodonContext, conversationOid)));
+    }
+
+    private List<AActivity> getConversationActivities(Uri uri, JSONObject mastodonContext, String conversationOid)
+            throws ConnectionException {
+        List<AActivity> timeline = new ArrayList<>();
         try {
             String ancestors = "ancestors";
             if (mastodonContext.has(ancestors)) {
-                timeline.addAll(jArrToTimeline(ancestors, mastodonContext.getJSONArray(ancestors),
-                        ApiRoutineEnum.GET_CONVERSATION, uri));
+                jArrToTimeline(ancestors, mastodonContext.getJSONArray(ancestors), ApiRoutineEnum.GET_CONVERSATION, uri)
+                    .onSuccess( timeline::addAll);
             }
             String descendants = "descendants";
             if (mastodonContext.has(descendants)) {
-                timeline.addAll(jArrToTimeline(descendants, mastodonContext.getJSONArray(descendants),
-                        ApiRoutineEnum.GET_CONVERSATION, uri));
+                jArrToTimeline(descendants, mastodonContext.getJSONArray(descendants), ApiRoutineEnum.GET_CONVERSATION, uri)
+                        .onSuccess( timeline::addAll);
             }
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Error getting conversation '" + conversationOid + "'",
@@ -274,12 +285,12 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     @Override
-    public AActivity updateNote(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
+    public Try<AActivity> updateNote(Note note, String inReplyToOid, Attachments attachments) {
         return updateNote2(note, inReplyToOid, attachments);
     }
 
     @Override
-    protected AActivity updateNote2(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
+    protected Try<AActivity> updateNote2(Note note, String inReplyToOid, Attachments attachments) {
         JSONObject obj = new JSONObject();
         try {
             obj.put(SUMMARY_PROPERTY, note.getSummary());
@@ -295,20 +306,25 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                     // TODO
                     MyLog.i(this, "Skipped downloadable " + attachment);
                 } else {
-                    JSONObject mediaObject = uploadMedia(attachment.uri);
-                    if (mediaObject != null && mediaObject.has("id")) {
-                        ids.add(mediaObject.get("id").toString());
-                    }
+                    Try<AActivity> uploaded = uploadMedia(attachment.uri)
+                    .map( mediaObject -> {
+                        if (mediaObject != null && mediaObject.has("id")) {
+                            ids.add(mediaObject.get("id").toString());
+                        }
+                        return AActivity.EMPTY;
+                    });
+                    if (uploaded.isFailure()) return uploaded;
                 }
-            };
+            }
             if (!ids.isEmpty()) {
                 obj.put("media_ids[]", ids);
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Error updating note '" + attachments + "'", e, obj);
+            return Try.failure(ConnectionException.loggedJsonException(this, "Error updating note '" + attachments + "'", e, obj));
         }
-        return postRequest(ApiRoutineEnum.UPDATE_NOTE, obj).map(HttpReadResult::getJsonObject)
-                .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
+        return postRequest(ApiRoutineEnum.UPDATE_NOTE, obj)
+                .flatMap(HttpReadResult::getJsonObject)
+                .map(this::activityFromJson);
     }
 
     private String getVisibility(Note note) {
@@ -318,21 +334,21 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         return note.audience().isFollowers() ? VISIBILITY_PRIVATE : VISIBILITY_DIRECT;
     }
 
-    private JSONObject uploadMedia(Uri mediaUri) throws ConnectionException {
+    private Try<JSONObject> uploadMedia(Uri mediaUri) {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "file");
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
             return postRequest(ApiRoutineEnum.UPLOAD_MEDIA, formParams)
-                .map(HttpReadResult::getJsonObject)
+                .flatMap(HttpReadResult::getJsonObject)
                 .filter(Objects::nonNull)
                 .onSuccess(jso -> {
                     if (MyLog.isVerboseEnabled()) {
                         MyLog.v(this, "uploaded '" + mediaUri.toString() + "' " + jso.toString());
                     }
-                }).getOrElseThrow(ConnectionException::of);
+                });
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Error uploading '" + mediaUri + "'", e, formParams);
+            return Try.failure(ConnectionException.loggedJsonException(this, "Error uploading '" + mediaUri + "'", e, formParams));
         }
     }
 
@@ -511,60 +527,69 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     @Override
-    public Actor getActor2(Actor actorIn) throws ConnectionException {
-        JSONObject jso = getRequest(
-                getApiPathWithActorId(ApiRoutineEnum.GET_ACTOR,
-                    UriUtils.isRealOid(actorIn.oid) ? actorIn.oid : actorIn.getUsername())
-        );
-        return actorFromJson(jso);
+    public Try<Actor> getActor2(Actor actorIn) {
+        return getApiPathWithActorId(ApiRoutineEnum.GET_ACTOR,
+                UriUtils.isRealOid(actorIn.oid) ? actorIn.oid : actorIn.getUsername())
+                .flatMap(this::getRequest)
+                .map(this::actorFromJson);
     }
 
     @Override
-    public AActivity follow(String actorOid, Boolean follow) throws ConnectionException {
-        JSONObject relationship = postRequest(getApiPathWithActorId(follow ? ApiRoutineEnum.FOLLOW :
-                ApiRoutineEnum.UNDO_FOLLOW, actorOid), new JSONObject())
-            .map(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of);
-        Actor friend = Actor.fromOid(data.getOrigin(), actorOid);
-        if (relationship == null || relationship.isNull("following")) {
-            return AActivity.EMPTY;
-        }
-        TriState following = TriState.fromBoolean(relationship.optBoolean("following"));
-        return data.getAccountActor().act(
-                data.getAccountActor(),
-                following.toBoolean(!follow) == follow
-                    ? (follow
-                        ? ActivityType.FOLLOW
-                        : ActivityType.UNDO_FOLLOW)
-                    : ActivityType.UPDATE,
-                friend
-        );
+    public Try<AActivity> follow(String actorOid, Boolean follow) {
+        Try<JSONObject> tryRelationship = getApiPathWithActorId(follow
+                ? ApiRoutineEnum.FOLLOW : ApiRoutineEnum.UNDO_FOLLOW, actorOid)
+            .flatMap(uri -> postRequest(uri, new JSONObject()))
+            .flatMap(HttpReadResult::getJsonObject);
+
+        return tryRelationship.map(relationship -> {
+            if (relationship == null || relationship.isNull("following")) {
+                return AActivity.EMPTY;
+            }
+            TriState following = TriState.fromBoolean(relationship.optBoolean("following"));
+            return data.getAccountActor().act(
+                    data.getAccountActor(),
+                    following.toBoolean(!follow) == follow
+                            ? (follow
+                            ? ActivityType.FOLLOW
+                            : ActivityType.UNDO_FOLLOW)
+                            : ActivityType.UPDATE,
+                    Actor.fromOid(data.getOrigin(), actorOid)
+            );
+        });
     }
 
     @Override
-    public boolean undoAnnounce(String noteOid) throws ConnectionException {
-        return http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.UNDO_ANNOUNCE, noteOid))
-            .map(HttpReadResult::getJsonObject)
+    public Try<Boolean> undoAnnounce(String noteOid) {
+        return getApiPathWithNoteId(ApiRoutineEnum.UNDO_ANNOUNCE, noteOid)
+            .flatMap(http::postRequest)
+            .flatMap(HttpReadResult::getJsonObject)
             .filter(Objects::nonNull)
             .onSuccess(jso -> MyLog.v(this, "destroyReblog response: " + jso.toString()))
-            .isSuccess();
+            .map(any -> true);
     }
 
     @Override
-    List<Actor> getActors(Actor actor, ApiRoutineEnum apiRoutine) throws ConnectionException {
-        Uri.Builder builder = this.getApiPathWithActorId(apiRoutine, actor.oid).buildUpon();
+    Try<List<Actor>> getActors(Actor actor, ApiRoutineEnum apiRoutine) {
         int limit = 400;
-        builder.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine));
-        return jArrToActors(http.getRequestAsArray(builder.build()), apiRoutine, builder.build());
+        return getApiPathWithActorId(apiRoutine, actor.oid)
+            .map(Uri::buildUpon)
+            .map(b -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)))
+            .map(Uri.Builder::build)
+            .flatMap(uri -> http.getRequestAsArray(uri)
+                    .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, uri)));
     }
 
     @Override
-    public OriginConfig getConfig() throws ConnectionException {
-        JSONObject result = getRequest(getApiPath(ApiRoutineEnum.GET_CONFIG));
-        // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/spec/validators/status_length_validator_spec.rb
-        int textLimit = result == null || result.optInt(TEXT_LIMIT_KEY) < 1
-                ? OriginConfig.MASTODON_TEXT_LIMIT_DEFAULT
-                : result.optInt(TEXT_LIMIT_KEY);
-        // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/app/models/media_attachment.rb
-        return OriginConfig.fromTextLimit(textLimit, 10 * BYTES_IN_MB);
+    public Try<OriginConfig> getConfig() {
+        return getApiPath(ApiRoutineEnum.GET_CONFIG)
+            .flatMap(this::getRequest)
+            .map(result -> {
+                // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/spec/validators/status_length_validator_spec.rb
+                int textLimit = result == null || result.optInt(TEXT_LIMIT_KEY) < 1
+                        ? OriginConfig.MASTODON_TEXT_LIMIT_DEFAULT
+                        : result.optInt(TEXT_LIMIT_KEY);
+                // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/app/models/media_attachment.rb
+                return OriginConfig.fromTextLimit(textLimit, 10 * BYTES_IN_MB);
+        });
     }
 }

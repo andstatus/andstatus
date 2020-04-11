@@ -49,7 +49,7 @@ public class UrlUtilsTest {
         String strUrl = "https://" + host;
         assertEquals(strUrl, url.toExternalForm());
         String path = "somepath/somewhere.json";
-        assertEquals(strUrl + "/" + path, UrlUtils.pathToUrlString(url, path, false));
+        assertEquals(strUrl + "/" + path, UrlUtils.pathToUrlString(url, path, false).get());
         assertTrue(UrlUtils.isHostOnly(url));
         isSsl = false;
         url = UrlUtils.buildUrl(hostOrUrl, isSsl);
@@ -112,7 +112,7 @@ public class UrlUtilsTest {
     private void assertPath2Url(String strUrl, String path, boolean addSlash) throws ConnectionException {
         boolean isSsl = true;
         URL url1 = UrlUtils.buildUrl(strUrl, isSsl);
-        String strUrl2 = UrlUtils.pathToUrlString(url1, path, false);
+        String strUrl2 = UrlUtils.pathToUrlString(url1, path, false).getOrElse("(failure)");
         assertEquals(strUrl + (addSlash ? "/" : "") + path, strUrl2);
     }
 }

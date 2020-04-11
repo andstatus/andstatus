@@ -4,8 +4,6 @@ import com.github.scribejava.core.builder.api.DefaultApi20;
 import com.github.scribejava.core.extractors.TokenExtractor;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 
-import org.andstatus.app.util.MyLog;
-
 import java.util.Map;
 
 import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.OAUTH_ACCESS_TOKEN;
@@ -25,22 +23,12 @@ public class OAuthApi20 extends DefaultApi20 {
 
     @Override
     public String getAccessTokenEndpoint() {
-        try {
-            return http.getApiUri(OAUTH_ACCESS_TOKEN).toString();
-        } catch (ConnectionException e) {
-            MyLog.e(this, e);
-        }
-        return "";
+        return http.getApiUri(OAUTH_ACCESS_TOKEN).toString();
     }
 
     @Override
     protected String getAuthorizationBaseUrl() {
-        try {
-            return http.getApiUri(OAUTH_AUTHORIZE).toString();
-        } catch (ConnectionException e) {
-            MyLog.e(this, e);
-        }
-        return "";
+        return http.getApiUri(OAUTH_AUTHORIZE).toString();
     }
 
     @Override

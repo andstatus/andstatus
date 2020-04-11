@@ -20,7 +20,6 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.List;
@@ -58,7 +57,7 @@ public class HttpConnectionApacheCommon {
                     data.getContentType().ifPresent(value -> httpPost.addHeader("Content-Type", value));
                     fillSinglePartPost(httpPost, params);
                 }
-            } catch (ConnectionException | UnsupportedEncodingException e) {
+            } catch (Exception e) {
                 result.setException(e);
                 MyLog.i(this, e);
             }
@@ -100,22 +99,19 @@ public class HttpConnectionApacheCommon {
                         stop = specific.onMoved(result);
                         break;
                     default:
-                        result.appendToLog( "statusLine:'" + result.statusLine + "'");
                         entity = httpResponse.getEntity();
                         if (entity != null) {
                             HttpConnectionUtils.readStream(result, entity.getContent());
                         }
                         stop =  result.fileResult == null || !result.authenticate;
                         if (!stop) {
-                            result.authenticate = false;
-                            result.appendToLog("retrying without authentication");
+                            result.onRetryWithoutAuthentication();
                             DbUtils.closeSilently(httpResponse);
-                            MyLog.v(this, result::toString);
                         }
                         break;
                 }
             } while (!stop);
-        } catch (IOException | IllegalArgumentException e) {
+        } catch (Exception e) {
             result.setException(e);
         }
     }

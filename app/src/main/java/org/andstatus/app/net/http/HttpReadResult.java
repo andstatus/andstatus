@@ -51,6 +51,8 @@ import java.util.stream.Stream;
 
 import io.vavr.control.Try;
 
+import static org.andstatus.app.util.TryUtils.checkException;
+
 public class HttpReadResult {
     final MyContext myContext;
     private final Uri uriInitial;
@@ -187,7 +189,7 @@ public class HttpReadResult {
                 + (fileResult == null ? "" : "; saved to file");
     }
     
-    public JSONObject getJsonObject() throws ConnectionException {
+    public Try<JSONObject> getJsonObject() {
         return innerGetJsonObject(strResponse);
     }
 
@@ -195,7 +197,7 @@ public class HttpReadResult {
         return strResponse;
     }
 
-    private JSONObject innerGetJsonObject(String strJson) throws ConnectionException {
+    private Try<JSONObject> innerGetJsonObject(String strJson) {
         String method = "getJsonObject; ";
         JSONObject jso = null;
         try {
@@ -206,21 +208,21 @@ public class HttpReadResult {
                 String error = jso.optString("error");
                 if ("Could not authenticate you.".equals(error)) {
                     appendToLog("error:" + error);
-                    throw new ConnectionException(toString());
+                    return Try.failure(new ConnectionException(toString()));
                 }
                 
             }
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, method + I18n.trimTextAt(toString(), 500), e, strJson);
+            return Try.failure(ConnectionException.loggedJsonException(this, method + I18n.trimTextAt(toString(), 500), e, strJson));
         }
-        return jso;
+        return Try.success(jso);
     }
 
-    JSONArray getJsonArray(String arrayKey) throws ConnectionException {
+    Try<JSONArray> getJsonArray(String arrayKey) {
         String method = "getJsonArray; ";
         if (StringUtil.isEmpty(strResponse)) {
             MyLog.v(this, () -> method + "; response is empty");
-            return new JSONArray();
+            return Try.success(new JSONArray());
         }
         JSONTokener jst = new JSONTokener(strResponse);
         JSONArray jsa = null;
@@ -232,8 +234,8 @@ public class HttpReadResult {
                     try {
                         obj = jso.getJSONArray(arrayKey);
                     } catch (JSONException e) {
-                        throw ConnectionException.loggedJsonException(this, "'" + arrayKey + "' is not an array?!"
-                                + method + toString(), e, jso);
+                        return Try.failure(ConnectionException.loggedJsonException(this, "'" + arrayKey + "' is not an array?!"
+                                + method + toString(), e, jso));
                     }
                 } else {
                     Iterator<String> iterator =  jso.keys();
@@ -250,18 +252,18 @@ public class HttpReadResult {
             }
             jsa = (JSONArray) obj;
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, method + toString(), e, strResponse);
-        } catch (ClassCastException e) {
-            throw ConnectionException.loggedHardJsonException(this, method + toString(), e, strResponse);
+            return Try.failure(ConnectionException.loggedJsonException(this, method + toString(), e, strResponse));
+        } catch (Exception e) {
+            return Try.failure(ConnectionException.loggedHardJsonException(this, method + toString(), e, strResponse));
         }
-        return jsa;
+        return Try.success(jsa);
     }
  
     ConnectionException getExceptionFromJsonErrorResponse() {
         StatusCode statusCode = this.statusCode;
         String error = "?";
         if (TextUtils.isEmpty(strResponse)) {
-            return new ConnectionException(statusCode, "Empty response");
+            return new ConnectionException(statusCode, "Empty response; " + toString());
         }
         try {
             JSONObject jsonError = new JSONObject(strResponse);
@@ -269,13 +271,16 @@ public class HttpReadResult {
             if (statusCode == StatusCode.UNKNOWN && error.contains("not found")) {
                 statusCode = StatusCode.NOT_FOUND;
             }
-            return new ConnectionException(statusCode, toString() + "; error='" + error + "'");
+            return new ConnectionException(statusCode, "Error='" + error + "'; " + toString());
         } catch (JSONException e) {
-            return new ConnectionException(statusCode, "Response: \"" + strResponse + "\"");
+            return new ConnectionException(statusCode, toString());
         }
     }
 
     public void setException(Throwable e) {
+        checkException(e);
+        if (exception != null) return;
+
         exception = e instanceof Exception
             ? (Exception) e
             : new ConnectionException("Unexpected exception", e);
@@ -285,27 +290,29 @@ public class HttpReadResult {
         return exception;
     }
 
-    HttpReadResult parseAndThrow() throws ConnectionException {
+    Try<HttpReadResult> tryToParse() {
         if (exception instanceof ConnectionException) {
-            throw (ConnectionException) exception;
+            return Try.failure(exception);
         }
         if ( isStatusOk()) {
             if (fileResult != null && fileResult.isFile() && fileResult.exists()
                     && fileResult.length() > MyPreferences.getMaximumSizeOfAttachmentBytes()) {
-                throw ConnectionException.hardConnectionException(
+                setException(ConnectionException.hardConnectionException(
                         "File, downloaded from \"" + urlString + "\", is too large: "
                           + Formatter.formatShortFileSize(MyContextHolder.get().context(), fileResult.length()),
-                        null);
+                        null));
+                return Try.failure(exception);
             }
             MyLog.v(this, this::toString);
         } else {
             if (!StringUtil.isEmpty(strResponse)) {
-                throw getExceptionFromJsonErrorResponse();
+                setException(getExceptionFromJsonErrorResponse());
             } else {
-                throw ConnectionException.fromStatusCodeAndThrowable(statusCode, toString(), exception);
+                setException(ConnectionException.fromStatusCodeAndThrowable(statusCode, toString(), exception));
             }
+            return Try.failure(exception);
         }
-        return this;
+        return Try.success(this);
     }
 
     private boolean isStatusOk() {
@@ -343,5 +350,11 @@ public class HttpReadResult {
             builder.atNewLine(header.getKey(), header.getValue().toString());
         }
         return builder;
+    }
+
+    void onRetryWithoutAuthentication() {
+        authenticate = false;
+        appendToLog("Retrying without authentication");
+        MyLog.v(this, this::toString);
     }
 }

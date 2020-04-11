@@ -16,8 +16,9 @@
 
 package org.andstatus.app.service;
 
-import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
+
+import io.vavr.control.Try;
 
 class TimelineDownloaderFollowers extends TimelineDownloader {
 
@@ -26,9 +27,9 @@ class TimelineDownloaderFollowers extends TimelineDownloader {
     }
 
     @Override
-    public void download() throws ConnectionException {
+    public Try<Boolean> download() {
         CommandExecutorStrategy strategy = new CommandExecutorFollowers(execContext);
-        strategy.execute();
+        return strategy.execute();
     }
 
     @Override

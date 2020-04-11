@@ -41,6 +41,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.vavr.control.Try;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.basic.DefaultOAuthConsumer;
@@ -56,7 +57,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
      * Partially borrowed from the "Impeller" code !
      */
     @Override
-    public void registerClient() throws ConnectionException {
+    public Try<Void> registerClient() {
         Uri uri = getApiUri(ApiRoutineEnum.OAUTH_REGISTER_CLIENT);
 		MyStringBuilder logmsg = MyStringBuilder.of("registerClient; for " + data.originUrl
                 + "; URL='" + uri + "'");
@@ -105,9 +106,10 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         if (data.oauthClientKeys.areKeysPresent()) {
             MyLog.v(this, () -> "Completed " + logmsg);
         } else {
-            throw ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,
-                    "Failed to obtain client keys for host; " + logmsg, data.originUrl);
+            Try.failure(ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,
+                    "Failed to obtain client keys for host; " + logmsg, data.originUrl));
         }
+        return Try.success(null);
     }
 
     @Override
@@ -136,7 +138,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     } else {
                         writeJson(conn, params);
                     }
-                } catch (JSONException | IOException e) {
+                } catch (Exception e) {
                     result.setException(e);
                 }
             });
@@ -147,9 +149,9 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     break;
                 default:
                     HttpConnectionUtils.readStream(result, conn.getErrorStream());
-                    throw result.getExceptionFromJsonErrorResponse();
+                    result.setException(result.getExceptionFromJsonErrorResponse());
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             result.setException(e);
         }
         return result;
@@ -196,12 +198,9 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         return consumer;
     }
 
-    public void getRequest(HttpReadResult result) throws ConnectionException {
-        String method = "getRequest; ";
-        StringBuilder logBuilder = new StringBuilder(method);
+    public void getRequest(HttpReadResult result) {
         try {
             OAuthConsumer consumer = getConsumer();
-            logBuilder.append("URL='" + result.getUrl() + "';");
             boolean redirected = false;
             boolean stop = false;
             do {
@@ -227,18 +226,13 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                         HttpConnectionUtils.readStream(result, conn.getErrorStream());
                         stop = result.fileResult == null || !result.authenticate;
                         if (!stop) {
-                            result.authenticate = false;
-                            String logMsg4 = "Retrying without authentication connection to '" + result.getUrl() + "'";
-                            logBuilder.append(logMsg4 + "; ");
-                            MyLog.v(this, () -> method + logMsg4);
+                            result.onRetryWithoutAuthentication();
                         }
                         break;
                 }
             } while (!stop);
-        } catch(ConnectionException e) {
-            throw e;
-        } catch(IOException e) {
-            throw new ConnectionException(logBuilder.toString(), e);
+        } catch(Exception e) {
+            result.setException(e);
         }
     }
 
@@ -273,8 +267,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     consumer.sign(conn);
                 }
             }
-        } catch (OAuthMessageSignerException | OAuthExpectationFailedException
-                | OAuthCommunicationException e) {
+        } catch (Exception e) {
             throw new ConnectionException(e);
         }
     }

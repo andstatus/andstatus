@@ -13,12 +13,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class RawResourceUtils {
 
     public static String getString(@RawRes int id) throws IOException {
         return new String(getBytes(id, InstrumentationRegistry.getInstrumentation().getContext()),
-                Charset.forName("UTF-8"));
+                StandardCharsets.UTF_8);
     }
 
     /**

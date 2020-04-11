@@ -45,7 +45,6 @@ import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyHtml;
-import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
@@ -63,6 +62,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import io.vavr.control.Try;
+
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
@@ -71,6 +72,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -168,7 +170,7 @@ public class ConnectionPumpioTest {
         String urls[] = {originUrl + "/api/user/t131t/profile", originUrl + "/api/user/somebody/profile"};
         String hosts[] = {demoData.pumpioMainHost, demoData.pumpioMainHost};
         for (int ind=0; ind < actors.length; ind++) {
-            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.GET_ACTOR, actors[ind]);
+            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.GET_ACTOR, actors[ind]).get();
             assertEquals("Expecting '" + urls[ind] + "'", Uri.parse(urls[ind]), conu.uri);
             assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], conu.httpConnection.data.originUrl.getHost());
         }
@@ -182,7 +184,7 @@ public class ConnectionPumpioTest {
         Actor actor1 = Actor.fromOid(connection.getData().getOrigin(),"acct:" + webFingerId)
                 .setWebFingerId(webFingerId);
         InputTimelinePage timeline = connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
-                TimelinePosition.of(sinceId), TimelinePosition.EMPTY, 20, actor1);
+                TimelinePosition.of(sinceId), TimelinePosition.EMPTY, 20, actor1).get();
         assertNotNull("timeline returned", timeline);
         int size = 6;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -320,7 +322,7 @@ public class ConnectionPumpioTest {
         final String webFingerId = "t131t@" + originUrl.getHost();
         Actor actor = Actor.fromOid(connection.getData().getOrigin(),"acct:" + webFingerId)
                 .setWebFingerId(webFingerId);
-        List<Actor> actors = connection.getFriends(actor);
+        List<Actor> actors = connection.getFriends(actor).get();
         assertNotNull("List of actors, who " + actor.getUniqueNameWithOrigin() + " is following", actors);
         int size = 5;
         assertEquals("Response for t131t", size, actors.size());
@@ -385,7 +387,7 @@ public class ConnectionPumpioTest {
     public void testUnfollowActor() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.unfollow_pumpio);
         String actorOid = "acct:evan@e14n.com";
-        AActivity activity = connection.follow(actorOid, false);
+        AActivity activity = connection.follow(actorOid, false).get();
         assertEquals("Not unfollow action", ActivityType.UNDO_FOLLOW, activity.type);
         Actor objActor = activity.getObjActor();
         assertTrue("objActor is present", objActor.nonEmpty());
@@ -403,16 +405,11 @@ public class ConnectionPumpioTest {
     public void testDestroyStatus() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_delete_comment_response);
         assertTrue("Success", connection.deleteNote("https://" + demoData.pumpioMainHost
-                + "/api/comment/xf0WjLeEQSlyi8jwHJ0ttre"));
+                + "/api/comment/xf0WjLeEQSlyi8jwHJ0ttre").get());
 
-        boolean thrown = false;
-        try {
-            connection.deleteNote("");
-        } catch (IllegalArgumentException e) {
-            MyLog.v(this, e);
-            thrown = true;
-        }
-        assertTrue(thrown);
+        Try<Boolean> tried = connection.deleteNote("");
+        assertTrue(tried.isFailure());
+        assertThat(tried.getCause(), isA(IllegalArgumentException.class));
     }
 
     @Test
@@ -422,7 +419,7 @@ public class ConnectionPumpioTest {
 
         Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
                 .setContentPosted("Test post note with media");
-        AActivity activity = connection.updateNote(note, "",
+        Try<AActivity> activity = connection.updateNote(note, "",
                 new Attachments().add(Attachment.fromUriAndMimeType(demoData.localImageTestUri,
                         MyContentType.IMAGE.generalMimeType)));
     }
@@ -441,7 +438,7 @@ public class ConnectionPumpioTest {
 
         AActivity activity = connection.updateNote(note, "",
                 new Attachments().add(Attachment.fromUriAndMimeType(demoData.localVideoTestUri,
-                        MyContentType.VIDEO.generalMimeType)));
+                        MyContentType.VIDEO.generalMimeType))).get();
         assertEquals("Responses counter " + mock.getHttpMock(), 3, mock.getHttpMock().responsesCounter);
         Note note2 = activity.getNote();
         assertEquals("Note name " + activity, name, note2.getName());
@@ -457,7 +454,7 @@ public class ConnectionPumpioTest {
     private Note privateGetNoteWithAttachment(boolean uniqueUid) throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
 
-        Note note = connection.getNote("https://io.jpope.org/api/activity/w9wME-JVQw2GQe6POK7FSQ").getNote();
+        Note note = connection.getNote("https://io.jpope.org/api/activity/w9wME-JVQw2GQe6POK7FSQ").get().getNote();
         if (uniqueUid) {
             note = note.copy(Optional.of(note.oid + "_" + demoData.testRunUid), Optional.empty());
         }
@@ -479,7 +476,7 @@ public class ConnectionPumpioTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_note_self);
 
         final String noteOid = "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA";
-        final AActivity activity = connection.getNote(noteOid);
+        final AActivity activity = connection.getNote(noteOid).get();
         Note note = activity.getNote();
         assertNotNull("note returned", note);
         assertEquals("Note oid", noteOid, note.oid);

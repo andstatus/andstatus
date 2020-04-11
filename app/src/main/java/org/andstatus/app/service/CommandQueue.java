@@ -20,7 +20,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDiskIOException;
+
+import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -29,6 +30,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.TryUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -202,18 +204,22 @@ public class CommandQueue {
         }
         if (loaded) clearQueuesInDatabase(db);
         moveCommandsFromPreToMainQueue();
-        int countCurrentRetry = save(db, QueueType.CURRENT) + save(db, QueueType.RETRY);
-        int countError = save(db, QueueType.ERROR);
+        Try<Integer> countCurrentRetry = save(db, QueueType.CURRENT)
+                .flatMap(i1 -> save(db, QueueType.RETRY).map(i2 -> i1 + i2));
+        Try<Integer> countError = save(db, QueueType.ERROR);
         MyLog.d(this, (loaded ? "Queues saved" : "Saved new queued commands only") + ", "
-                + (countCurrentRetry > 0 ? Integer.toString(countCurrentRetry) : "no") + " commands"
-                + (countError > 0 ? ", plus " + Integer.toString(countError) + " in Error queue" : "")
+            + ( countCurrentRetry.isFailure() || countError.isFailure()
+                ? " Error saving commands!"
+                : ((countCurrentRetry.get() > 0 ? Integer.toString(countCurrentRetry.get()) : "no") + " commands"
+                    + (countError.get() > 0 ? ", plus " + countError.get() + " in Error queue" : ""))
+            )
         );
         saved |= loaded;
         loaded = false;
     }
 
     /** @return Number of items persisted */
-    private int save(@NonNull SQLiteDatabase db, @NonNull QueueType queueType) {
+    private Try<Integer> save(@NonNull SQLiteDatabase db, @NonNull QueueType queueType) {
         final String method = "saveQueue-" + queueType.save();
         OneQueue oneQueue = queues.get(queueType);
         Queue<CommandData> queue = oneQueue.queue;
@@ -239,39 +245,28 @@ public class CommandQueue {
                         MyLog.e(context, method + "; Duplicated command in a queue:" + count + " " + cd.toString());
                     }
                 }
-                if (queue.isEmpty()) {
-                    MyLog.d(context, method + "; " + count + " saved");
-                } else {
-                    MyLog.e(context, method + "; " + count + " saved" +
-                            (queue.isEmpty() ? "" : ", " + queue.size() + " left"));
-                }
+                MyLog.e(context, method + "; " + count + " saved" +
+                        (queue.isEmpty() ? "" : ", " + queue.size() + " left"));
             }
         } catch (Exception e) {
             String msgLog = method + "; " + count + " saved, " + queue.size() + " left.";
             MyLog.e(context, msgLog, e);
-            if (SQLiteDiskIOException.class.isAssignableFrom(e.getClass())) {
-                throw e;
-            } else {
-                throw new IllegalStateException(msgLog, e);
-            }
+            return TryUtils.failure(msgLog, e);
         }
         oneQueue.savedCount.addAndGet(count);
-        return count;
+        return Try.success(count);
     }
 
-    private synchronized void clearQueuesInDatabase(@NonNull SQLiteDatabase db) {
+    private synchronized Try<Boolean> clearQueuesInDatabase(@NonNull SQLiteDatabase db) {
         final String method = "clearQueuesInDatabase";
         try {
             String sql = "DELETE FROM " + CommandTable.TABLE_NAME;
             DbUtils.execSQL(db, sql);
         } catch (Exception e) {
             MyLog.e(context, method, e);
-            if (SQLiteDiskIOException.class.isAssignableFrom(e.getClass())) {
-                throw e;
-            } else {
-                throw new IllegalStateException(method, e);
-            }
+            return TryUtils.failure(method, e);
         }
+        return TryUtils.TRUE;
     }
 
     void clear() {

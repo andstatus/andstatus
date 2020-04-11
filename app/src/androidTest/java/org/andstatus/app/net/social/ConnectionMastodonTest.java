@@ -65,7 +65,7 @@ public class ConnectionMastodonTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_home_timeline);
 
         InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.HOME_TIMELINE,
-                TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor);
+                TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor).get();
         assertNotNull("timeline returned", timeline);
         int size = 1;
         assertEquals("Number of items in the Timeline", size, timeline.size());
@@ -124,7 +124,7 @@ public class ConnectionMastodonTest {
     private void oneVisibility(String stringResponse, TriState isPublic, boolean isFollowers) throws ConnectionException {
         mock.getHttpMock().addResponse(stringResponse);
         InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.HOME_TIMELINE,
-                TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor);
+                TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor).get();
         assertVisibility(timeline.get(0).getNote().audience(), isPublic, isFollowers);
     }
 
@@ -132,7 +132,7 @@ public class ConnectionMastodonTest {
     public void testGetConversation() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_conversation);
 
-        List<AActivity> timeline = mock.connection.getConversation("5596683");
+        List<AActivity> timeline = mock.connection.getConversation("5596683").get();
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 5, timeline.size());
     }
@@ -142,7 +142,7 @@ public class ConnectionMastodonTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_notifications);
 
         InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
-                TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, accountActor);
+                TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, accountActor).get();
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 20, timeline.size());
 
@@ -199,7 +199,7 @@ public class ConnectionMastodonTest {
     public void testGetActor() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_actor);
 
-        Actor actor = mock.connection.getActor(Actor.fromOid( accountActor.origin,"5962"));
+        Actor actor = mock.connection.getActor(Actor.fromOid( accountActor.origin,"5962")).get();
         assertTrue(actor.toString(), actor.nonEmpty());
         assertEquals("Actor's Oid", "5962", actor.oid);
         assertEquals("Username", "AndStatus", actor.getUsername());
@@ -221,7 +221,7 @@ public class ConnectionMastodonTest {
         MyLog.i("mentionsInANote" + iteration, "started");
 
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_note);
-        AActivity activity = mock.connection.getNote("101064848262880936");
+        AActivity activity = mock.connection.getNote("101064848262880936").get();
         assertEquals("Is not UPDATE " + activity, ActivityType.UPDATE, activity.type);
         assertEquals("Is not a note", AObjectType.NOTE, activity.getObjectType());
 
@@ -265,7 +265,7 @@ public class ConnectionMastodonTest {
     public void reblog() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_reblog);
 
-        AActivity activity = mock.connection.getNote("101100271392454703");
+        AActivity activity = mock.connection.getNote("101100271392454703").get();
         assertEquals("Is not ANNOUNCE " + activity, ActivityType.ANNOUNCE, activity.type);
         assertEquals("Is not an Activity", AObjectType.ACTIVITY, activity.getObjectType());
 
@@ -312,7 +312,7 @@ public class ConnectionMastodonTest {
 
     private void assertOneTootWithVideo(String actorOid, String videoUri, String previewUri) throws ConnectionException {
         InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.ACTOR_TIMELINE,
-                TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, Actor.fromOid(mock.getData().getOrigin(), actorOid));
+                TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, Actor.fromOid(mock.getData().getOrigin(), actorOid)).get();
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 1, timeline.size());
 

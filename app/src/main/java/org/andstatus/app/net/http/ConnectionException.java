@@ -16,8 +16,11 @@
 
 package org.andstatus.app.net.http;
 
+import android.content.res.Resources;
+
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UrlUtils;
 
 import java.io.IOException;
@@ -86,12 +89,15 @@ public class ConnectionException extends IOException {
     }
     private final StatusCode statusCode;
     private final boolean isHardError;
-    private final URL host;
+    private final URL url;
 
     public static ConnectionException of(Throwable e) {
-        return e instanceof ConnectionException
-                ? (ConnectionException) e
-                : new ConnectionException("Unexpected exception", e);
+        if (e instanceof ConnectionException) return (ConnectionException) e;
+
+        if (e instanceof Resources.NotFoundException) {
+            return ConnectionException.fromStatusCode(StatusCode.NOT_FOUND, e.getMessage());
+        }
+        return new ConnectionException("Unexpected exception", e);
     }
 
     public static ConnectionException from(HttpReadResult result) {
@@ -101,7 +107,7 @@ public class ConnectionException extends IOException {
     private ConnectionException(HttpReadResult result) {
         super(result.logMsg(), result.getException());
         this.statusCode = result.getStatusCode();
-        this.host = UrlUtils.fromString(result.getUrl());
+        this.url = UrlUtils.fromString(result.getUrl());
         this.isHardError = isHardFromStatusCode(result.getException() instanceof ConnectionException &&
                 ((ConnectionException) result.getException()).isHardError(), statusCode);
     }
@@ -150,7 +156,7 @@ public class ConnectionException extends IOException {
     }
 
     public ConnectionException(String detailMessage) {
-        this(detailMessage, null);
+        this(StatusCode.UNKNOWN, detailMessage);
     }
 
     public ConnectionException(StatusCode statusCode, String detailMessage) {
@@ -161,15 +167,21 @@ public class ConnectionException extends IOException {
         this(StatusCode.OK, detailMessage, throwable, null, false);
     }
     
-    public ConnectionException(StatusCode statusCode, String detailMessage, URL host) {
-        this(statusCode, detailMessage, null, host, false);
+    public ConnectionException(StatusCode statusCode, String detailMessage, URL url) {
+        this(statusCode, detailMessage, null, url, false);
     }
-    
+
+    public ConnectionException append(String toAppend) {
+        return new ConnectionException(statusCode,
+            getMessage() + (StringUtil.nonEmpty(getMessage()) ? ". " : "") + toAppend,
+            getCause(), url, isHardError);
+    }
+
     private ConnectionException(StatusCode statusCode, String detailMessage, 
-            Throwable throwable, URL host, boolean isHardIn) {
+            Throwable throwable, URL url, boolean isHardIn) {
         super(detailMessage, throwable);
         this.statusCode = statusCode;
-        this.host = host; 
+        this.url = url;
         this.isHardError = isHardFromStatusCode(isHardIn, statusCode);
     }
 
@@ -183,8 +195,8 @@ public class ConnectionException extends IOException {
 
     @Override
     public String toString() {
-        return "Status code=" + this.statusCode + "; " + (isHardError ? "hard" : "soft") 
-			+ (host == null ? "" : "; host=" + host) 
+        return "Status code: " + this.statusCode + "; " + (isHardError ? "hard" : "soft")
+			+ (url == null ? "" : "; URL: " + url)
 			+ "; \n" + super.getMessage()
 		    + (super.getCause() != null ? "; \nCaused by " + super.getCause().toString() : "");
     }

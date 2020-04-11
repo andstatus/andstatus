@@ -27,6 +27,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.TryUtils;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -120,15 +121,16 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
 
     @Override
-    public boolean deleteNote(String noteOid) throws ConnectionException {
-        return http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.DELETE_NOTE, noteOid))
-        .map(HttpReadResult::getJsonObject)
+    public Try<Boolean> deleteNote(String noteOid) {
+        return getApiPathWithNoteId(ApiRoutineEnum.DELETE_NOTE, noteOid)
+        .flatMap(http::postRequest)
+        .flatMap(HttpReadResult::getJsonObject)
         .map(jso -> {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG, "deleteNote response: " + jso.toString());
             }
             return true;
-        }).getOrElse(false);
+        });
     }
     
     /**
@@ -136,9 +138,10 @@ public abstract class ConnectionTwitterLike extends Connection {
      *      href="https://dev.twitter.com/docs/api/1.1/post/friendships/create">POST friendships/create</a>
      * @see <a
      *      href="https://dev.twitter.com/docs/api/1.1/post/friendships/destroy">POST friendships/destroy</a>
+     * @return
      */
     @Override
-    public AActivity follow(String actorOid, Boolean follow) throws ConnectionException {
+    public Try<AActivity> follow(String actorOid, Boolean follow) {
         JSONObject out = new JSONObject();
         try {
             out.put("user_id", actorOid);
@@ -146,13 +149,13 @@ public abstract class ConnectionTwitterLike extends Connection {
             MyLog.e(this, e);
         }
         return postRequest(follow ? ApiRoutineEnum.FOLLOW : ApiRoutineEnum.UNDO_FOLLOW, out)
-            .map(HttpReadResult::getJsonObject)
+            .flatMap(HttpReadResult::getJsonObject)
             .map(this::actorFromJson)
             .map(friend -> data.getAccountActor().act(
                         data.getAccountActor(),
                         follow ? ActivityType.FOLLOW : ActivityType.UNDO_FOLLOW,
                         friend)
-            ).getOrElseThrow(ConnectionException::of);
+            );
     }
 
     /**
@@ -161,20 +164,8 @@ public abstract class ConnectionTwitterLike extends Connection {
      * @see <a href="https://dev.twitter.com/docs/api/1.1/get/friends/ids">GET friends/ids</a>
      */
     @Override
-    public List<String> getFriendsIds(String actorOid) throws ConnectionException {
-        String method = "getFriendsIds";
-        Uri.Builder builder = getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS).buildUpon();
-        builder.appendQueryParameter("user_id", actorOid);
-        List<String> list = new ArrayList<>();
-        JSONArray jArr = getRequestArrayInObject(builder.build(), "ids");
-        try {
-            for (int index = 0; jArr != null && index < jArr.length(); index++) {
-                list.add(jArr.getString(index));
-            }
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, method, e, jArr);
-        }
-        return list;
+    public Try<List<String>> getFriendsIds(String actorOid) {
+        return getFriendsOrFollowersIDs(ApiRoutineEnum.GET_FRIENDS_IDS, actorOid);
     }
 
     /**
@@ -184,20 +175,27 @@ public abstract class ConnectionTwitterLike extends Connection {
      */
     @NonNull
     @Override
-    public List<String> getFollowersIds(String actorOid) throws ConnectionException {
-        String method = "getFollowersIds";
-        Uri.Builder builder = getApiPath(ApiRoutineEnum.GET_FOLLOWERS_IDS).buildUpon();
-        builder.appendQueryParameter("user_id", actorOid);
-        List<String> list = new ArrayList<>();
-        JSONArray jArr = getRequestArrayInObject(builder.build(), "ids");
-        try {
-            for (int index = 0; jArr != null && index < jArr.length(); index++) {
-                list.add(jArr.getString(index));
+    public Try<List<String>> getFollowersIds(String actorOid) {
+        return getFriendsOrFollowersIDs(ApiRoutineEnum.GET_FOLLOWERS_IDS, actorOid);
+    }
+
+    private Try<List<String>> getFriendsOrFollowersIDs(ApiRoutineEnum apiRoutineEnum, String actorOid) {
+        return getApiPath(apiRoutineEnum)
+        .map(Uri::buildUpon)
+        .map(builder -> builder.appendQueryParameter("user_id", actorOid))
+        .map(Uri.Builder::build)
+        .flatMap(uri -> getRequestArrayInObject(uri, "ids"))
+        .flatMap(jsonArray -> {
+            List<String> list = new ArrayList<>();
+            try {
+                for (int index = 0; jsonArray != null && index < jsonArray.length(); index++) {
+                    list.add(jsonArray.getString(index));
+                }
+            } catch (JSONException e) {
+                return Try.failure(ConnectionException.loggedJsonException(this, apiRoutineEnum.name(), e, jsonArray));
             }
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, method, e, jArr);
-        }
-        return list;
+            return Try.success(list);
+        });
     }
 
     /**
@@ -208,30 +206,30 @@ public abstract class ConnectionTwitterLike extends Connection {
      *      REST API Method: statuses/destroy</a>
      */
     @Override
-    public AActivity getNote1(String noteOid) throws ConnectionException {
-        JSONObject note = getRequest(getApiPathWithNoteId(ApiRoutineEnum.GET_NOTE, noteOid));
-        return activityFromJson(note);
+    public Try<AActivity> getNote1(String noteOid) {
+        return getApiPathWithNoteId(ApiRoutineEnum.GET_NOTE, noteOid)
+                .flatMap(this::getRequest)
+                .map(this::activityFromJson);
     }
 
     @NonNull
     @Override
-    public InputTimelinePage getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                         TimelinePosition oldestPosition, int limit, Actor actor)
-            throws ConnectionException {
-        Uri.Builder builder = getTimelineUriBuilder(apiRoutine, limit, actor);
-        appendPositionParameters(builder, youngestPosition, oldestPosition);
-        JSONArray jArr = http.getRequestAsArray(builder.build());
-        return InputTimelinePage.of(jArrToTimeline("", jArr, apiRoutine, builder.build()));
+    public Try<InputTimelinePage> getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine,
+                  TimelinePosition youngestPosition, TimelinePosition oldestPosition, int limit, Actor actor) {
+        return getTimelineUriBuilder(apiRoutine, limit, actor)
+            .map(builder -> appendPositionParameters(builder, youngestPosition, oldestPosition))
+            .map(Uri.Builder::build)
+            .flatMap(uri -> http.getRequestAsArray(uri)
+                .flatMap(jArr -> jArrToTimeline("", jArr, apiRoutine, uri)))
+            .map(InputTimelinePage::of);
     }
 
     @NonNull
-    protected Uri.Builder getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, Actor actor) throws ConnectionException {
-        Uri.Builder builder = this.getApiPath(apiRoutine).buildUpon();
-        builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        if (!StringUtil.isEmpty(actor.oid)) {
-            builder.appendQueryParameter("user_id", actor.oid);
-        }
-        return builder;
+    protected Try<Uri.Builder> getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, Actor actor) {
+        return this.getApiPath(apiRoutine)
+        .map(Uri::buildUpon)
+        .map(b -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)))
+        .map(b -> StringUtil.isEmpty(actor.oid) ? b : b.appendQueryParameter("user_id", actor.oid));
     }
 
     protected AActivity activityFromTwitterLikeJson(JSONObject jso) throws ConnectionException {
@@ -394,7 +392,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
 
     @NonNull
-    Actor actorBuilderFromJson(JSONObject jso) throws ConnectionException {
+    Actor actorBuilderFromJson(JSONObject jso) {
         if (jso == null) return Actor.EMPTY;
 
         String oid = "";
@@ -439,21 +437,21 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     @NonNull
     @Override
-    public InputTimelinePage searchNotes(boolean syncYounger, TimelinePosition youngestPosition,
-                                         TimelinePosition oldestPosition, int limit, String searchQuery)
-            throws ConnectionException {
+    public Try<InputTimelinePage> searchNotes(boolean syncYounger, TimelinePosition youngestPosition,
+                                              TimelinePosition oldestPosition, int limit, String searchQuery) {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_NOTES;
-        Uri.Builder builder = this.getApiPath(apiRoutine).buildUpon();
-        if (!StringUtil.isEmpty(searchQuery)) {
-            builder.appendQueryParameter("q", searchQuery);
-        }
-        appendPositionParameters(builder, youngestPosition, oldestPosition);
-        builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        JSONArray jArr = http.getRequestAsArray(builder.build());
-        return InputTimelinePage.of(jArrToTimeline("", jArr, apiRoutine, builder.build()));
+        return getApiPath(apiRoutine)
+        .map(Uri::buildUpon)
+        .map(b -> StringUtil.isEmpty(searchQuery) ? b : b.appendQueryParameter("q", searchQuery))
+        .map(builder -> appendPositionParameters(builder, youngestPosition, oldestPosition))
+        .map(builder -> builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)))
+        .map(Uri.Builder::build)
+        .flatMap(uri -> http.getRequestAsArray(uri)
+            .flatMap(jArr -> jArrToTimeline("", jArr, apiRoutine, uri)))
+            .map(InputTimelinePage::of);
     }
 
-    void appendPositionParameters(Uri.Builder builder, TimelinePosition youngest, TimelinePosition oldest) {
+    Uri.Builder appendPositionParameters(Uri.Builder builder, TimelinePosition youngest, TimelinePosition oldest) {
         if (youngest.nonEmpty()) {
             builder.appendQueryParameter("since_id", youngest.getPosition());
         } else if (oldest.nonEmpty()) {
@@ -467,9 +465,10 @@ public abstract class ConnectionTwitterLike extends Connection {
             }
             builder.appendQueryParameter("max_id", maxIdString);
         }
+        return builder;
     }
 
-    List<AActivity> jArrToTimeline(String requestDescription, JSONArray jArr, ApiRoutineEnum apiRoutine, Uri uri) throws ConnectionException {
+    Try<List<AActivity>> jArrToTimeline(String requestDescription, JSONArray jArr, ApiRoutineEnum apiRoutine, Uri uri) {
         List<AActivity> timeline = new ArrayList<>();
         if (jArr != null) {
             // Read the activities in chronological order
@@ -478,7 +477,9 @@ public abstract class ConnectionTwitterLike extends Connection {
                     AActivity item = activityFromTwitterLikeJson(jArr.getJSONObject(index));
                     timeline.add(item);
                 } catch (JSONException e) {
-                    throw ConnectionException.loggedJsonException(this, "Parsing " + apiRoutine, e, null);
+                    return Try.failure(ConnectionException.loggedJsonException(this, "Parsing " + apiRoutine, e, null));
+                } catch (Exception e) {
+                    return Try.failure(e);
                 }
             }
         }
@@ -486,10 +487,10 @@ public abstract class ConnectionTwitterLike extends Connection {
             setNotesPrivate(timeline);
         }
         MyLog.d(this, apiRoutine + " " + requestDescription + " '" + uri + "' " + timeline.size() + " items");
-        return timeline;
+        return Try.success(timeline);
     }
 
-    void setNotesPrivate(List<AActivity> timeline) {
+    private void setNotesPrivate(List<AActivity> timeline) {
         for (AActivity item : timeline) {
             if (item.getObjectType() == AObjectType.NOTE) {
                 item.getNote().setPublic(TriState.FALSE);
@@ -497,7 +498,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         }
     }
 
-    List<Actor> jArrToActors(JSONArray jArr, ApiRoutineEnum apiRoutine, Uri uri) throws ConnectionException {
+    Try<List<Actor>> jArrToActors(JSONArray jArr, ApiRoutineEnum apiRoutine, Uri uri) {
         List<Actor> actors = new ArrayList<>();
         if (jArr != null) {
             for (int index = 0; index < jArr.length(); index++) {
@@ -506,34 +507,38 @@ public abstract class ConnectionTwitterLike extends Connection {
                     Actor item = actorFromJson(jso);
                     actors.add(item);
                 } catch (JSONException e) {
-                    throw ConnectionException.loggedJsonException(this, "Parsing " + apiRoutine, e, null);
+                    return Try.failure(ConnectionException.loggedJsonException(this, "Parsing " + apiRoutine, e, null));
+                } catch (Exception e) {
+                    return Try.failure(e);
                 }
             }
         }
         MyLog.d(this, apiRoutine + " '" + uri + "' " + actors.size() + " items");
-        return actors;
+        return Try.success(actors);
     }
 
     /**
      * @see <a href="https://dev.twitter.com/docs/api/1.1/get/users/show">GET users/show</a>
+     * @return
      */
     @Override
-    public Actor getActor2(Actor actorIn) throws ConnectionException {
-        Uri.Builder builder = getApiPath(ApiRoutineEnum.GET_ACTOR).buildUpon();
-        if (UriUtils.isRealOid(actorIn.oid)) {
-            builder.appendQueryParameter("user_id", actorIn.oid);
-        } else {
-            builder.appendQueryParameter("screen_name", actorIn.getUsername());
-        }
-        JSONObject jso = getRequest(builder.build());
-        return actorFromJson(jso);
+    public Try<Actor> getActor2(Actor actorIn) {
+        return getApiPath(ApiRoutineEnum.GET_ACTOR)
+        .map(Uri::buildUpon)
+        .map(builder -> UriUtils.isRealOid(actorIn.oid)
+                ? builder.appendQueryParameter("user_id", actorIn.oid)
+                : builder.appendQueryParameter("screen_name", actorIn.getUsername()))
+        .map(Uri.Builder::build)
+        .flatMap(this::getRequest)
+        .map(this::actorFromJson);
     }
     
     @Override
-    public AActivity announce(String rebloggedNoteOid) throws ConnectionException {
-        return http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.ANNOUNCE, rebloggedNoteOid))
-            .map(HttpReadResult::getJsonObject)
-            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
+    public Try<AActivity> announce(String rebloggedNoteOid) {
+        return getApiPathWithNoteId(ApiRoutineEnum.ANNOUNCE, rebloggedNoteOid)
+        .flatMap(http::postRequest)
+        .flatMap(HttpReadResult::getJsonObject)
+        .map(this::activityFromJson);
     }
 
     /**
@@ -550,40 +555,34 @@ public abstract class ConnectionTwitterLike extends Connection {
            account/rate_limit_status</a>
      */
     @Override
-    public RateLimitStatus rateLimitStatus() throws ConnectionException {
-        JSONObject result = getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS));
-        RateLimitStatus status = new RateLimitStatus();
-        if (result != null) {
-            switch (data.getOriginType()) {
-                case GNUSOCIAL:
-                    status.remaining = result.optInt("remaining_hits");
-                    status.limit = result.optInt("hourly_limit");
-                    break;
-                default:
-                    JSONObject resources = null;
-                    try {
-                        resources = result.getJSONObject("resources");
-                        JSONObject limitObject = resources.getJSONObject("statuses").getJSONObject("/statuses/home_timeline");
-                        status.remaining = limitObject.optInt("remaining");
-                        status.limit = limitObject.optInt("limit");
-                    } catch (JSONException e) {
-                        throw ConnectionException.loggedJsonException(this, "getting rate limits", e, resources);
-                    }
-                    break;
+    public Try<RateLimitStatus> rateLimitStatus() {
+        return getApiPath(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)
+        .flatMap(this::getRequest).flatMap(result -> {
+            RateLimitStatus status = new RateLimitStatus();
+            if (result != null) {
+                JSONObject resources = null;
+                try {
+                    resources = result.getJSONObject("resources");
+                    JSONObject limitObject = resources.getJSONObject("statuses").getJSONObject("/statuses/home_timeline");
+                    status.remaining = limitObject.optInt("remaining");
+                    status.limit = limitObject.optInt("limit");
+                } catch (JSONException e) {
+                    return Try.failure(ConnectionException.loggedJsonException(this, "getting rate limits", e, resources));
+                }
             }
-        }
-        return status;
+            return Try.success(status);
+        });
     }
     
     @Override
-    public AActivity updateNote(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
+    public Try<AActivity> updateNote(Note note, String inReplyToOid, Attachments attachments) {
         if (StringUtil.isEmpty(inReplyToOid) && note.audience().hasNonSpecial() && note.audience().getPublic().isFalse) {
             return updatePrivateNote(note, note.audience().getFirstNonSpecial().oid, attachments);
         }
         return updateNote2(note, inReplyToOid, attachments);
     }
 
-    abstract AActivity updateNote2(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException;
+    abstract Try<AActivity> updateNote2(Note note, String inReplyToOid, Attachments attachments);
 
     void updateNoteSetFields(Note note, String inReplyToOid, JSONObject formParams) throws JSONException {
         if (StringUtil.nonEmpty(note.getContentToPost())) {
@@ -594,8 +593,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         }
     }
 
-    private AActivity updatePrivateNote(Note note, String recipientOid, Attachments attachments)
-            throws ConnectionException {
+    private Try<AActivity> updatePrivateNote(Note note, String recipientOid, Attachments attachments) {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("text", note.getContentToPost());
@@ -603,11 +601,11 @@ public abstract class ConnectionTwitterLike extends Connection {
                 formParams.put("user_id", recipientOid);
             }
         } catch (JSONException e) {
-            MyLog.e(this, e);
+            return Try.failure(e);
         }
         return postRequest(ApiRoutineEnum.UPDATE_PRIVATE_NOTE, formParams)
-            .map(HttpReadResult::getJsonObject)
-            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
+        .flatMap(HttpReadResult::getJsonObject)
+        .map(this::activityFromJson);
     }
 
     /**
@@ -618,7 +616,8 @@ public abstract class ConnectionTwitterLike extends Connection {
     @Override
     @NonNull
     public Try<Actor> verifyCredentials(Optional<Uri> whoAmI) {
-        return Try.of(() -> getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS)))
+        return getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS)
+                .flatMap(this::getRequest)
                 .map(this::actorFromJson);
     }
 
@@ -626,39 +625,41 @@ public abstract class ConnectionTwitterLike extends Connection {
         return tryApiPath(data.getAccountActor(), apiRoutine).flatMap(uri -> postRequest(uri, formParams));
     }
 
-    Uri getApiPathWithNoteId(ApiRoutineEnum routineEnum, String noteId) throws ConnectionException {
-        return UriUtils.map(getApiPath(routineEnum), s -> s.replace("%noteId%", noteId));
+    Try<Uri> getApiPathWithNoteId(ApiRoutineEnum routineEnum, String noteId) {
+        return getApiPath(routineEnum).map(uri -> UriUtils.map(uri, s -> s.replace("%noteId%", noteId)));
     }
 
-    Uri getApiPathWithActorId(ApiRoutineEnum routineEnum, String actorId) throws ConnectionException {
-        return UriUtils.map(getApiPath(routineEnum), s -> s.replace("%actorId%", actorId));
+    Try<Uri> getApiPathWithActorId(ApiRoutineEnum routineEnum, String actorId) {
+        return getApiPath(routineEnum).map(uri -> UriUtils.map(uri, s -> s.replace("%actorId%", actorId)));
     }
 
     @Override
-    public List<Actor> getFollowers(Actor actor) throws ConnectionException {
+    public Try<List<Actor>> getFollowers(Actor actor) {
         return getActors(actor, ApiRoutineEnum.GET_FOLLOWERS);
     }
 
     @Override
-    public List<Actor> getFriends(Actor actor) throws ConnectionException {
+    public Try<List<Actor>> getFriends(Actor actor) {
         return getActors(actor, ApiRoutineEnum.GET_FRIENDS);
     }
 
-    List<Actor> getActors(Actor actor, ApiRoutineEnum apiRoutine) throws ConnectionException {
-        return new ArrayList<>();
+    Try<List<Actor>> getActors(Actor actor, ApiRoutineEnum apiRoutine) {
+        return TryUtils.emptyList();
     }
 
     @Override
-    public AActivity like(String noteOid) throws ConnectionException {
-        return http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.LIKE, noteOid))
-            .map(HttpReadResult::getJsonObject)
-            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
+    public Try<AActivity> like(String noteOid) {
+        return getApiPathWithNoteId(ApiRoutineEnum.LIKE, noteOid)
+            .flatMap(http::postRequest)
+            .flatMap(HttpReadResult::getJsonObject)
+            .map(this::activityFromJson);
     }
 
     @Override
-    public AActivity undoLike(String noteOid) throws ConnectionException {
-        return http.postRequest(getApiPathWithNoteId(ApiRoutineEnum.UNDO_LIKE, noteOid))
-            .map(HttpReadResult::getJsonObject)
-            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
+    public Try<AActivity> undoLike(String noteOid) {
+        return getApiPathWithNoteId(ApiRoutineEnum.UNDO_LIKE, noteOid)
+            .flatMap(http::postRequest)
+            .flatMap(HttpReadResult::getJsonObject)
+            .map(this::activityFromJson);
     }
 }

@@ -49,7 +49,6 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -193,10 +192,9 @@ public abstract class Connection implements IsEmpty {
      * Use {@link #tryApiPath(Actor, ApiRoutineEnum)}
      * @return URL or throws a ConnectionException in case the API routine is not supported
      */
-    @Deprecated
     @NonNull
-    public final Uri getApiPath(ApiRoutineEnum routine) throws ConnectionException {
-        return tryApiPath(data.getAccountActor(), routine).getOrElseThrow(ConnectionException::of);
+    protected final Try<Uri> getApiPath(ApiRoutineEnum routine) {
+        return tryApiPath(data.getAccountActor(), routine);
     }
 
     /**
@@ -229,7 +227,7 @@ public abstract class Connection implements IsEmpty {
                 : Optional.of(getApiPathFromOrigin(routine)).flatMap(this::pathToUri);
     }
 
-    public Optional<Uri> pathToUri(String path) {
+    Optional<Uri> pathToUri(String path) {
         return Optional.ofNullable(path)
                 .filter(StringUtil::nonEmpty)
                 .flatMap(path2 -> UrlUtils.pathToUrl(data.getOriginUrl(), path2))
@@ -240,8 +238,8 @@ public abstract class Connection implements IsEmpty {
     /**
      * Check API requests status.
      */
-    public RateLimitStatus rateLimitStatus() throws ConnectionException {
-        return new RateLimitStatus();
+    public Try<RateLimitStatus> rateLimitStatus() {
+        return Try.success(new RateLimitStatus());
     }
 
     /**
@@ -282,7 +280,7 @@ public abstract class Connection implements IsEmpty {
     @NonNull
     public abstract Try<Actor> verifyCredentials(Optional<Uri> whoAmI);
 
-    public abstract AActivity undoLike(String noteOid) throws ConnectionException;
+    public abstract Try<AActivity> undoLike(String noteOid);
 
     /**
      * Favorites the status specified in the ID parameter as the authenticating account.
@@ -291,9 +289,9 @@ public abstract class Connection implements IsEmpty {
      *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-favorites%C2%A0create">Twitter
      *      REST API Method: favorites create</a>
      */
-    public abstract AActivity like(String noteOid) throws ConnectionException;
+    public abstract Try<AActivity> like(String noteOid);
 
-    public boolean undoAnnounce(String noteOid) throws ConnectionException {
+    public Try<Boolean> undoAnnounce(String noteOid) {
         return deleteNote(noteOid);
     }
 
@@ -304,31 +302,45 @@ public abstract class Connection implements IsEmpty {
      *      href="http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-statuses%C2%A0destroy">Twitter
      *      REST API Method: statuses/destroy</a>
      */
-    public abstract boolean deleteNote(String noteOid) throws ConnectionException;
+    public abstract Try<Boolean> deleteNote(String noteOid);
+
+    public Try<List<Actor>> getFriendsOrFollowers(Connection.ApiRoutineEnum routineEnum, Actor actor) {
+        return routineEnum == ApiRoutineEnum.GET_FRIENDS
+                ? getFriends(actor)
+                : getFollowers(actor);
+    }
+
+    public Try<List<String>> getFriendsOrFollowersIds(Connection.ApiRoutineEnum routineEnum, String actorOid) {
+        return routineEnum == ApiRoutineEnum.GET_FRIENDS_IDS
+                ? getFriendsIds(actorOid)
+                : getFollowersIds(actorOid);
+    }
 
     /**
      * Returns a list of actors the specified actor is following.
      */
-    public List<Actor> getFriends(Actor actor) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFriends for actor:"
-                + actor.getUniqueNameWithOrigin());
+    public Try<List<Actor>> getFriends(Actor actor) {
+        return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
+                "getFriends for actor:" + actor.getUniqueNameWithOrigin()));
     }
     
     /**
      * Returns a list of IDs for every actor the specified actor is following.
      */
-    public List<String> getFriendsIds(String actorOid) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFriendsIds for actorOid=" + actorOid);
+    public Try<List<String>> getFriendsIds(String actorOid) {
+        return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
+                "getFriendsIds for actorOid=" + actorOid));
     }
 
     @NonNull
-    public List<String> getFollowersIds(String actorOid) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFollowersIds actorOid=" + actorOid);
+    public Try<List<String>> getFollowersIds(String actorOid) {
+        return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
+                "getFollowersIds for actorOid=" + actorOid));
     }
 
-    public List<Actor> getFollowers(Actor actor) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getFollowers actor:"
-                + actor.getUniqueNameWithOrigin());
+    public Try<List<Actor>> getFollowers(Actor actor) {
+        return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
+                "getFollowers for actor:" + actor.getUniqueNameWithOrigin()));
     }
 
     /**
@@ -336,19 +348,20 @@ public abstract class Connection implements IsEmpty {
      * More than one activity may be returned (as replies) to reflect Favoriting and Reblogging of the "status"
      */
     @NonNull
-    public final AActivity getNote(String noteOid) throws ConnectionException {
+    public final Try<AActivity> getNote(String noteOid) {
         return getNote1(noteOid);
     }
 
     /** See {@link #getNote(String)} */
-    protected abstract AActivity getNote1(String noteOid) throws ConnectionException;
+    protected abstract Try<AActivity> getNote1(String noteOid);
 
     public boolean canGetConversation(String conversationOid) {
         return isRealOid(conversationOid) && hasApiEndpoint(Connection.ApiRoutineEnum.GET_CONVERSATION);
     }
 
-    public List<AActivity> getConversation(String conversationOid) throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, "getConversation oid=" + conversationOid);
+    public Try<List<AActivity>> getConversation(String conversationOid) {
+        return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
+                "getConversation oid=" + conversationOid));
     }
 
     /**
@@ -363,7 +376,7 @@ public abstract class Connection implements IsEmpty {
      *      href="https://dev.twitter.com/docs/api/1/post/statuses/update">Twitter
      *      POST statuses/update</a>
      */
-    public abstract AActivity updateNote(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException;
+    public abstract Try<AActivity> updateNote(Note note, String inReplyToOid, Attachments attachments);
 
     /**
      * Post Reblog ("retweet")
@@ -371,7 +384,7 @@ public abstract class Connection implements IsEmpty {
      * 
      * @param rebloggedNoteOid id of the Reblogged note
      */
-    public abstract AActivity announce(String rebloggedNoteOid) throws ConnectionException;
+    public abstract Try<AActivity> announce(String rebloggedNoteOid);
 
     /**
      * Universal method for several Timeline Types...
@@ -379,40 +392,39 @@ public abstract class Connection implements IsEmpty {
      * @param actor For the {@link ApiRoutineEnum#ACTOR_TIMELINE}, null for the other timelines
      */
     @NonNull
-    public abstract InputTimelinePage getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                                  TimelinePosition oldestPosition, int limit, Actor actor)
-            throws ConnectionException;
+    public abstract Try<InputTimelinePage> getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine,
+               TimelinePosition youngestPosition, TimelinePosition oldestPosition, int limit, Actor actor);
 
     @NonNull
-    public InputTimelinePage searchNotes(boolean syncYounger, TimelinePosition youngestPosition,
-                                         TimelinePosition oldestPosition, int limit, String searchQuery) throws ConnectionException {
-        return InputTimelinePage.EMPTY;
+    public Try<InputTimelinePage> searchNotes(boolean syncYounger, TimelinePosition youngestPosition,
+                                         TimelinePosition oldestPosition, int limit, String searchQuery) {
+        return InputTimelinePage.TRY_EMPTY;
     }
 
     @NonNull
-    public List<Actor> searchActors(int limit, String searchQuery) throws ConnectionException {
-        return new ArrayList<>();
+    public Try<List<Actor>> searchActors(int limit, String searchQuery) {
+        return TryUtils.emptyList();
     }
 
     /**
      * Allows this Account to follow (or stop following) an actor specified in the actorOid parameter
      * @param follow true - Follow, false - Stop following
      */
-    public abstract AActivity follow(String actorOid, Boolean follow) throws ConnectionException;
+    public abstract Try<AActivity> follow(String actorOid, Boolean follow);
 
     /** Get information about the specified Actor */
-    public Actor getActor(Actor actorIn) throws ConnectionException {
-        long time = MyLog.uniqueCurrentTimeMS();
-        Actor actor = getActor2(actorIn);
-        if (!actor.isPartiallyDefined()) {
-            if (actor.getUpdatedDate() <= SOME_TIME_AGO) actor.setUpdatedDate(time);
-        }
-        MyLog.v(this, () -> "getActor oid='" + actorIn.oid
-                + "', username='" + actorIn.getUsername() + "' -> " + actor.getRealName());
-        return actor;
+    public Try<Actor> getActor(Actor actorIn) {
+        return getActor2(actorIn).map(actor -> {
+            if (!actor.isPartiallyDefined() && (actor.getUpdatedDate() <= SOME_TIME_AGO)) {
+                actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+            }
+            MyLog.v(this, () -> "getActor oid='" + actorIn.oid
+                    + "', username='" + actorIn.getUsername() + "' -> " + actor.getRealName());
+            return actor;
+        });
     }
 
-    protected abstract Actor getActor2(Actor actorIn) throws ConnectionException;
+    protected abstract Try<Actor> getActor2(Actor actorIn);
     
     @NonNull
     protected String strFixedDownloadLimit(int limit, ApiRoutineEnum apiRoutine) {
@@ -442,8 +454,8 @@ public abstract class Connection implements IsEmpty {
         return (http instanceof OAuthService) ? (OAuthService) http : null;
     }
 
-    public void registerClientForAccount() throws ConnectionException {
-        http.registerClient();
+    public Try<Void> registerClientForAccount() {
+        return http.registerClient();
     }
 
     public void clearClientKeys() {
@@ -465,12 +477,13 @@ public abstract class Connection implements IsEmpty {
         return http.postRequest(apiUri, formParams);
     }
 
-    public OriginConfig getConfig() throws ConnectionException {
-        return OriginConfig.getEmpty();
+    public Try<OriginConfig> getConfig() {
+        return Try.success(OriginConfig.getEmpty());
     }
 
-    public List<Server> getOpenInstances() throws ConnectionException {
-        throw ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API, MyStringBuilder.objToTag(this));
+    public Try<List<Server>> getOpenInstances() {
+        return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
+                MyStringBuilder.objToTag(this)));
     }
     
     /**
@@ -550,30 +563,31 @@ public abstract class Connection implements IsEmpty {
         return unixDate;
     }
 
-    public final Try<HttpReadResult> tryGetRequest(Uri uri) {
-        return Try.of(() -> http.getRequestCommon(uri, true));
+    final Try<HttpReadResult> tryGetRequest(Uri uri) {
+        return http.getRequestCommon(uri, true);
     }
 
-    public final JSONObject getRequest(Uri uri) throws ConnectionException {
+    public final Try<JSONObject> getRequest(Uri uri) {
         return http.getRequest(uri);
     }
 
-    JSONArray getRequestArrayInObject(Uri uri, String arrayName) throws ConnectionException {
+    Try<JSONArray> getRequestArrayInObject(Uri uri, String arrayName) {
         String method = "getRequestArrayInObject";
-        JSONArray jArr = null;
-        JSONObject jso = getRequest(uri);
-        if (jso != null) {
-            try {
-                jArr = jso.getJSONArray(arrayName);
-            } catch (JSONException e) {
-                throw ConnectionException.loggedJsonException(this, method + ", arrayName=" + arrayName, e, jso);
+        return getRequest(uri).flatMap(jso -> {
+            JSONArray jArr = null;
+            if (jso != null) {
+                try {
+                    jArr = jso.getJSONArray(arrayName);
+                } catch (JSONException e) {
+                    return Try.failure(ConnectionException.loggedJsonException(this, method + ", arrayName=" + arrayName, e, jso));
+                }
             }
-        }
-        return jArr;
+            return Try.success(jArr);
+        });
     }
 
-    public void downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) throws ConnectionException {
-        http.downloadFile(connectionRequired, uri, file);
+    public Try<Void> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
+        return http.downloadFile(connectionRequired, uri, file);
     }
 
     public HttpConnection getHttp() {

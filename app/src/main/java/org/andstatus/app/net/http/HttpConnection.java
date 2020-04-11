@@ -32,9 +32,7 @@ public abstract class HttpConnection implements HttpConnectionInterface {
     public HttpConnection getNewInstance() {
         try {
             return getClass().newInstance();
-        } catch (InstantiationException e) {
-            MyLog.e(this, e);
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             MyLog.e(this, e);
         }
         return null;

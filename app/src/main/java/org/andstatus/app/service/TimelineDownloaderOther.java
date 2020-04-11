@@ -35,6 +35,8 @@ import java.util.Date;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import io.vavr.control.Try;
+
 class TimelineDownloaderOther extends TimelineDownloader {
     private static final int YOUNGER_NOTES_TO_DOWNLOAD_MAX = 200;
     private static final int OLDER_NOTES_TO_DOWNLOAD_MAX = 40;
@@ -45,9 +47,9 @@ class TimelineDownloaderOther extends TimelineDownloader {
     }
 
     @Override
-    public void download() throws ConnectionException {
+    public Try<Boolean> download() {
         if (!getTimeline().isSyncable()) {
-            throw new IllegalArgumentException("Timeline cannot be synced: " + getTimeline());
+            return Try.failure(new IllegalArgumentException("Timeline cannot be synced: " + getTimeline()));
         }
 
         TimelineSyncTracker syncTracker = new TimelineSyncTracker(getTimeline(), isSyncYounger());
@@ -61,7 +63,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
             downloadingLatest = true;
         }
 
-        Actor actor = getActorWithOid();
+        Try<Actor> tryActor = getActorWithOid();
         int toDownload = downloadingLatest ? LATEST_NOTES_TO_DOWNLOAD_MAX :
                 (isSyncYounger() ? YOUNGER_NOTES_TO_DOWNLOAD_MAX : OLDER_NOTES_TO_DOWNLOAD_MAX);
         TimelinePosition positionToRequest = syncTracker.getPreviousPosition();
@@ -80,86 +82,94 @@ class TimelineDownloaderOther extends TimelineDownloader {
 
         DataUpdater dataUpdater = new DataUpdater(execContext);
         for (int loopCounter=0; loopCounter < 100; loopCounter++ ) {
-            try {
                 int limit = getConnection().fixedDownloadLimit(
                         toDownload, getTimeline().getTimelineType().getConnectionApiRoutine());
                 syncTracker.onPositionRequested(positionToRequest);
-                InputTimelinePage page;
+                Try<InputTimelinePage> tryPage;
                 switch (getTimeline().getTimelineType()) {
                     case SEARCH:
-                        page = getConnection().searchNotes(isSyncYounger(),
+                        tryPage = getConnection().searchNotes(isSyncYounger(),
                                 isSyncYounger() ? positionToRequest : TimelinePosition.EMPTY,
                                 isSyncYounger() ? TimelinePosition.EMPTY : positionToRequest,
                                 limit, getTimeline().getSearchQuery());
                         break;
                     default:
-                        page = getConnection().getTimeline(isSyncYounger(),
+                        TimelinePosition positionToRequest2 = positionToRequest;
+                        tryPage = tryActor.flatMap(actor ->
+                                getConnection().getTimeline(isSyncYounger(),
                                 getTimeline().getTimelineType().getConnectionApiRoutine(),
-                                isSyncYounger() ? positionToRequest : TimelinePosition.EMPTY,
-                                isSyncYounger() ? TimelinePosition.EMPTY : positionToRequest,
-                                limit, actor);
+                                isSyncYounger() ? positionToRequest2 : TimelinePosition.EMPTY,
+                                isSyncYounger() ? TimelinePosition.EMPTY : positionToRequest2,
+                                limit, actor));
                         break;
                 }
-                syncTracker.onNewPage(page);
-                for (AActivity activity : page.activities) {
-                    toDownload--;
-                    syncTracker.onNewMsg(activity.getTimelinePosition(), activity.getUpdatedDate());
-                    if (!activity.isSubscribedByMe().equals(TriState.FALSE)
-                        && activity.getUpdatedDate() > 0
-                        && execContext.getTimeline().getTimelineType().isSubscribedByMe()
-                        && execContext.myContext.users().isMe(execContext.getTimeline().actor)
-                            ) {
-                        activity.setSubscribedByMe(TriState.TRUE);
+                if (tryPage.isSuccess()) {
+                    InputTimelinePage page = tryPage.get();
+                    syncTracker.onNewPage(page);
+                    for (AActivity activity : page.activities) {
+                        toDownload--;
+                        syncTracker.onNewMsg(activity.getTimelinePosition(), activity.getUpdatedDate());
+                        if (!activity.isSubscribedByMe().equals(TriState.FALSE)
+                                && activity.getUpdatedDate() > 0
+                                && execContext.getTimeline().getTimelineType().isSubscribedByMe()
+                                && execContext.myContext.users().isMe(execContext.getTimeline().actor)
+                        ) {
+                            activity.setSubscribedByMe(TriState.TRUE);
+                        }
+                        dataUpdater.onActivity(activity, false);
                     }
-                    dataUpdater.onActivity(activity, false);
-                }
-                if (page.activities.isEmpty()) {
-                    if (syncTracker.firstPosition.nonEmpty() &&
-                            !syncTracker.requestedPositions.contains(syncTracker.firstPosition)) {
-                        positionToRequest = page.firstPosition;
-                        continue;
+                    if (page.activities.isEmpty()) {
+                        if (syncTracker.firstPosition.nonEmpty() &&
+                                !syncTracker.requestedPositions.contains(syncTracker.firstPosition)) {
+                            positionToRequest = page.firstPosition;
+                            continue;
+                        }
+                        if (!syncTracker.requestedPositions.contains(TimelinePosition.EMPTY)) {
+                            positionToRequest = TimelinePosition.EMPTY;
+                            continue;
+                        }
                     }
-                    if (!syncTracker.requestedPositions.contains(TimelinePosition.EMPTY)) {
-                        positionToRequest = TimelinePosition.EMPTY;
-                        continue;
+                    Optional<TimelinePosition> optPositionToRequest = syncTracker.getNextPositionToRequest();
+                    if (toDownload <= 0 || !optPositionToRequest.isPresent()) {
+                        break;
                     }
+                    positionToRequest = optPositionToRequest.get();
                 }
-                Optional<TimelinePosition> optPositionToRequest = syncTracker.getNextPositionToRequest();
-                if (toDownload <= 0 || !optPositionToRequest.isPresent()) {
-                    break;
+
+                if(tryPage.isFailure()) {
+                    Throwable e = tryPage.getCause();
+
+                    if (syncTracker.requestedPositions.isEmpty() || ConnectionException.of(e).getStatusCode() != StatusCode.NOT_FOUND) {
+                        return Try.failure(e);
+                    }
+                    TimelinePosition justRequested = syncTracker.requestedPositions.get(syncTracker.requestedPositions.size()-1);
+                    if (justRequested.isEmpty()) {
+                        return Try.failure(ConnectionException.hardConnectionException("Failed to request default position", e));
+                    }
+                    MyLog.d(this, "The timeline was not found at position='" + justRequested +"'", e);
+                    positionToRequest = TimelinePosition.EMPTY;
                 }
-                positionToRequest = optPositionToRequest.get();
-            } catch (ConnectionException e) {
-                if (syncTracker.requestedPositions.isEmpty() || e.getStatusCode() != StatusCode.NOT_FOUND) {
-                    throw e;
-                }
-                TimelinePosition justRequested = syncTracker.requestedPositions.get(syncTracker.requestedPositions.size()-1);
-                if (justRequested.isEmpty()) {
-                    throw ConnectionException.hardConnectionException("Failed to request default position", e);
-                }
-                MyLog.d(this, "The timeline was not found at position='" + justRequested +"'", e);
-                positionToRequest = TimelinePosition.EMPTY;
-            }
         }
         dataUpdater.saveLum();
+        return Try.success(true);
     }
 
     @NonNull
-    private Actor getActorWithOid() throws ConnectionException {
+    private Try<Actor> getActorWithOid() {
         if (getActor().actorId == 0) {
             if (getTimeline().myAccountToSync.isValid()) {
-                return getTimeline().myAccountToSync.getActor();
+                return Try.success(getTimeline().myAccountToSync.getActor());
             }
         } else {
             Actor actor = Actor.load(execContext.myContext, getActor().actorId);
             if (StringUtil.isEmpty(actor.oid)) {
-                throw new ConnectionException("No ActorOid for " + actor + ", timeline:" + getTimeline());
+                return Try.failure(new ConnectionException("No ActorOid for " + actor + ", timeline:" + getTimeline()));
             }
-            return actor;
+            return Try.success(actor);
         }
         if (getTimeline().getTimelineType().isForUser()) {
-            throw new ConnectionException("No actor for the timeline:" + getTimeline());
+            return Try.failure(new ConnectionException("No actor for the timeline:" + getTimeline()));
         }
-        return Actor.EMPTY;
+        return Try.success(Actor.EMPTY);
     }
 }

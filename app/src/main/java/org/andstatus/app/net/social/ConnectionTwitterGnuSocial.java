@@ -29,6 +29,7 @@ import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtil;
+import org.andstatus.app.util.TryUtils;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,6 +40,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import io.vavr.control.Try;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.andstatus.app.util.UriUtils.nonRealOid;
@@ -87,39 +90,49 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    public List<String> getFriendsIds(String actorOid) throws ConnectionException {
-        Uri.Builder builder = getApiPath(ApiRoutineEnum.GET_FRIENDS_IDS).buildUpon();
-        builder.appendQueryParameter("user_id", actorOid);
-        List<String> list = new ArrayList<>();
-        JSONArray jArr = http.getRequestAsArray(builder.build());
-        try {
-            for (int index = 0; index < jArr.length(); index++) {
-                list.add(jArr.getString(index));
-            }
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Parsing friendsIds " + builder.build(), e, null);
-        }
-        return list;
+    public Try<List<String>> getFriendsIds(String actorOid) {
+        return getFriendsOrFollowersIDs(ApiRoutineEnum.GET_FRIENDS_IDS, actorOid);
     }
 
     @Override
-    public List<String> getFollowersIds(String actorOid) throws ConnectionException {
-        Uri.Builder builder = getApiPath(ApiRoutineEnum.GET_FOLLOWERS_IDS).buildUpon();
-        builder.appendQueryParameter("user_id", actorOid);
-        List<String> list = new ArrayList<>();
-        JSONArray jArr = http.getRequestAsArray(builder.build());
-        try {
-            for (int index = 0; index < jArr.length(); index++) {
-                list.add(jArr.getString(index));
+    public Try<List<String>> getFollowersIds(String actorOid) {
+        return getFriendsOrFollowersIDs(ApiRoutineEnum.GET_FOLLOWERS_IDS, actorOid);
+    }
+
+    private Try<List<String>> getFriendsOrFollowersIDs(ApiRoutineEnum apiRoutineEnum, String actorOid) {
+        return getApiPath(apiRoutineEnum)
+        .map(Uri::buildUpon)
+        .map(builder -> builder.appendQueryParameter("user_id", actorOid))
+        .map(Uri.Builder::build)
+        .flatMap(uri -> http.getRequestAsArray(uri))
+        .flatMap(jsonArray -> {
+            List<String> list = new ArrayList<>();
+            try {
+                for (int index = 0; jsonArray != null && index < jsonArray.length(); index++) {
+                    list.add(jsonArray.getString(index));
+                }
+            } catch (JSONException e) {
+                return Try.failure(ConnectionException.loggedJsonException(this, apiRoutineEnum.name(), e, jsonArray));
             }
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Parsing followersIds " + builder.build(), e, null);
-        }
-        return list;
+            return Try.success(list);
+        });
     }
 
     @Override
-    protected AActivity updateNote2(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
+    public Try<RateLimitStatus> rateLimitStatus() {
+        return getApiPath(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)
+        .flatMap(this::getRequest).flatMap(result -> {
+            RateLimitStatus status = new RateLimitStatus();
+            if (result != null) {
+                status.remaining = result.optInt("remaining_hits");
+                status.limit = result.optInt("hourly_limit");
+            }
+            return Try.success(status);
+        });
+    }
+
+    @Override
+    protected Try<AActivity> updateNote2(Note note, String inReplyToOid, Attachments attachments) {
         JSONObject formParams = new JSONObject();
         try {
             super.updateNoteSetFields(note, inReplyToOid, formParams);
@@ -132,42 +145,44 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                 formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachments.getFirstToUpload().uri.toString());
             }
         } catch (JSONException e) {
-            MyLog.e(this, e);
+            return Try.failure(e);
         }
         return postRequest(ApiRoutineEnum.UPDATE_NOTE, formParams)
-            .map(HttpReadResult::getJsonObject)
-            .map(this::activityFromJson).getOrElseThrow(ConnectionException::of);
+            .flatMap(HttpReadResult::getJsonObject)
+            .map(this::activityFromJson);
     }
     
     @Override
-    public OriginConfig getConfig() throws ConnectionException {
-        JSONObject result = getRequest(getApiPath(ApiRoutineEnum.GET_CONFIG));
-        OriginConfig config = OriginConfig.getEmpty();
-        if (result != null) {
-            JSONObject site = result.optJSONObject("site");
-            if (site != null) {
-                int textLimit = site.optInt("textlimit");
-                int uploadLimit = 0;
-                JSONObject attachments = site.optJSONObject("attachments");
-                if (attachments != null && site.optBoolean("uploads")) {
-                    uploadLimit = site.optInt("file_quota");
+    public Try<OriginConfig> getConfig() {
+        return getApiPath(ApiRoutineEnum.GET_CONFIG)
+        .flatMap(this::getRequest)
+        .map(result -> {
+            OriginConfig config = OriginConfig.getEmpty();
+            if (result != null) {
+                JSONObject site = result.optJSONObject("site");
+                if (site != null) {
+                    int textLimit = site.optInt("textlimit");
+                    int uploadLimit = 0;
+                    JSONObject attachments = site.optJSONObject("attachments");
+                    if (attachments != null && site.optBoolean("uploads")) {
+                        uploadLimit = site.optInt("file_quota");
+                    }
+                    config = OriginConfig.fromTextLimit(textLimit, uploadLimit);
+                    // "shorturllength" is not used
                 }
-                config = OriginConfig.fromTextLimit(textLimit, uploadLimit);
-                // "shorturllength" is not used
             }
-        }
-        return config;
+            return config;
+        });
     }
 
     @Override
-    public List<AActivity> getConversation(String conversationOid) throws ConnectionException {
-        if (nonRealOid(conversationOid)) {
-            return new ArrayList<>();
-        } else {
-            Uri uri = getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid);
-            JSONArray jArr = http.getRequestAsArray(uri);
-            return jArrToTimeline("", jArr, ApiRoutineEnum.GET_CONVERSATION, uri);
-        }
+    public Try<List<AActivity>> getConversation(String conversationOid) {
+        if (nonRealOid(conversationOid)) return TryUtils.emptyList();
+
+        return getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid)
+        .flatMap(uri ->
+            http.getRequestAsArray(uri)
+            .flatMap(jArr -> jArrToTimeline("", jArr, ApiRoutineEnum.GET_CONVERSATION, uri)));
     }
 
     @Override
@@ -243,48 +258,51 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
 
     @Override
     @NonNull
-    Actor actorBuilderFromJson(JSONObject jso) throws ConnectionException {
+    Actor actorBuilderFromJson(JSONObject jso) {
         if (jso == null) return Actor.EMPTY;
         return super.actorBuilderFromJson(jso)
                 .setProfileUrl(jso.optString("statusnet_profile_url"));
     }
     
     @Override
-    public List<Server> getOpenInstances() throws ConnectionException {
-        JSONObject result = http.getUnauthenticatedRequest(getApiPath(ApiRoutineEnum.GET_OPEN_INSTANCES));
-        List<Server> origins = new ArrayList<>();
-        StringBuilder logMessage = new StringBuilder(ApiRoutineEnum.GET_OPEN_INSTANCES.toString());
-        boolean error = false;
-        if (result == null) {
-            MyStringBuilder.appendWithSpace(logMessage, "Response is null JSON");
-            error = true;
-        }
-        if (!error && !result.optString("status").equals("OK")) {
-            MyStringBuilder.appendWithSpace(logMessage, "gtools service returned the error: '" + result.optString("error") + "'");
-            error = true;
-        }
-        if (!error) {
-            JSONObject data = result.optJSONObject("data");
-            if (data != null) {
-                try {
-                    Iterator<String> iterator = data.keys();
-                    while(iterator.hasNext()) {
-                        String key = iterator.next();
-                        JSONObject instance = data.getJSONObject(key);
-                        origins.add(new Server(instance.optString("instance_name"),
-                                instance.optString("instance_address"),
-                                instance.optLong("users_count"),
-                                instance.optLong("notices_count")));
+    public Try<List<Server>> getOpenInstances() {
+        return getApiPath(ApiRoutineEnum.GET_OPEN_INSTANCES)
+        .flatMap(http::getUnauthenticatedRequest)
+        .map(result -> {
+            List<Server> origins = new ArrayList<>();
+            StringBuilder logMessage = new StringBuilder(ApiRoutineEnum.GET_OPEN_INSTANCES.toString());
+            boolean error = false;
+            if (result == null) {
+                MyStringBuilder.appendWithSpace(logMessage, "Response is null JSON");
+                error = true;
+            }
+            if (!error && !result.optString("status").equals("OK")) {
+                MyStringBuilder.appendWithSpace(logMessage, "gtools service returned the error: '" + result.optString("error") + "'");
+                error = true;
+            }
+            if (!error) {
+                JSONObject data = result.optJSONObject("data");
+                if (data != null) {
+                    try {
+                        Iterator<String> iterator = data.keys();
+                        while(iterator.hasNext()) {
+                            String key = iterator.next();
+                            JSONObject instance = data.getJSONObject(key);
+                            origins.add(new Server(instance.optString("instance_name"),
+                                    instance.optString("instance_address"),
+                                    instance.optLong("users_count"),
+                                    instance.optLong("notices_count")));
+                        }
+                    } catch (JSONException e) {
+                        throw ConnectionException.loggedJsonException(this, logMessage.toString(), e, data);
                     }
-                } catch (JSONException e) {
-                    throw ConnectionException.loggedJsonException(this, logMessage.toString(), e, data);
                 }
             }
-        }
-        if (error) {
-            throw new ConnectionException(logMessage.toString());
-        }
-        return origins;
+            if (error) {
+                throw new ConnectionException(logMessage.toString());
+            }
+            return origins;
+        });
     }
     
 }

@@ -20,7 +20,6 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.util.TryUtils;
 
@@ -36,61 +35,56 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public RateLimitStatus rateLimitStatus() throws ConnectionException {
-        return new RateLimitStatus();
-    }
-
-    @Override
     @NonNull
     public Try<Actor> verifyCredentials(Optional<Uri> whoAmI) {
         return TryUtils.notFound();
     }
 
     @Override
-    public AActivity undoLike(String noteOid) throws ConnectionException {
-        return AActivity.EMPTY;
+    public Try<AActivity> undoLike(String noteOid) {
+        return AActivity.TRY_EMPTY;
     }
 
     @Override
-    public AActivity like(String noteOid) throws ConnectionException {
-        return AActivity.EMPTY;
+    public Try<AActivity> like(String noteOid) {
+        return AActivity.TRY_EMPTY;
     }
 
     @Override
-    public boolean deleteNote(String noteOid) throws ConnectionException {
-        return false;
+    public Try<Boolean> deleteNote(String noteOid) {
+        return TryUtils.notFound();
     }
 
     @Override
-    public AActivity getNote1(String noteOid) throws ConnectionException {
-        return AActivity.EMPTY;
+    public Try<AActivity> getNote1(String noteOid) {
+        return AActivity.TRY_EMPTY;
     }
 
     @Override
-    public AActivity updateNote(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
-        return AActivity.EMPTY;
+    public Try<AActivity> updateNote(Note note, String inReplyToOid, Attachments attachments) {
+        return AActivity.TRY_EMPTY;
     }
 
     @Override
-    public AActivity announce(String rebloggedNoteOid) throws ConnectionException {
-        return AActivity.EMPTY;
+    public Try<AActivity> announce(String rebloggedNoteOid) {
+        return AActivity.TRY_EMPTY;
     }
 
     @NonNull
     @Override
-    public InputTimelinePage getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                         TimelinePosition oldestPosition, int limit, Actor actor) {
-        return InputTimelinePage.EMPTY;
+    public Try<InputTimelinePage> getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine,
+                  TimelinePosition youngestPosition, TimelinePosition oldestPosition, int limit, Actor actor) {
+        return Try.success(InputTimelinePage.EMPTY);
     }
 
     @Override
-    public AActivity follow(String actorOid, Boolean follow) throws ConnectionException {
-        return AActivity.EMPTY;
+    public Try<AActivity> follow(String actorOid, Boolean follow) {
+        return AActivity.TRY_EMPTY;
     }
 
     @Override
-    public Actor getActor2(Actor actorIn) throws ConnectionException {
-        return Actor.EMPTY;
+    public Try<Actor> getActor2(Actor actorIn) {
+        return Actor.TRY_EMPTY;
     }
 
 }

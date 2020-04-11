@@ -17,7 +17,6 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Server;
 import org.andstatus.app.origin.DiscoveredOrigins;
@@ -29,6 +28,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.vavr.control.Try;
+
 public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
 
     public CommandExecutorGetOpenInstances(CommandExecutionContext execContext) {
@@ -36,35 +37,31 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
     }
 
     @Override
-    void execute() {
-        boolean ok = false;
+    Try<Boolean> execute() {
+        return Connection.fromMyAccount(execContext.getMyAccount(), TriState.UNKNOWN)
+        .getOpenInstances()
+        .map(this::saveDiscoveredOrigins);
+    }
+
+    private Boolean saveDiscoveredOrigins(List<Server> result) {
         Origin execOrigin = execContext.getCommandData().getTimeline().getOrigin();
-        List<Server> result = null;
-        try {
-            result = Connection.fromMyAccount(execContext.getMyAccount(), TriState.UNKNOWN).getOpenInstances();
-            ok = !result.isEmpty();
-            logOk(ok);
-        } catch (ConnectionException e) {
-            logConnectionException(e, "");
-        }
-        if (ok) {
-            List<Origin> newOrigins = new ArrayList<>();
-            for (Server mbOrigin : result) {
-                execContext.getResult().incrementDownloadedCount();
-                Origin origin = new Origin.Builder(execContext.myContext, execOrigin.getOriginType()).setName(mbOrigin.name)
-                        .setHostOrUrl(mbOrigin.urlString)
-                        .build();
-                if (origin.isValid()
-                        && !MyContextHolder.get().origins().fromName(origin.getName())
-                                .isValid()
-                        && !haveOriginsWithThisHostName(origin.getUrl())) {
-                    newOrigins.add(origin);
-                } else {
-                    MyLog.d(this, "Origin is not valid: " + origin.toString());
-                }
+        List<Origin> newOrigins = new ArrayList<>();
+        for (Server mbOrigin : result) {
+            execContext.getResult().incrementDownloadedCount();
+            Origin origin = new Origin.Builder(execContext.myContext, execOrigin.getOriginType()).setName(mbOrigin.name)
+                    .setHostOrUrl(mbOrigin.urlString)
+                    .build();
+            if (origin.isValid()
+                    && !MyContextHolder.get().origins().fromName(origin.getName())
+                    .isValid()
+                    && !haveOriginsWithThisHostName(origin.getUrl())) {
+                newOrigins.add(origin);
+            } else {
+                MyLog.d(this, "Origin is not valid: " + origin.toString());
             }
-            DiscoveredOrigins.replaceAll(newOrigins);
         }
+        DiscoveredOrigins.replaceAll(newOrigins);
+        return true;
     }
 
     private boolean haveOriginsWithThisHostName(URL url) {

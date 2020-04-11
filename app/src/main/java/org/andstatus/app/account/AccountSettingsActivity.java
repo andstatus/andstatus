@@ -1242,7 +1242,7 @@ public class AccountSettingsActivity extends MyActivity {
             if (skip) return new TaskResult(ResultStatus.NONE);
 
             return Try.success(state.builder)
-            .map(MyAccount.Builder::getOriginConfig)
+            .flatMap(MyAccount.Builder::getOriginConfig)
             .flatMap(b -> b.getConnection().verifyCredentials(whoAmI))
             .flatMap(state.builder::onCredentialsVerified)
             .map(MyAccount.Builder::getAccount)

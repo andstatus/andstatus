@@ -37,6 +37,7 @@ import java.util.function.Function;
 
 import io.vavr.control.Try;
 
+import static org.andstatus.app.os.ExceptionsCounter.logSystemInfo;
 import static org.andstatus.app.os.ExceptionsCounter.onDiskIoException;
 
 /**
@@ -134,25 +135,14 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
                 return doInBackground2(params != null && params.length > 0 ? params[0] : null);
             }
         } catch (SQLiteDiskIOException e) {
-            logSystemInfo(e);
-            onDiskIoException();
+            onDiskIoException(e);
         } catch (SQLiteDatabaseLockedException e) {
             // see also https://github.com/greenrobot/greenDAO/issues/191
             logError("Database lock error, probably related to the application re-initialization", e);
-        } catch (AssertionError e) {
+        } catch (AssertionError | Exception e) {
             logSystemInfo(e);
-        } catch (Exception e) {
-            logSystemInfo(e);
-            throw new IllegalStateException("Unexpected exception", e);
         }
         return null;
-    }
-
-    @NonNull
-    private void logSystemInfo(Throwable throwable) {
-        final String systemInfo = MyContextHolder.getSystemInfo(MyContextHolder.get().context(), true);
-        ACRA.getErrorReporter().putCustomData("systemInfo", systemInfo);
-        logError(systemInfo, throwable);
     }
 
     protected abstract Result doInBackground2(Params params);

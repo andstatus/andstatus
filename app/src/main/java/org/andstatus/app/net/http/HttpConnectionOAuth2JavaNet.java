@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import io.vavr.control.Try;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 
@@ -55,7 +56,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
     public static final String OAUTH_SCOPES = "read write follow";
 
     @Override
-    public void registerClient() throws ConnectionException {
+    public Try<Void> registerClient() {
         Uri uri = getApiUri(Connection.ApiRoutineEnum.OAUTH_REGISTER_CLIENT);
         MyStringBuilder logmsg = MyStringBuilder.of("registerClient; for " + data.originUrl
                 + "; URL='" + uri + "'");
@@ -68,20 +69,26 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             params.put("scopes", OAUTH_SCOPES);
             params.put("website", "http://andstatus.org");
 
-            JSONObject jso = postRequest(uri, params).map(HttpReadResult::getJsonObject)
-                    .getOrElseThrow(ConnectionException::of);
-            String consumerKey = jso.getString("client_id");
-            String consumerSecret = jso.getString("client_secret");
-            data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
-        } catch (IOException | JSONException e) {
-            logmsg.withComma("Exception", e.getMessage());
-            MyLog.i(this, logmsg.toString(), e);
-        }
-        if (data.oauthClientKeys.areKeysPresent()) {
-            MyLog.v(this, () -> "Completed " + logmsg);
-        } else {
-            throw ConnectionException.fromStatusCodeAndHost(ConnectionException.StatusCode.NO_CREDENTIALS_FOR_HOST,
-                    "Failed to obtain client keys for host; " + logmsg, data.originUrl);
+            return postRequest(uri, params)
+            .flatMap(HttpReadResult::getJsonObject)
+            .map(jso -> {
+                String consumerKey = jso.getString("client_id");
+                String consumerSecret = jso.getString("client_secret");
+                data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
+                return data.oauthClientKeys.areKeysPresent();
+            })
+            .flatMap(keysArePresent -> {
+                if (keysArePresent) {
+                    MyLog.v(this, () -> "Completed " + logmsg);
+                    return Try.success(null);
+                } else {
+                    return Try.failure(ConnectionException.fromStatusCodeAndHost(
+                            ConnectionException.StatusCode.NO_CREDENTIALS_FOR_HOST,
+                            "Failed to obtain client keys for host; " + logmsg, data.originUrl));
+                }
+            });
+        } catch (JSONException e) {
+            return Try.failure(ConnectionException.loggedJsonException(this, logmsg.toString(), e, null));
         }
     }
 
@@ -125,11 +132,12 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                                     }
                                 } catch (JSONException e) {
                                     MyLog.w(this, "Failed to get key " + key, e);
+                                    result.setException(e);
                                 }
                             }
                         }
                     }
-                } catch (ConnectionException e) {
+                } catch (Exception e) {
                     result.setException(e);
                     MyLog.w(this, result.toString(), e);
                 }
@@ -139,23 +147,20 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             setStatusCodeAndHeaders(result, response);
             HttpConnectionUtils.readStream(result, response.getStream());
             if (result.getStatusCode() != OK) {
-                throw result.getExceptionFromJsonErrorResponse();
+                result.setException(result.getExceptionFromJsonErrorResponse());
             }
-        } catch (IOException | ExecutionException | OAuthException e) {
-            result.setException(e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
+            result.setException(e);
+        } catch (Exception e) {
             result.setException(e);
         }
         return result;
     }
 
     @Override
-    public void getRequest(HttpReadResult result) throws ConnectionException {
-        String method = "getRequest; ";
-        StringBuilder logBuilder = new StringBuilder(method);
+    public void getRequest(HttpReadResult result) {
         try {
-            logBuilder.append("URL='" + result.getUrl() + "';");
             OAuth20Service service = getService(false);
             boolean redirected = false;
             boolean stop = false;
@@ -181,21 +186,16 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                         HttpConnectionUtils.readStream(result, response.getStream());
                         stop = result.fileResult == null || !result.authenticate;
                         if (!stop) {
-                            result.authenticate = false;
-                            String logMsg4 = "Retrying without authentication connection to '" + result.getUrl() + "'";
-                            logBuilder.append(logMsg4 + "; ");
-                            MyLog.v(this, () -> method + logMsg4);
+                            result.onRetryWithoutAuthentication();
                         }
                         break;
                 }
             } while (!stop);
-        } catch(ConnectionException e) {
-            throw e;
-        } catch(IOException | ExecutionException | OAuthException e) {
-            throw new ConnectionException(logBuilder.toString(), e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new ConnectionException(logBuilder.toString(), e);
+            result.setException(e);
+        } catch(Exception e) {
+            result.setException(e);
         }
     }
 
@@ -243,7 +243,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                 }
             }
         } catch (Exception e) {
-            throw new ConnectionException(e);
+            throw ConnectionException.of(e);
         }
     }
 
@@ -271,7 +271,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             }
             conn.setRequestProperty(OAuthConstants.ACCESS_TOKEN, token.getAccessToken());
         } catch (Exception e) {
-            throw new ConnectionException(e);
+            throw ConnectionException.of(e);
         }
     }
 

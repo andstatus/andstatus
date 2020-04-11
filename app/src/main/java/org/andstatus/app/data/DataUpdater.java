@@ -47,6 +47,8 @@ import org.andstatus.app.util.TriState;
 import java.util.Date;
 import java.util.List;
 
+import io.vavr.control.Try;
+
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.andstatus.app.util.UriUtils.nonEmptyOid;
 import static org.andstatus.app.util.UriUtils.nonRealOid;
@@ -499,14 +501,17 @@ public class DataUpdater {
         }
     }
 
-    public void downloadOneNoteBy(Actor actor) throws ConnectionException {
-        List<AActivity> activities = execContext.getConnection().getTimeline(
-                true, TimelineType.SENT.getConnectionApiRoutine(), TimelinePosition.EMPTY,
-                TimelinePosition.EMPTY, 1, actor).activities;
-        for (AActivity item : activities) {
-            onActivity(item, false);
-        }
-        saveLum();
+    public Try<Void> downloadOneNoteBy(Actor actor) {
+        return execContext.getConnection()
+        .getTimeline(true, TimelineType.SENT.getConnectionApiRoutine(), TimelinePosition.EMPTY,
+                TimelinePosition.EMPTY, 1, actor)
+        .map(page -> {
+            for (AActivity item : page.activities) {
+                onActivity(item, false);
+            }
+            saveLum();
+            return null;
+        });
     }
 
 }

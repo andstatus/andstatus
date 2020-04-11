@@ -1,5 +1,12 @@
 package org.andstatus.app.util;
 
+import android.database.sqlite.SQLiteDiskIOException;
+
+import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.os.ExceptionsCounter;
+
+import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -16,11 +23,29 @@ public class TryUtils {
     private static final NoSuchElementException OPTIONAL_IS_EMPTY = new NoSuchElementException("Optional is empty");
     private static final NoSuchElementException CALLABLE_IS_NULL = new NoSuchElementException("Callable is null");
     private static final NoSuchElementException VALUE_IS_NULL = new NoSuchElementException("Value is null");
+    public final static Try<Boolean> TRUE = Try.success(true);
 
     private TryUtils() {
         // Empty
     }
 
+    public static <T> Try<T> failure(Throwable exception) {
+        return failure("", exception);
+    }
+
+    public static <T> Try<T> failure(String message, Throwable exception) {
+        checkException(exception);
+        return Try.failure(StringUtil.nonEmpty(message)
+                ? ConnectionException.of(exception).append(message)
+                : exception);
+    }
+
+    public static <T extends Throwable> T checkException(T exception) {
+        if (exception instanceof SQLiteDiskIOException) {
+            ExceptionsCounter.onDiskIoException(exception);
+        }
+        return exception;
+    }
 
     /**
      * Creates a Try from nullable value.
@@ -73,5 +98,13 @@ public class TryUtils {
 
     public static <T> Try<T> notFound() {
         return NOT_FOUND;
+    }
+
+    public static <T> Try<T> failure(String message) {
+        return Try.failure(new Exception(message));
+    }
+
+    public static <T> Try<List<T>> emptyList() {
+        return Try.success(Collections.emptyList());
     }
 }

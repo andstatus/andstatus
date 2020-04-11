@@ -29,22 +29,25 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import io.vavr.control.Try;
+
 /**
  * Connection to local resources
  */
 public class ConnectionLocal extends ConnectionEmpty {
 
     @Override
-    public void downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) throws ConnectionException {
+    public Try<Void> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
         try {
             HttpReadResult result = new HttpReadResult(MyContextHolder.get(), ConnectionRequired.ANY,
                     uri, file, new JSONObject());
             InputStream ins = MyContextHolder.get().context().getContentResolver().openInputStream(uri);
             HttpConnectionUtils.readStream(result, ins);
         } catch (IOException e) {
-            throw ConnectionException.hardConnectionException("mediaUri='" + uri + "'", e);
+            Try.failure(ConnectionException.hardConnectionException("mediaUri='" + uri + "'", e));
         } catch (SecurityException e) {
-            throw ConnectionException.hardConnectionException("mediaUri='" + uri + "'", e);
+            Try.failure(ConnectionException.hardConnectionException("mediaUri='" + uri + "'", e));
         }
+        return Try.success(null);
     }
 }

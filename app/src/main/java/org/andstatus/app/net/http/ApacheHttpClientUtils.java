@@ -88,7 +88,7 @@ class ApacheHttpClientUtils {
             httpEntity.writeTo(out);
             out.flush();
         } catch (IOException e) {
-            throw  new ConnectionException("httpEntityToBytes", e);
+            throw new ConnectionException("httpEntityToBytes", e);
         }
         return out.toByteArray();
     }

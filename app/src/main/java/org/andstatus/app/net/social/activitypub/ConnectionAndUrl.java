@@ -27,42 +27,46 @@ import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UrlUtils;
+import org.json.JSONObject;
 
 import java.util.Optional;
 
+import io.vavr.control.Try;
+
 class ConnectionAndUrl {
     public final Uri uri;
-    public final HttpConnection httpConnection;
+    final HttpConnection httpConnection;
 
     private ConnectionAndUrl(Uri uri, HttpConnection httpConnection) {
         this.uri = uri;
         this.httpConnection = httpConnection;
     }
 
-    public ConnectionAndUrl withUri(Uri newUri) {
+    ConnectionAndUrl withUri(Uri newUri) {
         return new ConnectionAndUrl(newUri, httpConnection);
     }
 
-    static ConnectionAndUrl fromUriActor(Uri uri, ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
-        return new ConnectionAndUrl(uri, getConnection(connection, apiRoutine, actor));
+    static Try<ConnectionAndUrl> fromUriActor(Uri uri, ConnectionActivityPub connection,
+                                              Connection.ApiRoutineEnum apiRoutine, Actor actor) {
+        return getConnection(connection, apiRoutine, actor).map(conu -> new ConnectionAndUrl(uri, conu));
     }
 
-    static ConnectionAndUrl fromActor(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) throws ConnectionException {
+    static Try<ConnectionAndUrl> fromActor(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) {
         final Optional<Uri> endpoint = actor.getEndpoint(ActorEndpointType.from(apiRoutine));
         if (!endpoint.isPresent()) {
-            throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
-                    ": endpoint is empty for " + actor);
+            return Try.failure(new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
+                    ": endpoint is empty for " + actor));
         }
-        return new ConnectionAndUrl(endpoint.get(), getConnection(connection, apiRoutine, actor));
+        return getConnection(connection, apiRoutine, actor).map(conu -> new ConnectionAndUrl(endpoint.get(), conu));
     }
 
-    private static HttpConnection getConnection(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine,
-                                                Actor actor) throws ConnectionException {
+    private static Try<HttpConnection> getConnection(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine,
+                                                Actor actor) {
         HttpConnection httpConnection = connection.getHttp();
         String host = actor.getConnectionHost();
         if (StringUtil.isEmpty(host)) {
-            throw new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
-                    ": host is empty for " + actor);
+            return Try.failure(new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
+                    ": host is empty for " + actor));
         } else if (connection.getHttp().data.originUrl == null || host.compareToIgnoreCase(
                 connection.getHttp().data.originUrl.getHost()) != 0) {
             MyLog.v(connection, () -> "Requesting data from the host: " + host);
@@ -75,10 +79,14 @@ class ConnectionAndUrl {
         if (!httpConnection.data.areOAuthClientKeysPresent()) {
             httpConnection.registerClient();
             if (!httpConnection.getCredentialsPresent()) {
-                throw ConnectionException.fromStatusCodeAndHost(ConnectionException.StatusCode.NO_CREDENTIALS_FOR_HOST,
-                        "No credentials", httpConnection.data.originUrl);
+                return Try.failure(ConnectionException.fromStatusCodeAndHost(ConnectionException.StatusCode.NO_CREDENTIALS_FOR_HOST,
+                        "No credentials", httpConnection.data.originUrl));
             }
         }
-        return httpConnection;
+        return Try.success(httpConnection);
+    }
+
+    Try<JSONObject> getRequest() {
+        return httpConnection.getRequest(uri);
     }
 }

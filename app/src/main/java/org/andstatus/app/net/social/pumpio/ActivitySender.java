@@ -87,42 +87,48 @@ class ActivitySender {
         return this;
     }
     
-    AActivity send(PActivityType activityType) throws ConnectionException {
+    Try<AActivity> send(PActivityType activityType) {
         return sendInternal(activityType)
-            .map(HttpReadResult::getJsonObject)
-            .map(connection::activityFromJson).getOrElseThrow(ConnectionException::of);
+            .flatMap(HttpReadResult::getJsonObject)
+            .map(connection::activityFromJson);
     }
 
-    private Try<HttpReadResult> sendInternal(PActivityType activityTypeIn) throws ConnectionException {
+    private Try<HttpReadResult> sendInternal(PActivityType activityTypeIn) {
         PActivityType activityType = isExisting()
                 ? (activityTypeIn.equals(PActivityType.POST) ? PActivityType.UPDATE : activityTypeIn)
                 : PActivityType.POST;
         String msgLog = "Activity '" + activityType + "'" + (isExisting() ? " objectId:'" + objectId + "'" : "");
-        Try<HttpReadResult> activityResponse = null;
         JSONObject activity = null;
         try {
             activity = buildActivityToSend(activityType);
-            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPDATE_NOTE, getActor());
-            activityResponse = connection.postRequest(conu.uri, activity);
-            if (activityResponse.map(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
+            JSONObject activityImm = activity;
+            Try<ConnectionAndUrl> tryConu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPDATE_NOTE, getActor());
+            Try<HttpReadResult> activityResponse = tryConu
+                    .flatMap(conu -> connection.postRequest(conu.uri, activityImm));
+            if (activityResponse.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
                 return Try.failure(ConnectionException.hardConnectionException(msgLog + " returned no data", null));
             }
-            activityResponse.filter(r -> MyLog.isVerboseEnabled()).map(HttpReadResult::getJsonObject)
+            activityResponse.filter(r -> MyLog.isVerboseEnabled())
+                .flatMap(HttpReadResult::getJsonObject)
                 .map(jso -> msgLog + " " + jso.toString(2))
                 .onSuccess(message -> MyLog.v(this, message));
-            if (activityResponse.map(HttpReadResult::getJsonObject).map(jso -> contentNotPosted(activityType, jso))
+            if (activityResponse
+                    .flatMap(HttpReadResult::getJsonObject)
+                    .map(jso -> contentNotPosted(activityType, jso))
                     .getOrElse(true)) {
                 if (MyLog.isVerboseEnabled()) {
                     MyLog.v(this, msgLog + " Pump.io bug: content is not sent, " +
                             "when an image object is posted. Sending an update");
                 }
                 activity.put("verb", PActivityType.UPDATE.code);
-                activityResponse = connection.postRequest(conu.uri, activity);
+                return tryConu.flatMap(conu -> connection.postRequest(conu.uri, activityImm));
             }
+            return activityResponse;
         } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, msgLog, e, activity);
+            return Try.failure(ConnectionException.loggedJsonException(this, msgLog, e, activity));
+        } catch (Exception e) {
+            return Try.failure(e);
         }
-        return activityResponse;
     }
 
     private Actor getActor() {
@@ -252,16 +258,17 @@ class ActivitySender {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachment.uri.toString());
-            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA, getActor());
-            Try<HttpReadResult> result = connection.postRequest(conu.uri, formParams);
-            if (result.map(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
+            Try<HttpReadResult> result = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA, getActor())
+                    .flatMap(conu -> connection.postRequest(conu.uri, formParams));
+            if (result.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
                 result = Try.failure(new ConnectionException(
                         "Error uploading '" + attachment + "': null response returned"));
             }
-            result.filter(r -> MyLog.isVerboseEnabled()).map(HttpReadResult::getJsonObject)
+            result.filter(r -> MyLog.isVerboseEnabled())
+                .flatMap(HttpReadResult::getJsonObject)
                 .map(jso -> jso.toString(2))
                 .onSuccess(message -> MyLog.v(this, "uploaded '" + attachment + "' " + message));
-            return result.map(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of);
+            return result.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of);
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this,
                     "Error uploading '" + attachment + "'", e, formParams);

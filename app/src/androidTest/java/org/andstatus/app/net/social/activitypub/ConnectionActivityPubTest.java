@@ -78,7 +78,7 @@ public class ConnectionActivityPubTest {
                 .withUniqueName(UNIQUE_NAME_IN_ORIGIN);
         actorForTimeline.endpoints.add(ActorEndpointType.API_INBOX, "https://pleroma.site/users/AndStatus/inbox");
         InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.HOME_TIMELINE,
-                TimelinePosition.of(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline);
+                TimelinePosition.of(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline).get();
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 5, timeline.size());
 
@@ -135,7 +135,7 @@ public class ConnectionActivityPubTest {
                 .withUniqueName(UNIQUE_NAME_IN_ORIGIN);
         actorForTimeline.endpoints.add(ActorEndpointType.API_OUTBOX, ACTOR_OID2 + "/outbox");
         InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.ACTOR_TIMELINE,
-                TimelinePosition.of(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline);
+                TimelinePosition.of(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline).get();
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 10, timeline.size());
 
@@ -153,7 +153,7 @@ public class ConnectionActivityPubTest {
     @Test
     public void noteFromPawooNet() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_note_from_pawoo_net_pleroma);
-        AActivity activity8 = mock.connection.getNote(pawooNoteOid);
+        AActivity activity8 = mock.connection.getNote(pawooNoteOid).get();
         assertEquals("Updating " + activity8, ActivityType.UPDATE, activity8.type);
         assertEquals("Acting on a Note " + activity8, AObjectType.NOTE, activity8.getObjectType());
         Note note8 = activity8.getNote();
@@ -176,7 +176,7 @@ public class ConnectionActivityPubTest {
                 .withUniqueName(UNIQUE_NAME_IN_ORIGIN);
         actorForTimeline.endpoints.add(ActorEndpointType.API_INBOX, "https://pleroma.site/users/AndStatus/inbox");
         InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.HOME_TIMELINE,
-                TimelinePosition.of(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline);
+                TimelinePosition.of(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline).get();
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 10, timeline.size());
 
@@ -235,7 +235,7 @@ public class ConnectionActivityPubTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_friends_pleroma);
         Actor actor = Actor.fromOid(mock.getData().getOrigin(), "https://pleroma.site/users/ActivityPubTester");
         actor.endpoints.add(ActorEndpointType.API_FOLLOWING, "https://pleroma.site/users/ActivityPubTester/following");
-        List<Actor> actors = mock.connection.getFriends(actor);
+        List<Actor> actors = mock.connection.getFriends(actor).get();
         assertEquals("Number of actors, " +
                 "who " + actor.getUniqueNameWithOrigin() + " is following " + actors, 1, actors.size());
 
@@ -246,7 +246,7 @@ public class ConnectionActivityPubTest {
     public void testGetNoteWithAudience() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_with_audience_pleroma);
         String noteOid = "https://pleroma.site/objects/032e7c06-48aa-4cc9-b84a-0a36a24a7779";
-        AActivity activity = mock.connection.getNote(noteOid);
+        AActivity activity = mock.connection.getNote(noteOid).get();
         assertEquals("Creating " + activity, ActivityType.CREATE, activity.type);
         assertEquals("Acting on a Note " + activity, AObjectType.NOTE, activity.getObjectType());
         Note note = activity.getNote();
@@ -288,7 +288,7 @@ public class ConnectionActivityPubTest {
     public void getNoteWithAttachment() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_with_attachment_pleroma);
         String noteOid = "https://queer.hacktivis.me/objects/afc8092f-d25e-40a5-9dfe-5a067fb2e67d";
-        AActivity activity = mock.connection.getNote(noteOid);
+        AActivity activity = mock.connection.getNote(noteOid).get();
         assertEquals("Updating " + activity, ActivityType.UPDATE, activity.type);
         assertEquals("Acting on a Note " + activity, AObjectType.NOTE, activity.getObjectType());
         Note note = activity.getNote();

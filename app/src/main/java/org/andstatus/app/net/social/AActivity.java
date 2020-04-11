@@ -40,6 +40,8 @@ import org.andstatus.app.util.TriState;
 
 import java.util.Optional;
 
+import io.vavr.control.Try;
+
 import static org.andstatus.app.origin.OriginConfig.MAX_ATTACHMENTS_DEFAULT;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
@@ -47,6 +49,8 @@ import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/ */
 public class AActivity extends AObject {
     public static final AActivity EMPTY = from(Actor.EMPTY, ActivityType.EMPTY);
+    public static final Try<AActivity> TRY_EMPTY = Try.success(EMPTY);
+
     private TimelinePosition timelinePosition = TimelinePosition.EMPTY;
     private long storedUpdatedDate = DATETIME_MILLIS_NEVER;
     private long updatedDate = DATETIME_MILLIS_NEVER;

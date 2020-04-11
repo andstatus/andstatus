@@ -43,6 +43,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.ObjectOrId;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.TryUtils;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONArray;
@@ -127,8 +128,11 @@ public class ConnectionPumpio extends Connection {
     @Override
     @NonNull
     public Try<Actor> verifyCredentials(Optional<Uri> whoAmI) {
-        return Try.of(() -> getRequest(getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS)))
-                .map(this::actorFromJson);
+        return TryUtils.fromOptional(whoAmI)
+            .filter(UriUtils::isDownloadable)
+            .orElse(() -> getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS))
+            .flatMap(this::getRequest)
+            .map(this::actorFromJson);
     }
 
     @NonNull
@@ -181,41 +185,48 @@ public class ConnectionPumpio extends Connection {
     }
     
     @Override
-    public AActivity undoLike(String noteOid) throws ConnectionException {
+    public Try<AActivity> undoLike(String noteOid) {
         return actOnNote(PActivityType.UNFAVORITE, noteOid);
     }
 
     @Override
-    public AActivity like(String noteOid) throws ConnectionException {
+    public Try<AActivity> like(String noteOid) {
         return actOnNote(PActivityType.FAVORITE, noteOid);
     }
 
     @Override
-    public boolean deleteNote(String noteOid) throws ConnectionException {
-        return !actOnNote(PActivityType.DELETE, noteOid).isEmpty();
+    public Try<Boolean> deleteNote(String noteOid) {
+        return actOnNote(PActivityType.DELETE, noteOid).map(AActivity::nonEmpty);
     }
 
-    private AActivity actOnNote(PActivityType activityType, String noteId) throws ConnectionException {
+    private Try<AActivity> actOnNote(PActivityType activityType, String noteId) {
         return ActivitySender.fromId(this, noteId).send(activityType);
     }
 
     @Override
-    public List<Actor> getFollowers(Actor actor) throws ConnectionException {
+    public Try<List<Actor>> getFollowers(Actor actor) {
         return getActors(actor, ApiRoutineEnum.GET_FOLLOWERS);
     }
 
     @Override
-    public List<Actor> getFriends(Actor actor) throws ConnectionException {
+    public Try<List<Actor>> getFriends(Actor actor) {
         return getActors(actor, ApiRoutineEnum.GET_FRIENDS);
     }
 
     @NonNull
-    private List<Actor> getActors(Actor actor, ApiRoutineEnum apiRoutine) throws ConnectionException {
+    private Try<List<Actor>> getActors(Actor actor, ApiRoutineEnum apiRoutine) {
         int limit = 200;
-        ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, apiRoutine, actor);
-        Uri.Builder builder = conu.uri.buildUpon();
-        builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        JSONArray jArr = conu.httpConnection.getRequestAsArray(builder.build());
+        return ConnectionAndUrl.fromActor(this, apiRoutine, actor)
+                .flatMap(conu -> {
+                    Uri.Builder builder = conu.uri.buildUpon();
+                    builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
+                    Uri uri = builder.build();
+                    return conu.httpConnection.getRequestAsArray(uri)
+                            .map(jArr -> jsonArrayToActors(apiRoutine, uri, jArr));
+                });
+    }
+
+    private List<Actor> jsonArrayToActors(ApiRoutineEnum apiRoutine, Uri uri, JSONArray jArr) throws ConnectionException {
         List<Actor> actors = new ArrayList<>();
         if (jArr != null) {
             for (int index = 0; index < jArr.length(); index++) {
@@ -228,17 +239,17 @@ public class ConnectionPumpio extends Connection {
                 }
             }
         }
-        MyLog.d(TAG, apiRoutine + " '" + builder.build() + "' " + actors.size() + " actors");
+        MyLog.d(TAG, apiRoutine + " '" + uri + "' " + actors.size() + " actors");
         return actors;
     }
 
     @Override
-    protected AActivity getNote1(String noteOid) throws ConnectionException {
-        return activityFromJson(getRequest(UriUtils.fromString(noteOid)));
+    protected Try<AActivity> getNote1(String noteOid) {
+        return getRequest(UriUtils.fromString(noteOid)).map(this::activityFromJson);
     }
 
     @Override
-    public AActivity updateNote(Note note, String inReplyToOid, Attachments attachments) throws ConnectionException {
+    public Try<AActivity> updateNote(Note note, String inReplyToOid, Attachments attachments) {
         ActivitySender sender = ActivitySender.fromContent(this, note);
         sender.setInReplyTo(inReplyToOid);
         sender.setAttachments(attachments);
@@ -279,16 +290,18 @@ public class ConnectionPumpio extends Connection {
     }
 
     @Override
-    public AActivity announce(String rebloggedNoteOid) throws ConnectionException {
+    public Try<AActivity> announce(String rebloggedNoteOid) {
         return actOnNote(PActivityType.SHARE, rebloggedNoteOid);
     }
 
     @NonNull
     @Override
-    public InputTimelinePage getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine, TimelinePosition youngestPosition,
-                                         TimelinePosition oldestPosition, int limit, Actor actor)
-            throws ConnectionException {
-        ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, apiRoutine, actor);
+    public Try<InputTimelinePage> getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine,
+                  TimelinePosition youngestPosition, TimelinePosition oldestPosition, int limit, Actor actor) {
+        Try<ConnectionAndUrl> tryConu = ConnectionAndUrl.fromActor(this, apiRoutine, actor);
+        if (tryConu.isFailure()) return tryConu.map(any -> InputTimelinePage.EMPTY);
+
+        ConnectionAndUrl conu = tryConu.get();
         Uri.Builder builder = conu.uri.buildUpon();
         if (youngestPosition.nonEmpty()) {
             // The "since" should point to the "Activity" on the timeline, not to the note
@@ -298,21 +311,22 @@ public class ConnectionPumpio extends Connection {
             builder.appendQueryParameter("before", oldestPosition.getPosition());
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        JSONArray jArr = conu.httpConnection.getRequestAsArray(builder.build());
-        List<AActivity> activities = new ArrayList<>();
-        if (jArr != null) {
-            // Read the activities in the chronological order
-            for (int index = jArr.length() - 1; index >= 0; index--) {
-                try {
-                    JSONObject jso = jArr.getJSONObject(index);
-                    activities.add(activityFromJson(jso));
-                } catch (JSONException e) {
-                    throw ConnectionException.loggedJsonException(this, "Parsing timeline", e, null);
+        return conu.httpConnection.getRequestAsArray(builder.build()).map(jArr -> {
+            List<AActivity> activities = new ArrayList<>();
+            if (jArr != null) {
+                // Read the activities in the chronological order
+                for (int index = jArr.length() - 1; index >= 0; index--) {
+                    try {
+                        JSONObject jso = jArr.getJSONObject(index);
+                        activities.add(activityFromJson(jso));
+                    } catch (JSONException e) {
+                        throw ConnectionException.loggedJsonException(this, "Parsing timeline", e, null);
+                    }
                 }
             }
-        }
-        MyLog.d(TAG, "getTimeline '" + builder.build() + "' " + activities.size() + " activities");
-        return InputTimelinePage.of(activities);
+            MyLog.d(TAG, "getTimeline '" + builder.build() + "' " + activities.size() + " activities");
+            return InputTimelinePage.of(activities);
+        });
     }
 
     @Override
@@ -543,27 +557,21 @@ public class ConnectionPumpio extends Connection {
         return (indexOfAt < 0) ? "" : actorId.substring(indexOfAt + 1);
     }
 
-    @NonNull
     @Override
-    public InputTimelinePage searchNotes(boolean syncYounger, TimelinePosition youngestPosition,
-                                         TimelinePosition oldestPosition, int limit, String searchQuery) {
-        return InputTimelinePage.EMPTY;
-    }
-
-    @Override
-    public AActivity follow(String actorOid, Boolean follow) throws ConnectionException {
+    public Try<AActivity> follow(String actorOid, Boolean follow) {
         return actOnActor(follow ? PActivityType.FOLLOW : PActivityType.STOP_FOLLOWING, actorOid);
     }
 
-    private AActivity actOnActor(PActivityType activityType, String actorId) throws ConnectionException {
+    private Try<AActivity> actOnActor(PActivityType activityType, String actorId) {
         return ActivitySender.fromId(this, actorId).send(activityType);
     }
     
     @Override
-    public Actor getActor2(Actor actorIn) throws ConnectionException {
-        ConnectionAndUrl conu = ConnectionAndUrl.fromActor(this, ApiRoutineEnum.GET_ACTOR, actorIn);
-        JSONObject jso = conu.httpConnection.getRequest(conu.uri);
-        return actorFromJson(jso);
+    public Try<Actor> getActor2(Actor actorIn) {
+        return ConnectionAndUrl
+        .fromActor(this, ApiRoutineEnum.GET_ACTOR, actorIn)
+        .flatMap(ConnectionAndUrl::getRequest)
+        .map(this::actorFromJson);
     }
 
 }

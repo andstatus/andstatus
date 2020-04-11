@@ -121,7 +121,7 @@ public class MyServiceTest1 extends MyServiceTest {
     }
 
     @Test
-    public void testDiskIoErrorCatching() throws InterruptedException {
+    public void testDiskIoErrorCatching() {
         final String method = "testDiskIoErrorCatching";
         MyLog.i(this, method + " started");
 

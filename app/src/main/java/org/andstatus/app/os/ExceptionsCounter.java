@@ -18,23 +18,29 @@ package org.andstatus.app.os;
 
 import android.app.Dialog;
 
+import org.acra.ACRA;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.DialogFactory;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import androidx.annotation.MainThread;
+import androidx.annotation.NonNull;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 public class ExceptionsCounter {
+    private static final String TAG = ExceptionsCounter.class.getSimpleName();
 
     private static final AtomicLong diskIoExceptionsCount = new AtomicLong();
     private static final AtomicLong diskIoExceptionsCountShown = new AtomicLong();
     private static volatile Dialog diskIoDialog = null;
+    public static final AtomicReference<String> firstError = new AtomicReference<>();
 
     private ExceptionsCounter() {
         // Empty
@@ -44,8 +50,24 @@ public class ExceptionsCounter {
         return diskIoExceptionsCount.get();
     }
 
-    public static void onDiskIoException() {
+    public static void onDiskIoException(Throwable e) {
         diskIoExceptionsCount.incrementAndGet();
+        logSystemInfo(e);
+    }
+
+    @NonNull
+    public static void logSystemInfo(Throwable throwable) {
+        final String systemInfo = MyContextHolder.getSystemInfo(MyContextHolder.get().context(), true);
+        ACRA.getErrorReporter().putCustomData("systemInfo", systemInfo);
+        logError(systemInfo, throwable);
+    }
+
+    private static void logError(String msgLog, Throwable tr) {
+        MyLog.e(TAG, msgLog, tr);
+        if (!StringUtil.isEmpty(firstError.get()) || tr == null) {
+            return;
+        }
+        firstError.set(MyLog.getStackTrace(tr));
     }
 
     public static void forget() {

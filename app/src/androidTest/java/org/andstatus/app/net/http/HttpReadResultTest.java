@@ -39,7 +39,7 @@ public class HttpReadResultTest {
                 + "}";
         HttpReadResult result1 = new HttpReadResult(uri, new JSONObject());
         result1.strResponse = in;
-        JSONArray jsa =  result1.getJsonArray("items");
+        JSONArray jsa =  result1.getJsonArray("items").get();
         assertEquals(2, jsa.length());
         assertEquals(false, result1.formParams.isPresent());
         assertFalse(result1.toString(), result1.toString().contains("posted"));
