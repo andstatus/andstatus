@@ -701,11 +701,16 @@ public class Origin implements Comparable<Origin>, IsEmpty {
             if (origin.id == 0) {
                 values.put(OriginTable.ORIGIN_NAME, origin.name);
                 values.put(OriginTable.ORIGIN_TYPE_ID, origin.originType.getId());
-                origin.id = DbUtils.addRowWithRetry(getMyContext(), OriginTable.TABLE_NAME, values, 3);
+                DbUtils.addRowWithRetry(getMyContext(), OriginTable.TABLE_NAME, values, 3)
+                .onSuccess(idAdded -> {
+                    origin.id = idAdded;
+                });
                 changed = origin.isPersistent();
             } else {
-                changed = (DbUtils.updateRowWithRetry(getMyContext(), OriginTable.TABLE_NAME, origin.id,
-                        values, 3) != 0);
+                changed = DbUtils.updateRowWithRetry(getMyContext(), OriginTable.TABLE_NAME, origin.id,
+                        values, 3)
+                        .onFailure(e -> MyLog.w("Origin", "Failed to save " + this))
+                        .isSuccess();
             }
             if (changed && getMyContext().isReady()) {
                 MyPreferences.onPreferencesChanged();

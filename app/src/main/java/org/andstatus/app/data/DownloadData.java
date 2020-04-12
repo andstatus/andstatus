@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteException;
 import android.net.Uri;
 import android.webkit.MimeTypeMap;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.DownloadTable;
@@ -27,8 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
-
-import androidx.annotation.NonNull;
 
 public class DownloadData implements IsEmpty {
     private static final String TAG = DownloadData.class.getSimpleName();
@@ -305,21 +305,23 @@ public class DownloadData implements IsEmpty {
 
     private void addNew() {
         ContentValues values = toContentValues();
-        downloadId = DbUtils.addRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, values, 3);
-        if (downloadId == -1) {
-            softError = true;
-        } else {
+        DbUtils.addRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, values, 3)
+        .onSuccess(idAdded -> {
+            downloadId = idAdded;
             MyLog.v(this, () -> "Added " + actorNoteUriToString());
-        }
+        })
+        .onFailure(e -> {
+            softError = true;
+            MyLog.w(this, "Failed to add " + actorNoteUriToString());
+        });
     }
 
     private void update() {
         ContentValues values = toContentValues();
-        if (DbUtils.updateRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, downloadId, values, 3) != 1) {
-            softError = true;
-        } else {
-            MyLog.v(this, () -> "Updated " + actorNoteUriToString());
-        }
+        DbUtils.updateRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, downloadId, values, 3)
+        .onSuccess(o -> MyLog.v(this, () -> "Updated " + actorNoteUriToString()))
+        .onFailure(e -> softError = true);
+
         boolean filenameChanged = !isError() && fileNew.existsNow()
                 && !fileStored.getFilename().equals(fileNew.getFilename());
         if (filenameChanged) {

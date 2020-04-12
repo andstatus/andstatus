@@ -24,6 +24,7 @@ public class TryUtils {
     private static final NoSuchElementException CALLABLE_IS_NULL = new NoSuchElementException("Callable is null");
     private static final NoSuchElementException VALUE_IS_NULL = new NoSuchElementException("Value is null");
     public final static Try<Boolean> TRUE = Try.success(true);
+    public final static Try<Void> SUCCESS = Try.success(null);
 
     private TryUtils() {
         // Empty

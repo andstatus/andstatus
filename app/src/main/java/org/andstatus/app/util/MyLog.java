@@ -604,9 +604,11 @@ public class MyLog {
                     : formatDateTime(date);
     }
 
-    public static void databaseIsNull(Supplier<Object> message) {
-        if (!isVerboseEnabled()) return;
+    public static String databaseIsNull(Supplier<Object> message) {
+        if (!isVerboseEnabled()) return "Database is null";
 
-        v(TAG, "Database is null. " + message.get() + "\n" + getStackTrace(new Exception()));
+        String msgLog = "Database is null. " + message.get() + "\n" + getStackTrace(new Exception());
+        v(TAG, msgLog);
+        return msgLog;
     }
 }

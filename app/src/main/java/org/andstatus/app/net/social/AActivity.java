@@ -415,11 +415,16 @@ public class AActivity extends AObject {
         if (wontSave(myContext)) return id;
         if (updatedDate > SOME_TIME_AGO) calculateInteraction(myContext);
         if (getId() == 0) {
-            id = DbUtils.addRowWithRetry(myContext, ActivityTable.TABLE_NAME, toContentValues(), 3);
-            MyLog.v(this, () -> "Added " + this);
+            DbUtils.addRowWithRetry(myContext, ActivityTable.TABLE_NAME, toContentValues(), 3)
+            .onSuccess(idAdded -> {
+                id = idAdded;
+                MyLog.v(this, () -> "Added " + this);
+            })
+            .onFailure(e -> MyLog.w(this, "Failed to add " + this, e));
         } else {
-            DbUtils.updateRowWithRetry(myContext, ActivityTable.TABLE_NAME, getId(), toContentValues(), 3);
-            MyLog.v(this, () -> "Updated " + this);
+            DbUtils.updateRowWithRetry(myContext, ActivityTable.TABLE_NAME, getId(), toContentValues(), 3)
+            .onSuccess(o -> MyLog.v(this, () -> "Updated " + this))
+            .onFailure(e -> MyLog.w(this, "Failed to update " + this, e));
         }
         afterSave(myContext);
         return id;

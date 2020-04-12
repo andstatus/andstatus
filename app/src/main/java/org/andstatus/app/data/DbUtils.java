@@ -23,11 +23,14 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteStatement;
 import android.provider.BaseColumns;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StopWatch;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
+import org.andstatus.app.util.TryUtils;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -40,7 +43,7 @@ import java.nio.channels.FileChannel;
 import java.util.Random;
 import java.util.function.Supplier;
 
-import androidx.annotation.NonNull;
+import io.vavr.control.Try;
 
 public final class DbUtils {
     private static final int MS_BETWEEN_RETRIES = 500;
@@ -52,14 +55,15 @@ public final class DbUtils {
     /**
      * @return rowId
      */
-    public static long addRowWithRetry(MyContext myContext, String tableName, ContentValues values, int nRetries) {
+    public static Try<Long> addRowWithRetry(MyContext myContext, String tableName, ContentValues values, int nRetries) {
         String method = "addRowWithRetry";
         long rowId = -1;
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.databaseIsNull(() -> method);
-            return 0;
+            return TryUtils.failure("Database is null");
         }
+        Exception lastException = null;
         for (int pass = 0; pass < nRetries; pass++) {
             try {
                 rowId = db.insert(tableName, null, values);
@@ -67,31 +71,29 @@ public final class DbUtils {
                     break;
                 }
                 MyLog.v(method, "Error inserting row, table=" + tableName + "; pass=" + pass);
-            } catch (NullPointerException e) {
-                MyLog.i(method, "NullPointerException, table=" + tableName + "; pass=" + pass, e);
+            } catch (Exception e) {
+                lastException = e;
+                MyLog.i(method, "Exception, table=" + tableName + "; pass=" + pass, e);
                 break;
-            } catch (SQLiteException e) {
-                MyLog.i(method, "Database exception, table=" + tableName + "; pass=" + pass, e);
-                rowId = -1;
             }
             waitBetweenRetries(method);
         }
         if (rowId == -1) {
-            MyLog.e(method, "Failed to insert row into " + tableName + "; values=" + values.toString(), null);
+            return TryUtils.failure("Failed to insert row into " + tableName + "; values=" + values.toString(), lastException);
         }
-        return rowId;
+        return Try.success(rowId);
     }
 
     /**
      * @return Number of rows updated
      */
-    public static int updateRowWithRetry(MyContext myContext, String tableName, long rowId, ContentValues values, int nRetries) {
+    public static Try<Void> updateRowWithRetry(MyContext myContext, String tableName, long rowId, ContentValues values, int nRetries) {
         String method = "updateRowWithRetry";
         int rowsUpdated = 0;
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.databaseIsNull(() -> method);
-            return 0;
+            return TryUtils.failure("Database is null");
         }
         for (int pass=0; pass<nRetries; pass++) {
             try {
@@ -103,9 +105,11 @@ public final class DbUtils {
             waitBetweenRetries(method);
         }
         if (rowsUpdated != 1) {
-            MyLog.e(method, " Failed to update rowId=" + rowId + " updated " + rowsUpdated + " rows", null);
+            String msgLog = "Failed to update rowId=" + rowId + " updated " + rowsUpdated + " rows";
+            MyLog.e(method, msgLog, null);
+            TryUtils.failure(msgLog);
         }
-        return rowsUpdated;
+        return TryUtils.SUCCESS;
     }
 
     /** @return true if current thread was interrupted */

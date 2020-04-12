@@ -336,19 +336,26 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         assertTrue(logMsg + "; Text: '" + text + "'", text.startsWith("@") && text.lastIndexOf("@") > 1);
     }
 
-    private String getClipboardText(String methodExt) throws InterruptedException {
+    private String getClipboardText(String methodExt) {
         final String method = "getClipboardText";
-        MyLog.v(methodExt, method + " started");
-        TestSuite.waitForIdleSync();
-        ClipboardReader reader = new ClipboardReader();
-        getInstrumentation().runOnMainSync(reader);
-        MyLog.v(methodExt, method + "; clip='" + reader.clip + "'");
-        if (reader.clip == null) {
-            return "";
+        try {
+            MyLog.v(methodExt, method + " started");
+            TestSuite.waitForIdleSync();
+            ClipboardReader reader = new ClipboardReader();
+            getInstrumentation().runOnMainSync(reader);
+            MyLog.v(methodExt, method + "; clip='" + reader.clip + "'");
+            if (reader.clip == null) {
+                return "";
+            }
+            ClipData.Item item = reader.clip.getItemAt(0);
+            String text = (StringUtil.isEmpty(item.getHtmlText()) ? item.getText() : item.getHtmlText())
+                    .toString();
+            MyLog.v(methodExt, method + " ended. Text: " + text);
+            return text;
+        } catch (Exception e) {
+            MyLog.e(method, e);
+            return "Exception: " + e.getMessage();
         }
-        ClipData.Item item = reader.clip.getItemAt(0);
-        return (StringUtil.isEmpty(item.getHtmlText()) ? item.getText() : item.getHtmlText())
-                .toString();
     }
 
     private static class ClipboardReader implements Runnable {

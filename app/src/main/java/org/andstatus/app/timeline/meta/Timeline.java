@@ -22,6 +22,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorListType;
@@ -51,8 +53,6 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-
-import androidx.annotation.NonNull;
 
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
@@ -529,11 +529,15 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
             MyLog.v(this, () -> "Saving " + this);
         }
         if (getId() == 0) {
-            id = DbUtils.addRowWithRetry(myContext, TimelineTable.TABLE_NAME, contentValues, 3);
+            DbUtils.addRowWithRetry(myContext, TimelineTable.TABLE_NAME, contentValues, 3)
+            .onSuccess(idAdded -> {
+                id = idAdded;
+                changed = false;
+            });
         } else {
-            DbUtils.updateRowWithRetry(myContext, TimelineTable.TABLE_NAME, getId(), contentValues, 3);
+            DbUtils.updateRowWithRetry(myContext, TimelineTable.TABLE_NAME, getId(), contentValues, 3)
+            .onSuccess( o -> changed = false);
         }
-        changed = false;
         return getId();
     }
 

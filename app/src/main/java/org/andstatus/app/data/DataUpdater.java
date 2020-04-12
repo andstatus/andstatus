@@ -28,7 +28,6 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
@@ -459,8 +458,8 @@ public class DataUpdater {
             actor.avatarFile.resetAvatarErrors(execContext.myContext);
             execContext.myContext.users().reload(actor);
 
-            if (actor.isPartiallyDefined()) {
-                actor.requestDownload();
+            if (actor.isPartiallyDefined() && actor.canGetActor()) {
+                actor.requestDownload(false);
             }
             actor.requestAvatarDownload();
             if (actor.hasLatestNote()) {
@@ -473,6 +472,8 @@ public class DataUpdater {
 
     private void updateFriendship(AActivity activity, MyAccount me) {
         Actor objActor = activity.getObjActor();
+        if (me.getActor().isSame(objActor)) return;
+
         if (objActor.isMyFriend.known) {
             MyLog.v(this, () -> "Account " + me.getActor().getUniqueNameWithOrigin() + " "
                     + (objActor.isMyFriend.isTrue ? "follows " : "stopped following ")

@@ -317,7 +317,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public boolean canGetActor() {
-        return (isOidReal() || isUsernameValid()) && StringUtil.nonEmpty(getConnectionHost());
+        return (isOidReal() || isWebFingerIdValid()) && StringUtil.nonEmpty(getConnectionHost());
     }
 
     @Override
@@ -905,11 +905,13 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return AvatarFile.EMPTY != avatarFile;
     }
 
-    public void requestDownload() {
+    public void requestDownload(boolean isManuallyLaunched) {
         if (canGetActor()) {
             MyLog.v(this, () -> "Actor " + this + " will be loaded from the Internet");
-            MyServiceManager.sendForegroundCommand(
-                    CommandData.newActorCommandAtOrigin(CommandEnum.GET_ACTOR, this, getUsername(), origin));
+            CommandData command = CommandData.newActorCommandAtOrigin(
+                    CommandEnum.GET_ACTOR, this, getUsername(), origin)
+                .setManuallyLaunched(isManuallyLaunched);
+            MyServiceManager.sendForegroundCommand(command);
         } else {
             MyLog.v(this, () -> "Cannot get Actor " + this);
         }

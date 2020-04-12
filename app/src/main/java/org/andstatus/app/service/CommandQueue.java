@@ -245,7 +245,7 @@ public class CommandQueue {
                         MyLog.e(context, method + "; Duplicated command in a queue:" + count + " " + cd.toString());
                     }
                 }
-                MyLog.e(context, method + "; " + count + " saved" +
+                MyLog.d(context, method + "; " + count + " saved" +
                         (queue.isEmpty() ? "" : ", " + queue.size() + " left"));
             }
         } catch (Exception e) {

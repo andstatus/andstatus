@@ -126,11 +126,16 @@ public class User implements IsEmpty {
         final ContentValues values = toContentValues(myContext);
         if (this == EMPTY || values.size() == 0) return;
         if (userId == 0) {
-            userId = DbUtils.addRowWithRetry(myContext, UserTable.TABLE_NAME, values, 3);
-            MyLog.v(this, () -> "Added " + this);
+            DbUtils.addRowWithRetry(myContext, UserTable.TABLE_NAME, values, 3)
+            .onSuccess( idAdded -> {
+                userId = idAdded;
+                MyLog.v(this, () -> "Added " + this);
+            })
+            .onFailure(e -> MyLog.w(this, "Failed to add " + this, e));
         } else {
-            DbUtils.updateRowWithRetry(myContext, UserTable.TABLE_NAME, userId, values, 3);
-            MyLog.v(this, () -> "Updated " + this);
+            DbUtils.updateRowWithRetry(myContext, UserTable.TABLE_NAME, userId, values, 3)
+            .onSuccess( o -> MyLog.v(this, () -> "Updated " + this))
+            .onFailure(e -> MyLog.w(this, "Failed to update " + this, e));
         }
     }
 
