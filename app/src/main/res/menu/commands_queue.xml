@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 
-    Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+    Copyright (c) 2020 yvolk (Yuri Volkov), http://yurivolkov.com
 
 	Licensed under the Apache License, Version 2.0 (the "License");
 	you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 <menu xmlns:tools="http://schemas.android.com/tools"
       xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto"
-      tools:context="org.andstatus.app.timeline.meta.ManageTimelines">
+      tools:context="org.andstatus.app.service.QueueViewer">
     <item
         android:id="@+id/refresh_menu_item"
         android:alphabeticShortcut="r"
@@ -26,19 +26,8 @@
         android:title="@string/refresh_title">
     </item>
     <item
-        android:id="@+id/total_counters"
+        android:id="@+id/clear_the_queue"
         app:showAsAction="never"
-        android:checkable="true"
-        android:title="@string/total_counters">
-    </item>
-    <item
-        android:id="@+id/reset_counters_menu_item"
-        app:showAsAction="never"
-        android:title="@string/reset_counters">
-    </item>
-    <item
-        android:id="@+id/reset_timelines_order"
-        app:showAsAction="never"
-        android:title="@string/reset_timelines_order">
+        android:title="@string/clear_the_queue">
     </item>
 </menu>

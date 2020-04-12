@@ -64,6 +64,7 @@
   <string name="check_and_fix_data">Check and fix data</string>
   <string name="check_and_fix_data_summary">Use this action if you feel that AndStatus is malfunctioning,
     but you don\'t want to reinstall it</string>
+  <string name="clear_the_queue">Clear the queue</string>
   <string name="client_registration_failed">AndStatus client registration failed</string>
   <string name="collapse_duplicates">Collapse duplicates</string>
   <string name="color_black">Black</string>

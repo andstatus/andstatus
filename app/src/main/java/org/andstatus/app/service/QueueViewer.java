@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -67,6 +68,29 @@ public class QueueViewer extends LoadableListActivity {
     }
 
     private QueueData queueData = null;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.commands_queue, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.clear_the_queue:
+                MyServiceManager.sendManualForegroundCommand(
+                        CommandData.newItemCommand(
+                                CommandEnum.CLEAR_COMMAND_QUEUE,
+                                MyAccount.EMPTY,
+                                0));
+                showList(WhichPage.CURRENT);
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return false;
+    }
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {

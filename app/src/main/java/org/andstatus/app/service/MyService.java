@@ -47,6 +47,7 @@ import org.andstatus.app.util.TriState;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.andstatus.app.notification.NotificationEventType.SERVICE_RUNNING;
+import static org.andstatus.app.service.CommandEnum.CLEAR_COMMAND_QUEUE;
 import static org.andstatus.app.service.CommandEnum.DELETE_COMMAND;
 
 /**
@@ -556,6 +557,9 @@ public class MyService extends Service {
                             .setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
                     if (commandData.getCommand() == DELETE_COMMAND) {
                         commandQueue.deleteCommand(commandData);
+                    } else if (commandData.getCommand() == CLEAR_COMMAND_QUEUE) {
+                        commandQueue.clear();
+                        return true;
                     } else {
                         CommandExecutorStrategy.executeCommand(commandData, this);
                     }
