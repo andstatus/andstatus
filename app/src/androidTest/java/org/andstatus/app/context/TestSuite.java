@@ -24,6 +24,8 @@ import android.content.Intent;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
+import androidx.test.platform.app.InstrumentationRegistry;
+
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.MyAction;
@@ -40,8 +42,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
-
-import androidx.test.platform.app.InstrumentationRegistry;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -253,7 +253,8 @@ public class TestSuite {
             }
             itemsCount = itemsCountNew;
         }
-        assertTrue("There are " + itemsCount + " items (min=" + minCount + ") in the list of " + activity.getClass().getSimpleName(),
+        assertTrue("There are " + itemsCount + " items (min=" + minCount + ")" +
+                        " in the list of " + activity.getClass().getSimpleName(),
                 itemsCount >= minCount);
         return itemsCount;
     }

@@ -472,9 +472,9 @@ public class DataUpdater {
 
     private void updateFriendship(AActivity activity, MyAccount me) {
         Actor objActor = activity.getObjActor();
-        if (me.getActor().isSame(objActor)) return;
+        if (!objActor.isOidReal()) return;
 
-        if (objActor.isMyFriend.known) {
+        if (objActor.isMyFriend.known && !objActor.isSame(me.getActor())) {
             MyLog.v(this, () -> "Account " + me.getActor().getUniqueNameWithOrigin() + " "
                     + (objActor.isMyFriend.isTrue ? "follows " : "stopped following ")
                     + objActor.getUniqueNameWithOrigin());
@@ -482,7 +482,7 @@ public class DataUpdater {
                     objActor.isMyFriend, objActor);
             execContext.myContext.users().reload(me.getActor());
         }
-        if (activity.followedByActor().known) {
+        if (activity.followedByActor().known && !objActor.isSame(activity.getActor())) {
             MyLog.v(this, () -> "Actor " + activity.getActor().getUniqueNameWithOrigin() + " "
                     + (activity.followedByActor().isTrue ? "follows " : "stopped following ")
                     + objActor.getUniqueNameWithOrigin());
