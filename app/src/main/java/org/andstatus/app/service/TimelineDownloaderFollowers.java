@@ -34,10 +34,10 @@ class TimelineDownloaderFollowers extends TimelineDownloader {
 
     @Override
     boolean isApiSupported(Connection.ApiRoutineEnum routine) {
-        return super.isApiSupported(routine) || super.isApiSupported(getAlternativeApiRputineEnum(routine));
+        return super.isApiSupported(routine) || super.isApiSupported(getAlternativeApiRoutine(routine));
     }
 
-    private Connection.ApiRoutineEnum getAlternativeApiRputineEnum(Connection.ApiRoutineEnum routine) {
+    private Connection.ApiRoutineEnum getAlternativeApiRoutine(Connection.ApiRoutineEnum routine) {
         switch (routine) {
             case GET_FOLLOWERS:
                 return Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS;

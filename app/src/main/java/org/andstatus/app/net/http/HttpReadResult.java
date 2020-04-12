@@ -41,6 +41,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -104,8 +105,14 @@ public class HttpReadResult {
     }
 
     private HttpReadResult setHeaders(@NonNull Map<String, List<String>> headers) {
-        this.headers = headers;
-        this.location = Optional.ofNullable(this.headers.get("Location")).orElse(Collections.emptyList()).stream()
+        // Header field names are case-insensitive, see https://stackoverflow.com/a/5259004/297710
+        Map<String, List<String>> lowercaseKeysMap = new HashMap<>();
+        headers.entrySet().forEach(entry -> {
+            lowercaseKeysMap.put(entry.getKey() == null ? null : entry.getKey().toLowerCase(), entry.getValue());
+        });
+        this.headers = lowercaseKeysMap;
+        this.location = Optional.ofNullable(this.headers.get("location"))
+                .orElse(Collections.emptyList()).stream()
                 .filter(StringUtil::nonEmpty)
                 .findFirst()
                 .map(l -> l.replace("%3F", "?"));
@@ -113,10 +120,10 @@ public class HttpReadResult {
     }
 
     private static <T> Collector<T, ?, Map<String, List<String>>> toHeaders(
-            Function<T, String> keyMapper,
+            Function<T, String> fieldNameMapper,
             Function<T, String> valueMapper) {
         return Collectors.toMap(
-                keyMapper,
+                fieldNameMapper,
                 v -> Collections.singletonList(valueMapper.apply(v)),
                 (a, b) -> {
                     List<String> out = new ArrayList<>(a);
@@ -356,7 +363,7 @@ public class HttpReadResult {
 
     void onRetryWithoutAuthentication() {
         authenticate = false;
-        appendToLog("Retrying without authentication, exception: " + exception);
+        appendToLog("Retrying without authentication" + (exception == null ? "" : ", exception: " + exception));
         exception = null;
         MyLog.v(this, this::toString);
     }

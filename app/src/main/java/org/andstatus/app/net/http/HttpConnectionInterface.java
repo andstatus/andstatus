@@ -127,6 +127,7 @@ public interface HttpConnectionInterface {
     default Try<HttpReadResult> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
         HttpReadResult result = new HttpReadResult(getData().getMyContext(), connectionRequired, uri, file, new JSONObject());
         getRequest(result);
+        result.logResponse(getData().getLogName());
         return result.tryToParse();
     }
     
@@ -196,7 +197,8 @@ public interface HttpConnectionInterface {
         result.appendToLog( "statusLine:'" + result.statusLine + "'");
         result.redirected = true;
         stop = TryUtils.fromOptional(result.getLocation())
-                .mapFailure(e -> new IllegalArgumentException("No 'Location' header on MOVED response"))
+                .mapFailure(e -> new ConnectionException(ConnectionException.StatusCode.MOVED,
+                        "No 'Location' header on MOVED response"))
                 .map(result::setUrl)
                 .onFailure(result::setException)
                 .onSuccess(this::logFollowingRedirects)
