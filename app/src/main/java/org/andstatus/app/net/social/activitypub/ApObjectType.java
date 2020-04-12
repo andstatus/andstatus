@@ -42,11 +42,13 @@ enum ApObjectType {
     },
     APPLICATION("application", null),
     PERSON("Person", null),
-    COMMENT("comment", null),
-    IMAGE("image", COMMENT),
-    VIDEO("video", COMMENT),
-    NOTE("Note", COMMENT),
-    COLLECTION("collection", null),
+    NOTE("Note", null),
+    IMAGE("Image", NOTE),
+    VIDEO("Video", NOTE),
+    COLLECTION("Collection", null),
+    ORDERED_COLLECTION("OrderedCollection", null),
+    COLLECTION_PAGE("CollectionPage", null),
+    ORDERED_COLLECTION_PAGE("OrderedCollectionPage", null),
     RELATIONSHIP("Relationship", null),
     UNKNOWN("unknown", null);
 
@@ -74,7 +76,7 @@ enum ApObjectType {
 
     public static ApObjectType compatibleWith(JSONObject jso) {
         ApObjectType type = fromJson(jso);
-        return type.compatibleType == null ? UNKNOWN : type.compatibleType;
+        return type.compatibleType == null ? type : type.compatibleType;
     }
 
     public static ApObjectType fromJson(JSONObject jso) {

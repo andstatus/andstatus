@@ -336,8 +336,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         .withComma("groupType", groupType == GroupType.UNKNOWN ? "" : groupType)
         .withComma("", user, user::nonEmpty)
         .withComma("profileUri", profileUri, UriUtils::nonEmpty)
-        .withComma("avatar", avatarUri, this::hasAvatar)
-        .withComma("avatarFile", avatarFile, this::hasAvatarFile)
+        .withComma("avatar", avatarUri, UriUtils::nonEmpty)
+        .withComma("avatarFile", avatarFile, AvatarFile::nonEmpty)
         .withComma("banner", endpoints.findFirst(ActorEndpointType.BANNER).orElse(null))
         .withComma("", "latest note present", this::hasLatestNote);
         if (parentActor.isEvaluated() && parentActor.get().nonEmpty()) {

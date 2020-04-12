@@ -21,6 +21,7 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.AccountConnectionData;
+import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.AActivity;
@@ -103,9 +104,28 @@ public class ConnectionActivityPub extends Connection {
 
     @NonNull
     private Actor actorFromJson(JSONObject jso) {
-        if (!ApObjectType.PERSON.isTypeOf(jso)) {
-            return Actor.EMPTY;
+        switch (ApObjectType.fromJson(jso)) {
+            case PERSON:
+                return actorFromPersonTypeJson(jso);
+            case COLLECTION:
+            case ORDERED_COLLECTION:
+                return actorFromCollectionTypeJson(jso);
+            case UNKNOWN:
+                return Actor.EMPTY;
+            default:
+                MyLog.w(TAG, "Unexpected object type for Actor: " + ApObjectType.fromJson(jso) + ", JSON:\n" + jso);
+                return Actor.EMPTY;
         }
+    }
+
+    @NonNull
+    private Actor actorFromCollectionTypeJson(JSONObject jso) {
+        Actor actor = Actor.fromTwoIds(data.getOrigin(), GroupType.GENERIC, 0, jso.optString("id"));
+        return actor.build();
+    }
+
+    @NonNull
+    private Actor actorFromPersonTypeJson(JSONObject jso) {
         Actor actor = actorFromOid(jso.optString("id"));
         actor.setUsername(jso.optString("preferredUsername"));
         actor.setRealName(jso.optString(NAME_PROPERTY));
@@ -116,14 +136,14 @@ public class ConnectionActivityPub extends Connection {
         actor.setProfileUrl(jso.optString("url"));
         actor.setUpdatedDate(dateFromJson(jso, "updated"));
         actor.endpoints
-            .add(ActorEndpointType.API_PROFILE, jso.optString("id"))
-            .add(ActorEndpointType.API_INBOX, jso.optString("inbox"))
-            .add(ActorEndpointType.API_OUTBOX, jso.optString("outbox"))
-            .add(ActorEndpointType.API_FOLLOWING, jso.optString("following"))
-            .add(ActorEndpointType.API_FOLLOWERS, jso.optString("followers"))
-            .add(ActorEndpointType.BANNER, JsonUtils.optStringInside(jso, "image", "url"))
-            .add(ActorEndpointType.API_SHARED_INBOX, JsonUtils.optStringInside(jso, "endpoints", "sharedInbox"))
-            .add(ActorEndpointType.API_UPLOAD_MEDIA, JsonUtils.optStringInside(jso, "endpoints", "uploadMedia"));
+                .add(ActorEndpointType.API_PROFILE, jso.optString("id"))
+                .add(ActorEndpointType.API_INBOX, jso.optString("inbox"))
+                .add(ActorEndpointType.API_OUTBOX, jso.optString("outbox"))
+                .add(ActorEndpointType.API_FOLLOWING, jso.optString("following"))
+                .add(ActorEndpointType.API_FOLLOWERS, jso.optString("followers"))
+                .add(ActorEndpointType.BANNER, JsonUtils.optStringInside(jso, "image", "url"))
+                .add(ActorEndpointType.API_SHARED_INBOX, JsonUtils.optStringInside(jso, "endpoints", "sharedInbox"))
+                .add(ActorEndpointType.API_UPLOAD_MEDIA, JsonUtils.optStringInside(jso, "endpoints", "uploadMedia"));
         return actor.build();
     }
 
@@ -359,7 +379,7 @@ public class ConnectionActivityPub extends Connection {
     private AActivity parseObjectOfActivity(AActivity activity, JSONObject objectOfActivity) throws ConnectionException {
         if (ApObjectType.PERSON.isTypeOf(objectOfActivity)) {
             activity.setObjActor(actorFromJson(objectOfActivity));
-        } else if (ApObjectType.compatibleWith(objectOfActivity) == ApObjectType.COMMENT) {
+        } else if (ApObjectType.compatibleWith(objectOfActivity) == ApObjectType.NOTE) {
             noteFromJson(activity, objectOfActivity);
         }
         return activity;

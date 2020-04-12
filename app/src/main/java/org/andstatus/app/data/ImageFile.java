@@ -311,7 +311,7 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
 
     @Override
     public String toString() {
-        return getInstanceTag() + ":" + downloadFile;
+        return isEmpty() ? "EMPTY" : getInstanceTag() + ":" + downloadFile;
     }
 
     @Override
