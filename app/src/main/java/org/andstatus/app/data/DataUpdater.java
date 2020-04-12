@@ -357,7 +357,7 @@ public class DataUpdater {
         if (shouldWeUpdateActor(method, objActor)) {
             updateObjActor2(activity, recursing, me);
         } else {
-            updateFriendship(activity, me);
+            updateFriendships(activity, me);
             execContext.myContext.users().reload(objActor);
         }
 
@@ -453,7 +453,7 @@ public class DataUpdater {
             }
             actor.endpoints.save(actor.actorId);
 
-            updateFriendship(activity, me);
+            updateFriendships(activity, me);
 
             actor.avatarFile.resetAvatarErrors(execContext.myContext);
             execContext.myContext.users().reload(actor);
@@ -470,26 +470,10 @@ public class DataUpdater {
         }
     }
 
-    private void updateFriendship(AActivity activity, MyAccount me) {
-        Actor objActor = activity.getObjActor();
-        if (!objActor.isOidReal()) return;
-
-        if (objActor.isMyFriend.known && !objActor.isSame(me.getActor())) {
-            MyLog.v(this, () -> "Account " + me.getActor().getUniqueNameWithOrigin() + " "
-                    + (objActor.isMyFriend.isTrue ? "follows " : "stopped following ")
-                    + objActor.getUniqueNameWithOrigin());
-            GroupMembership.setMember(execContext.myContext, me.getActor(), GroupType.FRIENDS,
-                    objActor.isMyFriend, objActor);
-            execContext.myContext.users().reload(me.getActor());
-        }
-        if (activity.followedByActor().known && !objActor.isSame(activity.getActor())) {
-            MyLog.v(this, () -> "Actor " + activity.getActor().getUniqueNameWithOrigin() + " "
-                    + (activity.followedByActor().isTrue ? "follows " : "stopped following ")
-                    + objActor.getUniqueNameWithOrigin());
-            GroupMembership.setMember(execContext.myContext, activity.getActor(), GroupType.FRIENDS,
-                    activity.followedByActor(), objActor);
-            execContext.myContext.users().reload(activity.getActor());
-        }
+    private void updateFriendships(AActivity activity, MyAccount me) {
+        Actor actor = activity.getObjActor();
+        GroupMembership.setAndReload(execContext.myContext, me.getActor(), actor.isMyFriend, actor);
+        GroupMembership.setAndReload(execContext.myContext, activity.getActor(), activity.followedByActor(), actor);
     }
 
     private void fixActorUpdatedDate(AActivity activity, Actor actor) {

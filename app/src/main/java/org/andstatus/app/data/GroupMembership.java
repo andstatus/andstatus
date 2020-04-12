@@ -48,6 +48,26 @@ public class GroupMembership {
     private final long memberId;
     private final TriState isMember;
 
+    public static void setAndReload(MyContext myContext, Actor follower, TriState follows, Actor friend) {
+        if (!follower.isOidReal() || !friend.isOidReal() || follows.unknown || follower.isSame(friend)) return;
+
+        MyLog.v(TAG, () ->
+            "Actor " + follower.getUniqueNameWithOrigin() + " "
+                    + (follows.isTrue ? "follows " : "stopped following ")
+                    + friend.getUniqueNameWithOrigin()
+        );
+        setMember(myContext, follower, GroupType.FRIENDS, follows, friend);
+        myContext.users().reload(follower);
+
+        MyLog.v(TAG, () ->
+            "Actor " + friend.getUniqueNameWithOrigin() + " "
+                    + (follows.isTrue ? "get a follower " : "lost a follower ")
+                    + follower.getUniqueNameWithOrigin() + " (indirect info)"
+        );
+        setMember(myContext, friend, GroupType.FOLLOWERS, follows, follower);
+        myContext.users().reload(friend);
+    }
+
     public static void setMember(MyContext myContext, Actor parentActor, GroupType groupType, TriState isMember, Actor member) {
         if (parentActor.actorId == 0 || member.actorId == 0 || isMember.unknown) return;
 
