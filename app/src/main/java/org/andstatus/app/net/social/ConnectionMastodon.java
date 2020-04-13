@@ -163,7 +163,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     protected AActivity activityFromTwitterLikeJson(JSONObject timelineItem) throws ConnectionException {
         if (isNotification(timelineItem)) {
             AActivity activity = AActivity.from(data.getAccountActor(), getType(timelineItem));
-            activity.setTimelinePosition(timelineItem.optString("id"));
+            activity.setOid(timelineItem.optString("id"));
             activity.setUpdatedDate(dateFromJson(timelineItem, "created_at"));
             activity.setActor(actorFromJson(timelineItem.optJSONObject("account")));
             AActivity noteActivity = activityFromJson2(timelineItem.optJSONObject("status"));

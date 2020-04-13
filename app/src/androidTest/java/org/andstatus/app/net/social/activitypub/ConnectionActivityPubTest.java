@@ -210,6 +210,9 @@ public class ConnectionActivityPubTest {
         assertEquals("Timeline position " + activity9,
                 "https://pleroma.site/users/AndStatus/inbox",
                 activity9.getTimelinePosition().getPosition());
+        assertEquals("Activity oid " + activity9,
+                "https://pleroma.site/activities/0f74296c-0f8c-43e2-a250-692f3e61c9c3",
+                activity9.getOid());
         assertEquals("Note oid " + note9, "https://pleroma.site/objects/78bcd5dd-c1ee-4ac1-b2e0-206a508e60e9", note9.oid);
         assertEquals("Conversation oid " + note9,"https://pleroma.site/contexts/cebf1c4d-f7f2-46a5-8025-fd8bd9cde1ab", note9.conversationOid);
         assertEquals("Note name " + note9, "", note9.getName());

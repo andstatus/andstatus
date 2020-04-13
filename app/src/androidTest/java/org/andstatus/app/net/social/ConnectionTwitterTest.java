@@ -84,7 +84,7 @@ public class ConnectionTwitterTest {
         AActivity activity = timeline.get(ind);
         String hostName = demoData.twitterTestHostWithoutApiDot;
         assertEquals("Posting note", AObjectType.NOTE, activity.getObjectType());
-        assertEquals("Timeline position", "381172771428257792", activity.getTimelinePosition().getPosition());
+        assertEquals("Activity oid", "381172771428257792", activity.getOid());
         assertEquals("Note Oid", "381172771428257792", activity.getNote().oid);
         assertEquals("MyAccount", connection.getData().getAccountActor(), activity.accountActor);
         assertEquals("Favorited " + activity, TriState.TRUE, activity.getNote().getFavoritedBy(activity.accountActor));
@@ -129,7 +129,7 @@ public class ConnectionTwitterTest {
         assertTrue("Is not a reply", note.getInReplyTo().isEmpty());
         assertEquals("Reblog of the note id", "315088751183409153", note.oid);
         assertEquals("Author of reblogged note oid", "442756884", activity.getAuthor().oid);
-        assertEquals("Reblog id", "383295679507869696", activity.getTimelinePosition().getPosition());
+        assertEquals("Reblog id", "383295679507869696", activity.getOid());
         assertEquals("Reblogger oid", "111911542", activity.getActor().oid);
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         startsWith = "This AndStatus application";

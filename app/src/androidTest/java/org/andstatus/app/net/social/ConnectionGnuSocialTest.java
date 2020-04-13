@@ -82,7 +82,7 @@ public class ConnectionGnuSocialTest {
         int ind = 0;
         assertEquals("Posting note", AObjectType.NOTE, timeline.get(ind).getObjectType());
         AActivity activity = timeline.get(ind);
-        assertEquals("Timeline position", "2663077", activity.getTimelinePosition().getPosition());
+        assertEquals("Activity oid", "2663077", activity.getOid());
         assertEquals("Note Oid", "2663077", activity.getNote().oid);
         assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
         assertEquals("Favorited " + activity, TriState.TRUE, activity.getNote().getFavoritedBy(activity.accountActor));
@@ -108,7 +108,7 @@ public class ConnectionGnuSocialTest {
         ind++;
         activity = timeline.get(ind);
         author = activity.getAuthor();
-        assertEquals("Timeline position", "2664346", activity.getTimelinePosition().getPosition());
+        assertEquals("Activity oid", "2664346", activity.getOid());
         assertEquals("Note Oid", "2664346", activity.getNote().oid);
         assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
         assertEquals("Should have a recipient " + activity, 1, activity.audience().getNonSpecialActors().size());
@@ -214,7 +214,7 @@ public class ConnectionGnuSocialTest {
         assertEquals(1, mock.getHttpMock().getRequestsCounter());
         HttpReadResult result = mock.getHttpMock().getResults().get(0);
         assertTrue("URL doesn't contain note oid: " + result.getUrl(), result.getUrl().contains(NOTE_OID));
-        assertEquals("Activity oid; " + activity, "10341833", activity.getTimelinePosition().getPosition());
+        assertEquals("Activity oid; " + activity, "10341833", activity.getOid());
         assertEquals("Actor; " + activity, "andstatus@loadaverage.org", activity.getActor().getWebFingerId());
         assertEquals("Author; " + activity, "igor@herds.eu", activity.getAuthor().getWebFingerId());
     }
@@ -268,7 +268,7 @@ public class ConnectionGnuSocialTest {
         AActivity activity = timeline.get(ind);
         assertEquals("Posting a note " + activity, AObjectType.NOTE, activity.getObjectType());
         assertEquals("Should be UPDATE " + activity, ActivityType.UPDATE,  activity.type);
-        assertEquals("Timeline position", "12940131", activity.getTimelinePosition().getPosition());
+        assertEquals("Activity oid", "12940131", activity.getOid());
         assertEquals("Note Oid", "12940131", activity.getNote().oid);
         assertEquals("conversationOid", "10538185", activity.getNote().conversationOid);
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
@@ -282,7 +282,7 @@ public class ConnectionGnuSocialTest {
         ind++;
         activity = timeline.get(ind);
         assertEquals("Should be LIKE " + activity, ActivityType.LIKE,  activity.type);
-        assertEquals("Timeline position", "12942571", activity.getTimelinePosition().getPosition());
+        assertEquals("Activity oid", "12942571", activity.getOid());
         assertEquals("Actor Oid", "347578", activity.getActor().oid);
         assertEquals("Actor Username", "fanta", activity.getActor().getUsername());
         assertEquals("Author Oid", "379323", activity.getAuthor().oid);

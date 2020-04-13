@@ -52,6 +52,7 @@ public class AActivity extends AObject {
     public static final Try<AActivity> TRY_EMPTY = Try.success(EMPTY);
 
     private TimelinePosition timelinePosition = TimelinePosition.EMPTY;
+    private String oid = "";
     private long storedUpdatedDate = DATETIME_MILLIS_NEVER;
     private long updatedDate = DATETIME_MILLIS_NEVER;
     private long id = 0;
@@ -104,7 +105,7 @@ public class AActivity extends AObject {
         final Note note = Note.fromOriginAndOid(accountActor.origin, noteOid, status);
         AActivity activity = from(accountActor, ActivityType.UPDATE);
         activity.setActor(actor);
-        activity.setTimelinePosition(
+        activity.setOid(
                 StringUtil.toTempOidIf(StringUtil.isEmptyOrTemp(note.oid),
                     activity.getActorPrefix() + StringUtil.stripTempPrefix(note.oid)));
         activity.setNote(note);
@@ -216,21 +217,26 @@ public class AActivity extends AObject {
                 || accountActor.isEmpty();
     }
 
+    public String getOid() {
+        return oid;
+    }
+
+    public AActivity setOid(String oidIn) {
+        oid = StringUtil.isEmpty(oidIn) ? "" : oidIn;
+        return this;
+    }
+
     public TimelinePosition getTimelinePosition() {
         return timelinePosition;
     }
 
-    private void setTempTimelinePosition() {
-        setTimelinePosition("");
-    }
-
     public AActivity setTimelinePosition(String strPosition) {
-        timelinePosition = TimelinePosition.of(StringUtil.isEmpty(strPosition) ? getTempPositionString() : strPosition);
+        timelinePosition = TimelinePosition.of(StringUtil.isEmpty(strPosition) ? "" : strPosition);
         return this;
     }
 
     @NonNull
-    private String getTempPositionString() {
+    private String buildTempOid() {
         return StringUtil.toTempOid(
                     getActorPrefix() +
                     type.name().toLowerCase() + "-" +
@@ -313,11 +319,12 @@ public class AActivity extends AObject {
         return objActor;
     }
 
-    public void setObjActor(Actor actor) {
+    public AActivity setObjActor(Actor actor) {
         if (this == EMPTY && Actor.EMPTY != actor) {
             throw new IllegalStateException("Cannot set objActor of EMPTY Activity");
         }
         this.objActor = actor == null ? Actor.EMPTY : actor;
+        return this;
     }
 
     public Audience audience() {
@@ -594,16 +601,22 @@ public class AActivity extends AObject {
         values.put(ActivityTable.UPDATED_DATE, updatedDate);
         if (id == 0) {
             values.put(ActivityTable.ACTIVITY_TYPE, type.id);
+            if (StringUtil.isEmpty(oid)) {
+                setOid(buildTempOid());
+            }
             if (timelinePosition.isEmpty()) {
-                setTempTimelinePosition();
+                setTimelinePosition(oid);
             }
         }
         if (id == 0 || (storedUpdatedDate <= SOME_TIME_AGO && updatedDate > SOME_TIME_AGO)) {
             insDate = MyLog.uniqueCurrentTimeMS();
             values.put(ActivityTable.INS_DATE, insDate);
         }
-        if (!timelinePosition.isEmpty()) {
-            values.put(ActivityTable.ACTIVITY_OID, timelinePosition.getPosition());
+        if (StringUtil.nonEmpty(oid)) {
+            values.put(ActivityTable.ACTIVITY_OID, oid);
+        }
+        if (timelinePosition.nonEmpty()) {
+            values.put(ActivityTable.TIMELINE_POSITION, timelinePosition.getPosition());
         }
         return values;
     }

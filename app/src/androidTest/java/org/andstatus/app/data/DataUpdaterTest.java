@@ -708,7 +708,7 @@ public class DataUpdaterTest {
         // Response from a server
         AActivity activity2 = AActivity.from(accountActor, ActivityType.CREATE);
         activity2.setId(activity1.getId());
-        activity2.setTimelinePosition("https://" + demoData.activityPubMainHost + "/activities/" + MyLog.uniqueCurrentTimeMS());
+        activity2.setOid("https://" + demoData.activityPubMainHost + "/activities/" + MyLog.uniqueCurrentTimeMS());
         activity2.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
 
         // No content in the response, just oid of the note

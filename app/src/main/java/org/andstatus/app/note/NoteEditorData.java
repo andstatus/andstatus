@@ -97,7 +97,7 @@ public class NoteEditorData implements IsEmpty {
                     DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)));
             activity.setId(MyQuery.oidToId(ma.getOrigin().myContext, OidEnum.ACTIVITY_OID,
                     activity.accountActor.origin.getId(),
-                    activity.getTimelinePosition().getPosition()));
+                    activity.getOid()));
             if (activity.getId() == 0) {
                 activity.setId(MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, noteId));
             }

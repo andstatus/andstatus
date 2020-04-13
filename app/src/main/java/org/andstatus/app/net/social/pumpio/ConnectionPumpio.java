@@ -363,7 +363,7 @@ public class ConnectionPumpio extends Connection {
             MyLog.d(this, "Pumpio activity has no id:" + jsoActivity.toString(2));
             return AActivity.EMPTY;
         }
-        activity.setTimelinePosition(oid);
+        activity.setOid(oid);
         activity.setUpdatedDate(dateFromJson(jsoActivity, "updated"));
         if (jsoActivity.has("actor")) {
             activity.setActor(actorFromJson(jsoActivity.getJSONObject("actor")));

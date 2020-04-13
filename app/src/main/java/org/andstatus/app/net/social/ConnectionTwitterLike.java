@@ -243,7 +243,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     private AActivity makeReblog(Actor accountActor, @NonNull AActivity mainActivity,
                                  AActivity rebloggedActivity) {
         AActivity reblog = AActivity.from(accountActor, ActivityType.ANNOUNCE);
-        reblog.setTimelinePosition(mainActivity.getNote().oid);
+        reblog.setOid(mainActivity.getNote().oid);
         reblog.setUpdatedDate(mainActivity.getUpdatedDate());
         reblog.setActor(mainActivity.getActor());
         reblog.setActivity(rebloggedActivity);
@@ -253,7 +253,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     @NonNull
     AActivity newLoadedUpdateActivity(String oid, long updatedDate) {
         return AActivity.newPartialNote(data.getAccountActor(), Actor.EMPTY, oid, updatedDate,
-                DownloadStatus.LOADED).setTimelinePosition(oid);
+                DownloadStatus.LOADED).setOid(oid);
     }
 
     AActivity rebloggedNoteFromJson(@NonNull JSONObject jso) throws ConnectionException {

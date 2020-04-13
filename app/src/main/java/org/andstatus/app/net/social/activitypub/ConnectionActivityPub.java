@@ -291,7 +291,8 @@ public class ConnectionActivityPub extends Connection {
     @NonNull
     private AActivity activityFromJson(ObjectOrId objectOrId) throws ConnectionException {
         if (objectOrId.id.isPresent()) {
-            return AActivity.newPartialNote(data.getAccountActor(), Actor.EMPTY, objectOrId.id.get());
+            return AActivity.newPartialNote(data.getAccountActor(), Actor.EMPTY, objectOrId.id.get())
+                .setOid(objectOrId.id.get());
         } else if (objectOrId.object.isPresent()) {
             return activityFromJson(objectOrId.object.get());
         } else {
@@ -305,7 +306,8 @@ public class ConnectionActivityPub extends Connection {
             MyLog.d(this, "Activity has no id:" + jsoActivity.toString(2));
             return AActivity.EMPTY;
         }
-        activity.setUpdatedDate(updatedOrCreatedDate(jsoActivity));
+        activity.setOid(oid)
+            .setUpdatedDate(updatedOrCreatedDate(jsoActivity));
 
         actorFromProperty(jsoActivity, "actor").onSuccess(activity::setActor);
 
@@ -379,8 +381,14 @@ public class ConnectionActivityPub extends Connection {
     private AActivity parseObjectOfActivity(AActivity activity, JSONObject objectOfActivity) throws ConnectionException {
         if (ApObjectType.PERSON.isTypeOf(objectOfActivity)) {
             activity.setObjActor(actorFromJson(objectOfActivity));
+            if (activity.getOid().isEmpty()) {
+                activity.setOid(activity.getObjActor().oid);
+            }
         } else if (ApObjectType.compatibleWith(objectOfActivity) == ApObjectType.NOTE) {
             noteFromJson(activity, objectOfActivity);
+            if (activity.getOid().isEmpty()) {
+                activity.setOid(activity.getNote().oid);
+            }
         }
         return activity;
     }

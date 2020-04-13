@@ -145,7 +145,7 @@ public class DemoNoteInserter {
 
     public AActivity buildActivity(@NonNull Actor actor, @NonNull ActivityType type, String noteOid) {
         AActivity activity = AActivity.from(accountActor, type);
-        activity.setTimelinePosition(
+        activity.setOid(
                 (StringUtil.isEmpty(noteOid) ?  MyLog.uniqueDateTimeFormatted() : noteOid)
                 + "-" + activity.type.name().toLowerCase());
         activity.setActor(actor);

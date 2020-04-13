@@ -73,7 +73,7 @@ public class ConnectionMastodonTest {
         int ind = 0;
         AActivity activity = timeline.get(ind);
         Note note = activity.getNote();
-        assertEquals("Timeline position", "22", activity.getTimelinePosition().getPosition());
+        assertEquals("Activity oid", "22", activity.getOid());
         assertEquals("Note Oid", "22", note.oid);
         assertEquals("Account unknown " + activity, true, MyContextHolder.get().accounts()
                 .fromActorOfSameOrigin(activity.accountActor).isValid());
@@ -148,7 +148,7 @@ public class ConnectionMastodonTest {
 
         int ind = 0;
         AActivity activity = timeline.get(ind);
-        assertEquals("Timeline position", "2667058", activity.getTimelinePosition().getPosition());
+        assertEquals("Activity oid", "2667058", activity.getOid());
         assertEquals("Note Oid", "4729037", activity.getNote().oid);
         assertEquals("Is not a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
         assertEquals("Is not an activity", AObjectType.ACTIVITY, activity.getObjectType());
@@ -161,7 +161,7 @@ public class ConnectionMastodonTest {
 
         ind = 2;
         activity = timeline.get(ind);
-        assertEquals("Timeline position", "2674022", activity.getTimelinePosition().getPosition());
+        assertEquals("Activity oid", "2674022", activity.getOid());
         assertEquals("Note Oid", "4729037", activity.getNote().oid);
         assertEquals("Is not an activity " + activity, AObjectType.ACTIVITY, activity.getObjectType());
         assertEquals("Is not LIKE " + activity, ActivityType.LIKE, activity.type);

@@ -82,7 +82,7 @@ public class NoteForAnyAccountTest {
         AActivity reblog1 = AActivity.from(accountActor, ActivityType.ANNOUNCE);
         reblog1.setActor(anotherMan);
         reblog1.setActivity(reblogged1);
-        reblog1.setTimelinePosition(MyLog.uniqueDateTimeFormatted());
+        reblog1.setOid(MyLog.uniqueDateTimeFormatted());
         reblog1.setUpdatedNow(0);
         mi.onActivity(reblog1);
 

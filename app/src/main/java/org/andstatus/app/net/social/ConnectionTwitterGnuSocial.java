@@ -240,7 +240,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         note.setInReplyTo(AActivity.EMPTY);
 
         AActivity activity = AActivity.from(activityIn.accountActor, ActivityType.LIKE);
-        activity.setTimelinePosition(activityIn.getTimelinePosition().getPosition());
+        activity.setOid(activityIn.getOid());
         activity.setActor(activityIn.getActor());
         activity.setUpdatedDate(activityIn.getUpdatedDate());
         activity.setActivity(favoritedActivity);
