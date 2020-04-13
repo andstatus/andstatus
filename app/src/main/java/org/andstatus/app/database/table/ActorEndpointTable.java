@@ -39,7 +39,7 @@ public class ActorEndpointTable {
                 + ACTOR_ID + " INTEGER NOT NULL,"
                 + ENDPOINT_TYPE + " INTEGER NOT NULL,"
                 + ENDPOINT_INDEX + " INTEGER NOT NULL DEFAULT 0,"
-                + ENDPOINT_URI + " INTEGER NOT NULL,"   // TODO: Change type to TEXT
+                + ENDPOINT_URI + " TEXT NOT NULL,"
                 + " CONSTRAINT pk_" + TABLE_NAME + " PRIMARY KEY (" + ACTOR_ID + " ASC, " + ENDPOINT_TYPE + " ASC, " + ENDPOINT_INDEX + " ASC)"
                 + ")");
     }

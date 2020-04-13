@@ -88,9 +88,7 @@ class DatabaseConverter {
                 } else {
                     MyLog.i(this, msgLog);
                 }
-            } catch (InstantiationException e) {
-                MyLog.e(this, "Error at version " + currentVersion, e);
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 MyLog.e(this, "Error at version " + currentVersion, e);
             }
         } while (oneStep != null && currentVersion < newVersion);

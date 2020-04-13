@@ -257,7 +257,7 @@ public class DataUpdaterTest {
         sa.addSelection(NoteTable.NOTE_ID + " = ?", Long.toString(noteId));
         String[] PROJECTION = new String[] {
                 ActivityTable.ACTIVITY_ID,
-                ActivityTable.ACT_ACTOR_ID,
+                ActivityTable.ACTOR_ID,
                 ActivityTable.SUBSCRIBED,
                 ActivityTable.INS_DATE,
                 NoteTable.NOTE_ID,

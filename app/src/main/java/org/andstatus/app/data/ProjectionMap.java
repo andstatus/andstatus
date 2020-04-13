@@ -42,8 +42,7 @@ public class ProjectionMap {
         TIMELINE.put(ActivityTable.ORIGIN_ID, ActivityTable.ORIGIN_ID);
         TIMELINE.put(ActivityTable.ACCOUNT_ID, ActivityTable.ACCOUNT_ID);
         TIMELINE.put(ActivityTable.ACTIVITY_TYPE, ActivityTable.ACTIVITY_TYPE);
-        TIMELINE.put(ActivityTable.ACT_ACTOR_ID, ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID +
-                " AS " + ActivityTable.ACT_ACTOR_ID);
+        TIMELINE.put(ActivityTable.ACTOR_ID, ActivityTable.ACTOR_ID);
         TIMELINE.put(ActivityTable.AUTHOR_ID, ActivityTable.AUTHOR_ID);
         TIMELINE.put(ActivityTable.NOTE_ID, ActivityTable.NOTE_ID);
         TIMELINE.put(ActivityTable.OBJ_ACTOR_ID, ActivityTable.OBJ_ACTOR_ID);

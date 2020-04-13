@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2017-2020 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.andstatus.app.database.table;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
+
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.data.DbUtils;
@@ -31,16 +32,17 @@ public final class ActivityTable implements BaseColumns {
     public static final String TABLE_NAME = "activity";
 
     public static final String ORIGIN_ID =  "activity_" + OriginTable.ORIGIN_ID;
+    public static final String TIMELINE_POSITION = "timeline_position";
     /** id in a Social Network {@link OriginTable} */
     public static final String ACTIVITY_OID = "activity_oid";
     public static final String ACCOUNT_ID = "account_id";
     /** ID of {@link ActivityType} */
     public static final String ACTIVITY_TYPE = "activity_type";
-    public static final String ACTOR_ID = "actor_id";   // TODO: rename to "activity_actor_id" and remove alias
+    public static final String ACTOR_ID = "activity_" + ActorTable.ACTOR_ID;
     /** Note as Object */
     public static final String NOTE_ID = "activity_" + NoteTable.NOTE_ID;
     /** Actor as Object */
-    public static final String OBJ_ACTOR_ID = "activity_" + ActorTable.ACTOR_ID;  // TODO: rename to "obj_actor_id"
+    public static final String OBJ_ACTOR_ID = "obj_" + ActorTable.ACTOR_ID;
     /** Inner Activity as Object */
     public static final String OBJ_ACTIVITY_ID = "obj_activity_id";
 
@@ -52,7 +54,6 @@ public final class ActivityTable implements BaseColumns {
     /** {@link #NOTIFIED_ACTOR_ID} should be notified of this action */
     public static final String NOTIFIED = "notified";
     public static final String NOTIFIED_ACTOR_ID = "notified_actor_id";
-    // TODO: Add "is mine" flag/ID... to easily make "SENT/ACTOR" timelines.
     /** {@link NotificationEventType}, it is not 0 if the notification is active */
     public static final String NEW_NOTIFICATION_EVENT = "new_notification_event";
 
@@ -63,8 +64,6 @@ public final class ActivityTable implements BaseColumns {
 
     // Aliases
     public static final String ACTIVITY_ID = "activity_id";
-    /** {@link #ACTOR_ID} with unique column name **/
-    public static final String ACT_ACTOR_ID = "act_actor_id";
     public static final String AUTHOR_ID = "author_id";
     public static final String LAST_UPDATE_ID = "last_update_id";
 
@@ -86,6 +85,7 @@ public final class ActivityTable implements BaseColumns {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + ORIGIN_ID + " INTEGER NOT NULL,"
+                + TIMELINE_POSITION + " TEXT NOT NULL,"
                 + ACTIVITY_OID + " TEXT NOT NULL,"
                 + ACCOUNT_ID + " INTEGER NOT NULL,"
                 + ACTIVITY_TYPE + " INTEGER NOT NULL,"
@@ -114,7 +114,7 @@ public final class ActivityTable implements BaseColumns {
                 + ")"
         );
 
-        DbUtils.execSQL(db, "CREATE INDEX idx_activity_actor ON " + TABLE_NAME + " ("
+        DbUtils.execSQL(db, "CREATE INDEX idx_activity_obj_actor ON " + TABLE_NAME + " ("
                 + OBJ_ACTOR_ID
                 + ")"
         );
