@@ -32,7 +32,6 @@ public final class ActivityTable implements BaseColumns {
     public static final String TABLE_NAME = "activity";
 
     public static final String ORIGIN_ID =  "activity_" + OriginTable.ORIGIN_ID;
-    public static final String TIMELINE_POSITION = "timeline_position";
     /** id in a Social Network {@link OriginTable} */
     public static final String ACTIVITY_OID = "activity_oid";
     public static final String ACCOUNT_ID = "account_id";
@@ -85,7 +84,6 @@ public final class ActivityTable implements BaseColumns {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + ORIGIN_ID + " INTEGER NOT NULL,"
-                + TIMELINE_POSITION + " TEXT NOT NULL,"
                 + ACTIVITY_OID + " TEXT NOT NULL,"
                 + ACCOUNT_ID + " INTEGER NOT NULL,"
                 + ACTIVITY_TYPE + " INTEGER NOT NULL,"

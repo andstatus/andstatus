@@ -48,7 +48,7 @@ class Convert51 extends ConvertOneStep {
         sql = "ALTER TABLE activity RENAME TO oldactivity";
         DbUtils.execSQL(db, sql);
 
-        sql = "CREATE TABLE activity (_id INTEGER PRIMARY KEY AUTOINCREMENT,activity_origin_id INTEGER NOT NULL,timeline_position TEXT NOT NULL,activity_oid TEXT NOT NULL,account_id INTEGER NOT NULL,activity_type INTEGER NOT NULL,activity_actor_id INTEGER NOT NULL,activity_note_id INTEGER NOT NULL,obj_actor_id INTEGER NOT NULL,obj_activity_id INTEGER NOT NULL,subscribed INTEGER NOT NULL DEFAULT 0,interacted INTEGER NOT NULL DEFAULT 0,interaction_event INTEGER NOT NULL DEFAULT 0,notified INTEGER NOT NULL DEFAULT 0,notified_actor_id INTEGER NOT NULL DEFAULT 0,new_notification_event INTEGER NOT NULL DEFAULT 0,activity_ins_date INTEGER NOT NULL,activity_updated_date INTEGER NOT NULL DEFAULT 0)";
+        sql = "CREATE TABLE activity (_id INTEGER PRIMARY KEY AUTOINCREMENT,activity_origin_id INTEGER NOT NULL,activity_oid TEXT NOT NULL,account_id INTEGER NOT NULL,activity_type INTEGER NOT NULL,activity_actor_id INTEGER NOT NULL,activity_note_id INTEGER NOT NULL,obj_actor_id INTEGER NOT NULL,obj_activity_id INTEGER NOT NULL,subscribed INTEGER NOT NULL DEFAULT 0,interacted INTEGER NOT NULL DEFAULT 0,interaction_event INTEGER NOT NULL DEFAULT 0,notified INTEGER NOT NULL DEFAULT 0,notified_actor_id INTEGER NOT NULL DEFAULT 0,new_notification_event INTEGER NOT NULL DEFAULT 0,activity_ins_date INTEGER NOT NULL,activity_updated_date INTEGER NOT NULL DEFAULT 0)";
         DbUtils.execSQL(db, sql);
         sql = "CREATE UNIQUE INDEX idx_activity_origin ON activity (activity_origin_id, activity_oid)";
         DbUtils.execSQL(db, sql);
@@ -76,11 +76,11 @@ class Convert51 extends ConvertOneStep {
         DbUtils.execSQL(db, sql);
 
         sql = "INSERT INTO activity (" +
-                "_id,activity_origin_id,timeline_position,activity_oid," +
+                "_id,activity_origin_id,activity_oid," +
                 "account_id,activity_type,activity_actor_id,activity_note_id,obj_actor_id,     obj_activity_id," +
                 "subscribed,interacted,interaction_event,notified,notified_actor_id,new_notification_event," +
                 "activity_ins_date,activity_updated_date) SELECT " +
-                "_id,activity_origin_id,activity_oid,     activity_oid," +
+                "_id,activity_origin_id,activity_oid," +
                 "account_id,activity_type,actor_id,         activity_note_id,activity_actor_id,obj_activity_id," +
                 "subscribed,interacted,interaction_event,notified,notified_actor_id,new_notification_event," +
                 "activity_ins_date,activity_updated_date" +

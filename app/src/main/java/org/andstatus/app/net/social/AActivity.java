@@ -399,7 +399,6 @@ public class AActivity extends AObject {
 
         activity.id = DbUtils.getLong(cursor, ActivityTable._ID);
         activity.setOid(DbUtils.getString(cursor, ActivityTable.ACTIVITY_OID));
-        activity.setTimelinePosition(DbUtils.getString(cursor, ActivityTable.TIMELINE_POSITION));
         activity.actor = Actor.fromId(activity.accountActor.origin,
                 DbUtils.getLong(cursor, ActivityTable.ACTOR_ID));
         activity.note = Note.fromOriginAndOid(activity.accountActor.origin, "", DownloadStatus.UNKNOWN);
@@ -617,9 +616,6 @@ public class AActivity extends AObject {
         }
         if (StringUtil.nonEmpty(oid)) {
             values.put(ActivityTable.ACTIVITY_OID, oid);
-        }
-        if (timelinePosition.nonEmpty()) {
-            values.put(ActivityTable.TIMELINE_POSITION, timelinePosition.getPosition());
         }
         return values;
     }
