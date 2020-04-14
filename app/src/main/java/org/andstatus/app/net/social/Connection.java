@@ -33,6 +33,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.IsEmpty;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtil;
@@ -492,7 +493,7 @@ public abstract class Connection implements IsEmpty {
     public long dateFromJson(JSONObject jso, String fieldName) {
         long date = 0;
         if (jso != null && jso.has(fieldName)) {
-            String updated = jso.optString(fieldName);
+            String updated = JsonUtils.optString(jso, fieldName);
             if (updated.length() > 0) {
                 date = parseDate(updated);
             }

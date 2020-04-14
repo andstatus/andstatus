@@ -34,6 +34,7 @@ import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.Note;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
@@ -176,9 +177,9 @@ class ActivitySender {
     private boolean contentNotPosted(ActivityType activityType, JSONObject jsActivity) {
         JSONObject objPosted = jsActivity.optJSONObject("object");
         return ActivityType.CREATE.equals(activityType) && objPosted != null &&
-            (StringUtil.nonEmpty(note.getContent()) && StringUtil.isEmpty(objPosted.optString(CONTENT_PROPERTY))
-                || StringUtil.nonEmpty(note.getName()) && StringUtil.isEmpty(objPosted.optString(NAME_PROPERTY))
-                || StringUtil.nonEmpty(note.getSummary()) && StringUtil.isEmpty(objPosted.optString(SUMMARY_PROPERTY))
+            (StringUtil.nonEmpty(note.getContent()) && StringUtil.isEmpty(JsonUtils.optString(objPosted, CONTENT_PROPERTY))
+                || StringUtil.nonEmpty(note.getName()) && StringUtil.isEmpty(JsonUtils.optString(objPosted, NAME_PROPERTY))
+                || StringUtil.nonEmpty(note.getSummary()) && StringUtil.isEmpty(JsonUtils.optString(objPosted, SUMMARY_PROPERTY))
             );
     }
 

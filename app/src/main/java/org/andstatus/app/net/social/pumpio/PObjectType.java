@@ -16,6 +16,7 @@
 
 package org.andstatus.app.net.social.pumpio;
 
+import org.andstatus.app.util.JsonUtils;
 import org.json.JSONObject;
 
 /** @see <a href="https://www.w3.org/TR/activitystreams-vocabulary/#activity-types">Object Types</a>
@@ -63,7 +64,7 @@ enum PObjectType {
     public boolean isTypeOf(JSONObject jso) {
         boolean is = false;
         if (jso != null) {
-            is = id().equalsIgnoreCase(jso.optString("objectType"));
+            is = id().equalsIgnoreCase(JsonUtils.optString(jso, "objectType"));
         }
         return is;
     }

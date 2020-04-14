@@ -148,16 +148,16 @@ public class ConnectionPumpio extends Connection {
             default:
                 return Actor.EMPTY;
         }
-        String oid = jso.optString("id");
+        String oid = JsonUtils.optString(jso, "id");
         Actor actor = Actor.fromTwoIds(data.getOrigin(), groupType, 0, oid);
-        String username = jso.optString("preferredUsername");
+        String username = JsonUtils.optString(jso, "preferredUsername");
         actor.setUsername(StringUtil.isEmpty(username) ? actorOidToUsername(oid) : username);
-        actor.setRealName(jso.optString(NAME_PROPERTY));
+        actor.setRealName(JsonUtils.optString(jso, NAME_PROPERTY));
         actor.setAvatarUrl(JsonUtils.optStringInside(jso, "image", "url"));
         actor.location = JsonUtils.optStringInside(jso, "location", NAME_PROPERTY);
-        actor.setSummary(jso.optString("summary"));
-        actor.setHomepage(jso.optString("url"));
-        actor.setProfileUrl(jso.optString("url"));
+        actor.setSummary(JsonUtils.optString(jso, "summary"));
+        actor.setHomepage(JsonUtils.optString(jso, "url"));
+        actor.setProfileUrl(JsonUtils.optString(jso, "url"));
         actor.setUpdatedDate(dateFromJson(jso, "updated"));
         JSONObject pumpIo = jso.optJSONObject("pump_io");
         if (pumpIo != null && !pumpIo.isNull("followed")) {
@@ -343,7 +343,7 @@ public class ConnectionPumpio extends Connection {
     AActivity activityFromJson(JSONObject jsoActivity) throws ConnectionException {
         if (jsoActivity == null) return AActivity.EMPTY;
 
-        final PActivityType verb = PActivityType.load(jsoActivity.optString("verb"));
+        final PActivityType verb = PActivityType.load(JsonUtils.optString(jsoActivity, "verb"));
         AActivity activity = AActivity.from(data.getAccountActor(),
                 verb == PActivityType.UNKNOWN ? ActivityType.UPDATE : verb.activityType);
         try {
@@ -358,7 +358,7 @@ public class ConnectionPumpio extends Connection {
     }
 
     private AActivity parseActivity(AActivity activity, JSONObject jsoActivity) throws JSONException, ConnectionException {
-        String oid = jsoActivity.optString("id");
+        String oid = JsonUtils.optString(jsoActivity, "id");
         if (StringUtil.isEmpty(oid)) {
             MyLog.d(this, "Pumpio activity has no id:" + jsoActivity.toString(2));
             return AActivity.EMPTY;
@@ -426,7 +426,7 @@ public class ConnectionPumpio extends Connection {
 
     private void noteFromJsonComment(AActivity parentActivity, JSONObject jso) throws ConnectionException {
         try {
-            String oid = jso.optString("id");
+            String oid = JsonUtils.optString(jso, "id");
             if (StringUtil.isEmpty(oid)) {
                 MyLog.d(TAG, "Pumpio object has no id:" + jso.toString(2));
                 return;
@@ -459,11 +459,11 @@ public class ConnectionPumpio extends Connection {
             }
 
             Note note =  activity.getNote();
-            note.setName(jso.optString(NAME_PROPERTY));
-            note.setContentPosted(jso.optString(CONTENT_PROPERTY));
+            note.setName(JsonUtils.optString(jso, NAME_PROPERTY));
+            note.setContentPosted(JsonUtils.optString(jso, CONTENT_PROPERTY));
 
             setVia(note, jso);
-            note.url = jso.optString("url");
+            note.url = JsonUtils.optString(jso, "url");
 
             // If the Msg is a Reply to other note
             if (jso.has("inReplyTo")) {

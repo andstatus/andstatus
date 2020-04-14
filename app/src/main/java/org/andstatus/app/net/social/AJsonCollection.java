@@ -19,6 +19,7 @@ package org.andstatus.app.net.social;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.util.IsEmpty;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.ObjectOrId;
 import org.andstatus.app.util.StringUtil;
 import org.json.JSONException;
@@ -104,7 +105,7 @@ public class AJsonCollection implements IsEmpty {
     }
 
     private static Type calcType(@NonNull JSONObject jso) {
-        switch (jso.optString("type")) {
+        switch (JsonUtils.optString(jso, "type")) {
             case "Collection":
                 return jso.has("items") ? Type.COLLECTION : Type.PAGED_COLLECTION;
             case "OrderedCollection":

@@ -83,11 +83,11 @@ class Convert47 extends ConvertOneStep {
                 .flatMap(jsonOut -> {
                     AccountData accountData = AccountData.fromJson(myContext, jsonOut, false);
                     MyLog.v(TAG, method + "; " + accountData.toJsonString());
-                    String accountName = jsonOut.optString(KEY_ACCOUNT_NAME);
+                    String accountName = JsonUtils.optString(jsonOut, KEY_ACCOUNT_NAME);
 
                     return (accountName.equals(accountIn.name)
                             ? Try.success(accountIn)
-                            : AccountUtils.addEmptyAccount(am, accountName, jsonOut.optString(KEY_PASSWORD)))
+                            : AccountUtils.addEmptyAccount(am, accountName, JsonUtils.optString(jsonOut,KEY_PASSWORD)))
                         .flatMap(accountOut ->
                                 accountData.saveIfChanged(accountOut)
                                 .map(b -> accountOut));
@@ -124,11 +124,11 @@ class Convert47 extends ConvertOneStep {
 
     static Try<JSONObject> convertJson16(MyContext myContext, JSONObject jsonIn, boolean isPersistent) {
         final int versionTo = 48;
-        String originName = jsonIn.optString(Origin.KEY_ORIGIN_NAME);
+        String originName = JsonUtils.optString(jsonIn, Origin.KEY_ORIGIN_NAME);
         Origin origin = myContext.origins().fromName(originName);
         if (origin.isEmpty()) return Try.failure(new NoSuchElementException("Origin wan't found for " + jsonIn));
 
-        String oldName = jsonIn.optString(KEY_USERNAME).trim();
+        String oldName = JsonUtils.optString(jsonIn, KEY_USERNAME).trim();
         String newUserName = oldName;
         String newUniqueName = "";
         String host = "";

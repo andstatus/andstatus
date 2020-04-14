@@ -17,6 +17,7 @@
 package org.andstatus.app.net.social.activitypub;
 
 import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.util.JsonUtils;
 import org.json.JSONObject;
 
 import static org.andstatus.app.net.social.ActivityType.EMPTY;
@@ -32,7 +33,7 @@ enum ApObjectType {
             if (jso != null) {
                 if (jso.has("type")) {
                     is = super.isTypeOf(jso) ||
-                            (ActivityType.from(jso.optString("type")) != EMPTY && jso.has("object"));
+                            (ActivityType.from(JsonUtils.optString(jso, "type")) != EMPTY && jso.has("object"));
                 } else {
                     is = jso.has("object");
                 }
@@ -69,7 +70,7 @@ enum ApObjectType {
     public boolean isTypeOf(JSONObject jso) {
         boolean is = false;
         if (jso != null) {
-            is = id().equalsIgnoreCase(jso.optString("type"));
+            is = id().equalsIgnoreCase(JsonUtils.optString(jso, "type"));
         }
         return is;
     }

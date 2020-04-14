@@ -32,6 +32,7 @@ import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.Note;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
@@ -193,8 +194,8 @@ class ActivitySender {
     private boolean contentNotPosted(PActivityType activityType, JSONObject jsActivity) {
         JSONObject objPosted = jsActivity.optJSONObject("object");
         return PActivityType.POST.equals(activityType) && objPosted != null
-                && (StringUtil.nonEmpty(content) && StringUtil.isEmpty(objPosted.optString(CONTENT_PROPERTY))
-                    || StringUtil.nonEmpty(name) && StringUtil.isEmpty(objPosted.optString(NAME_PROPERTY)));
+                && (StringUtil.nonEmpty(content) && StringUtil.isEmpty(JsonUtils.optString(objPosted, CONTENT_PROPERTY))
+                    || StringUtil.nonEmpty(name) && StringUtil.isEmpty(JsonUtils.optString(objPosted, NAME_PROPERTY)));
     }
 
     private JSONObject newActivityOfThisAccount(PActivityType activityType) throws JSONException, ConnectionException {

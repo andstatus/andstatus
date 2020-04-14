@@ -120,27 +120,27 @@ public class ConnectionActivityPub extends Connection {
 
     @NonNull
     private Actor actorFromCollectionTypeJson(JSONObject jso) {
-        Actor actor = Actor.fromTwoIds(data.getOrigin(), GroupType.GENERIC, 0, jso.optString("id"));
+        Actor actor = Actor.fromTwoIds(data.getOrigin(), GroupType.GENERIC, 0, JsonUtils.optString(jso, "id"));
         return actor.build();
     }
 
     @NonNull
     private Actor actorFromPersonTypeJson(JSONObject jso) {
-        Actor actor = actorFromOid(jso.optString("id"));
-        actor.setUsername(jso.optString("preferredUsername"));
-        actor.setRealName(jso.optString(NAME_PROPERTY));
+        Actor actor = actorFromOid(JsonUtils.optString(jso, "id"));
+        actor.setUsername(JsonUtils.optString(jso, "preferredUsername"));
+        actor.setRealName(JsonUtils.optString(jso, NAME_PROPERTY));
         actor.setAvatarUrl(JsonUtils.optStringInside(jso, "icon", "url"));
         actor.location = JsonUtils.optStringInside(jso, "location", NAME_PROPERTY);
-        actor.setSummary(jso.optString("summary"));
-        actor.setHomepage(jso.optString("url"));
-        actor.setProfileUrl(jso.optString("url"));
+        actor.setSummary(JsonUtils.optString(jso, "summary"));
+        actor.setHomepage(JsonUtils.optString(jso, "url"));
+        actor.setProfileUrl(JsonUtils.optString(jso, "url"));
         actor.setUpdatedDate(dateFromJson(jso, "updated"));
         actor.endpoints
-                .add(ActorEndpointType.API_PROFILE, jso.optString("id"))
-                .add(ActorEndpointType.API_INBOX, jso.optString("inbox"))
-                .add(ActorEndpointType.API_OUTBOX, jso.optString("outbox"))
-                .add(ActorEndpointType.API_FOLLOWING, jso.optString("following"))
-                .add(ActorEndpointType.API_FOLLOWERS, jso.optString("followers"))
+                .add(ActorEndpointType.API_PROFILE, JsonUtils.optString(jso, "id"))
+                .add(ActorEndpointType.API_INBOX, JsonUtils.optString(jso, "inbox"))
+                .add(ActorEndpointType.API_OUTBOX, JsonUtils.optString(jso, "outbox"))
+                .add(ActorEndpointType.API_FOLLOWING, JsonUtils.optString(jso, "following"))
+                .add(ActorEndpointType.API_FOLLOWERS, JsonUtils.optString(jso, "followers"))
                 .add(ActorEndpointType.BANNER, JsonUtils.optStringInside(jso, "image", "url"))
                 .add(ActorEndpointType.API_SHARED_INBOX, JsonUtils.optStringInside(jso, "endpoints", "sharedInbox"))
                 .add(ActorEndpointType.API_UPLOAD_MEDIA, JsonUtils.optStringInside(jso, "endpoints", "uploadMedia"));
@@ -268,7 +268,7 @@ public class ConnectionActivityPub extends Connection {
     AActivity activityFromJson(JSONObject jsoActivity) throws ConnectionException {
         if (jsoActivity == null) return AActivity.EMPTY;
 
-        final ActivityType activityType = ActivityType.from(jsoActivity.optString("type"));
+        final ActivityType activityType = ActivityType.from(JsonUtils.optString(jsoActivity, "type"));
         AActivity activity = AActivity.from(data.getAccountActor(),
                 activityType == ActivityType.EMPTY ? ActivityType.UPDATE : activityType);
         try {
@@ -301,7 +301,7 @@ public class ConnectionActivityPub extends Connection {
     }
 
     private AActivity parseActivity(AActivity activity, JSONObject jsoActivity) throws JSONException, ConnectionException {
-        String oid = jsoActivity.optString("id");
+        String oid = JsonUtils.optString(jsoActivity, "id");
         if (StringUtil.isEmpty(oid)) {
             MyLog.d(this, "Activity has no id:" + jsoActivity.toString(2));
             return AActivity.EMPTY;
@@ -395,7 +395,7 @@ public class ConnectionActivityPub extends Connection {
 
     private void noteFromJson(AActivity parentActivity, JSONObject jso) throws ConnectionException {
         try {
-            String oid = jso.optString("id");
+            String oid = JsonUtils.optString(jso, "id");
             if (StringUtil.isEmpty(oid)) {
                 MyLog.d(TAG, "ActivityPub object has no id:" + jso.toString(2));
                 return;
@@ -429,12 +429,12 @@ public class ConnectionActivityPub extends Connection {
             }
 
             Note note =  activity.getNote();
-            note.setName(jso.optString(NAME_PROPERTY));
-            note.setSummary(jso.optString(SUMMARY_PROPERTY));
-            note.setContentPosted(jso.optString(CONTENT_PROPERTY));
+            note.setName(JsonUtils.optString(jso, NAME_PROPERTY));
+            note.setSummary(JsonUtils.optString(jso, SUMMARY_PROPERTY));
+            note.setContentPosted(JsonUtils.optString(jso, CONTENT_PROPERTY));
 
-            note.setConversationOid(StringUtil.optNotEmpty(jso.optString("conversation"))
-                    .orElseGet(() -> jso.optString("context")));
+            note.setConversationOid(StringUtil.optNotEmpty(JsonUtils.optString(jso, "conversation"))
+                    .orElseGet(() -> JsonUtils.optString(jso, "context")));
 
             setAudience(activity, jso);
 
@@ -468,13 +468,13 @@ public class ConnectionActivityPub extends Connection {
     private static Attachment attachmentFromJson(JSONObject jso) {
         return ObjectOrId.of(jso, "url")
                 .mapAll(ConnectionActivityPub::attachmentFromUrlObject,
-                        url -> Attachment.fromUriAndMimeType(url, jso.optString("mediaType")))
+                        url -> Attachment.fromUriAndMimeType(url, JsonUtils.optString(jso, "mediaType")))
                 .stream().findFirst().orElse(Attachment.EMPTY);
     }
 
     @NonNull
     private static Attachment attachmentFromUrlObject(JSONObject jso) {
-        return Attachment.fromUriAndMimeType(jso.optString("href"), jso.optString("mediaType"));
+        return Attachment.fromUriAndMimeType(JsonUtils.optString(jso, "href"), JsonUtils.optString(jso, "mediaType"));
     }
 
     @Override

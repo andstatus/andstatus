@@ -26,6 +26,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.I18n;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtil;
@@ -213,7 +214,7 @@ public class HttpReadResult {
                 jso = new JSONObject();
             } else {
                 jso = new JSONObject(strJson);
-                String error = jso.optString("error");
+                String error = JsonUtils.optString(jso, "error");
                 if ("Could not authenticate you.".equals(error)) {
                     appendToLog("error:" + error);
                     return Try.failure(new ConnectionException(toString()));
@@ -275,7 +276,7 @@ public class HttpReadResult {
         }
         try {
             JSONObject jsonError = new JSONObject(strResponse);
-            error = jsonError.optString("error", error);
+            error = JsonUtils.optString(jsonError,"error", error);
             if (statusCode == StatusCode.UNKNOWN && error.contains("not found")) {
                 statusCode = StatusCode.NOT_FOUND;
             }

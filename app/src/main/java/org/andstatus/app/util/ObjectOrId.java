@@ -54,7 +54,7 @@ public class ObjectOrId implements IsEmpty {
                 : Optional.of(jsonArray);
         id = object.isPresent() || jsonArray != null
                 ? Optional.empty()
-                : StringUtil.optNotEmpty(parentObject.optString(propertyName));
+                : StringUtil.optNotEmpty(JsonUtils.optString(parentObject, propertyName));
         error = Optional.empty();
     }
 

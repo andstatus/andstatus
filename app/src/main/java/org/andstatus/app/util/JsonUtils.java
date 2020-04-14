@@ -16,13 +16,14 @@
 
 package org.andstatus.app.util;
 
+import androidx.annotation.NonNull;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 /**
@@ -36,14 +37,13 @@ public class JsonUtils {
 
     @NonNull
     public static String optStringInside(JSONObject jso, String parentTag, String childTag) {
-        String str = "";
         if (jso.has(parentTag)) {
-            JSONObject image = jso.optJSONObject(parentTag);
-            if (image != null) {
-                str = image.optString(childTag);
+            JSONObject innerJso = jso.optJSONObject(parentTag);
+            if (innerJso != null) {
+                return optString(innerJso, childTag);
             }
         }
-        return str;
+        return "";
     }
 
     /** Creates new shallow copy without the keyToRemove */
@@ -115,5 +115,21 @@ public class JsonUtils {
             MyLog.e(JsonUtils.class, "Failed toString of " + data, e);
             return "";
         }
+    }
+
+    /** Return the value mapped by the given key, or "" if not present.
+     * See https://stackoverflow.com/a/23377941/297710 */
+    @NonNull
+    public static String optString(@NonNull JSONObject json, @NonNull String key) {
+        return optString(json, key, "");
+    }
+
+    /** Return the value mapped by the given key, or fallback if not present */
+    public static String optString(@NonNull JSONObject json, @NonNull String key, String fallback) {
+        // http://code.google.com/p/android/issues/detail?id=13830
+        if (json.isNull(key))
+            return fallback;
+        else
+            return json.optString(key, fallback);
     }
 }

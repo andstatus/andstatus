@@ -63,7 +63,7 @@ public class UriUtils {
         JSONObject jso = path.length == 2 ? jsoIn.optJSONObject(path[0]) : jsoIn;
         String urlTag = path.length == 2 ? path[1] : pathIn;
         if (jso != null && !StringUtil.isEmpty(urlTag) && jso.has(urlTag)) {
-            return fromString(jso.optString(urlTag));
+            return fromString(JsonUtils.optString(jso, urlTag));
         }
         return Uri.EMPTY;
     }

@@ -354,7 +354,10 @@ public class AActivity extends AObject {
                 + (isEmpty() ? "(empty), " : "")
                 + type
                 + ", id:" + id
-                + ", timelinePosition:" + timelinePosition
+                + ", oid:" + oid
+                + (timelinePosition.getPosition().equals(oid)
+                    ? ""
+                    : ", pos:" + timelinePosition)
                 + ", updated:" + MyLog.debugFormatOfDate(updatedDate)
                 + ", me:" + (accountActor.isEmpty() ? "EMPTY" : accountActor.oid)
                 + (subscribedByMe.known ? (subscribedByMe == TriState.TRUE ? ", subscribed" : ", NOT subscribed") : "" )
@@ -395,7 +398,8 @@ public class AActivity extends AObject {
                 ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE)));
 
         activity.id = DbUtils.getLong(cursor, ActivityTable._ID);
-        activity.timelinePosition = TimelinePosition.of(DbUtils.getString(cursor, ActivityTable.ACTIVITY_OID));
+        activity.setOid(DbUtils.getString(cursor, ActivityTable.ACTIVITY_OID));
+        activity.setTimelinePosition(DbUtils.getString(cursor, ActivityTable.TIMELINE_POSITION));
         activity.actor = Actor.fromId(activity.accountActor.origin,
                 DbUtils.getLong(cursor, ActivityTable.ACTOR_ID));
         activity.note = Note.fromOriginAndOid(activity.accountActor.origin, "", DownloadStatus.UNKNOWN);
@@ -439,7 +443,7 @@ public class AActivity extends AObject {
 
     private boolean wontSave(MyContext myContext) {
         if (isEmpty() || (type.equals(ActivityType.UPDATE) && getObjectType().equals(AObjectType.ACTOR))
-                || (timelinePosition.isEmpty() && getId() != 0)) {
+                || (StringUtil.isEmpty(oid) && getId() != 0)) {
             MyLog.v(this, () -> "Won't save " + this);
             return true;
         }
@@ -486,7 +490,7 @@ public class AActivity extends AObject {
                 default:
                     break;
             }
-            if (timelinePosition.isTemp()) {
+            if (StringUtil.isTemp(oid)) {
                 MyLog.v(this, () -> "Skipped as temp oid " + this);
                 return true;
             }
@@ -495,9 +499,8 @@ public class AActivity extends AObject {
     }
 
     private void findExisting(MyContext myContext) {
-        if (!timelinePosition.isEmpty()) {
-            id = MyQuery.oidToId(myContext, OidEnum.ACTIVITY_OID, accountActor.origin.getId(),
-                    timelinePosition.getPosition());
+        if (StringUtil.nonEmpty(oid)) {
+            id = MyQuery.oidToId(myContext, OidEnum.ACTIVITY_OID, accountActor.origin.getId(), oid);
         }
         if (id != 0) {
             return;

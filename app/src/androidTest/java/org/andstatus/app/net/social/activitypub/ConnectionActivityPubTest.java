@@ -54,6 +54,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringStartsWith.startsWith;
+import static org.hamcrest.text.IsEmptyString.emptyString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -188,6 +189,7 @@ public class ConnectionActivityPubTest {
         Actor author = activity8.getAuthor();
         assertEquals("Author's oid " + activity8, pawooActorOid, author.oid);
         assertEquals("Actor is author", author, activity8.getActor());
+        assertThat("Note summary should be absent " + note8, note8.getSummary(), is(emptyString()));
         assertThat("Note body " + note8, note8.getContent(),
                 containsString("how two attached images may look like"));
         assertEquals("Note updated at " + TestSuite.utcTime(note8.getUpdatedDate()),

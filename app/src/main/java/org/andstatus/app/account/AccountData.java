@@ -218,7 +218,7 @@ public class AccountData implements Parcelable, AccountDataWriter, IdentifiableI
 
     @Override
     public String getDataString(String key, String defValue) {
-        return data.optString(key, defValue);
+        return JsonUtils.optString(data, key, defValue);
     }
 
     @Override

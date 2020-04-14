@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpReadResult;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtil;
@@ -267,10 +268,10 @@ public abstract class ConnectionTwitterLike extends Connection {
         }
         AActivity activity;
         try {
-            String oid = jso.optString("id_str");
+            String oid = JsonUtils.optString(jso, "id_str");
             if (StringUtil.isEmpty(oid)) {
                 // This is for the Status.net
-                oid = jso.optString("id");
+                oid = JsonUtils.optString(jso, "id");
             }
             activity = newLoadedUpdateActivity(oid, dateFromJson(jso, "created_at"));
 
@@ -346,9 +347,9 @@ public abstract class ConnectionTwitterLike extends Connection {
             // This is in the search results,
             // see https://dev.twitter.com/docs/api/1/get/search
             String senderName = jso.getString("from_user");
-            String senderOid = jso.optString("from_user_id_str");
+            String senderOid = JsonUtils.optString(jso, "from_user_id_str");
             if (SharedPreferencesUtil.isEmpty(senderOid)) {
-                senderOid = jso.optString("from_user_id");
+                senderOid = JsonUtils.optString(jso, "from_user_id");
             }
             if (!SharedPreferencesUtil.isEmpty(senderOid)) {
                 author = Actor.fromOid(data.getOrigin(), senderOid);
@@ -386,31 +387,31 @@ public abstract class ConnectionTwitterLike extends Connection {
 
         String oid = "";
         if (jso.has("id_str")) {
-            oid = jso.optString("id_str");
+            oid = JsonUtils.optString(jso, "id_str");
         } else if (jso.has("id")) {
-            oid = jso.optString("id");
+            oid = JsonUtils.optString(jso, "id");
         }
         if (SharedPreferencesUtil.isEmpty(oid)) {
             oid = "";
         }
         String username = "";
         if (jso.has("screen_name")) {
-            username = jso.optString("screen_name");
+            username = JsonUtils.optString(jso, "screen_name");
             if (SharedPreferencesUtil.isEmpty(username)) {
                 username = "";
             }
         }
         Actor actor = Actor.fromOid(data.getOrigin(), oid);
         actor.setUsername(username);
-        actor.setRealName(jso.optString("name"));
+        actor.setRealName(JsonUtils.optString(jso, "name"));
         if (!SharedPreferencesUtil.isEmpty(actor.getRealName())) {
             actor.setProfileUrlToOriginUrl(data.getOriginUrl());
         }
-        actor.location = jso.optString("location");
+        actor.location = JsonUtils.optString(jso, "location");
         actor.setAvatarUri(UriUtils.fromAlternativeTags(jso,"profile_image_url_https","profile_image_url"));
         actor.endpoints.add(ActorEndpointType.BANNER, UriUtils.fromJson(jso, "profile_banner_url"));
-        actor.setSummary(jso.optString("description"));
-        actor.setHomepage(jso.optString("url"));
+        actor.setSummary(JsonUtils.optString(jso, "description"));
+        actor.setHomepage(JsonUtils.optString(jso, "url"));
         // Hack for twitter.com
         actor.setProfileUrl(http.pathToUrlString("/").replace("/api.", "/") + username);
         actor.notesCount = jso.optLong("statuses_count");

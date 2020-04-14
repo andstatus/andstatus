@@ -28,6 +28,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.DatabaseCreator;
 import org.andstatus.app.util.DocumentFileUtils;
 import org.andstatus.app.util.FileDescriptorUtils;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.json.JSONException;
@@ -108,7 +109,7 @@ public class MyBackupDescriptor {
         createdDate = jso.optLong(KEY_CREATED_DATE, createdDate);
         saved = createdDate != 0;
         applicationVersionCode = jso.optInt(KEY_APPLICATION_VERSION_CODE, applicationVersionCode);
-        applicationVersionName = jso.optString(KEY_APPLICATION_VERSION_NAME, applicationVersionName);
+        applicationVersionName = JsonUtils.optString(jso, KEY_APPLICATION_VERSION_NAME, applicationVersionName);
         accountsCount = jso.optLong(KEY_ACCOUNTS_COUNT, accountsCount);
         if (backupSchemaVersion != BACKUP_SCHEMA_VERSION) {
             try {

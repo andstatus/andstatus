@@ -44,6 +44,7 @@ import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
 import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
@@ -359,9 +360,10 @@ public class ConnectionPumpioTest {
                 .setName(name2).setContentPosted(content2);
         Try<AActivity> tryActivity = connection.updateNote(note2, "", Attachments.EMPTY);
         jsoActivity = mock.getHttpMock().getPostedJSONObject();
-        assertTrue("Object present " + jsoActivity, jsoActivity.has("object"));
+        assertTrue("Object present " + jsoActivity +
+                "\nResults: " + mock.getHttpMock().getResults(), jsoActivity.has("object"));
         obj = jsoActivity.getJSONObject("object");
-        assertEquals("Note name", name2, MyHtml.htmlToPlainText(obj.optString("displayName")));
+        assertEquals("Note name", name2, MyHtml.htmlToPlainText(JsonUtils.optString(obj, "displayName")));
         assertEquals("Note content", content2, MyHtml.htmlToPlainText(obj.getString("content")));
         assertEquals("Note without reply is a note", PObjectType.NOTE.id(), obj.getString("objectType"));
 

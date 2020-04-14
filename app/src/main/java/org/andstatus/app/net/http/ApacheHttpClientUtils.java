@@ -22,6 +22,7 @@ import android.net.Uri;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.FileUtils;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONObject;
@@ -59,7 +60,7 @@ class ApacheHttpClientUtils {
         ContentType textContentType = ContentType.create(HTTP.PLAIN_TEXT_TYPE, HTTP.UTF_8);
         while (iterator.hasNext()) {
             String name = iterator.next();
-            String value = formParams.optString(name);
+            String value = JsonUtils.optString(formParams, name);
             if (HttpConnection.KEY_MEDIA_PART_NAME.equals(name)) {
                 mediaPartName = value;
             } else if (HttpConnection.KEY_MEDIA_PART_URI.equals(name)) {
@@ -98,7 +99,7 @@ class ApacheHttpClientUtils {
         Iterator<String> iterator =  jso.keys();
         while (iterator.hasNext()) {
             String name = iterator.next();
-            String value = jso.optString(name);
+            String value = JsonUtils.optString(jso, name);
             if (!StringUtil.isEmpty(value)) {
                 formParams.add(new BasicNameValuePair(name, value));
             }

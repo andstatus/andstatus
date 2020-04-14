@@ -26,6 +26,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.origin.OriginConfig;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtil;
@@ -192,15 +193,15 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         final String method = "activityFromJson2";
         AActivity activity = super.activityFromJson2(jso);
         Note note = activity.getNote();
-        note.url = jso.optString("external_url");
-        note.setConversationOid(jso.optString(CONVERSATION_ID_FIELD_NAME));
+        note.url = JsonUtils.optString(jso, "external_url");
+        note.setConversationOid(JsonUtils.optString(jso, CONVERSATION_ID_FIELD_NAME));
         if (!jso.isNull(ATTACHMENTS_FIELD_NAME)) {
             try {
                 JSONArray jArr = jso.getJSONArray(ATTACHMENTS_FIELD_NAME);
                 for (int ind = 0; ind < jArr.length(); ind++) {
                     JSONObject jsonAttachment = (JSONObject) jArr.get(ind);
                     Uri uri = UriUtils.fromAlternativeTags(jsonAttachment, "url", "thumb_url");
-                    Attachment attachment =  Attachment.fromUriAndMimeType(uri, jsonAttachment.optString("mimetype"));
+                    Attachment attachment =  Attachment.fromUriAndMimeType(uri, JsonUtils.optString(jsonAttachment, "mimetype"));
                     if (attachment.isValid()) {
                         activity.addAttachment(attachment);
                     } else {
@@ -252,7 +253,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     Actor actorBuilderFromJson(JSONObject jso) {
         if (jso == null) return Actor.EMPTY;
         return super.actorBuilderFromJson(jso)
-                .setProfileUrl(jso.optString("statusnet_profile_url"));
+                .setProfileUrl(JsonUtils.optString(jso, "statusnet_profile_url"));
     }
     
     @Override
@@ -267,8 +268,9 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                 MyStringBuilder.appendWithSpace(logMessage, "Response is null JSON");
                 error = true;
             }
-            if (!error && !result.optString("status").equals("OK")) {
-                MyStringBuilder.appendWithSpace(logMessage, "gtools service returned the error: '" + result.optString("error") + "'");
+            if (!error && !JsonUtils.optString(result, "status").equals("OK")) {
+                MyStringBuilder.appendWithSpace(logMessage, "gtools service returned the error: '" +
+                        JsonUtils.optString(result, "error") + "'");
                 error = true;
             }
             if (!error) {
@@ -279,8 +281,8 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                         while(iterator.hasNext()) {
                             String key = iterator.next();
                             JSONObject instance = data.getJSONObject(key);
-                            origins.add(new Server(instance.optString("instance_name"),
-                                    instance.optString("instance_address"),
+                            origins.add(new Server(JsonUtils.optString(instance, "instance_name"),
+                                    JsonUtils.optString(instance, "instance_address"),
                                     instance.optLong("users_count"),
                                     instance.optLong("notices_count")));
                         }

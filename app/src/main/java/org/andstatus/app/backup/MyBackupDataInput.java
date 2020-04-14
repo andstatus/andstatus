@@ -25,6 +25,7 @@ import androidx.documentfile.provider.DocumentFile;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.util.DocumentFileUtils;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.json.JSONObject;
 
@@ -66,16 +67,15 @@ public class MyBackupDataInput {
         
         static BackupHeader fromJson(JSONObject jso) {
             return new BackupHeader(
-            jso.optString(MyBackupDataOutput.KEY_KEYNAME, ""),
+            JsonUtils.optString(jso, MyBackupDataOutput.KEY_KEYNAME),
             jso.optLong(MyBackupDataOutput.KEY_ORDINAL_NUMBER, 0),
             jso.optInt(MyBackupDataOutput.KEY_DATA_SIZE, 0),
-            jso.optString(MyBackupDataOutput.KEY_FILE_EXTENSION, MyBackupDataOutput.DATA_FILE_EXTENSION_DEFAULT));
+            JsonUtils.optString(jso, MyBackupDataOutput.KEY_FILE_EXTENSION, MyBackupDataOutput.DATA_FILE_EXTENSION_DEFAULT));
         }
 
         @Override
         public int compareTo(BackupHeader another) {
-            return ordinalNumber == another.ordinalNumber ? 0
-                    : (ordinalNumber > another.ordinalNumber ? 1 : -1);
+            return Long.compare(ordinalNumber, another.ordinalNumber);
         }
 
         @Override

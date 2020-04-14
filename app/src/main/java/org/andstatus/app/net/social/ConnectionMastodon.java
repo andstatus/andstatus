@@ -26,6 +26,7 @@ import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.origin.OriginConfig;
+import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.ObjectOrId;
@@ -163,7 +164,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     protected AActivity activityFromTwitterLikeJson(JSONObject timelineItem) throws ConnectionException {
         if (isNotification(timelineItem)) {
             AActivity activity = AActivity.from(data.getAccountActor(), getType(timelineItem));
-            activity.setOid(timelineItem.optString("id"));
+            activity.setOid(JsonUtils.optString(timelineItem, "id"));
             activity.setUpdatedDate(dateFromJson(timelineItem, "created_at"));
             activity.setActor(actorFromJson(timelineItem.optJSONObject("account")));
             AActivity noteActivity = activityFromJson2(timelineItem.optJSONObject("status"));
@@ -193,7 +194,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     @NonNull
     protected ActivityType getType(JSONObject timelineItem) {
         if (isNotification(timelineItem)) {
-            switch (timelineItem.optString("type")) {
+            switch (JsonUtils.optString(timelineItem,"type")) {
                 case "favourite":
                     return ActivityType.LIKE;
                 case "reblog":
@@ -358,22 +359,22 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         if (jso == null) {
             return Actor.EMPTY;
         }
-        String oid = jso.optString("id");
-        String username = jso.optString("username");
+        String oid = JsonUtils.optString(jso, "id");
+        String username = JsonUtils.optString(jso, "username");
         if (StringUtil.isEmpty(oid) || StringUtil.isEmpty(username)) {
             throw ConnectionException.loggedJsonException(this, "Id or username is empty", null, jso);
         }
         Actor actor = Actor.fromOid(data.getOrigin(), oid);
         actor.setUsername(username);
-        actor.setRealName(jso.optString("display_name"));
-        actor.setWebFingerId(jso.optString("acct"));
+        actor.setRealName(JsonUtils.optString(jso, "display_name"));
+        actor.setWebFingerId(JsonUtils.optString(jso, "acct"));
         if (!SharedPreferencesUtil.isEmpty(actor.getRealName())) {
             actor.setProfileUrlToOriginUrl(data.getOriginUrl());
         }
         actor.setAvatarUri(UriUtils.fromJson(jso, "avatar"));
         actor.endpoints.add(ActorEndpointType.BANNER, UriUtils.fromJson(jso, "header"));
         actor.setSummary(extractSummary(jso));
-        actor.setProfileUrl(jso.optString("url"));
+        actor.setProfileUrl(JsonUtils.optString(jso, "url"));
         actor.notesCount = jso.optLong("statuses_count");
         actor.followingCount = jso.optLong("following_count");
         actor.followersCount = jso.optLong("followers_count");
@@ -383,13 +384,13 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     private String extractSummary(JSONObject jso) {
         MyStringBuilder builder = new MyStringBuilder();
-        builder.append(jso.optString("note"));
+        builder.append(JsonUtils.optString(jso, "note"));
         JSONArray fields = jso.optJSONArray("fields");
         if (fields != null) {
             for (int ind=0; ind < fields.length(); ind++) {
                 JSONObject field = fields.optJSONObject(ind);
                 if (field != null) {
-                    builder.append(field.optString("name"), field.optString("value"),
+                    builder.append(JsonUtils.optString(field, "name"), JsonUtils.optString(field,"value"),
                             "\n<br>", false);
                 }
             }
@@ -404,7 +405,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             return AActivity.EMPTY;
         }
         final String method = "activityFromJson2";
-        String oid = jso.optString("id");
+        String oid = JsonUtils.optString(jso, "id");
         AActivity activity = newLoadedUpdateActivity(oid, dateFromJson(jso, "created_at"));
         try {
             JSONObject actor;
@@ -414,10 +415,10 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             }
 
             Note note =  activity.getNote();
-            note.setSummary(jso.optString(SUMMARY_PROPERTY));
+            note.setSummary(JsonUtils.optString(jso, SUMMARY_PROPERTY));
             note.setSensitive(jso.optBoolean(SENSITIVE_PROPERTY));
-            note.setContentPosted(jso.optString(CONTENT_PROPERTY));
-            note.url = jso.optString("url");
+            note.setContentPosted(JsonUtils.optString(jso, CONTENT_PROPERTY));
+            note.url = JsonUtils.optString(jso, "url");
             if (jso.has(VISIBILITY_PROPERTY)) {
                 switch (jso.getString(VISIBILITY_PROPERTY)) {
                     case VISIBILITY_PUBLIC:
@@ -447,7 +448,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
             if (!jso.isNull("application")) {
                 JSONObject application = jso.getJSONObject("application");
-                note.via = application.optString("name");
+                note.via = JsonUtils.optString(application, "name");
             }
             if (!jso.isNull("favourited")) {
                 note.addFavoriteBy(data.getAccountActor(),
@@ -487,7 +488,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     private CheckedFunction<JSONObject, List<Attachment>> jsonToAttachments(String method) {
         return jsoAttachment -> {
-            String type = StringUtil.notEmpty(jsoAttachment.optString("type"), "unknown");
+            String type = StringUtil.notEmpty(JsonUtils.optString(jsoAttachment, "type"), "unknown");
             if ("unknown".equals(type)) {
                 // When the type is "unknown", it is likely only remote_url is available and local url is missing
                 Uri remoteUri = UriUtils.fromJson(jsoAttachment, "remote_url");
