@@ -223,7 +223,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             return InputTimelinePage.TRY_EMPTY;
         }
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.TAG_TIMELINE;
-        return getApiPath(apiRoutine).map(Uri::buildUpon)
+        return getApiPathWithTag(apiRoutine, tag)
+                .map(Uri::buildUpon)
                 .map(b -> appendPositionParameters(b, youngestPosition, oldestPosition))
                 .map(b -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)))
                 .map(Uri.Builder::build)
