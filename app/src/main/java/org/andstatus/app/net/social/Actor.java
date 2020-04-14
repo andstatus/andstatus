@@ -268,6 +268,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public boolean isPartiallyDefined() {
+        if (groupType.isGroup.isTrue) return false;
+
         if (isPartiallyDefined.unknown) {
             isPartiallyDefined = TriState.fromBoolean(!origin.isValid() || UriUtils.nonRealOid(oid) ||
                     StringUtil.isEmpty(webFingerId) ||
