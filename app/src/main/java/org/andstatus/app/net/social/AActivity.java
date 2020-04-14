@@ -227,7 +227,7 @@ public class AActivity extends AObject {
     }
 
     public TimelinePosition getTimelinePosition() {
-        return timelinePosition;
+        return timelinePosition.isEmpty() ? TimelinePosition.of(oid) : timelinePosition;
     }
 
     public AActivity setTimelinePosition(String strPosition) {
@@ -355,7 +355,7 @@ public class AActivity extends AObject {
                 + type
                 + ", id:" + id
                 + ", oid:" + oid
-                + (timelinePosition.getPosition().equals(oid)
+                + (timelinePosition.isEmpty() || timelinePosition.getPosition().equals(oid)
                     ? ""
                     : ", pos:" + timelinePosition)
                 + ", updated:" + MyLog.debugFormatOfDate(updatedDate)
@@ -605,9 +605,6 @@ public class AActivity extends AObject {
             values.put(ActivityTable.ACTIVITY_TYPE, type.id);
             if (StringUtil.isEmpty(oid)) {
                 setOid(buildTempOid());
-            }
-            if (timelinePosition.isEmpty()) {
-                setTimelinePosition(oid);
             }
         }
         if (id == 0 || (storedUpdatedDate <= SOME_TIME_AGO && updatedDate > SOME_TIME_AGO)) {
