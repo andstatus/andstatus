@@ -193,16 +193,34 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         String uniqueName = getAccountName();
 
         boolean found = false;
-        String possiblyUnique = getUsername();
+
+        String possiblyUnique = getActor().getUniqueName();
         for (MyAccount persistentAccount : data.myContext().accounts().get()) {
             if (!persistentAccount.toString().equalsIgnoreCase(toString())
-                    && persistentAccount.getUsername().equalsIgnoreCase(possiblyUnique)) {
+                    && persistentAccount.getActor().getUniqueName().equalsIgnoreCase(possiblyUnique)) {
                 found = true;
                 break;
             }
         }
         if (!found) {
             uniqueName = possiblyUnique;
+        }
+
+        if (!found) {
+            possiblyUnique = getUsername();
+            for (MyAccount persistentAccount : data.myContext().accounts().get()) {
+                if (!persistentAccount.toString().equalsIgnoreCase(toString())
+                        && persistentAccount.getUsername().equalsIgnoreCase(possiblyUnique)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                uniqueName = possiblyUnique;
+            }
+        }
+
+        if (!found) {
             int indAt = uniqueName.indexOf('@');
             if (indAt > 0) {
                 possiblyUnique = uniqueName.substring(0, indAt);
@@ -224,6 +242,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                 }
             }
         }
+
         return uniqueName;
     }
 

@@ -361,6 +361,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     public String getUniqueName() {
         if (StringUtil.nonEmptyNonTemp(username)) return username + getOptAtHostForUniqueName();
         if (StringUtil.nonEmptyNonTemp(realName)) return realName + getOptAtHostForUniqueName();
+        if (isWebFingerIdValid()) return webFingerId;
         if (StringUtil.nonEmptyNonTemp(oid)) return oid;
         return "id:" + actorId + getOptAtHostForUniqueName();
     }
@@ -783,10 +784,14 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         }
     }
 
-    public String getViewItemName() {
+    public String getRecipientName() {
         if (groupType == GroupType.FOLLOWERS) {
             return origin.myContext.context().getText(R.string.followers).toString();
         }
+        return getUniqueName();
+    }
+
+    public String getViewItemActorName() {
         if (MyPreferences.getShowOrigin() && nonEmpty()) {
             String name = getTimelineUsername() + " / " + origin.getName();
             if (origin.getOriginType() == OriginType.GNUSOCIAL && MyPreferences.isShowDebuggingInfoInUi()
@@ -895,7 +900,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (user.isMyUser().unknown && origin.myContext.users().isMe(this)) {
             user.setIsMyUser(TriState.TRUE);
         }
-        if (user.userId == 0) user.setKnownAs(getUniqueNameWithOrigin());
+        if (user.userId == 0) user.setKnownAs(getUniqueName());
         user.save(origin.myContext);
     }
 

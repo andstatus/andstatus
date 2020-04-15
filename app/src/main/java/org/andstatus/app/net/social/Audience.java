@@ -119,24 +119,24 @@ public class Audience {
         MyStringBuilder toBuilder = new MyStringBuilder();
         if (getPublic().isTrue) {
             builder.withSpace(context.getText(R.string.timeline_title_public));
-        } else if (getPublic().isFalse) {
-            builder.withSpace(context.getText(R.string.notification_events_private));
         } else if (isFollowers()) {
             toBuilder.withSpace(context.getText(R.string.followers));
+        } else if (getPublic().isFalse) {
+            builder.withSpace(context.getText(R.string.notification_events_private));
+            actors.stream()
+                .filter(actor -> !actor.isSame(inReplyToActor))
+                .map(Actor::getRecipientName)
+                .sorted()
+                .forEach(toBuilder::withComma);
         } else {
             builder.withSpace(context.getText(R.string.privacy_unknown));
         }
-        actors.stream()
-                .filter(actor -> !actor.isSame(inReplyToActor))
-                .map(Actor::getViewItemName)
-                .sorted()
-                .forEach(toBuilder::withComma);
         if (toBuilder.nonEmpty()) {
             builder.withSpace(StringUtil.format(context, R.string.message_source_to, toBuilder.toString()));
         }
         if (inReplyToActor.nonEmpty()) {
             builder.withSpace(StringUtil.format(context, R.string.message_source_in_reply_to,
-                    inReplyToActor.getViewItemName()));
+                    inReplyToActor.getRecipientName()));
         }
         return builder.toString();
     }

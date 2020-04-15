@@ -178,7 +178,7 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
             MyUrlSpan.showText(view, R.id.action_title,
                     (layoutType == LayoutType.ACTOR_ACTOR
                             ? item.actor.getActor().getUniqueName()
-                            : item.actor.getActor().getViewItemName()) +
+                            : item.actor.getActor().getViewItemActorName()) +
                         " " + item.activityType.getActedTitle(contextMenu.actor.getActivity()) +
                         (layoutType == LayoutType.ACTOR_ACTOR
                             ? " " + item.getObjActorItem().getActor().getUniqueName()
