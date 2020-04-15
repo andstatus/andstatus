@@ -28,6 +28,7 @@ import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.timeline.ListScope;
 import org.andstatus.app.util.StringUtil;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -104,7 +105,7 @@ public enum TimelineType implements SelectableEnum {
         return UNKNOWN;
     }
 
-    public static Set<TimelineType> getDefaultMyAccountTimelineTypes() {
+    public static List<TimelineType> getDefaultMyAccountTimelineTypes() {
         return defaultMyAccountTimelineTypes;
     }
 
@@ -192,11 +193,9 @@ public enum TimelineType implements SelectableEnum {
         }
     }
 
-    private static final Set<TimelineType> defaultMyAccountTimelineTypes = Stream.of(
+    private static final List<TimelineType> defaultMyAccountTimelineTypes = Stream.of(
             DRAFTS,
             FAVORITES,
-            FOLLOWERS,
-            FRIENDS,
             HOME,
             INTERACTIONS,
             NOTIFICATIONS,
@@ -204,7 +203,7 @@ public enum TimelineType implements SelectableEnum {
             PRIVATE,
             SENT,
             UNREAD_NOTIFICATIONS
-    ).collect(Collectors.toSet());
+    ).collect(Collectors.toList());
 
     private static final Set<TimelineType> defaultOriginTimelineTypes = Stream.of(
             EVERYTHING,

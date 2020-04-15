@@ -570,7 +570,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
                     && (origin.getOriginType().isTimelineTypeSyncable(timelineType)
                     || timelineType.equals(TimelineType.EVERYTHING));
         } else {
-            return actor.user.isMyUser().isTrue && TimelineType.getDefaultMyAccountTimelineTypes().contains(timelineType);
+            return actor.user.isMyUser().isTrue && actor.getDefaultMyAccountTimelineTypes().contains(timelineType);
         }
     }
 

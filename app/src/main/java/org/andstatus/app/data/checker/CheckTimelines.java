@@ -75,7 +75,7 @@ class CheckTimelines extends DataChecker {
         try {
             new TimelineSaver(myContext).addDefaultCombined();
             for (MyAccount myAccount: myContext.accounts().get()) {
-                new TimelineSaver(myContext).addDefaultForMyUser(myAccount);
+                new TimelineSaver(myContext).addDefaultForMyAccount(myAccount);
             }
         } catch (Exception e) {
             String logMsg = "Error: " + e.getMessage();

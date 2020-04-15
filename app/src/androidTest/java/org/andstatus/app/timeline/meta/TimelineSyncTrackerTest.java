@@ -56,7 +56,7 @@ public class TimelineSyncTrackerTest {
             }
         } else {
             assertDefaultTimelinePersistence(
-                    message, TimelineType.getDefaultMyAccountTimelineTypes().contains(timelineType), timeline);
+                    message, ma.getActor().getDefaultMyAccountTimelineTypes().contains(timelineType), timeline);
         }
         long time1 = System.currentTimeMillis();
         TimelineSyncTracker syncTracker = new TimelineSyncTracker(timeline, true);

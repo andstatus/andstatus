@@ -41,6 +41,7 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.user.User;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.LazyVal;
@@ -60,6 +61,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import io.vavr.control.Try;
 
@@ -141,6 +143,14 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return MyAsyncTask.nonUiThread() && (cached.isPartiallyDefined() || reloadFirst)
                 ? loadFromDatabase(myContext, actorId, supplier, true).betterToCache(cached)
                 : cached;
+    }
+
+    public List<TimelineType> getDefaultMyAccountTimelineTypes() {
+        return origin.getOriginType().isPrivatePostsSupported()
+                ? TimelineType.getDefaultMyAccountTimelineTypes()
+                : TimelineType.getDefaultMyAccountTimelineTypes().stream()
+                    .filter(t -> t != TimelineType.PRIVATE)
+                    .collect(Collectors.toList());
     }
 
     private Actor betterToCache(Actor other) {

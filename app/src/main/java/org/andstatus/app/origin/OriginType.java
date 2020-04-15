@@ -221,6 +221,7 @@ public enum OriginType implements SelectableEnum {
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
                 httpConnectionClassBasic = HttpConnectionBasic.class;
                 mAllowAttachmentForPrivateNote = false;
+                isPrivateTimelineSyncable = false;
                 allowEditing = false;
                 isPrivateNoteAllowsReply = false;
 
@@ -491,5 +492,9 @@ public enum OriginType implements SelectableEnum {
 
     public int getMaxAttachmentsToSend() {
         return OriginConfig.getMaxAttachmentsToSend(this);
+    }
+
+    public boolean isPrivatePostsSupported() {
+        return this != TWITTER;
     }
 }

@@ -16,6 +16,8 @@
 
 package org.andstatus.app.timeline.meta;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DbUtils;
@@ -28,8 +30,6 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.TriState;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import androidx.annotation.NonNull;
 
 /**
  * Save changes to Timelines not on UI thread.
@@ -120,7 +120,7 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
 
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
                     TimelineTable._ID, TimelineTable.ACTOR_ID + "=" + ma.getActorId());
-            if (timelineId == 0) addDefaultForMyUser(ma);
+            if (timelineId == 0) addDefaultForMyAccount(ma);
         }
     }
 
@@ -146,8 +146,8 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
         }
     }
 
-    public void addDefaultForMyUser(MyAccount myAccount) {
-        for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
+    public void addDefaultForMyAccount(MyAccount myAccount) {
+        for (TimelineType timelineType : myAccount.getActor().getDefaultMyAccountTimelineTypes()) {
             timelines().forUser(timelineType, myAccount.getActor()).save(myContext);
         }
     }

@@ -226,7 +226,7 @@ public class DemoAccountInserter {
 
     public static void assertDefaultTimelinesForAccounts() {
         for (MyAccount myAccount : MyContextHolder.get().accounts().get()) {
-            for (TimelineType timelineType : TimelineType.getDefaultMyAccountTimelineTypes()) {
+            for (TimelineType timelineType : myAccount.getActor().getDefaultMyAccountTimelineTypes()) {
                 if (!myAccount.getConnection().hasApiEndpoint(timelineType.getConnectionApiRoutine())) continue;
 
                 long count = 0;
