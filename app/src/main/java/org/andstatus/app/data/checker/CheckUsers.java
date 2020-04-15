@@ -112,8 +112,8 @@ class CheckUsers extends DataChecker {
 
     private CheckResults getResults() {
         CheckResults results = new CheckResults();
-        String sql = "SELECT " + ActorSql.select(false, true)
-                + " FROM " + ActorSql.tables(false, true)
+        String sql = "SELECT " + ActorSql.selectFullProjection()
+                + " FROM " + ActorSql.tables(true, false, true)
                 + " ORDER BY " + ActorTable.WEBFINGER_ID + " COLLATE NOCASE";
                 ;
 

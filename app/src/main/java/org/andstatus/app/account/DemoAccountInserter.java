@@ -196,7 +196,7 @@ public class DemoAccountInserter {
         assertEquals("Android account name", accountName.getName(),
                 existingAndroidAccount.map(a -> a.name).getOrElse("(not found)"));
 
-        assertEquals("User should be known as this actor " + actor, actor.getUniqueNameWithOrigin(), actor.user.getKnownAs());
+        assertEquals("User should be known as this actor " + actor, actor.getUniqueName(), actor.user.getKnownAs());
         assertEquals("User is not mine " + actor, TriState.TRUE, actor.user.isMyUser());
         assertNotEquals("User is not added " + actor, 0, actor.user.userId);
 

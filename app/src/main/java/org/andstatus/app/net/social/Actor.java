@@ -159,8 +159,8 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     public static Actor loadFromDatabase(@NonNull MyContext myContext, long actorId, Supplier<Actor> supplier,
                                          boolean useCache) {
-        final String sql = "SELECT " + ActorSql.select()
-                + " FROM " + ActorSql.tables()
+        final String sql = "SELECT " + ActorSql.selectFullProjection()
+                + " FROM " + ActorSql.allTables()
                 + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;
         final Function<Cursor, Actor> function = cursor -> fromCursor(myContext, cursor, useCache);
         return MyQuery.get(myContext, sql, function).stream().findFirst().orElseGet(supplier);

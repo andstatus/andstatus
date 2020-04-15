@@ -100,16 +100,16 @@ public class ActorSql {
     }
 
     @NonNull
-    public static String select() {
-        return select(false, true);
+    public static String selectFullProjection() {
+        return select(true, false);
     }
 
     @NonNull
-    public static String select(boolean userOnly, boolean optionalUser) {
-        return (userOnly
-                ? userOnlyProjectionMap.values().stream()
-                : optionalUser
-                    ? fullProjectionMap.values().stream()
+    public static String select(boolean fullProjection, boolean userOnly) {
+        return (fullProjection
+                ? fullProjectionMap.values().stream()
+                : userOnly
+                    ? userOnlyProjectionMap.values().stream()
                     : MyPreferences.getShowAvatars()
                         ? Stream.concat(baseProjectionMap.values().stream(), avatarProjectionMap.values().stream())
                         : baseProjectionMap.values().stream())
@@ -117,17 +117,17 @@ public class ActorSql {
     }
 
     @NonNull
-    public static String tables() {
-        return tables(false, true);
+    public static String allTables() {
+        return tables(true, false, true);
     }
 
     @NonNull
-    public static String tables(boolean userOnly, boolean optionalUser) {
+    public static String tables(boolean isFullProjection, boolean userOnly, boolean userIsOptional) {
         final String tables = ActorTable.TABLE_NAME + " "
-                + (optionalUser ? "LEFT" : "INNER") + " JOIN " + UserTable.TABLE_NAME
+                + (userIsOptional ? "LEFT" : "INNER") + " JOIN " + UserTable.TABLE_NAME
                 + " ON " + ActorTable.TABLE_NAME + "." + ActorTable.USER_ID
                 + "=" + UserTable.TABLE_NAME + "." + UserTable._ID;
-        return !userOnly && MyPreferences.getShowAvatars()
+        return isFullProjection || (!userOnly && MyPreferences.getShowAvatars())
                 ? addAvatarImageTable(tables)
                 : tables;
     }

@@ -68,8 +68,8 @@ public class CachedUsersAndActors {
         actors.clear();
         myUsers.clear();
         myActors.clear();
-        final String sql = "SELECT " + ActorSql.select()
-                + " FROM " + ActorSql.tables()
+        final String sql = "SELECT " + ActorSql.selectFullProjection()
+                + " FROM " + ActorSql.allTables()
                 + " WHERE " + UserTable.IS_MY + "=" + TriState.TRUE.id;
         final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(myContext, cursor, true);
         MyQuery.get(myContext, sql, function).forEach(this::updateCache);
@@ -78,9 +78,9 @@ public class CachedUsersAndActors {
     private void initializeFriendsOfMyActors() {
         final String FOLLOWER_ID = "followerId";
         friendsOfMyActors.clear();
-        final String sql = "SELECT DISTINCT " + ActorSql.select()
+        final String sql = "SELECT DISTINCT " + ActorSql.selectFullProjection()
                 + ", friends." + ActorTable.PARENT_ACTOR_ID + " AS " + FOLLOWER_ID
-                + " FROM (" + ActorSql.tables() + ")"
+                + " FROM (" + ActorSql.allTables() + ")"
                 + " INNER JOIN (" + GroupMembership.selectMemberIds(myActors.keySet(), GroupType.FRIENDS, true)
                 + " ) as friends ON friends." + GroupMembersTable.MEMBER_ID +
                 "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID;
@@ -120,8 +120,8 @@ public class CachedUsersAndActors {
     }
 
     private void loadTimelineActors() {
-        final String sql = "SELECT " + ActorSql.select()
-                + " FROM " + ActorSql.tables()
+        final String sql = "SELECT " + ActorSql.selectFullProjection()
+                + " FROM " + ActorSql.allTables()
                 + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + " IN ("
                 + " SELECT DISTINCT " + TimelineTable.ACTOR_ID
                 + " FROM " + TimelineTable.TABLE_NAME

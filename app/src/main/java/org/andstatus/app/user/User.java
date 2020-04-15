@@ -59,8 +59,8 @@ public class User implements IsEmpty {
 
     private static User loadInternal(@NonNull MyContext myContext, long actorId) {
         if (actorId == 0 || MyAsyncTask.isUiThread()) return User.EMPTY;
-        final String sql = "SELECT " + ActorSql.select(true, false)
-                + " FROM " + ActorSql.tables(true, false)
+        final String sql = "SELECT " + ActorSql.select(false, true)
+                + " FROM " + ActorSql.tables(false, true, false)
                 + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;
         final Function<Cursor, User> function = cursor -> fromCursor(myContext, cursor, true);
         return MyQuery.get(myContext, sql, function).stream().findFirst().orElse(EMPTY);

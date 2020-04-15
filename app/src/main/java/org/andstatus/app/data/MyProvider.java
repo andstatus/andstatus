@@ -431,7 +431,7 @@ public class MyProvider extends ContentProvider {
             case ACTOR:
             case ACTORLIST:
             case ACTORLIST_SEARCH:
-                tables = Collections.singletonList(ActorSql.tables());
+                tables = Collections.singletonList(ActorSql.allTables());
                 qb.setProjectionMap(ActorSql.fullProjectionMap);
                 rawQuery = uriParser.getSearchQuery();
                 SqlWhere actorWhere = new SqlWhere().append(selectionIn);
@@ -453,7 +453,7 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case ACTORLIST_ITEM:
-                tables = Collections.singletonList(ActorSql.tables());
+                tables = Collections.singletonList(ActorSql.allTables());
                 qb.setProjectionMap(ActorSql.fullProjectionMap);
                 selection = selectionIn;
                 where = BaseColumns._ID + "=" + uriParser.getActorId();

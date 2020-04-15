@@ -57,8 +57,8 @@ import io.vavr.control.Try;
 public class Audience {
     private static final String TAG = Audience.class.getSimpleName();
     public final static Audience EMPTY = new Audience(Origin.EMPTY);
-    private static final String LOAD_SQL = "SELECT " + ActorSql.select()
-            + " FROM (" + ActorSql.tables()
+    private static final String LOAD_SQL = "SELECT " + ActorSql.selectFullProjection()
+            + " FROM (" + ActorSql.allTables()
             + ") INNER JOIN " + AudienceTable.TABLE_NAME + " ON "
             + AudienceTable.TABLE_NAME + "." + AudienceTable.ACTOR_ID + "="
             + ActorTable.TABLE_NAME + "." + ActorTable._ID

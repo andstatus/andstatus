@@ -294,8 +294,8 @@ public class DataPruner {
     private void pruneTempActors() {
         logger.logProgress("Delete temporary unused actors started");
         final SqlIds myActorIds = SqlIds.myActorsIds();
-        String sql = "SELECT " + ActorSql.select()
-                + " FROM " + ActorSql.tables() +
+        String sql = "SELECT " + ActorSql.selectFullProjection()
+                + " FROM " + ActorSql.allTables() +
                 " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable.PARENT_ACTOR_ID + " = 0" +
                 " AND " + ActorTable.TABLE_NAME + "." + ActorTable.ACTOR_OID + " LIKE ('andstatustemp:%')" +
                 " AND " + ActorTable.TABLE_NAME + "." + ActorTable._ID + myActorIds.getNotSql() +
