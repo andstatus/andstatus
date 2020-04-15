@@ -172,7 +172,6 @@ public enum OriginType implements SelectableEnum {
     private URL urlDefault = null;
     private String basicPath = BASIC_PATH_DEFAULT;
     private String oauthPath = OAUTH_PATH_DEFAULT;
-    private final boolean mAllowAttachmentForPrivateNote;
 
     private boolean isPublicTimeLineSyncable = false;
     private boolean isSearchTimelineSyncable = true;
@@ -220,7 +219,6 @@ public enum OriginType implements SelectableEnum {
                 connectionClass = ConnectionTheTwitter.class;
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
                 httpConnectionClassBasic = HttpConnectionBasic.class;
-                mAllowAttachmentForPrivateNote = false;
                 isPrivateTimelineSyncable = false;
                 allowEditing = false;
                 isPrivateNoteAllowsReply = false;
@@ -244,7 +242,6 @@ public enum OriginType implements SelectableEnum {
                 connectionClass = ConnectionPumpio.class;
                 httpConnectionClassOauth = HttpConnectionOAuthJavaNet.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
-                mAllowAttachmentForPrivateNote = true;
                 isSearchTimelineSyncable = false;
                 isPrivateTimelineSyncable = false;
                 isInteractionsTimelineSyncable = false;
@@ -270,7 +267,6 @@ public enum OriginType implements SelectableEnum {
                 connectionClass = ConnectionActivityPub.class;
                 httpConnectionClassOauth = HttpConnectionOAuthMastodon.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
-                mAllowAttachmentForPrivateNote = true;
                 isSearchTimelineSyncable = false;
                 isPrivateTimelineSyncable = false;
                 isPublicTimeLineSyncable = true;
@@ -296,7 +292,6 @@ public enum OriginType implements SelectableEnum {
                 connectionClass = ConnectionTwitterGnuSocial.class;
                 httpConnectionClassOauth = HttpConnectionOAuthApache.class;
                 httpConnectionClassBasic = HttpConnectionBasic.class;
-                mAllowAttachmentForPrivateNote = false;
                 isPublicTimeLineSyncable = true;
                 allowEditing = false;
                 isPrivateNoteAllowsReply = true;
@@ -319,7 +314,6 @@ public enum OriginType implements SelectableEnum {
                 connectionClass = ConnectionMastodon.class;
                 httpConnectionClassOauth = HttpConnectionOAuthMastodon.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
-                mAllowAttachmentForPrivateNote = false;
                 isSearchTimelineSyncable = true;
                 isPrivateTimelineSyncable = false;
                 isPublicTimeLineSyncable = true;
@@ -336,7 +330,6 @@ public enum OriginType implements SelectableEnum {
                 connectionClass = ConnectionEmpty.class;
                 httpConnectionClassOauth = HttpConnectionEmpty.class;
                 httpConnectionClassBasic = HttpConnectionEmpty.class;
-                mAllowAttachmentForPrivateNote = false;
                 allowEditing = false;
                 isPrivateNoteAllowsReply = true;
                 uniqueNameExamples = "userName@hostName.org";
@@ -405,7 +398,7 @@ public enum OriginType implements SelectableEnum {
     }
     
     public boolean allowAttachmentForPrivateNote() {
-        return mAllowAttachmentForPrivateNote;
+        return true;  // Currently for all...
     }
     
     public static OriginType fromId( long id) {
