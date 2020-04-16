@@ -29,6 +29,25 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="54.00" android:versionCode="310"
+        versionDate="2020-04-16"
+        versionTitle="Explicit Public, to Followers and Private posts">
+        <changes>
+            <change>Each Note now has "Public", "to Followers" or "Private" words under the Note's text.
+                And this works for Mastodon, ActivityPub and Pump.io Social networks.
+                Private Notes are not a special kind of posts, they are just sent to explicitly mentioned
+                recipients only.
+            </change>
+            <change>Support of open #<a href="https://socialhub.activitypub.rocks/c/software/andstatus/51">ActivityPub
+                Client-to-Server protocol</a> extended. As we see now, not only Pleroma
+                supports this protocol: Mastodon sites also started to respond to some ActivityPub C2S requests
+                properly...
+            </change>
+            <change>Discovered and fixed an old bug that sometimes prevented downloading of avatars and images
+                ("location" header was not recognized).
+            </change>
+        </changes>
+    </release>
     <release android:versionName="53.02" android:versionCode="306"
         versionDate="2020-03-26"
         versionTitle="Explicit Public and Followers recipients. Mastodon's 'Status privacy'">
