@@ -18,6 +18,7 @@ package org.andstatus.app.net.social;
 
 import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.Spanned;
 
 import androidx.annotation.NonNull;
 
@@ -46,11 +47,11 @@ public class SpanUtil {
     public static class Region implements Comparable<Region> {
         final int start;
         final int end;
-        final CharSequence text;
+        public final CharSequence text;
         final Optional<MyUrlSpan> urlSpan;
         final Optional<Object> otherSpan;
 
-        private Region(Spannable spannable, Object span) {
+        private Region(Spanned spannable, Object span) {
             int spanStart = spannable.getSpanStart(span);
             // Sometimes "@" is not included in the span
             start = spanStart > 0 &&
@@ -68,7 +69,7 @@ public class SpanUtil {
             text = spannable.subSequence(start, end);
         }
 
-        private Region(Spannable spannable, int start, int end) {
+        private Region(Spanned spannable, int start, int end) {
             this.start = start;
             this.end = end;
             urlSpan = Optional.empty();
@@ -98,7 +99,7 @@ public class SpanUtil {
         }
     }
 
-    public static List<Region> regionsOf(Spannable spannable) {
+    public static List<Region> regionsOf(Spanned spannable) {
         return Stream.concat(
                 Arrays.stream(spannable.getSpans(0, spannable.length(), Object.class))
                     .map(span -> new Region(spannable, span)),
@@ -189,9 +190,9 @@ public class SpanUtil {
 
             int start2 = region.start + indInRegion;
             int start3 = start2 + stringFound.length();
-            if (start3 > region.end) return false;
+            if (start3 > region.end + 1) return false;
 
-            spannable.setSpan(new MyUrlSpan(spanData), start2, start3, 0);
+            spannable.setSpan(new MyUrlSpan(spanData), start2, Math.min(start3, region.end), 0);
             if (indInRegion >= MIN_SPAN_LENGTH) {
                 modifySpansInRegion(spannable, audience).accept(new Region(spannable, region.start, start2));
             }
@@ -209,10 +210,10 @@ public class SpanUtil {
         if (indInRegion >= 0) return indInRegion;
 
         final String foundUpper = stringFound.toUpperCase();
-        int ind = 1;
+        int ind = 0;
         do {
             int ind2 = substr1.substring(ind).toUpperCase().indexOf(foundUpper);
-            if (ind2 >= 0) return ind2;
+            if (ind2 >= 0) return ind2 + ind;
             ind++;
         } while(ind + stringFound.length() < substr1.length());
         return -1;
