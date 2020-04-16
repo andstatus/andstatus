@@ -194,12 +194,6 @@ public class NoteContextMenu extends MyContextMenu {
                                 : R.string.view_media);
             }
 
-            if (!isEditorVisible()) {
-                // TODO: Only if he follows me?
-                NoteContextMenuItem.PRIVATE_NOTE.addTo(menu, order++,
-                        R.string.menu_item_private_message);
-            }
-
             if (noteForAnyAccount.isLoaded() && noteForAnyAccount.isPublic.notFalse) {
                 if (accountToNote.favorited) {
                     NoteContextMenuItem.UNDO_LIKE.addTo(menu, order++,
