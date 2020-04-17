@@ -107,8 +107,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                     InputTimelinePage page = tryPage.get();
                     syncTracker.onNewPage(page);
                     for (AActivity activity : page.activities) {
-                        toDownload--;
-                        syncTracker.onNewMsg(activity.getTimelinePosition(), activity.getUpdatedDate());
+                        syncTracker.onNewActivity(activity.getTimelinePosition(), activity.getUpdatedDate());
                         if (!activity.isSubscribedByMe().equals(TriState.FALSE)
                                 && activity.getUpdatedDate() > 0
                                 && execContext.getTimeline().getTimelineType().isSubscribedByMe()
@@ -118,36 +117,24 @@ class TimelineDownloaderOther extends TimelineDownloader {
                         }
                         dataUpdater.onActivity(activity, false);
                     }
-                    if (page.activities.isEmpty()) {
-                        if (syncTracker.firstPosition.nonEmpty() &&
-                                !syncTracker.requestedPositions.contains(syncTracker.firstPosition)) {
-                            positionToRequest = page.firstPosition;
-                            continue;
-                        }
-                        if (!syncTracker.requestedPositions.contains(TimelinePosition.EMPTY)) {
-                            positionToRequest = TimelinePosition.EMPTY;
-                            continue;
-                        }
-                    }
                     Optional<TimelinePosition> optPositionToRequest = syncTracker.getNextPositionToRequest();
-                    if (toDownload <= 0 || !optPositionToRequest.isPresent()) {
+                    if ( toDownload - syncTracker.getDownloadedCounter() <= 0 || !optPositionToRequest.isPresent()) {
                         break;
                     }
                     positionToRequest = optPositionToRequest.get();
                 }
 
-                if(tryPage.isFailure()) {
-                    Throwable e = tryPage.getCause();
-
-                    if (syncTracker.requestedPositions.isEmpty() || ConnectionException.of(e).getStatusCode() != StatusCode.NOT_FOUND) {
-                        return Try.failure(e);
+                if (tryPage.isFailure()) {
+                    if (ConnectionException.of(tryPage.getCause()).getStatusCode() != StatusCode.NOT_FOUND) {
+                        return Try.failure(tryPage.getCause());
                     }
-                    TimelinePosition justRequested = syncTracker.requestedPositions.get(syncTracker.requestedPositions.size()-1);
-                    if (justRequested.isEmpty()) {
-                        return Try.failure(ConnectionException.hardConnectionException("Failed to request default position", e));
+                    Optional<TimelinePosition> optPositionToRequest = syncTracker.onNotFound();
+                    if (!optPositionToRequest.isPresent()) {
+                        return Try.failure(ConnectionException.fromStatusCode(StatusCode.NOT_FOUND,
+                                "Timeline was not found at " + syncTracker.requestedPositions));
                     }
-                    MyLog.d(this, "The timeline was not found at position='" + justRequested +"'", e);
-                    positionToRequest = TimelinePosition.EMPTY;
+                    MyLog.d(this, "Trying default timeline position");
+                    positionToRequest = optPositionToRequest.get();
                 }
         }
         dataUpdater.saveLum();

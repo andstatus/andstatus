@@ -36,6 +36,7 @@ public class TimelineSyncTracker {
     List<TimelinePosition> requestedPositions = new ArrayList<>();
     TimelinePosition firstPosition = TimelinePosition.EMPTY;
     private TimelinePosition nextPosition = TimelinePosition.EMPTY;
+    private long downloadedCounter = 0;
 
     public TimelineSyncTracker(Timeline timeline, boolean syncYounger) {
         this.timeline = timeline;
@@ -81,7 +82,8 @@ public class TimelineSyncTracker {
     }
 
     /** A new Timeline Item was downloaded   */
-    public void onNewMsg(TimelinePosition timelineItemPosition, long timelineItemDate) {
+    public void onNewActivity(TimelinePosition timelineItemPosition, long timelineItemDate) {
+        downloadedCounter++;
         if (timelineItemPosition != null 
                 && timelineItemPosition.nonEmpty()
                 && (timelineItemDate > 0)) {
@@ -97,17 +99,25 @@ public class TimelineSyncTracker {
         }
     }
 
+    public long getDownloadedCounter() {
+        return downloadedCounter;
+    }
+
     public Optional<TimelinePosition> getNextPositionToRequest() {
         TimelinePosition candidate = nextPosition.isEmpty()
             ? getPreviousTimelinePosition()
             : nextPosition;
-        if (!requestedPositions.contains(candidate)) return Optional.of(candidate);
+        if (candidate.nonEmpty() && !requestedPositions.contains(candidate)) return Optional.of(candidate);
 
-        if (firstPosition.nonEmpty() && !requestedPositions.contains(firstPosition)) {
+        if (downloadedCounter == 0 && firstPosition.nonEmpty() && !requestedPositions.contains(firstPosition)) {
             return Optional.of(firstPosition);
         }
 
-        return requestedPositions.contains(TimelinePosition.EMPTY)
+        return Optional.empty();
+    }
+
+    public Optional<TimelinePosition> onNotFound() {
+        return downloadedCounter > 0 || requestedPositions.contains(TimelinePosition.EMPTY)
                 ? Optional.empty()
                 : Optional.of(TimelinePosition.EMPTY);
     }
@@ -116,6 +126,7 @@ public class TimelineSyncTracker {
     public String toString() {
         return TAG + "[" + timeline.toString()
                     + ", " + timeline.positionsToString()
+                    + ", " + downloadedCounter
                     + "]";
     }
 
