@@ -400,7 +400,7 @@ public class DataUpdater {
                 // End of required attributes
             }
 
-            if (actor.groupType.isGroup.known) {
+            if (actor.groupType != GroupType.UNKNOWN) {
                 values.put(ActorTable.GROUP_TYPE, actor.groupType.id);
             }
             if (actor.getParentActorId() != 0) {

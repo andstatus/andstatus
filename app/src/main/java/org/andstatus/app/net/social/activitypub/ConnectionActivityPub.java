@@ -120,7 +120,7 @@ public class ConnectionActivityPub extends Connection {
 
     @NonNull
     private Actor actorFromCollectionTypeJson(JSONObject jso) {
-        Actor actor = Actor.fromTwoIds(data.getOrigin(), GroupType.GENERIC, 0, JsonUtils.optString(jso, "id"));
+        Actor actor = Actor.fromTwoIds(data.getOrigin(), GroupType.COLLECTION, 0, JsonUtils.optString(jso, "id"));
         return actor.build();
     }
 

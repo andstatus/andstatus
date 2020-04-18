@@ -143,7 +143,7 @@ public class ConnectionPumpio extends Connection {
                 groupType = GroupType.NOT_A_GROUP;
                 break;
             case COLLECTION:
-                groupType = GroupType.GENERIC;
+                groupType = GroupType.COLLECTION;
                 break;
             default:
                 return Actor.EMPTY;

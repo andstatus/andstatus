@@ -51,8 +51,7 @@ public final class ActorTable implements BaseColumns {
 
     /** {@link org.andstatus.app.actor.GroupType} */
     public static final String GROUP_TYPE = "group_type";
-    /** For {@link org.andstatus.app.actor.GroupType#FRIENDS}, {@link org.andstatus.app.actor.GroupType#FOLLOWERS}
-     * and {@link org.andstatus.app.actor.GroupType#ACTOR_OWNED}
+    /** {@link org.andstatus.app.actor.GroupType#parentActorRequired}
      * denotes the Actor, whose the Group is */
     public static final String PARENT_ACTOR_ID = "parent_actor_id";
 

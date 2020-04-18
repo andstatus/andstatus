@@ -46,6 +46,7 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
@@ -58,6 +59,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
 
         noteId = MyQuery.oidToId(OidEnum.NOTE_OID, demoData.getPumpioConversationOrigin().getId(),
                 demoData.conversationMentionsNoteOid);
+        assertNotEquals("No note with oid " + demoData.conversationMentionsNoteOid, 0, noteId);
 
         final Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.EVERYTHING,
                 Actor.EMPTY, Origin.EMPTY);

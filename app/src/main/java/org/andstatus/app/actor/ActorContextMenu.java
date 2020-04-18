@@ -60,7 +60,7 @@ public class ActorContextMenu extends MyContextMenu {
                     .setTitle(actor.toActorTitle())
                     .setSubtitle(getActingAccount().getAccountName());
             String shortName = actor.getUsername();
-            if (actor.groupType.isGroup.isTrue) {
+            if (actor.groupType.isGroupLike) {
                 ActorContextMenuItem.GROUP_NOTES.addTo(menu, menuGroup, order++,
                         StringUtil.format(getActivity(), R.string.group_notes, shortName));
             }

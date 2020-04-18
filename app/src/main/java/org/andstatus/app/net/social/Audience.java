@@ -141,12 +141,12 @@ public class Audience {
         return builder.toString();
     }
 
-    public List<Actor> getActorsToSave(Actor actorOnAudience) {
+    public List<Actor> getActorsToSave(Actor actorOfAudience) {
         if (followers == Actor.FOLLOWERS) {
-            followers = Group.getActorsGroup(actorOnAudience, GroupType.FOLLOWERS, "");
+            followers = Group.getActorsGroup(actorOfAudience, GroupType.FOLLOWERS, "");
         }
         List<Actor> toSave = actors.stream()
-                .map(actor -> lookupInActorOnAudience(actorOnAudience, actor))
+                .map(actor -> lookupInActorOfAudience(actorOfAudience, actor))
                 .collect(Collectors.toList());
         if (!followers.isConstant()) {
             toSave.add(0, followers);
@@ -154,20 +154,20 @@ public class Audience {
         return toSave;
     }
 
-    private static Actor lookupInActorOnAudience(Actor actorOnAudience, Actor actor) {
+    private static Actor lookupInActorOfAudience(Actor actorOfAudience, Actor actor) {
         if (actor.isEmpty()) return  Actor.EMPTY;
-        if (actorOnAudience.isSame(actor)) return actorOnAudience;
+        if (actorOfAudience.isSame(actor)) return actorOfAudience;
 
-        Optional<Actor> optFollowers = actorOnAudience.getEndpoint(ActorEndpointType.API_FOLLOWERS)
+        Optional<Actor> optFollowers = actorOfAudience.getEndpoint(ActorEndpointType.API_FOLLOWERS)
             .flatMap(uri -> actor.oid.equals(uri.toString())
-                ? Optional.of(Group.getActorsGroup(actorOnAudience, GroupType.FOLLOWERS, actor.oid))
+                ? Optional.of(Group.getActorsGroup(actorOfAudience, GroupType.FOLLOWERS, actor.oid))
                 : Optional.empty()
             );
         if (optFollowers.isPresent()) return optFollowers.get();
 
-        Optional<Actor> optFriends = actorOnAudience.getEndpoint(ActorEndpointType.API_FOLLOWING)
+        Optional<Actor> optFriends = actorOfAudience.getEndpoint(ActorEndpointType.API_FOLLOWING)
                 .flatMap(uri -> actor.oid.equals(uri.toString())
-                        ? Optional.of(Group.getActorsGroup(actorOnAudience, GroupType.FRIENDS, actor.oid))
+                        ? Optional.of(Group.getActorsGroup(actorOfAudience, GroupType.FRIENDS, actor.oid))
                         : Optional.empty()
                 );
         if (optFriends.isPresent()) return optFriends.get();
@@ -252,7 +252,7 @@ public class Audience {
         if (other.isPublic()) return getPublic().isTrue ? Try.success(Actor.PUBLIC) : TryUtils.notFound();
 
         List<Actor> nonSpecialActors = getNonSpecialActors();
-        if (other.groupType.isGroup.isTrue && other.groupType.parentActorRequired()) {
+        if (other.groupType.parentActorRequired) {
             return TryUtils.fromOptional(nonSpecialActors.stream()
                     .filter(a -> a.groupType == other.groupType).findAny());
         }
@@ -267,16 +267,16 @@ public class Audience {
     /** TODO: Audience should belong to an Activity, not to a Note.
      *        As audience currently belongs to a Note, we actually use noteAuthor instead of activityActor here.
      * @return true if data changed */
-    public boolean save(Actor actorOnAudience, long noteId, TriState isPublic, boolean countOnly) {
-        if (!actorOnAudience.origin.isValid() || noteId == 0 || actorOnAudience.actorId == 0 || !origin.myContext.isReady()) {
+    public boolean save(Actor actorOfAudience, long noteId, TriState isPublic, boolean countOnly) {
+        if (!actorOfAudience.origin.isValid() || noteId == 0 || actorOfAudience.actorId == 0 || !origin.myContext.isReady()) {
             return false;
         }
-        Audience prevAudience = Audience.loadIds(actorOnAudience.origin, noteId, Optional.of(isPublic));
-        List<Actor> actorsToSave = getActorsToSave(actorOnAudience);
+        Audience prevAudience = Audience.loadIds(actorOfAudience.origin, noteId, Optional.of(isPublic));
+        List<Actor> actorsToSave = getActorsToSave(actorOfAudience);
         Set<Actor> toDelete = new HashSet<>();
         Set<Actor> toAdd = new HashSet<>();
 
-        for (Actor actor : prevAudience.getActorsToSave(actorOnAudience)) {
+        for (Actor actor : prevAudience.getActorsToSave(actorOfAudience)) {
             findSame(actor).onFailure(e -> toDelete.add(actor));
         }
         for (Actor actor : actorsToSave) {

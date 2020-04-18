@@ -36,6 +36,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginPumpio;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -145,7 +146,7 @@ public final class DemoData {
         final String method = "add";
         dataPath = dataPathIn;
         MyLog.v(TAG, method + ": started");
-        final MyAsyncTask<Void, Void, Void> asyncTask = addAsync(method, myContext, ProgressLogger.EMPTY_LISTENER);
+        final MyAsyncTask<Void, Void, Void> asyncTask = addAsync(myContext, ProgressLogger.EMPTY_LISTENER);
         long count = 200;
         while (count > 0) {
             boolean completedWork = asyncTask.completedBackgroundWork();
@@ -155,6 +156,9 @@ public final class DemoData {
                 break;
             }
             count--;
+        }
+        if (ExceptionsCounter.firstError.get() != null) {
+            fail("Error during Demo data creation: " + ExceptionsCounter.firstError.get());
         }
         assertEquals("Demo data creation failed, count=" + count + ", status=" + asyncTask.getStatus()
                 + ", " + asyncTask.toString(), true, asyncTask.completedBackgroundWork());
@@ -264,7 +268,7 @@ public final class DemoData {
     }
 
     @NonNull
-    public MyAsyncTask<Void, Void, Void> addAsync(final String logTag, final MyContext myContext,
+    public MyAsyncTask<Void, Void, Void> addAsync(final MyContext myContext,
                                                   final ProgressLogger.ProgressListener progressListener) {
         MyAsyncTaskDemoData asyncTask = new MyAsyncTaskDemoData(progressListener, myContext, this);
         AsyncTaskLauncher.execute(progressListener.getLogTag(), asyncTask);

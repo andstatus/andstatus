@@ -101,7 +101,7 @@ public class HelpActivity extends MyActivity {
 
             generatingDemoData = true;
             progressListener = new DefaultProgressListener(this, R.string.app_name, "GenerateDemoData");
-            demoData.addAsync("GenerateDemoData", MyContextHolder.get(), progressListener);
+            demoData.addAsync(MyContextHolder.get(), progressListener);
         }
 
         showRestoreButton();

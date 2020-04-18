@@ -121,6 +121,9 @@ public class DemoConversationInserter {
         AActivity reply5 = buildActivity(author2, "", MENTIONS_NOTE_BODY, reply4,
                 iteration == 1 ? demoData.conversationMentionsNoteOid : null);
         addActivity(reply5);
+        if (iteration == 1) {
+            assertEquals(reply5.toString(), demoData.conversationMentionsNoteOid, reply5.getNote().oid);
+        }
         assertThat("The user '" + author3.getUsername() + "' should be a recipient\n" + reply5.getNote(),
                 reply5.getNote().audience().getNonSpecialActors(), hasItem(author3));
         assertThat("The user '" + author2.getUsername() + "' should not be a recipient\n" + reply5.getNote(),

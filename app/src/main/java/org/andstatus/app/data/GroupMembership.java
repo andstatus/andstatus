@@ -155,9 +155,8 @@ public class GroupMembership {
                 GroupMembersTable.GROUP_ID + "=" + group.actorId + " AND " +
                 GroupMembersTable.MEMBER_ID + "=" + memberId, null);
         } else {
-            if (group.groupType.isGroup.isFalse) {
-                return;
-            }
+            if (!group.groupType.isGroupLike) return;
+
             ContentValues cv = new ContentValues();
             cv.put(GroupMembersTable.GROUP_ID, group.actorId);
             cv.put(GroupMembersTable.MEMBER_ID, memberId);

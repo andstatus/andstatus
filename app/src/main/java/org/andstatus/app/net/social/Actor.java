@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountName;
+import org.andstatus.app.actor.Group;
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
@@ -278,7 +279,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public boolean isPartiallyDefined() {
-        if (groupType.isGroup.isTrue) return false;
+        if (groupType.isGroupLike) return false;
 
         if (isPartiallyDefined.unknown) {
             isPartiallyDefined = TriState.fromBoolean(!origin.isValid() || UriUtils.nonRealOid(oid) ||
@@ -614,16 +615,10 @@ public class Actor implements Comparable<Actor>, IsEmpty {
                 }
                 if (actorId == 0 && !skip2 && groupType != GroupType.UNKNOWN) {
                     GroupType groupTypeStored = origin.myContext.users().idToGroupType(actorId2);
-                    if (groupType != groupTypeStored) {
-                        if (groupTypeStored == GroupType.UNKNOWN ||
-                                (groupType.isGroup.isTrue && groupTypeStored.isGroup.isFalse)) {
-                            long updatedDateStored = MyQuery.actorIdToLongColumnValue(ActorTable.UPDATED_DATE, actorId2);
-                            if (updatedDate <= updatedDateStored) {
-                                updatedDate = Math.max(updatedDateStored + 1, SOME_TIME_AGO + 1);
-                            }
-                        } else {
-                            MyLog.i(this, "Different groupTypes for " + this +
-                                    ", stored: " + groupTypeStored + ", id: " + actorId2);
+                    if (Group.groupTypeNeedsCorrection(groupTypeStored, groupType)) {
+                        long updatedDateStored = MyQuery.actorIdToLongColumnValue(ActorTable.UPDATED_DATE, actorId);
+                        if (this.getUpdatedDate() <= updatedDateStored) {
+                            this.setUpdatedDate(Math.max(updatedDateStored + 1, SOME_TIME_AGO + 1));
                         }
                     }
                 }

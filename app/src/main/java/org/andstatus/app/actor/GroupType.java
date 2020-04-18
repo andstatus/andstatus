@@ -16,28 +16,49 @@
 
 package org.andstatus.app.actor;
 
-import org.andstatus.app.util.TriState;
-
 /** See https://www.w3.org/TR/activitystreams-vocabulary/#dfn-group
  * @author yvolk@yurivolkov.com
  */
 public enum GroupType {
-    NOT_A_GROUP("NotAGroup", 1, TriState.FALSE),
-    PUBLIC("Public", 2, TriState.TRUE),
-    FRIENDS("Friends", 3, TriState.TRUE),
-    FOLLOWERS("Followers", 4, TriState.TRUE),
-    ACTOR_OWNED("ActorOwned", 5, TriState.TRUE),
-    GENERIC("Generic", 6, TriState.TRUE),
-    UNKNOWN("Unknown", 0, TriState.UNKNOWN);
+    NOT_A_GROUP("NotAGroup", 1, IsGroupLike.NO, IsCollection.NO, IsActorOwned.NO),
+    PUBLIC("Public", 2, IsGroupLike.YES, IsCollection.NO, IsActorOwned.NO),
+    GENERIC("Generic", 6, IsGroupLike.YES, IsCollection.NO, IsActorOwned.NO),
+    COLLECTION("Collection", 7, IsGroupLike.YES, IsCollection.YES, IsActorOwned.NO),
+    FRIENDS("Friends", 3, IsGroupLike.YES, IsCollection.YES, IsActorOwned.YES),
+    FOLLOWERS("Followers", 4, IsGroupLike.YES, IsCollection.YES, IsActorOwned.YES),
+    ACTOR_OWNED("ActorOwned", 5, IsGroupLike.YES, IsCollection.NO, IsActorOwned.YES),
+    UNKNOWN("Unknown", 0, IsGroupLike.NO, IsCollection.NO, IsActorOwned.NO);
 
     public final long id;
     public final String name;
-    public final TriState isGroup;
+    /** true if this is a "Group" object or simply a "Collection" of Actors */
+    public final boolean isGroupLike;
+    /** The Group id points to a Collection object */
+    public final boolean isCollection;
+    /** A groupLike that has a parent actor */
+    public final boolean parentActorRequired;
 
-    GroupType(String name, long id, TriState isGroup) {
+    private enum  IsGroupLike {
+        YES,
+        NO;
+    }
+
+    private enum  IsCollection {
+        YES,
+        NO;
+    }
+
+    private enum  IsActorOwned {
+        YES,
+        NO;
+    }
+
+    GroupType(String name, long id, IsGroupLike isGroupLike, IsCollection isCollection, IsActorOwned isActorOwned) {
         this.name = name;
         this.id = id;
-        this.isGroup = isGroup;
+        this.isGroupLike = isGroupLike == IsGroupLike.YES;
+        this.isCollection = isCollection == IsCollection.YES;
+        this.parentActorRequired = isActorOwned == IsActorOwned.YES;
     }
 
     public static GroupType fromId(long id) {
@@ -47,17 +68,6 @@ public enum GroupType {
             }
         }
         return UNKNOWN;
-    }
-
-    public boolean parentActorRequired() {
-        switch (this) {
-            case ACTOR_OWNED:
-            case FRIENDS:
-            case FOLLOWERS:
-                return true;
-            default:
-                return false;
-        }
     }
 
     public boolean isSameActor(GroupType other) {
