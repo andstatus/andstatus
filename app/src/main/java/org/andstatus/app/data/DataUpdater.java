@@ -278,6 +278,9 @@ public class DataUpdater {
                     execContext.getContext().getContentResolver().update(msgUri, values2, null, null);
                 }
                 MyLog.v("Note", () -> "Added " + note);
+                if (!note.hasSomeContent() && note.getStatus().canBeDownloaded) {
+                    Note.requestDownload(me, note.noteId, false);
+                }
             } else {
                 Uri msgUri = MatchedUri.getMsgUri(me.getActorId(), note.noteId);
                 execContext.getContext().getContentResolver().update(msgUri, values, null, null);

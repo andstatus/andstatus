@@ -21,6 +21,7 @@ import android.database.Cursor;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
@@ -30,6 +31,9 @@ import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
+import org.andstatus.app.service.CommandData;
+import org.andstatus.app.service.CommandEnum;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.LazyVal;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
@@ -52,6 +56,7 @@ import static org.andstatus.app.util.UriUtils.nonRealOid;
  * @author yvolk@yurivolkov.com
  */
 public class Note extends AObject {
+    private static final String TAG = Note.class.getSimpleName();
     public static final Note EMPTY = new Note(Origin.EMPTY, getTempOid());
 
     private DownloadStatus status = DownloadStatus.UNKNOWN;
@@ -441,6 +446,14 @@ public class Note extends AObject {
 
     public void setStatus(DownloadStatus status) {
         this.status = status;
+    }
+
+    public static void requestDownload(MyAccount ma, long noteId, boolean isManuallyLaunched) {
+        MyLog.v(TAG, () -> "Note id:" + noteId + " will be loaded from the Internet");
+        CommandData command = CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, noteId)
+                .setManuallyLaunched(isManuallyLaunched)
+                .setInForeground(isManuallyLaunched);
+        MyServiceManager.sendCommand(command);
     }
 
     public void setAudience(Audience audience) {

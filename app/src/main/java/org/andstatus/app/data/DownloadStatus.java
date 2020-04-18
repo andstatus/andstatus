@@ -19,28 +19,34 @@ package org.andstatus.app.data;
 import android.content.Context;
 
 import org.andstatus.app.R;
-import org.andstatus.app.util.MyLog;
 
 public enum DownloadStatus {
-    LOADED(2, 0),
-    SOFT_ERROR(4, 0),
-    HARD_ERROR(5, 0),
-    ABSENT(6, 0),
-    SENDING(7, R.string.download_status_unsent),
-    SENT(11, R.string.sent),
-    DRAFT(8, R.string.download_status_draft),
-    DELETED(9, 0),
-    NEEDS_UPDATE(10, 0),
-    UNKNOWN(0, 0);
+    LOADED(2, 0, CanBeDownloaded.YES),
+    SOFT_ERROR(4, 0, CanBeDownloaded.NO),
+    HARD_ERROR(5, 0, CanBeDownloaded.NO),
+    ABSENT(6, 0, CanBeDownloaded.NO),
+    SENDING(7, R.string.download_status_unsent, CanBeDownloaded.YES),
+    SENT(11, R.string.sent, CanBeDownloaded.YES),
+    DRAFT(8, R.string.download_status_draft, CanBeDownloaded.NO),
+    DELETED(9, 0, CanBeDownloaded.NO),
+    NEEDS_UPDATE(10, 0, CanBeDownloaded.YES),
+    UNKNOWN(0, 0, CanBeDownloaded.YES);
 
     private static final String TAG = DownloadStatus.class.getSimpleName();
 
     private long code;
     private int titleResourceId;
+    public final boolean canBeDownloaded;
 
-    DownloadStatus(long codeIn, int titleResourceIdIn) {
+    private enum CanBeDownloaded {
+        YES,
+        NO
+    }
+
+    DownloadStatus(long codeIn, int titleResourceIdIn, CanBeDownloaded canBeDownloaded) {
         code = codeIn;
         titleResourceId = titleResourceIdIn;
+        this.canBeDownloaded = canBeDownloaded == CanBeDownloaded.YES;
     }
     
     public long save() {

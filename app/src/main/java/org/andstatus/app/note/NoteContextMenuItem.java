@@ -24,6 +24,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.view.Menu;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.account.AccountSelector;
@@ -38,6 +40,7 @@ import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.list.ContextMenuItem;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Note;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;
@@ -50,8 +53,6 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.view.MyContextMenu;
-
-import androidx.annotation.NonNull;
 
 public enum NoteContextMenuItem implements ContextMenuItem {
     REPLY(true, false) {
@@ -340,10 +341,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            MyServiceManager.sendManualForegroundCommand(
-                    CommandData.newItemCommand(CommandEnum.GET_NOTE, menu.getActingAccount(),
-                    menu.getNoteId())
-            );
+            Note.requestDownload(menu.getActingAccount(), menu.getNoteId(), true);
         }
     },
     OPEN_NOTE_LINK {

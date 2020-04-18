@@ -32,6 +32,7 @@ import org.andstatus.app.data.checker.CheckConversations;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Note;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -205,9 +206,7 @@ public abstract class ConversationLoader extends SyncLoader<ConversationViewItem
         if (requestConversationSync(noteId)) {
             return;
         }
-        MyLog.v(this, () -> "Note id=" + noteId + " will be loaded from the Internet");
-        MyServiceManager.sendForegroundCommand(
-                CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, noteId));
+        Note.requestDownload(ma, noteId, true);
     }
 
     private boolean requestConversationSync(long noteId_in) {
