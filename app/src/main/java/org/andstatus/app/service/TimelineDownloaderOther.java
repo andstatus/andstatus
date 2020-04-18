@@ -106,7 +106,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                 if (tryPage.isSuccess()) {
                     InputTimelinePage page = tryPage.get();
                     syncTracker.onNewPage(page);
-                    for (AActivity activity : page.activities) {
+                    for (AActivity activity : page.items) {
                         syncTracker.onNewActivity(activity.getTimelinePosition(), activity.getUpdatedDate());
                         if (!activity.isSubscribedByMe().equals(TriState.FALSE)
                                 && activity.getUpdatedDate() > 0

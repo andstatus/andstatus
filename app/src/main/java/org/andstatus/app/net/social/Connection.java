@@ -305,10 +305,11 @@ public abstract class Connection implements IsEmpty {
      */
     public abstract Try<Boolean> deleteNote(String noteOid);
 
-    public Try<List<Actor>> getFriendsOrFollowers(Connection.ApiRoutineEnum routineEnum, Actor actor) {
-        return routineEnum == ApiRoutineEnum.GET_FRIENDS
+    public Try<InputActorPage> getFriendsOrFollowers(ApiRoutineEnum routineEnum, TimelinePosition position, Actor actor) {
+        return (routineEnum == ApiRoutineEnum.GET_FRIENDS
                 ? getFriends(actor)
-                : getFollowers(actor);
+                : getFollowers(actor))
+        .map(InputActorPage::of);
     }
 
     public Try<List<String>> getFriendsOrFollowersIds(Connection.ApiRoutineEnum routineEnum, String actorOid) {

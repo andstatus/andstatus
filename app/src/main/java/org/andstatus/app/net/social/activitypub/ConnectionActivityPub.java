@@ -34,6 +34,7 @@ import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.InputActorPage;
 import org.andstatus.app.net.social.InputTimelinePage;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
@@ -172,23 +173,19 @@ public class ConnectionActivityPub extends Connection {
     }
 
     @Override
-    public Try<List<Actor>> getFollowers(Actor actor) {
-        return getActors(actor, ApiRoutineEnum.GET_FOLLOWERS);
-    }
-
-    @Override
-    public Try<List<Actor>> getFriends(Actor actor) {
-        return getActors(actor, ApiRoutineEnum.GET_FRIENDS);
+    public Try<InputActorPage> getFriendsOrFollowers(ApiRoutineEnum routineEnum, TimelinePosition position, Actor actor) {
+        return getActors(routineEnum, position, actor);
     }
 
     @NonNull
-    private Try<List<Actor>> getActors(Actor actor, ApiRoutineEnum apiRoutine) {
-        return ConnectionAndUrl.fromActor(this, apiRoutine, actor)
+    private Try<InputActorPage> getActors(ApiRoutineEnum apiRoutine, TimelinePosition position, Actor actor) {
+        return ConnectionAndUrl.fromActor(this, apiRoutine, position, actor)
         .flatMap(conu ->
-            conu.getRequest().map(root -> {
-                List<Actor> actors = AJsonCollection.of(root).mapAll(this::actorFromJson, this::actorFromOid);
+            conu.getRequest().map(jsonObject -> {
+                AJsonCollection jsonCollection = AJsonCollection.of(jsonObject);
+                List<Actor> actors = jsonCollection.mapAll(this::actorFromJson, this::actorFromOid);
                 MyLog.v(TAG, () -> apiRoutine + " '" + conu.uri + "' " + actors.size() + " actors");
-                return actors;
+                return InputActorPage.of(jsonCollection, actors);
             })
         );
     }
@@ -224,7 +221,7 @@ public class ConnectionActivityPub extends Connection {
             return ConnectionAndUrl
             .fromUriActor(uri, this, ApiRoutineEnum.GET_CONVERSATION, data.getAccountActor())
             .flatMap(conu -> getActivities(ApiRoutineEnum.GET_CONVERSATION, conu))
-            .map(p -> p.activities);
+            .map(p -> p.items);
         } else {
             return super.getConversation(conversationOid);
         }
@@ -235,12 +232,9 @@ public class ConnectionActivityPub extends Connection {
     public Try<InputTimelinePage> getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine,
                   TimelinePosition youngestPosition, TimelinePosition oldestPosition, int limit, Actor actor) {
         TimelinePosition requestedPosition = syncYounger ? youngestPosition : oldestPosition;
-        return ConnectionAndUrl.fromActor(this, apiRoutine, actor)
-            // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
-        .map(conu -> UriUtils.toDownloadableOptional(requestedPosition.getPosition())
-                        .map(conu::withUri)
-                        .orElse(conu)
-        )
+
+        // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
+        return ConnectionAndUrl.fromActor(this, apiRoutine, requestedPosition, actor)
         .flatMap(conu -> getActivities(apiRoutine, conu));
     }
 
@@ -489,7 +483,7 @@ public class ConnectionActivityPub extends Connection {
     @Override
     public Try<Actor> getActor2(Actor actorIn) {
         return ConnectionAndUrl
-        .fromActor(this, ApiRoutineEnum.GET_ACTOR, actorIn)
+        .fromActor(this, ApiRoutineEnum.GET_ACTOR, TimelinePosition.EMPTY, actorIn)
         .flatMap(ConnectionAndUrl::getRequest)
         .map(this::actorFromJson);
     }

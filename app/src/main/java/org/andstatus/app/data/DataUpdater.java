@@ -491,7 +491,7 @@ public class DataUpdater {
         .getTimeline(true, TimelineType.SENT.getConnectionApiRoutine(), TimelinePosition.EMPTY,
                 TimelinePosition.EMPTY, 1, actor)
         .map(page -> {
-            for (AActivity item : page.activities) {
+            for (AActivity item : page.items) {
                 onActivity(item, false);
             }
             saveLum();

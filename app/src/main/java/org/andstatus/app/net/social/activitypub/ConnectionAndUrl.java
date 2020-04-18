@@ -24,6 +24,7 @@ import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UrlUtils;
@@ -51,8 +52,11 @@ class ConnectionAndUrl {
         return getConnection(connection, apiRoutine, actor).map(conu -> new ConnectionAndUrl(uri, conu));
     }
 
-    static Try<ConnectionAndUrl> fromActor(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) {
-        final Optional<Uri> endpoint = actor.getEndpoint(ActorEndpointType.from(apiRoutine));
+    static Try<ConnectionAndUrl> fromActor(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine,
+                                           TimelinePosition position, Actor actor) {
+        final Optional<Uri> endpoint = position.optUri().isPresent()
+                ? position.optUri()
+                : actor.getEndpoint(ActorEndpointType.from(apiRoutine));
         if (!endpoint.isPresent()) {
             return Try.failure(new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
                     ": endpoint is empty for " + actor));

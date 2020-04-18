@@ -104,7 +104,7 @@ public class ConnectionMastodonTest {
         assertEquals("Media URI", UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
                 attachment.getUri());
 
-        timeline.activities.forEach(act -> act.setUpdatedNow(0));
+        timeline.items.forEach(act -> act.setUpdatedNow(0));
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 MyContextHolder.get(), CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME));

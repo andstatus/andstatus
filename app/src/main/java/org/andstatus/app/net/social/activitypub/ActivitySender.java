@@ -34,6 +34,7 @@ import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.net.social.Note;
+import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
@@ -100,7 +101,8 @@ class ActivitySender {
         try {
             activity = buildActivityToSend(activityType);
             JSONObject activityImm = activity;
-            Try<ConnectionAndUrl> tryConu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPDATE_NOTE, getActor());
+            Try<ConnectionAndUrl> tryConu = ConnectionAndUrl.fromActor(connection,
+                    ApiRoutineEnum.UPDATE_NOTE, TimelinePosition.EMPTY, getActor());
             Try<HttpReadResult> activityResponse = tryConu
                 .flatMap(conu -> connection.postRequest(conu.uri, activityImm));
             Try<JSONObject> jsonObject = activityResponse
@@ -229,8 +231,9 @@ class ActivitySender {
         try {
             formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "file");
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachment.uri.toString());
-            Try<HttpReadResult> result = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA, getActor())
-                    .flatMap(conu -> connection.postRequest(conu.uri, formParams));
+            Try<HttpReadResult> result = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA,
+                    TimelinePosition.EMPTY, getActor())
+                .flatMap(conu -> connection.postRequest(conu.uri, formParams));
             if (result.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
                 result = Try.failure(new ConnectionException(
                         "Error uploading '" + attachment + "': null response returned"));

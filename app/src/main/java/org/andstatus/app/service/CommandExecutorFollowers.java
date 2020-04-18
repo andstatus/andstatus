@@ -28,9 +28,12 @@ import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.InputActorPage;
+import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtil;
@@ -40,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.vavr.control.Try;
 
@@ -76,7 +80,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         Connection.ApiRoutineEnum apiActors = command == CommandEnum.GET_FOLLOWERS
                 ? Connection.ApiRoutineEnum.GET_FOLLOWERS : Connection.ApiRoutineEnum.GET_FRIENDS;
         if (isApiSupported(apiActors)) {
-            return getConnection().getFriendsOrFollowers(apiActors, getActor());
+            return getNewActors(apiActors);
         } else {
             Connection.ApiRoutineEnum apiIds = command == CommandEnum.GET_FOLLOWERS
                     ? Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS : Connection.ApiRoutineEnum.GET_FRIENDS_IDS;
@@ -89,6 +93,30 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                         apiActors + " and " + apiIds));
             }
         }
+    }
+
+    private Try<List<Actor>> getNewActors(Connection.ApiRoutineEnum apiActors) {
+        List<Actor> actors = new ArrayList<>();
+        List<TimelinePosition> requested = new ArrayList<>();
+        AtomicReference<TimelinePosition> positionToRequest = new AtomicReference<>(TimelinePosition.EMPTY);
+        for (int pageNum = 0; pageNum < 100; pageNum++) {
+            if (requested.contains(positionToRequest.get())) break;
+
+            Try<InputActorPage> tried = getConnection().getFriendsOrFollowers(apiActors, positionToRequest.get(), getActor());
+            if (tried.isFailure()) return tried.map(page -> page.items);
+
+            requested.add(positionToRequest.get());
+            tried.onSuccess(page -> {
+                actors.addAll(page.items);
+
+                if (page.firstPosition.nonEmpty() && !requested.contains(page.firstPosition)) {
+                    positionToRequest.set(page.firstPosition);
+                } else if (page.olderPosition.nonEmpty() && !requested.contains(page.olderPosition)) {
+                    positionToRequest.set(page.olderPosition);
+                }
+            });
+        }
+        return Try.success(actors);
     }
 
     private Try<List<Actor>> getActorsForOids(List<String> actorOidsNew) {
@@ -129,14 +157,21 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     private void updateGroupMemberships(CommandEnum command, List<Actor> actorsNew) {
         GroupType groupType = command == CommandEnum.GET_FOLLOWERS
                 ? GroupType.FOLLOWERS : GroupType.FRIENDS;
-        int actionStringRes = command == CommandEnum.GET_FOLLOWERS ? R.string.followers : R.string.friends;
+        int actionStringRes = groupType == GroupType.FOLLOWERS ? R.string.followers : R.string.friends;
         Set<Long> actorIdsOld = GroupMembership.getGroupMemberIds(execContext.myContext, getActor().actorId, groupType);
         execContext.getResult().incrementDownloadedCount();
         broadcastProgress(execContext.getContext().getText(actionStringRes).toString()
                 + ": " + actorIdsOld.size() + " -> " + actorsNew.size(), false);
 
-        if (!areAllNotesLoaded(actorsNew)) {
+        boolean loadLatestNotes = actorsNew.size() < 30;  // TODO: Too long...
+        if (loadLatestNotes && !areAllNotesLoaded(actorsNew)) {
             if (updateNewActorsAndTheirLatestActions(actorsNew)) return;
+        } else {
+            DataUpdater dataUpdater = new DataUpdater(execContext);
+            for (Actor actor : actorsNew) {
+                AActivity activity = execContext.getMyAccount().getActor().update(actor);
+                dataUpdater.onActivity(activity);
+            }
         }
 
         for (Actor actor : actorsNew) {

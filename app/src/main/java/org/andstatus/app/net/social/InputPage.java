@@ -25,15 +25,15 @@ public abstract class InputPage<T> implements HasEmpty<T> {
     public final TimelinePosition youngerPosition;
     public final TimelinePosition thisPosition;
     public final TimelinePosition olderPosition;
-    public final List<T> activities;
+    public final List<T> items;
     private final boolean isEmpty;
 
-    protected InputPage(AJsonCollection jsonCollection, List<T> activities) {
+    protected InputPage(AJsonCollection jsonCollection, List<T> items) {
         firstPosition = TimelinePosition.of(jsonCollection.firstPage.getId());
         youngerPosition = TimelinePosition.of(jsonCollection.prevPage.getId());
         thisPosition = TimelinePosition.of(jsonCollection.getId());
         olderPosition = TimelinePosition.of(jsonCollection.nextPage.getId());
-        this.activities = activities;
+        this.items = items;
         isEmpty = jsonCollection.isEmpty();
     }
 
@@ -42,12 +42,12 @@ public abstract class InputPage<T> implements HasEmpty<T> {
     }
 
     public T get(int ind) {
-        return ind < 0 || ind > activities.size()
+        return ind < 0 || ind > items.size()
                 ? empty()
-                : activities.get(ind);
+                : items.get(ind);
     }
 
     public int size() {
-        return activities.size();
+        return items.size();
     }
 }

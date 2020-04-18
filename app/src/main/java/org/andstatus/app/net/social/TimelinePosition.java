@@ -16,8 +16,13 @@
 
 package org.andstatus.app.net.social;
 
+import android.net.Uri;
+
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.StringUtil;
+import org.andstatus.app.util.UriUtils;
+
+import java.util.Optional;
 
 /**
  * Since introducing support for Pump.Io it appeared that 
@@ -46,6 +51,10 @@ public class TimelinePosition implements IsEmpty {
 
     public String getPosition() {
         return position;
+    }
+
+    public Optional<Uri> optUri() {
+        return UriUtils.toDownloadableOptional(position);
     }
 
     @Override
