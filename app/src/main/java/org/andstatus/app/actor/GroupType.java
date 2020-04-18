@@ -20,14 +20,14 @@ package org.andstatus.app.actor;
  * @author yvolk@yurivolkov.com
  */
 public enum GroupType {
-    NOT_A_GROUP("NotAGroup", 1, IsGroupLike.NO, IsCollection.NO, IsActorOwned.NO),
-    PUBLIC("Public", 2, IsGroupLike.YES, IsCollection.NO, IsActorOwned.NO),
-    GENERIC("Generic", 6, IsGroupLike.YES, IsCollection.NO, IsActorOwned.NO),
-    COLLECTION("Collection", 7, IsGroupLike.YES, IsCollection.YES, IsActorOwned.NO),
-    FRIENDS("Friends", 3, IsGroupLike.YES, IsCollection.YES, IsActorOwned.YES),
-    FOLLOWERS("Followers", 4, IsGroupLike.YES, IsCollection.YES, IsActorOwned.YES),
-    ACTOR_OWNED("ActorOwned", 5, IsGroupLike.YES, IsCollection.NO, IsActorOwned.YES),
-    UNKNOWN("Unknown", 0, IsGroupLike.NO, IsCollection.NO, IsActorOwned.NO);
+    NOT_A_GROUP("NotAGroup", 1, IsGroupLike.NO, IsCollection.NO, IsActorOwned.NO, 1),
+    PUBLIC("Public", 2, IsGroupLike.YES, IsCollection.NO, IsActorOwned.NO, 3),
+    GENERIC("Generic", 6, IsGroupLike.YES, IsCollection.NO, IsActorOwned.NO, 1),
+    COLLECTION("Collection", 7, IsGroupLike.YES, IsCollection.YES, IsActorOwned.NO, 1),
+    FRIENDS("Friends", 3, IsGroupLike.YES, IsCollection.YES, IsActorOwned.YES, 3),
+    FOLLOWERS("Followers", 4, IsGroupLike.YES, IsCollection.YES, IsActorOwned.YES, 3),
+    ACTOR_OWNED("ActorOwned", 5, IsGroupLike.YES, IsCollection.NO, IsActorOwned.YES, 2),
+    UNKNOWN("Unknown", 0, IsGroupLike.NO, IsCollection.NO, IsActorOwned.NO, 0);
 
     public final long id;
     public final String name;
@@ -37,6 +37,8 @@ public enum GroupType {
     public final boolean isCollection;
     /** A groupLike that has a parent actor */
     public final boolean parentActorRequired;
+    /** Used to figure out, which value is more specific */
+    public final long precision;
 
     private enum  IsGroupLike {
         YES,
@@ -53,12 +55,13 @@ public enum GroupType {
         NO;
     }
 
-    GroupType(String name, long id, IsGroupLike isGroupLike, IsCollection isCollection, IsActorOwned isActorOwned) {
+    GroupType(String name, long id, IsGroupLike isGroupLike, IsCollection isCollection, IsActorOwned isActorOwned, long precision) {
         this.name = name;
         this.id = id;
         this.isGroupLike = isGroupLike == IsGroupLike.YES;
         this.isCollection = isCollection == IsCollection.YES;
         this.parentActorRequired = isActorOwned == IsActorOwned.YES;
+        this.precision = precision;
     }
 
     public static GroupType fromId(long id) {

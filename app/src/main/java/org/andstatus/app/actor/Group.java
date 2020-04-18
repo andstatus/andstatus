@@ -15,6 +15,10 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
+import org.andstatus.app.util.UriUtils;
+
+import java.util.Optional;
 
 import static org.andstatus.app.util.StringUtil.nonEmptyNonTemp;
 import static org.andstatus.app.util.StringUtil.toTempOid;
@@ -40,10 +44,11 @@ public final class Group {
             : group;
     }
 
-    private static Actor correctGroupType(Actor actor, Actor group, GroupType groupType) {
-        String msg = "Correct group type to " + groupType + " for " + group;
+    private static Actor correctGroupType(Actor actor, Actor group, GroupType newType) {
+        MyStringBuilder msg = MyStringBuilder.of("Correct group type from " + group.groupType +
+                " to " + newType + " for " + group);
         if (group.actorId == 0){
-            MyLog.w(TAG, msg);
+            MyLog.w(TAG, msg.prependWithSeparator("Failed, actorId==0", ". ").toString());
             return group;
         }
         SQLiteDatabase db = actor.origin.myContext.getDatabase();
@@ -51,19 +56,33 @@ public final class Group {
             MyLog.databaseIsNull(() -> msg);
             return group;
         }
-        MyLog.i(TAG, msg);
 
-        long parentActorId = group.groupType.parentActorRequired ? actor.actorId : 0;
+        long parentActorId = newType.parentActorRequired ? actor.actorId : 0;
+
+        Optional<String> optOid = optOidFromEndpoint(actor, newType);
+        optOid.map(oid -> msg.withComma("uri", oid));
+        MyLog.i(TAG, msg.toString());
 
         db.execSQL("UPDATE " + ActorTable.TABLE_NAME +
-                " SET " + ActorTable.GROUP_TYPE + "=" + groupType.id +
-                (group.groupType.parentActorRequired == (parentActorId != 0)
-                    ? " AND " + ActorTable.PARENT_ACTOR_ID + "=" + parentActorId
+                " SET " + ActorTable.GROUP_TYPE + "=" + newType.id +
+                (newType.parentActorRequired == (parentActorId != 0)
+                    ? ", " + ActorTable.PARENT_ACTOR_ID + "=" + parentActorId
                     : "") +
+                optOid.map(oid -> ", " + ActorTable.ACTOR_OID + "='" + oid + "'").orElse("") +
                 " WHERE " + ActorTable._ID + "=" + group.actorId
         );
 
         return actor.origin.myContext.users().reload(group);
+    }
+
+    private static Optional<String> optOidFromEndpoint(Actor actor, GroupType groupType) {
+        return (groupType == GroupType.FOLLOWERS
+                ? actor.getEndpoint(ActorEndpointType.API_FOLLOWERS)
+                : groupType == GroupType.FRIENDS
+                    ? actor.getEndpoint(ActorEndpointType.API_FOLLOWING)
+                    : Optional.<Uri>empty())
+            .filter(UriUtils::isDownloadable)
+            .map(Uri::toString);
     }
 
     @NonNull
@@ -76,14 +95,27 @@ public final class Group {
             " FROM " + ActorTable.TABLE_NAME +
             " WHERE " + ActorTable.PARENT_ACTOR_ID + "=" + parentActor.actorId +
             " AND " + ActorTable.GROUP_TYPE + "=" + groupType.id)
-            .stream().findAny().orElse(0L);
+            .stream().findAny()
+        .orElseGet( () -> getGroupIdFromParentEndpoint(parentActor, groupType));
+    }
+
+    private static long getGroupIdFromParentEndpoint(Actor parentActor, GroupType groupType) {
+        return optOidFromEndpoint(parentActor, groupType)
+        .map(oid -> MyQuery.getLongs(parentActor.origin.myContext, "SELECT " + ActorTable._ID +
+                " FROM " + ActorTable.TABLE_NAME +
+                " WHERE " + ActorTable.ACTOR_OID + "='" + oid + "'" +
+                " AND " + ActorTable.ORIGIN_ID + "=" + parentActor.origin.getId()
+            )
+            .stream().findAny()
+            .orElse(0L))
+        .orElse(0L);
     }
 
     public static boolean groupTypeNeedsCorrection(GroupType oldType, GroupType newType) {
-        if (newType == GroupType.UNKNOWN || oldType == newType) return false;
+        if (newType.precision < oldType.precision || oldType == newType) return false;
 
         return (newType.isGroupLike && !oldType.isGroupLike) ||
-                (newType.isCollection != oldType.isCollection);
+                newType.precision > oldType.precision;
     }
 
     private static long addActorsGroup(MyContext myContext, Actor parentActor, GroupType newType, String oidIn) {

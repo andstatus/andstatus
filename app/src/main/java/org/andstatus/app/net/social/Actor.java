@@ -141,7 +141,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (actorId == 0) return supplier.get();
 
         Actor cached = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
-        return MyAsyncTask.nonUiThread() && (cached.isPartiallyDefined() || reloadFirst)
+        return MyAsyncTask.nonUiThread() && (reloadFirst || cached.isPartiallyDefined())
                 ? loadFromDatabase(myContext, actorId, supplier, true).betterToCache(cached)
                 : cached;
     }
@@ -271,7 +271,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (this == EMPTY) return true;
         if (isConstant()) return false;
         return !origin.isValid() ||
-                (actorId == 0 && UriUtils.nonRealOid(oid) && StringUtil.isEmpty(webFingerId) && !isUsernameValid());
+                (actorId == 0 && UriUtils.nonRealOid(oid) && !isWebFingerIdValid() && !isUsernameValid());
     }
 
     public boolean dontStore() {
@@ -279,11 +279,12 @@ public class Actor implements Comparable<Actor>, IsEmpty {
     }
 
     public boolean isPartiallyDefined() {
-        if (groupType.isGroupLike) return false;
+        if (isEmpty() || groupType.isGroupLike) return false;
 
         if (isPartiallyDefined.unknown) {
-            isPartiallyDefined = TriState.fromBoolean(!origin.isValid() || UriUtils.nonRealOid(oid) ||
-                    StringUtil.isEmpty(webFingerId) ||
+            isPartiallyDefined = TriState.fromBoolean(
+                    UriUtils.nonRealOid(oid) ||
+                    !isWebFingerIdValid() ||
                     !isUsernameValid());
         }
         return isPartiallyDefined.isTrue;
