@@ -50,4 +50,8 @@ public abstract class InputPage<T> implements HasEmpty<T> {
     public int size() {
         return items.size();
     }
+
+    public String toString() {
+        return items.toString();
+    }
 }

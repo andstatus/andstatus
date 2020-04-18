@@ -125,7 +125,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
 
     public volatile User user = User.EMPTY;
 
-    private volatile TriState isPartiallyDefined = TriState.UNKNOWN;
+    private volatile TriState isFullyDefined = TriState.UNKNOWN;
 
     @NonNull
     public static Actor getEmpty() {
@@ -141,7 +141,7 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         if (actorId == 0) return supplier.get();
 
         Actor cached = myContext.users().actors.getOrDefault(actorId, Actor.EMPTY);
-        return MyAsyncTask.nonUiThread() && (reloadFirst || cached.isPartiallyDefined())
+        return MyAsyncTask.nonUiThread() && (reloadFirst || cached.isNotFullyDefined())
                 ? loadFromDatabase(myContext, actorId, supplier, true).betterToCache(cached)
                 : cached;
     }
@@ -278,26 +278,39 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return isConstant();
     }
 
-    public boolean isPartiallyDefined() {
-        if (isEmpty() || groupType.isGroupLike) return false;
-
-        if (isPartiallyDefined.unknown) {
-            isPartiallyDefined = TriState.fromBoolean(
-                    UriUtils.nonRealOid(oid) ||
-                    !isWebFingerIdValid() ||
-                    !isUsernameValid());
+    public boolean isFullyDefined() {
+        if (isFullyDefined.unknown) {
+            isFullyDefined = calcIsFullyDefined();
         }
-        return isPartiallyDefined.isTrue;
+        return isFullyDefined.isTrue;
+    }
+
+    private TriState calcIsFullyDefined() {
+        if (isEmpty() || UriUtils.nonRealOid(oid)) return TriState.FALSE;
+        if (groupType.isGroupLike) return TriState.TRUE;
+        return TriState.fromBoolean(isWebFingerIdValid() && isUsernameValid());
+    }
+
+    public boolean isNotFullyDefined() {
+        return !isFullyDefined();
     }
 
     public boolean isBetterToCacheThan(Actor other) {
         if (this == other) return false;
 
         if (other == null || other == EMPTY ||
-                (!isPartiallyDefined() && other.isPartiallyDefined())) return true;
-        if (this == EMPTY || (isPartiallyDefined() && !other.isPartiallyDefined())) return false;
+                (isFullyDefined() && other.isNotFullyDefined())) return true;
+        if (this == EMPTY || (isNotFullyDefined() && other.isFullyDefined())) return false;
 
-        if (isPartiallyDefined()) {
+        if (isFullyDefined()) {
+            if (getUpdatedDate() != other.getUpdatedDate()) {
+                return getUpdatedDate() > other.getUpdatedDate();
+            }
+            if (avatarFile.downloadedDate != other.avatarFile.downloadedDate) {
+                return avatarFile.downloadedDate > other.avatarFile.downloadedDate;
+            }
+            return notesCount > other.notesCount;
+        } else {
             if (isOidReal() && !other.isOidReal()) return true;
             if (!isOidReal() && other.isOidReal()) return false;
 
@@ -311,14 +324,6 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             if (UriUtils.isEmpty(profileUri) && UriUtils.nonEmpty(other.profileUri)) return false;
 
             return getUpdatedDate() > other.getUpdatedDate();
-        } else {
-            if (getUpdatedDate() != other.getUpdatedDate()) {
-                return getUpdatedDate() > other.getUpdatedDate();
-            }
-            if (avatarFile.downloadedDate != other.avatarFile.downloadedDate) {
-                return avatarFile.downloadedDate > other.avatarFile.downloadedDate;
-            }
-            return notesCount > other.notesCount;
         }
     }
 

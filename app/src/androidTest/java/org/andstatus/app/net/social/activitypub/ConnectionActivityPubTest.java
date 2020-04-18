@@ -30,6 +30,7 @@ import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.ConnectionMock;
+import org.andstatus.app.net.social.InputActorPage;
 import org.andstatus.app.net.social.InputTimelinePage;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
@@ -240,11 +241,11 @@ public class ConnectionActivityPubTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_friends_pleroma);
         Actor actor = Actor.fromOid(mock.getData().getOrigin(), "https://pleroma.site/users/ActivityPubTester");
         actor.endpoints.add(ActorEndpointType.API_FOLLOWING, "https://pleroma.site/users/ActivityPubTester/following");
-        List<Actor> actors = mock.connection.getFriends(actor).get();
+        InputActorPage page = mock.connection.getFriendsOrFollowers(Connection.ApiRoutineEnum.GET_FRIENDS,
+                TimelinePosition.EMPTY, actor).get();
         assertEquals("Number of actors, " +
-                "who " + actor.getUniqueNameWithOrigin() + " is following " + actors, 1, actors.size());
-
-        assertEquals("https://pleroma.site/users/AndStatus", actors.get(0).oid);
+                "who " + actor.getUniqueNameWithOrigin() + " is following " + page, 1, page.size());
+        assertEquals("https://pleroma.site/users/AndStatus", page.get(0).oid);
     }
 
     @Test

@@ -417,11 +417,10 @@ public abstract class Connection implements IsEmpty {
     /** Get information about the specified Actor */
     public Try<Actor> getActor(Actor actorIn) {
         return getActor2(actorIn).map(actor -> {
-            if (!actor.isPartiallyDefined() && (actor.getUpdatedDate() <= SOME_TIME_AGO)) {
+            if (actor.isFullyDefined() && (actor.getUpdatedDate() <= SOME_TIME_AGO)) {
                 actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
             }
-            MyLog.v(this, () -> "getActor oid='" + actorIn.oid
-                    + "', username='" + actorIn.getUsername() + "' -> " + actor.getRealName());
+            MyLog.v(this, () -> "getActor oid='" + actorIn.oid + "' -> " + actor.getUniqueName());
             return actor;
         });
     }

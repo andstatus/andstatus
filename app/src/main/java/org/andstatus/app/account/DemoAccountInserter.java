@@ -122,7 +122,7 @@ public class DemoAccountInserter {
         assertAccountIsAddedToAccountManager(ma);
 
         assertEquals("Oid: " + ma.getActor(), actor.oid, ma.getActor().oid);
-        assertEquals("Partially defined: " + ma.getActor(), false, ma.getActor().isPartiallyDefined());
+        assertTrue("Should be fully defined: " + ma.getActor(), ma.getActor().isFullyDefined());
 
         assertNotEquals(Timeline.EMPTY, getAutomaticallySyncableTimeline(myContext, ma));
         return ma;

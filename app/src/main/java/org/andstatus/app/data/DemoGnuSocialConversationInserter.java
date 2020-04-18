@@ -59,8 +59,7 @@ public class DemoGnuSocialConversationInserter {
         assertNotSame( "No host URL: " + origin, "", origin.getHost());
         final MyAccount myAccount = demoData.getGnuSocialAccount();
         accountActor = myAccount.getActor();
-        assertFalse( "Account actor is not defined " + myAccount,
-                accountActor.isEmpty() || accountActor.isPartiallyDefined());
+        assertTrue( "Should be fully defined " + myAccount, accountActor.isFullyDefined());
         assertEquals( "Inconsistent origin for " + accountActor + "\n and " + origin, accountActor.origin, origin);
     }
     

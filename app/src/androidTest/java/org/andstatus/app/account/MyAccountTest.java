@@ -80,7 +80,7 @@ public class MyAccountTest {
         MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(demoData.conversationAccountName + " exists", ma.isValid());
         Actor accountActor = ma.getActor();
-        assertFalse("Actor is partial " + accountActor, accountActor.isPartiallyDefined());
+        assertTrue("Should be fully defined " + accountActor, accountActor.isFullyDefined());
     }
 
     public static void fixPersistentAccounts(MyContext myContext) {

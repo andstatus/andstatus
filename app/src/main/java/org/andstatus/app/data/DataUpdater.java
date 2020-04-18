@@ -350,9 +350,9 @@ public class DataUpdater {
         fixActorUpdatedDate(activity, objActor);
         objActor.lookupActorId();
 
-        if (objActor.actorId != 0 && objActor.isPartiallyDefined() && objActor.isMyFriend.unknown
+        if (objActor.actorId != 0 && objActor.isNotFullyDefined() && objActor.isMyFriend.unknown
                 && activity.followedByActor().unknown && objActor.groupType == GroupType.UNKNOWN) {
-            MyLog.v(this, () -> method + "; Skipping partially defined: " + objActor);
+            MyLog.v(this, () -> method + "; Skipping existing partially defined: " + objActor);
             return;
         }
 
@@ -383,7 +383,7 @@ public class DataUpdater {
             String actorOid = (actor.actorId == 0 && !actor.isOidReal()) ? actor.toTempOid() : actor.oid;
 
             ContentValues values = new ContentValues();
-            if (actor.actorId == 0 || !actor.isPartiallyDefined()) {
+            if (actor.actorId == 0 || actor.isFullyDefined()) {
                 if (actor.actorId == 0 || actor.isOidReal()) {
                     values.put(ActorTable.ACTOR_OID, actorOid);
                 }
@@ -461,7 +461,7 @@ public class DataUpdater {
             actor.avatarFile.resetAvatarErrors(execContext.myContext);
             execContext.myContext.users().reload(actor);
 
-            if (actor.isPartiallyDefined() && actor.canGetActor()) {
+            if (actor.isNotFullyDefined() && actor.canGetActor()) {
                 actor.requestDownload(false);
             }
             actor.requestAvatarDownload();

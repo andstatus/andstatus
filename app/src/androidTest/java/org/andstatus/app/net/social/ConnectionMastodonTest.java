@@ -87,7 +87,7 @@ public class ConnectionMastodonTest {
         assertEquals("Parsing " + stringDate, 4, new Date(parsedDate).getMonth() + 1);
         assertEquals("Created at", parsedDate, actor.getCreatedDate());
 
-        assertEquals("Actor is partially defined " + actor, false, actor.isPartiallyDefined());
+        assertTrue("Actor is partially defined " + actor, actor.isFullyDefined());
         assertEquals("Actor Oid", "37", actor.oid);
         assertEquals("Username", "t131t1", actor.getUsername());
 

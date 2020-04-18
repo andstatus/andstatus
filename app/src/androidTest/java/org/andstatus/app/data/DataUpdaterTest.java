@@ -434,7 +434,7 @@ public class DataUpdaterTest {
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1));
 
         Actor actor1partial = Actor.fromOid(actor1.origin, actor1.oid);
-        assertTrue("Partially defined", actor1partial.isPartiallyDefined());
+        assertFalse("Should be partially defined", actor1partial.isFullyDefined());
         long actorId1partial = dataUpdater.onActivity(accountActor.update(actor1partial)).getObjActor().actorId;
         assertEquals("Same Actor", actorId1, actorId1partial);
         assertEquals("Partially defined Actor shouldn't change Username", actor1.getUsername(),
