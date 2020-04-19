@@ -60,7 +60,7 @@ public class PrivateNotesConversationLoader extends ConversationLoader {
     @NonNull
     // TODO: Actually this is not exactly what we need, because we don't check recipients
     private String getSelectionForActorAndAudience(String actor, String audienceIds) {
-        return "(" + NoteTable.PUBLIC + "=" + TriState.FALSE.id
+        return "(" + NoteTable.VISIBILITY + "=" + TriState.FALSE.id
                 + " AND (" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + actor
                 + " OR " + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + audienceIds + "))";
     }

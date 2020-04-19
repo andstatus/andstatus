@@ -180,7 +180,7 @@ public enum OriginType implements SelectableEnum {
     private final boolean isPrivateNoteAllowsReply;
     public final boolean hasNoteName;
     public final boolean hasNoteSummary;
-    public final boolean isPublicChangeAllowed;
+    public final boolean visibilityChangeAllowed;
     public final boolean isFollowersChangeAllowed;
     public final boolean isSensitiveChangeAllowed;
 
@@ -196,7 +196,7 @@ public enum OriginType implements SelectableEnum {
         this.title = title;
         hasNoteName = noteName == NoteName.YES;
         hasNoteSummary = noteSummary == NoteSummary.YES;
-        isPublicChangeAllowed = publicChangeAllowed == PublicChangeAllowed.YES;
+        visibilityChangeAllowed = publicChangeAllowed == PublicChangeAllowed.YES;
         isFollowersChangeAllowed = followersChangeAllowed == FollowersChangeAllowed.YES;
         isSensitiveChangeAllowed = sensitiveChangeAllowed == SensitiveChangeAllowed.YES;
         shortUrlLengthDefault = shortUrlLength;

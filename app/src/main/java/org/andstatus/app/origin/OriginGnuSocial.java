@@ -36,7 +36,7 @@ class OriginGnuSocial extends Origin {
     protected String alternativeNotePermalink(long noteId) {
         try {
             return new URL(url,
-                    (MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId).isFalse
+                    (MyQuery.noteIdToTriState(NoteTable.VISIBILITY, noteId).isFalse
                             ? "message"
                             : "notice") + "/"
                     + MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId)).toExternalForm();

@@ -28,7 +28,7 @@ public class ConversationLoaderFactory {
 
     public ConversationLoader getLoader(ConversationViewItem emptyItem, MyContext myContext, Origin origin, long noteId, boolean sync) {
         boolean recursiveLoader = origin.getOriginType().isPrivateNoteAllowsReply() ||
-                MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId).notFalse;
+                MyQuery.noteIdToTriState(NoteTable.VISIBILITY, noteId).notFalse;
         if (recursiveLoader) {
             return new RecursiveConversationLoader(emptyItem, myContext, origin, noteId, sync);
         }  else {

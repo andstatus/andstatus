@@ -92,9 +92,8 @@ public final class NoteTable implements BaseColumns {
     /** Date and time when the Note was first LOADED into this database
      * or if it was not LOADED yet, when the row was inserted into this database */
     public static final String INS_DATE = "note_ins_date";
-    /** {@link TriState} true - The Note is definitely public (e.g. it has Public group as one of its audience members)
-     * false - it is definitely private */
-    public static final String PUBLIC = "public";
+    /** {@link org.andstatus.app.net.social.Visibility} */
+    public static final String VISIBILITY = "public";  // TODO: rename
     /** Indicates that some users may wish to apply discretion about viewing its content, whether due to nudity,
      * violence, or any other likely aspects that viewers may be sensitive to.
      * See <a href="https://www.w3.org/wiki/Activity_Streams_extensions#as:sensitive_property">Activity Streams extensions</a> */
@@ -142,7 +141,7 @@ public final class NoteTable implements BaseColumns {
                 + AUTHOR_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + IN_REPLY_TO_NOTE_ID + " INTEGER,"
                 + IN_REPLY_TO_ACTOR_ID + " INTEGER,"
-                + PUBLIC + " INTEGER NOT NULL DEFAULT 0,"
+                + VISIBILITY + " INTEGER NOT NULL DEFAULT 0,"
                 + SENSITIVE + " INTEGER NOT NULL DEFAULT 0,"
                 + FAVORITED + " INTEGER NOT NULL DEFAULT 0,"
                 + REBLOGGED + " INTEGER NOT NULL DEFAULT 0,"

@@ -267,7 +267,7 @@ public class ConnectionActivityPubTest {
                 TestSuite.utcTime(note.getUpdatedDate()).toString());
 
         Audience audience = activity.audience();
-        assertEquals("Audience of " + activity, TriState.TRUE, audience.getPublic());
+        assertEquals("Visibility of " + activity, TriState.TRUE, audience.getVisibility());
         List<String> oids = Arrays.asList(
             "https://pleroma.site/users/kaniini",
             "https://pawoo.net/users/pawooAndStatusTester",
@@ -282,7 +282,7 @@ public class ConnectionActivityPubTest {
                 CommandData.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT));
         new DataUpdater(executionContext).onActivity(activity);
 
-        Audience audienceStored = Audience.fromNoteId(mock.getData().getOrigin(), note.noteId, note.getPublic());
+        Audience audienceStored = Audience.fromNoteId(mock.getData().getOrigin(), note.noteId, note.getVisibility());
         oids.forEach(oid -> {
             assertTrue("Audience should contain " + oid + "\n " + activity + "\n " + audienceStored, audienceStored.containsOid(oid));
         });
@@ -309,7 +309,7 @@ public class ConnectionActivityPubTest {
                 TestSuite.utcTime(note.getUpdatedDate()).toString());
 
         Audience audience = activity.audience();
-        assertEquals("Audience of " + activity, TriState.TRUE, audience.getPublic());
+        assertEquals("Visibility of " + activity, TriState.TRUE, audience.getVisibility());
         List<String> oids = Arrays.asList(
                 "https://queer.hacktivis.me/users/AndStatus/followers"
         );

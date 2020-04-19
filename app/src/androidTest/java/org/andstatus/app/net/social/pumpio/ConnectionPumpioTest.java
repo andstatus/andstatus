@@ -263,7 +263,7 @@ public class ConnectionPumpioTest {
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
 
         Audience audience = note.audience();
-        assertEquals("Is not Public " + audience, TriState.TRUE, audience.getPublic());
+        assertEquals("Is not Public " + audience, TriState.TRUE, audience.getVisibility());
         assertFalse("Is to Followers. We shouldn't know this yet?! " + audience, audience.isFollowers());
         assertThat(audience.getRecipients().toString(),
                 audience.getNonSpecialActors().stream().map(Actor::getUsername).collect(Collectors.toList()),
@@ -281,7 +281,7 @@ public class ConnectionPumpioTest {
         Note noteStored = Note.loadContentById(mock.getData().getOrigin().myContext, note.noteId);
 
         Audience audienceStored = noteStored.audience();
-        assertEquals("Is not Public " + audienceStored, TriState.TRUE, audienceStored.getPublic());
+        assertEquals("Is not Public " + audienceStored, TriState.TRUE, audienceStored.getVisibility());
         assertTrue("Is not to Followers " + audienceStored, audienceStored.isFollowers());
         assertThat(audienceStored.getRecipients().toString(), audienceStored.getNonSpecialActors(), is(empty()));
     }

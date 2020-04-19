@@ -136,7 +136,7 @@ public class NoteEditorData implements IsEmpty {
             inReplyToNote.noteId = inReplyToNoteId;
             inReplyToNote.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, inReplyToNoteId));
             inReplyToNote.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, inReplyToNoteId));
-            inReplyToNote.setPublic(MyQuery.noteIdToTriState(NoteTable.PUBLIC, inReplyToNoteId));
+            inReplyToNote.setVisibility(MyQuery.noteIdToTriState(NoteTable.VISIBILITY, inReplyToNoteId));
             inReplyToNote.setSensitive(MyQuery.noteIdToLongColumnValue(NoteTable.SENSITIVE, inReplyToNoteId) == 1);
             inReplyToNote.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId));
             note.setInReplyTo(inReplyTo);
@@ -257,7 +257,7 @@ public class NoteEditorData implements IsEmpty {
         audience.add(activity.getNote().getInReplyTo().getActor());
         audience.addActorsFromContent(activity.getNote().getContent(),
                 activity.getAuthor(), activity.getNote().getInReplyTo().getActor());
-        audience.setPublic(activity.getNote().audience().getPublic());
+        audience.setVisibility(activity.getNote().audience().getVisibility());
         audience.setFollowers(activity.getNote().audience().isFollowers());
         activity.getNote().setAudience(audience);
     }
@@ -388,13 +388,13 @@ public class NoteEditorData implements IsEmpty {
         return this;
     }
 
-    public TriState getPublic() {
-        return activity.getNote().getPublic();
+    public TriState getVisibility() {
+        return activity.getNote().getVisibility();
     }
 
     public NoteEditorData setPublic(boolean isPublic) {
-        if (canChangeIsPublic()) {
-            this.activity.getNote().setPublic(isPublic ? TriState.TRUE : TriState.FALSE);
+        if (canChangeVisibility()) {
+            this.activity.getNote().setVisibility(isPublic ? TriState.TRUE : TriState.FALSE);
         }
         return this;
     }
@@ -425,8 +425,8 @@ public class NoteEditorData implements IsEmpty {
         return this;
     }
 
-    public boolean canChangeIsPublic() {
-        return ma.getOrigin().getOriginType().isPublicChangeAllowed
+    public boolean canChangeVisibility() {
+        return ma.getOrigin().getOriginType().visibilityChangeAllowed
                 && (getInReplyToNoteId() == 0 || ma.getOrigin().getOriginType().isPrivateNoteAllowsReply());
     }
 

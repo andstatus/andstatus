@@ -243,8 +243,8 @@ public class DataUpdater {
             if (!StringUtil.isEmpty(note.url)) {
                 values.put(NoteTable.URL, note.url);
             }
-            if (note.getPublic().known) {
-                values.put(NoteTable.PUBLIC, note.getPublic().id);
+            if (note.getVisibility().known) {
+                values.put(NoteTable.VISIBILITY, note.getVisibility().id);
             }
 
             if (note.lookupConversationId() != 0) {
@@ -287,7 +287,7 @@ public class DataUpdater {
                 MyLog.v("Note", () -> "Updated " + note);
             }
             if (note.getStatus().mayUpdateContent()) {
-                note.audience().save(activity.getAuthor(), note.noteId, note.getPublic(), false);
+                note.audience().save(activity.getAuthor(), note.noteId, note.getVisibility(), false);
 
                 if (shouldSaveAttachments(isFirstTimeLoaded, isDraftUpdated)) {
                     note.attachments.save(execContext, note.noteId);

@@ -168,7 +168,7 @@ public class DemoNoteInserter {
 
         MyAccount ma = origin.myContext.accounts().fromActorId(accountActor.actorId);
         assertTrue("Persistent account exists for " + accountActor + " " + activity, ma.isValid());
-        final TimelineType timelineType = activity.getNote().getPublic().isFalse ? TimelineType.PRIVATE : TimelineType.HOME;
+        final TimelineType timelineType = activity.getNote().getVisibility().isFalse ? TimelineType.PRIVATE : TimelineType.HOME;
         CommandExecutionContext execContext = new CommandExecutionContext(origin.myContext,
                 CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType));
         activity.audience().assertContext();
@@ -344,7 +344,7 @@ public class DemoNoteInserter {
     }
 
     public static void assertVisibility(Audience audience, TriState isPublic, boolean isFollowers) {
-        assertEquals("Public check " + audience + "\n", isPublic, audience.getPublic());
+        assertEquals("Public check " + audience + "\n", isPublic, audience.getVisibility());
         assertEquals("Followers check " + audience + "\n", isFollowers, audience.isFollowers());
     }
 }

@@ -297,7 +297,7 @@ public class NoteEditor {
         if (item != null) {
             boolean enableAttach = isVisible()
                     && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_NOTES, true)
-                    && (editorData.getPublic().notFalse || editorData.getMyAccount().getOrigin().getOriginType()
+                    && (editorData.getVisibility().notFalse || editorData.getMyAccount().getOrigin().getOriginType()
                     .allowAttachmentForPrivateNote());
             item.setEnabled(enableAttach);
             item.setVisible(enableAttach);
@@ -427,8 +427,8 @@ public class NoteEditor {
 
     public void updateScreen() {
         setAdapter();
-        ViewUtils.showView(editorView, R.id.is_public, editorData.canChangeIsPublic());
-        MyCheckBox.set(getActivity(), R.id.is_public, editorData.getPublic().isTrue, true);
+        ViewUtils.showView(editorView, R.id.is_public, editorData.canChangeVisibility());
+        MyCheckBox.set(getActivity(), R.id.is_public, editorData.getVisibility().isTrue, true);
         ViewUtils.showView(editorView, R.id.is_followers, editorData.canChangeIsFollowers());
         MyCheckBox.set(getActivity(), R.id.is_followers, editorData.isFollowers(), true);
         ViewUtils.showView(editorView, R.id.is_sensitive, editorData.canChangeIsSensitive());

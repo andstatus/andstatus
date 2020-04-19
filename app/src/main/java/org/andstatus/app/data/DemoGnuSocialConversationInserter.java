@@ -77,7 +77,7 @@ public class DemoGnuSocialConversationInserter {
         selected.setSubscribedByMe(TriState.TRUE);
         AActivity reply1 = buildActivity(author3, "Reply 1 to selected", selected, null);
         AActivity reply2 = buildActivity(author2, "Reply 2 to selected is public", selected, null);
-        addPublicNote(reply2, TriState.TRUE);
+        addWithVisibility(reply2, TriState.TRUE);
         AActivity reply3 = buildActivity(author1, "Reply 3 to selected by the same author", selected, null);
         addActivity(selected);
         addActivity(reply3);
@@ -87,7 +87,7 @@ public class DemoGnuSocialConversationInserter {
         AActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1, " + demoData.publicNoteText + " other author", reply1, null);
         addActivity(reply4);
         DemoNoteInserter.increaseUpdateDate(reply4);
-        addPublicNote(reply4, TriState.FALSE);
+        addWithVisibility(reply4, TriState.FALSE);
 
         final AActivity reply5 = buildActivity(author2, "Reply 5 to Reply 4", reply4, null);
         addWithMultipleAttachments(reply5);
@@ -96,7 +96,7 @@ public class DemoGnuSocialConversationInserter {
 
         AActivity reply7 = buildActivity(author1, "Reply 7 to Reply 2 is about "
         + demoData.publicNoteText + " and something else", reply2, null);
-        addPublicNote(reply7, TriState.TRUE);
+        addWithVisibility(reply7, TriState.TRUE);
         
         AActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
         AActivity reply9 = buildActivity(author2, "Reply 9 to Reply 7, 3 images", reply7, null);
@@ -105,7 +105,7 @@ public class DemoGnuSocialConversationInserter {
         addWithMultipleImages(reply10, 1);
         AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + demoData.globalPublicNoteText
                 + " text", reply7, null);
-        addPublicNote(reply11, TriState.TRUE);
+        addWithVisibility(reply11, TriState.TRUE);
 
         AActivity reply12 = buildActivity(author2, "Reply 12 to Reply 7 reblogged by author1", reply7, null);
         DemoNoteInserter.onActivityS(reply12);
@@ -189,12 +189,12 @@ public class DemoGnuSocialConversationInserter {
         assertEquals(attachments.toString(), 2 * numberOfImages, attachments.size());
     }
 
-    private void addPublicNote(AActivity activity, TriState isPublic) {
-        activity.getNote().setPublic(isPublic);
+    private void addWithVisibility(AActivity activity, TriState visibility) {
+        activity.getNote().setVisibility(visibility);
         addActivity(activity);
-        assertEquals("Note is " + (isPublic.equals(TriState.TRUE) ? "public" :
-                        isPublic.equals(TriState.FALSE) ? "non public" : "") + ": " + activity.getNote().getContent(),
-                isPublic, MyQuery.noteIdToTriState(NoteTable.PUBLIC, activity.getNote().noteId));
+        assertEquals("Note is " + (visibility.equals(TriState.TRUE) ? "public" :
+                        visibility.equals(TriState.FALSE) ? "non public" : "") + ": " + activity.getNote().getContent(),
+                visibility, MyQuery.noteIdToTriState(NoteTable.VISIBILITY, activity.getNote().noteId));
     }
 
     private Actor actorFromOidAndAvatar(String actorOid, @Nullable String avatarUrl) {

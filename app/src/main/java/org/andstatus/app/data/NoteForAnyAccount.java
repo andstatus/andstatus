@@ -49,7 +49,7 @@ public class NoteForAnyAccount {
     public final Actor author;
     public final Actor actor;
     public final NoteDownloads downloads;
-    public final TriState isPublic;
+    public final TriState visibility;
     Audience audience;
     private String content = "";
 
@@ -61,13 +61,13 @@ public class NoteForAnyAccount {
         SQLiteDatabase db = myContext.getDatabase();
         long authorId = 0;
         DownloadStatus statusLoc = DownloadStatus.UNKNOWN;
-        TriState isPublicLoc = TriState.UNKNOWN;
+        TriState visibilityLoc = TriState.UNKNOWN;
         if (noteId != 0 && this.origin.isValid() && db != null) {
             String sql = "SELECT " + NoteTable.NOTE_STATUS + ", "
                     + NoteTable.CONTENT + ", "
                     + NoteTable.AUTHOR_ID + ","
                     + NoteTable.NOTE_OID + ", "
-                    + NoteTable.PUBLIC
+                    + NoteTable.VISIBILITY
                     + " FROM " + NoteTable.TABLE_NAME
                     + " WHERE " + NoteTable._ID + "=" + noteId;
             try (Cursor cursor = db.rawQuery(sql, null)) {
@@ -76,14 +76,14 @@ public class NoteForAnyAccount {
                     content = DbUtils.getString(cursor, NoteTable.CONTENT);
                     authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
                     noteOid = DbUtils.getString(cursor, NoteTable.NOTE_OID);
-                    isPublicLoc = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
+                    visibilityLoc = DbUtils.getTriState(cursor, NoteTable.VISIBILITY);
                 }
             } catch (Exception e) {
                 MyLog.i(this, method + "; SQL:'" + sql + "'", e);
             }
         }
         status = statusLoc;
-        isPublic = isPublicLoc;
+        visibility = visibilityLoc;
         audience = Audience.fromNoteId(origin, noteId); // Now all users, mentioned in a body, are members of Audience
         author = Actor.load(myContext, authorId);
 

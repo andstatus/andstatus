@@ -178,7 +178,7 @@ public class NoteContextMenu extends MyContextMenu {
                 }
             }
 
-            if (noteForAnyAccount.isLoaded() && (noteForAnyAccount.isPublic.notFalse ||
+            if (noteForAnyAccount.isLoaded() && (noteForAnyAccount.visibility.notFalse ||
                     noteForAnyAccount.origin.getOriginType().isPrivateNoteAllowsReply()) && !isEditorVisible()) {
                 NoteContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply);
                 NoteContextMenuItem.REPLY_TO_CONVERSATION_PARTICIPANTS.addTo(menu, order++,
@@ -194,7 +194,7 @@ public class NoteContextMenu extends MyContextMenu {
                                 : R.string.view_media);
             }
 
-            if (noteForAnyAccount.isLoaded() && noteForAnyAccount.isPublic.notFalse) {
+            if (noteForAnyAccount.isLoaded() && noteForAnyAccount.visibility.notFalse) {
                 if (accountToNote.favorited) {
                     NoteContextMenuItem.UNDO_LIKE.addTo(menu, order++,
                             R.string.menu_item_destroy_favorite);

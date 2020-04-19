@@ -153,7 +153,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityVie
                         String.valueOf(viewItem.getContent()).contains(publicNoteText));
                 assertNotEquals("Note #" + viewItem.getId() + " '" + viewItem.getContent()
                         + "' is private" + "\n" + viewItem, TriState.FALSE,
-                        MyQuery.noteIdToTriState(NoteTable.PUBLIC, viewItem.getId()));
+                        MyQuery.noteIdToTriState(NoteTable.VISIBILITY, viewItem.getId()));
                 msgCount++;
             }
         }

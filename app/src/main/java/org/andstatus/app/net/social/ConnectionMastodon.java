@@ -330,7 +330,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     private String getVisibility(Note note) {
-        if (note.audience().getPublic().isTrue) {
+        if (note.audience().getVisibility().isTrue) {
             return VISIBILITY_PUBLIC;
         }
         return note.audience().isFollowers() ? VISIBILITY_PRIVATE : VISIBILITY_DIRECT;
@@ -424,15 +424,15 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 switch (jso.getString(VISIBILITY_PROPERTY)) {
                     case VISIBILITY_PUBLIC:
                     case VISIBILITY_UNLISTED:
-                        note.audience().setPublic(TriState.TRUE);
+                        note.audience().setVisibility(TriState.TRUE);
                         note.audience().setFollowers(true);
                         break;
                     case VISIBILITY_PRIVATE:
-                        note.audience().setPublic(TriState.FALSE);
+                        note.audience().setVisibility(TriState.FALSE);
                         note.audience().setFollowers(true);
                         break;
                     case VISIBILITY_DIRECT:
-                        note.audience().setPublic(TriState.FALSE);
+                        note.audience().setVisibility(TriState.FALSE);
                         note.audience().setFollowers(false);
                         break;
                     default:

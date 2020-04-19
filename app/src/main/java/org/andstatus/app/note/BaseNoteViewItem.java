@@ -71,7 +71,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     protected ActorViewItem author = ActorViewItem.EMPTY;
 
-    TriState isPublic = TriState.UNKNOWN;
+    TriState visibility = TriState.UNKNOWN;
     boolean isSensitive = false;
     Audience audience = Audience.EMPTY;
 
@@ -130,8 +130,8 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
         inReplyToActor = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
-        isPublic = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
-        audience = Audience.fromNoteId(getOrigin(), getNoteId(), isPublic);
+        visibility = DbUtils.getTriState(cursor, NoteTable.VISIBILITY);
+        audience = Audience.fromNoteId(getOrigin(), getNoteId(), visibility);
         noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
         favorited = DbUtils.getTriState(cursor, NoteTable.FAVORITED) == TriState.TRUE;
         reblogged = DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE;

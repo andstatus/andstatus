@@ -390,7 +390,7 @@ public class ConnectionPumpio extends Connection {
 
     private void setAudience(AActivity activity, JSONObject jso) {
         Audience audience = activity.getNote().audience();
-        audience.setPublic(TriState.FALSE);
+        audience.setVisibility(TriState.FALSE);
         ObjectOrId.of(jso, "to")
                 .mapAll(this::actorFromJson, this::actorFromOid)
                 .forEach(o -> addRecipient(o, audience));

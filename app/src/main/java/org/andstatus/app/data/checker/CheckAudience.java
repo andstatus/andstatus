@@ -58,7 +58,7 @@ class CheckAudience extends DataChecker {
 
         String sql = "SELECT " + NoteTable._ID + ", " +
                 NoteTable.INS_DATE + ", " +
-                NoteTable.PUBLIC + ", " +
+                NoteTable.VISIBILITY + ", " +
                 NoteTable.CONTENT + ", " +
                 NoteTable.ORIGIN_ID + ", " +
                 NoteTable.AUTHOR_ID + ", " +
@@ -88,7 +88,7 @@ class CheckAudience extends DataChecker {
         s.rowsCount++;
         long noteId = DbUtils.getLong(cursor, NoteTable._ID);
         long insDate = DbUtils.getLong(cursor, NoteTable.INS_DATE);
-        TriState isPublic = DbUtils.getTriState(cursor, NoteTable.PUBLIC);
+        TriState visibility = DbUtils.getTriState(cursor, NoteTable.VISIBILITY);
         String content = DbUtils.getString(cursor, NoteTable.CONTENT);
         Actor author = Actor.load(myContext, DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
         Actor inReplyToActor = Actor.load(myContext, DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
@@ -99,7 +99,7 @@ class CheckAudience extends DataChecker {
             Audience audience = new Audience(origin);
             audience.add(inReplyToActor);
             audience.addActorsFromContent(content, author, inReplyToActor);
-            audience.setPublic(isPublic);
+            audience.setVisibility(visibility);
             audience.lookupUsers();
 
             if (!countOnly) {
@@ -107,7 +107,7 @@ class CheckAudience extends DataChecker {
                         dataUpdater.updateObjActor(ma.getActor().update(actor), 0)
                 );
             }
-            if (audience.save(author, noteId, audience.getPublic(), countOnly)) {
+            if (audience.save(author, noteId, audience.getVisibility(), countOnly)) {
                 s.toFixCount += 1;
             }
         }

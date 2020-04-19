@@ -64,7 +64,7 @@ public class NotifierTest {
                 " AND " + ActivityTable.UPDATED_DATE + ">" + RelativeTime.SOME_TIME_AGO +
                 " AND " + ActivityTable.NEW_NOTIFICATION_EVENT + "=0" +
                 (eventType == NotificationEventType.PRIVATE
-                        ? " AND " + NoteTable.PUBLIC + "=" + TriState.FALSE.id
+                        ? " AND " + NoteTable.VISIBILITY + "=" + TriState.FALSE.id
                         : "");
         final Iterator<Long> iterator = MyQuery.getLongs(myContext, where).iterator();
         assertTrue("No data for '" + where + "'", iterator.hasNext());

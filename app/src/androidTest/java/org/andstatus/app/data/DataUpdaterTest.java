@@ -176,13 +176,13 @@ public class DataUpdaterTest {
         final Note note = activity.getNote();
         note.via = "AnyOtherClient";
         note.audience().add(accountActor);
-        note.setPublic(TriState.FALSE);
+        note.setVisibility(TriState.FALSE);
         final long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;
         assertNotEquals("Note added", 0, noteId);
         assertNotEquals("Activity added", 0, activity.getId());
 
         assertEquals("Note should be private " + note, TriState.FALSE,
-                MyQuery.noteIdToTriState(NoteTable.PUBLIC, noteId));
+                MyQuery.noteIdToTriState(NoteTable.VISIBILITY, noteId));
         assertEquals("Note name " + note, noteName, MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId));
         DemoNoteInserter.assertInteraction(activity, NotificationEventType.PRIVATE, TriState.TRUE);
 
@@ -210,7 +210,7 @@ public class DataUpdaterTest {
         Note note = activity.getNote();
         note.setContentPosted("This test note will be favorited by First Reader from http://pumpity.net");
         note.via = "SomeOtherClient";
-        note.setPublic(TriState.TRUE);
+        note.setVisibility(TriState.TRUE);
 
         String otherUsername = "firstreader@identi.ca";
         Actor otherActor = Actor.fromOid(accountActor.origin, OriginPumpio.ACCOUNT_PREFIX + otherUsername);
@@ -745,7 +745,7 @@ public class DataUpdaterTest {
         Note note = activity.getNote();
         note.setContentPosted("This test note was sent to Followers only");
         note.via = "SomeApClient";
-        note.audience().setPublic(TriState.FALSE);
+        note.audience().setVisibility(TriState.FALSE);
         note.audience().setFollowers(true);
 
         long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;

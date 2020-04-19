@@ -40,14 +40,14 @@ public class NoteForAnyAccountTest {
         assertTrue(atnActivity1.isAuthor);
         assertTrue(atnActivity1.isActor);
         assertTrue(atnActivity1.isSubscribed);
-        assertEquals(TRUE, nfaActivity1.isPublic);
+        assertEquals(TRUE, nfaActivity1.visibility);
         assertTrue(atnActivity1.isTiedToThisAccount());
         assertTrue(atnActivity1.hasPrivateAccess());
         
         Actor author2 = mi.buildActorFromOid("acct:a2." + demoData.testRunUid + "@pump.example.com");
         final AActivity replyTo1 = mi.buildActivity(author2, "", "@" + accountActor.getUsername()
                 + " Replying to you privately", activity1, null, DownloadStatus.LOADED);
-        replyTo1.getNote().setPublic(FALSE);
+        replyTo1.getNote().setVisibility(FALSE);
         mi.onActivity(replyTo1);
 
         NoteForAnyAccount nfaReplyTo1 = new NoteForAnyAccount(MyContextHolder.get(),
@@ -55,14 +55,14 @@ public class NoteForAnyAccountTest {
         AccountToNote atnReplyTo1 = new AccountToNote(nfaReplyTo1, ma);
         assertFalse(atnReplyTo1.isAuthor);
         assertFalse(atnReplyTo1.isActor);
-        assertEquals(FALSE, nfaReplyTo1.isPublic);
+        assertEquals(FALSE, nfaReplyTo1.visibility);
         assertTrue(atnReplyTo1.isTiedToThisAccount());
         assertTrue(atnReplyTo1.hasPrivateAccess());
 
         Actor author3 = mi.buildActorFromOid("acct:b3." + demoData.testRunUid + "@pumpity.example.com");
         AActivity reply2 = mi.buildActivity(author3, "", "@" + author2.getUsername()
                 + " Replying publicly to the second author", replyTo1, null, DownloadStatus.LOADED);
-        reply2.getNote().setPublic(TRUE);
+        reply2.getNote().setVisibility(TRUE);
         mi.onActivity(reply2);
 
         NoteForAnyAccount nfaReply2 = new NoteForAnyAccount(MyContextHolder.get(),
@@ -70,7 +70,7 @@ public class NoteForAnyAccountTest {
         AccountToNote atnReply2 = new AccountToNote(nfaReply2, ma);
         assertFalse(atnReply2.isAuthor);
         assertFalse(atnReply2.isActor);
-        assertEquals(TRUE, nfaReply2.isPublic);
+        assertEquals(TRUE, nfaReply2.visibility);
         assertFalse(atnReply2.isTiedToThisAccount());
         assertFalse(atnReply2.hasPrivateAccess());
         assertFalse(atnReply2.reblogged);
@@ -92,7 +92,7 @@ public class NoteForAnyAccountTest {
         assertFalse(atnReblogged1.isAuthor);
         assertFalse(atnReblogged1.isActor);
         assertFalse(atnReblogged1.isSubscribed);
-        assertEquals(FALSE, nfaReblogged1.isPublic);
+        assertEquals(FALSE, nfaReblogged1.visibility);
         assertFalse(atnReblogged1.isTiedToThisAccount());
         assertFalse(atnReblogged1.hasPrivateAccess());
         assertFalse(atnReblogged1.reblogged);
