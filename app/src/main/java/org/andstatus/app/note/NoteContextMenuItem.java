@@ -120,7 +120,7 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
             return NoteEditorData.newEmpty(menu.getActingAccount())
-                    .addToAudience(menu.getAuthor()).setPublic(false);
+                    .addToAudience(menu.getAuthor()).setPublicAndFollowers(false, false);
         }
 
         @Override

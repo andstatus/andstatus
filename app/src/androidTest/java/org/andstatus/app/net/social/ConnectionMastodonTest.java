@@ -79,7 +79,7 @@ public class ConnectionMastodonTest {
                 .fromActorOfSameOrigin(activity.accountActor).isValid());
         assertEquals("Is not a note " + activity, AObjectType.NOTE, activity.getObjectType());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, note.getFavoritedBy(activity.accountActor));
-        assertVisibility(note.audience(), TriState.TRUE, true);
+        assertVisibility(note.audience(), Visibility.PUBLIC_AND_TO_FOLLOWERS);
 
         Actor actor = activity.getActor();
         String stringDate = "2017-04-16T11:13:12.133Z";
@@ -114,18 +114,18 @@ public class ConnectionMastodonTest {
     @Test
     public void testIncomingVisibility() throws IOException {
         String response = RawResourceUtils.getString(org.andstatus.app.tests.R.raw.mastodon_home_timeline);
-        oneVisibility(response, TriState.TRUE, true);
+        oneVisibility(response, Visibility.PUBLIC_AND_TO_FOLLOWERS);
         String pattern = "\"visibility\": \"public\"";
-        oneVisibility(response.replace(pattern, "\"visibility\": \"unlisted\""), TriState.TRUE, true);
-        oneVisibility(response.replace(pattern, "\"visibility\": \"private\""), TriState.FALSE, true);
-        oneVisibility(response.replace(pattern, "\"visibility\": \"direct\""), TriState.FALSE, false);
+        oneVisibility(response.replace(pattern, "\"visibility\": \"unlisted\""), Visibility.PUBLIC_AND_TO_FOLLOWERS);
+        oneVisibility(response.replace(pattern, "\"visibility\": \"private\""), Visibility.TO_FOLLOWERS);
+        oneVisibility(response.replace(pattern, "\"visibility\": \"direct\""), Visibility.PRIVATE);
     }
 
-    private void oneVisibility(String stringResponse, TriState isPublic, boolean isFollowers) throws ConnectionException {
+    private void oneVisibility(String stringResponse, Visibility visibility) {
         mock.getHttpMock().addResponse(stringResponse);
         InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.HOME_TIMELINE,
                 TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor).get();
-        assertVisibility(timeline.get(0).getNote().audience(), isPublic, isFollowers);
+        assertVisibility(timeline.get(0).getNote().audience(), visibility);
     }
 
     @Test
@@ -245,10 +245,10 @@ public class ConnectionMastodonTest {
         assertOneRecipient(activity, "qwertystop", "https://wandering.shop/@qwertystop",
                 "qwertystop@wandering.shop");
 
-        assertVisibility(activity.getNote().audience(), TriState.TRUE, true);
+        assertVisibility(activity.getNote().audience(), Visibility.PUBLIC_AND_TO_FOLLOWERS);
 
         Audience audience = Audience.fromNoteId(accountActor.origin, activity.getNote().noteId);
-        assertVisibility(audience, TriState.TRUE, true);
+        assertVisibility(audience, Visibility.PUBLIC_AND_TO_FOLLOWERS);
 
     }
 

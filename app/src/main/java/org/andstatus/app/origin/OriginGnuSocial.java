@@ -19,6 +19,7 @@ package org.andstatus.app.origin;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.util.MyLog;
 
 import java.net.MalformedURLException;
@@ -36,7 +37,7 @@ class OriginGnuSocial extends Origin {
     protected String alternativeNotePermalink(long noteId) {
         try {
             return new URL(url,
-                    (MyQuery.noteIdToTriState(NoteTable.VISIBILITY, noteId).isFalse
+                    (Visibility.fromNoteId(noteId).isPrivate()
                             ? "message"
                             : "notice") + "/"
                     + MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId)).toExternalForm();

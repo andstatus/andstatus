@@ -29,6 +29,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Note;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
 import org.andstatus.app.note.NoteEditorData;
 import org.andstatus.app.notification.NotificationEventType;
@@ -168,7 +169,7 @@ public class DemoNoteInserter {
 
         MyAccount ma = origin.myContext.accounts().fromActorId(accountActor.actorId);
         assertTrue("Persistent account exists for " + accountActor + " " + activity, ma.isValid());
-        final TimelineType timelineType = activity.getNote().getVisibility().isFalse ? TimelineType.PRIVATE : TimelineType.HOME;
+        final TimelineType timelineType = activity.getNote().getVisibility().isPrivate() ? TimelineType.PRIVATE : TimelineType.HOME;
         CommandExecutionContext execContext = new CommandExecutionContext(origin.myContext,
                 CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType));
         activity.audience().assertContext();
@@ -343,8 +344,7 @@ public class DemoNoteInserter {
         }
     }
 
-    public static void assertVisibility(Audience audience, TriState isPublic, boolean isFollowers) {
-        assertEquals("Public check " + audience + "\n", isPublic, audience.getVisibility());
-        assertEquals("Followers check " + audience + "\n", isFollowers, audience.isFollowers());
+    public static void assertVisibility(Audience audience, Visibility visibility) {
+        assertEquals("Visibility check " + audience + "\n", visibility, audience.getVisibility());
     }
 }

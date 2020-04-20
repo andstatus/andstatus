@@ -34,6 +34,7 @@ import org.andstatus.app.net.social.InputActorPage;
 import org.andstatus.app.net.social.InputTimelinePage;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;
@@ -267,7 +268,7 @@ public class ConnectionActivityPubTest {
                 TestSuite.utcTime(note.getUpdatedDate()).toString());
 
         Audience audience = activity.audience();
-        assertEquals("Visibility of " + activity, TriState.TRUE, audience.getVisibility());
+        assertEquals("Visibility of " + activity, Visibility.PUBLIC_AND_TO_FOLLOWERS, audience.getVisibility());
         List<String> oids = Arrays.asList(
             "https://pleroma.site/users/kaniini",
             "https://pawoo.net/users/pawooAndStatusTester",
@@ -309,7 +310,7 @@ public class ConnectionActivityPubTest {
                 TestSuite.utcTime(note.getUpdatedDate()).toString());
 
         Audience audience = activity.audience();
-        assertEquals("Visibility of " + activity, TriState.TRUE, audience.getVisibility());
+        assertEquals("Visibility of " + activity, Visibility.PUBLIC_AND_TO_FOLLOWERS, audience.getVisibility());
         List<String> oids = Arrays.asList(
                 "https://queer.hacktivis.me/users/AndStatus/followers"
         );

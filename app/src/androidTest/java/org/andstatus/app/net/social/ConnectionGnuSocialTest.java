@@ -133,7 +133,7 @@ public class ConnectionGnuSocialTest {
         activity = timeline.get(ind);
         author = activity.getAuthor();
         assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
-        assertEquals("Should be public", TriState.TRUE, activity.getNote().getVisibility());
+        assertEquals("Should be public", Visibility.PUBLIC_AND_TO_FOLLOWERS, activity.getNote().getVisibility());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         assertEquals("MyAccount", accountActor.oid, activity.accountActor.oid);
         assertEquals("Actor", author.oid, activity.getActor().oid);
@@ -287,7 +287,7 @@ public class ConnectionGnuSocialTest {
         assertEquals("Actor Username", "fanta", activity.getActor().getUsername());
         assertEquals("Author Oid", "379323", activity.getAuthor().oid);
         assertEquals("Note Oid", "12940131", activity.getNote().oid);
-        assertTrue("Should not have a recipient", activity.audience().noRecipients());
+        assertTrue("Should not have a recipient " + activity.audience(), !activity.audience().hasNonSpecial());
 
         assertTrue("Content " + activity, activity.getNote().getContent().startsWith(contentPrefix));
 

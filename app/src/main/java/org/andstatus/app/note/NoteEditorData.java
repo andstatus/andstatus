@@ -44,12 +44,12 @@ import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Note;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -136,7 +136,7 @@ public class NoteEditorData implements IsEmpty {
             inReplyToNote.noteId = inReplyToNoteId;
             inReplyToNote.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, inReplyToNoteId));
             inReplyToNote.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, inReplyToNoteId));
-            inReplyToNote.setVisibility(MyQuery.noteIdToTriState(NoteTable.VISIBILITY, inReplyToNoteId));
+            inReplyToNote.setVisibility(Visibility.fromId(inReplyToNoteId));
             inReplyToNote.setSensitive(MyQuery.noteIdToLongColumnValue(NoteTable.SENSITIVE, inReplyToNoteId) == 1);
             inReplyToNote.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId));
             note.setInReplyTo(inReplyTo);
@@ -388,24 +388,14 @@ public class NoteEditorData implements IsEmpty {
         return this;
     }
 
-    public TriState getVisibility() {
+    public Visibility getVisibility() {
         return activity.getNote().getVisibility();
     }
 
-    public NoteEditorData setPublic(boolean isPublic) {
+    public NoteEditorData setPublicAndFollowers(boolean isPublic, boolean isFollowers) {
         if (canChangeVisibility()) {
-            this.activity.getNote().setVisibility(isPublic ? TriState.TRUE : TriState.FALSE);
-        }
-        return this;
-    }
-
-    public boolean isFollowers() {
-        return activity.getNote().audience().isFollowers();
-    }
-
-    public NoteEditorData setFollowers(boolean isFollowers) {
-        if (canChangeIsFollowers()) {
-            this.activity.getNote().audience().setFollowers(isFollowers);
+            this.activity.getNote().setVisibility(Visibility
+                    .fromCheckboxes(isPublic, canChangeIsFollowers() && isFollowers));
         }
         return this;
     }

@@ -121,17 +121,11 @@ public class AActivity extends AObject {
 
     public void initializePublicAndFollowers() {
         OriginType originType = accountActor.origin.getOriginType();
-        getNote().setVisibility(TriState.TRUE);
-        if (originType.isFollowersChangeAllowed) {
-            getNote().audience().setFollowers(true);
-        }
+        getNote().setVisibility(Visibility.fromCheckboxes(true, originType.isFollowersChangeAllowed));
 
-        TriState visibility = getNote().getInReplyTo().getNote().audience().getVisibility();
-        if (visibility.known) {
+        Visibility visibility = getNote().getInReplyTo().getNote().audience().getVisibility();
+        if (visibility.isKnown()) {
             getNote().setVisibility(visibility);
-            if (originType.isFollowersChangeAllowed) {
-                getNote().audience().setFollowers(visibility.isTrue);
-            }
         }
     }
 
@@ -535,7 +529,7 @@ public class AActivity extends AObject {
 
     private NotificationEventType calculateNotificationEventType(MyContext myContext) {
         if (myContext.users().isMe(getActor())) return NotificationEventType.EMPTY;
-        if (getNote().getVisibility().isFalse) {
+        if (getNote().getVisibility().isPrivate()) {
             return NotificationEventType.PRIVATE;
         } else if(myContext.users().containsMe(getNote().audience().getNonSpecialActors()) && !isMyActorOrAuthor(myContext)) {
             return NotificationEventType.MENTION;

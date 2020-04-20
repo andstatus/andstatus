@@ -243,7 +243,7 @@ public class DataUpdater {
             if (!StringUtil.isEmpty(note.url)) {
                 values.put(NoteTable.URL, note.url);
             }
-            if (note.getVisibility().known) {
+            if (note.getVisibility().isKnown()) {
                 values.put(NoteTable.VISIBILITY, note.getVisibility().id);
             }
 

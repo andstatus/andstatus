@@ -38,6 +38,7 @@ import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.ConnectionGnuSocialTest;
 import org.andstatus.app.net.social.Note;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.note.NoteEditorData;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
@@ -176,13 +177,12 @@ public class DataUpdaterTest {
         final Note note = activity.getNote();
         note.via = "AnyOtherClient";
         note.audience().add(accountActor);
-        note.setVisibility(TriState.FALSE);
+        note.setVisibility(Visibility.PRIVATE);
         final long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;
         assertNotEquals("Note added", 0, noteId);
         assertNotEquals("Activity added", 0, activity.getId());
 
-        assertEquals("Note should be private " + note, TriState.FALSE,
-                MyQuery.noteIdToTriState(NoteTable.VISIBILITY, noteId));
+        assertEquals("Note should be private " + note, Visibility.PRIVATE, Visibility.fromNoteId(noteId));
         assertEquals("Note name " + note, noteName, MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId));
         DemoNoteInserter.assertInteraction(activity, NotificationEventType.PRIVATE, TriState.TRUE);
 
@@ -191,7 +191,7 @@ public class DataUpdaterTest {
         assertEquals("Recipient " + ma.getAccountName() + "; " + audience.getNonSpecialActors(),
                 ma.getActorId(), audience.getFirstNonSpecial().actorId);
         assertEquals("Number of audience for " + activity, 1, audience.getNonSpecialActors().size());
-        assertVisibility(audience, TriState.FALSE, false);
+        assertVisibility(audience, Visibility.PRIVATE);
     }
 
     @Test
@@ -210,7 +210,7 @@ public class DataUpdaterTest {
         Note note = activity.getNote();
         note.setContentPosted("This test note will be favorited by First Reader from http://pumpity.net");
         note.via = "SomeOtherClient";
-        note.setVisibility(TriState.TRUE);
+        note.setVisibility(Visibility.PUBLIC_AND_TO_FOLLOWERS);
 
         String otherUsername = "firstreader@identi.ca";
         Actor otherActor = Actor.fromOid(accountActor.origin, OriginPumpio.ACCOUNT_PREFIX + otherUsername);
@@ -247,7 +247,7 @@ public class DataUpdaterTest {
                 MyQuery.noteIdToTriState(NoteTable.REBLOGGED, noteId));
 
         Audience audience = Audience.fromNoteId(accountActor.origin, noteId);
-        assertVisibility(audience, TriState.TRUE, false);
+        assertVisibility(audience, Visibility.PUBLIC_AND_TO_FOLLOWERS);
 
         // TODO: Below is actually a timeline query test, so maybe expand / move...
         Uri contentUri = myContext.timelines()
@@ -703,7 +703,7 @@ public class DataUpdaterTest {
         assertEquals("Note " + note1, DownloadStatus.SENDING, note1.getStatus());
 
         Audience audience = Audience.fromNoteId(accountActor.origin, note1.noteId);
-        assertVisibility(audience, TriState.UNKNOWN, false);
+        assertVisibility(audience, Visibility.UNKNOWN);
 
         // Response from a server
         AActivity activity2 = AActivity.from(accountActor, ActivityType.CREATE);
@@ -745,7 +745,7 @@ public class DataUpdaterTest {
         Note note = activity.getNote();
         note.setContentPosted("This test note was sent to Followers only");
         note.via = "SomeApClient";
-        note.audience().setVisibility(TriState.FALSE);
+        note.audience().setVisibility(Visibility.PRIVATE);
         note.audience().setFollowers(true);
 
         long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;
@@ -753,6 +753,6 @@ public class DataUpdaterTest {
         assertNotEquals("First activity added", 0, activity.getId());
 
         Audience audience = Audience.fromNoteId(accountActor.origin, noteId);
-        assertVisibility(audience, TriState.FALSE, true);
+        assertVisibility(audience, Visibility.PRIVATE);
     }
 }

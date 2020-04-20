@@ -330,10 +330,19 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     private String getVisibility(Note note) {
-        if (note.audience().getVisibility().isTrue) {
-            return VISIBILITY_PUBLIC;
+        switch (note.audience().getVisibility()) {
+            case UNKNOWN:
+            case PUBLIC_AND_TO_FOLLOWERS:
+            case PUBLIC:
+                return VISIBILITY_PUBLIC;
+            case NOT_PUBLIC_NEEDS_CLARIFICATION:
+            case TO_FOLLOWERS:
+                return VISIBILITY_PRIVATE;
+            case PRIVATE:
+                return VISIBILITY_DIRECT;
+            default:
+                throw new IllegalStateException("Unexpected visibility: " + note.audience().getVisibility());
         }
-        return note.audience().isFollowers() ? VISIBILITY_PRIVATE : VISIBILITY_DIRECT;
     }
 
     private Try<JSONObject> uploadMedia(Uri mediaUri) {
@@ -420,25 +429,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             note.setSensitive(jso.optBoolean(SENSITIVE_PROPERTY));
             note.setContentPosted(JsonUtils.optString(jso, CONTENT_PROPERTY));
             note.url = JsonUtils.optString(jso, "url");
-            if (jso.has(VISIBILITY_PROPERTY)) {
-                switch (jso.getString(VISIBILITY_PROPERTY)) {
-                    case VISIBILITY_PUBLIC:
-                    case VISIBILITY_UNLISTED:
-                        note.audience().setVisibility(TriState.TRUE);
-                        note.audience().setFollowers(true);
-                        break;
-                    case VISIBILITY_PRIVATE:
-                        note.audience().setVisibility(TriState.FALSE);
-                        note.audience().setFollowers(true);
-                        break;
-                    case VISIBILITY_DIRECT:
-                        note.audience().setVisibility(TriState.FALSE);
-                        note.audience().setFollowers(false);
-                        break;
-                    default:
-                        break;
-                }
-            }
+            setVisibility(jso, note);
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");
                 note.audience().add(actorFromJson(recipient));
@@ -485,6 +476,25 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             return AActivity.EMPTY;
         }
         return activity;
+    }
+
+    private void setVisibility(JSONObject jso, Note note) throws JSONException {
+        if (jso.has(VISIBILITY_PROPERTY)) {
+            switch (jso.getString(VISIBILITY_PROPERTY)) {
+                case VISIBILITY_PUBLIC:
+                case VISIBILITY_UNLISTED:
+                    note.audience().setVisibility(Visibility.PUBLIC_AND_TO_FOLLOWERS);
+                    break;
+                case VISIBILITY_PRIVATE:
+                    note.audience().setVisibility(Visibility.TO_FOLLOWERS);
+                    break;
+                case VISIBILITY_DIRECT:
+                    note.audience().setVisibility(Visibility.PRIVATE);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
     private CheckedFunction<JSONObject, List<Attachment>> jsonToAttachments(String method) {

@@ -18,16 +18,17 @@ package org.andstatus.app.origin;
 
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+
 import org.andstatus.app.R;
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.UriUtils;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
 
 class OriginTwitter extends Origin {
 
@@ -75,12 +76,12 @@ class OriginTwitter extends Origin {
             return "";
         }
         final Uri uri = fixUriForPermalink(UriUtils.fromUrl(url));
-        if (MyQuery.noteIdToTriState(NoteTable.VISIBILITY, noteId).notFalse) {
+        if (Visibility.fromNoteId(noteId).isPrivate()) {
+            return Uri.withAppendedPath(uri, "messages").toString();
+        } else {
             String username = MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, noteId, ActorInTimeline.USERNAME);
             final String oid = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId);
             return Uri.withAppendedPath(uri, username + "/status/" + oid).toString();
-        } else {
-            return Uri.withAppendedPath(uri, "messages").toString();
         }
     }
 

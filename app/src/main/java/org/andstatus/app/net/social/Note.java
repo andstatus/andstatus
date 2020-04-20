@@ -342,11 +342,11 @@ public class Note extends AObject {
         }
     }
 
-    public TriState getVisibility() {
+    public Visibility getVisibility() {
         return audience().getVisibility();
     }
 
-    public Note setVisibility(TriState visibility) {
+    public Note setVisibility(Visibility visibility) {
         audience().setVisibility(visibility);
         return this;
     }

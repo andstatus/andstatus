@@ -47,7 +47,7 @@ enum PObjectType {
     COLLECTION("collection", null),
     UNKNOWN("unknown", null);
     
-    private String id;
+    public final String id;
     private PObjectType compatibleType = this;
 
     PObjectType(String fieldName, PObjectType compatibleType) {
@@ -56,15 +56,11 @@ enum PObjectType {
             this.compatibleType = compatibleType;
         }
     }
-    
-    public String id() {
-        return id;
-    }
-    
+
     public boolean isTypeOf(JSONObject jso) {
         boolean is = false;
         if (jso != null) {
-            is = id().equalsIgnoreCase(JsonUtils.optString(jso, "objectType"));
+            is = id.equalsIgnoreCase(JsonUtils.optString(jso, "objectType"));
         }
         return is;
     }

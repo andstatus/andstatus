@@ -34,13 +34,11 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.SqlIds;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
-import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.TryUtils;
 
 import java.util.ArrayList;
@@ -66,7 +64,7 @@ public class Audience {
     public final Origin origin;
 
     private List<Actor> actors = new ArrayList<>();
-    private TriState visibility = TriState.UNKNOWN;
+    private Visibility visibility = Visibility.UNKNOWN;
     private Actor followers = Actor.EMPTY;
 
     public Audience(Origin origin) {
@@ -74,10 +72,10 @@ public class Audience {
     }
 
     public static Audience fromNoteId(@NonNull Origin origin, long noteId) {
-        return fromNoteId(origin, noteId, MyQuery.noteIdToTriState(NoteTable.VISIBILITY, noteId));
+        return fromNoteId(origin, noteId, Visibility.fromNoteId(noteId));
     }
 
-    public static Audience fromNoteId(@NonNull Origin origin, long noteId, TriState visibility) {
+    public static Audience fromNoteId(@NonNull Origin origin, long noteId, Visibility visibility) {
         if (noteId == 0) return Audience.EMPTY;
 
         String where = AudienceTable.NOTE_ID + "=" + noteId;
@@ -98,12 +96,12 @@ public class Audience {
         return audience;
     }
 
-    public static Audience load(@NonNull Origin origin, long noteId, Optional<TriState> optVisibility) {
+    public static Audience load(@NonNull Origin origin, long noteId, Optional<Visibility> optVisibility) {
         Audience audience = new Audience(origin);
         final String sql = LOAD_SQL + noteId;
         final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(origin.myContext, cursor, true);
         MyQuery.get(origin.myContext, sql, function).forEach(audience::add);
-        audience.setVisibility(optVisibility.orElseGet(() -> MyQuery.noteIdToTriState(NoteTable.VISIBILITY, noteId)));
+        audience.setVisibility(optVisibility.orElseGet(() -> Visibility.fromNoteId(noteId)));
         return audience;
     }
 
@@ -117,11 +115,11 @@ public class Audience {
         Context context = origin.myContext.context();
         MyStringBuilder builder = new MyStringBuilder();
         MyStringBuilder toBuilder = new MyStringBuilder();
-        if (getVisibility().isTrue) {
+        if (getVisibility().isPublic()) {
             builder.withSpace(context.getText(R.string.timeline_title_public));
-        } else if (isFollowers()) {
+        } else if (getVisibility().isFollowers()) {
             toBuilder.withSpace(context.getText(R.string.followers));
-        } else if (getVisibility().isFalse) {
+        } else if (getVisibility().isPrivate()) {
             builder.withSpace(context.getText(R.string.notification_events_private));
             actors.stream()
                 .filter(actor -> !actor.isSame(inReplyToActor))
@@ -176,7 +174,7 @@ public class Audience {
     }
 
     public boolean noRecipients() {
-        return actors.isEmpty() && followers.isEmpty() && visibility.untrue;
+        return actors.isEmpty() && visibility.isPrivate();
     }
 
     public List<Actor> getRecipients() {
@@ -184,7 +182,7 @@ public class Audience {
         if (isFollowers()) {
             recipients.add(0, followers);
         }
-        if (visibility.isTrue) {
+        if (visibility.isPublic()) {
             recipients.add(0, Actor.PUBLIC);
         }
         return recipients;
@@ -225,11 +223,12 @@ public class Audience {
         if (actor.isEmpty()) return;
 
         if (actor.isPublic()) {
-            setVisibility(TriState.TRUE);
+            addVisibility(Visibility.PUBLIC);
             return;
         }
         if (actor.isFollowers()) {
             followers = actor;
+            addVisibility(Visibility.TO_FOLLOWERS);
             return;
         }
 
@@ -249,7 +248,7 @@ public class Audience {
     public Try<Actor> findSame(Actor other) {
         if (other.isEmpty()) return TryUtils.notFound();
         if (other.isSame(followers)) return Try.success(followers);
-        if (other.isPublic()) return getVisibility().isTrue ? Try.success(Actor.PUBLIC) : TryUtils.notFound();
+        if (other.isPublic()) return getVisibility().isPublic() ? Try.success(Actor.PUBLIC) : TryUtils.notFound();
 
         List<Actor> nonSpecialActors = getNonSpecialActors();
         if (other.groupType.parentActorRequired) {
@@ -267,11 +266,11 @@ public class Audience {
     /** TODO: Audience should belong to an Activity, not to a Note.
      *        As audience currently belongs to a Note, we actually use noteAuthor instead of activityActor here.
      * @return true if data changed */
-    public boolean save(Actor actorOfAudience, long noteId, TriState isPublic, boolean countOnly) {
+    public boolean save(Actor actorOfAudience, long noteId, Visibility visibility, boolean countOnly) {
         if (!actorOfAudience.origin.isValid() || noteId == 0 || actorOfAudience.actorId == 0 || !origin.myContext.isReady()) {
             return false;
         }
-        Audience prevAudience = Audience.loadIds(actorOfAudience.origin, noteId, Optional.of(isPublic));
+        Audience prevAudience = Audience.loadIds(actorOfAudience.origin, noteId, Optional.of(visibility));
         List<Actor> actorsToSave = getActorsToSave(actorOfAudience);
         Set<Actor> toDelete = new HashSet<>();
         Set<Actor> toAdd = new HashSet<>();
@@ -306,14 +305,14 @@ public class Audience {
         return  !toDelete.isEmpty() || !toAdd.isEmpty();
     }
 
-    private static Audience loadIds(@NonNull Origin origin, long noteId, Optional<TriState> optVisibility) {
+    private static Audience loadIds(@NonNull Origin origin, long noteId, Optional<Visibility> optVisibility) {
         Audience audience = new Audience(origin);
         final String sql = "SELECT " + AudienceTable.ACTOR_ID +
                 " FROM " + AudienceTable.TABLE_NAME +
                 " WHERE " + AudienceTable.NOTE_ID + "=" + noteId;
         final Function<Cursor, Actor> function = cursor -> Actor.fromId(origin, cursor.getLong(0));
         MyQuery.get(origin.myContext, sql, function).forEach(audience::add);
-        audience.setVisibility(optVisibility.orElseGet(() -> MyQuery.noteIdToTriState(NoteTable.VISIBILITY, noteId)));
+        audience.setVisibility(optVisibility.orElseGet(() -> Visibility.fromNoteId(noteId)));
         return audience;
     }
 
@@ -330,18 +329,27 @@ public class Audience {
         return toAudienceString(Actor.EMPTY);
     }
 
-    public void setVisibility(TriState visibility) {
+    public void addVisibility(Visibility visibility) {
+        setVisibility(this.visibility.add(visibility));
+    }
+
+    public void setVisibility(Visibility visibility) {
+        if (origin.getOriginType().isFollowersChangeAllowed) {
+            setFollowers(visibility.isFollowers());
+        }
         this.visibility = visibility;
     }
 
-    public TriState getVisibility() {
+    public Visibility getVisibility() {
         return visibility;
     }
 
     public void setFollowers(boolean isFollowers) {
         if (isFollowers == isFollowers()) return;
 
-        followers = isFollowers ? Actor.FOLLOWERS : Actor.EMPTY;
+        followers = isFollowers
+            ? followers.isConstant() ? Actor.FOLLOWERS : followers
+            : Actor.EMPTY;
     }
 
     public boolean isFollowers() {

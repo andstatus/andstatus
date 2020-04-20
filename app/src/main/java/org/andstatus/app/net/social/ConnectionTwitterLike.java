@@ -285,7 +285,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                 note.audience().add(actorFromJson(recipient));
             }
             // Tweets are public by default, see https://help.twitter.com/en/safety-and-security/public-and-protected-tweets
-            note.audience().setVisibility(TriState.TRUE);
+            note.audience().setVisibility(Visibility.PUBLIC_AND_TO_FOLLOWERS);
 
             if (jso.has("source")) {
                 note.via = jso.getString("source");
@@ -483,7 +483,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     private void setNotesPrivate(List<AActivity> timeline) {
         for (AActivity item : timeline) {
             if (item.getObjectType() == AObjectType.NOTE) {
-                item.getNote().setVisibility(TriState.FALSE);
+                item.getNote().setVisibility(Visibility.PRIVATE);
             }
         }
     }
@@ -566,7 +566,8 @@ public abstract class ConnectionTwitterLike extends Connection {
     
     @Override
     public Try<AActivity> updateNote(Note note, String inReplyToOid, Attachments attachments) {
-        if (StringUtil.isEmpty(inReplyToOid) && note.audience().hasNonSpecial() && note.audience().getVisibility().isFalse) {
+        if (StringUtil.isEmpty(inReplyToOid) && note.audience().hasNonSpecial() &&
+                note.audience().getVisibility().isPrivate()) {
             return updatePrivateNote(note, note.audience().getFirstNonSpecial().oid, attachments);
         }
         return updateNote2(note, inReplyToOid, attachments);

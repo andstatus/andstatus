@@ -19,20 +19,20 @@ package org.andstatus.app.data;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.note.NoteDownloads;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
-
-import androidx.annotation.NonNull;
 
 /**
  * Helper class to find out a relation of a Note with {@link #noteId} to MyAccount-s
@@ -49,7 +49,7 @@ public class NoteForAnyAccount {
     public final Actor author;
     public final Actor actor;
     public final NoteDownloads downloads;
-    public final TriState visibility;
+    public final Visibility visibility;
     Audience audience;
     private String content = "";
 
@@ -61,7 +61,7 @@ public class NoteForAnyAccount {
         SQLiteDatabase db = myContext.getDatabase();
         long authorId = 0;
         DownloadStatus statusLoc = DownloadStatus.UNKNOWN;
-        TriState visibilityLoc = TriState.UNKNOWN;
+        Visibility visibilityLoc = Visibility.UNKNOWN;
         if (noteId != 0 && this.origin.isValid() && db != null) {
             String sql = "SELECT " + NoteTable.NOTE_STATUS + ", "
                     + NoteTable.CONTENT + ", "
@@ -76,7 +76,7 @@ public class NoteForAnyAccount {
                     content = DbUtils.getString(cursor, NoteTable.CONTENT);
                     authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
                     noteOid = DbUtils.getString(cursor, NoteTable.NOTE_OID);
-                    visibilityLoc = DbUtils.getTriState(cursor, NoteTable.VISIBILITY);
+                    visibilityLoc = Visibility.fromCursor(cursor);
                 }
             } catch (Exception e) {
                 MyLog.i(this, method + "; SQL:'" + sql + "'", e);

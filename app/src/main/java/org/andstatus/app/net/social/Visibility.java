@@ -16,6 +16,12 @@
 
 package org.andstatus.app.net.social;
 
+import android.database.Cursor;
+
+import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.table.NoteTable;
+
 /** @author yvolk@yurivolkov.com */
 public enum Visibility {
     UNKNOWN(3),
@@ -45,13 +51,32 @@ public enum Visibility {
         return UNKNOWN;
     }
 
+    public static Visibility fromNoteId(long noteId) {
+        return fromId(MyQuery.noteIdToLongColumnValue(NoteTable.VISIBILITY, noteId));
+    }
+
+    public static Visibility fromCursor(Cursor cursor) {
+        return fromId(DbUtils.getLong(cursor, NoteTable.VISIBILITY));
+    }
+
+    public static Visibility fromCheckboxes(boolean isPublic, boolean isFollowers) {
+        if (isPublic) {
+            return isFollowers ? PUBLIC_AND_TO_FOLLOWERS : PUBLIC;
+        } else {
+            return isFollowers ? TO_FOLLOWERS : PRIVATE;
+        }
+    }
+
     public boolean isKnown() {
         return this != UNKNOWN;
     }
 
     public boolean isPublicCheckbox() {
+        return this == UNKNOWN || isPublic();
+    }
+
+    public boolean isPublic() {
         switch (this) {
-            case UNKNOWN:
             case PUBLIC_AND_TO_FOLLOWERS:
             case PUBLIC:
                 return true;
@@ -60,7 +85,7 @@ public enum Visibility {
         }
     }
 
-    public boolean isFollowersCheckbox() {
+    public boolean isFollowers() {
         switch (this) {
             case PUBLIC_AND_TO_FOLLOWERS:
             case TO_FOLLOWERS:
@@ -68,5 +93,20 @@ public enum Visibility {
             default:
                 return false;
         }
+    }
+
+    public Visibility add(Visibility other) {
+        switch (other) {
+            case PUBLIC:
+                return this.id >= TO_FOLLOWERS.id ? PUBLIC_AND_TO_FOLLOWERS : PUBLIC;
+            case TO_FOLLOWERS:
+                return this.id >= PUBLIC.id ? PUBLIC_AND_TO_FOLLOWERS : TO_FOLLOWERS;
+            default:
+                return this.id > other.id ? this : other;
+        }
+    }
+
+    public boolean isPrivate() {
+        return this == PRIVATE;
     }
 }

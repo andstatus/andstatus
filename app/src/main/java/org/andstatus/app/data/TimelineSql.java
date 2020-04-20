@@ -29,6 +29,7 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.GroupMembersTable;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -69,11 +70,11 @@ public class TimelineSql {
             case HOME:
                 actWhere.append(ActivityTable.SUBSCRIBED + "=" + TriState.TRUE.id)
                         .append(ActivityTable.ACCOUNT_ID, SqlIds.actorIdsOfTimelineAccount(timeline));
-                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.VISIBILITY, "!=" + TriState.FALSE.id);
+                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.VISIBILITY, "!=" + Visibility.PRIVATE.id);
                 break;
             case PRIVATE:
                 actWhere.append(ActivityTable.ACCOUNT_ID, SqlIds.actorIdsOfTimelineAccount(timeline));
-                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.VISIBILITY, "=" + TriState.FALSE.id);
+                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.VISIBILITY, "=" + Visibility.PRIVATE.id);
                 break;
             case FAVORITES:
                 actWhere.append(ActivityTable.ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));
@@ -84,7 +85,7 @@ public class TimelineSql {
                         .append(ActivityTable.NOTIFIED_ACTOR_ID, SqlIds.notifiedActorIdsOfTimeline(timeline));
                 break;
             case PUBLIC:
-                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.VISIBILITY, "!=" + TriState.FALSE.id);
+                noteWhere.append(NOTE_TABLE_ALIAS + "." + NoteTable.VISIBILITY, "<" + Visibility.PRIVATE.id);
                 break;
             case DRAFTS:
                 actWhere.append(ActivityTable.ACTOR_ID, SqlIds.actorIdsOfTimelineActor(timeline));

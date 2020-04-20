@@ -7,6 +7,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.ActivityType;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
 import org.junit.Before;
@@ -64,7 +65,7 @@ public class NotifierTest {
                 " AND " + ActivityTable.UPDATED_DATE + ">" + RelativeTime.SOME_TIME_AGO +
                 " AND " + ActivityTable.NEW_NOTIFICATION_EVENT + "=0" +
                 (eventType == NotificationEventType.PRIVATE
-                        ? " AND " + NoteTable.VISIBILITY + "=" + TriState.FALSE.id
+                        ? " AND " + NoteTable.VISIBILITY + "=" + Visibility.PRIVATE.id
                         : "");
         final Iterator<Long> iterator = MyQuery.getLongs(myContext, where).iterator();
         assertTrue("No data for '" + where + "'", iterator.hasNext());

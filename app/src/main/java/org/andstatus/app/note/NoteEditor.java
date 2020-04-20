@@ -297,7 +297,7 @@ public class NoteEditor {
         if (item != null) {
             boolean enableAttach = isVisible()
                     && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_NOTES, true)
-                    && (editorData.getVisibility().notFalse || editorData.getMyAccount().getOrigin().getOriginType()
+                    && (!editorData.getVisibility().isPrivate() || editorData.getMyAccount().getOrigin().getOriginType()
                     .allowAttachmentForPrivateNote());
             item.setEnabled(enableAttach);
             item.setVisible(enableAttach);
@@ -428,9 +428,9 @@ public class NoteEditor {
     public void updateScreen() {
         setAdapter();
         ViewUtils.showView(editorView, R.id.is_public, editorData.canChangeVisibility());
-        MyCheckBox.set(getActivity(), R.id.is_public, editorData.getVisibility().isTrue, true);
+        MyCheckBox.set(getActivity(), R.id.is_public, editorData.getVisibility().isPublicCheckbox(), true);
         ViewUtils.showView(editorView, R.id.is_followers, editorData.canChangeIsFollowers());
-        MyCheckBox.set(getActivity(), R.id.is_followers, editorData.isFollowers(), true);
+        MyCheckBox.set(getActivity(), R.id.is_followers, editorData.getVisibility().isFollowers(), true);
         ViewUtils.showView(editorView, R.id.is_sensitive, editorData.canChangeIsSensitive());
         MyCheckBox.set(getActivity(), R.id.is_sensitive, editorData.getSensitive(), true);
 
@@ -594,8 +594,8 @@ public class NoteEditor {
         editorData.setName(MyUrlSpan.getText(editorView, R.id.note_name_edit))
             .setSummary(MyUrlSpan.getText(editorView, R.id.summary_edit))
             .setContent(bodyView.getText().toString(), editorContentMediaType)
-            .setPublic(MyCheckBox.isChecked(getActivity(), R.id.is_public, false))
-            .setFollowers(MyCheckBox.isChecked(getActivity(), R.id.is_followers, false))
+            .setPublicAndFollowers(MyCheckBox.isChecked(getActivity(), R.id.is_public, false),
+                MyCheckBox.isChecked(getActivity(), R.id.is_followers, false))
             .setSensitive(MyCheckBox.isChecked(getActivity(), R.id.is_sensitive, false));
     }
 

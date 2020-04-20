@@ -39,6 +39,7 @@ import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.net.social.InputTimelinePage;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
@@ -49,7 +50,6 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
@@ -79,6 +79,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class ConnectionPumpioTest {
@@ -263,7 +264,7 @@ public class ConnectionPumpioTest {
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
 
         Audience audience = note.audience();
-        assertEquals("Is not Public " + audience, TriState.TRUE, audience.getVisibility());
+        assertEquals("Is not Public " + audience, Visibility.PUBLIC_AND_TO_FOLLOWERS, audience.getVisibility());
         assertFalse("Is to Followers. We shouldn't know this yet?! " + audience, audience.isFollowers());
         assertThat(audience.getRecipients().toString(),
                 audience.getNonSpecialActors().stream().map(Actor::getUsername).collect(Collectors.toList()),
@@ -281,7 +282,7 @@ public class ConnectionPumpioTest {
         Note noteStored = Note.loadContentById(mock.getData().getOrigin().myContext, note.noteId);
 
         Audience audienceStored = noteStored.audience();
-        assertEquals("Is not Public " + audienceStored, TriState.TRUE, audienceStored.getVisibility());
+        assertEquals("Is not Public " + audienceStored, Visibility.PUBLIC_AND_TO_FOLLOWERS, audienceStored.getVisibility());
         assertTrue("Is not to Followers " + audienceStored, audienceStored.isFollowers());
         assertThat(audienceStored.getRecipients().toString(), audienceStored.getNonSpecialActors(), is(empty()));
     }
@@ -336,57 +337,58 @@ public class ConnectionPumpioTest {
     }
 
     @Test
-    public void testUpdateStatus() throws JSONException {
+    public void testReply() throws JSONException {
         String name = "To Peter";
         String content = "@peter Do you think it's true?";
         String inReplyToId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
                 .setName(name).setContentPosted(content);
+
         connection.updateNote(note, inReplyToId, Attachments.EMPTY);
         JSONObject jsoActivity = mock.getHttpMock().getPostedJSONObject();
         assertTrue("Object present", jsoActivity.has("object"));
-        JSONObject obj = jsoActivity.getJSONObject("object");
-        assertEquals("Note name", name, MyHtml.htmlToPlainText(obj.getString("displayName")));
-        assertEquals("Note content", content, MyHtml.htmlToPlainText(obj.getString("content")));
-        assertEquals("Reply is comment", PObjectType.COMMENT.id(), obj.getString("objectType"));
-        
-        assertTrue("InReplyTo is present", obj.has("inReplyTo"));
-        JSONObject inReplyToObject = obj.getJSONObject("inReplyTo");
+        JSONObject jso = jsoActivity.getJSONObject("object");
+        assertEquals("Note name", name, MyHtml.htmlToPlainText(jso.getString("displayName")));
+        assertEquals("Note content", content, MyHtml.htmlToPlainText(jso.getString("content")));
+        assertEquals("Reply is comment", PObjectType.COMMENT.id, jso.getString("objectType"));
+        assertTrue("InReplyTo is present", jso.has("inReplyTo"));
+        JSONObject inReplyToObject = jso.getJSONObject("inReplyTo");
         assertEquals("Id of the in reply to object", inReplyToId, inReplyToObject.getString("id"));
-
-        String name2 = "";
-        String content2 = "Testing the application...";
-        Note note2 = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
-                .setName(name2).setContentPosted(content2);
-        Try<AActivity> tryActivity = connection.updateNote(note2, "", Attachments.EMPTY);
-        jsoActivity = mock.getHttpMock().getPostedJSONObject();
-        assertTrue("Object present " + jsoActivity +
-                "\nResults: " + mock.getHttpMock().getResults(), jsoActivity.has("object"));
-        obj = jsoActivity.getJSONObject("object");
-        assertEquals("Note name", name2, MyHtml.htmlToPlainText(JsonUtils.optString(obj, "displayName")));
-        assertEquals("Note content", content2, MyHtml.htmlToPlainText(obj.getString("content")));
-        assertEquals("Note without reply is a note", PObjectType.NOTE.id(), obj.getString("objectType"));
-
-        JSONArray recipients = jsoActivity.optJSONArray("to");
-        assertEquals("To Public collection", ConnectionPumpio.PUBLIC_COLLECTION_ID, ((JSONObject) recipients.get(0)).get("id"));
-
-        assertTrue("InReplyTo is not present", !obj.has("inReplyTo"));
     }
 
     @Test
-    public void testReblog() throws ConnectionException, JSONException {
+    public void testUpdateStatus() throws JSONException {
+        String name = "";
+        String content = "Testing the application...";
+        Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
+                .setName(name).setContentPosted(content);
+
+        Try<AActivity> tryActivity = connection.updateNote(note, "", Attachments.EMPTY);
+        JSONObject jsoActivity = mock.getHttpMock().getPostedJSONObject();
+        assertTrue("Object present " + jsoActivity +
+                "\nResults: " + mock.getHttpMock().getResults(), jsoActivity.has("object"));
+        JSONObject jso = jsoActivity.getJSONObject("object");
+        assertEquals("Note name", name, MyHtml.htmlToPlainText(JsonUtils.optString(jso, "displayName")));
+        assertEquals("Note content", content, MyHtml.htmlToPlainText(jso.getString("content")));
+        assertEquals("Note without reply is a note", PObjectType.NOTE.id, jso.getString("objectType"));
+        assertFalse("No explicit recipients expected " + jsoActivity, jsoActivity.has("to"));
+        assertFalse("InReplyTo is not present " + jsoActivity, jso.has("inReplyTo"));
+    }
+
+    @Test
+    public void testReblog() throws JSONException {
         String rebloggedId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         connection.announce(rebloggedId);
         JSONObject activity = mock.getHttpMock().getPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
-        assertEquals("Sharing a note", PObjectType.NOTE.id(), obj.getString("objectType"));
-        assertEquals("Nothing in TO", null, activity.optJSONArray("to"));
-        assertEquals("No followers in CC", null, activity.optJSONArray("cc"));
+        assertEquals("Sharing a note", PObjectType.NOTE.id, obj.getString("objectType"));
+        assertFalse("Nothing in 'to'", activity.has("to"));
+        assertFalse("No followers in CC", activity.has("cc"));
     }
 
     @Test
-    public void testUnfollowActor() throws IOException {
+    public void testUndoFollowActor() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.unfollow_pumpio);
         String actorOid = "acct:evan@e14n.com";
         AActivity activity = connection.follow(actorOid, false).get();

@@ -19,6 +19,7 @@ package org.andstatus.app.note;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.origin.Origin;
 
 /**
@@ -28,7 +29,7 @@ public class ConversationLoaderFactory {
 
     public ConversationLoader getLoader(ConversationViewItem emptyItem, MyContext myContext, Origin origin, long noteId, boolean sync) {
         boolean recursiveLoader = origin.getOriginType().isPrivateNoteAllowsReply() ||
-                MyQuery.noteIdToTriState(NoteTable.VISIBILITY, noteId).notFalse;
+                Visibility.fromNoteId(noteId).id > Visibility.PRIVATE.id;
         if (recursiveLoader) {
             return new RecursiveConversationLoader(emptyItem, myContext, origin, noteId, sync);
         }  else {

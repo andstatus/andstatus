@@ -21,24 +21,22 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.test.espresso.action.TypeTextAction;
+
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.note.BaseNoteViewItem;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.TriState;
 import org.junit.Test;
-
-import androidx.test.espresso.action.TypeTextAction;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
@@ -136,7 +134,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityVie
                 break;
             }
         }
-        assertTrue("Notes found", msgCount > 0);
+        assertTrue("Notes should be found", msgCount > 0);
     }
 
     private int oneAttempt(TimelineActivity timelineActivity, String publicNoteText) {
@@ -152,8 +150,8 @@ public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityVie
                                 + "' contains '" + publicNoteText + "'\n" + viewItem,
                         String.valueOf(viewItem.getContent()).contains(publicNoteText));
                 assertNotEquals("Note #" + viewItem.getId() + " '" + viewItem.getContent()
-                        + "' is private" + "\n" + viewItem, TriState.FALSE,
-                        MyQuery.noteIdToTriState(NoteTable.VISIBILITY, viewItem.getId()));
+                        + "' is private" + "\n" + viewItem, Visibility.PRIVATE,
+                            Visibility.fromNoteId(viewItem.getId()));
                 msgCount++;
             }
         }

@@ -40,6 +40,7 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.SpanUtil;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
@@ -71,7 +72,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     protected ActorViewItem author = ActorViewItem.EMPTY;
 
-    TriState visibility = TriState.UNKNOWN;
+    Visibility visibility = Visibility.UNKNOWN;
     boolean isSensitive = false;
     Audience audience = Audience.EMPTY;
 
@@ -130,7 +131,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
         inReplyToActor = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
-        visibility = DbUtils.getTriState(cursor, NoteTable.VISIBILITY);
+        visibility = Visibility.fromCursor(cursor);
         audience = Audience.fromNoteId(getOrigin(), getNoteId(), visibility);
         noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
         favorited = DbUtils.getTriState(cursor, NoteTable.FAVORITED) == TriState.TRUE;

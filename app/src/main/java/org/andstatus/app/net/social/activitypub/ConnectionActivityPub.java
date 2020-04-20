@@ -38,11 +38,11 @@ import org.andstatus.app.net.social.InputActorPage;
 import org.andstatus.app.net.social.InputTimelinePage;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.ObjectOrId;
 import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.TryUtils;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
@@ -345,7 +345,7 @@ public class ConnectionActivityPub extends Connection {
 
     private void setAudience(AActivity activity, JSONObject jso) {
         Audience audience = activity.getNote().audience();
-        audience.setVisibility(TriState.FALSE);
+        audience.setVisibility(Visibility.PRIVATE);
         ObjectOrId.of(jso, "to")
                 .mapAll(this::actorFromJson, this::actorFromOid)
                 .forEach(o -> addRecipient(o, audience));

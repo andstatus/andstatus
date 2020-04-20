@@ -19,11 +19,11 @@ package org.andstatus.app.data;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Attachment;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
@@ -93,7 +93,7 @@ public class DemoConversationInserter {
 
         AActivity privateReply2 = buildActivity(author2, "Private reply", "Reply 2 to selected is private",
                 selected, null);
-        addWithVisibility(privateReply2, TriState.FALSE);
+        addWithVisibility(privateReply2, Visibility.PRIVATE);
         DemoNoteInserter.assertInteraction(privateReply2, NotificationEventType.PRIVATE, TriState.TRUE);
         assertEquals("Should be subscribed " + selected, TriState.TRUE,
                 MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, selected.getId()));
@@ -111,7 +111,7 @@ public class DemoConversationInserter {
         addActivity(reply4);
 
         DemoNoteInserter.increaseUpdateDate(reply4);
-        addWithVisibility(reply4, TriState.TRUE);
+        addWithVisibility(reply4, Visibility.PUBLIC_AND_TO_FOLLOWERS);
 
         DemoConversationInserter.assertIfActorIsMyFriend(author3, true, ma);
 
@@ -146,7 +146,7 @@ public class DemoConversationInserter {
 
         AActivity reply7 = buildActivity(getAuthor1(), "", "Reply 7 to Reply 2 is about "
         + demoData.publicNoteText + " and something else", privateReply2, null);
-        addWithVisibility(reply7, TriState.TRUE);
+        addWithVisibility(reply7, Visibility.PUBLIC_AND_TO_FOLLOWERS);
         
         AActivity reply8 = buildActivity(author4, "", "<b>Reply 8</b> to Reply 7", reply7, null);
         AActivity reblogOfNewActivity8 = buildActivity(author3, ActivityType.ANNOUNCE);
@@ -186,12 +186,12 @@ public class DemoConversationInserter {
 
         AActivity reply11 = buildActivity(author2, "", "Reply 11 to Reply 7, " + demoData.globalPublicNoteText
                 + " text", reply7, null);
-        addWithVisibility(reply11, TriState.TRUE);
+        addWithVisibility(reply11, Visibility.PUBLIC_AND_TO_FOLLOWERS);
         DemoNoteInserter.assertInteraction(reply11, NotificationEventType.EMPTY, TriState.FALSE);
 
         AActivity myReply13 = buildActivity(accountActor, "", "My reply 13 to Reply 2", privateReply2, null);
         AActivity reply14 = buildActivity(author3, "", "Publicly reply to my note 13", myReply13, null);
-        addWithVisibility(reply14, TriState.TRUE);
+        addWithVisibility(reply14, Visibility.PUBLIC_AND_TO_FOLLOWERS);
         DemoNoteInserter.assertInteraction(reply14, NotificationEventType.MENTION, TriState.TRUE);
 
         AActivity reblogOf14 = buildActivity(author2, ActivityType.ANNOUNCE);
@@ -244,13 +244,11 @@ public class DemoConversationInserter {
         return author1;
     }
     
-    private void addWithVisibility(AActivity activity, TriState visibility) {
+    private void addWithVisibility(AActivity activity, Visibility visibility) {
         activity.getNote().setVisibility(visibility);
         addActivity(activity);
-        TriState storedVisibility = MyQuery.noteIdToTriState(NoteTable.VISIBILITY, activity.getNote().noteId);
-        assertEquals("Note is " + (visibility.equals(TriState.TRUE) ? "public" :
-                        visibility.equals(TriState.FALSE) ? "non public" : "") + ": " + activity.getNote().getContent(),
-                visibility, storedVisibility);
+        assertEquals("Visibility of: " + activity.getNote().getContent(),
+                visibility, Visibility.fromNoteId(activity.getNote().noteId));
     }
 
     private Actor buildActorFromOid(String actorOid) {

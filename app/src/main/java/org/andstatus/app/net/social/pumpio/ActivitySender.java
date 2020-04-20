@@ -206,7 +206,7 @@ class ActivitySender {
         JSONObject generator = new JSONObject();
         generator.put("id", ConnectionPumpio.APPLICATION_ID);
         generator.put("displayName", HttpConnection.USER_AGENT);
-        generator.put("objectType", PObjectType.APPLICATION.id());
+        generator.put("objectType", PObjectType.APPLICATION.id);
         activity.put("generator", generator);
 
         setAudience(activity, activityType);
@@ -287,7 +287,7 @@ class ActivitySender {
             }
             obj.put("author", activity.getJSONObject("actor"));
             PObjectType objectType = StringUtil.isEmpty(inReplyToId) ? PObjectType.NOTE : PObjectType.COMMENT;
-            obj.put("objectType", objectType.id());
+            obj.put("objectType", objectType.id);
         }
         return obj;
     }
