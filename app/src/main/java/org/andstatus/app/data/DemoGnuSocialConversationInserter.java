@@ -19,7 +19,6 @@ package org.andstatus.app.data;
 import androidx.annotation.Nullable;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
@@ -76,18 +75,22 @@ public class DemoGnuSocialConversationInserter {
         AActivity selected = buildActivity(author1, "Selected note", minus1,null);
         selected.setSubscribedByMe(TriState.TRUE);
         AActivity reply1 = buildActivity(author3, "Reply 1 to selected", selected, null);
-        AActivity reply2 = buildActivity(author2, "Reply 2 to selected is public", selected, null);
-        addWithVisibility(reply2, Visibility.PUBLIC_AND_TO_FOLLOWERS);
+        AActivity reply2 = buildActivity(author2, "Reply 2 to selected is public", selected, null)
+            .withVisibility(Visibility.PUBLIC_AND_TO_FOLLOWERS);
         AActivity reply3 = buildActivity(author1, "Reply 3 to selected by the same author", selected, null);
         addActivity(selected);
         addActivity(reply3);
         addActivity(reply1);
         addActivity(reply2);
+        DemoNoteInserter.assertStoredVisibility(reply2, Visibility.PUBLIC_AND_TO_FOLLOWERS);
 
         AActivity reply4 = buildActivity(author4, "Reply 4 to Reply 1, " + demoData.publicNoteText + " other author", reply1, null);
         addActivity(reply4);
-        DemoNoteInserter.increaseUpdateDate(reply4);
-        addWithVisibility(reply4, Visibility.PRIVATE);
+        DemoNoteInserter.assertStoredVisibility(reply4, Visibility.PUBLIC);
+
+        DemoNoteInserter.increaseUpdateDate(reply4).withVisibility(Visibility.PRIVATE);
+        addActivity(reply4);
+        DemoNoteInserter.assertStoredVisibility(reply4, Visibility.PRIVATE);
 
         final AActivity reply5 = buildActivity(author2, "Reply 5 to Reply 4", reply4, null);
         addWithMultipleAttachments(reply5);
@@ -95,17 +98,21 @@ public class DemoGnuSocialConversationInserter {
         addWithMultipleImages(buildActivity(author3, "Reply 6 to Reply 4 - the second, with 2 images", reply4, null), 2);
 
         AActivity reply7 = buildActivity(author1, "Reply 7 to Reply 2 is about "
-        + demoData.publicNoteText + " and something else", reply2, null);
-        addWithVisibility(reply7, Visibility.PUBLIC_AND_TO_FOLLOWERS);
-        
+                + demoData.publicNoteText + " and something else", reply2, null)
+            .withVisibility(Visibility.PUBLIC);
+        addActivity(reply7);
+        DemoNoteInserter.assertStoredVisibility(reply7, Visibility.PUBLIC);
+
         AActivity reply8 = buildActivity(author4, "<b>Reply 8</b> to Reply 7", reply7, null);
         AActivity reply9 = buildActivity(author2, "Reply 9 to Reply 7, 3 images", reply7, null);
         addWithMultipleImages(reply9, 3);
         AActivity reply10 = buildActivity(author3, "Reply 10 to Reply 8, number of images: 1", reply8, null);
         addWithMultipleImages(reply10, 1);
         AActivity reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + demoData.globalPublicNoteText
-                + " text", reply7, null);
-        addWithVisibility(reply11, Visibility.PUBLIC_AND_TO_FOLLOWERS);
+                + " text", reply7, null)
+            .withVisibility(Visibility.PUBLIC);
+        addActivity(reply11);
+        DemoNoteInserter.assertStoredVisibility(reply11, Visibility.PUBLIC);
 
         AActivity reply12 = buildActivity(author2, "Reply 12 to Reply 7 reblogged by author1", reply7, null);
         DemoNoteInserter.onActivityS(reply12);
@@ -187,13 +194,6 @@ public class DemoGnuSocialConversationInserter {
         addActivity(activity);
         final Attachments attachments = activity.getNote().attachments;
         assertEquals(attachments.toString(), 2 * numberOfImages, attachments.size());
-    }
-
-    private void addWithVisibility(AActivity activity, Visibility visibility) {
-        activity.getNote().setVisibility(visibility);
-        addActivity(activity);
-        assertEquals("Visibility of: " + activity.getNote().getContent(),
-                visibility, Visibility.fromNoteId(activity.getNote().noteId));
     }
 
     private Actor actorFromOidAndAvatar(String actorOid, @Nullable String avatarUrl) {

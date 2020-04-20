@@ -31,7 +31,6 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.notification.NotificationEventType;
-import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
@@ -120,13 +119,10 @@ public class AActivity extends AObject {
     }
 
     public void initializePublicAndFollowers() {
-        OriginType originType = accountActor.origin.getOriginType();
-        getNote().setVisibility(Visibility.fromCheckboxes(true, originType.isFollowersChangeAllowed));
-
         Visibility visibility = getNote().getInReplyTo().getNote().audience().getVisibility();
-        if (visibility.isKnown()) {
-            getNote().setVisibility(visibility);
-        }
+        getNote().audience().setVisibility(visibility.isKnown()
+            ? visibility
+            : Visibility.fromCheckboxes(true, accountActor.origin.getOriginType().isFollowersChangeAllowed));
     }
 
     @NonNull
@@ -356,8 +352,9 @@ public class AActivity extends AObject {
                 + ", me:" + (accountActor.isEmpty() ? "EMPTY" : accountActor.oid)
                 + (subscribedByMe.known ? (subscribedByMe == TriState.TRUE ? ", subscribed" : ", NOT subscribed") : "" )
                 + (interacted.isTrue ? ", interacted" : "" )
-                + (notifiedActor.isEmpty() ? "" : " actor:" + objActor)
-                + (notified.isTrue ? ", notified" : "" )
+                + (notified.isTrue
+                    ? ", notified" + (notifiedActor.isEmpty() ? " ???" : "Actor:" + objActor)
+                    : "" )
                 + (newNotificationEventType.isEmpty() ? "" : ", " + newNotificationEventType)
                 + (actor.isEmpty() ? "" : ", \nactor:" + actor)
                 + (note == null || note.isEmpty() ? "" : ", \nnote:" + note)
@@ -529,7 +526,7 @@ public class AActivity extends AObject {
 
     private NotificationEventType calculateNotificationEventType(MyContext myContext) {
         if (myContext.users().isMe(getActor())) return NotificationEventType.EMPTY;
-        if (getNote().getVisibility().isPrivate()) {
+        if (getNote().audience().getVisibility().isPrivate()) {
             return NotificationEventType.PRIVATE;
         } else if(myContext.users().containsMe(getNote().audience().getNonSpecialActors()) && !isMyActorOrAuthor(myContext)) {
             return NotificationEventType.MENTION;
@@ -633,5 +630,10 @@ public class AActivity extends AObject {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public AActivity withVisibility(Visibility visibility) {
+        getNote().audience().withVisibility(visibility);
+        return this;
     }
 }

@@ -37,6 +37,8 @@ import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 
+import java.util.Collections;
+
 public enum ActorContextMenuItem implements ContextMenuItem {
     GET_ACTOR(true) {
         @Override
@@ -49,7 +51,8 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         @Override
         NoteEditorData executeAsync(Params params) {
             return NoteEditorData.newEmpty(params.menu.getActingAccount())
-                    .addToAudience(params.menu.getViewItem().getActorId());
+                    .setPublicAndFollowers(false, false)
+                    .addActorsBeforeText(Collections.singletonList(params.menu.getViewItem().actor));
         }
 
         @Override

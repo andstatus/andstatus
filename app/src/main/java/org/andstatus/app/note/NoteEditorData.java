@@ -117,7 +117,7 @@ public class NoteEditorData implements IsEmpty {
         long noteId = note.noteId;
         note.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId));
         note.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, noteId));
-        note.setSensitive(MyQuery.noteIdToLongColumnValue(NoteTable.SENSITIVE, noteId) == 1);
+        note.setSensitive(MyQuery.isSensitive(noteId));
         note.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId));
         note.setAudience(Audience.load(activity.accountActor.origin, noteId, Optional.empty()));
 
@@ -136,8 +136,8 @@ public class NoteEditorData implements IsEmpty {
             inReplyToNote.noteId = inReplyToNoteId;
             inReplyToNote.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, inReplyToNoteId));
             inReplyToNote.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, inReplyToNoteId));
-            inReplyToNote.setVisibility(Visibility.fromId(inReplyToNoteId));
-            inReplyToNote.setSensitive(MyQuery.noteIdToLongColumnValue(NoteTable.SENSITIVE, inReplyToNoteId) == 1);
+            inReplyToNote.audience().setVisibility(Visibility.fromId(inReplyToNoteId));
+            inReplyToNote.setSensitive(MyQuery.isSensitive(inReplyToNoteId));
             inReplyToNote.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId));
             note.setInReplyTo(inReplyTo);
         }
@@ -247,19 +247,19 @@ public class NoteEditorData implements IsEmpty {
     }
 
     public void save() {
-        recreateAudience(activity);
+        recreateKnownAudience(activity);
         new DataUpdater(getMyAccount()).onActivity(activity);
         // TODO: Delete previous draft activities of this note
     }
 
-    public static void recreateAudience(AActivity activity) {
-        Audience audience = new Audience(activity.accountActor.origin);
-        audience.add(activity.getNote().getInReplyTo().getActor());
-        audience.addActorsFromContent(activity.getNote().getContent(),
-                activity.getAuthor(), activity.getNote().getInReplyTo().getActor());
-        audience.setVisibility(activity.getNote().audience().getVisibility());
-        audience.setFollowers(activity.getNote().audience().isFollowers());
-        activity.getNote().setAudience(audience);
+    public static void recreateKnownAudience(AActivity activity) {
+        Note note = activity.getNote();
+        if (note == Note.EMPTY) return;
+
+        Audience audience = new Audience(activity.accountActor.origin).withVisibility(note.audience().getVisibility());
+        audience.add(note.getInReplyTo().getActor());
+        audience.addActorsFromContent(note.getContent(), activity.getAuthor(), note.getInReplyTo().getActor());
+        note.setAudience(audience);
     }
 
     MyAccount getMyAccount() {
@@ -343,12 +343,14 @@ public class NoteEditorData implements IsEmpty {
         addActorsBeforeText(loader.getList().stream().map(ActorViewItem::getActor).collect(Collectors.toList()));
     }
 
-    private void addActorsBeforeText(List<Actor> toMention) {
+    public NoteEditorData addActorsBeforeText(List<Actor> toMention) {
         toMention.add(0, Actor.load(myContext, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, getInReplyToNoteId())));
         List<String> mentionedNames = new ArrayList<>();
         mentionedNames.add(ma.getActor().getUniqueName());  // Don't mention the author of this note
         MyStringBuilder mentions = new MyStringBuilder();
         for(Actor actor : toMention) {
+            if (actor.isEmpty()) continue;
+
             String name = actor.getUniqueName();
             if (!StringUtil.isEmpty(name) && !mentionedNames.contains(name)) {
                 mentionedNames.add(name);
@@ -361,6 +363,7 @@ public class NoteEditorData implements IsEmpty {
         if (mentions.nonEmpty()) {
             setContent(mentions.toString() + " " + getContent(), TextMediaType.HTML);
         }
+        return this;
     }
 
     public long getInReplyToNoteId() {
@@ -389,13 +392,13 @@ public class NoteEditorData implements IsEmpty {
     }
 
     public Visibility getVisibility() {
-        return activity.getNote().getVisibility();
+        return activity.getNote().audience().getVisibility();
     }
 
     public NoteEditorData setPublicAndFollowers(boolean isPublic, boolean isFollowers) {
         if (canChangeVisibility()) {
-            this.activity.getNote().setVisibility(Visibility
-                    .fromCheckboxes(isPublic, canChangeIsFollowers() && isFollowers));
+            this.activity.getNote().audience().withVisibility(Visibility
+                        .fromCheckboxes(isPublic, canChangeIsFollowers() && isFollowers));
         }
         return this;
     }
@@ -441,11 +444,11 @@ public class NoteEditorData implements IsEmpty {
     }
 
     NoteEditorData copySensitiveProperty() {
-        if (MyQuery.noteIdToLongColumnValue(NoteTable.SENSITIVE, getInReplyToNoteId()) != 1) return this;
-
-        activity.getNote().setSensitive(true);
-        StringUtil.optNotEmpty(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, getInReplyToNoteId()))
-                .ifPresent(this::setSummary);
+        if (MyQuery.isSensitive(getInReplyToNoteId())) {
+            activity.getNote().setSensitive(true);
+            StringUtil.optNotEmpty(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, getInReplyToNoteId()))
+                    .ifPresent(this::setSummary);
+        }
         return this;
     }
 }

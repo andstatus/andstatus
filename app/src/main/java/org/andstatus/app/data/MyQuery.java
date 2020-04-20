@@ -25,7 +25,6 @@ import android.provider.BaseColumns;
 import androidx.annotation.NonNull;
 import androidx.core.util.Pair;
 
-import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
@@ -574,6 +573,10 @@ public class MyQuery {
 
     public static TriState noteIdToTriState(String columnName, long systemId) {
         return TriState.fromId(noteIdToLongColumnValue(columnName, systemId));
+    }
+
+    public static boolean isSensitive(long systemId) {
+        return noteIdToLongColumnValue(NoteTable.SENSITIVE, systemId) == 1;
     }
 
     /**

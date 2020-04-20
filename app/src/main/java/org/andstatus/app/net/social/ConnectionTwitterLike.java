@@ -483,7 +483,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     private void setNotesPrivate(List<AActivity> timeline) {
         for (AActivity item : timeline) {
             if (item.getObjectType() == AObjectType.NOTE) {
-                item.getNote().setVisibility(Visibility.PRIVATE);
+                item.getNote().audience().setVisibility(Visibility.PRIVATE);
             }
         }
     }

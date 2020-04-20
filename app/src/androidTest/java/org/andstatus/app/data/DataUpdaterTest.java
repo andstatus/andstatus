@@ -177,7 +177,7 @@ public class DataUpdaterTest {
         final Note note = activity.getNote();
         note.via = "AnyOtherClient";
         note.audience().add(accountActor);
-        note.setVisibility(Visibility.PRIVATE);
+        note.audience().setVisibility(Visibility.PRIVATE);
         final long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;
         assertNotEquals("Note added", 0, noteId);
         assertNotEquals("Activity added", 0, activity.getId());
@@ -210,7 +210,7 @@ public class DataUpdaterTest {
         Note note = activity.getNote();
         note.setContentPosted("This test note will be favorited by First Reader from http://pumpity.net");
         note.via = "SomeOtherClient";
-        note.setVisibility(Visibility.PUBLIC_AND_TO_FOLLOWERS);
+        note.audience().setVisibility(Visibility.PUBLIC_AND_TO_FOLLOWERS);
 
         String otherUsername = "firstreader@identi.ca";
         Actor otherActor = Actor.fromOid(accountActor.origin, OriginPumpio.ACCOUNT_PREFIX + otherUsername);
@@ -581,7 +581,7 @@ public class DataUpdaterTest {
         noteIn.setContentPosted(content);
         noteIn.via = "MyCoolClient";
 
-        NoteEditorData.recreateAudience(activityIn);
+        NoteEditorData.recreateKnownAudience(activityIn);
         final AActivity activity = new DataUpdater(ma).onActivity(activityIn);
         final Note note = activity.getNote();
         assertTrue("Note was not added: " + activity, note.noteId != 0);
@@ -625,7 +625,7 @@ public class DataUpdaterTest {
         AActivity activity2 = AActivity.from(accountActor, ActivityType.UPDATE);
         activity2.setActor(author1);
         activity2.setActivity(activity1);
-        NoteEditorData.recreateAudience(activity2);
+        NoteEditorData.recreateKnownAudience(activity2);
 
         long noteId = new DataUpdater(ma).onActivity(activity2).getNote().noteId;
         assertTrue("Note should be added", noteId != 0);
@@ -703,7 +703,7 @@ public class DataUpdaterTest {
         assertEquals("Note " + note1, DownloadStatus.SENDING, note1.getStatus());
 
         Audience audience = Audience.fromNoteId(accountActor.origin, note1.noteId);
-        assertVisibility(audience, Visibility.UNKNOWN);
+        assertVisibility(audience, Visibility.PRIVATE);
 
         // Response from a server
         AActivity activity2 = AActivity.from(accountActor, ActivityType.CREATE);
@@ -745,14 +745,13 @@ public class DataUpdaterTest {
         Note note = activity.getNote();
         note.setContentPosted("This test note was sent to Followers only");
         note.via = "SomeApClient";
-        note.audience().setVisibility(Visibility.PRIVATE);
-        note.audience().setFollowers(true);
+        note.audience().withVisibility(Visibility.TO_FOLLOWERS);
 
         long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;
         assertNotEquals("Note added", 0, noteId);
         assertNotEquals("First activity added", 0, activity.getId());
 
         Audience audience = Audience.fromNoteId(accountActor.origin, noteId);
-        assertVisibility(audience, Visibility.PRIVATE);
+        assertVisibility(audience, Visibility.TO_FOLLOWERS);
     }
 }

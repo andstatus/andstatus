@@ -344,14 +344,17 @@ public class ConnectionActivityPub extends Connection {
     }
 
     private void setAudience(AActivity activity, JSONObject jso) {
-        Audience audience = activity.getNote().audience();
-        audience.setVisibility(Visibility.PRIVATE);
+        Audience audience = new Audience(data.getOrigin());
         ObjectOrId.of(jso, "to")
                 .mapAll(this::actorFromJson, this::actorFromOid)
                 .forEach(o -> addRecipient(o, audience));
         ObjectOrId.of(jso, "cc")
                 .mapAll(this::actorFromJson, this::actorFromOid)
                 .forEach(o -> addRecipient(o, audience));
+        if (audience.hasNonSpecial()) {
+            audience.addVisibility(Visibility.PRIVATE);
+        }
+        activity.getNote().setAudience(audience);
     }
 
     private void addRecipient(Actor recipient, Audience audience) {

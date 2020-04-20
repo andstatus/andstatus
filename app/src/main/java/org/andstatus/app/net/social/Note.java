@@ -342,15 +342,6 @@ public class Note extends AObject {
         }
     }
 
-    public Visibility getVisibility() {
-        return audience().getVisibility();
-    }
-
-    public Note setVisibility(Visibility visibility) {
-        audience().setVisibility(visibility);
-        return this;
-    }
-
     public boolean isSensitive() {
         return isSensitive;
     }

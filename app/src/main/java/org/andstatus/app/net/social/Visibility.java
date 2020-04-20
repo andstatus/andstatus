@@ -43,9 +43,9 @@ public enum Visibility {
         if (id == 2) return PUBLIC;
         if (id == 1) return NOT_PUBLIC_NEEDS_CLARIFICATION;
 
-        for (Visibility tt : Visibility.values()) {
-            if (tt.id == id) {
-                return tt;
+        for (Visibility value : Visibility.values()) {
+            if (value.id == id) {
+                return value;
             }
         }
         return UNKNOWN;
@@ -95,14 +95,33 @@ public enum Visibility {
         }
     }
 
+    public Visibility getKnown() {
+        Visibility v1 = isPublic()
+                ? Visibility.PUBLIC
+                : Visibility.PRIVATE;
+        return isFollowers()
+                ? v1.add(Visibility.TO_FOLLOWERS)
+                : v1;
+    }
+
     public Visibility add(Visibility other) {
+        if (this == other) return this;
+
+        if (this == UNKNOWN) return other;
+        if (other == UNKNOWN) return this;
+
+        if (this == NOT_PUBLIC_NEEDS_CLARIFICATION) return other;
+        if (other == NOT_PUBLIC_NEEDS_CLARIFICATION) return this;
+
         switch (other) {
             case PUBLIC:
-                return this.id >= TO_FOLLOWERS.id ? PUBLIC_AND_TO_FOLLOWERS : PUBLIC;
+                return this.id <= TO_FOLLOWERS.id ? PUBLIC_AND_TO_FOLLOWERS : PUBLIC;
             case TO_FOLLOWERS:
-                return this.id >= PUBLIC.id ? PUBLIC_AND_TO_FOLLOWERS : TO_FOLLOWERS;
+                return this.id <= PUBLIC.id ? PUBLIC_AND_TO_FOLLOWERS : TO_FOLLOWERS;
+            case UNKNOWN:
+                return this;
             default:
-                return this.id > other.id ? this : other;
+                return this.id < other.id ? this : other;
         }
     }
 

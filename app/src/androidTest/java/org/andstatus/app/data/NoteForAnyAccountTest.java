@@ -12,8 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
-import static org.andstatus.app.util.TriState.FALSE;
-import static org.andstatus.app.util.TriState.TRUE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -48,7 +46,7 @@ public class NoteForAnyAccountTest {
         Actor author2 = mi.buildActorFromOid("acct:a2." + demoData.testRunUid + "@pump.example.com");
         final AActivity replyTo1 = mi.buildActivity(author2, "", "@" + accountActor.getUsername()
                 + " Replying to you privately", activity1, null, DownloadStatus.LOADED);
-        replyTo1.getNote().setVisibility(Visibility.PRIVATE);
+        replyTo1.getNote().audience().setVisibility(Visibility.PRIVATE);
         mi.onActivity(replyTo1);
 
         NoteForAnyAccount nfaReplyTo1 = new NoteForAnyAccount(MyContextHolder.get(),
@@ -63,7 +61,7 @@ public class NoteForAnyAccountTest {
         Actor author3 = mi.buildActorFromOid("acct:b3." + demoData.testRunUid + "@pumpity.example.com");
         AActivity reply2 = mi.buildActivity(author3, "", "@" + author2.getUsername()
                 + " Replying publicly to the second author", replyTo1, null, DownloadStatus.LOADED);
-        reply2.getNote().setVisibility(Visibility.PUBLIC_AND_TO_FOLLOWERS);
+        reply2.getNote().audience().setVisibility(Visibility.PUBLIC_AND_TO_FOLLOWERS);
         mi.onActivity(reply2);
 
         NoteForAnyAccount nfaReply2 = new NoteForAnyAccount(MyContextHolder.get(),

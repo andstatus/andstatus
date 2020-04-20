@@ -54,6 +54,8 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.view.MyContextMenu;
 
+import java.util.Collections;
+
 public enum NoteContextMenuItem implements ContextMenuItem {
     REPLY(true, false) {
         @Override
@@ -120,7 +122,8 @@ public enum NoteContextMenuItem implements ContextMenuItem {
         @Override
         NoteEditorData executeAsync(NoteContextMenu menu) {
             return NoteEditorData.newEmpty(menu.getActingAccount())
-                    .addToAudience(menu.getAuthor()).setPublicAndFollowers(false, false);
+                    .setPublicAndFollowers(false, false)
+                    .addActorsBeforeText(Collections.singletonList(menu.getAuthor()));
         }
 
         @Override

@@ -591,12 +591,13 @@ public class NoteEditor {
     }
 
     private void updateDataFromScreen() {
-        editorData.setName(MyUrlSpan.getText(editorView, R.id.note_name_edit))
-            .setSummary(MyUrlSpan.getText(editorView, R.id.summary_edit))
-            .setContent(bodyView.getText().toString(), editorContentMediaType)
+        editorData
             .setPublicAndFollowers(MyCheckBox.isChecked(getActivity(), R.id.is_public, false),
                 MyCheckBox.isChecked(getActivity(), R.id.is_followers, false))
-            .setSensitive(MyCheckBox.isChecked(getActivity(), R.id.is_sensitive, false));
+            .setSensitive(MyCheckBox.isChecked(getActivity(), R.id.is_sensitive, false))
+            .setName(MyUrlSpan.getText(editorView, R.id.note_name_edit))
+            .setSummary(MyUrlSpan.getText(editorView, R.id.summary_edit))
+            .setContent(bodyView.getText().toString(), editorContentMediaType);
     }
 
     private void discardAndHide() {

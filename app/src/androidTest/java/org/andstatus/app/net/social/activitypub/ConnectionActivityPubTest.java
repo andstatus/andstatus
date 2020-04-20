@@ -268,7 +268,7 @@ public class ConnectionActivityPubTest {
                 TestSuite.utcTime(note.getUpdatedDate()).toString());
 
         Audience audience = activity.audience();
-        assertEquals("Visibility of " + activity, Visibility.PUBLIC_AND_TO_FOLLOWERS, audience.getVisibility());
+        assertEquals("Visibility of " + activity, Visibility.PUBLIC, audience.getVisibility());
         List<String> oids = Arrays.asList(
             "https://pleroma.site/users/kaniini",
             "https://pawoo.net/users/pawooAndStatusTester",
@@ -283,7 +283,7 @@ public class ConnectionActivityPubTest {
                 CommandData.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT));
         new DataUpdater(executionContext).onActivity(activity);
 
-        Audience audienceStored = Audience.fromNoteId(mock.getData().getOrigin(), note.noteId, note.getVisibility());
+        Audience audienceStored = Audience.fromNoteId(mock.getData().getOrigin(), note.noteId, note.audience().getVisibility());
         oids.forEach(oid -> {
             assertTrue("Audience should contain " + oid + "\n " + activity + "\n " + audienceStored, audienceStored.containsOid(oid));
         });
@@ -310,7 +310,7 @@ public class ConnectionActivityPubTest {
                 TestSuite.utcTime(note.getUpdatedDate()).toString());
 
         Audience audience = activity.audience();
-        assertEquals("Visibility of " + activity, Visibility.PUBLIC_AND_TO_FOLLOWERS, audience.getVisibility());
+        assertEquals("Visibility of " + activity, Visibility.PUBLIC, audience.getVisibility());
         List<String> oids = Arrays.asList(
                 "https://queer.hacktivis.me/users/AndStatus/followers"
         );

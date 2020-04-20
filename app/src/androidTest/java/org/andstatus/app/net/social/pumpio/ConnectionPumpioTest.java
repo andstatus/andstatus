@@ -79,7 +79,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class ConnectionPumpioTest {
@@ -264,7 +263,8 @@ public class ConnectionPumpioTest {
         assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
 
         Audience audience = note.audience();
-        assertEquals("Is not Public " + audience, Visibility.PUBLIC_AND_TO_FOLLOWERS, audience.getVisibility());
+        assertEquals("Should be Public for now. Followers in cc aren't recognized yet as a Followers collection... " +
+                activity + "\n", Visibility.PUBLIC, audience.getVisibility());
         assertFalse("Is to Followers. We shouldn't know this yet?! " + audience, audience.isFollowers());
         assertThat(audience.getRecipients().toString(),
                 audience.getNonSpecialActors().stream().map(Actor::getUsername).collect(Collectors.toList()),
@@ -282,7 +282,8 @@ public class ConnectionPumpioTest {
         Note noteStored = Note.loadContentById(mock.getData().getOrigin().myContext, note.noteId);
 
         Audience audienceStored = noteStored.audience();
-        assertEquals("Is not Public " + audienceStored, Visibility.PUBLIC_AND_TO_FOLLOWERS, audienceStored.getVisibility());
+        assertEquals("Should be Public with Followers " + audienceStored,
+                Visibility.PUBLIC_AND_TO_FOLLOWERS, audienceStored.getVisibility());
         assertTrue("Is not to Followers " + audienceStored, audienceStored.isFollowers());
         assertThat(audienceStored.getRecipients().toString(), audienceStored.getNonSpecialActors(), is(empty()));
     }

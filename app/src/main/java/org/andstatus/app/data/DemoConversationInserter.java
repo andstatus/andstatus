@@ -33,6 +33,7 @@ import org.andstatus.app.util.TriState;
 import java.util.GregorianCalendar;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.net.social.Visibility.PUBLIC_AND_TO_FOLLOWERS;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -92,8 +93,9 @@ public class DemoConversationInserter {
         reply1.getNote().replies.add(reply12);
 
         AActivity privateReply2 = buildActivity(author2, "Private reply", "Reply 2 to selected is private",
-                selected, null);
-        addWithVisibility(privateReply2, Visibility.PRIVATE);
+                selected, null).withVisibility(Visibility.PRIVATE);
+        addActivity(privateReply2);
+        DemoNoteInserter.assertStoredVisibility(privateReply2, Visibility.PRIVATE);
         DemoNoteInserter.assertInteraction(privateReply2, NotificationEventType.PRIVATE, TriState.TRUE);
         assertEquals("Should be subscribed " + selected, TriState.TRUE,
                 MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, selected.getId()));
@@ -111,7 +113,8 @@ public class DemoConversationInserter {
         addActivity(reply4);
 
         DemoNoteInserter.increaseUpdateDate(reply4);
-        addWithVisibility(reply4, Visibility.PUBLIC_AND_TO_FOLLOWERS);
+        addActivity(reply4.withVisibility(PUBLIC_AND_TO_FOLLOWERS));
+        DemoNoteInserter.assertStoredVisibility(reply4, PUBLIC_AND_TO_FOLLOWERS);
 
         DemoConversationInserter.assertIfActorIsMyFriend(author3, true, ma);
 
@@ -145,9 +148,11 @@ public class DemoConversationInserter {
         addActivity(likeOf6);
 
         AActivity reply7 = buildActivity(getAuthor1(), "", "Reply 7 to Reply 2 is about "
-        + demoData.publicNoteText + " and something else", privateReply2, null);
-        addWithVisibility(reply7, Visibility.PUBLIC_AND_TO_FOLLOWERS);
-        
+                + demoData.publicNoteText + " and something else", privateReply2, null)
+            .withVisibility(PUBLIC_AND_TO_FOLLOWERS);
+        addActivity(reply7);
+        DemoNoteInserter.assertStoredVisibility(reply7, PUBLIC_AND_TO_FOLLOWERS);
+
         AActivity reply8 = buildActivity(author4, "", "<b>Reply 8</b> to Reply 7", reply7, null);
         AActivity reblogOfNewActivity8 = buildActivity(author3, ActivityType.ANNOUNCE);
         reblogOfNewActivity8.setActivity(reply8);
@@ -185,13 +190,17 @@ public class DemoConversationInserter {
         addActivity(anonymousReply);
 
         AActivity reply11 = buildActivity(author2, "", "Reply 11 to Reply 7, " + demoData.globalPublicNoteText
-                + " text", reply7, null);
-        addWithVisibility(reply11, Visibility.PUBLIC_AND_TO_FOLLOWERS);
+                + " text", reply7, null)
+            .withVisibility(PUBLIC_AND_TO_FOLLOWERS);
+        addActivity(reply11);
+        DemoNoteInserter.assertStoredVisibility(reply11, PUBLIC_AND_TO_FOLLOWERS);
         DemoNoteInserter.assertInteraction(reply11, NotificationEventType.EMPTY, TriState.FALSE);
 
         AActivity myReply13 = buildActivity(accountActor, "", "My reply 13 to Reply 2", privateReply2, null);
-        AActivity reply14 = buildActivity(author3, "", "Publicly reply to my note 13", myReply13, null);
-        addWithVisibility(reply14, Visibility.PUBLIC_AND_TO_FOLLOWERS);
+        AActivity reply14 = buildActivity(author3, "", "Publicly reply to my note 13", myReply13, null)
+            .withVisibility(PUBLIC_AND_TO_FOLLOWERS);
+        addActivity(reply14);
+        DemoNoteInserter.assertStoredVisibility(reply14, PUBLIC_AND_TO_FOLLOWERS);
         DemoNoteInserter.assertInteraction(reply14, NotificationEventType.MENTION, TriState.TRUE);
 
         AActivity reblogOf14 = buildActivity(author2, ActivityType.ANNOUNCE);
@@ -205,7 +214,8 @@ public class DemoConversationInserter {
         addActivity(reblogOfMyPrivate13);
         DemoNoteInserter.assertInteraction(reblogOfMyPrivate13, NotificationEventType.PRIVATE, TriState.TRUE);
 
-        AActivity mentionOfAuthor3 = buildActivity(reblogger1, "", "@" + author3.getUsername() + " mention in reply to 4",
+        AActivity mentionOfAuthor3 = buildActivity(reblogger1, "",
+                "@" + author3.getUsername() + " mention in reply to 4",
                 reply4, iteration == 1 ? demoData.conversationMentionOfAuthor3Oid : null);
         addActivity(mentionOfAuthor3);
 
@@ -244,13 +254,6 @@ public class DemoConversationInserter {
         return author1;
     }
     
-    private void addWithVisibility(AActivity activity, Visibility visibility) {
-        activity.getNote().setVisibility(visibility);
-        addActivity(activity);
-        assertEquals("Visibility of: " + activity.getNote().getContent(),
-                visibility, Visibility.fromNoteId(activity.getNote().noteId));
-    }
-
     private Actor buildActorFromOid(String actorOid) {
         return new DemoNoteInserter(accountActor).buildActorFromOid(actorOid);
     }

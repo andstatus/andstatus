@@ -158,18 +158,19 @@ public class DemoNoteInserter {
         new DemoNoteInserter(activity.accountActor).onActivity(activity);
     }
 
-    static void increaseUpdateDate(AActivity activity) {
+    static AActivity increaseUpdateDate(AActivity activity) {
         // In order for a note not to be ignored
         activity.setUpdatedDate(activity.getUpdatedDate() + 1);
         activity.getNote().setUpdatedDate(activity.getNote().getUpdatedDate() + 1);
+        return activity;
     }
 
     public void onActivity(final AActivity activity) {
-        NoteEditorData.recreateAudience(activity);
+        NoteEditorData.recreateKnownAudience(activity);
 
         MyAccount ma = origin.myContext.accounts().fromActorId(accountActor.actorId);
         assertTrue("Persistent account exists for " + accountActor + " " + activity, ma.isValid());
-        final TimelineType timelineType = activity.getNote().getVisibility().isPrivate() ? TimelineType.PRIVATE : TimelineType.HOME;
+        final TimelineType timelineType = activity.getNote().audience().getVisibility().isPrivate() ? TimelineType.PRIVATE : TimelineType.HOME;
         CommandExecutionContext execContext = new CommandExecutionContext(origin.myContext,
                 CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType));
         activity.audience().assertContext();
@@ -342,6 +343,11 @@ public class DemoNoteInserter {
                     notified,
                     MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()));
         }
+    }
+
+    public static void assertStoredVisibility(AActivity activity, Visibility expected) {
+        assertEquals("Visibility of\n" + activity + "\n",
+                expected, Visibility.fromNoteId(activity.getNote().noteId));
     }
 
     public static void assertVisibility(Audience audience, Visibility visibility) {

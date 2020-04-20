@@ -133,7 +133,7 @@ public class ConnectionGnuSocialTest {
         activity = timeline.get(ind);
         author = activity.getAuthor();
         assertEquals("conversationOid", "2218650", activity.getNote().conversationOid);
-        assertEquals("Should be public", Visibility.PUBLIC_AND_TO_FOLLOWERS, activity.getNote().getVisibility());
+        assertEquals("Should be public", Visibility.PUBLIC_AND_TO_FOLLOWERS, activity.getNote().audience().getVisibility());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
         assertEquals("MyAccount", accountActor.oid, activity.accountActor.oid);
         assertEquals("Actor", author.oid, activity.getActor().oid);

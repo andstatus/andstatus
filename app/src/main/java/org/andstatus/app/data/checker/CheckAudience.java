@@ -31,12 +31,16 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyHtml;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+
+import java.util.List;
 
 /**
  * @author yvolk@yurivolkov.com
  */
 class CheckAudience extends DataChecker {
+    private final static String TAG = CheckAudience.class.getSimpleName();
 
     @Override
     long fixInternal() {
@@ -88,7 +92,7 @@ class CheckAudience extends DataChecker {
         s.rowsCount++;
         long noteId = DbUtils.getLong(cursor, NoteTable._ID);
         long insDate = DbUtils.getLong(cursor, NoteTable.INS_DATE);
-        Visibility visibility = Visibility.fromCursor(cursor);
+        Visibility storedVisibility = Visibility.fromCursor(cursor);
         String content = DbUtils.getString(cursor, NoteTable.CONTENT);
         Actor author = Actor.load(myContext, DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
         Actor inReplyToActor = Actor.load(myContext, DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID));
@@ -96,25 +100,44 @@ class CheckAudience extends DataChecker {
         if (origin.getOriginType() == OriginType.GNUSOCIAL || origin.getOriginType() == OriginType.TWITTER) {
 
             // See org.andstatus.app.note.NoteEditorData.recreateAudience
-            Audience audience = new Audience(origin);
+            Audience audience = new Audience(origin).withVisibility(storedVisibility);
             audience.add(inReplyToActor);
             audience.addActorsFromContent(content, author, inReplyToActor);
-            audience.setVisibility(visibility);
             audience.lookupUsers();
 
+            List<Actor> actorsToSave = audience.getActorsToSave(author);
             if (!countOnly) {
-                audience.getActorsToSave(author).stream().filter(a -> a.actorId == 0).forEach(actor ->
+                actorsToSave.stream().filter(a -> a.actorId == 0).forEach(actor ->
                         dataUpdater.updateObjActor(ma.getActor().update(actor), 0)
                 );
             }
+            compareVisibility(s, countOnly, noteId, audience, storedVisibility);
             if (audience.save(author, noteId, audience.getVisibility(), countOnly)) {
                 s.toFixCount += 1;
             }
+        } else {
+            Audience audience = Audience.fromNoteId(origin, noteId, storedVisibility);
+            compareVisibility(s, countOnly, noteId, audience, storedVisibility);
         }
         logger.logProgressIfLongProcess(() -> origin.getName() + ": need to fix " + s.toFixCount +
                 " of " + s.rowsCount + " audiences;\n" +
                 RelativeTime.getDifference(myContext.context(), insDate) + ", " +
                 I18n.trimTextAt(MyHtml.htmlToCompactPlainText(content), 120));
         return s;
+    }
+
+    private void compareVisibility(FixSummary s, boolean countOnly, long noteId,
+                                   Audience audience, Visibility storedVisibility) {
+        if (storedVisibility == audience.getVisibility()) return;
+
+        MyLog.i(TAG, "Fix visibility for " + noteId + " " + storedVisibility + " -> " + audience.getVisibility());
+        s.toFixCount += 1;
+        if (!countOnly) {
+            String sql = "UPDATE " + NoteTable.TABLE_NAME
+                    + " SET "
+                    + NoteTable.VISIBILITY + "=" + audience.getVisibility().id
+                    + " WHERE " + NoteTable._ID + "=" + noteId;
+            myContext.getDatabase().execSQL(sql);
+        }
     }
 }

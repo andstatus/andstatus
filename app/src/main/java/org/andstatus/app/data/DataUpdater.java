@@ -159,10 +159,12 @@ public class DataUpdater {
                 MyLog.w(this, method +"; my account is invalid, skipping: " + activity.toString());
                 return;
             }
+
+            updateObjActor(me.getActor().update(me.getActor(), activity.getActor()), recursing + 1);
             if (activity.isAuthorActor()) {
                 activity.setAuthor(activity.getActor());
             } else {
-                updateObjActor(activity.getActor().update(activity.accountActor, activity.getAuthor()), recursing + 1);
+                updateObjActor(activity.getActor().update(me.getActor(), activity.getAuthor()), recursing + 1);
             }
             if (note.noteId == 0) {
                 note.noteId = MyQuery.oidToId(OidEnum.NOTE_OID, note.origin.getId(), note.oid);
@@ -234,7 +236,7 @@ public class DataUpdater {
             updateInReplyTo(activity, values);
             activity.getNote().audience().lookupUsers();
             for ( Actor actor : note.audience().getActorsToSave(activity.getAuthor())) {
-                updateObjActor(activity.getActor().update(activity.accountActor, actor), recursing + 1);
+                updateObjActor(activity.getActor().update(me.getActor(), actor), recursing + 1);
             }
 
             if (!StringUtil.isEmpty(note.via)) {
@@ -243,8 +245,8 @@ public class DataUpdater {
             if (!StringUtil.isEmpty(note.url)) {
                 values.put(NoteTable.URL, note.url);
             }
-            if (note.getVisibility().isKnown()) {
-                values.put(NoteTable.VISIBILITY, note.getVisibility().id);
+            if (note.audience().getVisibility().isKnown()) {
+                values.put(NoteTable.VISIBILITY, note.audience().getVisibility().id);
             }
 
             if (note.lookupConversationId() != 0) {
@@ -287,7 +289,7 @@ public class DataUpdater {
                 MyLog.v("Note", () -> "Updated " + note);
             }
             if (note.getStatus().mayUpdateContent()) {
-                note.audience().save(activity.getAuthor(), note.noteId, note.getVisibility(), false);
+                note.audience().save(activity.getAuthor(), note.noteId, note.audience().getVisibility(), false);
 
                 if (shouldSaveAttachments(isFirstTimeLoaded, isDraftUpdated)) {
                     note.attachments.save(execContext, note.noteId);

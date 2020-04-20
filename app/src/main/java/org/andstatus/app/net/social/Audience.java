@@ -86,22 +86,21 @@ public class Audience {
                 AudienceTable.TABLE_NAME + "." + AudienceTable.ACTOR_ID + "=" +
                 ActorTable.TABLE_NAME + "." + ActorTable._ID +
                 " WHERE " + where;
-        Audience audience = new Audience(origin);
+        Audience audience = new Audience(origin).withVisibility(visibility);
         final Function<Cursor, Actor> function = cursor -> Actor.fromTwoIds(origin,
                 GroupType.fromId(DbUtils.getLong(cursor, ActorTable.GROUP_TYPE)),
                 DbUtils.getLong(cursor, AudienceTable.ACTOR_ID),
                 DbUtils.getString(cursor, ActorTable.ACTOR_OID));
         MyQuery.get(MyContextHolder.get(), sql, function).forEach(audience::add);
-        audience.setVisibility(visibility);
         return audience;
     }
 
     public static Audience load(@NonNull Origin origin, long noteId, Optional<Visibility> optVisibility) {
         Audience audience = new Audience(origin);
+        audience.setVisibility(optVisibility.orElseGet(() -> Visibility.fromNoteId(noteId)));
         final String sql = LOAD_SQL + noteId;
         final Function<Cursor, Actor> function = cursor -> Actor.fromCursor(origin.myContext, cursor, true);
         MyQuery.get(origin.myContext, sql, function).forEach(audience::add);
-        audience.setVisibility(optVisibility.orElseGet(() -> Visibility.fromNoteId(noteId)));
         return audience;
     }
 
@@ -140,12 +139,15 @@ public class Audience {
     }
 
     public List<Actor> getActorsToSave(Actor actorOfAudience) {
-        if (followers == Actor.FOLLOWERS) {
-            followers = Group.getActorsGroup(actorOfAudience, GroupType.FOLLOWERS, "");
-        }
         List<Actor> toSave = actors.stream()
                 .map(actor -> lookupInActorOfAudience(actorOfAudience, actor))
                 .collect(Collectors.toList());
+        actors.clear();
+        toSave.forEach(this::add);
+
+        if (followers == Actor.FOLLOWERS) {
+            followers = Group.getActorsGroup(actorOfAudience, GroupType.FOLLOWERS, "");
+        }
         if (!followers.isConstant()) {
             toSave.add(0, followers);
         }
@@ -197,11 +199,14 @@ public class Audience {
     }
 
     public Audience copy() {
-        Audience audience = new Audience(origin);
+        Audience audience = new Audience(origin).withVisibility(this.getVisibility());
         actors.forEach(audience::add);
-        audience.setVisibility(getVisibility());
-        audience.setFollowers(isFollowers());
         return audience;
+    }
+
+    public Audience withVisibility(Visibility visibility) {
+        setVisibility(visibility.getKnown());
+        return this;
     }
 
     public void addActorsFromContent(@NonNull String content, @NonNull Actor author, @NonNull Actor inReplyToActor) {
@@ -326,7 +331,7 @@ public class Audience {
 
     @Override
     public String toString() {
-        return toAudienceString(Actor.EMPTY);
+        return toAudienceString(Actor.EMPTY) + "; " + getRecipients();
     }
 
     public void addVisibility(Visibility visibility) {
@@ -334,6 +339,8 @@ public class Audience {
     }
 
     public void setVisibility(Visibility visibility) {
+        if (this.visibility == visibility) return;
+
         if (origin.getOriginType().isFollowersChangeAllowed) {
             setFollowers(visibility.isFollowers());
         }
@@ -344,7 +351,7 @@ public class Audience {
         return visibility;
     }
 
-    public void setFollowers(boolean isFollowers) {
+    private void setFollowers(boolean isFollowers) {
         if (isFollowers == isFollowers()) return;
 
         followers = isFollowers
