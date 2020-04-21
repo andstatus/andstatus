@@ -80,11 +80,10 @@ public class ActorContextMenu extends MyContextMenu {
                         ActorContextMenuItem.FOLLOW.addTo(menu, menuGroup, order++,
                                 StringUtil.format(getActivity(), R.string.menu_item_follow_user, shortName));
                     }
-                }
-                if (!menuContainer.getNoteEditor().isVisible()) {
-                    // TODO: Only if he follows me?
-                    ActorContextMenuItem.PRIVATE_NOTE.addTo(menu, menuGroup, order++,
-                            R.string.menu_item_private_message);
+                    if (!menuContainer.getNoteEditor().isVisible()) {
+                        ActorContextMenuItem.POST_TO.addTo(menu, menuGroup, order++,
+                                StringUtil.format(getActivity(), R.string.post_to, shortName));
+                    }
                 }
                 switch (getMyContext().accounts().succeededForSameUser(actor).size()) {
                     case 0:

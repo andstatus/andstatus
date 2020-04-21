@@ -47,7 +47,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
             return super.executeAsync(params);
         }
     },
-    PRIVATE_NOTE(true) {
+    POST_TO(true) {
         @Override
         NoteEditorData executeAsync(Params params) {
             return NoteEditorData.newEmpty(params.menu.getActingAccount())
@@ -57,9 +57,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
-            if (editorData.activity.getNote().audience().hasNonSpecial()) {
-                menu.menuContainer.getNoteEditor().startEditingNote(editorData);
-            }
+            menu.menuContainer.getNoteEditor().startEditingNote(editorData);
         }
     },
     SHARE() {

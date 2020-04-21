@@ -137,7 +137,7 @@
   <string name="discover_open_instances_title">Discover open instances</string>
   <string name="displayed_in_selector">Displayed in a selector</string>
   <string name="displayed_in_selector_abbreviated">Displ.</string>
-  <string name="database_disk_io_error">Attention! %1$s error(s) occurred while accessing the local cache database, which caused a malfunction in the AndStatus app.\nTypically, this is caused by an SD card related error.</string>
+  <string name="database_disk_io_error">Attention! %s error(s) occurred while accessing the local cache database, which caused a malfunction in the AndStatus app.\nTypically, this is caused by an SD card related error.</string>
   <string name="dont_synchronize_old_messages">Don\'t synchronize old activities, if previous sync was more than ... hours ago</string>
   <string name="dont_synchronize_old_messages_summary">%s hours since the previous sync
 AndStatus won\'t try to sync all activities since the latest activity downloaded,
@@ -174,10 +174,10 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="followed">followed</string>
   <string name="followed_by">Followed by</string>
   <string name="followers">Followers</string>
-  <string name="followers_of">Followers of \"%1s\"</string>
+  <string name="followers_of">Followers of %s</string>
   <string name="forget_sync_events">Forget sync events and dates</string>
   <string name="friends">Friends</string>
-  <string name="friends_of">Friends of \"%1s\"</string>
+  <string name="friends_of">Friends of %s</string>
   <string name="full_check">Yes: Proceed with a full and maybe extensive problem fixing.\nNo: Quick but only the most important checks and fixes.</string>
   <string name="gestures">Gestures</string>
   <string name="gestures_summary">Touch mechanics. How the User interacts with the app</string>
@@ -189,7 +189,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="get_user">Get Actor information</string>
   <string name="go_to_the_top_title">Go to the Top</string>
   <string name="group">Group</string>
-  <string name="group_notes">\"%1s\" group notes</string>
+  <string name="group_notes">%s group notes</string>
   <string name="groups">Groups</string>
   <string name="header_accounts">Accounts</string>
   <string name="header_accounts_summary">Manage accounts and Social networks</string>
@@ -260,7 +260,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="maximum_size_of_cached_media_mb">Maximum size of cached media files (including attachments), MB</string>
   <string name="mention_as_webfingerid_title">Mention as @webFingerId</string>
   <string name="menu_item_act_as">Act as&#8230;</string>
-  <string name="menu_item_act_as_user">Act as \"%1s\"</string>
+  <string name="menu_item_act_as_user">Act as %s</string>
   <string name="menu_item_block">Block</string>
   <string name="menu_item_copy_text">Copy text to clipboard</string>
   <string name="menu_item_copy_author">Copy @author to clipboard</string>
@@ -272,7 +272,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="menu_item_delete_note_from_local_cache">Delete note from local cache</string>
   <string name="menu_item_edit">Edit</string>
   <string name="menu_item_favorite">Favorite</string>
-  <string name="menu_item_follow_user">Follow \"%1s\"</string>
+  <string name="menu_item_follow_user">Follow %s</string>
   <string name="menu_item_view_image">View image</string>
   <string name="menu_item_open_conversation">Open Conversation</string>
   <string name="menu_item_open_message_permalink">Open in browser</string>
@@ -285,17 +285,17 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="menu_item_reblog_twitter">Retweet</string>
   <string name="menu_item_resend">Resend</string>
   <string name="menu_item_share">Share</string>
-  <string name="menu_item_stop_following_user">Stop following \"%1s\"</string>
-  <string name="menu_item_user_messages">Notes by \"%1s\"</string>
+  <string name="menu_item_stop_following_user">Stop following %s</string>
+  <string name="menu_item_user_messages">Notes by %s</string>
   <string name="menu_item_view_profile">View Profile</string>
   <string name="message">Note</string>
   <string name="message_characters_left">Characters left:</string>
   <string name="message_edit_hint">Enter your note here!</string>
   <string name="message_is_too_long">Note is too long.</string>
   <string name="message_sent">Your note has been sent.</string>
-  <string name="message_source_from">from %1$s</string>
-  <string name="message_source_in_reply_to">in reply to %1$s</string>
-  <string name="message_source_to">to %1$s</string>
+  <string name="message_source_from">from %s</string>
+  <string name="message_source_in_reply_to">in reply to %s</string>
+  <string name="message_source_to">to %s</string>
   <string name="message_twitter">Tweet</string>
   <string name="messages">Notes</string>
   <string name="n_message_link">Note link</string>
@@ -348,6 +348,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="page_top_of">top of</string>
   <string name="page_younger">younger</string>
   <string name="page_youngest">youngest</string>
+  <string name="post_to">Post to %s</string>
   <string name="preference_ssl_mode_title">SSL mode and security</string>
   <string name="preference_ssl_mode_secure_summary">You are safe: only secure SSL connections allowed</string>
   <string name="preference_ssl_mode_insecure_summary">Warning: Your connections are not secure. Please tell your server administrator to fix this and then return to a Secure mode</string>
@@ -362,9 +363,9 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="preference_use_kitkat_media_chooser_title">Modern interface to select an attachment</string>
   <string name="privacy_unknown">Public?</string>
   <string name="reblogged">reposted</string>
-  <string name="reblogged_by">reposted by %1$s</string>
-  <string name="reblogged_by_pumpio">shared by %1$s</string>
-  <string name="reblogged_by_twitter">retweeted by %1$s</string>
+  <string name="reblogged_by">reposted by %s</string>
+  <string name="reblogged_by_pumpio">shared by %s</string>
+  <string name="reblogged_by_twitter">retweeted by %s</string>
   <string name="received_sometime_ago">received %s</string>
   <string name="refresh_title">Refresh from cache</string>
   <string name="refresh_timeline_automatically_title">Refresh timeline automatically</string>
@@ -448,24 +449,24 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="summary_preference_syncing">When to sync timeline and how to indicate this</string>
   <string name="summary_preference_theme_size">Select text size</string>
   <string name="summary_preference_user_in_timeline">Actor will be shown as \"{0}\"</string>
-  <string name="summary_preference_username">Your username in the \"%1$s\" Social network; e.g.: %2$s</string>
-  <string name="summary_preference_username_webfinger_id">Your unique name in the \"%1$s\" Social network. It
-    looks like an email address, with your username then \"@\" then your server. E.g. %2$s</string>
+  <string name="summary_preference_username">Your username in the \"%s\" Social network; e.g.: %s</string>
+  <string name="summary_preference_username_webfinger_id">Your unique name in the \"%s\" Social network. It
+    looks like an email address, with your username then \"@\" then your server. E.g. %s</string>
   <string name="summary_preference_verify_credentials">This Account is verified and enabled. Tap Back button to continue or
     tap the button below to check the Account\'s credentials again.</string>
   <string name="summary_preference_verify_credentials_failed">Verification failed. Tap the button below to verify credentials and enable this User Account</string>
   <string name="summary_preference_vibration_off">Vibration is turned off</string>
   <string name="summary_preference_vibration_on">Vibrate on incoming activity</string>
   <string name="switch_to_default_timeline">Switch to Default Timeline</string>
-  <string name="sync_younger_messages">Synced %1$s. Sync activities since %2$s</string>
-  <string name="sync_older_messages">Sync activities before %1$s</string>
+  <string name="sync_younger_messages">Synced %s. Sync activities since %s</string>
+  <string name="sync_older_messages">Sync activities before %s</string>
   <string name="sync_over_wifi_only">Sync over Wi-Fi only</string>
   <string name="sync_failed">Sync failed</string>
   <string name="sync_frequency_minutes">Sync frequency in minutes. Leave blank to use default value: </string>
   <string name="synced_automatically">Synced automatically</string>
   <string name="synced_abbreviated">Sync</string>
   <string name="syncing">Syncing&#8230;</string>
-  <string name="syncing_timeline_for_somebody">Syncing %1$s for %2$s</string>
+  <string name="syncing_timeline_for_somebody">Syncing %s for %s</string>
   <string name="system_information">System information</string>
   <string name="system_is_busy_try_later">The system is busy. Please try again later.</string>
   <string name="tap_on_a_timeline_title_behaviour">Behavior when tapping a Timeline title</string>

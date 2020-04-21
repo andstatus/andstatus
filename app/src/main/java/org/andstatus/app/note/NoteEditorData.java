@@ -344,7 +344,9 @@ public class NoteEditorData implements IsEmpty {
     }
 
     public NoteEditorData addActorsBeforeText(List<Actor> toMention) {
-        toMention.add(0, Actor.load(myContext, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, getInReplyToNoteId())));
+        if (getInReplyToNoteId() != 0) {
+            toMention.add(0, Actor.load(myContext, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, getInReplyToNoteId())));
+        }
         List<String> mentionedNames = new ArrayList<>();
         mentionedNames.add(ma.getActor().getUniqueName());  // Don't mention the author of this note
         MyStringBuilder mentions = new MyStringBuilder();
