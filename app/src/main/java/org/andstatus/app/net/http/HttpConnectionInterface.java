@@ -19,6 +19,7 @@ package org.andstatus.app.net.http;
 import android.net.Uri;
 
 import org.andstatus.app.account.AccountDataWriter;
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.JsonUtils;
@@ -77,16 +78,19 @@ public interface HttpConnectionInterface {
         : postRequestOneProtocol(uri, formParams, getData().getUseLegacyHttpProtocol().toBoolean(true));
     }
 
-    default Try<HttpReadResult> postRequestOneProtocol(Uri path, JSONObject formParams, boolean isLegacyHttpProtocol) {
-        if (UriUtils.isEmpty(path)) {
+    default Try<HttpReadResult> postRequestOneProtocol(Uri uri, JSONObject postParams, boolean isLegacyHttpProtocol) {
+        if (UriUtils.isEmpty(uri)) {
             return Try.failure(new IllegalArgumentException("URL is empty"));
         }
-        HttpReadResult result = new HttpReadResult(path, formParams).setLegacyHttpProtocol(isLegacyHttpProtocol);
+        HttpRequest request = new HttpRequest(MyContextHolder.get(), uri)
+            .withLegacyHttpProtocol(isLegacyHttpProtocol)
+            .withPostParams(postParams);
         if (MyPreferences.isLogNetworkLevelMessages()) {
-            JSONObject jso = JsonUtils.put(result.request.formParams.orElseGet(JSONObject::new), "URL", result.getUrlObj());
+            JSONObject jso = JsonUtils.put(request.postParams.orElseGet(JSONObject::new), "logURL", request.uri);
             MyLog.logNetworkLevelMessage("post", getData().getLogName(), jso, "");
         }
-        return Try.success(result)
+        return Try.success(request)
+                .map(HttpRequest::newResult)
                 .map(this::postRequest)
                 .map(r -> r.logResponse(getData().getLogName()))
                 .flatMap(HttpReadResult::tryToParse);
@@ -109,8 +113,8 @@ public interface HttpConnectionInterface {
             return Try.failure(new IllegalArgumentException("URL is empty"));
         }
         MyLog.v(this, () -> "getRequest; URL='" + uri + "'");
-        HttpReadResult result = new HttpReadResult(uri, new JSONObject());
-        result.request.authenticate = authenticated;
+        HttpRequest request = new HttpRequest(MyContextHolder.get(), uri).withAuthenticate(authenticated);
+        HttpReadResult result = request.newResult();
         getRequest(result);
         result.logResponse(getData().getLogName());
         return result.tryToParse();
@@ -125,7 +129,10 @@ public interface HttpConnectionInterface {
     }
 
     default Try<HttpReadResult> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
-        HttpReadResult result = new HttpReadResult(getData().getMyContext(), connectionRequired, uri, file, new JSONObject());
+        HttpRequest request = new HttpRequest(getData().getMyContext(), uri)
+                .withConnectionRequired(connectionRequired)
+                .withFile(file);
+        HttpReadResult result = request.newResult();
         getRequest(result);
         result.logResponse(getData().getLogName());
         return result.tryToParse();

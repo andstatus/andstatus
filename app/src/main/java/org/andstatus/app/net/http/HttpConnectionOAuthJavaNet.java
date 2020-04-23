@@ -38,6 +38,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -77,11 +78,12 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             conn.setDoOutput(true);
             conn.setDoInput(true);
             
-            writer = new OutputStreamWriter(conn.getOutputStream(), UTF_8);
+            writer = new OutputStreamWriter(conn.getOutputStream(), StandardCharsets.UTF_8);
             writer.write(requestBody);
             writer.close();
 
-            HttpReadResult result = new HttpReadResult(uri, new JSONObject());
+            HttpRequest request = new HttpRequest(MyContextHolder.get(), uri).withPostParams(new JSONObject());
+            HttpReadResult result = request.newResult();
             setStatusCodeAndHeaders(result, conn);
             if (result.isStatusOk()) {
                 result.readStream("", o -> conn.getInputStream());
@@ -129,7 +131,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setRequestMethod("POST");
-            result.request.formParams.ifPresent(params -> {
+            result.request.postParams.ifPresent(params -> {
                 try {
                     if (params.has(HttpConnection.KEY_MEDIA_PART_URI)) {
                         writeMedia(conn, params);

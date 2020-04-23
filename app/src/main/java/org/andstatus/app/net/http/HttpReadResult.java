@@ -14,17 +14,14 @@
 
 package org.andstatus.app.net.http;
 
-import android.net.Uri;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
-import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
@@ -36,7 +33,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -55,7 +51,6 @@ import java.util.stream.Stream;
 import io.vavr.control.CheckedFunction;
 import io.vavr.control.Try;
 
-import static com.github.scribejava.core.model.Verb.GET;
 import static org.andstatus.app.util.TryUtils.checkException;
 
 public class HttpReadResult {
@@ -74,16 +69,7 @@ public class HttpReadResult {
     private int intStatusCode = 0;
     private StatusCode statusCode = StatusCode.UNKNOWN;
 
-    public HttpReadResult(Uri uriIn, JSONObject formParams) {
-        this (MyContextHolder.get(), ConnectionRequired.ANY, uriIn, null, formParams);
-    }
-
-    public HttpReadResult(MyContext myContext, ConnectionRequired connectionRequired, Uri uriIn, File file,
-                          JSONObject formParams) {
-        this(new HttpRequest(myContext, connectionRequired, uriIn, GET, file, formParams));
-    }
-
-    HttpReadResult(HttpRequest request) {
+    public HttpReadResult(HttpRequest request) {
         this.request = request;
         setUrl(request.uri.toString());
     }
@@ -179,7 +165,6 @@ public class HttpReadResult {
                 + (intStatusCode == 0 ? "" : "; statusCode:" + statusCode + " (" + intStatusCode + ")")
                 + (redirected ? "; redirected" : "")
                 + "; url:'" + urlString + "'"
-                + (isLegacyHttpProtocol() ? "; legacy HTTP" : "")
                 + (retriedWithoutAuthentication ? "; retried without auth" : "")
                 + (StringUtil.isEmpty(strResponse) ? "" : "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
                 + location.map(str -> "; location:'" + str + "'").orElse("")
@@ -317,22 +302,13 @@ public class HttpReadResult {
         return exception == null && (statusCode == StatusCode.OK || statusCode == StatusCode.UNKNOWN);
     }
 
-    boolean isLegacyHttpProtocol() {
-        return request.isLegacyHttpProtocol();
-    }
-
-    HttpReadResult setLegacyHttpProtocol(boolean mIsLegacyHttpProtocol) {
-        request.withLegacyHttpProtocol(mIsLegacyHttpProtocol);
-        return this;
-    }
-
     Try<HttpReadResult> toFailure() {
         return Try.failure(ConnectionException.from(this));
     }
 
     HttpReadResult logResponse(String namePrefix) {
-        Object objTag = "response";
         if (strResponse != null && MyPreferences.isLogNetworkLevelMessages()) {
+            Object objTag = "response";
             MyLog.logNetworkLevelMessage(objTag, namePrefix, strResponse,
                     MyStringBuilder.of("")
                             .atNewLine("URL", urlString)

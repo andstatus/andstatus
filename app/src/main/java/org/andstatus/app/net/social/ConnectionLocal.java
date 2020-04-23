@@ -20,8 +20,8 @@ import android.net.Uri;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.HttpReadResult;
+import org.andstatus.app.net.http.HttpRequest;
 import org.andstatus.app.service.ConnectionRequired;
-import org.json.JSONObject;
 
 import java.io.File;
 
@@ -34,8 +34,8 @@ public class ConnectionLocal extends ConnectionEmpty {
 
     @Override
     public Try<HttpReadResult> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
-        HttpReadResult result = new HttpReadResult(MyContextHolder.get(), ConnectionRequired.ANY,
-                uri, file, new JSONObject());
+        HttpRequest request = new HttpRequest(MyContextHolder.get(), uri).withFile(file);
+        HttpReadResult result = request.newResult();
         return result.readStream("mediaUri='" + uri + "'",
                 o -> MyContextHolder.get().context().getContentResolver().openInputStream(uri))
             .flatMap(HttpReadResult::tryToParse);

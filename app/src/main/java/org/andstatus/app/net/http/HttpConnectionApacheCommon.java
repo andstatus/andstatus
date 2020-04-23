@@ -46,10 +46,10 @@ public class HttpConnectionApacheCommon {
 
     protected HttpReadResult postRequest(HttpReadResult result) {
         HttpPost httpPost = new HttpPost(result.getUrl());
-        if (result.isLegacyHttpProtocol()) {
+        if (result.request.isLegacyHttpProtocol()) {
             httpPost.setProtocolVersion(HttpVersion.HTTP_1_0);
         }
-        result.request.formParams.ifPresent(params -> {
+        result.request.postParams.ifPresent(params -> {
             try {
                 if (params.has(HttpConnection.KEY_MEDIA_PART_URI)) {
                     httpPost.setEntity(ApacheHttpClientUtils.multiPartFormEntity(params));

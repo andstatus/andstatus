@@ -102,7 +102,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
         try {
             OAuth20Service service = getService(false);
             final OAuthRequest request = new OAuthRequest(Verb.POST, result.getUrlObj().toString());
-            result.request.formParams.ifPresent(params -> {
+            result.request.postParams.ifPresent(params -> {
                 try {
                     if (params.has(HttpConnection.KEY_MEDIA_PART_URI)) {
                         MultipartFormEntityBytes bytes = ApacheHttpClientUtils.buildMultipartFormEntityBytes(params);

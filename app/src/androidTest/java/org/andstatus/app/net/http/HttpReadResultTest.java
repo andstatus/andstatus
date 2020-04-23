@@ -18,6 +18,7 @@ package org.andstatus.app.net.http;
 
 import android.net.Uri;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,18 +38,23 @@ public class HttpReadResultTest {
                 + "{\"text\":\"Text2\",\"to_user\":\"andstatus\",\"from_user\":\"otherauthor\"}]"
                 + ",\"since_id\":\"Wed, 05 Mar 2014 16:37:17 +0100\""
                 + "}";
-        HttpReadResult result1 = new HttpReadResult(uri, new JSONObject());
+        HttpRequest request1 = new HttpRequest(MyContextHolder.get(), uri)
+                .withPostParams(new JSONObject());
+        HttpReadResult result1 = request1.newResult();
         result1.strResponse = in;
         JSONArray jsa =  result1.getJsonArray("items").get();
         assertEquals(2, jsa.length());
-        assertEquals(false, result1.request.formParams.isPresent());
+        assertFalse(result1.request.postParams.isPresent());
         assertFalse(result1.toString(), result1.toString().contains("posted"));
 
-        HttpReadResult result2 = new HttpReadResult(uri, new JSONObject("{}"));
-        assertEquals(false, result2.request.formParams.isPresent());
+        HttpRequest request2 = new HttpRequest(MyContextHolder.get(), uri)
+                .withPostParams(new JSONObject("{}"));
+        assertFalse(request2.postParams.isPresent());
 
-        HttpReadResult result3 = new HttpReadResult(uri, new JSONObject("{\"text\":\"Text1\"}"));
-        assertEquals(true, result3.request.formParams.isPresent());
+        HttpRequest request3 = new HttpRequest(MyContextHolder.get(), uri)
+                .withPostParams(new JSONObject("{\"text\":\"Text1\"}"));
+        HttpReadResult result3 = request3.newResult();
+        assertTrue(result3.request.postParams.isPresent());
         assertTrue(result3.toString(), result3.toString().contains("posted"));
     }
 }

@@ -114,7 +114,7 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
         Optional<HttpReadResult> result = Optional.empty();
         for (int attempt=0; attempt < 10; attempt++) {
             result = mock.getHttpMock().getResults().stream()
-                    .filter(r -> r.request.formParams.toString().contains(actorUniqueName))
+                    .filter(r -> r.request.postParams.toString().contains(actorUniqueName))
                     .findFirst();
             if (result.isPresent()) break;
             if (DbUtils.waitMs(method, 2000)) break;

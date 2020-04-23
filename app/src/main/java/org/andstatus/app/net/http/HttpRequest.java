@@ -19,7 +19,6 @@ import android.net.Uri;
 import com.github.scribejava.core.model.Verb;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.service.ConnectionRequired;
 import org.json.JSONObject;
@@ -31,39 +30,29 @@ public class HttpRequest {
 
     final MyContext myContext;
     final Uri uri;
-    final Verb verb;
-    final ConnectionRequired connectionRequired;
+    Verb verb = Verb.GET;
+    ConnectionRequired connectionRequired = ConnectionRequired.ANY;
     boolean authenticate = true;
     private boolean mIsLegacyHttpProtocol = false;
     final long maxSizeBytes;
 
-    public final Optional<JSONObject> formParams;
-    public final File fileResult;
+    public Optional<JSONObject> postParams = Optional.empty();
+    File fileResult = null;
 
-    public HttpRequest(Uri uriIn, Verb verb, JSONObject formParams) {
-        this (MyContextHolder.get(), ConnectionRequired.ANY, uriIn, verb, null, formParams);
-    }
-
-    public HttpRequest(MyContext myContext, ConnectionRequired connectionRequired, Uri uri, Verb verb, File file,
-                       JSONObject formParams) {
+    public HttpRequest(MyContext myContext, Uri uri) {
         this.myContext = myContext;
-        this.connectionRequired = connectionRequired;
         this.uri = uri;
-        this.verb = verb;
-        fileResult = file;
-        this.formParams = formParams == null || formParams.length() == 0
-            ? Optional.empty()
-            : Optional.of(formParams);
         maxSizeBytes = MyPreferences.getMaximumSizeOfAttachmentBytes();
     }
 
     @Override
     public String toString() {
-        return "; uri:'" + uri + "'"
+        return "uri:'" + uri + "'"
+            + (verb != Verb.GET ? "; " + verb + ": " : "")
+            + postParams.map(params -> "'" + params + "'").orElse("(nothing)")
+            + (fileResult == null ? "" : "; saved to file")
             + (isLegacyHttpProtocol() ? "; legacy HTTP" : "")
-            + (authenticate ? "; authenticated" : "")
-            + formParams.map(params -> "; posted:'" + params + "'").orElse("")
-            + (fileResult == null ? "" : "; saved to file");
+            + (authenticate ? "; authenticate" : "");
     }
 
     boolean isLegacyHttpProtocol() {
@@ -75,12 +64,35 @@ public class HttpRequest {
         return this;
     }
 
+    HttpRequest withConnectionRequired(ConnectionRequired connectionRequired) {
+        this.connectionRequired = connectionRequired;
+        return this;
+    }
+
+    public HttpRequest withFile(File file) {
+        this.fileResult = file;
+        return this;
+    }
+
     boolean isFileTooLarge() {
         return  fileResult != null && fileResult.isFile() && fileResult.exists()
             && fileResult.length() > MyPreferences.getMaximumSizeOfAttachmentBytes();
     }
 
-    HttpReadResult newResult() {
+    public HttpRequest withPostParams(JSONObject postParams) {
+        verb = Verb.POST;
+        this.postParams = postParams == null || postParams.length() == 0
+                ? Optional.empty()
+                : Optional.of(postParams);
+        return this;
+    }
+
+    public HttpRequest withAuthenticate(boolean authenticate) {
+        this.authenticate = authenticate;
+        return this;
+    }
+
+    public HttpReadResult newResult() {
         return new HttpReadResult(this);
     }
 }
