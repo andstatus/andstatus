@@ -136,7 +136,7 @@ public class NoteEditorData implements IsEmpty {
             inReplyToNote.noteId = inReplyToNoteId;
             inReplyToNote.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, inReplyToNoteId));
             inReplyToNote.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, inReplyToNoteId));
-            inReplyToNote.audience().setVisibility(Visibility.fromId(inReplyToNoteId));
+            inReplyToNote.audience().setVisibility(Visibility.fromNoteId(inReplyToNoteId));
             inReplyToNote.setSensitive(MyQuery.isSensitive(inReplyToNoteId));
             inReplyToNote.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId));
             note.setInReplyTo(inReplyTo);
