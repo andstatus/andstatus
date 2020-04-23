@@ -175,7 +175,7 @@ public class HttpConnectionMock extends HttpConnection {
     }
 
     public JSONObject getPostedJSONObject() {
-        return results.get(results.size()-1).formParams.orElse(new JSONObject());
+        return results.get(results.size()-1).request.formParams.orElse(new JSONObject());
     }
 
     public List<HttpReadResult> getResults() {
@@ -199,13 +199,13 @@ public class HttpConnectionMock extends HttpConnection {
 
     public List<JSONObject> getPostedObjects() {
         return getResults().stream()
-                .map(r -> r.formParams.orElse(null))
+                .map(r -> r.request.formParams.orElse(null))
                 .collect(Collectors.toList());
     }
 
     public int getPostedCounter() {
         return getResults().stream().reduce(0,
-                (a, r) -> r.formParams.map(p -> a + 1).orElse(a),
+                (a, r) -> r.request.formParams.map(p -> a + 1).orElse(a),
                 (a1, a2) -> a1 + a2);
     }
 

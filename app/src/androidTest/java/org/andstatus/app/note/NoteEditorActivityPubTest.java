@@ -114,12 +114,12 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
         Optional<HttpReadResult> result = Optional.empty();
         for (int attempt=0; attempt < 10; attempt++) {
             result = mock.getHttpMock().getResults().stream()
-                    .filter(r -> r.formParams.toString().contains(actorUniqueName))
+                    .filter(r -> r.request.formParams.toString().contains(actorUniqueName))
                     .findFirst();
             if (result.isPresent()) break;
             if (DbUtils.waitMs(method, 2000)) break;
         }
-        assertTrue("The content should be sent: " + content, result.isPresent());
+        assertTrue("The content should be sent: " + content + "\n Results:" + mock.getHttpMock().getResults(), result.isPresent());
     }
 
     @Test

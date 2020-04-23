@@ -55,30 +55,24 @@ import java.util.stream.Stream;
 import io.vavr.control.CheckedFunction;
 import io.vavr.control.Try;
 
+import static com.github.scribejava.core.model.Verb.GET;
 import static org.andstatus.app.util.TryUtils.checkException;
 
 public class HttpReadResult {
-    final MyContext myContext;
-    private final Uri uriInitial;
-    final ConnectionRequired connectionRequired;
+    public final HttpRequest request;
     private String urlString = "";
     private URL url;
     private Map<String, List<String>> headers = Collections.emptyMap();
+    boolean redirected = false;
     private Optional<String> location = Optional.empty();
-    boolean authenticate = true;
-    private boolean mIsLegacyHttpProtocol = false;
-    final long maxSizeBytes;
+    private boolean retriedWithoutAuthentication = false;
 
-    public final Optional<JSONObject> formParams;
     private StringBuilder logBuilder =  new StringBuilder();
     private Exception exception = null;
     String strResponse = "";
-    public final File fileResult;
     String statusLine = "";
     private int intStatusCode = 0;
     private StatusCode statusCode = StatusCode.UNKNOWN;
-
-    boolean redirected = false;
 
     public HttpReadResult(Uri uriIn, JSONObject formParams) {
         this (MyContextHolder.get(), ConnectionRequired.ANY, uriIn, null, formParams);
@@ -86,15 +80,12 @@ public class HttpReadResult {
 
     public HttpReadResult(MyContext myContext, ConnectionRequired connectionRequired, Uri uriIn, File file,
                           JSONObject formParams) {
-        this.myContext = myContext;
-        this.connectionRequired = connectionRequired;
-        uriInitial = uriIn;
-        fileResult = file;
-        this.formParams = formParams == null || formParams.length() == 0
-            ? Optional.empty()
-            : Optional.of(formParams);
-        setUrl(uriIn.toString());
-        maxSizeBytes = MyPreferences.getMaximumSizeOfAttachmentBytes();
+        this(new HttpRequest(myContext, connectionRequired, uriIn, GET, file, formParams));
+    }
+
+    HttpReadResult(HttpRequest request) {
+        this.request = request;
+        setUrl(request.uri.toString());
     }
 
     public Map<String, List<String>> getHeaders() {
@@ -139,7 +130,6 @@ public class HttpReadResult {
 
     public final HttpReadResult setUrl(String urlIn) {
         if (!StringUtil.isEmpty(urlIn) && !urlString.contentEquals(urlIn)) {
-            redirected = !StringUtil.isEmpty(urlString);
             urlString = urlIn;
             try {
                 url = new URL(urlIn);
@@ -186,16 +176,15 @@ public class HttpReadResult {
         return logMsg()
                 + ((statusCode == StatusCode.OK) || StringUtil.isEmpty(statusLine)
                         ? "" : "; statusLine:'" + statusLine + "'")
-                + (intStatusCode == 0 ? "" : "; statusCode:" + statusCode + " (" + intStatusCode + ")") 
+                + (intStatusCode == 0 ? "" : "; statusCode:" + statusCode + " (" + intStatusCode + ")")
+                + (redirected ? "; redirected" : "")
                 + "; url:'" + urlString + "'"
                 + (isLegacyHttpProtocol() ? "; legacy HTTP" : "")
-                + (authenticate ? "; authenticated" : "")
-                + (redirected ? "; redirected from:'" + uriInitial + "'" : "")
-                + formParams.map(params -> "; posted:'" + params + "'").orElse("")
+                + (retriedWithoutAuthentication ? "; retried without auth" : "")
                 + (StringUtil.isEmpty(strResponse) ? "" : "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
                 + location.map(str -> "; location:'" + str + "'").orElse("")
                 + (exception == null ? "" : "; \nexception: " + exception.toString())
-                + (fileResult == null ? "" : "; saved to file");
+                + "\nRequested: " + request;
     }
     
     public Try<JSONObject> getJsonObject() {
@@ -305,12 +294,11 @@ public class HttpReadResult {
             return Try.failure(exception);
         }
         if ( isStatusOk()) {
-            if (fileResult != null && fileResult.isFile() && fileResult.exists()
-                    && fileResult.length() > MyPreferences.getMaximumSizeOfAttachmentBytes()) {
+            if (request.isFileTooLarge()) {
                 setException(ConnectionException.hardConnectionException(
-                        "File, downloaded from \"" + urlString + "\", is too large: "
-                          + Formatter.formatShortFileSize(MyContextHolder.get().context(), fileResult.length()),
-                        null));
+                    "File, downloaded from \"" + urlString + "\", is too large: "
+                      + Formatter.formatShortFileSize(MyContextHolder.get().context(), request.fileResult.length()),
+                    null));
                 return Try.failure(exception);
             }
             MyLog.v(this, this::toString);
@@ -330,11 +318,11 @@ public class HttpReadResult {
     }
 
     boolean isLegacyHttpProtocol() {
-        return mIsLegacyHttpProtocol;
+        return request.isLegacyHttpProtocol();
     }
 
     HttpReadResult setLegacyHttpProtocol(boolean mIsLegacyHttpProtocol) {
-        this.mIsLegacyHttpProtocol = mIsLegacyHttpProtocol;
+        request.withLegacyHttpProtocol(mIsLegacyHttpProtocol);
         return this;
     }
 
@@ -348,7 +336,8 @@ public class HttpReadResult {
             MyLog.logNetworkLevelMessage(objTag, namePrefix, strResponse,
                     MyStringBuilder.of("")
                             .atNewLine("URL", urlString)
-                            .atNewLine("authenticate", Boolean.toString(authenticate))
+                            .atNewLine("authenticate",
+                                    Boolean.toString(retriedWithoutAuthentication || request.authenticate))
                             .apply(this::appendHeaders).toString());
         }
         return this;
@@ -363,7 +352,7 @@ public class HttpReadResult {
     }
 
     void onRetryWithoutAuthentication() {
-        authenticate = false;
+        retriedWithoutAuthentication = true;
         appendToLog("Retrying without authentication" + (exception == null ? "" : ", exception: " + exception));
         exception = null;
         MyLog.v(this, this::toString);

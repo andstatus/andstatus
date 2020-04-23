@@ -83,7 +83,7 @@ public interface HttpConnectionInterface {
         }
         HttpReadResult result = new HttpReadResult(path, formParams).setLegacyHttpProtocol(isLegacyHttpProtocol);
         if (MyPreferences.isLogNetworkLevelMessages()) {
-            JSONObject jso = JsonUtils.put(result.formParams.orElseGet(JSONObject::new), "URL", result.getUrlObj());
+            JSONObject jso = JsonUtils.put(result.request.formParams.orElseGet(JSONObject::new), "URL", result.getUrlObj());
             MyLog.logNetworkLevelMessage("post", getData().getLogName(), jso, "");
         }
         return Try.success(result)
@@ -110,7 +110,7 @@ public interface HttpConnectionInterface {
         }
         MyLog.v(this, () -> "getRequest; URL='" + uri + "'");
         HttpReadResult result = new HttpReadResult(uri, new JSONObject());
-        result.authenticate = authenticated;
+        result.request.authenticate = authenticated;
         getRequest(result);
         result.logResponse(getData().getLogName());
         return result.tryToParse();

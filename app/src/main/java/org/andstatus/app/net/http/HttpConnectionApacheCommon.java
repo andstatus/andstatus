@@ -49,7 +49,7 @@ public class HttpConnectionApacheCommon {
         if (result.isLegacyHttpProtocol()) {
             httpPost.setProtocolVersion(HttpVersion.HTTP_1_0);
         }
-        result.formParams.ifPresent(params -> {
+        result.request.formParams.ifPresent(params -> {
             try {
                 if (params.has(HttpConnection.KEY_MEDIA_PART_URI)) {
                     httpPost.setEntity(ApacheHttpClientUtils.multiPartFormEntity(params));
@@ -81,7 +81,7 @@ public class HttpConnectionApacheCommon {
             do {
                 HttpGet httpGet = newHttpGet(result.getUrl());
                 data.getContentType().ifPresent(value -> httpGet.addHeader("Accept", value));
-                if (result.authenticate) {
+                if (result.request.authenticate) {
                     specific.httpApacheSetAuthorization(httpGet);
                 }
                 // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
@@ -104,7 +104,7 @@ public class HttpConnectionApacheCommon {
                         if (entity != null) {
                             result.readStream("", o -> entity.getContent());
                         }
-                        stop =  result.fileResult == null || !result.authenticate;
+                        stop =  result.request.fileResult == null || !result.request.authenticate;
                         if (!stop) {
                             result.onRetryWithoutAuthentication();
                             DbUtils.closeSilently(httpResponse);

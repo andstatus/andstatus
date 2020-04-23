@@ -41,14 +41,14 @@ public class HttpReadResultTest {
         result1.strResponse = in;
         JSONArray jsa =  result1.getJsonArray("items").get();
         assertEquals(2, jsa.length());
-        assertEquals(false, result1.formParams.isPresent());
+        assertEquals(false, result1.request.formParams.isPresent());
         assertFalse(result1.toString(), result1.toString().contains("posted"));
 
         HttpReadResult result2 = new HttpReadResult(uri, new JSONObject("{}"));
-        assertEquals(false, result2.formParams.isPresent());
+        assertEquals(false, result2.request.formParams.isPresent());
 
         HttpReadResult result3 = new HttpReadResult(uri, new JSONObject("{\"text\":\"Text1\"}"));
-        assertEquals(true, result3.formParams.isPresent());
+        assertEquals(true, result3.request.formParams.isPresent());
         assertTrue(result3.toString(), result3.toString().contains("posted"));
     }
 }

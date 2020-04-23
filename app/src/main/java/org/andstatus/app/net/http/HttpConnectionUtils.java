@@ -73,7 +73,7 @@ public class HttpConnectionUtils {
                         ConnectionException.StatusCode.CLIENT_ERROR,  msgLog + " Input stream is null");
                 return result.setException(exception).toFailure();
             }
-            return result.fileResult == null || !result.isStatusOk()
+            return result.request.fileResult == null || !result.isStatusOk()
                     ? readStreamToString(result, in)
                     : readStreamToFile(result, in);
         } catch (Exception e) {
@@ -103,7 +103,7 @@ public class HttpConnectionUtils {
         byte[] buffer = new byte[BUFFER_LENGTH];
         ReadChecker checker = new ReadChecker(resultIn);
         int count;
-        try (FileOutputStream fileOutputStream = newFileOutputStreamWithRetry(resultIn.fileResult);
+        try (FileOutputStream fileOutputStream = newFileOutputStreamWithRetry(resultIn.request.fileResult);
              OutputStream out = new BufferedOutputStream(fileOutputStream)) {
             while ((count = in.read(buffer)) != -1) {
                 if (checker.isFailed(count)) return resultIn.toFailure();
@@ -117,31 +117,33 @@ public class HttpConnectionUtils {
 
     private static class ReadChecker {
         final StopWatch stopWatch = StopWatch.createStarted();
+        final HttpRequest request;
         final HttpReadResult result;
         long size = 0;
 
         ReadChecker(HttpReadResult result) {
+            request = result.request;
             this.result = result;
         }
 
         boolean isFailed(int count) {
             size += count;
-            if (!result.myContext.isReady()) {
+            if (!request.myContext.isReady()) {
                 result.setException(new ConnectionException("App restarted?!"));
                 return true;
             }
-            if (size > result.maxSizeBytes) {
+            if (size > request.maxSizeBytes) {
                 result.setException(ConnectionException.hardConnectionException(
                         "File, downloaded from \"" + result.getUrl() + "\", is too large: at least "
-                                + Formatter.formatShortFileSize(result.myContext.context(), size),
+                                + Formatter.formatShortFileSize(request.myContext.context(), size),
                         null));
                 return true;
             }
-            if (result.connectionRequired != ConnectionRequired.ANY && stopWatch.hasPassed(5000)) {
-                ConnectionState connectionState = result.myContext.getConnectionState();
-                if (!result.connectionRequired.isConnectionStateOk(connectionState)) {
+            if (request.connectionRequired != ConnectionRequired.ANY && stopWatch.hasPassed(5000)) {
+                ConnectionState connectionState = request.myContext.getConnectionState();
+                if (!request.connectionRequired.isConnectionStateOk(connectionState)) {
                     result.setException(
-                            new ConnectionException("Expected '" + result.connectionRequired +
+                            new ConnectionException("Expected '" + request.connectionRequired +
                                     "', but was '" + connectionState + "' connection"));
                     return true;
                 }

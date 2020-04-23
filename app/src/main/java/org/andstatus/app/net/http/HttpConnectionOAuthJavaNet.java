@@ -129,7 +129,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setRequestMethod("POST");
-            result.formParams.ifPresent(params -> {
+            result.request.formParams.ifPresent(params -> {
                 try {
                     if (params.has(HttpConnection.KEY_MEDIA_PART_URI)) {
                         writeMedia(conn, params);
@@ -205,7 +205,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                 HttpURLConnection conn = (HttpURLConnection) result.getUrlObj().openConnection();
                 data.getContentType().ifPresent(value -> conn.addRequestProperty("Accept", value));
                 conn.setInstanceFollowRedirects(false);
-                if (result.authenticate) {
+                if (result.request.authenticate) {
                     signConnection(conn, consumer, redirected);
                 }
                 conn.connect();
@@ -222,7 +222,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                         break;
                     default:
                         result.readStream("", o -> conn.getErrorStream());
-                        stop = result.fileResult == null || !result.authenticate;
+                        stop = result.request.fileResult == null || !result.request.authenticate;
                         if (!stop) {
                             result.onRetryWithoutAuthentication();
                         }

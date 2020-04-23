@@ -102,7 +102,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
         try {
             OAuth20Service service = getService(false);
             final OAuthRequest request = new OAuthRequest(Verb.POST, result.getUrlObj().toString());
-            result.formParams.ifPresent(params -> {
+            result.request.formParams.ifPresent(params -> {
                 try {
                     if (params.has(HttpConnection.KEY_MEDIA_PART_URI)) {
                         MultipartFormEntityBytes bytes = ApacheHttpClientUtils.buildMultipartFormEntityBytes(params);
@@ -164,7 +164,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             do {
                 OAuthRequest request = new OAuthRequest(Verb.GET, result.getUrlObj().toString());
                 data.getContentType().ifPresent(value -> request.addHeader("Accept", value));
-                if (result.authenticate) {
+                if (result.request.authenticate) {
                     signRequest(request, service, redirected);
                 }
                 Response response = service.execute(request);
@@ -181,7 +181,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                         break;
                     default:
                         result.readStream("", o -> response.getStream());
-                        stop = result.fileResult == null || !result.authenticate;
+                        stop = result.request.fileResult == null || !result.request.authenticate;
                         if (!stop) {
                             result.onRetryWithoutAuthentication();
                         }
