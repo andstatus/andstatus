@@ -78,7 +78,7 @@ public class PersistentTimelinesTest {
         ensureAtLeastOneNotDisplayedTimeline();
         long count2 = myContext.timelines().filter(
                 true, TriState.UNKNOWN, TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY).count();
-        assertTrue(timelines.size() > count2);
+        assertTrue("count2:" + count2 + "; " + timelines,timelines.size() > count2);
         assertTrue(count2 > count);
 
         MyAccount myAccount = demoData.getMyAccount(demoData.conversationAccountName);
@@ -106,7 +106,7 @@ public class PersistentTimelinesTest {
                 found = true;
                 break;
             }
-            if (timeline1 == Timeline.EMPTY && timeline.getTimelineType().equals(TimelineType.FOLLOWERS)) {
+            if (timeline1 == Timeline.EMPTY && timeline.getTimelineType().equals(TimelineType.INTERACTIONS)) {
                 timeline1 = timeline;
             }
         }

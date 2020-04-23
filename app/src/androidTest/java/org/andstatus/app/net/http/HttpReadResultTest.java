@@ -25,6 +25,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -32,7 +34,7 @@ import static org.junit.Assert.assertTrue;
 public class HttpReadResultTest {
 
     @Test
-    public void testResultToArray() throws ConnectionException, JSONException {
+    public void testResultToArray() throws JSONException {
         final Uri uri = UriUtils.fromString("https://example.com/somepath/file.html");
         final String in = "{\"results\":[{\"text\":\"Text1\",\"to_user\":\"someuser\",\"from_user\":\"author1\"}," 
                 + "{\"text\":\"Text2\",\"to_user\":\"andstatus\",\"from_user\":\"otherauthor\"}]"
@@ -53,8 +55,7 @@ public class HttpReadResultTest {
 
         HttpRequest request3 = new HttpRequest(MyContextHolder.get(), uri)
                 .withPostParams(new JSONObject("{\"text\":\"Text1\"}"));
-        HttpReadResult result3 = request3.newResult();
-        assertTrue(result3.request.postParams.isPresent());
-        assertTrue(result3.toString(), result3.toString().contains("posted"));
+        assertTrue(request3.toString(), request3.postParams.isPresent());
+        assertThat(request3.toString(), containsString("POST:"));
     }
 }
