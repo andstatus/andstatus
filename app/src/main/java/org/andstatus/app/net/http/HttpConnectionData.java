@@ -79,8 +79,8 @@ public class HttpConnectionData {
                 + dataReader + ", oauthClientKeys:" + oauthClientKeys + "}";
     }
 
-    public String getLogName() {
-        return accountName.getLogName();
+    public String getLogName(ApiRoutineEnum apiRoutine) {
+        return accountName.getLogName() + "-" + apiRoutine.name().toLowerCase();
     }
 
     public OriginType getOriginType() {

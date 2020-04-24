@@ -331,7 +331,7 @@ public class HttpReadResult {
             Object objTag = "response";
             MyLog.logNetworkLevelMessage(objTag, namePrefix, strResponse,
                     MyStringBuilder.of("")
-                            .atNewLine("URL", urlString)
+                            .atNewLine("loggedURL", urlString)
                             .atNewLine("authenticate",
                                     Boolean.toString(!retriedWithoutAuthentication && request.authenticate))
                             .apply(this::appendHeaders).toString());

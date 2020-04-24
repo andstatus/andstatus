@@ -18,13 +18,13 @@ package org.andstatus.app.account;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.StringUtil;
-
-import androidx.annotation.NonNull;
 
 /**
  * Account name, unique for this application and suitable for {@link android.accounts.AccountManager}
@@ -163,7 +163,7 @@ public class AccountName {
     }
 
     public String getLogName() {
-        return getName().replace("@", "-")
+        return getUniqueName().replace("@", "-")
                 .replace(ORIGIN_SEPARATOR, "-");
     }
 

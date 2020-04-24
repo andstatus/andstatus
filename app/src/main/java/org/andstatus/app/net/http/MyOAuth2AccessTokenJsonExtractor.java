@@ -23,6 +23,7 @@ import com.github.scribejava.core.extractors.OAuth2AccessTokenJsonExtractor;
 import com.github.scribejava.core.model.OAuth2AccessToken;
 import com.github.scribejava.core.model.Response;
 
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
@@ -43,7 +44,8 @@ public class MyOAuth2AccessTokenJsonExtractor extends OAuth2AccessTokenJsonExtra
     @Override
     public OAuth2AccessToken extract(Response response) throws IOException {
         final String body = response.getBody();
-        MyLog.logNetworkLevelMessage("oauthAccessToken_response", data.getLogName(), body, "");
+        MyLog.logNetworkLevelMessage("oauthAccessToken_response",
+                data.getLogName(ApiRoutineEnum.OAUTH_ACCESS_TOKEN), body, "");
         return super.extract(response);
     }
 
