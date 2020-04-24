@@ -24,6 +24,8 @@ import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.http.HttpReadResult;
+import org.andstatus.app.net.http.HttpRequest;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.AJsonCollection;
 import org.andstatus.app.net.social.AObjectType;
@@ -97,10 +99,12 @@ public class ConnectionActivityPub extends Connection {
     @NonNull
     public Try<Actor> verifyCredentials(Optional<Uri> whoAmI) {
         return TryUtils.fromOptional(whoAmI)
-            .filter(UriUtils::isDownloadable)
-            .orElse(() -> getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS))
-            .flatMap(this::getRequest)
-            .map(this::actorFromJson);
+        .filter(UriUtils::isDownloadable)
+        .orElse(() -> getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS))
+        .map(uri -> HttpRequest.of(myContext(), ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri))
+        .flatMap(this::execute)
+        .flatMap(HttpReadResult::getJsonObject)
+        .map(this::actorFromJson);
     }
 
     @NonNull
@@ -180,8 +184,9 @@ public class ConnectionActivityPub extends Connection {
     @NonNull
     private Try<InputActorPage> getActors(ApiRoutineEnum apiRoutine, TimelinePosition position, Actor actor) {
         return ConnectionAndUrl.fromActor(this, apiRoutine, position, actor)
-        .flatMap(conu ->
-            conu.getRequest().map(jsonObject -> {
+        .flatMap(conu -> conu.execute(conu.newRequest())
+            .flatMap(HttpReadResult::getJsonObject)
+            .map(jsonObject -> {
                 AJsonCollection jsonCollection = AJsonCollection.of(jsonObject);
                 List<Actor> actors = jsonCollection.mapAll(this::actorFromJson, this::actorFromOid);
                 MyLog.v(TAG, () -> apiRoutine + " '" + conu.uri + "' " + actors.size() + " actors");
@@ -192,7 +197,9 @@ public class ConnectionActivityPub extends Connection {
 
     @Override
     protected Try<AActivity> getNote1(String noteOid) {
-        return getRequest(UriUtils.fromString(noteOid)).map(this::activityFromJson);
+        return execute(HttpRequest.of(myContext(), ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid)))
+        .flatMap(HttpReadResult::getJsonObject)
+        .map(this::activityFromJson);
     }
 
     @Override
@@ -220,7 +227,7 @@ public class ConnectionActivityPub extends Connection {
         if (UriUtils.isDownloadable(uri)) {
             return ConnectionAndUrl
             .fromUriActor(uri, this, ApiRoutineEnum.GET_CONVERSATION, data.getAccountActor())
-            .flatMap(conu -> getActivities(ApiRoutineEnum.GET_CONVERSATION, conu))
+            .flatMap(this::getActivities)
             .map(p -> p.items);
         } else {
             return super.getConversation(conversationOid);
@@ -235,15 +242,17 @@ public class ConnectionActivityPub extends Connection {
 
         // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
         return ConnectionAndUrl.fromActor(this, apiRoutine, requestedPosition, actor)
-        .flatMap(conu -> getActivities(apiRoutine, conu));
+        .flatMap(conu -> getActivities(conu));
     }
 
-    private Try<InputTimelinePage> getActivities(ApiRoutineEnum apiRoutine, ConnectionAndUrl conu) {
-        return conu.getRequest().map(root -> {
+    private Try<InputTimelinePage> getActivities(ConnectionAndUrl conu) {
+        return conu.execute(conu.newRequest())
+        .flatMap(HttpReadResult::getJsonObject)
+        .map(root -> {
             AJsonCollection jsonCollection = AJsonCollection.of(root);
             List<AActivity> activities = jsonCollection.mapObjects(item ->
                     activityFromJson(ObjectOrId.of(item)).setTimelinePosition(jsonCollection.getId()));
-            MyLog.d(TAG, "getTimeline " + apiRoutine + " '" + conu.uri + "' " + activities.size() + " activities");
+            MyLog.d(TAG, "getTimeline " + conu.apiRoutine + " '" + conu.uri + "' " + activities.size() + " activities");
             return InputTimelinePage.of(jsonCollection, activities);
         });
     }
@@ -487,7 +496,8 @@ public class ConnectionActivityPub extends Connection {
     public Try<Actor> getActor2(Actor actorIn) {
         return ConnectionAndUrl
         .fromActor(this, ApiRoutineEnum.GET_ACTOR, TimelinePosition.EMPTY, actorIn)
-        .flatMap(ConnectionAndUrl::getRequest)
+        .flatMap(connectionAndUrl -> connectionAndUrl.execute(connectionAndUrl.newRequest()))
+        .flatMap(HttpReadResult::getJsonObject)
         .map(this::actorFromJson);
     }
 

@@ -23,15 +23,16 @@ import androidx.annotation.NonNull;
 import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
 import org.andstatus.app.net.http.HttpReadResult;
+import org.andstatus.app.net.http.HttpRequest;
 import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginConfig;
-import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
@@ -41,11 +42,8 @@ import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.TryUtils;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -117,7 +115,9 @@ public abstract class Connection implements IsEmpty {
 
         GET_NOTE,
         UNDO_FOLLOW,
-        
+
+        DOWNLOAD_FILE,
+
         /**
          * OAuth APIs
          */
@@ -474,10 +474,6 @@ public abstract class Connection implements IsEmpty {
         return this;
     }
 
-    public final Try<HttpReadResult> postRequest(Uri apiUri, JSONObject formParams) {
-        return http.postRequest(apiUri, formParams);
-    }
-
     public Try<OriginConfig> getConfig() {
         return Try.success(OriginConfig.getEmpty());
     }
@@ -564,31 +560,12 @@ public abstract class Connection implements IsEmpty {
         return unixDate;
     }
 
-    final Try<HttpReadResult> tryGetRequest(Uri uri) {
-        return http.getRequestCommon(uri, true);
+    public MyContext myContext() {
+        return http.data.getMyContext();
     }
 
-    public final Try<JSONObject> getRequest(Uri uri) {
-        return http.getRequest(uri);
-    }
-
-    Try<JSONArray> getRequestArrayInObject(Uri uri, String arrayName) {
-        String method = "getRequestArrayInObject";
-        return getRequest(uri).flatMap(jso -> {
-            JSONArray jArr = null;
-            if (jso != null) {
-                try {
-                    jArr = jso.getJSONArray(arrayName);
-                } catch (JSONException e) {
-                    return Try.failure(ConnectionException.loggedJsonException(this, method + ", arrayName=" + arrayName, e, jso));
-                }
-            }
-            return Try.success(jArr);
-        });
-    }
-
-    public Try<HttpReadResult> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
-        return http.downloadFile(connectionRequired, uri, file);
+    public Try<HttpReadResult> execute(HttpRequest request) {
+        return http.execute(request);
     }
 
     public HttpConnection getHttp() {

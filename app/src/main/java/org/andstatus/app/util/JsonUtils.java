@@ -30,6 +30,7 @@ import io.vavr.control.Try;
  * @author yvolk@yurivolkov.com
  */
 public class JsonUtils {
+    public final static JSONObject EMPTY = new JSONObject();
 
     private JsonUtils() {
         // Empty
@@ -49,7 +50,7 @@ public class JsonUtils {
     /** Creates new shallow copy without the keyToRemove */
     @NonNull
     public static JSONObject remove(JSONObject jso, String keyToRemove) {
-        if (jso == null || jso.length() == 0) return new JSONObject();
+        if (isEmpty(jso)) return new JSONObject();
 
         try {
             Iterator<String> iterator = jso.keys();
@@ -82,7 +83,7 @@ public class JsonUtils {
     /** Creates new shallow copy */
     @NonNull
     public static JSONObject shallowCopy(JSONObject jso) {
-        if (jso == null || jso.length() == 0) return new JSONObject();
+        if (isEmpty(jso)) return new JSONObject();
 
         try {
             Iterator<String> iterator = jso.keys();
@@ -96,6 +97,10 @@ public class JsonUtils {
             MyLog.w(JsonUtils.class, "shallowCopy", e);
         }
         return jso;
+    }
+
+    public static boolean isEmpty(JSONObject jso) {
+        return jso == null || jso.length() == 0;
     }
 
     public static Try<JSONObject> toJsonObject(String jsonString) {

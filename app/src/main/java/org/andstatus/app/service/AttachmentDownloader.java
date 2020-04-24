@@ -17,6 +17,7 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AccountToNote;
 import org.andstatus.app.data.DownloadData;
@@ -24,8 +25,8 @@ import org.andstatus.app.util.MyLog;
 
 public class AttachmentDownloader extends FileDownloader {
 
-    protected AttachmentDownloader(DownloadData data) {
-        super(data);
+    protected AttachmentDownloader(MyContext myContext, DownloadData data) {
+        super(myContext, data);
     }
 
     @Override

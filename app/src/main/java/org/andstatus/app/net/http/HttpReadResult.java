@@ -60,7 +60,7 @@ public class HttpReadResult {
     private Map<String, List<String>> headers = Collections.emptyMap();
     boolean redirected = false;
     private Optional<String> location = Optional.empty();
-    private boolean retriedWithoutAuthentication = false;
+    boolean retriedWithoutAuthentication = false;
 
     private StringBuilder logBuilder =  new StringBuilder();
     private Exception exception = null;
@@ -171,7 +171,23 @@ public class HttpReadResult {
                 + (exception == null ? "" : "; \nexception: " + exception.toString())
                 + "\nRequested: " + request;
     }
-    
+
+    public Try<JSONArray> getJsonArrayInObject(String arrayName) {
+        String method = "getRequestArrayInObject";
+        return getJsonObject()
+        .flatMap(jso -> {
+            JSONArray jArr = null;
+            if (jso != null) {
+                try {
+                    jArr = jso.getJSONArray(arrayName);
+                } catch (JSONException e) {
+                    return Try.failure(ConnectionException.loggedJsonException(this, method + ", arrayName=" + arrayName, e, jso));
+                }
+            }
+            return Try.success(jArr);
+        });
+    }
+
     public Try<JSONObject> getJsonObject() {
         return innerGetJsonObject(strResponse);
     }
@@ -199,6 +215,10 @@ public class HttpReadResult {
             return Try.failure(ConnectionException.loggedJsonException(this, method + I18n.trimTextAt(toString(), 500), e, strJson));
         }
         return Try.success(jso);
+    }
+
+    public Try<JSONArray> getJsonArray() {
+        return getJsonArray("items");
     }
 
     Try<JSONArray> getJsonArray(String arrayKey) {
@@ -313,7 +333,7 @@ public class HttpReadResult {
                     MyStringBuilder.of("")
                             .atNewLine("URL", urlString)
                             .atNewLine("authenticate",
-                                    Boolean.toString(retriedWithoutAuthentication || request.authenticate))
+                                    Boolean.toString(!retriedWithoutAuthentication && request.authenticate))
                             .apply(this::appendHeaders).toString());
         }
         return this;

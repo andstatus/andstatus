@@ -101,10 +101,10 @@ class ActivitySender {
         try {
             activity = buildActivityToSend(activityType);
             JSONObject activityImm = activity;
-            Try<ConnectionAndUrl> tryConu = ConnectionAndUrl.fromActor(connection,
-                    ApiRoutineEnum.UPDATE_NOTE, TimelinePosition.EMPTY, getActor());
-            Try<HttpReadResult> activityResponse = tryConu
-                .flatMap(conu -> connection.postRequest(conu.uri, activityImm));
+            Try<HttpReadResult> activityResponse = ConnectionAndUrl.fromActor(connection,
+                    ApiRoutineEnum.UPDATE_NOTE, TimelinePosition.EMPTY, getActor())
+                .flatMap(conu -> conu.execute(conu.newRequest().withPostParams(activityImm)));
+
             Try<JSONObject> jsonObject = activityResponse
                     .flatMap(HttpReadResult::getJsonObject)
                     .flatMap(jso -> jso == null
@@ -123,7 +123,9 @@ class ActivitySender {
                             "when an image object is posted. Sending an update");
                 }
                 activity.put("type", ActivityType.UPDATE.activityPubValue);
-                return tryConu.flatMap(conu -> connection.postRequest(conu.uri, activityImm));
+                return ConnectionAndUrl.fromActor(connection,
+                        ApiRoutineEnum.UPDATE_NOTE, TimelinePosition.EMPTY, getActor())
+                    .flatMap(conu -> conu.execute(conu.newRequest().withPostParams(activityImm)));
             }
             return activityResponse;
         } catch (JSONException e) {
@@ -233,7 +235,7 @@ class ActivitySender {
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachment.uri.toString());
             Try<HttpReadResult> result = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA,
                     TimelinePosition.EMPTY, getActor())
-                .flatMap(conu -> connection.postRequest(conu.uri, formParams));
+                .flatMap(conu -> conu.execute(conu.newRequest().withPostParams(formParams)));
             if (result.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
                 result = Try.failure(new ConnectionException(
                         "Error uploading '" + attachment + "': null response returned"));

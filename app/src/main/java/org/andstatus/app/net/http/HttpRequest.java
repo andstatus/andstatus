@@ -20,27 +20,44 @@ import com.github.scribejava.core.model.Verb;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.service.ConnectionRequired;
+import org.andstatus.app.util.UriUtils;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.util.Optional;
 
+import io.vavr.control.Try;
+
 public class HttpRequest {
 
     final MyContext myContext;
-    final Uri uri;
+    public final Connection.ApiRoutineEnum apiRoutine;
+    public final Uri uri;
     Verb verb = Verb.GET;
     ConnectionRequired connectionRequired = ConnectionRequired.ANY;
     boolean authenticate = true;
-    private boolean mIsLegacyHttpProtocol = false;
+    private boolean isLegacyHttpProtocol = false;
     final long maxSizeBytes;
 
     public Optional<JSONObject> postParams = Optional.empty();
     File fileResult = null;
 
-    public HttpRequest(MyContext myContext, Uri uri) {
+    public static HttpRequest of(MyContext myContext, Connection.ApiRoutineEnum apiRoutine, Uri uri) {
+        return new HttpRequest(myContext, apiRoutine, uri);
+    }
+
+    public Try<HttpRequest> validate() {
+        if (UriUtils.isEmpty(uri)) {
+            return Try.failure(new IllegalArgumentException("URi is empty; API: " + apiRoutine));
+        }
+        return Try.success(this);
+    }
+
+    private HttpRequest(MyContext myContext, Connection.ApiRoutineEnum apiRoutine, Uri uri) {
         this.myContext = myContext;
+        this.apiRoutine = apiRoutine;
         this.uri = uri;
         maxSizeBytes = MyPreferences.getMaximumSizeOfAttachmentBytes();
     }
@@ -56,15 +73,15 @@ public class HttpRequest {
     }
 
     boolean isLegacyHttpProtocol() {
-        return mIsLegacyHttpProtocol;
+        return isLegacyHttpProtocol;
     }
 
-    HttpRequest withLegacyHttpProtocol(boolean mIsLegacyHttpProtocol) {
-        this.mIsLegacyHttpProtocol = mIsLegacyHttpProtocol;
+    HttpRequest withLegacyHttpProtocol(boolean isLegacyHttpProtocol) {
+        this.isLegacyHttpProtocol = isLegacyHttpProtocol;
         return this;
     }
 
-    HttpRequest withConnectionRequired(ConnectionRequired connectionRequired) {
+    public HttpRequest withConnectionRequired(ConnectionRequired connectionRequired) {
         this.connectionRequired = connectionRequired;
         return this;
     }
@@ -80,10 +97,18 @@ public class HttpRequest {
     }
 
     public HttpRequest withPostParams(JSONObject postParams) {
-        verb = Verb.POST;
         this.postParams = postParams == null || postParams.length() == 0
                 ? Optional.empty()
                 : Optional.of(postParams);
+        return asPost();
+    }
+
+    public HttpRequest asPost(boolean asPost) {
+        return asPost ? asPost() : this;
+    }
+
+    public HttpRequest asPost() {
+        verb = Verb.POST;
         return this;
     }
 

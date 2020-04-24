@@ -18,21 +18,17 @@ package org.andstatus.app.net.http;
 
 import android.net.Uri;
 
+import com.github.scribejava.core.model.Verb;
+
 import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.TryUtils;
-import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
-
-import java.io.File;
 
 import io.vavr.control.Try;
 
@@ -66,80 +62,42 @@ public interface HttpConnectionInterface {
         return true;
     }
 
-    default Try<HttpReadResult> postRequest(Uri uri) {
-        return postRequest(uri, new JSONObject());
-    }
-
-    default Try<HttpReadResult> postRequest(Uri uri, JSONObject formParams) {
-        /* See https://github.com/andstatus/andstatus/issues/249 */
-        return (getData().getUseLegacyHttpProtocol() == TriState.UNKNOWN)
-        ? postRequestOneProtocol(uri, formParams, false)
-            .orElse(() -> postRequestOneProtocol(uri, formParams, true))
-        : postRequestOneProtocol(uri, formParams, getData().getUseLegacyHttpProtocol().toBoolean(true));
-    }
-
-    default Try<HttpReadResult> postRequestOneProtocol(Uri uri, JSONObject postParams, boolean isLegacyHttpProtocol) {
-        if (UriUtils.isEmpty(uri)) {
-            return Try.failure(new IllegalArgumentException("URL is empty"));
+    default Try<HttpReadResult> execute(HttpRequest request) {
+        if (request.verb == Verb.POST) {
+            /* See https://github.com/andstatus/andstatus/issues/249 */
+            return (getData().getUseLegacyHttpProtocol() == TriState.UNKNOWN)
+                    ? executeOneProtocol(request, false)
+                    .orElse(() -> executeOneProtocol(request, true))
+                    : executeOneProtocol(request, getData().getUseLegacyHttpProtocol().toBoolean(true));
+        } else {
+            return executeInner(request);
         }
-        HttpRequest request = new HttpRequest(MyContextHolder.get(), uri)
-            .withLegacyHttpProtocol(isLegacyHttpProtocol)
-            .withPostParams(postParams);
-        if (MyPreferences.isLogNetworkLevelMessages()) {
+    }
+
+    default Try<HttpReadResult> executeOneProtocol(HttpRequest request, boolean isLegacyHttpProtocol) {
+        return executeInner(request.withLegacyHttpProtocol(isLegacyHttpProtocol));
+    }
+
+    default Try<HttpReadResult> executeInner(HttpRequest request) {
+        if (request.verb == Verb.POST && MyPreferences.isLogNetworkLevelMessages()) {
             JSONObject jso = JsonUtils.put(request.postParams.orElseGet(JSONObject::new), "logURL", request.uri);
             MyLog.logNetworkLevelMessage("post", getData().getLogName(), jso, "");
         }
-        return Try.success(request)
+        return request.validate()
                 .map(HttpRequest::newResult)
-                .map(this::postRequest)
+                .map(result -> result.request.verb == Verb.POST
+                        ? postRequest(result)
+                        : getRequest(result))
                 .map(r -> r.logResponse(getData().getLogName()))
                 .flatMap(HttpReadResult::tryToParse);
     }
-    
+
     default HttpReadResult postRequest(HttpReadResult result) {
         return result;
     }
 
-    default Try<JSONObject> getRequest(Uri uri) {
-        return getRequestCommon(uri, true).flatMap(HttpReadResult::getJsonObject);
-    }
-
-    default Try<JSONObject> getUnauthenticatedRequest(Uri path) {
-        return getRequestCommon(path, false).flatMap(HttpReadResult::getJsonObject);
-    }
-
-    default Try<HttpReadResult> getRequestCommon(Uri uri, boolean authenticated) {
-        if (UriUtils.isEmpty(uri)) {
-            return Try.failure(new IllegalArgumentException("URL is empty"));
-        }
-        MyLog.v(this, () -> "getRequest; URL='" + uri + "'");
-        HttpRequest request = new HttpRequest(MyContextHolder.get(), uri).withAuthenticate(authenticated);
-        HttpReadResult result = request.newResult();
-        getRequest(result);
-        result.logResponse(getData().getLogName());
-        return result.tryToParse();
-    }
-
-    default Try<JSONArray> getRequestAsArray(Uri uri) {
-        return getRequestAsArray(uri, "items");
-    }
-
-    default Try<JSONArray> getRequestAsArray(Uri uri, String parentKey) {
-        return getRequestCommon(uri, true).flatMap(r -> r.getJsonArray(parentKey));
-    }
-
-    default Try<HttpReadResult> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
-        HttpRequest request = new HttpRequest(getData().getMyContext(), uri)
-                .withConnectionRequired(connectionRequired)
-                .withFile(file);
-        HttpReadResult result = request.newResult();
-        getRequest(result);
-        result.logResponse(getData().getLogName());
-        return result.tryToParse();
-    }
-    
-    default void getRequest(HttpReadResult result) {
-        // Empty
+    default HttpReadResult getRequest(HttpReadResult result) {
+        return result;
     }
     
     default void clearAuthInformation() {

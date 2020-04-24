@@ -146,10 +146,10 @@ public class HttpConnectionMock extends HttpConnection {
                 : (responsesCounter < responses.size() ? responses.get(responsesCounter++) : "");
     }
 
-    private Try<HttpReadResult> getRequestInner(String method, HttpReadResult result) {
+    private HttpReadResult getRequestInner(String method, HttpReadResult result) {
         onRequest(method, result);
         setExceptions(result);
-        return result.tryToParse();
+        return result;
     }
 
     @Override
@@ -223,8 +223,8 @@ public class HttpConnectionMock extends HttpConnection {
     }
 
     @Override
-    public void getRequest(HttpReadResult result) {
-        getRequestInner("getRequest", result);
+    public HttpReadResult getRequest(HttpReadResult result) {
+        return getRequestInner("getRequest", result);
     }
 
     @Override

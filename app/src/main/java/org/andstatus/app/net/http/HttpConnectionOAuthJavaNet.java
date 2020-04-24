@@ -82,7 +82,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             writer.write(requestBody);
             writer.close();
 
-            HttpRequest request = new HttpRequest(MyContextHolder.get(), uri).withPostParams(new JSONObject());
+            HttpRequest request = HttpRequest.of(MyContextHolder.get(), ApiRoutineEnum.OAUTH_REGISTER_CLIENT ,uri).asPost();
             HttpReadResult result = request.newResult();
             setStatusCodeAndHeaders(result, conn);
             if (result.isStatusOk()) {
@@ -198,7 +198,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         return consumer;
     }
 
-    public void getRequest(HttpReadResult result) {
+    public HttpReadResult getRequest(HttpReadResult result) {
         try {
             OAuthConsumer consumer = getConsumer();
             boolean redirected = false;
@@ -224,7 +224,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                         break;
                     default:
                         result.readStream("", o -> conn.getErrorStream());
-                        stop = result.request.fileResult == null || !result.request.authenticate;
+                        stop = result.request.fileResult == null || result.retriedWithoutAuthentication;
                         if (!stop) {
                             result.onRetryWithoutAuthentication();
                         }
@@ -234,6 +234,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         } catch(Exception e) {
             result.setException(e);
         }
+        return result;
     }
 
     private void setStatusCodeAndHeaders(HttpReadResult result, HttpURLConnection conn) throws IOException {

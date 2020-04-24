@@ -16,14 +16,10 @@
 
 package org.andstatus.app.net.social;
 
-import android.net.Uri;
-
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.http.HttpRequest;
-import org.andstatus.app.service.ConnectionRequired;
-
-import java.io.File;
 
 import io.vavr.control.Try;
 
@@ -31,13 +27,26 @@ import io.vavr.control.Try;
  * Connection to local resources
  */
 public class ConnectionLocal extends ConnectionEmpty {
+    private final MyContext myContext;
+
+    public ConnectionLocal(MyContext myContext) {
+        this.myContext = myContext;
+    }
 
     @Override
-    public Try<HttpReadResult> downloadFile(ConnectionRequired connectionRequired, Uri uri, File file) {
-        HttpRequest request = new HttpRequest(MyContextHolder.get(), uri).withFile(file);
-        HttpReadResult result = request.newResult();
-        return result.readStream("mediaUri='" + uri + "'",
-                o -> MyContextHolder.get().context().getContentResolver().openInputStream(uri))
-            .flatMap(HttpReadResult::tryToParse);
+    public Try<HttpReadResult> execute(HttpRequest request) {
+        if (request.apiRoutine == ApiRoutineEnum.DOWNLOAD_FILE) {
+            return request.newResult()
+                .readStream("mediaUri='" + request.uri + "'",
+                    o -> MyContextHolder.get().context().getContentResolver().openInputStream(request.uri))
+                .flatMap(HttpReadResult::tryToParse);
+        } else {
+            return super.execute(request);
+        }
+    }
+
+    @Override
+    public MyContext myContext() {
+        return myContext;
     }
 }

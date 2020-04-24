@@ -105,7 +105,7 @@ class ActivitySender {
             JSONObject activityImm = activity;
             Try<ConnectionAndUrl> tryConu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPDATE_NOTE, getActor());
             Try<HttpReadResult> activityResponse = tryConu
-                    .flatMap(conu -> connection.postRequest(conu.uri, activityImm));
+                    .flatMap(conu -> conu.execute(conu.newRequest().withPostParams(activityImm)));
             if (activityResponse.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
                 return Try.failure(ConnectionException.hardConnectionException(msgLog + " returned no data", null));
             }
@@ -122,7 +122,7 @@ class ActivitySender {
                             "when an image object is posted. Sending an update");
                 }
                 activity.put("verb", PActivityType.UPDATE.code);
-                return tryConu.flatMap(conu -> connection.postRequest(conu.uri, activityImm));
+                return tryConu.flatMap(conu -> conu.execute(conu.newRequest().withPostParams(activityImm)));
             }
             return activityResponse;
         } catch (JSONException e) {
@@ -260,7 +260,7 @@ class ActivitySender {
         try {
             formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachment.uri.toString());
             Try<HttpReadResult> result = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA, getActor())
-                    .flatMap(conu -> connection.postRequest(conu.uri, formParams));
+                    .flatMap(conu -> conu.execute(conu.newRequest().withPostParams(formParams)));
             if (result.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
                 result = Try.failure(new ConnectionException(
                         "Error uploading '" + attachment + "': null response returned"));

@@ -17,6 +17,7 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AvatarData;
 import org.andstatus.app.data.DownloadData;
@@ -29,11 +30,11 @@ import org.andstatus.app.util.MyLog;
 public class AvatarDownloader extends FileDownloader {
 
     public AvatarDownloader(Actor actor) {
-        this(AvatarData.getCurrentForActor(actor));
+        this(actor.origin.myContext, AvatarData.getCurrentForActor(actor));
     }
 
-    protected AvatarDownloader(DownloadData data) {
-        super(data);
+    protected AvatarDownloader(MyContext myContext, DownloadData data) {
+        super(myContext, data);
     }
 
     @Override

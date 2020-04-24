@@ -84,7 +84,7 @@ class CommandExecutorOther extends CommandExecutorStrategy{
             case RATE_LIMIT_STATUS:
                 return rateLimitStatus();
             case GET_ATTACHMENT:
-                return FileDownloader.newForDownloadData(DownloadData.fromId(execContext.getCommandData().itemId))
+                return FileDownloader.newForDownloadData(execContext.myContext, DownloadData.fromId(execContext.getCommandData().itemId))
                         .setConnectionRequired(ConnectionRequired.DOWNLOAD_ATTACHMENT)
                         .load(execContext.getCommandData());
             case GET_AVATAR:

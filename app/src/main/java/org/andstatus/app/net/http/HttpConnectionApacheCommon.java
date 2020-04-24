@@ -74,7 +74,7 @@ public class HttpConnectionApacheCommon {
         }
     }
 
-    protected void getRequest(HttpReadResult result) {
+    protected HttpReadResult getRequest(HttpReadResult result) {
         HttpResponse httpResponse = null;
         try {
             boolean stop = false;
@@ -104,7 +104,7 @@ public class HttpConnectionApacheCommon {
                         if (entity != null) {
                             result.readStream("", o -> entity.getContent());
                         }
-                        stop =  result.request.fileResult == null || !result.request.authenticate;
+                        stop =  result.request.fileResult == null || result.retriedWithoutAuthentication;
                         if (!stop) {
                             result.onRetryWithoutAuthentication();
                             DbUtils.closeSilently(httpResponse);
@@ -117,6 +117,7 @@ public class HttpConnectionApacheCommon {
         } finally {
             DbUtils.closeSilently(httpResponse);
         }
+        return result;
     }
 
     static void setStatusCodeAndHeaders(HttpReadResult result, HttpResponse httpResponse) {

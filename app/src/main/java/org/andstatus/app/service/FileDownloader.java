@@ -19,11 +19,13 @@ package org.andstatus.app.service;
 import android.net.Uri;
 
 import org.andstatus.app.account.MyAccount;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.http.HttpRequest;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.ConnectionLocal;
 import org.andstatus.app.util.MyLog;
@@ -35,19 +37,21 @@ import java.io.File;
 import io.vavr.control.Try;
 
 public abstract class FileDownloader {
+    final MyContext myContext;
     protected final DownloadData data;
     private Connection connectionMock;
     private ConnectionRequired connectionRequired = ConnectionRequired.ANY;
 
-    static FileDownloader newForDownloadData(DownloadData data) {
+    static FileDownloader newForDownloadData(MyContext myContext, DownloadData data) {
         if (data.actorId != 0) {
-            return new AvatarDownloader(data);
+            return new AvatarDownloader(myContext, data);
         } else {
-            return new AttachmentDownloader(data);
+            return new AttachmentDownloader(myContext, data);
         }
     }
     
-    protected FileDownloader(DownloadData dataIn) {
+    protected FileDownloader(MyContext myContext, DownloadData dataIn) {
+        this.myContext = myContext;
         data = dataIn;
     }
     
@@ -92,8 +96,8 @@ public abstract class FileDownloader {
         MyAccount ma = findBestAccountForDownload();
         MyLog.v(this, () -> "About to download " + data.toString() + "; account:" + ma.getAccountName());
         if (ma.isValidAndSucceeded()) {
-            ((connectionMock != null) ? Try.success(connectionMock) : getConnection(ma, data.getUri()))
-            .flatMap(connection -> connection.downloadFile(connectionRequired, data.getUri(), file))
+            getConnection(ma, data.getUri())
+            .flatMap(connection -> connection.execute(newRequest(file, connection)))
             .onFailure(e -> {
                 ConnectionException ce = ConnectionException.of(e);
                 if (ce.isHardError()) {
@@ -116,12 +120,20 @@ public abstract class FileDownloader {
         data.onDownloaded();
     }
 
+    private HttpRequest newRequest(File file, Connection connection) {
+        return HttpRequest.of(connection.myContext(), Connection.ApiRoutineEnum.DOWNLOAD_FILE, data.getUri())
+            .withConnectionRequired(connectionRequired)
+            .withFile(file);
+    }
+
     public FileDownloader setConnectionRequired(ConnectionRequired connectionRequired) {
         this.connectionRequired = connectionRequired;
         return this;
     }
 
     private Try<Connection> getConnection(MyAccount ma, Uri uri) {
+        if (connectionMock != null) return Try.success(connectionMock);
+
         if (UriUtils.isEmpty(uri)) {
             return Try.failure(new ConnectionException(ConnectionException.StatusCode.NOT_FOUND,
                     "No Uri to (down)load from: '" + uri + "'"));
@@ -129,7 +141,7 @@ public abstract class FileDownloader {
         if (UriUtils.isDownloadable(uri)) {
             return Try.success(ma.getConnection());
         } else {
-            return Try.success(new ConnectionLocal());
+            return Try.success(new ConnectionLocal(myContext));
         }
     }
 
@@ -140,7 +152,7 @@ public abstract class FileDownloader {
     protected abstract MyAccount findBestAccountForDownload();
 
     public static Try<Boolean> load(DownloadData downloadData, CommandData commandData) {
-        FileDownloader downloader = FileDownloader.newForDownloadData(downloadData);
+        FileDownloader downloader = FileDownloader.newForDownloadData(commandData.myAccount.getOrigin().myContext, downloadData);
         return downloader.load(commandData);
     }
 

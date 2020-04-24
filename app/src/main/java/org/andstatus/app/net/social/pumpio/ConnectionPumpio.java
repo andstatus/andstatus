@@ -25,6 +25,8 @@ import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
+import org.andstatus.app.net.http.HttpReadResult;
+import org.andstatus.app.net.http.HttpRequest;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.AObjectType;
 import org.andstatus.app.net.social.ActivityType;
@@ -130,10 +132,12 @@ public class ConnectionPumpio extends Connection {
     @NonNull
     public Try<Actor> verifyCredentials(Optional<Uri> whoAmI) {
         return TryUtils.fromOptional(whoAmI)
-            .filter(UriUtils::isDownloadable)
-            .orElse(() -> getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS))
-            .flatMap(this::getRequest)
-            .map(this::actorFromJson);
+        .filter(UriUtils::isDownloadable)
+        .orElse(() -> getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS))
+        .map(uri -> HttpRequest.of(myContext(), ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri))
+        .flatMap(this::execute)
+        .flatMap(HttpReadResult::getJsonObject)
+        .map(this::actorFromJson);
     }
 
     @NonNull
@@ -218,13 +222,15 @@ public class ConnectionPumpio extends Connection {
     private Try<List<Actor>> getActors(Actor actor, ApiRoutineEnum apiRoutine) {
         int limit = 200;
         return ConnectionAndUrl.fromActor(this, apiRoutine, actor)
-                .flatMap(conu -> {
-                    Uri.Builder builder = conu.uri.buildUpon();
-                    builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-                    Uri uri = builder.build();
-                    return conu.httpConnection.getRequestAsArray(uri)
-                            .map(jArr -> jsonArrayToActors(apiRoutine, uri, jArr));
-                });
+        .map(conu -> {
+            Uri.Builder builder = conu.uri.buildUpon();
+            builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
+            Uri uri = builder.build();
+            return conu.withUri(uri);
+        })
+        .flatMap(conu -> conu.execute(conu.newRequest()))
+        .flatMap(result -> result.getJsonArray()
+            .map(jsonArray -> jsonArrayToActors(apiRoutine, result.request.uri, jsonArray)));
     }
 
     private List<Actor> jsonArrayToActors(ApiRoutineEnum apiRoutine, Uri uri, JSONArray jArr) throws ConnectionException {
@@ -246,7 +252,9 @@ public class ConnectionPumpio extends Connection {
 
     @Override
     protected Try<AActivity> getNote1(String noteOid) {
-        return getRequest(UriUtils.fromString(noteOid)).map(this::activityFromJson);
+        return execute(HttpRequest.of(myContext(), ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid)))
+        .flatMap(HttpReadResult::getJsonObject)
+        .map(this::activityFromJson);
     }
 
     @Override
@@ -312,7 +320,9 @@ public class ConnectionPumpio extends Connection {
             builder.appendQueryParameter("before", oldestPosition.getPosition());
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        return conu.httpConnection.getRequestAsArray(builder.build()).map(jArr -> {
+        return execute(HttpRequest.of(myContext(), apiRoutine, builder.build()))
+        .flatMap(HttpReadResult::getJsonArray)
+        .map(jArr -> {
             List<AActivity> activities = new ArrayList<>();
             if (jArr != null) {
                 // Read the activities in the chronological order
@@ -574,7 +584,8 @@ public class ConnectionPumpio extends Connection {
     public Try<Actor> getActor2(Actor actorIn) {
         return ConnectionAndUrl
         .fromActor(this, ApiRoutineEnum.GET_ACTOR, actorIn)
-        .flatMap(ConnectionAndUrl::getRequest)
+        .flatMap(conu -> conu.execute(conu.newRequest()))
+        .flatMap(HttpReadResult::getJsonObject)
         .map(this::actorFromJson);
     }
 

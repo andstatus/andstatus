@@ -20,11 +20,13 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpReadResult;
+import org.andstatus.app.net.http.HttpRequest;
 import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
@@ -91,12 +93,14 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    public Try<List<String>> getFriendsOrFollowersIds(ApiRoutineEnum apiRoutineEnum, String actorOid) {
-        return getApiPath(apiRoutineEnum)
+    public Try<List<String>> getFriendsOrFollowersIds(ApiRoutineEnum apiRoutine, String actorOid) {
+        return getApiPath(apiRoutine)
         .map(Uri::buildUpon)
         .map(builder -> builder.appendQueryParameter("user_id", actorOid))
         .map(Uri.Builder::build)
-        .flatMap(uri -> http.getRequestAsArray(uri))
+        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .flatMap(this::execute)
+        .flatMap(HttpReadResult::getJsonArray)
         .flatMap(jsonArray -> {
             List<String> list = new ArrayList<>();
             try {
@@ -104,7 +108,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
                     list.add(jsonArray.getString(index));
                 }
             } catch (JSONException e) {
-                return Try.failure(ConnectionException.loggedJsonException(this, apiRoutineEnum.name(), e, jsonArray));
+                return Try.failure(ConnectionException.loggedJsonException(this, apiRoutine.name(), e, jsonArray));
             }
             return Try.success(list);
         });
@@ -112,8 +116,12 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
 
     @Override
     public Try<RateLimitStatus> rateLimitStatus() {
-        return getApiPath(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)
-        .flatMap(this::getRequest).flatMap(result -> {
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS;
+        return getApiPath(apiRoutine)
+        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .flatMap(this::execute)
+        .flatMap(HttpReadResult::getJsonObject)
+        .flatMap(result -> {
             RateLimitStatus status = new RateLimitStatus();
             if (result != null) {
                 status.remaining = result.optInt("remaining_hits");
@@ -146,8 +154,11 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     
     @Override
     public Try<OriginConfig> getConfig() {
-        return getApiPath(ApiRoutineEnum.GET_CONFIG)
-        .flatMap(this::getRequest)
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.GET_CONFIG;
+        return getApiPath(apiRoutine)
+        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .flatMap(this::execute)
+        .flatMap(HttpReadResult::getJsonObject)
         .map(result -> {
             OriginConfig config = OriginConfig.getEmpty();
             if (result != null) {
@@ -171,10 +182,12 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     public Try<List<AActivity>> getConversation(String conversationOid) {
         if (nonRealOid(conversationOid)) return TryUtils.emptyList();
 
-        return getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid)
-        .flatMap(uri ->
-            http.getRequestAsArray(uri)
-            .flatMap(jArr -> jArrToTimeline("", jArr, ApiRoutineEnum.GET_CONVERSATION, uri)));
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.GET_CONVERSATION;
+        return getApiPathWithNoteId(apiRoutine, conversationOid)
+        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .flatMap(this::execute)
+        .flatMap(HttpReadResult::getJsonArray)
+        .flatMap(jsonArray -> jArrToTimeline(jsonArray, apiRoutine));
     }
 
     @Override
@@ -258,11 +271,15 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     
     @Override
     public Try<List<Server>> getOpenInstances() {
-        return getApiPath(ApiRoutineEnum.GET_OPEN_INSTANCES)
-        .flatMap(http::getUnauthenticatedRequest)
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.GET_OPEN_INSTANCES;
+        return getApiPath(apiRoutine)
+        .map(path -> HttpRequest.of(MyContextHolder.get(), apiRoutine, path)
+                        .withAuthenticate(false))
+        .flatMap(http::execute)
+        .flatMap(HttpReadResult::getJsonObject)
         .map(result -> {
             List<Server> origins = new ArrayList<>();
-            StringBuilder logMessage = new StringBuilder(ApiRoutineEnum.GET_OPEN_INSTANCES.toString());
+            StringBuilder logMessage = new StringBuilder(apiRoutine.toString());
             boolean error = false;
             if (result == null) {
                 MyStringBuilder.appendWithSpace(logMessage, "Response is null JSON");

@@ -21,6 +21,8 @@ import android.net.Uri;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionData;
+import org.andstatus.app.net.http.HttpReadResult;
+import org.andstatus.app.net.http.HttpRequest;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Connection;
@@ -28,19 +30,24 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
-import org.json.JSONObject;
 
 import java.util.Optional;
 
 import io.vavr.control.Try;
 
 class ConnectionAndUrl {
+    final Connection.ApiRoutineEnum apiRoutine;
     public final Uri uri;
     public final HttpConnection httpConnection;
 
-    public ConnectionAndUrl(Uri uri, HttpConnection httpConnection) {
+    public ConnectionAndUrl(Connection.ApiRoutineEnum apiRoutine, Uri uri, HttpConnection httpConnection) {
+        this.apiRoutine = apiRoutine;
         this.uri = uri;
         this.httpConnection = httpConnection;
+    }
+
+    ConnectionAndUrl withUri(Uri newUri) {
+        return new ConnectionAndUrl(apiRoutine, newUri, httpConnection);
     }
 
     public static Try<ConnectionAndUrl> fromActor(ConnectionPumpio connection, Connection.ApiRoutineEnum apiRoutine, Actor actor) {
@@ -82,10 +89,14 @@ class ConnectionAndUrl {
                         "No credentials", httpConnection.data.originUrl));
             }
         }
-        return Try.success(new ConnectionAndUrl(uri, httpConnection));
+        return Try.success(new ConnectionAndUrl(apiRoutine, uri, httpConnection));
     }
 
-    Try<JSONObject> getRequest() {
-        return httpConnection.getRequest(uri);
+    HttpRequest newRequest() {
+        return HttpRequest.of(httpConnection.data.getMyContext(), apiRoutine, uri);
+    }
+
+    Try<HttpReadResult> execute(HttpRequest request) {
+        return httpConnection.execute(request);
     }
 }

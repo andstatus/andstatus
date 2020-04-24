@@ -85,8 +85,8 @@ public class AttachmentDownloaderTest {
     }
 
     public static void loadAndAssertStatusForRow(DownloadData dataIn, DownloadStatus status, boolean mockNetworkError) {
-        FileDownloader loader = FileDownloader.newForDownloadData(dataIn);
         MyAccount ma = demoData.getGnuSocialAccount();
+        FileDownloader loader = FileDownloader.newForDownloadData(ma.getOrigin().myContext, dataIn);
         if (mockNetworkError) {
             loader.setConnectionMock(ConnectionMock.newFor(ma)
                     .withException(new ConnectionException("Mocked IO exception"))

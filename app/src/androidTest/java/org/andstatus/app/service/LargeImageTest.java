@@ -15,6 +15,8 @@ package org.andstatus.app.service;
  * limitations under the License.
  */
 
+import androidx.test.platform.app.InstrumentationRegistry;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.AttachedImageFile;
@@ -31,9 +33,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.io.InputStream;
-
-import androidx.test.platform.app.InstrumentationRegistry;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
@@ -53,7 +52,7 @@ public class LargeImageTest {
         loadingTest(dd);
     }
 
-    private DownloadData insertNote() throws IOException {
+    private DownloadData insertNote() {
         String body = "Large image attachment";
         MyAccount ma = demoData.getGnuSocialAccount();
         DemoNoteInserter inserter = new DemoNoteInserter(ma);
@@ -68,7 +67,7 @@ public class LargeImageTest {
 
         CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR,
                 Actor.fromId(ma.getOrigin(), 34234), "");
-        AttachmentDownloader loader = new AttachmentDownloader(dd);
+        AttachmentDownloader loader = new AttachmentDownloader(ma.getOrigin().myContext, dd);
         ConnectionMock connMock = ConnectionMock.newFor(demoData.gnusocialTestAccountName);
         connMock.getHttpMock().setResponseStreamSupplier(o ->
                 InstrumentationRegistry.getInstrumentation().getContext().getResources()

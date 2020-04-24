@@ -24,6 +24,7 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpReadResult;
+import org.andstatus.app.net.http.HttpRequest;
 import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.util.JsonUtils;
@@ -48,7 +49,6 @@ import io.vavr.control.CheckedFunction;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.context.MyPreferences.BYTES_IN_MB;
-import static org.andstatus.app.util.UriUtils.nonRealOid;
 
 /**
  * See <a href="https://source.joinmastodon.org/mastodon/docs">API</a>
@@ -228,8 +228,10 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 .map(b -> appendPositionParameters(b, youngestPosition, oldestPosition))
                 .map(b -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)))
                 .map(Uri.Builder::build)
-                .flatMap(uri -> http.getRequestAsArray(uri)
-                    .flatMap(jsonArray -> jArrToTimeline("", jsonArray, apiRoutine, uri)))
+                .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+                .flatMap(this::execute)
+                .flatMap(result -> result.getJsonArray()
+                    .flatMap(jsonArray -> jArrToTimeline(jsonArray, apiRoutine)))
                 .map(InputTimelinePage::of);
     }
 
@@ -247,7 +249,10 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 .appendQueryParameter("resolve", "true")
                 .appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)))
         .map(Uri.Builder::build)
-        .flatMap(uri -> http.getRequestAsArray(uri).flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, uri)));
+        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .flatMap(this::execute)
+        .flatMap(result -> result.getJsonArray()
+            .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, result.request.uri)));
     }
 
     // TODO: Delete ?
@@ -257,26 +262,24 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @Override
     public Try<List<AActivity>> getConversation(String conversationOid) {
-        if (nonRealOid(conversationOid)) {
-            return TryUtils.emptyList();
-        }
-        return getApiPathWithNoteId(ApiRoutineEnum.GET_CONVERSATION, conversationOid)
-            .flatMap(uri -> getRequest(uri)
-                .map(mastodonContext -> getConversationActivities(uri, mastodonContext, conversationOid)));
+        return noteAction(ApiRoutineEnum.GET_CONVERSATION, conversationOid)
+        .map(jsonObject -> getConversationActivities(jsonObject, conversationOid));
     }
 
-    private List<AActivity> getConversationActivities(Uri uri, JSONObject mastodonContext, String conversationOid)
+    private List<AActivity> getConversationActivities(JSONObject mastodonContext, String conversationOid)
             throws ConnectionException {
+        if (JsonUtils.isEmpty(mastodonContext)) return Collections.emptyList();
+
         List<AActivity> timeline = new ArrayList<>();
         try {
             String ancestors = "ancestors";
             if (mastodonContext.has(ancestors)) {
-                jArrToTimeline(ancestors, mastodonContext.getJSONArray(ancestors), ApiRoutineEnum.GET_CONVERSATION, uri)
+                jArrToTimeline(mastodonContext.getJSONArray(ancestors), ApiRoutineEnum.GET_CONVERSATION)
                     .onSuccess( timeline::addAll);
             }
             String descendants = "descendants";
             if (mastodonContext.has(descendants)) {
-                jArrToTimeline(descendants, mastodonContext.getJSONArray(descendants), ApiRoutineEnum.GET_CONVERSATION, uri)
+                jArrToTimeline(mastodonContext.getJSONArray(descendants), ApiRoutineEnum.GET_CONVERSATION)
                         .onSuccess( timeline::addAll);
             }
         } catch (JSONException e) {
@@ -535,17 +538,21 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @Override
     public Try<Actor> getActor2(Actor actorIn) {
-        return getApiPathWithActorId(ApiRoutineEnum.GET_ACTOR,
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.GET_ACTOR;
+        return getApiPathWithActorId(apiRoutine,
                 UriUtils.isRealOid(actorIn.oid) ? actorIn.oid : actorIn.getUsername())
-                .flatMap(this::getRequest)
+                .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+                .flatMap(this::execute)
+                .flatMap(HttpReadResult::getJsonObject)
                 .map(this::actorFromJson);
     }
 
     @Override
     public Try<AActivity> follow(String actorOid, Boolean follow) {
-        Try<JSONObject> tryRelationship = getApiPathWithActorId(follow
-                ? ApiRoutineEnum.FOLLOW : ApiRoutineEnum.UNDO_FOLLOW, actorOid)
-            .flatMap(uri -> postRequest(uri, new JSONObject()))
+        ApiRoutineEnum apiRoutine = follow ? ApiRoutineEnum.FOLLOW : ApiRoutineEnum.UNDO_FOLLOW;
+        Try<JSONObject> tryRelationship = getApiPathWithActorId(apiRoutine, actorOid)
+            .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri).asPost())
+            .flatMap(this::execute)
             .flatMap(HttpReadResult::getJsonObject);
 
         return tryRelationship.map(relationship -> {
@@ -567,11 +574,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
 
     @Override
     public Try<Boolean> undoAnnounce(String noteOid) {
-        return getApiPathWithNoteId(ApiRoutineEnum.UNDO_ANNOUNCE, noteOid)
-            .flatMap(http::postRequest)
-            .flatMap(HttpReadResult::getJsonObject)
+        return postNoteAction(ApiRoutineEnum.UNDO_ANNOUNCE, noteOid)
             .filter(Objects::nonNull)
-            .onSuccess(jso -> MyLog.v(this, "destroyReblog response: " + jso.toString()))
             .map(any -> true);
     }
 
@@ -582,21 +586,26 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             .map(Uri::buildUpon)
             .map(b -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)))
             .map(Uri.Builder::build)
-            .flatMap(uri -> http.getRequestAsArray(uri)
-                    .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, uri)));
+            .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+            .flatMap(this::execute)
+            .flatMap(result -> result.getJsonArray()
+                .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, result.request.uri)));
     }
 
     @Override
     public Try<OriginConfig> getConfig() {
-        return getApiPath(ApiRoutineEnum.GET_CONFIG)
-            .flatMap(this::getRequest)
-            .map(result -> {
-                // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/spec/validators/status_length_validator_spec.rb
-                int textLimit = result == null || result.optInt(TEXT_LIMIT_KEY) < 1
-                        ? OriginConfig.MASTODON_TEXT_LIMIT_DEFAULT
-                        : result.optInt(TEXT_LIMIT_KEY);
-                // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/app/models/media_attachment.rb
-                return OriginConfig.fromTextLimit(textLimit, 10 * BYTES_IN_MB);
+        ApiRoutineEnum apiRoutine = ApiRoutineEnum.GET_CONFIG;
+        return getApiPath(apiRoutine)
+        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .flatMap(this::execute)
+        .flatMap(HttpReadResult::getJsonObject)
+        .map(result -> {
+            // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/spec/validators/status_length_validator_spec.rb
+            int textLimit = result == null || result.optInt(TEXT_LIMIT_KEY) < 1
+                    ? OriginConfig.MASTODON_TEXT_LIMIT_DEFAULT
+                    : result.optInt(TEXT_LIMIT_KEY);
+            // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/app/models/media_attachment.rb
+            return OriginConfig.fromTextLimit(textLimit, 10 * BYTES_IN_MB);
         });
     }
 }

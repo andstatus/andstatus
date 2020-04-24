@@ -24,6 +24,7 @@ import androidx.annotation.NonNull;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpReadResult;
+import org.andstatus.app.net.http.HttpRequest;
 import org.andstatus.app.origin.OriginConfig;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
@@ -228,8 +229,10 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         .map(builder -> appendPositionParameters(builder, youngestPosition, oldestPosition))
         .map(builder -> builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)))
         .map(Uri.Builder::build)
-        .flatMap(uri -> this.getRequestArrayInObject(uri, "statuses")
-            .flatMap(jArr -> jArrToTimeline("", jArr, apiRoutine, uri)))
+        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .flatMap(this::execute)
+        .flatMap(result -> result.getJsonArrayInObject("statuses")
+            .flatMap(jArr -> jArrToTimeline(jArr, apiRoutine)))
         .map(InputTimelinePage::of);
     }
 
@@ -242,7 +245,10 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         .map(b -> StringUtil.isEmpty(searchQuery) ? b : b.appendQueryParameter("q", searchQuery))
         .map(b -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)))
         .map(Uri.Builder::build)
-        .flatMap(uri -> http.getRequestAsArray(uri).flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, uri)));
+        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .flatMap(this::execute)
+        .flatMap(result -> result.getJsonArray()
+            .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, result.request.uri)));
     }
 
     @Override
@@ -304,8 +310,10 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         .map(b -> StringUtil.isEmpty(actor.oid) ? b : b.appendQueryParameter("user_id", actor.oid))
         .map(b -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)))
         .map(Uri.Builder::build)
-        .flatMap(uri -> http.getRequestAsArray(uri)
-            .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, uri)));
+        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .flatMap(this::execute)
+        .flatMap(result -> result.getJsonArray()
+            .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, result.request.uri)));
     }
 
 }

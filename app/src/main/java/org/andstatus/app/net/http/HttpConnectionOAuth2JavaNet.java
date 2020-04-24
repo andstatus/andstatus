@@ -27,6 +27,7 @@ import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
+import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.MyLog;
@@ -66,7 +67,9 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             params.put("scopes", OAUTH_SCOPES);
             params.put("website", "http://andstatus.org");
 
-            return postRequest(uri, params)
+            HttpRequest request = HttpRequest.of(MyContextHolder.get(), Connection.ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
+                .withPostParams(params);
+            return execute(request)
             .flatMap(HttpReadResult::getJsonObject)
             .map(jso -> {
                 String consumerKey = jso.getString("client_id");
@@ -156,7 +159,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
     }
 
     @Override
-    public void getRequest(HttpReadResult result) {
+    public HttpReadResult getRequest(HttpReadResult result) {
         try {
             OAuth20Service service = getService(false);
             boolean redirected = false;
@@ -181,7 +184,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                         break;
                     default:
                         result.readStream("", o -> response.getStream());
-                        stop = result.request.fileResult == null || !result.request.authenticate;
+                        stop = result.request.fileResult == null || result.retriedWithoutAuthentication;
                         if (!stop) {
                             result.onRetryWithoutAuthentication();
                         }
@@ -194,6 +197,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
         } catch(Exception e) {
             result.setException(e);
         }
+        return result;
     }
 
     private void setStatusCodeAndHeaders(HttpReadResult result, Response response) {
