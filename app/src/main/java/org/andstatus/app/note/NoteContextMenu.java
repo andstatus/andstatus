@@ -35,7 +35,7 @@ import org.andstatus.app.data.AccountToNote;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.NoteForAnyAccount;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.ContextMenuHeader;
@@ -242,7 +242,7 @@ public class NoteContextMenu extends MyContextMenu {
             if (accountToNote.isAuthorSucceededMyAccount()) {
                 if (noteForAnyAccount.isPresentAtServer()) {
                     if (!accountToNote.reblogged && getActingAccount().getConnection()
-                            .hasApiEndpoint(Connection.ApiRoutineEnum.DELETE_NOTE)) {
+                            .hasApiEndpoint(ApiRoutineEnum.DELETE_NOTE)) {
                         NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++,
                                 R.string.menu_item_destroy_status);
                     }

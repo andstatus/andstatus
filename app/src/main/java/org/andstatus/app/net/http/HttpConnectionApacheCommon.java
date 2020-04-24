@@ -54,7 +54,7 @@ public class HttpConnectionApacheCommon {
                 if (params.has(HttpConnection.KEY_MEDIA_PART_URI)) {
                     httpPost.setEntity(ApacheHttpClientUtils.multiPartFormEntity(params));
                 } else {
-                    data.getContentType().ifPresent(value -> httpPost.addHeader("Content-Type", value));
+                    data.optOriginContentType().ifPresent(value -> httpPost.addHeader("Content-Type", value));
                     fillSinglePartPost(httpPost, params);
                 }
             } catch (Exception e) {
@@ -80,7 +80,7 @@ public class HttpConnectionApacheCommon {
             boolean stop = false;
             do {
                 HttpGet httpGet = newHttpGet(result.getUrl());
-                data.getContentType().ifPresent(value -> httpGet.addHeader("Accept", value));
+                data.optOriginContentType().ifPresent(value -> httpGet.addHeader("Accept", value));
                 if (result.request.authenticate) {
                     specific.httpApacheSetAuthorization(httpGet);
                 }

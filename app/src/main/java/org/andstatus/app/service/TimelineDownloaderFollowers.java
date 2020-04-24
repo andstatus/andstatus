@@ -16,7 +16,7 @@
 
 package org.andstatus.app.service;
 
-import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 
 import io.vavr.control.Try;
 
@@ -33,22 +33,22 @@ class TimelineDownloaderFollowers extends TimelineDownloader {
     }
 
     @Override
-    boolean isApiSupported(Connection.ApiRoutineEnum routine) {
+    boolean isApiSupported(ApiRoutineEnum routine) {
         return super.isApiSupported(routine) || super.isApiSupported(getAlternativeApiRoutine(routine));
     }
 
-    private Connection.ApiRoutineEnum getAlternativeApiRoutine(Connection.ApiRoutineEnum routine) {
+    private ApiRoutineEnum getAlternativeApiRoutine(ApiRoutineEnum routine) {
         switch (routine) {
             case GET_FOLLOWERS:
-                return Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS;
+                return ApiRoutineEnum.GET_FOLLOWERS_IDS;
             case GET_FOLLOWERS_IDS:
-                return Connection.ApiRoutineEnum.GET_FOLLOWERS;
+                return ApiRoutineEnum.GET_FOLLOWERS;
             case GET_FRIENDS:
-                return Connection.ApiRoutineEnum.GET_FRIENDS_IDS;
+                return ApiRoutineEnum.GET_FRIENDS_IDS;
             case GET_FRIENDS_IDS:
-                return Connection.ApiRoutineEnum.GET_FRIENDS;
+                return ApiRoutineEnum.GET_FRIENDS;
             default:
-                return Connection.ApiRoutineEnum.DUMMY_API;
+                return ApiRoutineEnum.DUMMY_API;
         }
 
     }

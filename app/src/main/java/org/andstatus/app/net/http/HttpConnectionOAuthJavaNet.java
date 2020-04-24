@@ -23,7 +23,7 @@ import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
-import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -136,7 +136,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     if (params.has(HttpConnection.KEY_MEDIA_PART_URI)) {
                         writeMedia(conn, params);
                     } else {
-                        writeJson(conn, params);
+                        writeJson(conn, result.request, params);
                     }
                 } catch (Exception e) {
                     result.setException(e);
@@ -177,8 +177,8 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
         }
     }
 
-    private void writeJson(HttpURLConnection conn, JSONObject formParams) throws IOException {
-        conn.setRequestProperty("Content-Type", data.getContentType().orElse("application/json"));
+    private void writeJson(HttpURLConnection conn, HttpRequest request, JSONObject formParams) throws IOException {
+        conn.setRequestProperty("Content-Type", data.jsonContentType(request.apiRoutine));
         signConnection(conn, getConsumer(), false);
         try (
                 OutputStream os = conn.getOutputStream();
@@ -205,7 +205,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             boolean stop = false;
             do {
                 HttpURLConnection conn = (HttpURLConnection) result.getUrlObj().openConnection();
-                data.getContentType().ifPresent(value -> conn.addRequestProperty("Accept", value));
+                data.optOriginContentType().ifPresent(value -> conn.addRequestProperty("Accept", value));
                 conn.setInstanceFollowRedirects(false);
                 if (result.request.authenticate) {
                     signConnection(conn, consumer, redirected);

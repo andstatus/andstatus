@@ -25,10 +25,10 @@ import org.andstatus.app.net.social.AObjectType;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
-import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.net.social.InputActorPage;
 import org.andstatus.app.net.social.InputTimelinePage;
@@ -80,7 +80,7 @@ public class ConnectionActivityPubTest {
         Actor actorForTimeline = Actor.fromOid(mock.getData().getOrigin(), ACTOR_OID)
                 .withUniqueName(UNIQUE_NAME_IN_ORIGIN);
         actorForTimeline.endpoints.add(ActorEndpointType.API_INBOX, "https://pleroma.site/users/AndStatus/inbox");
-        InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.HOME_TIMELINE,
+        InputTimelinePage timeline = mock.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
                 TimelinePosition.of(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline).get();
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 5, timeline.size());
@@ -137,7 +137,7 @@ public class ConnectionActivityPubTest {
         Actor actorForTimeline = Actor.fromOid(mock.getData().getOrigin(), ACTOR_OID2)
                 .withUniqueName(UNIQUE_NAME_IN_ORIGIN);
         actorForTimeline.endpoints.add(ActorEndpointType.API_OUTBOX, ACTOR_OID2 + "/outbox");
-        InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.ACTOR_TIMELINE,
+        InputTimelinePage timeline = mock.connection.getTimeline(true, ApiRoutineEnum.ACTOR_TIMELINE,
                 TimelinePosition.of(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline).get();
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 10, timeline.size());
@@ -178,7 +178,7 @@ public class ConnectionActivityPubTest {
         Actor actorForTimeline = Actor.fromOid(mock.getData().getOrigin(), ACTOR_OID)
                 .withUniqueName(UNIQUE_NAME_IN_ORIGIN);
         actorForTimeline.endpoints.add(ActorEndpointType.API_INBOX, "https://pleroma.site/users/AndStatus/inbox");
-        InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.HOME_TIMELINE,
+        InputTimelinePage timeline = mock.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
                 TimelinePosition.of(sinceId), TimelinePosition.EMPTY, 20, actorForTimeline).get();
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 10, timeline.size());
@@ -242,7 +242,7 @@ public class ConnectionActivityPubTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_friends_pleroma);
         Actor actor = Actor.fromOid(mock.getData().getOrigin(), "https://pleroma.site/users/ActivityPubTester");
         actor.endpoints.add(ActorEndpointType.API_FOLLOWING, "https://pleroma.site/users/ActivityPubTester/following");
-        InputActorPage page = mock.connection.getFriendsOrFollowers(Connection.ApiRoutineEnum.GET_FRIENDS,
+        InputActorPage page = mock.connection.getFriendsOrFollowers(ApiRoutineEnum.GET_FRIENDS,
                 TimelinePosition.EMPTY, actor).get();
         assertEquals("Number of actors, " +
                 "who " + actor.getUniqueNameWithOrigin() + " is following " + page, 1, page.size());

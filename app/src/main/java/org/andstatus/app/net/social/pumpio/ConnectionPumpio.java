@@ -32,6 +32,7 @@ import org.andstatus.app.net.social.AObjectType;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;

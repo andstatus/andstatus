@@ -20,11 +20,14 @@ import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.account.AccountDataReader;
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 
 import java.net.URL;
 import java.util.Optional;
+
+import static org.andstatus.app.data.MyContentType.APPLICATION_JSON;
 
 public class HttpConnectionData {
     public static final HttpConnectionData EMPTY = new HttpConnectionData(AccountName.getEmpty());
@@ -104,7 +107,13 @@ public class HttpConnectionData {
         return accountName.getOrigin().getSslMode();
     }
 
-    public Optional<String> getContentType() {
+    public String jsonContentType(ApiRoutineEnum apiRoutine) {
+        return apiRoutine.isOriginApi()
+                ? getOriginType().getContentType().orElse(APPLICATION_JSON)
+                : APPLICATION_JSON;
+    }
+
+    public Optional<String> optOriginContentType() {
         return getOriginType().getContentType();
     }
 

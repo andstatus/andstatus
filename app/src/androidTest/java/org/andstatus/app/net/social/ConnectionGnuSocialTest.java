@@ -27,7 +27,6 @@ import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.HttpReadResult;
-import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.CommandExecutionContext;

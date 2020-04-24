@@ -29,7 +29,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
 
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.json.JSONException;
@@ -55,7 +55,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
 
     @Override
     public Try<Void> registerClient() {
-        Uri uri = getApiUri(Connection.ApiRoutineEnum.OAUTH_REGISTER_CLIENT);
+        Uri uri = getApiUri(ApiRoutineEnum.OAUTH_REGISTER_CLIENT);
         MyStringBuilder logmsg = MyStringBuilder.of("registerClient; for " + data.originUrl
                 + "; URL='" + uri + "'");
         MyLog.v(this, logmsg::toString);
@@ -67,7 +67,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             params.put("scopes", OAUTH_SCOPES);
             params.put("website", "http://andstatus.org");
 
-            HttpRequest request = HttpRequest.of(MyContextHolder.get(), Connection.ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
+            HttpRequest request = HttpRequest.of(MyContextHolder.get(), ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
                 .withPostParams(params);
             return execute(request)
             .flatMap(HttpReadResult::getJsonObject)
@@ -112,7 +112,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                         request.addHeader(bytes.contentTypeName, bytes.contentTypeValue);
                         request.setPayload(bytes.bytes);
                     } else {
-                        if (data.getContentType().map(value -> {
+                        if (data.optOriginContentType().map(value -> {
                             request.addHeader("Content-Type", value);
                             request.setPayload(params.toString().getBytes(StandardCharsets.UTF_8));
                             return false;
@@ -166,7 +166,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             boolean stop = false;
             do {
                 OAuthRequest request = new OAuthRequest(Verb.GET, result.getUrlObj().toString());
-                data.getContentType().ifPresent(value -> request.addHeader("Accept", value));
+                data.optOriginContentType().ifPresent(value -> request.addHeader("Accept", value));
                 if (result.request.authenticate) {
                     signRequest(request, service, redirected);
                 }

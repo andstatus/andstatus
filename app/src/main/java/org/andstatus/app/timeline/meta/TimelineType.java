@@ -23,7 +23,7 @@ import androidx.annotation.StringRes;
 
 import org.andstatus.app.R;
 import org.andstatus.app.lang.SelectableEnum;
-import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.timeline.ListScope;
 import org.andstatus.app.util.StringUtil;
@@ -33,16 +33,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.ACTOR_TIMELINE;
-import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.DUMMY_API;
-import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.GET_FOLLOWERS;
-import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.GET_FRIENDS;
-import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.HOME_TIMELINE;
-import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.LIKED_TIMELINE;
-import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE;
-import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.PRIVATE_NOTES;
-import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.PUBLIC_TIMELINE;
-import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.SEARCH_NOTES;
+import static org.andstatus.app.net.social.ApiRoutineEnum.ACTOR_TIMELINE;
+import static org.andstatus.app.net.social.ApiRoutineEnum.DUMMY_API;
+import static org.andstatus.app.net.social.ApiRoutineEnum.GET_FOLLOWERS;
+import static org.andstatus.app.net.social.ApiRoutineEnum.GET_FRIENDS;
+import static org.andstatus.app.net.social.ApiRoutineEnum.HOME_TIMELINE;
+import static org.andstatus.app.net.social.ApiRoutineEnum.LIKED_TIMELINE;
+import static org.andstatus.app.net.social.ApiRoutineEnum.NOTIFICATIONS_TIMELINE;
+import static org.andstatus.app.net.social.ApiRoutineEnum.PRIVATE_NOTES;
+import static org.andstatus.app.net.social.ApiRoutineEnum.PUBLIC_TIMELINE;
+import static org.andstatus.app.net.social.ApiRoutineEnum.SEARCH_NOTES;
 
 public enum TimelineType implements SelectableEnum {
     UNKNOWN(ListScope.ORIGIN, "unknown", R.string.timeline_title_unknown, 0, DUMMY_API),
@@ -82,11 +82,11 @@ public enum TimelineType implements SelectableEnum {
     @StringRes
     public final int titleResWithParamsId;
     /** Api routine to download this timeline */
-    private final Connection.ApiRoutineEnum connectionApiRoutine;
+    private final ApiRoutineEnum connectionApiRoutine;
     public final ListScope scope;
 
     TimelineType(ListScope scope, String code, @StringRes int resId, @StringRes int resWithParamsId,
-                 Connection.ApiRoutineEnum connectionApiRoutine) {
+                 ApiRoutineEnum connectionApiRoutine) {
         this.scope = scope;
         this.code = code;
         this.titleResId = resId;
@@ -320,7 +320,7 @@ public enum TimelineType implements SelectableEnum {
         return R.string.dialog_title_select_timeline;
     }
 
-    public Connection.ApiRoutineEnum getConnectionApiRoutine() {
+    public ApiRoutineEnum getConnectionApiRoutine() {
         return connectionApiRoutine;
     }
 }

@@ -34,7 +34,7 @@ import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
-import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.net.social.InputTimelinePage;
 import org.andstatus.app.net.social.Note;

@@ -25,7 +25,7 @@ import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.http.HttpRequest;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
-import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
@@ -36,11 +36,11 @@ import java.util.Optional;
 import io.vavr.control.Try;
 
 class ConnectionAndUrl {
-    final Connection.ApiRoutineEnum apiRoutine;
+    final ApiRoutineEnum apiRoutine;
     public final Uri uri;
     final HttpConnection httpConnection;
 
-    private ConnectionAndUrl(Connection.ApiRoutineEnum apiRoutine, Uri uri, HttpConnection httpConnection) {
+    private ConnectionAndUrl(ApiRoutineEnum apiRoutine, Uri uri, HttpConnection httpConnection) {
         this.apiRoutine = apiRoutine;
         this.uri = uri;
         this.httpConnection = httpConnection;
@@ -51,11 +51,11 @@ class ConnectionAndUrl {
     }
 
     static Try<ConnectionAndUrl> fromUriActor(Uri uri, ConnectionActivityPub connection,
-                                              Connection.ApiRoutineEnum apiRoutine, Actor actor) {
+                                              ApiRoutineEnum apiRoutine, Actor actor) {
         return getConnection(connection, apiRoutine, actor).map(conu -> new ConnectionAndUrl(apiRoutine, uri, conu));
     }
 
-    static Try<ConnectionAndUrl> fromActor(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine,
+    static Try<ConnectionAndUrl> fromActor(ConnectionActivityPub connection, ApiRoutineEnum apiRoutine,
                                            TimelinePosition position, Actor actor) {
         final Optional<Uri> endpoint = position.optUri().isPresent()
                 ? position.optUri()
@@ -67,7 +67,7 @@ class ConnectionAndUrl {
         return getConnection(connection, apiRoutine, actor).map(conu -> new ConnectionAndUrl(apiRoutine, endpoint.get(), conu));
     }
 
-    private static Try<HttpConnection> getConnection(ConnectionActivityPub connection, Connection.ApiRoutineEnum apiRoutine,
+    private static Try<HttpConnection> getConnection(ConnectionActivityPub connection, ApiRoutineEnum apiRoutine,
                                                 Actor actor) {
         HttpConnection httpConnection = connection.getHttp();
         String host = actor.getConnectionHost();

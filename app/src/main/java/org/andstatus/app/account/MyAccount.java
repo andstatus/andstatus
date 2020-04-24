@@ -40,7 +40,7 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;

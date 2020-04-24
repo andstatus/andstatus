@@ -20,12 +20,12 @@ import android.content.ContentResolver;
 import android.net.Uri;
 import android.webkit.MimeTypeMap;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
-
-import androidx.annotation.NonNull;
 
 public enum MyContentType {
     IMAGE("image/*", 2, 1),
@@ -33,9 +33,10 @@ public enum MyContentType {
     VIDEO("video/*", 4, 2),
     APPLICATION("application/*", 5, 4),
     UNKNOWN("*/*", 0, 5);
-    
+
     private static final String TAG = MyContentType.class.getSimpleName();
-    
+    public static final String APPLICATION_JSON = "application/json";
+
     private final long code;
     public final String generalMimeType;
     public final int attachmentsSortOrder;

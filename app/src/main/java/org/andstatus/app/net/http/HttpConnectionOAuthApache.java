@@ -16,7 +16,7 @@
 
 package org.andstatus.app.net.http;
 
-import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 
 import java.io.IOException;
 

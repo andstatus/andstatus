@@ -22,7 +22,7 @@ import android.text.TextUtils;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
 import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;

@@ -64,7 +64,7 @@ public class ConnectionMastodonTest {
     public void testGetHomeTimeline() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_home_timeline);
 
-        InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.HOME_TIMELINE,
+        InputTimelinePage timeline = mock.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
                 TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor).get();
         assertNotNull("timeline returned", timeline);
         int size = 1;
@@ -123,7 +123,7 @@ public class ConnectionMastodonTest {
 
     private void oneVisibility(String stringResponse, Visibility visibility) {
         mock.getHttpMock().addResponse(stringResponse);
-        InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.HOME_TIMELINE,
+        InputTimelinePage timeline = mock.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
                 TimelinePosition.of("2656388"), TimelinePosition.EMPTY, 20, accountActor).get();
         assertVisibility(timeline.get(0).getNote().audience(), visibility);
     }
@@ -141,7 +141,7 @@ public class ConnectionMastodonTest {
     public void testGetNotifications() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_notifications);
 
-        InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
+        InputTimelinePage timeline = mock.connection.getTimeline(true, ApiRoutineEnum.NOTIFICATIONS_TIMELINE,
                 TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, accountActor).get();
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 20, timeline.size());
@@ -311,7 +311,7 @@ public class ConnectionMastodonTest {
     }
 
     private void assertOneTootWithVideo(String actorOid, String videoUri, String previewUri) throws ConnectionException {
-        InputTimelinePage timeline = mock.connection.getTimeline(true, Connection.ApiRoutineEnum.ACTOR_TIMELINE,
+        InputTimelinePage timeline = mock.connection.getTimeline(true, ApiRoutineEnum.ACTOR_TIMELINE,
                 TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, Actor.fromOid(mock.getData().getOrigin(), actorOid)).get();
         assertNotNull("timeline returned", timeline);
         assertEquals("Number of items in the Timeline", 1, timeline.size());

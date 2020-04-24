@@ -31,7 +31,7 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.net.social.InputActorPage;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.MyLog;
@@ -77,13 +77,13 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
     }
 
     private Try<List<Actor>> getNewActors(CommandEnum command) {
-        Connection.ApiRoutineEnum apiActors = command == CommandEnum.GET_FOLLOWERS
-                ? Connection.ApiRoutineEnum.GET_FOLLOWERS : Connection.ApiRoutineEnum.GET_FRIENDS;
+        ApiRoutineEnum apiActors = command == CommandEnum.GET_FOLLOWERS
+                ? ApiRoutineEnum.GET_FOLLOWERS : ApiRoutineEnum.GET_FRIENDS;
         if (isApiSupported(apiActors)) {
             return getNewActors(apiActors);
         } else {
-            Connection.ApiRoutineEnum apiIds = command == CommandEnum.GET_FOLLOWERS
-                    ? Connection.ApiRoutineEnum.GET_FOLLOWERS_IDS : Connection.ApiRoutineEnum.GET_FRIENDS_IDS;
+            ApiRoutineEnum apiIds = command == CommandEnum.GET_FOLLOWERS
+                    ? ApiRoutineEnum.GET_FOLLOWERS_IDS : ApiRoutineEnum.GET_FRIENDS_IDS;
             if (isApiSupported(apiIds)) {
                 return getConnection()
                     .getFriendsOrFollowersIds(apiIds, getActor().oid)
@@ -95,7 +95,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
         }
     }
 
-    private Try<List<Actor>> getNewActors(Connection.ApiRoutineEnum apiActors) {
+    private Try<List<Actor>> getNewActors(ApiRoutineEnum apiActors) {
         List<Actor> actors = new ArrayList<>();
         List<TimelinePosition> requested = new ArrayList<>();
         AtomicReference<TimelinePosition> positionToRequest = new AtomicReference<>(TimelinePosition.EMPTY);

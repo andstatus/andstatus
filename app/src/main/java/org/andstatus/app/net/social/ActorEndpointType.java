@@ -45,7 +45,7 @@ public enum ActorEndpointType {
         return EMPTY;
     }
 
-    public static ActorEndpointType from(Connection.ApiRoutineEnum routine) {
+    public static ActorEndpointType from(ApiRoutineEnum routine) {
         switch (routine) {
             case GET_FOLLOWERS:
             case GET_FOLLOWERS_IDS:

@@ -47,7 +47,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.graphics.IdentifiableImageView;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.Connection.ApiRoutineEnum;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.CommandData;

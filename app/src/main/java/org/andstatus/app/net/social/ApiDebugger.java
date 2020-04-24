@@ -57,7 +57,7 @@ public class ApiDebugger {
         Connection connection = myContext.accounts().getCurrentAccount().getConnection();
         Optional<Uri> optUri = connection.pathToUri(connection.partialPathToApiPath(text));
         return TryUtils.fromOptional(optUri)
-        .map(uri -> HttpRequest.of(myContext, Connection.ApiRoutineEnum.HOME_TIMELINE, uri))
+        .map(uri -> HttpRequest.of(myContext, ApiRoutineEnum.HOME_TIMELINE, uri))
         .flatMap(connection::execute);
     }
 

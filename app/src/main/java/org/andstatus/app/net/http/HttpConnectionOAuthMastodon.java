@@ -21,7 +21,7 @@ import android.net.Uri;
 import com.github.scribejava.core.model.OAuthConstants;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
-import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
 
@@ -31,7 +31,7 @@ import java.util.Map;
 public class HttpConnectionOAuthMastodon extends HttpConnectionOAuth2JavaNet {
 
     @Override
-    public Uri getApiUri(Connection.ApiRoutineEnum routine) {
+    public Uri getApiUri(ApiRoutineEnum routine) {
         String url;
 
         switch (routine) {

@@ -19,6 +19,7 @@ package org.andstatus.app.service;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Actor;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
@@ -196,7 +197,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         return execContext.getCommandData().getTimeline().actor;
     }
 
-    boolean isApiSupported(Connection.ApiRoutineEnum routine) {
+    boolean isApiSupported(ApiRoutineEnum routine) {
         return getConnection().hasApiEndpoint(routine);
     }
 

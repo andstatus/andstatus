@@ -26,6 +26,7 @@ import org.andstatus.app.data.DownloadFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpRequest;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.ConnectionLocal;
 import org.andstatus.app.util.MyLog;
@@ -121,7 +122,7 @@ public abstract class FileDownloader {
     }
 
     private HttpRequest newRequest(File file, Connection connection) {
-        return HttpRequest.of(connection.myContext(), Connection.ApiRoutineEnum.DOWNLOAD_FILE, data.getUri())
+        return HttpRequest.of(connection.myContext(), ApiRoutineEnum.DOWNLOAD_FILE, data.getUri())
             .withConnectionRequired(connectionRequired)
             .withFile(file);
     }

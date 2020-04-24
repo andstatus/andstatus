@@ -6,8 +6,8 @@ import com.github.scribejava.core.model.OAuth2AccessToken;
 
 import java.util.Map;
 
-import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.OAUTH_ACCESS_TOKEN;
-import static org.andstatus.app.net.social.Connection.ApiRoutineEnum.OAUTH_AUTHORIZE;
+import static org.andstatus.app.net.social.ApiRoutineEnum.OAUTH_ACCESS_TOKEN;
+import static org.andstatus.app.net.social.ApiRoutineEnum.OAUTH_AUTHORIZE;
 
 public class OAuthApi20 extends DefaultApi20 {
     private final HttpConnectionOAuth http;

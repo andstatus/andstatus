@@ -20,7 +20,7 @@ import com.github.scribejava.core.model.Verb;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONObject;
@@ -33,7 +33,7 @@ import io.vavr.control.Try;
 public class HttpRequest {
 
     final MyContext myContext;
-    public final Connection.ApiRoutineEnum apiRoutine;
+    public final ApiRoutineEnum apiRoutine;
     public final Uri uri;
     Verb verb = Verb.GET;
     ConnectionRequired connectionRequired = ConnectionRequired.ANY;
@@ -44,7 +44,7 @@ public class HttpRequest {
     public Optional<JSONObject> postParams = Optional.empty();
     File fileResult = null;
 
-    public static HttpRequest of(MyContext myContext, Connection.ApiRoutineEnum apiRoutine, Uri uri) {
+    public static HttpRequest of(MyContext myContext, ApiRoutineEnum apiRoutine, Uri uri) {
         return new HttpRequest(myContext, apiRoutine, uri);
     }
 
@@ -55,7 +55,7 @@ public class HttpRequest {
         return Try.success(this);
     }
 
-    private HttpRequest(MyContext myContext, Connection.ApiRoutineEnum apiRoutine, Uri uri) {
+    private HttpRequest(MyContext myContext, ApiRoutineEnum apiRoutine, Uri uri) {
         this.myContext = myContext;
         this.apiRoutine = apiRoutine;
         this.uri = uri;
