@@ -48,25 +48,15 @@ import java.util.regex.Pattern;
 import static org.andstatus.app.origin.OriginConfig.MASTODON_TEXT_LIMIT_DEFAULT;
 
 public enum OriginType implements SelectableEnum {
+    /** <a href="https://github.com/Gargron/mastodon">Mastodon at GitHub</a> */
+    MASTODON(4, "Mastodon", ApiEnum.MASTODON, NoteName.NO, NoteSummary.YES,
+            PublicChangeAllowed.YES, FollowersChangeAllowed.YES, SensitiveChangeAllowed.YES, ShortUrlLength.of(0)),
     /**
      * Origin type for Twitter system 
      * <a href="https://dev.twitter.com/docs">Twitter Developers' documentation</a>
      */
     TWITTER(1, "Twitter", ApiEnum.TWITTER1P1, NoteName.NO, NoteSummary.NO,
             PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(23)),
-    /**
-     * Origin type for the pump.io system 
-     * Till July of 2013 (and v.1.16 of AndStatus) the API was: 
-     * <a href="http://status.net/wiki/Twitter-compatible_API">Twitter-compatible identi.ca API</a>
-     * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
-     */
-    PUMPIO(2, "Pump.io", ApiEnum.PUMPIO, NoteName.YES, NoteSummary.NO,
-            PublicChangeAllowed.YES, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)),
-    GNUSOCIAL(3, "GnuSocial", ApiEnum.GNUSOCIAL_TWITTER, NoteName.NO, NoteSummary.NO,
-            PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)),
-    /** <a href="https://github.com/Gargron/mastodon">Mastodon at GitHub</a> */
-    MASTODON(4, "Mastodon", ApiEnum.MASTODON, NoteName.NO, NoteSummary.YES,
-            PublicChangeAllowed.YES, FollowersChangeAllowed.YES, SensitiveChangeAllowed.YES, ShortUrlLength.of(0)),
     ACTIVITYPUB(5, "ActivityPub", ApiEnum.ACTIVITYPUB, NoteName.YES, NoteSummary.YES,
             PublicChangeAllowed.YES, FollowersChangeAllowed.YES, SensitiveChangeAllowed.YES, ShortUrlLength.of(0)) {
 
@@ -75,6 +65,16 @@ public enum OriginType implements SelectableEnum {
             return Optional.of("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"");
         }
     },
+    GNUSOCIAL(3, "GnuSocial", ApiEnum.GNUSOCIAL_TWITTER, NoteName.NO, NoteSummary.NO,
+            PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)),
+    /**
+     * Origin type for the pump.io system
+     * Till July of 2013 (and v.1.16 of AndStatus) the API was:
+     * <a href="http://status.net/wiki/Twitter-compatible_API">Twitter-compatible identi.ca API</a>
+     * Since July 2013 the API is <a href="https://github.com/e14n/pump.io/blob/master/API.md">pump.io API</a>
+     */
+    PUMPIO(2, "Pump.io", ApiEnum.PUMPIO, NoteName.YES, NoteSummary.NO,
+            PublicChangeAllowed.YES, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)),
     UNKNOWN(0, "?", ApiEnum.UNKNOWN_API, NoteName.NO, NoteSummary.NO,
             PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(0)) {
 
