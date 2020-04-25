@@ -326,13 +326,14 @@ public class HttpReadResult {
         return Try.failure(ConnectionException.from(this));
     }
 
-    HttpReadResult logResponse(String namePrefix) {
+    HttpReadResult logResponse(HttpConnectionData connectionData) {
         if (strResponse != null && MyPreferences.isLogNetworkLevelMessages()) {
             Object objTag = "response";
-            MyLog.logNetworkLevelMessage(objTag, namePrefix, strResponse,
+            MyLog.logNetworkLevelMessage(objTag, connectionData.getLogName(request), strResponse,
                     MyStringBuilder.of("")
-                            .atNewLine("loggedURL", urlString)
-                            .atNewLine("authenticate",
+                            .atNewLine("logger-URL", urlString)
+                            .atNewLine("logger-account", connectionData.getAccountName().getName())
+                            .atNewLine("logger-authenticated",
                                     Boolean.toString(!retriedWithoutAuthentication && request.authenticate))
                             .apply(this::appendHeaders).toString());
         }

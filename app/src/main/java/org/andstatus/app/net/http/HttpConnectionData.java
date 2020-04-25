@@ -79,8 +79,13 @@ public class HttpConnectionData {
                 + dataReader + ", oauthClientKeys:" + oauthClientKeys + "}";
     }
 
-    public String getLogName(ApiRoutineEnum apiRoutine) {
-        return accountName.getLogName() + "-" + apiRoutine.name().toLowerCase();
+    public String getLogName(HttpRequest request) {
+        if (getOriginType() == OriginType.ACTIVITYPUB || getOriginType() == OriginType.PUMPIO
+                || request.apiRoutine == ApiRoutineEnum.OAUTH_REGISTER_CLIENT) {
+            return request.uri.getHost() + "-" + request.apiRoutine.name().toLowerCase();
+        } else {
+            return accountName.getLogName() + "-" + request.apiRoutine.name().toLowerCase();
+        }
     }
 
     public OriginType getOriginType() {
