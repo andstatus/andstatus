@@ -16,8 +16,6 @@
 
 package org.andstatus.app.service;
 
-import android.net.Uri;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyStorage;
@@ -28,10 +26,8 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpRequest;
 import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.net.social.ConnectionLocal;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.UriUtils;
 
 import java.io.File;
 
@@ -97,8 +93,8 @@ public abstract class FileDownloader {
         MyAccount ma = findBestAccountForDownload();
         MyLog.v(this, () -> "About to download " + data.toString() + "; account:" + ma.getAccountName());
         if (ma.isValidAndSucceeded()) {
-            getConnection(ma, data.getUri())
-            .flatMap(connection -> connection.execute(newRequest(file, connection)))
+            Try.success(connectionMock == null ? ma.getConnection() : connectionMock)
+            .flatMap(connection -> connection.execute(newRequest(file)))
             .onFailure(e -> {
                 ConnectionException ce = ConnectionException.of(e);
                 if (ce.isHardError()) {
@@ -121,7 +117,7 @@ public abstract class FileDownloader {
         data.onDownloaded();
     }
 
-    private HttpRequest newRequest(File file, Connection connection) {
+    private HttpRequest newRequest(File file) {
         return HttpRequest.of(ApiRoutineEnum.DOWNLOAD_FILE, data.getUri())
             .withConnectionRequired(connectionRequired)
             .withFile(file);
@@ -130,20 +126,6 @@ public abstract class FileDownloader {
     public FileDownloader setConnectionRequired(ConnectionRequired connectionRequired) {
         this.connectionRequired = connectionRequired;
         return this;
-    }
-
-    private Try<Connection> getConnection(MyAccount ma, Uri uri) {
-        if (connectionMock != null) return Try.success(connectionMock);
-
-        if (UriUtils.isEmpty(uri)) {
-            return Try.failure(new ConnectionException(ConnectionException.StatusCode.NOT_FOUND,
-                    "No Uri to (down)load from: '" + uri + "'"));
-        }
-        if (UriUtils.isDownloadable(uri)) {
-            return Try.success(ma.getConnection());
-        } else {
-            return Try.success(new ConnectionLocal(myContext));
-        }
     }
 
     public DownloadStatus getStatus() {

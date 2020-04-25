@@ -205,7 +205,7 @@ public class DemoAccountInserter {
     }
 
     private void insertTestClientKeys(MyAccount myAccount) {
-        HttpConnectionData connectionData = HttpConnectionData.fromConnectionData(
+        HttpConnectionData connectionData = HttpConnectionData.fromAccountConnectionData(
             AccountConnectionData.fromMyAccount(myAccount, TriState.UNKNOWN)
         );
         if (!UrlUtils.hasHost(connectionData.originUrl)) {

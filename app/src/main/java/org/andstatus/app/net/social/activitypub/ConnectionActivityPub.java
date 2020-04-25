@@ -166,14 +166,14 @@ public class ConnectionActivityPub extends Connection {
         actor.setProfileUrl(JsonUtils.optString(jso, "url"));
         actor.setUpdatedDate(dateFromJson(jso, "updated"));
         actor.endpoints
-                .add(ActorEndpointType.API_PROFILE, JsonUtils.optString(jso, "id"))
-                .add(ActorEndpointType.API_INBOX, JsonUtils.optString(jso, "inbox"))
-                .add(ActorEndpointType.API_OUTBOX, JsonUtils.optString(jso, "outbox"))
-                .add(ActorEndpointType.API_FOLLOWING, JsonUtils.optString(jso, "following"))
-                .add(ActorEndpointType.API_FOLLOWERS, JsonUtils.optString(jso, "followers"))
-                .add(ActorEndpointType.BANNER, JsonUtils.optStringInside(jso, "image", "url"))
-                .add(ActorEndpointType.API_SHARED_INBOX, JsonUtils.optStringInside(jso, "endpoints", "sharedInbox"))
-                .add(ActorEndpointType.API_UPLOAD_MEDIA, JsonUtils.optStringInside(jso, "endpoints", "uploadMedia"));
+            .add(ActorEndpointType.API_PROFILE, JsonUtils.optString(jso, "id"))
+            .add(ActorEndpointType.API_INBOX, JsonUtils.optString(jso, "inbox"))
+            .add(ActorEndpointType.API_OUTBOX, JsonUtils.optString(jso, "outbox"))
+            .add(ActorEndpointType.API_FOLLOWING, JsonUtils.optString(jso, "following"))
+            .add(ActorEndpointType.API_FOLLOWERS, JsonUtils.optString(jso, "followers"))
+            .add(ActorEndpointType.BANNER, JsonUtils.optStringInside(jso, "image", "url"))
+            .add(ActorEndpointType.API_SHARED_INBOX, JsonUtils.optStringInside(jso, "endpoints", "sharedInbox"))
+            .add(ActorEndpointType.API_UPLOAD_MEDIA, JsonUtils.optStringInside(jso, "endpoints", "uploadMedia"));
         return actor.build();
     }
 
@@ -267,7 +267,7 @@ public class ConnectionActivityPub extends Connection {
 
         // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
         return ConnectionAndUrl.fromActor(this, apiRoutine, requestedPosition, actor)
-        .flatMap(conu -> getActivities(conu));
+        .flatMap(this::getActivities);
     }
 
     private Try<InputTimelinePage> getActivities(ConnectionAndUrl conu) {

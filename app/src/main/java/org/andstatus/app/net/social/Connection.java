@@ -391,7 +391,7 @@ public abstract class Connection implements IsEmpty {
     public Connection setAccountConnectionData(AccountConnectionData connectionData) {
         data = connectionData;
         http = connectionData.newHttpConnection();
-        http.setHttpConnectionData(HttpConnectionData.fromConnectionData(connectionData));
+        http.setHttpConnectionData(HttpConnectionData.fromAccountConnectionData(connectionData));
         return this;
     }
 

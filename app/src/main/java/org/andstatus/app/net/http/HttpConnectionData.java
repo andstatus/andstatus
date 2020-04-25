@@ -42,11 +42,11 @@ public class HttpConnectionData {
         this.accountName = accountName;
     }
 
-    public static HttpConnectionData fromConnectionData(AccountConnectionData oConnectionData) {
-        HttpConnectionData data = new HttpConnectionData(oConnectionData.getAccountName());
-        data.originUrl = oConnectionData.getOriginUrl();
-        data.urlForUserToken = oConnectionData.getOriginUrl();
-        data.dataReader = oConnectionData.getDataReader();
+    public static HttpConnectionData fromAccountConnectionData(AccountConnectionData accountnData) {
+        HttpConnectionData data = new HttpConnectionData(accountnData.getAccountName());
+        data.originUrl = accountnData.getOriginUrl();
+        data.urlForUserToken = accountnData.getOriginUrl();
+        data.dataReader = accountnData.getDataReader();
         return data;
     }
 

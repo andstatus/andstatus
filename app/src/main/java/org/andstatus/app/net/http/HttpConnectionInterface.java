@@ -22,11 +22,13 @@ import com.github.scribejava.core.model.Verb;
 
 import org.andstatus.app.account.AccountDataWriter;
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.TryUtils;
+import org.andstatus.app.util.UriUtils;
 import org.andstatus.app.util.UrlUtils;
 import org.json.JSONObject;
 
@@ -88,13 +90,28 @@ public interface HttpConnectionInterface {
                 .map(HttpRequest::newResult)
                 .map(result -> result.request.verb == Verb.POST
                         ? postRequest(result)
-                        : getRequest(result))
+                        : getRequestInner(result))
                 .map(HttpReadResult::logResponse)
                 .flatMap(HttpReadResult::tryToParse);
     }
 
     default HttpReadResult postRequest(HttpReadResult result) {
         return result;
+    }
+
+    default HttpReadResult getRequestInner(HttpReadResult result) {
+        if (result.request.apiRoutine == ApiRoutineEnum.DOWNLOAD_FILE && !UriUtils.isDownloadable(result.request.uri)) {
+            return downloadLocalFile(result);
+        } else {
+            return getRequest(result);
+        }
+    }
+
+    default HttpReadResult downloadLocalFile(HttpReadResult result) {
+        return result.readStream("mediaUri='" + result.request.uri + "'",
+            o -> result.request.myContext().context().getContentResolver().openInputStream(result.request.uri))
+        .recover(Exception.class, result::setException)
+        .getOrElse(result);
     }
 
     default HttpReadResult getRequest(HttpReadResult result) {
