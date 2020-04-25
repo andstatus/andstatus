@@ -72,84 +72,61 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     @NonNull
     @Override
     protected String getApiPathFromOrigin(ApiRoutineEnum routine) {
-        String url;
+        return partialPathToApiPath(partialPath(routine));
+    }
+
+    public static String partialPath(ApiRoutineEnum routine) {
         switch (routine) {
             case GET_CONFIG:
-                url = "v1/instance";  // https://docs.joinmastodon.org/api/rest/instances/
-                break;
+                return "v1/instance";  // https://docs.joinmastodon.org/api/rest/instances/
             case HOME_TIMELINE:
-                url = "v1/timelines/home";
-                break;
+                return "v1/timelines/home";
             case NOTIFICATIONS_TIMELINE:
-                url = "v1/notifications";
-                break;
+                return "v1/notifications";
             case LIKED_TIMELINE:
-                url = "v1/favourites";
-                break;
+                return "v1/favourites";
             case PUBLIC_TIMELINE:
-                url = "v1/timelines/public";
-                break;
+                return "v1/timelines/public";
             case TAG_TIMELINE:
-                url = "v1/timelines/tag/%tag%";
-                break;
+                return "v1/timelines/tag/%tag%";
             case ACTOR_TIMELINE:
-                url = "v1/accounts/%actorId%/statuses";
-                break;
+                return "v1/accounts/%actorId%/statuses";
             case ACCOUNT_VERIFY_CREDENTIALS:
-                url = "v1/accounts/verify_credentials";
-                break;
+                return "v1/accounts/verify_credentials";
             case UPDATE_NOTE:
             case UPDATE_PRIVATE_NOTE:
-                url = "v1/statuses";
-                break;
+                return "v1/statuses";
             case UPLOAD_MEDIA:
-                url = "v1/media";
-                break;
+                return "v1/media";
             case GET_NOTE:
-                url = "v1/statuses/%noteId%";
-                break;
+                return "v1/statuses/%noteId%";
             case SEARCH_NOTES:
-                url = "v1/search"; /* actually, this is a complex search "for content" */
-                break;
+                return "v1/search"; /* actually, this is a complex search "for content" */
             case SEARCH_ACTORS:
-                url = "v1/accounts/search";
-                break;
+                return "v1/accounts/search";
             case GET_CONVERSATION:
-                url = "v1/statuses/%noteId%/context";
-                break;
+                return "v1/statuses/%noteId%/context";
             case LIKE:
-                url = "v1/statuses/%noteId%/favourite";
-                break;
+                return "v1/statuses/%noteId%/favourite";
             case UNDO_LIKE:
-                url = "v1/statuses/%noteId%/unfavourite";
-                break;
+                return "v1/statuses/%noteId%/unfavourite";
             case FOLLOW:
-                url = "v1/accounts/%actorId%/follow";
-                break;
+                return "v1/accounts/%actorId%/follow";
             case UNDO_FOLLOW:
-                url = "v1/accounts/%actorId%/unfollow";
-                break;
+                return "v1/accounts/%actorId%/unfollow";
             case GET_FOLLOWERS:
-                url = "v1/accounts/%actorId%/followers";
-                break;
+                return "v1/accounts/%actorId%/followers";
             case GET_FRIENDS:
-                url = "v1/accounts/%actorId%/following";
-                break;
+                return "v1/accounts/%actorId%/following";
             case GET_ACTOR:
-                url = "v1/accounts/%actorId%";
-                break;
+                return "v1/accounts/%actorId%";
             case ANNOUNCE:
-                url = "v1/statuses/%noteId%/reblog";
-                break;
+                return "v1/statuses/%noteId%/reblog";
             case UNDO_ANNOUNCE:
-                url = "v1/statuses/%noteId%/unreblog";
-                break;
+                return "v1/statuses/%noteId%/unreblog";
             default:
-                url = "";
-                break;
+                return "";
         }
-
-        return partialPathToApiPath(url);
     }
 
     @NonNull

@@ -455,6 +455,13 @@ public enum OriginType implements SelectableEnum {
         return isSearchTimelineSyncable;
     }
 
+    public String partialPathToApiPath(String partialPath) {
+        if (!StringUtil.isEmpty(partialPath) && !partialPath.contains("://")) {
+            partialPath = getBasicPath() + "/" + partialPath;
+        }
+        return partialPath;
+    }
+
     public String getBasicPath() {
         return basicPath;
     }

@@ -145,15 +145,16 @@ public abstract class Connection implements IsEmpty {
         Optional<Uri> fromActor = endpointActor.getEndpoint(ActorEndpointType.from(routine));
         return fromActor.isPresent()
                 ? fromActor
-                : Optional.of(getApiPathFromOrigin(routine)).flatMap(this::pathToUri);
+                : Optional.of(getApiPathFromOrigin(routine)).flatMap(apiPath -> pathToUri(apiPath).toOptional());
     }
 
-    Optional<Uri> pathToUri(String path) {
-        return Optional.ofNullable(path)
-                .filter(StringUtil::nonEmpty)
-                .flatMap(path2 -> UrlUtils.pathToUrl(data.getOriginUrl(), path2))
-                .map(URL::toExternalForm)
-                .flatMap(UriUtils::toDownloadableOptional);
+    protected Try<Uri> pathToUri(String path) {
+        return Try.success(path)
+        .filter(StringUtil::nonEmpty)
+        .flatMap(path2 -> UrlUtils.pathToUrl(data.getOriginUrl(), path2))
+        .map(URL::toExternalForm)
+        .map(UriUtils::fromString)
+        .filter(UriUtils::isDownloadable);
     }
 
     /**
@@ -497,11 +498,8 @@ public abstract class Connection implements IsEmpty {
     }
 
     @NonNull
-    public String partialPathToApiPath(String partialPath) {
-        if (!StringUtil.isEmpty(partialPath) && !partialPath.contains("://")) {
-            partialPath = http.data.getAccountName().getOrigin().getOriginType().getBasicPath() + "/" + partialPath;
-        }
-        return partialPath;
+    protected String partialPathToApiPath(String partialPath) {
+        return http.data.getAccountName().getOrigin().getOriginType().partialPathToApiPath(partialPath);
     }
 
     @NonNull

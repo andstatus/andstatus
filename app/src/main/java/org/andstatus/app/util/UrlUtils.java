@@ -112,30 +112,29 @@ public final class UrlUtils {
     }
     
     public static Try<String> pathToUrlString(URL originUrl, String path, boolean failOnInvalid) {
-        Optional<URL> url = pathToUrl(originUrl, path);
-        if (!url.isPresent()) {
+        Try<URL> url = pathToUrl(originUrl, path);
+        if (url.isFailure()) {
             return failOnInvalid
                 ? Try.failure(ConnectionException.hardConnectionException("URL is unknown or malformed. System URL:'"
                     + originUrl + "', path:'" + path + "'", null))
                 : Try.success("");
         }
-        String host = url.map(URL::getHost).orElse("");
+        String host = url.map(URL::getHost).getOrElse("");
         if (failOnInvalid && (host.equals("example.com") || host.endsWith(".example.com"))) {
             return Try.failure(ConnectionException.fromStatusCode(ConnectionException.StatusCode.NOT_FOUND,
                     "URL: '" + url.get().toExternalForm() + "'"));
         }
-        return Try.of( () -> url.get().toExternalForm());
+        return url.map(URL::toExternalForm);
     }
 
-    public static Optional<URL> pathToUrl(URL originUrl, String path) {
+    public static Try<URL> pathToUrl(URL originUrl, String path) {
         try {
             if (path != null && path.contains("://")) {
-                return Optional.of(new URL(path));
+                return Try.success(new URL(path));
             }
-            return Optional.of(new URL(originUrl, path));
+            return Try.success(new URL(originUrl, path));
         } catch (MalformedURLException e) {
-            MyLog.v(TAG, () -> "MalformedURL pathToUrl, originUrl:'" + originUrl + "', path:'" + path + "'");
-            return Optional.empty();
+            return TryUtils.failure("Malformed URL, originUrl:'" + originUrl + "', path:'" + path + "'");
         }
     }
 

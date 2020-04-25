@@ -17,7 +17,6 @@
 package org.andstatus.app.net.social;
 
 import android.content.Context;
-import android.net.Uri;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
@@ -25,9 +24,6 @@ import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.http.HttpRequest;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.util.DialogFactory;
-import org.andstatus.app.util.TryUtils;
-
-import java.util.Optional;
 
 import io.vavr.control.Try;
 
@@ -55,8 +51,7 @@ public class ApiDebugger {
     private Try<HttpReadResult> debugApiAsync(String text) {
         previousValue = text;
         Connection connection = myContext.accounts().getCurrentAccount().getConnection();
-        Optional<Uri> optUri = connection.pathToUri(connection.partialPathToApiPath(text));
-        return TryUtils.fromOptional(optUri)
+        return connection.pathToUri(connection.partialPathToApiPath(text))
         .map(uri -> HttpRequest.of(myContext, ApiRoutineEnum.HOME_TIMELINE, uri))
         .flatMap(connection::execute);
     }

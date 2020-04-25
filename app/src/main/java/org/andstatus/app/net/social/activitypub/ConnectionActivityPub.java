@@ -37,11 +37,13 @@ import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.net.social.ConnectionMastodon;
 import org.andstatus.app.net.social.InputActorPage;
 import org.andstatus.app.net.social.InputTimelinePage;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.net.social.Visibility;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.ObjectOrId;
@@ -104,8 +106,30 @@ public class ConnectionActivityPub extends Connection {
         .orElse(() -> getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS))
         .map(uri -> HttpRequest.of(myContext(), ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri))
         .flatMap(this::execute)
+        .recoverWith(Exception.class, this::mastodonsHackToVerifyCredentials)
         .flatMap(HttpReadResult::getJsonObject)
         .map(this::actorFromJson);
+    }
+
+    /** @return  original error, if this Mastodon's hack didn't work */
+    private Try<HttpReadResult> mastodonsHackToVerifyCredentials(Exception originalException) {
+        // Get Username first by partially parsing Mastodon's non-ActivityPub response
+        Try<String> userNameInMastodon = Try.success(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS)
+        .map(ConnectionMastodon::partialPath)
+        .map(OriginType.MASTODON::partialPathToApiPath)
+        .flatMap(this::pathToUri)
+        .map(uri -> HttpRequest.of(myContext(), ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri))
+        .flatMap(this::execute)
+        .flatMap(HttpReadResult::getJsonObject)
+        .map(jso -> JsonUtils.optString(jso, "username"))
+        .filter(StringUtil::nonEmpty);
+
+        // Now build the Actor's Uri artificially using Mastodon's known URL pattern
+        return userNameInMastodon.map(username -> "users/" + username)
+        .flatMap(this::pathToUri)
+        .map(uri -> HttpRequest.of(myContext(), ApiRoutineEnum.GET_ACTOR, uri))
+        .flatMap(this::execute)
+        .recoverWith(Exception.class, newException -> Try.failure(originalException));
     }
 
     @NonNull
