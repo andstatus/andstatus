@@ -135,7 +135,7 @@ public class ConnectionPumpio extends Connection {
         return TryUtils.fromOptional(whoAmI)
         .filter(UriUtils::isDownloadable)
         .orElse(() -> getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS))
-        .map(uri -> HttpRequest.of(myContext(), ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri))
+        .map(uri -> HttpRequest.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri))
         .flatMap(this::execute)
         .flatMap(HttpReadResult::getJsonObject)
         .map(this::actorFromJson);
@@ -253,7 +253,7 @@ public class ConnectionPumpio extends Connection {
 
     @Override
     protected Try<AActivity> getNote1(String noteOid) {
-        return execute(HttpRequest.of(myContext(), ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid)))
+        return execute(HttpRequest.of(ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid)))
         .flatMap(HttpReadResult::getJsonObject)
         .map(this::activityFromJson);
     }
@@ -321,7 +321,7 @@ public class ConnectionPumpio extends Connection {
             builder.appendQueryParameter("before", oldestPosition.getPosition());
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine));
-        return execute(HttpRequest.of(myContext(), apiRoutine, builder.build()))
+        return execute(HttpRequest.of(apiRoutine, builder.build()))
         .flatMap(HttpReadResult::getJsonArray)
         .map(jArr -> {
             List<AActivity> activities = new ArrayList<>();

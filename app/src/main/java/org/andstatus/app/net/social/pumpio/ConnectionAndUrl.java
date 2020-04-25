@@ -93,7 +93,7 @@ class ConnectionAndUrl {
     }
 
     HttpRequest newRequest() {
-        return HttpRequest.of(httpConnection.data.getMyContext(), apiRoutine, uri);
+        return HttpRequest.of(apiRoutine, uri);
     }
 
     Try<HttpReadResult> execute(HttpRequest request) {

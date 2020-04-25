@@ -482,7 +482,7 @@ public abstract class Connection implements IsEmpty {
     }
 
     public MyContext myContext() {
-        return http.data.getMyContext();
+        return http.data.myContext();
     }
 
     public Try<HttpReadResult> execute(HttpRequest request) {

@@ -52,7 +52,7 @@ public class ApiDebugger {
         previousValue = text;
         Connection connection = myContext.accounts().getCurrentAccount().getConnection();
         return connection.pathToUri(connection.partialPathToApiPath(text))
-        .map(uri -> HttpRequest.of(myContext, ApiRoutineEnum.HOME_TIMELINE, uri))
+        .map(uri -> HttpRequest.of(ApiRoutineEnum.HOME_TIMELINE, uri))
         .flatMap(connection::execute);
     }
 

@@ -62,7 +62,8 @@ public interface HttpConnectionInterface {
         return true;
     }
 
-    default Try<HttpReadResult> execute(HttpRequest request) {
+    default Try<HttpReadResult> execute(HttpRequest requestIn) {
+        HttpRequest request = requestIn.withConnectionData(getData());
         if (request.verb == Verb.POST) {
             /* See https://github.com/andstatus/andstatus/issues/249 */
             return (getData().getUseLegacyHttpProtocol() == TriState.UNKNOWN)
@@ -81,14 +82,14 @@ public interface HttpConnectionInterface {
     default Try<HttpReadResult> executeInner(HttpRequest request) {
         if (request.verb == Verb.POST && MyPreferences.isLogNetworkLevelMessages()) {
             JSONObject jso = JsonUtils.put(request.postParams.orElseGet(JSONObject::new), "loggedURL", request.uri);
-            MyLog.logNetworkLevelMessage("post", getData().getLogName(request), jso, "");
+            MyLog.logNetworkLevelMessage("post", request.getLogName(), jso, "");
         }
         return request.validate()
                 .map(HttpRequest::newResult)
                 .map(result -> result.request.verb == Verb.POST
                         ? postRequest(result)
                         : getRequest(result))
-                .map(result -> result.logResponse(getData()))
+                .map(HttpReadResult::logResponse)
                 .flatMap(HttpReadResult::tryToParse);
     }
 

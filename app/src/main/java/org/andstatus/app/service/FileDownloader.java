@@ -122,7 +122,7 @@ public abstract class FileDownloader {
     }
 
     private HttpRequest newRequest(File file, Connection connection) {
-        return HttpRequest.of(connection.myContext(), ApiRoutineEnum.DOWNLOAD_FILE, data.getUri())
+        return HttpRequest.of(ApiRoutineEnum.DOWNLOAD_FILE, data.getUri())
             .withConnectionRequired(connectionRequired)
             .withFile(file);
     }

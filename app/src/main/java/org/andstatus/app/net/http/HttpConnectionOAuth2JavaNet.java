@@ -27,7 +27,6 @@ import com.github.scribejava.core.model.Response;
 import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
@@ -67,7 +66,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             params.put("scopes", OAUTH_SCOPES);
             params.put("website", "http://andstatus.org");
 
-            HttpRequest request = HttpRequest.of(MyContextHolder.get(), ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
+            HttpRequest request = HttpRequest.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
                 .withPostParams(params);
             return execute(request)
             .flatMap(HttpReadResult::getJsonObject)

@@ -20,7 +20,6 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.http.ConnectionException;
@@ -98,7 +97,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
         .map(Uri::buildUpon)
         .map(builder -> builder.appendQueryParameter("user_id", actorOid))
         .map(Uri.Builder::build)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(HttpReadResult::getJsonArray)
         .flatMap(jsonArray -> {
@@ -118,7 +117,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     public Try<RateLimitStatus> rateLimitStatus() {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS;
         return getApiPath(apiRoutine)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(HttpReadResult::getJsonObject)
         .flatMap(result -> {
@@ -156,7 +155,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     public Try<OriginConfig> getConfig() {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.GET_CONFIG;
         return getApiPath(apiRoutine)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(HttpReadResult::getJsonObject)
         .map(result -> {
@@ -184,7 +183,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
 
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.GET_CONVERSATION;
         return getApiPathWithNoteId(apiRoutine, conversationOid)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(HttpReadResult::getJsonArray)
         .flatMap(jsonArray -> jArrToTimeline(jsonArray, apiRoutine));
@@ -273,7 +272,7 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     public Try<List<Server>> getOpenInstances() {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.GET_OPEN_INSTANCES;
         return getApiPath(apiRoutine)
-        .map(path -> HttpRequest.of(MyContextHolder.get(), apiRoutine, path)
+        .map(path -> HttpRequest.of(apiRoutine, path)
                         .withAuthenticate(false))
         .flatMap(http::execute)
         .flatMap(HttpReadResult::getJsonObject)

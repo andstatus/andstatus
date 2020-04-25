@@ -205,7 +205,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 .map(b -> appendPositionParameters(b, youngestPosition, oldestPosition))
                 .map(b -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)))
                 .map(Uri.Builder::build)
-                .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+                .map(uri -> HttpRequest.of(apiRoutine, uri))
                 .flatMap(this::execute)
                 .flatMap(result -> result.getJsonArray()
                     .flatMap(jsonArray -> jArrToTimeline(jsonArray, apiRoutine)))
@@ -226,7 +226,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 .appendQueryParameter("resolve", "true")
                 .appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)))
         .map(Uri.Builder::build)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(result -> result.getJsonArray()
             .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, result.request.uri)));
@@ -518,7 +518,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.GET_ACTOR;
         return getApiPathWithActorId(apiRoutine,
                 UriUtils.isRealOid(actorIn.oid) ? actorIn.oid : actorIn.getUsername())
-                .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+                .map(uri -> HttpRequest.of(apiRoutine, uri))
                 .flatMap(this::execute)
                 .flatMap(HttpReadResult::getJsonObject)
                 .map(this::actorFromJson);
@@ -528,7 +528,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     public Try<AActivity> follow(String actorOid, Boolean follow) {
         ApiRoutineEnum apiRoutine = follow ? ApiRoutineEnum.FOLLOW : ApiRoutineEnum.UNDO_FOLLOW;
         Try<JSONObject> tryRelationship = getApiPathWithActorId(apiRoutine, actorOid)
-            .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri).asPost())
+            .map(uri -> HttpRequest.of(apiRoutine, uri).asPost())
             .flatMap(this::execute)
             .flatMap(HttpReadResult::getJsonObject);
 
@@ -563,7 +563,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             .map(Uri::buildUpon)
             .map(b -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)))
             .map(Uri.Builder::build)
-            .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+            .map(uri -> HttpRequest.of(apiRoutine, uri))
             .flatMap(this::execute)
             .flatMap(result -> result.getJsonArray()
                 .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, result.request.uri)));
@@ -573,7 +573,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     public Try<OriginConfig> getConfig() {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.GET_CONFIG;
         return getApiPath(apiRoutine)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(HttpReadResult::getJsonObject)
         .map(result -> {

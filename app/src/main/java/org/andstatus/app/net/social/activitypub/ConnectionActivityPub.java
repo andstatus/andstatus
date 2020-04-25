@@ -104,7 +104,7 @@ public class ConnectionActivityPub extends Connection {
         return TryUtils.fromOptional(whoAmI)
         .filter(UriUtils::isDownloadable)
         .orElse(() -> getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS))
-        .map(uri -> HttpRequest.of(myContext(), ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri))
+        .map(uri -> HttpRequest.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri))
         .flatMap(this::execute)
         .recoverWith(Exception.class, this::mastodonsHackToVerifyCredentials)
         .flatMap(HttpReadResult::getJsonObject)
@@ -118,7 +118,7 @@ public class ConnectionActivityPub extends Connection {
         .map(ConnectionMastodon::partialPath)
         .map(OriginType.MASTODON::partialPathToApiPath)
         .flatMap(this::pathToUri)
-        .map(uri -> HttpRequest.of(myContext(), ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri))
+        .map(uri -> HttpRequest.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri))
         .flatMap(this::execute)
         .flatMap(HttpReadResult::getJsonObject)
         .map(jso -> JsonUtils.optString(jso, "username"))
@@ -127,7 +127,7 @@ public class ConnectionActivityPub extends Connection {
         // Now build the Actor's Uri artificially using Mastodon's known URL pattern
         return userNameInMastodon.map(username -> "users/" + username)
         .flatMap(this::pathToUri)
-        .map(uri -> HttpRequest.of(myContext(), ApiRoutineEnum.GET_ACTOR, uri))
+        .map(uri -> HttpRequest.of(ApiRoutineEnum.GET_ACTOR, uri))
         .flatMap(this::execute)
         .recoverWith(Exception.class, newException -> Try.failure(originalException));
     }
@@ -222,7 +222,7 @@ public class ConnectionActivityPub extends Connection {
 
     @Override
     protected Try<AActivity> getNote1(String noteOid) {
-        return execute(HttpRequest.of(myContext(), ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid)))
+        return execute(HttpRequest.of(ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid)))
         .flatMap(HttpReadResult::getJsonObject)
         .map(this::activityFromJson);
     }

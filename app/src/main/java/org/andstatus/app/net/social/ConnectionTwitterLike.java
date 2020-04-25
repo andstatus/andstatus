@@ -175,7 +175,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         .map(Uri::buildUpon)
         .map(builder -> builder.appendQueryParameter("user_id", actorOid))
         .map(Uri.Builder::build)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(result -> result.getJsonArrayInObject("ids"))
         .flatMap(jsonArray -> {
@@ -211,7 +211,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         return getTimelineUriBuilder(apiRoutine, limit, actor)
         .map(builder -> appendPositionParameters(builder, youngestPosition, oldestPosition))
         .map(Uri.Builder::build)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(result -> result.getJsonArray()
             .flatMap(jsonArray -> jArrToTimeline(jsonArray, apiRoutine)))
@@ -440,7 +440,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         .map(builder -> appendPositionParameters(builder, youngestPosition, oldestPosition))
         .map(builder -> builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)))
         .map(Uri.Builder::build)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(result -> result.getJsonArray()
             .flatMap(jsonArray -> jArrToTimeline(jsonArray, apiRoutine)))
@@ -525,7 +525,7 @@ public abstract class ConnectionTwitterLike extends Connection {
                 ? builder.appendQueryParameter("user_id", actorIn.oid)
                 : builder.appendQueryParameter("screen_name", actorIn.getUsername()))
         .map(Uri.Builder::build)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(HttpReadResult::getJsonObject)
         .map(this::actorFromJson);
@@ -554,7 +554,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     public Try<RateLimitStatus> rateLimitStatus() {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS;
         return getApiPath(apiRoutine)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(HttpReadResult::getJsonObject)
         .flatMap(result -> {
@@ -619,7 +619,7 @@ public abstract class ConnectionTwitterLike extends Connection {
     public Try<Actor> verifyCredentials(Optional<Uri> whoAmI) {
         ApiRoutineEnum apiRoutine = ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS;
         return getApiPath(apiRoutine)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(HttpReadResult::getJsonObject)
         .map(this::actorFromJson);
@@ -627,7 +627,7 @@ public abstract class ConnectionTwitterLike extends Connection {
 
     protected final Try<HttpReadResult> postRequest(ApiRoutineEnum apiRoutine, JSONObject formParams) {
         return tryApiPath(data.getAccountActor(), apiRoutine)
-                .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri).withPostParams(formParams))
+                .map(uri -> HttpRequest.of(apiRoutine, uri).withPostParams(formParams))
                 .flatMap(this::execute);
     }
 
@@ -677,7 +677,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         if (nonRealOid(noteOid)) return Try.success(JsonUtils.EMPTY);
 
         return getApiPathWithNoteId(apiRoutine, noteOid)
-                .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri).asPost(asPost))
+                .map(uri -> HttpRequest.of(apiRoutine, uri).asPost(asPost))
                 .flatMap(this::execute)
                 .flatMap(HttpReadResult::getJsonObject);
     }

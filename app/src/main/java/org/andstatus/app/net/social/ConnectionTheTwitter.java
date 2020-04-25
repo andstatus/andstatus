@@ -229,7 +229,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         .map(builder -> appendPositionParameters(builder, youngestPosition, oldestPosition))
         .map(builder -> builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)))
         .map(Uri.Builder::build)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(result -> result.getJsonArrayInObject("statuses")
             .flatMap(jArr -> jArrToTimeline(jArr, apiRoutine)))
@@ -245,7 +245,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         .map(b -> StringUtil.isEmpty(searchQuery) ? b : b.appendQueryParameter("q", searchQuery))
         .map(b -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)))
         .map(Uri.Builder::build)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(result -> result.getJsonArray()
             .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, result.request.uri)));
@@ -310,7 +310,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         .map(b -> StringUtil.isEmpty(actor.oid) ? b : b.appendQueryParameter("user_id", actor.oid))
         .map(b -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)))
         .map(Uri.Builder::build)
-        .map(uri -> HttpRequest.of(myContext(), apiRoutine, uri))
+        .map(uri -> HttpRequest.of(apiRoutine, uri))
         .flatMap(this::execute)
         .flatMap(result -> result.getJsonArray()
             .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, result.request.uri)));

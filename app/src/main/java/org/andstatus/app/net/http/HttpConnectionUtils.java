@@ -128,19 +128,19 @@ public class HttpConnectionUtils {
 
         boolean isFailed(int count) {
             size += count;
-            if (!request.myContext.isReady()) {
+            if (!request.myContext().isReady()) {
                 result.setException(new ConnectionException("App restarted?!"));
                 return true;
             }
             if (size > request.maxSizeBytes) {
                 result.setException(ConnectionException.hardConnectionException(
                         "File, downloaded from \"" + result.getUrl() + "\", is too large: at least "
-                                + Formatter.formatShortFileSize(request.myContext.context(), size),
+                                + Formatter.formatShortFileSize(request.myContext().context(), size),
                         null));
                 return true;
             }
             if (request.connectionRequired != ConnectionRequired.ANY && stopWatch.hasPassed(5000)) {
-                ConnectionState connectionState = request.myContext.getConnectionState();
+                ConnectionState connectionState = request.myContext().getConnectionState();
                 if (!request.connectionRequired.isConnectionStateOk(connectionState)) {
                     result.setException(
                             new ConnectionException("Expected '" + request.connectionRequired +

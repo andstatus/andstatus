@@ -21,6 +21,7 @@ import com.github.scribejava.core.model.Verb;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.social.ApiRoutineEnum;
+import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONObject;
@@ -31,8 +32,7 @@ import java.util.Optional;
 import io.vavr.control.Try;
 
 public class HttpRequest {
-
-    final MyContext myContext;
+    private HttpConnectionData connectionData = HttpConnectionData.EMPTY;
     public final ApiRoutineEnum apiRoutine;
     public final Uri uri;
     Verb verb = Verb.GET;
@@ -44,8 +44,8 @@ public class HttpRequest {
     public Optional<JSONObject> postParams = Optional.empty();
     File fileResult = null;
 
-    public static HttpRequest of(MyContext myContext, ApiRoutineEnum apiRoutine, Uri uri) {
-        return new HttpRequest(myContext, apiRoutine, uri);
+    public static HttpRequest of(ApiRoutineEnum apiRoutine, Uri uri) {
+        return new HttpRequest(apiRoutine, uri);
     }
 
     public Try<HttpRequest> validate() {
@@ -55,8 +55,7 @@ public class HttpRequest {
         return Try.success(this);
     }
 
-    private HttpRequest(MyContext myContext, ApiRoutineEnum apiRoutine, Uri uri) {
-        this.myContext = myContext;
+    private HttpRequest(ApiRoutineEnum apiRoutine, Uri uri) {
         this.apiRoutine = apiRoutine;
         this.uri = uri;
         maxSizeBytes = MyPreferences.getMaximumSizeOfAttachmentBytes();
@@ -115,6 +114,29 @@ public class HttpRequest {
     public HttpRequest withAuthenticate(boolean authenticate) {
         this.authenticate = authenticate;
         return this;
+    }
+
+    public HttpRequest withConnectionData(HttpConnectionData connectionData) {
+        this.connectionData = connectionData;
+        return this;
+    }
+
+    HttpConnectionData connectionData() {
+        return connectionData;
+    }
+
+    public MyContext myContext() {
+        return connectionData.myContext();
+    }
+
+    String getLogName() {
+        if (connectionData.getOriginType() == OriginType.ACTIVITYPUB
+                || connectionData.getOriginType() == OriginType.PUMPIO
+                || apiRoutine == ApiRoutineEnum.OAUTH_REGISTER_CLIENT) {
+            return uri.getHost() + "-" + apiRoutine.name().toLowerCase();
+        } else {
+            return connectionData.getAccountName().getLogName() + "-" + apiRoutine.name().toLowerCase();
+        }
     }
 
     public HttpReadResult newResult() {

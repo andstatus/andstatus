@@ -18,7 +18,6 @@ package org.andstatus.app.net.http;
 
 import android.net.Uri;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.util.UriUtils;
 import org.json.JSONArray;
@@ -41,7 +40,7 @@ public class HttpReadResultTest {
                 + "{\"text\":\"Text2\",\"to_user\":\"andstatus\",\"from_user\":\"otherauthor\"}]"
                 + ",\"since_id\":\"Wed, 05 Mar 2014 16:37:17 +0100\""
                 + "}";
-        HttpRequest request1 = HttpRequest.of(MyContextHolder.get(), ApiRoutineEnum.HOME_TIMELINE, uri)
+        HttpRequest request1 = HttpRequest.of(ApiRoutineEnum.HOME_TIMELINE, uri)
                 .withPostParams(new JSONObject());
         HttpReadResult result1 = request1.newResult();
         result1.strResponse = in;
@@ -50,11 +49,11 @@ public class HttpReadResultTest {
         assertFalse(result1.request.postParams.isPresent());
         assertFalse(result1.toString(), result1.toString().contains("posted"));
 
-        HttpRequest request2 = HttpRequest.of(MyContextHolder.get(), ApiRoutineEnum.HOME_TIMELINE, uri)
+        HttpRequest request2 = HttpRequest.of(ApiRoutineEnum.HOME_TIMELINE, uri)
                 .withPostParams(new JSONObject("{}"));
         assertFalse(request2.postParams.isPresent());
 
-        HttpRequest request3 = HttpRequest.of(MyContextHolder.get(), ApiRoutineEnum.HOME_TIMELINE, uri)
+        HttpRequest request3 = HttpRequest.of(ApiRoutineEnum.HOME_TIMELINE, uri)
                 .withPostParams(new JSONObject("{\"text\":\"Text1\"}"));
         assertTrue(request3.toString(), request3.postParams.isPresent());
         assertThat(request3.toString(), containsString("POST:"));
