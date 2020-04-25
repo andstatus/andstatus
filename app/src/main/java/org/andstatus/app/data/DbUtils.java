@@ -39,6 +39,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.net.HttpURLConnection;
 import java.nio.channels.FileChannel;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -156,30 +157,32 @@ public final class DbUtils {
         }
     }
     
-    private static void closeLegacy(Object closeable, String message) throws IOException {
-        if (Closeable.class.isAssignableFrom(closeable.getClass()) ) {
-            ((Closeable) closeable).close();
-        } else if (Cursor.class.isAssignableFrom(closeable.getClass())) {
-            if (!((Cursor) closeable).isClosed()) {
-                ((Cursor) closeable).close();
+    private static void closeLegacy(Object toClose, String message) throws IOException {
+        if (Closeable.class.isAssignableFrom(toClose.getClass()) ) {
+            ((Closeable) toClose).close();
+        } else if (Cursor.class.isAssignableFrom(toClose.getClass())) {
+            if (!((Cursor) toClose).isClosed()) {
+                ((Cursor) toClose).close();
             }
-        } else if (FileChannel.class.isAssignableFrom(closeable.getClass())) {
-            ((FileChannel) closeable).close();
-        } else if (InputStream.class.isAssignableFrom(closeable.getClass())) {
-            ((InputStream) closeable).close();
-        } else if (Reader.class.isAssignableFrom(closeable.getClass())) {
-            ((Reader) closeable).close();
-        } else if (SQLiteStatement.class.isAssignableFrom(closeable.getClass())) {
-            ((SQLiteStatement) closeable).close();
-        } else if (OutputStream.class.isAssignableFrom(closeable.getClass())) {
-            ((OutputStream) closeable).close();
-        } else if (OutputStreamWriter.class.isAssignableFrom(closeable.getClass())) {
-            ((OutputStreamWriter) closeable).close();
-        } else if (Writer.class.isAssignableFrom(closeable.getClass())) {
-            ((Writer) closeable).close();
+        } else if (FileChannel.class.isAssignableFrom(toClose.getClass())) {
+            ((FileChannel) toClose).close();
+        } else if (InputStream.class.isAssignableFrom(toClose.getClass())) {
+            ((InputStream) toClose).close();
+        } else if (Reader.class.isAssignableFrom(toClose.getClass())) {
+            ((Reader) toClose).close();
+        } else if (SQLiteStatement.class.isAssignableFrom(toClose.getClass())) {
+            ((SQLiteStatement) toClose).close();
+        } else if (OutputStream.class.isAssignableFrom(toClose.getClass())) {
+            ((OutputStream) toClose).close();
+        } else if (OutputStreamWriter.class.isAssignableFrom(toClose.getClass())) {
+            ((OutputStreamWriter) toClose).close();
+        } else if (Writer.class.isAssignableFrom(toClose.getClass())) {
+            ((Writer) toClose).close();
+        } else if (HttpURLConnection.class.isAssignableFrom(toClose.getClass())) {
+            ((HttpURLConnection) toClose).disconnect();
         } else {
             String detailMessage = "Couldn't close silently an object of the class: "
-                    + closeable.getClass().getCanonicalName() 
+                    + toClose.getClass().getCanonicalName()
                     + (StringUtil.isEmpty(message) ? "" : "; " + message) ;
             MyLog.w(TAG, MyLog.getStackTrace(new IllegalArgumentException(detailMessage)));
         }

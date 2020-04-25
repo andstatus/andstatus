@@ -69,7 +69,7 @@ public class HttpConnectionOAuthApache extends HttpConnectionOAuth implements Ht
     public HttpReadResult httpApachePostRequest(HttpPost post, HttpReadResult result) {
         try {
             // TODO: Redo like for get request
-            if (result.request.authenticate) {
+            if (result.authenticate()) {
                 signRequest(post);
             }
             result.strResponse = ApacheHttpClientUtils.getHttpClient(data.getSslMode()).execute(

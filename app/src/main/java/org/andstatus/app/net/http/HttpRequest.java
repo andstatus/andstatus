@@ -66,7 +66,7 @@ public class HttpRequest {
         return "uri:'" + uri + "'"
             + (verb != Verb.GET ? "; " + verb + ": " : "")
             + postParams.map(params -> "'" + params + "'").orElse("(nothing)")
-            + (fileResult == null ? "" : "; saved to file")
+            + (fileResult == null ? "" : "; save to file")
             + (isLegacyHttpProtocol() ? "; legacy HTTP" : "")
             + (authenticate ? "; authenticate" : "");
     }

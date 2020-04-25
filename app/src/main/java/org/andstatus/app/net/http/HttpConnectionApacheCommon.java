@@ -75,22 +75,22 @@ public class HttpConnectionApacheCommon {
     }
 
     protected HttpReadResult getRequest(HttpReadResult result) {
-        HttpResponse httpResponse = null;
+        HttpResponse response = null;
         try {
             boolean stop = false;
             do {
                 HttpGet httpGet = newHttpGet(result.getUrl());
                 data.optOriginContentType().ifPresent(value -> httpGet.addHeader("Accept", value));
-                if (result.request.authenticate) {
+                if (result.authenticate()) {
                     specific.httpApacheSetAuthorization(httpGet);
                 }
                 // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
-                httpResponse = specific.httpApacheGetResponse(httpGet);
-                setStatusCodeAndHeaders(result, httpResponse);
+                response = specific.httpApacheGetResponse(httpGet);
+                setStatusCodeAndHeaders(result, response);
                 switch (result.getStatusCode()) {
                     case OK:
                     case UNKNOWN:
-                        HttpEntity entity = httpResponse.getEntity();
+                        HttpEntity entity = response.getEntity();
                         if (entity != null) {
                             result.readStream("", o -> entity.getContent());
                         }
@@ -100,22 +100,19 @@ public class HttpConnectionApacheCommon {
                         stop = specific.onMoved(result);
                         break;
                     default:
-                        entity = httpResponse.getEntity();
+                        entity = response.getEntity();
                         if (entity != null) {
                             result.readStream("", o -> entity.getContent());
                         }
-                        stop =  result.request.fileResult == null || result.retriedWithoutAuthentication;
-                        if (!stop) {
-                            result.onRetryWithoutAuthentication();
-                            DbUtils.closeSilently(httpResponse);
-                        }
+                        stop =  result.noMoreHttpRetries();
                         break;
                 }
+                DbUtils.closeSilently(response);
             } while (!stop);
         } catch (Exception e) {
             result.setException(e);
         } finally {
-            DbUtils.closeSilently(httpResponse);
+            DbUtils.closeSilently(response);
         }
         return result;
     }

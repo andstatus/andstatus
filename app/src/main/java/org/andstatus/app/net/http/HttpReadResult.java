@@ -22,6 +22,7 @@ import androidx.annotation.NonNull;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
+import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
@@ -333,8 +334,7 @@ public class HttpReadResult {
                     MyStringBuilder.of("")
                         .atNewLine("logger-URL", urlString)
                         .atNewLine("logger-account", request.connectionData().getAccountName().getName())
-                        .atNewLine("logger-authenticated",
-                                Boolean.toString(!retriedWithoutAuthentication && request.authenticate))
+                        .atNewLine("logger-authenticated", Boolean.toString(authenticate()))
                         .apply(this::appendHeaders).toString());
         }
         return this;
@@ -348,14 +348,26 @@ public class HttpReadResult {
         return builder;
     }
 
-    void onRetryWithoutAuthentication() {
+    boolean authenticate() {
+        return !retriedWithoutAuthentication && request.authenticate;
+    }
+
+    boolean noMoreHttpRetries() {
+        if (authenticate() && request.apiRoutine == ApiRoutineEnum.DOWNLOAD_FILE) {
+            onRetryWithoutAuthentication();
+            return false;
+        }
+        return true;
+    }
+
+    private void onRetryWithoutAuthentication() {
         retriedWithoutAuthentication = true;
         appendToLog("Retrying without authentication" + (exception == null ? "" : ", exception: " + exception));
         exception = null;
         MyLog.v(this, this::toString);
     }
 
-    public Try<HttpReadResult> readStream(String msgLog, CheckedFunction<Void, InputStream> supplier) {
+    Try<HttpReadResult> readStream(String msgLog, CheckedFunction<Void, InputStream> supplier) {
         return HttpConnectionUtils.readStream(this, msgLog, supplier);
     }
 }

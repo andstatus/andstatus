@@ -1,0 +1,42 @@
+{
+  "@context": [
+    "https:\/\/www.w3.org\/ns\/activitystreams",
+    "https:\/\/pleroma.site\/schemas\/litepub-0.1.jsonld",
+    {
+      "@language": "und"
+    }
+  ],
+  "attachment": [],
+  "discoverable": false,
+  "endpoints": {
+    "oauthAuthorizationEndpoint": "https:\/\/pleroma.site\/oauth\/authorize",
+    "oauthRegistrationEndpoint": "https:\/\/pleroma.site\/api\/v1\/apps",
+    "oauthTokenEndpoint": "https:\/\/pleroma.site\/oauth\/token",
+    "sharedInbox": "https:\/\/pleroma.site\/inbox"
+  },
+  "followers": "https:\/\/pleroma.site\/users\/ActivityPubTester\/followers",
+  "following": "https:\/\/pleroma.site\/users\/ActivityPubTester\/following",
+  "icon": {
+    "type": "Image",
+    "url": "https:\/\/pleroma.site\/media\/97236e2a-f221-429c-8b6b-bb52ab9b0590\/blob.jpg?name=blob.jpg"
+  },
+  "id": "https:\/\/pleroma.site\/users\/ActivityPubTester",
+  "image": {
+    "type": "Image",
+    "url": "https:\/\/pleroma.site\/media\/09f93531-32e0-4cf2-be8f-0830809f7435\/flowers.jpg?name=flowers.jpg"
+  },
+  "inbox": "https:\/\/pleroma.site\/users\/ActivityPubTester\/inbox",
+  "manuallyApprovesFollowers": false,
+  "name": "ActivityPub Tester",
+  "outbox": "https:\/\/pleroma.site\/users\/ActivityPubTester\/outbox",
+  "preferredUsername": "ActivityPubTester",
+  "publicKey": {
+    "id": "https:\/\/pleroma.site\/users\/ActivityPubTester#main-key",
+    "owner": "https:\/\/pleroma.site\/users\/ActivityPubTester",
+    "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAljhvapkoUWGzKIY94Y21\nzCMeLAddadgoXwmfQFp64G1prLQYb0f9Qtgoz69bM11NWHy0huS8nOF1yHAsP3Tq\nYa4pQEfj3r5dponsth9Yx00+JFwlGNQ2sBI88HLj6o6KHyMT\/\/q8AIYS7QyqB3eD\nwFapuTFw4W4c8KRbGbIZHdQXlVG4KAwpldhleLoCQxjBpa64PYdZD8+engbLsTAP\nJrHOawgGLfMtJNx3pZSPfwbw7eEJLgGjR4RuHI21OwITsP0ngUR2qCnvxSqadd+w\nhvtlsvcB2lNvVEX2mXLiKjwGRLLkhPhOlKE9cXPmA08TTJ6huwpRl6a\/FnYaKEqq\nDwIDAQAB\n-----END PUBLIC KEY-----\n\n"
+  },
+  "summary": "Testing ActivityPub Clent to Server API using AndStatus application",
+  "tag": [],
+  "type": "Person",
+  "url": "https:\/\/pleroma.site\/users\/ActivityPubTester"
+}

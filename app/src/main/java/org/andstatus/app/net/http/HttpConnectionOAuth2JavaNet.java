@@ -28,6 +28,7 @@ import com.github.scribejava.core.model.Verb;
 import com.github.scribejava.core.oauth.OAuth20Service;
 
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
@@ -159,6 +160,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
 
     @Override
     public HttpReadResult getRequest(HttpReadResult result) {
+        Response responseCopy = null;
         try {
             OAuth20Service service = getService(false);
             boolean redirected = false;
@@ -166,10 +168,11 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             do {
                 OAuthRequest request = new OAuthRequest(Verb.GET, result.getUrlObj().toString());
                 data.optOriginContentType().ifPresent(value -> request.addHeader("Accept", value));
-                if (result.request.authenticate) {
+                if (result.authenticate()) {
                     signRequest(request, service, redirected);
                 }
-                Response response = service.execute(request);
+                responseCopy = service.execute(request);
+                Response response = responseCopy;
                 setStatusCodeAndHeaders(result, response);
                 switch(result.getStatusCode()) {
                     case OK:
@@ -183,10 +186,7 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
                         break;
                     default:
                         result.readStream("", o -> response.getStream());
-                        stop = result.request.fileResult == null || result.retriedWithoutAuthentication;
-                        if (!stop) {
-                            result.onRetryWithoutAuthentication();
-                        }
+                        stop =  result.noMoreHttpRetries();
                         break;
                 }
             } while (!stop);
@@ -195,6 +195,8 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
             result.setException(e);
         } catch(Exception e) {
             result.setException(e);
+        } finally {
+            DbUtils.closeSilently(responseCopy);
         }
         return result;
     }

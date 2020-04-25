@@ -341,4 +341,25 @@ public class ConnectionActivityPubTest {
         });
         assertTrue("Audience of " + activity + "\n " + audienceStored, audienceStored.hasNonSpecial());
     }
+
+
+    @Test
+    public void getActor() throws IOException {
+        mock.addResponse(org.andstatus.app.tests.R.raw.activitypub_get_actor);
+        String actorOid = "https://pleroma.site/users/ActivityPubTester";
+        Actor partial = Actor.fromOid(mock.getData().getOrigin(), actorOid);
+        Actor received = mock.connection.getActor(partial).get();
+        assertEquals("Actor's oid " + received, actorOid, received.oid);
+        assertThat("Note name " + received, received.getUsername(), is("ActivityPubTester"));
+
+        CommandExecutionContext executionContext = new CommandExecutionContext(
+                MyContextHolder.get(),
+                CommandData.newActorCommandAtOrigin(
+                CommandEnum.GET_ACTOR, partial, "", mock.getData().getOrigin()));
+        AActivity activity = executionContext.getMyAccount().getActor().update(received);
+        new DataUpdater(executionContext).onActivity(activity);
+
+        Actor stored = Actor.load(executionContext.myContext, received.actorId, true, () -> Actor.EMPTY);
+        assertEquals("Actor's oid " + stored, actorOid, stored.oid);
+    }
 }

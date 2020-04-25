@@ -199,15 +199,17 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     }
 
     public HttpReadResult getRequest(HttpReadResult result) {
+        HttpURLConnection connCopy = null;
         try {
             OAuthConsumer consumer = getConsumer();
             boolean redirected = false;
             boolean stop = false;
             do {
-                HttpURLConnection conn = (HttpURLConnection) result.getUrlObj().openConnection();
+                connCopy = (HttpURLConnection) result.getUrlObj().openConnection();
+                HttpURLConnection conn = connCopy;
                 data.optOriginContentType().ifPresent(value -> conn.addRequestProperty("Accept", value));
                 conn.setInstanceFollowRedirects(false);
-                if (result.request.authenticate) {
+                if (result.authenticate()) {
                     signConnection(conn, consumer, redirected);
                 }
                 conn.connect();
@@ -220,19 +222,18 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
                     case MOVED:
                         redirected = true;
                         stop = onMoved(result);
-                        conn.disconnect();
                         break;
                     default:
                         result.readStream("", o -> conn.getErrorStream());
-                        stop = result.request.fileResult == null || result.retriedWithoutAuthentication;
-                        if (!stop) {
-                            result.onRetryWithoutAuthentication();
-                        }
+                        stop =  result.noMoreHttpRetries();
                         break;
                 }
+                DbUtils.closeSilently(conn);
             } while (!stop);
         } catch(Exception e) {
             result.setException(e);
+        } finally {
+            DbUtils.closeSilently(connCopy);
         }
         return result;
     }
