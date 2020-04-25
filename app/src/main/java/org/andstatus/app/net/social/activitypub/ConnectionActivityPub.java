@@ -267,6 +267,7 @@ public class ConnectionActivityPub extends Connection {
 
         // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
         return ConnectionAndUrl.fromActor(this, apiRoutine, requestedPosition, actor)
+        .map(conu -> conu.withSyncDirection(syncYounger))
         .flatMap(this::getActivities);
     }
 
@@ -276,7 +277,9 @@ public class ConnectionActivityPub extends Connection {
         .map(root -> {
             AJsonCollection jsonCollection = AJsonCollection.of(root);
             List<AActivity> activities = jsonCollection.mapObjects(item ->
-                    activityFromJson(ObjectOrId.of(item)).setTimelinePosition(jsonCollection.getId()));
+                activityFromJson(ObjectOrId.of(item))
+                    .setTimelinePositions(jsonCollection.getPrevId(), jsonCollection.getNextId())
+            );
             MyLog.d(TAG, "getTimeline " + conu.apiRoutine + " '" + conu.uri + "' " + activities.size() + " activities");
             return InputTimelinePage.of(jsonCollection, activities);
         });

@@ -39,6 +39,7 @@ class ConnectionAndUrl {
     final ApiRoutineEnum apiRoutine;
     public final Uri uri;
     final HttpConnection httpConnection;
+    boolean syncYounger = true;
 
     private ConnectionAndUrl(ApiRoutineEnum apiRoutine, Uri uri, HttpConnection httpConnection) {
         this.apiRoutine = apiRoutine;
@@ -47,7 +48,8 @@ class ConnectionAndUrl {
     }
 
     ConnectionAndUrl withUri(Uri newUri) {
-        return new ConnectionAndUrl(apiRoutine, newUri, httpConnection);
+        return new ConnectionAndUrl(apiRoutine, newUri, httpConnection)
+            .withSyncDirection(syncYounger);
     }
 
     static Try<ConnectionAndUrl> fromUriActor(Uri uri, ConnectionActivityPub connection,
@@ -64,7 +66,8 @@ class ConnectionAndUrl {
             return Try.failure(new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
                     ": endpoint is empty for " + actor));
         }
-        return getConnection(connection, apiRoutine, actor).map(conu -> new ConnectionAndUrl(apiRoutine, endpoint.get(), conu));
+        return getConnection(connection, apiRoutine, actor).map(httpConnection ->
+                new ConnectionAndUrl(apiRoutine, endpoint.get(), httpConnection));
     }
 
     private static Try<HttpConnection> getConnection(ConnectionActivityPub connection, ApiRoutineEnum apiRoutine,
@@ -99,5 +102,10 @@ class ConnectionAndUrl {
 
     Try<HttpReadResult> execute(HttpRequest request) {
         return httpConnection.execute(request);
+    }
+
+    public ConnectionAndUrl withSyncDirection(boolean syncYounger) {
+        this.syncYounger = syncYounger;
+        return this;
     }
 }

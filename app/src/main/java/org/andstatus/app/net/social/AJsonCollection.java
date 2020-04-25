@@ -162,6 +162,22 @@ public class AJsonCollection implements IsEmpty {
         return id.orElse("");
     }
 
+    public String getPrevId() {
+        if (prevPage.id.isPresent()) return prevPage.id.get();
+        if (firstPage.prevPage.id.isPresent()) return firstPage.prevPage.id.get();
+        if (nextPage.id.isPresent()) return nextPage.id.get();
+        if (firstPage.id.isPresent()) return firstPage.id.get();
+        return getId();
+    }
+
+    public String getNextId() {
+        if (nextPage.id.isPresent()) return nextPage.id.get();
+        if (firstPage.nextPage.id.isPresent()) return firstPage.nextPage.id.get();
+        if (prevPage.id.isPresent()) return prevPage.id.get();
+        if (firstPage.id.isPresent()) return firstPage.id.get();
+        return getId();
+    }
+
     @NonNull
     @Override
     public String toString() {

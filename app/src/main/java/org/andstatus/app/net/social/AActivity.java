@@ -50,7 +50,8 @@ public class AActivity extends AObject {
     public static final AActivity EMPTY = from(Actor.EMPTY, ActivityType.EMPTY);
     public static final Try<AActivity> TRY_EMPTY = Try.success(EMPTY);
 
-    private TimelinePosition timelinePosition = TimelinePosition.EMPTY;
+    private TimelinePosition prevTimelinePosition = TimelinePosition.EMPTY;
+    private TimelinePosition nextTimelinePosition = TimelinePosition.EMPTY;
     private String oid = "";
     private long storedUpdatedDate = DATETIME_MILLIS_NEVER;
     private long updatedDate = DATETIME_MILLIS_NEVER;
@@ -216,12 +217,21 @@ public class AActivity extends AObject {
         return this;
     }
 
-    public TimelinePosition getTimelinePosition() {
-        return timelinePosition.isEmpty() ? TimelinePosition.of(oid) : timelinePosition;
+    public TimelinePosition getPrevTimelinePosition() {
+        return prevTimelinePosition.isEmpty()
+                ? (nextTimelinePosition.isEmpty() ? TimelinePosition.of(oid) : nextTimelinePosition)
+                : prevTimelinePosition;
     }
 
-    public AActivity setTimelinePosition(String strPosition) {
-        timelinePosition = TimelinePosition.of(StringUtil.isEmpty(strPosition) ? "" : strPosition);
+    public TimelinePosition getNextTimelinePosition() {
+        return nextTimelinePosition.isEmpty()
+                ? (prevTimelinePosition.isEmpty() ? TimelinePosition.of(oid) : prevTimelinePosition)
+                : nextTimelinePosition;
+    }
+
+    public AActivity setTimelinePositions(String prevPosition, String nextPosition) {
+        prevTimelinePosition = TimelinePosition.of(StringUtil.isEmpty(prevPosition) ? "" : prevPosition);
+        nextTimelinePosition = TimelinePosition.of(StringUtil.isEmpty(nextPosition) ? "" : nextPosition);
         return this;
     }
 
@@ -345,9 +355,6 @@ public class AActivity extends AObject {
                 + type
                 + ", id:" + id
                 + ", oid:" + oid
-                + (timelinePosition.isEmpty() || timelinePosition.getPosition().equals(oid)
-                    ? ""
-                    : ", pos:" + timelinePosition)
                 + ", updated:" + MyLog.debugFormatOfDate(updatedDate)
                 + ", me:" + (accountActor.isEmpty() ? "EMPTY" : accountActor.oid)
                 + (subscribedByMe.known ? (subscribedByMe == TriState.TRUE ? ", subscribed" : ", NOT subscribed") : "" )

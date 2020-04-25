@@ -748,20 +748,19 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         }
     }
 
-    public void onNewMsg(long newDate, String newPosition) {
-        if (newDate <= SOME_TIME_AGO || StringUtil.isEmpty(newPosition)) {
-            return;
-        }
-        if (youngestItemDate < newDate ||
-                ( youngestItemDate == newDate && StringUtil.isNewFilledValue(youngestPosition, newPosition))) {
+    public void onNewMsg(long newDate, String youngerPosition, String olderPosition) {
+        if (newDate <= SOME_TIME_AGO) return;
+
+        if (StringUtil.nonEmpty(youngerPosition) && (youngestItemDate < newDate ||
+                ( youngestItemDate == newDate && StringUtil.isNewFilledValue(youngestPosition, youngerPosition)))) {
             youngestItemDate = newDate;
-            youngestPosition = newPosition;
+            youngestPosition = youngerPosition;
             setChanged();
         }
-        if (oldestItemDate <= SOME_TIME_AGO || oldestItemDate > newDate ||
-                (oldestItemDate == newDate && StringUtil.isNewFilledValue(oldestPosition, newPosition))) {
+        if (StringUtil.nonEmpty(olderPosition) && (oldestItemDate <= SOME_TIME_AGO || oldestItemDate > newDate ||
+                (oldestItemDate == newDate && StringUtil.isNewFilledValue(oldestPosition, olderPosition)))) {
             oldestItemDate = newDate;
-            oldestPosition = newPosition;
+            oldestPosition = olderPosition;
             setChanged();
         }
     }
@@ -892,8 +891,8 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         setIfLess(downloadedItemsCount, other.downloadedItemsCount);
         setIfLess(downloadedItemsCountTotal, other.downloadedItemsCountTotal);
 
-        onNewMsg(other.youngestItemDate, other.youngestPosition);
-        onNewMsg(other.oldestItemDate, other.oldestPosition);
+        onNewMsg(other.youngestItemDate, other.youngestPosition, "");
+        onNewMsg(other.oldestItemDate, "", other.oldestPosition);
         setYoungestSyncedDate(other.youngestSyncedDate);
         setOldestSyncedDate(other.oldestSyncedDate);
 

@@ -211,9 +211,12 @@ public class ConnectionActivityPubTest {
         AActivity activity9 = timeline.get(9);
         assertEquals("Creating a Note " + activity9, AObjectType.NOTE, activity9.getObjectType());
         Note note9 = activity9.getNote();
-        assertEquals("Timeline position " + activity9,
-                "https://pleroma.site/users/AndStatus/inbox",
-                activity9.getTimelinePosition().getPosition());
+        assertEquals("Prev timeline position " + activity9,
+                "https://pleroma.site/users/AndStatus/inbox?max_id=9gOowwftJe67DBVQum",
+                activity9.getPrevTimelinePosition().getPosition());
+        assertEquals("Next timeline position " + activity9,
+                "https://pleroma.site/users/AndStatus/inbox?max_id=9gmg7FVl50VMgeCw0u",
+                activity9.getNextTimelinePosition().getPosition());
         assertEquals("Activity oid " + activity9,
                 "https://pleroma.site/activities/0f74296c-0f8c-43e2-a250-692f3e61c9c3",
                 activity9.getOid());

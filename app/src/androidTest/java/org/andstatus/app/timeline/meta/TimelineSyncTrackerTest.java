@@ -62,8 +62,9 @@ public class TimelineSyncTrackerTest {
         TimelineSyncTracker syncTracker = new TimelineSyncTracker(timeline, true);
         syncTracker.onTimelineDownloaded();
         syncTracker.onNewActivity(
+                System.currentTimeMillis() - LATEST_ITEM_MILLIS_AGO,
                 TimelinePosition.of("position_" + timelineType.save() + "_" + accountName),
-                System.currentTimeMillis() - LATEST_ITEM_MILLIS_AGO);
+                TimelinePosition.of("position_" + timelineType.save() + "_" + accountName));
         timeline.save(myContext);
 
         Timeline timeline2 = findTimeline(myContext, timelineType, ma);

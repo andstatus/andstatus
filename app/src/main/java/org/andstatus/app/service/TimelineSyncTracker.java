@@ -82,13 +82,11 @@ public class TimelineSyncTracker {
     }
 
     /** A new Timeline Item was downloaded   */
-    public void onNewActivity(TimelinePosition timelineItemPosition, long timelineItemDate) {
+    public void onNewActivity(long timelineItemDate, TimelinePosition prevPosition, TimelinePosition nextPosition) {
         downloadedCounter++;
-        if (timelineItemPosition != null 
-                && timelineItemPosition.nonEmpty()
-                && (timelineItemDate > 0)) {
-            timeline.onNewMsg(timelineItemDate, timelineItemPosition.getPosition());
-        }
+        timeline.onNewMsg(timelineItemDate,
+                prevPosition == null ? "" :prevPosition.getPosition(),
+                nextPosition == null ? "" : nextPosition.getPosition());
     }
     
     public void onTimelineDownloaded() {

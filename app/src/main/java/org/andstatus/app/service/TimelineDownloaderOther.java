@@ -107,7 +107,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                     InputTimelinePage page = tryPage.get();
                     syncTracker.onNewPage(page);
                     for (AActivity activity : page.items) {
-                        syncTracker.onNewActivity(activity.getTimelinePosition(), activity.getUpdatedDate());
+                        syncTracker.onNewActivity(activity.getUpdatedDate(), activity.getPrevTimelinePosition(), activity.getNextTimelinePosition());
                         if (!activity.isSubscribedByMe().equals(TriState.FALSE)
                                 && activity.getUpdatedDate() > 0
                                 && execContext.getTimeline().getTimelineType().isSubscribedByMe()
