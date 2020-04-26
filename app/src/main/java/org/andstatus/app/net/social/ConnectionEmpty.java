@@ -61,7 +61,7 @@ public class ConnectionEmpty extends Connection {
     }
 
     @Override
-    public Try<AActivity> updateNote(Note note, String inReplyToOid, Attachments attachments) {
+    public Try<AActivity> updateNote(Note note) {
         return AActivity.TRY_EMPTY;
     }
 

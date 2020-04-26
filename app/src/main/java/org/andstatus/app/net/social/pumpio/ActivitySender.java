@@ -21,16 +21,15 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.actor.GroupType;
+import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
-import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.net.social.Attachments;
-import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.ApiRoutineEnum;
+import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.MyLog;
@@ -52,42 +51,22 @@ import static org.andstatus.app.net.social.pumpio.ConnectionPumpio.NAME_PROPERTY
  */
 class ActivitySender {
     final ConnectionPumpio connection;
-    final String objectId;
-    final Audience audience;
-    String inReplyToId = "";
-    String name = "";
-    String summary = "";
-    String content = "";
-    Attachments attachments = Attachments.EMPTY;
+    final Note note;
 
-    ActivitySender(ConnectionPumpio connection, String objectId, Audience audience) {
+    ActivitySender(ConnectionPumpio connection, Note note) {
         this.connection = connection;
-        this.objectId = objectId;
-        this.audience = audience;
+        this.note = note;
     }
 
     static ActivitySender fromId(ConnectionPumpio connection, String objectId) {
-        return new ActivitySender(connection, objectId, Audience.EMPTY);
+        return new ActivitySender(connection,
+                Note.fromOriginAndOid(connection.getData().getOrigin(), objectId, DownloadStatus.UNKNOWN));
     }
 
     static ActivitySender fromContent(ConnectionPumpio connection, Note note) {
-        ActivitySender sender = new ActivitySender(connection, note.oid, note.audience());
-        sender.name = note.getName();
-        sender.summary = note.getSummary();
-        sender.content = note.getContentToPost();
-        return sender;
+        return new ActivitySender(connection, note);
     }
 
-    ActivitySender setInReplyTo(String inReplyToId) {
-        this.inReplyToId = inReplyToId;
-        return this;
-    }
-    
-    ActivitySender setAttachments(Attachments attachments) {
-        this.attachments = attachments;
-        return this;
-    }
-    
     Try<AActivity> send(PActivityType activityType) {
         return sendInternal(activityType)
             .flatMap(HttpReadResult::getJsonObject)
@@ -98,7 +77,7 @@ class ActivitySender {
         PActivityType activityType = isExisting()
                 ? (activityTypeIn.equals(PActivityType.POST) ? PActivityType.UPDATE : activityTypeIn)
                 : PActivityType.POST;
-        String msgLog = "Activity '" + activityType + "'" + (isExisting() ? " objectId:'" + objectId + "'" : "");
+        String msgLog = "Activity '" + activityType + "'" + (isExisting() ? " objectId:'" + note.oid + "'" : "");
         JSONObject activity = null;
         try {
             activity = buildActivityToSend(activityType);
@@ -139,10 +118,10 @@ class ActivitySender {
     private JSONObject buildActivityToSend(PActivityType activityType) throws JSONException, ConnectionException {
         JSONObject activity = newActivityOfThisAccount(activityType);
         JSONObject obj = buildObject(activity);
-        Attachment attachment = attachments.getFirstToUpload();
+        Attachment attachment = note.attachments.getFirstToUpload();
         if (attachment.nonEmpty()) {
-            if (attachments.toUploadCount() > 1) {
-                MyLog.w(this, "Sending only the first attachment: " + attachments);  // TODO
+            if (note.attachments.toUploadCount() > 1) {
+                MyLog.w(this, "Sending only the first attachment: " + note.attachments);  // TODO
             }
             PObjectType objectType = PObjectType.fromJson(obj);
             if (isExisting()
@@ -175,16 +154,16 @@ class ActivitySender {
                 obj = mediaObject;
             }
         }
-        if (StringUtil.nonEmpty(name)) {
-            obj.put(NAME_PROPERTY, name);
+        if (StringUtil.nonEmpty(note.getName())) {
+            obj.put(NAME_PROPERTY, note.getName());
         }
-        if (StringUtil.nonEmpty(content)) {
-            obj.put(CONTENT_PROPERTY, content);
+        if (StringUtil.nonEmpty(note.getContent())) {
+            obj.put(CONTENT_PROPERTY, note.getContentToPost());
         }
-        if (!StringUtil.isEmpty(inReplyToId)) {
+        if (StringUtil.nonEmptyNonTemp(note.getInReplyTo().getOid())) {
             JSONObject inReplyToObject = new JSONObject();
-            inReplyToObject.put("id", inReplyToId);
-            inReplyToObject.put("objectType", connection.oidToObjectType(inReplyToId));
+            inReplyToObject.put("id", note.getInReplyTo().getOid());
+            inReplyToObject.put("objectType", connection.oidToObjectType(note.getInReplyTo().getOid()));
             obj.put("inReplyTo", inReplyToObject);
         }
         activity.put("object", obj);
@@ -194,8 +173,11 @@ class ActivitySender {
     private boolean contentNotPosted(PActivityType activityType, JSONObject jsActivity) {
         JSONObject objPosted = jsActivity.optJSONObject("object");
         return PActivityType.POST.equals(activityType) && objPosted != null
-                && (StringUtil.nonEmpty(content) && StringUtil.isEmpty(JsonUtils.optString(objPosted, CONTENT_PROPERTY))
-                    || StringUtil.nonEmpty(name) && StringUtil.isEmpty(JsonUtils.optString(objPosted, NAME_PROPERTY)));
+            && (StringUtil.nonEmpty(note.getContent())
+                    && StringUtil.isEmpty(JsonUtils.optString(objPosted, CONTENT_PROPERTY))
+                || StringUtil.nonEmpty(note.getName())
+                    && StringUtil.isEmpty(JsonUtils.optString(objPosted, NAME_PROPERTY))
+            );
     }
 
     private JSONObject newActivityOfThisAccount(PActivityType activityType) throws JSONException, ConnectionException {
@@ -220,8 +202,8 @@ class ActivitySender {
     }
 
     private void setAudience(JSONObject activity, PActivityType activityType) throws JSONException {
-        audience.getRecipients().forEach(actor -> addToAudience(activity, "to", actor));
-        if (audience.noRecipients() && StringUtil.isEmpty(inReplyToId)
+        note.audience().getRecipients().forEach(actor -> addToAudience(activity, "to", actor));
+        if (note.audience().noRecipients() && StringUtil.isEmpty(note.getInReplyTo().getOid())
                 && (activityType.equals(PActivityType.POST) || activityType.equals(PActivityType.UPDATE))) {
             addToAudience(activity, "to", Actor.PUBLIC);
         }
@@ -279,20 +261,20 @@ class ActivitySender {
     private JSONObject buildObject(JSONObject activity) throws JSONException {
         JSONObject obj = new JSONObject();
         if (isExisting()) {
-            obj.put("id", objectId);
-            obj.put("objectType", connection.oidToObjectType(objectId));
+            obj.put("id", note.oid);
+            obj.put("objectType", connection.oidToObjectType(note.oid));
         } else {
-            if (StringUtil.isEmpty(name) && StringUtil.isEmpty(content) && attachments.isEmpty()) {
+            if (!note.hasSomeContent()) {
                 throw new IllegalArgumentException("Nothing to send");
             }
             obj.put("author", activity.getJSONObject("actor"));
-            PObjectType objectType = StringUtil.isEmpty(inReplyToId) ? PObjectType.NOTE : PObjectType.COMMENT;
+            PObjectType objectType = StringUtil.isEmpty(note.getInReplyTo().getOid()) ? PObjectType.NOTE : PObjectType.COMMENT;
             obj.put("objectType", objectType.id);
         }
         return obj;
     }
 
     private boolean isExisting() {
-        return UriUtils.isRealOid(objectId);
+        return UriUtils.isRealOid(note.oid);
     }
 }

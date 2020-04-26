@@ -19,6 +19,8 @@ package org.andstatus.app.net.social;
 import android.content.ContentResolver;
 import android.net.Uri;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadType;
@@ -26,8 +28,7 @@ import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.IsEmpty;
 
 import java.util.Objects;
-
-import androidx.annotation.NonNull;
+import java.util.Optional;
 
 public class Attachment implements Comparable<Attachment>, IsEmpty {
     public static final Attachment EMPTY = new Attachment(null, Uri.EMPTY, "");
@@ -37,17 +38,17 @@ public class Attachment implements Comparable<Attachment>, IsEmpty {
     public final String mimeType;
     @NonNull
     public final MyContentType contentType;
-    long downloadId = 0;
-    long downloadNumber = 0;
     Attachment previewOf = Attachment.EMPTY;
+
+    DownloadData downloadData = DownloadData.EMPTY;
+    private Optional<Long> optNewDownloadNumber = Optional.empty();
 
     /** #previewOf cannot be set here **/
     Attachment(@NonNull DownloadData downloadData) {
+        this.downloadData = downloadData;
         uri = downloadData.getUri();
         mimeType = downloadData.getMimeType();
         contentType = downloadData.getContentType();
-        downloadId = downloadData.getDownloadId();
-        downloadNumber = downloadData.getDownloadNumber();
     }
 
     private Attachment(ContentResolver contentResolver, @NonNull Uri uri, @NonNull String mimeType) {
@@ -94,7 +95,7 @@ public class Attachment implements Comparable<Attachment>, IsEmpty {
     }
 
     public long getDownloadNumber() {
-        return downloadNumber;
+        return optNewDownloadNumber.orElse(downloadData.getDownloadNumber());
     }
 
     @Override
@@ -130,6 +131,10 @@ public class Attachment implements Comparable<Attachment>, IsEmpty {
     }
 
     public long getDownloadId() {
-        return downloadId;
+        return downloadData.getDownloadId();
+    }
+
+    public void setDownloadNumber(long downloadNumber) {
+        optNewDownloadNumber = Optional.of(downloadNumber);
     }
 }

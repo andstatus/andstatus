@@ -96,7 +96,7 @@ public class AActivity extends AObject {
 
     @NonNull
     public static AActivity newPartialNote(@NonNull Actor accountActor, Actor actor, String noteOid) {
-        return newPartialNote(accountActor, actor, noteOid, 0, DownloadStatus.UNKNOWN);
+        return newPartialNote(accountActor, actor, noteOid, DATETIME_MILLIS_NEVER, DownloadStatus.UNKNOWN);
     }
 
     @NonNull
@@ -304,7 +304,7 @@ public class AActivity extends AObject {
         if ( attachments.size() > maxAttachments) {
             attachments.list.remove(0);
         }
-        setNote(getNote().copy(Optional.empty(), Optional.of(attachments)));
+        setNote(getNote().withAttachments(attachments));
     }
 
     public void setNote(Note note) {

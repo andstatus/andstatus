@@ -169,7 +169,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     @NonNull
-    protected ActivityType getType(JSONObject timelineItem) {
+    private ActivityType getType(JSONObject timelineItem) {
         if (isNotification(timelineItem)) {
             switch (JsonUtils.optString(timelineItem,"type")) {
                 case "favourite":
@@ -267,23 +267,23 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
     }
 
     @Override
-    public Try<AActivity> updateNote(Note note, String inReplyToOid, Attachments attachments) {
-        return updateNote2(note, inReplyToOid, attachments);
+    public Try<AActivity> updateNote(Note note) {
+        return updateNote2(note);
     }
 
     @Override
-    protected Try<AActivity> updateNote2(Note note, String inReplyToOid, Attachments attachments) {
+    protected Try<AActivity> updateNote2(Note note) {
         JSONObject obj = new JSONObject();
         try {
             obj.put(SUMMARY_PROPERTY, note.getSummary());
             obj.put(VISIBILITY_PROPERTY, getVisibility(note));
             obj.put(SENSITIVE_PROPERTY, note.isSensitive());
             obj.put(CONTENT_PROPERTY_UPDATE, note.getContentToPost());
-            if ( !StringUtil.isEmpty(inReplyToOid)) {
-                obj.put("in_reply_to_id", inReplyToOid);
+            if (StringUtil.nonEmptyNonTemp(note.getInReplyTo().getOid())) {
+                obj.put("in_reply_to_id", note.getInReplyTo().getOid());
             }
             List<String> ids = new ArrayList<>();
-            for (Attachment attachment : attachments.list) {
+            for (Attachment attachment : note.attachments.list) {
                 if (UriUtils.isDownloadable(attachment.uri)) {
                     // TODO
                     MyLog.i(this, "Skipped downloadable " + attachment);
@@ -302,7 +302,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 obj.put("media_ids[]", ids);
             }
         } catch (JSONException e) {
-            return Try.failure(ConnectionException.loggedJsonException(this, "Error updating note '" + attachments + "'", e, obj));
+            return Try.failure(ConnectionException.loggedJsonException(this, "Error updating note", e, obj));
         }
         return postRequest(ApiRoutineEnum.UPDATE_NOTE, obj)
                 .flatMap(HttpReadResult::getJsonObject)

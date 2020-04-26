@@ -58,6 +58,7 @@ import java.util.stream.Collectors;
 
 import static org.andstatus.app.data.DownloadStatus.UNKNOWN;
 import static org.andstatus.app.util.MyStringBuilder.COMMA;
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
 public class NoteEditorData implements IsEmpty {
     public static final String TAG = NoteEditorData.class.getSimpleName();
@@ -131,7 +132,9 @@ public class NoteEditorData implements IsEmpty {
             }
             final AActivity inReplyTo = AActivity.newPartialNote(getMyAccount().getActor(),
                     Actor.load(myContext, inReplyToActorId),
-                    MyQuery.idToOid(myContext, OidEnum.NOTE_OID, inReplyToNoteId, 0), 0, UNKNOWN);
+                    MyQuery.idToOid(myContext, OidEnum.NOTE_OID, inReplyToNoteId, 0),
+                    DATETIME_MILLIS_NEVER,
+                    UNKNOWN);
             final Note inReplyToNote = inReplyTo.getNote();
             inReplyToNote.noteId = inReplyToNoteId;
             inReplyToNote.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, inReplyToNoteId));
@@ -146,7 +149,7 @@ public class NoteEditorData implements IsEmpty {
         attachedImageFiles.list.forEach( imageFile -> {
             imageFile.preloadImageAsync(CacheName.ATTACHED_IMAGE);
         });
-        activity.setNote(note.copy(Optional.empty(), Optional.of(Attachments.load(myContext, noteId))));
+        activity.setNote(note.withAttachments(Attachments.load(myContext, noteId)));
         MyLog.v(TAG, () -> "Loaded " + this);
     }
 

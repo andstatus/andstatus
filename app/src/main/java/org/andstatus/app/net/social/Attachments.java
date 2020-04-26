@@ -57,7 +57,7 @@ public class Attachments implements IsEmpty {
         List<DownloadData> downloads = new ArrayList<>();
         for (Attachment attachment : list) {
             DownloadData dd = DownloadData.fromAttachment(noteId, attachment);
-            dd.setDownloadNumber(attachment.downloadNumber);
+            dd.setDownloadNumber(attachment.getDownloadNumber());
             if (attachment.previewOf.nonEmpty()) {
                 dd.setPreviewOfDownloadId(
                     downloads.stream().filter(d -> d.getUri().equals(attachment.previewOf.uri)).findAny()
@@ -89,7 +89,7 @@ public class Attachments implements IsEmpty {
         List<Attachment> copy = new ArrayList<>(list);
         Collections.sort(copy);
         for (int ind = 0; ind < copy.size(); ind++) {
-            copy.get(ind).downloadNumber = ind;
+            copy.get(ind).setDownloadNumber(ind);
         }
     }
 

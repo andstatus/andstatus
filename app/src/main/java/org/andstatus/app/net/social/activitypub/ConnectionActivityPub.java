@@ -34,7 +34,6 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
 import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.net.social.Attachments;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.ConnectionMastodon;
@@ -228,11 +227,8 @@ public class ConnectionActivityPub extends Connection {
     }
 
     @Override
-    public Try<AActivity> updateNote(Note note, String inReplyToOid, Attachments attachments) {
-        ActivitySender sender = ActivitySender.fromContent(this, note);
-        sender.setInReplyTo(inReplyToOid);
-        sender.setAttachments(attachments);
-        return sender.send(ActivityType.CREATE);
+    public Try<AActivity> updateNote(Note note) {
+        return ActivitySender.fromContent(this, note).send(ActivityType.CREATE);
     }
 
     @Override

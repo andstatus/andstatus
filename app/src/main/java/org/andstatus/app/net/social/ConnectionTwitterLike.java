@@ -575,26 +575,25 @@ public abstract class ConnectionTwitterLike extends Connection {
     }
     
     @Override
-    public Try<AActivity> updateNote(Note note, String inReplyToOid, Attachments attachments) {
-        if (StringUtil.isEmpty(inReplyToOid) && note.audience().hasNonSpecial() &&
-                note.audience().getVisibility().isPrivate()) {
-            return updatePrivateNote(note, note.audience().getFirstNonSpecial().oid, attachments);
+    public Try<AActivity> updateNote(Note note) {
+        if (note.audience().hasNonSpecial() && note.audience().getVisibility().isPrivate()) {
+            return updatePrivateNote(note, note.audience().getFirstNonSpecial().oid);
         }
-        return updateNote2(note, inReplyToOid, attachments);
+        return updateNote2(note);
     }
 
-    abstract Try<AActivity> updateNote2(Note note, String inReplyToOid, Attachments attachments);
+    abstract Try<AActivity> updateNote2(Note note);
 
-    void updateNoteSetFields(Note note, String inReplyToOid, JSONObject formParams) throws JSONException {
+    void updateNoteSetFields(Note note, JSONObject formParams) throws JSONException {
         if (StringUtil.nonEmpty(note.getContentToPost())) {
             formParams.put("status", note.getContentToPost());
         }
-        if (StringUtil.nonEmpty(inReplyToOid)) {
-            formParams.put("in_reply_to_status_id", inReplyToOid);
+        if (StringUtil.nonEmptyNonTemp(note.getInReplyTo().getOid())) {
+            formParams.put("in_reply_to_status_id", note.getInReplyTo().getOid());
         }
     }
 
-    private Try<AActivity> updatePrivateNote(Note note, String recipientOid, Attachments attachments) {
+    private Try<AActivity> updatePrivateNote(Note note, String recipientOid) {
         JSONObject formParams = new JSONObject();
         try {
             formParams.put("text", note.getContentToPost());

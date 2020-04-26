@@ -336,10 +336,11 @@ public class Note extends AObject {
         return inReplyTo == null ? AActivity.EMPTY : inReplyTo;
     }
 
-    public void setInReplyTo(AActivity activity) {
+    public Note setInReplyTo(AActivity activity) {
         if (activity != null && activity.nonEmpty()) {
             inReplyTo = activity;
         }
+        return this;
     }
 
     public boolean isSensitive() {
@@ -371,10 +372,12 @@ public class Note extends AObject {
         return note;
     }
 
-    public Note copy(Optional<String> oidNew, Optional<Attachments> attachments) {
-        return oidNew.filter(StringUtil::nonEmpty).isPresent() || attachments.filter(Attachments::nonEmpty).isPresent()
-            ? new Note(this, oidNew, attachments)
-            : this;
+    public Note withAttachments(Attachments attachments) {
+        return new Note(this, Optional.empty(), Optional.of(attachments));
+    }
+
+    public Note withNewOid(String oid) {
+        return new Note(this, Optional.of(oid), Optional.empty());
     }
 
     private Note(Note note, Optional<String> oidNew, Optional<Attachments> attachments) {

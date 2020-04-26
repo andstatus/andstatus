@@ -56,9 +56,9 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     private static final String ATTACHMENTS_FIELD_NAME = "attachments";
     private static final String CONVERSATION_ID_FIELD_NAME = "statusnet_conversation_id";
     private static final String HTML_BODY_FIELD_NAME = "statusnet_html";
-    public static final Pattern GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN = Pattern.compile(
+    private static final Pattern GNU_SOCIAL_FAVORITED_SOMETHING_BY_PATTERN = Pattern.compile(
             "(?s)([^ ]+) favorited something by [^ ]+ (.+)");
-    public static final Pattern GNU_SOCIAL_FAVOURITED_A_STATUS_BY_PATTERN = Pattern.compile(
+    private static final Pattern GNU_SOCIAL_FAVOURITED_A_STATUS_BY_PATTERN = Pattern.compile(
             "(?s)([^ ]+) favourited (a status by [^ ]+)");
 
     @NonNull
@@ -131,17 +131,17 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
     }
 
     @Override
-    protected Try<AActivity> updateNote2(Note note, String inReplyToOid, Attachments attachments) {
+    protected Try<AActivity> updateNote2(Note note) {
         JSONObject formParams = new JSONObject();
         try {
-            super.updateNoteSetFields(note, inReplyToOid, formParams);
+            super.updateNoteSetFields(note, formParams);
 
             // This parameter was removed from Twitter API, but it still is in GNUsocial
             formParams.put("source", HttpConnection.USER_AGENT);
 
-            if (attachments.toUploadCount() > 0) {
+            if (note.attachments.toUploadCount() > 0) {
                 formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media");
-                formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachments.getFirstToUpload().uri.toString());
+                formParams.put(HttpConnection.KEY_MEDIA_PART_URI, note.attachments.getFirstToUpload().uri.toString());
             }
         } catch (JSONException e) {
             return Try.failure(e);

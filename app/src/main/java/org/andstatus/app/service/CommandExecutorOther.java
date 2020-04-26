@@ -47,6 +47,9 @@ import java.util.stream.Collectors;
 
 import io.vavr.control.Try;
 
+import static org.andstatus.app.data.DownloadStatus.UNKNOWN;
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
+
 class CommandExecutorOther extends CommandExecutorStrategy{
     private static final int ACTORS_LIMIT = 400;
 
@@ -343,29 +346,32 @@ class CommandExecutorOther extends CommandExecutorStrategy{
 
     private Try<Boolean> updateNote(long activityId) {
         final String method = "updateNote";
+
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, activityId);
-        Note note = Note.loadContentById(execContext.myContext, noteId);
+        Note note = Note.loadContentById(execContext.myContext, noteId)
+            .withAttachments(Attachments.load(execContext.myContext, noteId));
+
+        getNoteOid(method, MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId), false)
+            .filter(StringUtil::nonEmptyNonTemp)
+            .map(inReplyToNoteOid -> AActivity.newPartialNote(execContext.getMyAccount().getActor(),
+                Actor.EMPTY, inReplyToNoteOid, DATETIME_MILLIS_NEVER, UNKNOWN)
+                .setOid(inReplyToNoteOid))
+            .onSuccess(note::setInReplyTo);
+
         DemoData.crashTest(() -> note.getContent().startsWith("Crash me on sending 2015-04-10"));
 
-        String content = note.getContentToPost();
-        // TODO: Add attachments to Note right here
-        Attachments attachments = Attachments.load(execContext.myContext, noteId);
-        String msgLog = (StringUtil.nonEmpty(note.getName()) ? "name:'" + note.getName() + "'; " : "")
-                + (StringUtil.nonEmpty(note.getSummary()) ? "summary:'" + note.getSummary() + "'; " : "")
-                + (StringUtil.nonEmpty(content) ? "content:'" + MyLog.trimmedString(content, 80) + "'" : "")
-                + (attachments.isEmpty() ? "" : "; " + attachments);
-
         if (MyLog.isVerboseEnabled()) {
+            String msgLog = (StringUtil.nonEmpty(note.getName()) ? "name:'" + note.getName() + "'; " : "")
+                + (StringUtil.nonEmpty(note.getSummary()) ? "summary:'" + note.getSummary() + "'; " : "")
+                + (StringUtil.nonEmpty(note.getContent()) ? "content:'" + MyLog.trimmedString(note.getContentToPost(), 80) + "'" : "")
+                + (note.attachments.isEmpty() ? "" : "; " + note.attachments);
             MyLog.v(this, () -> method + ";" + msgLog);
         }
         if (!note.getStatus().mayBeSent()) {
             return Try.failure(ConnectionException.hardConnectionException("Wrong note status: " + note.getStatus(), null));
         }
-        long inReplyToNoteId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId);
-        Try<String> inReplyToNoteOid = getNoteOid(method, inReplyToNoteId, false);
 
-        return inReplyToNoteOid
-        .flatMap(oid -> getConnection().updateNote(note, oid, attachments))
+        return getConnection().updateNote(note)
         .flatMap(activity ->
             failIfEmptyNote(method, noteId, activity.getNote()).map(b -> {
                 // The note was sent successfully, so now update unsent message

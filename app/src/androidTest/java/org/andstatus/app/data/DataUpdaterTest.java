@@ -59,6 +59,7 @@ import java.util.Optional;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.data.DemoNoteInserter.assertVisibility;
+import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -311,7 +312,7 @@ public class DataUpdaterTest {
                         "irtUser" +  iterationId + demoData.testRunUid)
                         .setUsername("irt" + authorUsername +  iterationId)
                         .build(),
-                inReplyToOid, 0, DownloadStatus.UNKNOWN);
+                inReplyToOid, DATETIME_MILLIS_NEVER, DownloadStatus.UNKNOWN);
         note.setInReplyTo(inReplyTo);
 
         long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;

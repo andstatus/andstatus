@@ -131,15 +131,15 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
      * @return
      */
     @Override
-    protected Try<AActivity> updateNote2(Note note, String inReplyToOid, Attachments attachments) {
+    protected Try<AActivity> updateNote2(Note note) {
         JSONObject obj = new JSONObject();
         try {
-            super.updateNoteSetFields(note, inReplyToOid, obj);
+            super.updateNoteSetFields(note, obj);
             if (note.isSensitive()) {
                 obj.put(SENSITIVE_PROPERTY, note.isSensitive());
             }
             List<String> ids = new ArrayList<>();
-            for (Attachment attachment : attachments.list) {
+            for (Attachment attachment : note.attachments.list) {
                 if (UriUtils.isDownloadable(attachment.uri)) {
                     MyLog.i(this, "Skipped downloadable " + attachment);
                 } else {

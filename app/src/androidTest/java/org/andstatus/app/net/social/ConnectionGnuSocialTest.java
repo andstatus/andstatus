@@ -169,9 +169,9 @@ public class ConnectionGnuSocialTest {
     public void testPostWithMedia() throws IOException {
         mock.addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
         Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
-                .setContentPosted("Test post note with media");
-        AActivity activity = mock.connection.updateNote(note, "",
-                new Attachments().add(Attachment.fromUri(demoData.localImageTestUri))).get();
+                .setContentPosted("Test post note with media")
+                .withAttachments(new Attachments().add(Attachment.fromUri(demoData.localImageTestUri)));
+        AActivity activity = mock.connection.updateNote(note).get();
         assertEquals("Note returned",
                 privateGetNoteWithAttachment(false).getNote(), activity.getNote());
     }
@@ -187,8 +187,7 @@ public class ConnectionGnuSocialTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment);
         AActivity activity = mock.connection.getNote(NOTE_OID).get();
         if (uniqueUid) {
-            activity.setNote(activity.getNote().copy(
-                    Optional.of(activity.getNote().oid + "_" + demoData.testRunUid), Optional.empty()));
+            activity.setNote(activity.getNote().withNewOid(activity.getNote().oid + "_" + demoData.testRunUid));
         }
         assertNotNull("note returned", activity);
         assertEquals("conversationOid", "1956322", activity.getNote().conversationOid);

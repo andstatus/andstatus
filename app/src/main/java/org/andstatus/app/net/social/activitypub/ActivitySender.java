@@ -29,10 +29,8 @@ import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ActorEndpointType;
-import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.net.social.Attachments;
-import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.ApiRoutineEnum;
+import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.util.JsonUtils;
@@ -57,35 +55,21 @@ import static org.andstatus.app.net.social.activitypub.ConnectionActivityPub.SUM
 class ActivitySender {
     final ConnectionActivityPub connection;
     final Note note;
-    final Audience audience;
-    String inReplyToId = "";
-    Attachments attachments = Attachments.EMPTY;
 
-    ActivitySender(ConnectionActivityPub connection, Note note, Audience audience) {
+    ActivitySender(ConnectionActivityPub connection, Note note) {
         this.connection = connection;
         this.note = note;
-        this.audience = audience;
     }
 
     static ActivitySender fromId(ConnectionActivityPub connection, String objectId) {
         return new ActivitySender(connection,
-                Note.fromOriginAndOid(connection.getData().getOrigin(), objectId, DownloadStatus.UNKNOWN), Audience.EMPTY);
+                Note.fromOriginAndOid(connection.getData().getOrigin(), objectId, DownloadStatus.UNKNOWN));
     }
     
     static ActivitySender fromContent(ConnectionActivityPub connection, Note note) {
-        return new ActivitySender(connection, note, note.audience());
+        return new ActivitySender(connection, note);
     }
 
-    ActivitySender setInReplyTo(String inReplyToId) {
-        this.inReplyToId = inReplyToId;
-        return this;
-    }
-    
-    ActivitySender setAttachments(Attachments attachments) {
-        this.attachments = attachments;
-        return this;
-    }
-    
     Try<AActivity> send(ActivityType activityType) {
         return sendInternal(activityType)
             .flatMap(HttpReadResult::getJsonObject)
@@ -155,18 +139,18 @@ class ActivitySender {
         if (StringUtil.nonEmpty(note.getContent())) {
             obj.put(CONTENT_PROPERTY, note.getContentToPost());
         }
-        if (!StringUtil.isEmpty(inReplyToId)) {
-            obj.put("inReplyTo", inReplyToId);
+        if (!StringUtil.isEmpty(note.getInReplyTo().getOid())) {
+            obj.put("inReplyTo", note.getInReplyTo().getOid());
         }
         activity.put("object", obj);
         return activity;
     }
 
     private void addAttachments(JSONObject obj) throws ConnectionException, JSONException {
-        if (attachments.isEmpty()) return;
+        if (note.attachments.isEmpty()) return;
 
         JSONArray jsoAttachments = new JSONArray();
-        for (Attachment attachment: attachments.list) {
+        for (Attachment attachment: note.attachments.list) {
             if (UriUtils.isDownloadable(attachment.uri)) {
                 // TODO
                 MyLog.i(this, "Skipped downloadable " + attachment);
@@ -199,8 +183,8 @@ class ActivitySender {
     }
 
     private void setAudience(JSONObject activity, ActivityType activityType) throws JSONException {
-        audience.getRecipients().forEach(recipient -> addToAudience(activity, "to", recipient));
-        if (audience.noRecipients()) {
+        note.audience().getRecipients().forEach(recipient -> addToAudience(activity, "to", recipient));
+        if (note.audience().noRecipients()) {
             // "clients must be aware that the server will only forward new Activities
             //   to addressees in the to, bto, cc, bcc, and audience fields"
             addToAudience(activity, "to", Actor.PUBLIC);
@@ -257,7 +241,7 @@ class ActivitySender {
             obj.put("id", note.oid);
             obj.put("type", ApObjectType.NOTE.id());
         } else {
-            if (!note.hasSomeContent() && attachments.isEmpty()) {
+            if (!note.hasSomeContent()) {
                 throw new IllegalArgumentException("Nothing to send");
             }
             obj.put("attributedTo", getActor().oid);
