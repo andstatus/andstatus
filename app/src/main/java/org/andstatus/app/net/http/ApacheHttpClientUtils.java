@@ -19,12 +19,10 @@ package org.andstatus.app.net.http;
 import android.content.ContentResolver;
 import android.net.Uri;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.JsonUtils;
 import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.UriUtils;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
@@ -44,38 +42,37 @@ import cz.msebera.android.httpclient.protocol.HTTP;
 
 class ApacheHttpClientUtils {
 
-    static MultipartFormEntityBytes buildMultipartFormEntityBytes(JSONObject params) throws ConnectionException {
-        HttpEntity httpEntity = multiPartFormEntity(params);
+    static MultipartFormEntityBytes buildMultipartFormEntityBytes(HttpRequest request) throws ConnectionException {
+        HttpEntity httpEntity = multiPartFormEntity(request);
         return new MultipartFormEntityBytes(
                 httpEntity.getContentType().getName(),
                 httpEntity.getContentType().getValue(),
                 httpEntityToBytes(httpEntity));
     }
 
-    static HttpEntity multiPartFormEntity(JSONObject formParams) throws ConnectionException {
+    static HttpEntity multiPartFormEntity(HttpRequest request) throws ConnectionException {
         MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        Uri mediaUri = null;
-        String mediaPartName = "";
-        Iterator<String> iterator =  formParams.keys();
-        ContentType textContentType = ContentType.create(HTTP.PLAIN_TEXT_TYPE, HTTP.UTF_8);
-        while (iterator.hasNext()) {
-            String name = iterator.next();
-            String value = JsonUtils.optString(formParams, name);
-            if (HttpConnection.KEY_MEDIA_PART_NAME.equals(name)) {
-                mediaPartName = value;
-            } else if (HttpConnection.KEY_MEDIA_PART_URI.equals(name)) {
-                mediaUri = UriUtils.fromString(value);
-            } else {
+        request.postParams.ifPresent(formParams -> {
+            Iterator<String> iterator = formParams.keys();
+            ContentType textContentType = ContentType.create(HTTP.PLAIN_TEXT_TYPE, HTTP.UTF_8);
+            while (iterator.hasNext()) {
+                String name = iterator.next();
+                String value = JsonUtils.optString(formParams, name);
                 // see http://stackoverflow.com/questions/19292169/multipartentitybuilder-and-charset
                 builder.addTextBody(name, value, textContentType);
             }
+        });
+        final ContentResolver contentResolver = request.myContext().context().getContentResolver();
+        if (contentResolver == null) {
+            throw ConnectionException.fromStatusCode(ConnectionException.StatusCode.NOT_FOUND,
+                    "Content Resolver is null in " + request.myContext().context());
         }
-        final ContentResolver contentResolver = MyContextHolder.get().context().getContentResolver();
-        if (!StringUtil.isEmpty(mediaPartName) && !UriUtils.isEmpty(mediaUri) && contentResolver != null) {
+        if (request.mediaUri.isPresent()) {
+            Uri mediaUri = request.mediaUri.get();
             try (InputStream ins = contentResolver.openInputStream(mediaUri)) {
                 ContentType mediaContentType = ContentType.create(
                         MyContentType.uri2MimeType(contentResolver, mediaUri));
-                builder.addBinaryBody(mediaPartName, FileUtils.getBytes(ins), mediaContentType, mediaUri.getPath());
+                builder.addBinaryBody(request.mediaPartName, FileUtils.getBytes(ins), mediaContentType, mediaUri.getPath());
             } catch (SecurityException | IOException e) {
                 throw ConnectionException.hardConnectionException("mediaUri='" + mediaUri + "'", e);
             }

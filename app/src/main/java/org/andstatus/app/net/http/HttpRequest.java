@@ -21,6 +21,7 @@ import com.github.scribejava.core.model.Verb;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.social.ApiRoutineEnum;
+import org.andstatus.app.net.social.Attachment;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.util.UriUtils;
@@ -41,6 +42,8 @@ public class HttpRequest {
     private boolean isLegacyHttpProtocol = false;
     final long maxSizeBytes;
 
+    String mediaPartName = "file";
+    Optional<Uri> mediaUri = Optional.empty();
     public Optional<JSONObject> postParams = Optional.empty();
     File fileResult = null;
 
@@ -93,6 +96,16 @@ public class HttpRequest {
     boolean isFileTooLarge() {
         return  fileResult != null && fileResult.isFile() && fileResult.exists()
             && fileResult.length() > MyPreferences.getMaximumSizeOfAttachmentBytes();
+    }
+
+    public HttpRequest withMediaPartName(String mediaPartName) {
+        this.mediaPartName = mediaPartName;
+        return asPost();
+    }
+
+    public HttpRequest withAttachmentToPost(Attachment attachment) {
+        this.mediaUri = Optional.ofNullable(attachment.mediaUriToPost()).filter(UriUtils::nonEmpty);
+        return asPost();
     }
 
     public HttpRequest withPostParams(JSONObject postParams) {

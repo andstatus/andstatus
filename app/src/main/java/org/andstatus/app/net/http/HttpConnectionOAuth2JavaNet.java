@@ -105,43 +105,36 @@ public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
         try {
             OAuth20Service service = getService(false);
             final OAuthRequest request = new OAuthRequest(Verb.POST, result.getUrlObj().toString());
-            result.request.postParams.ifPresent(params -> {
-                try {
-                    if (params.has(HttpConnection.KEY_MEDIA_PART_URI)) {
-                        MultipartFormEntityBytes bytes = ApacheHttpClientUtils.buildMultipartFormEntityBytes(params);
-                        request.addHeader(bytes.contentTypeName, bytes.contentTypeValue);
-                        request.setPayload(bytes.bytes);
-                    } else {
-                        if (data.optOriginContentType().map(value -> {
-                            request.addHeader("Content-Type", value);
-                            request.setPayload(params.toString().getBytes(StandardCharsets.UTF_8));
-                            return false;
-                        }).orElse(true))
-                        {
-                            Iterator<String> iterator = params.keys();
-                            while (iterator.hasNext()) {
-                                String key = iterator.next();
-                                try {
-                                    Object value = params.get(key);
-                                    if (value != null) {
-                                        if (value instanceof List) {
-                                            ((List<String>) value).forEach( v -> request.addBodyParameter(key, v));
-                                        } else {
-                                            request.addBodyParameter(key, value.toString());
-                                        }
-                                    }
-                                } catch (JSONException e) {
-                                    MyLog.w(this, "Failed to get key " + key, e);
-                                    result.setException(e);
+            if (result.request.mediaUri.isPresent()) {
+                MultipartFormEntityBytes bytes = ApacheHttpClientUtils.buildMultipartFormEntityBytes(result.request);
+                request.addHeader(bytes.contentTypeName, bytes.contentTypeValue);
+                request.setPayload(bytes.bytes);
+            } else if(result.request.postParams.isPresent()) {
+                JSONObject params = result.request.postParams.get();
+                if (data.optOriginContentType().map(value -> {
+                    request.addHeader("Content-Type", value);
+                    request.setPayload(params.toString().getBytes(StandardCharsets.UTF_8));
+                    return false;
+                }).orElse(true)) {
+                    Iterator<String> iterator = params.keys();
+                    while (iterator.hasNext()) {
+                        String key = iterator.next();
+                        try {
+                            Object value = params.get(key);
+                            if (value != null) {
+                                if (value instanceof List) {
+                                    ((List<String>) value).forEach( v -> request.addBodyParameter(key, v));
+                                } else {
+                                    request.addBodyParameter(key, value.toString());
                                 }
                             }
+                        } catch (JSONException e) {
+                            MyLog.w(this, "Failed to get key " + key, e);
+                            result.setException(e);
                         }
                     }
-                } catch (Exception e) {
-                    result.setException(e);
-                    MyLog.w(this, result.toString(), e);
                 }
-            });
+            }
             signRequest(request, service, false);
             final Response response = service.execute(request);
             setStatusCodeAndHeaders(result, response);

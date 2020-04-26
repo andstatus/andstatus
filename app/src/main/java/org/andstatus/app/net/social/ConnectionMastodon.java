@@ -22,7 +22,6 @@ import androidx.annotation.NonNull;
 
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.http.HttpRequest;
 import org.andstatus.app.note.KeywordsFilter;
@@ -288,7 +287,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                     // TODO
                     MyLog.i(this, "Skipped downloadable " + attachment);
                 } else {
-                    Try<AActivity> uploaded = uploadMedia(attachment.uri)
+                    Try<AActivity> uploaded = uploadMedia(attachment)
                     .map( mediaObject -> {
                         if (mediaObject != null && mediaObject.has("id")) {
                             ids.add(mediaObject.get("id").toString());
@@ -325,22 +324,16 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         }
     }
 
-    private Try<JSONObject> uploadMedia(Uri mediaUri) {
-        JSONObject formParams = new JSONObject();
-        try {
-            formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "file");
-            formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
-            return postRequest(ApiRoutineEnum.UPLOAD_MEDIA, formParams)
-                .flatMap(HttpReadResult::getJsonObject)
-                .filter(Objects::nonNull)
-                .onSuccess(jso -> {
-                    if (MyLog.isVerboseEnabled()) {
-                        MyLog.v(this, "uploaded '" + mediaUri.toString() + "' " + jso.toString());
-                    }
-                });
-        } catch (JSONException e) {
-            return Try.failure(ConnectionException.loggedJsonException(this, "Error uploading '" + mediaUri + "'", e, formParams));
-        }
+    private Try<JSONObject> uploadMedia(Attachment attachment) {
+        return tryApiPath(data.getAccountActor(), ApiRoutineEnum.UPLOAD_MEDIA)
+        .map(uri -> HttpRequest.of(ApiRoutineEnum.UPLOAD_MEDIA, uri)
+                        .withMediaPartName("file")
+                        .withAttachmentToPost(attachment)
+        )
+        .flatMap(this::execute)
+        .flatMap(HttpReadResult::getJsonObject)
+        .filter(Objects::nonNull)
+        .onSuccess(jso -> MyLog.v(this, () -> "uploaded '" + attachment + "' " + jso.toString()));
     }
 
     @Override

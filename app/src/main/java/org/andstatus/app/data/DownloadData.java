@@ -541,13 +541,6 @@ public class DownloadData implements IsEmpty {
         return MyStringBuilder.formatKeyValue(this, builder.toString());
     }
 
-    public Uri mediaUriToBePosted() {
-      if (isEmpty() || UriUtils.isDownloadable(getUri())) {
-          return Uri.EMPTY;
-      }
-      return FileProvider.downloadFilenameToUri(getFile().getFilename());
-    }
-
     @Override
     public boolean isEmpty() {
         return this == EMPTY || uri.equals(Uri.EMPTY);

@@ -138,17 +138,19 @@ public class ConnectionTwitterGnuSocial extends ConnectionTwitterLike {
 
             // This parameter was removed from Twitter API, but it still is in GNUsocial
             formParams.put("source", HttpConnection.USER_AGENT);
-
-            if (note.attachments.toUploadCount() > 0) {
-                formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media");
-                formParams.put(HttpConnection.KEY_MEDIA_PART_URI, note.attachments.getFirstToUpload().uri.toString());
-            }
         } catch (JSONException e) {
             return Try.failure(e);
         }
-        return postRequest(ApiRoutineEnum.UPDATE_NOTE, formParams)
-            .flatMap(HttpReadResult::getJsonObject)
-            .map(this::activityFromJson);
+
+        return tryApiPath(data.getAccountActor(), ApiRoutineEnum.UPDATE_NOTE)
+        .map(uri -> HttpRequest.of(ApiRoutineEnum.UPDATE_NOTE, uri)
+            .withPostParams(formParams)
+            .withMediaPartName("media")
+            .withAttachmentToPost(note.attachments.getFirstToUpload())
+        )
+        .flatMap(this::execute)
+        .flatMap(HttpReadResult::getJsonObject)
+        .map(this::activityFromJson);
     }
     
     @Override

@@ -24,8 +24,10 @@ import androidx.annotation.NonNull;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadType;
+import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.IsEmpty;
+import org.andstatus.app.util.UriUtils;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -113,6 +115,13 @@ public class Attachment implements Comparable<Attachment>, IsEmpty {
 
     public Uri getUri() {
         return uri;
+    }
+
+    public Uri mediaUriToPost() {
+        if (downloadData.isEmpty() || UriUtils.isDownloadable(getUri())) {
+            return Uri.EMPTY;
+        }
+        return FileProvider.downloadFilenameToUri(downloadData.getFile().getFilename());
     }
 
     @Override

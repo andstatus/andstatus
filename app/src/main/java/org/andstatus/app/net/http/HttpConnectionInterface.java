@@ -36,8 +36,6 @@ import io.vavr.control.Try;
 
 public interface HttpConnectionInterface {
     String USER_AGENT = "AndStatus";
-    String KEY_MEDIA_PART_NAME = "media_part_name";
-    String KEY_MEDIA_PART_URI = "media_part_uri";
 
     /**
      * The URI is consistent with "scheme" and "host" in AndroidManifest

@@ -22,7 +22,6 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.http.HttpRequest;
 import org.andstatus.app.origin.OriginConfig;
@@ -144,7 +143,7 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                     MyLog.i(this, "Skipped downloadable " + attachment);
                 } else {
                     // https://developer.twitter.com/en/docs/media/upload-media/api-reference/post-media-upload
-                    JSONObject mediaObject = uploadMedia(attachment.uri);
+                    JSONObject mediaObject = uploadMedia(attachment);
                     if (mediaObject != null && mediaObject.has("media_id_string")) {
                         ids.add(mediaObject.get("media_id_string").toString());
                     }
@@ -167,22 +166,17 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
                 .map(this::activityFromJson);
     }
 
-    private JSONObject uploadMedia(Uri mediaUri) throws ConnectionException {
-        JSONObject formParams = new JSONObject();
-        try {
-            formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "media");
-            formParams.put(HttpConnection.KEY_MEDIA_PART_URI, mediaUri.toString());
-            return postRequest(ApiRoutineEnum.UPLOAD_MEDIA, formParams)
-                    .flatMap(HttpReadResult::getJsonObject)
-                    .filter(Objects::nonNull)
-                    .onSuccess(jso -> {
-                        if (MyLog.isVerboseEnabled()) {
-                            MyLog.v(this, "uploaded '" + mediaUri.toString() + "' " + jso.toString());
-                        }
-                    }).getOrElseThrow(ConnectionException::of);
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Error uploading '" + mediaUri + "'", e, formParams);
-        }
+    private JSONObject uploadMedia(Attachment attachment) throws ConnectionException {
+        return tryApiPath(data.getAccountActor(), ApiRoutineEnum.UPLOAD_MEDIA)
+        .map(uri -> HttpRequest.of(ApiRoutineEnum.UPLOAD_MEDIA, uri)
+                        .withMediaPartName("media")
+                        .withAttachmentToPost(attachment)
+        )
+        .flatMap(this::execute)
+        .flatMap(HttpReadResult::getJsonObject)
+        .filter(Objects::nonNull)
+        .onSuccess(jso -> MyLog.v(this, () -> "uploaded '" + attachment + "' " + jso.toString()))
+        .getOrElseThrow(ConnectionException::of);
     }
 
     @Override

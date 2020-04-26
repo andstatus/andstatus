@@ -238,24 +238,17 @@ class ActivitySender {
      */
     @NonNull
     private JSONObject uploadMedia(Attachment attachment) throws ConnectionException {
-        JSONObject formParams = new JSONObject();
-        try {
-            formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachment.uri.toString());
-            Try<HttpReadResult> result = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA, getActor())
-                    .flatMap(conu -> conu.execute(conu.newRequest().withPostParams(formParams)));
-            if (result.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
-                result = Try.failure(new ConnectionException(
-                        "Error uploading '" + attachment + "': null response returned"));
-            }
-            result.filter(r -> MyLog.isVerboseEnabled())
-                .flatMap(HttpReadResult::getJsonObject)
-                .map(jso -> jso.toString(2))
-                .onSuccess(message -> MyLog.v(this, "uploaded '" + attachment + "' " + message));
-            return result.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of);
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this,
-                    "Error uploading '" + attachment + "'", e, formParams);
+        Try<HttpReadResult> result = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA, getActor())
+            .flatMap(conu -> conu.execute(conu.newRequest().withAttachmentToPost(attachment)));
+        if (result.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
+            result = Try.failure(new ConnectionException(
+                    "Error uploading '" + attachment + "': null response returned"));
         }
+        result.filter(r -> MyLog.isVerboseEnabled())
+            .flatMap(HttpReadResult::getJsonObject)
+            .map(jso -> jso.toString(2))
+            .onSuccess(message -> MyLog.v(this, "uploaded '" + attachment + "' " + message));
+        return result.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of);
     }
 
     private JSONObject buildObject(JSONObject activity) throws JSONException {

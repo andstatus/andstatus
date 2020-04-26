@@ -49,19 +49,24 @@ public class HttpConnectionApacheCommon {
         if (result.request.isLegacyHttpProtocol()) {
             httpPost.setProtocolVersion(HttpVersion.HTTP_1_0);
         }
-        result.request.postParams.ifPresent(params -> {
+        if (result.request.mediaUri.isPresent()) {
             try {
-                if (params.has(HttpConnection.KEY_MEDIA_PART_URI)) {
-                    httpPost.setEntity(ApacheHttpClientUtils.multiPartFormEntity(params));
-                } else {
-                    data.optOriginContentType().ifPresent(value -> httpPost.addHeader("Content-Type", value));
-                    fillSinglePartPost(httpPost, params);
-                }
+                httpPost.setEntity(ApacheHttpClientUtils.multiPartFormEntity(result.request));
             } catch (Exception e) {
                 result.setException(e);
                 MyLog.i(this, e);
             }
-        });
+        } else {
+            result.request.postParams.ifPresent(params -> {
+                try {
+                    data.optOriginContentType().ifPresent(value -> httpPost.addHeader("Content-Type", value));
+                    fillSinglePartPost(httpPost, params);
+                } catch (Exception e) {
+                    result.setException(e);
+                    MyLog.i(this, e);
+                }
+            });
+        }
         return specific.httpApachePostRequest(httpPost, result);
     }
 

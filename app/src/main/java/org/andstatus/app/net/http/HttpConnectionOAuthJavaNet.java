@@ -27,7 +27,6 @@ import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedOutputStream;
@@ -131,17 +130,21 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             conn.setDoOutput(true);
             conn.setDoInput(true);
             conn.setRequestMethod("POST");
-            result.request.postParams.ifPresent(params -> {
-                try {
-                    if (params.has(HttpConnection.KEY_MEDIA_PART_URI)) {
-                        writeMedia(conn, params);
-                    } else {
-                        writeJson(conn, result.request, params);
-                    }
-                } catch (Exception e) {
-                    result.setException(e);
+            try {
+                if (result.request.mediaUri.isPresent()) {
+                    writeMedia(conn, result.request);
+                } else {
+                    result.request.postParams.ifPresent(params -> {
+                        try {
+                            writeJson(conn, result.request, params);
+                        } catch (Exception e) {
+                            result.setException(e);
+                        }
+                    });
                 }
-            });
+            } catch (Exception e) {
+                result.setException(e);
+            }
             setStatusCodeAndHeaders(result, conn);
             switch(result.getStatusCode()) {
                 case OK:
@@ -158,10 +161,9 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     }
 
     /** This method is not legacy HTTP */
-    private void writeMedia(HttpURLConnection conn, JSONObject formParams)
-            throws IOException, JSONException {
+    private void writeMedia(HttpURLConnection conn, HttpRequest request) throws IOException {
         final ContentResolver contentResolver = MyContextHolder.get().context().getContentResolver();
-        Uri mediaUri = Uri.parse(formParams.getString(KEY_MEDIA_PART_URI));
+        Uri mediaUri = request.mediaUri.get();
         conn.setChunkedStreamingMode(0);
         conn.setRequestProperty("Content-Type", MyContentType.uri2MimeType(contentResolver, mediaUri));
         signConnection(conn, getConsumer(), false);

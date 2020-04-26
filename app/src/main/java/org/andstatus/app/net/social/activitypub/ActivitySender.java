@@ -23,7 +23,6 @@ import androidx.annotation.NonNull;
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
@@ -171,18 +170,18 @@ class ActivitySender {
             );
     }
 
-    private JSONObject newActivityOfThisAccount(ActivityType activityType) throws JSONException, ConnectionException {
+    private JSONObject newActivityOfThisAccount(ActivityType activityType) throws JSONException {
         JSONObject activity = new JSONObject();
         activity.put("@context", "https://www.w3.org/ns/activitystreams");
         activity.put("type", activityType.activityPubValue);
 
-        setAudience(activity, activityType);
+        setAudience(activity);
 
         activity.put("actor", getActor().oid);
         return activity;
     }
 
-    private void setAudience(JSONObject activity, ActivityType activityType) throws JSONException {
+    private void setAudience(JSONObject activity) {
         note.audience().getRecipients().forEach(recipient -> addToAudience(activity, "to", recipient));
         if (note.audience().noRecipients()) {
             // "clients must be aware that the server will only forward new Activities
@@ -213,26 +212,21 @@ class ActivitySender {
 
     @NonNull
     private JSONObject uploadMedia(Attachment attachment) throws ConnectionException {
-        JSONObject formParams = new JSONObject();
-        try {
-            formParams.put(HttpConnection.KEY_MEDIA_PART_NAME, "file");
-            formParams.put(HttpConnection.KEY_MEDIA_PART_URI, attachment.uri.toString());
-            Try<HttpReadResult> result = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA,
-                    TimelinePosition.EMPTY, getActor())
-                .flatMap(conu -> conu.execute(conu.newRequest().withPostParams(formParams)));
-            if (result.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
-                result = Try.failure(new ConnectionException(
-                        "Error uploading '" + attachment + "': null response returned"));
-            }
-            result.filter(r -> MyLog.isVerboseEnabled())
-                .flatMap(HttpReadResult::getJsonObject)
-                .map(jso -> jso.toString(2))
-                .onSuccess(message -> MyLog.v(this, "uploaded '" + attachment + "' " + message));
-            return result.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of);
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this,
-                    "Error uploading '" + attachment + "'", e, formParams);
+        Try<HttpReadResult> result = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA,
+                TimelinePosition.EMPTY, getActor())
+            .flatMap(conu -> conu.execute(conu.newRequest()
+                    .withMediaPartName("file")
+                    .withAttachmentToPost(attachment)
+            ));
+        if (result.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of) == null) {
+            result = Try.failure(new ConnectionException(
+                    "Error uploading '" + attachment + "': null response returned"));
         }
+        result.filter(r -> MyLog.isVerboseEnabled())
+            .flatMap(HttpReadResult::getJsonObject)
+            .map(jso -> jso.toString(2))
+            .onSuccess(message -> MyLog.v(this, "uploaded '" + attachment + "' " + message));
+        return result.flatMap(HttpReadResult::getJsonObject).getOrElseThrow(ConnectionException::of);
     }
 
     private JSONObject buildObject(JSONObject activity) throws JSONException {
