@@ -2,9 +2,9 @@
 
 AndStatus is an Open Source multiple accounts client for multiple Social networks, including
 [Mastodon](https://github.com/tootsuite/documentation),
-[Twitter](https://twitter.com),  
-[ActivityPub](https://socialhub.activitypub.rocks/c/activitypub/c2s/6) (Client to Server),  
-[GNU social](http://gnu.io/social) and [Pump.io](http://pump.io).
+[Twitter](https://twitter.com),
+[ActivityPub](https://socialhub.activitypub.rocks/c/activitypub/c2s/6) (Client to Server),
+[GNU social](http://gnu.io/social) and [Pump.io](http://pump.io).  
 AndStatus can combine your feeds from all networks into one Timeline,
 and it allows you to read and post even when you are offline.
 
