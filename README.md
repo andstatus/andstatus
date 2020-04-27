@@ -10,7 +10,7 @@ For Android v.7.0+ devices.
 Under Free/Libre and Open Source License.
 
 [![Build status](https://api.travis-ci.org/andstatus/andstatus.svg?branch=master)](https://travis-ci.org/andstatus/andstatus) 
-[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=andstatus)](https://sonarcloud.io/dashboard?id=andstatus)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=andstatus&metric=alert_status)](https://sonarcloud.io/dashboard?id=andstatus)
 
 See the [Change Log](http://andstatus.org/changelog.html) for descriptions of all the features of AndStatus
  and for the links to their discussion.
@@ -32,7 +32,7 @@ See the [Change Log](http://andstatus.org/changelog.html) for descriptions of al
 
 Read the [FAQ](doc/FAQ.md) to help you find information that is not present on this page.
 
-<p align="middle">
+<p>
 <img alt="The Home Timeline with an image attached" src="doc/screenshots/scr-timeline.png" height="400" />
 <img src="doc/images/5x5.png" width="5" />
 <img alt="The Home Timeline with an image attached" src="doc/screenshots/scr-message-editor.jpg" height="400" />
