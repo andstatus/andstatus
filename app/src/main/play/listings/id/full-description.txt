@@ -1,0 +1,22 @@
+AndStatus adalah klien jejaring sosial dengan lalu lintas Open Source yang rendah dengan percakapan berulir seperti pohon.
+Ini mendukung jaringan sosial yang berbeda, termasuk
+Sosial GNU (mis., Keluar.se, LoMemuat Rata-rata, Vinilox, dll.), Kericau dan Pump.io.
+AndStatus dapat menggabungkan umpan Anda dari semua jaringan menjadi satu Garis waktu,
+dan ini memungkinkan Anda untuk membaca dan mengeposkan bahkan saat offline.
+
+Untuk perangkat Android v.7.0 +.
+
+Membedakan fitur AndStatus:
+
+1. Banyak akun di jaringan sosial yang berbeda. Anda mungkin memiliki beberapa akun di masing-masing, tulis/balas sebagai "Anda" dan bagikan antara akun dan sistem.
+2. Anda tidak perlu online untuk membaca jadwal dan memposting pembaruan Anda: draf dan posting yang tidak terkirim disimpan bahkan setelah di-reboot. Mereka akan dikirim saat perangkat Anda Online.
+3. Nyaman seperti "Conversation view".
+4. "Penelusuran global" yang memungkinkan Anda mencari pesan publik di semua jaringan dengan satu kueri.
+5. Daftar Teman dan Pengikut, disajikan sebagai Daftar Pengguna dan sebagai Garis Waktu (dengan pesan terbaru dari setiap pengguna)
+6. Tweet/pesan/avatar/gambar terlampir disinkronkan di latar belakang, bila perangkat Anda memiliki koneksi yang baik. Secara default, lampiran hanya didownload melalui WiFi.
+7. Data dalam cache dapat disimpan selama bertahun-tahun atau beberapa hari saja - ini pilihan Anda.
+8. Membuat cadangan dan memulihkan akun dan pesan di antara perangkat Anda. Memiliki data anda!
+9. Gratis dan tanpa iklan, didukung masyarakat.
+
+Lihat Log Perubahan untuk deskripsi semua fitur AndStatus yang memiliki tautan ke diskusi mereka:
+http://andstatus.org/changelog.html

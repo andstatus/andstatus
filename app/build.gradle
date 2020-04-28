@@ -1,5 +1,13 @@
-apply plugin: 'com.android.application'
-apply plugin: "org.sonarqube"
+plugins {
+    id 'com.android.application'
+    id 'org.sonarqube'
+    id 'com.github.triplet.play' version '2.7.5'
+}
+
+if (project.hasProperty("andstatus.google-play-publisher")
+        && new File(project.property("andstatus.google-play-publisher").toString() + ".gradle").exists()) {
+    apply from: project.property("andstatus.google-play-publisher") + ".gradle";
+}
 
 android {
     compileSdkVersion rootProject.compileSdkVersion

@@ -1,0 +1,22 @@
+AndStatus este un client Open Source cu trafic redus pentru rețele sociale cu conversațiile aranjate în stilul unui copac.
+Funcționează cu diferite rețele sociale, incluzând
+GNU social (ex. Quitter.se, LoadAverage, Vinilox, etc.), Twitter and Pump.io.
+AndStatus poate combina feed-urile din toate rețelele într-o singură Cronologie
+și vă permite să citiți și să postați chiar când sunteți offline.
+
+Pentru dispozitive Android v.7.0+.
+
+Trăsături ce diferențiază AndStatus:
+
+1. Mai multe conturi în Rețele sociale diferite. Poți să ai mai multe conturi de fiecare, scrie/răspunde ca orice "Tu" și împărtășește între conturi și sisteme.
+2. Nu trebuie să fiți online pentru a citi cronologiile și să postați actualizările: schițele și post-ările netrimise sunt păstrate chiar și după ce resetați programul. Vor fi trimise când dispozitivul va fi Online.
+3. "Conversațiile" aranjate, în mod convenient, în stilul unui copac.
+4. "Căutare globală" ce îți permite să cauți mesajele publice în toate rețelele cu doar o căutare.
+5. Liste de Prieteni și Urmăritori, prezentate ca liste de Utilizatori și Cronologii (cu cele mai recente mesaje ale fiecărui utilizator)
+6. Tweet-uri/mesaje/iconițe utilizator/imagini atașate sunt sincronizate în fundal, când dispozitivul are o conexiune bună. Ca setare de bază, atașamentele sunt descărcate numai prin WiFi.
+7. Informația din cache poate fi stocată pentru câțiva ani sau pentru câteva zile doar - e opțiunea ta.
+8. Copii de rezervă și refacere conturi și mesaje între dispozitivele tale. Fi stăpânul informației tale!
+9. Gratis și fără reclame, susținut de comunitate.
+
+Vezi o schimbare a Log-ului pentru descrieri ale tuturor caracteristicilor AndStatus cu link-uri către discuțiile lor:
+http://andstatus.org/changelog.html

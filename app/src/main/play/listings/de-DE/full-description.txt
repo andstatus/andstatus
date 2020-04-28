@@ -1,0 +1,21 @@
+AndStatus ist ein Open-Source-Client für mehrere Accounts in mehreren sozialen Netzwerken, darunter
+GNU social, Mastodon, Twitter und Pump.io.
+AndStatus kann Ihre Feeds aus allen Netzen in einer Timeline kombinieren,
+und es erlaubt Ihnen zu lesen und zu schreiben, auch wenn Sie offline sind.
+
+Für Android v.7.0+ Geräte.
+
+Unterscheidungsmerkmale von AndStatus:
+
+1. Viele Konten auf unterschiedlichen sozialen Netzwerken. Sie können mehrere Konten in jedem haben, als jedes "Sie" schreiben/antworten und zwischen Konten und Netzwerken teilen.
+2. Sie müssen nicht online sein um Timelines zu lesen und Ihre Updates zu posten: Entwürfe und nicht gesendete Beiträge bleiben sogar nach einem Neustart erhalten. Sie werden versendet, sobald das Gerät wieder Online ist.
+3. Komfortable baumartige "Gesprächsansicht".
+4. "Globale Suche", mit der Sie öffentliche Notizen in allen Netzen mit einer Abfrage durchsuchen können.
+5. Listen von Freunden und Nachfolgern, die als Benutzerlisten und als Zeitleisten (mit der letzten Notiz jedes Benutzers) dargestellt werden.
+6. Notizen (Tweets)/Avatare/angehängte Bilder werden im Hintergrund synchronisiert, wenn Ihr Gerät eine gute Verbindung hat. Standardmäßig werden Anhänge nur über WLAN heruntergleaden.
+7. Daten können für Jahre oder nur wenige Tage zwischengespeichert werden - du hast die Wahl.
+8. Sichern Sie Konten und Notizen und stellen Sie sie auf jedem Ihrer Geräte wieder her. Besitzen Sie Ihre Daten!
+9. Kostenlos und werbefrei - unterstützt von einer Gemeinschaft.
+
+Werfen Sie einen Blick in das Changelog für Beschreibungen von allen Funktionen von AndStatus mit Links zu den jeweiligen Diskussionen:
+http://andstatus.org/changelog.html
