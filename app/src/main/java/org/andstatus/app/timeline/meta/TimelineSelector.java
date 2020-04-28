@@ -19,8 +19,9 @@ package org.andstatus.app.timeline.meta;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.BaseColumns;
-import androidx.fragment.app.FragmentActivity;
 import android.widget.TextView;
+
+import androidx.fragment.app.FragmentActivity;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
@@ -36,7 +37,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -59,7 +59,7 @@ public class TimelineSelector extends SelectorDialog {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        Objects.requireNonNull(getArguments());
+        requireArguments();
         setTitle(R.string.dialog_title_select_timeline);
         Timeline currentTimeline = myContext.timelines().fromId(getArguments().
                 getLong(IntentExtra.TIMELINE_ID.key, 0));

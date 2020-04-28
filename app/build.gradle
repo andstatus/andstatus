@@ -4,15 +4,6 @@ plugins {
     id 'com.github.triplet.play' version '2.7.5'
 }
 
-if (project.hasProperty("andstatus.google-play-publisher")
-        && new File(project.property("andstatus.google-play-publisher").toString() + ".gradle").exists()) {
-    apply from: project.property("andstatus.google-play-publisher") + ".gradle";
-} else {
-    play {
-        enabled = false
-    }
-}
-
 android {
     compileSdkVersion rootProject.compileSdkVersion
     buildToolsVersion rootProject.buildToolsVersion
@@ -72,6 +63,15 @@ sonarqube {
         property "sonar.import_unknown_files", true
 
         property "sonar.android.lint.report", "./build/outputs/lint-results.xml"
+    }
+}
+
+if (project.hasProperty("andstatus.google-play-publisher")
+        && new File(project.property("andstatus.google-play-publisher").toString() + ".gradle").exists()) {
+    apply from: project.property("andstatus.google-play-publisher") + ".gradle";
+} else {
+    play {
+        enabled = false
     }
 }
 
