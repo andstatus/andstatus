@@ -1,1 +1,0 @@
-Cliente liviano para redes sociales basadas en conversaciones ramificadas

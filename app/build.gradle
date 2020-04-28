@@ -7,6 +7,10 @@ plugins {
 if (project.hasProperty("andstatus.google-play-publisher")
         && new File(project.property("andstatus.google-play-publisher").toString() + ".gradle").exists()) {
     apply from: project.property("andstatus.google-play-publisher") + ".gradle";
+} else {
+    play {
+        enabled = false
+    }
 }
 
 android {
@@ -14,8 +18,8 @@ android {
     buildToolsVersion rootProject.buildToolsVersion
 
     defaultConfig {
-        versionCode 313
-        versionName "55.01"
+        versionCode 314
+        versionName "55.02"
 
         applicationId "org.andstatus.app"
         minSdkVersion rootProject.minSdkVersion
