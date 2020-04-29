@@ -1,3 +1,0 @@
-v.52.01 Fixes of below features
-v.52. Show multiple attachments for incoming notes. Create notes with multiple attachments for ActivityPub and for Mastodon.
-Get max note size for Pleroma from instance config.
