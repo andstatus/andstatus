@@ -661,13 +661,13 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return StringUtil.toTempOid(isWebFingerIdValid(webFingerId) ? webFingerId : validUserName);
     }
 
-    /** Tries to find this actor in the home origin (the same host...).
+    /** Tries to find this actor in his home origin (the same host...).
      * Returns the same Actor, if not found */
     public Actor toHomeOrigin() {
-        return origin.getHost().equals(getConnectionHost())
+        return origin.getHost().equals(getIdHost())
             ? this
             : user.actorIds.stream().map(id -> NullUtil.getOrDefault(origin.myContext.users().actors, id, Actor.EMPTY))
-                .filter(a -> a.nonEmpty() && a.origin.getHost().equals(getConnectionHost()))
+                .filter(a -> a.nonEmpty() && a.origin.getHost().equals(getIdHost()))
                 .findAny().orElse(this);
     }
 
