@@ -27,22 +27,29 @@ import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.net.social.Audience;
+import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.ConnectionMock;
 import org.andstatus.app.net.social.Note;
+import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.TimelineActivityTest;
 import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.util.JsonUtils;
+import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.json.JSONObject;
 import org.junit.Test;
 
-import java.util.Optional;
-
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.scrollTo;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isNotChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.note.NoteEditorTest.attachImages;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityViewItem> {
@@ -64,8 +71,8 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
     }
 
     @Test
-    public void sending() throws InterruptedException {
-        final String method = "sending";
+    public void sendingPublic() throws InterruptedException {
+        final String method = "sendingPublic";
         TestSuite.waitForListLoaded(getActivity(), 2);
 
         ActivityTestHelper.hideEditorAndSaveDraft(method, getActivity());
@@ -82,10 +89,42 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
         long noteId = ActivityTestHelper.waitAndGetIdOfStoredNote(method, content);
         Note note = Note.loadContentById(mock.connection.myContext(), noteId);
         assertEquals("Note " + note, DownloadStatus.SENDING, note.getStatus());
+        assertEquals("Visibility " + note, Visibility.PUBLIC_AND_TO_FOLLOWERS, note.audience().getVisibility());
+        assertFalse("Not sensitive " + note, note.isSensitive());
+        assertTrue("Audience should contain " + actorUniqueName +  "\n " + note,
+            note.audience().getNonSpecialActors().stream().anyMatch(a -> actorUniqueName.equals(a.getUniqueName())));
+    }
 
-        Audience audience = Audience.load(mock.getData().getOrigin(), noteId, Optional.empty());
-        assertTrue("Audience should contain " + actorUniqueName +  "\n " + audience,
-            audience.getNonSpecialActors().stream().anyMatch(a -> actorUniqueName.equals(a.getUniqueName())));
+    @Test
+    public void sendingSensitive() throws Exception {
+        final String method = "sendingSensitive";
+        TestSuite.waitForListLoaded(getActivity(), 2);
+
+        ActivityTestHelper.hideEditorAndSaveDraft(method, getActivity());
+        ActivityTestHelper.openEditor(method, getActivity());
+
+        final String content = "Sending sensitive note " + demoData.testRunUid;
+        onView(withId(R.id.is_sensitive)).check(matches(isNotChecked())).perform(scrollTo(), click());
+        // TypeTextAction doesn't work here due to auto-correction
+        onView(withId(R.id.noteBodyEditText)).perform(new ReplaceTextAction(content));
+        TestSuite.waitForIdleSync();
+
+        ActivityTestHelper.clickSendButton(method, getActivity());
+
+        long noteId = ActivityTestHelper.waitAndGetIdOfStoredNote(method, content);
+        Note note = Note.loadContentById(mock.connection.myContext(), noteId);
+        assertEquals("Note " + note, DownloadStatus.SENDING, note.getStatus());
+        assertEquals("Visibility " + note, Visibility.PUBLIC_AND_TO_FOLLOWERS, note.audience().getVisibility());
+        assertTrue("Sensitive " + note, note.isSensitive());
+
+        HttpReadResult result = mock.getHttpMock().waitForPostContaining(content);
+        JSONObject postedObject = result.request.postParams.get();
+        JSONObject jso = postedObject.getJSONObject("object");
+        assertFalse("No name " + postedObject, jso.has("name"));
+        assertEquals("Note content " + postedObject, content,
+                MyHtml.htmlToPlainText(jso.getString("content")));
+        assertEquals("Sensitive " + postedObject, "true",
+                JsonUtils.optString(jso, "sensitive", "(not found)"));
     }
 
     @Test

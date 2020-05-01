@@ -389,6 +389,7 @@ public class Note extends AObject {
         updatedDate = note.updatedDate;
         name = note.name;
         summary = note.summary;
+        isSensitive = note.isSensitive;
         setContentStored(note.content);
         inReplyTo = note.inReplyTo;
         replies = note.replies;
