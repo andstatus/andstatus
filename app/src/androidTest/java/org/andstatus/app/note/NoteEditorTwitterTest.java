@@ -17,7 +17,6 @@
 package org.andstatus.app.note;
 
 import android.content.Intent;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -99,40 +98,20 @@ public class NoteEditorTwitterTest extends TimelineActivityTest<ActivityViewItem
                 break;
             default:
                 editingStep.set(1);
-                openEditor();
+                ActivityTestHelper.openEditor("default", getActivity());
                 editingStep1();
                 break;
         }
         MyLog.v(this, "After step " + editingStep + " ended");
     }
 
-    private void openEditor() throws InterruptedException {
-        final String method = "openEditor";
-        MenuItem createNoteButton = getActivity().getOptionsMenu().findItem(R.id.createNoteButton);
-        assertTrue(createNoteButton != null);
-        View editorView = getActivity().findViewById(R.id.note_editor);
-        assertTrue(editorView != null);
-        if (editorView.getVisibility() != View.VISIBLE) {
-            assertTrue("Blog button is visible", createNoteButton.isVisible());
-            ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
-            helper.clickMenuItem(method + " opening editor", R.id.createNoteButton);
-        }
-        assertEquals("Editor appeared", View.VISIBLE, editorView.getVisibility());
-    }
-
     private void editingStep1() throws InterruptedException {
         final String method = "editingStep1";
         MyLog.v(this, method + " started");
 
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
-        helper.clickMenuItem(method + " hiding editor", R.id.saveDraftButton);
-        View editorView = getActivity().findViewById(R.id.note_editor);
-        ActivityTestHelper.waitViewInvisible(method, editorView);
-
+        View editorView = ActivityTestHelper.hideEditorAndSaveDraft(method, getActivity());
         final NoteEditor editor = getActivity().getNoteEditor();
         getInstrumentation().runOnMainSync(() -> editor.startEditingNote(data));
-        TestSuite.waitForIdleSync();
-
         ActivityTestHelper.waitViewVisible(method, editorView);
 
         assertInitialText("Initial text");
@@ -142,15 +121,15 @@ public class NoteEditorTwitterTest extends TimelineActivityTest<ActivityViewItem
     private void editingStep2() throws InterruptedException {
         final String method = "editingStep2";
         MyLog.v(this, method + " started");
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
         View editorView = getActivity().findViewById(R.id.note_editor);
         ActivityTestHelper.waitViewVisible(method + "; Restored note is visible", editorView);
         assertInitialText("Note restored");
-        helper.clickMenuItem(method + " hide editor", R.id.saveDraftButton);
-        ActivityTestHelper.waitViewInvisible(method + "; Editor is hidden again", editorView);
-        helper.clickMenuItem(method + " clicker 5", R.id.createNoteButton);
-        ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
+
+        ActivityTestHelper.hideEditorAndSaveDraft(method, getActivity());
+        ActivityTestHelper.openEditor(method, getActivity());
         assertTextCleared();
+
+        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
         helper.clickMenuItem(method + " click Discard", R.id.discardButton);
         ActivityTestHelper.waitViewInvisible(method + "; Editor hidden after discard", editorView);
         MyLog.v(this, method + " ended");

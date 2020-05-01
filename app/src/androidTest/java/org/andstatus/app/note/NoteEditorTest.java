@@ -23,7 +23,6 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -132,35 +131,18 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
                 break;
             default:
                 editingStep.set(1);
-                openEditor();
+                ActivityTestHelper.openEditor("default", getActivity());
                 editingStep1();
                 break;
         }
         MyLog.v(this, "After step " + editingStep + " ended");
     }
 
-    private void openEditor() throws InterruptedException {
-        final String method = "openEditor";
-        MenuItem createNoteButton = getActivity().getOptionsMenu().findItem(R.id.createNoteButton);
-        assertTrue(createNoteButton != null);
-        View editorView = getActivity().findViewById(R.id.note_editor);
-        assertTrue(editorView != null);
-        if (editorView.getVisibility() != android.view.View.VISIBLE) {
-            assertTrue("Blog button is visible", createNoteButton.isVisible());
-            ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
-            helper.clickMenuItem(method + " opening editor", R.id.createNoteButton);
-        }
-        assertEquals("Editor appeared", android.view.View.VISIBLE, editorView.getVisibility());
-    }
-
     private void editingStep1() throws InterruptedException {
         final String method = "editingStep1";
         MyLog.v(this, method + " started");
 
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
-        helper.clickMenuItem(method + " hiding editor", R.id.saveDraftButton);
-        View editorView = getActivity().findViewById(R.id.note_editor);
-        ActivityTestHelper.waitViewInvisible(method, editorView);
+        View editorView = ActivityTestHelper.hideEditorAndSaveDraft(method, getActivity());
 
         final NoteEditor editor = getActivity().getNoteEditor();
         getInstrumentation().runOnMainSync(() -> editor.startEditingNote(data));
@@ -179,10 +161,8 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         View editorView = getActivity().findViewById(R.id.note_editor);
         ActivityTestHelper.waitViewVisible(method + "; Restored note is visible", editorView);
         assertInitialText("Note restored");
-        helper.clickMenuItem(method + " hide editor", R.id.saveDraftButton);
-        ActivityTestHelper.waitViewInvisible(method + "; Editor is hidden again", editorView);
-        helper.clickMenuItem(method + " clicker 5", R.id.createNoteButton);
-        ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
+        ActivityTestHelper.hideEditorAndSaveDraft(method, getActivity());
+        ActivityTestHelper.openEditor(method, getActivity());
         assertTextCleared(this);
         helper.clickMenuItem(method + " click Discard", R.id.discardButton);
         ActivityTestHelper.waitViewInvisible(method + "; Editor hidden after discard", editorView);
@@ -203,12 +183,8 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         final String method = "attachImages" + toAdd;
         MyLog.v(test, method + " started");
 
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(test.getActivity());
-        helper.clickMenuItem(method + " hide editor", R.id.saveDraftButton);
-
-        View editorView = test.getActivity().findViewById(R.id.note_editor);
-        helper.clickMenuItem(method + " clicker createNoteButton", R.id.createNoteButton);
-        ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
+        ActivityTestHelper.hideEditorAndSaveDraft(method, test.getActivity());
+        View editorView = ActivityTestHelper.openEditor(method, test.getActivity());
         assertTextCleared(test);
 
         TestSuite.waitForIdleSync();
@@ -229,7 +205,8 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
 
         onView(withId(R.id.noteBodyEditText)).check(matches(withText(content + " ")));
         onView(withId(R.id.note_name_edit)).check(matches(withText(noteName)));
-        helper.clickMenuItem(method + " clicker save draft", R.id.saveDraftButton);
+
+        ActivityTestHelper.hideEditorAndSaveDraft(method, test.getActivity());
 
         MyLog.v(test, method + " ended");
     }
@@ -309,7 +286,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
     public void testContextMenuWhileEditing1() throws InterruptedException {
         final String method = "testContextMenuWhileEditing";
         TestSuite.waitForListLoaded(getActivity(), 2);
-        openEditor();
+        ActivityTestHelper.openEditor(method, getActivity());
         ListActivityTestHelper<TimelineActivity> helper =
                 new ListActivityTestHelper<>(getActivity(), ConversationActivity.class);
         long listItemId = helper.getListItemIdOfLoadedReply();
@@ -328,7 +305,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
     public void testContextMenuWhileEditing2() throws InterruptedException {
         final String method = "testContextMenuWhileEditing";
         TestSuite.waitForListLoaded(getActivity(), 2);
-        openEditor();
+        ActivityTestHelper.openEditor(method, getActivity());
         ListActivityTestHelper<TimelineActivity> helper =
                 new ListActivityTestHelper<>(getActivity(), ConversationActivity.class);
         long listItemId = helper.getListItemIdOfLoadedReply();
@@ -427,8 +404,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         final String method = "replying";
         TestSuite.waitForListLoaded(getActivity(), 2);
 
-        ActivityTestHelper<TimelineActivity> aHelper = new ActivityTestHelper<>(getActivity());
-        aHelper.clickMenuItem(method + " hide editor", R.id.saveDraftButton);
+        View editorView = ActivityTestHelper.hideEditorAndSaveDraft(method, getActivity());
 
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
                 ConversationActivity.class);
@@ -448,7 +424,6 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         assertTrue(logMsg, invoked);
         ActivityTestHelper.closeContextMenu(getActivity());
 
-        View editorView = getActivity().findViewById(R.id.note_editor);
         ActivityTestHelper.waitViewVisible(method + " " + logMsg, editorView);
 
         onView(withId(R.id.noteBodyEditText)).check(matches(withText(startsWith("@"))));
@@ -461,14 +436,8 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
                 + " " + content));
         TestSuite.waitForIdleSync();
 
-        ActivityTestHelper<TimelineActivity> helper2 = new ActivityTestHelper<>(getActivity());
-        helper2.clickMenuItem(method + " clicker Save draft " + logMsg, R.id.saveDraftButton);
-        ActivityTestHelper.waitViewInvisible(method + " " + logMsg, editorView);
-
-        String sql = "SELECT " + NoteTable._ID + " FROM " + NoteTable.TABLE_NAME + " WHERE "
-                + NoteTable.CONTENT + " LIKE('% " + content + "')";
-        long draftNoteId = MyQuery.getLongs(sql).stream().findFirst().orElse(0L);
-        assertTrue("Reply '" + content + "' was not saved: " + logMsg, draftNoteId != 0);
+        ActivityTestHelper.hideEditorAndSaveDraft(method + " Save draft " + logMsg, getActivity());
+        long draftNoteId = ActivityTestHelper.waitAndGetIdOfStoredNote(method + " " + logMsg, content);
 
         assertEquals("Saved note should be in DRAFT state: " + logMsg, DownloadStatus.DRAFT,
                 getDownloadStatus(draftNoteId));

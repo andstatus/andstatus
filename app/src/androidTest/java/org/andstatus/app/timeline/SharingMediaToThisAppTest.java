@@ -6,6 +6,8 @@ import android.provider.BaseColumns;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.test.espresso.action.TypeTextAction;
+
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
@@ -23,8 +25,6 @@ import org.junit.After;
 import org.junit.Test;
 
 import java.util.Arrays;
-
-import androidx.test.espresso.action.TypeTextAction;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -81,10 +81,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest<ActivityView
         TestSuite.waitForIdleSync();
 
         mService.serviceStopped = false;
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
-        helper.clickMenuItem(method, R.id.noteSendButton);
-        ActivityTestHelper.waitViewInvisible(method, editorView);
-
+        ActivityTestHelper.clickSendButton(method, getActivity());
         mService.waitForServiceStopped(false);
 
         String message = "Data was posted " + mService.getHttp().getPostedCounter() + " times; "

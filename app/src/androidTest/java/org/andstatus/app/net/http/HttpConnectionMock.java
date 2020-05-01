@@ -32,11 +32,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 import io.vavr.control.CheckedFunction;
-import io.vavr.control.Try;
+
+import static org.junit.Assert.fail;
 
 public class HttpConnectionMock extends HttpConnection {
 
@@ -174,7 +176,7 @@ public class HttpConnectionMock extends HttpConnection {
         return !StringUtil.isEmpty(password) || ( !TextUtils.isDigitsOnly(userToken) && !StringUtil.isEmpty(userSecret));
     }
 
-    public JSONObject getPostedJSONObject() {
+    public JSONObject getLatestPostedJSONObject() {
         return results.get(results.size()-1).request.postParams.orElse(new JSONObject());
     }
 
@@ -225,6 +227,18 @@ public class HttpConnectionMock extends HttpConnection {
     @Override
     public HttpReadResult getRequest(HttpReadResult result) {
         return getRequestInner("getRequest", result);
+    }
+
+    public HttpReadResult waitForPostContaining(String substring) {
+        for (int attempt=0; attempt < 10; attempt++) {
+            Optional<HttpReadResult> result = getResults().stream()
+                    .filter(r -> r.request.postParams.toString().contains(substring))
+                    .findFirst();
+            if (result.isPresent()) return result.get();
+            if (DbUtils.waitMs("waitForPostContaining", 2000)) break;
+        }
+        fail("The content should be sent: '" + substring + "'\n Results:" + getResults());
+        return null;
     }
 
     @Override

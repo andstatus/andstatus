@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.provider.BaseColumns;
 import android.view.View;
 
+import androidx.test.espresso.action.TypeTextAction;
+
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
@@ -27,8 +29,6 @@ import org.junit.After;
 import org.junit.Test;
 
 import java.util.List;
-
-import androidx.test.espresso.action.TypeTextAction;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -62,10 +62,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
         final String method = "testEditUnsentNote";
         String step = "Start editing a note";
         MyLog.v(this, method + " started");
-        ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(getActivity());
-        View editorView = getActivity().findViewById(R.id.note_editor);
-        helper.clickMenuItem(method + "; " + step, R.id.createNoteButton);
-        ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
+        View editorView = ActivityTestHelper.openEditor(method + "; " + step, getActivity());
 
         final String suffix = "unsent" + demoData.testRunUid;
         String body = "Test unsent note, which we will try to edit " + suffix;
@@ -74,10 +71,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
         TestSuite.waitForIdleSync();
 
         mService.serviceStopped = false;
-        step = "Sending note";
-        helper.clickMenuItem(method + "; " + step, R.id.noteSendButton);
-        ActivityTestHelper.waitViewInvisible(method + "; " + step, editorView);
-
+        ActivityTestHelper.clickSendButton(method, getActivity());
         mService.waitForServiceStopped(false);
 
         String condition = NoteTable.CONTENT + " LIKE('%" + suffix + "%')";
@@ -93,8 +87,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
         TestSuite.waitForIdleSync();
 
         step = "Saving previously unsent note " + unsentMsgId + " as a draft";
-        helper.clickMenuItem(method + "; " + step, R.id.saveDraftButton);
-        ActivityTestHelper.waitViewInvisible(method + "; " + step, editorView);
+        ActivityTestHelper.hideEditorAndSaveDraft(method + "; " + step, getActivity());
 
         assertEquals(method + "; " + step, DownloadStatus.DRAFT, DownloadStatus.load(
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));

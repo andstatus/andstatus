@@ -17,7 +17,6 @@
 package org.andstatus.app.note;
 
 import android.content.Intent;
-import android.view.View;
 
 import androidx.test.espresso.action.ReplaceTextAction;
 
@@ -27,30 +26,23 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.net.social.ConnectionMock;
+import org.andstatus.app.net.social.Note;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.TimelineActivityTest;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.note.NoteEditorTest.attachImages;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.isIn;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityViewItem> {
@@ -76,12 +68,8 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
         final String method = "sending";
         TestSuite.waitForListLoaded(getActivity(), 2);
 
-        ActivityTestHelper<TimelineActivity> aHelper = new ActivityTestHelper<>(getActivity());
-        aHelper.clickMenuItem(method + " hide editor", R.id.saveDraftButton);
-
-        View editorView = getActivity().findViewById(R.id.note_editor);
-        aHelper.clickMenuItem(method + " clicker createNoteButton", R.id.createNoteButton);
-        ActivityTestHelper.waitViewVisible(method + "; Editor appeared", editorView);
+        ActivityTestHelper.hideEditorAndSaveDraft(method, getActivity());
+        ActivityTestHelper.openEditor(method, getActivity());
 
         String actorUniqueName = "me" + demoData.testRunUid + "@mastodon.example.com";
         final String content = "Sending note to the unknown yet Actor @" + actorUniqueName;
@@ -89,37 +77,15 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
         onView(withId(R.id.noteBodyEditText)).perform(new ReplaceTextAction(content));
         TestSuite.waitForIdleSync();
 
-        ActivityTestHelper<TimelineActivity> helper2 = new ActivityTestHelper<>(getActivity());
-        helper2.clickMenuItem(method + " clicker Send", R.id.noteSendButton);
-        ActivityTestHelper.waitViewInvisible(method, editorView);
+        ActivityTestHelper.clickSendButton(method, getActivity());
 
-        String sql = "SELECT " + NoteTable._ID + " FROM " + NoteTable.TABLE_NAME + " WHERE "
-                + NoteTable.CONTENT + " LIKE('%" + content + "%')";
-        long noteId = 0;
-        for (int attempt=0; attempt < 10; attempt++) {
-            noteId = MyQuery.getLongs(sql).stream().findFirst().orElse(0L);
-            if (noteId != 0) break;
-            if (DbUtils.waitMs(method, 2000)) break;
-        }
-        assertTrue("Note '" + content + "' was not saved", noteId != 0);
-
-        List<DownloadStatus> expected = Collections.singletonList(DownloadStatus.SENDING);
-        DownloadStatus status = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId));
-        assertThat(status, isIn(expected));
+        long noteId = ActivityTestHelper.waitAndGetIdOfStoredNote(method, content);
+        Note note = Note.loadContentById(mock.connection.myContext(), noteId);
+        assertEquals("Note " + note, DownloadStatus.SENDING, note.getStatus());
 
         Audience audience = Audience.load(mock.getData().getOrigin(), noteId, Optional.empty());
         assertTrue("Audience should contain " + actorUniqueName +  "\n " + audience,
-                audience.getNonSpecialActors().stream().anyMatch(a -> actorUniqueName.equals(a.getUniqueName())));
-
-        Optional<HttpReadResult> result = Optional.empty();
-        for (int attempt=0; attempt < 10; attempt++) {
-            result = mock.getHttpMock().getResults().stream()
-                    .filter(r -> r.request.postParams.toString().contains(actorUniqueName))
-                    .findFirst();
-            if (result.isPresent()) break;
-            if (DbUtils.waitMs(method, 2000)) break;
-        }
-        assertTrue("The content should be sent: " + content + "\n Results:" + mock.getHttpMock().getResults(), result.isPresent());
+            audience.getNonSpecialActors().stream().anyMatch(a -> actorUniqueName.equals(a.getUniqueName())));
     }
 
     @Test

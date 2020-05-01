@@ -20,20 +20,27 @@ import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.Intent;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.test.platform.app.InstrumentationRegistry;
+
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.test.SelectorActivityMock;
+import org.andstatus.app.timeline.TimelineActivity;
+import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.util.MyLog;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import androidx.test.platform.app.InstrumentationRegistry;
-
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class ActivityTestHelper<T extends MyActivity> implements SelectorActivityMock {
     private T mActivity;
@@ -116,6 +123,70 @@ public class ActivityTestHelper<T extends MyActivity> implements SelectorActivit
         };
         activity.runOnUiThread(runnable);
         TestSuite.waitForIdleSync();
+    }
+
+    public static long waitAndGetIdOfStoredNote(String method, String content) {
+        String sql = "SELECT " + NoteTable._ID + " FROM " + NoteTable.TABLE_NAME + " WHERE "
+                + NoteTable.CONTENT + " LIKE('%" + content + "%')";
+        long noteId = 0;
+        for (int attempt=0; attempt < 10; attempt++) {
+            noteId = MyQuery.getLongs(sql).stream().findFirst().orElse(0L);
+            if (noteId != 0) break;
+            if (DbUtils.waitMs(method, 2000)) break;
+        }
+        assertTrue(method + ": Note '" + content + "' was not saved", noteId != 0);
+        return noteId;
+    }
+
+    public static <T extends ViewItem<T>> View hideEditorAndSaveDraft(String method, TimelineActivity<T> activity) {
+        try {
+            View editorView = activity.findViewById(R.id.note_editor);
+            if (editorView.getVisibility() != View.VISIBLE) return editorView;
+
+            ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(activity);
+            helper.clickMenuItem(method + " hiding editor", R.id.saveDraftButton);
+            waitViewInvisible(method, editorView);
+            return editorView;
+        } catch (Exception e) {
+            fail(method + " failed to hide editor. " + e);
+            return null;
+        }
+    }
+
+    public static <T extends ViewItem<T>> View clickSendButton(String logMsg, TimelineActivity<T> activity) {
+        String method = "Click Send button; " + logMsg;
+        try {
+            View editorView = activity.findViewById(R.id.note_editor);
+            if (editorView.getVisibility() != View.VISIBLE) fail("EditorView is invisible " + method);
+
+            ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(activity);
+            helper.clickMenuItem(method, R.id.noteSendButton);
+            waitViewInvisible(method, editorView);
+            return editorView;
+        } catch (Exception e) {
+            fail(method + " failed to Click Send button. " + e);
+            return null;
+        }
+    }
+
+    public static <T extends ViewItem<T>> View openEditor(String logMsg, TimelineActivity<T> activity) {
+        final String method = "openEditor " + logMsg;
+        try {
+            MenuItem createNoteButton = activity.getOptionsMenu().findItem(R.id.createNoteButton);
+            assertTrue(createNoteButton != null);
+            View editorView = activity.findViewById(R.id.note_editor);
+            assertTrue(editorView != null);
+            if (editorView.getVisibility() != View.VISIBLE) {
+                assertTrue("Blog button is visible", createNoteButton.isVisible());
+                ActivityTestHelper<TimelineActivity> helper = new ActivityTestHelper<>(activity);
+                helper.clickMenuItem(method + " opening editor", R.id.createNoteButton);
+            }
+            assertEquals("Editor appeared", View.VISIBLE, editorView.getVisibility());
+            return editorView;
+        } catch (Exception e) {
+            fail(method + " failed to open editor. " + e);
+            return null;
+        }
     }
 
     public ActivityMonitor addMonitor(Class<? extends Activity> classOfActivity) {

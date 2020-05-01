@@ -25,6 +25,7 @@ import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnectionData;
+import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.http.OAuthClientKeys;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.AObjectType;
@@ -340,7 +341,8 @@ public class ConnectionPumpioTest {
     @Test
     public void testReply() throws JSONException {
         String name = "To Peter";
-        String content = "@peter Do you think it's true?";
+        String contentPartToLookup = "Do you think it's true?";
+        String content = "@peter " + contentPartToLookup;
         String inReplyToOid = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
                 .setName(name)
@@ -350,9 +352,8 @@ public class ConnectionPumpioTest {
                     .setOid(inReplyToOid));
 
         connection.updateNote(note);
-        JSONObject jsoActivity = mock.getHttpMock().getPostedJSONObject();
-        assertTrue("Object present", jsoActivity.has("object"));
-        JSONObject jso = jsoActivity.getJSONObject("object");
+        HttpReadResult result = mock.getHttpMock().waitForPostContaining(contentPartToLookup);
+        JSONObject jso = result.request.postParams.get().getJSONObject("object");
         assertEquals("Note name", name, MyHtml.htmlToPlainText(jso.getString("displayName")));
         assertEquals("Note content", content, MyHtml.htmlToPlainText(jso.getString("content")));
         assertEquals("Reply is comment", PObjectType.COMMENT.id, jso.getString("objectType"));
@@ -369,7 +370,7 @@ public class ConnectionPumpioTest {
                 .setName(name).setContentPosted(content);
 
         Try<AActivity> tryActivity = connection.updateNote(note);
-        JSONObject jsoActivity = mock.getHttpMock().getPostedJSONObject();
+        JSONObject jsoActivity = mock.getHttpMock().getLatestPostedJSONObject();
         assertTrue("Object present " + jsoActivity +
                 "\nResults: " + mock.getHttpMock().getResults(), jsoActivity.has("object"));
         JSONObject jso = jsoActivity.getJSONObject("object");
@@ -384,7 +385,7 @@ public class ConnectionPumpioTest {
     public void testReblog() throws JSONException {
         String rebloggedId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
         connection.announce(rebloggedId);
-        JSONObject activity = mock.getHttpMock().getPostedJSONObject();
+        JSONObject activity = mock.getHttpMock().getLatestPostedJSONObject();
         assertTrue("Object present", activity.has("object"));
         JSONObject obj = activity.getJSONObject("object");
         assertEquals("Sharing a note", PObjectType.NOTE.id, obj.getString("objectType"));
