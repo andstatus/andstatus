@@ -39,6 +39,7 @@ public class CachedUsersAndActors {
     public final Map<Long, Actor> myActors = new ConcurrentHashMap<>();
     /** key - friendId, set of values - IDs of my actors  */
     public final Map<Long, Set<Long>> friendsOfMyActors = new ConcurrentHashMap<>();
+    public final Map<Long, Set<Long>> followersOfMyActors = new ConcurrentHashMap<>();
 
     public static CachedUsersAndActors newEmpty(MyContext myContext) {
         return new CachedUsersAndActors(myContext);
@@ -54,12 +55,14 @@ public class CachedUsersAndActors {
 
     public CachedUsersAndActors initialize() {
         initializeMyUsers();
-        initializeFriendsOfMyActors();
+        initializeMyFriendsOrFollowers(GroupType.FRIENDS, friendsOfMyActors);
+        initializeMyFriendsOrFollowers(GroupType.FOLLOWERS, followersOfMyActors);
         loadTimelineActors();
         MyLog.v(this, () -> "Users list initialized, "
                 + myUsers.size() + " users, "
                 + myActors.size() + " my actors, "
-                + friendsOfMyActors.size() + " friends");
+                + friendsOfMyActors.size() + " friends, "
+                + followersOfMyActors.size() + " followers");
         return this;
     }
 
@@ -75,20 +78,20 @@ public class CachedUsersAndActors {
         MyQuery.get(myContext, sql, function).forEach(this::updateCache);
     }
 
-    private void initializeFriendsOfMyActors() {
-        final String FOLLOWER_ID = "followerId";
-        friendsOfMyActors.clear();
+    private void initializeMyFriendsOrFollowers(GroupType groupType, Map<Long, Set<Long>> groupMembers) {
+        final String MY_ACTOR_ID = "myActorId";
+        groupMembers.clear();
         final String sql = "SELECT DISTINCT " + ActorSql.selectFullProjection()
-                + ", friends." + ActorTable.PARENT_ACTOR_ID + " AS " + FOLLOWER_ID
+                + ", friends." + ActorTable.PARENT_ACTOR_ID + " AS " + MY_ACTOR_ID
                 + " FROM (" + ActorSql.allTables() + ")"
-                + " INNER JOIN (" + GroupMembership.selectMemberIds(myActors.keySet(), GroupType.FRIENDS, true)
+                + " INNER JOIN (" + GroupMembership.selectMemberIds(myActors.keySet(), groupType, true)
                 + " ) as friends ON friends." + GroupMembersTable.MEMBER_ID +
                 "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID;
 
         final Function<Cursor, Void> function = cursor -> {
             Actor friend = Actor.fromCursor(myContext, cursor, true);
-            Actor me = Actor.load(myContext, DbUtils.getLong(cursor, FOLLOWER_ID));
-            friendsOfMyActors.compute(friend.actorId, CollectionsUtil.addValue(me.actorId));
+            Actor me = Actor.load(myContext, DbUtils.getLong(cursor, MY_ACTOR_ID));
+            groupMembers.compute(friend.actorId, CollectionsUtil.addValue(me.actorId));
             return null;
         };
         MyQuery.get(myContext, sql, function);
