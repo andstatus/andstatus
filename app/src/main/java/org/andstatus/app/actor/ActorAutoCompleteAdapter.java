@@ -89,9 +89,9 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
                     myActivity.getText(R.string.nothing_in_the_loadable_list).toString(),false,true);
         } else {
             String username = item.getActor().getUniqueName();
-            MyUrlSpan.showText(view, R.id.username, username, false, true);
-            MyUrlSpan.showText(view, R.id.description,
-                    I18n.trimTextAt(item.actor.getSummary(), 80).toString(), false, false);
+            MyUrlSpan.showAsPlainText(view, R.id.username, username,true);
+            MyUrlSpan.showAsPlainText(view, R.id.description,
+                    I18n.trimTextAt(item.actor.getSummary(), 80).toString(), false);
             showAvatar(view, item);
         }
         return view;

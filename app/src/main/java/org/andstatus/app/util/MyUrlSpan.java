@@ -21,9 +21,6 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.os.Parcel;
-import androidx.annotation.IdRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
 import android.text.Html;
 import android.text.Layout;
 import android.text.Selection;
@@ -37,6 +34,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.IdRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextHolder;
@@ -147,6 +148,10 @@ public class MyUrlSpan extends URLSpan {
 
     public static void showLabel(Activity activity, @IdRes int viewId, @StringRes int stringResId) {
         showText(activity.findViewById(viewId), activity.getText(stringResId).toString(), TextMediaType.UNKNOWN, false, false);
+    }
+
+    public static void showAsPlainText(View parentView, @IdRes int viewId, String text, boolean showIfEmpty) {
+        showText(parentView, viewId, MyHtml.htmlToCompactPlainText(text), TextMediaType.PLAIN, false, showIfEmpty);
     }
 
     public static void showText(View parentView, @IdRes int viewId, String text, boolean linkify, boolean showIfEmpty) {
