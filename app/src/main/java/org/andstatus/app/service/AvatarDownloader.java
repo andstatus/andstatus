@@ -47,7 +47,7 @@ public class AvatarDownloader extends FileDownloader {
     @Override
     protected void onSuccessfulLoad() {
         data.deleteOtherOfThisActor(MyContextHolder.get());
-        MyContextHolder.get().users().reload(data.actorId);
+        MyContextHolder.get().users().load(data.actorId, true);
         MyLog.v(this, () -> "Loaded avatar actorId:" + data.actorId + "; uri:'" + data.getUri() + "'");
     }
 }

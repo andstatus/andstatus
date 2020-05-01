@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
@@ -201,15 +202,24 @@ public class MyAccounts implements IsEmpty {
         return other.isEmpty() ? MyAccount.EMPTY
                 : Stream.of(fromActor(other, true, true))
                 .filter(MyAccount::isValid).findFirst()
-                .orElseGet(() -> forFriend(other, true, true)
+                .orElseGet(() -> forRelatedActor(other, true, true)
                                 .orElseGet(() -> other.origin.isEmpty()
                                         ? MyAccount.EMPTY
                                         : getFirstSucceededForOrigin(other.origin))
                 );
     }
 
-    private Optional<MyAccount> forFriend(Actor friend, boolean sameOriginOnly, boolean succeededOnly) {
-        return myContext.users().friendsOfMyActors.getOrDefault(friend.actorId, Collections.emptySet()).stream()
+    private Optional<MyAccount> forRelatedActor(Actor relatedActor, boolean sameOriginOnly, boolean succeededOnly) {
+        Optional<MyAccount> forFriend = forFriendOfFollower(relatedActor, sameOriginOnly, succeededOnly,
+                myContext.users().friendsOfMyActors);
+        if (forFriend.isPresent()) return forFriend;
+
+        return forFriendOfFollower(relatedActor, sameOriginOnly, succeededOnly, myContext.users().followersOfMyActors);
+    }
+
+    private Optional<MyAccount> forFriendOfFollower(Actor friend, boolean sameOriginOnly, boolean succeededOnly,
+                                                    Map<Long, Set<Long>> friendsOrFollowers) {
+        return friendsOrFollowers.getOrDefault(friend.actorId, Collections.emptySet()).stream()
                 .map(this::fromActorId)
                 .filter(ma -> ma.isValidAndSucceeded() || !succeededOnly)
                 .filter(ma -> !sameOriginOnly || ma.getOrigin().equals(friend.origin))

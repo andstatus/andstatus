@@ -89,36 +89,37 @@ public class CachedUsersAndActors {
                 "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID;
 
         final Function<Cursor, Void> function = cursor -> {
-            Actor friend = Actor.fromCursor(myContext, cursor, true);
+            Actor other = Actor.fromCursor(myContext, cursor, true);
             Actor me = Actor.load(myContext, DbUtils.getLong(cursor, MY_ACTOR_ID));
-            groupMembers.compute(friend.actorId, CollectionsUtil.addValue(me.actorId));
+            groupMembers.compute(other.actorId, CollectionsUtil.addValue(me.actorId));
             return null;
         };
         MyQuery.get(myContext, sql, function);
     }
 
     public Actor load(long actorId) {
-        Actor actor = Actor.load(myContext, actorId, false, Actor::getEmpty);
-        if (isMe(actor)) loadFriendsOfMy(actor);
-        return actor;
+        return load(actorId, false);
     }
 
     public Actor reload(Actor actor) {
-        return reload(actor.actorId);
+        return load(actor.actorId, true);
     }
 
-    public Actor reload(long actorId) {
-        Actor reloaded = Actor.load(myContext, actorId, true, Actor::getEmpty);
-        if (isMe(reloaded)) loadFriendsOfMy(reloaded);
-        return reloaded;
+    public Actor load(long actorId, boolean reloadFirst) {
+        Actor actor = Actor.load(myContext, actorId, reloadFirst, Actor::getEmpty);
+        if (isMe(actor)) {
+            reloadFriendsOrFollowersOfMy(GroupType.FRIENDS, friendsOfMyActors, actor);
+            reloadFriendsOrFollowersOfMy(GroupType.FOLLOWERS, followersOfMyActors, actor);
+        }
+        return actor;
     }
 
-    private void loadFriendsOfMy(Actor actor) {
-        friendsOfMyActors.entrySet().stream().filter( entry -> entry.getValue().contains(actor.actorId))
+    private void reloadFriendsOrFollowersOfMy(GroupType groupType, Map<Long, Set<Long>> groupMembers, Actor actor) {
+        groupMembers.entrySet().stream().filter(entry -> entry.getValue().contains(actor.actorId))
                 .forEach(entry ->
-                        friendsOfMyActors.compute(entry.getKey(), CollectionsUtil.removeValue(actor.actorId)));
-        GroupMembership.getGroupMemberIds(myContext, actor.actorId, GroupType.FRIENDS)
-                .forEach(friendId -> friendsOfMyActors.compute(friendId, CollectionsUtil.addValue(actor.actorId))
+                        groupMembers.compute(entry.getKey(), CollectionsUtil.removeValue(actor.actorId)));
+        GroupMembership.getGroupMemberIds(myContext, actor.actorId, groupType)
+                .forEach(friendId -> groupMembers.compute(friendId, CollectionsUtil.addValue(actor.actorId))
         );
     }
 

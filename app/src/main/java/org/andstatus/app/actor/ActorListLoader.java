@@ -4,6 +4,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
@@ -23,8 +25,6 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StopWatch;
 import org.andstatus.app.util.StringUtil;
 
-import androidx.annotation.NonNull;
-
 import static java.util.stream.Collectors.toList;
 
 public class ActorListLoader extends SyncLoader<ActorViewItem> {
@@ -35,6 +35,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
     protected final Origin origin;
     protected boolean mAllowLoadingFromInternet = false;
     protected final long mCentralItemId;
+    private volatile Actor centralActor = Actor.EMPTY;
 
     private LoadableListActivity.ProgressPublisher mProgress;
 
@@ -61,6 +62,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
             MyLog.d(this, method + " started");
         }
         mProgress = publisher;
+        centralActor = Actor.load(myContext, mCentralItemId);
         loadInternal();
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, "Loaded " + size() + " items, " + stopWatch.getTime() + "ms");
@@ -113,6 +115,12 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
 
     private void populateItem(Cursor cursor) {
         ActorViewItem item = ActorViewItem.EMPTY.fromCursor(myContext, cursor);
+        if (mActorListType == ActorListType.FRIENDS) {
+            item.hideFollowedBy(centralActor);
+        }
+        if (mActorListType == ActorListType.FOLLOWERS) {
+            item.hideFollowing(centralActor);
+        }
         int index = items.indexOf(item);
         if (index < 0) {
             items.add(item);

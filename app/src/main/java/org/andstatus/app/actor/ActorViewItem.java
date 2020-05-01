@@ -47,7 +47,8 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
     boolean populated = false;
     @NonNull
     final Actor actor;
-    private Actor myFollowingActorToHide = Actor.EMPTY;
+    private Actor myActorFollowingToHide = Actor.EMPTY;
+    private Actor myActorFollowedToHide = Actor.EMPTY;
 
     @Override
     public boolean equals(Object o) {
@@ -159,13 +160,24 @@ public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable
         return super.duplicates(timeline, preferredOrigin, other);
     }
 
-    public void hideTheFollower(Actor actor) {
-        myFollowingActorToHide = actor;
+    public void hideFollowedBy(Actor myActor) {
+        myActorFollowingToHide = myActor;
     }
 
-    public Stream<Actor> getMyActorsFollowingTheActor(MyContext myContext) {
+    Stream<Actor> getMyActorsFollowingTheActor(MyContext myContext) {
         return NullUtil.getOrDefault(myContext.users().friendsOfMyActors, actor.actorId, Collections.emptySet()).stream()
-                .filter(id -> id != myFollowingActorToHide.actorId)
+                .filter(id -> id != myActorFollowingToHide.actorId)
+                .map(id -> NullUtil.getOrDefault(myContext.users().actors, id, Actor.EMPTY))
+                .filter(Actor::nonEmpty);
+    }
+
+    public void hideFollowing(Actor myActor) {
+        myActorFollowedToHide = myActor;
+    }
+
+    Stream<Actor> getMyActorsFollowedByTheActor(MyContext myContext) {
+        return NullUtil.getOrDefault(myContext.users().followersOfMyActors, actor.actorId, Collections.emptySet()).stream()
+                .filter(id -> id != myActorFollowedToHide.actorId)
                 .map(id -> NullUtil.getOrDefault(myContext.users().actors, id, Actor.EMPTY))
                 .filter(Actor::nonEmpty);
     }

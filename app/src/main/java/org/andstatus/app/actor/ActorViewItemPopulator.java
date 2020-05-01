@@ -61,7 +61,8 @@ public class ActorViewItemPopulator {
         showCounter(view, R.id.followers_count, item.actor.followersCount);
 
         MyUrlSpan.showText(view, R.id.location, item.actor.location, false, false);
-        showMyFollowers(view, item);
+        showMyActorsFollowingTheActor(view, item);
+        showMyActorsFollowedByTheActor(view, item);
     }
 
     private static void showCounter(View parentView, int viewId, long counter) {
@@ -72,7 +73,7 @@ public class ActorViewItemPopulator {
         item.showAvatar(myActivity, view.findViewById(R.id.avatar_image));
     }
 
-    private void showMyFollowers(View view, ActorViewItem item) {
+    private void showMyActorsFollowingTheActor(View view, ActorViewItem item) {
         MyStringBuilder builder = MyStringBuilder.of(
             item.getMyActorsFollowingTheActor(myActivity.getMyContext())
                 .map(actor -> myActivity.getMyContext().accounts().fromActorOfAnyOrigin(actor).getAccountName())
@@ -81,5 +82,16 @@ public class ActorViewItemPopulator {
             builder.prependWithSeparator(myActivity.getText(R.string.followed_by), " ");
         }
         MyUrlSpan.showText(view, R.id.followed_by, builder.toString(), false, false);
+    }
+
+    private void showMyActorsFollowedByTheActor(View view, ActorViewItem item) {
+        MyStringBuilder builder = MyStringBuilder.of(
+                item.getMyActorsFollowedByTheActor(myActivity.getMyContext())
+                        .map(actor -> myActivity.getMyContext().accounts().fromActorOfAnyOrigin(actor).getAccountName())
+                        .collect(Collectors.joining(", ")));
+        if (builder.nonEmpty()) {
+            builder.prependWithSeparator(myActivity.getText(R.string.follows), " ");
+        }
+        MyUrlSpan.showText(view, R.id.follows, builder.toString(), false, false);
     }
 }

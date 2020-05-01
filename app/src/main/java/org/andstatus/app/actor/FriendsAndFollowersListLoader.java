@@ -26,17 +26,15 @@ import java.util.Collections;
  * @author yvolk@yurivolkov.com
  */
 public class FriendsAndFollowersListLoader extends ActorListLoader {
-    private long actorId;
 
     public FriendsAndFollowersListLoader(MyContext myContext, ActorListType actorListType, Origin origin,
                                          long centralItemId, String searchQuery) {
         super(myContext, actorListType, origin, centralItemId, searchQuery);
-        actorId = centralItemId;
     }
 
     protected String getSqlActorIds() {
         GroupType groupType = mActorListType == ActorListType.FOLLOWERS ? GroupType.FOLLOWERS : GroupType.FRIENDS;
-        return " IN (" + GroupMembership.selectMemberIds(Collections.singletonList(actorId), groupType, false) + ")";
+        return " IN (" + GroupMembership.selectMemberIds(Collections.singletonList(mCentralItemId), groupType, false) + ")";
     }
 
     @Override

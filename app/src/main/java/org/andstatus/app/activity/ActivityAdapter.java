@@ -170,7 +170,7 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
         final ViewGroup actorView = view.findViewById(R.id.action_wrapper);
         if (layoutType.isActorShown()) {
             item.noteViewItem.hideTheReblogger(item.actor.getActor());
-            item.getObjActorItem().hideTheFollower(item.actor.getActor());
+            item.getObjActorItem().hideFollowedBy(item.actor.getActor());
             if (showAvatars && layoutType != LayoutType.ACTOR_ACTOR) {
                 AvatarView avatarView = view.findViewById(R.id.actor_avatar_image);
                 item.actor.showAvatar(contextMenu.actor.getActivity(), avatarView);

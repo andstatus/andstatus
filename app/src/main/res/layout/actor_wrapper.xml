@@ -118,6 +118,13 @@
             android:layout_height="wrap_content"
             style="@style/messageDetailsAppearance"
             tools:text="Followed by andstatus, yvolk"/>
+
+        <TextView
+            android:id="@+id/follows"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/messageDetailsAppearance"
+            tools:text="Follows yvolkru"/>
     </LinearLayout>
 
     <org.andstatus.app.graphics.AvatarView
