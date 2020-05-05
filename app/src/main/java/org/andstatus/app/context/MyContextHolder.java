@@ -23,21 +23,26 @@ import android.content.pm.PackageManager;
 import android.os.SystemClock;
 import android.provider.Settings;
 
+import androidx.annotation.NonNull;
+
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.graphics.ImageCaches;
+import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.ExceptionsCounter;
+import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.syncadapter.SyncInitiator;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TamperingDetector;
 
 import java.util.function.Supplier;
-
-import androidx.annotation.NonNull;
 
 /**
  * Holds globally cached state of the application: {@link MyContext}  
@@ -189,10 +194,6 @@ public final class MyContextHolder {
         }
     }
 
-    public static void release(Supplier<String> reason) {
-        get().release(reason);
-    }
-
     public static void upgradeIfNeeded(Activity upgradeRequestor) {
         if (get().state() == MyContextState.UPGRADING && upgradeRequestor != null) {
             DatabaseConverterController.attemptToTriggerDatabaseUpgrade(upgradeRequestor);
@@ -283,5 +284,21 @@ public final class MyContextHolder {
 
     public static boolean isShuttingDown() {
         return isShuttingDown;
+    }
+
+    public static void release(Supplier<String> reason) {
+        release(get(), reason);
+    }
+
+    public static void release(MyContext previousContext, Supplier<String> reason) {
+        SyncInitiator.unregister(previousContext);
+        MyServiceManager.setServiceUnavailable();
+        TlsSniSocketFactory.forget();
+        AsyncTaskLauncher.forget();
+        ExceptionsCounter.forget();
+        MyLog.forget();
+        SharedPreferencesUtil.forget();
+        previousContext.release(reason);
+        MyLog.v(TAG, () -> "release completed, " + reason.get());
     }
 }

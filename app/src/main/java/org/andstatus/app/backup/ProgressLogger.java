@@ -99,7 +99,6 @@ public class ProgressLogger {
 
     public void logProgressIfLongProcess(Supplier<CharSequence> supplier) {
         if (loggedMoreSecondsAgoThan(ProgressLogger.PROGRESS_REPORT_PERIOD_SECONDS)) {
-            MyServiceManager.setServiceUnavailable();
             logProgress(supplier.get());
         }
     }

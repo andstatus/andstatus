@@ -19,27 +19,24 @@ package org.andstatus.app.context;
 import android.app.Activity;
 import android.content.Intent;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.net.http.TlsSniSocketFactory;
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.syncadapter.SyncInitiator;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
-import androidx.annotation.NonNull;
-
 /**
  * @author yvolk@yurivolkov.com
  */
 public class MyFutureContext extends MyAsyncTask<Object, Void, MyContext> {
+    private static final String TAG = MyFutureContext.class.getSimpleName();
     @NonNull
     final MyContext previousContext;
 
@@ -72,20 +69,8 @@ public class MyFutureContext extends MyAsyncTask<Object, Void, MyContext> {
 
     @Override
     protected MyContext doInBackground2(Object obj) {
-        MyLog.d(this, "Starting initialization by " + obj);
-        releaseGlobal();
+        MyContextHolder.release(previousContext, () -> "Starting initialization by " + obj);
         return previousContext.newInitialized(obj);
-    }
-
-    private void releaseGlobal() {
-        SyncInitiator.unregister(previousContext);
-        TlsSniSocketFactory.forget();
-        AsyncTaskLauncher.forget();
-        ExceptionsCounter.forget();
-        MyLog.forget();
-        SharedPreferencesUtil.forget();
-        previousContext.release(() -> "releaseGlobal");
-        MyLog.d(this, "releaseGlobal completed");
     }
 
     @Override
@@ -139,18 +124,18 @@ public class MyFutureContext extends MyAsyncTask<Object, Void, MyContext> {
                     launched = true;
                 } catch (android.util.AndroidRuntimeException e) {
                     if (intent == null) {
-                        MyLog.e(this, "Launching next activity from firstActivity", e);
+                        MyLog.e(TAG, "Launching next activity from firstActivity", e);
                     } else {
                         try {
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             myContext.context().startActivity(intent);
                             launched = true;
                         } catch (Exception e2) {
-                            MyLog.e(this, "Launching activity with Intent.FLAG_ACTIVITY_NEW_TASK flag", e);
+                            MyLog.e(TAG, "Launching activity with Intent.FLAG_ACTIVITY_NEW_TASK flag", e);
                         }
                     }
                 } catch (java.lang.SecurityException e) {
-                    MyLog.d(this, "Launching activity", e);
+                    MyLog.d(TAG, "Launching activity", e);
                 }
             }
             if (!launched) {
@@ -200,12 +185,12 @@ public class MyFutureContext extends MyAsyncTask<Object, Void, MyContext> {
             for(int i = 1; i < 10; i++) {
                 myContext = get();
                 if (completedBackgroundWork()) break;
-                MyLog.v(this, "Didn't complete background work yet " + i);
-                DbUtils.waitMs(this, 50 * i);
+                MyLog.v(TAG, "Didn't complete background work yet " + i);
+                DbUtils.waitMs(TAG, 50 * i);
             }
-            if (!completedBackgroundWork()) MyLog.w(this, "Didn't complete background work");
+            if (!completedBackgroundWork()) MyLog.w(TAG, "Didn't complete background work");
         } catch (Exception e) {
-            MyLog.i(this, "getBlocking failed", e);
+            MyLog.i(TAG, "getBlocking failed", e);
         }
         return myContext == null ? previousContext : myContext;
     }
