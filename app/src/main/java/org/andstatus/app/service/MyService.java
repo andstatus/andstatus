@@ -89,7 +89,6 @@ public class MyService extends Service {
      */
     @GuardedBy("wakeLockLock")
     private PowerManager.WakeLock mWakeLock = null;
-    private final CommandQueue commandQueue = new CommandQueue(this);
 
     private static final AtomicBoolean widgetsInitialized = new AtomicBoolean(false);
 
@@ -314,8 +313,8 @@ public class MyService extends Service {
             logMsg.append("; startId=" + getLatestProcessedStartId());
         }
         if (success && doStop) {
-            logMsg.append("; " + (commandQueue.totalSizeToExecute() == 0 ? "queue is empty" : "queueSize="
-                    + commandQueue.totalSizeToExecute()));
+            logMsg.append("; " + (myContext.queues().totalSizeToExecute() == 0 ? "queue is empty" : "queueSize="
+                    + myContext.queues().totalSizeToExecute()));
         }
         MyLog.v(this, logMsg::toString);
         return success;
@@ -395,7 +394,7 @@ public class MyService extends Service {
     }
 
     private boolean isAnythingToExecuteNow() {
-        return commandQueue.isAnythingToExecuteNow() || isExecutorReallyWorkingNow();
+        return myContext.queues().isAnythingToExecuteNow() || isExecutorReallyWorkingNow();
     }
     
     private boolean isExecutorReallyWorkingNow() {
@@ -508,7 +507,6 @@ public class MyService extends Service {
         if (!myContext.isReady()) {
             myContext = MyContextHolder.initialize(this, this);
         }
-        commandQueue.setMyContext(myContext);
     }
 
     private class QueueExecutor extends MyAsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
@@ -521,8 +519,7 @@ public class MyService extends Service {
 
         @Override
         protected Boolean doInBackground2(Void aVoid) {
-            commandQueue.load();
-            MyLog.d(this, "Started, " + commandQueue.totalSizeToExecute() + " commands to process");
+            MyLog.d(this, "Started, " + myContext.queues().totalSizeToExecute() + " commands to process");
             String breakReason = "";
             do {
                 if (isStopping()) {
@@ -543,7 +540,7 @@ public class MyService extends Service {
                         break;
                     }
                 }
-                CommandData commandData = commandQueue.pollQueue();
+                CommandData commandData = myContext.queues().pollQueue();
                 currentlyExecuting = commandData;
                 currentlyExecutingSince = System.currentTimeMillis();
                 if (commandData == null) {
@@ -556,9 +553,9 @@ public class MyService extends Service {
                             .setCommandData(commandData)
                             .setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
                     if (commandData.getCommand() == DELETE_COMMAND) {
-                        commandQueue.deleteCommand(commandData);
+                        myContext.queues().deleteCommand(commandData);
                     } else if (commandData.getCommand() == CLEAR_COMMAND_QUEUE) {
-                        commandQueue.clear();
+                        myContext.queues().clear();
                         return true;
                     } else {
                         CommandExecutorStrategy.executeCommand(commandData, this);
@@ -570,15 +567,15 @@ public class MyService extends Service {
                             + "', but was '" + connectionState + "' connection");
                 }
                 if (commandData.getResult().shouldWeRetry()) {
-                    commandQueue.addToQueue(QueueType.RETRY, commandData);
+                    myContext.queues().addToQueue(QueueType.RETRY, commandData);
                 } else if (commandData.getResult().hasError()) {
-                    commandQueue.addToQueue(QueueType.ERROR, commandData);
+                    myContext.queues().addToQueue(QueueType.ERROR, commandData);
                 }
                 broadcastAfterExecutingCommand(commandData);
                 addSyncOfThisToQueue(commandData);
             } while (true);
-            MyLog.d(this, "Ended, " + breakReason + ", " + commandQueue.totalSizeToExecute() + " commands left");
-            commandQueue.save();
+            MyLog.d(this, "Ended, " + breakReason + ", " + myContext.queues().totalSizeToExecute() + " commands left");
+            myContext.queues().save();
             return true;
         }
 

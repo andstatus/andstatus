@@ -80,11 +80,11 @@ public class CommandDataTest {
         assertEquals(hasSoftError, commandData.getResult().hasSoftError());
         assertFalse(commandData.getResult().hasHardError());
         
-        CommandQueue queues = new CommandQueue();
+        CommandQueue queues = MyContextHolder.get().queues();
         queues.clear();
         queues.get(QueueType.ERROR).add(commandData);
         queues.save();
-        assertEquals(0, queues.get(QueueType.ERROR).size());
+        assertEquals(1, queues.get(QueueType.ERROR).size());
         queues.load();
         assertEquals(1, queues.get(QueueType.ERROR).size());
         assertEquals(commandData, MyServiceTest2.getFromQueue(queues, QueueType.ERROR, commandData));

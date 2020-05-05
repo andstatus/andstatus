@@ -32,6 +32,7 @@ import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.notification.NotificationData;
 import org.andstatus.app.notification.Notifier;
 import org.andstatus.app.origin.PersistentOrigins;
+import org.andstatus.app.service.CommandQueue;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.meta.PersistentTimelines;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -77,6 +78,7 @@ public class MyContextImpl implements MyContext {
     private final MyAccounts accounts = MyAccounts.newEmpty(this);
     private final PersistentOrigins origins = PersistentOrigins.newEmpty(this);
     private final PersistentTimelines timelines = PersistentTimelines.newEmpty(this);
+    private final CommandQueue commandQueue = new CommandQueue(this);
 
     private volatile boolean expired = false;
     private final Notifier notifier = new Notifier(this);
@@ -155,6 +157,7 @@ public class MyContextImpl implements MyContext {
                     accounts.initialize();
                     timelines.initialize();
                     ImageCaches.initialize(context());
+                    commandQueue.load();
                     state = MyContextState.READY;
                 }
                 break;
@@ -269,6 +272,11 @@ public class MyContextImpl implements MyContext {
         return null;
     }
 
+    @Override
+    public void save(Supplier<String> reason) {
+        commandQueue.save();
+    }
+
     /**
      * 2019-01-16 After getting not only (usual previously) errors "A SQLiteConnection object for database ... was leaked!"
      * but also "SQLiteException: no such table" and "Failed to open database" in Android 9
@@ -319,6 +327,12 @@ public class MyContextImpl implements MyContext {
     @Override
     public PersistentTimelines timelines() {
         return timelines;
+    }
+
+    @NonNull
+    @Override
+    public CommandQueue queues() {
+        return commandQueue;
     }
 
     @Override

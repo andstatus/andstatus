@@ -27,6 +27,7 @@ import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.notification.NotificationData;
 import org.andstatus.app.notification.Notifier;
 import org.andstatus.app.origin.PersistentOrigins;
+import org.andstatus.app.service.CommandQueue;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.timeline.meta.PersistentTimelines;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -56,7 +57,10 @@ public interface MyContext extends IdentifiableInstance {
     PersistentOrigins origins();
     @NonNull
     PersistentTimelines timelines();
+    @NonNull
+    CommandQueue queues();
     default void putAssertionData(@NonNull String key, @NonNull ContentValues contentValues) {}
+    void save(Supplier<String> reason);
     void release(Supplier<String> reason);
     boolean isExpired();
     void setExpired(Supplier<String> reason);

@@ -75,7 +75,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     }
 
     private void dropQueues() {
-        new CommandQueue().clear();
+        myContext.queues().clear();
     }
 
     void sendListenedCommand() {
@@ -133,7 +133,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         for (int pass = 1; pass < 10000; pass++) {
             if (serviceStopped) {
                 if (clearQueue) {
-                    new CommandQueue().clear();
+                    dropQueues();
                 }
                 stopped = true;
                 break;

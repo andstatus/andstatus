@@ -294,6 +294,7 @@ public final class MyContextHolder {
         SyncInitiator.unregister(previousContext);
         MyServiceManager.setServiceUnavailable();
         TlsSniSocketFactory.forget();
+        previousContext.save(reason);
         AsyncTaskLauncher.forget();
         ExceptionsCounter.forget();
         MyLog.forget();

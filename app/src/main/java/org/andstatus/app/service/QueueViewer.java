@@ -49,10 +49,9 @@ public class QueueViewer extends LoadableListActivity {
         return new SyncLoader<QueueData>() {
             @Override
             public void load(ProgressPublisher publisher) {
-                CommandQueue queues = new CommandQueue(QueueViewer.this).load();
                 for (QueueType queueType :
                         new QueueType[]{QueueType.CURRENT, QueueType.RETRY, QueueType.ERROR}) {
-                    Queue<CommandData> queue = queues.get(queueType);
+                    Queue<CommandData> queue = myContext.queues().get(queueType);
                     for (CommandData commandData : queue) {
                         items.add(QueueData.getNew(queueType, commandData));
                     }

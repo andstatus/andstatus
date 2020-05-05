@@ -22,6 +22,8 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SearchObjects;
@@ -50,8 +52,7 @@ import org.andstatus.app.util.StringUtil;
 
 import java.util.Objects;
 import java.util.Queue;
-
-import androidx.annotation.NonNull;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Command data store
@@ -474,16 +475,22 @@ public class CommandData implements Comparable<CommandData> {
         return builder.toString();
     }
 
-    void deleteCommandFromQueue(Queue<CommandData> queue) {
+    /** @return true if the command was deleted */
+    boolean deleteCommandFromQueue(Queue<CommandData> queue) {
+        AtomicBoolean deleted = new AtomicBoolean(false);
         String method = "deleteCommandFromQueue: ";
         for (CommandData cd : queue) {
             if (cd.getCommandId() == itemId) {
-                queue.remove(cd);
+                if (queue.remove(cd)) {
+                    deleted.set(true);
+                }
                 getResult().incrementDownloadedCount();
                 MyLog.v(this, () -> method + "deleted: " + cd);
             }
         }
-        MyLog.v(this, () -> method + "id=" + itemId + ", processed queue: " + queue.size());
+        MyLog.v(this, () -> method + "id=" + itemId + (deleted.get() ? " deleted" : " not found")
+                + ", processed queue: " + queue.size());
+        return deleted.get();
     }
 
     public boolean isInForeground() {
