@@ -412,7 +412,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         prepareMarkAllAsReadButton(menu);
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.timeline, menu);
-        if (MyLog.isVerboseEnabled()) {
+        if (MyPreferences.isShowDebuggingInfoInUi()) {
             MenuItem item = menu.findItem(R.id.debug_api);
             if (item != null) {
                 item.setVisible(true);

@@ -90,6 +90,8 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                 return "v1/timelines/tag/%tag%";
             case ACTOR_TIMELINE:
                 return "v1/accounts/%actorId%/statuses";
+            case PRIVATE_NOTES:
+                return "v1/conversations";
             case ACCOUNT_VERIFY_CREDENTIALS:
                 return "v1/accounts/verify_credentials";
             case UPDATE_NOTE:
@@ -161,6 +163,13 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
                     break;
             }
             return activity;
+        } else if(isConversation(timelineItem)) {
+            // https://docs.joinmastodon.org/entities/conversation/
+            AActivity noteActivity = activityFromJson2(timelineItem.optJSONObject("last_status"));
+            if (noteActivity.nonEmpty()) {
+                noteActivity.getNote().setConversationOid(timelineItem.optString("id"));
+            }
+            return noteActivity;
         } else {
             return super.activityFromTwitterLikeJson(timelineItem);
         }
@@ -186,8 +195,13 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         return ActivityType.UPDATE;
     }
 
+    /** https://docs.joinmastodon.org/entities/conversation/ */
+    private boolean isConversation(JSONObject activity) {
+        return activity != null && activity.has("last_status");
+    }
+
     private boolean isNotification(JSONObject activity) {
-        return activity != null && !activity.isNull("type");
+        return activity != null && activity.has("type");
     }
 
     @NonNull

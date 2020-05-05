@@ -112,6 +112,62 @@ public class ConnectionMastodonTest {
     }
 
     @Test
+    public void testGetPrivateNotes() throws IOException {
+        mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_private_notes);
+
+        InputTimelinePage timeline = mock.connection.getTimeline(true, ApiRoutineEnum.PRIVATE_NOTES,
+                TimelinePosition.EMPTY, TimelinePosition.EMPTY, 20, accountActor).get();
+        assertNotNull("timeline returned", timeline);
+        int size = 4;
+        assertEquals("Number of items in the Timeline", size, timeline.size());
+
+        AActivity activity3 = timeline.get(3);
+        Note note3 = activity3.getNote();
+        assertEquals("Activity oid", "104114771989428879", activity3.getOid());
+        assertEquals("Account unknown " + activity3, true, MyContextHolder.get().accounts()
+                .fromActorOfSameOrigin(activity3.accountActor).isValid());
+        assertEquals("Is not a note " + activity3, AObjectType.NOTE, activity3.getObjectType());
+        assertEquals("Favorited " + activity3, TriState.UNKNOWN, note3.getFavoritedBy(activity3.accountActor));
+        assertVisibility(note3.audience(), Visibility.PRIVATE);
+        assertTrue("Audience: " + note3.audience(), note3.audience().containsOid("886798"));
+        assertEquals("Audience: " + note3.audience(), "lanodan@queer.hacktivis.me",
+                note3.audience().getRecipients().stream()
+                .filter(actor -> actor.getUsername().equals("lanodan"))
+                .findAny()
+                .map(Actor::getWebFingerId)
+                .orElse("(not found)"));
+
+        Actor actor3 = activity3.getActor();
+        String stringDate = "2016-10-14T08:05:36.581Z";
+        long parsedDate = mock.connection.parseDate(stringDate);
+        assertEquals("Parsing " + stringDate, 10, new Date(parsedDate).getMonth() + 1);
+        assertEquals("Created at", parsedDate, actor3.getCreatedDate());
+
+        assertTrue("Actor is partially defined " + actor3, actor3.isFullyDefined());
+        assertEquals("Actor Oid", "5962", actor3.oid);
+        assertEquals("Username", "AndStatus", actor3.getUsername());
+
+        assertEquals("Note Oid", "104114771989428879", note3.oid);
+        assertEquals("Note url" + activity3, "https://mastodon.social/@AndStatus/104114771989428879", note3.url);
+        assertEquals("Name", "", note3.getName());
+        assertEquals("Summary", "", note3.getSummary());
+        assertThat("Body", note3.getContent(), containsString("Will monitor there"));
+        assertEquals("Note application", "Web", note3.via);
+
+        assertEquals("Media attachments", 0, note3.attachments.size());
+
+        MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
+        CommandExecutionContext executionContext = new CommandExecutionContext(
+                MyContextHolder.get(), CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE));
+
+        timeline.items.forEach(act -> {
+            act.setUpdatedNow(0);
+            new DataUpdater(executionContext).onActivity(act);
+        });
+
+    }
+
+    @Test
     public void testIncomingVisibility() throws IOException {
         String response = RawResourceUtils.getString(org.andstatus.app.tests.R.raw.mastodon_home_timeline);
         oneVisibility(response, Visibility.PUBLIC_AND_TO_FOLLOWERS);
