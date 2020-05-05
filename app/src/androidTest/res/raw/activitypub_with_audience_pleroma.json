@@ -10,6 +10,7 @@
       "https:\/\/www.w3.org\/ns\/activitystreams#Public"
     ],
     "published": "2019-03-31T11:39:54.186125Z",
+    "sensitive": true,
     "name": "This is test",
     "inReplyToStatusId": "9gP1LdSd5YdKJIqITI",
     "inReplyToAtomUri": "https:\/\/pleroma.site\/objects\/460e9a09-354e-4a8b-8f25-dbd69e6d6fb5",

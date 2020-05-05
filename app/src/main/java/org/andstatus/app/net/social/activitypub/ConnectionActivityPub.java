@@ -462,6 +462,7 @@ public class ConnectionActivityPub extends Connection {
             note.setName(JsonUtils.optString(jso, NAME_PROPERTY));
             note.setSummary(JsonUtils.optString(jso, SUMMARY_PROPERTY));
             note.setContentPosted(JsonUtils.optString(jso, CONTENT_PROPERTY));
+            note.setSensitive(jso.optBoolean(SENSITIVE_PROPERTY));
 
             note.setConversationOid(StringUtil.optNotEmpty(JsonUtils.optString(jso, "conversation"))
                     .orElseGet(() -> JsonUtils.optString(jso, "context")));

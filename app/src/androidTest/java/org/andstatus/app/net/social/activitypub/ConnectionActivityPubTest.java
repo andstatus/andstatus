@@ -58,6 +58,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.hamcrest.text.IsEmptyString.emptyString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -269,6 +270,7 @@ public class ConnectionActivityPubTest {
         assertEquals("Note updated at " + TestSuite.utcTime(note.getUpdatedDate()),
                 TestSuite.utcTime(2019, Calendar.MARCH, 31, 11, 39, 54).toString(),
                 TestSuite.utcTime(note.getUpdatedDate()).toString());
+        assertTrue("Note should be sensitive " + note, note.isSensitive());
 
         Audience audience = activity.audience();
         assertEquals("Visibility of " + activity, Visibility.PUBLIC, audience.getVisibility());
@@ -286,12 +288,15 @@ public class ConnectionActivityPubTest {
                 CommandData.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT));
         new DataUpdater(executionContext).onActivity(activity);
 
-        Audience audienceStored = Audience.fromNoteId(mock.getData().getOrigin(), note.noteId, note.audience().getVisibility());
+        Note noteStored = Note.loadContentById(mock.getData().getOrigin().myContext, note.noteId);
+
+        Audience audienceStored = noteStored.audience();
         oids.forEach(oid -> {
             assertTrue("Audience should contain " + oid + "\n " + activity + "\n " + audienceStored, audienceStored.containsOid(oid));
         });
         assertTrue("Audience of " + activity + "\n " + audienceStored, audienceStored.hasNonSpecial());
 
+        assertTrue("Note should be sensitive " + noteStored, noteStored.isSensitive());
     }
 
     @Test
@@ -311,6 +316,7 @@ public class ConnectionActivityPubTest {
         assertEquals("Note updated at " + TestSuite.utcTime(note.getUpdatedDate()),
                 TestSuite.utcTime(2019, Calendar.NOVEMBER, 10, 10, 44, 37).toString(),
                 TestSuite.utcTime(note.getUpdatedDate()).toString());
+        assertFalse("Note is sensitive " + note, note.isSensitive());
 
         Audience audience = activity.audience();
         assertEquals("Visibility of " + activity, Visibility.PUBLIC, audience.getVisibility());
@@ -335,11 +341,14 @@ public class ConnectionActivityPubTest {
         assertEquals("Attachment stored of " + activity + "\n " + attachmentsStored + "\n",
                 attachments.list, attachmentsStored.list);
 
-        Audience audienceStored = Audience.fromNoteId(mock.getData().getOrigin(), note.noteId);
+        Note noteStored = Note.loadContentById(mock.getData().getOrigin().myContext, note.noteId);
+
+        Audience audienceStored = noteStored.audience();
         oids.forEach(oid -> {
             assertTrue("Audience should contain " + oid + "\n " + activity + "\n " + audienceStored, audienceStored.containsOid(oid));
         });
         assertTrue("Audience of " + activity + "\n " + audienceStored, audienceStored.hasNonSpecial());
+        assertFalse("Note is sensitive " + noteStored, noteStored.isSensitive());
     }
 
 
