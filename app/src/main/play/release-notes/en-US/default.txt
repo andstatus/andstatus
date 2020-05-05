@@ -1,4 +1,1 @@
-v.55.03 Fix sending sensitive posts
-v.55.02 Added screenshots and localized descriptions for app listing in F-Droid
-v.55.01 ActivityPub Client to Server improvements. You can even play with Mastodon
-as an ActivityPub type Social network (switch to Sent timeline)...
+v.56.00 Private notes from Mastodon

@@ -29,6 +29,15 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="56.00" android:versionCode="317"
+        versionDate="2020-05-05"
+        versionTitle="Private notes from Mastodon">
+        <changes>
+            <change>Implemented receiving Private ("Direct") notes from Mastodon. It appeared that such notes
+                should be queried from a Server via a separate timeline (just like in Twitter and GNU Social).
+            </change>
+        </changes>
+    </release>
     <release android:versionName="55.01" android:versionCode="313"
         versionDate="2020-04-26"
         versionTitle="ActivityPub Client to Server improvements">

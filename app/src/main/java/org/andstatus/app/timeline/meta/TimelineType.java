@@ -116,12 +116,8 @@ public enum TimelineType implements SelectableEnum {
     @NonNull
     public static TimelineType from(NotificationEventType event) {
         switch (event) {
-            case PRIVATE:
-                return PRIVATE;
             case OUTBOX:
                 return OUTBOX;
-            case EMPTY:
-                return UNKNOWN;
             default:
                 return UNREAD_NOTIFICATIONS;
         }
