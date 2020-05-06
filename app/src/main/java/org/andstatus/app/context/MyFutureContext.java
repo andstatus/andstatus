@@ -53,8 +53,10 @@ public class MyFutureContext implements IdentifiableInstance {
     public static MyFutureContext fromPrevious(MyFutureContext previousFuture) {
         if (previousFuture.needToInitialize()) {
             MyContext previousContext = previousFuture.getNow();
-            return new MyFutureContext(previousContext, completedFuture(previousContext).future
-                .thenApplyAsync(MyFutureContext::initializeMyContext, NonUiThreadExecutor.INSTANCE));
+            CompletableFuture<MyContext> future =
+                    completedFuture(previousContext).future
+                    .thenApplyAsync(MyFutureContext::initializeMyContext, NonUiThreadExecutor.INSTANCE);
+            return new MyFutureContext(previousContext, future);
         } else {
             return previousFuture;
         }
@@ -160,7 +162,7 @@ public class MyFutureContext implements IdentifiableInstance {
         };
     }
 
-    public Try<MyContext> getBlocking() {
+    public Try<MyContext> tryBlocking() {
         return Try.of(future::get);
     }
 }

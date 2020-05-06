@@ -69,7 +69,8 @@ public class MyProvider extends ContentProvider {
      */
     @Override
     public boolean onCreate() {
-        return MyContextHolder.getMyFutureContext(getContext(), this).getNow().isReady();
+        MyContextHolder.INSTANCE.initialize(getContext(), this, false);
+        return true;
     }
 
     /**

@@ -101,7 +101,8 @@ public class TestSuite {
             }
             MyLog.i(TAG, "Before MyContextHolder.initialize " + iter);
             try {
-                if (creatorSet || MyContextHolder.trySetCreator(new MyContextTestImpl(null, context, testCase))) {
+                if (creatorSet || MyContextHolder.INSTANCE
+                        .trySetCreator(new MyContextTestImpl(null, context, testCase))) {
                     creatorSet = true;
                     FirstActivity.startMeAsync(context, MyAction.INITIALIZE_APP);
                     DbUtils.waitMs(method, 3000);
@@ -115,7 +116,7 @@ public class TestSuite {
             DbUtils.waitMs(method, 3000);
         }
         MyLog.i(TAG, "After Initializing Test Suite loop");
-        MyContextHolder.setExecutionMode(
+        MyContextHolder.INSTANCE.setExecutionMode(
                 ExecutionMode.load(InstrumentationRegistry.getArguments().getString("executionMode")));
         final MyContext myContext = MyContextHolder.get();
         assertNotEquals("MyContext state " + myContext, MyContextState.EMPTY, myContext.state());

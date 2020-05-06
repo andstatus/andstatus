@@ -121,8 +121,10 @@ public class AuthenticatorService extends Service {
         public Bundle getAccountRemovalAllowed(AccountAuthenticatorResponse response, Account account) {
             boolean deleted = true;
             if (AccountUtils.isVersionCurrent(context, account)) {
-                deleted = MyContextHolder.getMyFutureContext(context)
-                    .getBlocking()
+                deleted = MyContextHolder.INSTANCE
+                    .initialize(context, context, false)
+                    .getFuture()
+                    .tryBlocking()
                     .map(myContext -> myContext.accounts().fromAccountName(account.name))
                     .map(ma -> {
                         if (ma.isValid()) {

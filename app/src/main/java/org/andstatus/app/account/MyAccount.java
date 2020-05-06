@@ -39,8 +39,8 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.http.OAuthService;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.ApiRoutineEnum;
+import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.ConnectionEmpty;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -512,7 +512,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         static Builder loadFromAccountData(@NonNull AccountData accountData, String method) {
             MyAccount myAccount = new MyAccount(accountData);
             Builder builder = fromMyAccount(myAccount);
-            if (!MyContextHolder.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently();
+            if (!MyContextHolder.INSTANCE.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently();
             builder.logLoadResult(method);
             return builder;
         }

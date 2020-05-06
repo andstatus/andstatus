@@ -21,6 +21,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.Environment;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.ClassInApplicationPackage;
@@ -46,9 +49,6 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.function.Supplier;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 /**
  * Contains global state of the application
@@ -150,7 +150,7 @@ public class MyContextImpl implements MyContext {
             case DATABASE_READY:
                 if (!origins.initialize()) {
                     state = MyContextState.DATABASE_UNAVAILABLE;
-                } else if (MyContextHolder.isOnRestore()) {
+                } else if (MyContextHolder.INSTANCE.isOnRestore()) {
                     state = MyContextState.RESTORING;
                 } else {
                     users.initialize();

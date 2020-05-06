@@ -33,6 +33,7 @@ import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsGroup;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.os.UiThreadExecutor;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -75,8 +76,8 @@ public class FirstActivity extends AppCompatActivity {
     private void startNextActivity(Intent intent) {
         switch (MyAction.fromIntent(intent)) {
             case INITIALIZE_APP:
-                MyContextHolder.getMyFutureContext(this);
-                finish();
+                MyContextHolder.INSTANCE.initialize(this, this, false)
+                .whenSuccessAsync(myContext -> finish(), UiThreadExecutor.INSTANCE);
                 break;
             case SET_DEFAULT_VALUES:
                 setDefaultValuesOnUiThread(this);

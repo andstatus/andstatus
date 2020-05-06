@@ -175,7 +175,7 @@ public class MyService extends Service {
 
     private boolean isForcedToStop() {
         synchronized (serviceStateLock) {
-            return mForcedToStop || MyContextHolder.isShuttingDown();
+            return mForcedToStop || MyContextHolder.INSTANCE.isShuttingDown();
         }
     }
 

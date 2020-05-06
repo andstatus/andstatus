@@ -72,8 +72,8 @@ public class DatabaseConverterController {
             skip = true;
         }
         if (!skip && acquireUpgradeLock(requestorName)) {
-            final AsyncUpgrade asyncUpgrade = new AsyncUpgrade(upgradeRequestorIn, MyContextHolder.isOnRestore());
-            if (MyContextHolder.isOnRestore()) {
+            final AsyncUpgrade asyncUpgrade = new AsyncUpgrade(upgradeRequestorIn, MyContextHolder.INSTANCE.isOnRestore());
+            if (MyContextHolder.INSTANCE.isOnRestore()) {
                 asyncUpgrade.syncUpgrade();
             } else {
                 AsyncTaskLauncher.execute(TAG, asyncUpgrade);
@@ -154,7 +154,8 @@ public class DatabaseConverterController {
                 MyContextHolder.release(() -> "doUpgrade");
                 // Upgrade will occur inside this call synchronously
                 // TODO: Add completion stage instead of blocking...
-                MyContextHolder.getMyFutureContext(upgradeRequestor, upgradeRequestor, true).getBlocking();
+                MyContextHolder.INSTANCE.initialize(upgradeRequestor, upgradeRequestor, true)
+                    .getBlocking();
                 synchronized(UPGRADE_LOCK) {
                     shouldTriggerDatabaseUpgrade = false;
                 }

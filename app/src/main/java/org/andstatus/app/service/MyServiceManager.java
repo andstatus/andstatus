@@ -86,14 +86,14 @@ public class MyServiceManager extends BroadcastReceiver {
                 SyncInitiator.tryToSync(context);
                 break;
             case SERVICE_STATE:
-                MyContextHolder.getMyFutureContext(context);
+                MyContextHolder.INSTANCE.initialize(context, context, false);
                 stateInTime = MyServiceStateInTime.fromIntent(intent);
                 MyLog.d(this, "Notification received: Service state=" + stateInTime.stateEnum);
                 break;
             case ACTION_SHUTDOWN:
                 setServiceUnavailable();
                 MyLog.d(this, "Stopping service on Shutdown");
-                MyContextHolder.onShutDown();
+                MyContextHolder.INSTANCE.onShutDown();
                 stopService();
                 break;
             default:

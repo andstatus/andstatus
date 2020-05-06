@@ -56,18 +56,18 @@ import java.util.function.UnaryOperator;
 @ThreadSafe
 public final class MyContextHolder {
     private static final String TAG = MyContextHolder.class.getSimpleName();
-    private final static long appStartedAt = SystemClock.elapsedRealtime();
-    private static volatile boolean isShuttingDown = false;
+    public final static MyContextHolder INSTANCE = new MyContextHolder();
 
-    private static final Object CONTEXT_LOCK = new Object();
+    private final long appStartedAt = SystemClock.elapsedRealtime();
+    private volatile boolean isShuttingDown = false;
+
+    private final Object CONTEXT_LOCK = new Object();
     @GuardedBy("CONTEXT_LOCK")
     @NonNull
-    private static volatile MyFutureContext myFutureContext = MyFutureContext.completedFuture(MyContext.EMPTY);
-    private static volatile boolean onRestore = false;
+    private volatile MyFutureContext myFutureContext = MyFutureContext.completedFuture(MyContext.EMPTY);
+    private volatile boolean onRestore = false;
     @NonNull
-    private static volatile ExecutionMode executionMode = ExecutionMode.UNKNOWN;
-
-    public final static MyContextHolder INSTANCE = new MyContextHolder();
+    private volatile ExecutionMode executionMode = ExecutionMode.UNKNOWN;
 
     private MyContextHolder() {
     }
@@ -75,19 +75,19 @@ public final class MyContextHolder {
     /** Immediately get currently available context, even if it's empty */
     @NonNull
     public static MyContext get(Context context) {
-        storeContextIfNotPresent(context, context);
+        INSTANCE.storeContextIfNotPresent(context, context);
         return get();
     }
 
     /** Immediately get currently available context, even if it's empty */
     @NonNull
     public static MyContext get() {
-        return myFutureContext.getNow();
+        return INSTANCE.getFuture().getNow();
     }
     
     /** This is mainly for mocking / testing
      * @return true if succeeded */
-    static boolean trySetCreator(@NonNull MyContext contextCreatorNew) {
+    boolean trySetCreator(@NonNull MyContext contextCreatorNew) {
         synchronized (CONTEXT_LOCK) {
             if (!myFutureContext.future.isDone()) return false;
 
@@ -102,7 +102,7 @@ public final class MyContextHolder {
      * @return true if the Activity is being restarted
      */
     public static boolean initializeThenRestartMe(@NonNull Activity activity) {
-        if (myFutureContext.needToInitialize()) {
+        if (INSTANCE.getFuture().needToInitialize()) {
             INSTANCE.initialize(activity, activity, false)
             .whenSuccessAsync(myContext -> {
                 activity.finish();
@@ -124,68 +124,64 @@ public final class MyContextHolder {
      * Blocks on initialization
      */
     public static MyContext initialize(Context context, Object calledBy) {
-        return getMyFutureContext(context, calledBy, false).getBlocking().getOrElse(myFutureContext.getNow());
+        return INSTANCE.initialize(context, calledBy, false).getBlocking();
     }
 
-    public static MyFutureContext getMyFutureContext(Context context) {
-        return getMyFutureContext(context, context);
+    public MyContext getBlocking() {
+        return myFutureContext.tryBlocking().getOrElse(myFutureContext.getNow());
     }
 
-    public static MyFutureContext getMyFutureContext(Context context, Object calledBy) {
-        return getMyFutureContext(context, calledBy, false);
-    }
-
-    public MyContextHolder initialize(Context context, Object calledBy, boolean duringUpgrade) {
-        myFutureContext = getMyFutureContext(context, calledBy, duringUpgrade);
-        return this;
-    }
-
-    public static MyFutureContext getMyFutureContext(Context context, Object calledBy, boolean duringUpgrade) {
-        storeContextIfNotPresent(context, calledBy);
-        if (isShuttingDown) {
-            MyLog.d(TAG, "Skipping initialization: device is shutting down (called by: " + calledBy + ")");
-            return myFutureContext;
-        }
-        if (!duringUpgrade && DatabaseConverterController.isUpgrading()) {
-            MyLog.d(TAG, "Skipping initialization: upgrade in progress (called by: " + calledBy + ")");
-            return myFutureContext;
-        }
-        myFutureContext = MyFutureContext.fromPrevious(myFutureContext);
+    public MyFutureContext getFuture() {
         return myFutureContext;
     }
 
+    public MyContextHolder initialize(Context context, Object calledBy, boolean duringUpgrade) {
+        storeContextIfNotPresent(context, calledBy);
+        if (isShuttingDown) {
+            MyLog.d(TAG, "Skipping initialization: device is shutting down (called by: " + calledBy + ")");
+        } else if (!duringUpgrade && DatabaseConverterController.isUpgrading()) {
+            MyLog.d(TAG, "Skipping initialization: upgrade in progress (called by: " + calledBy + ")");
+        } else {
+            synchronized(CONTEXT_LOCK) {
+                myFutureContext = MyFutureContext.fromPrevious(myFutureContext);
+            }
+        }
+        return this;
+    }
+
     public MyContextHolder whenSuccessAsync(Consumer<MyContext> consumer, Executor executor) {
-        myFutureContext = myFutureContext.whenSuccessAsync(consumer, executor);
+        synchronized(CONTEXT_LOCK) {
+            myFutureContext = myFutureContext.whenSuccessAsync(consumer, executor);
+        }
         return this;
     }
 
     public MyContextHolder with(UnaryOperator<CompletableFuture<MyContext>> future) {
-        myFutureContext = myFutureContext.with(future);
+        synchronized(CONTEXT_LOCK) {
+            myFutureContext = myFutureContext.with(future);
+        }
         return this;
     }
 
     public static void setExpiredIfConfigChanged() {
-        if (get().isConfigChanged()) {
-            synchronized(CONTEXT_LOCK) {
-                final MyContext myContext = get();
-                if (myContext.isConfigChanged()) {
-                    long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
-                    if (myContext.preferencesChangeTime() != preferencesChangeTimeLast) {
-                        myContext.setExpired(() -> "Preferences changed "
-                                + RelativeTime.secondsAgo(preferencesChangeTimeLast)
-                                + " seconds ago, refreshing...");
-                    }
+        INSTANCE.with(future -> future.whenComplete((myContext, throwable) -> {
+            if (myContext != null && myContext.isConfigChanged()) {
+                long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
+                if (myContext.preferencesChangeTime() != preferencesChangeTimeLast) {
+                    myContext.setExpired(() -> "Preferences changed "
+                            + RelativeTime.secondsAgo(preferencesChangeTimeLast)
+                            + " seconds ago, refreshing...");
                 }
             }
-        }
+        }));
     }
 
     /**
      * This allows to refer to the context even before myInitializedContext is initialized.
      * Quickly returns, providing context for the deferred initialization
      */
-    public static void storeContextIfNotPresent(Context context, Object calledBy) {
-        if (context == null || myFutureContext.getNow().context() != null) return;
+    public void storeContextIfNotPresent(Context context, Object calledBy) {
+        if (context == null || INSTANCE.getFuture().getNow().context() != null) return;
 
         synchronized(CONTEXT_LOCK) {
             if (myFutureContext.getNow().context() == null) {
@@ -213,7 +209,8 @@ public final class MyContextHolder {
         if (showVersion) builder.append(getVersionText(context));
         MyStringBuilder.appendWithSpace(builder, MyLog.currentDateTimeForLogLine());
         MyStringBuilder.appendWithSpace(builder, ", started");
-        MyStringBuilder.appendWithSpace(builder, RelativeTime.getDifference(context, appStartedAt, SystemClock.elapsedRealtime()));
+        MyStringBuilder.appendWithSpace(builder, RelativeTime.getDifference(context, INSTANCE.appStartedAt,
+                SystemClock.elapsedRealtime()));
         builder.append("\n");
         builder.append(ImageCaches.getCacheInfo());
         builder.append("\n");
@@ -240,17 +237,18 @@ public final class MyContextHolder {
         return builder.toString();
     }
 
-    public static void setOnRestore(boolean onRestore) {
-        MyContextHolder.onRestore = onRestore;
+    public MyContextHolder setOnRestore(boolean onRestore) {
+        this.onRestore = onRestore;
+        return this;
     }
 
-    public static boolean isOnRestore() {
+    public boolean isOnRestore() {
         return onRestore;
     }
 
-    public static void setExecutionMode(@NonNull ExecutionMode executionMode) {
-        if (MyContextHolder.executionMode != executionMode) {
-            MyContextHolder.executionMode = executionMode;
+    public void setExecutionMode(@NonNull ExecutionMode executionMode) {
+        if (this.executionMode != executionMode) {
+            this.executionMode = executionMode;
             if (executionMode != ExecutionMode.DEVICE) {
                 MyLog.i(TAG, "Executing: " + getVersionText(get().context()));
             }
@@ -259,10 +257,10 @@ public final class MyContextHolder {
 
     @NonNull
     public static ExecutionMode getExecutionMode() {
-        if (executionMode == ExecutionMode.UNKNOWN) {
-            setExecutionMode(calculateExecutionMode());
+        if (INSTANCE.executionMode == ExecutionMode.UNKNOWN) {
+            INSTANCE.setExecutionMode(calculateExecutionMode());
         }
-        return executionMode;
+        return INSTANCE.executionMode;
     }
 
     @NonNull
@@ -285,12 +283,12 @@ public final class MyContextHolder {
         return getExecutionMode() != ExecutionMode.TRAVIS_TEST;
     }
 
-    public static void onShutDown() {
+    public void onShutDown() {
         isShuttingDown = true;
         release(() -> "onShutDown");
     }
 
-    public static boolean isShuttingDown() {
+    public boolean isShuttingDown() {
         return isShuttingDown;
     }
 

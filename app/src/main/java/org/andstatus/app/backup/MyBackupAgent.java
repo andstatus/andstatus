@@ -294,8 +294,9 @@ public class MyBackupAgent extends BackupAgent {
         assertNextHeader(data, DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME);
         databasesRestored += restoreFile(data, MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
         MyContextHolder.release(() -> "doRestore");
-        MyContextHolder.setOnRestore(true);
-        MyContextHolder.initialize(this, this);
+        MyContextHolder.INSTANCE
+            .setOnRestore(true)
+            .initialize(this, this, false).getBlocking();
         if (MyContextHolder.get().state() == MyContextState.UPGRADING && activity != null) {
             MyContextHolder.upgradeIfNeeded(activity);
         }
@@ -309,7 +310,7 @@ public class MyBackupAgent extends BackupAgent {
         accountsRestored += data.getMyContext().accounts().onRestore(data, backupDescriptor);
 
         MyContextHolder.release(() -> "doRestore");
-        MyContextHolder.setOnRestore(false);
+        MyContextHolder.INSTANCE.setOnRestore(false);
         MyContextHolder.initialize(this, this);
     }
 
