@@ -79,7 +79,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     }
 
     void sendListenedCommand() {
-        MyServiceManager.sendCommandEvenForUnavailable(getListenedCommand());
+        MyServiceManager.sendCommandIgnoringServiceAvailability(getListenedCommand());
     }
     
     boolean assertCommandExecutionStarted(String logMsg, long count0, TriState expectStarted) {

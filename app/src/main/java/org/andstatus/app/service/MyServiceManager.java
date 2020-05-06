@@ -116,7 +116,7 @@ public class MyServiceManager extends BroadcastReceiver {
             .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
             return;
         }
-        sendCommandEvenForUnavailable(commandData);
+        sendCommandIgnoringServiceAvailability(commandData);
     }
 
     public static void sendManualForegroundCommand(CommandData commandData) {
@@ -127,11 +127,22 @@ public class MyServiceManager extends BroadcastReceiver {
         sendCommand(commandData.setInForeground(true));
     }
 
-    static void sendCommandEvenForUnavailable(CommandData commandData) {
-        // Using explicit Service intent, 
+    static void sendCommandIgnoringServiceAvailability(CommandData commandData) {
+        // Using explicit Service intent,
         // see http://stackoverflow.com/questions/18924640/starting-android-service-using-explicit-vs-implicit-intent
         Intent serviceIntent = new Intent(MyContextHolder.get().context(), MyService.class);
-        if (commandData != null) serviceIntent = commandData.toIntent(serviceIntent);
+        switch (commandData.getCommand()) {
+            case STOP_SERVICE:
+            case BROADCAST_SERVICE_STATE:
+                serviceIntent = commandData.toIntent(serviceIntent);
+                break;
+            case UNKNOWN:
+                break;
+            default:
+                CommandQueue.addToPreQueue(commandData);
+                break;
+        }
+
         try {
             MyContextHolder.get().context().startService(serviceIntent);
         } catch (IllegalStateException e) {

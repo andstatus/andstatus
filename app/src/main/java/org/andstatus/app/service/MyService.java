@@ -157,11 +157,13 @@ public class MyService extends Service {
             case BROADCAST_SERVICE_STATE:
                 broadcastAfterExecutingCommand(commandData);
                 break;
-            case UNKNOWN:
-                MyLog.v(this, () -> "Command " + commandData.getCommand() + " ignored");
-                break;
             default:
-                receiveOtherCommand(commandData);
+                if (isForcedToStop()) {
+                    stopDelayed(false);
+                } else {
+                    initialize();
+                    startStopExecution();
+                }
                 break;
         }
         synchronized (serviceStateLock) {
@@ -171,16 +173,6 @@ public class MyService extends Service {
         }
     }
 
-    private void receiveOtherCommand(CommandData commandData) {
-        CommandQueue.addToPreQueue(commandData);
-        if (isForcedToStop()) {
-            stopDelayed(false);
-        } else {
-            initialize();
-            startStopExecution();
-        }
-    }
-    
     private boolean isForcedToStop() {
         synchronized (serviceStateLock) {
             return mForcedToStop || MyContextHolder.isShuttingDown();

@@ -65,7 +65,7 @@ public class MyServiceCommandsRunner {
         // we don't wait for completion anymore.
         // TODO: Implement Synchronous background sync ?!
         if (ignoreServiceAvailability) {
-            MyServiceManager.sendCommandEvenForUnavailable(commandData);
+            MyServiceManager.sendCommandIgnoringServiceAvailability(commandData);
         } else {
             MyServiceManager.sendCommand(commandData);
         }

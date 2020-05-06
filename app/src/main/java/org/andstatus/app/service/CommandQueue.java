@@ -188,6 +188,10 @@ public class CommandQueue {
             MyLog.d(TAG, "save; Database is unavailable");
             return;
         }
+        if (!myContext.isReady() && !myContext.isExpired()) {
+            MyLog.d(TAG, "save; Cannot save: context is " + myContext.state());
+            return;
+        }
         if (loaded) clearQueuesInDatabase(db);
         moveCommandsFromPreToMainQueue();
         Try<Integer> countCurrentRetry = save(db, QueueType.CURRENT)
