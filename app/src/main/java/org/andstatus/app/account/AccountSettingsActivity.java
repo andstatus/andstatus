@@ -21,6 +21,7 @@ import android.accounts.AccountManager;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -62,6 +63,7 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.origin.PersistentOriginList;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.os.UiThreadExecutor;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.timeline.TimelineActivity;
@@ -784,7 +786,9 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void returnToOurActivity() {
-        MyContextHolder.getMyFutureContext(this, this, false).thenRun( myContext -> {
+        MyContextHolder.INSTANCE
+        .initialize(this, this, false)
+        .whenSuccessAsync(myContext -> {
             MyLog.v(this, "Returning to " + activityOnFinish);
             MyAccount myAccount = myContext.accounts().fromAccountName(getState().getAccount().getAccountName());
             if (myAccount.isValid()) {
@@ -805,7 +809,7 @@ public class AccountSettingsActivity extends MyActivity {
                     TimelineActivity.goHome(AccountSettingsActivity.this);
                 }
             }
-        });
+        }, AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**
@@ -930,15 +934,16 @@ public class AccountSettingsActivity extends MyActivity {
             if (result != null && !AccountSettingsActivity.this.isFinishing()) {
                 if (result.isSuccess()) {
                     state.builder.myContext().setExpired(() -> "Client registered");
-                    MyContextHolder.getMyFutureContext(AccountSettingsActivity.this, this, false)
-                            .thenRun( myContext -> {
+                    MyContextHolder.INSTANCE
+                    .initialize(AccountSettingsActivity.this, this, false)
+                    .whenSuccessAsync(myContext -> {
                         state.builder.rebuildMyAccount(myContext);
                         updateScreen();
                         AsyncTaskLauncher.execute(this,
                                 new OAuthAcquireRequestTokenTask(AccountSettingsActivity.this))
                                 .onFailure( e -> appendError(e.getMessage()));
                         activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
-                    });
+                    }, UiThreadExecutor.INSTANCE);
                 } else {
                     appendError(result.message);
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);

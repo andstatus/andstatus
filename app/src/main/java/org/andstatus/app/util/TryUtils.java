@@ -19,7 +19,7 @@ import io.vavr.control.Try;
  */
 public class TryUtils {
     private static final NoSuchElementException NOT_FOUND_EXCEPTION = new NoSuchElementException("Not found");
-    public static final Try NOT_FOUND = Try.failure(NOT_FOUND_EXCEPTION);
+    private static final Try NOT_FOUND = Try.failure(NOT_FOUND_EXCEPTION);
     private static final NoSuchElementException OPTIONAL_IS_EMPTY = new NoSuchElementException("Optional is empty");
     private static final NoSuchElementException CALLABLE_IS_NULL = new NoSuchElementException("Callable is null");
     private static final NoSuchElementException VALUE_IS_NULL = new NoSuchElementException("Value is null");

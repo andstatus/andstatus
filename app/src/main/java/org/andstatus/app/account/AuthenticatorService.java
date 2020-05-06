@@ -121,13 +121,18 @@ public class AuthenticatorService extends Service {
         public Bundle getAccountRemovalAllowed(AccountAuthenticatorResponse response, Account account) {
             boolean deleted = true;
             if (AccountUtils.isVersionCurrent(context, account)) {
-                MyAccount ma = MyContextHolder.getMyFutureContext(context).getBlocking()
-                        .accounts().fromAccountName(account.name);
-                if (ma.isValid()) {
-                    MyContextHolder.get().timelines().onAccountDelete(ma);
-                    deleted = MyContextHolder.get().accounts().delete(ma);
-                }
-                MyPreferences.onPreferencesChanged();
+                deleted = MyContextHolder.getMyFutureContext(context)
+                    .getBlocking()
+                    .map(myContext -> myContext.accounts().fromAccountName(account.name))
+                    .map(ma -> {
+                        if (ma.isValid()) {
+                            MyContextHolder.get().timelines().onAccountDelete(ma);
+                            MyPreferences.onPreferencesChanged();
+                            return true;
+                        }
+                        return false;
+                    })
+                    .getOrElse(false);
             }
             final Bundle result = new Bundle();
             result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, deleted);

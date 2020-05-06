@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2020 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,109 +23,125 @@ import androidx.annotation.NonNull;
 
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.os.NonUiThreadExecutor;
 import org.andstatus.app.syncadapter.SyncInitiator;
+import org.andstatus.app.util.IdentifiableInstance;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
-import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.UnaryOperator;
+
+import io.vavr.control.Try;
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MyFutureContext extends MyAsyncTask<Object, Void, MyContext> {
+public class MyFutureContext implements IdentifiableInstance {
     private static final String TAG = MyFutureContext.class.getSimpleName();
+
+    protected final long createdAt = MyLog.uniqueCurrentTimeMS();
+    protected final long instanceId = InstanceId.next();
+
     @NonNull
-    final MyContext previousContext;
+    private final MyContext previousContext;
+    public final CompletableFuture<MyContext> future;
 
-    private volatile FirstActivity firstActivity = null;
-    private volatile Intent activityIntentPostRun = null;
-    private volatile Consumer<MyContext> postRunConsumer = null;
-
-    private static class DirectExecutor implements Executor {
-        private DirectExecutor() {
-        }
-
-        public void execute(@NonNull Runnable command) {
-            command.run();
-        }
-    }
-
-    MyFutureContext(@NonNull MyContext previousContext) {
-        super(MyFutureContext.class.getSimpleName(), PoolEnum.thatCannotBeShutDown());
-        Objects.requireNonNull(previousContext);
-        this.previousContext = previousContext;
-    }
-
-    void executeOnNonUiThread(Object initializer) {
-        if (isUiThread()) {
-            execute(initializer);
+    public static MyFutureContext fromPrevious(MyFutureContext previousFuture) {
+        if (previousFuture.needToInitialize()) {
+            MyContext previousContext = previousFuture.getNow();
+            return new MyFutureContext(previousContext, completedFuture(previousContext).future
+                .thenApplyAsync(MyFutureContext::initializeMyContext, NonUiThreadExecutor.INSTANCE));
         } else {
-            executeOnExecutor(new DirectExecutor(), initializer);
+            return previousFuture;
         }
     }
 
-    @Override
-    protected MyContext doInBackground2(Object obj) {
-        MyContextHolder.release(previousContext, () -> "Starting initialization by " + obj);
-        return previousContext.newInitialized(obj);
-    }
-
-    @Override
-    protected void onPostExecute2(MyContext myContext) {
-        runRunnable(myContext);
-        startActivity(myContext);
+    private static MyContext initializeMyContext(MyContext previousContext) {
+        MyContextHolder.release(previousContext, () -> "Starting initialization by " + previousContext);
+        MyContext myContext = previousContext.newInitialized(previousContext);
         SyncInitiator.register(myContext);
+        return myContext;
     }
 
-    public boolean isEmpty() {
+    public static MyFutureContext completedFuture(MyContext myContext) {
+        CompletableFuture<MyContext> future = new CompletableFuture<>();
+        future.complete(myContext);
+        return new MyFutureContext(MyContext.EMPTY, future);
+    }
+
+    private MyFutureContext(@NonNull MyContext previousContext, CompletableFuture<MyContext> future) {
+        this.previousContext = previousContext;
+        this.future = future;
+    }
+
+    public boolean needToInitialize() {
+        if (future.isDone()) {
+            return future.isCancelled() || future.isCompletedExceptionally()
+                    || getNow().isExpired() || !getNow().isReady();
+        }
         return false;
     }
 
-
-    public void thenStartNextActivity(FirstActivity firstActivity) {
-        this.firstActivity = firstActivity;
-        if (completedBackgroundWork()) {
-            startActivity(getNow());
-        }
+    public MyContext getNow() {
+        return Try.success(previousContext).map(future::getNow).getOrElse(previousContext);
     }
 
-    public void thenStartActivity(Activity activity) {
-        if (activity != null) {
-            thenStartActivity(activity.getIntent());
-        }
+    @Override
+    public long getInstanceId() {
+        return instanceId;
     }
 
-    public void thenStartActivity(Intent intent) {
-        if (activityIntentPostRun != null) {
-            return;
-        }
-        activityIntentPostRun = intent;
-        if (completedBackgroundWork()) {
-            startActivity(getNow());
-        }
-    }
-
-    private void startActivity(MyContext myContext) {
-        if (myContext == null) return;
-        Intent intent = activityIntentPostRun;
-        if (intent != null || firstActivity != null) {
-            postRunConsumer = null;
+    public static BiConsumer<MyContext, Throwable> startNextActivity(FirstActivity firstActivity) {
+        return (myContext, throwable) -> {
             boolean launched = false;
-            if (myContext.isReady() && !myContext.isExpired()) {
+            if (myContext != null && myContext.isReady() && !myContext.isExpired()) {
                 try {
-                    if (firstActivity != null) {
-                        firstActivity.startNextActivitySync(myContext);
-                    } else {
-                        myContext.context().startActivity(intent);
-                    }
+                    firstActivity.startNextActivitySync(myContext);
                     launched = true;
                 } catch (android.util.AndroidRuntimeException e) {
-                    if (intent == null) {
-                        MyLog.e(TAG, "Launching next activity from firstActivity", e);
-                    } else {
+                    MyLog.e(TAG, "Launching next activity from firstActivity", e);
+                } catch (java.lang.SecurityException e) {
+                    MyLog.d(TAG, "Launching activity", e);
+                }
+            }
+            if (!launched) {
+                HelpActivity.startMe(
+                        myContext == null ? MyContextHolder.get().context() : myContext.context(),
+                        true, HelpActivity.PAGE_LOGO);
+            }
+            firstActivity.finish();
+        };
+    }
+
+    public MyFutureContext whenSuccessAsync(Consumer<MyContext> consumer, Executor executor) {
+        return with(future -> future.whenCompleteAsync((myContext, throwable) -> {
+            if (myContext != null) {
+                consumer.accept(myContext);
+            }
+        }, executor));
+    }
+
+    public MyFutureContext with(UnaryOperator<CompletableFuture<MyContext>> futures) {
+        return new MyFutureContext(previousContext, futures.apply(future));
+    }
+
+    public static Consumer<MyContext> startActivity(Activity activity) {
+        return startIntent(activity.getIntent());
+    }
+
+    public static Consumer<MyContext> startIntent(Intent intent) {
+        return myContext -> {
+            if (intent != null) {
+                boolean launched = false;
+                if (myContext.isReady() && !myContext.isExpired()) {
+                    try {
+                        myContext.context().startActivity(intent);
+                        launched = true;
+                    } catch (android.util.AndroidRuntimeException e) {
                         try {
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             myContext.context().startActivity(intent);
@@ -133,66 +149,18 @@ public class MyFutureContext extends MyAsyncTask<Object, Void, MyContext> {
                         } catch (Exception e2) {
                             MyLog.e(TAG, "Launching activity with Intent.FLAG_ACTIVITY_NEW_TASK flag", e);
                         }
+                    } catch (java.lang.SecurityException e) {
+                        MyLog.d(TAG, "Launching activity", e);
                     }
-                } catch (java.lang.SecurityException e) {
-                    MyLog.d(TAG, "Launching activity", e);
+                }
+                if (!launched) {
+                    HelpActivity.startMe(myContext.context(), true, HelpActivity.PAGE_LOGO);
                 }
             }
-            if (!launched) {
-                HelpActivity.startMe(myContext.context(), true, HelpActivity.PAGE_LOGO);
-            }
-            activityIntentPostRun = null;
-            if (firstActivity != null) {
-                firstActivity.finish();
-                firstActivity = null;
-            }
-        }
+        };
     }
 
-    public void thenRun(Consumer<MyContext> consumer) {
-        this.postRunConsumer = consumer;
-        if (completedBackgroundWork()) {
-            runRunnable(getNow());
-        }
+    public Try<MyContext> getBlocking() {
+        return Try.of(future::get);
     }
-
-    private void runRunnable(MyContext myContext) {
-        if (postRunConsumer != null && myContext != null) {
-            if (myContext.isReady()) {
-                postRunConsumer.accept(myContext);
-            } else {
-                HelpActivity.startMe(myContext.context(), true, HelpActivity.PAGE_LOGO);
-            }
-            postRunConsumer = null;
-        }
-    }
-
-    /**
-     * Immediately get currently available context, even if it's empty
-     */
-    @NonNull
-    public MyContext getNow() {
-        if (completedBackgroundWork()) {
-            return getBlocking();
-        }
-        return previousContext;
-    }
-
-    @NonNull
-    public MyContext getBlocking() {
-        MyContext myContext = previousContext;
-        try {
-            for(int i = 1; i < 10; i++) {
-                myContext = get();
-                if (completedBackgroundWork()) break;
-                MyLog.v(TAG, "Didn't complete background work yet " + i);
-                DbUtils.waitMs(TAG, 50 * i);
-            }
-            if (!completedBackgroundWork()) MyLog.w(TAG, "Didn't complete background work");
-        } catch (Exception e) {
-            MyLog.i(TAG, "getBlocking failed", e);
-        }
-        return myContext == null ? previousContext : myContext;
-    }
-
 }

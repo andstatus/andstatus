@@ -34,6 +34,7 @@ import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.ExceptionsCounter;
+import org.andstatus.app.os.UiThreadExecutor;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.syncadapter.SyncInitiator;
 import org.andstatus.app.util.MyLog;
@@ -42,7 +43,11 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TamperingDetector;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.function.UnaryOperator;
 
 /**
  * Holds globally cached state of the application: {@link MyContext}  
@@ -57,10 +62,12 @@ public final class MyContextHolder {
     private static final Object CONTEXT_LOCK = new Object();
     @GuardedBy("CONTEXT_LOCK")
     @NonNull
-    private static volatile MyFutureContext myFutureContext = MyEmptyFutureContext.EMPTY;
+    private static volatile MyFutureContext myFutureContext = MyFutureContext.completedFuture(MyContext.EMPTY);
     private static volatile boolean onRestore = false;
     @NonNull
     private static volatile ExecutionMode executionMode = ExecutionMode.UNKNOWN;
+
+    public final static MyContextHolder INSTANCE = new MyContextHolder();
 
     private MyContextHolder() {
     }
@@ -82,10 +89,10 @@ public final class MyContextHolder {
      * @return true if succeeded */
     static boolean trySetCreator(@NonNull MyContext contextCreatorNew) {
         synchronized (CONTEXT_LOCK) {
-            if (myFutureContext.needsBackgroundWork()) return false;
+            if (!myFutureContext.future.isDone()) return false;
 
             myFutureContext.getNow().release(() -> "trySetCreator");
-            myFutureContext = new MyEmptyFutureContext(contextCreatorNew);
+            myFutureContext = MyFutureContext.completedFuture(contextCreatorNew);
         }
         return true;
     }
@@ -95,18 +102,21 @@ public final class MyContextHolder {
      * @return true if the Activity is being restarted
      */
     public static boolean initializeThenRestartMe(@NonNull Activity activity) {
-        MyFutureContext myFutureContext = getMyFutureContext(activity, activity, false);
-        if (myFutureContext.needsBackgroundWork() || !get().isReady()) {
-            activity.finish();
-            myFutureContext.thenStartActivity(activity);
+        if (myFutureContext.needToInitialize()) {
+            INSTANCE.initialize(activity, activity, false)
+            .whenSuccessAsync(myContext -> {
+                activity.finish();
+                MyFutureContext.startActivity(activity);
+                }, UiThreadExecutor.INSTANCE);
             return true;
         }
         return false;
     }
 
     public static void initializeByFirstActivity(@NonNull FirstActivity firstActivity) {
-        MyFutureContext myFutureContext = getMyFutureContext(firstActivity, firstActivity, false);
-        myFutureContext.thenStartNextActivity(firstActivity);
+        INSTANCE.initialize(firstActivity, firstActivity, false)
+        .with(future -> future
+            .whenCompleteAsync(MyFutureContext.startNextActivity(firstActivity), UiThreadExecutor.INSTANCE));
     }
 
     /**
@@ -114,7 +124,7 @@ public final class MyContextHolder {
      * Blocks on initialization
      */
     public static MyContext initialize(Context context, Object calledBy) {
-        return getMyFutureContext(context, calledBy, false).getBlocking();
+        return getMyFutureContext(context, calledBy, false).getBlocking().getOrElse(myFutureContext.getNow());
     }
 
     public static MyFutureContext getMyFutureContext(Context context) {
@@ -125,35 +135,33 @@ public final class MyContextHolder {
         return getMyFutureContext(context, calledBy, false);
     }
 
+    public MyContextHolder initialize(Context context, Object calledBy, boolean duringUpgrade) {
+        myFutureContext = getMyFutureContext(context, calledBy, duringUpgrade);
+        return this;
+    }
+
     public static MyFutureContext getMyFutureContext(Context context, Object calledBy, boolean duringUpgrade) {
         storeContextIfNotPresent(context, calledBy);
         if (isShuttingDown) {
             MyLog.d(TAG, "Skipping initialization: device is shutting down (called by: " + calledBy + ")");
-            return new MyEmptyFutureContext(myFutureContext.getNow());
+            return myFutureContext;
         }
         if (!duringUpgrade && DatabaseConverterController.isUpgrading()) {
             MyLog.d(TAG, "Skipping initialization: upgrade in progress (called by: " + calledBy + ")");
-            return new MyEmptyFutureContext(myFutureContext.getNow());
+            return myFutureContext;
         }
-        if (needToInitialize()) {
-            MyLog.v(TAG, () -> "myFutureContext " + (myFutureContext.isEmpty() ? "isEmpty " : "") + get());
-            boolean launchExecution = false;
-            synchronized(CONTEXT_LOCK) {
-                if (needToInitialize()) {
-                    myFutureContext = new MyFutureContext(myFutureContext.getNow());
-                    launchExecution = true;
-                }
-            }
-            if (launchExecution) {
-                MyLog.v(TAG, () -> "myFutureContext launch " + (myFutureContext.isEmpty() ? "isEmpty " : "") + get());
-                myFutureContext.executeOnNonUiThread(calledBy);
-            }
-        }
+        myFutureContext = MyFutureContext.fromPrevious(myFutureContext);
         return myFutureContext;
     }
 
-    private static boolean needToInitialize() {
-        return myFutureContext.isEmpty() || (myFutureContext.completedBackgroundWork() && get().isExpired());
+    public MyContextHolder whenSuccessAsync(Consumer<MyContext> consumer, Executor executor) {
+        myFutureContext = myFutureContext.whenSuccessAsync(consumer, executor);
+        return this;
+    }
+
+    public MyContextHolder with(UnaryOperator<CompletableFuture<MyContext>> future) {
+        myFutureContext = myFutureContext.with(future);
+        return this;
     }
 
     public static void setExpiredIfConfigChanged() {
@@ -183,7 +191,7 @@ public final class MyContextHolder {
             if (myFutureContext.getNow().context() == null) {
                 MyContext contextCreator = myFutureContext.getNow().newCreator(context, calledBy);
                 requireNonNullContext(contextCreator.context(), calledBy, "no compatible context");
-                myFutureContext = new MyEmptyFutureContext(contextCreator);
+                myFutureContext = MyFutureContext.completedFuture(contextCreator);
             }
         }
     }

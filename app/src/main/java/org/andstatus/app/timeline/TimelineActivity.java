@@ -52,6 +52,7 @@ import org.andstatus.app.actor.ActorProfileViewer;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextHolder;
+import org.andstatus.app.context.MyFutureContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.MatchedUri;
@@ -70,6 +71,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginSelector;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.os.UiThreadExecutor;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -1220,7 +1222,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             MyLog.v(this, () -> "switchTimelineActivity; " + timeline);
             if (isFinishing()) {
                 final Intent intent = getIntentForTimeline(myContext, timeline, false);
-                MyContextHolder.getMyFutureContext(this).thenStartActivity(intent);
+                MyContextHolder.INSTANCE.initialize(this, this, false)
+                .whenSuccessAsync(MyFutureContext.startIntent(intent), UiThreadExecutor.INSTANCE);
             } else {
                 TimelineActivity.startForTimeline(myContext, this, timeline);
             }

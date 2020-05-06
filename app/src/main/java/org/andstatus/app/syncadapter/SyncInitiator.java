@@ -22,8 +22,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.PowerManager;
 import android.os.SystemClock;
+
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.MyAction;
@@ -66,7 +68,9 @@ public class SyncInitiator extends BroadcastReceiver {
     }
 
     private void initializeApp(Context context) {
-        MyContextHolder.getMyFutureContext(context, this).thenRun(this::checkConnectionState);
+        MyContextHolder.INSTANCE
+        .initialize(context, this, false)
+        .whenSuccessAsync(this::checkConnectionState, AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private void checkConnectionState(MyContext myContext) {
