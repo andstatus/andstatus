@@ -38,7 +38,7 @@ import static org.junit.Assert.assertTrue;
 public class MyServiceTest2 extends MyServiceTest {
 
     @Test
-    public void testSyncInForeground() throws InterruptedException {
+    public void testSyncInForeground() {
         final String method = "testSyncInForeground";
         MyLog.i(this, method + " started");
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false);
@@ -73,11 +73,14 @@ public class MyServiceTest2 extends MyServiceTest {
         assertEquals("No new data was posted while in foreground",
                 1, mService.getHttp().getRequestsCounter());
 
-        Queue<CommandData> queue = myContextHolder.getNow().queues().get(QueueType.CURRENT);
-        MyLog.i(this, method + "; Current queue size:" + queue.size());
-        assertFalse("Main queue is empty", queue.isEmpty());
-        assertFalse("First command is in the main queue", queue.contains(cd1));
-        assertTrue("The second command is not in the main queue", queue.contains(cd2));
+        CommandQueue queues1 = myContextHolder.getBlocking().queues();
+        Queue<CommandData> queue1 = queues1.get(QueueType.CURRENT);
+        MyLog.i(this, method + "; Current queue size:" + queue1.size());
+        assertTrue("Current queue is empty " + queue1, queue1.isEmpty());
+        assertFalse("First command is in the main queue " + queue1, queue1.contains(cd1));
+        assertFalse("The second command is in the main queue " + queue1, queue1.contains(cd2));
+        queue1 = queues1.get(QueueType.SKIPPED);
+        assertTrue("The second command stayed in the Skip queue " + queue1, queue1.contains(cd2));
 
         CommandData cd3 = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
                 demoData.getMyAccount(demoData.twitterTestAccountName),
@@ -93,12 +96,14 @@ public class MyServiceTest2 extends MyServiceTest {
         assertTrue("Foreground command ended executing", mService.waitForCommandExecutionEnded(endCount));
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
 
-        queue = myContextHolder.getNow().queues().get(QueueType.CURRENT);
-        assertFalse("Main queue is not empty", queue.isEmpty());
-        assertTrue("The second command stayed in the main queue", queue.contains(cd2));
+        CommandQueue queues2 = myContextHolder.getBlocking().queues();
+        Queue<CommandData> queue2 = queues2.get(QueueType.CURRENT);
+        assertTrue("Current queue should be empty " + queue2, queue2.isEmpty());
+        queue2 = queues2.get(QueueType.SKIPPED);
+        assertTrue("The second command stayed in the Skip queue " + queue2, queue2.contains(cd2));
         
         long idFound = -1;
-        for (CommandData cd : queue) {
+        for (CommandData cd : queue2) {
             if (cd.equals(cd2)) {
                 idFound = cd.getCommandId();
             }
@@ -106,7 +111,7 @@ public class MyServiceTest2 extends MyServiceTest {
         assertEquals("command id", cd2.getCommandId(), idFound);
         assertTrue("command id=" + idFound, idFound >= 0);
         
-        assertFalse("Foreground command is not in main queue", queue.contains(cd3));
+        assertFalse("Foreground command is not in main queue", queue2.contains(cd3));
         MyLog.i(this, method + " ended");
 
         myTestDeleteCommand(cd2);

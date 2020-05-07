@@ -7,6 +7,7 @@ public enum QueueType {
     RETRY("retry", "R", true, true),
     ERROR("error", "E", false, true),
     PRE("pre", "P", true, false),
+    SKIPPED("skipped", "S", true, true),
     UNKNOWN("unknown", "U", false, false);
 
     final private String code;

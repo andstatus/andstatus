@@ -101,4 +101,15 @@ public enum TriState {
         bundle.putLong(key, id);
         return bundle;
     }
+
+    public <T> T select(T ifTrue, T ifFalse, T ifUnknown) {
+        switch (this) {
+            case TRUE:
+                return ifTrue;
+            case FALSE:
+                return ifFalse;
+            default:
+                return ifUnknown;
+        }
+    }
 }

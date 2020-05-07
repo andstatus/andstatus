@@ -81,10 +81,15 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     void sendListenedCommand() {
         MyServiceManager.sendCommandIgnoringServiceAvailability(getListenedCommand());
     }
-    
+
+    /** @return true if execution started */
     boolean assertCommandExecutionStarted(String logMsg, long count0, TriState expectStarted) {
         final String method = "waitForCommandExecutionStart " + logMsg + "; " + getListenedCommand().getCommand().save();
-        MyLog.v(this, method + " started, count=" + executionStartCount + ", waiting for > " + count0);
+        final String criteria = expectStarted.select(
+                "check if count > " + count0,
+                "check for no new execution, count0 = " + count0,
+                "just waiting, count0 = " + count0);
+        MyLog.v(this, method + " started, count=" + executionStartCount + ", " + criteria);
         boolean found = false;
         String locEvent = "none";
         for (int pass = 0; pass < 1000; pass++) {
@@ -98,7 +103,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 break;
             }
         }
-        String logMsgEnd = method + " ended, found=" + found + ", count=" + executionStartCount + ", waited for > " + count0;
+        String logMsgEnd = method + " ended, found=" + found + ", count=" + executionStartCount + ", " + criteria;
         MyLog.v(this, logMsgEnd);
         if (!expectStarted.equals(TriState.UNKNOWN)) {
             assertEquals(logMsgEnd, expectStarted.toBoolean(false), found);

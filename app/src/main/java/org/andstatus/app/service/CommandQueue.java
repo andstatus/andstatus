@@ -126,7 +126,7 @@ public class CommandQueue {
         if (loaded) {
             MyLog.v(TAG, "Already loaded");
         } else {
-            int count = load(QueueType.CURRENT) + load(QueueType.RETRY);
+            int count = load(QueueType.CURRENT) + load(QueueType.SKIPPED) + load(QueueType.RETRY);
             int countError = load(QueueType.ERROR);
             MyLog.d(TAG, "State restored, " + (count > 0 ? Integer.toString(count) : "no ")
                     + " msg in the Queues"
@@ -194,13 +194,14 @@ public class CommandQueue {
         }
         if (loaded) clearQueuesInDatabase(db);
         moveCommandsFromPreToMainQueue();
-        Try<Integer> countCurrentRetry = save(db, QueueType.CURRENT)
+        Try<Integer> countNotError = save(db, QueueType.CURRENT)
+                .flatMap(i1 -> save(db, QueueType.SKIPPED).map(i2 -> i1 + i2))
                 .flatMap(i1 -> save(db, QueueType.RETRY).map(i2 -> i1 + i2));
         Try<Integer> countError = save(db, QueueType.ERROR);
         MyLog.d(TAG, (loaded ? "Queues saved" : "Saved new queued commands only") + ", "
-            + ( countCurrentRetry.isFailure() || countError.isFailure()
+            + ( countNotError.isFailure() || countError.isFailure()
                 ? " Error saving commands!"
-                : ((countCurrentRetry.get() > 0 ? Integer.toString(countCurrentRetry.get()) : "no") + " commands"
+                : ((countNotError.get() > 0 ? Integer.toString(countNotError.get()) : "no") + " commands"
                     + (countError.get() > 0 ? ", plus " + countError.get() + " in Error queue" : ""))
             )
         );
@@ -231,10 +232,11 @@ public class CommandQueue {
                         MyLog.e(TAG, method + "; Duplicated command in a queue:" + count + " " + cd.toString());
                     }
                 }
+                int left = queue.size();
                 // And add all commands back to the queue, so we won't need to reload them from a database
                 commands.forEach(queue::offer);
                 MyLog.d(TAG, method + "; " + count + " saved" +
-                        (queue.isEmpty() ? "" : ", " + queue.size() + " left"));
+                        (left == 0 ? " all" : ", " + left + " left"));
             }
         } catch (Exception e) {
             String msgLog = method + "; " + count + " saved, " + queue.size() + " left.";
@@ -340,7 +342,7 @@ public class CommandQueue {
             }
             if (commandData != null && !commandData.isInForeground() && myContext.isInForeground()
                     && !MyPreferences.isSyncWhileUsingApplicationEnabled()) {
-                addToPreQueue(commandData);
+                addToQueue(QueueType.SKIPPED, commandData);
                 commandData = null;
             }
         } while (commandData == null);
@@ -360,6 +362,15 @@ public class CommandQueue {
         for (CommandData cd : preQueue) {
             if (addToMainQueue(cd)) {
                 preQueue.remove(cd);
+            }
+        }
+    }
+
+    void moveCommandsFromSkippedToMainQueue() {
+        Queue<CommandData> queue = get(QueueType.SKIPPED);
+        for (CommandData cd : queue) {
+            if (addToMainQueue(cd)) {
+                queue.remove(cd);
             }
         }
     }

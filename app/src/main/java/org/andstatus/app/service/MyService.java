@@ -37,11 +37,11 @@ import org.andstatus.app.notification.NotificationData;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.TriState;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -55,25 +55,21 @@ import static org.andstatus.app.service.CommandEnum.DELETE_COMMAND;
  * between this Android Device and Social networks.
  */
 public class MyService extends Service {
-    private volatile MyContext myContext = MyContext.EMPTY;
-    private final Object serviceStateLock = new Object();
-    private volatile long startedForegrounLastTime = 0;
-    /** We are going to finish this service. But may rethink...  */
-    @GuardedBy("serviceStateLock")
-    private boolean mIsStopping = false;
-    /** No way back */
-    @GuardedBy("serviceStateLock")
-    private boolean mForcedToStop = false;
-    private final static long START_TO_STOP_CHANGE_MIN_PERIOD_SECONDS = 10;
-    @GuardedBy("serviceStateLock")
-    private long decidedToChangeIsStoppingAt = 0;
-    /** Flag to control the Service state persistence */
-    @GuardedBy("serviceStateLock")
-    private boolean mInitialized = false;
+    private static final String TAG = MyService.class.getSimpleName();
+    private final static long STOP_ON_INACTIVITY_AFTER_SECONDS = 10;
 
-    @GuardedBy("serviceStateLock")
-    private int mLatestProcessedStartId = 0;
-    
+    protected final long instanceId = InstanceId.next();
+    private volatile MyContext myContext = MyContext.EMPTY;
+    private volatile long startedForegrounLastTime = 0;
+    /** No way back */
+    private volatile boolean mForcedToStop = false;
+    private volatile long latestActivityTime = 0;
+
+    /** Flag to control the Service state persistence */
+    private AtomicBoolean initialized = new AtomicBoolean(false);
+    /** We are stopping this service */
+    private AtomicBoolean isStopping = new AtomicBoolean(false);
+
     private final Object executorLock = new Object();
     @GuardedBy("executorLock")
     private QueueExecutor mExecutor = null;
@@ -93,33 +89,29 @@ public class MyService extends Service {
     private static final AtomicBoolean widgetsInitialized = new AtomicBoolean(false);
 
     private MyServiceState getServiceState() {
-        MyServiceState state = MyServiceState.STOPPED; 
-        synchronized (serviceStateLock) {
-            if (mInitialized) {
-                if (mIsStopping) {
-                    state = MyServiceState.STOPPING;
-                } else {
-                    state = MyServiceState.RUNNING;
-                }
+        if (initialized.get()) {
+            if (isStopping.get()) {
+                return MyServiceState.STOPPING;
+            } else {
+                return MyServiceState.RUNNING;
             }
         }
-        return state;
+        return MyServiceState.STOPPED;
     }
+
     private boolean isStopping() {
-        synchronized (serviceStateLock) {
-            return mIsStopping;
-        }
+        return isStopping.get();
     }
     
     @Override
     public void onCreate() {
-        MyLog.d(this, "Service created");
-        initializeMyContext();
+        MyLog.d(TAG, "Service created");
+        myContext = myContextHolder.initialize(this).getNow();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        MyLog.d(this, "onStartCommand: startid=" + startId);
+        MyLog.d(TAG, "onStartCommand: startid=" + startId);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForeground();
         }
@@ -134,84 +126,69 @@ public class MyService extends Service {
 
         startedForegrounLastTime = currentTimeMillis;
         final NotificationData data = new NotificationData(SERVICE_RUNNING, Actor.EMPTY, currentTimeMillis);
-        getMyContext().getNotifier().createNotificationChannel(data);
-        startForeground(SERVICE_RUNNING.notificationId(), getMyContext().getNotifier().getAndroidNotification(data));
+        myContext.getNotifier().createNotificationChannel(data);
+        startForeground(SERVICE_RUNNING.notificationId(), myContext.getNotifier().getAndroidNotification(data));
     }
 
     @GuardedBy("serviceStateLock")
     private BroadcastReceiver intentReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context arg0, Intent intent) {
-            MyLog.v(this, () -> "onReceive " + intent.toString());
+            MyLog.v(TAG, () -> "onReceive " + intent.toString());
             receiveCommand(intent, 0);
         }
     };
     
     private void receiveCommand(Intent intent, int startId) {
-        CommandData commandData = CommandData.fromIntent(getMyContext(), intent);
+        CommandData commandData = CommandData.fromIntent(myContext, intent);
         switch (commandData.getCommand()) {
             case STOP_SERVICE:
-                MyLog.v(this, () -> "Command " + commandData.getCommand() + " received");
+                MyLog.v(TAG, () -> "Command " + commandData.getCommand() + " received");
                 stopDelayed(false);
                 break;
             case BROADCAST_SERVICE_STATE:
+                if (isStopping.get()) {
+                    stopDelayed(false);
+                }
                 broadcastAfterExecutingCommand(commandData);
                 break;
             default:
+                latestActivityTime = System.currentTimeMillis();
                 if (isForcedToStop()) {
-                    stopDelayed(false);
+                    stopDelayed(true);
                 } else {
-                    initialize();
+                    ensureInitialized();
                     startStopExecution();
                 }
                 break;
         }
-        synchronized (serviceStateLock) {
-            if (startId > mLatestProcessedStartId) {
-                mLatestProcessedStartId = startId;
-            }
-        }
     }
 
     private boolean isForcedToStop() {
-        synchronized (serviceStateLock) {
-            return mForcedToStop || myContextHolder.isShuttingDown();
-        }
+        return mForcedToStop || myContextHolder.isShuttingDown();
     }
 
     private void broadcastAfterExecutingCommand(CommandData commandData) {
-        MyServiceEventsBroadcaster.newInstance(getMyContext(), getServiceState())
+        MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
         .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
     }
     
-    void initialize() {
-        boolean changed = false;
-        boolean wasNotInitialized = false;
-        MyContext myContext = getMyContext();
-        if (!mInitialized) {
-            initializeMyContext();
-            synchronized (serviceStateLock) {
-                if (!mInitialized) {
-                    wasNotInitialized = true;
-                    myContext = getMyContext();
-                    if (myContext.isReady()) {
-                        registerReceiver(intentReceiver, new IntentFilter(MyAction.EXECUTE_COMMAND.getAction()));
-                        mInitialized = true;
-                        changed = true;
-                    }
-                }
-            }
+    void ensureInitialized() {
+        if (initialized.get() || isStopping.get()) return;
+
+        if (!myContext.isReady()) {
+            myContext = myContextHolder.initialize(this).getBlocking();
+            if (!myContext.isReady()) return;
         }
-        if (mInitialized && myContext.isReady()) {
-            if (wasNotInitialized) {
-                if (widgetsInitialized.compareAndSet(false, true)) {
-                    AppWidgets.of(myContext).updateViews();
-                }
-                reviveHeartBeat();
+
+        if (initialized.compareAndSet(false, true)) {
+            registerReceiver(intentReceiver, new IntentFilter(MyAction.EXECUTE_COMMAND.getAction()));
+            if (widgetsInitialized.compareAndSet(false, true)) {
+                AppWidgets.of(myContext).updateViews();
             }
-            if (changed) {
-                MyServiceEventsBroadcaster.newInstance(myContext, getServiceState()).broadcast();
-            }
+            reviveHeartBeat();
+            MyLog.v(TAG, () -> "MyService " + instanceId + " initialized");
+            MyServiceEventsBroadcaster.newInstance(myContext, getServiceState()).broadcast();
         }
     }
 
@@ -223,7 +200,7 @@ public class MyService extends Service {
             }
             if (mHeartBeat == null) {
                 mHeartBeat = new HeartBeat();
-                if (AsyncTaskLauncher.execute(this, mHeartBeat).isFailure()) {
+                if (AsyncTaskLauncher.execute(TAG, mHeartBeat).isFailure()) {
                     mHeartBeat = null;
                 }
             }
@@ -231,99 +208,24 @@ public class MyService extends Service {
     }
 
     private void startStopExecution() {
-        switch (shouldStop()) {
-            case TRUE:
-                stopDelayed(false);
-                break;
-            case FALSE:
-                startExecution();
-                break;
-            default:
-                MyLog.v(this, () -> "Didn't change execution " + mExecutor);
-                break;
+        if (!initialized.get()) return;
+
+        if (isStopping.get() || !myContext.isReady() || isForcedToStop() || (
+                !isAnythingToExecuteNow()
+                && RelativeTime.moreSecondsAgoThan(latestActivityTime, STOP_ON_INACTIVITY_AFTER_SECONDS)
+                && !isExecutorReallyWorkingNow())) {
+            stopDelayed(false);
+        } else if (isAnythingToExecuteNow()) {
+            startExecution();
         }
     }
 
-    private TriState shouldStop() {
-        boolean doStop = !getMyContext().isReady() || isForcedToStop() || !isAnythingToExecuteNow();
-        if (!setIsStopping(doStop, false)) {
-            return TriState.UNKNOWN;
-        }
-        if (doStop) {
-            return TriState.TRUE;
-        } else {
-            return TriState.FALSE;
-        }
-    }
-
-    /** @return true if succeeded */
-    private boolean setIsStopping(boolean doStop, boolean forceStopNow) {
-        boolean decided = false;
-        boolean success = false;
-        StringBuilder logMsg = new StringBuilder("setIsStopping ");
-        synchronized (serviceStateLock) {
-            if (doStop == mIsStopping) {
-                logMsg.append("Continuing " + (doStop ? "stopping" : "starting"));
-                decided = true;
-                success = true;
-            }
-            if (!decided && !mInitialized && !doStop) {
-                logMsg.append("Cannot start when not initialized");
-                decided = true;
-            }
-            if (!decided && !doStop && mForcedToStop) {
-                logMsg.append("Cannot start due to forcedToStop flag");
-                decided = true;
-            }
-            if (!decided
-                    && doStop
-                    && !RelativeTime.moreSecondsAgoThan(decidedToChangeIsStoppingAt,
-                            START_TO_STOP_CHANGE_MIN_PERIOD_SECONDS)) {
-                if (forceStopNow) {
-                    logMsg.append("Forced to stop");
-                    success = true;
-                } else {
-                    logMsg.append("Cannot stop now, decided to start only "
-                            + RelativeTime.secondsAgo(decidedToChangeIsStoppingAt) + " second ago");
-                }
-                decided = true;
-            }
-            if (!decided) {
-                success = true;
-                if (doStop) {
-                    logMsg.append("Stopping");
-                } else {
-                    logMsg.append("Starting");
-                }
-            }
-            if (success && doStop != mIsStopping) {
-                decidedToChangeIsStoppingAt = System.currentTimeMillis();
-                mIsStopping = doStop;
-            }
-        }
-        if (success) {
-            logMsg.append("; startId=" + getLatestProcessedStartId());
-        }
-        if (success && doStop) {
-            logMsg.append("; " + (myContext.queues().totalSizeToExecute() == 0 ? "queue is empty" : "queueSize="
-                    + myContext.queues().totalSizeToExecute()));
-        }
-        MyLog.v(this, logMsg::toString);
-        return success;
-    }
-
-    private int getLatestProcessedStartId() {
-        synchronized (serviceStateLock) {
-            return mLatestProcessedStartId;
-        }
-    }
-    
     private void startExecution() {
         acquireWakeLock();
         try {
             ensureExecutorStarted();
         } catch (Exception e) {
-            MyLog.i(this, "Couldn't start executor", e);
+            MyLog.i(TAG, "Couldn't start executor", e);
             couldStopExecutor(true);
             releaseWakeLock();
         }
@@ -348,7 +250,7 @@ public class MyService extends Service {
                 // (it seems there is some problem in parallel execution...)
                 QueueExecutor newExecutor = new QueueExecutor();
                 logMessageBuilder.append(" Adding and starting new Executor " + newExecutor);
-                if (AsyncTaskLauncher.execute(this, newExecutor).isSuccess()) {
+                if (AsyncTaskLauncher.execute(TAG, newExecutor).isSuccess()) {
                     mExecutor = newExecutor;
                 } else {
                     logMessageBuilder.append(" New executor was not added");
@@ -356,7 +258,7 @@ public class MyService extends Service {
             }
         }
         if (logMessageBuilder.length() > 0) {
-            MyLog.v(this, () -> method + "; " + logMessageBuilder);
+            MyLog.v(TAG, () -> method + "; " + logMessageBuilder);
         }
     }
     
@@ -377,7 +279,7 @@ public class MyService extends Service {
     private void acquireWakeLock() {
         synchronized(wakeLockLock) {
             if (mWakeLock == null) {
-                MyLog.d(this, "Acquiring wakelock");
+                MyLog.d(TAG, "Acquiring wakelock");
                 PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
                 mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, MyService.class.getName());
                 mWakeLock.acquire();
@@ -397,16 +299,12 @@ public class MyService extends Service {
     
     @Override
     public void onDestroy() {
-        boolean initialized;
-        synchronized (serviceStateLock) {
+        if (initialized.get()) {
             mForcedToStop = true;
-            initialized = mInitialized;
-        }
-        if (initialized) {
-            MyLog.v(this, "onDestroy");
+            MyLog.v(TAG, () -> "MyService " + instanceId + " onDestroy");
             stopDelayed(true);
         }
-        MyLog.d(this, "Service destroyed");
+        MyLog.d(TAG, "MyService " + instanceId + " destroyed");
         MyLog.setNextLogFileName();
     }
     
@@ -416,36 +314,28 @@ public class MyService extends Service {
      * Persist everything that we'll need on next Service creation and free resources
      */
     private void stopDelayed(boolean forceNow) {
-        startedForegrounLastTime = 0;
-
-        if (!setIsStopping(true, forceNow) && !forceNow) {
-            return;
+        if (isStopping.compareAndSet(false, true)) {
+            MyLog.v(TAG, () -> "MyService " + instanceId + " stopping" + (forceNow ? ", forced" : ""));
         }
+        startedForegrounLastTime = 0;
         if (!couldStopExecutor(forceNow) && !forceNow) {
             return;
         }
         unInitialize();
-        MyServiceEventsBroadcaster.newInstance(getMyContext(), getServiceState())
+        MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
                 .setEvent(MyServiceEvent.ON_STOP).broadcast();
     }
 
     private void unInitialize() {
-        int latestProcessedStartId = 0;
-        synchronized (serviceStateLock) {
-            if( mInitialized) {
-                try {
-                    unregisterReceiver(intentReceiver);
-                } catch (Exception e) {
-                    MyLog.d(this, "On unregisterReceiver", e);
-                }
-                latestProcessedStartId = mLatestProcessedStartId;
-                mInitialized = false;
-                mIsStopping = false;
-                mForcedToStop = false;
-                mLatestProcessedStartId = 0;
-                decidedToChangeIsStoppingAt = 0;
-            }
+        if (!initialized.compareAndSet(true, false)) return;
+
+        try {
+            unregisterReceiver(intentReceiver);
+        } catch (Exception e) {
+            MyLog.d(TAG, "On unregisterReceiver", e);
         }
+        mForcedToStop = false;
+
         synchronized(heartBeatLock) {
             if (mHeartBeat != null) {
                 mHeartBeat.cancelLogged(true);
@@ -454,8 +344,10 @@ public class MyService extends Service {
         }
         AsyncTaskLauncher.cancelPoolTasks(MyAsyncTask.PoolEnum.SYNC);
         releaseWakeLock();
-        stopSelfResult(latestProcessedStartId);
-        getMyContext().getNotifier().clearAndroidNotification(SERVICE_RUNNING);
+        stopSelf();
+        myContext.getNotifier().clearAndroidNotification(SERVICE_RUNNING);
+        MyLog.v(TAG, () -> "MyService " + instanceId + " stopped");
+        isStopping.set(false);
     }
 
     private boolean couldStopExecutor(boolean forceNow) {
@@ -476,7 +368,7 @@ public class MyService extends Service {
             }
         }
         if (logMessageBuilder.length() > 0) {
-            MyLog.v(this, () -> method + "; " + logMessageBuilder);
+            MyLog.v(TAG, () -> method + "; " + logMessageBuilder);
         }
         return could;
     }
@@ -484,26 +376,17 @@ public class MyService extends Service {
     private void releaseWakeLock() {
         synchronized(wakeLockLock) {
             if (mWakeLock != null) {
-                MyLog.d(this, "Releasing wakelock");
+                MyLog.d(TAG, "Releasing wakelock");
                 mWakeLock.release();
                 mWakeLock = null;
             }
         }
     }
 
-    private MyContext getMyContext() {
-        return myContext;
-    }
-
-    private void initializeMyContext() {
-        if (!myContext.isReady()) {
-            myContext = myContextHolder.initialize(this).getBlocking();
-        }
-    }
-
     private class QueueExecutor extends MyAsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
         private volatile CommandData currentlyExecuting = null;
         private static final long MAX_EXECUTION_TIME_SECONDS = 60;
+        private final String QTAG = QueueExecutor.class.getSimpleName() + InstanceId.next();
 
         QueueExecutor() {
             super(PoolEnum.SYNC);
@@ -511,7 +394,8 @@ public class MyService extends Service {
 
         @Override
         protected Boolean doInBackground2(Void aVoid) {
-            MyLog.d(this, "Started, " + myContext.queues().totalSizeToExecute() + " commands to process");
+            MyLog.d(TAG, QTAG +  " started, " + myContext.queues().totalSizeToExecute() + " commands to process");
+            myContext.queues().moveCommandsFromSkippedToMainQueue();
             String breakReason = "";
             do {
                 if (isStopping()) {
@@ -539,9 +423,9 @@ public class MyService extends Service {
                     breakReason = "No more commands";
                     break;
                 }
-                ConnectionState connectionState = getMyContext().getConnectionState();
+                ConnectionState connectionState = myContext.getConnectionState();
                 if (commandData.getCommand().getConnectionRequired().isConnectionStateOk(connectionState)) {
-                    MyServiceEventsBroadcaster.newInstance(getMyContext(), getServiceState())
+                    MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
                             .setCommandData(commandData)
                             .setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
                     if (commandData.getCommand() == DELETE_COMMAND) {
@@ -566,7 +450,7 @@ public class MyService extends Service {
                 broadcastAfterExecutingCommand(commandData);
                 addSyncOfThisToQueue(commandData);
             } while (true);
-            MyLog.d(this, "Ended, " + breakReason + ", " + myContext.queues().totalSizeToExecute() + " commands left");
+            MyLog.d(TAG, QTAG + " ended, " + breakReason + ", " + myContext.queues().totalSizeToExecute() + " commands left");
             myContext.queues().save();
             return true;
         }
@@ -578,29 +462,21 @@ public class MyService extends Service {
                             MyPreferences.KEY_SYNC_AFTER_NOTE_WAS_SENT, false)) {
                 return;
             }
-            CommandQueue.addToPreQueue(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
+            myContext.queues().addToQueue(QueueType.CURRENT, CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
                     commandDataExecuted.getTimeline().myAccountToSync, TimelineType.HOME)
                     .setInForeground(commandDataExecuted.isInForeground()));
         }
-        
-       @Override
-        protected void onPostExecute2(Boolean notUsed) {
-            onEndedExecution("onPostExecute");
-        }
 
         @Override
-        protected void onCancelled2(Boolean result) {
-            onEndedExecution("onCancelled");
-        }
-
-        private void onEndedExecution(String method) {
-            MyLog.v(this, method);
+        protected void onFinish(Boolean aBoolean, boolean success) {
+            latestActivityTime = System.currentTimeMillis();
+            MyLog.v(TAG, success ? "onExecutorSuccess" : "onExecutorFailure");
             currentlyExecuting = null;
             currentlyExecutingSince = 0;
             reviveHeartBeat();
             startStopExecution();
         }
-        
+
         @Override
         public boolean isStopping() {
             return MyService.this.isStopping();
@@ -633,7 +509,7 @@ public class MyService extends Service {
 
         @Override
         protected Void doInBackground2(Void aVoid) {
-            MyLog.v(this, () -> "Started instance " + instanceId);
+            MyLog.v(TAG, () -> "Started instance " + instanceId);
             String breakReason = "";
             for (long iteration = 1; iteration < 10000; iteration++) {
                 synchronized(heartBeatLock) {
@@ -651,16 +527,14 @@ public class MyService extends Service {
                     breakReason = "InterruptedException";
                     break;
                 }
-                synchronized(serviceStateLock) {
-                    if (!mInitialized) {
-                        breakReason = "Not initialized";
-                        break;
-                    }
+                if (!initialized.get()) {
+                    breakReason = "Not initialized";
+                    break;
                 }
                 publishProgress(iteration);
             }
             String breakReasonVal = breakReason;
-            MyLog.v(this, () -> "Ended; " + this + " - " + breakReasonVal);
+            MyLog.v(TAG, () -> "Ended; " + this + " - " + breakReasonVal);
             synchronized(heartBeatLock) {
                 if (mHeartBeat == this) {
                     mHeartBeat = null;
@@ -674,11 +548,11 @@ public class MyService extends Service {
             mIteration = values[0];
             previousBeat = MyLog.uniqueCurrentTimeMS();
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, () -> "onProgressUpdate; " + this);
+                MyLog.v(TAG, () -> "onProgressUpdate; " + this);
             }
             if (MyLog.isDebugEnabled() && RelativeTime.moreSecondsAgoThan(createdAt,
                     QueueExecutor.MAX_EXECUTION_TIME_SECONDS)) {
-                MyLog.d(this, AsyncTaskLauncher.threadPoolInfo());
+                MyLog.d(TAG, AsyncTaskLauncher.threadPoolInfo());
             }
             startStopExecution();
         }
