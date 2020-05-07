@@ -67,6 +67,7 @@ public class MyService extends Service {
 
     /** Flag to control the Service state persistence */
     private AtomicBoolean initialized = new AtomicBoolean(false);
+    private volatile long initializedTime = 0;
     /** We are stopping this service */
     private AtomicBoolean isStopping = new AtomicBoolean(false);
 
@@ -105,13 +106,13 @@ public class MyService extends Service {
     
     @Override
     public void onCreate() {
-        MyLog.d(TAG, "Service created");
+        MyLog.v(TAG, () -> "MyService " + instanceId + " created");
         myContext = myContextHolder.initialize(this).getNow();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        MyLog.d(TAG, "onStartCommand: startid=" + startId);
+        MyLog.v(TAG, () -> "MyService " + instanceId + " onStartCommand: startid=" + startId);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForeground();
         }
@@ -134,7 +135,7 @@ public class MyService extends Service {
     private BroadcastReceiver intentReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context arg0, Intent intent) {
-            MyLog.v(TAG, () -> "onReceive " + intent.toString());
+            MyLog.v(TAG, () -> "MyService " + instanceId + " onReceive " + intent.toString());
             receiveCommand(intent, 0);
         }
     };
@@ -143,7 +144,7 @@ public class MyService extends Service {
         CommandData commandData = CommandData.fromIntent(myContext, intent);
         switch (commandData.getCommand()) {
             case STOP_SERVICE:
-                MyLog.v(TAG, () -> "Command " + commandData.getCommand() + " received");
+                MyLog.v(TAG, () -> "MyService " + instanceId + " command " + commandData.getCommand() + " received");
                 stopDelayed(false);
                 break;
             case BROADCAST_SERVICE_STATE:
@@ -182,12 +183,13 @@ public class MyService extends Service {
         }
 
         if (initialized.compareAndSet(false, true)) {
+            initializedTime = System.currentTimeMillis();
             registerReceiver(intentReceiver, new IntentFilter(MyAction.EXECUTE_COMMAND.getAction()));
             if (widgetsInitialized.compareAndSet(false, true)) {
                 AppWidgets.of(myContext).updateViews();
             }
             reviveHeartBeat();
-            MyLog.v(TAG, () -> "MyService " + instanceId + " initialized");
+            MyLog.d(TAG, "MyService " + instanceId + " initialized");
             MyServiceEventsBroadcaster.newInstance(myContext, getServiceState()).broadcast();
         }
     }
@@ -258,7 +260,7 @@ public class MyService extends Service {
             }
         }
         if (logMessageBuilder.length() > 0) {
-            MyLog.v(TAG, () -> method + "; " + logMessageBuilder);
+            MyLog.v(TAG, () -> "MyService " + instanceId + " " + method + "; " + logMessageBuilder);
         }
     }
     
@@ -279,7 +281,7 @@ public class MyService extends Service {
     private void acquireWakeLock() {
         synchronized(wakeLockLock) {
             if (mWakeLock == null) {
-                MyLog.d(TAG, "Acquiring wakelock");
+                MyLog.v(TAG, () -> "MyService " + instanceId + " acquiring wakelock");
                 PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
                 mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, MyService.class.getName());
                 mWakeLock.acquire();
@@ -304,7 +306,7 @@ public class MyService extends Service {
             MyLog.v(TAG, () -> "MyService " + instanceId + " onDestroy");
             stopDelayed(true);
         }
-        MyLog.d(TAG, "MyService " + instanceId + " destroyed");
+        MyLog.v(TAG, () -> "MyService " + instanceId + " destroyed");
         MyLog.setNextLogFileName();
     }
     
@@ -332,7 +334,7 @@ public class MyService extends Service {
         try {
             unregisterReceiver(intentReceiver);
         } catch (Exception e) {
-            MyLog.d(TAG, "On unregisterReceiver", e);
+            MyLog.d(TAG, "MyService " + instanceId + " on unregisterReceiver", e);
         }
         mForcedToStop = false;
 
@@ -346,7 +348,7 @@ public class MyService extends Service {
         releaseWakeLock();
         stopSelf();
         myContext.getNotifier().clearAndroidNotification(SERVICE_RUNNING);
-        MyLog.v(TAG, () -> "MyService " + instanceId + " stopped");
+        MyLog.i(TAG, "MyService " + instanceId + " stopped, myServiceWorkMs:" + (System.currentTimeMillis() - initializedTime));
         isStopping.set(false);
     }
 
@@ -368,7 +370,7 @@ public class MyService extends Service {
             }
         }
         if (logMessageBuilder.length() > 0) {
-            MyLog.v(TAG, () -> method + "; " + logMessageBuilder);
+            MyLog.v(TAG, () -> "MyService " + instanceId + " " + method + "; " + logMessageBuilder);
         }
         return could;
     }
@@ -376,7 +378,7 @@ public class MyService extends Service {
     private void releaseWakeLock() {
         synchronized(wakeLockLock) {
             if (mWakeLock != null) {
-                MyLog.d(TAG, "Releasing wakelock");
+                MyLog.v(TAG, () -> "MyService " + instanceId + " releasing wakelock");
                 mWakeLock.release();
                 mWakeLock = null;
             }
@@ -394,7 +396,7 @@ public class MyService extends Service {
 
         @Override
         protected Boolean doInBackground2(Void aVoid) {
-            MyLog.d(TAG, QTAG +  " started, " + myContext.queues().totalSizeToExecute() + " commands to process");
+            MyLog.v(TAG, () -> QTAG +  " started, " + myContext.queues().totalSizeToExecute() + " commands to process");
             myContext.queues().moveCommandsFromSkippedToMainQueue();
             String breakReason = "";
             do {
@@ -450,7 +452,8 @@ public class MyService extends Service {
                 broadcastAfterExecutingCommand(commandData);
                 addSyncOfThisToQueue(commandData);
             } while (true);
-            MyLog.d(TAG, QTAG + " ended, " + breakReason + ", " + myContext.queues().totalSizeToExecute() + " commands left");
+            String breakReason2 = breakReason;
+            MyLog.v(TAG, () -> QTAG + " ended, " + breakReason2 + ", " + myContext.queues().totalSizeToExecute() + " commands left");
             myContext.queues().save();
             return true;
         }
