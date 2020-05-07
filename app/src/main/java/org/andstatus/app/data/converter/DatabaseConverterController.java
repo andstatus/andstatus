@@ -155,8 +155,7 @@ public class DatabaseConverterController {
                 myContextHolder.release(() -> "doUpgrade");
                 // Upgrade will occur inside this call synchronously
                 // TODO: Add completion stage instead of blocking...
-                myContextHolder.initialize(upgradeRequestor, upgradeRequestor, true)
-                    .getBlocking();
+                myContextHolder.initializeDuringUpgrade(upgradeRequestor).getBlocking();
                 synchronized(UPGRADE_LOCK) {
                     shouldTriggerDatabaseUpgrade = false;
                 }
@@ -185,7 +184,7 @@ public class DatabaseConverterController {
             MyServiceManager.setServiceUnavailable();
             if (!myContextHolder.getNow().isReady()) {
                 myContextHolder.release(() -> "onUpgradeSucceeded1");
-                myContextHolder.getInitialized(upgradeRequestor, upgradeRequestor);
+                myContextHolder.initialize(upgradeRequestor).getBlocking();
             }
             MyServiceManager.setServiceUnavailable();
             MyServiceManager.stopService();
@@ -193,7 +192,7 @@ public class DatabaseConverterController {
 
             DataChecker.fixData(progressLogger, false, false);
             myContextHolder.release(() -> "onUpgradeSucceeded2");
-            myContextHolder.getInitialized(upgradeRequestor, upgradeRequestor);
+            myContextHolder.initialize(upgradeRequestor).getBlocking();
             MyServiceManager.setServiceAvailable();
         }
     }

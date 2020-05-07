@@ -69,7 +69,7 @@ public class SyncInitiator extends BroadcastReceiver {
 
     private void initializeApp(Context context) {
         myContextHolder
-        .initialize(context, this, false)
+        .initialize(context, this)
         .whenSuccessAsync(this::checkConnectionState, AsyncTask.THREAD_POOL_EXECUTOR);
     }
 

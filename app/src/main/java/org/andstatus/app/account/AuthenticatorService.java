@@ -123,7 +123,7 @@ public class AuthenticatorService extends Service {
             boolean deleted = true;
             if (AccountUtils.isVersionCurrent(context, account)) {
                 deleted = myContextHolder
-                    .initialize(context, context, false)
+                    .initialize(context, this)
                     .getFuture()
                     .tryBlocking()
                     .map(myContext -> myContext.accounts().fromAccountName(account.name))
@@ -157,7 +157,7 @@ public class AuthenticatorService extends Service {
     public void onCreate() {
         super.onCreate();
         MyLog.v(this, "onCreate");
-        myContextHolder.getInitialized(this, this);
+        myContextHolder.initialize(this).getBlocking();
     }
 
     @Override

@@ -87,7 +87,7 @@ public class MyServiceManager extends BroadcastReceiver {
                 SyncInitiator.tryToSync(context);
                 break;
             case SERVICE_STATE:
-                myContextHolder.initialize(context, context, false);
+                myContextHolder.initialize(context);
                 stateInTime = MyServiceStateInTime.fromIntent(intent);
                 MyLog.d(this, "Notification received: Service state=" + stateInTime.stateEnum);
                 break;
@@ -220,7 +220,7 @@ public class MyServiceManager extends BroadcastReceiver {
             if (tryToInitialize
                     && MyAsyncTask.nonUiThread()    // Don't block on UI thread
                     && !myContextHolder.getNow().initialized()) {
-                myContextHolder.getInitialized(null, TAG);
+                myContextHolder.initialize(null, TAG).getBlocking();
                 isAvailable = myContextHolder.getNow().isReady();
             }
         }

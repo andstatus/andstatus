@@ -190,7 +190,7 @@ public final class DemoData {
             DbUtils.waitMs(logTag, 500);
 
             MyLog.v(logTag, "Before initialize 1");
-            myContextHolder.getInitialized(myContext.context(), logTag);
+            myContextHolder.initialize(null, logTag).getBlocking();
             MyLog.v(logTag, "After initialize 1");
             MyServiceManager.setServiceUnavailable();
             DemoOriginInserter originInserter = new DemoOriginInserter(myContext);
@@ -202,7 +202,7 @@ public final class DemoData {
             MyPreferences.onPreferencesChanged();
             myContextHolder.setExpiredIfConfigChanged();
             MyLog.v(logTag, "Before initialize 2");
-            myContextHolder.getInitialized(myContext.context(), logTag);
+            myContextHolder.initialize(null, logTag).getBlocking();
             MyLog.v(logTag, "After initialize 2");
             MyServiceManager.setServiceUnavailable();
 
@@ -243,7 +243,7 @@ public final class DemoData {
             myContextHolder.getNow().timelines().setDefault(defaultTimeline);
 
             MyLog.v(logTag, "Before initialize 3");
-            myContextHolder.getInitialized(myContext.context(), logTag);
+            myContextHolder.initialize(null, logTag).getBlocking();
             MyLog.v(logTag, "After initialize 3");
 
             assertOriginsContext();

@@ -49,7 +49,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             MyLog.d(this, account.name + " Service unavailable");
             return;
         }
-        final MyContext myContext = myContextHolder.getInitialized(mContext, this);
+        final MyContext myContext = myContextHolder.initialize(mContext, this).getBlocking();
         new MyServiceCommandsRunner(myContext).autoSyncAccount(
                 myContext.accounts().fromAccountName(account.name), syncResult);
     }

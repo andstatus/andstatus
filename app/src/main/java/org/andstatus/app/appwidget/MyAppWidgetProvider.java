@@ -36,18 +36,19 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
  * @author yvolk@yurivolkov.com
  */
 public class MyAppWidgetProvider extends AppWidgetProvider {
+    private static final String TAG = MyAppWidgetProvider.class.getSimpleName();
     
     @Override
     public void onReceive(Context context, Intent intent) {
-        MyLog.i(this, "onReceive; action=" + intent.getAction());
-        myContextHolder.getInitialized(context, this);
+        MyLog.i(TAG, "onReceive; action=" + intent.getAction());
+        myContextHolder.initialize(context, TAG).getBlocking();
         super.onReceive(context, intent);
     }
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        MyLog.v(this, () -> "onUpdate; ids=" + Arrays.toString(appWidgetIds));
-        AppWidgets.of(NotificationEvents.of(context)).updateViews(appWidgetManager, filterIds(appWidgetIds));
+        MyLog.v(TAG, () -> "onUpdate; ids=" + Arrays.toString(appWidgetIds));
+        AppWidgets.of(NotificationEvents.newInstance()).updateViews(appWidgetManager, filterIds(appWidgetIds));
     }
 
     private static Predicate<MyAppWidgetData> filterIds(int[] appWidgetIds) {
@@ -56,18 +57,18 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onDeleted(Context context, int[] appWidgetIds) {
-        MyLog.v(this, () -> "onDeleted; ids=" + Arrays.toString(appWidgetIds));
-        AppWidgets.of(NotificationEvents.of(context)).list()
+        MyLog.v(TAG, () -> "onDeleted; ids=" + Arrays.toString(appWidgetIds));
+        AppWidgets.of(NotificationEvents.newInstance()).list()
                 .stream().filter(filterIds(appWidgetIds)).forEach(MyAppWidgetData::update);
     }
 
     @Override
     public void onEnabled(Context context) {
-        MyLog.v(this, "onEnabled");
+        MyLog.v(TAG, "onEnabled");
     }
 
     @Override
     public void onDisabled(Context context) {
-        MyLog.v(this, "onDisabled");
+        MyLog.v(TAG, "onDisabled");
     }
 }

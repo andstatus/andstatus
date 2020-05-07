@@ -788,7 +788,7 @@ public class AccountSettingsActivity extends MyActivity {
 
     private void returnToOurActivity() {
         myContextHolder
-        .initialize(this, this, false)
+        .initialize(this)
         .whenSuccessAsync(myContext -> {
             MyLog.v(this, "Returning to " + activityOnFinish);
             MyAccount myAccount = myContext.accounts().fromAccountName(getState().getAccount().getAccountName());
@@ -936,7 +936,7 @@ public class AccountSettingsActivity extends MyActivity {
                 if (result.isSuccess()) {
                     state.builder.myContext().setExpired(() -> "Client registered");
                     myContextHolder
-                    .initialize(AccountSettingsActivity.this, this, false)
+                    .initialize(AccountSettingsActivity.this, this)
                     .whenSuccessAsync(myContext -> {
                         state.builder.rebuildMyAccount(myContext);
                         updateScreen();
@@ -1255,8 +1255,7 @@ public class AccountSettingsActivity extends MyActivity {
             .filter(MyAccount::isValidAndSucceeded)
             .onSuccess( myAccount -> {
                 state.forget();
-                MyContext myContext = myContextHolder.getInitialized(myContextHolder.getNow().context(),
-                        AccountSettingsActivity.this);
+                MyContext myContext = myContextHolder.initialize(AccountSettingsActivity.this, this).getBlocking();
                 FirstActivity.checkAndUpdateLastOpenedAppVersion(AccountSettingsActivity.this, true);
 
                 final Timeline timeline = myContext.timelines().forUser(TimelineType.HOME, myAccount.getActor());

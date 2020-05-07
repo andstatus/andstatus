@@ -17,7 +17,6 @@
 package org.andstatus.app.notification;
 
 import android.app.PendingIntent;
-import android.content.Context;
 
 import androidx.annotation.NonNull;
 
@@ -42,8 +41,8 @@ public class NotificationEvents {
     private final List<NotificationEventType> enabledEvents;
     public final Map<NotificationEventType, NotificationData> map;
 
-    public static NotificationEvents of(@NonNull Context context) {
-        return of(myContextHolder.getNow(context), Collections.emptyList());
+    public static NotificationEvents newInstance() {
+        return of(myContextHolder.getNow(), Collections.emptyList());
     }
 
     static NotificationEvents of(MyContext myContext, List<NotificationEventType> enabledEvents) {

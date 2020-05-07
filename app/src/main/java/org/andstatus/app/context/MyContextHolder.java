@@ -28,7 +28,6 @@ import androidx.annotation.NonNull;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
-import org.andstatus.app.FirstActivity;
 import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.net.http.TlsSniSocketFactory;
@@ -74,16 +73,18 @@ public final class MyContextHolder {
 
     /** Immediately get currently available context, even if it's empty */
     @NonNull
-    public MyContext getNow(Context context) {
-        return storeContextIfNotPresent(context, context).getNow();
-    }
-
-    /** Immediately get currently available context, even if it's empty */
-    @NonNull
     public MyContext getNow() {
         return getFuture().getNow();
     }
-    
+
+    public MyContext getBlocking() {
+        return myFutureContext.tryBlocking().getOrElse(myFutureContext.getNow());
+    }
+
+    public MyFutureContext getFuture() {
+        return myFutureContext;
+    }
+
     /** This is mainly for mocking / testing
      * @return true if succeeded */
     boolean trySetCreator(@NonNull MyContext contextCreatorNew) {
@@ -102,39 +103,30 @@ public final class MyContextHolder {
      */
     public boolean initializeThenRestartMe(@NonNull Activity activity) {
         if (getFuture().needToInitialize()) {
-            initialize(activity, activity, false)
+            initialize(activity)
             .whenSuccessAsync(myContext -> {
                 activity.finish();
                 MyFutureContext.startActivity(activity);
-                }, UiThreadExecutor.INSTANCE);
+            }, UiThreadExecutor.INSTANCE);
             return true;
         }
         return false;
     }
 
-    public void initializeByFirstActivity(@NonNull FirstActivity firstActivity) {
-        initialize(firstActivity, firstActivity, false)
-        .with(future -> future
-            .whenCompleteAsync(MyFutureContext.startNextActivity(firstActivity), UiThreadExecutor.INSTANCE));
+    public MyContextHolder initialize(Context context) {
+        return  initializeInner(context, context, false);
     }
 
-    /**
-     * Reinitializes in a case preferences have been changed
-     * Blocks on initialization
-     */
-    public MyContext getInitialized(Context context, Object calledBy) {
-        return initialize(context, calledBy, false).getBlocking();
+    /** Reinitialize in a case preferences have been changed */
+    public MyContextHolder initialize(Context context, Object calledBy) {
+        return  initializeInner(context, calledBy, false);
     }
 
-    public MyContext getBlocking() {
-        return myFutureContext.tryBlocking().getOrElse(myFutureContext.getNow());
+    public MyContextHolder initializeDuringUpgrade(Context upgradeRequestor) {
+        return  initializeInner(upgradeRequestor, upgradeRequestor, true);
     }
 
-    public MyFutureContext getFuture() {
-        return myFutureContext;
-    }
-
-    public MyContextHolder initialize(Context context, Object calledBy, boolean duringUpgrade) {
+    private MyContextHolder initializeInner(Context context, Object calledBy, boolean duringUpgrade) {
         storeContextIfNotPresent(context, calledBy);
         if (isShuttingDown) {
             MyLog.d(TAG, "Skipping initialization: device is shutting down (called by: " + calledBy + ")");
@@ -180,7 +172,7 @@ public final class MyContextHolder {
      * Quickly returns, providing context for the deferred initialization
      */
     public MyContextHolder storeContextIfNotPresent(Context context, Object calledBy) {
-        if (context == null || getFuture().getNow().context() != null) return this;
+        if (context == null || getNow().context() != null) return this;
 
         synchronized(CONTEXT_LOCK) {
             if (myFutureContext.getNow().context() == null) {

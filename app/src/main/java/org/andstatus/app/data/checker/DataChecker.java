@@ -36,6 +36,8 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
  * @author yvolk@yurivolkov.com
  */
 public abstract class DataChecker {
+    private static final String TAG = DataChecker.class.getSimpleName();
+
     MyContext myContext;
     ProgressLogger logger = ProgressLogger.getEmpty("DataChecker");
     boolean includeLong = false;
@@ -68,9 +70,9 @@ public abstract class DataChecker {
                     @Override
                     protected Void doInBackground2(Void aVoid) {
                         fixData(logger, includeLong, countOnly);
-                        DbUtils.waitMs(DataChecker.class, 3000);
+                        DbUtils.waitMs(TAG, 3000);
                         myContextHolder.release(() -> "fixDataAsync");
-                        myContextHolder.getInitialized(myContextHolder.getNow().context(), DataChecker.class);
+                        myContextHolder.initialize(null, TAG).getBlocking();
                         return null;
                     }
 
@@ -90,12 +92,12 @@ public abstract class DataChecker {
         long counter = 0;
         MyContext myContext = myContextHolder.getNow();
         if (!myContext.isReady()) {
-            MyLog.w(DataChecker.class, "fixData skipped: context is not ready " + myContext);
+            MyLog.w(TAG, "fixData skipped: context is not ready " + myContext);
             return counter;
         }
         StopWatch stopWatch = StopWatch.createStarted();
         try {
-            MyLog.i(DataChecker.class, "fixData started" + (includeLong ? ", including long tasks" : ""));
+            MyLog.i(TAG, "fixData started" + (includeLong ? ", including long tasks" : ""));
             List<DataChecker> allCheckers = Arrays.asList(
                     new CheckTimelines(),
                     new CheckDownloads(),
@@ -122,7 +124,7 @@ public abstract class DataChecker {
         } finally {
             MyServiceManager.setServiceAvailable();
         }
-        MyLog.i(DataChecker.class, "fixData ended in " + stopWatch.getTime(TimeUnit.MINUTES) + " min, counted: " + counter);
+        MyLog.i(TAG, "fixData ended in " + stopWatch.getTime(TimeUnit.MINUTES) + " min, counted: " + counter);
         return counter;
     }
 

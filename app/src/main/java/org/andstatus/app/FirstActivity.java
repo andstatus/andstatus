@@ -29,6 +29,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextState;
+import org.andstatus.app.context.MyFutureContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsGroup;
 import org.andstatus.app.data.DbUtils;
@@ -77,7 +78,7 @@ public class FirstActivity extends AppCompatActivity {
     private void startNextActivity(Intent intent) {
         switch (MyAction.fromIntent(intent)) {
             case INITIALIZE_APP:
-                myContextHolder.initialize(this, this, false)
+                myContextHolder.initialize(this)
                 .whenSuccessAsync(myContext -> finish(), UiThreadExecutor.INSTANCE);
                 break;
             case SET_DEFAULT_VALUES:
@@ -89,7 +90,10 @@ public class FirstActivity extends AppCompatActivity {
                     startNextActivitySync(myContextHolder.getNow(), intent);
                     finish();
                 } else {
-                    myContextHolder.initializeByFirstActivity(this);
+                    myContextHolder.initialize(this)
+                    .with(future -> future.whenCompleteAsync(
+                        MyFutureContext.startNextActivity(this), UiThreadExecutor.INSTANCE
+                    ));
                 }
         }
     }

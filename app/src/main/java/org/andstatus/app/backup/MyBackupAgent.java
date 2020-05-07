@@ -73,12 +73,15 @@ public class MyBackupAgent extends BackupAgent {
 
     void setActivity(Activity activity) {
         this.activity = activity;
+        myContextHolder.initialize(activity);
+        attachBaseContext(myContextHolder.getNow().context());
     }
 
-    void setContext(Context baseContext) {
-        attachBaseContext(baseContext);
+    @Override
+    public void onCreate() {
+        myContextHolder.initialize(this);
     }
-    
+
     @Override
     public void onBackup(ParcelFileDescriptor oldState, BackupDataOutput data,
             ParcelFileDescriptor newState) throws IOException {
@@ -106,7 +109,7 @@ public class MyBackupAgent extends BackupAgent {
                 ? ", folder='" + data.getDataFolderName() + "'" : "") +
                     ", " + (oldDescriptor.saved() ? "oldState:" + oldDescriptor.toString()
                 : "no old state"));
-        myContextHolder.getInitialized(this, this);
+        myContextHolder.initialize(this).getBlocking();
         backupDescriptor = newDescriptor;
         try {
             if (data == null) {
@@ -274,7 +277,7 @@ public class MyBackupAgent extends BackupAgent {
         if (MyStorage.isApplicationDataCreated().isFalse) {
             return;
         }
-        myContextHolder.getInitialized(this, this);
+        myContextHolder.initialize(this).getBlocking();
         if (!myContextHolder.getNow().isReady()) {
             throw new FileNotFoundException("Application context is not initialized");
         } else if (myContextHolder.getNow().accounts().nonEmpty()) {
@@ -293,10 +296,10 @@ public class MyBackupAgent extends BackupAgent {
         }
         assertNextHeader(data, DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME);
         databasesRestored += restoreFile(data, MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
-        myContextHolder.release(() -> "doRestore");
+        myContextHolder.release(() -> "doRestore, database restored");
         myContextHolder
             .setOnRestore(true)
-            .initialize(this, this, false).getBlocking();
+            .initialize(this).getBlocking();
         if (myContextHolder.getNow().state() == MyContextState.UPGRADING && activity != null) {
             myContextHolder.upgradeIfNeeded(activity);
         }
@@ -305,13 +308,13 @@ public class MyBackupAgent extends BackupAgent {
         }
         DataPruner.setDataPrunedNow();
 
-        data.setMyContext(myContextHolder.getNow(getContext()));
+        data.setMyContext(myContextHolder.getNow());
         assertNextHeader(data, KEY_ACCOUNT);
         accountsRestored += data.getMyContext().accounts().onRestore(data, backupDescriptor);
 
-        myContextHolder.release(() -> "doRestore");
+        myContextHolder.release(() -> "doRestore, accounts restored");
         myContextHolder.setOnRestore(false);
-        myContextHolder.getInitialized(this, this);
+        myContextHolder.initialize(this).getBlocking();
     }
 
     private void restoreSharedPreferences(MyBackupDataInput data) throws IOException {
@@ -328,7 +331,7 @@ public class MyBackupAgent extends BackupAgent {
         }
         fixExternalStorage();
         myContextHolder.release(() -> "restoreSharedPreferences");
-        myContextHolder.getInitialized(this, this);
+        myContextHolder.initialize(this).getBlocking();
     }
 
     private Context getContext() {

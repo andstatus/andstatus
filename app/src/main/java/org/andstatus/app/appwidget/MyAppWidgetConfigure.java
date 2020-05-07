@@ -27,6 +27,8 @@ import org.andstatus.app.R;
 import org.andstatus.app.notification.NotificationEvents;
 import org.andstatus.app.util.MyLog;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+
 /**
  * The configuration screen for the {@link MyAppWidgetProvider} widget.
  */
@@ -40,6 +42,7 @@ public class MyAppWidgetConfigure extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        myContextHolder.initialize(this);
 
         // Set the result to CANCELED. This will cause the widget host to cancel
         // out of the widget placement if they press the back button.
@@ -62,7 +65,7 @@ public class MyAppWidgetConfigure extends Activity {
             finish();
         }
 
-        appWidgetData = MyAppWidgetData.newInstance(NotificationEvents.of(this), mAppWidgetId);
+        appWidgetData = MyAppWidgetData.newInstance(NotificationEvents.newInstance(), mAppWidgetId);
         // For now we have only one setting to configure:
         mAppWidgetTitle.setText(appWidgetData.nothingPref);
     }

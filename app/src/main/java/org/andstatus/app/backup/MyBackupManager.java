@@ -115,18 +115,16 @@ class MyBackupManager {
         return TryUtils.ofNullableCallable(() -> dataFolder.findFile(DESCRIPTOR_FILE_NAME));
     }
 
-    void backup() throws Throwable {
+    void backup() {
         progressLogger.logProgress("Starting backup to data folder:'" + dataFolder.getUri() + "'");
         backupAgent = new MyBackupAgent();
-        Context context = myContextHolder.getNow(activity).context();
-        backupAgent.setContext(context);
         backupAgent.setActivity(activity);
 
-        MyBackupDataOutput dataOutput = new MyBackupDataOutput(context, dataFolder);
+        MyBackupDataOutput dataOutput = new MyBackupDataOutput(backupAgent, dataFolder);
 
         getExistingDescriptorFile(dataFolder)
         .map( df -> {
-                newDescriptor = MyBackupDescriptor.fromEmptyDocumentFile(context, df, progressLogger);
+                newDescriptor = MyBackupDescriptor.fromEmptyDocumentFile(backupAgent, df, progressLogger);
                 backupAgent.onBackup(MyBackupDescriptor.getEmpty(), dataOutput, newDescriptor);
                 progressLogger.logSuccess();
                 return true;
@@ -167,7 +165,7 @@ class MyBackupManager {
         this.dataFolder = dataFolder;
         newDescriptor = descriptorFile.map(df -> {
             MyBackupDescriptor descriptor = MyBackupDescriptor.fromOldDocFileDescriptor(
-                    myContextHolder.getNow(activity).context(), df, progressLogger);
+                    myContextHolder.getNow().context(), df, progressLogger);
             if (descriptor.getBackupSchemaVersion() != MyBackupDescriptor.BACKUP_SCHEMA_VERSION) {
                 throw new FileNotFoundException(
                         "Unsupported backup schema version: " + descriptor.getBackupSchemaVersion() +
@@ -181,17 +179,15 @@ class MyBackupManager {
     }
 
     void restore() throws IOException {
-        Context context = myContextHolder.getNow(activity).context();
-        MyBackupDataInput dataInput = new MyBackupDataInput(context, dataFolder);
+        backupAgent = new MyBackupAgent();
+        backupAgent.setActivity(activity);
+        MyBackupDataInput dataInput = new MyBackupDataInput(backupAgent, dataFolder);
         if (dataInput.listKeys().size() < 3) {
             throw new FileNotFoundException("Not enough keys in the backup: " + Arrays.toString(dataInput.listKeys().toArray()));
         }
 
         progressLogger.logProgress("Starting restoring from data folder:'" + dataFolder.getUri().getPath()
                 + "', created with " + newDescriptor.appVersionNameAndCode());
-        backupAgent = new MyBackupAgent();
-        backupAgent.setContext(context);
-        backupAgent.setActivity(activity);
         backupAgent.onRestore(dataInput, newDescriptor.getApplicationVersionCode(), newDescriptor);
         progressLogger.logSuccess();
     }

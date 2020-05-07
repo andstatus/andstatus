@@ -41,13 +41,13 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
                 TestSuite.setHttpConnectionMockInstance(httpConnectionMock);
                 myContextHolder.getNow().setExpired(() -> this.getClass().getSimpleName() + " setUp");
             }
-            myContext = myContextHolder.getInitialized(myContext.context(), this);
+            myContext = myContextHolder.initialize(myContext.context(), this).getBlocking();
 
             if (!myContext.isReady()) {
                 final String msg = "Context is not ready after the initialization, repeating... " + myContext;
                 MyLog.w(this, msg);
                 myContext.setExpired(() -> this.getClass().getSimpleName() + msg);
-                myContext = myContextHolder.getInitialized(myContext.context(), this);
+                myContext = myContextHolder.initialize(myContext.context(), this).getBlocking();
                 assertEquals("Context should be ready", true, myContext.isReady());
             }
 

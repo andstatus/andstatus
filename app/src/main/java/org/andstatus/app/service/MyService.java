@@ -497,7 +497,7 @@ public class MyService extends Service {
 
     private void initializeMyContext() {
         if (!myContext.isReady()) {
-            myContext = myContextHolder.getInitialized(this, this);
+            myContext = myContextHolder.initialize(this).getBlocking();
         }
     }
 
