@@ -25,7 +25,6 @@ import org.andstatus.app.account.AccountUtils;
 import org.andstatus.app.account.CredentialsVerificationStatus;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.origin.Origin;
@@ -37,6 +36,7 @@ import java.util.Collection;
 
 import static org.andstatus.app.account.AccountUtils.KEY_VERSION;
 import static org.andstatus.app.account.MyAccount.KEY_USERNAME;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 class Convert15 extends ConvertOneStep {
     private final static String TAG = Convert15.class.getSimpleName();
@@ -57,7 +57,7 @@ class Convert15 extends ConvertOneStep {
         boolean ok = false;
         try {
             MyLog.i(TAG, "Accounts upgrading step from version " + oldVersion + " to version " + versionTo );
-            MyContext myContext = MyContextHolder.get();
+            MyContext myContext = myContextHolder.getNow();
             myContext.origins().initialize(db);
 
             android.accounts.AccountManager am = AccountManager.get(myContext.context());

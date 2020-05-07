@@ -24,7 +24,6 @@ import android.os.ParcelFileDescriptor;
 
 import androidx.documentfile.provider.DocumentFile;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.DatabaseCreator;
 import org.andstatus.app.util.DocumentFileUtils;
 import org.andstatus.app.util.FileDescriptorUtils;
@@ -43,6 +42,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class MyBackupDescriptor {
     private static final Object TAG = MyBackupDescriptor.class;
@@ -124,7 +125,7 @@ public class MyBackupDescriptor {
                                                             ProgressLogger progressLoggerIn) throws IOException {
         MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLoggerIn);
         myBackupDescriptor.fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-        myBackupDescriptor.setEmptyFields(MyContextHolder.get().context());
+        myBackupDescriptor.setEmptyFields(myContextHolder.getNow().context());
         myBackupDescriptor.backupSchemaVersion = BACKUP_SCHEMA_VERSION;
         return myBackupDescriptor;
     }

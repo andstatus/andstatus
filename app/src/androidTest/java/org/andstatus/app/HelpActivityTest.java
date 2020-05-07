@@ -18,11 +18,11 @@ package org.andstatus.app;
 
 import android.app.Activity;
 import android.content.Intent;
+
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.viewpager.widget.ViewPager;
 
 import org.andstatus.app.context.ActivityTest;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
@@ -34,6 +34,7 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -70,7 +71,7 @@ public class HelpActivityTest extends ActivityTest<HelpActivity> {
         assertEquals("At User Guide", HelpActivity.PAGE_USER_GUIDE, mFlipper.getCurrentItem());
         onView(withId(R.id.button_help_learn_more)).perform(click());
         assertEquals("At Logo page", HelpActivity.PAGE_LOGO, mFlipper.getCurrentItem());
-        onView(withId(R.id.splash_application_version)).check(matches(withText(containsString(MyContextHolder
+        onView(withId(R.id.splash_application_version)).check(matches(withText(containsString(myContextHolder
                 .getExecutionMode().code))));
 
         DbUtils.waitMs("test", 500);

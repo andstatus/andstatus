@@ -10,7 +10,6 @@ import android.webkit.MimeTypeMap;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.graphics.MediaMetadata;
 import org.andstatus.app.net.social.Actor;
@@ -29,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class DownloadData implements IsEmpty {
     private static final String TAG = DownloadData.class.getSimpleName();
@@ -114,7 +115,7 @@ public class DownloadData implements IsEmpty {
     private void loadOtherFields() {
         if (checkHardErrorBeforeLoad()) return;
         String sql = "SELECT * FROM " + DownloadTable.TABLE_NAME + getWhere().getWhere();
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        SQLiteDatabase db = myContextHolder.getNow().getDatabase();
         if (db == null) {
             MyLog.databaseIsNull(() -> this);
             softError = true;
@@ -218,7 +219,7 @@ public class DownloadData implements IsEmpty {
         }
         if (contentType == MyContentType.UNKNOWN) {
             contentType = MyContentType.fromUri(DownloadType.ATTACHMENT,
-                    MyContextHolder.get().context().getContentResolver(), uri, mimeType);
+                    myContextHolder.getNow().context().getContentResolver(), uri, mimeType);
         }
     }
 
@@ -305,7 +306,7 @@ public class DownloadData implements IsEmpty {
 
     private void addNew() {
         ContentValues values = toContentValues();
-        DbUtils.addRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, values, 3)
+        DbUtils.addRowWithRetry(myContextHolder.getNow(), DownloadTable.TABLE_NAME, values, 3)
         .onSuccess(idAdded -> {
             downloadId = idAdded;
             MyLog.v(this, () -> "Added " + actorNoteUriToString());
@@ -318,7 +319,7 @@ public class DownloadData implements IsEmpty {
 
     private void update() {
         ContentValues values = toContentValues();
-        DbUtils.updateRowWithRetry(MyContextHolder.get(), DownloadTable.TABLE_NAME, downloadId, values, 3)
+        DbUtils.updateRowWithRetry(myContextHolder.getNow(), DownloadTable.TABLE_NAME, downloadId, values, 3)
         .onSuccess(o -> MyLog.v(this, () -> "Updated " + actorNoteUriToString()))
         .onFailure(e -> softError = true);
 

@@ -21,27 +21,29 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.appcompat.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -51,7 +53,7 @@ public class SelectorDialog extends DialogFragment {
     Toolbar toolbar = null;
     ListView listView = null;
     private int mLayoutId = R.layout.my_list_dialog;
-    protected MyContext myContext = MyContextHolder.get();
+    protected MyContext myContext = myContextHolder.getNow();
     private boolean resultReturned = false;
 
     public Bundle setRequestCode(ActivityRequestCode requestCode) {

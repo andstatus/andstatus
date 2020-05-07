@@ -28,7 +28,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorListLoader;
 import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFiles;
 import org.andstatus.app.data.DbUtils;
@@ -55,13 +54,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.timeline.DuplicationLink.DUPLICATES;
 import static org.andstatus.app.timeline.DuplicationLink.IS_DUPLICATED;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
 public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends ViewItem<T> {
     private static final int MIN_LENGTH_TO_COMPARE = 5;
-    MyContext myContext = MyContextHolder.get();
+    MyContext myContext = myContextHolder.getNow();
     long activityUpdatedDate = 0;
 
     public DownloadStatus noteStatus = DownloadStatus.UNKNOWN;
@@ -142,7 +142,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
             noteSource = Html.fromHtml(via).toString().trim();
         }
 
-        for (Actor actor : MyQuery.getRebloggers(MyContextHolder.get().getDatabase(), getOrigin(), getNoteId())) {
+        for (Actor actor : MyQuery.getRebloggers(myContextHolder.getNow().getDatabase(), getOrigin(), getNoteId())) {
             rebloggers.put(actor.actorId, actor.getWebFingerId());
         }
     }
@@ -341,7 +341,7 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         }
         return !filter.hideRepliesNotToMeOrFriends
                 || inReplyToActor.isEmpty()
-                || MyContextHolder.get().users().isMeOrMyFriend(inReplyToActor.getActor());
+                || myContextHolder.getNow().users().isMeOrMyFriend(inReplyToActor.getActor());
     }
 
     @Override

@@ -19,6 +19,8 @@ package org.andstatus.app.context;
 import org.apache.geode.test.junit.IgnoreCondition;
 import org.junit.runner.Description;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -26,6 +28,6 @@ public class NoScreenSupport implements IgnoreCondition {
     @Override
     public boolean evaluate(Description testCaseDescription) {
         TestSuite.initialize(this);
-        return !MyContextHolder.isScreenSupported();
+        return !myContextHolder.isScreenSupported();
     }
 }

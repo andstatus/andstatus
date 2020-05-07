@@ -18,7 +18,6 @@ package org.andstatus.app.net.social.activitypub;
 
 import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
@@ -33,6 +32,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.util.UriUtilsTest.assertEndpoint;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -45,7 +45,7 @@ public class VerifyCredentialsActivityPubTest {
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithAccounts(this);
-        Origin origin = MyContextHolder.get().origins().fromName(demoData.activityPubTestOriginName);
+        Origin origin = myContextHolder.getNow().origins().fromName(demoData.activityPubTestOriginName);
         AccountName accountName = AccountName.fromOriginAndUniqueName(origin, UNIQUE_NAME_IN_ORIGIN);
         mock = ConnectionMock.newFor(MyAccount.Builder.fromAccountName(accountName).getAccount());
     }
@@ -65,7 +65,7 @@ public class VerifyCredentialsActivityPubTest {
         assertEquals("Account actorOid", "https://pleroma.site/users/AndStatus" , actor.oid);
         assertEquals("Actor in the database for id=" + actorId,
                 actor.oid,
-                MyQuery.idToOid(MyContextHolder.get(), OidEnum.ACTOR_OID, actorId, 0));
+                MyQuery.idToOid(myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0));
         assertActor(actor);
 
         Actor stored = Actor.loadFromDatabase(mock.getData().getOrigin().myContext, actorId, () -> Actor.EMPTY, false);

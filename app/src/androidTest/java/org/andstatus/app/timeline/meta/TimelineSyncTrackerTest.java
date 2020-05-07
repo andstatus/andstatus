@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.social.TimelinePosition;
 import org.andstatus.app.service.TimelineSyncTracker;
@@ -13,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -41,7 +41,7 @@ public class TimelineSyncTrackerTest {
     }
 
     private void oneTimelineType(TimelineType timelineType, String accountName) {
-        MyContext myContext = MyContextHolder.get();
+        MyContext myContext = myContextHolder.getNow();
         MyAccount ma = demoData.getMyAccount(accountName);
         String message = timelineType.save() + " " + ma;
         assertTrue(ma.isValid());

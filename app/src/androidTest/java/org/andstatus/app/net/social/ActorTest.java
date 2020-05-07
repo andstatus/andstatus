@@ -17,7 +17,6 @@
 package org.andstatus.app.net.social;
 
 import org.andstatus.app.actor.GroupType;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.Origin;
 import org.junit.Before;
@@ -26,6 +25,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -38,7 +38,7 @@ public class ActorTest {
 
     @Test
     public void testFromBodyText1() {
-        Origin origin = MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName);
+        Origin origin = myContextHolder.getNow().origins().fromName(demoData.gnusocialTestOriginName);
         String anotherUser2 = "anotherUser@somedomain.org";
         String shortUsername3 = "shortusername";
         String groupname1 = "gnusocial";
@@ -67,7 +67,7 @@ public class ActorTest {
         final String SKIPPED_USERNAME3 = "kauiwoeieurt";
         final String USERNAME4 = "djjerekwerwewer";
 
-        Origin origin = MyContextHolder.get().origins().fromName(demoData.twitterTestOriginName);
+        Origin origin = myContextHolder.getNow().origins().fromName(demoData.twitterTestOriginName);
         String body = "Starting post @ #ThisIsTagofsome-event-and entertainment by @" +
                 USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3 +
                 " &amp; @" + USERNAME4 +
@@ -110,7 +110,7 @@ public class ActorTest {
 
     @Test
     public void testEquals() {
-        Origin origin = MyContextHolder.get().origins().fromId(18);
+        Origin origin = myContextHolder.getNow().origins().fromId(18);
         Actor actor1 = Actor.fromOid(origin, "acct:fourthWithoutAvatar@pump.example.com");
         actor1.actorId = 11;
         actor1.setUsername("fourthWithoutAvatar@pump.example.com");

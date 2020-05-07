@@ -2,13 +2,13 @@ package org.andstatus.app.origin;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.UrlUtils;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -90,7 +90,7 @@ public final class DemoOriginInserter {
     }
 
     public static void assertDefaultTimelinesForOrigins() {
-        MyContext myContext = MyContextHolder.get();
+        MyContext myContext = myContextHolder.getNow();
         for (Origin origin : myContext.origins().collection()) {
             MyAccount myAccount = myContext.accounts().
                     getFirstSucceededForOrigin(origin);

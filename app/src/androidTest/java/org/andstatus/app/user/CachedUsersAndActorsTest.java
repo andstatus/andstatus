@@ -16,7 +16,6 @@
 
 package org.andstatus.app.user;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
@@ -24,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -35,10 +35,10 @@ public class CachedUsersAndActorsTest {
 
     @Test
     public void test() {
-        CachedUsersAndActors users = MyContextHolder.get().users();
+        CachedUsersAndActors users = myContextHolder.getNow().users();
         assertTrue(users.toString(), users.size() > 4);
 
-        Origin origin = MyContextHolder.get().origins().fromName(demoData.conversationOriginName);
+        Origin origin = myContextHolder.getNow().origins().fromName(demoData.conversationOriginName);
         assertEquals(demoData.conversationOriginName, origin.getName());
 
         Actor actor = demoData.getMyAccount(demoData.conversationAccountSecondName).getActor();

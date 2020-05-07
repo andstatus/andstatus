@@ -19,11 +19,11 @@ package org.andstatus.app.graphics;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Point;
-import androidx.annotation.NonNull;
 import android.view.Display;
 import android.view.WindowManager;
 
-import org.andstatus.app.context.MyContextHolder;
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.data.AvatarFile;
@@ -34,6 +34,8 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -157,7 +159,7 @@ public class ImageCaches {
             builder.append(attachedImagesCache.getInfo() + "\n");
             builder.append("Styled images: " + styledImages.size() + "\n");
         }
-        Context context = MyContextHolder.get().context();
+        Context context = myContextHolder.getNow().context();
         if (context != null) {
             builder.append("Memory. App total: " + I18n.formatBytes(getTotalAppMemory(context)));
             ActivityManager.MemoryInfo memInfo = getMemoryInfo(context);
@@ -195,7 +197,7 @@ public class ImageCaches {
     public static CachedImage getStyledImage(int resourceIdLight, int resourceId) {
         CachedImage[] styledImage = styledImages.get(resourceId);
         if (styledImage == null) {
-            Context context = MyContextHolder.get().context();
+            Context context = myContextHolder.getNow().context();
             if (context != null) {
                 CachedImage image = getImageCompat(context, resourceId);
                 CachedImage imageLight = getImageCompat(context, resourceIdLight);

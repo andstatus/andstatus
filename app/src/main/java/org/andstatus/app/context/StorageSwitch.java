@@ -39,6 +39,8 @@ import org.andstatus.app.util.TriState;
 
 import java.io.File;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+
 public class StorageSwitch {
 
     static final Object MOVE_LOCK = new Object();
@@ -184,7 +186,7 @@ public class StorageSwitch {
             File dbFileOld = null;
             File dbFileNew = null;
             try {
-                dbFileOld = MyContextHolder.get().context().getDatabasePath(
+                dbFileOld = myContextHolder.getNow().context().getDatabasePath(
                         databaseName);
                 dbFileNew = MyStorage.getDatabasePath(
                         databaseName, TriState.fromBoolean(useExternalStorageNew));
@@ -217,7 +219,7 @@ public class StorageSwitch {
                         MyLog.v(this, method + " to: " + dbFileNew.getPath());
                     }
                     try {
-                        MyContextHolder.release(() -> "moveDatabase");
+                        myContextHolder.release(() -> "moveDatabase");
                         if (FileUtils.copyFile(this, dbFileOld, dbFileNew)) {
                             copied = true;
                             succeeded = true;

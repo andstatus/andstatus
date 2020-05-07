@@ -22,13 +22,14 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 
 import java.util.concurrent.atomic.AtomicReference;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /** State of the Account add/change process that we store between activity execution steps
 *   It's not proper to persist a Bundle, 
@@ -110,19 +111,19 @@ class StateOfAccountChangeProcess {
             String accountName = extras.getString(IntentExtra.ACCOUNT_NAME.key);
             if (!StringUtil.isEmpty(accountName)) {
                 state.builder.rebuildMyAccount(
-                        AccountName.fromAccountName(MyContextHolder.get(), accountName));
+                        AccountName.fromAccountName(myContextHolder.getNow(), accountName));
                 state.useThisState = state.builder.isPersistent();
             }
         }
 
         if (state.getAccount().isEmpty() && !state.getAccountAction().equals(Intent.ACTION_INSERT)) {
-            switch (MyContextHolder.get().accounts().size()) {
+            switch (myContextHolder.getNow().accounts().size()) {
                 case 0:
                     state.setAccountAction(Intent.ACTION_INSERT);
                     break;
                 case 1:
                     state.builder.rebuildMyAccount(
-                            MyContextHolder.get().accounts().getCurrentAccount().getOAccountName());
+                            myContextHolder.getNow().accounts().getCurrentAccount().getOAccountName());
                     break;
                 default:
                     state.accountShouldBeSelected = true;
@@ -132,15 +133,14 @@ class StateOfAccountChangeProcess {
         
         if (state.getAccount().isEmpty()) {
             if (state.getAccountAction().equals(Intent.ACTION_INSERT)) {
-                Origin origin = MyContextHolder
-                        .get()
+                Origin origin = myContextHolder.getNow()
                         .origins()
                         .firstOfType(OriginType.UNKNOWN);
                 state.builder.rebuildMyAccount(AccountName.fromOriginAndUniqueName(origin, ""));
                 state.originShouldBeSelected = true;
             } else {
                 state.builder.rebuildMyAccount(
-                        MyContextHolder.get().accounts().getCurrentAccount().getOAccountName());
+                        myContextHolder.getNow().accounts().getCurrentAccount().getOAccountName());
             }
             if (!state.builder.isPersistent()) {
                 state.setAccountAction(Intent.ACTION_INSERT);

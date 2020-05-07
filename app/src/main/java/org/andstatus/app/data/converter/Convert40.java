@@ -17,9 +17,9 @@
 package org.andstatus.app.data.converter;
 
 import android.database.Cursor;
+
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadType;
 import org.andstatus.app.data.MyContentType;
@@ -28,6 +28,8 @@ import org.andstatus.app.util.UriUtils;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 class Convert40 extends ConvertOneStep {
     Convert40() {
@@ -48,7 +50,7 @@ class Convert40 extends ConvertOneStep {
                     DbUtils.getLong(cursor, "_id"),
                     uri,
                     MyContentType.fromUri(DownloadType.ATTACHMENT,
-                            MyContextHolder.get().context().getContentResolver(),
+                            myContextHolder.getNow().context().getContentResolver(),
                             UriUtils.fromString(uri),
                             DbUtils.getString(cursor, "media_type"))
             );

@@ -18,8 +18,9 @@ package org.andstatus.app.service;
 
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.timeline.ViewItem;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -54,12 +55,12 @@ public class QueueData extends ViewItem<QueueData> implements Comparable<QueueDa
 
     public String toSharedSubject() {
         return queueType.getAcronym() + "; "
-                + commandData.toCommandSummary(MyContextHolder.get());
+                + commandData.toCommandSummary(myContextHolder.getNow());
     }
 
     public String toSharedText() {
         return queueType.getAcronym() + "; "
-                + commandData.share(MyContextHolder.get());
+                + commandData.share(myContextHolder.getNow());
     }
 
     @Override

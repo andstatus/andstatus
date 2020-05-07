@@ -16,23 +16,16 @@
 package org.andstatus.app.note;
 
 import android.database.Cursor;
+
 import androidx.annotation.NonNull;
-import android.text.Html;
 
 import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
 
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 

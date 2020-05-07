@@ -14,7 +14,6 @@ import androidx.test.rule.GrantPermissionRule;
 import org.andstatus.app.account.AccountUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.account.MyAccounts;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.service.MyServiceManager;
@@ -40,6 +39,7 @@ import java.util.concurrent.TimeUnit;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -66,17 +66,17 @@ public class MyBackupAgentTest {
 
     @Test
     public void testBackupRestore() throws Throwable {
-        MyAccounts accountsBefore = MyAccounts.newEmpty(MyContextHolder.get());
+        MyAccounts accountsBefore = MyAccounts.newEmpty(myContextHolder.getNow());
         accountsBefore.initialize();
 
         TestSuite.forget();
         TestSuite.initialize(this);
         demoData.assertConversations();
         
-        assertEquals("Compare Persistent accounts with copy", MyContextHolder.get().accounts(), accountsBefore);
-        compareOneAccount(MyContextHolder.get().accounts(), accountsBefore, demoData.gnusocialTestAccountName);
+        assertEquals("Compare Persistent accounts with copy", myContextHolder.getNow().accounts(), accountsBefore);
+        compareOneAccount(myContextHolder.getNow().accounts(), accountsBefore, demoData.gnusocialTestAccountName);
         
-        DocumentFile outputFolder = DocumentFile.fromFile(MyContextHolder.get().context().getCacheDir());
+        DocumentFile outputFolder = DocumentFile.fromFile(myContextHolder.getNow().context().getCacheDir());
         DocumentFile dataFolder = testBackup(outputFolder);
         deleteApplicationData();
         testRestore(dataFolder);
@@ -84,10 +84,10 @@ public class MyBackupAgentTest {
         TestSuite.forget();
         TestSuite.initialize(this);
 
-        assertEquals("Number of persistent accounts", accountsBefore.size(), MyContextHolder.get().accounts().size());
+        assertEquals("Number of persistent accounts", accountsBefore.size(), myContextHolder.getNow().accounts().size());
         
-        assertEquals("Persistent accounts", accountsBefore, MyContextHolder.get().accounts());
-        compareOneAccount(accountsBefore, MyContextHolder.get().accounts(), demoData.gnusocialTestAccountName);
+        assertEquals("Persistent accounts", accountsBefore, myContextHolder.getNow().accounts());
+        compareOneAccount(accountsBefore, myContextHolder.getNow().accounts(), demoData.gnusocialTestAccountName);
         demoData.assertConversations();
         TestSuite.initializeWithData(this);
 
@@ -117,11 +117,11 @@ public class MyBackupAgentTest {
         assertEquals("Shared preferences backed up", 1, backupManager.getBackupAgent().getSharedPreferencesBackedUp());
         assertEquals("Media files and logs backed up", 2, backupManager.getBackupAgent().getFoldersBackedUp());
         assertEquals("Databases backed up", 1, backupManager.getBackupAgent().getDatabasesBackedUp());
-        assertEquals("Accounts backed up", backupManager.getBackupAgent().getAccountsBackedUp(), MyContextHolder.get()
+        assertEquals("Accounts backed up", backupManager.getBackupAgent().getAccountsBackedUp(), myContextHolder.getNow()
                 .accounts().size());
 
         Try<DocumentFile> descriptorFile2 = MyBackupManager.getExistingDescriptorFile(dataFolder);
-        JSONObject jso = DocumentFileUtils.getJSONObject(MyContextHolder.get().context(), descriptorFile2.get());
+        JSONObject jso = DocumentFileUtils.getJSONObject(myContextHolder.getNow().context(), descriptorFile2.get());
         assertEquals(MyBackupDescriptor.BACKUP_SCHEMA_VERSION, jso.getInt(MyBackupDescriptor.KEY_BACKUP_SCHEMA_VERSION));
         assertTrue(jso.getLong(MyBackupDescriptor.KEY_CREATED_DATE) > System.currentTimeMillis() - 1000000);
 
@@ -130,13 +130,13 @@ public class MyBackupAgentTest {
         
         DocumentFile accountHeader = dataFolder.createFile("", "account_header.json");
         assertTrue(accountHeader.exists());
-        jso = DocumentFileUtils.getJSONObject(MyContextHolder.get().context(), accountHeader);
+        jso = DocumentFileUtils.getJSONObject(myContextHolder.getNow().context(), accountHeader);
         assertTrue(jso.getInt(MyBackupDataOutput.KEY_DATA_SIZE) > 10);
         assertEquals(".json", jso.getString(MyBackupDataOutput.KEY_FILE_EXTENSION));
 
         DocumentFile accountData = dataFolder.createFile("", "account_data.json");
         assertTrue(accountData.exists());
-        JSONArray jsa = DocumentFileUtils.getJSONArray(MyContextHolder.get().context(), accountData);
+        JSONArray jsa = DocumentFileUtils.getJSONArray(myContextHolder.getNow().context(), accountData);
         assertTrue(jsa.length() > 2);
         
         return dataFolder;
@@ -145,8 +145,8 @@ public class MyBackupAgentTest {
     private void deleteApplicationData() throws IOException {
         MyServiceManager.setServiceUnavailable();
         deleteAccounts();
-        Context context = MyContextHolder.get().context();
-        MyContextHolder.release(() -> "deleteApplicationData");
+        Context context = myContextHolder.getNow().context();
+        myContextHolder.release(() -> "deleteApplicationData");
         deleteFiles(context, false);
         deleteFiles(context, true);
         SharedPreferencesUtil.resetHasSetDefaultValues();
@@ -155,8 +155,8 @@ public class MyBackupAgentTest {
     }
 
     private void deleteAccounts() throws IOException {
-        android.accounts.AccountManager am = AccountManager.get(MyContextHolder.get().context());
-        List<Account> aa = AccountUtils.getCurrentAccounts(MyContextHolder.get().context());
+        android.accounts.AccountManager am = AccountManager.get(myContextHolder.getNow().context());
+        List<Account> aa = AccountUtils.getCurrentAccounts(myContextHolder.getNow().context());
         for (android.accounts.Account androidAccount : aa) {
             String logMsg = "Removing old account: " + androidAccount.name;
             MyLog.i(this, logMsg);

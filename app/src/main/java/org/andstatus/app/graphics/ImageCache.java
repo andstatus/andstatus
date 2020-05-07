@@ -36,7 +36,6 @@ import android.util.LruCache;
 
 import androidx.annotation.Nullable;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ImageFile;
 import org.andstatus.app.data.MyContentType;
@@ -49,6 +48,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -229,7 +230,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
     @Nullable
     private Bitmap videoPathToBitmap(ImageFile imageFile) {
         try (MediaMetadataRetriever retriever = new MediaMetadataRetriever()) {
-            retriever.setDataSource(MyContextHolder.get().context(), Uri.parse(imageFile.getPath()));
+            retriever.setDataSource(myContextHolder.getNow().context(), Uri.parse(imageFile.getPath()));
             Bitmap source = retriever.getFrameAtTime();
             if (source == null) {
                 return null;

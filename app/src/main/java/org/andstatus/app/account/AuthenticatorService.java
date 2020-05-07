@@ -27,9 +27,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Based on a very basic authenticator service for POP/IMAP...
@@ -121,14 +122,14 @@ public class AuthenticatorService extends Service {
         public Bundle getAccountRemovalAllowed(AccountAuthenticatorResponse response, Account account) {
             boolean deleted = true;
             if (AccountUtils.isVersionCurrent(context, account)) {
-                deleted = MyContextHolder.INSTANCE
+                deleted = myContextHolder
                     .initialize(context, context, false)
                     .getFuture()
                     .tryBlocking()
                     .map(myContext -> myContext.accounts().fromAccountName(account.name))
                     .map(ma -> {
                         if (ma.isValid()) {
-                            MyContextHolder.get().timelines().onAccountDelete(ma);
+                            myContextHolder.getNow().timelines().onAccountDelete(ma);
                             MyPreferences.onPreferencesChanged();
                             return true;
                         }
@@ -156,7 +157,7 @@ public class AuthenticatorService extends Service {
     public void onCreate() {
         super.onCreate();
         MyLog.v(this, "onCreate");
-        MyContextHolder.initialize(this, this);
+        myContextHolder.getInitialized(this, this);
     }
 
     @Override

@@ -19,7 +19,6 @@ package org.andstatus.app.activity;
 import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.timeline.TimelineActivityTest;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -27,6 +26,7 @@ import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertTrue;
 
 public class NotificationsTimelineTest extends TimelineActivityTest<ActivityViewItem> {
@@ -38,11 +38,11 @@ public class NotificationsTimelineTest extends TimelineActivityTest<ActivityView
 
         final MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
-        MyContextHolder.get().accounts().setCurrentAccount(ma);
+        myContextHolder.getNow().accounts().setCurrentAccount(ma);
 
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW,
-                MyContextHolder.get().timelines().get(TimelineType.NOTIFICATIONS, ma.getActor(), ma.getOrigin()).getUri());
+                myContextHolder.getNow().timelines().get(TimelineType.NOTIFICATIONS, ma.getActor(), ma.getOrigin()).getUri());
     }
 
     @Test

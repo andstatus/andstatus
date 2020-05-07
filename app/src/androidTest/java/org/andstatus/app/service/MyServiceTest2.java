@@ -19,7 +19,6 @@ package org.andstatus.app.service;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -31,6 +30,7 @@ import org.junit.Test;
 import java.util.Queue;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -73,7 +73,7 @@ public class MyServiceTest2 extends MyServiceTest {
         assertEquals("No new data was posted while in foreground",
                 1, mService.getHttp().getRequestsCounter());
 
-        Queue<CommandData> queue = MyContextHolder.get().queues().get(QueueType.CURRENT);
+        Queue<CommandData> queue = myContextHolder.getNow().queues().get(QueueType.CURRENT);
         MyLog.i(this, method + "; Current queue size:" + queue.size());
         assertFalse("Main queue is empty", queue.isEmpty());
         assertFalse("First command is in the main queue", queue.contains(cd1));
@@ -93,7 +93,7 @@ public class MyServiceTest2 extends MyServiceTest {
         assertTrue("Foreground command ended executing", mService.waitForCommandExecutionEnded(endCount));
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
 
-        queue = MyContextHolder.get().queues().get(QueueType.CURRENT);
+        queue = myContextHolder.getNow().queues().get(QueueType.CURRENT);
         assertFalse("Main queue is not empty", queue.isEmpty());
         assertTrue("The second command stayed in the main queue", queue.contains(cd2));
         
@@ -111,14 +111,14 @@ public class MyServiceTest2 extends MyServiceTest {
 
         myTestDeleteCommand(cd2);
 
-        MyContextHolder.get().queues().clear();
+        myContextHolder.getNow().queues().clear();
     }
     
     private void myTestDeleteCommand(CommandData commandIn) {
         MyLog.i(this, "myTestDeleteCommand started");
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
 
-        final CommandQueue cq1 = MyContextHolder.get().queues();
+        final CommandQueue cq1 = myContextHolder.getNow().queues();
         assertEquals("Didn't find input command in any queue", commandIn, getFromAnyQueue(cq1, commandIn));
 
         CommandData commandDelete = CommandData.newItemCommand(
@@ -135,7 +135,7 @@ public class MyServiceTest2 extends MyServiceTest {
         assertTrue("Delete command ended executing", mService.waitForCommandExecutionEnded(endCount));
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
 
-        final CommandQueue cq2 = new CommandQueue(MyContextHolder.get()).load();
+        final CommandQueue cq2 = new CommandQueue(myContextHolder.getNow()).load();
         assertEquals("The DELETE command was not deleted from some queue: " + commandDelete,
                 CommandData.EMPTY, getFromAnyQueue(cq2, commandDelete));
         assertEquals("The command was not deleted from some queue: " + commandIn,

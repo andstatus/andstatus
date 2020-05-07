@@ -18,7 +18,6 @@ package org.andstatus.app.data.checker;
 
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -30,6 +29,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -68,8 +69,8 @@ public abstract class DataChecker {
                     protected Void doInBackground2(Void aVoid) {
                         fixData(logger, includeLong, countOnly);
                         DbUtils.waitMs(DataChecker.class, 3000);
-                        MyContextHolder.release(() -> "fixDataAsync");
-                        MyContextHolder.initialize(MyContextHolder.get().context(), DataChecker.class);
+                        myContextHolder.release(() -> "fixDataAsync");
+                        myContextHolder.getInitialized(myContextHolder.getNow().context(), DataChecker.class);
                         return null;
                     }
 
@@ -87,7 +88,7 @@ public abstract class DataChecker {
 
     public static long fixData(final ProgressLogger logger, final boolean includeLong, boolean countOnly) {
         long counter = 0;
-        MyContext myContext = MyContextHolder.get();
+        MyContext myContext = myContextHolder.getNow();
         if (!myContext.isReady()) {
             MyLog.w(DataChecker.class, "fixData skipped: context is not ready " + myContext);
             return counter;

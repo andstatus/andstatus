@@ -25,7 +25,6 @@ import android.widget.TextView;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.ActivityTest;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
@@ -35,6 +34,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -55,7 +55,7 @@ public class AccountSettingsActivityTest extends ActivityTest<AccountSettingsAct
     protected Intent getActivityIntent() {
         TestSuite.initializeWithAccounts(this);
 
-        ma = MyContextHolder.get().accounts().getCurrentAccount();
+        ma = myContextHolder.getNow().accounts().getCurrentAccount();
         if (ma.nonValid()) fail("No persistent accounts yet");
 
         return new Intent().putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName());

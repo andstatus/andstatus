@@ -16,7 +16,6 @@
 
 package org.andstatus.app.net.social.activitypub;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.MyContentType;
@@ -50,6 +49,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.net.social.activitypub.VerifyCredentialsActivityPubTest.ACTOR_OID;
 import static org.andstatus.app.net.social.activitypub.VerifyCredentialsActivityPubTest.UNIQUE_NAME_IN_ORIGIN;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -284,7 +284,7 @@ public class ConnectionActivityPubTest {
         });
 
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                MyContextHolder.get(),
+                myContextHolder.getNow(),
                 CommandData.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT));
         new DataUpdater(executionContext).onActivity(activity);
 
@@ -331,11 +331,11 @@ public class ConnectionActivityPubTest {
         assertTrue("Attachments of " + activity, attachments.nonEmpty());
 
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                MyContextHolder.get(),
+                myContextHolder.getNow(),
                 CommandData.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().getMyAccount(), TimelineType.SENT));
         new DataUpdater(executionContext).onActivity(activity);
 
-        Attachments attachmentsStored = Attachments.load(MyContextHolder.get(), activity.getNote().noteId);
+        Attachments attachmentsStored = Attachments.load(myContextHolder.getNow(), activity.getNote().noteId);
         assertTrue("Attachments should be stored of " + activity + "\n " + attachmentsStored + "\n",
                 attachmentsStored.nonEmpty());
         assertEquals("Attachment stored of " + activity + "\n " + attachmentsStored + "\n",
@@ -362,7 +362,7 @@ public class ConnectionActivityPubTest {
         assertThat("Note name " + received, received.getUsername(), is("ActivityPubTester"));
 
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                MyContextHolder.get(),
+                myContextHolder.getNow(),
                 CommandData.newActorCommandAtOrigin(
                 CommandEnum.GET_ACTOR, partial, "", mock.getData().getOrigin()));
         AActivity activity = executionContext.getMyAccount().getActor().update(received);

@@ -18,7 +18,6 @@ package org.andstatus.app.net.social.pumpio;
 
 import android.net.Uri;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
@@ -66,6 +65,7 @@ import java.util.stream.Collectors;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.data.DownloadStatus.UNKNOWN;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
@@ -272,7 +272,7 @@ public class ConnectionPumpioTest {
                 containsInAnyOrder("user/jpope/followers"));
 
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                MyContextHolder.get(),
+                myContextHolder.getNow(),
                 CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, mock.getData().getMyAccount(), TimelineType.HOME));
         new DataUpdater(executionContext).onActivity(activity);
 

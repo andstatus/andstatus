@@ -19,12 +19,13 @@ package org.andstatus.app.data;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Date;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 
 /**
@@ -115,7 +116,7 @@ public final class ActorActivity {
      */
     public boolean save() {
         MyLog.v(this, () -> "actorId " + actorId + ": " +
-                        MyQuery.actorIdToWebfingerId(MyContextHolder.get(), actorId)
+                        MyQuery.actorIdToWebfingerId(myContextHolder.getNow(), actorId)
                 + " Latest activity update at " + (new Date(getLastActivityDate()).toString())
                 + (changed ? "" : " not changed")
                 );
@@ -129,7 +130,7 @@ public final class ActorActivity {
             lastActivityDate = activityDate;
             lastActivityId = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId);
             MyLog.v(this, () -> "There is newer information in the database. Actor " + actorId + ": "
-                    + MyQuery.actorIdToWebfingerId(MyContextHolder.get(), actorId)
+                    + MyQuery.actorIdToWebfingerId(myContextHolder.getNow(), actorId)
                     + " Latest activity at " + (new Date(getLastActivityDate()).toString()));
             changed = false;
             return true;
@@ -143,7 +144,7 @@ public final class ActorActivity {
             sql = "UPDATE " + ActorTable.TABLE_NAME + " SET " + sql
                     + " WHERE " + BaseColumns._ID + "=" + actorId;
 
-            SQLiteDatabase db = MyContextHolder.get().getDatabase();
+            SQLiteDatabase db = myContextHolder.getNow().getDatabase();
             if (db == null) {
                 MyLog.databaseIsNull(() -> "Save " + this);
                 return false;

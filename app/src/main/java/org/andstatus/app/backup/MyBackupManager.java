@@ -24,7 +24,6 @@ import android.os.Environment;
 import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TryUtils;
@@ -36,6 +35,7 @@ import java.util.Arrays;
 import io.vavr.control.Try;
 
 import static java.util.function.UnaryOperator.identity;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Creates backups in the local file system:
@@ -118,7 +118,7 @@ class MyBackupManager {
     void backup() throws Throwable {
         progressLogger.logProgress("Starting backup to data folder:'" + dataFolder.getUri() + "'");
         backupAgent = new MyBackupAgent();
-        Context context = MyContextHolder.get(activity).context();
+        Context context = myContextHolder.getNow(activity).context();
         backupAgent.setContext(context);
         backupAgent.setActivity(activity);
 
@@ -167,7 +167,7 @@ class MyBackupManager {
         this.dataFolder = dataFolder;
         newDescriptor = descriptorFile.map(df -> {
             MyBackupDescriptor descriptor = MyBackupDescriptor.fromOldDocFileDescriptor(
-                    MyContextHolder.get(activity).context(), df, progressLogger);
+                    myContextHolder.getNow(activity).context(), df, progressLogger);
             if (descriptor.getBackupSchemaVersion() != MyBackupDescriptor.BACKUP_SCHEMA_VERSION) {
                 throw new FileNotFoundException(
                         "Unsupported backup schema version: " + descriptor.getBackupSchemaVersion() +
@@ -181,7 +181,7 @@ class MyBackupManager {
     }
 
     void restore() throws IOException {
-        Context context = MyContextHolder.get(activity).context();
+        Context context = myContextHolder.getNow(activity).context();
         MyBackupDataInput dataInput = new MyBackupDataInput(context, dataFolder);
         if (dataInput.listKeys().size() < 3) {
             throw new FileNotFoundException("Not enough keys in the backup: " + Arrays.toString(dataInput.listKeys().toArray()));

@@ -20,7 +20,6 @@ import android.content.Intent;
 
 import org.andstatus.app.R;
 import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
@@ -43,6 +42,7 @@ import java.util.List;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.junit.Assert.assertEquals;
@@ -61,7 +61,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
                 demoData.conversationMentionsNoteOid);
         assertNotEquals("No note with oid " + demoData.conversationMentionsNoteOid, 0, noteId);
 
-        final Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.EVERYTHING,
+        final Timeline timeline = myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING,
                 Actor.EMPTY, Origin.EMPTY);
         long updatedDate = MyQuery.noteIdToLongColumnValue(NoteTable.UPDATED_DATE, noteId);
         timeline.setVisibleItemId(noteId);
@@ -95,11 +95,11 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
 
         assertEquals(listItems.toString(), 5, listItems.size());
 
-        Actor actorE = MyContextHolder.get().users().actors.values().stream()
+        Actor actorE = myContextHolder.getNow().users().actors.values().stream()
                 .filter(actor -> actor.oid.equals(demoData.conversationAuthorThirdActorOid))
                 .findAny().orElse(Actor.EMPTY);
         assertTrue("Found " + demoData.conversationAuthorThirdActorOid
-                + " cached " + MyContextHolder.get().users().actors, actorE.nonEmpty());
+                + " cached " + myContextHolder.getNow().users().actors, actorE.nonEmpty());
         Actor actorA = getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
         assertTrue("Not found " + demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA.nonEmpty());
         compareAttributes(actorE, actorA, false);

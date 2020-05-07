@@ -19,12 +19,13 @@ package org.andstatus.app.appwidget;
 import android.content.SharedPreferences;
 
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.notification.NotificationEvents;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtil;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Maintains the appWidget instance (defined by {@link #appWidgetId}): - state
@@ -68,7 +69,7 @@ public class MyAppWidgetData {
 
     public static MyAppWidgetData newInstance(NotificationEvents events, int appWidgetId) {
         MyAppWidgetData data = new MyAppWidgetData(events, appWidgetId);
-        if (MyContextHolder.get().isReady()) {
+        if (myContextHolder.getNow().isReady()) {
             data.load();
         }
         return data;

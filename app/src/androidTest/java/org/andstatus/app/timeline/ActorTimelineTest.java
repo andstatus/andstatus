@@ -20,7 +20,6 @@ import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
@@ -32,6 +31,7 @@ import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -44,12 +44,12 @@ public class ActorTimelineTest extends TimelineActivityTest<ActivityViewItem> {
 
         final MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
-        MyContextHolder.get().accounts().setCurrentAccount(ma);
+        myContextHolder.getNow().accounts().setCurrentAccount(ma);
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOriginId(), demoData.conversationAuthorSecondActorOid);
         Actor actor = Actor.fromId(ma.getOrigin(), actorId);
 
         MyLog.i(this, "setUp ended");
-        final Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.SENT, actor, ma.getOrigin());
+        final Timeline timeline = myContextHolder.getNow().timelines().get(TimelineType.SENT, actor, ma.getOrigin());
         timeline.forgetPositionsAndDates();
         return new Intent(Intent.ACTION_VIEW, timeline.getUri());
     }

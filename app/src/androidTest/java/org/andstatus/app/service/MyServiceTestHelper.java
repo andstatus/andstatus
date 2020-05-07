@@ -2,7 +2,6 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccountTest;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
@@ -13,6 +12,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -26,7 +26,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
     volatile long executionStartCount = 0;
     volatile long executionEndCount = 0;
     public volatile boolean serviceStopped = false;
-    private MyContext myContext = MyContextHolder.get();
+    private MyContext myContext = myContextHolder.getNow();
     
     public void setUp(String accountName) {
         MyLog.i(this, "setUp started");
@@ -39,15 +39,15 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             if (isSingleMockedInstance) {
                 httpConnectionMock = new HttpConnectionMock();
                 TestSuite.setHttpConnectionMockInstance(httpConnectionMock);
-                MyContextHolder.get().setExpired(() -> this.getClass().getSimpleName() + " setUp");
+                myContextHolder.getNow().setExpired(() -> this.getClass().getSimpleName() + " setUp");
             }
-            myContext = MyContextHolder.initialize(myContext.context(), this);
+            myContext = myContextHolder.getInitialized(myContext.context(), this);
 
             if (!myContext.isReady()) {
                 final String msg = "Context is not ready after the initialization, repeating... " + myContext;
                 MyLog.w(this, msg);
                 myContext.setExpired(() -> this.getClass().getSimpleName() + msg);
-                myContext = MyContextHolder.initialize(myContext.context(), this);
+                myContext = myContextHolder.getInitialized(myContext.context(), this);
                 assertEquals("Context should be ready", true, myContext.isReady());
             }
 

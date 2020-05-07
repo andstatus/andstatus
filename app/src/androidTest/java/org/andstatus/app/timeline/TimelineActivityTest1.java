@@ -21,13 +21,14 @@ import android.content.Intent;
 import android.widget.CheckBox;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
@@ -50,9 +51,8 @@ import org.junit.Test;
 
 import java.util.Set;
 
-import androidx.annotation.NonNull;
-
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
@@ -71,10 +71,10 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
 
         ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
-        MyContextHolder.get().accounts().setCurrentAccount(ma);
+        myContextHolder.getNow().accounts().setCurrentAccount(ma);
 
         MyLog.i(this, "setUp ended");
-        return new Intent(Intent.ACTION_VIEW, MyContextHolder.get().timelines()
+        return new Intent(Intent.ACTION_VIEW, myContextHolder.getNow().timelines()
                 .get(TimelineType.HOME, ma.getActor(), Origin.EMPTY).getUri());
     }
 
@@ -196,7 +196,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
     private void broadcastCommandExecuted() {
         CommandData commandData = CommandData.newAccountCommand(CommandEnum.LIKE,
                 demoData.getPumpioConversationAccount());
-        MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
+        MyServiceEventsBroadcaster.newInstance(myContextHolder.getNow(), MyServiceState.RUNNING)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)
                 .broadcast();
     }
@@ -221,7 +221,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
                 ListActivityTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
         long listItemId = helper.getListItemIdOfLoadedReply();
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId);
-        final MyContext myContext = MyContextHolder.get();
+        final MyContext myContext = myContextHolder.getNow();
         Origin origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId));
         Set<MyAccount> accounts = myContext.accounts().succeededForSameOrigin(origin);
         String logMsg = "itemId=" + listItemId + ", noteId=" + noteId

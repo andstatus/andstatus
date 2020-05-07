@@ -16,15 +16,15 @@
 
 package org.andstatus.app.net.http;
 
-import org.andstatus.app.context.MyContextHolder;
-import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.account.AccountConnectionData;
+import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 
 public class OAuthClientKeysTest {
@@ -38,8 +38,8 @@ public class OAuthClientKeysTest {
     @Test
     public void testKeysSave() {
         HttpConnectionData connectionData = HttpConnectionData.fromAccountConnectionData(
-                AccountConnectionData.fromMyAccount(MyContextHolder.get().accounts().getFirstSucceededForOrigin(
-                        MyContextHolder.get().origins().firstOfType(OriginType.PUMPIO)), TriState.UNKNOWN)
+                AccountConnectionData.fromMyAccount(myContextHolder.getNow().accounts().getFirstSucceededForOrigin(
+                        myContextHolder.getNow().origins().firstOfType(OriginType.PUMPIO)), TriState.UNKNOWN)
         );
         final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
         final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());

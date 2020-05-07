@@ -10,7 +10,6 @@ import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
@@ -33,6 +32,7 @@ import java.util.List;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -46,10 +46,10 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
         mService.setUp(null);
         MyAccount ma = demoData.getGnuSocialAccount();
         assertTrue(ma.isValid());
-        MyContextHolder.get().accounts().setCurrentAccount(ma);
+        myContextHolder.getNow().accounts().setCurrentAccount(ma);
 
         return new Intent(Intent.ACTION_VIEW,
-                MyContextHolder.get().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.getOrigin()).getUri());
+                myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.getOrigin()).getUri());
     }
 
     @After
@@ -82,7 +82,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)));
 
         step = "Start editing unsent note " + unsentMsgId ;
-        getActivity().getNoteEditor().startEditingNote(NoteEditorData.load(MyContextHolder.get(), unsentMsgId));
+        getActivity().getNoteEditor().startEditingNote(NoteEditorData.load(myContextHolder.getNow(), unsentMsgId));
         ActivityTestHelper.waitViewVisible(method + "; " + step, editorView);
         TestSuite.waitForIdleSync();
 

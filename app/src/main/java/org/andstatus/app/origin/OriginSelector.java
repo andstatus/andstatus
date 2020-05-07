@@ -19,14 +19,14 @@ package org.andstatus.app.origin;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.BaseColumns;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
-import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.view.MyContextMenu;
 import org.andstatus.app.view.MySimpleAdapter;
@@ -37,6 +37,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -72,7 +74,7 @@ public class OriginSelector extends SelectorDialog {
 
         getListView().setOnItemClickListener((parent, view, position, id) -> {
             long selectedId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText().toString());
-            returnSelectedItem(MyContextHolder.get().origins().fromId(selectedId));
+            returnSelectedItem(myContextHolder.getNow().origins().fromId(selectedId));
         });
     }
 
@@ -83,7 +85,7 @@ public class OriginSelector extends SelectorDialog {
     private List<Origin> getOriginsForActor() {
         final Long actorId = Optional.ofNullable(getArguments())
                 .map(bundle -> bundle.getLong(IntentExtra.ACTOR_ID.key)).orElse(0L);
-        return Actor.load(MyContextHolder.get(), actorId).user.knownInOrigins(MyContextHolder.get());
+        return Actor.load(myContextHolder.getNow(), actorId).user.knownInOrigins(myContextHolder.getNow());
     }
 
     private MySimpleAdapter newListAdapter(List<Origin> listData) {

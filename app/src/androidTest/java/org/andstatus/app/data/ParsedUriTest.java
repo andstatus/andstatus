@@ -20,7 +20,6 @@ import android.content.UriMatcher;
 import android.net.Uri;
 
 import org.andstatus.app.actor.ActorListType;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.OriginType;
@@ -30,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 
 public class ParsedUriTest {
@@ -83,8 +83,8 @@ public class ParsedUriTest {
     }
 
     private void oneSearchQuery(String searchQuery) {
-        final Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.SEARCH, Actor.EMPTY,
-                MyContextHolder.get().origins().firstOfType(OriginType.GNUSOCIAL), searchQuery);
+        final Timeline timeline = myContextHolder.getNow().timelines().get(TimelineType.SEARCH, Actor.EMPTY,
+                myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL), searchQuery);
         final Uri clickUri = timeline.getClickUri();
         ParsedUri parsedUri = ParsedUri.fromUri(clickUri);
         assertEquals(parsedUri.toString() + "\n" + timeline.toString(), TimelineType.SEARCH, parsedUri.getTimelineType());

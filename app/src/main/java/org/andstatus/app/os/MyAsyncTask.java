@@ -23,8 +23,6 @@ import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
-import org.acra.ACRA;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.IdentifiableInstance;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;

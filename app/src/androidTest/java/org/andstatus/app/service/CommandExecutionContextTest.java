@@ -1,7 +1,6 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -10,6 +9,7 @@ import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 
 public class CommandExecutionContextTest {
@@ -18,13 +18,13 @@ public class CommandExecutionContextTest {
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        ma = MyContextHolder.get().accounts().getFirstSucceeded();
+        ma = myContextHolder.getNow().accounts().getFirstSucceeded();
     }
 
     @Test
     public void testMentionsAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
-            MyContextHolder.get(), CommandData.newTimelineCommand( CommandEnum.GET_TIMELINE, ma, TimelineType.INTERACTIONS));
+            myContextHolder.getNow(), CommandData.newTimelineCommand( CommandEnum.GET_TIMELINE, ma, TimelineType.INTERACTIONS));
         assertEquals(TimelineType.INTERACTIONS, execContext.getTimeline().getTimelineType());
         
         final int noteCount = 4;
@@ -44,7 +44,7 @@ public class CommandExecutionContextTest {
     @Test
     public void testPrivateAccumulation() {
         CommandExecutionContext execContext = new CommandExecutionContext(
-            MyContextHolder.get(), CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE));
+            myContextHolder.getNow(), CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE));
         final int privateCount = 4;
         for (int ind=0; ind < privateCount; ind++) {
             execContext.getResult().onNotificationEvent(NotificationEventType.PRIVATE);

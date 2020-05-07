@@ -18,12 +18,13 @@ package org.andstatus.app.note;
 
 import android.net.Uri;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.Optional;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class NoteEditorCommand implements IsEmpty {
     private volatile Long currentNoteId = null;
@@ -79,7 +80,7 @@ public class NoteEditorCommand implements IsEmpty {
     }
 
     public void loadCurrent() {
-        currentData = NoteEditorData.load(MyContextHolder.get(), getCurrentNoteId());
+        currentData = NoteEditorData.load(myContextHolder.getNow(), getCurrentNoteId());
     }
 
     public boolean isEmpty() {

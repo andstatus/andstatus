@@ -25,7 +25,6 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
@@ -58,6 +57,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.data.DemoNoteInserter.assertVisibility;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.junit.Assert.assertEquals;
@@ -639,7 +639,7 @@ public class DataUpdaterTest {
         assertEquals("Group type: " + group, GroupType.GENERIC, group.get().groupType);
         assertNotEquals("Group id: " + group, 0, group.get().actorId);
 
-        Actor savedGroup = Actor.loadFromDatabase(MyContextHolder.get(), group.get().actorId, () -> Actor.EMPTY, false);
+        Actor savedGroup = Actor.loadFromDatabase(myContextHolder.getNow(), group.get().actorId, () -> Actor.EMPTY, false);
         assertEquals("Saved group: " + savedGroup, groupname, savedGroup.getUsername());
         assertEquals("Saved group type: " + savedGroup, GroupType.GENERIC, savedGroup.groupType);
     }

@@ -26,10 +26,11 @@ import android.content.SyncResult;
 import android.os.Bundle;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.service.MyServiceCommandsRunner;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private final Context mContext;
@@ -48,7 +49,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             MyLog.d(this, account.name + " Service unavailable");
             return;
         }
-        final MyContext myContext = MyContextHolder.initialize(mContext, this);
+        final MyContext myContext = myContextHolder.getInitialized(mContext, this);
         new MyServiceCommandsRunner(myContext).autoSyncAccount(
                 myContext.accounts().fromAccountName(account.name), syncResult);
     }

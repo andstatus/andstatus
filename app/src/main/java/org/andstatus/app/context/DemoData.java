@@ -49,6 +49,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -189,7 +190,7 @@ public final class DemoData {
             DbUtils.waitMs(logTag, 500);
 
             MyLog.v(logTag, "Before initialize 1");
-            MyContextHolder.initialize(myContext.context(), logTag);
+            myContextHolder.getInitialized(myContext.context(), logTag);
             MyLog.v(logTag, "After initialize 1");
             MyServiceManager.setServiceUnavailable();
             DemoOriginInserter originInserter = new DemoOriginInserter(myContext);
@@ -199,25 +200,25 @@ public final class DemoData {
             myContext.timelines().saveChanged();
 
             MyPreferences.onPreferencesChanged();
-            MyContextHolder.setExpiredIfConfigChanged();
+            myContextHolder.setExpiredIfConfigChanged();
             MyLog.v(logTag, "Before initialize 2");
-            MyContextHolder.initialize(myContext.context(), logTag);
+            myContextHolder.getInitialized(myContext.context(), logTag);
             MyLog.v(logTag, "After initialize 2");
             MyServiceManager.setServiceUnavailable();
 
             progressListener.onProgressMessage("Demo accounts added...");
             DbUtils.waitMs(logTag, 500);
 
-            assertTrue("Context is not ready " + MyContextHolder.get(), MyContextHolder.get().isReady());
+            assertTrue("Context is not ready " + myContextHolder.getNow(), myContextHolder.getNow().isReady());
             demoData.checkDataPath();
-            int size = MyContextHolder.get().accounts().size();
-            assertTrue("Only " + size + " accounts added: " + MyContextHolder.get().accounts(),
+            int size = myContextHolder.getNow().accounts().size();
+            assertTrue("Only " + size + " accounts added: " + myContextHolder.getNow().accounts(),
                     size > 5);
-            assertEquals("No WebfingerId", Optional.empty(), MyContextHolder.get().accounts()
+            assertEquals("No WebfingerId", Optional.empty(), myContextHolder.getNow().accounts()
                     .get().stream().filter(ma -> !ma.getActor().isWebFingerIdValid()).findFirst());
-            int size2 = MyContextHolder.get().users().size();
-            assertTrue("Only " + size2 + " users added: " + MyContextHolder.get().users()
-                            + "\nAccounts: " + MyContextHolder.get().accounts(),
+            int size2 = myContextHolder.getNow().users().size();
+            assertTrue("Only " + size2 + " users added: " + myContextHolder.getNow().users()
+                            + "\nAccounts: " + myContextHolder.getNow().accounts(),
                     size2 >= size);
 
             assertOriginsContext();
@@ -230,19 +231,19 @@ public final class DemoData {
             progressListener.onProgressMessage("Demo notes added...");
             DbUtils.waitMs(logTag, 500);
 
-            if (MyContextHolder.get().accounts().size() == 0) {
+            if (myContextHolder.getNow().accounts().size() == 0) {
                 fail("No persistent accounts");
             }
             demoData.setSuccessfulAccountAsCurrent();
-            Timeline defaultTimeline = MyContextHolder.get().timelines().filter(
+            Timeline defaultTimeline = myContextHolder.getNow().timelines().filter(
                     false, TriState.TRUE, TimelineType.EVERYTHING, Actor.EMPTY,
-                    MyContextHolder.get().accounts().getCurrentAccount().getOrigin())
+                    myContextHolder.getNow().accounts().getCurrentAccount().getOrigin())
                     .findFirst().orElse(Timeline.EMPTY);
             assertThat(defaultTimeline.getTimelineType(), is(TimelineType.EVERYTHING));
-            MyContextHolder.get().timelines().setDefault(defaultTimeline);
+            myContextHolder.getNow().timelines().setDefault(defaultTimeline);
 
             MyLog.v(logTag, "Before initialize 3");
-            MyContextHolder.initialize(myContext.context(), logTag);
+            myContextHolder.getInitialized(myContext.context(), logTag);
             MyLog.v(logTag, "After initialize 3");
 
             assertOriginsContext();
@@ -282,35 +283,35 @@ public final class DemoData {
     public void assertConversations() {
         assertEquals("Conversations need fixes", 0,
                 new CheckConversations()
-                        .setMyContext(MyContextHolder.get()).setLogger(ProgressLogger.getEmpty("CheckConversations"))
+                        .setMyContext(myContextHolder.getNow()).setLogger(ProgressLogger.getEmpty("CheckConversations"))
                         .setCountOnly(true)
                         .fix());
     }
 
     private void setSuccessfulAccountAsCurrent() {
-        MyLog.i(TAG, "Persistent accounts: " + MyContextHolder.get().accounts().size());
-        boolean found = (MyContextHolder.get().accounts().getCurrentAccount().getCredentialsVerified()
+        MyLog.i(TAG, "Persistent accounts: " + myContextHolder.getNow().accounts().size());
+        boolean found = (myContextHolder.getNow().accounts().getCurrentAccount().getCredentialsVerified()
                 == CredentialsVerificationStatus.SUCCEEDED);
         if (!found) {
-            for (MyAccount ma : MyContextHolder.get().accounts().get()) {
+            for (MyAccount ma : myContextHolder.getNow().accounts().get()) {
                 MyLog.i(TAG, ma.toString());
                 if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
                     found = true;
-                    MyContextHolder.get().accounts().setCurrentAccount(ma);
+                    myContextHolder.getNow().accounts().setCurrentAccount(ma);
                     break;
                 }
             }
         }
         assertTrue("Found account, which is successfully verified", found);
         assertTrue("Current account is successfully verified",
-                MyContextHolder.get().accounts().getCurrentAccount().getCredentialsVerified()
+                myContextHolder.getNow().accounts().getCurrentAccount().getCredentialsVerified()
                 == CredentialsVerificationStatus.SUCCEEDED);
     }
 
     public void checkDataPath() {
         if (!StringUtil.isEmpty(dataPath)) {
-            assertEquals("Data path. " + MyContextHolder.get(), dataPath,
-                    MyContextHolder.get().context().getDatabasePath("andstatus").getPath());
+            assertEquals("Data path. " + myContextHolder.getNow(), dataPath,
+                    myContextHolder.getNow().context().getDatabasePath("andstatus").getPath());
         }
     }
 
@@ -324,7 +325,7 @@ public final class DemoData {
 
     @NonNull
     public MyAccount getMyAccount(String accountName) {
-        MyAccount ma = MyContextHolder.get().accounts().fromAccountName(accountName);
+        MyAccount ma = myContextHolder.getNow().accounts().fromAccountName(accountName);
         assertTrue(accountName + " exists", ma.isValid());
         assertTrue("Origin for " + accountName + " doesn't exist", ma.getOrigin().isValid());
         return ma;
@@ -332,7 +333,7 @@ public final class DemoData {
 
     @NonNull
     public Actor getAccountActorByOid(String actorOid) {
-        for (MyAccount ma : MyContextHolder.get().accounts().get()) {
+        for (MyAccount ma : myContextHolder.getNow().accounts().get()) {
             if (ma.getActorOid().equals(actorOid)) {
                 return ma.getActor();
             }
@@ -356,6 +357,6 @@ public final class DemoData {
     }
 
     private static void assertOriginsContext() {
-        MyContextHolder.get().origins().collection().forEach(Origin::assertContext);
+        myContextHolder.getNow().origins().collection().forEach(Origin::assertContext);
     }
 }

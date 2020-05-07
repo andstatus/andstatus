@@ -37,7 +37,6 @@ import android.widget.TextView;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.lang.SelectableEnumList;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -48,6 +47,8 @@ import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 import org.andstatus.app.util.ViewUtils;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Add/Update Microblogging system
@@ -71,7 +72,7 @@ public class OriginEditor extends MyActivity {
     protected void onCreate(Bundle savedInstanceState) {
         MyServiceManager.setServiceUnavailable();
 
-        builder = new Origin.Builder(MyContextHolder.get(), OriginType.GNUSOCIAL);
+        builder = new Origin.Builder(myContextHolder.getNow(), OriginType.GNUSOCIAL);
         mLayoutId = R.layout.origin_editor;
         super.onCreate(savedInstanceState);
 
@@ -113,7 +114,7 @@ public class OriginEditor extends MyActivity {
                 builder = new Origin.Builder(origin);
             } else {
                 OriginType originType = OriginType.fromCode(intentNew.getStringExtra(IntentExtra.ORIGIN_TYPE.key));
-                builder = new Origin.Builder(MyContextHolder.get(), OriginType.UNKNOWN.equals(originType) ? OriginType.GNUSOCIAL : originType);
+                builder = new Origin.Builder(myContextHolder.getNow(), OriginType.UNKNOWN.equals(originType) ? OriginType.GNUSOCIAL : originType);
                 if (!OriginType.UNKNOWN.equals(originType)) {
                     spinnerOriginType.setEnabled(false);
                 }
@@ -122,7 +123,7 @@ public class OriginEditor extends MyActivity {
             buttonSave.setOnClickListener(new SaveOrigin());
             spinnerOriginType.setEnabled(false);
             editTextOriginName.setEnabled(false);
-            Origin origin = MyContextHolder.get().origins().fromName(
+            Origin origin = myContextHolder.getNow().origins().fromName(
                     intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key));
             builder = new Origin.Builder(origin);
         }

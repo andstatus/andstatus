@@ -18,6 +18,8 @@ package org.andstatus.app.context;
 
 import android.os.Environment;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtil;
@@ -27,7 +29,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-import androidx.annotation.NonNull;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Utility class grouping references to Storage
@@ -80,7 +82,7 @@ public class MyStorage {
         final String method = "getDataFilesDir";
         File dir = null;
         StringBuilder textToLog = new StringBuilder();
-        MyContext myContext = MyContextHolder.get();
+        MyContext myContext = myContextHolder.getNow();
         if (myContext.context() == null) {
             textToLog.append("No android.content.Context yet");
         } else {

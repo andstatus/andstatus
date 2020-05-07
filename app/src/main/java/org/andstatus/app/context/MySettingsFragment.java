@@ -68,6 +68,7 @@ import java.util.Optional;
 
 import io.vavr.control.Try;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.util.I18n.formatBytes;
 
 public class MySettingsFragment extends PreferenceFragmentCompat implements
@@ -111,7 +112,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
     @Override
     public void onResume() {
         super.onResume();
-        if (!MyContextHolder.get().isReady()) {
+        if (!myContextHolder.getNow().isReady()) {
             MySettingsActivity.restartMe(getActivity());
             return;
         }
@@ -162,11 +163,11 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
         Preference preference = findPreference(KEY_MANAGE_ACCOUNTS);
         if (preference != null) {
             CharSequence summary;
-            if (MyContextHolder.get().accounts().isEmpty()) {
+            if (myContextHolder.getNow().accounts().isEmpty()) {
                 summary = getText(R.string.summary_preference_accounts_absent);
             } else {
                 summary = getText(R.string.summary_preference_accounts_present) + ": "
-                        + MyContextHolder.get().accounts().size();
+                        + myContextHolder.getNow().accounts().size();
             }
             preference.setSummary(summary);
         }
@@ -263,7 +264,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
         Preference preference = findPreference(KEY_BACKUP_RESTORE);
         if (preference != null) {
             CharSequence title;
-            if (MyContextHolder.get().accounts().isEmpty()) {
+            if (myContextHolder.getNow().accounts().isEmpty()) {
                 title = getText(R.string.label_restore);
             } else {
                 title = getText(R.string.label_backup);
@@ -319,11 +320,11 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
     }
 
     private void showManageTimelines() {
-        Timeline timeline = MyContextHolder.get().timelines().getDefault();
+        Timeline timeline = myContextHolder.getNow().timelines().getDefault();
         Preference preference = findPreference(KEY_MANAGE_TIMELINES);
         if (preference != null) {
             preference.setSummary(StringUtil.format(getContext(), R.string.default_timeline_summary,
-                    TimelineTitle.from(MyContextHolder.get(), timeline).toString()));
+                    TimelineTitle.from(myContextHolder.getNow(), timeline).toString()));
         }
     }
 
@@ -397,7 +398,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                 startActivity(intent);
                 break;
             case KEY_BACKUP_RESTORE:
-                if (MyContextHolder.get().accounts().isEmpty()) {
+                if (myContextHolder.getNow().accounts().isEmpty()) {
                     startActivity(new Intent(getActivity(), RestoreActivity.class));
                 } else {
                     startActivity(new Intent(getActivity(), BackupActivity.class));
@@ -441,7 +442,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
         DefaultProgressListener progressListener = new DefaultProgressListener(
                 (MyActivity) getActivity(), R.string.delete_old_data, "DataPruner");
         progressListener.setCancelable(true);
-        DataPruner pruner = new DataPruner(MyContextHolder.get())
+        DataPruner pruner = new DataPruner(myContextHolder.getNow())
             .setLogger(new ProgressLogger(progressListener))
             .setPruneNow();
 
@@ -467,7 +468,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (mIgnorePreferenceChange || onSharedPreferenceChangedIsBusy
-                || !MyContextHolder.get().initialized() || storageSwitch.isDataBeingMoved()) {
+                || !myContextHolder.getNow().initialized() || storageSwitch.isDataBeingMoved()) {
             return;
         }
         onSharedPreferenceChangedIsBusy = true;
@@ -502,7 +503,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                     showDontSynchronizeOldNotes();
                     break;
                 case MyPreferences.KEY_SYNC_FREQUENCY_SECONDS:
-                    MyContextHolder.get().accounts().onDefaultSyncFrequencyChanged();
+                    myContextHolder.getNow().accounts().onDefaultSyncFrequencyChanged();
                     showFrequency();
                     break;
                 case MyPreferences.KEY_CONNECTION_TIMEOUT_SECONDS:

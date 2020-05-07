@@ -16,7 +16,6 @@
 
 package org.andstatus.app.note;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyProvider;
@@ -28,6 +27,8 @@ import org.andstatus.app.service.MyServiceEventsBroadcaster;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.service.MyServiceState;
 import org.andstatus.app.util.MyLog;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Asynchronously save, delete and send a note, prepared by {@link NoteEditor}
@@ -54,7 +55,7 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
         }
         saveCurrentData();
         return command.showAfterSave
-                ? NoteEditorData.load(MyContextHolder.get(), command.currentData.getNoteId())
+                ? NoteEditorData.load(myContextHolder.getNow(), command.currentData.getNoteId())
                 : NoteEditorData.EMPTY;
     }
 
@@ -69,7 +70,7 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
     private void saveCurrentData() {
         MyLog.v(NoteEditorData.TAG, () -> "Saving current data:" + command.currentData);
         if (command.currentData.activity.getNote().getStatus() == DownloadStatus.DELETED) {
-            MyProvider.deleteNoteAndItsActivities(MyContextHolder.get(), command.currentData.getNoteId());
+            MyProvider.deleteNoteAndItsActivities(myContextHolder.getNow(), command.currentData.getNoteId());
         } else {
             if (command.hasMedia()) {
                 command.currentData.addAttachment(command.getMediaUri(), command.getMediaType());
@@ -95,7 +96,7 @@ public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorDa
         CommandData commandData = data.activity.getNote().getStatus() == DownloadStatus.DELETED ?
                 CommandData.newItemCommand(CommandEnum.DELETE_NOTE, data.getMyAccount(), data.getNoteId()) :
                 CommandData.newUpdateStatus(data.getMyAccount(), data.activity.getId(), data.getNoteId());
-        MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.UNKNOWN)
+        MyServiceEventsBroadcaster.newInstance(myContextHolder.getNow(), MyServiceState.UNKNOWN)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
     }
 

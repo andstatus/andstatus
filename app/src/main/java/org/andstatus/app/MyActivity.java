@@ -23,7 +23,12 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 
-import org.andstatus.app.context.MyContextHolder;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
 import org.andstatus.app.context.MyLocale;
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.timeline.TimelineActivity;
@@ -33,11 +38,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -80,7 +81,7 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
                 if (previousErrorInflatingTime == 0) {
                     previousErrorInflatingTime = System.currentTimeMillis();
                     finish();
-                    MyContextHolder.get().setExpired(() -> logMsg);
+                    myContextHolder.getNow().setExpired(() -> logMsg);
                     TimelineActivity.goHome(this);
                 } else {
                     throw new IllegalStateException(logMsg, e);

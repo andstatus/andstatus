@@ -23,6 +23,12 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceScreen;
+
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
@@ -31,11 +37,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.MyLog;
 
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.preference.Preference;
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceScreen;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /** See <a href="http://developer.android.com/guide/topics/ui/settings.html">Settings</a>
  */
@@ -133,13 +135,13 @@ public class MySettingsActivity extends MyActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime() || !MyContextHolder.get().initialized()) {
+        if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime() || !myContextHolder.getNow().initialized()) {
             logEvent("onResume", "Recreating");
-            MyContextHolder.initializeThenRestartMe(this);
+            myContextHolder.initializeThenRestartMe(this);
             return;
         }
         if (isRootScreen()) {
-            MyContextHolder.get().setInForeground(true);
+            myContextHolder.getNow().setInForeground(true);
             MyServiceManager.setServiceUnavailable();
             MyServiceManager.stopService();
         }
@@ -151,7 +153,7 @@ public class MySettingsActivity extends MyActivity implements
         super.onPause();
         logEvent("onPause", "");
         if (isRootScreen()) {
-            MyContextHolder.get().setInForeground(false);
+            myContextHolder.getNow().setInForeground(false);
         }
     }
 
@@ -195,8 +197,8 @@ public class MySettingsActivity extends MyActivity implements
     public static void restartMe(Activity activity) {
         if (activity == null) {
             FirstActivity.startApp();
-        } else if (!MyContextHolder.get().isReady()) {
-            MyContextHolder.initializeThenRestartMe(activity);
+        } else if (!myContextHolder.getNow().isReady()) {
+            myContextHolder.initializeThenRestartMe(activity);
         } else {
             Intent intent = activity.getIntent();
             activity.finish();
@@ -209,7 +211,7 @@ public class MySettingsActivity extends MyActivity implements
         logEvent("finish", restartApp ? " and restart" : "");
         super.finish();
         if (resumedOnce) {
-            MyContextHolder.setExpiredIfConfigChanged();
+            myContextHolder.setExpiredIfConfigChanged();
             if (restartApp) {
                 TimelineActivity.goHome(this);
             }

@@ -24,7 +24,6 @@ import org.andstatus.app.account.AccountName;
 import org.andstatus.app.account.AccountUtils;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.JsonUtils;
@@ -44,6 +43,7 @@ import static org.andstatus.app.account.AccountUtils.KEY_VERSION;
 import static org.andstatus.app.account.MyAccount.KEY_ACCOUNT_NAME;
 import static org.andstatus.app.account.MyAccount.KEY_UNIQUE_NAME;
 import static org.andstatus.app.account.MyAccount.KEY_USERNAME;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.net.social.Connection.KEY_PASSWORD;
 
 class Convert47 extends ConvertOneStep {
@@ -64,7 +64,7 @@ class Convert47 extends ConvertOneStep {
         AtomicInteger accountsConverted = new AtomicInteger();
 
         progressLogger.logProgress(stepTitle + ": Converting accounts");
-        MyContext myContext = MyContextHolder.get();
+        MyContext myContext = myContextHolder.getNow();
         myContext.origins().initialize(db);
 
         android.accounts.AccountManager am = AccountManager.get(myContext.context());

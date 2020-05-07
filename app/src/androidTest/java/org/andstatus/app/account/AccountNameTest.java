@@ -16,7 +16,6 @@
 
 package org.andstatus.app.account;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.StringUtil;
@@ -24,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 
 public class AccountNameTest {
@@ -66,10 +66,10 @@ public class AccountNameTest {
 
     @Test
     public void testUniqueAccountName() {
-        AccountName accountName1 = AccountName.fromAccountName(MyContextHolder.get(), "someTester/Pump.io");
+        AccountName accountName1 = AccountName.fromAccountName(myContextHolder.getNow(), "someTester/Pump.io");
         assertEquals(accountName1.toString(), accountName1.origin.getName(), "Pump.io");
 
-        AccountName accountName2 = AccountName.fromAccountName(MyContextHolder.get(), "someTester/PumpioTest");
+        AccountName accountName2 = AccountName.fromAccountName(myContextHolder.getNow(), "someTester/PumpioTest");
         assertEquals(accountName2.toString(), accountName2.origin.getName(), "PumpioTest");
     }
 

@@ -22,7 +22,6 @@ import android.database.sqlite.SQLiteDiskIOException;
 import org.andstatus.app.account.DemoAccountInserter;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
@@ -34,6 +33,7 @@ import org.andstatus.app.util.TriState;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -44,10 +44,10 @@ public class MyServiceTest1 extends MyServiceTest {
         final String method = "testAccountSync";
         MyLog.i(this, method + " started");
 
-        MyAccount myAccount = MyContextHolder.get().accounts().getFirstSucceeded();
+        MyAccount myAccount = myContextHolder.getNow().accounts().getFirstSucceeded();
         assertTrue("No successful account", myAccount.isValidAndSucceeded());
 
-        MyContext myContext = MyContextHolder.get();
+        MyContext myContext = myContextHolder.getNow();
         myContext.timelines().filter(false, TriState.FALSE,
                 TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY)
                 .filter(Timeline::isSyncedAutomatically)
@@ -61,7 +61,7 @@ public class MyServiceTest1 extends MyServiceTest {
                 runner.toString() + "; " + mService.getHttp().toString(),
                 0, mService.getHttp().getRequestsCounter());
 
-        MyContext myContext2 = MyContextHolder.get();
+        MyContext myContext2 = myContextHolder.getNow();
         Timeline timelineToSync = DemoAccountInserter.getAutomaticallySyncableTimeline(myContext2, myAccount);
         timelineToSync.setSyncSucceededDate(0);
 

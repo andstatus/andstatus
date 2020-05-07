@@ -40,7 +40,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
@@ -52,6 +51,7 @@ import java.util.stream.Stream;
 
 import static android.text.Html.FROM_HTML_MODE_COMPACT;
 import static java.util.stream.Collectors.joining;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /** Prevents ActivityNotFoundException for malformed links,
  * see https://github.com/andstatus/andstatus/issues/300
@@ -80,8 +80,8 @@ public class MyUrlSpan extends URLSpan {
 
         public Timeline getTimeline() {
             return searchQuery.map(s ->
-                    MyContextHolder.get().timelines().get(TimelineType.SEARCH, Actor.EMPTY, Origin.EMPTY, s))
-                    .orElse(actor.map(a -> MyContextHolder.get().timelines().forUserAtHomeOrigin(TimelineType.SENT, a))
+                    myContextHolder.getNow().timelines().get(TimelineType.SEARCH, Actor.EMPTY, Origin.EMPTY, s))
+                    .orElse(actor.map(a -> myContextHolder.getNow().timelines().forUserAtHomeOrigin(TimelineType.SENT, a))
                             .orElse(Timeline.EMPTY));
         }
 
@@ -130,7 +130,7 @@ public class MyUrlSpan extends URLSpan {
             MyLog.v(this, e);
             try {
                 MyLog.i(this, "Malformed link:'" + getURL() + "', " + data);
-                Context context = MyContextHolder.get().context();
+                Context context = myContextHolder.getNow().context();
                 if (context != null) {
                     Toast.makeText(context, context.getText(R.string.malformed_link)
                                     + "\n URL:'" + getURL() + "'", Toast.LENGTH_SHORT).show();

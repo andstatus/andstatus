@@ -21,8 +21,9 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Service to handle Account sync. This is invoked with an intent with action
@@ -49,7 +50,7 @@ public class SyncService extends Service {
     }
 
     private static class ResourceHolder {          
-        static SyncAdapter syncAdapter = new SyncAdapter(MyContextHolder.get().context(), true);      
+        static SyncAdapter syncAdapter = new SyncAdapter(myContextHolder.getNow().context(), true);
     } 
 
     @Override

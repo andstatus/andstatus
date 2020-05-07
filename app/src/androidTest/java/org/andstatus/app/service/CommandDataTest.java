@@ -18,7 +18,6 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.SearchObjects;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
@@ -34,6 +33,7 @@ import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -53,7 +53,7 @@ public class CommandDataTest {
         CommandData commandData = CommandData.newUpdateStatus(demoData.getPumpioConversationAccount(), 1, 4);
         testQueueOneCommandData(commandData, time0);
 
-        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, MyContextHolder.get().origins()
+        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, myContextHolder.getNow().origins()
                 .fromName(demoData.conversationOriginName).getId(),
                 demoData.conversationEntryNoteOid);
         long downloadDataRowId = 23;
@@ -80,7 +80,7 @@ public class CommandDataTest {
         assertEquals(hasSoftError, commandData.getResult().hasSoftError());
         assertFalse(commandData.getResult().hasHardError());
         
-        CommandQueue queues = MyContextHolder.get().queues();
+        CommandQueue queues = myContextHolder.getNow().queues();
         queues.clear();
         queues.get(QueueType.ERROR).add(commandData);
         queues.save();
@@ -106,8 +106,8 @@ public class CommandDataTest {
 
     @Test
     public void testEquals() {
-        CommandData data1 = CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), Origin.EMPTY,"andstatus");
-        CommandData data2 = CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), Origin.EMPTY,"mustard");
+        CommandData data1 = CommandData.newSearch(SearchObjects.NOTES, myContextHolder.getNow(), Origin.EMPTY,"andstatus");
+        CommandData data2 = CommandData.newSearch(SearchObjects.NOTES, myContextHolder.getNow(), Origin.EMPTY,"mustard");
         assertTrue("Hashcodes: " + data1.hashCode() + " and " + data2.hashCode(), data1.hashCode() != data2.hashCode());
         assertFalse(data1.equals(data2));
         
@@ -115,7 +115,7 @@ public class CommandDataTest {
         data1.getResult().incrementNumIoExceptions();
         data1.getResult().afterExecutionEnded();
         assertFalse(data1.getResult().shouldWeRetry());
-        CommandData data3 = CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), Origin.EMPTY,"andstatus");
+        CommandData data3 = CommandData.newSearch(SearchObjects.NOTES, myContextHolder.getNow(), Origin.EMPTY,"andstatus");
         assertTrue(data1.equals(data3));
         assertTrue(data1.hashCode() == data3.hashCode());
         assertEquals(data1, data3);
@@ -127,7 +127,7 @@ public class CommandDataTest {
         final MyAccount ma = demoData.getGnuSocialAccount();
         queue.add(CommandData.newActorCommand(CommandEnum.GET_FRIENDS, Actor.fromId(ma.getOrigin(), 123), ""));
         queue.add(CommandData.newActorCommand(CommandEnum.GET_TIMELINE, ma.getActor(), ma.getUsername()));
-        queue.add(CommandData.newSearch(SearchObjects.NOTES, MyContextHolder.get(), ma.getOrigin(), "q1"));
+        queue.add(CommandData.newSearch(SearchObjects.NOTES, myContextHolder.getNow(), ma.getOrigin(), "q1"));
         queue.add(CommandData.newUpdateStatus(MyAccount.EMPTY, 2, 5));
         queue.add(CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.INTERACTIONS));
         queue.add(CommandData.newUpdateStatus(MyAccount.EMPTY, 3, 6));
@@ -170,11 +170,11 @@ public class CommandDataTest {
         Actor actor = Actor.load(ma.getOrigin().myContext, actorId);
         CommandData data = CommandData.actOnActorCommand(
                 command, demoData.getPumpioConversationAccount(), actor, "");
-        String summary = data.toCommandSummary(MyContextHolder.get());
+        String summary = data.toCommandSummary(myContextHolder.getNow());
         String msgLog = command.name() + "; Summary:'" + summary + "'";
         MyLog.v(this, msgLog);
-        assertThat(msgLog, summary, containsString(command.getTitle(MyContextHolder.get(),
-                ma.getAccountName()) + " " + MyQuery.actorIdToWebfingerId(MyContextHolder.get(), actorId)));
+        assertThat(msgLog, summary, containsString(command.getTitle(myContextHolder.getNow(),
+                ma.getAccountName()) + " " + MyQuery.actorIdToWebfingerId(myContextHolder.getNow(), actorId)));
     }
 
 }

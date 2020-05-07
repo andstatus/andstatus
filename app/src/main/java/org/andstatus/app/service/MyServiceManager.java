@@ -24,11 +24,12 @@ import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyAction;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.syncadapter.SyncInitiator;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * This receiver starts and stops {@link MyService} and also queries its state.
@@ -86,14 +87,14 @@ public class MyServiceManager extends BroadcastReceiver {
                 SyncInitiator.tryToSync(context);
                 break;
             case SERVICE_STATE:
-                MyContextHolder.INSTANCE.initialize(context, context, false);
+                myContextHolder.initialize(context, context, false);
                 stateInTime = MyServiceStateInTime.fromIntent(intent);
                 MyLog.d(this, "Notification received: Service state=" + stateInTime.stateEnum);
                 break;
             case ACTION_SHUTDOWN:
                 setServiceUnavailable();
                 MyLog.d(this, "Stopping service on Shutdown");
-                MyContextHolder.INSTANCE.onShutDown();
+                myContextHolder.onShutDown();
                 stopService();
                 break;
             default:
@@ -112,7 +113,7 @@ public class MyServiceManager extends BroadcastReceiver {
             // Imitate a soft service error
             commandData.getResult().incrementNumIoExceptions();
             commandData.getResult().setMessage("Service is not available");
-            MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.STOPPED)
+            MyServiceEventsBroadcaster.newInstance(myContextHolder.getNow(), MyServiceState.STOPPED)
             .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
             return;
         }
@@ -130,7 +131,7 @@ public class MyServiceManager extends BroadcastReceiver {
     static void sendCommandIgnoringServiceAvailability(CommandData commandData) {
         // Using explicit Service intent,
         // see http://stackoverflow.com/questions/18924640/starting-android-service-using-explicit-vs-implicit-intent
-        Intent serviceIntent = new Intent(MyContextHolder.get().context(), MyService.class);
+        Intent serviceIntent = new Intent(myContextHolder.getNow().context(), MyService.class);
         switch (commandData.getCommand()) {
             case STOP_SERVICE:
             case BROADCAST_SERVICE_STATE:
@@ -144,13 +145,13 @@ public class MyServiceManager extends BroadcastReceiver {
         }
 
         try {
-            MyContextHolder.get().context().startService(serviceIntent);
+            myContextHolder.getNow().context().startService(serviceIntent);
         } catch (IllegalStateException e) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 try {
                     // Since Android Oreo TODO: https://developer.android.com/about/versions/oreo/android-8.0-changes.html#back-all
                     // See also https://github.com/evernote/android-job/issues/254
-                    MyContextHolder.get().context().startForegroundService(serviceIntent);
+                    myContextHolder.getNow().context().startForegroundService(serviceIntent);
                 } catch (IllegalStateException e2) {
                     MyLog.e(TAG, "Failed to start MyService in the foreground", e2);
                 }
@@ -166,12 +167,12 @@ public class MyServiceManager extends BroadcastReceiver {
      * Stop  {@link MyService} asynchronously
      */
     public static synchronized void stopService() {
-        if ( !MyContextHolder.get().isReady() ) {
+        if ( !myContextHolder.getNow().isReady() ) {
             return;
         }
         // Don't do "context.stopService", because we may lose some information and (or) get Force Close
         // This is "mild" stopping
-        MyContextHolder.get().context()
+        myContextHolder.getNow().context()
                 .sendBroadcast(CommandData.newCommand(CommandEnum.STOP_SERVICE)
                         .toIntent(MyAction.EXECUTE_COMMAND.getIntent()));
     }
@@ -196,7 +197,7 @@ public class MyServiceManager extends BroadcastReceiver {
             state.isWaiting = true;
             state.stateQueuedTime = time;
             stateInTime = state;
-            MyContextHolder.get().context()
+            myContextHolder.getNow().context()
                     .sendBroadcast(CommandData.newCommand(CommandEnum.BROADCAST_SERVICE_STATE)
                             .toIntent(MyAction.EXECUTE_COMMAND.getIntent()));
         }
@@ -210,7 +211,7 @@ public class MyServiceManager extends BroadcastReceiver {
     private static long timeWhenTheServiceWillBeAvailable = 0;
 
     public static boolean isServiceAvailable() {
-        boolean isAvailable = MyContextHolder.get().isReady();
+        boolean isAvailable = myContextHolder.getNow().isReady();
         if (!isAvailable) {
             boolean tryToInitialize;
             synchronized (serviceAvailableLock) {
@@ -218,9 +219,9 @@ public class MyServiceManager extends BroadcastReceiver {
             }
             if (tryToInitialize
                     && MyAsyncTask.nonUiThread()    // Don't block on UI thread
-                    && !MyContextHolder.get().initialized()) {
-                MyContextHolder.initialize(null, TAG);
-                isAvailable = MyContextHolder.get().isReady();
+                    && !myContextHolder.getNow().initialized()) {
+                myContextHolder.getInitialized(null, TAG);
+                isAvailable = myContextHolder.getNow().isReady();
             }
         }
         if (isAvailable) {

@@ -28,7 +28,6 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SearchObjects;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.MatchedUri;
@@ -56,6 +55,8 @@ import org.json.JSONObject;
 import java.util.concurrent.TimeUnit;
 
 import io.vavr.control.Try;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Immutable class that holds "AndStatus account"-specific information including: 
@@ -512,7 +513,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
         static Builder loadFromAccountData(@NonNull AccountData accountData, String method) {
             MyAccount myAccount = new MyAccount(accountData);
             Builder builder = fromMyAccount(myAccount);
-            if (!MyContextHolder.INSTANCE.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently();
+            if (!myContextHolder.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently();
             builder.logLoadResult(method);
             return builder;
         }

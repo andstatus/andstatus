@@ -37,6 +37,8 @@ import java.util.function.UnaryOperator;
 
 import io.vavr.control.Try;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -63,7 +65,7 @@ public class MyFutureContext implements IdentifiableInstance {
     }
 
     private static MyContext initializeMyContext(MyContext previousContext) {
-        MyContextHolder.release(previousContext, () -> "Starting initialization by " + previousContext);
+        myContextHolder.release(previousContext, () -> "Starting initialization by " + previousContext);
         MyContext myContext = previousContext.newInitialized(previousContext);
         SyncInitiator.register(myContext);
         return myContext;
@@ -112,7 +114,7 @@ public class MyFutureContext implements IdentifiableInstance {
             }
             if (!launched) {
                 HelpActivity.startMe(
-                        myContext == null ? MyContextHolder.get().context() : myContext.context(),
+                        myContext == null ? myContextHolder.getNow().context() : myContext.context(),
                         true, HelpActivity.PAGE_LOGO);
             }
             firstActivity.finish();

@@ -16,12 +16,12 @@
 
 package org.andstatus.app.account;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -33,7 +33,7 @@ public class MyAccountsTest {
 
     @Test
     public void test() {
-        MyAccounts accounts = MyContextHolder.get().accounts();
+        MyAccounts accounts = myContextHolder.getNow().accounts();
 
         assertNotEquals(accounts.toString(), MyAccount.EMPTY,
                 accounts.fromWebFingerId(demoData.pumpioTestAccountUniqueName.toLowerCase()));

@@ -19,16 +19,17 @@ package org.andstatus.app.account;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.ListFragment;
-import androidx.appcompat.app.ActionBar;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.ListFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.woxthebox.draglistview.DragItem;
 import com.woxthebox.draglistview.DragItemAdapter;
@@ -37,12 +38,13 @@ import com.woxthebox.draglistview.DragListView;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyResources;
 import org.andstatus.app.util.MyUrlSpan;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -68,7 +70,7 @@ public class AccountListFragment extends Fragment {
         mDragListView = view.findViewById(R.id.drag_list_view);
         mDragListView.getRecyclerView().setVerticalScrollBarEnabled(true);
 
-        mItems = new CopyOnWriteArrayList<>(MyContextHolder.get().accounts().get());
+        mItems = new CopyOnWriteArrayList<>(myContextHolder.getNow().accounts().get());
         setupListRecyclerView();
         return view;
     }
@@ -88,7 +90,7 @@ public class AccountListFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        MyContextHolder.get().accounts().reorderAccounts(mItems);
+        myContextHolder.getNow().accounts().reorderAccounts(mItems);
     }
 
     private void setupListRecyclerView() {
@@ -165,7 +167,7 @@ public class AccountListFragment extends Fragment {
             public void onItemClicked(View view) {
                 Intent intent = new Intent(getActivity(), AccountSettingsActivity.class);
                 intent.putExtra(IntentExtra.ACCOUNT_NAME.key,
-                        MyContextHolder.get().accounts().fromActorId(mItemId).getAccountName());
+                        myContextHolder.getNow().accounts().fromActorId(mItemId).getAccountName());
                 getActivity().startActivity(intent);
             }
 

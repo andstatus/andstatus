@@ -29,12 +29,13 @@ import androidx.documentfile.provider.DocumentFile;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.Permissions;
 
 import io.vavr.control.Try;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class RestoreActivity extends MyActivity implements ProgressLogger.ProgressListener {
     private static final int MAX_RESTORE_SECONDS = 600;
@@ -160,14 +161,14 @@ public class RestoreActivity extends MyActivity implements ProgressLogger.Progre
 
     @Override
     protected void onResume() {
-        MyContextHolder.get().setInForeground(true);
+        myContextHolder.getNow().setInForeground(true);
         super.onResume();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        MyContextHolder.get().setInForeground(false);
+        myContextHolder.getNow().setInForeground(false);
     }
 
     @Override

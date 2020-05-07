@@ -16,7 +16,8 @@
 
 package org.andstatus.app.data;
 
-import org.andstatus.app.context.MyContextHolder;
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.IsEmpty;
@@ -27,9 +28,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import androidx.annotation.NonNull;
-
 import static java.util.stream.Collectors.toList;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Helper class to construct sql WHERE clause selecting by Ids
@@ -59,7 +59,7 @@ public class SqlIds implements IsEmpty {
     }
 
     public static SqlIds myActorsIds() {
-        return SqlIds.fromIds(MyContextHolder.get().users().myActors.keySet());
+        return SqlIds.fromIds(myContextHolder.getNow().users().myActors.keySet());
     }
 
     public static SqlIds actorIdsOfTimelineAccount(@NonNull Timeline timeline) {

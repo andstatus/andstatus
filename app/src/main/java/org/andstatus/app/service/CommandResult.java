@@ -20,9 +20,9 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.os.Parcel;
 import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.notification.NotificationEventType;
@@ -33,6 +33,8 @@ import org.andstatus.app.util.StringUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Result of the command execution
@@ -180,7 +182,7 @@ public final class CommandResult implements Parcelable {
         StringBuilder message = new StringBuilder();
         if (executionCount > 0) {
             message.append("executed:" + executionCount + ", ");
-            message.append("last:" + RelativeTime.getDifference(MyContextHolder.get().context(), lastExecutedDate) + ", ");
+            message.append("last:" + RelativeTime.getDifference(myContextHolder.getNow().context(), lastExecutedDate) + ", ");
             if (retriesLeft > 0) {
                 message.append("retriesLeft:" + retriesLeft + ", ");
             }

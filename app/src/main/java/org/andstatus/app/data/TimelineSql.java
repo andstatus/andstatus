@@ -22,7 +22,6 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.ActorInTimeline;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
@@ -41,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.data.ProjectionMap.NOTE_TABLE_ALIAS;
 
 public class TimelineSql {
@@ -50,7 +50,7 @@ public class TimelineSql {
     }
 
     private static String tablesForTimeline(Uri uri, String[] projection, int subQueryIndex) {
-        Timeline timeline = Timeline.fromParsedUri(MyContextHolder.get(), ParsedUri.fromUri(uri), "");
+        Timeline timeline = Timeline.fromParsedUri(myContextHolder.getNow(), ParsedUri.fromUri(uri), "");
         SqlWhere actWhere = new SqlWhere().append(ActivityTable.UPDATED_DATE, ">0");
         SqlWhere noteWhere = new SqlWhere();
         SqlWhere audienceWhere = new SqlWhere();
@@ -145,7 +145,7 @@ public class TimelineSql {
      * @return Strings for {@link SQLiteQueryBuilder#setTables(String)}, more than one for a union query
      */
     static List<String> tablesForTimeline(Uri uri, String[] projection) {
-        Timeline timeline = Timeline.fromParsedUri(MyContextHolder.get(), ParsedUri.fromUri(uri), "");
+        Timeline timeline = Timeline.fromParsedUri(myContextHolder.getNow(), ParsedUri.fromUri(uri), "");
         switch (timeline.getTimelineType()) {
             case SENT:
                 return Arrays.asList(

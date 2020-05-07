@@ -22,7 +22,6 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorListLoader;
 import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.actor.ActorViewItem;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.AvatarData;
 import org.andstatus.app.data.DownloadData;
@@ -41,6 +40,7 @@ import org.junit.Test;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -109,7 +109,7 @@ public class AvatarDownloaderTest {
         loadAndAssertStatusForMa(ma, "Inexistent avatar",
                 DownloadStatus.HARD_ERROR, DownloadStatus.LOADED, false);
 
-        ActorListLoader aLoader = new ActorListLoader(MyContextHolder.get(), ActorListType.ACTORS_AT_ORIGIN,
+        ActorListLoader aLoader = new ActorListLoader(myContextHolder.getNow(), ActorListType.ACTORS_AT_ORIGIN,
                 ma.getOrigin(), 0, "");
         aLoader.addActorToList(ma.getActor());
         aLoader.load(progress -> {});
@@ -162,11 +162,11 @@ public class AvatarDownloaderTest {
         actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
         values.put(ActorTable.AVATAR_URL, urlString);
         values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate());
-        MyContextHolder.get().getDatabase()
+        myContextHolder.getNow().getDatabase()
                 .update(ActorTable.TABLE_NAME, values, ActorTable._ID + "=" + actor.actorId, null);
-        MyContextHolder.get().users().reload(actor);
+        myContextHolder.getNow().users().reload(actor);
         assertEquals("URL should change for " + actor +
-                        "\n reloaded: " + Actor.load(MyContextHolder.get(), actor.actorId),
+                        "\n reloaded: " + Actor.load(myContextHolder.getNow(), actor.actorId),
                 urlString, MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, actor.actorId));
     }
 
@@ -174,17 +174,17 @@ public class AvatarDownloaderTest {
         ContentValues values = new ContentValues();
         values.put(DownloadTable.DOWNLOAD_STATUS, status.save());
         values.put(DownloadTable.DOWNLOADED_DATE, MyLog.uniqueCurrentTimeMS());
-        MyContextHolder.get().getDatabase()
+        myContextHolder.getNow().getDatabase()
                 .update(DownloadTable.TABLE_NAME, values, DownloadTable.ACTOR_ID + "=" + actor.actorId
                         + " AND " + DownloadTable.URL + "=" + MyQuery.quoteIfNotQuoted(actor.getAvatarUrl()), null);
-        Actor actor2 = MyContextHolder.get().users().reload(actor);
+        Actor actor2 = myContextHolder.getNow().users().reload(actor);
         AvatarData avatarData = AvatarData.getCurrentForActor(actor);
         assertEquals("Download status for " + actor2, status, avatarData.getStatus());
     }
 
     private long loadAndAssertStatusForMa(MyAccount ma, String description, DownloadStatus loadStatus,
                                           DownloadStatus displayedStatus, boolean mockNetworkError) {
-        final Actor actor = Actor.load(MyContextHolder.get(), ma.getActor().actorId);
+        final Actor actor = Actor.load(myContextHolder.getNow(), ma.getActor().actorId);
         FileDownloader loader = new AvatarDownloader(actor);
         if (mockNetworkError) {
             loader.setConnectionMock(ConnectionMock.newFor(ma)

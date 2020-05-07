@@ -2,7 +2,6 @@ package org.andstatus.app.data;
 
 import android.net.Uri;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyStorage;
 import org.andstatus.app.context.TestSuite;
@@ -17,6 +16,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.Date;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.context.MyPreferences.BYTES_IN_MB;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -45,14 +45,14 @@ public class DataPrunerTest {
         MyLog.setLogToFile(false);
         assertTrue(logFile1.exists());
         clearPrunedDate();
-        DataPruner dp = new DataPruner(MyContextHolder.get());
+        DataPruner dp = new DataPruner(myContextHolder.getNow());
         assertTrue("Pruned", dp.prune());
         
         assertTrue("File is fresh", logFile1.exists());
         long pruneDate1 = SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE);
         assertTrue(
                 "Pruning date updated " + pruneDate1 + " - "
-                        + RelativeTime.getDifference(MyContextHolder.get().context(),
+                        + RelativeTime.getDifference(myContextHolder.getNow().context(),
                                 pruneDate1),
                 !RelativeTime.moreSecondsAgoThan(pruneDate1, 300));
         assertFalse("Second prune skipped", dp.prune());
@@ -90,7 +90,7 @@ public class DataPrunerTest {
 
     @Test
     public void testPruneParentlessAttachments() {
-        DataPruner dp = new DataPruner(MyContextHolder.get());
+        DataPruner dp = new DataPruner(myContextHolder.getNow());
         dp.pruneParentlessAttachments();
         DownloadData dd = DownloadData.fromAttachment(-555L,
                 Attachment.fromUriAndMimeType(Uri.parse("http://example.com/image.png"), ""));
@@ -117,7 +117,7 @@ public class DataPrunerTest {
         SharedPreferencesUtil.putLong(MyPreferences.KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB, newSizeOfAttachmentMb);
         SharedPreferencesUtil.putLong(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, maximumSizeOfStoredMediaMb);
 
-        DataPruner dp = new DataPruner(MyContextHolder.get());
+        DataPruner dp = new DataPruner(myContextHolder.getNow());
         long prunedCount1 = dp.pruneMedia();
         long dirSize2 = MyStorage.getMediaFilesSize();
         long prunedCount2 = dp.pruneMedia();

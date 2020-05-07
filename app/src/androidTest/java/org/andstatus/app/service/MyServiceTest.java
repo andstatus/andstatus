@@ -17,12 +17,12 @@
 package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.util.MyLog;
 import org.junit.After;
 import org.junit.Before;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertTrue;
 
 abstract class MyServiceTest {
@@ -40,7 +40,7 @@ abstract class MyServiceTest {
             TestSuite.initializeWithData(this);
             mService = new MyServiceTestHelper();
             mService.setUp(null);
-            ma = MyContextHolder.get().accounts().getFirstSucceeded();
+            ma = myContextHolder.getNow().accounts().getFirstSucceeded();
             assertTrue("No successfully verified accounts", ma.isValidAndSucceeded());
             mService.waitForServiceStopped(true);
             ok = true;

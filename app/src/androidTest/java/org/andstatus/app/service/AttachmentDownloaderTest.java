@@ -19,7 +19,6 @@ package org.andstatus.app.service;
 import android.net.Uri;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DemoNoteInserter;
 import org.andstatus.app.data.DownloadData;
@@ -38,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -77,7 +77,7 @@ public class AttachmentDownloaderTest {
         assertTrue(data.getFilename(), data.getFile().existed);
 
         Uri uri = FileProvider.downloadFilenameToUri(data.getFile().getFilename());
-        InputStream in = MyContextHolder.get().context().getContentResolver().openInputStream(uri);
+        InputStream in = myContextHolder.getNow().context().getContentResolver().openInputStream(uri);
         byte[] buffer = new byte[100];
         int bytesRead = in.read(buffer);
         assertEquals(buffer.length, bytesRead);

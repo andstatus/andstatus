@@ -26,7 +26,6 @@ import android.text.format.Formatter;
 
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyStorage;
@@ -47,6 +46,7 @@ import java.io.IOException;
 
 import io.vavr.control.Try;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.util.FileUtils.newFileOutputStreamWithRetry;
 
 public class MyBackupAgent extends BackupAgent {
@@ -82,7 +82,7 @@ public class MyBackupAgent extends BackupAgent {
     @Override
     public void onBackup(ParcelFileDescriptor oldState, BackupDataOutput data,
             ParcelFileDescriptor newState) throws IOException {
-        if (MyContextHolder.get().isTestRun()) {
+        if (myContextHolder.getNow().isTestRun()) {
             String logmsg = "onBackup; skipped due to test run";
             MyLog.i(this, logmsg);
             throw new IOException(logmsg);
@@ -106,14 +106,14 @@ public class MyBackupAgent extends BackupAgent {
                 ? ", folder='" + data.getDataFolderName() + "'" : "") +
                     ", " + (oldDescriptor.saved() ? "oldState:" + oldDescriptor.toString()
                 : "no old state"));
-        MyContextHolder.initialize(this, this);
+        myContextHolder.getInitialized(this, this);
         backupDescriptor = newDescriptor;
         try {
             if (data == null) {
                 throw new FileNotFoundException("No BackupDataOutput");
-            } else if (!MyContextHolder.get().isReady()) {
+            } else if (!myContextHolder.getNow().isReady()) {
                 throw new FileNotFoundException("Application context is not initialized");
-            } else if (MyContextHolder.get().accounts().isEmpty()) {
+            } else if (myContextHolder.getNow().accounts().isEmpty()) {
                 throw new FileNotFoundException("Nothing to backup - No accounts yet");
             } else {
                 boolean isServiceAvailableStored = checkAndSetServiceUnavailable();
@@ -146,7 +146,7 @@ public class MyBackupAgent extends BackupAgent {
     }
 
     private void doBackup(MyBackupDataOutput data) throws IOException {
-        MyContextHolder.release(() -> "doBackup");
+        myContextHolder.release(() -> "doBackup");
         sharedPreferencesBackedUp = backupFile(data,
                 SHARED_PREFERENCES_KEY,
                 SharedPreferencesUtil.defaultSharedPreferencesPath(getContext()));
@@ -161,7 +161,7 @@ public class MyBackupAgent extends BackupAgent {
             foldersBackedUp += backupFolder(data, LOG_FILES_KEY,
                     MyStorage.getDataFilesDir(MyStorage.DIRECTORY_LOGS));
         }
-        accountsBackedUp = MyContextHolder.get().accounts().onBackup(data, backupDescriptor);
+        accountsBackedUp = myContextHolder.getNow().accounts().onBackup(data, backupDescriptor);
     }
 
     private long backupFolder(MyBackupDataOutput data, String key, File sourceFolder) {
@@ -274,16 +274,16 @@ public class MyBackupAgent extends BackupAgent {
         if (MyStorage.isApplicationDataCreated().isFalse) {
             return;
         }
-        MyContextHolder.initialize(this, this);
-        if (!MyContextHolder.get().isReady()) {
+        myContextHolder.getInitialized(this, this);
+        if (!myContextHolder.getNow().isReady()) {
             throw new FileNotFoundException("Application context is not initialized");
-        } else if (MyContextHolder.get().accounts().nonEmpty()) {
+        } else if (myContextHolder.getNow().accounts().nonEmpty()) {
             throw new FileNotFoundException("Cannot restore: AndStatus accounts are present. Please reinstall application before restore");
         }
 
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
-        MyContextHolder.release(() -> "ensureNoDataIsPresent");
+        myContextHolder.release(() -> "ensureNoDataIsPresent");
     }
     
     private void doRestore(MyBackupDataInput data) throws IOException {
@@ -293,25 +293,25 @@ public class MyBackupAgent extends BackupAgent {
         }
         assertNextHeader(data, DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME);
         databasesRestored += restoreFile(data, MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME));
-        MyContextHolder.release(() -> "doRestore");
-        MyContextHolder.INSTANCE
+        myContextHolder.release(() -> "doRestore");
+        myContextHolder
             .setOnRestore(true)
             .initialize(this, this, false).getBlocking();
-        if (MyContextHolder.get().state() == MyContextState.UPGRADING && activity != null) {
-            MyContextHolder.upgradeIfNeeded(activity);
+        if (myContextHolder.getNow().state() == MyContextState.UPGRADING && activity != null) {
+            myContextHolder.upgradeIfNeeded(activity);
         }
         if (optionalNextHeader(data, LOG_FILES_KEY)) {
             foldersRestored += restoreFolder(data, MyStorage.getDataFilesDir(MyStorage.DIRECTORY_LOGS));
         }
         DataPruner.setDataPrunedNow();
 
-        data.setMyContext(MyContextHolder.get(getContext()));
+        data.setMyContext(myContextHolder.getNow(getContext()));
         assertNextHeader(data, KEY_ACCOUNT);
         accountsRestored += data.getMyContext().accounts().onRestore(data, backupDescriptor);
 
-        MyContextHolder.release(() -> "doRestore");
-        MyContextHolder.INSTANCE.setOnRestore(false);
-        MyContextHolder.initialize(this, this);
+        myContextHolder.release(() -> "doRestore");
+        myContextHolder.setOnRestore(false);
+        myContextHolder.getInitialized(this, this);
     }
 
     private void restoreSharedPreferences(MyBackupDataInput data) throws IOException {
@@ -327,8 +327,8 @@ public class MyBackupAgent extends BackupAgent {
             MyLog.v(this, () -> "Couldn't delete " + tempFile.getAbsolutePath());
         }
         fixExternalStorage();
-        MyContextHolder.release(() -> "restoreSharedPreferences");
-        MyContextHolder.initialize(this, this);
+        myContextHolder.release(() -> "restoreSharedPreferences");
+        myContextHolder.getInitialized(this, this);
     }
 
     private Context getContext() {

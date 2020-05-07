@@ -13,7 +13,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
@@ -29,6 +28,7 @@ import java.util.Arrays;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -46,7 +46,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest<ActivityView
         mService.setUp(demoData.gnusocialTestAccountName);
         ma = demoData.getGnuSocialAccount();
         assertTrue(ma.isValid());
-        MyContextHolder.get().accounts().setCurrentAccount(ma);
+        myContextHolder.getNow().accounts().setCurrentAccount(ma);
 
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("image/png");
@@ -72,7 +72,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest<ActivityView
         View editorView = getActivity().findViewById(R.id.note_editor);
         ActivityTestHelper.waitViewVisible(method, editorView);
         TextView details = editorView.findViewById(R.id.noteEditDetails);
-        String textToFind = MyContextHolder.get().context().getText(R.string.label_with_media).toString();
+        String textToFind = myContextHolder.getNow().context().getText(R.string.label_with_media).toString();
         ActivityTestHelper.waitTextInAView(method, details, textToFind);
 
         TestSuite.waitForIdleSync();

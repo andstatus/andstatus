@@ -30,7 +30,6 @@ import androidx.annotation.NonNull;
 import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorEndpointTable;
 import org.andstatus.app.database.table.ActorTable;
@@ -54,6 +53,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+
 /**
  * Database provider for the MyDatabase database.
  * 
@@ -69,7 +70,7 @@ public class MyProvider extends ContentProvider {
      */
     @Override
     public boolean onCreate() {
-        MyContextHolder.INSTANCE.initialize(getContext(), this, false);
+        myContextHolder.initialize(getContext(), this, false);
         return true;
     }
 
@@ -191,14 +192,14 @@ public class MyProvider extends ContentProvider {
 
     // TODO: return Try<Long>
     public static long deleteActivity(MyContext myContext, long activityId, long noteId, boolean inTransaction) {
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        SQLiteDatabase db = myContextHolder.getNow().getDatabase();
         if (db == null) {
             MyLog.databaseIsNull(() -> "deleteActivity");
             return 0;
         }
         long originId = MyQuery.activityIdToLongColumnValue(ActivityTable.ORIGIN_ID, activityId);
         if (originId == 0) return 0;
-        Origin origin = MyContextHolder.get().origins().fromId(originId);
+        Origin origin = myContextHolder.getNow().origins().fromId(originId);
         // Was this the last activity for this note?
         final long activityId2 = MyQuery.conditionToLongColumnValue(db, null, ActivityTable.TABLE_NAME,
                 BaseColumns._ID, ActivityTable.NOTE_ID + "=" + noteId +
@@ -299,7 +300,7 @@ public class MyProvider extends ContentProvider {
         long rowId;
         Uri newUri = null;
         try {
-            SQLiteDatabase db = MyContextHolder.get().getDatabase();
+            SQLiteDatabase db = myContextHolder.getNow().getDatabase();
             if (db == null) {
                 MyLog.databaseIsNull(() -> "insert");
                 return null;
@@ -497,9 +498,9 @@ public class MyProvider extends ContentProvider {
         }
 
         Cursor c = null;
-        if (MyContextHolder.get().isReady()) {
+        if (myContextHolder.getNow().isReady()) {
             // Get the database and run the query
-            SQLiteDatabase db = MyContextHolder.get().getDatabase();
+            SQLiteDatabase db = myContextHolder.getNow().getDatabase();
             boolean logQuery = MyLog.isDebugEnabled();
             try {
                 if (StringUtil.nonEmpty(where)) {
@@ -563,7 +564,7 @@ public class MyProvider extends ContentProvider {
      */
     @Override
     public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        SQLiteDatabase db = MyContextHolder.get().getDatabase();
+        SQLiteDatabase db = myContextHolder.getNow().getDatabase();
         if (db == null) {
             MyLog.databaseIsNull(() -> "update");
             return 0;

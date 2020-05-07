@@ -26,7 +26,6 @@ import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.actor.ActorsOfNoteListLoader;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AttachedImageFiles;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
@@ -56,6 +55,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.data.DownloadStatus.UNKNOWN;
 import static org.andstatus.app.util.MyStringBuilder.COMMA;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
@@ -158,7 +158,7 @@ public class NoteEditorData implements IsEmpty {
     }
 
     static NoteEditorData newReplyTo(long inReplyToNoteId, MyAccount myAccount) {
-        return new NoteEditorData(myAccount.getValidOrCurrent(MyContextHolder.get()), 0, true,
+        return new NoteEditorData(myAccount.getValidOrCurrent(myContextHolder.getNow()), 0, true,
                 inReplyToNoteId, inReplyToNoteId != 0);
     }
 
@@ -332,7 +332,7 @@ public class NoteEditorData implements IsEmpty {
     private void addConversationParticipantsBeforeText() {
         ConversationLoader loader =
                 new ConversationLoaderFactory().getLoader(
-                ConversationViewItem.EMPTY, MyContextHolder.get(), ma.getOrigin(), getInReplyToNoteId(), false);
+                ConversationViewItem.EMPTY, myContextHolder.getNow(), ma.getOrigin(), getInReplyToNoteId(), false);
         loader.load(progress -> {});
         addActorsBeforeText(loader.getList().stream()
                 .filter(ConversationViewItem::isActorAConversationParticipant)
@@ -388,7 +388,7 @@ public class NoteEditorData implements IsEmpty {
     }
 
     public NoteEditorData addToAudience(long actorId) {
-        return addToAudience(Actor.load(MyContextHolder.get(), actorId));
+        return addToAudience(Actor.load(myContextHolder.getNow(), actorId));
     }
 
     public NoteEditorData addToAudience(Actor actor) {

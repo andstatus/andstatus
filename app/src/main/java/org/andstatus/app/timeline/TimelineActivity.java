@@ -51,7 +51,6 @@ import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.actor.ActorProfileViewer;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyFutureContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
@@ -100,6 +99,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 
@@ -361,7 +361,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                     MyLog.v(this, () ->
                             method + "; Restarting this Activity to apply all new changes of configuration");
                     finish();
-                    MyContextHolder.setExpiredIfConfigChanged();
+                    myContextHolder.setExpiredIfConfigChanged();
                     switchView(getParamsLoaded().getTimeline());
                 }
             } else { 
@@ -1222,7 +1222,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             MyLog.v(this, () -> "switchTimelineActivity; " + timeline);
             if (isFinishing()) {
                 final Intent intent = getIntentForTimeline(myContext, timeline, false);
-                MyContextHolder.INSTANCE.initialize(this, this, false)
+                myContextHolder.initialize(this, this, false)
                 .whenSuccessAsync(MyFutureContext.startIntent(intent), UiThreadExecutor.INSTANCE);
             } else {
                 TimelineActivity.startForTimeline(myContext, this, timeline);

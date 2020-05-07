@@ -17,7 +17,6 @@
 package org.andstatus.app.net.social;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadData;
@@ -40,6 +39,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.data.DemoNoteInserter.assertVisibility;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -75,7 +75,7 @@ public class ConnectionMastodonTest {
         Note note = activity.getNote();
         assertEquals("Activity oid", "22", activity.getOid());
         assertEquals("Note Oid", "22", note.oid);
-        assertEquals("Account unknown " + activity, true, MyContextHolder.get().accounts()
+        assertEquals("Account unknown " + activity, true, myContextHolder.getNow().accounts()
                 .fromActorOfSameOrigin(activity.accountActor).isValid());
         assertEquals("Is not a note " + activity, AObjectType.NOTE, activity.getObjectType());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, note.getFavoritedBy(activity.accountActor));
@@ -107,7 +107,7 @@ public class ConnectionMastodonTest {
         timeline.items.forEach(act -> act.setUpdatedNow(0));
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                MyContextHolder.get(), CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME));
+                myContextHolder.getNow(), CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME));
         new DataUpdater(executionContext).onActivity(activity);
     }
 
@@ -124,7 +124,7 @@ public class ConnectionMastodonTest {
         AActivity activity3 = timeline.get(3);
         Note note3 = activity3.getNote();
         assertEquals("Activity oid", "104114771989428879", activity3.getOid());
-        assertEquals("Account unknown " + activity3, true, MyContextHolder.get().accounts()
+        assertEquals("Account unknown " + activity3, true, myContextHolder.getNow().accounts()
                 .fromActorOfSameOrigin(activity3.accountActor).isValid());
         assertEquals("Is not a note " + activity3, AObjectType.NOTE, activity3.getObjectType());
         assertEquals("Favorited " + activity3, TriState.UNKNOWN, note3.getFavoritedBy(activity3.accountActor));
@@ -158,7 +158,7 @@ public class ConnectionMastodonTest {
 
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                MyContextHolder.get(), CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE));
+                myContextHolder.getNow(), CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE));
 
         timeline.items.forEach(act -> {
             act.setUpdatedNow(0);
@@ -293,7 +293,7 @@ public class ConnectionMastodonTest {
 
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                MyContextHolder.get(), CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
+                myContextHolder.getNow(), CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
         new DataUpdater(executionContext).onActivity(activity);
 
         assertOneRecipient(activity, "AndStatus", "https://mastodon.example.com/@AndStatus",
@@ -342,7 +342,7 @@ public class ConnectionMastodonTest {
 
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                MyContextHolder.get(), CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
+                myContextHolder.getNow(), CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
         new DataUpdater(executionContext).onActivity(activity);
 
         assertNotEquals("Activity wasn't saved " + activity, 0,  activity.getId());
@@ -388,10 +388,10 @@ public class ConnectionMastodonTest {
 
         MyAccount ma = demoData.getMyAccount(demoData.mastodonTestAccountName);
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                MyContextHolder.get(), CommandData.newItemCommand(CommandEnum.GET_CONVERSATION, ma, 123));
+                myContextHolder.getNow(), CommandData.newItemCommand(CommandEnum.GET_CONVERSATION, ma, 123));
         new DataUpdater(executionContext).onActivity(activity);
 
-        List<DownloadData> downloads = DownloadData.fromNoteId(MyContextHolder.get(), note.noteId);
+        List<DownloadData> downloads = DownloadData.fromNoteId(myContextHolder.getNow(), note.noteId);
         assertEquals("Saved downloads " + downloads, 2, downloads.size());
         DownloadData dPreview = downloads.stream().filter(d -> d.getContentType() == MyContentType.IMAGE).findAny().orElse(DownloadData.EMPTY);
         assertEquals("Preview URL " + downloads, preview.uri, dPreview.getUri());
@@ -402,7 +402,7 @@ public class ConnectionMastodonTest {
         assertEquals("Video URL " + downloads, video.uri, dVideo.getUri());
         assertEquals("Video " + downloads, 1, dVideo.getDownloadNumber());
 
-        NoteForAnyAccount nfa = new NoteForAnyAccount(MyContextHolder.get(),
+        NoteForAnyAccount nfa = new NoteForAnyAccount(myContextHolder.getNow(),
                 activity.getId(), activity.getNote().noteId);
         assertEquals(preview.uri, nfa.downloads.getFirstForTimeline().getUri());
         assertEquals(MyContentType.IMAGE, nfa.downloads.getFirstForTimeline().getContentType());

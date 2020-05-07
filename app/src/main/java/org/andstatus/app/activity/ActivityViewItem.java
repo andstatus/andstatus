@@ -19,10 +19,11 @@ package org.andstatus.app.activity;
 import android.content.Context;
 import android.database.Cursor;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.actor.ActorListLoader;
 import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.ActivityTable;
@@ -36,8 +37,7 @@ import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyStringBuilder;
 
-import androidx.annotation.NonNull;
-
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
 /** View on ActivityStream
@@ -67,7 +67,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     protected ActivityViewItem(Cursor cursor) {
         super(false, DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE));
         id = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID);
-        origin = MyContextHolder.get().origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
+        origin = myContextHolder.getNow().origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID));
         activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
         insertedDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
         actor = ActorViewItem.fromActor(Actor.fromId(origin, DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)));
@@ -79,7 +79,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
         if (noteId == 0) {
             noteViewItem = NoteViewItem.EMPTY;
         } else {
-            noteViewItem = NoteViewItem.EMPTY.fromCursor(MyContextHolder.get(), cursor);
+            noteViewItem = NoteViewItem.EMPTY.fromCursor(myContextHolder.getNow(), cursor);
             noteViewItem.setParent(this);
             if (MyPreferences.isShowDebuggingInfoInUi()) {
                 MyStringBuilder.appendWithSpace(noteViewItem.detailsSuffix, "(actId=" + id + ")");

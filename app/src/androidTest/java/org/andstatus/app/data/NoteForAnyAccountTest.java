@@ -1,7 +1,6 @@
 package org.andstatus.app.data;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.social.AActivity;
 import org.andstatus.app.net.social.ActivityType;
@@ -12,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -33,7 +33,7 @@ public class NoteForAnyAccountTest {
                 null, DownloadStatus.LOADED);
         mi.onActivity(activity1);
 
-        NoteForAnyAccount nfaActivity1 = new NoteForAnyAccount(MyContextHolder.get(),
+        NoteForAnyAccount nfaActivity1 = new NoteForAnyAccount(myContextHolder.getNow(),
                 activity1.getId(), activity1.getNote().noteId);
         AccountToNote atnActivity1 = new AccountToNote(nfaActivity1, ma);
         assertTrue(atnActivity1.isAuthor);
@@ -49,7 +49,7 @@ public class NoteForAnyAccountTest {
         replyTo1.getNote().audience().setVisibility(Visibility.PRIVATE);
         mi.onActivity(replyTo1);
 
-        NoteForAnyAccount nfaReplyTo1 = new NoteForAnyAccount(MyContextHolder.get(),
+        NoteForAnyAccount nfaReplyTo1 = new NoteForAnyAccount(myContextHolder.getNow(),
                 replyTo1.getId(), replyTo1.getNote().noteId);
         AccountToNote atnReplyTo1 = new AccountToNote(nfaReplyTo1, ma);
         assertFalse(atnReplyTo1.isAuthor);
@@ -64,7 +64,7 @@ public class NoteForAnyAccountTest {
         reply2.getNote().audience().setVisibility(Visibility.PUBLIC_AND_TO_FOLLOWERS);
         mi.onActivity(reply2);
 
-        NoteForAnyAccount nfaReply2 = new NoteForAnyAccount(MyContextHolder.get(),
+        NoteForAnyAccount nfaReply2 = new NoteForAnyAccount(myContextHolder.getNow(),
                 0, reply2.getNote().noteId);
         AccountToNote atnReply2 = new AccountToNote(nfaReply2, ma);
         assertFalse(atnReply2.isAuthor);
@@ -85,7 +85,7 @@ public class NoteForAnyAccountTest {
         reblog1.setUpdatedNow(0);
         mi.onActivity(reblog1);
 
-        NoteForAnyAccount nfaReblogged1 = new NoteForAnyAccount(MyContextHolder.get(),
+        NoteForAnyAccount nfaReblogged1 = new NoteForAnyAccount(myContextHolder.getNow(),
                 0, reblogged1.getNote().noteId);
         AccountToNote atnReblogged1 = new AccountToNote(nfaReblogged1, ma);
         assertFalse(atnReblogged1.isAuthor);

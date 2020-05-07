@@ -21,7 +21,6 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadType;
 import org.andstatus.app.data.FileProvider;
@@ -31,6 +30,8 @@ import org.andstatus.app.util.UriUtils;
 
 import java.util.Objects;
 import java.util.Optional;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class Attachment implements Comparable<Attachment>, IsEmpty {
     public static final Attachment EMPTY = new Attachment(null, Uri.EMPTY, "");
@@ -74,7 +75,7 @@ public class Attachment implements Comparable<Attachment>, IsEmpty {
     public static Attachment fromUriAndMimeType(Uri uriIn, @NonNull String mimeTypeIn) {
         Objects.requireNonNull(uriIn);
         Objects.requireNonNull(mimeTypeIn);
-        return new Attachment(MyContextHolder.get().context().getContentResolver(), uriIn, mimeTypeIn);
+        return new Attachment(myContextHolder.getNow().context().getContentResolver(), uriIn, mimeTypeIn);
     }
 
     Attachment setPreviewOf(@NonNull Attachment previewOf) {

@@ -19,7 +19,6 @@ import android.text.format.Formatter;
 
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
 import org.andstatus.app.net.social.ApiRoutineEnum;
@@ -52,6 +51,7 @@ import java.util.stream.Stream;
 import io.vavr.control.CheckedFunction;
 import io.vavr.control.Try;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.util.TryUtils.checkException;
 
 public class HttpReadResult {
@@ -303,7 +303,7 @@ public class HttpReadResult {
             if (request.isFileTooLarge()) {
                 setException(ConnectionException.hardConnectionException(
                     "File, downloaded from \"" + urlString + "\", is too large: "
-                      + Formatter.formatShortFileSize(MyContextHolder.get().context(), request.fileResult.length()),
+                      + Formatter.formatShortFileSize(myContextHolder.getNow().context(), request.fileResult.length()),
                     null));
                 return Try.failure(exception);
             }

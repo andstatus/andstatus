@@ -41,7 +41,6 @@ import org.andstatus.app.backup.DefaultProgressListener;
 import org.andstatus.app.backup.ProgressLogger;
 import org.andstatus.app.backup.RestoreActivity;
 import org.andstatus.app.context.ExecutionMode;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.timeline.TimelineActivity;
@@ -53,6 +52,7 @@ import org.andstatus.app.util.ViewUtils;
 import org.andstatus.app.widget.WebViewFragment;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class HelpActivity extends MyActivity {
     public static final String TAG = HelpActivity.class.getSimpleName();
@@ -94,14 +94,14 @@ public class HelpActivity extends MyActivity {
             mIsFirstActivity = getIntent().getBooleanExtra(EXTRA_IS_FIRST_ACTIVITY, mIsFirstActivity);
         }
 
-        if (MyContextHolder.get().accounts().getCurrentAccount().nonValid()
-                && MyContextHolder.getExecutionMode() == ExecutionMode.ROBO_TEST
+        if (myContextHolder.getNow().accounts().getCurrentAccount().nonValid()
+                && myContextHolder.getExecutionMode() == ExecutionMode.ROBO_TEST
                 && !generatingDemoData) {
             progressListener.cancel();
 
             generatingDemoData = true;
             progressListener = new DefaultProgressListener(this, R.string.app_name, "GenerateDemoData");
-            demoData.addAsync(MyContextHolder.get(), progressListener);
+            demoData.addAsync(myContextHolder.getNow(), progressListener);
         }
 
         showRestoreButton();
@@ -129,7 +129,7 @@ public class HelpActivity extends MyActivity {
     private void showRestoreButton() {
         Button restoreButton = findViewById(R.id.button_restore);
         if (!generatingDemoData
-                && MyContextHolder.get().isReady() && MyContextHolder.get().accounts().isEmpty()) {
+                && myContextHolder.getNow().isReady() && myContextHolder.getNow().accounts().isEmpty()) {
             restoreButton.setOnClickListener(v -> {
                 startActivity(new Intent(HelpActivity.this, RestoreActivity.class));
                 finish();
@@ -144,10 +144,10 @@ public class HelpActivity extends MyActivity {
         final Button getStarted = findViewById(R.id.button_help_get_started);
         getStarted.setVisibility(generatingDemoData ? View.GONE : View.VISIBLE);
         getStarted.setOnClickListener(v -> {
-            switch (MyContextHolder.get().state()) {
+            switch (myContextHolder.getNow().state()) {
                 case READY:
                     FirstActivity.checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
-                    if (MyContextHolder.get().accounts().getCurrentAccount().isValid()) {
+                    if (myContextHolder.getNow().accounts().getCurrentAccount().isValid()) {
                         startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
                         finish();
                     } else {
@@ -174,7 +174,7 @@ public class HelpActivity extends MyActivity {
                     break;
             }
         });
-        if (MyContextHolder.get().accounts().getCurrentAccount().isValid()) {
+        if (myContextHolder.getNow().accounts().getCurrentAccount().isValid()) {
             getStarted.setText(R.string.button_skip);
         }
     }
@@ -187,10 +187,10 @@ public class HelpActivity extends MyActivity {
             final View view = inflater.inflate(R.layout.splash, container, false);
             showVersionText(inflater.getContext(), view);
             ViewUtils.showView(view, R.id.system_info_section, MyPreferences.isShowDebuggingInfoInUi()
-                    || MyContextHolder.getExecutionMode() != ExecutionMode.DEVICE);
+                    || myContextHolder.getExecutionMode() != ExecutionMode.DEVICE);
             if (MyPreferences.isShowDebuggingInfoInUi()) {
                 MyUrlSpan.showText(view, R.id.system_info,
-                        MyContextHolder.getSystemInfo(inflater.getContext(), false),
+                        myContextHolder.getSystemInfo(inflater.getContext(), false),
                         false, false);
             }
 
@@ -199,10 +199,10 @@ public class HelpActivity extends MyActivity {
 
         private void showVersionText(Context context, @NonNull View parentView) {
             TextView versionText = parentView.findViewById(R.id.splash_application_version);
-            String text = MyContextHolder.getVersionText(context);
-            if (!MyContextHolder.get().isReady()) {
-                text += "\n" + MyContextHolder.get().state();
-                text += "\n" + MyContextHolder.get().getLastDatabaseError();
+            String text = myContextHolder.getVersionText(context);
+            if (!myContextHolder.getNow().isReady()) {
+                text += "\n" + myContextHolder.getNow().state();
+                text += "\n" + myContextHolder.getNow().getLastDatabaseError();
             }
             versionText.setText(text);
             versionText.setOnClickListener(v -> {
@@ -236,7 +236,7 @@ public class HelpActivity extends MyActivity {
         });
         
 
-        if (ViewUtils.showView(this, R.id.button_help_learn_more, MyContextHolder.get().isReady())) {
+        if (ViewUtils.showView(this, R.id.button_help_learn_more, myContextHolder.getNow().isReady())) {
             final Button learnMore = findViewById(R.id.button_help_learn_more);
             learnMore.setOnClickListener(v -> {
                 final PagerAdapter adapter = helpFlipper.getAdapter();
@@ -287,9 +287,9 @@ public class HelpActivity extends MyActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        MyContextHolder.upgradeIfNeeded(this);
+        myContextHolder.upgradeIfNeeded(this);
         if ( wasPaused && mIsFirstActivity
-                &&  MyContextHolder.get().accounts().getCurrentAccount().isValid() ) {
+                &&  myContextHolder.getNow().accounts().getCurrentAccount().isValid() ) {
             // We assume that user pressed back after adding first account
             Intent intent = new Intent(this, TimelineActivity.class);
             startActivity(intent);
@@ -322,7 +322,7 @@ public class HelpActivity extends MyActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        MyContextHolder.get().setExpired(() -> "onRequestPermissionsResult");
+        myContextHolder.getNow().setExpired(() -> "onRequestPermissionsResult");
         this.recreate();
     }
 

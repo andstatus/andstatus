@@ -17,7 +17,6 @@
 package org.andstatus.app.net.social;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
@@ -39,6 +38,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.util.MyHtmlTest.twitterBodyHtml;
 import static org.andstatus.app.util.MyHtmlTest.twitterBodyToPost;
 import static org.andstatus.app.util.UriUtilsTest.assertEndpoint;
@@ -197,7 +197,7 @@ public class ConnectionTwitterTest {
 
         MyAccount ma = demoData.getMyAccount(connection.getData().getAccountName().toString());
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                MyContextHolder.get(), CommandData.newAccountCommand(CommandEnum.GET_NOTE, ma));
+                myContextHolder.getNow(), CommandData.newAccountCommand(CommandEnum.GET_NOTE, ma));
         new DataUpdater(executionContext).onActivity(activity);
         assertNotEquals("Note was not added " + activity, 0, note.noteId);
         assertNotEquals("Activity was not added " + activity, 0, activity.getId());
@@ -224,7 +224,7 @@ public class ConnectionTwitterTest {
 
         MyAccount ma = demoData.getMyAccount(connection.getData().getAccountName().toString());
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                MyContextHolder.get(), CommandData.newAccountCommand(CommandEnum.GET_NOTE, ma));
+                myContextHolder.getNow(), CommandData.newAccountCommand(CommandEnum.GET_NOTE, ma));
         new DataUpdater(executionContext).onActivity(activity);
         assertNotEquals("Note was not added " + activity, 0, note.noteId);
         assertNotEquals("Activity was not added " + activity, 0, activity.getId());
@@ -243,10 +243,10 @@ public class ConnectionTwitterTest {
         MyAccount ma = demoData.getMyAccount(connection.getData().getAccountName().toString());
         Actor friend2 = Actor.fromId(ma.getOrigin(), 123);
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                MyContextHolder.get(), CommandData.actOnActorCommand(CommandEnum.FOLLOW, ma, friend2, ""));
+                myContextHolder.getNow(), CommandData.actOnActorCommand(CommandEnum.FOLLOW, ma, friend2, ""));
         new DataUpdater(executionContext).onActivity(activity);
 
-        long friendId = MyQuery.oidToId(MyContextHolder.get(), OidEnum.ACTOR_OID, ma.getOriginId(), actorOid);
+        long friendId = MyQuery.oidToId(myContextHolder.getNow(), OidEnum.ACTOR_OID, ma.getOriginId(), actorOid);
 
         assertNotEquals("Followed Actor was not added " + activity, 0, friendId);
         assertNotEquals("Activity was not added " + activity, 0, activity.getId());

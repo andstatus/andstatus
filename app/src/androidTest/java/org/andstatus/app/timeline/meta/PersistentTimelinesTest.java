@@ -19,7 +19,6 @@ package org.andstatus.app.timeline.meta;
 import org.andstatus.app.account.DemoAccountInserter;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
@@ -35,6 +34,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.core.Is.is;
@@ -50,7 +50,7 @@ public class PersistentTimelinesTest {
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithData(this);
-        myContext = MyContextHolder.get();
+        myContext = myContextHolder.getNow();
     }
 
     @Test

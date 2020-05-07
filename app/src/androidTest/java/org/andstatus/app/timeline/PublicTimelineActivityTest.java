@@ -26,7 +26,6 @@ import androidx.test.espresso.action.TypeTextAction;
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.social.Actor;
@@ -43,6 +42,7 @@ import static androidx.test.espresso.action.ViewActions.pressImeActionButton;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withResourceName;
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.util.EspressoUtils.setChecked;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -60,11 +60,11 @@ public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityVie
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
-        final Origin origin = MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName);
+        final Origin origin = myContextHolder.getNow().origins().fromName(demoData.gnusocialTestOriginName);
         assertTrue(origin.toString(), origin.isValid());
         MyLog.i(this, "setUp ended");
 
-        return new Intent(Intent.ACTION_VIEW, MyContextHolder.get().timelines()
+        return new Intent(Intent.ACTION_VIEW, myContextHolder.getNow().timelines()
                 .get(TimelineType.PUBLIC, Actor.EMPTY, origin).getUri());
     }
 

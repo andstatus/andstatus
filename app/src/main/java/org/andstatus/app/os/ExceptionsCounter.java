@@ -18,9 +18,11 @@ package org.andstatus.app.os;
 
 import android.app.Dialog;
 
+import androidx.annotation.MainThread;
+import androidx.annotation.NonNull;
+
 import org.acra.ACRA;
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
@@ -28,8 +30,7 @@ import org.andstatus.app.util.StringUtil;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import androidx.annotation.MainThread;
-import androidx.annotation.NonNull;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -57,7 +58,7 @@ public class ExceptionsCounter {
 
     @NonNull
     public static void logSystemInfo(Throwable throwable) {
-        final String systemInfo = MyContextHolder.getSystemInfo(MyContextHolder.get().context(), true);
+        final String systemInfo = myContextHolder.getSystemInfo(myContextHolder.getNow().context(), true);
         ACRA.getErrorReporter().putCustomData("systemInfo", systemInfo);
         logError(systemInfo, throwable);
     }
@@ -82,9 +83,9 @@ public class ExceptionsCounter {
 
         diskIoExceptionsCountShown.set(diskIoExceptionsCount.get());
         DialogFactory.dismissSafely(diskIoDialog);
-        final String text = StringUtil.format(MyContextHolder.get().context(), R.string.database_disk_io_error,
+        final String text = StringUtil.format(myContextHolder.getNow().context(), R.string.database_disk_io_error,
                 diskIoExceptionsCount.get());
-        diskIoDialog = DialogFactory.showOkAlertDialog(ExceptionsCounter.class, MyContextHolder.get().context(),
+        diskIoDialog = DialogFactory.showOkAlertDialog(ExceptionsCounter.class, myContextHolder.getNow().context(),
                 R.string.app_name, text);
     }
 }

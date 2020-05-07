@@ -16,9 +16,11 @@
 
 package org.andstatus.app.net.social;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.RawRes;
+
 import org.andstatus.app.account.AccountConnectionData;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.http.HttpConnection;
@@ -26,10 +28,8 @@ import org.andstatus.app.net.http.HttpConnectionMock;
 
 import java.io.IOException;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RawRes;
-
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class ConnectionMock {
     public final Connection connection;
@@ -79,8 +79,8 @@ public class ConnectionMock {
         if (http == null) {
             throw new IllegalStateException("http is null");
         }
-        MyContextHolder.get().getHttpConnectionMock();
-        throw new IllegalStateException("http is " + http.getClass().getName() + ", " + MyContextHolder.get().toString());
+        myContextHolder.getNow().getHttpConnectionMock();
+        throw new IllegalStateException("http is " + http.getClass().getName() + ", " + myContextHolder.getNow().toString());
     }
 
 }

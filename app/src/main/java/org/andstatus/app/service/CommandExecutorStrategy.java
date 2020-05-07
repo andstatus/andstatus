@@ -16,7 +16,6 @@
 
 package org.andstatus.app.service;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ApiRoutineEnum;
@@ -27,6 +26,8 @@ import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TryUtils;
 
 import io.vavr.control.Try;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 class CommandExecutorStrategy implements CommandExecutorParent {
     final protected CommandExecutionContext execContext;
@@ -83,7 +84,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         }
         MyLog.v(this, () -> "Progress: " + progress);
         lastProgressBroadcastAt = System.currentTimeMillis();
-        MyServiceEventsBroadcaster.newInstance(MyContextHolder.get(), MyServiceState.RUNNING)
+        MyServiceEventsBroadcaster.newInstance(myContextHolder.getNow(), MyServiceState.RUNNING)
                 .setCommandData(execContext.getCommandData())
                 .setProgress(progress)
                 .setEvent(MyServiceEvent.PROGRESS_EXECUTING_COMMAND).broadcast();

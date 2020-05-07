@@ -21,6 +21,7 @@ import org.andstatus.app.service.ConnectionState;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -38,7 +39,7 @@ public class ConnectionStateTest {
     @Test
     public void testIsConnectionStateOkFor() {
         TestSuite.getMyContextForTest().setConnectionState(ConnectionState.OFFLINE);
-        assertEquals(ConnectionState.OFFLINE, MyContextHolder.get().getConnectionState());
+        assertEquals(ConnectionState.OFFLINE, myContextHolder.getNow().getConnectionState());
 
         assertTrueFor(ConnectionRequired.OFFLINE);
         assertTrueFor(ConnectionRequired.ANY);
@@ -46,7 +47,7 @@ public class ConnectionStateTest {
         assertFalseFor(ConnectionRequired.DOWNLOAD_ATTACHMENT);
 
         TestSuite.getMyContextForTest().setConnectionState(ConnectionState.ONLINE);
-        assertEquals(ConnectionState.ONLINE, MyContextHolder.get().getConnectionState());
+        assertEquals(ConnectionState.ONLINE, myContextHolder.getNow().getConnectionState());
 
         assertFalseFor(ConnectionRequired.OFFLINE);
         assertTrueFor(ConnectionRequired.ANY);
@@ -78,7 +79,7 @@ public class ConnectionStateTest {
     }
 
     private boolean isConnectionStateOkFor(ConnectionRequired connectionRequired) {
-        return connectionRequired.isConnectionStateOk(MyContextHolder.get().getConnectionState());
+        return connectionRequired.isConnectionStateOk(myContextHolder.getNow().getConnectionState());
     }
 
 }

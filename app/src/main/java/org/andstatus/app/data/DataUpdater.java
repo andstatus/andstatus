@@ -23,7 +23,6 @@ import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.GroupType;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
@@ -48,6 +47,7 @@ import java.util.List;
 
 import io.vavr.control.Try;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.andstatus.app.util.UriUtils.nonEmptyOid;
 import static org.andstatus.app.util.UriUtils.nonRealOid;
@@ -76,7 +76,7 @@ public class DataUpdater {
     public DataUpdater(MyAccount ma) {
         this(new CommandExecutionContext(
                 ma.getOrigin().myContext.isEmptyOrExpired()
-                    ? MyContextHolder.get()
+                    ? myContextHolder.getNow()
                     : ma.getOrigin().myContext,
                 CommandData.newAccountCommand(CommandEnum.EMPTY, ma)
         ));
@@ -266,8 +266,8 @@ public class DataUpdater {
                         : "") );
             }
 
-            if (MyContextHolder.get().isTestRun()) {
-                MyContextHolder.get().putAssertionData(MSG_ASSERTION_KEY, values);
+            if (myContextHolder.getNow().isTestRun()) {
+                myContextHolder.getNow().putAssertionData(MSG_ASSERTION_KEY, values);
             }
             if (note.noteId == 0) {
                 Uri msgUri = execContext.getContext().getContentResolver().insert(

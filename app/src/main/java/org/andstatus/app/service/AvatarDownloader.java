@@ -18,7 +18,6 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AvatarData;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.MyQuery;
@@ -26,6 +25,8 @@ import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class AvatarDownloader extends FileDownloader {
 
@@ -39,15 +40,15 @@ public class AvatarDownloader extends FileDownloader {
 
     @Override
     protected MyAccount findBestAccountForDownload() {
-        final Origin origin = MyContextHolder.get().origins().fromId(
+        final Origin origin = myContextHolder.getNow().origins().fromId(
                 MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID, data.actorId));
-        return MyContextHolder.get().accounts().getFirstSucceededForOrigin(origin);
+        return myContextHolder.getNow().accounts().getFirstSucceededForOrigin(origin);
     }
 
     @Override
     protected void onSuccessfulLoad() {
-        data.deleteOtherOfThisActor(MyContextHolder.get());
-        MyContextHolder.get().users().load(data.actorId, true);
+        data.deleteOtherOfThisActor(myContextHolder.getNow());
+        myContextHolder.getNow().users().load(data.actorId, true);
         MyLog.v(this, () -> "Loaded avatar actorId:" + data.actorId + "; uri:'" + data.getUri() + "'");
     }
 }

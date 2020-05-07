@@ -19,7 +19,6 @@ package org.andstatus.app.note;
 import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DemoNoteInserter;
@@ -44,6 +43,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -79,9 +79,9 @@ public class AllowHtmlContentTest {
 
         assertNotNull(demoData.conversationOriginName + " exists", origin);
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), demoData.htmlNoteOid);
-        Note note = Note.loadContentById(MyContextHolder.get(), noteId);
+        Note note = Note.loadContentById(myContextHolder.getNow(), noteId);
         assertTrue("origin=" + origin.getId() + "; oid=" + demoData.htmlNoteOid, noteId != 0);
-        NoteShare noteShare = new NoteShare(origin, noteId, NoteDownloads.fromNoteId(MyContextHolder.get(), noteId));
+        NoteShare noteShare = new NoteShare(origin, noteId, NoteDownloads.fromNoteId(myContextHolder.getNow(), noteId));
         Intent intent = noteShare.intentToViewAndShare(true);
         assertTrue(intent.hasExtra(Intent.EXTRA_TEXT));
         assertTrue(
@@ -103,7 +103,7 @@ public class AllowHtmlContentTest {
         AActivity activity = DemoNoteInserter.addNoteForAccount(myAccount, body,
                 demoData.plainTextNoteOid, DownloadStatus.LOADED);
         NoteShare noteShare = new NoteShare(myAccount.getOrigin(), activity.getNote().noteId,
-                NoteDownloads.fromNoteId(MyContextHolder.get(), activity.getNote().noteId));
+                NoteDownloads.fromNoteId(myContextHolder.getNow(), activity.getNote().noteId));
         Intent intent = noteShare.intentToViewAndShare(true);
         assertTrue(intent.getExtras().containsKey(Intent.EXTRA_TEXT));
         assertTrue(intent.getStringExtra(Intent.EXTRA_TEXT), intent.getStringExtra(Intent.EXTRA_TEXT).contains(body));
@@ -150,7 +150,7 @@ public class AllowHtmlContentTest {
 
         MyAccount ma = demoData.getGnuSocialAccount();
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                MyContextHolder.get(), CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
+                myContextHolder.getNow(), CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, 123));
         new DataUpdater(executionContext).onActivity(activity);
 
     }

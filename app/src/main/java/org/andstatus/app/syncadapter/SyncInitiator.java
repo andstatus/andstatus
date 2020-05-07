@@ -31,7 +31,6 @@ import androidx.annotation.NonNull;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.service.ConnectionRequired;
 import org.andstatus.app.service.ConnectionState;
 import org.andstatus.app.service.MyServiceManager;
@@ -44,6 +43,7 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import static android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Periodic syncing doesn't work reliably, when a device is in a Doze mode, so we need
@@ -68,7 +68,7 @@ public class SyncInitiator extends BroadcastReceiver {
     }
 
     private void initializeApp(Context context) {
-        MyContextHolder.INSTANCE
+        myContextHolder
         .initialize(context, this, false)
         .whenSuccessAsync(this::checkConnectionState, AsyncTask.THREAD_POOL_EXECUTOR);
     }

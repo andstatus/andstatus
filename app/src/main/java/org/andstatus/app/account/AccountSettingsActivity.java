@@ -48,7 +48,6 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.TextMediaType;
@@ -92,6 +91,8 @@ import oauth.signpost.exception.OAuthCommunicationException;
 import oauth.signpost.exception.OAuthExpectationFailedException;
 import oauth.signpost.exception.OAuthMessageSignerException;
 import oauth.signpost.exception.OAuthNotAuthorizedException;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Add new or edit existing account
@@ -163,7 +164,7 @@ public class AccountSettingsActivity extends MyActivity {
         mLayoutId = R.layout.account_settings_main;
         super.onCreate(savedInstanceState);
 
-        if (MyContextHolder.initializeThenRestartMe(this)) {
+        if (myContextHolder.initializeThenRestartMe(this)) {
             return;
         }
 
@@ -253,7 +254,7 @@ public class AccountSettingsActivity extends MyActivity {
 
     private void onAccountSelected(int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-            AccountName accountName = AccountName.fromAccountName(MyContextHolder.get(),
+            AccountName accountName = AccountName.fromAccountName(myContextHolder.getNow(),
                     data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
             state.builder.rebuildMyAccount(accountName);
             if (!state.builder.isPersistent()) {
@@ -278,7 +279,7 @@ public class AccountSettingsActivity extends MyActivity {
         if (resultCode == RESULT_OK) {
             originType = OriginType.fromCode(data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key));
             if (originType.isSelectable()) {
-                List<Origin> origins = MyContextHolder.get().origins().originsOfType(originType);
+                List<Origin> origins = myContextHolder.getNow().origins().originsOfType(originType);
                 switch(origins.size()) {
                     case 0:
                         originType = OriginType.UNKNOWN;
@@ -308,7 +309,7 @@ public class AccountSettingsActivity extends MyActivity {
     private void onOriginSelected(int resultCode, Intent data) {
         Origin origin = Origin.EMPTY;
         if (resultCode == RESULT_OK) {
-            origin = MyContextHolder.get().origins().fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key));
+            origin = myContextHolder.getNow().origins().fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key));
             if (origin.isPersistent()) {
                 onOriginSelected(origin);
             }
@@ -676,9 +677,9 @@ public class AccountSettingsActivity extends MyActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        MyContextHolder.get().setInForeground(true);
+        myContextHolder.getNow().setInForeground(true);
 
-        if (MyContextHolder.initializeThenRestartMe(this)) {
+        if (myContextHolder.initializeThenRestartMe(this)) {
             return;
         }
         MyServiceManager.setServiceUnavailable();
@@ -777,16 +778,16 @@ public class AccountSettingsActivity extends MyActivity {
         super.onPause();
         state.save();
         if (mFinishing && resumedOnce) {
-            MyContextHolder.setExpiredIfConfigChanged();
+            myContextHolder.setExpiredIfConfigChanged();
             if (activityOnFinish != ActivityOnFinish.NONE) {
                 returnToOurActivity();
             }
         }
-        MyContextHolder.get().setInForeground(false);
+        myContextHolder.getNow().setInForeground(false);
     }
 
     private void returnToOurActivity() {
-        MyContextHolder.INSTANCE
+        myContextHolder
         .initialize(this, this, false)
         .whenSuccessAsync(myContext -> {
             MyLog.v(this, "Returning to " + activityOnFinish);
@@ -934,7 +935,7 @@ public class AccountSettingsActivity extends MyActivity {
             if (result != null && !AccountSettingsActivity.this.isFinishing()) {
                 if (result.isSuccess()) {
                     state.builder.myContext().setExpired(() -> "Client registered");
-                    MyContextHolder.INSTANCE
+                    myContextHolder
                     .initialize(AccountSettingsActivity.this, this, false)
                     .whenSuccessAsync(myContext -> {
                         state.builder.rebuildMyAccount(myContext);
@@ -1254,7 +1255,7 @@ public class AccountSettingsActivity extends MyActivity {
             .filter(MyAccount::isValidAndSucceeded)
             .onSuccess( myAccount -> {
                 state.forget();
-                MyContext myContext = MyContextHolder.initialize(MyContextHolder.get().context(),
+                MyContext myContext = myContextHolder.getInitialized(myContextHolder.getNow().context(),
                         AccountSettingsActivity.this);
                 FirstActivity.checkAndUpdateLastOpenedAppVersion(AccountSettingsActivity.this, true);
 

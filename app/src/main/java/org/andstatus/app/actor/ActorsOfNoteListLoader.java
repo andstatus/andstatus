@@ -16,8 +16,9 @@
 
 package org.andstatus.app.actor;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.NoteTable;
@@ -25,7 +26,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
 
-import androidx.annotation.NonNull;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -42,7 +43,7 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
 
         selectedNoteId = centralItemId;
         noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, selectedNoteId);
-        originOfSelectedNote = MyContextHolder.get().origins().fromId(
+        originOfSelectedNote = myContextHolder.getNow().origins().fromId(
                 MyQuery.noteIdToOriginId(selectedNoteId));
     }
 
@@ -73,7 +74,7 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
 
     private void addRebloggers() {
         for (Actor reblogger : MyQuery.getRebloggers(
-                MyContextHolder.get().getDatabase(), origin, selectedNoteId)) {
+                myContextHolder.getNow().getDatabase(), origin, selectedNoteId)) {
             addActorToList(reblogger);
         }
     }

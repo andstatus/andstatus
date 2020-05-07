@@ -23,7 +23,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
@@ -38,6 +37,7 @@ import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -54,10 +54,10 @@ public class ActAsTest extends TimelineActivityTest<ActivityViewItem> {
 
         final MyAccount ma = demoData.getGnuSocialAccount();
         assertTrue(ma.isValid());
-        MyContextHolder.get().accounts().setCurrentAccount(ma);
+        myContextHolder.getNow().accounts().setCurrentAccount(ma);
 
         MyLog.i(this, "setUp ended");
-        final Timeline timeline = MyContextHolder.get().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.getOrigin());
+        final Timeline timeline = myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.getOrigin());
         timeline.forgetPositionsAndDates();
         return new Intent(Intent.ACTION_VIEW, timeline.getUri());
     }
@@ -78,7 +78,7 @@ public class ActAsTest extends TimelineActivityTest<ActivityViewItem> {
                 ConversationActivity.class);
         long listItemId = helper.getListItemIdOfLoadedReply();
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId);
-        final MyContext myContext = MyContextHolder.get();
+        final MyContext myContext = myContextHolder.getNow();
         Origin origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId));
         String logMsg = "attempt=" + attempt + ", itemId=" + listItemId + ", noteId=" + noteId
             + ", origin=" + origin.getName()

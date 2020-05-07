@@ -24,7 +24,6 @@ import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.TextMediaType;
@@ -42,6 +41,7 @@ import org.junit.Test;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -65,13 +65,13 @@ public class NoteEditorTwitterTest extends TimelineActivityTest<ActivityViewItem
         final MyAccount ma = demoData.getMyAccount(demoData.twitterTestAccountName);
         assertTrue(ma.isValid());
         assertEquals("Account should be in Twitter: " + ma, OriginType.TWITTER, ma.getOrigin().getOriginType());
-        MyContextHolder.get().accounts().setCurrentAccount(ma);
+        myContextHolder.getNow().accounts().setCurrentAccount(ma);
 
         data = getStaticData(ma);
 
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW,
-                MyContextHolder.get().timelines().get(TimelineType.HOME, ma.getActor(), Origin.EMPTY).getUri());
+                myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.getActor(), Origin.EMPTY).getUri());
     }
 
     private NoteEditorData getStaticData(MyAccount ma) {

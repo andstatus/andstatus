@@ -17,11 +17,11 @@
 package org.andstatus.app.timeline.meta;
 
 import org.andstatus.app.context.ActivityTest;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -41,7 +41,7 @@ public class ManageTimelinesTest extends ActivityTest<ManageTimelines> {
 
     @Test
     public void testActivityOpened() throws InterruptedException {
-        int expectedCount = MyContextHolder.get().timelines().values().size();
+        int expectedCount = myContextHolder.getNow().timelines().values().size();
         TestSuite.waitForListLoaded(getActivity(), expectedCount);
         assertTrue("Timelines shown: " + getActivity().getListAdapter().getCount(),
                 getActivity().getListAdapter().getCount() ==  expectedCount);

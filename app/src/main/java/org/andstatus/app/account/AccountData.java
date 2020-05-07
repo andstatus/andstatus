@@ -23,8 +23,9 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.origin.Origin;
@@ -36,8 +37,9 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtil;
 import org.json.JSONObject;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.Try;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class AccountData implements Parcelable, AccountDataWriter, IdentifiableInstance {
     private static final String TAG = AccountData.class.getSimpleName();
@@ -287,7 +289,7 @@ public class AccountData implements Parcelable, AccountDataWriter, IdentifiableI
 
         @Override
         public AccountData createFromParcel(Parcel source) {
-            return AccountData.fromBundle(MyContextHolder.get(), source.readBundle());
+            return AccountData.fromBundle(myContextHolder.getNow(), source.readBundle());
         }
 
         @Override

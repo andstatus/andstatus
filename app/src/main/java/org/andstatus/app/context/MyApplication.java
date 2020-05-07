@@ -55,7 +55,7 @@ public class MyApplication extends Application {
         MyLog.v(this, "onCreate "
                 + (isAcraProcess ? "ACRA" : "'" + processName + "'") + " process");
         if (!isAcraProcess) {
-            MyContextHolder.INSTANCE.storeContextIfNotPresent(this, this);
+            MyContextHolder.myContextHolder.storeContextIfNotPresent(this, this);
             MyLocale.setLocale(this);
         }
     }

@@ -24,7 +24,6 @@ import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.net.http.HttpReadResult;
@@ -47,6 +46,7 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isNotChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.note.NoteEditorTest.attachImages;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -62,12 +62,12 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
 
         mock = ConnectionMock.newFor(demoData.activityPubTestAccountName);
         MyAccount ma = mock.getData().getMyAccount();
-        MyContextHolder.get().accounts().setCurrentAccount(ma);
+        myContextHolder.getNow().accounts().setCurrentAccount(ma);
         assertTrue("isValidAndSucceeded " + ma, ma.isValidAndSucceeded());
 
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW,
-                MyContextHolder.get().timelines().get(TimelineType.HOME, ma.getActor(), Origin.EMPTY).getUri());
+                myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.getActor(), Origin.EMPTY).getUri());
     }
 
     @Test

@@ -44,6 +44,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -65,7 +66,7 @@ public class TestSuite {
 
     public static Context initializeWithAccounts(Object testCase) {
         initialize(testCase);
-        if (MyContextHolder.get().accounts().fromAccountName(demoData.activityPubTestAccountName).isEmpty()) {
+        if (myContextHolder.getNow().accounts().fromAccountName(demoData.activityPubTestAccountName).isEmpty()) {
             ensureDataAdded();
         }
         return getMyContextForTest().context();
@@ -99,14 +100,14 @@ public class TestSuite {
                 MyLog.e(TAG, "targetContext is null.");
                 throw new IllegalArgumentException("testCase.getInstrumentation().getTargetContext() returned null");
             }
-            MyLog.i(TAG, "Before MyContextHolder.initialize " + iter);
+            MyLog.i(TAG, "Before myContextHolder.initialize " + iter);
             try {
-                if (creatorSet || MyContextHolder.INSTANCE
+                if (creatorSet || MyContextHolder.myContextHolder
                         .trySetCreator(new MyContextTestImpl(null, context, testCase))) {
                     creatorSet = true;
                     FirstActivity.startMeAsync(context, MyAction.INITIALIZE_APP);
                     DbUtils.waitMs(method, 3000);
-                    MyContext myContext = MyContextHolder.get();
+                    MyContext myContext = myContextHolder.getNow();
                     MyLog.i(TAG, "After starting FirstActivity " + iter + " " + myContext);
                     if (myContext.state() == MyContextState.READY) break;
                 }
@@ -116,9 +117,9 @@ public class TestSuite {
             DbUtils.waitMs(method, 3000);
         }
         MyLog.i(TAG, "After Initializing Test Suite loop");
-        MyContextHolder.INSTANCE.setExecutionMode(
+        MyContextHolder.myContextHolder.setExecutionMode(
                 ExecutionMode.load(InstrumentationRegistry.getArguments().getString("executionMode")));
-        final MyContext myContext = MyContextHolder.get();
+        final MyContext myContext = myContextHolder.getNow();
         assertNotEquals("MyContext state " + myContext, MyContextState.EMPTY, myContext.state());
 
         int logLevel = MyLog.VERBOSE;
@@ -133,22 +134,22 @@ public class TestSuite {
         assertTrue("Level " + logLevel + " should be loggable", MyLog.isLoggable(TAG, logLevel));
         MyServiceManager.setServiceUnavailable();
 
-        if (MyContextHolder.get().state() != MyContextState.READY) {
-            MyLog.d(TAG, "MyContext is not ready: " + MyContextHolder.get().state());
-            if (MyContextHolder.get().state() == MyContextState.NO_PERMISSIONS) {
+        if (myContextHolder.getNow().state() != MyContextState.READY) {
+            MyLog.d(TAG, "MyContext is not ready: " + myContextHolder.getNow().state());
+            if (myContextHolder.getNow().state() == MyContextState.NO_PERMISSIONS) {
                 Permissions.setAllGranted(true);
             }
             waitUntilContextIsReady();
         }
 
-        MyLog.d(TAG, "Before check isReady " + MyContextHolder.get());
-        initialized =  MyContextHolder.get().isReady();
-        assertTrue("Test Suite initialized, MyContext state=" + MyContextHolder.get().state(), initialized);
-        dataPath = MyContextHolder.get().context().getDatabasePath("andstatus").getPath();
-        MyLog.v("TestSuite", "Test Suite initialized, MyContext state=" + MyContextHolder.get().state() 
+        MyLog.d(TAG, "Before check isReady " + myContextHolder.getNow());
+        initialized =  myContextHolder.getNow().isReady();
+        assertTrue("Test Suite initialized, MyContext state=" + myContextHolder.getNow().state(), initialized);
+        dataPath = myContextHolder.getNow().context().getDatabasePath("andstatus").getPath();
+        MyLog.v("TestSuite", "Test Suite initialized, MyContext state=" + myContextHolder.getNow().state()
                 + "; databasePath=" + dataPath);
         
-        if (FirstActivity.checkAndUpdateLastOpenedAppVersion(MyContextHolder.get().context(), true)) {
+        if (FirstActivity.checkAndUpdateLastOpenedAppVersion(myContextHolder.getNow().context(), true)) {
             MyLog.i(TAG, "New version of application is running");
         }
         return context;
@@ -156,20 +157,20 @@ public class TestSuite {
 
     public static synchronized void forget() {
         MyLog.d(TAG, "Before forget");
-        MyContextHolder.release(() -> "forget");
+        myContextHolder.release(() -> "forget");
         context = null;
         initialized = false;
     }
     
     public static void waitUntilContextIsReady() {
         final String method = "waitUntilContextIsReady";
-        Intent intent = new Intent(MyContextHolder.get().context(), HelpActivity.class);
+        Intent intent = new Intent(myContextHolder.getNow().context(), HelpActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        MyContextHolder.get().context().startActivity(intent);
+        myContextHolder.getNow().context().startActivity(intent);
         for (int i=100; i > 0; i--) {
             DbUtils.waitMs(method, 2000);
-            MyLog.d(TAG, "Waiting for context " + i + " " + MyContextHolder.get().state());
-            switch (MyContextHolder.get().state()) {
+            MyLog.d(TAG, "Waiting for context " + i + " " + myContextHolder.getNow().state());
+            switch (myContextHolder.getNow().state()) {
                 case READY:
                 case ERROR:
                     i = 0;
@@ -178,12 +179,12 @@ public class TestSuite {
                     break;
             }
         }
-        assertEquals("Is Not ready", MyContextState.READY, MyContextHolder.get().state());
+        assertEquals("Is Not ready", MyContextState.READY, myContextHolder.getNow().state());
 
-        intent = new Intent(MyContextHolder.get().context(), HelpActivity.class);
+        intent = new Intent(myContextHolder.getNow().context(), HelpActivity.class);
         intent.putExtra(HelpActivity.EXTRA_CLOSE_ME, true);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        MyContextHolder.get().context().startActivity(intent);
+        myContextHolder.getNow().context().startActivity(intent);
         DbUtils.waitMs(method, 2000);
     }
 
@@ -192,11 +193,11 @@ public class TestSuite {
     }
     
     public static MyContextTestImpl getMyContextForTest() {
-        MyContext myContext = MyContextHolder.get();
+        MyContext myContext = myContextHolder.getNow();
         if (!(myContext instanceof MyContextTestImpl)) {
             fail("Wrong type of current context: " + (myContext == null ? "null" : myContext.getClass().getName()));
         }
-        return (MyContextTestImpl) MyContextHolder.get();
+        return (MyContextTestImpl) myContextHolder.getNow();
     }
     
     public static void setHttpConnectionMockClass(Class<? extends HttpConnection> httpConnectionMockClass) {
@@ -274,9 +275,9 @@ public class TestSuite {
 
     public static boolean setAndWaitForIsInForeground(boolean isInForeground) {
         final String method = "setAndWaitForIsInForeground";
-        MyContextHolder.get().setInForeground(isInForeground);
+        myContextHolder.getNow().setInForeground(isInForeground);
         for (int pass = 0; pass < 300; pass++) {
-            if (MyContextHolder.get().isInForeground() == isInForeground) {
+            if (myContextHolder.getNow().isInForeground() == isInForeground) {
                 return true;
             }
             if (DbUtils.waitMs(method, 100)) {

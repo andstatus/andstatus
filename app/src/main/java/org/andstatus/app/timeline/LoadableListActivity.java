@@ -26,12 +26,13 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.list.MyBaseListActivity;
 import org.andstatus.app.list.SyncLoader;
@@ -53,7 +54,7 @@ import org.andstatus.app.widget.MySearchView;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import androidx.annotation.NonNull;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * List, loaded asynchronously. Updated by MyService
@@ -70,7 +71,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
 
     private ParsedUri parsedUri = ParsedUri.fromUri(Uri.EMPTY);
 
-    protected MyContext myContext = MyContextHolder.get();
+    protected MyContext myContext = myContextHolder.getNow();
     private long configChangeTime = 0;
     MyServiceEventsReceiver myServiceReceiver;
 
@@ -96,9 +97,9 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        myContext = MyContextHolder.get();
+        myContext = myContextHolder.getNow();
         if (!myContext.isReady()) {
-            MyContextHolder.initializeThenRestartMe(this);
+            myContextHolder.initializeThenRestartMe(this);
         }
         super.onCreate(savedInstanceState);
         if (isFinishing()) {
@@ -110,7 +111,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         configChangeTime = myContext.preferencesChangeTime();
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, "onCreate, config changed " + RelativeTime.secondsAgo(configChangeTime) + " seconds ago"
-                    + (MyContextHolder.get().isReady() ? "" : ", MyContext is not ready")
+                    + (myContextHolder.getNow().isReady() ? "" : ", MyContext is not ready")
             );
         }
 
@@ -182,7 +183,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     }
 
     protected boolean isConfigChanged() {
-        MyContext myContextNew = MyContextHolder.get();
+        MyContext myContextNew = myContextHolder.getNow();
         return this.myContext != myContextNew || configChangeTime != myContextNew.preferencesChangeTime();
     }
 
@@ -382,7 +383,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         String method = "onResume";
         super.onResume();
         MyLog.v(this, () -> method + (mFinishing ? ", finishing" : "") );
-        if (!mFinishing && !MyContextHolder.initializeThenRestartMe(this)) {
+        if (!mFinishing && !myContextHolder.initializeThenRestartMe(this)) {
             myServiceReceiver.registerReceiver(this);
             myContext.setInForeground(true);
             if (!isLoading()) {
@@ -403,7 +404,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     protected void onPause() {
         super.onPause();
         myServiceReceiver.unregisterReceiver(this);
-        MyContextHolder.get().setInForeground(false);
+        myContextHolder.getNow().setInForeground(false);
         getListAdapter().setPositionRestored(false);
     }
     
@@ -417,7 +418,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                 break;
             case PROGRESS_EXECUTING_COMMAND:
                 if (isCommandToShowInSyncIndicator(commandData)) {
-                    showSyncing("Show Progress", commandData.toCommandProgress(MyContextHolder.get()));
+                    showSyncing("Show Progress", commandData.toCommandProgress(myContextHolder.getNow()));
                 }
                 break;
             case AFTER_EXECUTING_COMMAND:

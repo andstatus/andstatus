@@ -21,7 +21,6 @@ import android.text.Spannable;
 
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.DownloadStatus;
@@ -44,6 +43,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
 import static org.andstatus.app.util.UriUtilsTest.assertEndpoint;
@@ -331,7 +331,7 @@ public class ConnectionGnuSocialTest {
         activity.setUpdatedNow(0);
 
         CommandExecutionContext executionContext = new CommandExecutionContext(
-                MyContextHolder.get(), CommandData.newItemCommand(CommandEnum.GET_NOTE, mock.getData().getMyAccount(), 123));
+                myContextHolder.getNow(), CommandData.newItemCommand(CommandEnum.GET_NOTE, mock.getData().getMyAccount(), 123));
         new DataUpdater(executionContext).onActivity(activity);
 
         assertAudience(activity, activity.audience(), numberOfMembers);

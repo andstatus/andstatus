@@ -27,13 +27,14 @@ import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.backup.DefaultProgressListener;
 import org.andstatus.app.backup.ProgressLogger;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.checker.DataChecker;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class DatabaseConverterController {
     private static final String TAG = DatabaseConverterController.class.getSimpleName();
@@ -66,14 +67,14 @@ public class DatabaseConverterController {
                     + ": already upgrading");
             skip = true;
         }
-        if (!skip && !MyContextHolder.get().initialized()) {
+        if (!skip && !myContextHolder.getNow().initialized()) {
             MyLog.v(TAG, "Attempt to trigger database upgrade by " + requestorName 
                     + ": not initialized yet");
             skip = true;
         }
         if (!skip && acquireUpgradeLock(requestorName)) {
-            final AsyncUpgrade asyncUpgrade = new AsyncUpgrade(upgradeRequestorIn, MyContextHolder.INSTANCE.isOnRestore());
-            if (MyContextHolder.INSTANCE.isOnRestore()) {
+            final AsyncUpgrade asyncUpgrade = new AsyncUpgrade(upgradeRequestorIn, myContextHolder.isOnRestore());
+            if (myContextHolder.isOnRestore()) {
                 asyncUpgrade.syncUpgrade();
             } else {
                 AsyncTaskLauncher.execute(TAG, asyncUpgrade);
@@ -151,10 +152,10 @@ public class DatabaseConverterController {
                 }
                 MyLog.i(TAG, "Upgrade triggered by " + MyStringBuilder.objToTag(upgradeRequestor));
                 MyServiceManager.setServiceUnavailable();
-                MyContextHolder.release(() -> "doUpgrade");
+                myContextHolder.release(() -> "doUpgrade");
                 // Upgrade will occur inside this call synchronously
                 // TODO: Add completion stage instead of blocking...
-                MyContextHolder.INSTANCE.initialize(upgradeRequestor, upgradeRequestor, true)
+                myContextHolder.initialize(upgradeRequestor, upgradeRequestor, true)
                     .getBlocking();
                 synchronized(UPGRADE_LOCK) {
                     shouldTriggerDatabaseUpgrade = false;
@@ -174,7 +175,7 @@ public class DatabaseConverterController {
                 MyLog.v(TAG, "Upgrade didn't start");
             }
             if (success) {
-                MyLog.i(TAG, "success " + MyContextHolder.get().state());
+                MyLog.i(TAG, "success " + myContextHolder.getNow().state());
                 onUpgradeSucceeded();
             }
             return success;
@@ -182,17 +183,17 @@ public class DatabaseConverterController {
 
         private void onUpgradeSucceeded() {
             MyServiceManager.setServiceUnavailable();
-            if (!MyContextHolder.get().isReady()) {
-                MyContextHolder.release(() -> "onUpgradeSucceeded1");
-                MyContextHolder.initialize(upgradeRequestor, upgradeRequestor);
+            if (!myContextHolder.getNow().isReady()) {
+                myContextHolder.release(() -> "onUpgradeSucceeded1");
+                myContextHolder.getInitialized(upgradeRequestor, upgradeRequestor);
             }
             MyServiceManager.setServiceUnavailable();
             MyServiceManager.stopService();
             if (isRestoring) return;
 
             DataChecker.fixData(progressLogger, false, false);
-            MyContextHolder.release(() -> "onUpgradeSucceeded2");
-            MyContextHolder.initialize(upgradeRequestor, upgradeRequestor);
+            myContextHolder.release(() -> "onUpgradeSucceeded2");
+            myContextHolder.getInitialized(upgradeRequestor, upgradeRequestor);
             MyServiceManager.setServiceAvailable();
         }
     }
@@ -240,7 +241,7 @@ public class DatabaseConverterController {
             shouldTriggerDatabaseUpgrade = false;
             stillUpgrading();
         }
-        MyContextHolder.get().setInForeground(true);
+        myContextHolder.getNow().setInForeground(true);
         final DatabaseConverter databaseConverter = new DatabaseConverter();
         boolean success = databaseConverter.execute(new UpgradeParams(mProgressLogger, db, oldVersion, newVersion));
         synchronized(UPGRADE_LOCK) {

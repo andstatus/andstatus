@@ -26,6 +26,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.Audience;
+import org.andstatus.app.net.social.Note;
 import org.andstatus.app.net.social.Visibility;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
@@ -130,8 +131,13 @@ class CheckAudience extends DataChecker {
                                    Audience audience, Visibility storedVisibility) {
         if (storedVisibility == audience.getVisibility()) return;
 
-        MyLog.i(TAG, "Fix visibility for " + noteId + " " + storedVisibility + " -> " + audience.getVisibility());
         s.toFixCount += 1;
+        String msgLog = s.toFixCount + ". Fix visibility for " + noteId + " " + storedVisibility
+                + " -> " + audience.getVisibility();
+        if (s.toFixCount < 20) {
+            msgLog += "; " + Note.loadContentById(myContext, noteId);
+        }
+        MyLog.i(TAG, msgLog);
         if (!countOnly) {
             String sql = "UPDATE " + NoteTable.TABLE_NAME
                     + " SET "

@@ -23,7 +23,10 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckBox;
 
-import org.andstatus.app.context.MyContextHolder;
+import androidx.annotation.NonNull;
+import androidx.preference.ListPreference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -31,10 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import androidx.annotation.NonNull;
-import androidx.preference.ListPreference;
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceManager;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class SharedPreferencesUtil {
     private static final String TAG = SharedPreferencesUtil.class.getSimpleName();
@@ -209,7 +209,7 @@ public class SharedPreferencesUtil {
     }
 
     public static SharedPreferences getDefaultSharedPreferences() {
-        Context context = MyContextHolder.get().context();
+        Context context = myContextHolder.getNow().context();
         if (context == null) {
             return null;
         } else {
@@ -218,7 +218,7 @@ public class SharedPreferencesUtil {
     }
 
     public static SharedPreferences getSharedPreferences(String name) {
-        Context context = MyContextHolder.get().context();
+        Context context = myContextHolder.getNow().context();
         if (context == null) {
             MyLog.e(TAG, "getSharedPreferences for " + name + " - were not initialized yet");
             for(StackTraceElement element : Thread.currentThread().getStackTrace()) {

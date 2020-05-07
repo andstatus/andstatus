@@ -23,7 +23,6 @@ import android.net.Uri;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.ActorInTimeline;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.FileProvider;
 import org.andstatus.app.data.MyQuery;
@@ -34,6 +33,8 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.UriUtils;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class NoteShare {
     private final Origin origin;
@@ -82,9 +83,9 @@ public class NoteShare {
         }
         subjectString =
                 (MyQuery.isSensitive(noteId)
-                        ? "(" + MyContextHolder.get().context().getText(R.string.sensitive) + ") "
+                        ? "(" + myContextHolder.getNow().context().getText(R.string.sensitive) + ") "
                         : "") +
-                MyContextHolder.get().context().getText(origin.alternativeTermForResourceId(R.string.message)) +
+                myContextHolder.getNow().context().getText(origin.alternativeTermForResourceId(R.string.message)) +
                 " - " + subjectString;
 
         Intent intent = new Intent(share ? android.content.Intent.ACTION_SEND : Intent.ACTION_VIEW);

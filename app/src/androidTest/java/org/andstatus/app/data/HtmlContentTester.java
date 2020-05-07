@@ -17,7 +17,6 @@
 package org.andstatus.app.data;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.AActivity;
@@ -29,6 +28,7 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.StringUtil;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.util.MyHtml.LINEBREAK_HTML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -42,7 +42,7 @@ public class HtmlContentTester {
             + "and a plain text link to the issue 60: https://github.com/andstatus/andstatus/issues/60";
 
     public HtmlContentTester() {
-        Origin origin = MyContextHolder.get().origins().fromName(demoData.conversationOriginName);
+        Origin origin = myContextHolder.getNow().origins().fromName(demoData.conversationOriginName);
         assertTrue(demoData.conversationOriginName + " exists",
                 origin.getOriginType() != OriginType.UNKNOWN);
         ma = demoData.getMyAccount(demoData.conversationAccountName);
@@ -81,7 +81,7 @@ public class HtmlContentTester {
                 DownloadStatus.LOADED);
         mi.onActivity(activity);
 
-        Note noteStored = Note.loadContentById(MyContextHolder.get(), activity.getNote().noteId);
+        Note noteStored = Note.loadContentById(myContextHolder.getNow(), activity.getNote().noteId);
         assertTrue("Note was loaded " + activity.getNote(), noteStored.nonEmpty());
         if (htmlContentAllowed) {
             assertEquals("HTML preserved", bodyString, noteStored.getContent());

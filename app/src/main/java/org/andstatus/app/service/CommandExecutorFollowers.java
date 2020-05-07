@@ -18,7 +18,6 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.R;
 import org.andstatus.app.actor.GroupType;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ActorActivity;
 import org.andstatus.app.data.DataUpdater;
 import org.andstatus.app.data.GroupMembership;
@@ -46,6 +45,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import io.vavr.control.Try;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -252,7 +253,7 @@ public class CommandExecutorFollowers extends CommandExecutorStrategy {
                     MyLog.v(this, "Server didn't return Actor's activity for "
                                     + actor.getUniqueNameWithOrigin()
                                     + " found activity " + RelativeTime.
-                                    getDifference(MyContextHolder.get().context(), updatedDate),
+                                    getDifference(myContextHolder.getNow().context(), updatedDate),
                             exception);
                 }
             }

@@ -27,7 +27,6 @@ import androidx.core.util.Pair;
 
 import org.andstatus.app.context.ActorInTimeline;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
@@ -46,6 +45,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class MyQuery {
     private static final String TAG = MyQuery.class.getSimpleName();
@@ -80,7 +81,7 @@ public class MyQuery {
      *         {@link NoteTable#_ID} ). Or 0 if nothing was found.
      */
     public static long oidToId(OidEnum oidEnum, long originId, String oid) {
-        return oidToId(MyContextHolder.get(), oidEnum, originId, oid);
+        return oidToId(myContextHolder.getNow(), oidEnum, originId, oid);
     }
 
     public static long oidToId(@NonNull MyContext myContext, OidEnum oidEnum, long originId, String oid) {
@@ -113,7 +114,7 @@ public class MyQuery {
 
     public static long sqlToLong(SQLiteDatabase databaseIn, String msgLogIn, String sql) {
         String msgLog = StringUtil.notNull(msgLogIn);
-        SQLiteDatabase db = databaseIn == null ? MyContextHolder.get().getDatabase() : databaseIn;
+        SQLiteDatabase db = databaseIn == null ? myContextHolder.getNow().getDatabase() : databaseIn;
         if (db == null) {
             MyLog.databaseIsNull(() -> msgLog);
             return 0;
@@ -403,7 +404,7 @@ public class MyQuery {
                 } else {
                     throw new IllegalArgumentException( method + "; Unknown name \"" + actorIdColumnName + "\"");
                 }
-                SQLiteDatabase db = MyContextHolder.get().getDatabase();
+                SQLiteDatabase db = myContextHolder.getNow().getDatabase();
                 if (db == null) {
                     MyLog.databaseIsNull(() -> method);
                     return "";
@@ -509,7 +510,7 @@ public class MyQuery {
     @NonNull
     public static String conditionToStringColumnValue(SQLiteDatabase dbIn, String tableName, String columnName, String condition) {
         String method = "cond2str";
-        SQLiteDatabase db = dbIn == null ? MyContextHolder.get().getDatabase() : dbIn;
+        SQLiteDatabase db = dbIn == null ? myContextHolder.getNow().getDatabase() : dbIn;
         if (db == null) {
             MyLog.databaseIsNull(() -> method);
             return "";
@@ -708,7 +709,7 @@ public class MyQuery {
 
     @NonNull
     public static Set<Long> getLongs(String sql) {
-        return getLongs(MyContextHolder.get(), sql);
+        return getLongs(myContextHolder.getNow(), sql);
     }
 
     @NonNull

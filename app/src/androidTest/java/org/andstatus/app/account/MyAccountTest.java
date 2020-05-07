@@ -17,7 +17,6 @@
 package org.andstatus.app.account;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
@@ -28,8 +27,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -53,7 +52,7 @@ public class MyAccountTest {
     
     private void createAccountOfOriginType(String username, String host, OriginType originType) {
         String uniqueName = StringUtil.isEmpty(username) ? "" : username + "@" + host;
-        MyContext myContext = MyContextHolder.get();
+        MyContext myContext = myContextHolder.getNow();
         String logMsg = "Creating account '" + uniqueName + "' for '" + originType + "'";
         MyLog.v(this, logMsg);
 

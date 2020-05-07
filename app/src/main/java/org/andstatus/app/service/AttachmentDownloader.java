@@ -18,10 +18,11 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.AccountToNote;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.util.MyLog;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class AttachmentDownloader extends FileDownloader {
 
@@ -31,7 +32,7 @@ public class AttachmentDownloader extends FileDownloader {
 
     @Override
     protected MyAccount findBestAccountForDownload() {
-        return AccountToNote.getBestAccountToDownloadNote(MyContextHolder.get(), data.noteId);
+        return AccountToNote.getBestAccountToDownloadNote(myContextHolder.getNow(), data.noteId);
     }
 
     @Override

@@ -18,10 +18,10 @@ package org.andstatus.app.notification;
 
 import android.app.PendingIntent;
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.data.DbUtils.getLong;
 
 public class NotificationEvents {
@@ -42,7 +43,7 @@ public class NotificationEvents {
     public final Map<NotificationEventType, NotificationData> map;
 
     public static NotificationEvents of(@NonNull Context context) {
-        return of(MyContextHolder.get(context), Collections.emptyList());
+        return of(myContextHolder.getNow(context), Collections.emptyList());
     }
 
     static NotificationEvents of(MyContext myContext, List<NotificationEventType> enabledEvents) {

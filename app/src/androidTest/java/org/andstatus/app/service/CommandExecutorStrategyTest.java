@@ -18,7 +18,6 @@ package org.andstatus.app.service;
 
 import org.andstatus.app.SearchObjects;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DemoNoteInserter;
 import org.andstatus.app.data.DownloadStatus;
@@ -38,6 +37,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -51,7 +51,7 @@ public class CommandExecutorStrategyTest {
     public void setUp() throws Exception {
         TestSuite.initializeWithAccounts(this);
 
-        ma = MyContextHolder.get().accounts().getFirstSucceededForOrigin(demoData.getGnuSocialOrigin());
+        ma = myContextHolder.getNow().accounts().getFirstSucceededForOrigin(demoData.getGnuSocialOrigin());
         mock = ConnectionMock.newFor(ma);
         httpConnectionMock = mock.getHttpMock();
         assertTrue(ma.toString(), ma.isValidAndSucceeded());
@@ -71,12 +71,12 @@ public class CommandExecutorStrategyTest {
     @Test
     public void testSearch() {
         CommandData commandData1 = CommandData.newSearch(SearchObjects.NOTES,
-                MyContextHolder.get(), Origin.EMPTY, demoData.globalPublicNoteText);
+                myContextHolder.getNow(), Origin.EMPTY, demoData.globalPublicNoteText);
         CommandExecutorStrategy strategy = CommandExecutorStrategy.getStrategy(commandData1, null);
         assertEquals(CommandExecutorStrategy.class, strategy.getClass());
 
         CommandData commandData2 = CommandData.newSearch(SearchObjects.NOTES,
-                MyContextHolder.get(), ma.getOrigin(), demoData.globalPublicNoteText);
+                myContextHolder.getNow(), ma.getOrigin(), demoData.globalPublicNoteText);
         strategy = CommandExecutorStrategy.getStrategy(commandData2, null);
         assertEquals(TimelineDownloaderOther.class, strategy.getClass());
         strategy.execute();
@@ -176,6 +176,6 @@ public class CommandExecutorStrategyTest {
     @After
     public void tearDown() {
         TestSuite.setHttpConnectionMockInstance(null);
-        MyContextHolder.get().accounts().initialize();
+        myContextHolder.getNow().accounts().initialize();
     }
 }

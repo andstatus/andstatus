@@ -3,7 +3,6 @@ package org.andstatus.app.note;
 import android.net.Uri;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.AttachedImageFiles;
 import org.andstatus.app.data.MyQuery;
@@ -16,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -30,7 +30,7 @@ public class NoteEditorDataTest {
     @Test
     public void noteEditorDataConversation() {
         MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
-        final Origin origin = MyContextHolder.get().origins().fromName(demoData.conversationOriginName);
+        final Origin origin = myContextHolder.getNow().origins().fromName(demoData.conversationOriginName);
         assertEquals(origin, ma.getOrigin());
         long entryMsgId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), demoData.conversationEntryNoteOid);
         long entryActorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.getId(), demoData.conversationEntryAuthorOid);

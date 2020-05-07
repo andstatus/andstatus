@@ -16,7 +16,6 @@
 
 package org.andstatus.app.service;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.Connection;
 import org.andstatus.app.net.social.Server;
 import org.andstatus.app.origin.DiscoveredOrigins;
@@ -29,6 +28,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.vavr.control.Try;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
 
@@ -52,7 +53,7 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
                     .setHostOrUrl(mbOrigin.urlString)
                     .build();
             if (origin.isValid()
-                    && !MyContextHolder.get().origins().fromName(origin.getName())
+                    && !myContextHolder.getNow().origins().fromName(origin.getName())
                     .isValid()
                     && !haveOriginsWithThisHostName(origin.getUrl())) {
                 newOrigins.add(origin);
@@ -68,7 +69,7 @@ public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
         if (url == null) {
             return true;
         }
-        for (Origin origin : MyContextHolder.get().origins().collection()) {
+        for (Origin origin : myContextHolder.getNow().origins().collection()) {
             if ( origin.getUrl() != null && origin.getUrl().getHost().equals(url.getHost())) {
                 return true;
             }

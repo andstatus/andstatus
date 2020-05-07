@@ -26,6 +26,8 @@ import org.andstatus.app.timeline.TapOnATimelineTitleBehaviour;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.UriUtils;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+
 /**
  * This is a central point of accessing SharedPreferences
  * @author yvolk@yurivolkov.com
@@ -243,7 +245,7 @@ public class MyPreferences {
     public static void onPreferencesChanged() {
         SharedPreferencesUtil.forget();
         SharedPreferencesUtil.putLong(KEY_PREFERENCES_CHANGE_TIME, System.currentTimeMillis());
-        Context context = MyContextHolder.get().context();
+        Context context = myContextHolder.getNow().context();
         if (context != null && SharedPreferencesUtil.getBoolean(KEY_ENABLE_ANDROID_BACKUP, false)) {
             new BackupManager(context).dataChanged();
         }
@@ -270,7 +272,7 @@ public class MyPreferences {
     }
 
     public static boolean isLogEverythingToFile() {
-        return SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, MyContextHolder.get().isTestRun());
+        return SharedPreferencesUtil.getBoolean(MyPreferences.KEY_LOG_EVERYTHING_TO_FILE, myContextHolder.getNow().isTestRun());
     }
 
     public static boolean isRefreshTimelineAutomatically() {

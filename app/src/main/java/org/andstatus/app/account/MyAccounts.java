@@ -1,12 +1,13 @@
 package org.andstatus.app.account;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.account.MyAccount.Builder;
 import org.andstatus.app.backup.MyBackupAgent;
 import org.andstatus.app.backup.MyBackupDataInput;
 import org.andstatus.app.backup.MyBackupDataOutput;
 import org.andstatus.app.backup.MyBackupDescriptor;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.SqlIds;
 import org.andstatus.app.data.converter.AccountConverter;
@@ -37,9 +38,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import androidx.annotation.NonNull;
-
 import static java.util.stream.Collectors.toList;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class MyAccounts implements IsEmpty {
     /** Current account is the first in this list */
@@ -554,8 +554,8 @@ public class MyAccounts implements IsEmpty {
     @NonNull
     public static SqlIds myAccountIds() {
         return SqlIds.fromIds(
-            AccountUtils.getCurrentAccounts(MyContextHolder.get().context()).stream()
-            .map(account -> AccountData.fromAndroidAccount(MyContextHolder.get(), account)
+            AccountUtils.getCurrentAccounts(myContextHolder.getNow().context()).stream()
+            .map(account -> AccountData.fromAndroidAccount(myContextHolder.getNow(), account)
                     .getDataLong(MyAccount.KEY_ACTOR_ID, 0))
             .filter(id -> id > 0)
             .collect(toList())

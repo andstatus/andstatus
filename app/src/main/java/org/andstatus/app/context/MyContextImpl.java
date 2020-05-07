@@ -50,6 +50,8 @@ import org.andstatus.app.util.UriUtils;
 
 import java.util.function.Supplier;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+
 /**
  * Contains global state of the application
  * The objects are effectively immutable
@@ -150,7 +152,7 @@ public class MyContextImpl implements MyContext {
             case DATABASE_READY:
                 if (!origins.initialize()) {
                     state = MyContextState.DATABASE_UNAVAILABLE;
-                } else if (MyContextHolder.INSTANCE.isOnRestore()) {
+                } else if (myContextHolder.isOnRestore()) {
                     state = MyContextState.RESTORING;
                 } else {
                     users.initialize();

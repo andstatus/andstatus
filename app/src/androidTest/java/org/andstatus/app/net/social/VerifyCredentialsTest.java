@@ -17,7 +17,6 @@
 package org.andstatus.app.net.social;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
@@ -37,6 +36,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -79,7 +79,7 @@ public class VerifyCredentialsTest {
         Actor actor = connection.verifyCredentials(Optional.empty()).get();
         assertEquals("Actor's oid is actorOid of this account", demoData.twitterTestAccountActorOid, actor.oid);
 
-        Origin origin = MyContextHolder.get().origins().firstOfType(OriginType.TWITTER);
+        Origin origin = myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER);
         MyAccount.Builder builder = MyAccount.Builder.fromAccountName(mock.getData().getAccountName());
         builder.onCredentialsVerified(actor);
         assertTrue("Account is persistent", builder.isPersistent());
@@ -88,7 +88,7 @@ public class VerifyCredentialsTest {
         assertEquals("Account actorOid", builder.getAccount().getActorOid(), actor.oid);
         assertEquals("Actor in the database for id=" + actorId,
                 actor.oid,
-                MyQuery.idToOid(MyContextHolder.get(), OidEnum.ACTOR_OID, actorId, 0));
+                MyQuery.idToOid(myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0));
 
         String noteOid = "383296535213002752";
         long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), noteOid) ;

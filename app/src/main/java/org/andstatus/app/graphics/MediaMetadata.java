@@ -25,7 +25,6 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.database.table.DownloadTable;
@@ -35,6 +34,8 @@ import org.andstatus.app.util.MyStringBuilder;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.util.concurrent.TimeUnit;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class MediaMetadata implements IsEmpty {
     private final static String TAG = MediaMetadata.class.getSimpleName();
@@ -48,7 +49,7 @@ public class MediaMetadata implements IsEmpty {
         try {
             if (MyContentType.fromPathOfSavedFile(path) == MyContentType.VIDEO) {
                 try (MediaMetadataRetriever retriever = new MediaMetadataRetriever()) {
-                    retriever.setDataSource(MyContextHolder.get().context(), Uri.parse(path));
+                    retriever.setDataSource(myContextHolder.getNow().context(), Uri.parse(path));
                     return new MediaMetadata(
                         Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)),
                         Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)),

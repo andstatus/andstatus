@@ -21,12 +21,13 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.notification.NotificationEvents;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Arrays;
 import java.util.function.Predicate;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * A widget provider. It uses {@link MyAppWidgetData} to store preferences and to
@@ -39,7 +40,7 @@ public class MyAppWidgetProvider extends AppWidgetProvider {
     @Override
     public void onReceive(Context context, Intent intent) {
         MyLog.i(this, "onReceive; action=" + intent.getAction());
-        MyContextHolder.initialize(context, this);
+        myContextHolder.getInitialized(context, this);
         super.onReceive(context, intent);
     }
 

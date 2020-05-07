@@ -31,7 +31,6 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.net.social.Actor;
@@ -45,6 +44,8 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyStringBuilder;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * One selected note and, optionally, the whole conversation
@@ -104,7 +105,7 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
         switch (ActivityRequestCode.fromId(requestCode)) {
             case SELECT_ACCOUNT_TO_ACT_AS:
                 if (resultCode == RESULT_OK) {
-                    MyAccount myAccount = MyContextHolder.get().accounts().fromAccountName(
+                    MyAccount myAccount = myContextHolder.getNow().accounts().fromAccountName(
                             data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
                     if (myAccount.isValid()) {
                         mContextMenu.setSelectedActingAccount(myAccount);

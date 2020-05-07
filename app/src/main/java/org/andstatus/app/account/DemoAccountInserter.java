@@ -21,7 +21,6 @@ import android.accounts.Account;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.http.HttpConnectionData;
@@ -44,6 +43,7 @@ import io.vavr.control.Try;
 
 import static org.andstatus.app.account.AccountName.ORIGIN_SEPARATOR;
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -225,14 +225,14 @@ public class DemoAccountInserter {
     }
 
     public static void assertDefaultTimelinesForAccounts() {
-        for (MyAccount myAccount : MyContextHolder.get().accounts().get()) {
+        for (MyAccount myAccount : myContextHolder.getNow().accounts().get()) {
             for (TimelineType timelineType : myAccount.getActor().getDefaultMyAccountTimelineTypes()) {
                 if (!myAccount.getConnection().hasApiEndpoint(timelineType.getConnectionApiRoutine())) continue;
 
                 long count = 0;
                 StringBuilder logMsg =new StringBuilder(myAccount.toString());
                 MyStringBuilder.appendWithSpace(logMsg, timelineType.toString());
-                for (Timeline timeline : MyContextHolder.get().timelines().values()) {
+                for (Timeline timeline : myContextHolder.getNow().timelines().values()) {
                     if (timeline.getActorId() == myAccount.getActorId()
                             && timeline.getTimelineType().equals(timelineType)
                             && !timeline.hasSearchQuery()) {
@@ -240,7 +240,7 @@ public class DemoAccountInserter {
                         MyStringBuilder.appendWithSpace(logMsg, timeline.toString());
                     }
                 }
-                assertEquals(logMsg.toString() + "\n" + MyContextHolder.get().timelines().values(), 1, count);
+                assertEquals(logMsg.toString() + "\n" + myContextHolder.getNow().timelines().values(), 1, count);
             }
         }
     }

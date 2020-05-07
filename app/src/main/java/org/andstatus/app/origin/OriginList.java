@@ -30,16 +30,16 @@ import android.widget.TextView;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.list.MyListActivity;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.MySimpleAdapter;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Select or Manage Origins
@@ -132,7 +132,7 @@ public abstract class OriginList extends MyListActivity {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             String name = ((TextView)view.findViewById(R.id.name)).getText().toString();
-            Origin origin = MyContextHolder.get().origins().fromName(name);
+            Origin origin = myContextHolder.getNow().origins().fromName(name);
             if (origin.isPersistent()) {
                 Intent intent = new Intent(OriginList.this, OriginEditor.class);
                 intent.setAction(Intent.ACTION_EDIT);

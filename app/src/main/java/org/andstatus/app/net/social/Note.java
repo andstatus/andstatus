@@ -23,7 +23,6 @@ import androidx.core.util.Pair;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyQuery;
@@ -47,6 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.util.UriUtils.isEmptyOid;
 import static org.andstatus.app.util.UriUtils.isRealOid;
 import static org.andstatus.app.util.UriUtils.nonRealOid;
@@ -422,7 +422,7 @@ public class Note extends AObject {
             }
             return TriState.UNKNOWN;
         } else {
-            final Pair<Long, ActivityType> favAndType = MyQuery.noteIdToLastFavoriting(MyContextHolder.get().getDatabase(),
+            final Pair<Long, ActivityType> favAndType = MyQuery.noteIdToLastFavoriting(myContextHolder.getNow().getDatabase(),
                     noteId, accountActor.actorId);
             switch (favAndType.second) {
                 case LIKE:

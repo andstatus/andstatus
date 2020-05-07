@@ -22,7 +22,6 @@ import android.widget.Toast;
 
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.timeline.TimelineActivity;
@@ -30,6 +29,8 @@ import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Optional;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -55,7 +56,7 @@ public class DefaultProgressListener implements ProgressLogger.ProgressListener,
         this.defaultTitle = activity.getText(defaultTitleId);
         this.upgradingText = activity.getText(R.string.label_upgrading);
         this.cancelText = activity.getText(android.R.string.cancel);
-        this.versionText = MyContextHolder.getVersionText(activity.getBaseContext());
+        this.versionText = myContextHolder.getVersionText(activity.getBaseContext());
     }
 
     @Override
@@ -93,7 +94,7 @@ public class DefaultProgressListener implements ProgressLogger.ProgressListener,
                             if (progressDialog == null) {
                                 progressDialog = new ProgressDialog(activity, ProgressDialog.STYLE_SPINNER);
                                 progressDialog.setOnDismissListener(DefaultProgressListener.this);
-                                progressDialog.setTitle(MyContextHolder.get().state() == MyContextState.UPGRADING
+                                progressDialog.setTitle(myContextHolder.getNow().state() == MyContextState.UPGRADING
                                         ? upgradingText
                                         : defaultTitle);
                                 progressDialog.setMessage(message);
@@ -128,10 +129,10 @@ public class DefaultProgressListener implements ProgressLogger.ProgressListener,
 
     private void showToast(CharSequence message) {
         try {
-            Toast.makeText(MyContextHolder.get().context(),
+            Toast.makeText(myContextHolder.getNow().context(),
                 defaultTitle + "\n" +
                     versionText +
-                    (MyContextHolder.get().state() == MyContextState.UPGRADING
+                    (myContextHolder.getNow().state() == MyContextState.UPGRADING
                         ? "\n" + upgradingText
                         : "") +
                     "\n\n" + message,

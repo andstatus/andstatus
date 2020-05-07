@@ -29,7 +29,6 @@ import org.andstatus.app.R;
 import org.andstatus.app.SearchObjects;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.ContentValuesUtils;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyQuery;
@@ -53,6 +52,8 @@ import org.andstatus.app.util.StringUtil;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Command data store
@@ -124,7 +125,7 @@ public class CommandData implements Comparable<CommandData> {
     @NonNull
     public static CommandData newActorCommandAtOrigin(CommandEnum command, Actor actor, String username, Origin origin) {
         CommandData commandData = newTimelineCommand(command,
-                MyContextHolder.get().timelines().get(
+                myContextHolder.getNow().timelines().get(
                         origin.isEmpty() ? TimelineType.SENT : TimelineType.SENT_AT_ORIGIN, actor, origin));
         commandData.setUsername(username);
         commandData.description = commandData.getUsername();
@@ -147,7 +148,7 @@ public class CommandData implements Comparable<CommandData> {
         CommandData commandData = actor.isEmpty()
                 ? newAccountCommand(command, myAccount)
                 : new CommandData(0, command, myAccount,
-                MyContextHolder.get().timelines().get(TimelineType.SENT, actor, Origin.EMPTY), 0);
+                myContextHolder.getNow().timelines().get(TimelineType.SENT, actor, Origin.EMPTY), 0);
         commandData.setUsername(username);
         commandData.description = commandData.getUsername();
         return commandData;
@@ -160,12 +161,12 @@ public class CommandData implements Comparable<CommandData> {
     public static CommandData newOriginCommand(CommandEnum command, @NonNull Origin origin) {
         return newTimelineCommand(command, origin.isEmpty()
                 ? Timeline.EMPTY
-                : MyContextHolder.get().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, origin));
+                : myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, origin));
     }
 
     public static CommandData newTimelineCommand(CommandEnum command, @NonNull MyAccount myAccount,
                                                  TimelineType timelineType) {
-        return newTimelineCommand(command, MyContextHolder.get().timelines()
+        return newTimelineCommand(command, myContextHolder.getNow().timelines()
                 .get(timelineType, myAccount.getActor(), Origin.EMPTY));
     }
 
@@ -302,7 +303,7 @@ public class CommandData implements Comparable<CommandData> {
         if (mInForeground) {
             builder.withComma("foreground");
         }
-        builder.withComma("created:" + RelativeTime.getDifference(MyContextHolder.get().context(), getCreatedDate()));
+        builder.withComma("created:" + RelativeTime.getDifference(myContextHolder.getNow().context(), getCreatedDate()));
         builder.withComma(CommandResult.toString(commandResult));
         return MyStringBuilder.formatKeyValue(this, builder);
     }

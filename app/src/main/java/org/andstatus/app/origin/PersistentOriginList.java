@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,14 +24,15 @@ import android.view.MenuItem;
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class PersistentOriginList extends OriginList {
 
     protected Iterable<Origin> getOrigins() {
-        return MyContextHolder.get().origins().collection();
+        return myContextHolder.getNow().origins().collection();
     }
     
     @Override

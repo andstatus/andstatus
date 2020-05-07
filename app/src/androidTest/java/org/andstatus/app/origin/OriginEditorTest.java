@@ -25,7 +25,6 @@ import android.widget.Spinner;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.ActivityTest;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.lang.SelectableEnumList;
@@ -37,6 +36,7 @@ import org.junit.Test;
 
 import java.net.URL;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -91,7 +91,7 @@ public class OriginEditorTest extends ActivityTest<OriginEditor> {
             final boolean inCombinedGlobalSearch, final boolean inCombinedPublicReload) {
         final String method = "OriginEditorTest";
 
-        final Origin originOld = MyContextHolder.get().origins().fromName(originName);
+        final Origin originOld = myContextHolder.getNow().origins().fromName(originName);
         final Intent intent = new Intent();
         if (originOld.isPersistent()) {
             intent.setAction(Intent.ACTION_EDIT);
@@ -150,7 +150,7 @@ public class OriginEditorTest extends ActivityTest<OriginEditor> {
         getInstrumentation().waitForIdleSync();
         DbUtils.waitMs(method, 200);
 
-        Origin origin = MyContextHolder.get().origins().fromName(originName);
+        Origin origin = myContextHolder.getNow().origins().fromName(originName);
         assertEquals("Origin '" + originName + "' added", originName, origin.getName());
         assertEquals(originType, origin.getOriginType());
         if (hostOrUrl.contains("bad")) {

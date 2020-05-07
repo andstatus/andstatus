@@ -19,7 +19,6 @@ package org.andstatus.app.net.http;
 import android.content.ContentResolver;
 import android.net.Uri;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.net.http.ConnectionException.StatusCode;
@@ -46,6 +45,8 @@ import oauth.signpost.OAuthConsumer;
 import oauth.signpost.OAuthProvider;
 import oauth.signpost.basic.DefaultOAuthConsumer;
 import oauth.signpost.basic.DefaultOAuthProvider;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
     private static final String UTF_8 = "UTF-8";
@@ -162,7 +163,7 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
 
     /** This method is not legacy HTTP */
     private void writeMedia(HttpURLConnection conn, HttpRequest request) throws IOException {
-        final ContentResolver contentResolver = MyContextHolder.get().context().getContentResolver();
+        final ContentResolver contentResolver = myContextHolder.getNow().context().getContentResolver();
         Uri mediaUri = request.mediaUri.get();
         conn.setChunkedStreamingMode(0);
         conn.setRequestProperty("Content-Type", MyContentType.uri2MimeType(contentResolver, mediaUri));

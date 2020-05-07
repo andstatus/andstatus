@@ -30,7 +30,6 @@ import net.jcip.annotations.GuardedBy;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.social.Actor;
@@ -46,6 +45,7 @@ import org.andstatus.app.util.TriState;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.notification.NotificationEventType.SERVICE_RUNNING;
 import static org.andstatus.app.service.CommandEnum.CLEAR_COMMAND_QUEUE;
 import static org.andstatus.app.service.CommandEnum.DELETE_COMMAND;
@@ -175,7 +175,7 @@ public class MyService extends Service {
 
     private boolean isForcedToStop() {
         synchronized (serviceStateLock) {
-            return mForcedToStop || MyContextHolder.INSTANCE.isShuttingDown();
+            return mForcedToStop || myContextHolder.isShuttingDown();
         }
     }
 
@@ -497,7 +497,7 @@ public class MyService extends Service {
 
     private void initializeMyContext() {
         if (!myContext.isReady()) {
-            myContext = MyContextHolder.initialize(this, this);
+            myContext = myContextHolder.getInitialized(this, this);
         }
     }
 

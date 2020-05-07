@@ -19,14 +19,14 @@ package org.andstatus.app.account;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.BaseColumns;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.FragmentActivity;
-import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.view.MyContextMenu;
@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -82,27 +84,27 @@ public class AccountSelector extends SelectorDialog {
 
         getListView().setOnItemClickListener((parent, view, position, id) -> {
             long actorId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText().toString());
-            returnSelectedAccount(MyContextHolder.get().accounts().fromActorId(actorId));
+            returnSelectedAccount(myContextHolder.getNow().accounts().fromActorId(actorId));
         });
     }
 
     private List<MyAccount> newListData() {
         long originId = Optional.ofNullable(getArguments())
                 .map(bundle -> bundle.getLong(IntentExtra.ORIGIN_ID.key)).orElse(0L);
-        final Origin origin = MyContextHolder.get().origins().fromId(originId);
+        final Origin origin = myContextHolder.getNow().origins().fromId(originId);
         List<Origin> origins = origin.isValid()
                 ? Collections.singletonList(origin)
                 : getOriginsForActor();
         Predicate<MyAccount> predicate = origins.isEmpty()
                 ? ma -> true
                 : ma -> origins.contains(ma.getOrigin());
-        return MyContextHolder.get().accounts().get().stream().filter(predicate).collect(Collectors.toList());
+        return myContextHolder.getNow().accounts().get().stream().filter(predicate).collect(Collectors.toList());
     }
 
     private List<Origin> getOriginsForActor() {
         final Long actorId = Optional.ofNullable(getArguments())
                 .map(bundle -> bundle.getLong(IntentExtra.ACTOR_ID.key)).orElse(0L);
-        return Actor.load(MyContextHolder.get(), actorId).user.knownInOrigins(MyContextHolder.get());
+        return Actor.load(myContextHolder.getNow(), actorId).user.knownInOrigins(myContextHolder.getNow());
     }
 
     private MySimpleAdapter newListAdapter(List<MyAccount> listData) {

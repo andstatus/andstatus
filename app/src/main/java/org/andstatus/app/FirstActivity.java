@@ -28,7 +28,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsGroup;
@@ -41,6 +40,8 @@ import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.concurrent.atomic.AtomicReference;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /** Activity to be started, when Application is not initialised yet (or needs re-initialization).
  * It allows to avoid "Application not responding" errors.
@@ -76,7 +77,7 @@ public class FirstActivity extends AppCompatActivity {
     private void startNextActivity(Intent intent) {
         switch (MyAction.fromIntent(intent)) {
             case INITIALIZE_APP:
-                MyContextHolder.INSTANCE.initialize(this, this, false)
+                myContextHolder.initialize(this, this, false)
                 .whenSuccessAsync(myContext -> finish(), UiThreadExecutor.INSTANCE);
                 break;
             case SET_DEFAULT_VALUES:
@@ -84,11 +85,11 @@ public class FirstActivity extends AppCompatActivity {
                 finish();
                 break;
             default:
-                if (MyContextHolder.get().isReady() || MyContextHolder.get().state() == MyContextState.UPGRADING) {
-                    startNextActivitySync(MyContextHolder.get(), intent);
+                if (myContextHolder.getNow().isReady() || myContextHolder.getNow().state() == MyContextState.UPGRADING) {
+                    startNextActivitySync(myContextHolder.getNow(), intent);
                     finish();
                 } else {
-                    MyContextHolder.initializeByFirstActivity(this);
+                    myContextHolder.initializeByFirstActivity(this);
                 }
         }
     }
@@ -127,8 +128,8 @@ public class FirstActivity extends AppCompatActivity {
     }
 
     public static void startApp() {
-        MyContextHolder.get().context().startActivity(
-                new Intent(MyContextHolder.get().context(), FirstActivity.class));
+        myContextHolder.getNow().context().startActivity(
+                new Intent(myContextHolder.getNow().context(), FirstActivity.class));
     }
 
     public static NeedToStart needToStartNext(Context context, MyContext myContext) {
@@ -165,7 +166,7 @@ public class FirstActivity extends AppCompatActivity {
                         + (update ? ", updating" : "")
                 );
                 changed = true;
-                if ( update && MyContextHolder.get().isReady()) {
+                if ( update && myContextHolder.getNow().isReady()) {
                     SharedPreferencesUtil.putLong(MyPreferences.KEY_VERSION_CODE_LAST, versionCode);
                 }
             }

@@ -21,7 +21,6 @@ import android.text.format.DateUtils;
 import android.text.format.Time;
 
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.notification.NotificationEventType;
@@ -37,6 +36,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -50,7 +50,7 @@ public class MyAppWidgetProviderTest {
     @Before
     public void setUp() throws Exception {
         TestSuite.initializeWithAccounts(this);
-        myContext = MyContextHolder.get();
+        myContext = myContextHolder.getNow();
         MyServiceManager.setServiceUnavailable();
     }
 

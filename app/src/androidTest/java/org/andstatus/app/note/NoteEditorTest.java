@@ -36,7 +36,6 @@ import org.andstatus.app.HelpActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
@@ -69,6 +68,7 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -94,13 +94,13 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
 
         final MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
-        MyContextHolder.get().accounts().setCurrentAccount(ma);
+        myContextHolder.getNow().accounts().setCurrentAccount(ma);
 
         data = getStaticData(ma);
 
         MyLog.i(this, "setUp ended");
         return new Intent(Intent.ACTION_VIEW,
-                MyContextHolder.get().timelines().get(TimelineType.HOME, ma.getActor(), Origin.EMPTY).getUri());
+                myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.getActor(), Origin.EMPTY).getUri());
     }
 
     private NoteEditorData getStaticData(MyAccount ma) {
@@ -345,7 +345,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         @Override
         public void run() {
             // http://developer.android.com/guide/topics/text/copy-paste.html
-            ClipboardManager clipboard = (ClipboardManager) MyContextHolder.get().context()
+            ClipboardManager clipboard = (ClipboardManager) myContextHolder.getNow().context()
                     .getSystemService(Context.CLIPBOARD_SERVICE);
             clip = clipboard.getPrimaryClip();
         }

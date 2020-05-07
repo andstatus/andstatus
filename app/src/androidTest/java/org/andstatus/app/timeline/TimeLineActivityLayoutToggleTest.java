@@ -20,7 +20,6 @@ import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.origin.Origin;
@@ -34,6 +33,7 @@ import org.junit.Test;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertTrue;
 
 public class TimeLineActivityLayoutToggleTest extends TimelineActivityTest<ActivityViewItem> {
@@ -70,10 +70,10 @@ public class TimeLineActivityLayoutToggleTest extends TimelineActivityTest<Activ
 
         MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
-        MyContextHolder.get().accounts().setCurrentAccount(ma);
+        myContextHolder.getNow().accounts().setCurrentAccount(ma);
 
         logStartStop("setUp ended");
-        return new Intent(Intent.ACTION_VIEW, MyContextHolder.get().timelines().get(TimelineType.HOME, ma.getActor(),
+        return new Intent(Intent.ACTION_VIEW, myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.getActor(),
                 Origin.EMPTY).getUri());
     }
 

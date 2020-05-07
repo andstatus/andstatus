@@ -2,7 +2,6 @@
 package org.andstatus.app.origin;
 
 import org.andstatus.app.context.ActorInTimeline;
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DemoNoteInserter;
 import org.andstatus.app.data.DownloadStatus;
@@ -14,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.origin.OriginType.TEXT_LIMIT_MAXIMUM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -33,10 +33,10 @@ public class OriginTest {
         String body = "I set \"Shorten URL with: QTTR_AT\" URL longer than 25 Text longer than 140. Will this be shortened: "
                 + urlString;
 
-        Origin origin = MyContextHolder.get().origins().firstOfType(OriginType.ORIGIN_TYPE_DEFAULT);
+        Origin origin = myContextHolder.getNow().origins().firstOfType(OriginType.ORIGIN_TYPE_DEFAULT);
         assertEquals(OriginType.TWITTER, origin.getOriginType());
 
-        origin = MyContextHolder.get().origins().firstOfType(OriginType.TWITTER);
+        origin = myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER);
         assertEquals(OriginType.TWITTER, origin.getOriginType());
         int textLimit = 280;
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
@@ -47,7 +47,7 @@ public class OriginTest {
                 || charactersLeft == 142);
         assertFalse(origin.isMentionAsWebFingerId());
 
-        origin = MyContextHolder.get().origins().firstOfType(OriginType.PUMPIO);
+        origin = myContextHolder.getNow().origins().firstOfType(OriginType.PUMPIO);
         textLimit = TEXT_LIMIT_MAXIMUM;
         assertEquals("Textlimit", textLimit, origin.getTextLimit());
         assertEquals("Short URL length", 0, origin.shortUrlLength);
@@ -56,7 +56,7 @@ public class OriginTest {
                 origin.charactersLeftForNote(body));
         assertTrue(origin.isMentionAsWebFingerId());
 
-        origin = MyContextHolder.get().origins().firstOfType(OriginType.GNUSOCIAL);
+        origin = myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL);
         textLimit = Origin.TEXT_LIMIT_FOR_WEBFINGER_ID;
         int uploadLimit = 0;
         OriginConfig config = OriginConfig.fromTextLimit(textLimit, uploadLimit);
@@ -96,7 +96,7 @@ public class OriginTest {
         boolean inCombinedGlobalSearch = true;
         boolean inCombinedPublicReload = true;
 
-        DemoOriginInserter originInserter = new DemoOriginInserter(MyContextHolder.get());
+        DemoOriginInserter originInserter = new DemoOriginInserter(myContextHolder.getNow());
         originInserter.createOneOrigin(originType, originName, hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload);
         originInserter.createOneOrigin(originType, originName, "https://" + hostOrUrl
@@ -115,7 +115,7 @@ public class OriginTest {
 
     @Test
     public void testPermalink() {
-        Origin origin = MyContextHolder.get().origins().firstOfType(OriginType.TWITTER);
+        Origin origin = myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER);
         assertEquals(OriginType.TWITTER, origin.getOriginType());
         String body = "Posting to Twitter " + demoData.testRunUid;
         String noteOid = "2578909845023" + demoData.testRunUid;
@@ -144,7 +144,7 @@ public class OriginTest {
     }
     
     private void checkOneName(String out, String in) {
-        assertEquals(out, new Origin.Builder(MyContextHolder.get(), OriginType.GNUSOCIAL).setName(in).build().getName());
+        assertEquals(out, new Origin.Builder(myContextHolder.getNow(), OriginType.GNUSOCIAL).setName(in).build().getName());
     }
 
     @Test
@@ -154,12 +154,12 @@ public class OriginTest {
     }
     
     private void checkOneHost(String out, String in, boolean ssl) {
-        assertEquals(out, new Origin.Builder(MyContextHolder.get(), OriginType.GNUSOCIAL).setHostOrUrl(in).setSsl(ssl).build().getUrl().toExternalForm());
+        assertEquals(out, new Origin.Builder(myContextHolder.getNow(), OriginType.GNUSOCIAL).setHostOrUrl(in).setSsl(ssl).build().getUrl().toExternalForm());
     }
 
     @Test
     public void testUsernameIsValid() {
-        Origin origin = MyContextHolder.get().origins().fromName(demoData.gnusocialTestOriginName);
+        Origin origin = myContextHolder.getNow().origins().fromName(demoData.gnusocialTestOriginName);
         checkUsernameIsValid(origin, "", false);
         checkUsernameIsValid(origin, "someUser.", false);
         checkUsernameIsValid(origin, "someUser ", false);
@@ -168,7 +168,7 @@ public class OriginTest {
         checkUsernameIsValid(origin, "some.user/GnuSocial", false);
         checkUsernameIsValid(origin, "some@user", false);
 
-        origin = MyContextHolder.get().origins().fromName(demoData.pumpioOriginName);
+        origin = myContextHolder.getNow().origins().fromName(demoData.pumpioOriginName);
         checkUsernameIsValid(origin, "", false);
         checkUsernameIsValid(origin, "someUser.", false);
         checkUsernameIsValid(origin, "someUser ", false);

@@ -1,6 +1,5 @@
 package org.andstatus.app.note;
 
-import org.andstatus.app.context.MyContextHolder;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
@@ -13,6 +12,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.andstatus.app.context.DemoData.demoData;
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertTrue;
 
 public class ConversationViewLoaderTest implements ProgressPublisher {
@@ -34,7 +34,7 @@ public class ConversationViewLoaderTest implements ProgressPublisher {
     @Test
     public void testLoad() {
         ConversationLoader loader = new ConversationLoaderFactory().getLoader(
-                ConversationViewItem.EMPTY, MyContextHolder.get(), origin, selectedNoteId, false);
+                ConversationViewItem.EMPTY, myContextHolder.getNow(), origin, selectedNoteId, false);
         progressCounter = 0;
         loader.load(this);
         List<ConversationViewItem> list = loader.getList();
