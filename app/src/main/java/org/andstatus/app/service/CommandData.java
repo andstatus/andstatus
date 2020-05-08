@@ -75,7 +75,7 @@ public class CommandData implements Comparable<CommandData> {
      * specific e.g. {@link CommandEnum#DELETE_COMMAND}
      * It holds actorId for command, which need such parameter (not only for a timeline)
      */
-    private final Timeline timeline;
+    private final CommandTimeline commandTimeline;
     /** This is: 1. Generally: Note ID ({@link NoteTable#NOTE_ID} of the {@link NoteTable})...
      */
     protected long itemId = 0;
@@ -89,7 +89,8 @@ public class CommandData implements Comparable<CommandData> {
                                         MyContext myContext, Origin origin, String queryString) {
         if (searchObjects == SearchObjects.NOTES) {
             Timeline timeline =  myContext.timelines().get(TimelineType.SEARCH, Actor.EMPTY, origin, queryString);
-            return new CommandData(0, CommandEnum.GET_TIMELINE, timeline.myAccountToSync, timeline, 0);
+            return new CommandData(0, CommandEnum.GET_TIMELINE, timeline.myAccountToSync,
+                    CommandTimeline.of(timeline), 0);
         } else {
             return newActorCommand(CommandEnum.SEARCH_ACTORS, Actor.EMPTY, queryString);
         }
@@ -145,17 +146,17 @@ public class CommandData implements Comparable<CommandData> {
     public static CommandData actOnActorCommand(CommandEnum command, MyAccount myAccount, Actor actor, String username) {
         if (myAccount.nonValid() || (actor.isEmpty() && StringUtil.isEmpty(username))) return CommandData.EMPTY;
 
+        Timeline timeline = myContextHolder.getNow().timelines().get(TimelineType.SENT, actor, Origin.EMPTY);
         CommandData commandData = actor.isEmpty()
                 ? newAccountCommand(command, myAccount)
-                : new CommandData(0, command, myAccount,
-                myContextHolder.getNow().timelines().get(TimelineType.SENT, actor, Origin.EMPTY), 0);
+                : new CommandData(0, command, myAccount, CommandTimeline.of(timeline), 0);
         commandData.setUsername(username);
         commandData.description = commandData.getUsername();
         return commandData;
     }
 
     public static CommandData newAccountCommand(CommandEnum command, @NonNull MyAccount myAccount) {
-        return new CommandData(0, command, myAccount, Timeline.EMPTY, 0);
+        return new CommandData(0, command, myAccount, CommandTimeline.of(Timeline.EMPTY), 0);
     }
 
     public static CommandData newOriginCommand(CommandEnum command, @NonNull Origin origin) {
@@ -171,14 +172,14 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public static CommandData newTimelineCommand(CommandEnum command, Timeline timeline) {
-        return new CommandData(0, command, timeline.myAccountToSync, timeline, 0);
+        return new CommandData(0, command, timeline.myAccountToSync, CommandTimeline.of(timeline), 0);
     }
 
-    private CommandData(long commandId, CommandEnum command, MyAccount myAccount, Timeline timeline, long createdDate) {
+    private CommandData(long commandId, CommandEnum command, MyAccount myAccount, CommandTimeline commandTimeline, long createdDate) {
         this.commandId = commandId == 0 ? MyLog.uniqueCurrentTimeMS() : commandId;
         this.command = command;
         this.myAccount = myAccount;
-        this.timeline = timeline;
+        this.commandTimeline = commandTimeline;
         this.createdDate = createdDate > 0 ? createdDate : this.commandId;
         resetRetries();
     }
@@ -191,7 +192,7 @@ public class CommandData implements Comparable<CommandData> {
         return intent == null  ? EMPTY : fromBundle(myContext, intent.getExtras());
     }
 
-    public static CommandData fromBundle(MyContext myContext, Bundle bundle) {
+    private static CommandData fromBundle(MyContext myContext, Bundle bundle) {
         CommandData commandData;
         CommandEnum command = CommandEnum.fromBundle(bundle);
         switch (command) {
@@ -204,7 +205,7 @@ public class CommandData implements Comparable<CommandData> {
                         bundle.getLong(IntentExtra.COMMAND_ID.key, 0),
                         command,
                         MyAccount.fromBundle(myContext, bundle),
-                        Timeline.fromBundle(myContext, bundle),
+                        CommandTimeline.of(Timeline.fromBundle(myContext, bundle)),
                         bundle.getLong(IntentExtra.CREATED_DATE.key));
                 commandData.itemId = bundle.getLong(IntentExtra.ITEM_ID.key);
                 commandData.setUsername(BundleUtils.getString(bundle, IntentExtra.USERNAME));
@@ -226,7 +227,7 @@ public class CommandData implements Comparable<CommandData> {
         return intent;
     }
 
-    public Bundle toBundle() {
+    private Bundle toBundle() {
         Bundle bundle = new Bundle();
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND, command.save());
         if (command == CommandEnum.EMPTY) return bundle;
@@ -235,7 +236,7 @@ public class CommandData implements Comparable<CommandData> {
         if (myAccount.isValid()) {
             bundle.putString(IntentExtra.ACCOUNT_NAME.key, myAccount.getAccountName());
         }
-        timeline.toBundle(bundle);
+        getTimeline().toBundle(bundle);
         BundleUtils.putNotZero(bundle, IntentExtra.ITEM_ID, itemId);
         BundleUtils.putNotEmpty(bundle, IntentExtra.USERNAME, username);
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND_DESCRIPTION, description);
@@ -253,7 +254,7 @@ public class CommandData implements Comparable<CommandData> {
         ContentValuesUtils.putNotEmpty(values, CommandTable.DESCRIPTION, description);
         values.put(CommandTable.IN_FOREGROUND, mInForeground);
         values.put(CommandTable.MANUALLY_LAUNCHED, mManuallyLaunched);
-        timeline.toCommandContentValues(values);
+        commandTimeline.toContentValues(values);
         ContentValuesUtils.putNotZero(values, CommandTable.ITEM_ID, itemId);
         values.put(CommandTable.USERNAME, username);
         commandResult.toContentValues(values);
@@ -267,7 +268,7 @@ public class CommandData implements Comparable<CommandData> {
                 DbUtils.getLong(cursor, CommandTable._ID),
                 command,
                 myContext.accounts().fromActorId(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID)),
-                Timeline.fromCommandCursor(myContext, cursor),
+                CommandTimeline.fromCursor(myContext, cursor),
                 DbUtils.getLong(cursor, CommandTable.CREATED_DATE));
         commandData.description = DbUtils.getString(cursor, CommandTable.DESCRIPTION);
         commandData.mInForeground = DbUtils.getBoolean(cursor, CommandTable.IN_FOREGROUND);
@@ -279,7 +280,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public String getSearchQuery() {
-        return timeline.getSearchQuery();
+        return commandTimeline.searchQuery;
     }
 
     @Override
@@ -291,18 +292,18 @@ public class CommandData implements Comparable<CommandData> {
         if (mManuallyLaunched) {
             builder.withComma("manual");
         }
+        if (mInForeground) {
+            builder.withComma("foreground");
+        }
         builder.withComma("account", myAccount.getAccountName(), myAccount::nonEmpty);
         builder.withComma("username", username);
         if (StringUtil.nonEmpty(description) && !description.equals(username)) {
             builder.withSpaceQuoted(description);
         }
-        if (getTimeline().isValid()) {
-            builder.withComma(getTimeline().toString());
+        if (commandTimeline.isValid()) {
+            builder.withComma(commandTimeline.toString());
         }
         builder.withComma("itemId", itemId, () -> itemId != 0);
-        if (mInForeground) {
-            builder.withComma("foreground");
-        }
         builder.withComma("created:" + RelativeTime.getDifference(myContextHolder.getNow().context(), getCreatedDate()));
         builder.withComma(CommandResult.toString(commandResult));
         return MyStringBuilder.formatKeyValue(this, builder);
@@ -315,7 +316,7 @@ public class CommandData implements Comparable<CommandData> {
         final int prime = 31;
         int result = 1 + command.save().hashCode();
         result = prime * result + myAccount.hashCode();
-        result += prime * timeline.hashCode();
+        result += prime * commandTimeline.hashCode();
         result += prime * itemId;
         return result;
     }
@@ -323,12 +324,12 @@ public class CommandData implements Comparable<CommandData> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || !(o instanceof CommandData)) return false;
+        if (!(o instanceof CommandData)) return false;
 
         CommandData other = (CommandData) o;
         if (!command.equals(other.command)) return false;
         if (!myAccount.equals(other.myAccount)) return false;
-        if (!timeline.equals(other.timeline)) return false;
+        if (!commandTimeline.equals(other.commandTimeline)) return false;
         return itemId == other.itemId;
     }
 
@@ -353,7 +354,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public TimelineType getTimelineType() {
-        return timeline.getTimelineType();
+        return  commandTimeline.timelineType;
     }
 
     public boolean isManuallyLaunched() {
@@ -388,10 +389,10 @@ public class CommandData implements Comparable<CommandData> {
         switch (command) {
             case GET_AVATAR:
                 builder.withSpace(ListScope.USER.timelinePreposition(myContext));
-                builder.withSpace(timeline.actor.getWebFingerId());
+                builder.withSpace(getTimeline().actor.getWebFingerId());
                 if (myContext.accounts().getDistinctOriginsCount() > 1) {
                     builder.withSpace(ListScope.ORIGIN.timelinePreposition(myContext));
-                    builder.withSpace(timeline.actor.origin.getName());
+                    builder.withSpace(commandTimeline.origin.getName());
                 }
                 break;
             case GET_ATTACHMENT:
@@ -399,17 +400,17 @@ public class CommandData implements Comparable<CommandData> {
                 builder.withSpaceQuoted(trimConditionally(description, summaryOnly));
                 break;
             case GET_TIMELINE:
-                builder.append(TimelineTitle.from(myContext, timeline).toString());
+                builder.append(TimelineTitle.from(myContext, getTimeline()).toString());
                 break;
             case GET_OLDER_TIMELINE:
                 builder.append(WhichPage.OLDER.getTitle(myContext.context()));
-                builder.withSpace(TimelineTitle.from(myContext, timeline).toString());
+                builder.withSpace(TimelineTitle.from(myContext, getTimeline()).toString());
                 break;
             case FOLLOW:
             case UNDO_FOLLOW:
             case GET_FOLLOWERS:
             case GET_FRIENDS:
-                builder.withSpace(timeline.actor.getTimelineUsername());
+                builder.withSpace(getTimeline().actor.getTimelineUsername());
                 break;
             case GET_ACTOR:
             case SEARCH_ACTORS:
@@ -430,7 +431,7 @@ public class CommandData implements Comparable<CommandData> {
         if (getTimeline().myAccountToSync.isValid()) {
             builder.withSpace(getTimelineType().scope.timelinePreposition(myContext));
             if (getTimelineType().isAtOrigin()) {
-                builder.withSpace(getTimeline().getOrigin().getName());
+                builder.withSpace(commandTimeline.origin.getName());
             } else {
                 builder.withSpace(getTimeline().myAccountToSync.getAccountName());
             }
@@ -458,7 +459,7 @@ public class CommandData implements Comparable<CommandData> {
         return toShortCommandName(myContext) + "; " + getResult().getProgress();
     }
 
-    public String toShortCommandName(MyContext myContext) {
+    private String toShortCommandName(MyContext myContext) {
         StringBuilder builder = new StringBuilder();
         switch (command) {
             case GET_TIMELINE:
@@ -521,7 +522,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public Timeline getTimeline() {
-        return timeline;
+        return commandTimeline.timeline.get();
     }
 
     public String getUsername() {

@@ -32,6 +32,13 @@ public class LazyVal<T> implements Supplier<T> {
         return new LazyVal<>(supplier, false);
     }
 
+    public static <T> LazyVal<T> of(T value) {
+        LazyVal<T> lazyVal = new LazyVal<>(null, value == null);
+        lazyVal.value = value;
+        lazyVal.isEvaluated = true;
+        return lazyVal;
+    }
+
     public static <T> LazyVal<T> ofNullable(Supplier<T> supplier) {
         return new LazyVal<>(supplier, true);
     }

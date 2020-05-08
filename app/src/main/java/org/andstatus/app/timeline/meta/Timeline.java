@@ -35,7 +35,6 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.ParsedUri;
 import org.andstatus.app.data.SqlWhere;
-import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.database.table.TimelineTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
@@ -46,6 +45,7 @@ import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
@@ -201,16 +201,6 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         timeline.lastChangedDate = DbUtils.getLong(cursor, TimelineTable.LAST_CHANGED_DATE);
 
         return timeline;
-    }
-
-    public static Timeline fromCommandCursor(MyContext myContext, Cursor cursor) {
-        return myContext.timelines().get(
-                DbUtils.getLong(cursor, CommandTable.TIMELINE_ID),
-                TimelineType.load(DbUtils.getString(cursor, CommandTable.TIMELINE_TYPE)),
-                Actor.load(myContext, DbUtils.getLong(cursor, CommandTable.ACTOR_ID)),
-                myContext.origins().fromId(DbUtils.getLong(cursor, CommandTable.ORIGIN_ID)),
-                DbUtils.getString(cursor, CommandTable.SEARCH_QUERY)
-        );
     }
 
     public static Timeline fromBundle(MyContext myContext, Bundle bundle) {
@@ -377,14 +367,6 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
         values.put(TimelineTable.VISIBLE_OLDEST_DATE, visibleOldestDate);
 
         if (lastChangedDate > 0) values.put(TimelineTable.LAST_CHANGED_DATE, lastChangedDate);
-    }
-
-    public void toCommandContentValues(ContentValues values) {
-        values.put(CommandTable.TIMELINE_ID, id);
-        values.put(CommandTable.TIMELINE_TYPE, timelineType.save());
-        values.put(CommandTable.ACTOR_ID, actor.actorId);
-        values.put(CommandTable.ORIGIN_ID, origin.getId());
-        values.put(CommandTable.SEARCH_QUERY, searchQuery);
     }
 
     public Timeline fromSearch(MyContext myContext, boolean globalSearch) {
@@ -581,43 +563,41 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
+        MyStringBuilder builder = new MyStringBuilder();
 
-        builder.append("Timeline{");
         if (timelineType.isAtOrigin()) {
-            builder.append(origin.isValid() ? origin.getName() : "(all origins)");
+            builder.withComma(origin.isValid() ? origin.getName() : "(all origins)");
         }
         if (timelineType.isForUser()) {
             if (actor.isEmpty()) {
-                builder.append("(all accounts)");
+                builder.withComma("(all accounts)");
             } else if (myAccountToSync.isValid()) {
-                builder.append(myAccountToSync.getAccountName());
+                builder.withComma(myAccountToSync.getAccountName());
                 if (!myAccountToSync.getOrigin().equals(origin) && origin.isValid()) {
-                    builder.append(", origin:" + origin.getName());
+                    builder.withComma("origin", origin.getName());
                 }
             } else {
-                builder.append(actor.user);
+                builder.withComma(actor.user.toString());
             }
         }
         if (timelineType != TimelineType.UNKNOWN) {
-            builder.append(", type:" + timelineType.save());
+            builder.withComma("type", timelineType.save());
         }
         if (StringUtil.nonEmpty(actorInTimeline)) {
-            builder.append(", actor:'" + actorInTimeline + "'");
+            builder.withCommaQuoted("actor", actorInTimeline, true);
         } else if (actor.nonEmpty()) {
-            builder.append(", actor:" + actor);
+            builder.withComma("actor" + actor);
         }
         if (hasSearchQuery()) {
-            builder.append(" search:'" + getSearchQuery() + "'");
+            builder.withCommaQuoted("search",getSearchQuery(), true);
         }
         if ( id != 0) {
-            builder.append(", id:" + id);
+            builder.withComma("id", id);
         }
         if (!isSyncable()) {
-            builder.append(", not syncable");
+            builder.withComma("not syncable");
         }
-        builder.append('}');
-        return builder.toString();
+        return builder.toKeyValue("Timeline");
     }
 
     public String positionsToString() {
@@ -676,7 +656,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
     }
 
     public boolean hasSearchQuery() {
-        return !StringUtil.isEmpty(getSearchQuery());
+        return StringUtil.nonEmpty(getSearchQuery());
     }
 
     @NonNull

@@ -84,7 +84,8 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
 
     /** @return true if execution started */
     boolean assertCommandExecutionStarted(String logMsg, long count0, TriState expectStarted) {
-        final String method = "waitForCommandExecutionStart " + logMsg + "; " + getListenedCommand().getCommand().save();
+        final String method = "waitForCommandExecutionStart " + getListenedCommand().getTimelineType() + " "
+                + logMsg + "; " + getListenedCommand().getCommand().save();
         final String criteria = expectStarted.select(
                 "check if count > " + count0,
                 "check for no new execution, count0 = " + count0,

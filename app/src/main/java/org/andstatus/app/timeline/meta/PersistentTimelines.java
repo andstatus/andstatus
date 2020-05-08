@@ -65,7 +65,7 @@ public class PersistentTimelines {
                 }
             } else MyLog.w(PersistentTimelines.class, method + "; invalid skipped " + timeline);
         });
-        MyLog.i(this, "timelinesInitializedMs: " + stopWatch.getTime() + "; " + timelines.size() + " timelines");
+        MyLog.i(this, "timelinesInitializedMs:" + stopWatch.getTime() + "; " + timelines.size() + " timelines");
         return this;
     }
 
@@ -115,13 +115,11 @@ public class PersistentTimelines {
     @NonNull
     public Timeline get(long id, @NonNull TimelineType timelineType,
                         @NonNull Actor actor, @NonNull Origin origin, String searchQuery) {
+        if (id != 0) return fromId(id);
         if (timelineType == TimelineType.UNKNOWN) return Timeline.EMPTY;
 
         Timeline newTimeline = new Timeline(myContext, id, timelineType, actor, origin, searchQuery, 0);
-        return stream().filter(timeline -> newTimeline.getId() == 0
-                ? newTimeline.duplicates(timeline)
-                : timeline.getId() == newTimeline.getId())
-                .findAny().orElse(newTimeline);
+        return stream().filter(newTimeline::duplicates).findAny().orElse(newTimeline);
     }
 
     public Stream<Timeline> stream() {

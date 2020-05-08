@@ -47,6 +47,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.vavr.control.Try;
+
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.notification.NotificationEventType.SERVICE_RUNNING;
 import static org.andstatus.app.service.CommandEnum.CLEAR_COMMAND_QUEUE;
@@ -201,9 +203,10 @@ public class MyService extends Service {
                 if (previous != null) {
                     previous.cancelLogged(true);
                 }
-                if (AsyncTaskLauncher.execute(TAG, current).isFailure()) {
+                Try<Void> result = AsyncTaskLauncher.execute(TAG, current);
+                if (result.isFailure()) {
                     heartBeatRef.compareAndSet(current, null);
-                    MyLog.w(TAG, "MyService " + instanceId + " Failed to revive heartbeat");
+                    MyLog.w(TAG, "MyService " + instanceId + " Failed to revive heartbeat. " + result);
                 }
             }
         }
@@ -397,15 +400,16 @@ public class MyService extends Service {
     private class QueueExecutor extends MyAsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
         private volatile CommandData currentlyExecuting = null;
         private static final long MAX_EXECUTION_TIME_SECONDS = 60;
-        private final String QTAG = QueueExecutor.class.getSimpleName() + InstanceId.next();
+        private final static String TAG = "QueueExecutor";
+        private final String ITAG = TAG + instanceId;
 
         QueueExecutor() {
-            super(PoolEnum.SYNC);
+            super(TAG, PoolEnum.SYNC);
         }
 
         @Override
         protected Boolean doInBackground2(Void aVoid) {
-            MyLog.v(TAG, () -> QTAG +  " started, " + myContext.queues().totalSizeToExecute() + " commands to process");
+            MyLog.v(TAG, () -> ITAG +  " started, " + myContext.queues().totalSizeToExecute() + " commands to process");
             myContext.queues().moveCommandsFromSkippedToMainQueue();
             final String breakReason;
             do {
@@ -459,7 +463,7 @@ public class MyService extends Service {
                 broadcastAfterExecutingCommand(commandData);
                 addSyncOfThisToQueue(commandData);
             } while (true);
-            MyLog.v(TAG, () -> QTAG + " ended, " + breakReason + ", " + myContext.queues().totalSizeToExecute() + " commands left");
+            MyLog.v(TAG, () -> ITAG + " ended, " + breakReason + ", " + myContext.queues().totalSizeToExecute() + " commands left");
             myContext.queues().save();
             return true;
         }
@@ -502,23 +506,25 @@ public class MyService extends Service {
                 sb.withComma("stopping");
             }
             sb.withComma(super.toString());
-            return MyStringBuilder.formatKeyValue(this, sb);
+            return sb.toKeyValue(ITAG);
         }
 
     }
     
     private class HeartBeat extends MyAsyncTask<Void, Long, Void> {
+        private final static String TAG = "HeartBeat";
+        private final String ITAG = TAG + instanceId;
         private static final long HEARTBEAT_PERIOD_SECONDS = 11;
         private volatile long previousBeat = createdAt;
         private volatile long mIteration = 0;
 
         HeartBeat() {
-            super(PoolEnum.SYNC);
+            super(TAG, PoolEnum.SYNC);
         }
 
         @Override
         protected Void doInBackground2(Void aVoid) {
-            MyLog.v(TAG, () -> "Started instance " + instanceId);
+            MyLog.v(ITAG, () -> "Started instance " + instanceId);
             String breakReason = "";
             for (long iteration = 1; iteration < 10000; iteration++) {
                 final HeartBeat heartBeat = heartBeatRef.get();
@@ -543,7 +549,7 @@ public class MyService extends Service {
                 publishProgress(iteration);
             }
             String breakReasonVal = breakReason;
-            MyLog.v(TAG, () -> "Ended; " + this + " - " + breakReasonVal);
+            MyLog.v(ITAG, () -> "Ended; " + this + " - " + breakReasonVal);
             heartBeatRef.compareAndSet(this, null);
             return null;
         }
@@ -553,18 +559,18 @@ public class MyService extends Service {
             mIteration = values[0];
             previousBeat = MyLog.uniqueCurrentTimeMS();
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(TAG, () -> "onProgressUpdate; " + this);
+                MyLog.v(ITAG, () -> "onProgressUpdate; " + this);
             }
             if (MyLog.isDebugEnabled() && RelativeTime.moreSecondsAgoThan(createdAt,
                     QueueExecutor.MAX_EXECUTION_TIME_SECONDS)) {
-                MyLog.d(TAG, AsyncTaskLauncher.threadPoolInfo());
+                MyLog.d(ITAG, AsyncTaskLauncher.threadPoolInfo());
             }
             startStopExecution();
         }
 
         @Override
         public String toString() {
-            return "HeartBeat " + mIteration + "; " + super.toString();
+            return ITAG + "  " + + mIteration + "; " + super.toString();
         }
 
         @Override

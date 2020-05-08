@@ -232,4 +232,8 @@ public class MyStringBuilder implements CharSequence, IsEmpty {
     public boolean isEmpty() {
         return length() == 0;
     }
+
+    public String toKeyValue(Object key) {
+        return formatKeyValue(key, toString());
+    }
 }

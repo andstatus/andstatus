@@ -27,6 +27,7 @@ import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StopWatch;
 import org.andstatus.app.util.TryUtils;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -52,7 +54,7 @@ public class CommandQueue {
     private static final long RETRY_QUEUE_PROCESSING_PERIOD_SECONDS = 900;
     private static final long MIN_RETRY_PERIOD_SECONDS = 900;
     private static final long MAX_DAYS_IN_ERROR_QUEUE = 10;
-    private final static Queue<CommandData> preQueue = new PriorityBlockingQueue<>(INITIAL_CAPACITY);
+    private final static OneQueue preQueue = new OneQueue(QueueType.PRE);
 
     private final MyContext myContext;
     private final AtomicLong mRetryQueueProcessedAt = new AtomicLong();
@@ -61,27 +63,16 @@ public class CommandQueue {
     private volatile boolean changed = false;
 
     static void addToPreQueue(CommandData commandData) {
-        switch (commandData.getCommand()) {
-            case EMPTY:
-            case UNKNOWN:
-                return;
-            default:
-                break;
-        }
-        if (preQueue.contains(commandData)) {
-            MyLog.v(CommandQueue.class, () -> "Didn't add to preQueue. Already found " + commandData);
-            return;
-        }
-        MyLog.v(CommandQueue.class, () -> "Adding to preQueue " + commandData);
-        if (preQueue.offer(commandData)) return;
-
-        // TODO: Remove less prioritized item to free space for this one?!
-
-        MyLog.e(CommandQueue.class, "Couldn't add to the preQueue, size=" + preQueue.size());
+        preQueue.addToQueue(commandData);
     }
 
-    private static class OneQueue {
+    static class OneQueue {
+        final QueueType queueType;
         Queue<CommandData> queue = new PriorityBlockingQueue<>(INITIAL_CAPACITY);
+
+        private OneQueue(QueueType queueType) {
+            this.queueType = queueType;
+        }
 
         public void clear() {
             queue.clear();
@@ -100,6 +91,38 @@ public class CommandQueue {
             return false;
         }
 
+        boolean addToQueue(CommandData commandData) {
+            switch (commandData.getCommand()) {
+                case EMPTY:
+                case UNKNOWN:
+                    MyLog.v(TAG, () -> "Didn't add unknown command to " + queueType + " queue: " + commandData);
+                    return true;
+                default:
+                    break;
+            }
+
+            if (queueType.onAddRemoveExisting) {
+                if (queue.remove(commandData)) {
+                    MyLog.v(TAG, () -> "Removed equal command from " + queueType + " queue");
+                }
+            } else {
+                if (queue.contains(commandData)) {
+                    MyLog.v(TAG, () -> "Didn't add to " + queueType + " queue. Already found " + commandData);
+                    return true;
+                }
+            }
+
+            if (queueType == QueueType.CURRENT) {
+                commandData.getResult().prepareForLaunch();
+            }
+            MyLog.v(TAG, () -> "Adding to " + queueType + " queue " + commandData);
+            if (queue.offer(commandData)) {
+                return true;
+            }
+            MyLog.e(TAG, "Couldn't add to the " + queueType + " queue, size=" + queue.size());
+            return false;
+        }
+
         public int size() {
             return queue.size();
         }
@@ -108,19 +131,16 @@ public class CommandQueue {
     public CommandQueue(MyContext myContext) {
         this.myContext = myContext;
         for (QueueType queueType : QueueType.values()) {
-            if (queueType.createQueue) queues.put(queueType, new OneQueue());
+            if (queueType.createQueue) queues.put(queueType, new OneQueue(queueType));
         }
+        queues.put(QueueType.PRE, preQueue);
     }
 
-    public Queue<CommandData> get(QueueType queueType) {
-        switch (queueType) {
-            case PRE:
-                return preQueue;
-            case UNKNOWN:
-                return null;
-            default:
-                return queues.get(queueType).queue;
-        }
+    @NonNull
+    public OneQueue get(QueueType queueType) {
+        OneQueue oneQueue = queues.get(queueType);
+        if (oneQueue == null) throw new IllegalArgumentException("Unknown queueType " + queueType);
+        return oneQueue;
     }
 
     public synchronized CommandQueue load() {
@@ -295,12 +315,13 @@ public class CommandQueue {
         return size + preQueue.size();
     }
 
-    void addToQueue(QueueType queueType, CommandData commandData) {
-        get(queueType).remove(commandData);
-        if (!get(queueType).offer(commandData)) {
-            MyLog.e(TAG, queueType.name() + " is full?");
+    /** @return true if success */
+    boolean addToQueue(QueueType queueTypeIn, CommandData commandData) {
+        if (get(queueTypeIn).addToQueue(commandData)) {
+            changed = true;
+            return true;
         }
-        changed = true;
+        return false;
     }
 
     boolean isAnythingToExecuteNow() {
@@ -330,10 +351,10 @@ public class CommandQueue {
         moveCommandsFromPreToMainQueue();
         CommandData commandData;
         do {
-            commandData = get(QueueType.CURRENT).poll();
+            commandData = get(QueueType.CURRENT).queue.poll();
             if (commandData == null && isAnythingToRetryNow()) {
                 moveCommandsFromRetryToMainQueue();
-                commandData = get(QueueType.CURRENT).poll();
+                commandData = get(QueueType.CURRENT).queue.poll();
             }
             if (commandData == null) {
                 break;
@@ -352,7 +373,7 @@ public class CommandQueue {
                 + (myContext.isInForeground() ? "foreground "
                     + (MyPreferences.isSyncWhileUsingApplicationEnabled() ? "enabled" : "disabled")
                   : "background")
-                + (commandData == null ? "" : " " + commandData));
+                + (commandData == null ? " (no command)" : " " + commandData));
         if (commandData != null) {
             changed = true;
             commandData.setManuallyLaunched(false);
@@ -361,15 +382,15 @@ public class CommandQueue {
     }
 
     private void moveCommandsFromPreToMainQueue() {
-        for (CommandData cd : preQueue) {
+        for (CommandData cd : preQueue.queue) {
             if (addToMainQueue(cd)) {
-                preQueue.remove(cd);
+                preQueue.queue.remove(cd);
             }
         }
     }
 
     void moveCommandsFromSkippedToMainQueue() {
-        Queue<CommandData> queue = get(QueueType.SKIPPED);
+        Queue<CommandData> queue = get(QueueType.SKIPPED).queue;
         for (CommandData cd : queue) {
             if (addToMainQueue(cd)) {
                 queue.remove(cd);
@@ -379,23 +400,14 @@ public class CommandQueue {
 
     /** @return true if success */
     private boolean addToMainQueue(CommandData commandData) {
-        if (get(QueueType.CURRENT).contains(commandData)) {
-            MyLog.v(TAG, () -> "Didn't add to Main queue. Already found " + commandData);
-            return true;
-        }
-        commandData.getResult().prepareForLaunch();
-        MyLog.v(TAG, () -> "Adding to Main queue " + commandData);
-        changed = true;
-        if (get(QueueType.CURRENT).offer(commandData)) return true;
-
-        MyLog.e(TAG, "Couldn't add to the main queue, size=" + queues.get(QueueType.CURRENT).size());
-        return false;
+        return addToQueue(QueueType.CURRENT, commandData);
     }
 
     private void moveCommandsFromRetryToMainQueue() {
-        for (CommandData cd : get(QueueType.RETRY)) {
+        Queue<CommandData> queue = get(QueueType.RETRY).queue;
+        for (CommandData cd : queue) {
             if (cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS) && addToMainQueue(cd)) {
-                get(QueueType.RETRY).remove(cd);
+                queue.remove(cd);
                 changed = true;
                 MyLog.v(TAG, () -> "Moved from Retry to Main queue: " + cd);
             }
@@ -404,14 +416,15 @@ public class CommandQueue {
     }
 
     private CommandData findInRetryQueue(CommandData cdIn) {
+        Queue<CommandData> queue = get(QueueType.RETRY).queue;
         CommandData cdOut = cdIn;
-        if (get(QueueType.RETRY).contains(cdIn)) {
-            for (CommandData cd : get(QueueType.RETRY)) {
+        if (queue.contains(cdIn)) {
+            for (CommandData cd : queue) {
                 if (cd.equals(cdIn)) {
                     cd.resetRetries();
                     if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
                         cdOut = cd;
-                        get(QueueType.RETRY).remove(cd);
+                        queue.remove(cd);
                         changed = true;
                         MyLog.v(TAG, () -> "Returned from Retry queue: " + cd);
                     } else {
@@ -426,13 +439,14 @@ public class CommandQueue {
     }
 
     private CommandData findInErrorQueue(CommandData cdIn) {
+        Queue<CommandData> queue = get(QueueType.ERROR).queue;
         CommandData cdOut = cdIn;
-        if (get(QueueType.ERROR).contains(cdIn)) {
-            for (CommandData cd : get(QueueType.ERROR)) {
+        if (queue.contains(cdIn)) {
+            for (CommandData cd : queue) {
                 if (cd.equals(cdIn)) {
                     if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
                         cdOut = cd;
-                        get(QueueType.ERROR).remove(cd);
+                        queue.remove(cd);
                         changed = true;
                         MyLog.v(TAG, () -> "Returned from Error queue: " + cd);
                         cd.resetRetries();
@@ -442,7 +456,7 @@ public class CommandQueue {
                     }
                 } else {
                     if (cd.executedMoreSecondsAgoThan(TimeUnit.DAYS.toSeconds(MAX_DAYS_IN_ERROR_QUEUE))) {
-                        get(QueueType.ERROR).remove(cd);
+                        queue.remove(cd);
                         changed = true;
                         MyLog.i(TAG, "Removed old from Error queue: " + cd);
                     }
@@ -450,5 +464,45 @@ public class CommandQueue {
             }
         }
         return cdOut;
+    }
+
+    @NonNull
+    CommandData getFromAnyQueue(CommandData dataIn) {
+        return inWhichQueue(dataIn)
+                .map(oneQueue -> getFromQueue(oneQueue.queueType, dataIn))
+                .orElse(CommandData.EMPTY);
+    }
+
+    @NonNull
+    CommandData getFromQueue(QueueType queueType, CommandData dataIn) {
+        for (Object data : get(queueType).queue) {
+            if (dataIn.equals(data)) return (CommandData) data;
+        }
+        return CommandData.EMPTY;
+    }
+
+    Optional<OneQueue> inWhichQueue(CommandData commandData) {
+        for (OneQueue oneQueue : queues.values()) {
+            Queue<CommandData> queue = oneQueue.queue;
+            if (queue.contains(commandData)) {
+                return Optional.of(oneQueue);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public String toString() {
+        MyStringBuilder builder = new MyStringBuilder();
+        long count = 0;
+        for (OneQueue oneQueue : queues.values()) {
+            Queue<CommandData> queue = oneQueue.queue;
+            if (!queue.isEmpty()) {
+                count += queue.size();
+                builder.withComma(oneQueue.queueType.toString(), queue.toString());
+            }
+        }
+        builder.withComma("sizeOfAllQueues", count);
+        return builder.toKeyValue("CommandQueue");
     }
 }

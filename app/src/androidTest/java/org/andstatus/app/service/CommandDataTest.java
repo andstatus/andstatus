@@ -82,14 +82,14 @@ public class CommandDataTest {
         
         CommandQueue queues = myContextHolder.getNow().queues();
         queues.clear();
-        queues.get(QueueType.ERROR).add(commandData);
+        queues.get(QueueType.ERROR).addToQueue(commandData);
         queues.save();
         assertEquals(1, queues.get(QueueType.ERROR).size());
         queues.load();
         assertEquals(1, queues.get(QueueType.ERROR).size());
-        assertEquals(commandData, MyServiceTest2.getFromQueue(queues, QueueType.ERROR, commandData));
+        assertEquals(commandData, queues.getFromQueue(QueueType.ERROR, commandData));
 
-        CommandData commandData2 = queues.get(QueueType.ERROR).poll();
+        CommandData commandData2 = queues.get(QueueType.ERROR).queue.poll();
 
         assertEquals(commandData, commandData2);
         // Below fields are not included in equals

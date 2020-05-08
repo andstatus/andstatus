@@ -16,8 +16,6 @@
 
 package org.andstatus.app.service;
 
-import androidx.annotation.NonNull;
-
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
@@ -27,12 +25,11 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.junit.Test;
 
-import java.util.Queue;
+import java.util.Optional;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class MyServiceTest2 extends MyServiceTest {
@@ -42,79 +39,87 @@ public class MyServiceTest2 extends MyServiceTest {
         final String method = "testSyncInForeground";
         MyLog.i(this, method + " started");
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false);
-        CommandData cd1 = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
+        CommandData cd1Home = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
                 demoData.getMyAccount(demoData.twitterTestAccountName),
                 TimelineType.HOME);
-        mService.setListenedCommand(cd1);
+        mService.setListenedCommand(cd1Home);
 
         long startCount = mService.executionStartCount;
         long endCount = mService.executionEndCount;
 
+        MyLog.i(this, method + " Sending first command");
         mService.sendListenedCommand();
-        mService.assertCommandExecutionStarted("First command didn't start", startCount, TriState.TRUE);
-        assertTrue("First command didn't end executing", mService.waitForCommandExecutionEnded(endCount));
-        assertEquals(cd1.toString() + " " + mService.getHttp().toString(),
+        mService.assertCommandExecutionStarted("First command should start", startCount, TriState.TRUE);
+        assertTrue("First command should end execution", mService.waitForCommandExecutionEnded(endCount));
+        assertEquals(cd1Home.toString() + " " + mService.getHttp().toString(),
                 1, mService.getHttp().getRequestsCounter());
 
         assertTrue(TestSuite.setAndWaitForIsInForeground(true));
         MyLog.i(this, method + "; we are in a foreground");
 
-        CommandData cd2 = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
+        CommandData cd2Interactions = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
                 demoData.getMyAccount(demoData.twitterTestAccountName),
                 TimelineType.INTERACTIONS);
-        mService.setListenedCommand(cd2);
+        mService.setListenedCommand(cd2Interactions);
 
         startCount = mService.executionStartCount;
+
+        MyLog.i(this, method + " Sending second command");
         mService.sendListenedCommand();
-        mService.assertCommandExecutionStarted("Second command started execution", startCount, TriState.FALSE);
+        mService.assertCommandExecutionStarted("Second command shouldn't start", startCount, TriState.FALSE);
         MyLog.i(this, method + "; After waiting for the second command");
-        assertTrue("Service stopped", mService.waitForServiceStopped(false));
+        assertTrue("Service should stop", mService.waitForServiceStopped(false));
         MyLog.i(this, method + "; Service stopped after the second command");
-        assertEquals("No new data was posted while in foreground",
+
+        assertEquals("No new data should be posted while in foreground",
                 1, mService.getHttp().getRequestsCounter());
 
         CommandQueue queues1 = myContextHolder.getBlocking().queues();
-        Queue<CommandData> queue1 = queues1.get(QueueType.CURRENT);
-        MyLog.i(this, method + "; Current queue size:" + queue1.size());
-        assertTrue("Current queue is empty " + queue1, queue1.isEmpty());
-        assertFalse("First command is in the main queue " + queue1, queue1.contains(cd1));
-        assertFalse("The second command is in the main queue " + queue1, queue1.contains(cd2));
-        queue1 = queues1.get(QueueType.SKIPPED);
-        assertTrue("The second command stayed in the Skip queue " + queue1, queue1.contains(cd2));
+        MyLog.i(this, method + "; Queues1:" + queues1);
 
-        CommandData cd3 = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
+        assertEquals("First command shouldn't be in any queue " + queues1,
+                Optional.empty(), queues1.inWhichQueue(cd1Home).map(q -> q.queueType));
+        assertEquals("Second command should be in the Skip queue " + queues1,
+                Optional.of(QueueType.SKIPPED), queues1.inWhichQueue(cd2Interactions).map(q -> q.queueType));
+
+        CommandData cd3PublicForeground = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
                 demoData.getMyAccount(demoData.twitterTestAccountName),
-                TimelineType.HOME)
+                TimelineType.PUBLIC)
                 .setInForeground(true);
-        mService.setListenedCommand(cd3);
+        mService.setListenedCommand(cd3PublicForeground);
 
         startCount = mService.executionStartCount;
         endCount = mService.executionEndCount;
+
+        MyLog.i(this, method + " Sending third command");
         mService.sendListenedCommand();
 
-        mService.assertCommandExecutionStarted("Foreground command", startCount, TriState.TRUE);
+        mService.assertCommandExecutionStarted("Third (foreground) command", startCount, TriState.TRUE);
         assertTrue("Foreground command ended executing", mService.waitForCommandExecutionEnded(endCount));
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
 
         CommandQueue queues2 = myContextHolder.getBlocking().queues();
-        Queue<CommandData> queue2 = queues2.get(QueueType.CURRENT);
-        assertTrue("Current queue should be empty " + queue2, queue2.isEmpty());
-        queue2 = queues2.get(QueueType.SKIPPED);
-        assertTrue("The second command stayed in the Skip queue " + queue2, queue2.contains(cd2));
-        
+        MyLog.i(this, method + "; Queues2:" + queues2);
+
+        assertEquals("Third command shouldn't be in any queue " + queues2,
+                Optional.empty(), queues2.inWhichQueue(cd3PublicForeground).map(q -> q.queueType));
+
+        Optional<CommandQueue.OneQueue> cd2Queue = queues2.inWhichQueue(cd2Interactions);
+        assertEquals("Second command should be in the Skip queue " + queues2,
+                Optional.of(QueueType.SKIPPED), cd2Queue.map(q -> q.queueType));
+
         long idFound = -1;
-        for (CommandData cd : queue2) {
-            if (cd.equals(cd2)) {
+        for (CommandData cd : cd2Queue.get().queue) {
+            if (cd.equals(cd2Interactions)) {
                 idFound = cd.getCommandId();
             }
         }
-        assertEquals("command id", cd2.getCommandId(), idFound);
+        assertEquals("command id", cd2Interactions.getCommandId(), idFound);
         assertTrue("command id=" + idFound, idFound >= 0);
         
-        assertFalse("Foreground command is not in main queue", queue2.contains(cd3));
         MyLog.i(this, method + " ended");
 
-        myTestDeleteCommand(cd2);
+        myTestDeleteCommand(cd2Interactions);
 
         myContextHolder.getNow().queues().clear();
     }
@@ -124,7 +129,7 @@ public class MyServiceTest2 extends MyServiceTest {
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
 
         final CommandQueue cq1 = myContextHolder.getNow().queues();
-        assertEquals("Didn't find input command in any queue", commandIn, getFromAnyQueue(cq1, commandIn));
+        assertEquals("Didn't find input command in any queue", commandIn, cq1.getFromAnyQueue(commandIn));
 
         CommandData commandDelete = CommandData.newItemCommand(
                 CommandEnum.DELETE_COMMAND,
@@ -142,28 +147,9 @@ public class MyServiceTest2 extends MyServiceTest {
 
         final CommandQueue cq2 = new CommandQueue(myContextHolder.getNow()).load();
         assertEquals("The DELETE command was not deleted from some queue: " + commandDelete,
-                CommandData.EMPTY, getFromAnyQueue(cq2, commandDelete));
+                CommandData.EMPTY, cq2.getFromAnyQueue(commandDelete));
         assertEquals("The command was not deleted from some queue: " + commandIn,
-                CommandData.EMPTY, getFromAnyQueue(cq2, commandIn));
+                CommandData.EMPTY, cq2.getFromAnyQueue(commandIn));
         MyLog.i(this, "myTestDeleteCommand ended");
-    }
-
-    @NonNull
-    private static CommandData getFromAnyQueue(CommandQueue commandQueue, CommandData dataIn) {
-        for (QueueType queueType : QueueType.values()) {
-            CommandData dataOut = getFromQueue(commandQueue, queueType, dataIn);
-            if (dataOut != CommandData.EMPTY) return dataOut;
-        }
-        return CommandData.EMPTY;
-    }
-
-    @NonNull
-    static CommandData getFromQueue(CommandQueue commandQueue, QueueType queueType, CommandData dataIn) {
-        Queue queue = commandQueue.get(queueType);
-        if (queue == null) return CommandData.EMPTY;
-        for (Object data : queue) {
-            if (dataIn.equals(data)) return (CommandData) data;
-        }
-        return CommandData.EMPTY;
     }
 }

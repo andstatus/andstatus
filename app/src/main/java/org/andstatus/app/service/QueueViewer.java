@@ -34,7 +34,6 @@ import org.andstatus.app.timeline.WhichPage;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Collections;
-import java.util.Queue;
 
 public class QueueViewer extends LoadableListActivity {
 
@@ -49,10 +48,10 @@ public class QueueViewer extends LoadableListActivity {
         return new SyncLoader<QueueData>() {
             @Override
             public void load(ProgressPublisher publisher) {
-                for (QueueType queueType :
-                        new QueueType[]{QueueType.CURRENT, QueueType.RETRY, QueueType.ERROR}) {
-                    Queue<CommandData> queue = myContext.queues().get(queueType);
-                    for (CommandData commandData : queue) {
+                QueueType[] queueTypes = {QueueType.CURRENT, QueueType.SKIPPED, QueueType.RETRY, QueueType.ERROR};
+                for (QueueType queueType : queueTypes) {
+                    CommandQueue.OneQueue oneQueue = myContext.queues().get(queueType);
+                    for (CommandData commandData : oneQueue.queue) {
                         items.add(QueueData.getNew(queueType, commandData));
                     }
                 }
