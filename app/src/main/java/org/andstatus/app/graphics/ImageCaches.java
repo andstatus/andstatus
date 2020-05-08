@@ -31,6 +31,7 @@ import org.andstatus.app.data.ImageFile;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StopWatch;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,13 +57,14 @@ public class ImageCaches {
     }
 
     public static synchronized void initialize(Context context) {
+        StopWatch stopWatch = StopWatch.createStarted();
         styledImages.clear();
         if (attachedImagesCache != null) {
             return;
         }
         initializeAttachedImagesCache(context);
         initializeAvatarsCache(context);
-        MyLog.i(ImageCaches.class.getSimpleName(), "Cache initialized. " + getCacheInfo());
+        MyLog.i(ImageCaches.class.getSimpleName(), "imageCachesInitializedMs:" + stopWatch.getTime() + "; " + getCacheInfo());
     }
 
     private static void initializeAttachedImagesCache(Context context) {
@@ -153,18 +155,18 @@ public class ImageCaches {
     public static String getCacheInfo() {
         StringBuilder builder = new StringBuilder("ImageCaches: ");
         if (avatarsCache == null || attachedImagesCache == null) {
-            builder.append("not initialized\n");
+            builder.append("not initialized");
         } else {
-            builder.append(avatarsCache.getInfo() + "\n");
-            builder.append(attachedImagesCache.getInfo() + "\n");
-            builder.append("Styled images: " + styledImages.size() + "\n");
+            builder.append(avatarsCache.getInfo() + "; ");
+            builder.append(attachedImagesCache.getInfo() + "; ");
+            builder.append("Styled images: " + styledImages.size() + "; ");
         }
         Context context = myContextHolder.getNow().context();
         if (context != null) {
             builder.append("Memory. App total: " + I18n.formatBytes(getTotalAppMemory(context)));
             ActivityManager.MemoryInfo memInfo = getMemoryInfo(context);
             builder.append("; Device: available " + I18n.formatBytes(memInfo.availMem) + " of "
-                    + I18n.formatBytes(memInfo.totalMem) + "\n");
+                    + I18n.formatBytes(memInfo.totalMem));
         }
         return builder.toString();
     }

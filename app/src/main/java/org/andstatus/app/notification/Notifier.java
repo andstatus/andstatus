@@ -24,6 +24,8 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.R;
 import org.andstatus.app.appwidget.AppWidgets;
 import org.andstatus.app.context.MyContext;
@@ -32,14 +34,13 @@ import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StopWatch;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-
-import androidx.annotation.NonNull;
 
 import static org.andstatus.app.notification.NotificationEventType.SERVICE_RUNNING;
 
@@ -154,6 +155,7 @@ public class Notifier {
     }
 
     public void initialize() {
+        StopWatch stopWatch = StopWatch.createStarted();
         if (myContext.isReady()) {
             nM = (NotificationManager) myContext.context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
             if (nM == null) {
@@ -166,6 +168,7 @@ public class Notifier {
         enabledEvents = NotificationEventType.validValues.stream().filter(NotificationEventType::isEnabled)
                 .collect(Collectors.toList());
         refEvents.set(NotificationEvents.of(myContext, enabledEvents).load());
+        MyLog.i(this, "notifierInitializedMs:" + stopWatch.getTime() + "; " + refEvents.get().size() + " events");
     }
 
     public boolean isEnabled(NotificationEventType eventType) {

@@ -16,6 +16,7 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StopWatch;
 import org.andstatus.app.util.StringUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -67,6 +68,7 @@ public class MyAccounts implements IsEmpty {
     }
     
     public MyAccounts initialize() {
+        StopWatch stopWatch = StopWatch.createStarted();
         myAccounts.clear();
         recentAccounts.clear();
         for (android.accounts.Account account : AccountUtils.getCurrentAccounts(myContext.context())) {
@@ -79,8 +81,8 @@ public class MyAccounts implements IsEmpty {
         }
         calculateDistinctOriginsCount();
         recentAccounts.addAll(myAccounts.stream().limit(3).collect(Collectors.toList()));
-        MyLog.v(this, () -> "Accounts initialized, " + this.myAccounts.size() + " accounts" +
-                " in " + distinctOriginsCount + " origins");
+        MyLog.i(this, "accountsInitializedMs:" + stopWatch.getTime() + "; "
+            + this.myAccounts.size() + " accounts in " + distinctOriginsCount + " origins");
         return this;
     }
 

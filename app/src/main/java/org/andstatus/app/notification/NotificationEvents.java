@@ -61,6 +61,10 @@ public class NotificationEvents {
         return map.getOrDefault(eventType, NotificationData.EMPTY).count;
     }
 
+    public long size() {
+        return map.values().stream().mapToLong(NotificationData::getCount).sum();
+    }
+
     NotificationEvents clearAll() {
         MyProvider.clearAllNotifications(myContext);
         return load();

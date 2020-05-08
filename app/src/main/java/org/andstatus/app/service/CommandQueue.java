@@ -28,6 +28,7 @@ import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.table.CommandTable;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.StopWatch;
 import org.andstatus.app.util.TryUtils;
 
 import java.util.ArrayList;
@@ -126,10 +127,11 @@ public class CommandQueue {
         if (loaded) {
             MyLog.v(TAG, "Already loaded");
         } else {
+            StopWatch stopWatch = StopWatch.createStarted();
             int count = load(QueueType.CURRENT) + load(QueueType.SKIPPED) + load(QueueType.RETRY);
             int countError = load(QueueType.ERROR);
-            MyLog.d(TAG, "State restored, " + (count > 0 ? Integer.toString(count) : "no ")
-                    + " msg in the Queues"
+            MyLog.i(TAG, "commandQueueInitializedMs:" + stopWatch.getTime() + ";"
+                    + (count > 0 ? Integer.toString(count) : " no") + " msg in queues"
                     + (countError > 0 ? ", plus " + countError + " in Error queue" : "")
             );
             loaded = true;

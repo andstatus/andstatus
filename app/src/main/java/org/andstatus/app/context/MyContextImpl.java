@@ -46,6 +46,7 @@ import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StopWatch;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.function.Supplier;
@@ -120,9 +121,11 @@ public class MyContextImpl implements MyContext {
     }
 
     MyContext initialize(Object initializer) {
-        MyLog.v(this, () -> "Starting initialization by " + initializedBy);
+        StopWatch stopWatch = StopWatch.createStarted();
+        MyLog.i(this, "Starting initialization by " + initializedBy);
         MyContext myContext = initializeInternal(initializer);
-        MyLog.v(this, () -> "Initialized " + state + " by " + initializedBy);
+        MyLog.i(this, "myContextInitializedMs:" + stopWatch.getTime() + "; "
+                + state + " by " + initializedBy);
         return myContext;
     }
 
@@ -173,6 +176,7 @@ public class MyContextImpl implements MyContext {
     }
 
     private void initializeDatabase(boolean createApplicationData) {
+        StopWatch stopWatch = StopWatch.createStarted();
         final String method = "initializeDatabase";
         DatabaseHolder newDb = new DatabaseHolder(context, createApplicationData);
         try {
@@ -188,17 +192,8 @@ public class MyContextImpl implements MyContext {
         }
         if (state() == MyContextState.DATABASE_READY) {
             db = newDb;
-
-          /* For testing:
-            final SQLiteDatabase db = mDb.getWritableDatabase();
-            String sql = "DROP INDEX IF EXISTS idx_activity_message";
-            DbUtils.execSQL(db, sql);
-            //sql = "CREATE INDEX idx_activity_message ON activity (activity_msg_id) WHERE activity_msg_id != 0";
-            sql = "CREATE INDEX idx_activity_message ON activity (activity_msg_id)";
-            DbUtils.execSQL(db, sql);
-          **/
-
         }
+        MyLog.i(this, "databaseInitializedMs: " + stopWatch.getTime() + "; " + state);
     }
 
     private void logDatabaseError(String method, Exception e) {

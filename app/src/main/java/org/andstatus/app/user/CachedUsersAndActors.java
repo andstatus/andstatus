@@ -18,6 +18,7 @@ import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.CollectionsUtil;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StopWatch;
 import org.andstatus.app.util.TriState;
 
 import java.util.Collection;
@@ -54,11 +55,12 @@ public class CachedUsersAndActors {
     }
 
     public CachedUsersAndActors initialize() {
+        StopWatch stopWatch = StopWatch.createStarted();
         initializeMyUsers();
         initializeMyFriendsOrFollowers(GroupType.FRIENDS, friendsOfMyActors);
         initializeMyFriendsOrFollowers(GroupType.FOLLOWERS, followersOfMyActors);
         loadTimelineActors();
-        MyLog.v(this, () -> "Users list initialized, "
+        MyLog.i(this, "usersInitializedMs:" + stopWatch.getTime() + "; "
                 + myUsers.size() + " users, "
                 + myActors.size() + " my actors, "
                 + friendsOfMyActors.size() + " friends, "
@@ -107,7 +109,7 @@ public class CachedUsersAndActors {
 
     public Actor load(long actorId, boolean reloadFirst) {
         Actor actor = Actor.load(myContext, actorId, reloadFirst, Actor::getEmpty);
-        if (isMe(actor)) {
+        if (reloadFirst && isMe(actor)) {
             reloadFriendsOrFollowersOfMy(GroupType.FRIENDS, friendsOfMyActors, actor);
             reloadFriendsOrFollowersOfMy(GroupType.FOLLOWERS, followersOfMyActors, actor);
         }

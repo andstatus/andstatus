@@ -16,6 +16,8 @@
 
 package org.andstatus.app.timeline.meta;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
@@ -23,6 +25,7 @@ import org.andstatus.app.database.table.TimelineTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StopWatch;
 import org.andstatus.app.util.TriState;
 
 import java.util.ArrayList;
@@ -32,8 +35,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
-
-import androidx.annotation.NonNull;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -51,6 +52,7 @@ public class PersistentTimelines {
     }
 
     public PersistentTimelines initialize() {
+        StopWatch stopWatch = StopWatch.createStarted();
         final String method = "initialize";
         timelines.clear();
         MyQuery.get(myContext, "SELECT * FROM " + TimelineTable.TABLE_NAME,
@@ -63,7 +65,7 @@ public class PersistentTimelines {
                 }
             } else MyLog.w(PersistentTimelines.class, method + "; invalid skipped " + timeline);
         });
-        MyLog.v(this, () -> "Timelines initialized, " + timelines.size() + " timelines");
+        MyLog.i(this, "timelinesInitializedMs: " + stopWatch.getTime() + "; " + timelines.size() + " timelines");
         return this;
     }
 

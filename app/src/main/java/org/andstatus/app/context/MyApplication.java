@@ -52,7 +52,7 @@ public class MyApplication extends Application {
         super.onCreate();
         String processName = getCurrentProcessName(this);
         isAcraProcess = processName.endsWith(":acra");
-        MyLog.v(this, "onCreate "
+        MyLog.i(this, "onCreate "
                 + (isAcraProcess ? "ACRA" : "'" + processName + "'") + " process");
         if (!isAcraProcess) {
             MyContextHolder.myContextHolder.storeContextIfNotPresent(this, this);
@@ -84,16 +84,19 @@ public class MyApplication extends Application {
         if (isAcraProcess) {
             return super.openOrCreateDatabase(name, mode, factory);
         }
-        SQLiteDatabase db = null;
+        SQLiteDatabase db;
         File dbAbsolutePath = getDatabasePath(name);
         if (dbAbsolutePath != null) {
             db = SQLiteDatabase.openDatabase(dbAbsolutePath.getPath(), factory,
                     SQLiteDatabase.CREATE_IF_NECESSARY + SQLiteDatabase.OPEN_READWRITE );
+        } else {
+            db = null;
         }
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "openOrCreateDatabase, name=" + name + ( db!=null ? " opened '"
-                    + db.getPath() + "'" : " NOT opened" ));
-        }
+        MyLog.v(this, () -> "openOrCreateDatabase, name:" + name
+            + ( db == null
+                ? " NOT opened"
+                : " opened '" + db.getPath() + "'")
+        );
         return db;
     }
     
