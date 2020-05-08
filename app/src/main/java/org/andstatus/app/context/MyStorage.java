@@ -93,7 +93,7 @@ public class MyStorage {
                     } catch (NullPointerException e) {
                         // I noticed this exception once, but that time it was related to SD card malfunction...
                         if (logged) {
-                            MyLog.e(TAG, method, e);
+                            MyLog.e(TAG, method + " getExternalFilesDir for " + type, e);
                         }
                     }
                 }
@@ -109,7 +109,7 @@ public class MyStorage {
                     dir.mkdirs();
                 } catch (Exception e) {
                     if (logged) {
-                        MyLog.e(TAG, method + "; Error creating directory", e);
+                        MyLog.w(TAG, method + "; Error creating directory", e);
                     }
                 } finally {
                     if (!dir.exists()) {

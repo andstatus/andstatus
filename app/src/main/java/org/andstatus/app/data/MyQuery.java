@@ -220,7 +220,7 @@ public class MyQuery {
     
                     case REBLOG_OID:
                         if (rebloggerActorId == 0) {
-                            MyLog.e(TAG, method + ": actorId was not defined");
+                            MyLog.w(TAG, method + ": rebloggerActorId was not defined");
                         }
                         sql = "SELECT " + ActivityTable.ACTIVITY_OID + " FROM "
                                 + ActivityTable.TABLE_NAME + " WHERE "

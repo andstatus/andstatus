@@ -135,7 +135,7 @@ public class Attachments implements IsEmpty {
             if (downloadData.getPreviewOfDownloadId() != 0) {
                 Attachment target = map.get(downloadData.getPreviewOfDownloadId());
                 if (target == null) {
-                    MyLog.e(downloadData, "Couldn't find target of preview " + downloadData);
+                    MyLog.i(downloadData, "Couldn't find target of preview " + downloadData);
                 } else {
                     attachment.setPreviewOf(target);
                 }

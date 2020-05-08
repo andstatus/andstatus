@@ -107,7 +107,7 @@ public class MyFutureContext implements IdentifiableInstance {
                     firstActivity.startNextActivitySync(myContext);
                     launched = true;
                 } catch (android.util.AndroidRuntimeException e) {
-                    MyLog.e(TAG, "Launching next activity from firstActivity", e);
+                    MyLog.w(TAG, "Launching next activity from firstActivity", e);
                 } catch (java.lang.SecurityException e) {
                     MyLog.d(TAG, "Launching activity", e);
                 }

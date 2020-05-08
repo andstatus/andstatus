@@ -501,7 +501,6 @@ public class MyProvider extends ContentProvider {
         if (myContextHolder.getNow().isReady()) {
             // Get the database and run the query
             SQLiteDatabase db = myContextHolder.getNow().getDatabase();
-            boolean logQuery = MyLog.isDebugEnabled();
             try {
                 if (StringUtil.nonEmpty(where)) {
                     qb.appendWhere(where);
@@ -530,25 +529,19 @@ public class MyProvider extends ContentProvider {
                 // Here we substitute ?-s in selection with values from selectionArgs
                 c = db.rawQuery(sql, selectionArgs2);
                 if (c == null) {
-                    MyLog.e(this, "Null cursor returned");
-                    logQuery = true;
+                    MyLog.e(this, "Null cursor returned " + formatSql(sql, selectionArgs2));
                 }
             } catch (Exception e) {
-                logQuery = true;
-                MyLog.e(this, "Database query failed", e);
+                MyLog.e(this, "Database query failed " + formatSql(sql, selectionArgs2), e);
             }
 
-            if (logQuery) {
-                String msg = "query, SQL=\"" + sql + "\"";
-                if (selectionArgs2.length > 0) {
-                    msg += "; selectionArgs=" + Arrays.toString(selectionArgs2);
-                }
-                MyLog.d(this, msg);
+            if (MyLog.isDebugEnabled()) {
+                MyLog.d(this, formatSql(sql, selectionArgs2));
                 if (built && MyLog.isVerboseEnabled()) {
-                    msg = "uri=" + uri + "; projection=" + Arrays.toString(projection)
+                    String msg2 = "uri=" + uri + "; projection=" + Arrays.toString(projection)
                     + "; selection=" + selection + "; sortOrder=" + sortOrderIn
                     + "; qb.getTables=" + qb.getTables() + "; orderBy=" + sortOrder;
-                    MyLog.v(this, msg);
+                    MyLog.v(this, msg2);
                 }
             }
         }
@@ -557,6 +550,14 @@ public class MyProvider extends ContentProvider {
             c.setNotificationUri(getContext().getContentResolver(), uri);
         }
         return c;
+    }
+
+    public String formatSql(String sql, String[] selectionArgs2) {
+        String msg1 = "query, SQL=\"" + sql + "\"";
+        if (selectionArgs2.length > 0) {
+            msg1 += "; selectionArgs=" + Arrays.toString(selectionArgs2);
+        }
+        return msg1;
     }
 
     /**

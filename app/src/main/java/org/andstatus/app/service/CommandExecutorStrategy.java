@@ -68,7 +68,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
 
     protected <T> Try<T> onParseException(String message) {
         execContext.getResult().incrementParseExceptions();
-        MyLog.e(this, message);
+        MyLog.w(this, message);
         return TryUtils.failure(message);
     }
 
@@ -180,7 +180,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
         }
         MyStringBuilder builder = MyStringBuilder.of(detailedMessage).atNewLine(execContext.toExceptionContext());
         execContext.getResult().setMessage(builder.toString());
-        MyLog.e(this, builder.toString());
+        MyLog.w(this, builder.toString());
         return TryUtils.failure(detailedMessage);
     }
 

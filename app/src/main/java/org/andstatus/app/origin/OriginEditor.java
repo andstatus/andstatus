@@ -55,6 +55,7 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
  * @author yvolk@yurivolkov.com
  */
 public class OriginEditor extends MyActivity {
+    private static final String TAG = OriginEditor.class.getSimpleName();
     private Origin.Builder builder;
 
     private Button buttonSave;
@@ -129,7 +130,7 @@ public class OriginEditor extends MyActivity {
         }
 
         Origin origin = builder.build();
-        MyLog.v(this, () -> "processNewIntent: " + origin.toString());
+        MyLog.v(TAG, () -> "processNewIntent: " + origin.toString());
         spinnerOriginType.setSelection(originTypes.getIndex(origin.getOriginType()));
         if (spinnerOriginType.isEnabled()) {
             spinnerOriginType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -273,7 +274,7 @@ public class OriginEditor extends MyActivity {
                 .setInCombinedGlobalSearch(MyCheckBox.isChecked(this, R.id.in_combined_global_search, false))
                 .setInCombinedPublicReload(MyCheckBox.isChecked(this, R.id.in_combined_public_reload, false))
                 .save();
-        MyLog.v(this, () -> (builder.isSaved() ? "Saved" : "Not saved") + ": " + builder.build().toString());
+        MyLog.v(TAG, () -> (builder.isSaved() ? "Saved" : "Not saved") + ": " + builder.build().toString());
         if (builder.isSaved()) {
             builder.getMyContext().origins().initialize();
             setResult(RESULT_OK);
@@ -292,7 +293,7 @@ public class OriginEditor extends MyActivity {
             Ringtone r = RingtoneManager.getRingtone(context, notification);
             r.play();
         } catch (Exception e) {
-            MyLog.e("beep", e);
+            MyLog.w(TAG, "beep", e);
         }        
     }
 }

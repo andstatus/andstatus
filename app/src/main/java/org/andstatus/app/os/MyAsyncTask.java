@@ -287,7 +287,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     }
 
     private void logError(String msgLog, Throwable tr) {
-        MyLog.e(this, msgLog, tr);
+        MyLog.w(this, msgLog, tr);
         if (!StringUtil.isEmpty(firstError) || tr == null) {
             return;
         }

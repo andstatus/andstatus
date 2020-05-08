@@ -290,7 +290,7 @@ public class ConnectionPumpio extends Connection {
         }
         if (StringUtil.isEmpty(objectType)) {
             objectType = "unknown object type: " + oid;
-            MyLog.e(this, objectType);
+            MyLog.w(this, objectType);
         }
         return objectType;
     }

@@ -73,7 +73,7 @@ public class TamperingDetector {
                 signatures.add(signatureString);
             }
         } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException e) {
-            MyLog.e(TamperingDetector.class, e);
+            MyLog.e(TamperingDetector.class, "Failed to get app signature", e);
         }
         return signatures;
     }

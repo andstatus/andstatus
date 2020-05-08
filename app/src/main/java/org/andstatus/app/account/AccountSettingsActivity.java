@@ -913,7 +913,7 @@ public class AccountSettingsActivity extends MyActivity {
                 }
             } catch (ConnectionException e) {
                 connectionErrorMessage = e.getMessage();
-                MyLog.e(this, e);
+                MyLog.i(this, e);
             }
 
             String stepErrorMessage = "";
@@ -1037,7 +1037,7 @@ public class AccountSettingsActivity extends MyActivity {
                     | OAuthCommunicationException
                     | ConnectionException e) {
                 connectionErrorMessage = e.getMessage();
-                MyLog.e(this, e);
+                MyLog.i(this, e);
                 authUri = Uri.EMPTY;
             }
 
@@ -1169,7 +1169,7 @@ public class AccountSettingsActivity extends MyActivity {
                         }
                     } catch (Exception e) {
                         message = e.getMessage();
-                        MyLog.e(this, e);
+                        MyLog.i(this, e);
                     } finally {
                         state.builder.setUserTokenWithSecret(accessToken, accessSecret);
                         MyLog.d(this, "Access token for " + state.getAccount().getAccountName() +

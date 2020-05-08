@@ -206,7 +206,7 @@ class ActivitySender {
             field.put(recipientId);
             activity.put(recipientField, field);
         } catch (JSONException e) {
-            MyLog.e(this, e);
+            MyLog.w(this, "JSON: " + activity, e);
         }
     }
 

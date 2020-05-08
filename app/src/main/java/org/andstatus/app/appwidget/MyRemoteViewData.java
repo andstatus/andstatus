@@ -54,7 +54,7 @@ class MyRemoteViewData {
 
         if (endMillis == 0) {
             formatted = "=0 ???";
-            MyLog.e(context, "data.dateUpdated==0");
+            MyLog.w(context, "formatWidgetTime: endMillis == 0");
         } else {
             Time timeStart = new Time();
             timeStart.set(startMillis);

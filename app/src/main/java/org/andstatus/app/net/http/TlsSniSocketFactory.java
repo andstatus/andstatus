@@ -32,6 +32,7 @@ import cz.msebera.android.httpclient.conn.ssl.BrowserCompatHostnameVerifier;
 import cz.msebera.android.httpclient.protocol.HttpContext;
 
 public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
+    private static final String TAG = TlsSniSocketFactory.class.getSimpleName();
 
     private static final ConcurrentHashMap<SslModeEnum, TlsSniSocketFactory> instances = new ConcurrentHashMap<SslModeEnum, TlsSniSocketFactory>();
     public static ConnectionSocketFactory getInstance(SslModeEnum sslMode) {
@@ -73,7 +74,7 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
         } else {
             sslSocketFactory = (SSLCertificateSocketFactory) SSLCertificateSocketFactory
                     .getInsecure(MyPreferences.getConnectionTimeoutMs(), null);
-            MyLog.i(this, "Insecure SSL allowed");
+            MyLog.i(TAG, "Insecure SSL allowed");
         }
     }
     
@@ -84,7 +85,7 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
 
     @Override
     public Socket connectSocket(int timeout, Socket plain, HttpHost host, InetSocketAddress remoteAddr, InetSocketAddress localAddr, HttpContext context) throws IOException {
-        MyLog.d(this, "Preparing direct SSL connection (without proxy) to " + host);
+        MyLog.d(TAG, "Preparing direct SSL connection (without proxy) to " + host);
         
         // we'll rather use an SSLSocket directly
         plain.close();
@@ -100,13 +101,13 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
 
     @Override
     public Socket createLayeredSocket(Socket plain, String host, int port, HttpContext context) throws IOException {
-        MyLog.d(this, "Preparing layered SSL connection (over proxy) to " + host);
+        MyLog.d(TAG, "Preparing layered SSL connection (over proxy) to " + host);
         
         // create a layered SSL socket, but don't do hostname/certificate verification yet
         SSLSocket ssl = (SSLSocket)sslSocketFactory.createSocket(plain, host, port, true);
 
         // already connected, but verify host name again and print some connection info
-        MyLog.w(this, "Setting SNI/TLSv1.2 will silently fail because the handshake is already done");
+        MyLog.d(TAG, "Setting SNI/TLSv1.2 will silently fail because the handshake is already done");
         connectWithSNI(ssl, host);
 
         return ssl;
@@ -117,13 +118,13 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
         // - enable all supported protocols
         ssl.setEnabledProtocols(ssl.getSupportedProtocols());
         
-        MyLog.d(this, "Using documented SNI with host name " + host);
+        MyLog.d(TAG, "Using documented SNI with host name " + host);
         sslSocketFactory.setHostname(ssl, host);
 
         // verify hostname and certificate
         SSLSession session = ssl.getSession();
         if (!session.isValid()) {
-            MyLog.i(this, "Invalid session to host:'" + host + "'");
+            MyLog.i(TAG, "Invalid session to host:'" + host + "'");
         }
 
         HostnameVerifier hostnameVerifier = secure ? new BrowserCompatHostnameVerifier() : new AllowAllHostnameVerifier();
@@ -131,7 +132,7 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
             throw new SSLPeerUnverifiedException("Cannot verify hostname: " + host);
         }
 
-        MyLog.i(this, "Established " + session.getProtocol() + " connection with " + session.getPeerHost() +
+        MyLog.d(TAG, "Established " + session.getProtocol() + " connection with " + session.getPeerHost() +
                 " using " + session.getCipherSuite());
     }
     

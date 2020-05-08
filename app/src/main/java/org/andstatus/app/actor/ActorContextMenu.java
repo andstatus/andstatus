@@ -107,7 +107,7 @@ public class ActorContextMenu extends MyContextMenu {
                 ActorContextMenuItem.GET_ACTOR.addTo(menu, menuGroup, order++, R.string.get_user);
             }
         } catch (Exception e) {
-            MyLog.e(this, method, e);
+            MyLog.i(this, method, e);
         }
 
     }

@@ -63,7 +63,7 @@ public class Xslt {
             transformer.transform(xmlSource, result);
             output = result.getWriter().toString();
         } catch (TransformerFactoryConfigurationError | TransformerException e) {
-            MyLog.e(TAG, e);
+            MyLog.w(TAG, "Failed to transform XML to HTML", e);
         }
         return output;
     }

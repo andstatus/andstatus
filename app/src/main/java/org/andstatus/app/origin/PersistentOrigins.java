@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import androidx.annotation.NonNull;
 
 public class PersistentOrigins {
+    private static final String TAG = PersistentOrigins.class.getSimpleName();
     private final MyContext myContext;
     private final Map<String,Origin> mOrigins = new ConcurrentHashMap<String, Origin>();
     
@@ -62,13 +63,13 @@ public class PersistentOrigins {
                 mOrigins.put(origin.name, origin);
             }
         } catch (SQLException e){
-            MyLog.e(this, "Failed to initialize origins\n" + MyLog.getStackTrace(e));
+            MyLog.e(TAG, "Failed to initialize origins\n" + MyLog.getStackTrace(e));
             return false;
         } finally {
             DbUtils.closeSilently(cursor);
         }
         
-        MyLog.v(this, () -> "Initialized " + mOrigins.size() + " origins");
+        MyLog.v(TAG, () -> "Initialized " + mOrigins.size() + " origins");
         return true;
     }
     

@@ -68,7 +68,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
         this.parentActivity = loadableListActivity;
         searchText = (AutoCompleteTextView) findViewById(R.id.search_text);
         if (searchText == null) {
-            MyLog.e(this, "searchView is null");
+            MyLog.w(this, "searchView is null");
             return;
         }
         searchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -88,7 +88,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
 
         searchObjects = (Spinner) findViewById(R.id.search_objects);
         if (searchObjects == null) {
-            MyLog.e(this, "searchObjects is null");
+            MyLog.w(this, "searchObjects is null");
             return;
         }
         searchObjects.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -105,7 +105,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
 
         View upButton = findViewById(R.id.up_button);
         if (upButton == null) {
-            MyLog.e(this, "upButton is null");
+            MyLog.w(this, "upButton is null");
             return;
         }
         upButton.setOnClickListener(new OnClickListener() {
@@ -117,13 +117,13 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
 
         internetSearch = (CheckBox) findViewById(R.id.internet_search);
         if (internetSearch == null) {
-            MyLog.e(this, "internetSearch is null");
+            MyLog.w(this, "internetSearch is null");
             return;
         }
 
         combined = (CheckBox) findViewById(R.id.combined);
         if (combined == null) {
-            MyLog.e(this, "combined is null");
+            MyLog.w(this, "combined is null");
             return;
         }
         combined.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -135,7 +135,7 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
 
         View submitButton = findViewById(R.id.submit_button);
         if (submitButton == null) {
-            MyLog.e(this, "submitButton is null");
+            MyLog.w(this, "submitButton is null");
             return;
         }
         submitButton.setOnClickListener(new OnClickListener() {

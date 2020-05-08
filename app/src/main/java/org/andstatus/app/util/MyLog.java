@@ -20,6 +20,8 @@ import android.content.SharedPreferences;
 import android.text.format.DateFormat;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.context.MyPreferences;
@@ -46,7 +48,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
-import androidx.annotation.NonNull;
 import io.vavr.control.Try;
 
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
@@ -91,8 +92,7 @@ public class MyLog {
     private static final int IGNORED = VERBOSE - 1;
 
     private static volatile boolean initialized = false;
-    private static String logMessagePrefix = "andstatusMyLog ";
-    
+
     /** 
      * Cached value of the persistent preference
      */
@@ -131,49 +131,49 @@ public class MyLog {
     public static int e(Object objTag, String msg, Throwable tr) {
         String tag = objToTruncatedTag(objTag);
         logToFile(ERROR, tag, msg, tr);
-        return Log.e(tag, withPrefix(msg), tr);
+        return Log.e(tag, withOptionalPrefix(msg), tr);
     }
 
     public static int e(Object objTag, Throwable tr) {
         String tag = objToTruncatedTag(objTag);
         logToFile(ERROR, tag, null, tr);
-        return Log.e(tag, withPrefix(""), tr);
+        return Log.e(tag, withOptionalPrefix(""), tr);
     }
     
     public static int e(Object objTag, String msg) {
         String tag = objToTruncatedTag(objTag);
         logToFile(ERROR, tag, msg, null);
-        return Log.e(tag, withPrefix(msg));
+        return Log.e(tag, withOptionalPrefix(msg));
     }
 
     public static int i(Object objTag, String msg, Throwable tr) {
         String tag = objToTruncatedTag(objTag);
         logToFile(INFO, tag, msg, tr);
-        return Log.i(tag, withPrefix(msg), tr);
+        return Log.i(tag, withOptionalPrefix(msg), tr);
     }
     
     public static int i(Object objTag, Throwable tr) {
         String tag = objToTruncatedTag(objTag);
         logToFile(INFO, tag, null, tr);
-        return Log.i(tag, withPrefix(""), tr);
+        return Log.i(tag, withOptionalPrefix(""), tr);
     }
     
     public static int i(Object objTag, String msg) {
         String tag = objToTruncatedTag(objTag);
         logToFile(INFO, tag, msg, null);
-        return Log.i(tag, withPrefix(msg));
+        return Log.i(tag, withOptionalPrefix(msg));
     }
 
     public static int w(Object objTag, String msg) {
         String tag = objToTruncatedTag(objTag);
         logToFile(WARN, tag, msg, null);
-        return Log.w(tag, withPrefix(msg));
+        return Log.w(tag, withOptionalPrefix(msg));
     }
 
     public static int w(Object objTag, String msg, Throwable tr) {
         String tag = objToTruncatedTag(objTag);
         logToFile(WARN, tag, msg, tr);
-        return Log.w(tag, withPrefix(msg), tr);
+        return Log.w(tag, withOptionalPrefix(msg), tr);
     }
 
     /**
@@ -184,7 +184,7 @@ public class MyLog {
         int i = 0;
         if (isLoggable(tag, DEBUG)) {
             logToFile(DEBUG, tag, msg, null);
-            i = Log.d(tag, withPrefix(msg));
+            i = Log.d(tag, withOptionalPrefix(msg));
         }
         return i;
     }
@@ -197,7 +197,7 @@ public class MyLog {
         int i = 0;
         if (isLoggable(tag, DEBUG)) {
             logToFile(DEBUG, tag, msg, tr);
-            i = Log.d(tag, withPrefix(msg), tr);
+            i = Log.d(tag, withOptionalPrefix(msg), tr);
         }
         return i;
     }
@@ -210,7 +210,7 @@ public class MyLog {
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, null, tr);
-            i = Log.v(tag, withPrefix(""), tr);
+            i = Log.v(tag, withOptionalPrefix(""), tr);
         }
         return i;
     }
@@ -220,7 +220,7 @@ public class MyLog {
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, msg, null);
-            i = Log.v(tag, withPrefix(msg));
+            i = Log.v(tag, withOptionalPrefix(msg));
         }
         return i;
     }
@@ -231,7 +231,7 @@ public class MyLog {
 
         String msg = supplier.get();
         logToFile(VERBOSE, tag, msg, null);
-        return Log.v(tag, withPrefix(msg));
+        return Log.v(tag, withOptionalPrefix(msg));
     }
 
     public static int v(Object objTag, String msg, Throwable tr) {
@@ -239,7 +239,7 @@ public class MyLog {
         int i = 0;
         if (isLoggable(tag, Log.VERBOSE)) {
             logToFile(VERBOSE, tag, msg, tr);
-            i = Log.v(tag, withPrefix(msg), tr);
+            i = Log.v(tag, withOptionalPrefix(msg), tr);
         }
         return i;
     }
@@ -251,13 +251,14 @@ public class MyLog {
         String tag = objToTruncatedTag(objTag);
         int i = 0;
         if (isLoggable(tag, IGNORED)) {
-            i = Log.i(tag, withPrefix(""), tr);
+            i = Log.i(tag, withOptionalPrefix(""), tr);
         }
         return i;
     }
 
-    private static String withPrefix(String msg) {
-        return logMessagePrefix + msg;
+    /** For now let's not add any prefix */
+    private static String withOptionalPrefix(String msg) {
+        return msg;
     }
 
     /** Truncated to {@link #MAX_TAG_LENGTH} */

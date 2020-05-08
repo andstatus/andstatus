@@ -202,7 +202,7 @@ public class MyContextImpl implements MyContext {
     }
 
     private void logDatabaseError(String method, Exception e) {
-        MyLog.e(this, method + "; Error", e);
+        MyLog.w(this, method + "; Error", e);
         lastDatabaseError = e.getMessage();
     }
 

@@ -459,7 +459,7 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing note", e, jso);
         } catch (Exception e) {
-            MyLog.e(this, method, e);
+            MyLog.w(this, method, e);
             return AActivity.EMPTY;
         }
         return activity;

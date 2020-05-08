@@ -531,12 +531,12 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             if (isPersistent() && myAccount.actor.actorId == 0) {
                 changed = true;
                 assignActorId();
-                MyLog.e(TAG, "MyAccount '" + myAccount.getAccountName()
+                MyLog.i(TAG, "MyAccount '" + myAccount.getAccountName()
                         + "' was not connected to the Actor table. actorId=" + myAccount.actor.actorId);
             }
             if (!myAccount.getCredentialsPresent()
                     && myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
-                MyLog.e(TAG, "Account's credentials were lost?! Fixing...");
+                MyLog.i(TAG, "Account's credentials were lost?! Fixing...");
                 setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
                 changed = true;
             }
@@ -727,7 +727,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             save();
 
             if (credentialsOfOtherAccount) {
-                MyLog.e(TAG, myContext().context().getText(R.string.error_credentials_of_other_user) + ": " +
+                MyLog.w(TAG, myContext().context().getText(R.string.error_credentials_of_other_user) + ": " +
                         actor.getUniqueNameWithOrigin() +
                         " account name: " + myAccount.getAccountName() +
                         " vs username: " + actor.getUsername());
@@ -735,7 +735,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
             }
             if (errorSettingUsername) {
                 String msg = myContext().context().getText(R.string.error_set_username) + " " + actor.getUsername();
-                MyLog.e(TAG, msg);
+                MyLog.w(TAG, msg);
                 return Try.failure(new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg));
             }
             return Try.success(this);
@@ -777,7 +777,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty {
                 try {
                     new DataUpdater(myAccount).onActivity(myAccount.actor.update(myAccount.actor));
                 } catch (Exception e) {
-                    MyLog.e(TAG, "assignUserId", e);
+                    MyLog.e(TAG, "assignUserId to " + myAccount, e);
                 }
             }
         }

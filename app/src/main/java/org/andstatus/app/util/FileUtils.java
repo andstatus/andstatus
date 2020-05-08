@@ -201,9 +201,9 @@ public class FileUtils {
         if (src != null && src.exists()) {
             sizeIn = src.length();
             if (!dst.createNewFile()) {
-                MyLog.e(objTag, "New file was not created: '" + dst.getCanonicalPath() + "'");
+                MyLog.w(objTag, "New file was not created: '" + dst.getCanonicalPath() + "'");
             } else if (src.getCanonicalPath().compareTo(dst.getCanonicalPath()) == 0) {
-                MyLog.d(objTag, "Cannot copy to itself: '" + src.getCanonicalPath() + "'");
+                MyLog.i(objTag, "Cannot copy to itself: '" + src.getCanonicalPath() + "'");
             } else {
                 try (
                         FileInputStream fileInputStream = new FileInputStream(src);

@@ -59,7 +59,7 @@ public class ManageTimelinesContextMenu extends MyContextMenu {
             }
             ManageTimelinesContextMenuItem.FORGET_SYNC_EVENTS.addTo(menu, ++order, R.string.forget_sync_events);
         } catch (Exception e) {
-            MyLog.e(this, method, e);
+            MyLog.w(this, method, e);
         }
 
     }

@@ -234,7 +234,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         Actor actor = params.menu.getViewItem().getActor();
         Origin origin = params.menu.getOrigin();
         if (!origin.isValid()) {
-            MyLog.e(this, "Unknown origin for " + params.menu.getViewItem().actor);
+            MyLog.w(this, "Unknown origin for " + params.menu.getViewItem().actor);
             return;
         }
         if (params.menu.getActingAccount().nonValid() || !params.menu.getActingAccount().getOrigin().equals(origin)) {

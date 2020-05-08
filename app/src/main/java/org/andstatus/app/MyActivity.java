@@ -147,7 +147,7 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
         try {
             super.startActivityForResult(intent, requestCode);
         } catch (ActivityNotFoundException e) {
-            MyLog.e(this, "requestCode=" + requestCode, e);
+            MyLog.w(this, "requestCode=" + requestCode, e);
         }
     }
 

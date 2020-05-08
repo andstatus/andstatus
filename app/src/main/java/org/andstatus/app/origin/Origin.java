@@ -373,9 +373,9 @@ public class Origin implements Comparable<Origin>, IsEmpty {
                 cursor.close();
             }
             long countVal = count;
-            MyLog.v(this, () -> this.toString() + " has " + countVal + " children");
+            MyLog.v(this, () -> this + " has " + countVal + " children");
         } catch (Exception e) {
-            MyLog.e(this, "Error counting children", e);
+            MyLog.e(this, "Error counting children " + this, e);
         } finally {
             DbUtils.closeSilently(cursor);
         }
@@ -679,7 +679,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
                         .fromName(origin.getName());
                 if (existing.isPersistent()) {
                     if (origin.originType != existing.originType) {
-                        MyLog.e(this, "Origin with this name and other type already exists " + existing.toString());
+                        MyLog.w(this, "Origin with this name and other type already exists " + existing.toString());
                         return this;
                     }
                     origin.id = existing.getId();
@@ -733,7 +733,7 @@ public class Origin implements Comparable<Origin>, IsEmpty {
                     db.execSQL(sql);
                     deleted = true;
                 } catch (Exception e) {
-                    MyLog.e(this, "Error deleting Origin", e);
+                    MyLog.e(this, "Error deleting Origin " + origin.name, e);
                 }
             }
             return deleted;

@@ -233,7 +233,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
                 StringUtil.isEmpty(searchQueryIn) ? parsedUri.getSearchQuery() : searchQueryIn
         );
         if (timeline.getTimelineType() == TimelineType.UNKNOWN && parsedUri.getActorListType() == ActorListType.UNKNOWN) {
-            MyLog.e(Timeline.class, "fromParsedUri; uri:" + parsedUri.getUri() + "; " + timeline);
+            MyLog.w(Timeline.class, "fromParsedUri; uri:" + parsedUri.getUri() + "; " + timeline);
         }
         return timeline;
     }

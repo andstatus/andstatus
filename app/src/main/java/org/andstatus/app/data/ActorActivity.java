@@ -153,7 +153,7 @@ public final class ActorActivity {
             
             changed = false;
         } catch (Exception e) {
-            MyLog.e(this, "save: sql='" + sql + "'", e);
+            MyLog.w(this, "save: sql='" + sql + "'", e);
             return false;
         }
         return true;

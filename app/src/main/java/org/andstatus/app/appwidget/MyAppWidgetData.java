@@ -78,7 +78,7 @@ public class MyAppWidgetData {
     private void load() {
         SharedPreferences prefs = SharedPreferencesUtil.getSharedPreferences(prefsFileName);
         if (prefs == null) {
-            MyLog.e(this, "The prefs file '" + prefsFileName + "' was not loaded");
+            MyLog.w(this, "The prefs file '" + prefsFileName + "' was not loaded");
         } else {
             nothingPref = prefs.getString(PREF_NOTHING_KEY, null);
             if (nothingPref == null) {

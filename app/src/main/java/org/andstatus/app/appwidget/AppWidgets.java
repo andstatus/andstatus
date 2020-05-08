@@ -84,7 +84,7 @@ public class AppWidgets {
             RemoteViews views = constructRemoteViews(events.myContext.context(), viewData);
             appWidgetManager.updateAppWidget(widgetData.getId(), views);
         } catch (Exception e) {
-            MyLog.e(this, method, e);
+            MyLog.i(this, method, e);
         }
     }
 

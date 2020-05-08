@@ -61,7 +61,7 @@ public class PersistentTimelines {
                 if (MyLog.isVerboseEnabled() && timelines.size() < 5) {
                     MyLog.v(PersistentTimelines.class, method + "; " + timeline);
                 }
-            } else MyLog.e(PersistentTimelines.class, method + "; invalid skipped " + timeline);
+            } else MyLog.w(PersistentTimelines.class, method + "; invalid skipped " + timeline);
         });
         MyLog.v(this, () -> "Timelines initialized, " + timelines.size() + " timelines");
         return this;

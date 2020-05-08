@@ -38,6 +38,8 @@ import java.util.concurrent.TimeUnit;
 import io.vavr.control.Try;
 
 class TimelineDownloaderOther extends TimelineDownloader {
+    private static final String TAG = TimelineDownloaderOther.class.getSimpleName();
+
     private static final int YOUNGER_NOTES_TO_DOWNLOAD_MAX = 200;
     private static final int OLDER_NOTES_TO_DOWNLOAD_MAX = 40;
     private static final int LATEST_NOTES_TO_DOWNLOAD_MAX = 20;
@@ -67,7 +69,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
         int toDownload = downloadingLatest ? LATEST_NOTES_TO_DOWNLOAD_MAX :
                 (isSyncYounger() ? YOUNGER_NOTES_TO_DOWNLOAD_MAX : OLDER_NOTES_TO_DOWNLOAD_MAX);
         TimelinePosition positionToRequest = syncTracker.getPreviousPosition();
-        if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+        if (MyLog.isDebugEnabled()) {
             String strLog = "Loading "
             + (downloadingLatest ? "latest " : "")
             + execContext.getCommandData().toCommandSummary(execContext.getMyContext());
@@ -76,7 +78,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                 + "; last time downloaded at=" +  (new Date(syncTracker.getPreviousSyncedDate()).toString());
             }
             strLog += "; Position to request: " + positionToRequest.getPosition();
-            MyLog.d(this, strLog);
+            MyLog.d(TAG, strLog);
         }
         syncTracker.onTimelineDownloaded();
 
@@ -133,7 +135,7 @@ class TimelineDownloaderOther extends TimelineDownloader {
                         return Try.failure(ConnectionException.fromStatusCode(StatusCode.NOT_FOUND,
                                 "Timeline was not found at " + syncTracker.requestedPositions));
                     }
-                    MyLog.d(this, "Trying default timeline position");
+                    MyLog.d(TAG, "Trying default timeline position");
                     positionToRequest = optPositionToRequest.get();
                 }
         }

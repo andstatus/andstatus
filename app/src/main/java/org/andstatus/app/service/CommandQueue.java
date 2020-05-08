@@ -156,9 +156,9 @@ public class CommandQueue {
             while (c.moveToNext()) {
                 CommandData cd = CommandData.fromCursor(myContext, c);
                 if (CommandEnum.EMPTY.equals(cd.getCommand())) {
-                    MyLog.e(TAG, method + "; empty skipped " + cd);
+                    MyLog.w(TAG, method + "; empty skipped " + cd);
                 } else if (queue.contains(cd)) {
-                    MyLog.e(TAG, method + "; duplicate skipped " + cd);
+                    MyLog.w(TAG, method + "; duplicate skipped " + cd);
                 } else {
                     if (queue.offer(cd)) {
                         count++;
@@ -166,7 +166,7 @@ public class CommandQueue {
                             MyLog.v(TAG, method + "; " + count + ": " + cd.toString());
                         }
                     } else {
-                        MyLog.e(TAG, method + "; " + cd);
+                        MyLog.e(TAG, method + "; Couldn't edd to queue " + cd);
                     }
                 }
             }

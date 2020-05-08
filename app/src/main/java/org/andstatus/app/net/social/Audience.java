@@ -286,13 +286,13 @@ public class Audience {
         }
         for (Actor actor : actorsToSave) {
             if (actor.actorId == 0) {
-                MyLog.w(this, "No actorId for " + actor);
+                MyLog.w(TAG, "No actorId for " + actor);
                 continue;
             }
             prevAudience.findSame(actor).onFailure( e -> toAdd.add(actor));
         }
         if (!toDelete.isEmpty() || !toAdd.isEmpty()) {
-            MyLog.i(TAG, "Audience differs, noteId:" + noteId + "," +
+            MyLog.d(TAG, "Audience differs, noteId:" + noteId + "," +
                     "\nprev: " + prevAudience +
                     "\nnew: " + this +
                     (!toDelete.isEmpty() ? "\ntoDelete: " + toDelete : "") +
@@ -306,7 +306,7 @@ public class Audience {
             }
             toAdd.forEach(actor -> MyProvider.insert(origin.myContext, AudienceTable.TABLE_NAME, toContentValues(noteId, actor)));
         } catch (Exception e) {
-            MyLog.e(this, "save, noteId:" + noteId + "; " + actors, e);
+            MyLog.w(this, "save, noteId:" + noteId + "; " + actors, e);
         }
         return  !toDelete.isEmpty() || !toAdd.isEmpty();
     }

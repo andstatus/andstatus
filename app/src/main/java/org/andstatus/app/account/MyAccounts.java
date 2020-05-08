@@ -74,7 +74,7 @@ public class MyAccounts implements IsEmpty {
             if (ma.isValid()) {
                 myAccounts.add(ma);
             } else {
-                MyLog.e(this, "The account is invalid: " + ma);
+                MyLog.w(this, "The account is invalid: " + ma);
             }
         }
         calculateDistinctOriginsCount();

@@ -117,7 +117,7 @@ public class JsonUtils {
         try {
             return data.toString(indentSpaces);
         } catch (JSONException e) {
-            MyLog.e(JsonUtils.class, "Failed toString of " + data, e);
+            MyLog.w(JsonUtils.class, "Failed toString of " + data, e);
             return "";
         }
     }

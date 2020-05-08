@@ -218,7 +218,7 @@ public final class MyContextHolder {
                 PackageInfo pi = pm.getPackageInfo(context.getPackageName(), 0);
                 builder.append(pi.packageName + " v." + pi.versionName + " (" + pi.versionCode + ")");
             } catch (PackageManager.NameNotFoundException e) {
-                MyLog.e(TAG, "Unable to obtain package information", e);
+                MyLog.w(TAG, "Unable to obtain package information", e);
             }
         }
         if (builder.length() == 0) {

@@ -55,7 +55,7 @@ public class AccountSettingsWebActivity extends MyActivity {
             
             view.loadUrl(url);
         } catch (Exception e) {
-            MyLog.e(this, "onCreate", e);
+            MyLog.w(this, "onCreate", e);
             finish();
         }
     }

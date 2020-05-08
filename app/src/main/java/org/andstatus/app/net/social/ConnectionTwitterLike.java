@@ -148,7 +148,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         try {
             out.put("user_id", actorOid);
         } catch (JSONException e) {
-            MyLog.e(this, e);
+            MyLog.w(this, "follow " + actorOid, e);
         }
         return postRequest(follow ? ApiRoutineEnum.FOLLOW : ApiRoutineEnum.UNDO_FOLLOW, out)
             .flatMap(HttpReadResult::getJsonObject)
@@ -335,7 +335,7 @@ public abstract class ConnectionTwitterLike extends Connection {
         } catch (JSONException e) {
             throw ConnectionException.loggedJsonException(this, "Parsing note", e, jso);
         } catch (Exception e) {
-            MyLog.e(this, "activityFromJson2", e);
+            MyLog.w(this, "activityFromJson2", e);
             return AActivity.EMPTY;
         }
         return activity;

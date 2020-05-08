@@ -70,8 +70,9 @@ public class WebViewFragment extends Fragment {
         } catch (Throwable e) {
             LinearLayout view = (LinearLayout) inflater.inflate(R.layout.empty_layout, container, false);
             TextView contentView = view.findViewById(R.id.content);
-            contentView.setText("Error initializing WebView: " + e.getMessage() + "\n\n" + output);
-            MyLog.e(this, e);
+            String text = "Error initializing WebView: " + e.getMessage() + "\n\n" + output;
+            contentView.setText(text);
+            MyLog.w(this, text, e);
             return view;
         }
     }

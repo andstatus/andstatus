@@ -357,7 +357,7 @@ public class StorageSwitch {
         protected void onPostExecute2(TaskResult result) {
             DialogFactory.dismissSafely(dlg);
             if (result == null) {
-                MyLog.e(this, "Result is Null");
+                MyLog.w(this, "Result is Null");
                 return;
             }
             MyLog.d(this, this.getClass().getSimpleName() + " ended, "

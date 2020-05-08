@@ -128,7 +128,7 @@ public class StringUtil {
             return format(context.getText(resourceId).toString(), args);
         } catch (Exception e2) {
             String msg = "Error formatting resourceId=" + resourceId + argsToString(args);
-            MyLog.e(context, msg, e2);
+            MyLog.w(context, msg, e2);
             return msg;
         }
     }
@@ -142,7 +142,7 @@ public class StringUtil {
             try {
                 return String.format(format, args);
             } catch (Exception e) {
-                MyLog.e(StringUtil.class, "Error formatting \"" + format + "\"" + argsToString(args), e);
+                MyLog.w(StringUtil.class, "Error formatting \"" + format + "\"" + argsToString(args), e);
             }
         }
         return notEmpty(format, "(no format)") + argsToString(args);

@@ -101,7 +101,7 @@ public final class DbUtils {
                 rowsUpdated = db.update(tableName, values, BaseColumns._ID + "=" + Long.toString(rowId), null);
                 break;
             } catch (SQLiteException e) {
-                MyLog.i(method, " Database is locked, pass=" + pass, e);
+                MyLog.d(method, " Database is locked, pass=" + pass, e);
             }
             waitBetweenRetries(method);
         }

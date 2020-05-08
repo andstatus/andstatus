@@ -63,10 +63,10 @@ public class DialogFactory {
             dialog.show();
         } catch (Exception e) {
             try {
-                MyLog.e(method, "Couldn't open alert dialog with the text: " + summary, e);
+                MyLog.w(method, "Couldn't open alert dialog with the text: " + summary, e);
                 Toast.makeText(context, summary, Toast.LENGTH_LONG).show();
             } catch (Exception e2) {
-                MyLog.e(method, "Couldn't send toast with the text: " + summary, e2);
+                MyLog.w(method, "Couldn't send toast with the text: " + summary, e2);
             }
         }
         return dialog;

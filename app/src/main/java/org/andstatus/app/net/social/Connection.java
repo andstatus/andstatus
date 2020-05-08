@@ -466,7 +466,7 @@ public abstract class Connection implements IsEmpty {
             try {
                 unixDate = iso8601DateFormatSec.parse(datePrepared).getTime();
             } catch (ParseException e) {
-                MyLog.e(this, "Failed to parse the date: '" + stringDate +"' using '" + formatString + "'", e);
+                MyLog.w(this, "Failed to parse the date: '" + stringDate +"' using '" + formatString + "'", e);
             }
         }
         return unixDate;

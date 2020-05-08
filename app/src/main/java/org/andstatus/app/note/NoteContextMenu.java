@@ -253,7 +253,7 @@ public class NoteContextMenu extends MyContextMenu {
                 NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++, R.string.menu_item_delete_note_from_local_cache);
             }
         } catch (Exception e) {
-            MyLog.e(this, method, e);
+            MyLog.w(this, method, e);
         }
     }
 
