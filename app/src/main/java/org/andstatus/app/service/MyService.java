@@ -408,7 +408,7 @@ public class MyService extends Service {
 
         @Override
         protected Boolean doInBackground2(Void aVoid) {
-            MyLog.v(TAG, () -> instanceTag() +  " started, " + myContext.queues().totalSizeToExecute() + " commands to process");
+            MyLog.v(this, () -> "Started, " + myContext.queues().totalSizeToExecute() + " commands to process");
             myContext.queues().moveCommandsFromSkippedToMainQueue();
             final String breakReason;
             do {
@@ -462,7 +462,7 @@ public class MyService extends Service {
                 broadcastAfterExecutingCommand(commandData);
                 addSyncOfThisToQueue(commandData);
             } while (true);
-            MyLog.v(TAG, () -> instanceTag() + " ended, " + breakReason + ", " + myContext.queues().totalSizeToExecute() + " commands left");
+            MyLog.v(this, () -> "Ended, " + breakReason + ", " + myContext.queues().totalSizeToExecute() + " commands left");
             myContext.queues().save();
             return true;
         }
@@ -527,7 +527,7 @@ public class MyService extends Service {
 
         @Override
         protected Void doInBackground2(Void aVoid) {
-            MyLog.v(this, () -> "Started instance " + instanceId);
+            MyLog.v(this, () -> "Started");
             String breakReason = "";
             for (long iteration = 1; iteration < 10000; iteration++) {
                 final HeartBeat heartBeat = heartBeatRef.get();
@@ -552,7 +552,7 @@ public class MyService extends Service {
                 publishProgress(iteration);
             }
             String breakReasonVal = breakReason;
-            MyLog.v(this, () -> "Ended; " + this + " - " + breakReasonVal);
+            MyLog.v(this, () -> "Ended " + breakReasonVal + "; " + this);
             heartBeatRef.compareAndSet(this, null);
             return null;
         }
@@ -573,7 +573,12 @@ public class MyService extends Service {
 
         @Override
         public String toString() {
-            return instanceTag() + "  " + + mIteration + "; " + super.toString();
+            return instanceTag() + "; " + super.toString();
+        }
+
+        @Override
+        public String instanceTag() {
+            return super.instanceTag() + "-it" + mIteration;
         }
 
         @Override

@@ -156,8 +156,12 @@ public class AsyncTaskLauncher<Params> {
     private boolean foundUnfinished(MyAsyncTask<Params, ?, ?> asyncTask) {
         for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
             if (launched.equals(asyncTask) && launched.needsBackgroundWork()) {
-                MyLog.v(this, () -> "Found unfinished " + launched);
-                return true;
+                MyLog.v(this, () -> "Found unfinished "
+                        + (launched.isCancelled() ? "cancelled " : "")
+                        + launched);
+                if (!launched.isCancelled()) {
+                    return true;
+                }
             }
         }
         return false;
