@@ -22,6 +22,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtil;
+import org.andstatus.app.util.TaggedClass;
 import org.andstatus.app.util.UriUtils;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ import java.util.function.Consumer;
 
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
-public class DownloadData implements IsEmpty {
+public class DownloadData implements IsEmpty, TaggedClass {
     private static final String TAG = DownloadData.class.getSimpleName();
     public static final DownloadData EMPTY = new DownloadData(null, 0, 0, 0, MyContentType.UNKNOWN, "",
             DownloadType.UNKNOWN, Uri.EMPTY);
@@ -45,9 +46,9 @@ public class DownloadData implements IsEmpty {
     private long downloadNumber = 0;
     @NonNull
     private DownloadFile fileStored = DownloadFile.EMPTY;
-    public long fileSize = 0;
+    private long fileSize = 0;
     protected Uri uri = Uri.EMPTY;
-    public MediaMetadata mediaMetadata = MediaMetadata.EMPTY;
+    MediaMetadata mediaMetadata = MediaMetadata.EMPTY;
     private long previewOfDownloadId = 0;
 
     private boolean hardError = false;
@@ -594,4 +595,8 @@ public class DownloadData implements IsEmpty {
         long consumedSize = 0;
     }
 
+    @Override
+    public String classTag() {
+        return TAG;
+    }
 }

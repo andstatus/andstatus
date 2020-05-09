@@ -167,4 +167,9 @@ public class MyFutureContext implements IdentifiableInstance {
     public Try<MyContext> tryBlocking() {
         return Try.of(future::get);
     }
+
+    @Override
+    public String classTag() {
+        return TAG;
+    }
 }

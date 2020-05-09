@@ -690,7 +690,7 @@ public class AccountSettingsActivity extends MyActivity {
         Uri uri = getIntent().getData();
         if (uri != null) {
             if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-                MyLog.d(TAG, "uri=" + uri.toString());
+                MyLog.d(this, "uri=" + uri.toString());
             }
             if (HttpConnection.CALLBACK_URI.getScheme().equals(uri.getScheme())) {
                 // To prevent repeating of this task
@@ -923,7 +923,7 @@ public class AccountSettingsActivity extends MyActivity {
                 if (!StringUtil.isEmpty(connectionErrorMessage)) {
                     stepErrorMessage += ": " + connectionErrorMessage;
                 }
-                MyLog.d(TAG, stepErrorMessage);
+                MyLog.d(this, stepErrorMessage);
             }
             return new TaskResult(succeeded ? ResultStatus.SUCCESS : ResultStatus.NONE, stepErrorMessage);
         }
@@ -1048,7 +1048,7 @@ public class AccountSettingsActivity extends MyActivity {
                 if (StringUtil.nonEmpty(connectionErrorMessage)) {
                     stepErrorMessage += ": " + connectionErrorMessage;
                 }
-                MyLog.d(TAG, stepErrorMessage);
+                MyLog.d(this, stepErrorMessage);
 
                 activity.state.builder.clearClientKeys();
             }
@@ -1341,5 +1341,10 @@ public class AccountSettingsActivity extends MyActivity {
             updateScreen();
             appendError(errorMessage);
         }
+    }
+
+    @Override
+    public String classTag() {
+        return TAG;
     }
 }

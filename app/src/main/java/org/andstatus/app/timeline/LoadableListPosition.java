@@ -16,15 +16,18 @@
 
 package org.andstatus.app.timeline;
 
-import androidx.annotation.Nullable;
 import android.view.View;
 import android.widget.ListView;
+
+import androidx.annotation.Nullable;
 
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
+import org.andstatus.app.util.TaggedClass;
 
-public class LoadableListPosition<T extends ViewItem<T>> implements IsEmpty {
+public class LoadableListPosition<T extends ViewItem<T>> implements IsEmpty, TaggedClass {
+    private static final String TAG = LoadableListPosition.class.getSimpleName();
     public final static LoadableListPosition EMPTY = saved(0, 0, 0, "(empty position)");
     final int position;
     final long itemId;
@@ -155,5 +158,10 @@ public class LoadableListPosition<T extends ViewItem<T>> implements IsEmpty {
     @Override
     public String toString() {
         return MyStringBuilder.formatKeyValue(this, description);
+    }
+
+    @Override
+    public String classTag() {
+        return TAG;
     }
 }

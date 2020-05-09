@@ -19,6 +19,8 @@ package org.andstatus.app.context;
 import android.content.ContentValues;
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.data.AssertionData;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.notification.NotificationData;
@@ -32,13 +34,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import androidx.annotation.NonNull;
-
 /**
  * This is kind of mock of the concrete implementation 
  * @author yvolk@yurivolkov.com
  */
 public class MyContextTestImpl extends MyContextImpl {
+    private static final String TAG = MyContextTestImpl.class.getSimpleName();
     private final Map<String, AssertionData> assertionData = new ConcurrentHashMap<>();
     private volatile Class<? extends HttpConnection> httpConnectionMockClass = null;
     private volatile HttpConnection httpConnectionMockInstance = null;
@@ -150,7 +151,12 @@ public class MyContextTestImpl extends MyContextImpl {
 
     @Override
     public String toString() {
-        return getInstanceTag() + " http=" + getHttpConnectionMock() + ", "
+        return instanceTag() + " http=" + getHttpConnectionMock() + ", "
                 + super.toString();
+    }
+
+    @Override
+    public String classTag() {
+        return TAG;
     }
 }

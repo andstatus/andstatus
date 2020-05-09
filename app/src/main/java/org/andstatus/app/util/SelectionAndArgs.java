@@ -21,7 +21,8 @@ import java.util.Arrays;
 /**
  * Add selection and it's argument (for query...)
  */
-public final class SelectionAndArgs {
+public final class SelectionAndArgs implements TaggedClass {
+    private static final String TAG = SelectionAndArgs.class.getSimpleName();
     public volatile String selection;
     public volatile String[] selectionArgs;
     private volatile int nArgs;
@@ -78,4 +79,8 @@ public final class SelectionAndArgs {
         return MyStringBuilder.formatKeyValue(this, selection + ", args:" + Arrays.toString(selectionArgs));
     }
 
+    @Override
+    public String classTag() {
+        return TAG;
+    }
 }

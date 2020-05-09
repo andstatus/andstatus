@@ -17,7 +17,8 @@
 package org.andstatus.app.net.social;
 
 import org.andstatus.app.util.IsEmpty;
+import org.andstatus.app.util.TaggedClass;
 
 /** Object of ActivityStreams as defined in https://www.w3.org/TR/activitystreams-vocabulary/#dfn-object
  * @author yvolk@yurivolkov.com */
-abstract class AObject implements IsEmpty {}
+abstract class AObject implements IsEmpty, TaggedClass {}

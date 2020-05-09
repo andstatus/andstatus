@@ -151,7 +151,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
                 if (isLoading() && chainedRequest != TriState.TRUE) {
                     msgLog.append(", Ignored " + mWorkingLoader);
                 } else {
-                    AsyncLoader newLoader = new AsyncLoader(getInstanceTag());
+                    AsyncLoader newLoader = new AsyncLoader(instanceTag());
                     if (new AsyncTaskLauncher<Bundle>().execute(this, newLoader, args).isSuccess()) {
                         mWorkingLoader = newLoader;
                         loaderIsWorking = true;

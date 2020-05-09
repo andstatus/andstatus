@@ -401,7 +401,6 @@ public class MyService extends Service {
         private volatile CommandData currentlyExecuting = null;
         private static final long MAX_EXECUTION_TIME_SECONDS = 60;
         private final static String TAG = "QueueExecutor";
-        private final String ITAG = TAG + instanceId;
 
         QueueExecutor() {
             super(TAG, PoolEnum.SYNC);
@@ -409,7 +408,7 @@ public class MyService extends Service {
 
         @Override
         protected Boolean doInBackground2(Void aVoid) {
-            MyLog.v(TAG, () -> ITAG +  " started, " + myContext.queues().totalSizeToExecute() + " commands to process");
+            MyLog.v(TAG, () -> instanceTag() +  " started, " + myContext.queues().totalSizeToExecute() + " commands to process");
             myContext.queues().moveCommandsFromSkippedToMainQueue();
             final String breakReason;
             do {
@@ -463,7 +462,7 @@ public class MyService extends Service {
                 broadcastAfterExecutingCommand(commandData);
                 addSyncOfThisToQueue(commandData);
             } while (true);
-            MyLog.v(TAG, () -> ITAG + " ended, " + breakReason + ", " + myContext.queues().totalSizeToExecute() + " commands left");
+            MyLog.v(TAG, () -> instanceTag() + " ended, " + breakReason + ", " + myContext.queues().totalSizeToExecute() + " commands left");
             myContext.queues().save();
             return true;
         }
@@ -496,6 +495,11 @@ public class MyService extends Service {
         }
 
         @Override
+        public String classTag() {
+            return TAG;
+        }
+
+        @Override
         public String toString() {
             MyStringBuilder sb = new MyStringBuilder();
             if (currentlyExecuting != null && currentlyExecutingSince > 0) {
@@ -506,14 +510,13 @@ public class MyService extends Service {
                 sb.withComma("stopping");
             }
             sb.withComma(super.toString());
-            return sb.toKeyValue(ITAG);
+            return sb.toKeyValue(this);
         }
 
     }
     
     private class HeartBeat extends MyAsyncTask<Void, Long, Void> {
         private final static String TAG = "HeartBeat";
-        private final String ITAG = TAG + instanceId;
         private static final long HEARTBEAT_PERIOD_SECONDS = 11;
         private volatile long previousBeat = createdAt;
         private volatile long mIteration = 0;
@@ -524,7 +527,7 @@ public class MyService extends Service {
 
         @Override
         protected Void doInBackground2(Void aVoid) {
-            MyLog.v(ITAG, () -> "Started instance " + instanceId);
+            MyLog.v(this, () -> "Started instance " + instanceId);
             String breakReason = "";
             for (long iteration = 1; iteration < 10000; iteration++) {
                 final HeartBeat heartBeat = heartBeatRef.get();
@@ -549,7 +552,7 @@ public class MyService extends Service {
                 publishProgress(iteration);
             }
             String breakReasonVal = breakReason;
-            MyLog.v(ITAG, () -> "Ended; " + this + " - " + breakReasonVal);
+            MyLog.v(this, () -> "Ended; " + this + " - " + breakReasonVal);
             heartBeatRef.compareAndSet(this, null);
             return null;
         }
@@ -559,18 +562,23 @@ public class MyService extends Service {
             mIteration = values[0];
             previousBeat = MyLog.uniqueCurrentTimeMS();
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(ITAG, () -> "onProgressUpdate; " + this);
+                MyLog.v(this, () -> "onProgressUpdate; " + this);
             }
             if (MyLog.isDebugEnabled() && RelativeTime.moreSecondsAgoThan(createdAt,
                     QueueExecutor.MAX_EXECUTION_TIME_SECONDS)) {
-                MyLog.d(ITAG, AsyncTaskLauncher.threadPoolInfo());
+                MyLog.d(this, AsyncTaskLauncher.threadPoolInfo());
             }
             startStopExecution();
         }
 
         @Override
         public String toString() {
-            return ITAG + "  " + + mIteration + "; " + super.toString();
+            return instanceTag() + "  " + + mIteration + "; " + super.toString();
+        }
+
+        @Override
+        public String classTag() {
+            return TAG;
         }
 
         @Override

@@ -60,6 +60,7 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
  */
 @ThreadSafe
 public class MyContextImpl implements MyContext {
+    private static final String TAG = MyContextImpl.class.getSimpleName();
     private static volatile boolean inForeground = false;
     private static volatile long inForegroundChangedAt = 0;
     private static final long CONSIDER_IN_BACKGROUND_AFTER_SECONDS = 20;
@@ -215,7 +216,7 @@ public class MyContextImpl implements MyContext {
 
     @Override
     public String toString() {
-        return  getInstanceTag() + " by " + initializedBy + "; state=" + state +
+        return  instanceTag() + " by " + initializedBy + "; state=" + state +
                 (isExpired() ? "; expired" : "") +
                 "; " + accounts().size() + " accounts, " +
                 (context == null ? "no context" : "context=" + context.getClass().getName());
@@ -380,5 +381,10 @@ public class MyContextImpl implements MyContext {
     @Override
     public long getInstanceId() {
         return instanceId;
+    }
+
+    @Override
+    public String classTag() {
+        return TAG;
     }
 }

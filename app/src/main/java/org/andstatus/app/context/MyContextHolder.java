@@ -40,6 +40,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TaggedClass;
 import org.andstatus.app.util.TamperingDetector;
 
 import java.util.concurrent.CompletableFuture;
@@ -53,7 +54,7 @@ import java.util.function.UnaryOperator;
  * @author yvolk@yurivolkov.com
  */
 @ThreadSafe
-public final class MyContextHolder {
+public final class MyContextHolder implements TaggedClass {
     private static final String TAG = MyContextHolder.class.getSimpleName();
     public final static MyContextHolder myContextHolder = new MyContextHolder();
 
@@ -129,9 +130,9 @@ public final class MyContextHolder {
     private MyContextHolder initializeInner(Context context, Object calledBy, boolean duringUpgrade) {
         storeContextIfNotPresent(context, calledBy);
         if (isShuttingDown) {
-            MyLog.d(TAG, "Skipping initialization: device is shutting down (called by: " + calledBy + ")");
+            MyLog.d(this, "Skipping initialization: device is shutting down (called by: " + calledBy + ")");
         } else if (!duringUpgrade && DatabaseConverterController.isUpgrading()) {
-            MyLog.d(TAG, "Skipping initialization: upgrade in progress (called by: " + calledBy + ")");
+            MyLog.d(this, "Skipping initialization: upgrade in progress (called by: " + calledBy + ")");
         } else {
             synchronized(CONTEXT_LOCK) {
                 myFutureContext = MyFutureContext.fromPrevious(myFutureContext);
@@ -218,7 +219,7 @@ public final class MyContextHolder {
                 PackageInfo pi = pm.getPackageInfo(context.getPackageName(), 0);
                 builder.append(pi.packageName + " v." + pi.versionName + " (" + pi.versionCode + ")");
             } catch (PackageManager.NameNotFoundException e) {
-                MyLog.w(TAG, "Unable to obtain package information", e);
+                MyLog.w(this, "Unable to obtain package information", e);
             }
         }
         if (builder.length() == 0) {
@@ -242,7 +243,7 @@ public final class MyContextHolder {
         if (this.executionMode != executionMode) {
             this.executionMode = executionMode;
             if (executionMode != ExecutionMode.DEVICE) {
-                MyLog.i(TAG, "Executing: " + getVersionText(getNow().context()));
+                MyLog.i(this, "Executing: " + getVersionText(getNow().context()));
             }
         }
     }
@@ -298,6 +299,11 @@ public final class MyContextHolder {
         MyLog.forget();
         SharedPreferencesUtil.forget();
         previousContext.release(reason);
-        MyLog.v(TAG, () -> "release completed, " + reason.get());
+        MyLog.v(this, () -> "release completed, " + reason.get());
+    }
+
+    @Override
+    public String classTag() {
+        return TAG;
     }
 }

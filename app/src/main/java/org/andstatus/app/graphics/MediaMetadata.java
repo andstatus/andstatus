@@ -31,13 +31,14 @@ import org.andstatus.app.database.table.DownloadTable;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
+import org.andstatus.app.util.TaggedClass;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.util.concurrent.TimeUnit;
 
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
-public class MediaMetadata implements IsEmpty {
+public class MediaMetadata implements IsEmpty, TaggedClass {
     private final static String TAG = MediaMetadata.class.getSimpleName();
     public static final MediaMetadata EMPTY = new MediaMetadata(0, 0, 0);
     public final int width;
@@ -116,5 +117,10 @@ public class MediaMetadata implements IsEmpty {
         return DurationFormatUtils.formatDuration(duration,
                 (duration >= TimeUnit.HOURS.toMillis(1) ? "HH:" : "") + "mm:ss"
         );
+    }
+
+    @Override
+    public String classTag() {
+        return TAG;
     }
 }

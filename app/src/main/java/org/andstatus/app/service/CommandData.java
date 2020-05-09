@@ -48,6 +48,7 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.StringUtil;
+import org.andstatus.app.util.TaggedClass;
 
 import java.util.Objects;
 import java.util.Queue;
@@ -60,7 +61,8 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
  * 
  * @author yvolk@yurivolkov.com
  */
-public class CommandData implements Comparable<CommandData> {
+public class CommandData implements Comparable<CommandData>, TaggedClass {
+    private static final String TAG = CommandData.class.getSimpleName();
     public final static CommandData EMPTY = newCommand(CommandEnum.EMPTY);
     private final long commandId;
     private final CommandEnum command;
@@ -439,9 +441,7 @@ public class CommandData implements Comparable<CommandData> {
     }
 
     public String createdDateWithLabel(Context context) {
-        return context.getText(R.string.created_label)
-                       + " "
-                       + RelativeTime.getDifference(context, getCreatedDate());
+        return context.getText(R.string.created_label) + " " + RelativeTime.getDifference(context, getCreatedDate());
     }
 
     @NonNull
@@ -533,5 +533,10 @@ public class CommandData implements Comparable<CommandData> {
         if (StringUtil.isEmpty(this.username) && !StringUtil.isEmpty(username)) {
             this.username = username;
         }
+    }
+
+    @Override
+    public String classTag() {
+        return TAG;
     }
 }

@@ -461,4 +461,9 @@ public class Note extends AObject {
         setUpdatedDate(MyLog.uniqueCurrentTimeMS());
         inReplyTo.setUpdatedNow(level + 1);
     }
+
+    @Override
+    public String classTag() {
+        return TAG;
+    }
 }

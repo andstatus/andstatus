@@ -46,7 +46,7 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 public class MyActivity extends AppCompatActivity implements IdentifiableInstance {
     private static volatile long previousErrorInflatingTime = 0;
 
-    protected final long mInstanceId = InstanceId.next();
+    protected final long instanceId = InstanceId.next();
     protected int mLayoutId = 0;
     protected boolean myResumed = false;
     /**
@@ -221,6 +221,6 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
 
     @Override
     public long getInstanceId() {
-        return mInstanceId;
+        return instanceId;
     }
 }

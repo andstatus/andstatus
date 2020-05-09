@@ -333,4 +333,9 @@ public class AccountData implements Parcelable, AccountDataWriter, IdentifiableI
     public long getInstanceId() {
         return instanceId;
     }
+
+    @Override
+    public String classTag() {
+        return TAG;
+    }
 }

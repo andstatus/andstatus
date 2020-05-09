@@ -20,6 +20,7 @@ import android.app.LoaderManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.IntentExtra;
@@ -34,10 +35,12 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.StringUtil;
+import org.andstatus.app.util.TaggedClass;
 
 import java.util.Set;
 
-public class TimelineParameters {
+public class TimelineParameters implements TaggedClass {
+    private static final String TAG = TimelineParameters.class.getSimpleName();
     private final MyContext myContext;
 
     LoaderManager.LoaderCallbacks<Cursor> mLoaderCallbacks = null;
@@ -258,5 +261,10 @@ public class TimelineParameters {
 
     public MyContext getMyContext() {
         return myContext;
+    }
+
+    @Override
+    public String classTag() {
+        return TAG;
     }
 }

@@ -284,8 +284,8 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
         }
 
         @Override
-        public String getInstanceIdString() {
-            return IdentifiableInstance.super.getInstanceIdString() + taskSuffix;
+        public String instanceIdString() {
+            return IdentifiableInstance.super.instanceIdString() + taskSuffix;
         }
     }
 
@@ -295,7 +295,7 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
 
     @NonNull
     private String getTaskId(String taskSuffix) {
-        return getInstanceTag() + "-load" + taskSuffix;
+        return instanceTag() + "-load" + taskSuffix;
     }
 
     public Point getSize() {
@@ -311,7 +311,7 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
 
     @Override
     public String toString() {
-        return isEmpty() ? "EMPTY" : getInstanceTag() + ":" + downloadFile;
+        return isEmpty() ? "EMPTY" : instanceTag() + ":" + downloadFile;
     }
 
     @Override

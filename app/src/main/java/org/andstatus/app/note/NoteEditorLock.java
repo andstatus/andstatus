@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2015 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,6 +17,8 @@
 package org.andstatus.app.note;
 
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.util.IdentifiableInstance;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
@@ -24,10 +26,12 @@ import org.andstatus.app.util.MyStringBuilder;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
 
-class NoteEditorLock implements IsEmpty {
+class NoteEditorLock implements IsEmpty, IdentifiableInstance {
+    private static final String TAG = NoteEditorLock.class.getSimpleName();
     static final NoteEditorLock EMPTY = new NoteEditorLock(false, 0);
     static final AtomicReference<NoteEditorLock> lock = new AtomicReference<>(NoteEditorLock.EMPTY);
 
+    protected final long instanceId = InstanceId.next();
     final boolean isSave;
     final long noteId;
     long startedAt;
@@ -105,5 +109,15 @@ class NoteEditorLock implements IsEmpty {
 
     boolean expired() {
         return isEmpty() || Math.abs(System.currentTimeMillis() - startedAt) > 60000;
+    }
+
+    @Override
+    public long getInstanceId() {
+        return instanceId;
+    }
+
+    @Override
+    public String classTag() {
+        return TAG;
     }
 }

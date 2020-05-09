@@ -84,14 +84,16 @@ public class MyStringBuilder implements CharSequence, IsEmpty {
         if (objTag == null) {
             tag = "(null)";
         } else if (objTag instanceof IdentifiableInstance) {
-            tag = ((IdentifiableInstance) objTag).getInstanceTag();
+            tag = ((IdentifiableInstance) objTag).instanceTag();
+        } else if (objTag instanceof TaggedClass) {
+            tag = ((TaggedClass) objTag).classTag();
         } else if (objTag instanceof String) {
             tag = (String) objTag;
         } else if (objTag instanceof Enum<?>) {
             tag = objTag.toString();
         } else if (objTag instanceof Class<?>) {
             tag = ((Class<?>) objTag).getSimpleName();
-        }else {
+        } else {
             tag = objTag.getClass().getSimpleName();
         }
         if (tag.trim().isEmpty()) {
