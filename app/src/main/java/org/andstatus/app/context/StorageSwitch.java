@@ -26,6 +26,7 @@ import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.R;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
@@ -35,6 +36,7 @@ import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.FileUtils;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.io.File;
@@ -70,14 +72,7 @@ public class StorageSwitch {
     
     void move() {
         MyServiceManager.setServiceUnavailable();
-        if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
-            AsyncTaskLauncher.execute(this, new MoveDataBetweenStoragesTask());
-        } else {
-            MyServiceManager.stopService();
-            Toast.makeText(parentFragment.getActivity(),
-                    mContext.getText(R.string.system_is_busy_try_later),
-                    Toast.LENGTH_LONG).show();
-        }
+        AsyncTaskLauncher.execute(this, new MoveDataBetweenStoragesTask());
     }
 
     private boolean checkAndSetDataBeingMoved() {
@@ -131,6 +126,17 @@ public class StorageSwitch {
         @Override
         protected TaskResult doInBackground2(Void aVoid) {
             TaskResult result = new TaskResult();
+            myContextHolder.getBlocking();
+            MyServiceManager.stopService();
+            for (int i=0; i<4; i++) {
+                if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) break;
+                DbUtils.waitMs(this, 500);
+            }
+            if (MyServiceManager.getServiceState() != MyServiceState.STOPPED) {
+                result.messageBuilder.append(mContext.getText(R.string.system_is_busy_try_later));
+                return result;
+            }
+
             if (!checkAndSetDataBeingMoved()) {
                 return result;
             }
@@ -226,13 +232,13 @@ public class StorageSwitch {
                         }
                     } catch (Exception e) {
                         MyLog.v(this, "Copy database " + databaseName, e);
-                        messageToAppend.insert(0, " Couldn't copy database " 
-                                + databaseName + ": " + e.getMessage()  + ". ");
+                        messageToAppend.insert(0, " Couldn't copy database "
+                                + databaseName + ": " + getErrorInfo(e) + ". ");
                     }
                 }
             } catch (Exception e) {
                 MyLog.v(this, e);
-                messageToAppend.append(method + " error: " + e.getMessage() + ". ");
+                messageToAppend.append(method + " error: " + getErrorInfo(e) + ". ");
                 succeeded = false;
             } finally {
                 // Delete unnecessary files
@@ -252,7 +258,7 @@ public class StorageSwitch {
                     }
                 } catch (Exception e) {
                     MyLog.v(this, method + " Delete old file", e);
-                    messageToAppend.append(method + " couldn't delete old files. " + e.getMessage()
+                    messageToAppend.append(method + " couldn't delete old files. " + getErrorInfo(e)
                             + ". ");
                 }
             }
@@ -309,7 +315,7 @@ public class StorageSwitch {
                 }
             } catch (Exception e) {
                 MyLog.v(this, e);
-                messageToAppend.append(method + " error: " + e.getMessage() + ". ");
+                messageToAppend.append(method + " error: " + getErrorInfo(e) + ". ");
                 succeeded = false;
             } finally {
                 // Delete unnecessary files
@@ -336,7 +342,7 @@ public class StorageSwitch {
                 } catch (Exception e) {
                     String logMsg = method + " deleting unnecessary files";
                     MyLog.v(this, logMsg, e);
-                    messageToAppend.append(logMsg + ": " + e.getMessage());
+                    messageToAppend.append(logMsg + ": " + getErrorInfo(e));
                 }
             }
             MyLog.d(this, method + " " + strSucceeded(succeeded));
@@ -348,16 +354,17 @@ public class StorageSwitch {
                 MyPreferences.onPreferencesChanged();
             } catch (Exception e) {
                 MyLog.v(this, "Save new settings", e);
-                messageToAppend.append("Couldn't save new settings. " + e.getMessage());
+                messageToAppend.append("Couldn't save new settings. " + getErrorInfo(e));
             }
         }
         
         // This is in the UI thread, so we can mess with the UI
         @Override
-        protected void onPostExecute2(TaskResult result) {
+        protected void onFinish(TaskResult result, boolean success) {
             DialogFactory.dismissSafely(dlg);
             if (result == null) {
                 MyLog.w(this, "Result is Null");
+                Toast.makeText(mContext, mContext.getString(R.string.error), Toast.LENGTH_LONG).show();
                 return;
             }
             MyLog.d(this, this.getClass().getSimpleName() + " ended, "
@@ -374,6 +381,11 @@ public class StorageSwitch {
         protected void onCancelled2(TaskResult result) {
             DialogFactory.dismissSafely(dlg);
         }
+    }
+
+    static String getErrorInfo(Throwable e) {
+        return StringUtil.notEmpty(e.getMessage(), "(no error message)")
+                + " (" + e.getClass().getCanonicalName() + ")";
     }
 
     @NonNull

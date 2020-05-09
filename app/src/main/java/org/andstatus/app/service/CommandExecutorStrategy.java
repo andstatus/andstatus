@@ -20,20 +20,28 @@ import org.andstatus.app.net.http.ConnectionException;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.net.social.ApiRoutineEnum;
 import org.andstatus.app.net.social.Connection;
+import org.andstatus.app.util.IdentifiableInstance;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
+import org.andstatus.app.util.StopWatch;
 import org.andstatus.app.util.TryUtils;
+
+import java.util.concurrent.TimeUnit;
 
 import io.vavr.control.Try;
 
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
-class CommandExecutorStrategy implements CommandExecutorParent {
+class CommandExecutorStrategy implements CommandExecutorParent, IdentifiableInstance {
+    private static final String TAG = CommandExecutorStrategy.class.getSimpleName();
     final protected CommandExecutionContext execContext;
+    protected final long instanceId = InstanceId.next();
     private CommandExecutorParent parent = null;
     protected static final long MIN_PROGRESS_BROADCAST_PERIOD_SECONDS = 1;
     protected long lastProgressBroadcastAt  = 0;
+    private StopWatch stopWatch = StopWatch.createStarted();
 
     static void executeCommand(CommandData commandData, CommandExecutorParent parent) {
         CommandExecutorStrategy strategy = getStrategy(
@@ -52,6 +60,7 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     }
 
     private static void logLaunch(CommandExecutorStrategy strategy) {
+        strategy.stopWatch.restart();
         MyLog.d(strategy, "Launching " + strategy.execContext);
     }
 
@@ -73,7 +82,12 @@ class CommandExecutorStrategy implements CommandExecutorParent {
     }
 
     private static void logEnd(CommandExecutorStrategy strategy) {
-        MyLog.d(strategy, "Executed " + strategy.execContext);
+        long time = strategy.stopWatch.getTime();
+        if (time < TimeUnit.SECONDS.toMillis(MIN_PROGRESS_BROADCAST_PERIOD_SECONDS)) {
+            MyLog.d(strategy, "commandExecutedMs:" + time + "; " + strategy.execContext);
+        } else {
+            MyLog.i(strategy, "commandExecutedMs:" + time + "; " + strategy.execContext);
+        }
     }
 
     void broadcastProgress(String progress, boolean notTooOften) {
@@ -204,5 +218,15 @@ class CommandExecutorStrategy implements CommandExecutorParent {
 
     public Connection getConnection() {
         return execContext.getConnection();
+    }
+
+    @Override
+    public long getInstanceId() {
+        return instanceId;
+    }
+
+    @Override
+    public String classTag() {
+        return TAG;
     }
 }

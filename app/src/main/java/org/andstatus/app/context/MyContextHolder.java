@@ -30,16 +30,11 @@ import net.jcip.annotations.ThreadSafe;
 
 import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.graphics.ImageCaches;
-import org.andstatus.app.net.http.TlsSniSocketFactory;
 import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.os.UiThreadExecutor;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.syncadapter.SyncInitiator;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TaggedClass;
 import org.andstatus.app.util.TamperingDetector;
 
@@ -135,7 +130,7 @@ public final class MyContextHolder implements TaggedClass {
             MyLog.d(this, "Skipping initialization: upgrade in progress (called by: " + calledBy + ")");
         } else {
             synchronized(CONTEXT_LOCK) {
-                myFutureContext = MyFutureContext.fromPrevious(myFutureContext);
+                myFutureContext = MyFutureContext.fromPrevious(myFutureContext, calledBy);
             }
         }
         return this;
@@ -286,20 +281,9 @@ public final class MyContextHolder implements TaggedClass {
     }
 
     public void release(Supplier<String> reason) {
-        release(getNow(), reason);
-    }
-
-    public void release(MyContext previousContext, Supplier<String> reason) {
-        SyncInitiator.unregister(previousContext);
-        MyServiceManager.setServiceUnavailable();
-        TlsSniSocketFactory.forget();
-        previousContext.save(reason);
-        AsyncTaskLauncher.forget();
-        ExceptionsCounter.forget();
-        MyLog.forget();
-        SharedPreferencesUtil.forget();
-        previousContext.release(reason);
-        MyLog.v(this, () -> "release completed, " + reason.get());
+        synchronized(CONTEXT_LOCK) {
+            myFutureContext = myFutureContext.releaseNow(reason);
+        }
     }
 
     @Override

@@ -23,16 +23,23 @@ import androidx.annotation.NonNull;
 
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;
+import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.net.http.TlsSniSocketFactory;
+import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.ExceptionsCounter;
 import org.andstatus.app.os.NonUiThreadExecutor;
+import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.syncadapter.SyncInitiator;
 import org.andstatus.app.util.IdentifiableInstance;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import io.vavr.control.Try;
@@ -52,23 +59,47 @@ public class MyFutureContext implements IdentifiableInstance {
     private final MyContext previousContext;
     public final CompletableFuture<MyContext> future;
 
-    public static MyFutureContext fromPrevious(MyFutureContext previousFuture) {
+    public MyFutureContext releaseNow(Supplier<String> reason) {
+        MyContext previousContext = getNow();
+        release(previousContext, reason);
+        MyFutureContext future = completedFuture(previousContext);
+        return future;
+    }
+
+    public static MyFutureContext fromPrevious(MyFutureContext previousFuture, Object calledBy) {
         if (previousFuture.needToInitialize()) {
             MyContext previousContext = previousFuture.getNow();
             CompletableFuture<MyContext> future =
-                    completedFuture(previousContext).future
-                    .thenApplyAsync(MyFutureContext::initializeMyContext, NonUiThreadExecutor.INSTANCE);
+                completedFuture(previousContext).future
+                .thenApplyAsync(initializeMyContext(calledBy), NonUiThreadExecutor.INSTANCE);
             return new MyFutureContext(previousContext, future);
         } else {
             return previousFuture;
         }
     }
 
-    private static MyContext initializeMyContext(MyContext previousContext) {
-        myContextHolder.release(previousContext, () -> "Starting initialization by " + previousContext);
-        MyContext myContext = previousContext.newInitialized(previousContext);
-        SyncInitiator.register(myContext);
-        return myContext;
+    private static UnaryOperator<MyContext> initializeMyContext(Object calledBy) {
+        return previousContext -> {
+            release(previousContext, () -> "Starting initialization by " + calledBy);
+            MyContext myContext = previousContext.newInitialized(previousContext);
+            SyncInitiator.register(myContext);
+            return myContext;
+        };
+    }
+
+    private static void release(MyContext previousContext, Supplier<String> reason) {
+        SyncInitiator.unregister(previousContext);
+        MyServiceManager.setServiceUnavailable();
+        TlsSniSocketFactory.forget();
+        previousContext.save(reason);
+        AsyncTaskLauncher.forget();
+        ExceptionsCounter.forget();
+        MyLog.forget();
+        SharedPreferencesUtil.forget();
+        previousContext.release(reason);
+        // There is InterruptedException after above..., so we catch it below:
+        DbUtils.waitMs(TAG, 10);
+        MyLog.v(TAG, () -> "release completed, " + reason.get());
     }
 
     public static MyFutureContext completedFuture(MyContext myContext) {

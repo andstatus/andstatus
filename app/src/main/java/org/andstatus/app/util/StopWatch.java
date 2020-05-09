@@ -19,7 +19,7 @@ public class StopWatch extends org.apache.commons.lang3.time.StopWatch {
         return false;
     }
 
-    private void restart() {
+    public void restart() {
         reset();
         start();
     }
