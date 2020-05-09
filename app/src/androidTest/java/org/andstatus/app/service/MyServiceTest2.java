@@ -25,10 +25,13 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TriState;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -74,13 +77,14 @@ public class MyServiceTest2 extends MyServiceTest {
         assertEquals("No new data should be posted while in foreground",
                 1, mService.getHttp().getRequestsCounter());
 
-        CommandQueue queues1 = myContextHolder.getBlocking().queues();
-        MyLog.i(this, method + "; Queues1:" + queues1);
+        CommandQueue queues = myContextHolder.getBlocking().queues();
+        MyLog.i(this, method + "; Queues1:" + queues);
 
-        assertEquals("First command shouldn't be in any queue " + queues1,
-                Optional.empty(), queues1.inWhichQueue(cd1Home).map(q -> q.queueType));
-        assertEquals("Second command should be in the Skip queue " + queues1,
-                Optional.of(QueueType.SKIPPED), queues1.inWhichQueue(cd2Interactions).map(q -> q.queueType));
+        assertEquals("First command shouldn't be in any queue " + queues,
+                Optional.empty(), queues.inWhichQueue(cd1Home).map(q -> q.queueType));
+        assertThat("Second command should be in the Main or Skip queue " + queues,
+                Arrays.asList(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)),
+                hasItem(queues.inWhichQueue(cd2Interactions).map(q -> q.queueType)));
 
         CommandData cd3PublicForeground = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
                 demoData.getMyAccount(demoData.twitterTestAccountName),
@@ -98,24 +102,18 @@ public class MyServiceTest2 extends MyServiceTest {
         assertTrue("Foreground command ended executing", mService.waitForCommandExecutionEnded(endCount));
         assertTrue("Service stopped", mService.waitForServiceStopped(false));
 
-        CommandQueue queues2 = myContextHolder.getBlocking().queues();
-        MyLog.i(this, method + "; Queues2:" + queues2);
+        MyLog.i(this, method + "; Queues2:" + queues);
 
-        assertEquals("Third command shouldn't be in any queue " + queues2,
-                Optional.empty(), queues2.inWhichQueue(cd3PublicForeground).map(q -> q.queueType));
+        assertEquals("Third command shouldn't be in any queue " + queues,
+                Optional.empty(), queues.inWhichQueue(cd3PublicForeground).map(q -> q.queueType));
 
-        Optional<CommandQueue.OneQueue> cd2Queue = queues2.inWhichQueue(cd2Interactions);
-        assertEquals("Second command should be in the Skip queue " + queues2,
-                Optional.of(QueueType.SKIPPED), cd2Queue.map(q -> q.queueType));
+        assertThat("Second command should be in the Main or Skip queue " + queues,
+                Arrays.asList(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)),
+                hasItem(queues.inWhichQueue(cd2Interactions).map(q -> q.queueType)));
 
-        long idFound = -1;
-        for (CommandData cd : cd2Queue.get().queue) {
-            if (cd.equals(cd2Interactions)) {
-                idFound = cd.getCommandId();
-            }
-        }
-        assertEquals("command id", cd2Interactions.getCommandId(), idFound);
-        assertTrue("command id=" + idFound, idFound >= 0);
+        CommandData cd2FromQueue = queues.getFromAnyQueue(cd2Interactions);
+        assertEquals("command id " + cd2FromQueue, cd2Interactions.getCommandId(), cd2FromQueue.getCommandId());
+        assertTrue("command id " + cd2FromQueue, cd2FromQueue.getCommandId() >= 0);
         
         MyLog.i(this, method + " ended");
 
