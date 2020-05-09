@@ -51,8 +51,6 @@ import io.vavr.control.Try;
 
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.andstatus.app.notification.NotificationEventType.SERVICE_RUNNING;
-import static org.andstatus.app.service.CommandEnum.CLEAR_COMMAND_QUEUE;
-import static org.andstatus.app.service.CommandEnum.DELETE_COMMAND;
 
 /**
  * This service asynchronously executes commands, mostly related to communication
@@ -440,14 +438,7 @@ public class MyService extends Service {
                     MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
                             .setCommandData(commandData)
                             .setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
-                    if (commandData.getCommand() == DELETE_COMMAND) {
-                        myContext.queues().deleteCommand(commandData);
-                    } else if (commandData.getCommand() == CLEAR_COMMAND_QUEUE) {
-                        myContext.queues().clear();
-                        return true;
-                    } else {
-                        CommandExecutorStrategy.executeCommand(commandData, this);
-                    }
+                    CommandExecutorStrategy.executeCommand(commandData, this);
                 } else {
                     commandData.getResult().incrementNumIoExceptions();
                     commandData.getResult().setMessage("Expected '"

@@ -26,14 +26,16 @@ import android.view.MenuItem;
 import android.view.View;
 
 import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.list.SyncLoader;
+import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.timeline.BaseTimelineAdapter;
 import org.andstatus.app.timeline.LoadableListActivity;
 import org.andstatus.app.timeline.WhichPage;
 import org.andstatus.app.util.MyLog;
 
 import java.util.Collections;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 public class QueueViewer extends LoadableListActivity {
 
@@ -77,12 +79,9 @@ public class QueueViewer extends LoadableListActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.clear_the_queue:
-                MyServiceManager.sendManualForegroundCommand(
-                        CommandData.newItemCommand(
-                                CommandEnum.CLEAR_COMMAND_QUEUE,
-                                MyAccount.EMPTY,
-                                0));
-                showList(WhichPage.CURRENT);
+                AsyncTaskLauncher.execute(this,
+                    activity -> myContextHolder.getBlocking().queues().clear(),
+                    activity -> r -> activity.showList(WhichPage.CURRENT));
                 break;
             default:
                 return super.onOptionsItemSelected(item);
@@ -112,11 +111,9 @@ public class QueueViewer extends LoadableListActivity {
                 MyServiceManager.sendManualForegroundCommand(queueData.commandData);
                 return true;
             case R.id.menuItemDelete:
-                MyServiceManager.sendManualForegroundCommand(
-                        CommandData.newItemCommand(
-                                CommandEnum.DELETE_COMMAND,
-                                MyAccount.EMPTY,
-                                queueData.commandData.getCommandId()));
+                AsyncTaskLauncher.execute(this,
+                    activity -> myContextHolder.getBlocking().queues().deleteCommand(queueData.commandData),
+                    activity -> r -> activity.showList(WhichPage.CURRENT));
                 return true;
             default:
                 return super.onContextItemSelected(item);

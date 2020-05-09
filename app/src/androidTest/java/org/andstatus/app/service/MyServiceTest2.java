@@ -16,7 +16,6 @@
 
 package org.andstatus.app.service;
 
-import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -117,37 +116,6 @@ public class MyServiceTest2 extends MyServiceTest {
         
         MyLog.i(this, method + " ended");
 
-        myTestDeleteCommand(cd2Interactions);
-
         myContextHolder.getNow().queues().clear();
-    }
-    
-    private void myTestDeleteCommand(CommandData commandIn) {
-        MyLog.i(this, "myTestDeleteCommand started");
-        assertTrue("Service stopped", mService.waitForServiceStopped(false));
-
-        final CommandQueue cq1 = myContextHolder.getNow().queues();
-        assertEquals("Didn't find input command in any queue", commandIn, cq1.getFromAnyQueue(commandIn));
-
-        CommandData commandDelete = CommandData.newItemCommand(
-                CommandEnum.DELETE_COMMAND,
-                MyAccount.EMPTY,
-                commandIn.getCommandId());
-        commandDelete.setInForeground(true);
-        mService.setListenedCommand(commandDelete);
-        assertEquals(commandIn.getCommandId(), mService.getListenedCommand().itemId);
-        
-        long endCount = mService.executionEndCount;
-
-        mService.sendListenedCommand();
-        assertTrue("Delete command ended executing", mService.waitForCommandExecutionEnded(endCount));
-        assertTrue("Service stopped", mService.waitForServiceStopped(false));
-
-        final CommandQueue cq2 = new CommandQueue(myContextHolder.getNow()).load();
-        assertEquals("The DELETE command was not deleted from some queue: " + commandDelete,
-                CommandData.EMPTY, cq2.getFromAnyQueue(commandDelete));
-        assertEquals("The command was not deleted from some queue: " + commandIn,
-                CommandData.EMPTY, cq2.getFromAnyQueue(commandIn));
-        MyLog.i(this, "myTestDeleteCommand ended");
     }
 }

@@ -37,8 +37,6 @@ public enum CommandEnum {
     UNKNOWN("unknown"),
     /** There is no action */
     EMPTY("empty"),
-    CLEAR_COMMAND_QUEUE("clear-command-queue", R.string.clear_the_queue, -100, ConnectionRequired.ANY),
-    DELETE_COMMAND("delete-command", R.string.button_delete, -100, ConnectionRequired.ANY),
     GET_TIMELINE("fetch-timeline", 0, 4, ConnectionRequired.SYNC),
     GET_OLDER_TIMELINE("get-older-timeline", 0, 4, ConnectionRequired.SYNC),
 

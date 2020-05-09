@@ -107,9 +107,11 @@ public class TestSuite {
                     creatorSet = true;
                     FirstActivity.startMeAsync(context, MyAction.INITIALIZE_APP);
                     DbUtils.waitMs(method, 3000);
-                    MyContext myContext = myContextHolder.getNow();
-                    MyLog.i(TAG, "After starting FirstActivity " + iter + " " + myContext);
-                    if (myContext.state() == MyContextState.READY) break;
+                    if(myContextHolder.getFuture().future.isDone()) {
+                        MyContext myContext = myContextHolder.getNow();
+                        MyLog.i(TAG, "After starting FirstActivity " + iter + " " + myContext);
+                        if (myContext.state() == MyContextState.READY) break;
+                    }
                 }
             } catch (IllegalStateException e) {
                 MyLog.i(TAG, "Error caught, iteration=" + iter, e);
@@ -119,7 +121,7 @@ public class TestSuite {
         MyLog.i(TAG, "After Initializing Test Suite loop");
         MyContextHolder.myContextHolder.setExecutionMode(
                 ExecutionMode.load(InstrumentationRegistry.getArguments().getString("executionMode")));
-        final MyContext myContext = myContextHolder.getNow();
+        final MyContext myContext = myContextHolder.getBlocking();
         assertNotEquals("MyContext state " + myContext, MyContextState.EMPTY, myContext.state());
 
         int logLevel = MyLog.VERBOSE;
@@ -134,7 +136,7 @@ public class TestSuite {
         assertTrue("Level " + logLevel + " should be loggable", MyLog.isLoggable(TAG, logLevel));
         MyServiceManager.setServiceUnavailable();
 
-        if (myContextHolder.getNow().state() != MyContextState.READY) {
+        if (myContextHolder.getBlocking().state() != MyContextState.READY) {
             MyLog.d(TAG, "MyContext is not ready: " + myContextHolder.getNow().state());
             if (myContextHolder.getNow().state() == MyContextState.NO_PERMISSIONS) {
                 Permissions.setAllGranted(true);

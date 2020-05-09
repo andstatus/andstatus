@@ -280,7 +280,7 @@ public class CommandQueue {
         return TryUtils.TRUE;
     }
 
-    void clear() {
+    Try<Void> clear() {
         loaded = true;
         for ( Map.Entry<QueueType, OneQueue> entry : queues.entrySet()) {
             entry.getValue().clear();
@@ -289,12 +289,13 @@ public class CommandQueue {
         changed = true;
         save();
         MyLog.v(TAG, "Queues cleared");
+        return TryUtils.SUCCESS;
     }
 
-    void deleteCommand(CommandData commandData) {
+    Try<Void> deleteCommand(CommandData commandData) {
         moveCommandsFromPreToMainQueue();
         for (OneQueue oneQueue : queues.values()) {
-            if (commandData.deleteCommandFromQueue(oneQueue.queue)) {
+            if (commandData.deleteFromQueue(oneQueue)) {
                 changed = true;
             }
         }
@@ -303,6 +304,7 @@ public class CommandQueue {
             commandData.getResult().setMessage("Didn't delete command #" + commandData.itemId);
         }
         commandData.getResult().afterExecutionEnded();
+        return TryUtils.SUCCESS;
     }
 
     int totalSizeToExecute() {

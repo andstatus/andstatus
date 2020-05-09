@@ -74,7 +74,7 @@ public class CommandData implements Comparable<CommandData>, TaggedClass {
     private volatile boolean mManuallyLaunched = false;
 
     /** {@link MyAccount} for this command. Invalid account if command is not Account
-     * specific e.g. {@link CommandEnum#DELETE_COMMAND}
+     * specific ( do we have such? )
      * It holds actorId for command, which need such parameter (not only for a timeline)
      */
     private final CommandTimeline commandTimeline;
@@ -478,19 +478,20 @@ public class CommandData implements Comparable<CommandData>, TaggedClass {
     }
 
     /** @return true if the command was deleted */
-    boolean deleteCommandFromQueue(Queue<CommandData> queue) {
+    boolean deleteFromQueue(CommandQueue.OneQueue oneQueue) {
+        Queue<CommandData> queue = oneQueue.queue;
         AtomicBoolean deleted = new AtomicBoolean(false);
-        String method = "deleteCommandFromQueue: ";
+        String method = "deleteFromQueue " + oneQueue.queueType;
         for (CommandData cd : queue) {
-            if (cd.getCommandId() == itemId) {
+            if (cd.getCommandId() == commandId) {
                 if (queue.remove(cd)) {
                     deleted.set(true);
                 }
                 getResult().incrementDownloadedCount();
-                MyLog.v(this, () -> method + "deleted: " + cd);
+                MyLog.v(this, () -> method + " deleted: " + cd);
             }
         }
-        MyLog.v(this, () -> method + "id=" + itemId + (deleted.get() ? " deleted" : " not found")
+        MyLog.v(this, () -> method + " id=" + commandId + (deleted.get() ? " deleted" : " not found")
                 + ", processed queue: " + queue.size());
         return deleted.get();
     }

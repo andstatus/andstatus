@@ -20,6 +20,7 @@ import android.content.Intent;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
@@ -32,6 +33,7 @@ import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -42,15 +44,18 @@ public class ActorTimelineTest extends TimelineActivityTest<ActivityViewItem> {
         MyLog.i(this, "setUp started");
         TestSuite.initializeWithData(this);
 
+        MyContext myContext = myContextHolder.getBlocking();
         final MyAccount ma = demoData.getMyAccount(demoData.conversationAccountName);
         assertTrue(ma.isValid());
-        myContextHolder.getNow().accounts().setCurrentAccount(ma);
+        myContext.accounts().setCurrentAccount(ma);
         long actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOriginId(), demoData.conversationAuthorSecondActorOid);
         Actor actor = Actor.fromId(ma.getOrigin(), actorId);
-
-        MyLog.i(this, "setUp ended");
-        final Timeline timeline = myContextHolder.getNow().timelines().get(TimelineType.SENT, actor, ma.getOrigin());
+        assertNotEquals("Actor " + demoData.conversationAuthorSecondActorOid + " id=" + actorId + " -> "
+                + actor, 0, actor.actorId);
+        final Timeline timeline = myContext.timelines().get(TimelineType.SENT, actor, ma.getOrigin());
+        assertFalse("Timeline " + timeline, timeline.isCombined());
         timeline.forgetPositionsAndDates();
+        MyLog.i(this, "setUp ended, " + timeline);
         return new Intent(Intent.ACTION_VIEW, timeline.getUri());
     }
 
