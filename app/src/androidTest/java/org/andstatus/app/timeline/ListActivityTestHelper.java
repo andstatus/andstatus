@@ -22,6 +22,9 @@ import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
+import androidx.annotation.NonNull;
+import androidx.test.platform.app.InstrumentationRegistry;
+
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
@@ -36,9 +39,6 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.SelectorDialog;
 
 import java.util.function.Predicate;
-
-import androidx.annotation.NonNull;
-import androidx.test.platform.app.InstrumentationRegistry;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -270,8 +270,10 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
             BaseNoteViewItem item = toBaseNoteViewItem(viewItem);
             if (!item.isEmpty()) {
                 if (predicate.test(item)) {
-                    MyLog.v(this, method + ": found " + description + " : " + item);
+                    MyLog.v(this, method + " " + ind + ". found " + description + " : " + item);
                     return viewItem;
+                } else {
+                    MyLog.v(this, ind + ". skipped : " + item);
                 }
             }
         }

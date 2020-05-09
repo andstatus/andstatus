@@ -45,6 +45,7 @@ import org.andstatus.app.timeline.DuplicationLink;
 import org.andstatus.app.timeline.TimelineFilter;
 import org.andstatus.app.timeline.ViewItem;
 import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtil;
@@ -346,7 +347,10 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
 
     @Override
     public String toString() {
-        return "Note " + content;
+        return MyStringBuilder.formatKeyValue(this, I18n.trimTextAt(getContent().toString(), 40) + ", "
+                + getDetails(getMyContext().context(), false)
+                + "', actorId:" + author.getActorId() + ", " + noteStatus
+        );
     }
 
     public void hideTheReblogger(Actor actor) {

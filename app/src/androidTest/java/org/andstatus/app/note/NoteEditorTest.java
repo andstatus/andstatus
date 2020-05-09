@@ -52,6 +52,7 @@ import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.timeline.ListActivityTestHelper;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.TimelineActivityTest;
+import org.andstatus.app.timeline.meta.Timeline;
 import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyHtmlTest;
@@ -97,10 +98,9 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         myContextHolder.getNow().accounts().setCurrentAccount(ma);
 
         data = getStaticData(ma);
-
-        MyLog.i(this, "setUp ended");
-        return new Intent(Intent.ACTION_VIEW,
-                myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.getActor(), Origin.EMPTY).getUri());
+        Timeline timeline = myContextHolder.getNow().timelines().get(TimelineType.SENT, ma.getActor(), Origin.EMPTY);
+        MyLog.i(this, "setUp ended, " + timeline);
+        return new Intent(Intent.ACTION_VIEW, timeline.getUri());
     }
 
     private NoteEditorData getStaticData(MyAccount ma) {
@@ -360,7 +360,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         TestSuite.waitForListLoaded(getActivity(), 2);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
                 ConversationActivity.class);
-        long listItemId = helper.findListItemId("My loaded note",
+        long listItemId = helper.findListItemId("My loaded note, actorId:" + data.getMyAccount().getActorId(),
                 item -> item.author.getActorId() == data.getMyAccount().getActorId()
                         && item.noteStatus == DownloadStatus.LOADED);
 

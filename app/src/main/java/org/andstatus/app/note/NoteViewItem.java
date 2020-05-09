@@ -54,10 +54,4 @@ public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
         author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
         setOtherViewProperties(cursor);
     }
-
-    @Override
-    public String toString() {
-        return MyStringBuilder.formatKeyValue(this, I18n.trimTextAt(getContent().toString(), 40) + ","
-                + getDetails(getMyContext().context(), false));
-    }
 }
