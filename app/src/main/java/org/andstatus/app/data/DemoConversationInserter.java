@@ -246,6 +246,11 @@ public class DemoConversationInserter {
         AActivity followsAuthor4 = new DemoNoteInserter(accountActor).buildActivity(author3, ActivityType.FOLLOW, "");
         followsAuthor4.setObjActor(author4);
         DemoNoteInserter.onActivityS(followsAuthor4);
+
+        AActivity myReply17 = buildActivity(accountActor, "Name of reply 17", "My reply 17 to public Reply 14", reply14, null);
+        addActivity(myReply17);
+        DemoNoteInserter.assertStoredVisibility(myReply17, PUBLIC_AND_TO_FOLLOWERS);
+
     }
 
     private Actor getAuthor1() {

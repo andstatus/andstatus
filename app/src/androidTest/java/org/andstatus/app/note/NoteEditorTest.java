@@ -98,7 +98,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         myContextHolder.getNow().accounts().setCurrentAccount(ma);
 
         data = getStaticData(ma);
-        Timeline timeline = myContextHolder.getNow().timelines().get(TimelineType.SENT, ma.getActor(), Origin.EMPTY);
+        Timeline timeline = myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.getActor(), Origin.EMPTY);
         MyLog.i(this, "setUp ended, " + timeline);
         return new Intent(Intent.ACTION_VIEW, timeline.getUri());
     }
