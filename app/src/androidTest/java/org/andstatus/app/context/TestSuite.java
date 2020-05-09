@@ -66,7 +66,7 @@ public class TestSuite {
 
     public static Context initializeWithAccounts(Object testCase) {
         initialize(testCase);
-        if (myContextHolder.getNow().accounts().fromAccountName(demoData.activityPubTestAccountName).isEmpty()) {
+        if (myContextHolder.getBlocking().accounts().fromAccountName(demoData.activityPubTestAccountName).isEmpty()) {
             ensureDataAdded();
         }
         return getMyContextForTest().context();
@@ -195,11 +195,11 @@ public class TestSuite {
     }
     
     public static MyContextTestImpl getMyContextForTest() {
-        MyContext myContext = myContextHolder.getNow();
+        MyContext myContext = myContextHolder.getBlocking();
         if (!(myContext instanceof MyContextTestImpl)) {
             fail("Wrong type of current context: " + (myContext == null ? "null" : myContext.getClass().getName()));
         }
-        return (MyContextTestImpl) myContextHolder.getNow();
+        return (MyContextTestImpl) myContextHolder.getBlocking();
     }
     
     public static void setHttpConnectionMockClass(Class<? extends HttpConnection> httpConnectionMockClass) {

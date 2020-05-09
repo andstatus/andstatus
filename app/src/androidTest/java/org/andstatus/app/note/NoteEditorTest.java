@@ -193,7 +193,10 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
                 (toExpect == 1 ? "" : "s") + " " +
                 demoData.testRunUid;
         onView(withId(R.id.note_name_edit)).perform(new TypeTextAction(noteName));
+        onView(withId(R.id.note_name_edit)).check(matches(withText(noteName)));
+
         onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(content));
+        onView(withId(R.id.noteBodyEditText)).check(matches(withText(content)));
 
         attachImage(test, editorView, demoData.localImageTestUri2);
         if (toAdd == 2) {

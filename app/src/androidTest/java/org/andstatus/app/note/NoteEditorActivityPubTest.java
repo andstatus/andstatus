@@ -62,7 +62,7 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
 
         mock = ConnectionMock.newFor(demoData.activityPubTestAccountName);
         MyAccount ma = mock.getData().getMyAccount();
-        myContextHolder.getNow().accounts().setCurrentAccount(ma);
+        myContextHolder.getBlocking().accounts().setCurrentAccount(ma);
         assertTrue("isValidAndSucceeded " + ma, ma.isValidAndSucceeded());
 
         MyLog.i(this, "setUp ended");
