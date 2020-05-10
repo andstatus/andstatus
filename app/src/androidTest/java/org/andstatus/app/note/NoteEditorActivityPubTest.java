@@ -96,7 +96,11 @@ public class NoteEditorActivityPubTest extends TimelineActivityTest<ActivityView
     }
 
     @Test
-    public void sendingSensitive() throws Exception {
+    public void sendingSensitive() {
+        wrap(this::_sendingSensitive);
+    }
+
+    private void _sendingSensitive() throws Exception {
         final String method = "sendingSensitive";
         TestSuite.waitForListLoaded(getActivity(), 2);
 

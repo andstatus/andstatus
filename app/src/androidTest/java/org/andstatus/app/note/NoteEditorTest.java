@@ -70,6 +70,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import static org.andstatus.app.util.ScreenshotOnFailure.screenshotWrapper;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -179,7 +180,11 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         attachImages(this,2, 1);
     }
 
-    static void attachImages(TimelineActivityTest<ActivityViewItem> test, int toAdd, int toExpect) throws InterruptedException {
+    static void attachImages(TimelineActivityTest<ActivityViewItem> test, int toAdd, int toExpect) {
+        screenshotWrapper(test.getActivity(), () -> _attachImages(test, toAdd, toExpect));
+    }
+
+    private static void _attachImages(TimelineActivityTest<ActivityViewItem> test, int toAdd, int toExpect) throws InterruptedException {
         final String method = "attachImages" + toAdd;
         MyLog.v(test, method + " started");
 

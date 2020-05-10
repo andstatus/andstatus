@@ -84,16 +84,16 @@ configurations {
 dependencies {
     implementation "androidx.annotation:annotation:$annotationVersion"
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
-    implementation "androidx.documentfile:documentfile:$documentfileVersion" // https://developer.android.com/jetpack/androidx/releases/documentfile
+    implementation "androidx.documentfile:documentfile:$documentfileVersion"
     implementation "androidx.preference:preference:$preferenceVersion"
-    implementation "androidx.swiperefreshlayout:swiperefreshlayout:$swiperefreshlayoutVersion" // https://developer.android.com/jetpack/androidx/releases/swiperefreshlayout
-    implementation "ch.acra:acra-dialog:$acraVersion" // https://github.com/ACRA/acra/wiki/AdvancedUsage
+    implementation "androidx.swiperefreshlayout:swiperefreshlayout:$swiperefreshlayoutVersion"
+    implementation "ch.acra:acra-dialog:$acraVersion"
     implementation "ch.acra:acra-mail:$acraVersion"
     implementation "com.github.scribejava:scribejava-core:$scribejavaCoreVersion"
-    implementation "com.github.stephenc.jcip:jcip-annotations:$jcipAnnotationsVersion" // http://stephenc.github.io/jcip-annotations/dependency-info.html
+    implementation "com.github.stephenc.jcip:jcip-annotations:$jcipAnnotationsVersion"
     implementation "com.google.android.material:material:$materialVersion"
     implementation "commons-codec:commons-codec:$commonsCodecVersion"
-    implementation "cz.msebera.android:httpclient:$httpclientVersion" // https://github.com/smarek/httpclient-android
+    implementation "cz.msebera.android:httpclient:$httpclientVersion"
     implementation "io.vavr:vavr:$vavrVersion"
     implementation "junit:junit:$junitVersion"
     implementation "oauth.signpost:signpost-core:$signPostVersion"
@@ -106,4 +106,5 @@ dependencies {
     androidTestImplementation "androidx.test:runner:$testRunnerVersion"
     androidTestImplementation "androidx.test:rules:$testRulesVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoCoreVersion"
+    androidTestImplementation "eu.bolt:screenshotty:$screenshottyVersion"
 }

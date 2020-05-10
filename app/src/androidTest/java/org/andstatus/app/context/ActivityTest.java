@@ -19,12 +19,17 @@ package org.andstatus.app.context;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Intent;
+
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.rule.ActivityTestRule;
 
 import org.apache.geode.test.junit.ConditionalIgnore;
 import org.apache.geode.test.junit.rules.ConditionalIgnoreRule;
 import org.junit.Rule;
+
+import io.vavr.control.CheckedRunnable;
+
+import static org.andstatus.app.util.ScreenshotOnFailure.screenshotWrapper;
 
 /** Helper for Activity tests, based on https://google.github.io/android-testing-support-library/
  * See https://developer.android.com/training/testing/ui-testing/espresso-testing.html
@@ -33,7 +38,7 @@ import org.junit.Rule;
 public abstract class ActivityTest<T extends Activity> {
 
     @Rule
-    public ConditionalIgnoreRule rule = new ConditionalIgnoreRule();
+    public ConditionalIgnoreRule conditionalIgnoreRule = new ConditionalIgnoreRule();
 
     @Rule
     public ActivityTestRule<T> mActivityRule =
@@ -58,4 +63,10 @@ public abstract class ActivityTest<T extends Activity> {
     public Instrumentation getInstrumentation() {
         return InstrumentationRegistry.getInstrumentation();
     }
+
+    /** Make screenshot on failure */
+    public void wrap(CheckedRunnable runnable) {
+        screenshotWrapper(getActivity(), runnable);
+    }
+
 }

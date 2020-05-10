@@ -24,24 +24,25 @@ buildscript {
         targetSdkVersion = 29 as int
 
         // Lookup the latest here: https://mvnrepository.com/
-        acraVersion = '5.5.0'              // https://github.com/ACRA/acra/wiki/AdvancedUsage
+        acraVersion = '5.5.0'             // https://github.com/ACRA/acra/wiki/AdvancedUsage
         annotationVersion = '1.1.0'
         appCompatVersion = '1.1.0'        // https://mvnrepository.com/artifact/androidx.appcompat/appcompat
         commonsCodecVersion = '20041127.091804'
-        commonsLangVersion = '3.10'      // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
-        documentfileVersion = '1.0.1'
+        commonsLangVersion = '3.10'       // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
+        documentfileVersion = '1.0.1'     // https://developer.android.com/jetpack/androidx/releases/documentfile
         espressoCoreVersion = '3.1.1'
-        hamcrestVersion = '2.2'         // http://hamcrest.org/JavaHamcrest/distributables#using-hamcrest-in-a-gradle-project
+        hamcrestVersion = '2.2'           // http://hamcrest.org/JavaHamcrest/distributables#using-hamcrest-in-a-gradle-project
         httpMimeVersion = '4.5.12'
-        httpclientVersion = '4.5.8'     // https://github.com/smarek/httpclient-android
+        httpclientVersion = '4.5.8'       // https://github.com/smarek/httpclient-android
         jcipAnnotationsVersion = '1.0-1'  // http://stephenc.github.io/jcip-annotations/dependency-info.html
         junitVersion = '4.13'
         materialVersion = '1.1.0'         // https://mvnrepository.com/artifact/com.google.android.material/material
         preferenceVersion = '1.1.1'
         recyclerViewVersion = '1.0.0'
+        screenshottyVersion = '1.0.2'     // https://github.com/bolteu/screenshotty
         scribejavaCoreVersion = '6.9.0'   // https://github.com/scribejava/scribejava
         signPostVersion = '1.2.1.2'       // https://mvnrepository.com/artifact/oauth.signpost/signpost-core
-        swiperefreshlayoutVersion = '1.0.0'
+        swiperefreshlayoutVersion = '1.0.0' // https://developer.android.com/jetpack/androidx/releases/swiperefreshlayout
         testRulesVersion = '1.1.1'
         testRunnerVersion = '1.1.1'
         vavrVersion = '1.0.0-alpha-2'     // https://github.com/vavr-io/vavr

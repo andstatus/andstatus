@@ -60,7 +60,11 @@ public class ActorTimelineTest extends TimelineActivityTest<ActivityViewItem> {
     }
 
     @Test
-    public void openSecondAuthorTimeline() throws InterruptedException {
+    public void openSecondAuthorTimeline() {
+        wrap(this::_openSecondAuthorTimeline);
+    }
+
+    private void _openSecondAuthorTimeline() throws InterruptedException {
         final String method = "openSecondAuthorTimeline";
         TestSuite.waitForListLoaded(getActivity(), 10);
         TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
@@ -72,7 +76,7 @@ public class ActorTimelineTest extends TimelineActivityTest<ActivityViewItem> {
             }
         }
         assertNotEquals("No follow action by " + demoData.conversationAuthorSecondActorOid
-                + " in " + timelineData,
+                        + " in " + timelineData,
                 ActivityViewItem.EMPTY, followItem);
     }
 }
