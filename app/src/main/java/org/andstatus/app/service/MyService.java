@@ -164,9 +164,14 @@ public class MyService extends Service {
         return mForcedToStop || myContextHolder.isShuttingDown();
     }
 
+    private void broadcastBeforeExecutingCommand(CommandData commandData) {
+        MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
+            .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
+    }
+
     private void broadcastAfterExecutingCommand(CommandData commandData) {
         MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
-        .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
+            .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
     }
     
     void ensureInitialized() {
@@ -250,7 +255,7 @@ public class MyService extends Service {
         if (replace) {
             // For now let's have only ONE working thread
             // (it seems there is some problem in parallel execution...)
-            QueueExecutor current = new QueueExecutor();
+            QueueExecutor current = new QueueExecutor(CommandQueue.AccessorType.MAIN);
             if (replaceExecutor(logMessageBuilder, previous, current)) {
                 logMessageBuilder.withComma("Starting new Executor " + current);
                 if (AsyncTaskLauncher.execute(TAG, current).isFailure()) {
@@ -396,18 +401,21 @@ public class MyService extends Service {
     }
 
     private class QueueExecutor extends MyAsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
-        private volatile CommandData currentlyExecuting = null;
         private static final long MAX_EXECUTION_TIME_SECONDS = 60;
         private final static String TAG = "QueueExecutor";
+        final CommandQueue.AccessorType accessorType;
 
-        QueueExecutor() {
+        QueueExecutor(CommandQueue.AccessorType accessorType) {
             super(TAG, PoolEnum.SYNC);
+            this.accessorType = accessorType;
         }
 
         @Override
         protected Boolean doInBackground2(Void aVoid) {
-            MyLog.v(this, () -> "Started, " + myContext.queues().totalSizeToExecute() + " commands to process");
-            myContext.queues().moveCommandsFromSkippedToMainQueue();
+            MyLog.v(this, () -> "Started " + accessorType
+                    + ", " + myContext.queues().totalSizeToExecute() + " commands to process");
+            CommandQueue.Accessor accessor = myContext.queues().getAccessor(accessorType);
+            accessor.moveCommandsFromSkippedToMainQueue();
             final String breakReason;
             do {
                 if (isStopping()) {
@@ -426,39 +434,37 @@ public class MyService extends Service {
                     breakReason = "Other executor";
                     break;
                 }
-                CommandData commandData = myContext.queues().pollQueue();
-                currentlyExecuting = commandData;
-                currentlyExecutingSince = System.currentTimeMillis();
+                CommandData commandData = accessor.pollQueue();
                 if (commandData == null) {
                     breakReason = "No more commands";
                     break;
                 }
-                ConnectionState connectionState = myContext.getConnectionState();
-                if (commandData.getCommand().getConnectionRequired().isConnectionStateOk(connectionState)) {
-                    MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
-                            .setCommandData(commandData)
-                            .setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
-                    CommandExecutorStrategy.executeCommand(commandData, this);
-                } else {
-                    commandData.getResult().incrementNumIoExceptions();
-                    commandData.getResult().setMessage("Expected '"
-                            + commandData.getCommand().getConnectionRequired()
-                            + "', but was '" + connectionState + "' connection");
-                }
+
+                currentlyExecutingSince = System.currentTimeMillis();
+                currentlyExecutingDescription = commandData.toString();
+                broadcastBeforeExecutingCommand(commandData);
+
+                CommandExecutorStrategy.executeCommand(commandData, this);
+
                 if (commandData.getResult().shouldWeRetry()) {
                     myContext.queues().addToQueue(QueueType.RETRY, commandData);
                 } else if (commandData.getResult().hasError()) {
                     myContext.queues().addToQueue(QueueType.ERROR, commandData);
+                } else {
+                    addSyncAfterNoteWasSent(commandData);
                 }
                 broadcastAfterExecutingCommand(commandData);
-                addSyncOfThisToQueue(commandData);
             } while (true);
-            MyLog.v(this, () -> "Ended, " + breakReason + ", " + myContext.queues().totalSizeToExecute() + " commands left");
+            MyLog.v(this, () -> "Ended " + accessorType
+                    + ", " + breakReason + ", " + myContext.queues().totalSizeToExecute() + " commands left");
             myContext.queues().save();
+
+            currentlyExecutingSince = 0;
+            currentlyExecutingDescription = breakReason;
             return true;
         }
 
-        private void addSyncOfThisToQueue(CommandData commandDataExecuted) {
+        private void addSyncAfterNoteWasSent(CommandData commandDataExecuted) {
             if (commandDataExecuted.getResult().hasError()
                     || commandDataExecuted.getCommand() != CommandEnum.UPDATE_NOTE
                     || !SharedPreferencesUtil.getBoolean(
@@ -466,7 +472,7 @@ public class MyService extends Service {
                 return;
             }
             myContext.queues().addToQueue(QueueType.CURRENT, CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
-                    commandDataExecuted.getTimeline().myAccountToSync, TimelineType.HOME)
+                    commandDataExecuted.getTimeline().myAccountToSync, TimelineType.SENT)
                     .setInForeground(commandDataExecuted.isInForeground()));
         }
 
@@ -474,7 +480,6 @@ public class MyService extends Service {
         protected void onFinish(Boolean aBoolean, boolean success) {
             latestActivityTime = System.currentTimeMillis();
             MyLog.v(TAG, success ? "onExecutorSuccess" : "onExecutorFailure");
-            currentlyExecuting = null;
             currentlyExecutingSince = 0;
             reviveHeartBeat();
             startStopExecution();
@@ -493,9 +498,12 @@ public class MyService extends Service {
         @Override
         public String toString() {
             MyStringBuilder sb = new MyStringBuilder();
-            if (currentlyExecuting != null && currentlyExecutingSince > 0) {
-                sb.withComma("currentlyExecuting",currentlyExecuting);
-                sb.withComma("since",RelativeTime.getDifference(getBaseContext(), currentlyExecutingSince));
+            sb.append(accessorType.name());
+            if (currentlyExecutingSince == 0) {
+                sb.withComma("currentlyNotExecuting", currentlyExecutingDescription);
+            } else {
+                sb.withComma("currentlyExecuting", currentlyExecutingDescription);
+                sb.withComma("since", RelativeTime.getDifference(getBaseContext(), currentlyExecutingSince));
             }
             if (isStopping()) {
                 sb.withComma("stopping");

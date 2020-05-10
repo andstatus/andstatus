@@ -56,8 +56,11 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
 
     protected volatile long backgroundStartedAt;
     protected volatile long backgroundEndedAt;
+
     /** This allows to control execution time of single steps/commands by this AsyncTask */
     protected volatile long currentlyExecutingSince = 0;
+    /** Description of execution or lack of it */
+    protected volatile String currentlyExecutingDescription = "(didn't start)";
 
     boolean cancelable = true;
     private volatile long cancelledAt = 0;

@@ -59,6 +59,8 @@ public class CommandQueue {
     private final MyContext myContext;
     private final AtomicLong mRetryQueueProcessedAt = new AtomicLong();
     private final Map<QueueType, OneQueue> queues = new HashMap<>();
+    private final Accessor mainAccessor;
+    private final Map<AccessorType, Accessor> accessors = new HashMap<>();
     private volatile boolean loaded = false;
     private volatile boolean changed = false;
 
@@ -130,10 +132,21 @@ public class CommandQueue {
 
     public CommandQueue(MyContext myContext) {
         this.myContext = myContext;
+
         for (QueueType queueType : QueueType.values()) {
             if (queueType.createQueue) queues.put(queueType, new OneQueue(queueType));
         }
         queues.put(QueueType.PRE, preQueue);
+
+        mainAccessor = new Accessor(this, AccessorType.MAIN);
+        accessors.put(AccessorType.MAIN, mainAccessor);
+        accessors.put(AccessorType.DOWNLOADS, new Accessor(this, AccessorType.DOWNLOADS));
+    }
+
+    @NonNull
+    Accessor getAccessor(AccessorType accessorType) {
+        Accessor accessor = accessors.get(accessorType);
+        return accessor == null ? mainAccessor : accessor;
     }
 
     @NonNull
@@ -214,8 +227,9 @@ public class CommandQueue {
             MyLog.d(TAG, "save; Cannot save: context is " + myContext.state());
             return;
         }
+        accessors.values().forEach(Accessor::moveCommandsFromPreToMainQueue);
         if (loaded) clearQueuesInDatabase(db);
-        moveCommandsFromPreToMainQueue();
+
         Try<Integer> countNotError = save(db, QueueType.CURRENT)
                 .flatMap(i1 -> save(db, QueueType.SKIPPED).map(i2 -> i1 + i2))
                 .flatMap(i1 -> save(db, QueueType.RETRY).map(i2 -> i1 + i2));
@@ -268,7 +282,7 @@ public class CommandQueue {
         return Try.success(count);
     }
 
-    private synchronized Try<Boolean> clearQueuesInDatabase(@NonNull SQLiteDatabase db) {
+    private synchronized Try<Void> clearQueuesInDatabase(@NonNull SQLiteDatabase db) {
         final String method = "clearQueuesInDatabase";
         try {
             String sql = "DELETE FROM " + CommandTable.TABLE_NAME;
@@ -277,7 +291,7 @@ public class CommandQueue {
             MyLog.e(TAG, method, e);
             return TryUtils.failure(method, e);
         }
-        return TryUtils.TRUE;
+        return TryUtils.SUCCESS;
     }
 
     Try<Void> clear() {
@@ -293,7 +307,6 @@ public class CommandQueue {
     }
 
     Try<Void> deleteCommand(CommandData commandData) {
-        moveCommandsFromPreToMainQueue();
         for (OneQueue oneQueue : queues.values()) {
             if (commandData.deleteFromQueue(oneQueue)) {
                 changed = true;
@@ -327,145 +340,169 @@ public class CommandQueue {
     }
 
     boolean isAnythingToExecuteNow() {
-        return !loaded || !preQueue.isEmpty() || isAnythingToExecuteNowIn(QueueType.CURRENT)
-                || isAnythingToRetryNow();
+        return accessors.values().stream().anyMatch(Accessor::isAnythingToExecuteNow);
     }
 
-    private boolean isAnythingToRetryNow() {
-        return RelativeTime.moreSecondsAgoThan(mRetryQueueProcessedAt.get(),
-                RETRY_QUEUE_PROCESSING_PERIOD_SECONDS) && isAnythingToExecuteNowIn(QueueType.RETRY);
+    enum AccessorType {
+        MAIN,
+        DOWNLOADS
     }
 
-    private boolean isAnythingToExecuteNowIn(@NonNull QueueType queueType) {
-        if (!loaded) {
+    static class Accessor {
+        private final CommandQueue cq;
+        final AccessorType accessorType;
+
+        private Accessor(CommandQueue commandQueue, AccessorType accessorType) {
+            this.cq = commandQueue;
+            this.accessorType = accessorType;
+        }
+
+        boolean isAnythingToExecuteNow() {
+            return !cq.loaded || !preQueue.isEmpty() || isAnythingToExecuteNowIn(QueueType.CURRENT)
+                    || isAnythingToRetryNow();
+        }
+
+        private boolean isAnythingToRetryNow() {
+            return RelativeTime.moreSecondsAgoThan(cq.mRetryQueueProcessedAt.get(),
+                    RETRY_QUEUE_PROCESSING_PERIOD_SECONDS) && isAnythingToExecuteNowIn(QueueType.RETRY);
+        }
+
+        private boolean isAnythingToExecuteNowIn(@NonNull QueueType queueType) {
+            if (!cq.loaded) {
+                return true;
+            }
+            if ( cq.queues.get(queueType).isEmpty()) {
+                return false;
+            }
+            if (!MyPreferences.isSyncWhileUsingApplicationEnabled() && cq.myContext.isInForeground()) {
+                return cq.queues.get(queueType).hasForegroundTasks();
+            }
             return true;
         }
-        if ( queues.get(queueType).isEmpty()) {
-            return false;
-        }
-        if (!MyPreferences.isSyncWhileUsingApplicationEnabled() && myContext.isInForeground()) {
-            return queues.get(queueType).hasForegroundTasks();
-        }
-        return true;
-    }
 
-    CommandData pollQueue() {
-        moveCommandsFromPreToMainQueue();
-        CommandData commandData;
-        do {
-            commandData = get(QueueType.CURRENT).queue.poll();
-            if (commandData == null && isAnythingToRetryNow()) {
-                moveCommandsFromRetryToMainQueue();
-                commandData = get(QueueType.CURRENT).queue.poll();
-            }
-            if (commandData == null) {
-                break;
-            }
-            commandData = findInRetryQueue(commandData);
-            if (commandData != null) {
-                commandData = findInErrorQueue(commandData);
-            }
-            if (commandData != null && !commandData.isInForeground() && myContext.isInForeground()
-                    && !MyPreferences.isSyncWhileUsingApplicationEnabled()) {
-                addToQueue(QueueType.SKIPPED, commandData);
-                commandData = null;
-            }
-        } while (commandData == null);
-        MyLog.v(TAG, "Polled in "
-                + (myContext.isInForeground() ? "foreground "
-                    + (MyPreferences.isSyncWhileUsingApplicationEnabled() ? "enabled" : "disabled")
-                  : "background")
-                + (commandData == null ? " (no command)" : " " + commandData));
-        if (commandData != null) {
-            changed = true;
-            commandData.setManuallyLaunched(false);
-        }
-        return commandData;
-    }
-
-    private void moveCommandsFromPreToMainQueue() {
-        for (CommandData cd : preQueue.queue) {
-            if (addToMainQueue(cd)) {
-                preQueue.queue.remove(cd);
-            }
-        }
-    }
-
-    void moveCommandsFromSkippedToMainQueue() {
-        Queue<CommandData> queue = get(QueueType.SKIPPED).queue;
-        for (CommandData cd : queue) {
-            if (addToMainQueue(cd)) {
-                queue.remove(cd);
-            }
-        }
-    }
-
-    /** @return true if success */
-    private boolean addToMainQueue(CommandData commandData) {
-        return addToQueue(QueueType.CURRENT, commandData);
-    }
-
-    private void moveCommandsFromRetryToMainQueue() {
-        Queue<CommandData> queue = get(QueueType.RETRY).queue;
-        for (CommandData cd : queue) {
-            if (cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS) && addToMainQueue(cd)) {
-                queue.remove(cd);
-                changed = true;
-                MyLog.v(TAG, () -> "Moved from Retry to Main queue: " + cd);
-            }
-        }
-        mRetryQueueProcessedAt.set(System.currentTimeMillis());
-    }
-
-    private CommandData findInRetryQueue(CommandData cdIn) {
-        Queue<CommandData> queue = get(QueueType.RETRY).queue;
-        CommandData cdOut = cdIn;
-        if (queue.contains(cdIn)) {
-            for (CommandData cd : queue) {
-                if (cd.equals(cdIn)) {
-                    cd.resetRetries();
-                    if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
-                        cdOut = cd;
-                        queue.remove(cd);
-                        changed = true;
-                        MyLog.v(TAG, () -> "Returned from Retry queue: " + cd);
-                    } else {
-                        cdOut = null;
-                        MyLog.v(TAG, () -> "Found in Retry queue, but left there: " + cd);
-                    }
+        CommandData pollQueue() {
+            moveCommandsFromPreToMainQueue();
+            CommandData commandData;
+            do {
+                commandData = cq.get(QueueType.CURRENT).queue.poll();
+                if (commandData == null && isAnythingToRetryNow()) {
+                    moveCommandsFromRetryToMainQueue();
+                    commandData = cq.get(QueueType.CURRENT).queue.poll();
+                }
+                if (commandData == null) {
                     break;
                 }
+                commandData = findInRetryQueue(commandData);
+                if (commandData != null) {
+                    commandData = findInErrorQueue(commandData);
+                }
+                if (commandData != null && !commandData.isInForeground() && cq.myContext.isInForeground()
+                        && !MyPreferences.isSyncWhileUsingApplicationEnabled()) {
+                    cq.addToQueue(QueueType.SKIPPED, commandData);
+                    commandData = null;
+                }
+                if (commandData != null && !commandData.getCommand().getConnectionRequired()
+                        .isConnectionStateOk(cq.myContext.getConnectionState())) {
+                    cq.addToQueue(QueueType.SKIPPED, commandData);
+                    commandData = null;
+                }
+            } while (commandData == null);
+            MyLog.v(TAG, "Polled in "
+                    + (cq.myContext.isInForeground() ? "foreground "
+                    + (MyPreferences.isSyncWhileUsingApplicationEnabled() ? "enabled" : "disabled")
+                    : "background")
+                    + (commandData == null ? " (no command)" : " " + commandData));
+            if (commandData != null) {
+                cq.changed = true;
+                commandData.setManuallyLaunched(false);
             }
+            return commandData;
         }
-        return cdOut;
-    }
 
-    private CommandData findInErrorQueue(CommandData cdIn) {
-        Queue<CommandData> queue = get(QueueType.ERROR).queue;
-        CommandData cdOut = cdIn;
-        if (queue.contains(cdIn)) {
-            for (CommandData cd : queue) {
-                if (cd.equals(cdIn)) {
-                    if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
-                        cdOut = cd;
-                        queue.remove(cd);
-                        changed = true;
-                        MyLog.v(TAG, () -> "Returned from Error queue: " + cd);
-                        cd.resetRetries();
-                    } else {
-                        cdOut = null;
-                        MyLog.v(TAG, () -> "Found in Error queue, but left there: " + cd);
-                    }
-                } else {
-                    if (cd.executedMoreSecondsAgoThan(TimeUnit.DAYS.toSeconds(MAX_DAYS_IN_ERROR_QUEUE))) {
-                        queue.remove(cd);
-                        changed = true;
-                        MyLog.i(TAG, "Removed old from Error queue: " + cd);
-                    }
+        private void moveCommandsFromPreToMainQueue() {
+            for (CommandData cd : preQueue.queue) {
+                if (addToMainQueue(cd)) {
+                    preQueue.queue.remove(cd);
                 }
             }
         }
-        return cdOut;
+
+        void moveCommandsFromSkippedToMainQueue() {
+            Queue<CommandData> queue = cq.get(QueueType.SKIPPED).queue;
+            for (CommandData cd : queue) {
+                if (addToMainQueue(cd)) {
+                    queue.remove(cd);
+                }
+            }
+        }
+
+        /** @return true if success */
+        private boolean addToMainQueue(CommandData commandData) {
+            return cq.addToQueue(QueueType.CURRENT, commandData);
+        }
+
+        private void moveCommandsFromRetryToMainQueue() {
+            Queue<CommandData> queue = cq.get(QueueType.RETRY).queue;
+            for (CommandData cd : queue) {
+                if (cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS) && addToMainQueue(cd)) {
+                    queue.remove(cd);
+                    cq.changed = true;
+                    MyLog.v(TAG, () -> "Moved from Retry to Main queue: " + cd);
+                }
+            }
+            cq.mRetryQueueProcessedAt.set(System.currentTimeMillis());
+        }
+
+        private CommandData findInRetryQueue(CommandData cdIn) {
+            Queue<CommandData> queue = cq.get(QueueType.RETRY).queue;
+            CommandData cdOut = cdIn;
+            if (queue.contains(cdIn)) {
+                for (CommandData cd : queue) {
+                    if (cd.equals(cdIn)) {
+                        cd.resetRetries();
+                        if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
+                            cdOut = cd;
+                            queue.remove(cd);
+                            cq.changed = true;
+                            MyLog.v(TAG, () -> "Returned from Retry queue: " + cd);
+                        } else {
+                            cdOut = null;
+                            MyLog.v(TAG, () -> "Found in Retry queue, but left there: " + cd);
+                        }
+                        break;
+                    }
+                }
+            }
+            return cdOut;
+        }
+
+        private CommandData findInErrorQueue(CommandData cdIn) {
+            Queue<CommandData> queue = cq.get(QueueType.ERROR).queue;
+            CommandData cdOut = cdIn;
+            if (queue.contains(cdIn)) {
+                for (CommandData cd : queue) {
+                    if (cd.equals(cdIn)) {
+                        if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
+                            cdOut = cd;
+                            queue.remove(cd);
+                            cq.changed = true;
+                            MyLog.v(TAG, () -> "Returned from Error queue: " + cd);
+                            cd.resetRetries();
+                        } else {
+                            cdOut = null;
+                            MyLog.v(TAG, () -> "Found in Error queue, but left there: " + cd);
+                        }
+                    } else {
+                        if (cd.executedMoreSecondsAgoThan(TimeUnit.DAYS.toSeconds(MAX_DAYS_IN_ERROR_QUEUE))) {
+                            queue.remove(cd);
+                            cq.changed = true;
+                            MyLog.i(TAG, "Removed old from Error queue: " + cd);
+                        }
+                    }
+                }
+            }
+            return cdOut;
+        }
     }
 
     @NonNull
