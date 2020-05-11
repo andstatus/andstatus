@@ -1,1 +1,1 @@
-v.56.00 Private notes from Mastodon
+v.56.01 Avatars and attachments syncing performance improved

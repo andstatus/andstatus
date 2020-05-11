@@ -29,6 +29,20 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="56.01" android:versionCode="318"
+        versionDate="2020-05-11"
+        versionTitle="Avatars and attachments syncing performance improved">
+        <changes>
+            <change>Since its creation years ago AndStatus used only one background process (thread)
+                to post and to download information from the Internet.
+                Images downloads were considered low priority tasks,
+                so avatars and attachments appeared noticeably later than text of a timeline,
+                especially when multiple timelines and accounts were synced one after one.<br />
+                With this release a separate process is responsible for images downloading, so overall syncing
+                performance improvement should be visible.
+            </change>
+        </changes>
+    </release>
     <release android:versionName="56.00" android:versionCode="317"
         versionDate="2020-05-05"
         versionTitle="Private notes from Mastodon">
