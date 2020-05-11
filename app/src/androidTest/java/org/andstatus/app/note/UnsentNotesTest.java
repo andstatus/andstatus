@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.provider.BaseColumns;
 import android.view.View;
 
-import androidx.test.espresso.action.TypeTextAction;
+import androidx.test.espresso.action.ReplaceTextAction;
 
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
@@ -67,7 +67,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
         final String suffix = "unsent" + demoData.testRunUid;
         String body = "Test unsent note, which we will try to edit " + suffix;
         TestSuite.waitForIdleSync();
-        onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(body));
+        onView(withId(R.id.noteBodyEditText)).perform(new ReplaceTextAction(body));
         TestSuite.waitForIdleSync();
 
         mService.serviceStopped = false;

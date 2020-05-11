@@ -6,7 +6,7 @@ import android.provider.BaseColumns;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.test.espresso.action.TypeTextAction;
+import androidx.test.espresso.action.ReplaceTextAction;
 
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
@@ -77,7 +77,7 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest<ActivityView
 
         TestSuite.waitForIdleSync();
         final String content = "Test note with a shared image " + demoData.testRunUid;
-        onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(content));
+        onView(withId(R.id.noteBodyEditText)).perform(new ReplaceTextAction(content));
         TestSuite.waitForIdleSync();
 
         mService.serviceStopped = false;

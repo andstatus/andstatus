@@ -21,7 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import androidx.test.espresso.action.TypeTextAction;
+import androidx.test.espresso.action.ReplaceTextAction;
 
 import org.andstatus.app.ActivityTestHelper;
 import org.andstatus.app.R;
@@ -90,7 +90,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityVie
         helper.clickMenuItem(method, menu_id);
 
         onView(withId(R.id.internet_search)).perform(setChecked(internetSearch));
-        onView(withResourceName("search_text")).perform(new TypeTextAction(noteText), pressImeActionButton());
+        onView(withResourceName("search_text")).perform(new ReplaceTextAction(noteText), pressImeActionButton());
         TimelineActivity nextActivity = (TimelineActivity) helper.waitForNextActivity(method, 40000);
         waitForButtonClickedEvidence(nextActivity, method, noteText);
         assertNotesArePublic(nextActivity, noteText);

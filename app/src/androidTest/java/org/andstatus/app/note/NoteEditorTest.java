@@ -28,7 +28,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.test.espresso.action.ReplaceTextAction;
-import androidx.test.espresso.action.TypeTextAction;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.ActivityTestHelper;
@@ -197,10 +196,10 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         final String content = "Note with " + toExpect + " attachment" +
                 (toExpect == 1 ? "" : "s") + " " +
                 demoData.testRunUid;
-        onView(withId(R.id.note_name_edit)).perform(new TypeTextAction(noteName));
+        onView(withId(R.id.note_name_edit)).perform(new ReplaceTextAction(noteName));
         onView(withId(R.id.note_name_edit)).check(matches(withText(noteName)));
 
-        onView(withId(R.id.noteBodyEditText)).perform(new TypeTextAction(content));
+        onView(withId(R.id.noteBodyEditText)).perform(new ReplaceTextAction(content));
         onView(withId(R.id.noteBodyEditText)).check(matches(withText(content)));
 
         attachImage(test, editorView, demoData.localImageTestUri2);
