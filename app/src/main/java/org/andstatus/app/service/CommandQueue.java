@@ -360,9 +360,18 @@ public class CommandQueue {
         }
 
         boolean isAnythingToExecuteNow() {
-            return !cq.loaded || !preQueue.isEmpty()
+            moveCommandsFromPreToMainQueue();
+            return !cq.loaded
                 || isAnythingToExecuteNowIn(mainQueueType())
-                || isAnythingToRetryNow();
+                || isAnythingToExecuteNowIn(QueueType.SKIPPED)
+                || isTimeToProcessRetryQueue() && isAnythingToExecuteNowIn(QueueType.RETRY);
+        }
+
+        long countToExecuteNow() {
+            return countToExecuteNowIn(mainQueueType())
+                    + countToExecuteNowIn(QueueType.PRE)
+                    + countToExecuteNowIn(QueueType.SKIPPED)
+                    + (isTimeToProcessRetryQueue() ? countToExecuteNowIn(QueueType.RETRY) : 0);
         }
 
         private boolean isForAccessor(CommandData cd) {
@@ -377,22 +386,32 @@ public class CommandQueue {
                     : QueueType.DOWNLOADS;
         }
 
-        private boolean isAnythingToRetryNow() {
+        private boolean isTimeToProcessRetryQueue() {
             return RelativeTime.moreSecondsAgoThan(cq.mRetryQueueProcessedAt.get(),
-                    RETRY_QUEUE_PROCESSING_PERIOD_SECONDS) && isAnythingToExecuteNowIn(QueueType.RETRY);
+                    RETRY_QUEUE_PROCESSING_PERIOD_SECONDS);
+        }
+
+        private long countToExecuteNowIn(@NonNull QueueType queueType) {
+            long counter = 0;
+            if (!cq.loaded) {
+                return 0;
+            }
+            Queue<CommandData> queue = cq.get(queueType).queue;
+            for (CommandData cd : queue) {
+                if (isForAccessor(cd) && !skip(cd)) counter++;
+            }
+            return counter;
         }
 
         private boolean isAnythingToExecuteNowIn(@NonNull QueueType queueType) {
             if (!cq.loaded) {
                 return true;
             }
-            if ( cq.get(queueType).isEmpty()) {
-                return false;
+            Queue<CommandData> queue = cq.get(queueType).queue;
+            for (CommandData cd : queue) {
+                if (isForAccessor(cd) && !skip(cd)) return true;
             }
-            if (!MyPreferences.isSyncWhileUsingApplicationEnabled() && cq.myContext.isInForeground()) {
-                return cq.get(queueType).hasForegroundTasks();
-            }
-            return true;
+            return false;
         }
 
         CommandData pollQueue() {
@@ -400,7 +419,7 @@ public class CommandQueue {
             CommandData commandData;
             do {
                 commandData = cq.get(mainQueueType()).queue.poll();
-                if (commandData == null && isAnythingToRetryNow()) {
+                if (commandData == null && isTimeToProcessRetryQueue() && isAnythingToExecuteNowIn(QueueType.RETRY)) {
                     moveCommandsFromRetryToMainQueue();
                     commandData = cq.get(mainQueueType()).queue.poll();
                 }
@@ -411,13 +430,7 @@ public class CommandQueue {
                 if (commandData != null) {
                     commandData = findInErrorQueue(commandData);
                 }
-                if (commandData != null && !commandData.isInForeground() && cq.myContext.isInForeground()
-                        && !MyPreferences.isSyncWhileUsingApplicationEnabled()) {
-                    cq.addToQueue(QueueType.SKIPPED, commandData);
-                    commandData = null;
-                }
-                if (commandData != null && !commandData.getCommand().getConnectionRequired()
-                        .isConnectionStateOk(cq.myContext.getConnectionState())) {
+                if (skip(commandData)) {
                     cq.addToQueue(QueueType.SKIPPED, commandData);
                     commandData = null;
                 }
@@ -434,9 +447,23 @@ public class CommandQueue {
             return commandData;
         }
 
+        private boolean skip(CommandData commandData) {
+            if (commandData == null) return false;
+
+            if (!commandData.isInForeground() && cq.myContext.isInForeground()
+                    && !MyPreferences.isSyncWhileUsingApplicationEnabled()) {
+                return true;
+            }
+            if (!commandData.getCommand().getConnectionRequired()
+                    .isConnectionStateOk(cq.myContext.getConnectionState())) {
+                return true;
+            }
+            return false;
+        }
+
         private void moveCommandsFromPreToMainQueue() {
             for (CommandData cd : preQueue.queue) {
-                if (addToMainQueue(cd)) {
+                if (addToMainOrSkipQueue(cd)) {
                     preQueue.queue.remove(cd);
                 }
             }
@@ -445,21 +472,30 @@ public class CommandQueue {
         void moveCommandsFromSkippedToMainQueue() {
             Queue<CommandData> queue = cq.get(QueueType.SKIPPED).queue;
             for (CommandData cd : queue) {
-                if (addToMainQueue(cd)) {
+                if (!skip(cd)) {
                     queue.remove(cd);
+                    if (!addToMainOrSkipQueue(cd)) {
+                        queue.add(cd);
+                    }
                 }
             }
         }
 
         /** @return true if success */
-        private boolean addToMainQueue(CommandData commandData) {
-            return isForAccessor(commandData) && cq.addToQueue(mainQueueType(), commandData);
+        private boolean addToMainOrSkipQueue(CommandData commandData) {
+            if (!isForAccessor(commandData)) return false;
+
+            if (skip(commandData)) {
+                return cq.addToQueue(QueueType.SKIPPED, commandData);
+            } else {
+                return cq.addToQueue(mainQueueType(), commandData);
+            }
         }
 
         private void moveCommandsFromRetryToMainQueue() {
             Queue<CommandData> queue = cq.get(QueueType.RETRY).queue;
             for (CommandData cd : queue) {
-                if (cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS) && addToMainQueue(cd)) {
+                if (cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS) && addToMainOrSkipQueue(cd)) {
                     queue.remove(cd);
                     cq.changed = true;
                     MyLog.v(TAG, () -> "Moved from Retry to Main queue: " + cd);

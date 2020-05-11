@@ -224,7 +224,7 @@ public class MyService extends Service implements IdentifiableInstance {
     private void startExecution() {
         acquireWakeLock();
         try {
-            executors.ensureExecutorStarted();
+            executors.ensureExecutorsStarted();
         } catch (Exception e) {
             MyLog.i(TAG, "Couldn't start executor", e);
             executors.stopExecutor(true);

@@ -34,7 +34,7 @@ class QueueExecutors {
         this.myService = myService;
     }
 
-    void ensureExecutorStarted() {
+    void ensureExecutorsStarted() {
         ensureExecutorStarted(CommandQueue.AccessorType.GENERAL);
         ensureExecutorStarted(CommandQueue.AccessorType.DOWNLOADS);
     }
@@ -53,14 +53,25 @@ class QueueExecutors {
             replace = true;
         }
         if (replace) {
-            QueueExecutor current = new QueueExecutor(myService, accessorType);
-            if (replaceExecutor(logMessageBuilder, accessorType, previous, current)) {
-                logMessageBuilder.withComma("Starting new Executor " + current);
-                AsyncTaskLauncher.execute( myService.classTag() + "-" + accessorType, current)
-                .onFailure(throwable -> {
-                    logMessageBuilder.withComma("Failed to start new executor: " + throwable);
-                    replaceExecutor(logMessageBuilder, accessorType, current, null);
-                });
+            CommandQueue.Accessor accessor = myService.myContext.queues().getAccessor(accessorType);
+            QueueExecutor current = accessor.isAnythingToExecuteNow()
+                ? new QueueExecutor(myService, accessorType)
+                : null;
+            if (current == null && previous == null) {
+                logMessageBuilder.withComma("Nothing to execute");
+            } else {
+                if (replaceExecutor(logMessageBuilder, accessorType, previous, current)) {
+                    if (current == null) {
+                        logMessageBuilder.withComma("Nothing to execute");
+                    } else {
+                        logMessageBuilder.withComma("Starting new Executor " + current);
+                        AsyncTaskLauncher.execute( myService.classTag() + "-" + accessorType, current)
+                                .onFailure(throwable -> {
+                                    logMessageBuilder.withComma("Failed to start new executor: " + throwable);
+                                    replaceExecutor(logMessageBuilder, accessorType, current, null);
+                                });
+                    }
+                }
             }
         } else {
             logMessageBuilder.withComma("There is an Executor already " + previous);
@@ -129,7 +140,10 @@ class QueueExecutors {
     }
 
     boolean isReallyWorking() {
-        return general.get().isReallyWorking() || downloads.get().isReallyWorking();
+        QueueExecutor gExecutor = general.get();
+        QueueExecutor dExecutor = downloads.get();
+        return gExecutor != null && (gExecutor.isReallyWorking()
+                || dExecutor != null && dExecutor.isReallyWorking());
     }
 
     @NonNull

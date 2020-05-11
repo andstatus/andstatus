@@ -41,7 +41,7 @@ class QueueExecutor extends MyAsyncTask<Void, Void, Boolean> implements CommandE
 
         CommandQueue.Accessor accessor = myService.myContext.queues().getAccessor(accessorType);
         accessor.moveCommandsFromSkippedToMainQueue();
-        MyLog.v(this, () -> "Started, " + (accessor.isAnythingToExecuteNow() ? "some" : "no") + " commands to process");
+        MyLog.v(this, () -> "Started, " + accessor.countToExecuteNow() + " commands to process");
         final String breakReason;
         do {
             if (isStopping()) {
@@ -82,7 +82,7 @@ class QueueExecutor extends MyAsyncTask<Void, Void, Boolean> implements CommandE
             }
             myService.broadcastAfterExecutingCommand(commandData);
         } while (true);
-        MyLog.v(this, () -> "Ended, " + myService.myContext.queues().totalSizeToExecute() + " commands left");
+        MyLog.v(this, () -> "Ended, " + executedCounter.get() + " commands executed, " + accessor.countToExecuteNow() + " left");
         myService.myContext.queues().save();
 
         currentlyExecutingSince = 0;
@@ -109,9 +109,7 @@ class QueueExecutor extends MyAsyncTask<Void, Void, Boolean> implements CommandE
             myService.latestActivityTime = System.currentTimeMillis();
         }
 
-        MyLog.v(this, (success ? "onExecutorSuccess" : "onExecutorFailure")
-            + (executedCounter.get() == 0 ? " no commands executed" : executedCounter.get() + " commands executed")
-        );
+        MyLog.v(this, (success ? "onExecutorSuccess" : "onExecutorFailure"));
         currentlyExecutingSince = 0;
         if (myService != null) {
             myService.reviveHeartBeat();

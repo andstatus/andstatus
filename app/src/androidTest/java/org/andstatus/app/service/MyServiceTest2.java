@@ -29,8 +29,9 @@ import java.util.Optional;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.in;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -82,8 +83,8 @@ public class MyServiceTest2 extends MyServiceTest {
         assertEquals("First command shouldn't be in any queue " + queues,
                 Optional.empty(), queues.inWhichQueue(cd1Home).map(q -> q.queueType));
         assertThat("Second command should be in the Main or Skip queue " + queues,
-                Arrays.asList(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)),
-                hasItem(queues.inWhichQueue(cd2Interactions).map(q -> q.queueType)));
+                queues.inWhichQueue(cd2Interactions).map(q -> q.queueType),
+                is(in(Arrays.asList(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)))));
 
         CommandData cd3PublicForeground = CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
                 demoData.getMyAccount(demoData.twitterTestAccountName),
@@ -107,8 +108,8 @@ public class MyServiceTest2 extends MyServiceTest {
                 Optional.empty(), queues.inWhichQueue(cd3PublicForeground).map(q -> q.queueType));
 
         assertThat("Second command should be in the Main or Skip queue " + queues,
-                Arrays.asList(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)),
-                hasItem(queues.inWhichQueue(cd2Interactions).map(q -> q.queueType)));
+                queues.inWhichQueue(cd2Interactions).map(q -> q.queueType),
+                is(in(Arrays.asList(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)))));
 
         CommandData cd2FromQueue = queues.getFromAnyQueue(cd2Interactions);
         assertEquals("command id " + cd2FromQueue, cd2Interactions.getCommandId(), cd2FromQueue.getCommandId());
