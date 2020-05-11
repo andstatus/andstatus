@@ -68,7 +68,7 @@ public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Pa
     volatile boolean hasExecutor = true;
 
     public enum PoolEnum {
-        SYNC(2, MAX_COMMAND_EXECUTION_SECONDS, true),
+        SYNC(3, MAX_COMMAND_EXECUTION_SECONDS, true),
         FILE_DOWNLOAD(1, MAX_COMMAND_EXECUTION_SECONDS, true),
         QUICK_UI(0, 20, false),
         LONG_UI(1, MAX_COMMAND_EXECUTION_SECONDS, true);
