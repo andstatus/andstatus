@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 public enum QueueType {
     CURRENT("current", "C", true, true, false),
+    DOWNLOADS("downloads", "D", true, true, false),
     RETRY("retry", "R", true, true, true),
     ERROR("error", "E", false, true, true),
     PRE("pre", "P", true, false, false),

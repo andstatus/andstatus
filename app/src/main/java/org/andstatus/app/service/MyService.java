@@ -25,6 +25,8 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 
+import androidx.annotation.NonNull;
+
 import net.jcip.annotations.GuardedBy;
 
 import org.andstatus.app.MyAction;
@@ -43,6 +45,7 @@ import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
 
+import java.lang.ref.WeakReference;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -73,7 +76,7 @@ public class MyService extends Service {
     /** We are stopping this service */
     private final AtomicBoolean isStopping = new AtomicBoolean(false);
 
-    private final AtomicReference<QueueExecutor> executorRef = new AtomicReference<>();
+    private final AtomicReference<Executors> executorRef = new AtomicReference<>();
     private final AtomicReference<HeartBeat> heartBeatRef = new AtomicReference<>();
 
     /**
@@ -201,16 +204,15 @@ public class MyService extends Service {
             replace = true;
         }
         if (replace) {
-            HeartBeat current = new HeartBeat();
+            HeartBeat current = new HeartBeat(this);
             if (heartBeatRef.compareAndSet(previous, current)) {
                 if (previous != null) {
                     previous.cancelLogged(true);
                 }
-                Try<Void> result = AsyncTaskLauncher.execute(TAG, current);
-                if (result.isFailure()) {
+                AsyncTaskLauncher.execute(TAG, current).onFailure( t -> {
                     heartBeatRef.compareAndSet(current, null);
-                    MyLog.w(TAG, "MyService " + instanceId + " Failed to revive heartbeat. " + result);
-                }
+                    MyLog.w(TAG, "MyService " + instanceId + " Failed to revive heartbeat", t);
+                });
             }
         }
     }
@@ -242,7 +244,7 @@ public class MyService extends Service {
     private void ensureExecutorStarted() {
         final String method = "ensureExecutorStarted";
         MyStringBuilder logMessageBuilder = new MyStringBuilder();
-        QueueExecutor previous = executorRef.get();
+        Executors previous = executorRef.get();
         boolean replace = previous == null;
         if ( !replace && previous.completedBackgroundWork()) {
             logMessageBuilder.withComma("Removing completed Executor " + previous);
@@ -255,10 +257,10 @@ public class MyService extends Service {
         if (replace) {
             // For now let's have only ONE working thread
             // (it seems there is some problem in parallel execution...)
-            QueueExecutor current = new QueueExecutor(CommandQueue.AccessorType.MAIN);
+            Executors current = new Executors(this);
             if (replaceExecutor(logMessageBuilder, previous, current)) {
                 logMessageBuilder.withComma("Starting new Executor " + current);
-                if (AsyncTaskLauncher.execute(TAG, current).isFailure()) {
+                if (current.execute(TAG).isFailure()) {
                     logMessageBuilder.withComma("Failed to start new executor");
                     replaceExecutor(logMessageBuilder, current, null);
                 }
@@ -271,7 +273,7 @@ public class MyService extends Service {
         }
     }
 
-    private boolean replaceExecutor(MyStringBuilder logMessageBuilder, QueueExecutor previous, QueueExecutor current) {
+    private boolean replaceExecutor(MyStringBuilder logMessageBuilder, Executors previous, Executors current) {
         if (executorRef.compareAndSet(previous, current)) {
             if (previous == null) {
                 logMessageBuilder.withComma(current == null
@@ -313,7 +315,7 @@ public class MyService extends Service {
     }
     
     private boolean isExecutorReallyWorkingNow() {
-        return Optional.ofNullable(executorRef.get()).map(QueueExecutor::isReallyWorking).orElse(false);
+        return Optional.ofNullable(executorRef.get()).map(Executors::isReallyWorking).orElse(false);
     }
     
     @Override
@@ -372,19 +374,19 @@ public class MyService extends Service {
         final String method = "couldStopExecutor";
         MyStringBuilder logMessageBuilder = new MyStringBuilder();
 
-        QueueExecutor executor = executorRef.get();
-        boolean success = executor == null;
+        Executors executors = executorRef.get();
+        boolean success = executors == null;
         boolean doStop = !success;
-        if (doStop && executor.needsBackgroundWork() && executor.isReallyWorking() ) {
+        if (doStop && executors.needsBackgroundWork() && executors.isReallyWorking() ) {
             if (forceNow) {
-                logMessageBuilder.withComma("Cancelling working Executor;");
+                logMessageBuilder.withComma("Cancelling working Executors;");
             } else {
-                logMessageBuilder.withComma("Cannot stop now Executor " + executor);
+                logMessageBuilder.withComma("Cannot stop now Executors " + executors);
                 doStop = false;
             }
         }
         if (doStop) {
-            success = replaceExecutor(logMessageBuilder, executor, null);
+            success = replaceExecutor(logMessageBuilder, executors, null);
         }
         if (logMessageBuilder.length() > 0) {
             MyLog.v(TAG, () -> "MyService " + instanceId + " " + method + "; " + logMessageBuilder);
@@ -400,22 +402,75 @@ public class MyService extends Service {
         }
     }
 
-    private class QueueExecutor extends MyAsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
+    private static class Executors {
+        final QueueExecutor general;
+        final QueueExecutor downloads;
+
+        private Executors(MyService myService) {
+            general = new QueueExecutor(myService, CommandQueue.AccessorType.GENERAL);
+            downloads = new QueueExecutor(myService, CommandQueue.AccessorType.DOWNLOADS);
+        }
+
+        @NonNull
+        QueueExecutor get(CommandQueue.AccessorType accessorType) {
+            return accessorType == CommandQueue.AccessorType.DOWNLOADS
+                    ? downloads
+                    : general;
+        }
+
+        boolean completedBackgroundWork() {
+            return general.completedBackgroundWork() && downloads.completedBackgroundWork();
+        }
+
+        Try<Void> execute(String tag) {
+            return AsyncTaskLauncher.execute(tag + "-" + CommandQueue.AccessorType.GENERAL, general)
+                .flatMap(b -> AsyncTaskLauncher.execute(tag + "-" + CommandQueue.AccessorType.DOWNLOADS, downloads));
+        }
+
+        boolean needsBackgroundWork() {
+            return general.needsBackgroundWork() || downloads.needsBackgroundWork();
+        }
+
+        public void cancelLogged(boolean mayInterruptIfRunning) {
+            general.cancelLogged(mayInterruptIfRunning);
+            downloads.cancelLogged(mayInterruptIfRunning);
+        }
+
+        boolean isReallyWorking() {
+            return general.isReallyWorking() || downloads.isReallyWorking();
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return general.toString() + "; " + downloads.toString();
+        }
+    }
+
+    private static class QueueExecutor extends MyAsyncTask<Void, Void, Boolean> implements CommandExecutorParent {
         private static final long MAX_EXECUTION_TIME_SECONDS = 60;
         private final static String TAG = "QueueExecutor";
+        final WeakReference<MyService> myServiceRef;
         final CommandQueue.AccessorType accessorType;
 
-        QueueExecutor(CommandQueue.AccessorType accessorType) {
-            super(TAG, PoolEnum.SYNC);
+        QueueExecutor(MyService myService, CommandQueue.AccessorType accessorType) {
+            super(TAG + "-" + accessorType, PoolEnum.SYNC);
+            this.myServiceRef = new WeakReference<>(myService);
             this.accessorType = accessorType;
         }
 
         @Override
         protected Boolean doInBackground2(Void aVoid) {
-            MyLog.v(this, () -> "Started " + accessorType
-                    + ", " + myContext.queues().totalSizeToExecute() + " commands to process");
-            CommandQueue.Accessor accessor = myContext.queues().getAccessor(accessorType);
+            MyService myService = myServiceRef.get();
+            if (myService == null) {
+                MyLog.v(this, () -> "Didn't start " + accessorType + ", no reference to Myservice");
+                return true;
+            }
+
+            CommandQueue.Accessor accessor = myService.myContext.queues().getAccessor(accessorType);
             accessor.moveCommandsFromSkippedToMainQueue();
+            MyLog.v(this, () -> "Started " + accessorType
+                    + ", " + (accessor.isAnythingToExecuteNow() ? "some" : "no") + " commands to process");
             final String breakReason;
             do {
                 if (isStopping()) {
@@ -430,7 +485,7 @@ public class MyService extends Service {
                     breakReason = "Executed too long";
                     break;
                 }
-                if (executorRef.get() != this) {
+                if (myService.executorRef.get().get(accessorType) != this) {
                     breakReason = "Other executor";
                     break;
                 }
@@ -442,52 +497,59 @@ public class MyService extends Service {
 
                 currentlyExecutingSince = System.currentTimeMillis();
                 currentlyExecutingDescription = commandData.toString();
-                broadcastBeforeExecutingCommand(commandData);
+                myService.broadcastBeforeExecutingCommand(commandData);
 
                 CommandExecutorStrategy.executeCommand(commandData, this);
 
                 if (commandData.getResult().shouldWeRetry()) {
-                    myContext.queues().addToQueue(QueueType.RETRY, commandData);
+                    myService.myContext.queues().addToQueue(QueueType.RETRY, commandData);
                 } else if (commandData.getResult().hasError()) {
-                    myContext.queues().addToQueue(QueueType.ERROR, commandData);
+                    myService.myContext.queues().addToQueue(QueueType.ERROR, commandData);
                 } else {
-                    addSyncAfterNoteWasSent(commandData);
+                    addSyncAfterNoteWasSent(myService, commandData);
                 }
-                broadcastAfterExecutingCommand(commandData);
+                myService.broadcastAfterExecutingCommand(commandData);
             } while (true);
             MyLog.v(this, () -> "Ended " + accessorType
-                    + ", " + breakReason + ", " + myContext.queues().totalSizeToExecute() + " commands left");
-            myContext.queues().save();
+                    + ", " + breakReason + ", " + myService.myContext.queues().totalSizeToExecute() + " commands left");
+            myService.myContext.queues().save();
 
             currentlyExecutingSince = 0;
             currentlyExecutingDescription = breakReason;
             return true;
         }
 
-        private void addSyncAfterNoteWasSent(CommandData commandDataExecuted) {
+        private void addSyncAfterNoteWasSent(MyService myService, CommandData commandDataExecuted) {
             if (commandDataExecuted.getResult().hasError()
                     || commandDataExecuted.getCommand() != CommandEnum.UPDATE_NOTE
                     || !SharedPreferencesUtil.getBoolean(
                             MyPreferences.KEY_SYNC_AFTER_NOTE_WAS_SENT, false)) {
                 return;
             }
-            myContext.queues().addToQueue(QueueType.CURRENT, CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
+            myService.myContext.queues().addToQueue(QueueType.CURRENT, CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
                     commandDataExecuted.getTimeline().myAccountToSync, TimelineType.SENT)
                     .setInForeground(commandDataExecuted.isInForeground()));
         }
 
         @Override
         protected void onFinish(Boolean aBoolean, boolean success) {
-            latestActivityTime = System.currentTimeMillis();
-            MyLog.v(TAG, success ? "onExecutorSuccess" : "onExecutorFailure");
+            MyService myService = myServiceRef.get();
+            if (myService != null) {
+                myService.latestActivityTime = System.currentTimeMillis();
+            }
+
+            MyLog.v(this, success ? "onExecutorSuccess" : "onExecutorFailure");
             currentlyExecutingSince = 0;
-            reviveHeartBeat();
-            startStopExecution();
+            if (myService != null) {
+                myService.reviveHeartBeat();
+                myService.startStopExecution();
+            }
         }
 
         @Override
         public boolean isStopping() {
-            return MyService.this.isStopping();
+            MyService myService = myServiceRef.get();
+            return myService == null || myService.isStopping();
         }
 
         @Override
@@ -503,7 +565,7 @@ public class MyService extends Service {
                 sb.withComma("currentlyNotExecuting", currentlyExecutingDescription);
             } else {
                 sb.withComma("currentlyExecuting", currentlyExecutingDescription);
-                sb.withComma("since", RelativeTime.getDifference(getBaseContext(), currentlyExecutingSince));
+                sb.withComma("since", RelativeTime.getDifference(myContextHolder.getNow().context(), currentlyExecutingSince));
             }
             if (isStopping()) {
                 sb.withComma("stopping");
@@ -514,14 +576,16 @@ public class MyService extends Service {
 
     }
     
-    private class HeartBeat extends MyAsyncTask<Void, Long, Void> {
+    private static class HeartBeat extends MyAsyncTask<Void, Long, Void> {
         private final static String TAG = "HeartBeat";
+        private final WeakReference<MyService> myServiceRef;
         private static final long HEARTBEAT_PERIOD_SECONDS = 11;
         private volatile long previousBeat = createdAt;
         private volatile long mIteration = 0;
 
-        HeartBeat() {
+        HeartBeat(MyService myService) {
             super(TAG, PoolEnum.SYNC);
+            this.myServiceRef = new WeakReference<>(myService);
         }
 
         @Override
@@ -529,7 +593,13 @@ public class MyService extends Service {
             MyLog.v(this, () -> "Started");
             String breakReason = "";
             for (long iteration = 1; iteration < 10000; iteration++) {
-                final HeartBeat heartBeat = heartBeatRef.get();
+                MyService myService = myServiceRef.get();
+                if (myService == null) {
+                    breakReason = "No reference to MyService";
+                    break;
+                }
+
+                final HeartBeat heartBeat = myService.heartBeatRef.get();
                 if (heartBeat != null && heartBeat != this && heartBeat.isReallyWorking() ) {
                     breakReason = "Other instance found: " + heartBeat;
                     break;
@@ -544,7 +614,7 @@ public class MyService extends Service {
                     breakReason = "InterruptedException";
                     break;
                 }
-                if (!initialized.get()) {
+                if (!myService.initialized.get()) {
                     breakReason = "Not initialized";
                     break;
                 }
@@ -552,7 +622,10 @@ public class MyService extends Service {
             }
             String breakReasonVal = breakReason;
             MyLog.v(this, () -> "Ended " + breakReasonVal + "; " + this);
-            heartBeatRef.compareAndSet(this, null);
+            MyService myService = myServiceRef.get();
+            if (myService != null) {
+                myService.heartBeatRef.compareAndSet(this, null);
+            }
             return null;
         }
 
@@ -567,7 +640,10 @@ public class MyService extends Service {
                     QueueExecutor.MAX_EXECUTION_TIME_SECONDS)) {
                 MyLog.d(this, AsyncTaskLauncher.threadPoolInfo());
             }
-            startStopExecution();
+            MyService myService = myServiceRef.get();
+            if (myService != null) {
+                myService.startStopExecution();
+            }
         }
 
         @Override

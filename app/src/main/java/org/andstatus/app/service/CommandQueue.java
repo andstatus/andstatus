@@ -59,7 +59,7 @@ public class CommandQueue {
     private final MyContext myContext;
     private final AtomicLong mRetryQueueProcessedAt = new AtomicLong();
     private final Map<QueueType, OneQueue> queues = new HashMap<>();
-    private final Accessor mainAccessor;
+    private final Accessor generalAccessor;
     private final Map<AccessorType, Accessor> accessors = new HashMap<>();
     private volatile boolean loaded = false;
     private volatile boolean changed = false;
@@ -114,7 +114,7 @@ public class CommandQueue {
                 }
             }
 
-            if (queueType == QueueType.CURRENT) {
+            if (queueType == QueueType.CURRENT && queueType == QueueType.DOWNLOADS) {
                 commandData.getResult().prepareForLaunch();
             }
             MyLog.v(TAG, () -> "Adding to " + queueType + " queue " + commandData);
@@ -138,15 +138,15 @@ public class CommandQueue {
         }
         queues.put(QueueType.PRE, preQueue);
 
-        mainAccessor = new Accessor(this, AccessorType.MAIN);
-        accessors.put(AccessorType.MAIN, mainAccessor);
+        generalAccessor = new Accessor(this, AccessorType.GENERAL);
+        accessors.put(AccessorType.GENERAL, generalAccessor);
         accessors.put(AccessorType.DOWNLOADS, new Accessor(this, AccessorType.DOWNLOADS));
     }
 
     @NonNull
     Accessor getAccessor(AccessorType accessorType) {
         Accessor accessor = accessors.get(accessorType);
-        return accessor == null ? mainAccessor : accessor;
+        return accessor == null ? generalAccessor : accessor;
     }
 
     @NonNull
@@ -161,7 +161,8 @@ public class CommandQueue {
             MyLog.v(TAG, "Already loaded");
         } else {
             StopWatch stopWatch = StopWatch.createStarted();
-            int count = load(QueueType.CURRENT) + load(QueueType.SKIPPED) + load(QueueType.RETRY);
+            int count = load(QueueType.CURRENT) + load(QueueType.DOWNLOADS)
+                    + load(QueueType.SKIPPED) + load(QueueType.RETRY);
             int countError = load(QueueType.ERROR);
             MyLog.i(TAG, "commandQueueInitializedMs:" + stopWatch.getTime() + ";"
                     + (count > 0 ? Integer.toString(count) : " no") + " msg in queues"
@@ -175,7 +176,7 @@ public class CommandQueue {
     /** @return Number of items loaded */
     private int load(@NonNull QueueType queueType) {
         final String method = "loadQueue-" + queueType.save();
-        OneQueue oneQueue = queues.get(queueType);
+        OneQueue oneQueue = get(queueType);
         Queue<CommandData> queue = oneQueue.queue;
         int count = 0;
         SQLiteDatabase db = myContext.getDatabase();
@@ -231,6 +232,7 @@ public class CommandQueue {
         if (loaded) clearQueuesInDatabase(db);
 
         Try<Integer> countNotError = save(db, QueueType.CURRENT)
+                .flatMap(i1 -> save(db, QueueType.DOWNLOADS).map(i2 -> i1 + i2))
                 .flatMap(i1 -> save(db, QueueType.SKIPPED).map(i2 -> i1 + i2))
                 .flatMap(i1 -> save(db, QueueType.RETRY).map(i2 -> i1 + i2));
         Try<Integer> countError = save(db, QueueType.ERROR);
@@ -247,7 +249,7 @@ public class CommandQueue {
     /** @return Number of items persisted */
     private Try<Integer> save(@NonNull SQLiteDatabase db, @NonNull QueueType queueType) {
         final String method = "saveQueue-" + queueType.save();
-        OneQueue oneQueue = queues.get(queueType);
+        OneQueue oneQueue = get(queueType);
         Queue<CommandData> queue = oneQueue.queue;
         int count = 0;
         try {
@@ -344,7 +346,7 @@ public class CommandQueue {
     }
 
     enum AccessorType {
-        MAIN,
+        GENERAL,
         DOWNLOADS
     }
 
@@ -358,8 +360,21 @@ public class CommandQueue {
         }
 
         boolean isAnythingToExecuteNow() {
-            return !cq.loaded || !preQueue.isEmpty() || isAnythingToExecuteNowIn(QueueType.CURRENT)
-                    || isAnythingToRetryNow();
+            return !cq.loaded || !preQueue.isEmpty()
+                || isAnythingToExecuteNowIn(mainQueueType())
+                || isAnythingToRetryNow();
+        }
+
+        private boolean isForAccessor(CommandData cd) {
+            boolean commandForDownloads = cd.getCommand() == CommandEnum.GET_ATTACHMENT
+                    || cd.getCommand() == CommandEnum.GET_AVATAR;
+            return accessorType == AccessorType.GENERAL ^ commandForDownloads;
+        }
+
+        private QueueType mainQueueType() {
+            return accessorType == AccessorType.GENERAL
+                    ? QueueType.CURRENT
+                    : QueueType.DOWNLOADS;
         }
 
         private boolean isAnythingToRetryNow() {
@@ -371,11 +386,11 @@ public class CommandQueue {
             if (!cq.loaded) {
                 return true;
             }
-            if ( cq.queues.get(queueType).isEmpty()) {
+            if ( cq.get(queueType).isEmpty()) {
                 return false;
             }
             if (!MyPreferences.isSyncWhileUsingApplicationEnabled() && cq.myContext.isInForeground()) {
-                return cq.queues.get(queueType).hasForegroundTasks();
+                return cq.get(queueType).hasForegroundTasks();
             }
             return true;
         }
@@ -384,10 +399,10 @@ public class CommandQueue {
             moveCommandsFromPreToMainQueue();
             CommandData commandData;
             do {
-                commandData = cq.get(QueueType.CURRENT).queue.poll();
+                commandData = cq.get(mainQueueType()).queue.poll();
                 if (commandData == null && isAnythingToRetryNow()) {
                     moveCommandsFromRetryToMainQueue();
-                    commandData = cq.get(QueueType.CURRENT).queue.poll();
+                    commandData = cq.get(mainQueueType()).queue.poll();
                 }
                 if (commandData == null) {
                     break;
@@ -407,7 +422,7 @@ public class CommandQueue {
                     commandData = null;
                 }
             } while (commandData == null);
-            MyLog.v(TAG, "Polled in "
+            MyLog.v(TAG, "Polled " + accessorType + " in "
                     + (cq.myContext.isInForeground() ? "foreground "
                     + (MyPreferences.isSyncWhileUsingApplicationEnabled() ? "enabled" : "disabled")
                     : "background")
@@ -438,7 +453,7 @@ public class CommandQueue {
 
         /** @return true if success */
         private boolean addToMainQueue(CommandData commandData) {
-            return cq.addToQueue(QueueType.CURRENT, commandData);
+            return isForAccessor(commandData) && cq.addToQueue(mainQueueType(), commandData);
         }
 
         private void moveCommandsFromRetryToMainQueue() {

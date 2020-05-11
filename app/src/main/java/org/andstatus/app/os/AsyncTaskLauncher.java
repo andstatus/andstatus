@@ -19,6 +19,7 @@ package org.andstatus.app.os;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.TryUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -130,7 +131,7 @@ public class AsyncTaskLauncher<Params> {
                 launchedCount.incrementAndGet();
             }
             removeFinishedTasks();
-            return Try.success(null);
+            return TryUtils.SUCCESS;
         } catch (Exception e) {
             String msgLog = asyncTask.toString() + " Launching task\n" + threadPoolInfo();
             MyLog.w(objTag, msgLog, e);
@@ -172,7 +173,7 @@ public class AsyncTaskLauncher<Params> {
         for (MyAsyncTask<?, ?, ?> launched : launchedTasks) {
             if (launched.getStatus() == MyAsyncTask.Status.FINISHED) {
                 if (MyLog.isVerboseEnabled()) {
-                    MyLog.v(TAG, Long.toString(++count) + ". Removing finished " + launched);
+                    MyLog.v(TAG, (++count) + ". Removing finished " + launched);
                 }
                 launchedTasks.remove(launched);
             }
