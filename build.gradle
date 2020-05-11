@@ -30,7 +30,7 @@ buildscript {
         commonsCodecVersion = '20041127.091804'
         commonsLangVersion = '3.10'       // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3
         documentfileVersion = '1.0.1'     // https://developer.android.com/jetpack/androidx/releases/documentfile
-        espressoCoreVersion = '3.3.0-beta01' // https://developer.android.com/jetpack/androidx/releases/test
+        espressoCoreVersion = '3.2.0' // https://developer.android.com/jetpack/androidx/releases/test
         hamcrestVersion = '2.2'           // http://hamcrest.org/JavaHamcrest/distributables#using-hamcrest-in-a-gradle-project
         httpMimeVersion = '4.5.12'
         httpclientVersion = '4.5.8'       // https://github.com/smarek/httpclient-android
@@ -43,8 +43,8 @@ buildscript {
         scribejavaCoreVersion = '6.9.0'   // https://github.com/scribejava/scribejava
         signPostVersion = '1.2.1.2'       // https://mvnrepository.com/artifact/oauth.signpost/signpost-core
         swiperefreshlayoutVersion = '1.0.0' // https://developer.android.com/jetpack/androidx/releases/swiperefreshlayout
-        testRulesVersion = '1.3.0-beta01' // https://developer.android.com/jetpack/androidx/releases/test
-        testRunnerVersion = '1.3.0-beta01' // https://developer.android.com/jetpack/androidx/releases/test
+        testRulesVersion = '1.2.0' // https://developer.android.com/jetpack/androidx/releases/test
+        testRunnerVersion = '1.2.0' // https://developer.android.com/jetpack/androidx/releases/test
         vavrVersion = '1.0.0-alpha-2'     // https://github.com/vavr-io/vavr
     }
 }
