@@ -29,8 +29,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="56.01" android:versionCode="318"
-        versionDate="2020-05-11"
+    <release android:versionName="56.02" android:versionCode="319"
+        versionDate="2020-05-12"
         versionTitle="Avatars and attachments syncing performance improved">
         <changes>
             <change>Since its creation years ago AndStatus used only one background process (thread)

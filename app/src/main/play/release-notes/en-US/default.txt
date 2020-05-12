@@ -1,1 +1,2 @@
+v.56.02 Translations updated. Italian translation added.
 v.56.01 Avatars and attachments syncing performance improved

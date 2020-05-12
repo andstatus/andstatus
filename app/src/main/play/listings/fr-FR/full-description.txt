@@ -1,4 +1,4 @@
-AndStatus est un client Libre et multi-comptes supportant plusieurs réseaux sociaux dont
+AndStatus est un client libre et multi-comptes prenant en charge plusieurs réseaux sociaux dont
 GNU social, Mastodon, Twitter et Pump.io.
 AndStatus peut combiner vos flux de tous les réseaux sociaux dans un seul fil d'actualité
 et vous permet de lire et de publier même lorsque vous êtes en mode hors connexion.
@@ -11,11 +11,11 @@ Les différentes fonctionnalités d'AndStatus :
 2. Vous n’avez pas besoin d’être connecté pour lire les fils d'actualités et pour publier des messages : vos brouillons et vos messages non envoyés sont conservés même après le redémarrage de votre appareil. Ils seront envoyés lorsque votre appareil sera de nouveau connecté.
 3. Une visualisation des conversation en arborescence.
 4. "Recherche globale". Cette fonctionnalité vous permet de rechercher des messages publics sur tous les réseaux connectés à AndStatus via une seule et unique requête.
-5. Lists of Friends and Followers, presented as User Lists and as Timelines (with the latest note by each User).
-6. Notes (tweets)/avatars/attached images are being synced in a background, when your device has a good connection. Par défaut, les pièces jointes seront téléchargées uniquement via Wi-Fi.
+5. Listes d'amis et d'abonnés, présentées comme listes d'utilisateurs et comme fil d'actualité (avec la dernière note pour chaque Utilisateur).
+6. Les notes (twits)/avatars/images jointes sont synchronisés en arrière-plan, quand votre appareil a une bonne connexion. Par défaut, les pièces jointes seront téléchargées uniquement via Wi-Fi.
 7. Les données en mémoire cache peuvent être conservées pour des années ou pour plusieurs jours seulement - selon votre choix.
-8. Backup accounts and notes and Restore them on any of your devices. Gardez vos données !
+8. Sauvegarder les comptes et les notes, et les restaurer sur n'importe lequel de vos appareils. Gardez vos données !
 9. Gratuit et sans publicité, soutenu par la communauté.
 
-Consultez le Changelog pour obtenir une description de toutes les fonctionnalités de AndStatus avec des liens vers leurs discussions :
+Consultez le journal des modifications pour obtenir une description de toutes les fonctionnalités de AndStatus avec des liens vers leurs discussions :
 http://andstatus.org/changelog.html

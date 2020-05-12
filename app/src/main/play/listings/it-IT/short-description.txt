@@ -1,1 +1,1 @@
-Open Source social rete client di basso livello traffico
+Open Source multiple accounts client for multiple social networks
