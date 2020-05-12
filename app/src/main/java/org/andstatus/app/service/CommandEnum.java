@@ -145,4 +145,14 @@ public enum CommandEnum {
     public ConnectionRequired getConnectionRequired() {
         return connectionRequired;
     }
+
+    public boolean isGetTimeline() {
+        switch (this) {
+            case GET_TIMELINE:
+            case GET_OLDER_TIMELINE:
+                return true;
+            default:
+                return false;
+        }
+    }
 }

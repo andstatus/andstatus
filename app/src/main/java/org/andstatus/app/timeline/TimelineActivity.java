@@ -1167,6 +1167,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             default:
                 break;
         }
+        if (commandData.getCommand().isGetTimeline()) {
+            setCircularSyncIndicator("onReceiveAfterExecutingCommand ", false);
+        }
         if (!TextUtils.isEmpty(syncingText)) {
             if (MyServiceManager.getServiceState() != MyServiceState.RUNNING) {
                 hideSyncing("Service is not running");
