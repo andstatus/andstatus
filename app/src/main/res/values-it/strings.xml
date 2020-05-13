@@ -24,6 +24,8 @@
   <string name="always">Sempre</string>
   <string name="appwidget_nothingnew_default">Niente di nuovo da quanto:</string>
   <string name="appwidget_nodata">Non ci sono dati.</string>
+  <string name="attach_images_title">Allega immagini alle mie note</string>
+  <string name="attachment_is_too_large">L\'allegato è troppo grande</string>
   <string name="attachments">Gle allegati</string>
   <string name="authentication_never">Non ancora autenticato</string>
   <string name="authentication_successful">L\'autenticazione riuscita!</string>
@@ -69,6 +71,8 @@
   <string name="color_night">Notte</string>
   <string name="color_orange">Arancio</string>
   <string name="color_red">Rosso</string>
+  <string name="color_white">Bianco</string>
+  <string name="combined_timeline_on">combinato</string>
   <string name="combined_timeline_off_account">per</string>
   <string name="command_follow_user">Segui</string>
   <string name="command_stop_following_user">Smetti di seguire</string>

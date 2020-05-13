@@ -183,6 +183,7 @@
   <string name="get_message">Nachrichteninfos abrufen</string>
   <string name="get_user">Nutzerinfos abrufen</string>
   <string name="go_to_the_top_title">Gehe nach Oben</string>
+  <string name="group">Gruppe</string>
   <string name="header_accounts">Konten</string>
   <string name="header_accounts_summary">Konten und Soziale Netzwerke verwalten</string>
   <string name="header_add_new_account">Neuen Account hinzufügen</string>

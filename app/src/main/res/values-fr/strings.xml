@@ -35,6 +35,8 @@
   <string name="authentication_never">Pas de dernière authentification</string>
   <string name="authentication_successful">Authentification réussie !</string>
   <string name="automatic">Automatique</string>
+  <string name="backup_downloads">Sauvegarder les fichiers multimédia : pièces jointes et avatars</string>
+  <string name="backup_log_files">Sauvegarder les fichiers de journalisation</string>
   <string name="background_color_preference_title">Couleur de fond pour le thème Sombre</string>
   <string name="button_add">Ajouter</string>
   <string name="button_add_origin">Ajouter un nouveau Réseau Social</string>
@@ -57,9 +59,11 @@
   <string name="category_title_preference_information">Information</string>
   <string name="category_title_preference_origin">Réseau social</string>
   <string name="category_title_preference_settings">Réglages</string>
+  <string name="change_log_summary">Le journal des modifications est en anglais seulement</string>
   <string name="changed">Changé</string>
   <string name="check_and_fix_data">Vérifier et corriger les données</string>
   <string name="check_and_fix_data_summary">Utilisez cette action si vous estimez que AndStatus fonctionne mal mais que vous ne voulez pas le réinstaller</string>
+  <string name="clear_the_queue">Effacer la liste d\'attente</string>
   <string name="client_registration_failed">L’enregistrement du client AndStatus a échoué</string>
   <string name="collapse_duplicates">Fusionner les doublons</string>
   <string name="color_black">Noir</string>
@@ -92,7 +96,9 @@
   <string name="created_label">Créé</string>
   <string name="custom_locale_title">Langue de l\'application</string>
   <string name="set_as_default_timeline">Définir comme Timeline par Défaut</string>
+  <string name="database_unavailable_description">Nous n\'avons pas pu ouvrir le cache local (base de données avec des notes et des activités). Veuillez essayer de redémarrer votre appareil ou réinstaller AndStatus.</string>
   <string name="default_timeline_summary">Timeline qui sera ouverte par un lanceur : \"%s\"</string>
+  <string name="delete_old_data">Supprimer les anciennes données maintenant</string>
   <string name="deleted">supprimé</string>
   <string name="device_default">Valeur de l\'appareil</string>
   <string name="dialog_summary_acquiring_an_access_token">Merci de patienter pendant qu\'AndStatus échange le jeton de requête OAuth contre un jeton d\'accès</string>
@@ -165,6 +171,7 @@
   <string name="followed_by">Suivi par</string>
   <string name="followers">Abonnés</string>
   <string name="followers_of">Abonnés de \"%1s\"</string>
+  <string name="follows">Suit</string>
   <string name="forget_sync_events">Oublier les dates et les événements de synchronisation</string>
   <string name="friends">Amis</string>
   <string name="friends_of">Amis de \"%1s\"</string>
@@ -178,6 +185,9 @@
   <string name="get_message">Obtenir des informations sur le message</string>
   <string name="get_user">Obtenir des informations sur l’Utilisateur</string>
   <string name="go_to_the_top_title">Retour au haut de la page</string>
+  <string name="group">Groupe</string>
+  <string name="group_notes">%s notes de groupe</string>
+  <string name="groups">Groupes</string>
   <string name="header_accounts">Gestion des comptes</string>
   <string name="header_accounts_summary">Gérer les comptes et les réseaux sociaux</string>
   <string name="header_add_new_account">Ajouter un compte</string>
@@ -256,6 +266,7 @@
   <string name="menu_item_destroy_reblog_pumpio">Annuler le partage</string>
   <string name="menu_item_destroy_reblog_twitter">Annuler le repartage</string>
   <string name="menu_item_destroy_status">Supprimer ce message</string>
+  <string name="menu_item_delete_note_from_local_cache">Supprimer la note du cache local</string>
   <string name="menu_item_edit">Modifier</string>
   <string name="menu_item_favorite">Mettre en favori</string>
   <string name="menu_item_follow_user">S\'abonner \"%1s\"</string>
@@ -334,6 +345,7 @@
   <string name="page_top_of">au début</string>
   <string name="page_younger">plus jeune</string>
   <string name="page_youngest">plus récent</string>
+  <string name="post_to">Publier sur %s</string>
   <string name="preference_ssl_mode_title">Mode SSL et sécurité</string>
   <string name="preference_ssl_mode_secure_summary">Vous êtes en sécurité : seules les connexions SSL sécurisées sont autorisées</string>
   <string name="preference_ssl_mode_insecure_summary">AVERTISSEMENT : Vos connexions ne sont pas sécurisées. Demandez à votre administrateur de corriger ce problème puis revenez à un mode sécurisé</string>
@@ -346,6 +358,7 @@
   <string name="preference_log_network_level_messages_title">Consigner les messages de niveau réseau</string>
   <string name="preference_true_black_title">Véritable fond noir</string>
   <string name="preference_use_kitkat_media_chooser_title">Interface moderne pour sélectionner une pièce jointe</string>
+  <string name="privacy_unknown">Publique ?</string>
   <string name="reblogged">a reposté</string>
   <string name="reblogged_by">reposté par %1$s</string>
   <string name="reblogged_by_pumpio">partagé par %1$s</string>
@@ -382,6 +395,7 @@
   <string name="search_users">Rechercher des utilisateurs</string>
   <string name="select_backup_folder">Sélectionnez le dossier de sauvegarde</string>
   <string name="select_displayed_in_selector">Choisir si et quand cette timeline est affichée</string>
+  <string name="sensitive">Sensible</string>
   <string name="sent">Envoyé</string>
   <string name="select_social_network">Sélection du réseau social</string>
   <string name="settings_action">Paramétrages</string>
@@ -391,6 +405,7 @@
   <string name="show_threads_of_conversation">Afficher les conversations</string>
   <string name="show_timeline_messages">Montrer les messages de la Timeline</string>
   <string name="show_my_account_which_downloaded">Afficher mon compte, qui a téléchargé l’activité/la note</string>
+  <string name="show_sensitive_content">Afficher le contenu sensible</string>
   <string name="since">Depuis %s</string>
   <string name="splash_button_learn_more">En savoir plus</string>
   <string name="splash_button_get_started">Commencer</string>
@@ -398,6 +413,7 @@
     GNU social, Mastodon, Twitter et Pump.io</string>
   <string name="status_destroyed">Ce message a été supprimé.</string>
   <string name="subtitle">Sous-titre</string>
+  <string name="summaryCw">Résumé / Avertissement de contenu</string>
   <string name="summary_preference_accounts_absent">Pas encore de compte AndStatus</string>
   <string name="summary_preference_accounts_present">Nombre de comptes AndStatus</string>
   <string name="summary_preference_add_account_oauth">Cliquez sur le bouton ci-dessous pour ouvrir la page du réseau social dans un navigateur.</string>
@@ -532,6 +548,7 @@
   <string name="unread_notifications">Notifications non lues</string>
   <string name="updated">mis à jour</string>
   <string name="use_legacy_http_protocol_title">Utiliser l\'ancien protocole HTTP</string>
+  <string name="user_guide">Guide de l\'utilisateur</string>
   <string name="user_in_timeline_entries_username">nom d\'utilisateur</string>
   <string name="user_in_timeline_entries_at_username">"\@utilisateur"</string>
   <string name="user_in_timeline_entries_webfingerid">ID Webfinger</string>

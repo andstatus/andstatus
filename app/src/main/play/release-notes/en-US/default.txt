@@ -1,2 +1,2 @@
-v.56.02 Translations updated. Italian translation added.
+v.56.03 Fixed app restarting problems (e.g. in Settings). Translations updated.
 v.56.01 Avatars and attachments syncing performance improved
