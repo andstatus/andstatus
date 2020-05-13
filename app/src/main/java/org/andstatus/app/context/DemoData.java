@@ -199,8 +199,7 @@ public final class DemoData {
             accountInserter.insert();
             myContext.timelines().saveChanged();
 
-            MyPreferences.onPreferencesChanged();
-            myContextHolder.setExpiredIfConfigChanged();
+            myContextHolder.setExpired(true);
             MyLog.v(logTag, "Before initialize 2");
             myContextHolder.initialize(null, logTag).getBlocking();
             MyLog.v(logTag, "After initialize 2");

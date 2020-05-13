@@ -20,11 +20,11 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.widget.Toast;
 
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyContextState;
 import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
 
@@ -150,7 +150,7 @@ public class DefaultProgressListener implements ProgressLogger.ProgressListener,
             try {
                 activity.runOnUiThread(() -> {
                     freeResources();
-                    TimelineActivity.goHome(activity);
+                    FirstActivity.goHome(activity);
                     activity.finish();
                 });
             } catch (Exception e) {

@@ -37,7 +37,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 public class HelpActivityTest extends ActivityTest<HelpActivity> {
 
@@ -62,8 +62,10 @@ public class HelpActivityTest extends ActivityTest<HelpActivity> {
 
     @Test
     public void test() throws Throwable {
+        TestSuite.waitForIdleSync();
+
         ViewPager mFlipper = mActivityRule.getActivity().findViewById(R.id.help_flipper);
-        assertTrue(mFlipper != null);
+        assertNotNull(mFlipper);
         assertEquals("At Changelog page", HelpActivity.PAGE_CHANGELOG, mFlipper.getCurrentItem());
         DbUtils.waitMs("test", 500);
 

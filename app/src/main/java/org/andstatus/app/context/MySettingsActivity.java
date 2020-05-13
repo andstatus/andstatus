@@ -16,7 +16,6 @@
 
 package org.andstatus.app.context;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,12 +28,10 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 
-import org.andstatus.app.FirstActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.MyLog;
 
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
@@ -45,7 +42,6 @@ public class MySettingsActivity extends MyActivity implements
         PreferenceFragmentCompat.OnPreferenceStartScreenCallback,
         PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
-    private boolean restartApp = false;
     private long mPreferencesChangedAt = MyPreferences.getPreferencesChangeTime();
     private boolean resumedOnce = false;
 
@@ -135,9 +131,9 @@ public class MySettingsActivity extends MyActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime() || !myContextHolder.getNow().initialized()) {
+        if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime() || !myContextHolder.getFuture().isReady()) {
             logEvent("onResume", "Recreating");
-            myContextHolder.initializeThenRestartMe(this);
+            myContextHolder.ifNeededInitializeThenRestartMe(this);
             return;
         }
         if (isRootScreen()) {
@@ -175,8 +171,10 @@ public class MySettingsActivity extends MyActivity implements
     }
 
     private void closeAndRestartApp() {
-        logEvent("closeAndRestartApp", "");
-        restartApp = true;
+        if (resumedOnce) {
+            logEvent("closeAndRestartApp", "");
+            myContextHolder.setExpired(false).thenStartApp();
+        }
         finish();
     }
 
@@ -191,31 +189,10 @@ public class MySettingsActivity extends MyActivity implements
         return super.onKeyDown(keyCode, event);
     }
 
-    /**
-     * See http://stackoverflow.com/questions/1397361/how-do-i-restart-an-android-activity
-     */
-    public static void restartMe(Activity activity) {
-        if (activity == null) {
-            FirstActivity.startApp();
-        } else if (!myContextHolder.getNow().isReady()) {
-            myContextHolder.initializeThenRestartMe(activity);
-        } else {
-            Intent intent = activity.getIntent();
-            activity.finish();
-            activity.startActivity(intent);
-        }
-    }
-
     @Override
     public void finish() {
-        logEvent("finish", restartApp ? " and restart" : "");
         super.finish();
-        if (resumedOnce) {
-            myContextHolder.setExpiredIfConfigChanged();
-            if (restartApp) {
-                TimelineActivity.goHome(this);
-            }
-        }
+        logEvent("finish", "");
     }
 
     private void logEvent(String method, String msgLog_in) {

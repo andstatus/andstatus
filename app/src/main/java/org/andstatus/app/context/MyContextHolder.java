@@ -18,6 +18,7 @@ package org.andstatus.app.context;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.SystemClock;
@@ -28,9 +29,11 @@ import androidx.annotation.NonNull;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.os.AsyncTaskLauncher;
+import org.andstatus.app.os.NonUiThreadExecutor;
 import org.andstatus.app.os.UiThreadExecutor;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
@@ -94,28 +97,45 @@ public final class MyContextHolder implements TaggedClass {
     }
 
     /**
+     * See http://stackoverflow.com/questions/1397361/how-do-i-restart-an-android-activity
+     */
+    public MyContextHolder reInitializeAndRestartMe(Activity activity) {
+        myContextHolder.setExpired(true);
+        if (activity == null) {
+            return initialize(null).thenStartApp();
+        }
+        Intent intent = activity.getIntent();
+        MyLog.v(TAG, () -> "Restarting " + activity + "; intent:" + intent);
+        activity.finish();
+        return initialize(activity).thenStartIntent(intent);
+    }
+
+    /**
      * Initialize asynchronously
      * @return true if the Activity is being restarted
      */
-    public boolean initializeThenRestartMe(@NonNull Activity activity) {
+    public boolean ifNeededInitializeThenRestartMe(Activity activity) {
+        if (activity == null) {
+            thenStartApp();
+            return true;
+        }
         if (getFuture().needToInitialize()) {
-            initialize(activity)
-            .whenSuccessAsync(myContext -> {
-                activity.finish();
-                MyFutureContext.startActivity(activity);
-            }, UiThreadExecutor.INSTANCE);
+            Intent intent = activity.getIntent();
+            MyLog.v(TAG, () -> "Restarting " + activity + "; intent:" + intent);
+            activity.finish();
+            initialize(activity).thenStartIntent(intent);
             return true;
         }
         return false;
     }
 
     public MyContextHolder initialize(Context context) {
-        return  initializeInner(context, context, false);
+        return initializeInner(context, context, false);
     }
 
     /** Reinitialize in a case preferences have been changed */
     public MyContextHolder initialize(Context context, Object calledBy) {
-        return  initializeInner(context, calledBy, false);
+        return initializeInner(context, calledBy, false);
     }
 
     public MyContextHolder initializeDuringUpgrade(Context upgradeRequestor) {
@@ -136,9 +156,40 @@ public final class MyContextHolder implements TaggedClass {
         return this;
     }
 
+    public MyContextHolder setExpired(boolean evenIfUnchangedPreferences) {
+        return whenSuccessOrPreviousAsync(myContext -> {
+            if (myContext != MyContext.EMPTY) {
+                long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
+                boolean preferencesChanged = myContext.preferencesChangeTime() != preferencesChangeTimeLast;
+                if (preferencesChanged || evenIfUnchangedPreferences) {
+                    myContext.setExpired(() -> preferencesChanged
+                            ? "Preferences changed "
+                            + RelativeTime.secondsAgo(preferencesChangeTimeLast)
+                            + " seconds ago, refreshing..."
+                            : "Preferences weren't changed");
+                }
+            }
+        }, NonUiThreadExecutor.INSTANCE);
+    }
+
+    public MyContextHolder thenStartIntent(Intent intent) {
+        return whenSuccessAsync(MyFutureContext.startIntent(intent), UiThreadExecutor.INSTANCE);
+    }
+
+    public MyContextHolder thenStartApp() {
+        return whenSuccessAsync(FirstActivity::startApp, UiThreadExecutor.INSTANCE);
+    }
+
     public MyContextHolder whenSuccessAsync(Consumer<MyContext> consumer, Executor executor) {
         synchronized(CONTEXT_LOCK) {
             myFutureContext = myFutureContext.whenSuccessAsync(consumer, executor);
+        }
+        return this;
+    }
+
+    public MyContextHolder whenSuccessOrPreviousAsync(Consumer<MyContext> consumer, Executor executor) {
+        synchronized(CONTEXT_LOCK) {
+            myFutureContext = myFutureContext.whenSuccessOrPreviousAsync(consumer, executor);
         }
         return this;
     }
@@ -148,19 +199,6 @@ public final class MyContextHolder implements TaggedClass {
             myFutureContext = myFutureContext.with(future);
         }
         return this;
-    }
-
-    public void setExpiredIfConfigChanged() {
-        with(future -> future.whenComplete((myContext, throwable) -> {
-            if (myContext != null && myContext.isConfigChanged()) {
-                long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
-                if (myContext.preferencesChangeTime() != preferencesChangeTimeLast) {
-                    myContext.setExpired(() -> "Preferences changed "
-                            + RelativeTime.secondsAgo(preferencesChangeTimeLast)
-                            + " seconds ago, refreshing...");
-                }
-            }
-        }));
     }
 
     /**

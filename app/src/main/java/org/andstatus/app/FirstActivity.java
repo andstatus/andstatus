@@ -29,18 +29,19 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextState;
-import org.andstatus.app.context.MyFutureContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsGroup;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.os.UiThreadExecutor;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
@@ -49,6 +50,7 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
  * It is transparent and shows progress indicator only, launches next activity after application initialization.
  * */
 public class FirstActivity extends AppCompatActivity {
+    private static final String TAG = FirstActivity.class.getSimpleName();
     private static final String SET_DEFAULT_VALUES = "setDefaultValues";
     private static final AtomicReference<TriState> resultOfSettingDefaults = new AtomicReference<>(TriState.UNKNOWN);
 
@@ -66,16 +68,16 @@ public class FirstActivity extends AppCompatActivity {
         } catch (Throwable e) {
             MyLog.w(this, "Couldn't setContentView", e);
         }
-        startNextActivity(getIntent());
+        parseNewIntent(getIntent());
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        startNextActivity(intent);
+        parseNewIntent(intent);
     }
 
-    private void startNextActivity(Intent intent) {
+    private void parseNewIntent(Intent intent) {
         switch (MyAction.fromIntent(intent)) {
             case INITIALIZE_APP:
                 myContextHolder.initialize(this)
@@ -86,21 +88,35 @@ public class FirstActivity extends AppCompatActivity {
                 finish();
                 break;
             default:
-                if (myContextHolder.getNow().isReady() || myContextHolder.getNow().state() == MyContextState.UPGRADING) {
+                if (myContextHolder.getFuture().isReady() || myContextHolder.getNow().state() == MyContextState.UPGRADING) {
                     startNextActivitySync(myContextHolder.getNow(), intent);
                     finish();
                 } else {
                     myContextHolder.initialize(this)
-                    .with(future -> future.whenCompleteAsync(
-                        MyFutureContext.startNextActivity(this), UiThreadExecutor.INSTANCE
-                    ));
+                    .with(future -> future.whenCompleteAsync(startNextActivity, UiThreadExecutor.INSTANCE));
                 }
         }
     }
 
-    public void startNextActivitySync(MyContext myContext) {
-        startNextActivitySync(myContext, getIntent());
-    }
+    private BiConsumer<MyContext, Throwable> startNextActivity = (myContext, throwable) -> {
+        boolean launched = false;
+        if (myContext != null && myContext.isReady() && !myContext.isExpired()) {
+            try {
+                startNextActivitySync(myContext, getIntent());
+                launched = true;
+            } catch (android.util.AndroidRuntimeException e) {
+                MyLog.w(TAG, "Launching next activity from firstActivity", e);
+            } catch (java.lang.SecurityException e) {
+                MyLog.d(TAG, "Launching activity", e);
+            }
+        }
+        if (!launched) {
+            HelpActivity.startMe(
+                    myContext == null ? myContextHolder.getNow().context() : myContext.context(),
+                    true, HelpActivity.PAGE_LOGO);
+        }
+        this.finish();
+    };
 
     private void startNextActivitySync(MyContext myContext, Intent myIntent) {
         switch (needToStartNext(this, myContext)) {
@@ -131,9 +147,25 @@ public class FirstActivity extends AppCompatActivity {
         }
     }
 
-    public static void startApp() {
-        myContextHolder.getNow().context().startActivity(
-                new Intent(myContextHolder.getNow().context(), FirstActivity.class));
+    public static void goHome(Activity activity) {
+        try {
+            MyLog.v(TAG, () -> "goHome from " + MyStringBuilder.objToTag(activity));
+            startApp(activity);
+        } catch (Exception e) {
+            MyLog.v(TAG, "goHome", e);
+            myContextHolder.thenStartApp();
+        }
+    }
+
+    public static void startApp(MyContext myContext) {
+        Context context = myContext.context();
+        startApp(context);
+    }
+
+    private static void startApp(Context context) {
+        Intent intent = new Intent(context, FirstActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
     }
 
     public static NeedToStart needToStartNext(Context context, MyContext myContext) {
@@ -165,7 +197,7 @@ public class FirstActivity extends AppCompatActivity {
             if (versionCodeLast < versionCode) {
                 // Even if the Actor will see only the first page of the Help activity,
                 // count this as showing the Change Log
-                MyLog.v(FirstActivity.class, () -> "Last opened version=" + versionCodeLast
+                MyLog.v(TAG, () -> "Last opened version=" + versionCodeLast
                         + ", current is " + versionCode
                         + (update ? ", updating" : "")
                 );
@@ -175,7 +207,7 @@ public class FirstActivity extends AppCompatActivity {
                 }
             }
         } catch (PackageManager.NameNotFoundException e) {
-            MyLog.e(FirstActivity.class, "Unable to obtain package information", e);
+            MyLog.e(TAG, "Unable to obtain package information", e);
         }
         return changed;
     }
@@ -190,24 +222,24 @@ public class FirstActivity extends AppCompatActivity {
     /** @return success */
     public static boolean setDefaultValues(Context context) {
         if (context == null) {
-            MyLog.e(FirstActivity.class, SET_DEFAULT_VALUES + " no context");
+            MyLog.e(TAG, SET_DEFAULT_VALUES + " no context");
             return false;
         }
         synchronized (resultOfSettingDefaults) {
             resultOfSettingDefaults.set(TriState.UNKNOWN);
             try {
-                if (Activity.class.isInstance(context)) {
+                if (context instanceof Activity) {
                     final Activity activity = (Activity) context;
                     activity.runOnUiThread( () -> setDefaultValuesOnUiThread(activity));
                 } else {
                     startMeAsync(context, MyAction.SET_DEFAULT_VALUES);
                 }
                 for (int i = 0; i < 100; i++) {
-                    DbUtils.waitMs(FirstActivity.class, 50);
+                    DbUtils.waitMs(TAG, 50);
                     if (resultOfSettingDefaults.get().known) break;
                 }
             } catch (Exception e) {
-                MyLog.e(FirstActivity.class, SET_DEFAULT_VALUES + " error:" + e.getMessage() +
+                MyLog.e(TAG, SET_DEFAULT_VALUES + " error:" + e.getMessage() +
                         "\n" + MyLog.getStackTrace(e));
             }
         }

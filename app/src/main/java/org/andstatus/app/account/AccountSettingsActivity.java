@@ -164,7 +164,7 @@ public class AccountSettingsActivity extends MyActivity {
         mLayoutId = R.layout.account_settings_main;
         super.onCreate(savedInstanceState);
 
-        if (myContextHolder.initializeThenRestartMe(this)) {
+        if (myContextHolder.ifNeededInitializeThenRestartMe(this)) {
             return;
         }
 
@@ -679,7 +679,7 @@ public class AccountSettingsActivity extends MyActivity {
         super.onResume();
         myContextHolder.getNow().setInForeground(true);
 
-        if (myContextHolder.initializeThenRestartMe(this)) {
+        if (myContextHolder.ifNeededInitializeThenRestartMe(this)) {
             return;
         }
         MyServiceManager.setServiceUnavailable();
@@ -778,7 +778,7 @@ public class AccountSettingsActivity extends MyActivity {
         super.onPause();
         state.save();
         if (mFinishing && resumedOnce) {
-            myContextHolder.setExpiredIfConfigChanged();
+            myContextHolder.setExpired(false);
             if (activityOnFinish != ActivityOnFinish.NONE) {
                 returnToOurActivity();
             }
@@ -807,7 +807,7 @@ public class AccountSettingsActivity extends MyActivity {
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
                 } else {
-                    TimelineActivity.goHome(AccountSettingsActivity.this);
+                    FirstActivity.goHome(AccountSettingsActivity.this);
                 }
             }
         }, AsyncTask.THREAD_POOL_EXECUTOR);

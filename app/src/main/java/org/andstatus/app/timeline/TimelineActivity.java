@@ -51,7 +51,6 @@ import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.actor.ActorProfileViewer;
 import org.andstatus.app.context.DemoData;
 import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyFutureContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.data.MatchedUri;
@@ -70,7 +69,6 @@ import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginSelector;
 import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.os.UiThreadExecutor;
 import org.andstatus.app.service.CommandData;
 import org.andstatus.app.service.CommandEnum;
 import org.andstatus.app.service.MyServiceManager;
@@ -85,7 +83,6 @@ import org.andstatus.app.timeline.meta.TimelineType;
 import org.andstatus.app.util.BundleUtils;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -153,18 +150,6 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         }
         return intent;
-    }
-
-    public static void goHome(Activity activity) {
-        try {
-            MyLog.v(TimelineActivity.class, () -> "goHome from " + MyStringBuilder.objToTag(activity));
-            Intent intent = new Intent(activity, FirstActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-            activity.startActivity(intent);
-        } catch (Exception e) {
-            MyLog.v(TimelineActivity.class, "goHome", e);
-            FirstActivity.startApp();
-        }
     }
 
     @Override
@@ -272,7 +257,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                 if (getParamsLoaded().isAtHome()) {
                     onTimelineTypeButtonClick(item);
                 } else {
-                    goHome(this);
+                    FirstActivity.goHome(this);
                 }
                 break;
             case GO_TO_THE_TOP:
@@ -288,7 +273,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     public void onSwitchToDefaultTimelineButtonClick(View item) {
         closeDrawer();
-        goHome(this);
+        FirstActivity.goHome(this);
     }
 
     public void onGoToTheTopButtonClick(View item) {
@@ -361,13 +346,13 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
                     MyLog.v(this, () ->
                             method + "; Restarting this Activity to apply all new changes of configuration");
                     finish();
-                    myContextHolder.setExpiredIfConfigChanged();
+                    myContextHolder.setExpired(true);
                     switchView(getParamsLoaded().getTimeline());
                 }
             } else { 
                 MyLog.v(this, () ->
                         method + "; Finishing this Activity and going Home because there is no Account selected");
-                goHome(this);
+                FirstActivity.goHome(this);
                 finish();
             }
         }
@@ -1225,8 +1210,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             MyLog.v(this, () -> "switchTimelineActivity; " + timeline);
             if (isFinishing()) {
                 final Intent intent = getIntentForTimeline(myContext, timeline, false);
-                myContextHolder.initialize(this)
-                .whenSuccessAsync(MyFutureContext.startIntent(intent), UiThreadExecutor.INSTANCE);
+                myContextHolder.initialize(this).thenStartIntent(intent);
             } else {
                 TimelineActivity.startForTimeline(myContext, this, timeline);
             }

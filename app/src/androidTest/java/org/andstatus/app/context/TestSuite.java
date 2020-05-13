@@ -107,10 +107,12 @@ public class TestSuite {
                     creatorSet = true;
                     FirstActivity.startMeAsync(context, MyAction.INITIALIZE_APP);
                     DbUtils.waitMs(method, 3000);
-                    if(myContextHolder.getFuture().future.isDone()) {
+                    if (myContextHolder.getFuture().future.isDone()) {
                         MyContext myContext = myContextHolder.getNow();
                         MyLog.i(TAG, "After starting FirstActivity " + iter + " " + myContext);
                         if (myContext.state() == MyContextState.READY) break;
+                    } else {
+                        MyLog.i(TAG, "After starting FirstActivity " + iter + " is initializing...");
                     }
                 }
             } catch (IllegalStateException e) {

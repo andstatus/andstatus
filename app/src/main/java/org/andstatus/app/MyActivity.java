@@ -31,7 +31,6 @@ import androidx.fragment.app.FragmentTransaction;
 
 import org.andstatus.app.context.MyLocale;
 import org.andstatus.app.context.MyTheme;
-import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.IdentifiableInstance;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
@@ -82,7 +81,7 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
                     previousErrorInflatingTime = System.currentTimeMillis();
                     finish();
                     myContextHolder.getNow().setExpired(() -> logMsg);
-                    TimelineActivity.goHome(this);
+                    FirstActivity.goHome(this);
                 } else {
                     throw new IllegalStateException(logMsg, e);
                 }
@@ -212,11 +211,21 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
 
     @Override
     public void finish() {
-        MyLog.v(this, () -> "Finish requested" + (mFinishing ? ", already finishing" : ""));
+        boolean isFinishing1 = isFinishing();
+        MyLog.v(this, () -> {
+            return "Finish requested" + (isFinishing1 ? ", already finishing" : "");
+        });
         if (!mFinishing) {
             mFinishing = true;
         }
-        super.finish();
+        if (!isFinishing1) {
+            super.finish();
+        }
+    }
+
+    @Override
+    public boolean isFinishing() {
+        return mFinishing || super.isFinishing();
     }
 
     @Override

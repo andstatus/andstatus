@@ -28,7 +28,7 @@ public class NotifierTest {
         NotificationEventType.ANNOUNCE.setEnabled(true);
         NotificationEventType.MENTION.setEnabled(true);
         NotificationEventType.PRIVATE.setEnabled(true);
-        myContextHolder.setExpiredIfConfigChanged();
+        myContextHolder.setExpired(false);
         TestSuite.initializeWithData(this);
     }
 

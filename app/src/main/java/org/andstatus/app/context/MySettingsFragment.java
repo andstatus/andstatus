@@ -112,11 +112,12 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
     @Override
     public void onResume() {
         super.onResume();
-        if (!myContextHolder.getNow().isReady()) {
-            MySettingsActivity.restartMe(getActivity());
+        FragmentActivity activity = getActivity();
+        if (!activity.isFinishing() && !myContextHolder.getNow().isReady()) {
+            myContextHolder.reInitializeAndRestartMe(activity);
             return;
         }
-        getActivity().setTitle(MySettingsGroup.from(this).getTitleResId());
+        activity.setTitle(MySettingsGroup.from(this).getTitleResId());
         showAllPreferences();
         SharedPreferencesUtil.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this);
     }
@@ -479,11 +480,11 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
             switch (key) {
                 case MyPreferences.KEY_CUSTOM_LOCALE:
                     MyLocale.setLocale(getActivity());
-                    MySettingsActivity.restartMe(getActivity());
+                    myContextHolder.reInitializeAndRestartMe(getActivity());
                     break;
                 case MyPreferences.KEY_THEME_COLOR:
                     showThemeColor();
-                    MySettingsActivity.restartMe(getActivity());
+                    myContextHolder.reInitializeAndRestartMe(getActivity());
                     break;
                 case MyPreferences.KEY_THEME_SIZE:
                     showThemeSize();
@@ -493,11 +494,11 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                     break;
                 case MyPreferences.KEY_ACTION_BAR_BACKGROUND_COLOR:
                     showActionBarBackgroundColor();
-                    MySettingsActivity.restartMe(getActivity());
+                    myContextHolder.reInitializeAndRestartMe(getActivity());
                     break;
                 case MyPreferences.KEY_ACTION_BAR_TEXT_COLOR:
                     showActionBarTextColor();
-                    MySettingsActivity.restartMe(getActivity());
+                    myContextHolder.reInitializeAndRestartMe(getActivity());
                     break;
                 case MyPreferences.KEY_DONT_SYNCHRONIZE_OLD_NOTES:
                     showDontSynchronizeOldNotes();

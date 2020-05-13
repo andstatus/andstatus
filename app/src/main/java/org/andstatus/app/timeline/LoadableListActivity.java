@@ -99,7 +99,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     protected void onCreate(Bundle savedInstanceState) {
         myContext = myContextHolder.getNow();
         if (!myContext.isReady()) {
-            myContextHolder.initializeThenRestartMe(this);
+            myContextHolder.ifNeededInitializeThenRestartMe(this);
         }
         super.onCreate(savedInstanceState);
         if (isFinishing()) {
@@ -383,7 +383,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         String method = "onResume";
         super.onResume();
         MyLog.v(this, () -> method + (mFinishing ? ", finishing" : "") );
-        if (!mFinishing && !myContextHolder.initializeThenRestartMe(this)) {
+        if (!mFinishing && !myContextHolder.ifNeededInitializeThenRestartMe(this)) {
             myServiceReceiver.registerReceiver(this);
             myContext.setInForeground(true);
             if (!isLoading()) {

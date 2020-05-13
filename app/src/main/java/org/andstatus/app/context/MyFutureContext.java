@@ -16,12 +16,10 @@
 
 package org.andstatus.app.context;
 
-import android.app.Activity;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.http.TlsSniSocketFactory;
@@ -37,14 +35,11 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import io.vavr.control.Try;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -69,17 +64,18 @@ public class MyFutureContext implements IdentifiableInstance {
     public static MyFutureContext fromPrevious(MyFutureContext previousFuture, Object calledBy) {
         if (previousFuture.needToInitialize()) {
             MyContext previousContext = previousFuture.getNow();
-            CompletableFuture<MyContext> future =
-                completedFuture(previousContext).future
-                .thenApplyAsync(initializeMyContext(calledBy), NonUiThreadExecutor.INSTANCE);
+            CompletableFuture<MyContext> future = previousFuture.future
+                .thenApplyAsync(initializeMyContextIfNeeded(calledBy), NonUiThreadExecutor.INSTANCE);
             return new MyFutureContext(previousContext, future);
         } else {
             return previousFuture;
         }
     }
 
-    private static UnaryOperator<MyContext> initializeMyContext(Object calledBy) {
+    private static UnaryOperator<MyContext> initializeMyContextIfNeeded(Object calledBy) {
         return previousContext -> {
+            if (previousContext.isReady() && !previousContext.isExpired()) return previousContext;
+
             release(previousContext, () -> "Starting initialization by " + calledBy);
             MyContext myContext = previousContext.newInitialized(previousContext);
             SyncInitiator.register(myContext);
@@ -113,12 +109,13 @@ public class MyFutureContext implements IdentifiableInstance {
         this.future = future;
     }
 
-    public boolean needToInitialize() {
-        if (future.isDone()) {
-            return future.isCancelled() || future.isCompletedExceptionally()
+    public boolean isReady() {
+        return future.isDone() && !future.isCancelled() && !future.isCompletedExceptionally() && getNow().isReady();
+    }
+
+    boolean needToInitialize() {
+        return !future.isDone() || future.isCancelled() || future.isCompletedExceptionally()
                     || getNow().isExpired() || !getNow().isReady();
-        }
-        return false;
     }
 
     public MyContext getNow() {
@@ -130,29 +127,7 @@ public class MyFutureContext implements IdentifiableInstance {
         return instanceId;
     }
 
-    public static BiConsumer<MyContext, Throwable> startNextActivity(FirstActivity firstActivity) {
-        return (myContext, throwable) -> {
-            boolean launched = false;
-            if (myContext != null && myContext.isReady() && !myContext.isExpired()) {
-                try {
-                    firstActivity.startNextActivitySync(myContext);
-                    launched = true;
-                } catch (android.util.AndroidRuntimeException e) {
-                    MyLog.w(TAG, "Launching next activity from firstActivity", e);
-                } catch (java.lang.SecurityException e) {
-                    MyLog.d(TAG, "Launching activity", e);
-                }
-            }
-            if (!launched) {
-                HelpActivity.startMe(
-                        myContext == null ? myContextHolder.getNow().context() : myContext.context(),
-                        true, HelpActivity.PAGE_LOGO);
-            }
-            firstActivity.finish();
-        };
-    }
-
-    public MyFutureContext whenSuccessAsync(Consumer<MyContext> consumer, Executor executor) {
+    MyFutureContext whenSuccessAsync(Consumer<MyContext> consumer, Executor executor) {
         return with(future -> future.whenCompleteAsync((myContext, throwable) -> {
             if (myContext != null) {
                 consumer.accept(myContext);
@@ -160,15 +135,17 @@ public class MyFutureContext implements IdentifiableInstance {
         }, executor));
     }
 
+    MyFutureContext whenSuccessOrPreviousAsync(Consumer<MyContext> consumer, Executor executor) {
+        return with(future -> future.whenCompleteAsync((myContext, throwable) -> {
+            consumer.accept(myContext == null ? previousContext : myContext);
+        }, executor));
+    }
+
     public MyFutureContext with(UnaryOperator<CompletableFuture<MyContext>> futures) {
         return new MyFutureContext(previousContext, futures.apply(future));
     }
 
-    public static Consumer<MyContext> startActivity(Activity activity) {
-        return startIntent(activity.getIntent());
-    }
-
-    public static Consumer<MyContext> startIntent(Intent intent) {
+    static Consumer<MyContext> startIntent(Intent intent) {
         return myContext -> {
             if (intent != null) {
                 boolean launched = false;
