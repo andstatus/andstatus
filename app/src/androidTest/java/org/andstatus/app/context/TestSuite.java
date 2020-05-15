@@ -29,6 +29,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.MyAction;
+import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.os.AsyncTaskLauncher;
@@ -291,4 +292,9 @@ public class TestSuite {
         return false;
     }
 
+    public static void clearHttpMocks() {
+        setHttpConnectionMockClass(null);
+        setHttpConnectionMockInstance(null);
+        myContextHolder.getBlocking().accounts().get().forEach(MyAccount::setConnection);
+    }
 }

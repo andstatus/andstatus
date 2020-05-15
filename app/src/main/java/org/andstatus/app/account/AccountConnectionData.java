@@ -16,6 +16,8 @@
 
 package org.andstatus.app.account;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.net.http.HttpConnection;
 import org.andstatus.app.net.http.HttpConnectionEmpty;
 import org.andstatus.app.net.social.Actor;
@@ -24,8 +26,6 @@ import org.andstatus.app.origin.OriginType;
 import org.andstatus.app.util.TriState;
 
 import java.net.URL;
-
-import androidx.annotation.NonNull;
 
 public class AccountConnectionData {
     private boolean isOAuth;

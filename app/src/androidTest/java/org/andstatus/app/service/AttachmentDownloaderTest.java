@@ -88,6 +88,7 @@ public class AttachmentDownloaderTest {
 
     public static void loadAndAssertStatusForRow(String methodExt, DownloadData dataIn, DownloadStatus status, boolean mockNetworkError) {
         String method = "loadAndAssertStatusForRow";
+        TestSuite.clearHttpMocks();
         MyLog.i(method, methodExt + ": " + status + ", mockError:" + mockNetworkError
                 + ", uri:" + dataIn.getUri());
         MyAccount ma = demoData.getGnuSocialAccount();
@@ -96,8 +97,6 @@ public class AttachmentDownloaderTest {
             loader.setConnectionMock(ConnectionMock.newFor(ma)
                     .withException(new ConnectionException("Mocked IO exception"))
                     .connection);
-        } else {
-            ma.setConnection();
         }
         CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, Actor.EMPTY, "someActor");
         loader.load(commandData);

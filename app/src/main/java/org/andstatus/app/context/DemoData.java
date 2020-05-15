@@ -324,7 +324,7 @@ public final class DemoData {
 
     @NonNull
     public MyAccount getMyAccount(String accountName) {
-        MyAccount ma = myContextHolder.getNow().accounts().fromAccountName(accountName);
+        MyAccount ma = myContextHolder.getBlocking().accounts().fromAccountName(accountName);
         assertTrue(accountName + " exists", ma.isValid());
         assertTrue("Origin for " + accountName + " doesn't exist", ma.getOrigin().isValid());
         return ma;
@@ -332,7 +332,7 @@ public final class DemoData {
 
     @NonNull
     public Actor getAccountActorByOid(String actorOid) {
-        for (MyAccount ma : myContextHolder.getNow().accounts().get()) {
+        for (MyAccount ma : myContextHolder.getBlocking().accounts().get()) {
             if (ma.getActorOid().equals(actorOid)) {
                 return ma.getActor();
             }

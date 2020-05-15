@@ -175,7 +175,7 @@ public class CommandExecutorStrategyTest {
     
     @After
     public void tearDown() {
-        TestSuite.setHttpConnectionMockInstance(null);
-        myContextHolder.getNow().accounts().initialize();
+        TestSuite.clearHttpMocks();
+        myContextHolder.getBlocking().accounts().initialize();
     }
 }

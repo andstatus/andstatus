@@ -184,15 +184,14 @@ public class AvatarDownloaderTest {
 
     private long loadAndAssertStatusForMa(MyAccount ma, String description, DownloadStatus loadStatus,
                                           DownloadStatus displayedStatus, boolean mockNetworkError) {
-        final Actor actor = Actor.load(myContextHolder.getNow(), ma.getActor().actorId);
+        TestSuite.clearHttpMocks();
+
+        final Actor actor = Actor.load(myContextHolder.getBlocking(), ma.getActor().actorId);
         FileDownloader loader = new AvatarDownloader(actor);
         if (mockNetworkError) {
             loader.setConnectionMock(ConnectionMock.newFor(ma)
                     .withException(new ConnectionException(ConnectionException.StatusCode.NOT_FOUND,"Mocked IO exception"))
                     .connection);
-        } else {
-            loader.setConnectionMock(null);
-            ma.setConnection();
         }
         CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, actor, actor.getUsername());
         Try<Boolean> loaded = loader.load(commandData);

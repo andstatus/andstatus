@@ -39,7 +39,7 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
             if (isSingleMockedInstance) {
                 httpConnectionMock = new HttpConnectionMock();
                 TestSuite.setHttpConnectionMockInstance(httpConnectionMock);
-                myContextHolder.getNow().setExpired(() -> this.getClass().getSimpleName() + " setUp");
+                myContextHolder.getBlocking().setExpired(() -> this.getClass().getSimpleName() + " setUp");
             }
             myContext = myContextHolder.initialize(myContext.context(), this).getBlocking();
 
@@ -191,12 +191,10 @@ public class MyServiceTestHelper implements MyServiceEventsListener {
         if (serviceConnector != null) {
             serviceConnector.unregisterReceiver(myContext.context());
         }
-        TestSuite.setHttpConnectionMockInstance(null);
+        TestSuite.clearHttpMocks();
         TestSuite.getMyContextForTest().setConnectionState(ConnectionState.UNKNOWN);
-        if (myContext != null) {
-            myContext.accounts().initialize();
-            myContext.timelines().initialize();
-        }
+        myContextHolder.getBlocking().accounts().initialize();
+        myContextHolder.getBlocking().timelines().initialize();
         MyServiceManager.setServiceAvailable();
         MyLog.v(this, "tearDown ended");
     }
