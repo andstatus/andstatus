@@ -496,7 +496,8 @@ public abstract class Connection implements IsEmpty {
     @NonNull
     @Override
     public String toString() {
-        return data == null ? "(empty)" : data.toString();
+        return (data == null ? "(empty data)" : data.toString())
+            + ", http: " + (http == null ? "(empty" : http.toString());
     }
 
     @Override

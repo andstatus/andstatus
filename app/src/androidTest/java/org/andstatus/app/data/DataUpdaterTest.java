@@ -415,7 +415,7 @@ public class DataUpdaterTest {
         assertEquals("New image URI stored", note2.attachments.list.get(0).getUri(), dd2.getUri());
 
         assertEquals("Not loaded yet. " + dd2, DownloadStatus.ABSENT, dd2.getStatus());
-        AttachmentDownloaderTest.loadAndAssertStatusForRow(dd2, DownloadStatus.LOADED, false);
+        AttachmentDownloaderTest.loadAndAssertStatusForRow(method, dd2, DownloadStatus.LOADED, false);
     }
 
     @Test

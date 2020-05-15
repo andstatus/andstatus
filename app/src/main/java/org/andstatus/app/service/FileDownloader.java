@@ -91,10 +91,14 @@ public abstract class FileDownloader {
         DownloadFile fileTemp = new DownloadFile(MyStorage.TEMP_FILENAME_PREFIX + data.getFilenameNew());
         File file = fileTemp.getFile();
         MyAccount ma = findBestAccountForDownload();
-        MyLog.v(this, () -> "About to download " + data.toString() + "; account:" + ma.getAccountName());
         if (ma.isValidAndSucceeded()) {
-            Try.success(connectionMock == null ? ma.getConnection() : connectionMock)
-            .flatMap(connection -> connection.execute(newRequest(file)))
+            Connection connection = connectionMock == null ? ma.getConnection() : connectionMock;
+            MyLog.v(this, () -> "About to download " + data.toString() + "; connection"
+                    + (connectionMock == null ? "" : " (mocked)")
+                    + ": " + connection
+                    + "; account:" + ma.getAccountName());
+            Try.success(connection)
+            .flatMap(connection1 -> connection1.execute(newRequest(file)))
             .onFailure(e -> {
                 ConnectionException ce = ConnectionException.of(e);
                 if (ce.isHardError()) {
@@ -104,6 +108,7 @@ public abstract class FileDownloader {
                 }
             });
         } else {
+            MyLog.v(this, () -> "No account to download " + data.toString() + "; account:" + ma.getAccountName());
             data.hardErrorLogged(method + ", No account to download the file", null);
         }
         if (data.isError()) {

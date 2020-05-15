@@ -191,6 +191,7 @@ public class AvatarDownloaderTest {
                     .withException(new ConnectionException(ConnectionException.StatusCode.NOT_FOUND,"Mocked IO exception"))
                     .connection);
         } else {
+            loader.setConnectionMock(null);
             ma.setConnection();
         }
         CommandData commandData = CommandData.newActorCommand(CommandEnum.GET_AVATAR, actor, actor.getUsername());

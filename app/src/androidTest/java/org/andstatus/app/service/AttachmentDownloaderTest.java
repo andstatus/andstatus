@@ -52,6 +52,8 @@ public class AttachmentDownloaderTest {
 
     @Test
     public void testImageAttachmentLoad() throws IOException {
+        String method = "testImageAttachmentLoad";
+
         MyAccount ma = demoData.getGnuSocialAccount();
         ma.setConnection();
         assertTrue(demoData.gnusocialTestAccountName + " exists", ma.isValid());
@@ -66,8 +68,8 @@ public class AttachmentDownloaderTest {
         DownloadData dd = DownloadData.getSingleAttachment(activity.getNote().noteId);
         assertEquals("Image URI stored", activity.getNote().attachments.list.get(0).getUri(), dd.getUri());
         
-        loadAndAssertStatusForRow(dd, DownloadStatus.ABSENT, true);
-        loadAndAssertStatusForRow(dd, DownloadStatus.LOADED, false);
+        loadAndAssertStatusForRow(method, dd, DownloadStatus.ABSENT, true);
+        loadAndAssertStatusForRow(method, dd, DownloadStatus.LOADED, false);
         
         testFileProvider(dd.getDownloadId());
     }
@@ -84,7 +86,10 @@ public class AttachmentDownloaderTest {
         in.close();
     }
 
-    public static void loadAndAssertStatusForRow(DownloadData dataIn, DownloadStatus status, boolean mockNetworkError) {
+    public static void loadAndAssertStatusForRow(String methodExt, DownloadData dataIn, DownloadStatus status, boolean mockNetworkError) {
+        String method = "loadAndAssertStatusForRow";
+        MyLog.i(method, methodExt + ": " + status + ", mockError:" + mockNetworkError
+                + ", uri:" + dataIn.getUri());
         MyAccount ma = demoData.getGnuSocialAccount();
         FileDownloader loader = FileDownloader.newForDownloadData(ma.getOrigin().myContext, dataIn);
         if (mockNetworkError) {
