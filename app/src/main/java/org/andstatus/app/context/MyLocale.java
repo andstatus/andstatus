@@ -19,6 +19,7 @@ package org.andstatus.app.context;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.LocaleList;
 
 import org.acra.ACRA;
@@ -45,11 +46,11 @@ public class MyLocale {
         return  locale == null || locale.getLanguage().isEmpty() || locale.getLanguage().startsWith("en");
     }
 
-    public static Locale getAppLocale() {
+    private static Locale getAppLocale() {
         return mCustomLocale == null ? getDeviceDefaultLocale() : mCustomLocale;
     }
 
-    public static Locale getDeviceDefaultLocale() {
+    private static Locale getDeviceDefaultLocale() {
         if (mDeviceDefaultLocale == null) {
             // See https://stackoverflow.com/a/59209993/297710
             mDeviceDefaultLocale = LocaleList.getDefault().get(0);
@@ -65,17 +66,13 @@ public class MyLocale {
                     : new Locale(I18n.localeToLanguage(strLocale), I18n.localeToCountry(strLocale));
             Locale locale = getAppLocale();
             Locale.setDefault(locale);
-            updateConfiguration(contextWrapper, locale);
+            Configuration config = contextWrapper.getBaseContext().getResources().getConfiguration();
+            config.setLocale(locale);
         }
         ACRA.getErrorReporter().putCustomData("locale",
                 strLocale + ", " +
                 (mCustomLocale == null ? "" :  mCustomLocale.getDisplayName() + ", default=") +
                     (getDeviceDefaultLocale() == null ? "(null)" : getDeviceDefaultLocale().getDisplayName()));
-    }
-
-    private static void updateConfiguration(ContextWrapper contextWrapper, Locale locale) {
-        Configuration config = contextWrapper.getBaseContext().getResources().getConfiguration();
-        config.setLocale(locale);
     }
 
     static Configuration onConfigurationChanged(ContextWrapper contextWrapper, Configuration newConfig) {
@@ -85,17 +82,26 @@ public class MyLocale {
     }
 
     // Based on https://stackoverflow.com/questions/39705739/android-n-change-language-programmatically/40849142
-    public static Context wrap(Context context) {
+    public static Context onAttachBaseContext(Context context) {
         if (mCustomLocale == null) return context;
 
-        Configuration configuration = toCustomized(context.getResources().getConfiguration(), mCustomLocale);
-        Context configurationContext = context.createConfigurationContext(configuration);
-        return new ContextWrapper(configurationContext);
+        Locale.setDefault(getAppLocale());
+        Configuration configuration = toCustomized(context.getResources().getConfiguration(), getAppLocale());
+        return context.createConfigurationContext(configuration);
     }
 
     private static Configuration toCustomized(Configuration configuration, Locale newLocale) {
         Configuration custom = new Configuration(configuration);
         custom.setLocale(newLocale);
         return custom;
+    }
+
+    public static Configuration applyOverrideConfiguration(Context baseContext, Configuration overrideConfiguration) {
+        if (overrideConfiguration != null && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            int uiMode = overrideConfiguration.uiMode;
+            overrideConfiguration.setTo(baseContext.getResources().getConfiguration());
+            overrideConfiguration.uiMode = uiMode;
+        }
+        return overrideConfiguration;
     }
 }

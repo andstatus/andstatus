@@ -67,7 +67,7 @@ public class MyContextTestImpl extends MyContextImpl {
 
     @Override
     public MyContext newInitialized(Object initializer) {
-        return new MyContextTestImpl(this, context(), initializer).initialize(initializer);
+        return new MyContextTestImpl(this, context(), initializer).initialize();
     }
 
     @Override

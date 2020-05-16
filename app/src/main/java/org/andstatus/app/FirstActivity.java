@@ -29,6 +29,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyContextState;
+import org.andstatus.app.context.MyLocale;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MySettingsGroup;
 import org.andstatus.app.data.DbUtils;
@@ -40,6 +41,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
@@ -53,6 +55,7 @@ public class FirstActivity extends AppCompatActivity {
     private static final String TAG = FirstActivity.class.getSimpleName();
     private static final String SET_DEFAULT_VALUES = "setDefaultValues";
     private static final AtomicReference<TriState> resultOfSettingDefaults = new AtomicReference<>(TriState.UNKNOWN);
+    public static AtomicBoolean isFirstrun = new AtomicBoolean(true);
 
     public enum NeedToStart {
         HELP,
@@ -64,6 +67,9 @@ public class FirstActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
+            if (isFirstrun.compareAndSet(true, false)) {
+                MyLocale.onAttachBaseContext(this);
+            }
             setContentView(R.layout.loading);
         } catch (Throwable e) {
             MyLog.w(this, "Couldn't setContentView", e);

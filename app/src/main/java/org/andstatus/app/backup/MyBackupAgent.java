@@ -74,7 +74,7 @@ public class MyBackupAgent extends BackupAgent {
     void setActivity(Activity activity) {
         this.activity = activity;
         myContextHolder.initialize(activity);
-        attachBaseContext(myContextHolder.getNow().context());
+        attachBaseContext(myContextHolder.getNow().baseContext());
     }
 
     @Override

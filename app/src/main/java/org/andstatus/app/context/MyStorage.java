@@ -89,7 +89,7 @@ public class MyStorage {
             if (isStorageExternal(useExternalStorage)) {
                 if (isWritableExternalStorageAvailable(textToLog)) {
                     try {
-                        dir = myContext.context().getExternalFilesDir(type);
+                        dir = myContext.baseContext().getExternalFilesDir(type);
                     } catch (NullPointerException e) {
                         // I noticed this exception once, but that time it was related to SD card malfunction...
                         if (logged) {
@@ -98,7 +98,7 @@ public class MyStorage {
                     }
                 }
             } else {
-                dir = myContext.context().getFilesDir();
+                dir = myContext.baseContext().getFilesDir();
                 if (!StringUtil.isEmpty(type)) {
                     dir = new File(dir, type);
                 }

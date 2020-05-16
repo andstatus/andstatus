@@ -165,7 +165,7 @@ class MyBackupManager {
         this.dataFolder = dataFolder;
         newDescriptor = descriptorFile.map(df -> {
             MyBackupDescriptor descriptor = MyBackupDescriptor.fromOldDocFileDescriptor(
-                    myContextHolder.getNow().context(), df, progressLogger);
+                    myContextHolder.getNow().baseContext(), df, progressLogger);
             if (descriptor.getBackupSchemaVersion() != MyBackupDescriptor.BACKUP_SCHEMA_VERSION) {
                 throw new FileNotFoundException(
                         "Unsupported backup schema version: " + descriptor.getBackupSchemaVersion() +

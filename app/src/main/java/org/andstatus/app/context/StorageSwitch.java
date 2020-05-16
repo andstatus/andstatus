@@ -192,7 +192,7 @@ public class StorageSwitch {
             File dbFileOld = null;
             File dbFileNew = null;
             try {
-                dbFileOld = myContextHolder.getNow().context().getDatabasePath(
+                dbFileOld = myContextHolder.getNow().baseContext().getDatabasePath(
                         databaseName);
                 dbFileNew = MyStorage.getDatabasePath(
                         databaseName, TriState.fromBoolean(useExternalStorageNew));

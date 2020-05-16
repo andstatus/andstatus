@@ -125,7 +125,7 @@ public class MyBackupDescriptor {
                                                             ProgressLogger progressLoggerIn) throws IOException {
         MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLoggerIn);
         myBackupDescriptor.fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-        myBackupDescriptor.setEmptyFields(myContextHolder.getNow().context());
+        myBackupDescriptor.setEmptyFields(myContextHolder.getNow().baseContext());
         myBackupDescriptor.backupSchemaVersion = BACKUP_SCHEMA_VERSION;
         return myBackupDescriptor;
     }

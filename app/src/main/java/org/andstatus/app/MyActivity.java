@@ -19,6 +19,7 @@ package org.andstatus.app;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
@@ -56,7 +57,14 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
 
     @Override
     protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(MyLocale.wrap(newBase));
+        super.attachBaseContext(MyLocale.onAttachBaseContext(newBase));
+    }
+
+    @Override
+    public void applyOverrideConfiguration(Configuration overrideConfiguration) {
+        super.applyOverrideConfiguration(
+            MyLocale.applyOverrideConfiguration(getBaseContext(), overrideConfiguration)
+        );
     }
 
     @Override

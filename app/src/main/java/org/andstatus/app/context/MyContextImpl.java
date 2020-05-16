@@ -68,6 +68,7 @@ public class MyContextImpl implements MyContext {
     final long instanceId = InstanceId.next();
 
     private volatile MyContextState state = MyContextState.EMPTY;
+    private final Context baseContext;
     private final Context context;
     private final String initializedBy;
     /**
@@ -89,7 +90,8 @@ public class MyContextImpl implements MyContext {
 
     MyContextImpl(MyContextImpl parent, Context context, Object initializer) {
         initializedBy = MyStringBuilder.objToTag(initializer);
-        this.context = calcContextToUse(parent, context);
+        baseContext = calcContextToUse(parent, context);
+        this.context = MyLocale.onAttachBaseContext(baseContext);
         if (parent != null) {
             lastDatabaseError = parent.getLastDatabaseError();
         }
@@ -118,13 +120,13 @@ public class MyContextImpl implements MyContext {
 
     @Override
     public MyContext newInitialized(Object initializer) {
-        return new MyContextImpl(this, context(), initializer).initialize(initializer);
+        return new MyContextImpl(this, context(), initializer).initialize();
     }
 
-    MyContext initialize(Object initializer) {
+    MyContext initialize() {
         StopWatch stopWatch = StopWatch.createStarted();
         MyLog.i(this, "Starting initialization by " + initializedBy);
-        MyContext myContext = initializeInternal(initializer);
+        MyContext myContext = initializeInternal(initializedBy);
         MyLog.i(this, "myContextInitializedMs:" + stopWatch.getTime() + "; "
                 + state + " by " + initializedBy);
         return myContext;
@@ -179,7 +181,7 @@ public class MyContextImpl implements MyContext {
     private void initializeDatabase(boolean createApplicationData) {
         StopWatch stopWatch = StopWatch.createStarted();
         final String method = "initializeDatabase";
-        DatabaseHolder newDb = new DatabaseHolder(context, createApplicationData);
+        DatabaseHolder newDb = new DatabaseHolder(baseContext, createApplicationData);
         try {
             state = newDb.checkState();
             if (state() == MyContextState.DATABASE_READY && MyStorage.isApplicationDataCreated().untrue) {
@@ -245,6 +247,11 @@ public class MyContextImpl implements MyContext {
     @Override
     public Context context() {
         return context;
+    }
+
+    @Override
+    public Context baseContext() {
+        return baseContext;
     }
 
     @Override

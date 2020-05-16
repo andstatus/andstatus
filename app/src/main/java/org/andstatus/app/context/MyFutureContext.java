@@ -20,6 +20,7 @@ import android.content.Intent;
 
 import androidx.annotation.NonNull;
 
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.HelpActivity;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.net.http.TlsSniSocketFactory;
@@ -77,7 +78,7 @@ public class MyFutureContext implements IdentifiableInstance {
             if (previousContext.isReady() && !previousContext.isExpired()) return previousContext;
 
             release(previousContext, () -> "Starting initialization by " + calledBy);
-            MyContext myContext = previousContext.newInitialized(previousContext);
+            MyContext myContext = previousContext.newInitialized(calledBy);
             SyncInitiator.register(myContext);
             return myContext;
         };
@@ -92,6 +93,7 @@ public class MyFutureContext implements IdentifiableInstance {
         ExceptionsCounter.forget();
         MyLog.forget();
         SharedPreferencesUtil.forget();
+        FirstActivity.isFirstrun.set(true);
         previousContext.release(reason);
         // There is InterruptedException after above..., so we catch it below:
         DbUtils.waitMs(TAG, 10);

@@ -45,6 +45,7 @@ public interface MyContext extends IdentifiableInstance {
     boolean isReady();
     MyContextState state();
     Context context();
+    Context baseContext();
     long preferencesChangeTime();
     DatabaseHolder getMyDatabase();
     String getLastDatabaseError();
