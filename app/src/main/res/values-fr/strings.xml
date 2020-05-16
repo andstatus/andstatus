@@ -27,7 +27,7 @@
   <string name="appwidget_nodata">Aucune donnée.</string>
   <string name="acquiring_a_request_token_failed">La demande d\'identification a échoué</string>
   <string name="acquiring_an_access_token_failed">L\'accès à l\'identifiant a échoué</string>
-  <string name="attach_images_summary_off">Le bouton \"Trombone\", utilisé pour joindre des images à vos messages, est caché</string>
+  <string name="attach_images_summary_off">Le bouton «  Trombone », utilisé pour joindre des images à vos messages, est caché</string>
   <string name="attach_images_summary_on">Utilisez le bouton avec un trombone (Élément du menu \"Attacher\") pour joindre des images à votre message. Vous pouvez également partager une image vers AndStatus depuis une autre application</string>
   <string name="attach_images_title">Joindre des images à mes messages</string>
   <string name="attachment_is_too_large">La pièce jointe est trop grosse</string>
