@@ -54,21 +54,18 @@ public class LoadableListPosition<T extends ViewItem<T>> implements IsEmpty, Tag
     public static LoadableListPosition getCurrent(ListView list, BaseTimelineAdapter adapter, long itemIdDefault) {
         int firstVisiblePosition = Integer.min(
                 Integer.max(list.getFirstVisiblePosition(), 0),
-                adapter.getCount() - 1);
+                Integer.max(adapter.getCount() - 1, 0)
+        );
 
         int position = firstVisiblePosition;
         View viewOfPosition = getViewOfPosition(list, firstVisiblePosition);
         if (viewOfPosition == null && position > 0) {
-            position -= 1;
-            viewOfPosition = getViewOfPosition(list, position - 1);
-            if (viewOfPosition != null) {
-                position = position - 1;
-            } else {
-                viewOfPosition = getViewOfPosition(list, position + 1);
-                if (viewOfPosition != null) {
-                    position = position + 1;
-                }
-            }
+            position = firstVisiblePosition - 1;
+            viewOfPosition = getViewOfPosition(list, position);
+        }
+        if (viewOfPosition == null) {
+            position = Math.max(firstVisiblePosition + 1, 0);
+            viewOfPosition = getViewOfPosition(list, position);
         }
         if (viewOfPosition == null) {
             position = adapter.getPositionById(itemIdDefault);
@@ -79,27 +76,32 @@ public class LoadableListPosition<T extends ViewItem<T>> implements IsEmpty, Tag
 
         int lastPosition = Integer.min(list.getLastVisiblePosition() + 10, adapter.getCount() - 1);
         long minDate = adapter.getItem(lastPosition).getDate();
-        String description = "currentPosition:" + position
+        String description = "";
+        if (itemId <= 0 && minDate > 0) {
+            description = "from lastPosition, ";
+            position = lastPosition;
+            itemId = adapter.getItemId(lastPosition);
+        }
+        description = description + "currentPosition:" + position
                 + ", firstVisiblePos:" + firstVisiblePosition
                 + "; viewsInList:" + list.getChildCount()
                 + ", headers:" + list.getHeaderViewsCount()
                 + (viewOfPosition == null ? ", view not found" : ", y:" + y)
                 + "; items:" + adapter.getCount()
                 + ", itemId:" + itemId + " defaultId:" + itemIdDefault
-//                    + "\n" + MyLog.getStackTrace(new Throwable())
         ;
         return current(itemId, y, position, minDate, description);
     }
 
     @Nullable
-    public static View getViewOfPosition(ListView list, int position) {
+    static View getViewOfPosition(ListView list, int position) {
         View viewOfPosition = null;
         for (int ind = 0; ind < list.getChildCount(); ind++) {
             View view = list.getChildAt(ind);
             final int positionForView = list.getPositionForView(view);
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(LoadableListPosition.class, "getViewOfPosition " + position + ", ind " + ind
-                        + " => " + positionForView);
+                int ind2 = ind;
+                MyLog.v(TAG, () -> "getViewOfPosition " + position + ", ind " + ind2 + " => " + positionForView);
             }
             if (positionForView == position) {
                 viewOfPosition = view;
@@ -125,7 +127,7 @@ public class LoadableListPosition<T extends ViewItem<T>> implements IsEmpty, Tag
                 setPosition(list, position);
             }
         } catch (Exception e) {
-            MyLog.v(LoadableListPosition.class, "restore " + pos, e);
+            MyLog.v(TAG, "restore " + pos, e);
         }
         return false;
     }
@@ -138,7 +140,7 @@ public class LoadableListPosition<T extends ViewItem<T>> implements IsEmpty, Tag
         int childHeight = 30;
         int y = position == 0 ? 0 : viewHeight - childHeight;
         int headerViewsCount = listView.getHeaderViewsCount();
-        MyLog.v(LoadableListPosition.class, () -> "Set position of " + position + " item to " + y + " px," +
+        MyLog.v(TAG, () -> "Set item at position " + position + " to " + y + " px," +
                 " header views: " + headerViewsCount);
         listView.setSelectionFromTop(position, y);
     }
@@ -149,9 +151,7 @@ public class LoadableListPosition<T extends ViewItem<T>> implements IsEmpty, Tag
     }
 
     LoadableListPosition<T> logV(String description) {
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(LoadableListPosition.class, () -> description + "; " + this.description);
-        }
+        MyLog.v(TAG, () -> description + "; " + this.description);
         return this;
     }
 

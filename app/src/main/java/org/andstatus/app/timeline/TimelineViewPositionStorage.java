@@ -19,6 +19,7 @@ package org.andstatus.app.timeline;
 import android.widget.ListView;
 
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtil;
 
 /**
  * Determines where to save / retrieve position in the list
@@ -28,6 +29,7 @@ import org.andstatus.app.util.MyLog;
  * @author yvolk@yurivolkov.com
  */
 class TimelineViewPositionStorage<T extends ViewItem<T>> {
+    private final static String TAG = TimelineViewPositionStorage.class.getSimpleName();
     private final LoadableListActivity<T> activity;
     private final BaseTimelineAdapter<T> adapter;
     private final ListView listView;
@@ -43,7 +45,7 @@ class TimelineViewPositionStorage<T extends ViewItem<T>> {
     void save() {
         final String method = "save" + params.timeline.getId();
         if (isEmpty()) {
-            MyLog.v(this, () -> method + "; skipped");
+            MyLog.v(TAG, () -> method + "; skipped");
             return;
         }
         int itemCount = adapter.getCount();
@@ -55,24 +57,28 @@ class TimelineViewPositionStorage<T extends ViewItem<T>> {
         int lastPosition = Integer.min(listView.getLastVisiblePosition() + 10, itemCount - 1);
         long minDate = adapter.getItem(lastPosition).getDate();
 
-        if (pos.itemId <= 0) {
-            clear();
-        } else {
+
+        if (pos.itemId > 0) {
             saveListPosition(pos.itemId, minDate, pos.y);
+        } else if (minDate > 0) {
+            saveListPosition(0, minDate, 0);
+        } else {
+            // Don'r clear!
         }
-        if (MyLog.isVerboseEnabled()) {
+        if (pos.itemId <= 0 || MyLog.isVerboseEnabled()) {
             String msgLog = "id:" + pos.itemId
                     + ", y:" + pos.y
                     + " at pos=" + firstVisibleAdapterPosition
                     + (pos.position != firstVisibleAdapterPosition ? " found pos=" + pos.position : "")
+                    + (StringUtil.nonEmpty(pos.description) ? ", description=" + pos.description : "")
                     + ", minDate=" + MyLog.formatDateTime(minDate)
                     + " at pos=" + lastPosition + " of " + itemCount
                     + ", listViews=" + listView.getCount()
-                    + " " + params.getTimeline();
+                    + "; " + params.getTimeline();
             if (pos.itemId <= 0) {
-                MyLog.v(this, () -> method + "; failed " + msgLog + "\n no visible items");
+                MyLog.i(TAG,  method + "; failed " + msgLog);
             } else {
-                MyLog.v(this, () -> method + "; succeeded " + msgLog);
+                MyLog.v(TAG, () -> method + "; succeeded " + msgLog);
             }
         }
 
@@ -102,7 +108,7 @@ class TimelineViewPositionStorage<T extends ViewItem<T>> {
         params.getTimeline().setVisibleItemId(0);
         params.getTimeline().setVisibleOldestDate(0);
         params.getTimeline().setVisibleY(0);
-        MyLog.v(this, () -> "Position forgot " + params.getTimeline());
+        MyLog.v(TAG, () -> "Position forgot " + params.getTimeline());
     }
     
     /**
@@ -112,7 +118,7 @@ class TimelineViewPositionStorage<T extends ViewItem<T>> {
     public void restore() {
         final String method = "restore" + params.timeline.getId();
         if (isEmpty()) {
-            MyLog.v(this, () -> method + "; skipped");
+            MyLog.v(TAG, () -> method + "; skipped");
             return;
         }
         final LoadableListPosition pos = loadListPosition(params);

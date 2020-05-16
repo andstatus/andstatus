@@ -320,7 +320,7 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         ListView list = getListView();
         if (list == null) return;
 
-        pos.logV(method + "; Before " + (newAdapter
+        if (MyLog.isVerboseEnabled()) pos.logV(method + "; Before " + (newAdapter
                 ? "setting new adapter"
                 : "notifying change"));
 
