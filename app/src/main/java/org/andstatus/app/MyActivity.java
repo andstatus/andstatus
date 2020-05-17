@@ -24,10 +24,12 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import org.andstatus.app.context.MyLocale;
@@ -211,10 +213,17 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
         }
     }
 
-    protected void showFragment(Class<? extends Fragment> fragmentClass) {
-        Fragment fragment = Fragment.instantiate(this, fragmentClass.getName());
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragmentOne, fragment, "fragment").commit();
+    protected void showFragment(@NonNull Class<? extends Fragment> fragmentClass, Bundle args) {
+        ClassLoader classLoader = fragmentClass.getClassLoader();
+        if (classLoader == null) {
+            MyLog.e(this, "No class loader for " + fragmentClass);
+        } else {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            Fragment fragment = fragmentManager.getFragmentFactory().instantiate(classLoader, fragmentClass.getName());
+            if (args != null) fragment.setArguments(args);
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragmentOne, fragment, "fragment").commit();
+        }
     }
 
     @Override

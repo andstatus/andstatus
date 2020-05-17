@@ -380,7 +380,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                 }
                 break;
             case KEY_ADD_NEW_ACCOUNT:
-                AccountSettingsActivity.startAddNewAccount(getActivity());
+                AccountSettingsActivity.startAddNewAccount(getActivity(), null, false);
                 break;
             case KEY_DELETE_OLD_DATA:
                 DialogFactory.showOkCancelDialog(getActivity(), this.getText(R.string.delete_old_data), "", this::launchDataPruner);

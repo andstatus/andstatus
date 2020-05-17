@@ -200,6 +200,7 @@ you will not see activity 201 and older ones in a Timeline</string>
     Put phrases in double quotes e.g.:\nkeyword \"exact phrase\".
     Match a part of a word or URL: contains:ederatio contains://andstatus.org/</string>
   <string name="hide_replies_not_to_me_or_friends_title">Hide replies not to me or my friends from Home timeline</string>
+  <string name="hint_which_instance">Which instance?</string>
   <string name="history_size_entries_500">500 notes</string>
   <string name="history_size_entries_1000">1000 notes</string>
   <string name="history_size_entries_2000">2000 notes</string>
@@ -248,6 +249,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="latest_error_label">Latest error</string>
   <string name="liked">favorited</string>
   <string name="loading">Loading</string>
+  <string name="log_in_to_social_network">Log in to %s</string>
   <string name="long_press_to_open_context_menu">Long press to open Context Menu</string>
   <string name="long_press_to_open_context_menu_on">Long press an item to open its Context Menu</string>
   <string name="long_press_to_open_context_menu_off">Tap an item to open its Context Menu</string>
@@ -413,8 +415,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="since">Since %s</string>
   <string name="splash_button_learn_more">Learn More</string>
   <string name="splash_button_get_started">Get Started</string>
-  <string name="splash_payoff_line">Open Source multiple accounts client for multiple Social networks, including
-    GNU social, Mastodon, Twitter and Pump.io</string>
+  <string name="splash_payoff_line">AndStatus is an Open Source multiple accounts client for multiple Social networks, including Mastodon, Twitter, ActivityPub (Client to Server), GNU social and Pump.io.</string>
   <string name="status_destroyed">The note has been removed.</string>
   <string name="subtitle">Subtitle</string>
   <string name="summaryCw">Summary / Content Warning</string>

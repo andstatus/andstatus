@@ -19,6 +19,7 @@ package org.andstatus.app.account;
 
 import android.accounts.AccountManager;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -110,6 +111,27 @@ public class AccountSettingsActivity extends MyActivity {
         CREDENTIALS_OF_OTHER_ACCOUNT
     }
 
+    enum FragmentAction {
+        ON_ORIGIN_SELECTED,
+        NONE;
+
+        static final String FRAGMENT_ACTION_KEY = "fragment_action";
+
+        static FragmentAction fromBundle(Bundle args) {
+            if (args == null) return NONE;
+            String value = args.getString(FRAGMENT_ACTION_KEY);
+            for (FragmentAction action: values()) {
+                if (action.name().equals(value)) return action;
+            }
+            return NONE;
+        }
+
+        Bundle toBundle(Bundle args) {
+            args.putString(FRAGMENT_ACTION_KEY, this.name());
+            return args;
+        }
+    }
+
     private static class TaskResult {
         final ResultStatus status;
         final CharSequence message;
@@ -168,11 +190,8 @@ public class AccountSettingsActivity extends MyActivity {
             return;
         }
 
-        if (savedInstanceState == null) {
-            showFragment(AccountSettingsFragment.class);
-        }
-
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        restoreState(getIntent(), "onActivityCreated");
     }
 
     private boolean isInvisibleView(@IdRes int id) {
@@ -184,7 +203,7 @@ public class AccountSettingsActivity extends MyActivity {
         return view != null && view.getVisibility() == View.VISIBLE;
     }
 
-    private View findFragmentViewById(@IdRes int id) {
+    View findFragmentViewById(@IdRes int id) {
         Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentOne);
         if (fragment != null) {
             View view = fragment.getView();
@@ -216,17 +235,25 @@ public class AccountSettingsActivity extends MyActivity {
         }
         StateOfAccountChangeProcess newState = StateOfAccountChangeProcess.fromIntent(intent);
         if (state.actionCompleted || newState.useThisState) {
-            message += "; New state";
+            message += "; " +
+                    (state.actionCompleted ? "Old completed, " : "") +
+                    (newState.useThisState ? "Using this: " : "") +
+                    "New state";
             state = newState;
             if (state.originShouldBeSelected) {
                 EnumSelector.newInstance(ActivityRequestCode.SELECT_ORIGIN_TYPE, OriginType.class).show(this);
             } else if (state.accountShouldBeSelected) {
                 AccountSelector.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT, 0);
                 message += "; Select account";
+            } else if (state.getAccountAction().equals(Intent.ACTION_INSERT)
+                    && state.getAccount().getOrigin().getOriginType() == OriginType.MASTODON) {
+                showFragment(InstanceForNewAccountFragment.class, new Bundle());
+            } else {
+                showFragment(AccountSettingsFragment.class, new Bundle());
             }
             message += "; action=" + state.getAccountAction();
-
-            updateScreen();
+        } else {
+            showFragment(AccountSettingsFragment.class, new Bundle());
         }
         if (state.authenticatorResponse != null) {
             message += "; authenticatorResponse";
@@ -298,12 +325,17 @@ public class AccountSettingsActivity extends MyActivity {
         }
     }
 
-    protected boolean selectOrigin(OriginType originType) {
-        Intent intent = new Intent(AccountSettingsActivity.this, PersistentOriginList.class);
-        intent.setAction(Intent.ACTION_INSERT);
-        intent.putExtra(IntentExtra.ORIGIN_TYPE.key, originType.getCode());
-        startActivityForResult(intent, ActivityRequestCode.SELECT_ORIGIN.id);
-        return true;
+    protected void selectOrigin(OriginType originType) {
+        if (originType == OriginType.MASTODON) {
+            Bundle args = new Bundle();
+            args.putString(IntentExtra.ORIGIN_TYPE.key, originType.getCode());
+            showFragment(InstanceForNewAccountFragment.class, args);
+        } else {
+            Intent intent = new Intent(AccountSettingsActivity.this, PersistentOriginList.class);
+            intent.setAction(Intent.ACTION_INSERT);
+            intent.putExtra(IntentExtra.ORIGIN_TYPE.key, originType.getCode());
+            startActivityForResult(intent, ActivityRequestCode.SELECT_ORIGIN.id);
+        }
     }
 
     private void onOriginSelected(int resultCode, Intent data) {
@@ -324,11 +356,10 @@ public class AccountSettingsActivity extends MyActivity {
 
         // If we have changed the System, we should recreate the Account
         state.builder.setOrigin(origin);
-        updateScreen();
-        goToAddAccount();
+        showFragment(AccountSettingsFragment.class, FragmentAction.ON_ORIGIN_SELECTED.toBundle(new Bundle()));
     }
 
-    private void goToAddAccount() {
+    void goToAddAccount() {
         if (state.getAccountAction().equals(Intent.ACTION_INSERT)
                 && isInvisibleView(R.id.uniqueName)
                 && isInvisibleView(R.id.password)
@@ -382,7 +413,7 @@ public class AccountSettingsActivity extends MyActivity {
         finish();
     }
     
-    private void updateScreen() {
+    void updateScreen() {
         if (getSupportFragmentManager().findFragmentById(R.id.fragmentOne) == null) {
             MyLog.v(this, "No fragment found");
             return;
@@ -403,16 +434,18 @@ public class AccountSettingsActivity extends MyActivity {
         showLastSyncSucceededDate();
     }
 
-    private void showTitle() {
+    void showTitle() {
         MyAccount ma = state.getAccount();
-        String title = getText(R.string.account_settings_activity_title).toString();
-        if (ma.isValid()) {
+        if (ma.isValid() || !state.getAccountAction().equals(Intent.ACTION_INSERT)) {
+            String title = getText(R.string.account_settings_activity_title).toString();
             title += " - " + ma.getAccountName();
+            setTitle(title);
+        } else {
+            setTitle(getText(R.string.header_add_new_account).toString());
         }
-        setTitle(title);
     }
 
-    private void showErrors() {
+    void showErrors() {
         showTextView(R.id.latest_error_label, R.string.latest_error_label, 
                 mLatestErrorMessage.length() > 0);
         showTextView(R.id.latest_error, mLatestErrorMessage, mLatestErrorMessage.length() > 0);
@@ -565,7 +598,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
     }
 
-    private void clearError() {
+    void clearError() {
         android.webkit.CookieManager cookieManager = android.webkit.CookieManager.getInstance();
         cookieManager.removeAllCookie();
         if (mLatestErrorMessage.length() > 0) {
@@ -663,7 +696,7 @@ public class AccountSettingsActivity extends MyActivity {
                 isVisible);
     }
     
-    private TextView showTextView(int textViewId, CharSequence text, boolean isVisible) {
+    TextView showTextView(int textViewId, CharSequence text, boolean isVisible) {
         TextView textView = (TextView) findFragmentViewById(textViewId);
         if (textView != null) {
             if (!TextUtils.isEmpty(text)) {
@@ -709,7 +742,7 @@ public class AccountSettingsActivity extends MyActivity {
      * 
      * @param reVerify true - Verify only if we didn't do this yet
      */
-    private void verifyCredentials(boolean reVerify) {
+    void verifyCredentials(boolean reVerify) {
         MyAccount ma = state.getAccount();
         if (reVerify || ma.getCredentialsVerified() == CredentialsVerificationStatus.NEVER) {
             MyServiceManager.setServiceUnavailable();
@@ -762,7 +795,7 @@ public class AccountSettingsActivity extends MyActivity {
         }
     }
 
-    private void appendError(CharSequence errorMessage) {
+    void appendError(CharSequence errorMessage) {
         if (TextUtils.isEmpty(errorMessage)) {
             return;
         }
@@ -776,7 +809,7 @@ public class AccountSettingsActivity extends MyActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        state.save();
+        if (state != null) state.save();
         if (mFinishing && resumedOnce) {
             myContextHolder.setExpired(false);
             if (activityOnFinish != ActivityOnFinish.NONE) {
@@ -836,9 +869,19 @@ public class AccountSettingsActivity extends MyActivity {
      * @return
      */
     private void closeAndGoBack() {
-        // Explicitly save MyAccount only on "Back key" 
+        String message = saveState();
+        if (!mFinishing) {
+            MyLog.v(this, "finish: " + message);
+            finish();
+        }
+    }
+
+    private String saveState() {
+        if (state == null) return "(no state)";
+
+        String message = "action=" + state.getAccountAction();
+        // Explicitly save MyAccount only on "Back key"
         state.builder.save();
-        String message = "";
         state.actionCompleted = true;
         activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN;
         if (state.authenticatorResponse != null) {
@@ -852,7 +895,7 @@ public class AccountSettingsActivity extends MyActivity {
                     result.putString(AccountManager.KEY_ACCOUNT_TYPE,
                             AuthenticatorService.ANDROID_ACCOUNT_TYPE);
                     state.authenticatorResponse.onResult(result);
-                    message += "authenticatorResponse; account.name=" + state.getAccount().getAccountName() + "; ";
+                    message += "; authenticatorResponse; account.name=" + state.getAccount().getAccountName() + "; ";
                 }
             } else {
                 state.authenticatorResponse.onError(AccountManager.ERROR_CODE_CANCELED, "canceled");
@@ -860,23 +903,26 @@ public class AccountSettingsActivity extends MyActivity {
         }
         // Forget old state
         state.forget();
-        if (!mFinishing) {
-            MyLog.v(this, "finish: action=" + state.getAccountAction() + "; " + message);
-            finish();
-        }
+        return message;
     }
 
-    public static void startAddNewAccount(android.content.Context context) {
+    public static void startAddNewAccount(Context context, String originName, boolean clearTask) {
         Intent intent;
         intent = new Intent(context, AccountSettingsActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK +
+                (clearTask ? Intent.FLAG_ACTIVITY_CLEAR_TASK : 0)
+        );
         intent.setAction(Intent.ACTION_INSERT);
+        if (StringUtil.nonEmpty(originName)) {
+            intent.putExtra(IntentExtra.ORIGIN_NAME.key, originName);
+        }
         context.startActivity(intent);
     }
     
     public StateOfAccountChangeProcess getState() {
         return state;
     }
-    
+
     /**
      * Step 1 of 3 of the OAuth Authentication
      * Needed in a case we don't have the AndStatus Client keys for this Microblogging system
@@ -885,7 +931,7 @@ public class AccountSettingsActivity extends MyActivity {
         private ProgressDialog dlg;
 
         OAuthRegisterClientTask() {
-            super(PoolEnum.LONG_UI);
+            super("OAuthRegisterClientTask", PoolEnum.LONG_UI);
         }
 
         @Override

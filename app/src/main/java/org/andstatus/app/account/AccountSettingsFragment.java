@@ -20,11 +20,12 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.R;
@@ -75,7 +76,14 @@ public class AccountSettingsFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         final AccountSettingsActivity activity = (AccountSettingsActivity) getActivity();
         if (activity != null) {
-            activity.restoreState(activity.getIntent(), "onActivityCreated");
+            activity.updateScreen();
+            switch (AccountSettingsActivity.FragmentAction.fromBundle(getArguments())) {
+                case ON_ORIGIN_SELECTED:
+                    activity.goToAddAccount();
+                    break;
+                default:
+                    break;
+            }
         }
         super.onActivityCreated(savedInstanceState);
     }

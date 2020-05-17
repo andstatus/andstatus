@@ -32,7 +32,7 @@ public class ManageAccountsActivity extends MyActivity {
         super.onCreate(savedInstanceState);
 
         if (savedInstanceState == null) {
-            showFragment(AccountListFragment.class);
+            showFragment(AccountListFragment.class, new Bundle());
         }
     }
 

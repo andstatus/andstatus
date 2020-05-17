@@ -46,6 +46,7 @@ import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.MyUrlSpan;
 import org.andstatus.app.util.Permissions;
 import org.andstatus.app.util.ViewUtils;
@@ -144,6 +145,10 @@ public class HelpActivity extends MyActivity {
         final Button getStarted = findViewById(R.id.button_help_get_started);
         getStarted.setVisibility(generatingDemoData ? View.GONE : View.VISIBLE);
         getStarted.setOnClickListener(v -> {
+            if (myContextHolder.getFuture().isCompletedExceptionally()) {
+                myContextHolder.initialize(this).thenStartApp();
+                return;
+            };
             switch (myContextHolder.getNow().state()) {
                 case READY:
                     FirstActivity.checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
@@ -199,12 +204,18 @@ public class HelpActivity extends MyActivity {
 
         private void showVersionText(Context context, @NonNull View parentView) {
             TextView versionText = parentView.findViewById(R.id.splash_application_version);
-            String text = myContextHolder.getVersionText(context);
+            MyStringBuilder text = MyStringBuilder.of(myContextHolder.getVersionText(context));
             if (!myContextHolder.getNow().isReady()) {
-                text += "\n" + myContextHolder.getNow().state();
-                text += "\n" + myContextHolder.getNow().getLastDatabaseError();
+                text.append("\n" + myContextHolder.getNow().state());
+                text.append("\n" + myContextHolder.getNow().getLastDatabaseError());
             }
-            versionText.setText(text);
+            if (myContextHolder.getFuture().isCompletedExceptionally()) {
+                myContextHolder.tryNow().onFailure(e ->
+                        text.append("\n\n " + e.getMessage() + "\n\n" + MyLog.getStackTrace(e))
+                );
+            }
+
+            versionText.setText(text.toString());
             versionText.setOnClickListener(v -> {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(Uri.parse("http://andstatus.org"));

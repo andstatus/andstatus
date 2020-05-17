@@ -33,6 +33,7 @@ import org.andstatus.app.util.IdentifiableInstance;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
+import org.andstatus.app.util.TryUtils;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -62,12 +63,22 @@ public class MyFutureContext implements IdentifiableInstance {
         return future;
     }
 
+    public boolean isCompletedExceptionally() {
+        return future.isCompletedExceptionally();
+    }
+
     public static MyFutureContext fromPrevious(MyFutureContext previousFuture, Object calledBy) {
         if (previousFuture.needToInitialize()) {
-            MyContext previousContext = previousFuture.getNow();
-            CompletableFuture<MyContext> future = previousFuture.future
+            if (previousFuture.isCompletedExceptionally()) {
+                previousFuture.tryNow().onFailure(throwable -> MyLog.i(TAG, "Previous initialization failed" +
+                        ", now initializing by " + calledBy, throwable));
+            }
+            MyFutureContext completed = completedFuture(previousFuture.getNow());
+            CompletableFuture<MyContext> future = (previousFuture.isCompletedExceptionally()
+                    ? completed.future
+                    : previousFuture.future)
                 .thenApplyAsync(initializeMyContextIfNeeded(calledBy), NonUiThreadExecutor.INSTANCE);
-            return new MyFutureContext(previousContext, future);
+            return new MyFutureContext(completed.getNow(), future);
         } else {
             return previousFuture;
         }
@@ -122,6 +133,14 @@ public class MyFutureContext implements IdentifiableInstance {
 
     public MyContext getNow() {
         return Try.success(previousContext).map(future::getNow).getOrElse(previousContext);
+    }
+
+    public Try<MyContext> tryNow() {
+        if (future.isDone()) {
+            return Try.of(future::get);
+        } else {
+            return TryUtils.notFound();
+        }
     }
 
     @Override

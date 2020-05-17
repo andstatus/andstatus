@@ -106,13 +106,26 @@ class StateOfAccountChangeProcess {
             if (state.authenticatorResponse != null) {
                 state.useThisState = true;
             }
-            
-            // Maybe we received MyAccount name as a parameter?!
-            String accountName = extras.getString(IntentExtra.ACCOUNT_NAME.key);
-            if (!StringUtil.isEmpty(accountName)) {
-                state.builder.rebuildMyAccount(
-                        AccountName.fromAccountName(myContextHolder.getNow(), accountName));
-                state.useThisState = state.builder.isPersistent();
+
+            if (!state.useThisState) {
+                // Maybe we received MyAccount name as a parameter?!
+                String accountName = extras.getString(IntentExtra.ACCOUNT_NAME.key);
+                if (StringUtil.nonEmpty(accountName)) {
+                    state.builder.rebuildMyAccount(
+                            AccountName.fromAccountName(myContextHolder.getNow(), accountName));
+                    state.useThisState = state.builder.isPersistent();
+                }
+            }
+
+            if (!state.useThisState) {
+                String originName = extras.getString(IntentExtra.ORIGIN_NAME.key);
+                if (StringUtil.nonEmpty(originName)) {
+                    Origin origin = myContextHolder.getBlocking().origins().fromName(originName);
+                    if (origin.isPersistent()) {
+                        state.builder.setOrigin(origin);
+                        state.useThisState = true;
+                    }
+                }
             }
         }
 

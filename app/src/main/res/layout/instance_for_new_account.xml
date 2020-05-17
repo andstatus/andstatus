@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/my_layout_parent"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="4dp"
+    android:paddingEnd="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        tools:context=".account.AccountSettingsActivity"
+        android:weightSum="1">
+
+        <org.andstatus.app.widget.LongHintEditText
+            android:layout_marginTop="100dp"
+            android:id="@+id/originInstance"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_which_instance"
+            android:textAppearance="?attr/messageBodyTextAppearance" />
+
+        <TextView
+            android:layout_marginTop="10dp"
+            android:id="@+id/latest_error_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            tools:visibility="visible"
+            android:text="@string/latest_error_label" />
+
+        <TextView
+            android:id="@+id/latest_error"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            tools:text="Text of the latest error"
+            android:textAppearance="?attr/messageBodyTextAppearance" />
+
+        <TextView
+            android:id="@+id/account_state"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="account_state" />
+
+        <Button
+            android:layout_marginTop="10dp"
+            android:id="@+id/log_in_to_social_network"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/log_in_to_social_network" />
+
+    </LinearLayout>
+
+</ScrollView>

@@ -40,12 +40,15 @@ import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TaggedClass;
 import org.andstatus.app.util.TamperingDetector;
+import org.andstatus.app.util.TryUtils;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
+
+import io.vavr.control.Try;
 
 /**
  * Holds globally cached state of the application: {@link MyContext}  
@@ -74,6 +77,14 @@ public final class MyContextHolder implements TaggedClass {
     @NonNull
     public MyContext getNow() {
         return getFuture().getNow();
+    }
+
+    /** Immediately get completed context,
+     * or {@link TryUtils#notFound()} if it's not completed
+     * or Other failure if it failed */
+    @NonNull
+    public Try<MyContext> tryNow() {
+        return getFuture().tryNow();
     }
 
     public MyContext getBlocking() {

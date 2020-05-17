@@ -122,7 +122,7 @@ public class AsyncTaskLauncher<Params> {
             cancelStalledTasks();
             if (asyncTask.isSingleInstance() && foundUnfinished(asyncTask)) {
                 skippedCount.incrementAndGet();
-                return Try.failure(new IllegalStateException("Single instance and found unfinished task"));
+                return Try.failure(new IllegalStateException("Single instance and found unfinished task: " + asyncTask));
             } else {
                 @SuppressWarnings("unchecked")
                 Params[] paramsArray = (Params[]) new Object[] {params};
