@@ -107,41 +107,37 @@ public final class MyContextHolder implements TaggedClass {
         return true;
     }
 
-    /**
-     * See http://stackoverflow.com/questions/1397361/how-do-i-restart-an-android-activity
-     */
     public MyContextHolder reInitializeAndRestartMe(Activity activity) {
         myContextHolder.setExpired(true);
-        if (activity == null) {
-            return initialize(null).thenStartApp();
-        }
-        Intent intent = activity.getIntent();
-        MyLog.v(TAG, () -> "Restarting " + activity + "; intent:" + intent);
-        activity.finish();
-        return initialize(activity).thenStartIntent(intent);
+        return activity == null
+                ? initialize(null).thenStartApp()
+                : initializeThenRestartActivity(activity);
     }
 
     /**
-     * Initialize asynchronously
-     * @return true if the Activity will be restarted after initialization
+     * If app is initializing or needs initialization, do this asynchronously
+     * @return true if the Activity will be restarted after initialization completed
      */
-    public boolean ifNeededInitializeThenRestartMe(Activity activity) {
-        if (activity == null) {
-            thenStartApp();
-            return true;
-        }
+    public boolean restartMeIfNeeded(@NonNull Activity activity) {
         if (getFuture().needToRestartActivity()) {
-            Intent intent = activity.getIntent();
-            MyLog.i(TAG, "Will restart " + activity + " after initialization");
-            initialize(activity)
-            .whenSuccessAsync(myContext -> {
-                    MyLog.i(TAG, "Restarting " + activity + "; intent:" + intent);
-                    activity.finish();
-                }, UiThreadExecutor.INSTANCE)
-            .thenStartIntent(intent);
+            initializeThenRestartActivity(activity);
             return true;
         }
         return false;
+    }
+
+    /**
+     * See http://stackoverflow.com/questions/1397361/how-do-i-restart-an-android-activity
+     */
+    private MyContextHolder initializeThenRestartActivity(@NonNull Activity activity) {
+        Intent intent = activity.getIntent();
+        MyLog.i(TAG, "Will restart " + MyStringBuilder.objToTag(activity) + " after initialization");
+        return initialize(activity)
+        .whenSuccessAsync(myContext -> {
+                MyLog.i(TAG, "Finishing " + MyStringBuilder.objToTag(activity) + " before restart; intent:" + intent);
+                activity.finish();
+            }, UiThreadExecutor.INSTANCE)
+        .thenStartIntent(intent);
     }
 
     public MyContextHolder initialize(Context context) {

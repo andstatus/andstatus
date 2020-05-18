@@ -32,6 +32,7 @@ import org.andstatus.app.syncadapter.SyncInitiator;
 import org.andstatus.app.util.IdentifiableInstance;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.SharedPreferencesUtil;
 import org.andstatus.app.util.TryUtils;
 
@@ -80,7 +81,7 @@ public class MyFutureContext implements IdentifiableInstance {
         return previousContext -> {
             if (previousContext.isReady() && !previousContext.isExpired()) return previousContext;
 
-            release(previousContext, () -> "Starting initialization by " + calledBy);
+            release(previousContext, () -> "Starting initialization by " + MyStringBuilder.objToTag(calledBy));
             MyContext myContext = previousContext.newInitialized(calledBy);
             SyncInitiator.register(myContext);
             return myContext;
@@ -167,11 +168,13 @@ public class MyFutureContext implements IdentifiableInstance {
     }
 
     private CompletableFuture<MyContext> getHealthyFuture(Object calledBy) {
-        tryNow().onFailure(throwable ->
-                MyLog.i(TAG, future.isCancelled()
-                        ? "Previous initialization was cancelled"
-                        : "Previous initialization completed exceptionally"
-                        + ", now called by " + calledBy, throwable));
+        if (future.isDone()) {
+            tryNow().onFailure(throwable ->
+                    MyLog.i(TAG, future.isCancelled()
+                            ? "Previous initialization was cancelled"
+                            : "Previous initialization completed exceptionally"
+                            + ", now called by " + calledBy, throwable));
+        }
         return future.isCompletedExceptionally()
                 ? completedFuture(previousContext)
                 : future;
@@ -181,13 +184,15 @@ public class MyFutureContext implements IdentifiableInstance {
         return myContext -> {
             if (intent != null) {
                 boolean launched = false;
-                if (myContext.isReady() && !myContext.isExpired()) {
+                if (myContext.isReady()) {
                     try {
+                        MyLog.d(TAG, "Start activity with intent:" + intent);
                         myContext.context().startActivity(intent);
                         launched = true;
                     } catch (android.util.AndroidRuntimeException e) {
                         try {
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            MyLog.d(TAG, "Start activity with intent (new task):" + intent);
                             myContext.context().startActivity(intent);
                             launched = true;
                         } catch (Exception e2) {

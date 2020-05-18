@@ -186,7 +186,7 @@ public class AccountSettingsActivity extends MyActivity {
         mLayoutId = R.layout.account_settings_main;
         super.onCreate(savedInstanceState);
 
-        if (myContextHolder.ifNeededInitializeThenRestartMe(this)) {
+        if (myContextHolder.restartMeIfNeeded(this)) {
             return;
         }
 
@@ -712,7 +712,7 @@ public class AccountSettingsActivity extends MyActivity {
         super.onResume();
         myContextHolder.getNow().setInForeground(true);
 
-        if (myContextHolder.ifNeededInitializeThenRestartMe(this)) {
+        if (myContextHolder.restartMeIfNeeded(this)) {
             return;
         }
         MyServiceManager.setServiceUnavailable();

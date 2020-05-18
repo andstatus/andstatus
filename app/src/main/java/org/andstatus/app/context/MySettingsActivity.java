@@ -133,7 +133,7 @@ public class MySettingsActivity extends MyActivity implements
         super.onResume();
         if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime() || !myContextHolder.getFuture().isReady()) {
             logEvent("onResume", "Recreating");
-            myContextHolder.ifNeededInitializeThenRestartMe(this);
+            myContextHolder.reInitializeAndRestartMe(this);
             return;
         }
         if (isRootScreen()) {
