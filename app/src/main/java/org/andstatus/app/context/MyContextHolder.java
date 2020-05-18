@@ -65,7 +65,7 @@ public final class MyContextHolder implements TaggedClass {
     private final Object CONTEXT_LOCK = new Object();
     @GuardedBy("CONTEXT_LOCK")
     @NonNull
-    private volatile MyFutureContext myFutureContext = MyFutureContext.completedFuture(MyContext.EMPTY);
+    private volatile MyFutureContext myFutureContext = MyFutureContext.completed(MyContext.EMPTY);
     private volatile boolean onRestore = false;
     @NonNull
     private volatile ExecutionMode executionMode = ExecutionMode.UNKNOWN;
@@ -102,7 +102,7 @@ public final class MyContextHolder implements TaggedClass {
             if (!myFutureContext.future.isDone()) return false;
 
             myFutureContext.getNow().release(() -> "trySetCreator");
-            myFutureContext = MyFutureContext.completedFuture(contextCreatorNew);
+            myFutureContext = MyFutureContext.completed(contextCreatorNew);
         }
         return true;
     }
@@ -123,18 +123,22 @@ public final class MyContextHolder implements TaggedClass {
 
     /**
      * Initialize asynchronously
-     * @return true if the Activity is being restarted
+     * @return true if the Activity will be restarted after initialization
      */
     public boolean ifNeededInitializeThenRestartMe(Activity activity) {
         if (activity == null) {
             thenStartApp();
             return true;
         }
-        if (getFuture().needToInitialize()) {
+        if (getFuture().needToRestartActivity()) {
             Intent intent = activity.getIntent();
-            MyLog.v(TAG, () -> "Restarting " + activity + "; intent:" + intent);
-            activity.finish();
-            initialize(activity).thenStartIntent(intent);
+            MyLog.i(TAG, "Will restart " + activity + " after initialization");
+            initialize(activity)
+            .whenSuccessAsync(myContext -> {
+                    MyLog.i(TAG, "Restarting " + activity + "; intent:" + intent);
+                    activity.finish();
+                }, UiThreadExecutor.INSTANCE)
+            .thenStartIntent(intent);
             return true;
         }
         return false;
@@ -223,7 +227,7 @@ public final class MyContextHolder implements TaggedClass {
             if (myFutureContext.getNow().context() == null) {
                 MyContext contextCreator = myFutureContext.getNow().newCreator(context, calledBy);
                 requireNonNullContext(contextCreator.context(), calledBy, "no compatible context");
-                myFutureContext = MyFutureContext.completedFuture(contextCreator);
+                myFutureContext = MyFutureContext.completed(contextCreator);
             }
         }
         return this;

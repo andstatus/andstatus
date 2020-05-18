@@ -59,8 +59,7 @@ public class MyFutureContext implements IdentifiableInstance {
     public MyFutureContext releaseNow(Supplier<String> reason) {
         MyContext previousContext = getNow();
         release(previousContext, reason);
-        MyFutureContext future = completedFuture(previousContext);
-        return future;
+        return completed(previousContext);
     }
 
     public boolean isCompletedExceptionally() {
@@ -69,16 +68,9 @@ public class MyFutureContext implements IdentifiableInstance {
 
     public static MyFutureContext fromPrevious(MyFutureContext previousFuture, Object calledBy) {
         if (previousFuture.needToInitialize()) {
-            if (previousFuture.isCompletedExceptionally()) {
-                previousFuture.tryNow().onFailure(throwable -> MyLog.i(TAG, "Previous initialization failed" +
-                        ", now initializing by " + calledBy, throwable));
-            }
-            MyFutureContext completed = completedFuture(previousFuture.getNow());
-            CompletableFuture<MyContext> future = (previousFuture.isCompletedExceptionally()
-                    ? completed.future
-                    : previousFuture.future)
+            CompletableFuture<MyContext> future = previousFuture.getHealthyFuture(calledBy)
                 .thenApplyAsync(initializeMyContextIfNeeded(calledBy), NonUiThreadExecutor.INSTANCE);
-            return new MyFutureContext(completed.getNow(), future);
+            return new MyFutureContext(previousFuture.getNow(), future);
         } else {
             return previousFuture;
         }
@@ -111,10 +103,14 @@ public class MyFutureContext implements IdentifiableInstance {
         MyLog.v(TAG, () -> "release completed, " + reason.get());
     }
 
-    public static MyFutureContext completedFuture(MyContext myContext) {
+    static MyFutureContext completed(MyContext myContext) {
+        return new MyFutureContext(MyContext.EMPTY, completedFuture(myContext));
+    }
+
+    private static CompletableFuture<MyContext> completedFuture(MyContext myContext) {
         CompletableFuture<MyContext> future = new CompletableFuture<>();
         future.complete(myContext);
-        return new MyFutureContext(MyContext.EMPTY, future);
+        return future;
     }
 
     private MyFutureContext(@NonNull MyContext previousContext, CompletableFuture<MyContext> future) {
@@ -122,13 +118,16 @@ public class MyFutureContext implements IdentifiableInstance {
         this.future = future;
     }
 
-    public boolean isReady() {
-        return future.isDone() && !future.isCancelled() && !future.isCompletedExceptionally() && getNow().isReady();
+    boolean needToRestartActivity() {
+        return !future.isDone() || needToInitialize();
     }
 
-    boolean needToInitialize() {
-        return !future.isDone() || future.isCancelled() || future.isCompletedExceptionally()
-                    || getNow().isExpired() || !getNow().isReady();
+    private boolean needToInitialize() {
+        return future.isDone() && !isReady();
+    }
+
+    public boolean isReady() {
+        return future.isDone() && !future.isCompletedExceptionally() && getNow().isReady();
     }
 
     public MyContext getNow() {
@@ -163,7 +162,19 @@ public class MyFutureContext implements IdentifiableInstance {
     }
 
     public MyFutureContext with(UnaryOperator<CompletableFuture<MyContext>> futures) {
-        return new MyFutureContext(previousContext, futures.apply(future));
+        CompletableFuture<MyContext> healthyFuture = getHealthyFuture("(with)");
+        return new MyFutureContext(previousContext, futures.apply(healthyFuture));
+    }
+
+    private CompletableFuture<MyContext> getHealthyFuture(Object calledBy) {
+        tryNow().onFailure(throwable ->
+                MyLog.i(TAG, future.isCancelled()
+                        ? "Previous initialization was cancelled"
+                        : "Previous initialization completed exceptionally"
+                        + ", now called by " + calledBy, throwable));
+        return future.isCompletedExceptionally()
+                ? completedFuture(previousContext)
+                : future;
     }
 
     static Consumer<MyContext> startIntent(Intent intent) {
