@@ -35,12 +35,12 @@
   <string name="authentication_never">Not authenticated yet</string>
   <string name="authentication_successful">Authentication successful!</string>
   <string name="automatic">Auto</string>
-  <string name="backup_downloads">Backup media files: attachments and avatars</string>
-  <string name="backup_log_files">Backup log files</string>
+  <string name="backup_downloads">Back up media files: attachments and avatars</string>
+  <string name="backup_log_files">Back up log files</string>
   <string name="background_color_preference_title">Background color for the Dark theme</string>
   <string name="button_add">Add</string>
   <string name="button_add_origin">Add new Social Network</string>
-  <string name="button_backup">Backup</string>
+  <string name="button_backup">Back up</string>
   <string name="button_cancel">Cancel</string>
   <string name="button_change_folder">Change folder</string>
   <string name="button_create_message">Post</string>
@@ -97,7 +97,7 @@
   <string name="created_label">Created</string>
   <string name="custom_locale_title">App language</string>
   <string name="set_as_default_timeline">Set as Default Timeline</string>
-  <string name="database_unavailable_description">We couldn\'t open local cache (database with notes and activities). Please try to reboot your device or reinstall AndStatus.</string>
+  <string name="database_unavailable_description">Local cache (database with notes and activities) couldn\'t be opened. Please reboot your device or reinstall AndStatus.</string>
   <string name="default_timeline_summary">Timeline that will be opened by a Launcher: \"%s\"</string>
   <string name="delete_old_data">Delete old data now</string>
   <string name="deleted">deleted</string>
@@ -441,7 +441,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="summary_preference_show_avatars_on">Actor avatars will be displayed</string>
   <string name="summary_preference_ssl_off">No SSL</string>
   <string name="summary_preference_ssl_on">SSL is on</string>
-  <string name="summary_preference_storage">Where and what information to store. Check and backup your data.</string>
+  <string name="summary_preference_storage">Where and what information to store. Check and back up your data.</string>
   <string name="summary_preference_storage_external_off">Data is stored in Internal Memory</string>
   <string name="summary_preference_storage_external_on">Data is stored in External Memory</string>
   <string name="summary_preference_sync_indicator_on_timeline_off">No sync indicator</string>
