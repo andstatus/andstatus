@@ -812,8 +812,9 @@ public class AccountSettingsActivity extends MyActivity {
         super.onPause();
         if (state != null) state.save();
         if (mFinishing && resumedOnce) {
-            myContextHolder.setExpired(false);
-            if (activityOnFinish != ActivityOnFinish.NONE) {
+            if (activityOnFinish == ActivityOnFinish.NONE) {
+                myContextHolder.initialize(this);
+            } else {
                 returnToOurActivity();
             }
         }
@@ -1314,7 +1315,7 @@ public class AccountSettingsActivity extends MyActivity {
             })
             .map(ma -> new TaskResult(ResultStatus.SUCCESS, ""))
             .recover(ConnectionException.class, e -> {
-                ResultStatus status = ResultStatus.ACCOUNT_INVALID;
+                ResultStatus status;
                 String message = "";
                 switch (e.getStatusCode()) {
                     case AUTHENTICATION_ERROR:

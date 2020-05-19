@@ -74,9 +74,17 @@ public class MyFutureContext implements IdentifiableInstance {
 
     private static UnaryOperator<MyContext> initializeMyContextIfNeeded(Object calledBy) {
         return previousContext -> {
-            if (previousContext.isReady() && !previousContext.isExpired()) return previousContext;
-
-            release(previousContext, () -> "Starting initialization by " + MyStringBuilder.objToTag(calledBy));
+            String reason;
+            if (!previousContext.isReady()) {
+                reason = "Context not ready";
+            } else if (previousContext.isExpired()) {
+                reason = "Context expired";
+            } else if (previousContext.isPreferencesChanged()) {
+                reason = "Preferences changed";
+            } else {
+                return previousContext;
+            }
+            release(previousContext, () -> "Initialization: " + reason +  ", by " + MyStringBuilder.objToTag(calledBy));
             MyContext myContext = previousContext.newInitialized(calledBy);
             SyncInitiator.register(myContext);
             return myContext;
@@ -96,7 +104,7 @@ public class MyFutureContext implements IdentifiableInstance {
         previousContext.release(reason);
         // There is InterruptedException after above..., so we catch it below:
         DbUtils.waitMs(TAG, 10);
-        MyLog.v(TAG, () -> "release completed, " + reason.get());
+        MyLog.d(TAG,"release completed, " + reason.get());
     }
 
     static MyFutureContext completed(MyContext myContext) {

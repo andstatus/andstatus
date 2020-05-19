@@ -113,10 +113,9 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
     public void onResume() {
         super.onResume();
         FragmentActivity activity = getActivity();
-        if (!activity.isFinishing() && !myContextHolder.getNow().isReady()) {
-            myContextHolder.reInitializeAndRestartMe(activity);
+        if (activity == null || myContextHolder.restartMeIfNeeded(activity)) {
             return;
-        }
+        };
         activity.setTitle(MySettingsGroup.from(this).getTitleResId());
         showAllPreferences();
         SharedPreferencesUtil.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this);
@@ -480,11 +479,11 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
             switch (key) {
                 case MyPreferences.KEY_CUSTOM_LOCALE:
                     MyLocale.setLocale(getActivity());
-                    myContextHolder.reInitializeAndRestartMe(getActivity());
+                    myContextHolder.initializeThenRestartActivity(getActivity());
                     break;
                 case MyPreferences.KEY_THEME_COLOR:
                     showThemeColor();
-                    myContextHolder.reInitializeAndRestartMe(getActivity());
+                    myContextHolder.initializeThenRestartActivity(getActivity());
                     break;
                 case MyPreferences.KEY_THEME_SIZE:
                     showThemeSize();
@@ -494,11 +493,11 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                     break;
                 case MyPreferences.KEY_ACTION_BAR_BACKGROUND_COLOR:
                     showActionBarBackgroundColor();
-                    myContextHolder.reInitializeAndRestartMe(getActivity());
+                    myContextHolder.initializeThenRestartActivity(getActivity());
                     break;
                 case MyPreferences.KEY_ACTION_BAR_TEXT_COLOR:
                     showActionBarTextColor();
-                    myContextHolder.reInitializeAndRestartMe(getActivity());
+                    myContextHolder.initializeThenRestartActivity(getActivity());
                     break;
                 case MyPreferences.KEY_DONT_SYNCHRONIZE_OLD_NOTES:
                     showDontSynchronizeOldNotes();

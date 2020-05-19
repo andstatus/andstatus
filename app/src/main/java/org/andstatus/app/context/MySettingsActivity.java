@@ -133,7 +133,7 @@ public class MySettingsActivity extends MyActivity implements
         super.onResume();
         if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime() || !myContextHolder.getFuture().isReady()) {
             logEvent("onResume", "Recreating");
-            myContextHolder.reInitializeAndRestartMe(this);
+            myContextHolder.initializeThenRestartActivity(this);
             return;
         }
         if (isRootScreen()) {
@@ -173,7 +173,7 @@ public class MySettingsActivity extends MyActivity implements
     private void closeAndRestartApp() {
         if (resumedOnce) {
             logEvent("closeAndRestartApp", "");
-            myContextHolder.setExpired(false).thenStartApp();
+            myContextHolder.thenStartApp();
         }
         finish();
     }

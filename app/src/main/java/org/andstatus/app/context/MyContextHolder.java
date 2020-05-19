@@ -105,13 +105,6 @@ public final class MyContextHolder implements TaggedClass {
         return true;
     }
 
-    public MyContextHolder reInitializeAndRestartMe(Activity activity) {
-        myContextHolder.setExpired(true);
-        return activity == null
-                ? initialize(null).thenStartApp()
-                : initializeThenRestartActivity(activity);
-    }
-
     /**
      * If app is initializing or needs initialization, do this asynchronously
      * @return true if the Activity will be restarted after initialization completed
@@ -127,7 +120,7 @@ public final class MyContextHolder implements TaggedClass {
     /**
      * See http://stackoverflow.com/questions/1397361/how-do-i-restart-an-android-activity
      */
-    private MyContextHolder initializeThenRestartActivity(@NonNull Activity activity) {
+    public MyContextHolder initializeThenRestartActivity(@NonNull Activity activity) {
         Intent intent = activity.getIntent();
         MyLog.d(TAG, "Will restart " + MyStringBuilder.objToTag(activity) + " after initialization");
         return initialize(activity)
@@ -168,12 +161,10 @@ public final class MyContextHolder implements TaggedClass {
     public MyContextHolder setExpired(boolean evenIfUnchangedPreferences) {
         return whenSuccessOrPreviousAsync(myContext -> {
             if (myContext != MyContext.EMPTY) {
-                long preferencesChangeTimeLast = MyPreferences.getPreferencesChangeTime() ;
-                boolean preferencesChanged = myContext.preferencesChangeTime() != preferencesChangeTimeLast;
-                if (preferencesChanged || evenIfUnchangedPreferences) {
-                    myContext.setExpired(() -> preferencesChanged
+                if (myContext.isPreferencesChanged() || evenIfUnchangedPreferences) {
+                    myContext.setExpired(() -> myContext.isPreferencesChanged()
                             ? "Preferences changed "
-                            + RelativeTime.secondsAgo(preferencesChangeTimeLast)
+                            + RelativeTime.secondsAgo(MyPreferences.getPreferencesChangeTime())
                             + " seconds ago, refreshing..."
                             : "Preferences weren't changed");
                 }

@@ -129,8 +129,6 @@ public class InstanceForNewAccountFragment extends Fragment {
                 .setName(host)
                 .save()
                 .build();
-        CompletableFuture<MyContext> future = myContextHolder.setExpired(false).getFuture().future;
-        MyLog.d(this, "getNewOrExistingOrigin After setExpired " + future);
         return origin.isPersistent()
                 ? Try.success(origin)
                 : TryUtils.failure(getText(R.string.error_invalid_value) + ": " + origin);
