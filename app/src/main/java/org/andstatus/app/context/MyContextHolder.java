@@ -40,7 +40,6 @@ import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TaggedClass;
 import org.andstatus.app.util.TamperingDetector;
-import org.andstatus.app.util.TryUtils;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -79,9 +78,8 @@ public final class MyContextHolder implements TaggedClass {
         return getFuture().getNow();
     }
 
-    /** Immediately get completed context,
-     * or {@link TryUtils#notFound()} if it's not completed
-     * or Other failure if it failed */
+    /** Immediately get completed context or previous if not completed,
+     * or failure if future failed */
     @NonNull
     public Try<MyContext> tryNow() {
         return getFuture().tryNow();
@@ -131,13 +129,13 @@ public final class MyContextHolder implements TaggedClass {
      */
     private MyContextHolder initializeThenRestartActivity(@NonNull Activity activity) {
         Intent intent = activity.getIntent();
-        MyLog.i(TAG, "Will restart " + MyStringBuilder.objToTag(activity) + " after initialization");
+        MyLog.d(TAG, "Will restart " + MyStringBuilder.objToTag(activity) + " after initialization");
         return initialize(activity)
         .whenSuccessAsync(myContext -> {
-                MyLog.i(TAG, "Finishing " + MyStringBuilder.objToTag(activity) + " before restart; intent:" + intent);
+                MyLog.d(TAG, "Finishing " + MyStringBuilder.objToTag(activity) + " before restart; intent:" + intent);
                 activity.finish();
-            }, UiThreadExecutor.INSTANCE)
-        .thenStartIntent(intent);
+                MyFutureContext.startActivity(myContext, intent);
+            }, UiThreadExecutor.INSTANCE);
     }
 
     public MyContextHolder initialize(Context context) {
@@ -183,8 +181,8 @@ public final class MyContextHolder implements TaggedClass {
         }, NonUiThreadExecutor.INSTANCE);
     }
 
-    public MyContextHolder thenStartIntent(Intent intent) {
-        return whenSuccessAsync(MyFutureContext.startIntent(intent), UiThreadExecutor.INSTANCE);
+    public MyContextHolder thenStartActivity(Intent intent) {
+        return whenSuccessAsync(myContext -> MyFutureContext.startActivity(myContext, intent), UiThreadExecutor.INSTANCE);
     }
 
     public MyContextHolder thenStartApp() {

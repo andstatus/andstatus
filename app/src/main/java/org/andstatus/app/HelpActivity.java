@@ -209,11 +209,9 @@ public class HelpActivity extends MyActivity {
                 text.append("\n" + myContextHolder.getNow().state());
                 text.append("\n" + myContextHolder.getNow().getLastDatabaseError());
             }
-            if (myContextHolder.getFuture().isCompletedExceptionally()) {
-                myContextHolder.tryNow().onFailure(e ->
-                        text.append("\n\n " + e.getMessage() + "\n\n" + MyLog.getStackTrace(e))
-                );
-            }
+            myContextHolder.tryNow().onFailure(e ->
+                    text.append("\n\n " + e.getMessage() + "\n\n" + MyLog.getStackTrace(e))
+            );
 
             versionText.setText(text.toString());
             versionText.setOnClickListener(v -> {

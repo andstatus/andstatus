@@ -187,6 +187,7 @@ public class AccountSettingsActivity extends MyActivity {
         super.onCreate(savedInstanceState);
 
         if (myContextHolder.restartMeIfNeeded(this)) {
+            finish();
             return;
         }
 
@@ -916,6 +917,7 @@ public class AccountSettingsActivity extends MyActivity {
         if (StringUtil.nonEmpty(originName)) {
             intent.putExtra(IntentExtra.ORIGIN_NAME.key, originName);
         }
+        MyLog.i(TAG, "startAddNewAccount with " + intent);
         context.startActivity(intent);
     }
     

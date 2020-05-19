@@ -34,7 +34,6 @@ import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.TryUtils;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -68,13 +67,9 @@ public class MyFutureContext implements IdentifiableInstance {
     }
 
     public static MyFutureContext fromPrevious(MyFutureContext previousFuture, Object calledBy) {
-        if (previousFuture.needToInitialize()) {
-            CompletableFuture<MyContext> future = previousFuture.getHealthyFuture(calledBy)
-                .thenApplyAsync(initializeMyContextIfNeeded(calledBy), NonUiThreadExecutor.INSTANCE);
-            return new MyFutureContext(previousFuture.getNow(), future);
-        } else {
-            return previousFuture;
-        }
+        CompletableFuture<MyContext> future = previousFuture.getHealthyFuture(calledBy)
+            .thenApplyAsync(initializeMyContextIfNeeded(calledBy), NonUiThreadExecutor.INSTANCE);
+        return new MyFutureContext(previousFuture.getNow(), future);
     }
 
     private static UnaryOperator<MyContext> initializeMyContextIfNeeded(Object calledBy) {
@@ -120,27 +115,19 @@ public class MyFutureContext implements IdentifiableInstance {
     }
 
     boolean needToRestartActivity() {
-        return !future.isDone() || needToInitialize();
-    }
-
-    private boolean needToInitialize() {
-        return future.isDone() && !isReady();
+        return !isReady();
     }
 
     public boolean isReady() {
-        return future.isDone() && !future.isCompletedExceptionally() && getNow().isReady();
+        return getNow().isReady();
     }
 
     public MyContext getNow() {
-        return Try.success(previousContext).map(future::getNow).getOrElse(previousContext);
+        return tryNow().getOrElse(previousContext);
     }
 
     public Try<MyContext> tryNow() {
-        if (future.isDone()) {
-            return Try.of(future::get);
-        } else {
-            return TryUtils.notFound();
-        }
+        return Try.success(previousContext).map(future::getNow);
     }
 
     @Override
@@ -150,6 +137,7 @@ public class MyFutureContext implements IdentifiableInstance {
 
     MyFutureContext whenSuccessAsync(Consumer<MyContext> consumer, Executor executor) {
         return with(future -> future.whenCompleteAsync((myContext, throwable) -> {
+            MyLog.d(TAG, "whenSuccessAsync " + myContext + ", " + future);
             if (myContext != null) {
                 consumer.accept(myContext);
             }
@@ -164,7 +152,9 @@ public class MyFutureContext implements IdentifiableInstance {
 
     public MyFutureContext with(UnaryOperator<CompletableFuture<MyContext>> futures) {
         CompletableFuture<MyContext> healthyFuture = getHealthyFuture("(with)");
-        return new MyFutureContext(previousContext, futures.apply(healthyFuture));
+        CompletableFuture<MyContext> nextFuture = futures.apply(healthyFuture);
+        MyLog.d(TAG, "with, after apply, next: " + nextFuture);
+        return new MyFutureContext(previousContext, nextFuture);
     }
 
     private CompletableFuture<MyContext> getHealthyFuture(Object calledBy) {
@@ -180,33 +170,31 @@ public class MyFutureContext implements IdentifiableInstance {
                 : future;
     }
 
-    static Consumer<MyContext> startIntent(Intent intent) {
-        return myContext -> {
-            if (intent != null) {
-                boolean launched = false;
-                if (myContext.isReady()) {
+    static void startActivity(MyContext myContext, Intent intent) {
+        if (intent != null) {
+            boolean launched = false;
+            if (myContext.isReady()) {
+                try {
+                    MyLog.d(TAG, "Start activity with intent:" + intent);
+                    myContext.context().startActivity(intent);
+                    launched = true;
+                } catch (android.util.AndroidRuntimeException e) {
                     try {
-                        MyLog.d(TAG, "Start activity with intent:" + intent);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        MyLog.d(TAG, "Start activity with intent (new task):" + intent);
                         myContext.context().startActivity(intent);
                         launched = true;
-                    } catch (android.util.AndroidRuntimeException e) {
-                        try {
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            MyLog.d(TAG, "Start activity with intent (new task):" + intent);
-                            myContext.context().startActivity(intent);
-                            launched = true;
-                        } catch (Exception e2) {
-                            MyLog.e(TAG, "Launching activity with Intent.FLAG_ACTIVITY_NEW_TASK flag", e);
-                        }
-                    } catch (java.lang.SecurityException e) {
-                        MyLog.d(TAG, "Launching activity", e);
+                    } catch (Exception e2) {
+                        MyLog.e(TAG, "Launching activity with Intent.FLAG_ACTIVITY_NEW_TASK flag", e);
                     }
-                }
-                if (!launched) {
-                    HelpActivity.startMe(myContext.context(), true, HelpActivity.PAGE_LOGO);
+                } catch (SecurityException e) {
+                    MyLog.d(TAG, "Launching activity", e);
                 }
             }
-        };
+            if (!launched) {
+                HelpActivity.startMe(myContext.context(), true, HelpActivity.PAGE_LOGO);
+            }
+        }
     }
 
     public Try<MyContext> tryBlocking() {

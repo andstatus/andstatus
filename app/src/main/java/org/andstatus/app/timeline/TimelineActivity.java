@@ -1210,7 +1210,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             MyLog.v(this, () -> "switchTimelineActivity; " + timeline);
             if (isFinishing()) {
                 final Intent intent = getIntentForTimeline(myContext, timeline, false);
-                myContextHolder.initialize(this).thenStartIntent(intent);
+                myContextHolder.initialize(this).thenStartActivity(intent);
             } else {
                 TimelineActivity.startForTimeline(myContext, this, timeline);
             }

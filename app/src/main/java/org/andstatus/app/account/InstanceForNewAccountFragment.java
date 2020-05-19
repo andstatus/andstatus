@@ -27,13 +27,16 @@ import androidx.fragment.app.Fragment;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
+import org.andstatus.app.context.MyContext;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.os.NonUiThreadExecutor;
+import org.andstatus.app.os.UiThreadExecutor;
+import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TryUtils;
 import org.andstatus.app.util.UrlUtils;
 
 import java.net.URL;
+import java.util.concurrent.CompletableFuture;
 
 import io.vavr.control.Try;
 
@@ -65,6 +68,7 @@ public class InstanceForNewAccountFragment extends Fragment {
             prepareScreen(activity);
             activity.updateScreen();
             if (origin.isPersistent()) {
+                MyLog.i(this, "Launching verifyCredentials");
                 activity.verifyCredentials(true);
             }
         }
@@ -125,7 +129,8 @@ public class InstanceForNewAccountFragment extends Fragment {
                 .setName(host)
                 .save()
                 .build();
-        myContextHolder.setExpired(false);
+        CompletableFuture<MyContext> future = myContextHolder.setExpired(false).getFuture().future;
+        MyLog.d(this, "getNewOrExistingOrigin After setExpired " + future);
         return origin.isPersistent()
                 ? Try.success(origin)
                 : TryUtils.failure(getText(R.string.error_invalid_value) + ": " + origin);
@@ -138,10 +143,13 @@ public class InstanceForNewAccountFragment extends Fragment {
             }
             activity.verifyCredentials(true);
         } else {
-            myContextHolder.initialize(activity)
-            .whenSuccessAsync(future -> AccountSettingsActivity
-                            .startAddNewAccount(future.context(), originNew.getName(), true),
-                    NonUiThreadExecutor.INSTANCE);
+            CompletableFuture<MyContext> future1 = myContextHolder.initialize(activity).getFuture().future;
+            MyLog.d(this, "onNewOrigin After 'initialize' " + future1);
+            CompletableFuture<MyContext> future2 = myContextHolder.whenSuccessAsync(myContext -> {
+                    activity.finish();
+                    AccountSettingsActivity.startAddNewAccount(myContext.context(), originNew.getName(), true);
+                }, UiThreadExecutor.INSTANCE).getFuture().future;
+            MyLog.d(this, "onNewOrigin After 'whenSuccessAsync' " + future2);
         }
     }
 

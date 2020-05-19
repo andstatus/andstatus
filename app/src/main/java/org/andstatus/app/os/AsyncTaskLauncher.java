@@ -50,7 +50,7 @@ public class AsyncTaskLauncher<Params> {
     private static volatile ThreadPoolExecutor LONG_UI_POOL_EXECUTOR = null;
     private static volatile ThreadPoolExecutor FILE_DOWNLOAD_EXECUTOR = null;
 
-    private static ThreadPoolExecutor getExecutor(MyAsyncTask.PoolEnum pool) {
+    public static ThreadPoolExecutor getExecutor(MyAsyncTask.PoolEnum pool) {
         ThreadPoolExecutor executor;
         switch (pool) {
             case LONG_UI:

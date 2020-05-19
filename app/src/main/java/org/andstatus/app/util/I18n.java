@@ -17,8 +17,9 @@
 package org.andstatus.app.util;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import java.text.MessageFormat;
 import java.util.regex.Matcher;
@@ -95,7 +96,6 @@ public class I18n {
             lastSpace--;
         }
         final CharSequence trimmed = text.subSequence(0, lastSpace);
-        MyLog.v(TAG, () -> "'" + trimmed + "…" + "' max=" + maxLength);
         return trimmed + "…";
     }
 
