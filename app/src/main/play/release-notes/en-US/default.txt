@@ -1,2 +1,3 @@
+v.56.06 Fixed Conversations view in Twitter.
 v.56.05 Simplified interface to add new account in Mastodon. You don't need to add "Social network" separately. Just type (host of) instance and proceed to Log in.
 v.56.04 Fixed "App language" switch
