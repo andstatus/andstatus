@@ -934,7 +934,7 @@ public class AccountSettingsActivity extends MyActivity {
         private ProgressDialog dlg;
 
         OAuthRegisterClientTask() {
-            super("OAuthRegisterClientTask", PoolEnum.LONG_UI);
+            super("OAuthRegisterClientTask", PoolEnum.QUICK_UI);
         }
 
         @Override
@@ -1031,7 +1031,7 @@ public class AccountSettingsActivity extends MyActivity {
         private ProgressDialog dlg;
 
         OAuthAcquireRequestTokenTask(AccountSettingsActivity activity) {
-            super(PoolEnum.LONG_UI);
+            super(PoolEnum.QUICK_UI);
             this.activity = activity;
         }
 
@@ -1149,7 +1149,7 @@ public class AccountSettingsActivity extends MyActivity {
         private ProgressDialog dlg;
 
         OAuthAcquireAccessTokenTask() {
-            super(PoolEnum.LONG_UI);
+            super(PoolEnum.QUICK_UI);
         }
 
         @Override
@@ -1267,8 +1267,9 @@ public class AccountSettingsActivity extends MyActivity {
         private final Optional<Uri> whoAmI;
 
         VerifyCredentialsTask(Optional<Uri> whoAmI) {
-            super(PoolEnum.LONG_UI);
+            super(PoolEnum.QUICK_UI);
             this.whoAmI = whoAmI;
+            setCancelable(false); // This is needed because there is initialize in the background!
         }
 
         @Override
