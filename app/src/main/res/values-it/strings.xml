@@ -242,6 +242,7 @@
   <string name="message_source_from">da %s</string>
   <string name="message_source_in_reply_to">in risposta a %s</string>
   <string name="message_source_to">a %s</string>
+  <string name="message_twitter">Tweet</string>
   <string name="messages">Messaggi</string>
   <string name="n_message_link">Collegamento del messaggio</string>
   <string name="n_message_links">%d collegamenti messaggio</string>
@@ -249,11 +250,22 @@
   <string name="new_items_count_abbreviated">Nuovo</string>
   <string name="no">No</string>
   <string name="no_more_messages">Nessun\'altra attività</string>
+  <string name="not_set">non impostato</string>
+  <string name="not_syncable">Non sincronizzabile</string>
+  <string name="nothing_in_the_loadable_list">Non c’è ancora niente qui&#8230;</string>
+  <string name="notification_behavior">Come notificarti</string>
+  <string name="notification_events">Quali eventi includere nelle notifiche</string>
   <string name="notification_events_announce">Reblog</string>
   <string name="notification_events_follow">Follower</string>
+  <string name="notification_events_like">Preferiti</string>
+  <string name="notification_events_private">Privato</string>
   <string name="notification_events_private_summary">Messaggi privati (diretto)</string>
+  <string name="notification_events_mention">Menzioni</string>
   <string name="notification_events_outbox">Posta in uscita</string>
   <string name="notification_events_outbox_summary">Messaggi non inviati e azioni della posta in uscita</string>
+  <string name="notification_icon_alternative_title">Icona di notifica alternativa</string>
+  <string name="notification_icon_alternative_on">Icona come cerchio</string>
+  <string name="notification_in_notification_area">Visualizza nelle Notifiche</string>
   <string name="notification_sound">Suono di notifica</string>
   <string name="notifications_summary">Cosa includere nelle notifiche e come notificarti</string>
   <string name="notifications_title">Notifiche</string>
@@ -308,6 +320,7 @@
   <string name="search_timeline_label">Cerca messaggi, utenti e hashtag</string>
   <string name="search_timeline_hint">Inserisci parole chiave/#hashtag</string>
   <string name="search_userlist_hint">Inserisci nome/ID Webfinger</string>
+  <string name="search_users">Cerca utenti</string>
   <string name="select_backup_folder">Seleziona la cartella di backup</string>
   <string name="select_displayed_in_selector">Seleziona se e quando viene visualizzata questa cronologia</string>
   <string name="sensitive">Sensibile</string>
@@ -340,6 +353,9 @@
   <string name="summary_preference_oauth_off">Autenticazione di base</string>
   <string name="summary_preference_origin_system">Tocca qui per selezionare una rete sociale</string>
   <string name="summary_preference_password">Password della tua rete sociale</string>
+  <string name="summary_preference_ssl_off">Nessun SSL</string>
+  <string name="summary_preference_storage_external_off">I dati sono memorizzati nella memoria interna</string>
+  <string name="summary_preference_storage_external_on">I dati sono memorizzati nella memoria esterna</string>
   <string name="summary_preference_sync_indicator_on_timeline_off">Nessun indicatore di sincronizzazione</string>
   <string name="summary_preference_theme_size">Seleziona dimensione testo</string>
   <string name="summary_preference_username">Il tuo nome utente nella rete sociale %1$s; esempio: %2$s</string>
@@ -347,6 +363,12 @@
     sembra un indirizzo e-mail, con il tuo nome utente poi @ e il tuo server. Esempio %2$s</string>
   <string name="summary_preference_verify_credentials">Questo account è verificato e attivato. Tocca il pulsante Indietro per continuare o
     tocca il pulsante qui sotto per controllare nuovamente i dati di accesso dell\'account.</string>
+  <string name="system_information">Informazioni sistema</string>
+  <string name="system_is_busy_try_later">Il sistema è occupato. Riprova più tardi.</string>
+  <string name="tap_on_a_timeline_title_behaviour">Comportamento quando si tocca il titolo della Cronologia</string>
+  <string name="theme_color_entries_default">Come il dispositivo</string>
+  <string name="theme_color_entries_light">Chiaro</string>
+  <string name="theme_color_entries_dark">Scuro</string>
   <string name="theme_size_entries_large">Grande</string>
   <string name="theme_size_entries_larger">Più grande</string>
   <string name="theme_size_entries_small">Piccolo</string>

@@ -203,6 +203,7 @@
     将短语放在双引号中, 例如：\n关键词 \"字符串\"。
     匹配单词或 URL 的一部分：contains:ederatio contains://andstatus.org/</string>
   <string name="hide_replies_not_to_me_or_friends_title">在主页时间线中隐藏对陌生人的答复</string>
+  <string name="hint_which_instance">哪个实例？</string>
   <string name="history_size_entries_500">500 条</string>
   <string name="history_size_entries_1000">1000 条</string>
   <string name="history_size_entries_2000">2000 条</string>
@@ -250,6 +251,7 @@
   <string name="latest_error_label">最新错误</string>
   <string name="liked">收藏了</string>
   <string name="loading">正在加载</string>
+  <string name="log_in_to_social_network">登录到 %s</string>
   <string name="long_press_to_open_context_menu">长按打开上下文菜单</string>
   <string name="long_press_to_open_context_menu_on">长按某个项目来打开它的上下文菜单</string>
   <string name="long_press_to_open_context_menu_off">点击某个项目即可打开其上下文菜单</string>

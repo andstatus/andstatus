@@ -29,6 +29,16 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="56.05" android:versionCode="322"
+        versionDate="2020-05-20"
+        versionTitle="Simplified interface to add new account in Mastodon">
+        <changes>
+            <change>Simplified interface to add new account in Mastodon. You don't need to add "Social network" separately.
+                Just type (host of) instance and proceed to Log in.
+            </change>
+            <change>Fixed "App language" switch.</change>
+        </changes>
+    </release>
     <release android:versionName="56.02" android:versionCode="319"
         versionDate="2020-05-12"
         versionTitle="Avatars and attachments syncing performance improved">

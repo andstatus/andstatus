@@ -253,7 +253,7 @@
   <string name="manage_timelines">Gérer les Timelines</string>
   <string name="mark_all_as_read">Marquer tout comme lu</string>
   <string name="max_distance_between_duplicates_title">Distance maximale entre les doublons</string>
-  <string name="maximum_size_of_attachment_mb">Taille maximale d’ne pièce jointe, Mo</string>
+  <string name="maximum_size_of_attachment_mb">Taille maximale d’une pièce jointe, Mo</string>
   <string name="maximum_size_of_cached_media_mb">Taille maximale des fichiers multimédias en cache (y compris les pièces jointes), Mo</string>
   <string name="mention_as_webfingerid_title">Mention sous forme @IDWebfinger</string>
   <string name="menu_item_act_as">Agir comme&#8230;</string>
