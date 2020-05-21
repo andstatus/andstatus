@@ -27,7 +27,7 @@ With a few easy steps you can start developing AndStatus features:
    open activities and press buttons on them. And of course, they check results.
    As a result, the Test suite is almost an Integration test of all local components.
    Only connection to remote servers is not tested automatically.
-   Test suite has is located under ["androidTest" directory](https://github.com/andstatus/andstatus/tree/master/app/src/androidTest).
-3. Check and fix your code using modern tools of static code analysis.
+   Test suite is located under ["androidTest" directory](https://github.com/andstatus/andstatus/tree/master/app/src/androidTest).
+4. Check and fix your code using modern tools of static code analysis.
    AndStatus has a configuration section
    for launching [SonarQube](https://sonarcloud.io/dashboard?id=andstatus)
