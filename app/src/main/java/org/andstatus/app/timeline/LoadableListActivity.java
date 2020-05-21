@@ -400,7 +400,9 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     @Override
     protected void onPause() {
         super.onPause();
-        myServiceReceiver.unregisterReceiver(this);
+        if (myServiceReceiver != null) {
+            myServiceReceiver.unregisterReceiver(this);
+        }
         myContextHolder.getNow().setInForeground(false);
         getListAdapter().setPositionRestored(false);
     }
