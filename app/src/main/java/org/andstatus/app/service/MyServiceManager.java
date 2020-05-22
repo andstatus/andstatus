@@ -20,8 +20,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 
-import net.jcip.annotations.GuardedBy;
-
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.os.MyAsyncTask;
@@ -29,6 +27,9 @@ import org.andstatus.app.syncadapter.SyncInitiator;
 import org.andstatus.app.util.IdentifiableInstance;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
@@ -93,7 +94,7 @@ public class MyServiceManager extends BroadcastReceiver implements IdentifiableI
                 SyncInitiator.tryToSync(context);
                 break;
             case SERVICE_STATE:
-                if (mServiceAvailable) {
+                if (isServiceAvailable()) {
                     myContextHolder.initialize(context, this);
                 }
                 stateInTime = MyServiceStateInTime.fromIntent(intent);
@@ -212,19 +213,44 @@ public class MyServiceManager extends BroadcastReceiver implements IdentifiableI
         return state.stateEnum;
     }
 
-    private static final Object serviceAvailableLock = new Object();
-    @GuardedBy("serviceAvailableLock")
-    private static Boolean mServiceAvailable = true;
-    @GuardedBy("serviceAvailableLock")
-    private static long timeWhenTheServiceWillBeAvailable = 0;
+    private static AtomicReference<ServiceAvailability> serviceAvailability
+            = new AtomicReference<>(ServiceAvailability.AVAILABLE);
+
+    private static class ServiceAvailability {
+        static final ServiceAvailability AVAILABLE = new ServiceAvailability(0);
+        private final long timeWhenServiceWillBeAvailable;
+
+        private ServiceAvailability(long timeWhenServiceWillBeAvailable) {
+            this.timeWhenServiceWillBeAvailable = timeWhenServiceWillBeAvailable;
+        }
+
+        boolean isAvailable() {
+            return willBeAvailableInMillis() == 0;
+        }
+
+        long willBeAvailableInMillis() {
+            return timeWhenServiceWillBeAvailable == 0
+                ? 0
+                : Math.max(timeWhenServiceWillBeAvailable - System.currentTimeMillis(), 0);
+        }
+
+        static ServiceAvailability newUnavailable() {
+            return new ServiceAvailability(System.currentTimeMillis() +
+                    TimeUnit.MINUTES.toMillis(15));
+        }
+
+        ServiceAvailability checkAndGetNew() {
+            return isAvailable()
+                ? AVAILABLE
+                : newUnavailable();
+        }
+    }
+
 
     public static boolean isServiceAvailable() {
         boolean isAvailable = myContextHolder.getNow().isReady();
         if (!isAvailable) {
-            boolean tryToInitialize;
-            synchronized (serviceAvailableLock) {
-                tryToInitialize = mServiceAvailable;
-            }
+            boolean tryToInitialize = serviceAvailability.get().isAvailable();
             if (tryToInitialize
                     && MyAsyncTask.nonUiThread()    // Don't block on UI thread
                     && !myContextHolder.getNow().initialized()) {
@@ -233,14 +259,9 @@ public class MyServiceManager extends BroadcastReceiver implements IdentifiableI
             }
         }
         if (isAvailable) {
-            long availableInMillis = 0; 
-            synchronized (serviceAvailableLock) {
-                availableInMillis = timeWhenTheServiceWillBeAvailable - System.currentTimeMillis();
-                if (!mServiceAvailable && availableInMillis <= 0) {
-                    setServiceAvailable();
-                }
-                isAvailable = mServiceAvailable;
-            }
+            long availableInMillis = serviceAvailability.updateAndGet(ServiceAvailability::checkAndGetNew)
+                    .willBeAvailableInMillis();
+            isAvailable = availableInMillis == 0;
             if (!isAvailable && MyLog.isVerboseEnabled()) {
                 MyLog.v(TAG,"Service will be available in "
                         + java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(availableInMillis) 
@@ -252,16 +273,9 @@ public class MyServiceManager extends BroadcastReceiver implements IdentifiableI
         return isAvailable;
     }
     public static void setServiceAvailable() {
-        synchronized (serviceAvailableLock) {
-            mServiceAvailable = true;
-            timeWhenTheServiceWillBeAvailable = 0;
-        }
+        serviceAvailability.set(ServiceAvailability.AVAILABLE);
     }
     public static void setServiceUnavailable() {
-        synchronized (serviceAvailableLock) {
-            mServiceAvailable = false;
-            timeWhenTheServiceWillBeAvailable = System.currentTimeMillis() + 
-                    java.util.concurrent.TimeUnit.SECONDS.toMillis(15L * 60L);
-        }
+        serviceAvailability.set(ServiceAvailability.newUnavailable());
     }
 }
