@@ -200,6 +200,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
 フレーズは二重引用符で囲みます 例:\nキーワード \"完全 一致\"。
 単語またはURLの一部に一致: contains:ederatio contains://andstatus.org/</string>
   <string name="hide_replies_not_to_me_or_friends_title">ホーム タイムラインから、私または私の友達以外への返信を非表示</string>
+  <string name="hint_which_instance">どのインスタンスですか？</string>
   <string name="history_size_entries_500">500 メッセージ</string>
   <string name="history_size_entries_1000">1000 メッセージ</string>
   <string name="history_size_entries_2000">2000 メッセージ</string>
@@ -248,6 +249,7 @@ AndStatus は、最後のメッセージのダウンロード以降のすべて�
   <string name="latest_error_label">最新のエラー</string>
   <string name="liked">お気に入りに登録済み</string>
   <string name="loading">読み込み中</string>
+  <string name="log_in_to_social_network">%s にログイン</string>
   <string name="long_press_to_open_context_menu">長押しでコンテキスト メニューを開く</string>
   <string name="long_press_to_open_context_menu_on">項目を長押しして、コンテキスト メニューを開きます</string>
   <string name="long_press_to_open_context_menu_off">項目をタップして、コンテキスト メニューを開きます</string>

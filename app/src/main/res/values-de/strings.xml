@@ -352,6 +352,7 @@
   <string name="preference_log_network_level_messages_title">Logge Netzwerkebene betreffende Benachrichtigungen</string>
   <string name="preference_true_black_title">Rein schwarzer Hintergrund</string>
   <string name="preference_use_kitkat_media_chooser_title">KitKat Medienauswahl verwenden</string>
+  <string name="privacy_unknown">Öffentlich?</string>
   <string name="reblogged">hat repostet</string>
   <string name="reblogged_by">reblogged von %1$s</string>
   <string name="reblogged_by_pumpio">geteilt von %1$s</string>

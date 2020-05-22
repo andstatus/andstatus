@@ -196,6 +196,7 @@
     Mettez les phrases entre guillemets doubles anglais par exemple : \nmot clé \"phrase exacte\".
     Correspond à une partie d\'un mot ou d\'une URL : contains:ederatio contains://andstatus.org/</string>
   <string name="hide_replies_not_to_me_or_friends_title">Masquer les réponses qui ne sont pas de moi ou mes amis dans la Timeline de l’Accueil</string>
+  <string name="hint_which_instance">Quelle instance ?</string>
   <string name="history_size_entries_500">500 messages</string>
   <string name="history_size_entries_1000">1000 messages</string>
   <string name="history_size_entries_2000">2000 messages</string>
@@ -244,6 +245,7 @@
   <string name="latest_error_label">Dernière erreur</string>
   <string name="liked">mis en favoris</string>
   <string name="loading">Chargement</string>
+  <string name="log_in_to_social_network">Se connecter à %s</string>
   <string name="long_press_to_open_context_menu">Appuyer longuement pour ouvrir le Menu Contextuel</string>
   <string name="long_press_to_open_context_menu_on">Appuyez longuement sur un élément pour ouvrir son Menu Contextuel</string>
   <string name="long_press_to_open_context_menu_off">Appuyez sur un élément pour ouvrir son Menu Contextuel</string>

@@ -22,6 +22,7 @@
   <string name="action_bar_text_preference_title">Colore del testo e dell\'icona della barra delle azioni</string>
   <string name="action_menu_overflow_description">Piu azioni&#8230;</string>
   <string name="always">Sempre</string>
+  <string name="appwidget_configure_instructions">Personalizza il messaggio del widget AndStatus mostrato nel caso in cui non si verificasse nulla di nuovo</string>
   <string name="appwidget_nothingnew_default">Niente di nuovo da quanto:</string>
   <string name="appwidget_nodata">Non ci sono dati.</string>
   <string name="attach_images_title">Allega immagini alle mie messaggi</string>
@@ -156,6 +157,7 @@
   <string name="header_accounts_summary">Gestisci gli account e le reti sociali</string>
   <string name="header_add_new_account">Aggiungi un nuovo account</string>
   <string name="hide_messages_based_on_keywords_title">Nascondi i messaggi basati su parole chive o frasi esatte</string>
+  <string name="hint_which_instance">Quale istanza?</string>
   <string name="history_size_entries_500">500 messaggi</string>
   <string name="history_size_entries_1000">1000 messaggi</string>
   <string name="history_size_entries_2000">2000 messaggi</string>
@@ -176,10 +178,13 @@
   <string name="history_time_entries_1year">1 anno</string>
   <string name="history_time_entries_10years">10 anni</string>
   <string name="host_hint">Es. gnusocial.net, sociale.10one.net</string>
+  <string name="host_hint_mastodon">L\'indirizzo o il dominio di qualsiasi istanza, ad esempio mastodon.social, icosahedron.website,
+    social.tchncs.de</string>
   <string name="id_of_this_message_was_not_specified">L\'ID di questo messaggio non è stato specificato</string>
   <string name="in_context">In contesto</string>
   <string name="joined">iscritto/a il</string>
   <string name="label_accountselector">Seleziona un account</string>
+  <string name="label_allow_html_content">Autorizza il contenuto HTML</string>
   <string name="label_backup">Fai il backup dei dati dell\'app sulla scheda SD</string>
   <string name="label_backup_file">File di backup</string>
   <string name="label_backup_folder">Cartella di backup</string>
@@ -226,6 +231,7 @@
   <string name="menu_item_private_message">Note private</string>
   <string name="menu_item_reply">Rispondi</string>
   <string name="menu_item_reply_to_conversation_participants">Rispondi ai partecipanti della conversazione</string>
+  <string name="menu_item_reply_to_mentioned_users">Rispondi agli utenti menzionati</string>
   <string name="menu_item_reblog">Riposta</string>
   <string name="menu_item_reblog_pumpio">Condividi via Pump.io</string>
   <string name="menu_item_reblog_twitter">Ritwitta</string>
@@ -290,7 +296,12 @@
   <string name="page_new">nuovo</string>
   <string name="page_older">più vecchio</string>
   <string name="page_the_same">lo stesso</string>
+  <string name="preference_ssl_mode_title">Modalità SSL e sicurezza</string>
+  <string name="preference_ssl_mode_secure">SSL sicuro</string>
+  <string name="preference_ssl_mode_insecure">SSL non sicuro</string>
+  <string name="preference_ssl_mode_misconfigured">SSL non configurato</string>
   <string name="preference_true_black_title">Vero sfondo nero</string>
+  <string name="preference_use_kitkat_media_chooser_title">Interfaccia moderna per selezionare un allegato</string>
   <string name="privacy_unknown">Pubblico?</string>
   <string name="reblogged">ripubblica</string>
   <string name="reblogged_by">ripubblicato da %1$s</string>
@@ -354,6 +365,7 @@
   <string name="summary_preference_origin_system">Tocca qui per selezionare una rete sociale</string>
   <string name="summary_preference_password">Password della tua rete sociale</string>
   <string name="summary_preference_ssl_off">Nessun SSL</string>
+  <string name="summary_preference_ssl_on">SSL è attivo</string>
   <string name="summary_preference_storage_external_off">I dati sono memorizzati nella memoria interna</string>
   <string name="summary_preference_storage_external_on">I dati sono memorizzati nella memoria esterna</string>
   <string name="summary_preference_sync_indicator_on_timeline_off">Nessun indicatore di sincronizzazione</string>
@@ -363,6 +375,10 @@
     sembra un indirizzo e-mail, con il tuo nome utente poi @ e il tuo server. Esempio %2$s</string>
   <string name="summary_preference_verify_credentials">Questo account è verificato e attivato. Tocca il pulsante Indietro per continuare o
     tocca il pulsante qui sotto per controllare nuovamente i dati di accesso dell\'account.</string>
+  <string name="sync_failed">Sincronizzazione non riuscita</string>
+  <string name="synced_automatically">Sincronizzato automaticamente</string>
+  <string name="synced_abbreviated">Sincronizzazione</string>
+  <string name="syncing">Sincronizzazione&#8230;</string>
   <string name="system_information">Informazioni sistema</string>
   <string name="system_is_busy_try_later">Il sistema è occupato. Riprova più tardi.</string>
   <string name="tap_on_a_timeline_title_behaviour">Comportamento quando si tocca il titolo della Cronologia</string>
