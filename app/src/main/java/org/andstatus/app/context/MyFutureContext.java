@@ -84,7 +84,11 @@ public class MyFutureContext implements IdentifiableInstance {
             } else {
                 return previousContext;
             }
-            release(previousContext, () -> "Initialization: " + reason +  ", by " + MyStringBuilder.objToTag(calledBy));
+            Supplier<String> reasonSupplier = () -> "Initialization: " + reason
+                    + ", previous:" + MyStringBuilder.objToTag(previousContext)
+                    + " by " + MyStringBuilder.objToTag(calledBy);
+            MyLog.v(TAG, () -> "Preparing for " + reasonSupplier.get());
+            release(previousContext, reasonSupplier);
             MyContext myContext = previousContext.newInitialized(calledBy);
             SyncInitiator.register(myContext);
             return myContext;
@@ -104,7 +108,7 @@ public class MyFutureContext implements IdentifiableInstance {
         previousContext.release(reason);
         // There is InterruptedException after above..., so we catch it below:
         DbUtils.waitMs(TAG, 10);
-        MyLog.d(TAG,"release completed, " + reason.get());
+        MyLog.d(TAG,"Release completed, " + reason.get());
     }
 
     static MyFutureContext completed(MyContext myContext) {

@@ -35,6 +35,8 @@ import org.andstatus.app.context.MySettingsGroup;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.os.UiThreadExecutor;
 import org.andstatus.app.timeline.TimelineActivity;
+import org.andstatus.app.util.IdentifiableInstance;
+import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -51,16 +53,22 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
  * It allows to avoid "Application not responding" errors.
  * It is transparent and shows progress indicator only, launches next activity after application initialization.
  * */
-public class FirstActivity extends AppCompatActivity {
+public class FirstActivity extends AppCompatActivity implements IdentifiableInstance {
     private static final String TAG = FirstActivity.class.getSimpleName();
     private static final String SET_DEFAULT_VALUES = "setDefaultValues";
     private static final AtomicReference<TriState> resultOfSettingDefaults = new AtomicReference<>(TriState.UNKNOWN);
     public static AtomicBoolean isFirstrun = new AtomicBoolean(true);
+    private final long instanceId = InstanceId.next();
 
     public enum NeedToStart {
         HELP,
         CHANGELOG,
         OTHER
+    }
+
+    @Override
+    public long getInstanceId() {
+        return instanceId;
     }
 
     @Override

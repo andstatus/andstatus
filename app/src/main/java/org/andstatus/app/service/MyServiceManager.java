@@ -26,6 +26,7 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.syncadapter.SyncInitiator;
+import org.andstatus.app.util.IdentifiableInstance;
 import org.andstatus.app.util.InstanceId;
 import org.andstatus.app.util.MyLog;
 
@@ -36,13 +37,18 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
  * Android system creates new instance of this type on each Intent received. 
  * This is why we're keeping a state in static fields. 
  */
-public class MyServiceManager extends BroadcastReceiver {
+public class MyServiceManager extends BroadcastReceiver implements IdentifiableInstance {
     private static final String TAG = MyServiceManager.class.getSimpleName();
 
     private final long instanceId = InstanceId.next();
 
     public MyServiceManager() {
         MyLog.v(this, () -> "Created, instanceId=" + instanceId );
+    }
+
+    @Override
+    public long getInstanceId() {
+        return instanceId;
     }
 
     private static class MyServiceStateInTime {
@@ -87,7 +93,9 @@ public class MyServiceManager extends BroadcastReceiver {
                 SyncInitiator.tryToSync(context);
                 break;
             case SERVICE_STATE:
-                myContextHolder.initialize(context);
+                if (mServiceAvailable) {
+                    myContextHolder.initialize(context, this);
+                }
                 stateInTime = MyServiceStateInTime.fromIntent(intent);
                 MyLog.d(this, "Notification received: Service state=" + stateInTime.stateEnum);
                 break;

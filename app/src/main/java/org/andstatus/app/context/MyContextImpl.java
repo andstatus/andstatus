@@ -290,7 +290,7 @@ public class MyContextImpl implements MyContext {
      * I decided to db.close on every context release in order to have new instance for each MyContext */
     @Override
     public void release(Supplier<String> reason) {
-        setExpired(() -> "release " + reason.get());
+        setExpired(() -> "Release " + reason.get());
         try {
             if (db != null) db.close();
         } catch (Exception e) {
