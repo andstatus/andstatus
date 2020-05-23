@@ -29,6 +29,17 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="56.09" android:versionCode="326"
+        versionDate="2020-05-23"
+        versionTitle="Show numbers of likes, replies and reblogs for a Note">
+        <changes>
+            <change>Show numbers of likes, replies and reblogs for Mastodon; likes and retweets for Twitter.
+                Added similar to #ActivityPub #C2S, hope the same counters will be supported there also.
+            </change>
+            <change>Added Actors's name ("Real name") as a separate field to Actor's profile.
+                Created landscape layout for Actor's profile.</change>
+        </changes>
+    </release>
     <release android:versionName="56.08" android:versionCode="325"
         versionDate="2020-05-20"
         versionTitle="Simplified interface to add new account in Mastodon">
