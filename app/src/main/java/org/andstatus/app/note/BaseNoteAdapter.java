@@ -24,6 +24,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.AttachedImageFile;
@@ -39,7 +41,7 @@ import org.andstatus.app.util.SharedPreferencesUtil;
 import java.util.HashSet;
 import java.util.Set;
 
-import androidx.annotation.NonNull;
+import static org.andstatus.app.util.I18n.notZero;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -253,6 +255,9 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
             viewGroup.setVisibility(View.VISIBLE);
             tintIcon(viewGroup, item.reblogged, R.id.reblog_button, R.id.reblog_button_tinted);
             tintIcon(viewGroup, item.favorited, R.id.favorite_button, R.id.favorite_button_tinted);
+            MyUrlSpan.showText(viewGroup, R.id.likes_count, notZero(item.likesCount), false, true);
+            MyUrlSpan.showText(viewGroup, R.id.reblogs_count, notZero(item.reblogsCount), false, true);
+            MyUrlSpan.showText(viewGroup, R.id.replies_count, notZero(item.repliesCount), false, true);
         } else {
             viewGroup.setVisibility(View.GONE);
         }

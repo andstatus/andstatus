@@ -135,6 +135,10 @@ public class DemoNoteInserter {
         note.setName(name);
         note.setContentPosted(content);
         note.via = "AndStatus";
+        long rand = InstanceId.next();
+        note.setLikesCount(rand - 15);
+        note.setReblogsCount(rand - 3);
+        note.setRepliesCount(rand + 12);
         note.setInReplyTo(inReplyToActivity);
         if (origin.getOriginType() == OriginType.PUMPIO) {
             note.url = note.oid;

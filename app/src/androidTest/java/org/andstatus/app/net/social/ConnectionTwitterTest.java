@@ -81,12 +81,17 @@ public class ConnectionTwitterTest {
 
         int ind = 0;
         AActivity activity = timeline.get(ind);
+        Note note = activity.getNote();
         String hostName = demoData.twitterTestHostWithoutApiDot;
         assertEquals("Posting note", AObjectType.NOTE, activity.getObjectType());
         assertEquals("Activity oid", "381172771428257792", activity.getOid());
-        assertEquals("Note Oid", "381172771428257792", activity.getNote().oid);
+        assertEquals("Note Oid", "381172771428257792", note.oid);
         assertEquals("MyAccount", connection.getData().getAccountActor(), activity.accountActor);
-        assertEquals("Favorited " + activity, TriState.TRUE, activity.getNote().getFavoritedBy(activity.accountActor));
+        assertEquals("Favorited " + activity, TriState.TRUE, note.getFavoritedBy(activity.accountActor));
+        assertEquals("Counters " + activity, 232, note.getLikesCount());
+        assertEquals("Counters " + activity, 408, note.getReblogsCount());
+        assertEquals("Counters " + activity, 0, note.getRepliesCount());
+
         Actor author = activity.getAuthor();
         assertEquals("Oid", "221452291", author.oid);
         assertEquals("Username", "Know", author.getUsername());
@@ -108,7 +113,7 @@ public class ConnectionTwitterTest {
 
         ind++;
         activity = timeline.get(ind);
-        Note note = activity.getNote();
+        note = activity.getNote();
         assertTrue("Note is loaded", note.getStatus() == DownloadStatus.LOADED);
         assertEquals("Should have a recipient " + activity, 1, note.audience().getNonSpecialActors().size());
         assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);

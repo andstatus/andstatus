@@ -248,6 +248,15 @@ public class DataUpdater {
             if (note.audience().getVisibility().isKnown()) {
                 values.put(NoteTable.VISIBILITY, note.audience().getVisibility().id);
             }
+            if (note.getLikesCount() > 0) {
+                values.put(NoteTable.LIKES_COUNT, note.getLikesCount());
+            }
+            if (note.getReblogsCount() > 0) {
+                values.put(NoteTable.REBLOGS_COUNT, note.getReblogsCount());
+            }
+            if (note.getRepliesCount() > 0) {
+                values.put(NoteTable.REPLIES_COUNT, note.getRepliesCount());
+            }
 
             if (note.lookupConversationId() != 0) {
                 values.put(NoteTable.CONVERSATION_ID, note.getConversationId());

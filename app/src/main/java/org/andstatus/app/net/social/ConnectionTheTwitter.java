@@ -253,6 +253,8 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
         AActivity activity = super.activityFromJson2(jso);
         Note note =  activity.getNote();
         note.setSensitive(jso.optBoolean(SENSITIVE_PROPERTY));
+        note.setLikesCount(jso.optLong("favorite_count"));
+        note.setReblogsCount(jso.optLong("retweet_count"));
         if (!addAttachmentsFromJson(jso, activity, "extended_entities")) {
             // See https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/entities-object
             addAttachmentsFromJson(jso, activity, "entities");

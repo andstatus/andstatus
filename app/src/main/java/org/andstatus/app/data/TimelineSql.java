@@ -192,6 +192,9 @@ public class TimelineSql {
         columnNames.add(ActivityTable.ACCOUNT_ID);
         columnNames.add(NoteTable.AUTHOR_ID);
         columnNames.add(NoteTable.VIA);
+        columnNames.add(NoteTable.LIKES_COUNT);
+        columnNames.add(NoteTable.REBLOGS_COUNT);
+        columnNames.add(NoteTable.REPLIES_COUNT);
         columnNames.add(NoteTable.REBLOGGED);
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             columnNames.add(NoteTable.ATTACHMENTS_COUNT);

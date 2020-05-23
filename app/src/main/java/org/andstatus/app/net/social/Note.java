@@ -76,6 +76,10 @@ public class Note extends AObject {
     public String via = "";
     public String url="";
 
+    private long likesCount = 0;
+    private long reblogsCount = 0;
+    private long repliesCount = 0;
+
     public final Attachments attachments;
 
     /** Some additional attributes may appear from "My account's" (authenticated Account's) point of view */
@@ -396,6 +400,9 @@ public class Note extends AObject {
         conversationOid = note.conversationOid;
         via = note.via;
         url = note.url;
+        likesCount = note.likesCount;
+        reblogsCount = note.reblogsCount;
+        repliesCount = note.repliesCount;
         this.attachments = attachments.orElseGet(note.attachments::copy);
         conversationId = note.conversationId;
     }
@@ -460,6 +467,30 @@ public class Note extends AObject {
 
         setUpdatedDate(MyLog.uniqueCurrentTimeMS());
         inReplyTo.setUpdatedNow(level + 1);
+    }
+
+    public void setLikesCount(long likesCount) {
+        this.likesCount = likesCount;
+    }
+
+    public long getLikesCount() {
+        return likesCount;
+    }
+
+    public void setReblogsCount(long reblogsCount) {
+        this.reblogsCount = reblogsCount;
+    }
+
+    public long getReblogsCount() {
+        return reblogsCount;
+    }
+
+    public void setRepliesCount(long repliesCount) {
+        this.repliesCount = repliesCount;
+    }
+
+    public long getRepliesCount() {
+        return repliesCount;
     }
 
     @Override

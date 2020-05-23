@@ -464,6 +464,10 @@ public class ConnectionActivityPub extends Connection {
             note.setContentPosted(JsonUtils.optString(jso, CONTENT_PROPERTY));
             note.setSensitive(jso.optBoolean(SENSITIVE_PROPERTY));
 
+            note.setLikesCount(jso.optLong("likesCount")); // I didn't see this field yet
+            note.setReblogsCount(jso.optLong("reblogsCount")); // I didn't see this field yet
+            note.setRepliesCount(jso.optLong("repliesCount"));
+
             note.setConversationOid(StringUtil.optNotEmpty(JsonUtils.optString(jso, "conversation"))
                     .orElseGet(() -> JsonUtils.optString(jso, "context")));
 

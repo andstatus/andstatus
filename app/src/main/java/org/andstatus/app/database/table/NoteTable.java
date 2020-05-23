@@ -21,7 +21,6 @@ import android.provider.BaseColumns;
 
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.util.TriState;
 
 /**
  * Table for both public and private notes
@@ -106,9 +105,9 @@ public final class NoteTable implements BaseColumns {
      */
     public static final String REBLOGGED = "reblogged";
 
-    public static final String FAVORITE_COUNT = "favorite_count";
-    public static final String REBLOG_COUNT = "reblog_count";
-    public static final String REPLY_COUNT = "reply_count";  // To be calculated locally?!
+    public static final String LIKES_COUNT = "favorite_count";  // TODO: rename
+    public static final String REBLOGS_COUNT = "reblog_count";  // TODO: rename
+    public static final String REPLIES_COUNT = "reply_count";   // TODO: rename. To be calculated locally?!
     public static final String ATTACHMENTS_COUNT = "attachments_count";
 
     // Columns, which duplicate other existing info. Here to speed up data retrieval
@@ -145,9 +144,9 @@ public final class NoteTable implements BaseColumns {
                 + SENSITIVE + " INTEGER NOT NULL DEFAULT 0,"
                 + FAVORITED + " INTEGER NOT NULL DEFAULT 0,"
                 + REBLOGGED + " INTEGER NOT NULL DEFAULT 0,"
-                + FAVORITE_COUNT + " INTEGER NOT NULL DEFAULT 0,"
-                + REBLOG_COUNT + " INTEGER NOT NULL DEFAULT 0,"
-                + REPLY_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + LIKES_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + REBLOGS_COUNT + " INTEGER NOT NULL DEFAULT 0,"
+                + REPLIES_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + ATTACHMENTS_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + INS_DATE + " INTEGER NOT NULL,"
                 + UPDATED_DATE + " INTEGER NOT NULL DEFAULT 0"

@@ -416,6 +416,9 @@ public class ConnectionMastodon extends ConnectionTwitterLike {
             note.setSensitive(jso.optBoolean(SENSITIVE_PROPERTY));
             note.setContentPosted(JsonUtils.optString(jso, CONTENT_PROPERTY));
             note.url = JsonUtils.optString(jso, "url");
+            note.setLikesCount(jso.optLong("favourites_count"));
+            note.setReblogsCount(jso.optLong("reblogs_count"));
+            note.setRepliesCount(jso.optLong("replies_count"));
             note.audience().setVisibility(parseVisibility(jso));
             if (jso.has("recipient")) {
                 JSONObject recipient = jso.getJSONObject("recipient");

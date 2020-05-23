@@ -90,6 +90,10 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     private Spannable content = SpanUtil.EMPTY;
     String contentToSearch = "";
 
+    long likesCount = 0;
+    long reblogsCount = 0;
+    long repliesCount = 0;
+
     boolean favorited = false;
     Map<Long, String> rebloggers = new HashMap<>();
     boolean reblogged = false;
@@ -112,6 +116,10 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
         setNoteId(DbUtils.getLong(cursor, ActivityTable.NOTE_ID));
         setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)));
         isSensitive = DbUtils.getBoolean(cursor, NoteTable.SENSITIVE);
+        likesCount = DbUtils.getLong(cursor, NoteTable.LIKES_COUNT);
+        reblogsCount = DbUtils.getLong(cursor, NoteTable.REBLOGS_COUNT);
+        repliesCount = DbUtils.getLong(cursor, NoteTable.REPLIES_COUNT);
+
         this.myContext = myContext;
 
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {

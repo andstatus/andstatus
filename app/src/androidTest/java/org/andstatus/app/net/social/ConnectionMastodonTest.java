@@ -79,6 +79,9 @@ public class ConnectionMastodonTest {
                 .fromActorOfSameOrigin(activity.accountActor).isValid());
         assertEquals("Is not a note " + activity, AObjectType.NOTE, activity.getObjectType());
         assertEquals("Favorited " + activity, TriState.UNKNOWN, note.getFavoritedBy(activity.accountActor));
+        assertEquals("Counters " + activity, 678, note.getLikesCount());
+        assertEquals("Counters " + activity, 234, note.getReblogsCount());
+        assertEquals("Counters " + activity, 11, note.getRepliesCount());
         assertVisibility(note.audience(), Visibility.PUBLIC_AND_TO_FOLLOWERS);
 
         Actor actor = activity.getActor();

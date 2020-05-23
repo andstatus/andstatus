@@ -41,8 +41,9 @@
     "uri": "tag:neumastodon.com,2017-04-16:objectId=22:objectType=Status",
     "content": "<p>I&apos;m figuring out how to work with Mastodon<\/p>",
     "url": "https:\/\/neumastodon.com\/@t131t1\/22",
-    "reblogs_count": 0,
-    "favourites_count": 0,
+    "replies_count": 11,
+    "reblogs_count": 234,
+    "favourites_count": 678,
     "reblog": null,
     "favourited": null,
     "reblogged": null

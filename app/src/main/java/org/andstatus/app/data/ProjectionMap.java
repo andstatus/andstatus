@@ -82,6 +82,9 @@ public class ProjectionMap {
         TIMELINE.put(NoteTable.VISIBILITY, NoteTable.VISIBILITY);
         TIMELINE.put(NoteTable.FAVORITED, NoteTable.FAVORITED);
         TIMELINE.put(NoteTable.REBLOGGED, NoteTable.REBLOGGED);
+        TIMELINE.put(NoteTable.LIKES_COUNT, NoteTable.LIKES_COUNT);
+        TIMELINE.put(NoteTable.REBLOGS_COUNT, NoteTable.REBLOGS_COUNT);
+        TIMELINE.put(NoteTable.REPLIES_COUNT, NoteTable.REPLIES_COUNT);
         TIMELINE.put(NoteTable.UPDATED_DATE, NoteTable.UPDATED_DATE);
         TIMELINE.put(NoteTable.NOTE_STATUS, NoteTable.NOTE_STATUS);
         TIMELINE.put(NoteTable.INS_DATE, NoteTable.INS_DATE);

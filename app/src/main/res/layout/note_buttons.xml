@@ -21,12 +21,20 @@
         android:adjustViewBounds="false"
         android:contentDescription="@string/menu_item_reply"/>
 
+    <TextView
+        android:id="@+id/replies_count"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="-10dp"
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        style="@style/messageDetailsAppearance"
+        tools:text="2576"/>
+
     <ImageView
         android:id="@+id/reblog_button"
         android:layout_width="48dip"
         android:layout_height="36dip"
         android:scaleType="centerInside"
-        android:layout_marginLeft="38dp"
         android:src="?attr/reblogIcon"
         android:alpha="0.4"
         android:contentDescription="@string/menu_item_reblog"/>
@@ -38,15 +46,22 @@
         android:scaleType="centerInside"
         android:visibility="gone"
         tools:visibility="visible"
-        android:layout_marginLeft="38dp"
         android:src="@drawable/reblog_icon_tinted"
         android:contentDescription="@string/menu_item_reblog"/>
+
+    <TextView
+        android:id="@+id/reblogs_count"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="-10dp"
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        style="@style/messageDetailsAppearance"
+        tools:text="1234"/>
 
     <ImageView
         android:id="@+id/favorite_button"
         android:layout_width="48dip"
         android:layout_height="36dip"
-        android:layout_marginLeft="38dp"
         android:scaleType="centerInside"
         android:src="?attr/favoriteBorderIcon"
         android:alpha="0.4"
@@ -57,7 +72,6 @@
         android:id="@+id/favorite_button_tinted"
         android:layout_width="48dip"
         android:layout_height="36dip"
-        android:layout_marginLeft="38dp"
         android:visibility="gone"
         tools:visibility="visible"
         android:scaleType="centerInside"
@@ -65,11 +79,19 @@
         android:adjustViewBounds="false"
         android:contentDescription="@string/menu_item_favorite"/>
 
+    <TextView
+        android:id="@+id/likes_count"
+        android:layout_marginTop="8dp"
+        android:layout_marginLeft="-10dp"
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        style="@style/messageDetailsAppearance"
+        tools:text="7890"/>
+
     <ImageView
         android:id="@+id/more_button"
         android:layout_width="48dip"
         android:layout_height="36dip"
-        android:layout_marginLeft="38dp"
         android:scaleType="centerInside"
         android:src="?attr/moreIcon"
         android:alpha="0.4"
