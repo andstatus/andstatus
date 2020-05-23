@@ -116,7 +116,7 @@ public class NoteContextMenu extends MyContextMenu {
                 NoteContextMenuItem.NOTES_BY_ACTOR.addTo(menu, order++,
                         StringUtil.format(
                                 getActivity(), R.string.menu_item_user_messages,
-                                noteForAnyAccount.actor.getTimelineUsername()));
+                                noteForAnyAccount.actor.getActorNameInTimeline()));
             }
 
             if (viewItem.isCollapsed()) {
@@ -145,12 +145,12 @@ public class NoteContextMenu extends MyContextMenu {
                     NoteContextMenuItem.UNDO_FOLLOW_ACTOR.addTo(menu, order++,
                             StringUtil.format(
                                     getActivity(), R.string.menu_item_stop_following_user,
-                                    noteForAnyAccount.actor.getTimelineUsername()));
+                                    noteForAnyAccount.actor.getActorNameInTimeline()));
                 } else {
                     NoteContextMenuItem.FOLLOW_ACTOR.addTo(menu, order++,
                             StringUtil.format(
                                     getActivity(), R.string.menu_item_follow_user,
-                                    noteForAnyAccount.actor.getTimelineUsername()));
+                                    noteForAnyAccount.actor.getActorNameInTimeline()));
                 }
             }
 
@@ -161,19 +161,19 @@ public class NoteContextMenu extends MyContextMenu {
                     NoteContextMenuItem.NOTES_BY_AUTHOR.addTo(menu, order++,
                             StringUtil.format(
                                     getActivity(), R.string.menu_item_user_messages,
-                                    noteForAnyAccount.author.getTimelineUsername()));
+                                    noteForAnyAccount.author.getActorNameInTimeline()));
                 }
                 if (accountToNote.getMyActor().notSameUser(noteForAnyAccount.author)) {
                     if (accountToNote.authorFollowed) {
                         NoteContextMenuItem.UNDO_FOLLOW_AUTHOR.addTo(menu, order++,
                                 StringUtil.format(
                                         getActivity(), R.string.menu_item_stop_following_user,
-                                        noteForAnyAccount.author.getTimelineUsername()));
+                                        noteForAnyAccount.author.getActorNameInTimeline()));
                     } else {
                         NoteContextMenuItem.FOLLOW_AUTHOR.addTo(menu, order++,
                                 StringUtil.format(
                                         getActivity(), R.string.menu_item_follow_user,
-                                        noteForAnyAccount.author.getTimelineUsername()));
+                                        noteForAnyAccount.author.getActorNameInTimeline()));
                     }
                 }
             }

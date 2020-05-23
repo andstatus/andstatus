@@ -412,7 +412,7 @@ public class CommandData implements Comparable<CommandData>, TaggedClass {
             case UNDO_FOLLOW:
             case GET_FOLLOWERS:
             case GET_FRIENDS:
-                builder.withSpace(getTimeline().actor.getTimelineUsername());
+                builder.withSpace(getTimeline().actor.getActorNameInTimeline());
                 break;
             case GET_ACTOR:
             case SEARCH_ACTORS:

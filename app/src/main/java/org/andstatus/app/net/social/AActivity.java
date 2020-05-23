@@ -522,11 +522,11 @@ public class AActivity extends AObject {
                 " " + accountActor.origin.getName() +
                 " " + accountActor.getUniqueName() +
                 " " + MyLog.formatDateTime(getUpdatedDate()) +
-                " " + actor.getTimelineUsername() + " " + type +
+                " " + actor.getActorNameInTimeline() + " " + type +
                 (getNote().nonEmpty()
                     ? " '" + getNote().oid + "' " + I18n.trimTextAt(getNote().getContent(), 300)
                     : "") +
-                (getObjActor().nonEmpty() ? " " + getObjActor().getTimelineUsername() : "")
+                (getObjActor().nonEmpty() ? " " + getObjActor().getActorNameInTimeline() : "")
             );
         }
     }

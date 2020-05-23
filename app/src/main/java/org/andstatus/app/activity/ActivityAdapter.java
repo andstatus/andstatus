@@ -177,11 +177,11 @@ public class ActivityAdapter extends BaseTimelineAdapter<ActivityViewItem> {
             }
             MyUrlSpan.showText(view, R.id.action_title,
                     (layoutType == LayoutType.ACTOR_ACTOR
-                            ? item.actor.getActor().getUniqueName()
-                            : item.actor.getActor().getViewItemActorName()) +
+                            ? item.actor.getActor().getActorNameInTimeline()
+                            : item.actor.getActor().getActorNameInTimelineWithOrigin()) +
                         " " + item.activityType.getActedTitle(contextMenu.actor.getActivity()) +
                         (layoutType == LayoutType.ACTOR_ACTOR
-                            ? " " + item.getObjActorItem().getActor().getUniqueName()
+                            ? " " + item.getObjActorItem().getActor().getActorNameInTimelineWithOrigin()
                             : ""),
                     false, false);
             MyUrlSpan.showText(view, R.id.action_details,

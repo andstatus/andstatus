@@ -120,7 +120,7 @@ public class TimelineTitle {
 
     private static String getActorName(Timeline timeline) {
         return timeline.isSyncedByOtherUser()
-                ? timeline.actor.getTimelineUsername()
+                ? timeline.actor.getActorNameInTimeline()
                 : timeline.myAccountToSync.toAccountButtonText();
     }
 

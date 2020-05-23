@@ -802,14 +802,40 @@ public class Actor implements Comparable<Actor>, IsEmpty {
         return getUniqueName();
     }
 
-    public String getViewItemActorName() {
+    public String getActorNameInTimelineWithOrigin() {
         if (MyPreferences.getShowOrigin() && nonEmpty()) {
-            String name = getTimelineUsername() + " / " + origin.getName();
+            String name = getActorNameInTimeline() + " / " + origin.getName();
             if (origin.getOriginType() == OriginType.GNUSOCIAL && MyPreferences.isShowDebuggingInfoInUi()
                     && StringUtil.nonEmpty(oid)) {
                 return name + " oid:" + oid;
             } else return name;
-        } else return getTimelineUsername();
+        } else return getActorNameInTimeline();
+    }
+
+    public String getActorNameInTimeline() {
+        String name1 = getActorNameInTimeline1();
+        return StringUtil.nonEmpty(name1) ? name1 : getUniqueNameWithOrigin();
+    }
+
+    private String getActorNameInTimeline1() {
+        switch (MyPreferences.getActorInTimeline()) {
+            case AT_USERNAME:
+                return StringUtil.isEmpty(username) ? "" : "@" + username;
+            case WEBFINGER_ID:
+                return isWebFingerIdValid ? webFingerId : "";
+            case REAL_NAME:
+                return realName;
+            case REAL_NAME_AT_USERNAME:
+                return StringUtil.nonEmpty(realName) && StringUtil.nonEmpty(username)
+                        ? realName + " @" + username
+                        : username;
+            case REAL_NAME_AT_WEBFINGER_ID:
+                return StringUtil.nonEmpty(realName) && StringUtil.nonEmpty(webFingerId)
+                        ? realName + " @" + webFingerId
+                        : webFingerId;
+            default:
+                return username;
+        }
     }
 
     public String getRealName() {
@@ -875,32 +901,6 @@ public class Actor implements Comparable<Actor>, IsEmpty {
             MyStringBuilder.appendWithSpace(builder, "(" + getRealName() + ")");
         }
         return builder.toString();
-    }
-
-    public String getTimelineUsername() {
-        String name1 = getTimelineUsername1();
-        return StringUtil.nonEmpty(name1) ? name1 : getUniqueNameWithOrigin();
-    }
-
-    private String getTimelineUsername1() {
-        switch (MyPreferences.getActorInTimeline()) {
-            case AT_USERNAME:
-                return StringUtil.isEmpty(username) ? "" : "@" + username;
-            case WEBFINGER_ID:
-                return isWebFingerIdValid ? webFingerId : "";
-            case REAL_NAME:
-                return realName;
-            case REAL_NAME_AT_USERNAME:
-                return StringUtil.nonEmpty(realName) && StringUtil.nonEmpty(username)
-                    ? realName + " @" + username
-                    : username;
-            case REAL_NAME_AT_WEBFINGER_ID:
-                return StringUtil.nonEmpty(realName) && StringUtil.nonEmpty(webFingerId)
-                        ? realName + " @" + webFingerId
-                        : webFingerId;
-            default:
-                return username;
-        }
     }
 
     public Actor lookupUser() {

@@ -524,7 +524,7 @@ public class NoteEditor {
         Actor inReplyToAuthor = editorData.activity.getNote().getInReplyTo().getAuthor();
         if (inReplyToAuthor.nonEmpty()) {
             builder.withSpace(StringUtil.format(getActivity(), R.string.message_source_in_reply_to,
-                    inReplyToAuthor.getTimelineUsername()));
+                    inReplyToAuthor.getActorNameInTimeline()));
         }
 
         if (editorData.getAttachedImageFiles().nonEmpty()) {

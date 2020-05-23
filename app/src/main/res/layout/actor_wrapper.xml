@@ -18,11 +18,18 @@
         android:paddingTop="2dip" >
 
         <TextView
+            android:id="@+id/realname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/messageUsernameAppearance"
+            tools:text="John Smith"/>
+
+        <TextView
             android:id="@+id/username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/messageUsernameAppearance"
-            tools:text="user35@some.domain (John Smith)"/>
+            tools:text="user35@some.domain"/>
 
         <TextView
             android:id="@+id/profile_url"

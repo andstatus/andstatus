@@ -18,6 +18,8 @@ package org.andstatus.app.actor;
 
 import android.view.View;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.R;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.net.social.Audience;
@@ -27,8 +29,6 @@ import org.andstatus.app.util.MyStringBuilder;
 import org.andstatus.app.util.MyUrlSpan;
 
 import java.util.stream.Collectors;
-
-import androidx.annotation.NonNull;
 
 public class ActorViewItemPopulator {
     private final LoadableListActivity myActivity;
@@ -43,9 +43,8 @@ public class ActorViewItemPopulator {
     }
 
     public void populateView(View view, ActorViewItem item, int position) {
-        MyUrlSpan.showText(view, R.id.username,
-                item.actor.getTimelineUsername() + ( isCombined ? " / " + item.actor.origin.getName() : ""),
-                false, false);
+        MyUrlSpan.showText(view, R.id.realname, item.actor.getRealName(), false, false);
+        MyUrlSpan.showText(view, R.id.username, item.actor.getUniqueName(), false, false);
         if (showAvatars) {
             showAvatar(item, view);
         }

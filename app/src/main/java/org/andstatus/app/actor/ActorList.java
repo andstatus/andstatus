@@ -150,7 +150,7 @@ public class ActorList extends NoteEditorListActivity {
             if (actor.isEmpty()) {
                 title.withSpace(mActorListType.title(this));
             } else {
-                title.withSpace(mActorListType.title(this, actor.getTimelineUsername()));
+                title.withSpace(mActorListType.title(this, actor.getActorNameInTimeline()));
             }
         }
         if (StringUtil.nonEmpty(getParsedUri().getSearchQuery())) {

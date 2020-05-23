@@ -88,7 +88,7 @@ public class Notifier {
 
     public Notification getAndroidNotification(@NonNull NotificationData data) {
         String contentText = (data.myActor.nonEmpty()
-                ? data.myActor.getTimelineUsername()
+                ? data.myActor.getActorNameInTimeline()
                 : myContext.context().getText(data.event.titleResId)) + ": " + data.count;
         MyLog.v(this, contentText);
 
