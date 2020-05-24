@@ -29,7 +29,7 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="56.10" android:versionCode="327"
+    <release android:versionName="56.11" android:versionCode="328"
         versionDate="2020-05-24"
         versionTitle="Show numbers of likes, replies and reblogs for a Note">
         <changes>
@@ -38,7 +38,7 @@
             </change>
             <change>Added Actors's name ("Real name") as a separate field to Actor's profile.
                 Created landscape layout for Actor's profile.</change>
-            <change>v.56.10. Fix repeated restarts of Timeline activity</change>
+            <change>v.56.11. Fixed repeated restarts of Timeline and Settings activities.</change>
         </changes>
     </release>
     <release android:versionName="56.08" android:versionCode="325"

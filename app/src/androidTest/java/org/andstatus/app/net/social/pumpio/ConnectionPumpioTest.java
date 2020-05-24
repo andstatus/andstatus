@@ -50,6 +50,7 @@ import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
@@ -377,7 +378,11 @@ public class ConnectionPumpioTest {
         assertEquals("Note name", name, MyHtml.htmlToPlainText(JsonUtils.optString(jso, "displayName")));
         assertEquals("Note content", content, MyHtml.htmlToPlainText(jso.getString("content")));
         assertEquals("Note without reply is a note", PObjectType.NOTE.id, jso.getString("objectType"));
-        assertFalse("No explicit recipients expected " + jsoActivity, jsoActivity.has("to"));
+        JSONArray toArray = jsoActivity.optJSONArray("to");
+        assertEquals("Only public recipient expected " + jsoActivity, 1, toArray == null ? 0 : toArray.length());
+        JSONObject recipient = (JSONObject) toArray.get(0);
+        assertEquals("Only public recipient expected " + jsoActivity, ConnectionPumpio.PUBLIC_COLLECTION_ID,
+                recipient.getString("id"));
         assertFalse("InReplyTo is not present " + jsoActivity, jso.has("inReplyTo"));
     }
 

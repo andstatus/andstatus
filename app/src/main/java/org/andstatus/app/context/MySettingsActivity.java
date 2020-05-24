@@ -34,6 +34,8 @@ import org.andstatus.app.R;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.MyLog;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /** See <a href="http://developer.android.com/guide/topics/ui/settings.html">Settings</a>
@@ -44,6 +46,15 @@ public class MySettingsActivity extends MyActivity implements
 
     private long mPreferencesChangedAt = MyPreferences.getPreferencesChangeTime();
     private boolean resumedOnce = false;
+
+    enum OnFinishAction {
+        RESTART_APP,
+        RESTART_ME,
+        DONE,
+        NONE
+    }
+    // introduce this in order to avoid duplicated restarts: we have one place, where we restart anything
+    AtomicReference<OnFinishAction> onFinishAction = new AtomicReference<>(OnFinishAction.NONE);
 
     /**
      * Based on http://stackoverflow.com/questions/14001963/finish-all-activities-at-a-time
@@ -131,10 +142,11 @@ public class MySettingsActivity extends MyActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime() || !myContextHolder.getFuture().isReady()) {
-            logEvent("onResume", "Recreating");
-            myContextHolder.initializeThenRestartActivity(this);
-            return;
+        if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime() || myContextHolder.getFuture().needToRestartActivity()) {
+            if (initializeThenRestartActivity()){
+                logEvent("onResume", "Recreating");
+                return;
+            }
         }
         if (isRootScreen()) {
             myContextHolder.getNow().setInForeground(true);
@@ -172,10 +184,10 @@ public class MySettingsActivity extends MyActivity implements
 
     private void closeAndRestartApp() {
         if (resumedOnce) {
-            logEvent("closeAndRestartApp", "");
-            myContextHolder.thenStartApp();
+            if (onFinishAction.compareAndSet(OnFinishAction.NONE, OnFinishAction.RESTART_APP)) {
+                finish();
+            }
         }
-        finish();
     }
 
     @Override
@@ -189,10 +201,30 @@ public class MySettingsActivity extends MyActivity implements
         return super.onKeyDown(keyCode, event);
     }
 
+    /** @return true if we are restarting */
+    boolean initializeThenRestartActivity() {
+        if (onFinishAction.compareAndSet(MySettingsActivity.OnFinishAction.NONE,
+                MySettingsActivity.OnFinishAction.RESTART_ME)) {
+            finish();
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void finish() {
         super.finish();
-        logEvent("finish", "");
+        logEvent("finish", "onFinish: " + onFinishAction.get());
+        switch (onFinishAction.getAndSet(OnFinishAction.DONE)) {
+            case RESTART_ME:
+                myContextHolder.initialize(this).thenStartActivity(this.getIntent());
+                return;
+            case RESTART_APP:
+                myContextHolder.thenStartApp();
+                return;
+            default:
+                break;
+        }
     }
 
     private void logEvent(String method, String msgLog_in) {
