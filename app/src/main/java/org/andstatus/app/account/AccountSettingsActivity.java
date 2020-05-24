@@ -186,10 +186,7 @@ public class AccountSettingsActivity extends MyActivity {
         mLayoutId = R.layout.account_settings_main;
         super.onCreate(savedInstanceState);
 
-        if (myContextHolder.restartMeIfNeeded(this)) {
-            finish();
-            return;
-        }
+        if (restartMeIfNeeded()) return;
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
         restoreState(getIntent(), "onActivityCreated");
@@ -281,24 +278,23 @@ public class AccountSettingsActivity extends MyActivity {
     }
 
     private void onAccountSelected(int resultCode, Intent data) {
+        boolean toFinish;
         if (resultCode == RESULT_OK) {
             AccountName accountName = AccountName.fromAccountName(myContextHolder.getNow(),
                     data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
             state.builder.rebuildMyAccount(accountName);
-            if (!state.builder.isPersistent()) {
-                mFinishing = true;
-            }
+            toFinish = !state.builder.isPersistent();
         } else {
-            mFinishing = true;
+            toFinish = true;
         }
-        if (!mFinishing) {
+        if (toFinish) {
+            MyLog.v(this, "No account supplied, finishing");
+            finish();
+        } else {
             MyLog.v(this, "Switching to the selected account");
             state.builder.myContext().accounts().setCurrentAccount(state.builder.getAccount());
             state.setAccountAction(Intent.ACTION_EDIT);
             updateScreen();
-        } else {
-            MyLog.v(this, "No account supplied, finishing");
-            finish();
         }
     }
 
@@ -713,9 +709,8 @@ public class AccountSettingsActivity extends MyActivity {
         super.onResume();
         myContextHolder.getNow().setInForeground(true);
 
-        if (myContextHolder.restartMeIfNeeded(this)) {
-            return;
-        }
+        if (restartMeIfNeeded()) return;
+
         MyServiceManager.setServiceUnavailable();
         MyServiceManager.stopService();
 
@@ -811,14 +806,19 @@ public class AccountSettingsActivity extends MyActivity {
     protected void onPause() {
         super.onPause();
         if (state != null) state.save();
-        if (mFinishing && resumedOnce) {
+        myContextHolder.getNow().setInForeground(false);
+    }
+
+    @Override
+    public void finish() {
+        if (resumedOnce || !isMyResumed()) {
             if (activityOnFinish == ActivityOnFinish.NONE) {
                 myContextHolder.initialize(this);
             } else {
                 returnToOurActivity();
             }
         }
-        myContextHolder.getNow().setInForeground(false);
+        super.finish();
     }
 
     private void returnToOurActivity() {
@@ -872,8 +872,8 @@ public class AccountSettingsActivity extends MyActivity {
      */
     private void closeAndGoBack() {
         String message = saveState();
-        if (!mFinishing) {
-            MyLog.v(this, "finish: " + message);
+        if (!isFinishing()) {
+            MyLog.v(this, () -> "finish: " + message);
             finish();
         }
     }
@@ -1366,12 +1366,7 @@ public class AccountSettingsActivity extends MyActivity {
                     break;
             }
             if (activityOnFinish == ActivityOnFinish.HOME) {
-                if (isMyResumed()) {
-                    finish();
-                } else {
-                    finish();
-                    returnToOurActivity();
-                }
+                finish();
                 return;
             }
             if (!skip) {

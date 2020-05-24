@@ -40,6 +40,8 @@ import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.RelativeTime;
 import org.andstatus.app.util.TriState;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
@@ -48,13 +50,23 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 public class MyActivity extends AppCompatActivity implements IdentifiableInstance {
     private static volatile long previousErrorInflatingTime = 0;
 
+    protected enum OnFinishAction {
+        RESTART_APP,
+        RESTART_ME,
+        DONE,
+        NONE
+    }
+
+    // introduce this in order to avoid duplicated restarts: we have one place, where we restart anything
+    protected AtomicReference<OnFinishAction> onFinishAction = new AtomicReference<>(OnFinishAction.NONE);
+
     protected final long instanceId = InstanceId.next();
     protected int mLayoutId = 0;
     protected boolean myResumed = false;
     /**
      * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
      */
-    protected volatile boolean mFinishing = false;
+    private volatile boolean mFinishing = false;
     private Menu mOptionsMenu = null;
 
     @Override
@@ -226,17 +238,42 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
         }
     }
 
+    /** @return true if the Activity is finishing */
+    public boolean restartMeIfNeeded() {
+        return myContextHolder.needToRestartActivity() && initializeThenRestartActivity()
+                || isFinishing();
+    }
+
+    /** @return true if we are restarting */
+    public boolean initializeThenRestartActivity() {
+        if (onFinishAction.compareAndSet(OnFinishAction.NONE, OnFinishAction.RESTART_ME)) {
+            finish();
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void finish() {
-        boolean isFinishing1 = isFinishing();
-        MyLog.v(this, () -> {
-            return "Finish requested" + (isFinishing1 ? ", already finishing" : "");
-        });
-        if (!mFinishing) {
-            mFinishing = true;
+        OnFinishAction actionToDo = onFinishAction.getAndSet(OnFinishAction.DONE);
+        if (actionToDo == OnFinishAction.DONE) {
+            return;
         }
+        boolean isFinishing1 = isFinishing();
+        mFinishing = true;
+        MyLog.v(this,() -> "finish: " + onFinishAction.get() + (isFinishing1 ? ", already finishing" : ""));
         if (!isFinishing1) {
             super.finish();
+        }
+        switch (actionToDo) {
+            case RESTART_ME:
+                myContextHolder.initialize(this).thenStartActivity(this.getIntent());
+                break;
+            case RESTART_APP:
+                myContextHolder.thenStartApp();
+                break;
+            default:
+                break;
         }
     }
 

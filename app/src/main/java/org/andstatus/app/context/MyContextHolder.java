@@ -104,30 +104,8 @@ public final class MyContextHolder implements TaggedClass {
         return true;
     }
 
-    /**
-     * If app is initializing or needs initialization, do this asynchronously
-     * @return true if the Activity will be restarted after initialization completed
-     */
-    public boolean restartMeIfNeeded(@NonNull Activity activity) {
-        if (getFuture().needToRestartActivity()) {
-            initializeThenRestartActivity(activity);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * See http://stackoverflow.com/questions/1397361/how-do-i-restart-an-android-activity
-     */
-    public MyContextHolder initializeThenRestartActivity(@NonNull Activity activity) {
-        Intent intent = activity.getIntent();
-        MyLog.d(TAG, "Will restart " + MyStringBuilder.objToTag(activity) + " after initialization");
-        return initialize(activity)
-        .whenSuccessAsync(myContext -> {
-                MyLog.d(TAG, "Finishing " + MyStringBuilder.objToTag(activity) + " before restart; intent:" + intent);
-                activity.finish();
-                MyFutureContext.startActivity(myContext, intent);
-            }, UiThreadExecutor.INSTANCE);
+    public boolean needToRestartActivity() {
+        return !getFuture().isReady();
     }
 
     public MyContextHolder initialize(Context context) {

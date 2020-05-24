@@ -126,10 +126,6 @@ public class MyFutureContext implements IdentifiableInstance {
         this.future = future;
     }
 
-    boolean needToRestartActivity() {
-        return !isReady();
-    }
-
     public boolean isReady() {
         return getNow().isReady();
     }

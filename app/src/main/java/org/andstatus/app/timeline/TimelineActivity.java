@@ -340,7 +340,7 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     @Override
     protected void onResume() {
         String method = "onResume";
-        if (!mFinishing) {
+        if (!isFinishing()) {
             if (myContext.accounts().getCurrentAccount().isValid()) {
                 if (isContextNeedsUpdate()) {
                     MyLog.v(this, () ->
@@ -606,9 +606,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
     @Override
     protected void onNewIntent(Intent intent) {
-        if (mFinishing) {
+        if (isFinishing()) {
             MyLog.v(this, () -> "onNewIntent, Is finishing");
-            finish();
             return;
         }
         MyLog.v(this, () -> "onNewIntent");

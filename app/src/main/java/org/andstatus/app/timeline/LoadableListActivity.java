@@ -99,9 +99,8 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     protected void onCreate(Bundle savedInstanceState) {
         myContext = myContextHolder.getNow();
         super.onCreate(savedInstanceState);
-        if (myContextHolder.restartMeIfNeeded(this) || isFinishing()) {
-            return;
-        }
+
+        if (restartMeIfNeeded()) return;
 
         textualSyncIndicator = findViewById(R.id.sync_indicator);
 
@@ -379,8 +378,9 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
     protected void onResume() {
         String method = "onResume";
         super.onResume();
-        MyLog.v(this, () -> method + (mFinishing ? ", finishing" : "") );
-        if (!mFinishing && !myContextHolder.restartMeIfNeeded(this)) {
+        boolean isFinishing = restartMeIfNeeded();
+        MyLog.v(this, () -> method + (isFinishing ? ", and finishing" : "") );
+        if (!isFinishing) {
             myServiceReceiver.registerReceiver(this);
             myContext.setInForeground(true);
             if (!isLoading()) {

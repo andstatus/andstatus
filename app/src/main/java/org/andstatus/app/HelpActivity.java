@@ -154,11 +154,10 @@ public class HelpActivity extends MyActivity {
                     FirstActivity.checkAndUpdateLastOpenedAppVersion(HelpActivity.this, true);
                     if (myContextHolder.getNow().accounts().getCurrentAccount().isValid()) {
                         startActivity(new Intent(HelpActivity.this, TimelineActivity.class));
-                        finish();
                     } else {
                         startActivity(new Intent(HelpActivity.this, AccountSettingsActivity.class));
-                        finish();
                     }
+                    finish();
                     break;
                 case NO_PERMISSIONS:
                     // Actually this is not used for now...

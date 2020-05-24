@@ -109,7 +109,7 @@ abstract public class NoteEditorListActivity<T extends ViewItem<T>> extends Load
     @Override
     protected void onResume() {
         super.onResume();
-        if (!mFinishing) {
+        if (!isFinishing()) {
             noteEditor.loadCurrentDraft();
         }
     }

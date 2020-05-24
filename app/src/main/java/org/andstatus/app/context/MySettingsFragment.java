@@ -113,11 +113,8 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
     public void onResume() {
         super.onResume();
         MySettingsActivity activity = getMyActivity();
-        if (activity == null) return;
+        if (activity == null || activity.restartMeIfNeeded()) return;
 
-        if (myContextHolder.getFuture().needToRestartActivity() && initializeThenRestartActivity()) {
-            return;
-        }
         activity.setTitle(MySettingsGroup.from(this).getTitleResId());
         showAllPreferences();
         SharedPreferencesUtil.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this);
