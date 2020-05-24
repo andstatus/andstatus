@@ -1,6 +1,7 @@
 package org.andstatus.app.notification;
 
 import org.andstatus.app.context.MyContext;
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
@@ -14,7 +15,6 @@ import org.junit.Test;
 
 import java.util.Iterator;
 
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -28,7 +28,7 @@ public class NotifierTest {
         NotificationEventType.ANNOUNCE.setEnabled(true);
         NotificationEventType.MENTION.setEnabled(true);
         NotificationEventType.PRIVATE.setEnabled(true);
-        myContextHolder.setExpired(false);
+        MyPreferences.onPreferencesChanged();
         TestSuite.initializeWithData(this);
     }
 

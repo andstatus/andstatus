@@ -342,11 +342,10 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         String method = "onResume";
         if (!mFinishing) {
             if (myContext.accounts().getCurrentAccount().isValid()) {
-                if (isConfigChanged()) {
+                if (isContextNeedsUpdate()) {
                     MyLog.v(this, () ->
                             method + "; Restarting this Activity to apply all new changes of configuration");
                     finish();
-                    myContextHolder.setExpired(true);
                     switchView(getParamsLoaded().getTimeline());
                 }
             } else { 
@@ -608,21 +607,11 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
     @Override
     protected void onNewIntent(Intent intent) {
         if (mFinishing) {
-            if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "onNewIntent, Is finishing");
-            }
+            MyLog.v(this, () -> "onNewIntent, Is finishing");
             finish();
             return;
         }
-        if (!myContext.isReady()) {
-            MyLog.v(this,  () ->"onNewIntent, context is " + myContext.state());
-            finish();
-            this.startActivity(intent);
-            return;
-        }
-        if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "onNewIntent");
-        }
+        MyLog.v(this, () -> "onNewIntent");
         super.onNewIntent(intent);
         parseNewIntent(intent);
         checkForInitialSync(intent);

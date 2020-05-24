@@ -179,9 +179,9 @@ public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBase
         return loaderIsWorking;
     }
 
-    protected boolean isConfigChanged() {
+    protected boolean isContextNeedsUpdate() {
         MyContext myContextNew = myContextHolder.getNow();
-        return this.myContext != myContextNew || configChangeTime != myContextNew.preferencesChangeTime();
+        return !this.myContext.isReady() || this.myContext != myContextNew || configChangeTime != myContextNew.preferencesChangeTime();
     }
 
     /** @return selectedItem or EmptyViewItem */

@@ -33,7 +33,6 @@ import org.andstatus.app.FirstActivity;
 import org.andstatus.app.data.converter.DatabaseConverterController;
 import org.andstatus.app.graphics.ImageCaches;
 import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.NonUiThreadExecutor;
 import org.andstatus.app.os.UiThreadExecutor;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyStringBuilder;
@@ -156,20 +155,6 @@ public final class MyContextHolder implements TaggedClass {
             }
         }
         return this;
-    }
-
-    public MyContextHolder setExpired(boolean evenIfUnchangedPreferences) {
-        return whenSuccessOrPreviousAsync(myContext -> {
-            if (myContext != MyContext.EMPTY) {
-                if (myContext.isPreferencesChanged() || evenIfUnchangedPreferences) {
-                    myContext.setExpired(() -> myContext.isPreferencesChanged()
-                            ? "Preferences changed "
-                            + RelativeTime.secondsAgo(MyPreferences.getPreferencesChangeTime())
-                            + " seconds ago, refreshing..."
-                            : "Preferences weren't changed");
-                }
-            }
-        }, NonUiThreadExecutor.INSTANCE);
     }
 
     public MyContextHolder thenStartActivity(Intent intent) {
