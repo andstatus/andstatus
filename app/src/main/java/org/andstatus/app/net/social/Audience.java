@@ -177,7 +177,7 @@ public class Audience {
     }
 
     public boolean noRecipients() {
-        return actors.isEmpty() && visibility.isPrivate();
+        return getRecipients().isEmpty();
     }
 
     public List<Actor> getRecipients() {
