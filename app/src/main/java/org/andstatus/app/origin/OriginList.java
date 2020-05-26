@@ -115,6 +115,12 @@ public abstract class OriginList extends MyListActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        restartMeIfNeeded();
+    }
+
     protected abstract Iterable<Origin> getOrigins();
 
     private class Picker implements OnItemClickListener {

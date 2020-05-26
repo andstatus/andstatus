@@ -51,7 +51,7 @@ public class CommandExecutorStrategyTest {
     public void setUp() throws Exception {
         TestSuite.initializeWithAccounts(this);
 
-        ma = myContextHolder.getNow().accounts().getFirstSucceededForOrigin(demoData.getGnuSocialOrigin());
+        ma = myContextHolder.getNow().accounts().getFirstPreferablySucceededForOrigin(demoData.getGnuSocialOrigin());
         mock = ConnectionMock.newFor(ma);
         httpConnectionMock = mock.getHttpMock();
         assertTrue(ma.toString(), ma.isValidAndSucceeded());

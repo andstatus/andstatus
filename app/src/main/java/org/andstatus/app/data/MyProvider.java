@@ -37,6 +37,7 @@ import org.andstatus.app.database.table.AudienceTable;
 import org.andstatus.app.database.table.GroupMembersTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
+import org.andstatus.app.database.table.UserTable;
 import org.andstatus.app.note.KeywordsFilter;
 import org.andstatus.app.notification.NotificationEventType;
 import org.andstatus.app.origin.Origin;
@@ -92,10 +93,15 @@ public class MyProvider extends ContentProvider {
     /** @return Number of deleted activities of this note */
     public static int deleteNoteAndItsActivities(MyContext context, long noteId) {
         if (context == null || noteId == 0) return 0;
-        return deleteActivities(context.getDatabase(), ActivityTable.NOTE_ID + "=" + noteId, null, true);
+        return deleteActivities(context, ActivityTable.NOTE_ID + "=" + noteId, null, true);
     }
 
-    public static int deleteActivities(SQLiteDatabase db, String selection, String[] selectionArgs, boolean inTransaction) {
+    public static int deleteActivities(MyContext myContext, String selection, String[] selectionArgs, boolean inTransaction) {
+        SQLiteDatabase db = myContext.getDatabase();
+        if (db == null) {
+            MyLog.databaseIsNull(() -> "deleteActivities");
+            return 0;
+        }
         int count = 0;
         String sqlDesc = "";
         if (!inTransaction) {
@@ -147,11 +153,11 @@ public class MyProvider extends ContentProvider {
         return count;
     }
 
-    public static void deleteActor(MyContext myContext, long actorIdToDelete) {
-        deleteActor(myContext, actorIdToDelete, 0);
+    public static long deleteActor(MyContext myContext, long actorIdToDelete) {
+        return deleteActor(myContext, actorIdToDelete, 0);
     }
 
-    private static void deleteActor(MyContext myContext, long actorId, long recursionLevel) {
+    private static long deleteActor(MyContext myContext, long actorId, long recursionLevel) {
         if (recursionLevel < 3) {
             MyQuery.foldLeft(myContext, "SELECT " + ActorTable._ID + " FROM " +
                             ActorTable.TABLE_NAME + " WHERE " + ActorTable.PARENT_ACTOR_ID + "=" + actorId,
@@ -163,43 +169,51 @@ public class MyProvider extends ContentProvider {
             ).forEach(childActorId -> deleteActor(myContext, childActorId, recursionLevel + 1));
         }
 
+        long userId = MyQuery.idToLongColumnValue(myContext.getDatabase(), ActorTable.TABLE_NAME, ActorTable.USER_ID, actorId);
         delete(myContext, AudienceTable.TABLE_NAME, AudienceTable.ACTOR_ID, actorId);
         delete(myContext, GroupMembersTable.TABLE_NAME, GroupMembersTable.GROUP_ID, actorId);
         delete(myContext, GroupMembersTable.TABLE_NAME, GroupMembersTable.MEMBER_ID, actorId);
         DownloadData.deleteAllOfThisActor(myContext, actorId);
         delete(myContext, ActorEndpointTable.TABLE_NAME, ActorEndpointTable.ACTOR_ID, actorId);
         delete(myContext, ActorTable.TABLE_NAME, ActorTable._ID, actorId);
+
+        if (!MyQuery.dExists(myContext.getDatabase(), "SELECT * FROM " + ActorTable.TABLE_NAME
+                + " WHERE " + ActorTable.USER_ID + "=" + userId)) {
+            delete(myContext, UserTable.TABLE_NAME, UserTable._ID, userId);
+        }
+        return 1;
     }
 
-    public static void delete(@NonNull MyContext myContext, @NonNull String tableName, @NonNull String column, Object value) {
-        if (value == null) return;
-        delete(myContext, tableName, column + "=" + value);
+    public static int delete(@NonNull MyContext myContext, @NonNull String tableName, @NonNull String column, Object value) {
+        if (value == null) return 0;
+        return delete(myContext, tableName, column + "=" + value);
     }
 
-    public static void delete(@NonNull MyContext myContext, @NonNull String tableName, String where) {
+    public static int delete(@NonNull MyContext myContext, @NonNull String tableName, String where) {
         final String method = "delete";
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.databaseIsNull(() -> method);
-            return;
+            return 0;
         }
         try {
-            db.delete(tableName, where, null);
+            return db.delete(tableName, where, null);
         } catch (Exception e) {
             MyLog.w(TAG, method + "; table:'" + tableName + "', where:'" + where + "'", e);
         }
+        return 0;
     }
 
     // TODO: return Try<Long>
     public static long deleteActivity(MyContext myContext, long activityId, long noteId, boolean inTransaction) {
-        SQLiteDatabase db = myContextHolder.getNow().getDatabase();
+        SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.databaseIsNull(() -> "deleteActivity");
             return 0;
         }
         long originId = MyQuery.activityIdToLongColumnValue(ActivityTable.ORIGIN_ID, activityId);
         if (originId == 0) return 0;
-        Origin origin = myContextHolder.getNow().origins().fromId(originId);
+        Origin origin = myContext.origins().fromId(originId);
         // Was this the last activity for this note?
         final long activityId2 = MyQuery.conditionToLongColumnValue(db, null, ActivityTable.TABLE_NAME,
                 BaseColumns._ID, ActivityTable.NOTE_ID + "=" + noteId +
@@ -207,7 +221,7 @@ public class MyProvider extends ContentProvider {
         long count;
         if (noteId != 0 && activityId2 == 0) {
             // Delete related note if no more its activities left
-            count = deleteActivities(db, ActivityTable.TABLE_NAME + "." + ActivityTable._ID +
+            count = deleteActivities(myContext, ActivityTable.TABLE_NAME + "." + ActivityTable._ID +
                     "=" + activityId, new String[]{}, inTransaction);
         } else {
             // Delete this activity only

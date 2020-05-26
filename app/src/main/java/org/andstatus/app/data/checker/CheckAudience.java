@@ -56,7 +56,7 @@ class CheckAudience extends DataChecker {
     private int fixOneOrigin(Origin origin, boolean countOnly) {
         if (logger.isCancelled()) return 0;
 
-        MyAccount ma = myContext.accounts().getFirstSucceededForOrigin(origin);
+        MyAccount ma = myContext.accounts().getFirstPreferablySucceededForOrigin(origin);
         if (ma.isEmpty()) return 0;
 
         DataUpdater dataUpdater = new DataUpdater(ma);

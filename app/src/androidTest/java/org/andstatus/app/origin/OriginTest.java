@@ -9,6 +9,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.net.social.AActivity;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -109,7 +110,7 @@ public class OriginTest {
         Origin origin = originInserter.createOneOrigin(originType, originName,
                 hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml, 
                 inCombinedGlobalSearch, inCombinedPublicReload);
-        assertEquals("New origin has no children", false, origin.hasChildren());
+        assertEquals("New origin should have no notes", false, origin.hasNotes());
         assertEquals("Origin deleted", true, new Origin.Builder(origin).delete());
     }
 
@@ -185,5 +186,10 @@ public class OriginTest {
     private void checkUsernameIsValid(Origin origin, String username, boolean valid) {
         assertEquals("Username '" + username + "' " + (valid ? "is not valid" : "is valid"), valid,
                 origin.isUsernameValid(username));
+    }
+
+    @After
+    public void tearDown() {
+        myContextHolder.initialize(null, this);
     }
 }

@@ -42,7 +42,7 @@ public class AvatarDownloader extends FileDownloader {
     protected MyAccount findBestAccountForDownload() {
         final Origin origin = myContextHolder.getNow().origins().fromId(
                 MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID, data.actorId));
-        return myContextHolder.getNow().accounts().getFirstSucceededForOrigin(origin);
+        return myContextHolder.getNow().accounts().getFirstPreferablySucceededForOrigin(origin);
     }
 
     @Override

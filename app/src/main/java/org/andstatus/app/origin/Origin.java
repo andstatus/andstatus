@@ -33,7 +33,9 @@ import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.DbUtils;
+import org.andstatus.app.data.MyProvider;
 import org.andstatus.app.data.MyQuery;
+import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
 import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.database.table.OriginTable;
@@ -41,6 +43,7 @@ import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.util.IsEmpty;
 import org.andstatus.app.util.MyHtml;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.SelectionAndArgs;
 import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
@@ -344,42 +347,21 @@ public class Origin implements Comparable<Origin>, IsEmpty {
     public boolean isMentionAsWebFingerId() {
         return mMentionAsWebFingerId.toBoolean(isMentionAsWebFingerIdDefault());
     }
-    
-    public boolean hasChildren() {
+
+    public boolean hasAccounts() {
+        return myContext.accounts().getFirstPreferablySucceededForOrigin(this).isValid();
+    }
+
+    public boolean hasNotes() {
         if (isEmpty()) return false;
 
-        long count = 0;
-        Cursor cursor = null;
         SQLiteDatabase db = myContext.getDatabase();
         if (db == null) {
             MyLog.databaseIsNull(() -> "Origin hasChildren");
-            return false;
+            return true;
         }
-        try {
-            String sql = "SELECT Count(*) FROM " + NoteTable.TABLE_NAME + " WHERE "
-                    + NoteTable.ORIGIN_ID + "=" + id;
-            cursor = db.rawQuery(sql, null);
-            if (cursor.moveToNext()) {
-                count = cursor.getLong(0);
-            }
-            cursor.close();
-            if (count == 0) {
-                sql = "SELECT Count(*) FROM " + ActorTable.TABLE_NAME + " WHERE "
-                        + ActorTable.ORIGIN_ID + "=" + id;
-                cursor = db.rawQuery(sql, null);
-                if (cursor.moveToNext()) {
-                    count = cursor.getLong(0);
-                }
-                cursor.close();
-            }
-            long countVal = count;
-            MyLog.v(this, () -> this + " has " + countVal + " children");
-        } catch (Exception e) {
-            MyLog.e(this, "Error counting children " + this, e);
-        } finally {
-            DbUtils.closeSilently(cursor);
-        }
-        return count != 0;
+        String sql = "SELECT * FROM " + NoteTable.TABLE_NAME + " WHERE " + NoteTable.ORIGIN_ID + "=" + id;
+        return MyQuery.dExists(db, sql);
     }
 
     private static Origin fromType(MyContext myContext, OriginType originType) {
@@ -721,20 +703,26 @@ public class Origin implements Comparable<Origin>, IsEmpty {
 
         public boolean delete() {
             boolean deleted = false;
-            if (!origin.hasChildren()) {
-                SQLiteDatabase db = getMyContext().getDatabase();
-                if (db == null) {
-                    MyLog.databaseIsNull(() -> "delete");
-                    return false;
-                }
-                try {
-                    String sql = "DELETE FROM " + OriginTable.TABLE_NAME + " WHERE "
-                            + BaseColumns._ID + "=" + origin.id;
-                    db.execSQL(sql);
-                    deleted = true;
-                } catch (Exception e) {
-                    MyLog.e(this, "Error deleting Origin " + origin.name, e);
-                }
+
+            SelectionAndArgs sa = new SelectionAndArgs();
+            sa.addSelection(ActivityTable.TABLE_NAME + "." + ActivityTable.ORIGIN_ID + "=" + origin.id);
+            long deletedActivities = MyProvider.deleteActivities(getMyContext(),
+                    sa.selection, sa.selectionArgs, false);
+
+            long deletedActors = MyQuery.getLongs(getMyContext(), "SELECT " + BaseColumns._ID
+                    + " FROM " + ActorTable.TABLE_NAME
+                    + " WHERE " + ActorTable.ORIGIN_ID + "=" + origin.id).stream()
+                .mapToLong(actorId -> MyProvider.deleteActor(getMyContext(), actorId))
+                .sum();
+
+            deleted = !origin.hasNotes()
+                && MyProvider.delete(getMyContext(), OriginTable.TABLE_NAME, OriginTable._ID, origin.id) > 0;
+
+            if (deleted) {
+                MyLog.i(this, "Deleted Origin " + origin
+                        + ", its activities: " + deletedActivities
+                        + ", actors: " + deletedActors);
+                getMyContext().setExpired(() -> "Origin " + origin + " deleted");
             }
             return deleted;
         }

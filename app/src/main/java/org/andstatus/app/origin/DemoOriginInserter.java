@@ -93,7 +93,7 @@ public final class DemoOriginInserter {
         MyContext myContext = myContextHolder.getNow();
         for (Origin origin : myContext.origins().collection()) {
             MyAccount myAccount = myContext.accounts().
-                    getFirstSucceededForOrigin(origin);
+                    getFirstPreferablySucceededForOrigin(origin);
             for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
                 int count = 0;
                 for (Timeline timeline : myContext.timelines().values()) {

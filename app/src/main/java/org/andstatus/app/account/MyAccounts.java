@@ -207,7 +207,7 @@ public class MyAccounts implements IsEmpty {
                 .orElseGet(() -> forRelatedActor(other, true, true)
                                 .orElseGet(() -> other.origin.isEmpty()
                                         ? MyAccount.EMPTY
-                                        : getFirstSucceededForOrigin(other.origin))
+                                        : getFirstPreferablySucceededForOrigin(other.origin))
                 );
     }
 
@@ -255,7 +255,7 @@ public class MyAccounts implements IsEmpty {
 
     @NonNull
     public MyAccount getFirstSucceeded() {
-        return getFirstSucceededForOrigin(Origin.EMPTY);
+        return getFirstPreferablySucceededForOrigin(Origin.EMPTY);
     }
 
     /**
@@ -267,7 +267,7 @@ public class MyAccounts implements IsEmpty {
      * @return EMPTY account if not found
      */
     @NonNull
-    public MyAccount getFirstSucceededForOrigin(@NonNull Origin origin) {
+    public MyAccount getFirstPreferablySucceededForOrigin(@NonNull Origin origin) {
         return getFirstSucceededForOriginsStrict(Collections.singletonList(origin));
     }
 
@@ -383,7 +383,7 @@ public class MyAccounts implements IsEmpty {
             ma = betterFit(ma, preferredAccount == null ? MyAccount.EMPTY : preferredAccount, origin, succeededOnly);
         }
         if (!accountFits(ma, origin, succeededOnly)) {
-            ma = betterFit(ma, getFirstSucceededForOrigin(origin), origin, succeededOnly);
+            ma = betterFit(ma, getFirstPreferablySucceededForOrigin(origin), origin, succeededOnly);
         }
         if (!accountFits(ma, origin, false)) {
             ma = MyAccount.EMPTY;

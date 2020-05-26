@@ -137,7 +137,7 @@ public class PersistentTimelinesTest {
         assertFalse(timeline1.toString(), timeline1.isCombined());
 
         Origin origin = myContext.origins().fromName(demoData.gnusocialTestOriginName);
-        MyAccount myAccount = myContext.accounts().getFirstSucceededForOrigin(origin);
+        MyAccount myAccount = myContext.accounts().getFirstPreferablySucceededForOrigin(origin);
         assertTrue(myAccount.isValid());
         Timeline timeline2 = myContext.timelines()
                 .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.getActor(), Origin.EMPTY)

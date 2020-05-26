@@ -242,7 +242,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
                     .fromActorOfSameOrigin(actor));
             if (params.menu.getActingAccount().nonValid()) {
                 params.menu.setSelectedActingAccount(params.menu.getMyContext().accounts().
-                        getFirstSucceededForOrigin(origin));
+                        getFirstPreferablySucceededForOrigin(origin));
             }
         }
     }

@@ -75,7 +75,7 @@ public abstract class ConversationLoader extends SyncLoader<ConversationViewItem
     public ConversationLoader(ConversationViewItem emptyItem, MyContext myContext, Origin origin, long selectedNoteId, boolean sync) {
         this.emptyItem = emptyItem;
         this.myContext = myContext;
-        this.ma = myContext.accounts().getFirstSucceededForOrigin(origin);
+        this.ma = myContext.accounts().getFirstPreferablySucceededForOrigin(origin);
         this.selectedNoteId = selectedNoteId;
         this.sync = sync || MyPreferences.isSyncWhileUsingApplicationEnabled();
     }

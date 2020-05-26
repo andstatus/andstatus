@@ -44,7 +44,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
         this.myContext = myContext;
         mActorListType = actorListType;
         this.searchQuery = searchQuery;
-        this.ma = myContext.accounts().getFirstSucceededForOrigin(origin);
+        this.ma = myContext.accounts().getFirstPreferablySucceededForOrigin(origin);
         this.origin = origin;
         mCentralItemId = centralItemId;
     }

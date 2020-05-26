@@ -100,6 +100,9 @@
   <string name="database_unavailable_description">Local cache (database with notes and activities) couldn\'t be opened. Please reboot your device or reinstall AndStatus.</string>
   <string name="default_timeline_summary">Timeline that will be opened by a Launcher: \"%s\"</string>
   <string name="delete_old_data">Delete old data now</string>
+  <string name="delete_origin_dialog_title">Delete the \'%s\' social network?</string>
+  <string name="delete_origin_dialog_text">Deleting the social network (instance) will delete from the AndStatus local cache all its data: activities,
+    notes and actors, associated with (downloaded from) this social network. Continue?</string>
   <string name="deleted">deleted</string>
   <string name="device_default">Device default</string>
   <string name="dialog_summary_acquiring_an_access_token">Please wait while AndStatus is exchanging an OAuth Request token for Access token</string>

@@ -361,7 +361,7 @@ public class DataUpdaterTest {
         AActivity activity = ConnectionGnuSocialTest.getNoteWithAttachment(
                 InstrumentationRegistry.getInstrumentation().getContext());
 
-        MyAccount ma = myContext.accounts().getFirstSucceededForOrigin(activity.getActor().origin);
+        MyAccount ma = myContext.accounts().getFirstPreferablySucceededForOrigin(activity.getActor().origin);
         assertTrue("Account is valid " + ma, ma.isValid());
         long noteId = new DataUpdater(ma).onActivity(activity).getNote().noteId;
         assertNotEquals("Note added " + activity.getNote(), 0, noteId);

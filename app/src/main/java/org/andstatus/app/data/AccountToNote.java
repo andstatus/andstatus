@@ -65,7 +65,7 @@ public class AccountToNote {
             }
         }
         return bestAccountToNote.equals(EMPTY)
-            ? myContext.accounts().getFirstSucceededForOrigin(noteForAnyAccount.origin)
+            ? myContext.accounts().getFirstPreferablySucceededForOrigin(noteForAnyAccount.origin)
             : bestAccountToNote.myAccount;
     }
 

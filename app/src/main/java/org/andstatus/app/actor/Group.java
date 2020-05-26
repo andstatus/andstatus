@@ -133,7 +133,7 @@ public final class Group {
         group.setUsername(groupUsername);
         group.setParentActorId(myContext, parentActor.actorId);
 
-        MyAccount myAccount = myContext.accounts().getFirstSucceededForOrigin(origin);
+        MyAccount myAccount = myContext.accounts().getFirstPreferablySucceededForOrigin(origin);
         AActivity activity = myAccount.getActor().update(group);
         new DataUpdater(myAccount).updateObjActor(activity, 0);
         if (group.actorId == 0) {

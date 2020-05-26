@@ -40,6 +40,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.lang.SelectableEnumList;
 import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.service.MyServiceManager;
+import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyCheckBox;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.MyUrlSpan;
@@ -81,14 +82,14 @@ public class OriginEditor extends MyActivity {
         Button buttonDiscard = (Button) findViewById(R.id.button_discard);
         buttonDiscard.setOnClickListener(v -> finish());
         buttonDelete = (Button) findViewById(R.id.button_delete);
-        buttonDelete.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (builder.delete()) {
-                    builder.getMyContext().origins().initialize();
-                    setResult(RESULT_OK);
-                    finish();
-                }
+        buttonDelete.setOnClickListener(v -> {
+            if (builder.build().hasNotes()) {
+                DialogFactory.showOkCancelDialog(this,
+                    String.format(getText(R.string.delete_origin_dialog_title).toString(), builder.build().name),
+                    getText(R.string.delete_origin_dialog_text),
+                    this::deleteOrigin);
+            } else {
+                deleteOrigin(true);
             }
         });
         
@@ -102,6 +103,13 @@ public class OriginEditor extends MyActivity {
         spinnerUseLegacyHttpProtocol = (Spinner) findViewById(R.id.use_legacy_http_protocol);
 
         processNewIntent(getIntent());
+    }
+
+    private void deleteOrigin(boolean confirmed) {
+        if (confirmed && builder.delete()) {
+            setResult(RESULT_OK);
+            finish();
+        }
     }
 
     private void processNewIntent(final Intent intentNew) {
@@ -206,7 +214,7 @@ public class OriginEditor extends MyActivity {
         spinnerMentionAsWebFingerId.setSelection(origin.getMentionAsWebFingerId().getEntriesPosition());
         spinnerUseLegacyHttpProtocol.setSelection(origin.useLegacyHttpProtocol().getEntriesPosition());
         
-        buttonDelete.setVisibility(origin.hasChildren() ? View.GONE : View.VISIBLE);
+        buttonDelete.setVisibility(origin.hasAccounts() ? View.GONE : View.VISIBLE);
 
         MyCheckBox.set(this, R.id.in_combined_global_search, origin.isInCombinedGlobalSearch(),
                 origin.getOriginType().isSearchTimelineSyncable());

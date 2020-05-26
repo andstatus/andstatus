@@ -216,7 +216,7 @@ public class PersistentOrigins {
                 }
             }
         } else if (originIn != null && originIn.isValid()) {
-            MyAccount account = myContext.accounts().getFirstSucceededForOrigin(originIn);
+            MyAccount account = myContext.accounts().getFirstPreferablySucceededForOrigin(originIn);
             if (account.isValidAndSucceeded() && account.isSearchSupported(searchObjects)) {
                 origins.add(originIn);
             }

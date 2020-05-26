@@ -32,6 +32,7 @@ import org.andstatus.app.net.http.SslModeEnum;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
+import org.junit.After;
 import org.junit.Test;
 
 import java.net.URL;
@@ -51,7 +52,7 @@ public class OriginEditorTest extends ActivityTest<OriginEditor> {
     }
 
     @Test
-    public void test() throws InterruptedException {
+    public void test() {
         OriginType originType = OriginType.GNUSOCIAL;
         String originName = "oe" + System.currentTimeMillis();
         String host = originName + ".example.com";
@@ -172,5 +173,10 @@ public class OriginEditorTest extends ActivityTest<OriginEditor> {
         assertEquals(useLegacyHttpProtocol, origin.useLegacyHttpProtocol());
         assertEquals(inCombinedGlobalSearch, origin.isInCombinedGlobalSearch());
         assertEquals(inCombinedPublicReload, origin.isInCombinedPublicReload());
+    }
+
+    @After
+    public void tearDown() {
+        myContextHolder.initialize(null, this);
     }
 }
