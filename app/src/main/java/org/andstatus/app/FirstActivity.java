@@ -64,7 +64,10 @@ public class FirstActivity extends AppCompatActivity implements IdentifiableInst
      * Based on http://stackoverflow.com/questions/14001963/finish-all-activities-at-a-time
      */
     public static void closeAllActivities(Context context) {
-        context.startActivity(MyAction.CLOSE_ALL_ACTIVITIES.getIntent());
+        context.startActivity(MyAction.CLOSE_ALL_ACTIVITIES.getIntent()
+                .setClass(context, FirstActivity.class)
+                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK + Intent.FLAG_ACTIVITY_NEW_TASK)
+        );
     }
 
     public enum NeedToStart {
