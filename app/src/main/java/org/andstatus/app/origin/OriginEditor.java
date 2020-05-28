@@ -39,6 +39,8 @@ import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
 import org.andstatus.app.lang.SelectableEnumList;
 import org.andstatus.app.net.http.SslModeEnum;
+import org.andstatus.app.os.NonUiThreadExecutor;
+import org.andstatus.app.os.UiThreadExecutor;
 import org.andstatus.app.service.MyServiceManager;
 import org.andstatus.app.util.DialogFactory;
 import org.andstatus.app.util.MyCheckBox;
@@ -48,6 +50,8 @@ import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TriState;
 import org.andstatus.app.util.UrlUtils;
 import org.andstatus.app.util.ViewUtils;
+
+import java.util.concurrent.CompletableFuture;
 
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
@@ -106,10 +110,14 @@ public class OriginEditor extends MyActivity {
     }
 
     private void deleteOrigin(boolean confirmed) {
-        if (confirmed && builder.delete()) {
-            setResult(RESULT_OK);
-            finish();
-        }
+        if (!confirmed) return;
+
+        CompletableFuture.supplyAsync(() -> builder.delete(), NonUiThreadExecutor.INSTANCE)
+        .thenAcceptAsync(ok -> { if (ok) {
+                setResult(RESULT_OK);
+                finish();
+            }}
+            , UiThreadExecutor.INSTANCE);
     }
 
     private void processNewIntent(final Intent intentNew) {
