@@ -127,13 +127,12 @@ public class AuthenticatorService extends Service {
                     .getFuture()
                     .tryBlocking()
                     .map(myContext -> myContext.accounts().fromAccountName(account.name))
+                    .filter(MyAccount::isValid)
                     .map(ma -> {
-                        if (ma.isValid()) {
-                            myContextHolder.getNow().timelines().onAccountDelete(ma);
-                            MyPreferences.onPreferencesChanged();
-                            return true;
-                        }
-                        return false;
+                        MyLog.i(this, "Removing " + ma);
+                        myContextHolder.getNow().timelines().onAccountDelete(ma);
+                        MyPreferences.onPreferencesChanged();
+                        return true;
                     })
                     .getOrElse(false);
             }

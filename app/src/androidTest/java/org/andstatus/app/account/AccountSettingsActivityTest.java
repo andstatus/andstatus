@@ -22,10 +22,10 @@ import android.content.Intent;
 import android.widget.Button;
 import android.widget.TextView;
 
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.context.ActivityTest;
-import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.origin.OriginType;
@@ -74,7 +74,7 @@ public class AccountSettingsActivityTest extends ActivityTest<AccountSettingsAct
         DbUtils.waitMs(method, 500);
         getActivity().finish();
         DbUtils.waitMs(method, 500);
-        MySettingsActivity.closeAllActivities(getInstrumentation().getTargetContext());
+        FirstActivity.closeAllActivities(getInstrumentation().getTargetContext());
         DbUtils.waitMs(method, 500);
     }
 

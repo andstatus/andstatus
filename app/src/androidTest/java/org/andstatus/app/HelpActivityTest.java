@@ -57,7 +57,7 @@ public class HelpActivityTest extends ActivityTest<HelpActivity> {
 
     @After
     public void tearDown() {
-        MySettingsActivity.closeAllActivities(InstrumentationRegistry.getInstrumentation().getTargetContext());
+        FirstActivity.closeAllActivities(InstrumentationRegistry.getInstrumentation().getTargetContext());
     }
 
     @Test

@@ -60,6 +60,13 @@ public class FirstActivity extends AppCompatActivity implements IdentifiableInst
     public static AtomicBoolean isFirstrun = new AtomicBoolean(true);
     private final long instanceId = InstanceId.next();
 
+    /**
+     * Based on http://stackoverflow.com/questions/14001963/finish-all-activities-at-a-time
+     */
+    public static void closeAllActivities(Context context) {
+        context.startActivity(MyAction.CLOSE_ALL_ACTIVITIES.getIntent());
+    }
+
     public enum NeedToStart {
         HELP,
         CHANGELOG,
@@ -99,6 +106,9 @@ public class FirstActivity extends AppCompatActivity implements IdentifiableInst
                 break;
             case SET_DEFAULT_VALUES:
                 setDefaultValuesOnUiThread(this);
+                finish();
+                break;
+            case CLOSE_ALL_ACTIVITIES:
                 finish();
                 break;
             default:

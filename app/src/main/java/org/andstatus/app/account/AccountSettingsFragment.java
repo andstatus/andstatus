@@ -29,7 +29,12 @@ import androidx.fragment.app.Fragment;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.R;
+import org.andstatus.app.os.NonUiThreadExecutor;
+import org.andstatus.app.os.UiThreadExecutor;
 import org.andstatus.app.util.MyLog;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public class AccountSettingsFragment extends Fragment {
 
@@ -55,15 +60,29 @@ public class AccountSettingsFragment extends Fragment {
 
     private void onRemoveAccount() {
         StateOfAccountChangeProcess state = ((AccountSettingsActivity) getActivity()).getState();
-        if (state.builder.isPersistent()) {
+        if (state.builder != null && state.builder.isPersistent()) {
             for (android.accounts.Account account : AccountUtils.getCurrentAccounts(getActivity())) {
                 if (state.getAccount().getAccountName().equals(account.name)) {
                     MyLog.i(this, "Removing account: " + account.name);
                     android.accounts.AccountManager am = AccountManager.get(getActivity());
-                    am.removeAccount(account, getActivity(), null, null);
+                    CompletableFuture.supplyAsync(() -> {
+                        try {
+                            Bundle result = am.removeAccount(account, getActivity(), null, null)
+                                .getResult(10, TimeUnit.SECONDS);
+                            return result != null && result.getBoolean(AccountManager.KEY_BOOLEAN_RESULT);
+                        } catch (Exception e) {
+                            MyLog.w(this, "Failed to remove account " + account.name, e);
+                            return false;
+                        }
+                    }, NonUiThreadExecutor.INSTANCE)
+                    .thenAcceptAsync(ok -> {
+                        if (ok) {
+                            getActivity().finish();
+                        }
+                    }, UiThreadExecutor.INSTANCE);
+                    break;
                 }
             }
-            getActivity().finish();
         }
     }
 

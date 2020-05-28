@@ -16,7 +16,7 @@
 
 package org.andstatus.app.context;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -45,14 +45,9 @@ public class MySettingsActivity extends MyActivity implements
     private long mPreferencesChangedAt = MyPreferences.getPreferencesChangeTime();
     private boolean resumedOnce = false;
 
-    /**
-     * Based on http://stackoverflow.com/questions/14001963/finish-all-activities-at-a-time
-     */
-    public static void closeAllActivities(Context context) {
-        Intent intent = new Intent(context.getApplicationContext(), MySettingsActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK + Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(IntentExtra.FINISH.key, true);
-        context.startActivity(intent);
+    public static void goToMySettingsAccounts(Activity activity) {
+        activity.startActivity(MySettingsGroup.ACCOUNTS.add(new Intent(activity.getApplicationContext(), MySettingsActivity.class)));
+        activity.finish();
     }
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,6 +120,17 @@ public class MySettingsActivity extends MyActivity implements
         if (intent.getBooleanExtra(IntentExtra.FINISH.key, false)) {
             logEvent("parseNewIntent", "finish requested");
             finish();
+        } else {
+            MySettingsGroup settingsGroup = MySettingsGroup.fromIntent(intent);
+            if (settingsGroup != MySettingsGroup.UNKNOWN) {
+                if (!myContextHolder.needToRestartActivity()) {
+                    intent.removeExtra(IntentExtra.SETTINGS_GROUP.key);
+                    setIntent(intent);
+                }
+                Preference preference = new Preference(this);
+                preference.setKey(settingsGroup.key);
+                onPreferenceStartFragment(null, preference);
+            }
         }
     }
 

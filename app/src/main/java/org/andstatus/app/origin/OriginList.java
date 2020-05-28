@@ -19,17 +19,20 @@ package org.andstatus.app.origin;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.BaseColumns;
+import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import org.andstatus.app.ActivityRequestCode;
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
+import org.andstatus.app.context.MySettingsActivity;
 import org.andstatus.app.list.MyListActivity;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.view.MySimpleAdapter;
@@ -73,9 +76,9 @@ public abstract class OriginList extends MyListActivity {
     private void processNewIntent(Intent intentNew) {
         String action = intentNew.getAction();
         if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_INSERT.equals(action)) {
-            getListView().setOnItemClickListener(new Picker());
+            getListView().setOnItemClickListener(this::onPickOrigin);
         } else {
-            getListView().setOnItemClickListener(new Updater());
+            getListView().setOnItemClickListener(this::onEditOrigin);
         }
         addEnabled = !Intent.ACTION_PICK.equals(action);
         originType = OriginType.fromCode(intentNew.getStringExtra(IntentExtra.ORIGIN_TYPE.key));
@@ -118,36 +121,33 @@ public abstract class OriginList extends MyListActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        restartMeIfNeeded();
+        if (myContextHolder.needToRestartActivity()) {
+            FirstActivity.closeAllActivities(this);
+            myContextHolder.initialize(this).thenStartActivity(getIntent());
+        }
     }
 
     protected abstract Iterable<Origin> getOrigins();
 
-    private class Picker implements OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            String name = ((TextView)view.findViewById(R.id.name)).getText().toString();
-            Intent dataToReturn = new Intent();
-            dataToReturn.putExtra(IntentExtra.ORIGIN_NAME.key, name);
-            OriginList.this.setResult(RESULT_OK, dataToReturn);
-            finish();
+    public void onPickOrigin(AdapterView<?> parent, View view, int position, long id) {
+        String name = ((TextView)view.findViewById(R.id.name)).getText().toString();
+        Intent dataToReturn = new Intent();
+        dataToReturn.putExtra(IntentExtra.ORIGIN_NAME.key, name);
+        OriginList.this.setResult(RESULT_OK, dataToReturn);
+        finish();
+    }
+
+    public void onEditOrigin(AdapterView<?> parent, View view, int position, long id) {
+        String name = ((TextView)view.findViewById(R.id.name)).getText().toString();
+        Origin origin = myContextHolder.getNow().origins().fromName(name);
+        if (origin.isPersistent()) {
+            Intent intent = new Intent(OriginList.this, OriginEditor.class);
+            intent.setAction(Intent.ACTION_EDIT);
+            intent.putExtra(IntentExtra.ORIGIN_NAME.key, origin.getName());
+            startActivityForResult(intent, ActivityRequestCode.EDIT_ORIGIN.id);
         }
     }
 
-    private class Updater implements OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            String name = ((TextView)view.findViewById(R.id.name)).getText().toString();
-            Origin origin = myContextHolder.getNow().origins().fromName(name);
-            if (origin.isPersistent()) {
-                Intent intent = new Intent(OriginList.this, OriginEditor.class);
-                intent.setAction(Intent.ACTION_EDIT);
-                intent.putExtra(IntentExtra.ORIGIN_NAME.key, origin.getName());
-                startActivityForResult(intent, ActivityRequestCode.EDIT_ORIGIN.id);
-            }
-        }
-    }
-    
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -161,5 +161,25 @@ public abstract class OriginList extends MyListActivity {
     }
 
     protected abstract int getMenuResourceId();
-    
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                MySettingsActivity.goToMySettingsAccounts(this);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+            MySettingsActivity.goToMySettingsAccounts(this);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
 }

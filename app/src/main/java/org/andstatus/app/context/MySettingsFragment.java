@@ -370,7 +370,8 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
 
     @Override
     public boolean onPreferenceTreeClick(Preference preference) {
-        switch (preference.getKey()) {
+        FragmentActivity activity = getActivity();
+        if (activity != null) switch (preference.getKey()) {
             case MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW:
                 if (CheckBoxPreference.class.isInstance(preference)) {
                     storageSwitch.showSwitchStorageDialog(ActivityRequestCode.MOVE_DATA_BETWEEN_STORAGES, 
@@ -378,13 +379,13 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                 }
                 break;
             case KEY_ADD_NEW_ACCOUNT:
-                AccountSettingsActivity.startAddNewAccount(getActivity(), null, false);
+                AccountSettingsActivity.startAddNewAccount(activity, null, false);
                 break;
             case KEY_DELETE_OLD_DATA:
-                DialogFactory.showOkCancelDialog(getActivity(), this.getText(R.string.delete_old_data), "", this::launchDataPruner);
+                DialogFactory.showOkCancelDialog(activity, this.getText(R.string.delete_old_data), "", this::launchDataPruner);
                 break;
             case KEY_MANAGE_ACCOUNTS:
-                startActivity(new Intent(getActivity(), ManageAccountsActivity.class));
+                startActivity(new Intent(activity, ManageAccountsActivity.class));
                 break;
             case KEY_MANAGE_ACCOUNTS_ANDROID:
                 /**
@@ -398,9 +399,9 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                 break;
             case KEY_BACKUP_RESTORE:
                 if (myContextHolder.getNow().accounts().isEmpty()) {
-                    startActivity(new Intent(getActivity(), RestoreActivity.class));
+                    startActivity(new Intent(activity, RestoreActivity.class));
                 } else {
-                    startActivity(new Intent(getActivity(), BackupActivity.class));
+                    startActivity(new Intent(activity, BackupActivity.class));
                 }
                 break;
             case KEY_CHECK_DATA:
@@ -409,22 +410,22 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                         R.string.full_check, ActivityRequestCode.CHECK_DATA_INCLUDE_LONG);
                 break;
             case KEY_MANAGE_ORIGIN_SYSTEMS:
-                startActivity(new Intent(getActivity(), PersistentOriginList.class));
+                startActivity(new Intent(activity, PersistentOriginList.class));
                 break;
             case KEY_MANAGE_TIMELINES:
-                startActivity(new Intent(getActivity(), ManageTimelines.class));
+                startActivity(new Intent(activity, ManageTimelines.class));
                 break;
             case KEY_ABOUT_APPLICATION:
-                HelpActivity.startMe(getActivity(), false, HelpActivity.PAGE_LOGO);
+                HelpActivity.startMe(activity, false, HelpActivity.PAGE_LOGO);
                 break;
             case KEY_CHANGE_LOG:
-                HelpActivity.startMe(getActivity(), false, HelpActivity.PAGE_CHANGELOG);
+                HelpActivity.startMe(activity, false, HelpActivity.PAGE_CHANGELOG);
                 break;
             case KEY_USER_GUIDE:
-                HelpActivity.startMe(getActivity(), false, HelpActivity.PAGE_USER_GUIDE);
+                HelpActivity.startMe(activity, false, HelpActivity.PAGE_USER_GUIDE);
                 break;
             case MyPreferences.KEY_COMMANDS_QUEUE:
-                startActivity(new Intent(getActivity(), QueueViewer.class));
+                startActivity(new Intent(activity, QueueViewer.class));
                 break;
             case KEY_NOTIFICATION_SELECT_RINGTONE:
                 pickRingtone();

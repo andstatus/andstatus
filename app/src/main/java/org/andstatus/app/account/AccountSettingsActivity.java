@@ -873,8 +873,8 @@ public class AccountSettingsActivity extends MyActivity {
     private void closeAndGoBack() {
         String message = saveState();
         if (!isFinishing()) {
-            MyLog.v(this, () -> "finish: " + message);
-            finish();
+            MyLog.v(this, () -> "Go back: " + message);
+            MySettingsActivity.goToMySettingsAccounts(this);
         }
     }
 

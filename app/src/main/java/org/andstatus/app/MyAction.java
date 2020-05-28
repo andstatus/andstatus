@@ -42,6 +42,12 @@ public enum MyAction {
     SYNC("SYNC"),
     INITIALIZE_APP("INITIALIZE_APP"),
     SET_DEFAULT_VALUES("SET_DEFAULT_VALUES"),
+    CLOSE_ALL_ACTIVITIES("CLOSE_ALL_ACTIVITIES") {
+        @Override
+        public Intent getIntent() {
+            return super.getIntent().setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK + Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+    },
     UNKNOWN("UNKNOWN");
     
     private final String action;

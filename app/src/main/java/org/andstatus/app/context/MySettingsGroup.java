@@ -17,13 +17,15 @@
 package org.andstatus.app.context;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
-
-import org.andstatus.app.R;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
+
+import org.andstatus.app.IntentExtra;
+import org.andstatus.app.R;
 
 import static androidx.preference.PreferenceFragmentCompat.ARG_PREFERENCE_ROOT;
 
@@ -42,7 +44,7 @@ public enum MySettingsGroup {
     DEBUGGING("debugging", R.string.title_preference_debugging, R.xml.preferences_debugging);
 
     /** key used in preference headers */
-    private final String key;
+    public final String key;
     private final int titleResId;
     private final int preferencesXmlResId;
 
@@ -73,9 +75,7 @@ public enum MySettingsGroup {
                 : from(args.getString(ARG_PREFERENCE_ROOT));
     }
 
-    /**
-     * Returns the enum or UNKNOWN
-     */
+    /** @return  the enum or UNKNOWN */
     public static MySettingsGroup from(String key) {
         for (MySettingsGroup value : MySettingsGroup.values()) {
             if (value.key.equals(key)) {
@@ -85,8 +85,13 @@ public enum MySettingsGroup {
         return UNKNOWN;
     }
 
-    public String save() {
-        return key;
+    /** @return  the enum or UNKNOWN */
+    public static MySettingsGroup fromIntent(Intent intent) {
+        return from(intent.getStringExtra(IntentExtra.SETTINGS_GROUP.key));
+    }
+
+    public Intent add(Intent intent) {
+        return intent.putExtra(IntentExtra.SETTINGS_GROUP.key, key);
     }
 
     public int getTitleResId() {

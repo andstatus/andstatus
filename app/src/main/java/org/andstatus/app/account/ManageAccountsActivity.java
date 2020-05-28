@@ -17,9 +17,15 @@
 package org.andstatus.app.account;
 
 import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.MenuItem;
 
+import org.andstatus.app.FirstActivity;
 import org.andstatus.app.MyActivity;
 import org.andstatus.app.R;
+import org.andstatus.app.context.MySettingsActivity;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * @author yvolk@yurivolkov.com
@@ -34,6 +40,35 @@ public class ManageAccountsActivity extends MyActivity {
         if (savedInstanceState == null) {
             showFragment(AccountListFragment.class, new Bundle());
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (myContextHolder.needToRestartActivity()) {
+            FirstActivity.closeAllActivities(this);
+            myContextHolder.initialize(this).thenStartActivity(getIntent());
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                MySettingsActivity.goToMySettingsAccounts(this);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+            MySettingsActivity.goToMySettingsAccounts(this);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
 }

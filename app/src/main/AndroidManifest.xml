@@ -78,8 +78,7 @@
             android:name="org.andstatus.app.syncadapter.SyncService"
             android:exported="true">
             <intent-filter>
-                <action
-                    android:name="android.content.SyncAdapter" />
+                <action android:name="android.content.SyncAdapter" />
             </intent-filter>
             <meta-data
                 android:name="android.content.SyncAdapter"
@@ -111,6 +110,12 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="org.andstatus.app.action.CLOSE_ALL_ACTIVITIES" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />

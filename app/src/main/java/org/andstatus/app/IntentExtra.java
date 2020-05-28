@@ -121,6 +121,8 @@ public enum IntentExtra{
     FULL_CHECK("FULL_CHECK"),
     COUNT_ONLY("COUNT_ONLY"),
 
+    SETTINGS_GROUP("SETTINGS_GROUP"),
+
     UNKNOWN("UNKNOWN");
     
     public final String key;
