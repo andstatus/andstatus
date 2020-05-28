@@ -9,6 +9,7 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.database.table.ActorTable;
+import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.util.StringUtil;
 import org.junit.Before;
@@ -16,6 +17,9 @@ import org.junit.Test;
 
 import static org.andstatus.app.context.DemoData.demoData;
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -69,4 +73,19 @@ public class NoteEditorDataTest {
         assertEquals(data.toString() + "; expected name:" + expectedName, isMentionedExpected, isMentioned);
     }
 
+    @Test
+    public void testAddMentionsWhenNobodyIsMentioned() {
+        MyAccount myAccount = demoData.getMyAccount(demoData.conversationAccountName);
+        long noteId  = MyQuery.getLongs(myAccount.getOrigin().myContext, "SELECT " + NoteTable._ID
+                + " FROM " + NoteTable.TABLE_NAME
+                + " WHERE " + NoteTable.ORIGIN_ID + "=" + myAccount.getOrigin().getId()
+                + " AND " + NoteTable.CONTENT + "='Older one note'").stream()
+            .findFirst().orElse(0L);
+        NoteEditorData data = NoteEditorData.newReplyTo(noteId, myAccount)
+                .setReplyToMentionedActors(true)
+                .addMentionsToText();
+
+        assertThat(data.getContent(), containsString("@second@pump1.example.com "));
+        assertThat(data.getContent(), not(containsString("@t131t")));
+    }
 }

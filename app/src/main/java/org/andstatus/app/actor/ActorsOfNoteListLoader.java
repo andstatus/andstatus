@@ -16,8 +16,6 @@
 
 package org.andstatus.app.actor;
 
-import androidx.annotation.NonNull;
-
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.ActivityTable;
@@ -52,11 +50,12 @@ public class ActorsOfNoteListLoader extends ActorListLoader {
         return this;
     }
 
-    @NonNull
     @Override
-    protected String getSelection() {
+    protected void loadInternal() {
         addFromNoteRow();
-        return super.getSelection();
+        if (!mentionedOnly) {
+            super.loadInternal();
+        }
     }
 
     private void addFromNoteRow() {
