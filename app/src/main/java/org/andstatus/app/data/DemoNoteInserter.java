@@ -265,7 +265,7 @@ public class DemoNoteInserter {
                 }
             }
         }
-        note.audience().getActorsToSave(activity.getAuthor()).forEach(DemoNoteInserter::checkStoredActor);
+        note.audience().evaluateAndGetActorsToSave(activity.getAuthor()).forEach(DemoNoteInserter::checkStoredActor);
 
         if (activity.getObjActor().nonEmpty()) {
             assertNotEquals( "Actor was not added: " + activity.getObjActor(), 0, activity.getObjActor().actorId);

@@ -674,7 +674,7 @@ public class DataUpdaterTest {
         assertEquals("Audience should contain one actor " + activity2.getNote().audience(),
                 1, activity2.getNote().audience().getNonSpecialActors().size());
         assertEquals("Audience", myAuthor1, activity2.getNote().audience().getFirstNonSpecial());
-        assertEquals("Notified actor", actorFromAnotherOrigin, activity2.getNotifiedActor());
+        assertEquals("Notified actor " + activity2, actorFromAnotherOrigin, activity2.getNotifiedActor());
     }
 
     private AActivity newLoadedNote(Actor accountActor, Actor author, String content) {

@@ -101,7 +101,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
         MyLog.v(this, method + " started");
         TestSuite.waitForListLoaded(getActivity(), 1);
         ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity());
-        long itemId = helper.getListItemIdOfLoadedReply();
+        long itemId = helper.getListItemIdOfLoadedReply(item -> !item.visibility.isPrivate());
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, itemId);
         String noteOid = MyQuery.idToOid(getActivity().getMyContext(), OidEnum.NOTE_OID, noteId, 0);
         String logMsg = MyQuery.noteInfoForLog(getActivity().getMyContext(), noteId);

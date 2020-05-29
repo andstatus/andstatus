@@ -41,6 +41,7 @@ import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TryUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -139,7 +140,9 @@ public class Audience {
         return builder.toString();
     }
 
-    public List<Actor> getActorsToSave(Actor actorOfAudience) {
+    public List<Actor> evaluateAndGetActorsToSave(Actor actorOfAudience) {
+        if (this == EMPTY) return Collections.emptyList();
+
         List<Actor> toSave = actors.stream()
                 .map(actor -> lookupInActorOfAudience(actorOfAudience, actor))
                 .collect(Collectors.toList());
@@ -152,6 +155,7 @@ public class Audience {
         if (!followers.isConstant()) {
             toSave.add(0, followers);
         }
+        setVisibility(getVisibility().getKnown());
         return toSave;
     }
 
@@ -273,15 +277,15 @@ public class Audience {
      *        As audience currently belongs to a Note, we actually use noteAuthor instead of activityActor here.
      * @return true if data changed */
     public boolean save(Actor actorOfAudience, long noteId, Visibility visibility, boolean countOnly) {
-        if (!actorOfAudience.origin.isValid() || noteId == 0 || actorOfAudience.actorId == 0 || !origin.myContext.isReady()) {
+        if (this == EMPTY || !actorOfAudience.origin.isValid() || noteId == 0 || actorOfAudience.actorId == 0 || !origin.myContext.isReady()) {
             return false;
         }
         Audience prevAudience = Audience.loadIds(actorOfAudience.origin, noteId, Optional.of(visibility));
-        List<Actor> actorsToSave = getActorsToSave(actorOfAudience);
+        List<Actor> actorsToSave = evaluateAndGetActorsToSave(actorOfAudience);
         Set<Actor> toDelete = new HashSet<>();
         Set<Actor> toAdd = new HashSet<>();
 
-        for (Actor actor : prevAudience.getActorsToSave(actorOfAudience)) {
+        for (Actor actor : prevAudience.evaluateAndGetActorsToSave(actorOfAudience)) {
             findSame(actor).onFailure(e -> toDelete.add(actor));
         }
         for (Actor actor : actorsToSave) {
@@ -340,7 +344,7 @@ public class Audience {
     }
 
     public void setVisibility(Visibility visibility) {
-        if (this.visibility == visibility) return;
+        if (this == EMPTY || this.visibility == visibility) return;
 
         if (origin.getOriginType().isFollowersChangeAllowed) {
             setFollowers(visibility.isFollowers());
@@ -353,7 +357,7 @@ public class Audience {
     }
 
     private void setFollowers(boolean isFollowers) {
-        if (isFollowers == isFollowers()) return;
+        if (this == EMPTY || isFollowers == isFollowers()) return;
 
         followers = isFollowers
             ? followers.isConstant() ? Actor.FOLLOWERS : followers
@@ -372,6 +376,8 @@ public class Audience {
     }
 
     public void addActorsToLoad(Consumer<Actor> addActorToList) {
+        if (this == EMPTY) return;
+
         actors.forEach(addActorToList);
         if (isFollowers() && !followers.isConstant()) {
             addActorToList.accept(followers);
@@ -379,10 +385,15 @@ public class Audience {
     }
 
     public void setLoadedActors(Function<Actor, Actor> getLoaded) {
+        if (this == EMPTY) return;
+
         if (isFollowers()) {
             add(getLoaded.apply(followers));
         }
         new ArrayList<>(actors).forEach( actor -> add(getLoaded.apply(actor)));
     }
 
+    boolean isMeInAudience() {
+        return origin.nonEmpty() && origin.myContext.users().containsMe(getNonSpecialActors());
+    }
 }

@@ -75,7 +75,7 @@ class CheckAudience extends DataChecker {
                 (includeLong ? "" : " LIMIT 0, 500");
 
         FixSummary summary = MyQuery.foldLeft(myContext, sql, new FixSummary(),
-                s -> cursor -> foldOneNote(ma, dataUpdater, countOnly, s, cursor));
+                fixSummary -> cursor -> foldOneNote(ma, dataUpdater, countOnly, fixSummary, cursor));
 
         logger.logProgress(origin.getName() + ": " +
                 (summary.toFixCount == 0
@@ -86,11 +86,11 @@ class CheckAudience extends DataChecker {
         return summary.toFixCount;
     }
 
-    private FixSummary foldOneNote(MyAccount ma, DataUpdater dataUpdater, boolean countOnly, FixSummary s, Cursor cursor) {
-        if (logger.isCancelled()) return s;
+    private FixSummary foldOneNote(MyAccount ma, DataUpdater dataUpdater, boolean countOnly, FixSummary fixSummary, Cursor cursor) {
+        if (logger.isCancelled()) return fixSummary;
 
         Origin origin = ma.getOrigin();
-        s.rowsCount++;
+        fixSummary.rowsCount++;
         long noteId = DbUtils.getLong(cursor, NoteTable._ID);
         long insDate = DbUtils.getLong(cursor, NoteTable.INS_DATE);
         Visibility storedVisibility = Visibility.fromCursor(cursor);
@@ -106,25 +106,25 @@ class CheckAudience extends DataChecker {
             audience.addActorsFromContent(content, author, inReplyToActor);
             audience.lookupUsers();
 
-            List<Actor> actorsToSave = audience.getActorsToSave(author);
+            List<Actor> actorsToSave = audience.evaluateAndGetActorsToSave(author);
             if (!countOnly) {
                 actorsToSave.stream().filter(a -> a.actorId == 0).forEach(actor ->
                         dataUpdater.updateObjActor(ma.getActor().update(actor), 0)
                 );
             }
-            compareVisibility(s, countOnly, noteId, audience, storedVisibility);
+            compareVisibility(fixSummary, countOnly, noteId, audience, storedVisibility);
             if (audience.save(author, noteId, audience.getVisibility(), countOnly)) {
-                s.toFixCount += 1;
+                fixSummary.toFixCount += 1;
             }
         } else {
             Audience audience = Audience.fromNoteId(origin, noteId, storedVisibility);
-            compareVisibility(s, countOnly, noteId, audience, storedVisibility);
+            compareVisibility(fixSummary, countOnly, noteId, audience, storedVisibility);
         }
-        logger.logProgressIfLongProcess(() -> origin.getName() + ": need to fix " + s.toFixCount +
-                " of " + s.rowsCount + " audiences;\n" +
+        logger.logProgressIfLongProcess(() -> origin.getName() + ": need to fix " + fixSummary.toFixCount +
+                " of " + fixSummary.rowsCount + " audiences;\n" +
                 RelativeTime.getDifference(myContext.context(), insDate) + ", " +
                 I18n.trimTextAt(MyHtml.htmlToCompactPlainText(content), 120));
-        return s;
+        return fixSummary;
     }
 
     private void compareVisibility(FixSummary s, boolean countOnly, long noteId,

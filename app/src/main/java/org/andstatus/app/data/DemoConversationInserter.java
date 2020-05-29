@@ -96,7 +96,7 @@ public class DemoConversationInserter {
                 selected, null).withVisibility(Visibility.PRIVATE);
         addActivity(privateReply2);
         DemoNoteInserter.assertStoredVisibility(privateReply2, Visibility.PRIVATE);
-        DemoNoteInserter.assertInteraction(privateReply2, NotificationEventType.PRIVATE, TriState.TRUE);
+        DemoNoteInserter.assertInteraction(privateReply2, NotificationEventType.EMPTY, TriState.FALSE);
         assertEquals("Should be subscribed " + selected, TriState.TRUE,
                 MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, selected.getId()));
         DemoNoteInserter.assertInteraction(selected, NotificationEventType.HOME, TriState.TRUE);
@@ -212,7 +212,7 @@ public class DemoConversationInserter {
         AActivity reblogOfMyPrivate13 = buildActivity(author3, ActivityType.ANNOUNCE);
         reblogOfMyPrivate13.setActivity(myReply13);
         addActivity(reblogOfMyPrivate13);
-        DemoNoteInserter.assertInteraction(reblogOfMyPrivate13, NotificationEventType.PRIVATE, TriState.TRUE);
+        DemoNoteInserter.assertInteraction(reblogOfMyPrivate13, NotificationEventType.ANNOUNCE, TriState.TRUE);
 
         AActivity mentionOfAuthor3 = buildActivity(reblogger1, "",
                 "@" + author3.getUsername() + " mention in reply to 4",

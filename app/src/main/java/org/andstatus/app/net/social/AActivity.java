@@ -533,11 +533,14 @@ public class AActivity extends AObject {
 
     private NotificationEventType calculateNotificationEventType(MyContext myContext) {
         if (myContext.users().isMe(getActor())) return NotificationEventType.EMPTY;
-        if (getNote().audience().getVisibility().isPrivate()) {
-            return NotificationEventType.PRIVATE;
-        } else if(myContext.users().containsMe(getNote().audience().getNonSpecialActors()) && !isMyActorOrAuthor(myContext)) {
-            return NotificationEventType.MENTION;
-        } else if (type == ActivityType.ANNOUNCE && myContext.users().isMe(getAuthor())) {
+
+        if (getNote().audience().isMeInAudience() && !isMyActorOrAuthor(myContext)) {
+            return getNote().audience().getVisibility().isPrivate()
+                    ? NotificationEventType.PRIVATE
+                    : NotificationEventType.MENTION;
+        }
+
+        if (type == ActivityType.ANNOUNCE && myContext.users().isMe(getAuthor())) {
             return NotificationEventType.ANNOUNCE;
         } else if ((type == ActivityType.LIKE || type == ActivityType.UNDO_LIKE)
                 && myContext.users().isMe(getAuthor())) {
@@ -555,18 +558,21 @@ public class AActivity extends AObject {
     private Actor calculateNotifiedActor(MyContext myContext, NotificationEventType event) {
         switch (event) {
             case MENTION:
+            case PRIVATE:
                 return myContext.users().myActors.values().stream()
-                    .filter(actor -> getNote().audience().findSame(actor).isSuccess()).findFirst()
+                    .filter(actor -> getNote().audience().findSame(actor).isSuccess())
+                    .findFirst()
                     .orElse(
-                        myContext.users().myActors.values().stream().filter(a -> a.origin.equals(accountActor.origin))
-                            .findFirst().orElse(Actor.EMPTY)
+                        myContext.users().myActors.values().stream()
+                            .filter(a -> a.origin.equals(accountActor.origin))
+                            .findFirst()
+                            .orElse(Actor.EMPTY)
                     );
             case ANNOUNCE:
             case LIKE:
                 return getAuthor();
             case FOLLOW:
                 return getObjActor();
-            case PRIVATE:
             case HOME:
                 return accountActor;
             default:

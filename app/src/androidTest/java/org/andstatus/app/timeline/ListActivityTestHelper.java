@@ -246,8 +246,12 @@ public class ListActivityTestHelper<T extends MyBaseListActivity> {
     }
 
     public long getListItemIdOfLoadedReply() {
+        return getListItemIdOfLoadedReply(any -> true);
+    }
+
+    public long getListItemIdOfLoadedReply(Predicate<BaseNoteViewItem> predicate) {
         return findListItemId("Loaded reply", item -> {
-            if (item.inReplyToNoteId != 0 && item.noteStatus == DownloadStatus.LOADED) {
+            if (item.inReplyToNoteId != 0 && item.noteStatus == DownloadStatus.LOADED && predicate.test(item)) {
                 DownloadStatus statusOfReplied = DownloadStatus.load(
                         MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, item.inReplyToNoteId));
                 if (statusOfReplied == DownloadStatus.LOADED) {

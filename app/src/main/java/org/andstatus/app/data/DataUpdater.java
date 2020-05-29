@@ -235,7 +235,7 @@ public class DataUpdater {
 
             updateInReplyTo(activity, values);
             activity.getNote().audience().lookupUsers();
-            for ( Actor actor : note.audience().getActorsToSave(activity.getAuthor())) {
+            for ( Actor actor : note.audience().evaluateAndGetActorsToSave(activity.getAuthor())) {
                 updateObjActor(activity.getActor().update(me.getActor(), actor), recursing + 1);
             }
 
