@@ -1,5 +1,5 @@
-v.56.12 Fixed 'Reply to mentioned actors'
+v.56.12 Fixed 'Reply to mentioned actors' when nobody is mentioned.
 v.56.11 Fixed repeated restarts of Timeline and Settings activities.
 v.56.09 Show numbers of likes, replies and reblogs for a Note.
 v.56.05 Simplified interface to add new account in Mastodon. You don't need to add "Social network" separately. Just type (host of) instance and proceed to Log in.
-v.56.04 Fixed "App language" switch
+v.56.04 Fixed "App language" switch.

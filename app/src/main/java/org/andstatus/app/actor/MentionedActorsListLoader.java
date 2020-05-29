@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2020 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package org.andstatus.app.actor;
 
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
 
@@ -28,35 +26,20 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ActorsOfNoteListLoader extends ActorListLoader {
+public class MentionedActorsListLoader extends ActorListLoader {
     private final long selectedNoteId;
     private final Origin originOfSelectedNote;
-    final String noteContent;
 
-    public ActorsOfNoteListLoader(MyContext myContext, ActorListType actorListType, Origin origin, long noteId,
-                                  String searchQuery) {
-        super(myContext, actorListType, origin, 0, searchQuery);
+    public MentionedActorsListLoader(MyContext myContext, Origin origin, long noteId) {
+        super(myContext, ActorListType.ACTORS_OF_NOTE, origin, 0, "");
         selectedNoteId = noteId;
-        noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, selectedNoteId);
         originOfSelectedNote = myContextHolder.getNow().origins().fromId(
                 MyQuery.noteIdToOriginId(selectedNoteId));
     }
 
     @Override
     protected void loadInternal() {
-        addFromNoteRow();
-        if (!items.isEmpty()) super.loadInternal();
-    }
-
-    private void addFromNoteRow() {
-        addActorIdToList(originOfSelectedNote, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, selectedNoteId));
-        addActorIdToList(originOfSelectedNote, MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedNoteId));
         Audience.fromNoteId(originOfSelectedNote, selectedNoteId).getNonSpecialActors().forEach(this::addActorToList);
-        MyQuery.getRebloggers(myContextHolder.getNow().getDatabase(), origin, selectedNoteId).forEach(this::addActorToList);
-    }
-
-    @Override
-    protected String getSubtitle() {
-        return noteContent;
+        if (!items.isEmpty()) super.loadInternal();
     }
 }

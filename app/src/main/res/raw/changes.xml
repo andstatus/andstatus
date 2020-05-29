@@ -30,10 +30,10 @@
         </subtitle>
     </header>
     <release android:versionName="56.12" android:versionCode="329"
-        versionDate="2020-05-28"
+        versionDate="2020-05-29"
         versionTitle="Fixed 'Reply to mentioned actors'">
         <changes>
-            <change>v.56.12. Fixed 'Reply to mentioned actors'</change>
+            <change>v.56.12. Fixed 'Reply to mentioned actors' when nobody is mentioned.</change>
         </changes>
     </release>
     <release android:versionName="56.11" android:versionCode="328"

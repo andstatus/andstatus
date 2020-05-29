@@ -34,19 +34,19 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
     protected final MyAccount ma;
     protected final Origin origin;
     protected boolean mAllowLoadingFromInternet = false;
-    protected final long mCentralItemId;
+    protected final long centralActorId;
     private volatile Actor centralActor = Actor.EMPTY;
 
     private LoadableListActivity.ProgressPublisher mProgress;
 
-    public ActorListLoader(MyContext myContext, ActorListType actorListType, Origin origin, long centralItemId,
+    public ActorListLoader(MyContext myContext, ActorListType actorListType, Origin origin, long centralActorId,
                            String searchQuery) {
         this.myContext = myContext;
         mActorListType = actorListType;
         this.searchQuery = searchQuery;
         this.ma = myContext.accounts().getFirstPreferablySucceededForOrigin(origin);
         this.origin = origin;
-        mCentralItemId = centralItemId;
+        this.centralActorId = centralActorId;
     }
 
     @Override
@@ -62,7 +62,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
             MyLog.d(this, method + " started");
         }
         mProgress = publisher;
-        centralActor = Actor.load(myContext, mCentralItemId);
+        centralActor = Actor.load(myContext, centralActorId);
         loadInternal();
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, "Loaded " + size() + " items, " + stopWatch.getTime() + "ms");
@@ -91,7 +91,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
     }
 
     protected void loadInternal() {
-        Uri mContentUri = MatchedUri.getActorListUri(mActorListType, origin.getId(), mCentralItemId, searchQuery);
+        Uri mContentUri = MatchedUri.getActorListUri(mActorListType, origin.getId(), centralActorId, searchQuery);
         try (Cursor c = myContext.context().getContentResolver()
                     .query(mContentUri, ActorSql.baseProjection(), getSelection(), null, null)) {
             while (c != null && c.moveToNext()) {
@@ -141,7 +141,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
     @Override
     public String toString() {
         return mActorListType.toString()
-                + "; central=" + mCentralItemId
+                + "; central=" + centralActorId
                 + "; " + super.toString();
     }
 

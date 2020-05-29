@@ -22,9 +22,8 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.actor.ActorListType;
 import org.andstatus.app.actor.ActorViewItem;
-import org.andstatus.app.actor.ActorsOfNoteListLoader;
+import org.andstatus.app.actor.MentionedActorsListLoader;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.AttachedImageFiles;
 import org.andstatus.app.data.DataUpdater;
@@ -340,8 +339,8 @@ public class NoteEditorData implements IsEmpty {
     }
 
     private void addMentionedActorsBeforeText() {
-        ActorsOfNoteListLoader loader = new ActorsOfNoteListLoader(myContext, ActorListType.ACTORS_OF_NOTE, ma.getOrigin(),
-                getInReplyToNoteId(), "").setMentionedOnly(true);
+        MentionedActorsListLoader loader = new MentionedActorsListLoader(myContext, ma.getOrigin(),
+                getInReplyToNoteId());
         loader.load(null);
         addActorsBeforeText(loader.getList().stream().map(ActorViewItem::getActor).collect(Collectors.toList()));
     }

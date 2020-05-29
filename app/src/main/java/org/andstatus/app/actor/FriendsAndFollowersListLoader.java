@@ -34,7 +34,7 @@ public class FriendsAndFollowersListLoader extends ActorListLoader {
 
     protected String getSqlActorIds() {
         GroupType groupType = mActorListType == ActorListType.FOLLOWERS ? GroupType.FOLLOWERS : GroupType.FRIENDS;
-        return " IN (" + GroupMembership.selectMemberIds(Collections.singletonList(mCentralItemId), groupType, false) + ")";
+        return " IN (" + GroupMembership.selectMemberIds(Collections.singletonList(centralActorId), groupType, false) + ")";
     }
 
     @Override

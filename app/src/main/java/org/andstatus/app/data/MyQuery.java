@@ -300,11 +300,10 @@ public class MyQuery {
         return noteIdToActors(db, origin, noteId, ActivityType.ANNOUNCE, ActivityType.UNDO_ANNOUNCE);
     }
 
-    /** @return for each actor (actorId is a key): ID of the last type1 or type2 activity
-     *  and the type of the activity */
+    /** @return Actors, who did activities of one of these types with the note */
     @NonNull
     public static List<Actor> noteIdToActors(
-            SQLiteDatabase db, @NonNull Origin origin, long noteId, ActivityType typeToReturn, ActivityType undoType) {
+            SQLiteDatabase db, @NonNull Origin origin, long noteId, ActivityType mainType, ActivityType undoType) {
         String method = "noteIdToActors";
         final List<Long> foundActors = new ArrayList<>();
         final List<Actor> actors = new ArrayList<>();
@@ -316,7 +315,7 @@ public class MyQuery {
                 + " FROM " + ActivityTable.TABLE_NAME + " INNER JOIN " + ActorTable.TABLE_NAME
                 + " ON " + ActivityTable.ACTOR_ID + "=" + ActorTable.TABLE_NAME + "." + ActorTable._ID
                 + " WHERE " + ActivityTable.NOTE_ID + "=" + noteId + " AND "
-                + ActivityTable.ACTIVITY_TYPE + " IN(" + typeToReturn.id + "," + undoType.id + ")"
+                + ActivityTable.ACTIVITY_TYPE + " IN(" + mainType.id + "," + undoType.id + ")"
                 + " ORDER BY " + ActivityTable.UPDATED_DATE + " DESC";
         try (Cursor cursor = db.rawQuery(sql, null)) {
             while(cursor.moveToNext()) {
@@ -324,7 +323,7 @@ public class MyQuery {
                 if (!foundActors.contains(actorId)) {
                     foundActors.add(actorId);
                     ActivityType activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
-                    if (activityType.equals(typeToReturn)) {
+                    if (activityType.equals(mainType)) {
                         Actor actor = Actor.fromId(origin, actorId);
                         actor.setRealName(DbUtils.getString(cursor, ActorTable.ACTIVITY_ACTOR_NAME));
                         actor.setWebFingerId(DbUtils.getString(cursor, ActorTable.WEBFINGER_ID));
