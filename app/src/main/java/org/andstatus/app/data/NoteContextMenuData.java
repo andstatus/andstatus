@@ -16,6 +16,8 @@
 
 package org.andstatus.app.data;
 
+import androidx.annotation.NonNull;
+
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.net.social.Actor;
@@ -23,16 +25,15 @@ import org.andstatus.app.origin.Origin;
 
 import java.util.List;
 
-import androidx.annotation.NonNull;
-
 import static java.util.stream.Collectors.toList;
 
 /**
  * Helper class to find out a relation of a Note to {@link #myAccount}
  * @author yvolk@yurivolkov.com
  */
-public class AccountToNote {
-    public static final AccountToNote EMPTY = new AccountToNote(NoteForAnyAccount.EMPTY, MyAccount.EMPTY);
+public class NoteContextMenuData {
+    private final static String TAG = NoteContextMenuData.class.getSimpleName();
+    public static final NoteContextMenuData EMPTY = new NoteContextMenuData(NoteForAnyAccount.EMPTY, MyAccount.EMPTY);
     @NonNull
     public final NoteForAnyAccount noteForAnyAccount;
     private boolean isAuthorMySucceededMyAccount = false;
@@ -50,65 +51,65 @@ public class AccountToNote {
     public static MyAccount getBestAccountToDownloadNote(MyContext myContext, long noteId) {
         NoteForAnyAccount noteForAnyAccount = new NoteForAnyAccount(myContext, 0, noteId);
         boolean subscribedFound = false;
-        AccountToNote bestAccountToNote = AccountToNote.EMPTY;
-        for(AccountToNote accountToNote : getAccountsForNote(myContext, noteForAnyAccount)) {
-            if(accountToNote.hasPrivateAccess()) {
-                bestAccountToNote = accountToNote;
+        NoteContextMenuData bestFit = NoteContextMenuData.EMPTY;
+        for(NoteContextMenuData menuData : getMenuData(myContext, noteForAnyAccount)) {
+            if(menuData.hasPrivateAccess()) {
+                bestFit = menuData;
                 break;
             }
-            if(accountToNote.isSubscribed) {
-                bestAccountToNote = accountToNote;
+            if(menuData.isSubscribed) {
+                bestFit = menuData;
                 subscribedFound = true;
             }
-            if(accountToNote.isTiedToThisAccount() && !subscribedFound) {
-                bestAccountToNote = accountToNote;
+            if(menuData.isTiedToThisAccount() && !subscribedFound) {
+                bestFit = menuData;
             }
         }
-        return bestAccountToNote.equals(EMPTY)
+        return bestFit.equals(EMPTY)
             ? myContext.accounts().getFirstPreferablySucceededForOrigin(noteForAnyAccount.origin)
-            : bestAccountToNote.myAccount;
+            : bestFit.myAccount;
     }
 
-    private static List<AccountToNote> getAccountsForNote(MyContext myContext, NoteForAnyAccount noteForAnyAccount) {
+    private static List<NoteContextMenuData> getMenuData(MyContext myContext, NoteForAnyAccount noteForAnyAccount) {
         return myContext.accounts().succeededForSameOrigin(noteForAnyAccount.origin).stream()
-                .map(a -> new AccountToNote(noteForAnyAccount, a)).collect(toList());
+                .map(a -> new NoteContextMenuData(noteForAnyAccount, a)).collect(toList());
     }
 
-    public static AccountToNote getAccountToActOnNote(MyContext myContext, long activityId, long noteId,
-                                                      @NonNull MyAccount myActingAccount,
-                                                      @NonNull MyAccount currentAccount) {
+    public static NoteContextMenuData getAccountToActOnNote(MyContext myContext, long activityId, long noteId,
+                                                            @NonNull MyAccount myActingAccount,
+                                                            @NonNull MyAccount currentAccount) {
         NoteForAnyAccount noteForAnyAccount = new NoteForAnyAccount(myContext, activityId, noteId);
-        final List<AccountToNote> accountsForNote = getAccountsForNote(myContext, noteForAnyAccount);
+        final List<NoteContextMenuData> menuDataList = getMenuData(myContext, noteForAnyAccount);
 
-        AccountToNote acting = accountsForNote.stream().filter(atn -> atn.myAccount.equals(myActingAccount))
+        NoteContextMenuData acting = menuDataList.stream().filter(atn -> atn.myAccount.equals(myActingAccount))
                 .findAny().orElse(EMPTY);
         if (!acting.equals(EMPTY)) return acting;
 
-        AccountToNote bestAccountToNote = accountsForNote.stream().filter(atn -> atn.myAccount.equals(currentAccount))
+        NoteContextMenuData bestFit = menuDataList.stream().filter(atn -> atn.myAccount.equals(currentAccount))
                 .findAny().orElse(EMPTY);
-        for(AccountToNote accountToNote : accountsForNote) {
-            if (!bestAccountToNote.myAccount.isValidAndSucceeded()) {
-                bestAccountToNote = accountToNote;
+        for(NoteContextMenuData menuData : menuDataList) {
+            if (!bestFit.myAccount.isValidAndSucceeded()) {
+                bestFit = menuData;
             }
-            if(accountToNote.hasPrivateAccess()) {
-                bestAccountToNote = accountToNote;
+            if(menuData.hasPrivateAccess()) {
+                bestFit = menuData;
                 break;
             }
-            if(accountToNote.isSubscribed && !bestAccountToNote.isSubscribed) {
-                bestAccountToNote = accountToNote;
+            if(menuData.isSubscribed && !bestFit.isSubscribed) {
+                bestFit = menuData;
             }
-            if(accountToNote.isTiedToThisAccount() && !bestAccountToNote.isTiedToThisAccount()) {
-                bestAccountToNote = accountToNote;
+            if(menuData.isTiedToThisAccount() && !bestFit.isTiedToThisAccount()) {
+                bestFit = menuData;
             }
         }
-        return bestAccountToNote;
+        return bestFit;
     }
 
-    public AccountToNote(@NonNull NoteForAnyAccount noteForAnyAccount, MyAccount myAccount) {
+    public NoteContextMenuData(@NonNull NoteForAnyAccount noteForAnyAccount, MyAccount myAccount) {
         this.noteForAnyAccount = noteForAnyAccount;
         this.myAccount = calculateMyAccount(noteForAnyAccount.origin, myAccount);
         if (this.myAccount.isValid()) {
-            getData();
+            loadData();
         }
     }
 
@@ -120,8 +121,7 @@ public class AccountToNote {
         return ma;
     }
 
-    private void getData() {
-        final String method = "getData";
+    private void loadData() {
         isRecipient = noteForAnyAccount.audience.findSame(this.myAccount.getActor()).isSuccess();
         isAuthor = (this.myAccount.getActorId() == noteForAnyAccount.author.actorId);
         isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded();
@@ -162,7 +162,7 @@ public class AccountToNote {
 
     @Override
     public String toString() {
-        return "AccountToNote{" +
+        return TAG + "{" +
                 "noteForAnyAccount=" + noteForAnyAccount +
                 ", isAuthorMySucceededMyAccount=" + isAuthorMySucceededMyAccount +
                 ", myAccount=" + myAccount.getAccountName() +

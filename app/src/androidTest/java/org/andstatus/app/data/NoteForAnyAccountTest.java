@@ -35,13 +35,13 @@ public class NoteForAnyAccountTest {
 
         NoteForAnyAccount nfaActivity1 = new NoteForAnyAccount(myContextHolder.getNow(),
                 activity1.getId(), activity1.getNote().noteId);
-        AccountToNote atnActivity1 = new AccountToNote(nfaActivity1, ma);
-        assertTrue(atnActivity1.isAuthor);
-        assertTrue(atnActivity1.isActor);
-        assertTrue(atnActivity1.isSubscribed);
+        NoteContextMenuData dataActivity1 = new NoteContextMenuData(nfaActivity1, ma);
+        assertTrue(dataActivity1.isAuthor);
+        assertTrue(dataActivity1.isActor);
+        assertTrue(dataActivity1.isSubscribed);
         assertEquals(Visibility.PUBLIC, nfaActivity1.visibility);
-        assertTrue(atnActivity1.isTiedToThisAccount());
-        assertTrue(atnActivity1.hasPrivateAccess());
+        assertTrue(dataActivity1.isTiedToThisAccount());
+        assertTrue(dataActivity1.hasPrivateAccess());
         
         Actor author2 = mi.buildActorFromOid("acct:a2." + demoData.testRunUid + "@pump.example.com");
         final AActivity replyTo1 = mi.buildActivity(author2, "", "@" + accountActor.getUsername()
@@ -51,12 +51,12 @@ public class NoteForAnyAccountTest {
 
         NoteForAnyAccount nfaReplyTo1 = new NoteForAnyAccount(myContextHolder.getNow(),
                 replyTo1.getId(), replyTo1.getNote().noteId);
-        AccountToNote atnReplyTo1 = new AccountToNote(nfaReplyTo1, ma);
-        assertFalse(atnReplyTo1.isAuthor);
-        assertFalse(atnReplyTo1.isActor);
+        NoteContextMenuData dataReplyTo1 = new NoteContextMenuData(nfaReplyTo1, ma);
+        assertFalse(dataReplyTo1.isAuthor);
+        assertFalse(dataReplyTo1.isActor);
         assertEquals(Visibility.PRIVATE, nfaReplyTo1.visibility);
-        assertTrue(atnReplyTo1.isTiedToThisAccount());
-        assertTrue(atnReplyTo1.hasPrivateAccess());
+        assertTrue(dataReplyTo1.isTiedToThisAccount());
+        assertTrue(dataReplyTo1.hasPrivateAccess());
 
         Actor author3 = mi.buildActorFromOid("acct:b3." + demoData.testRunUid + "@pumpity.example.com");
         AActivity reply2 = mi.buildActivity(author3, "", "@" + author2.getUsername()
@@ -66,13 +66,13 @@ public class NoteForAnyAccountTest {
 
         NoteForAnyAccount nfaReply2 = new NoteForAnyAccount(myContextHolder.getNow(),
                 0, reply2.getNote().noteId);
-        AccountToNote atnReply2 = new AccountToNote(nfaReply2, ma);
-        assertFalse(atnReply2.isAuthor);
-        assertFalse(atnReply2.isActor);
+        NoteContextMenuData dataReply2 = new NoteContextMenuData(nfaReply2, ma);
+        assertFalse(dataReply2.isAuthor);
+        assertFalse(dataReply2.isActor);
         assertEquals(Visibility.PUBLIC_AND_TO_FOLLOWERS, nfaReply2.visibility);
-        assertFalse(atnReply2.isTiedToThisAccount());
-        assertFalse(atnReply2.hasPrivateAccess());
-        assertFalse(atnReply2.reblogged);
+        assertFalse(dataReply2.isTiedToThisAccount());
+        assertFalse(dataReply2.hasPrivateAccess());
+        assertFalse(dataReply2.reblogged);
 
         AActivity reblogged1 = mi.buildActivity(author3, "", "@" + author2.getUsername()
                 + " This reply is reblogged by anotherMan", replyTo1, null, DownloadStatus.LOADED);
@@ -87,13 +87,13 @@ public class NoteForAnyAccountTest {
 
         NoteForAnyAccount nfaReblogged1 = new NoteForAnyAccount(myContextHolder.getNow(),
                 0, reblogged1.getNote().noteId);
-        AccountToNote atnReblogged1 = new AccountToNote(nfaReblogged1, ma);
-        assertFalse(atnReblogged1.isAuthor);
-        assertFalse(atnReblogged1.isActor);
-        assertFalse(atnReblogged1.isSubscribed);
+        NoteContextMenuData dataReblogged1 = new NoteContextMenuData(nfaReblogged1, ma);
+        assertFalse(dataReblogged1.isAuthor);
+        assertFalse(dataReblogged1.isActor);
+        assertFalse(dataReblogged1.isSubscribed);
         assertEquals(Visibility.PRIVATE, nfaReblogged1.visibility);
-        assertFalse(atnReblogged1.isTiedToThisAccount());
-        assertFalse(atnReblogged1.hasPrivateAccess());
-        assertFalse(atnReblogged1.reblogged);
+        assertFalse(dataReblogged1.isTiedToThisAccount());
+        assertFalse(dataReblogged1.hasPrivateAccess());
+        assertFalse(dataReblogged1.reblogged);
     }
 }

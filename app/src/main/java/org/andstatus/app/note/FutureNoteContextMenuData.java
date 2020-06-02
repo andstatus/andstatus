@@ -19,7 +19,7 @@ package org.andstatus.app.note;
 import android.view.View;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.data.AccountToNote;
+import org.andstatus.app.data.NoteContextMenuData;
 import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.util.MyLog;
 
@@ -27,9 +27,10 @@ import java.util.function.Consumer;
 
 import androidx.annotation.NonNull;
 
-class NoteContextMenuData {
+class FutureNoteContextMenuData {
+    private static final String TAG = FutureNoteContextMenuData.class.getSimpleName();
     private static final int MAX_SECONDS_TO_LOAD = 10;
-    static NoteContextMenuData EMPTY = new NoteContextMenuData(NoteViewItem.EMPTY);
+    static final FutureNoteContextMenuData EMPTY = new FutureNoteContextMenuData(NoteViewItem.EMPTY);
 
     enum StateForSelectedViewItem {
         READY,
@@ -37,9 +38,10 @@ class NoteContextMenuData {
         NEW
     }
 
-    private final BaseNoteViewItem viewItem;
-    AccountToNote accountToNote = AccountToNote.EMPTY;
-    private MyAsyncTask<Void, Void, AccountToNote> loader;
+    private final long activityId;
+    private final long noteId;
+    volatile NoteContextMenuData menuData = NoteContextMenuData.EMPTY;
+    volatile private MyAsyncTask<Void, Void, NoteContextMenuData> loader;
 
     static void loadAsync(@NonNull final NoteContextMenu noteContextMenu,
                           final View view,
@@ -47,20 +49,19 @@ class NoteContextMenuData {
                           final Consumer<NoteContextMenu> next) {
 
         final NoteContextMenuContainer menuContainer = noteContextMenu.menuContainer;
-        NoteContextMenuData data = new NoteContextMenuData(viewItem);
+        FutureNoteContextMenuData future = new FutureNoteContextMenuData(viewItem);
 
-        if (menuContainer != null && view != null && viewItem != null && viewItem.getNoteId() != 0) {
-            final long noteId = viewItem.getNoteId();
-            data.loader = new MyAsyncTask<Void, Void, AccountToNote>(
-                    NoteContextMenuData.class.getSimpleName() + noteId, MyAsyncTask.PoolEnum.QUICK_UI) {
+        if (menuContainer != null && view != null && future.noteId != 0) {
+            future.loader = new MyAsyncTask<Void, Void, NoteContextMenuData>(
+                    TAG + future.noteId, MyAsyncTask.PoolEnum.QUICK_UI) {
 
                 @Override
-                protected AccountToNote doInBackground2(Void aVoid) {
+                protected NoteContextMenuData doInBackground2(Void aVoid) {
                     @NonNull final MyAccount selectedMyAccount = noteContextMenu.getSelectedActingAccount();
                     MyAccount currentMyAccount = menuContainer.getActivity().getMyContext().accounts().getCurrentAccount();
-                    AccountToNote accountToNote = AccountToNote.getAccountToActOnNote(
-                            menuContainer.getActivity().getMyContext(), viewItem.getActivityId(),
-                            noteId, selectedMyAccount, currentMyAccount);
+                    NoteContextMenuData accountToNote = NoteContextMenuData.getAccountToActOnNote(
+                            menuContainer.getActivity().getMyContext(), future.activityId,
+                            future.noteId, selectedMyAccount, currentMyAccount);
                     if (MyLog.isVerboseEnabled()) {
                         MyLog.v(noteContextMenu, "acting:" + accountToNote.getMyAccount().getAccountName()
                             + (accountToNote.getMyAccount().equals(selectedMyAccount) || selectedMyAccount.nonValid()
@@ -69,14 +70,15 @@ class NoteContextMenuData {
                                 ? "" : ", current:" + currentMyAccount.getAccountName())
                             + "\n " + accountToNote);
                     }
-                    return accountToNote.getMyAccount().isValid() ? accountToNote : AccountToNote.EMPTY;
+                    return accountToNote.getMyAccount().isValid() ? accountToNote : NoteContextMenuData.EMPTY;
                 }
 
                 @Override
-                protected void onFinish(AccountToNote accountToNote, boolean success) {
-                    data.accountToNote = accountToNote == null ? AccountToNote.EMPTY : accountToNote;
-                    noteContextMenu.setMenuData(data);
-                    if (data.accountToNote.noteForAnyAccount.noteId != 0 && viewItem.equals(noteContextMenu.getViewItem())) {
+                protected void onFinish(NoteContextMenuData menuData, boolean success) {
+                    future.menuData = menuData == null ? NoteContextMenuData.EMPTY : menuData;
+                    noteContextMenu.setFutureData(future);
+                    if (future.menuData.noteForAnyAccount.noteId != 0
+                            && noteContextMenu.getViewItem().getNoteId() == future.noteId) {
                         if (next != null) {
                             next.accept(noteContextMenu);
                         } else {
@@ -86,35 +88,36 @@ class NoteContextMenuData {
                 }
             };
         }
-        noteContextMenu.setMenuData(data);
-        if (data.loader != null) {
-            data.loader.setMaxCommandExecutionSeconds(MAX_SECONDS_TO_LOAD);
-            data.loader.execute();
+        noteContextMenu.setFutureData(future);
+        if (future.loader != null) {
+            future.loader.setMaxCommandExecutionSeconds(MAX_SECONDS_TO_LOAD);
+            future.loader.execute();
         }
     }
 
-    private NoteContextMenuData(final BaseNoteViewItem viewItem) {
-        this.viewItem = viewItem;
+    private FutureNoteContextMenuData(final BaseNoteViewItem viewItem) {
+        activityId = viewItem == null ? 0 : viewItem.getActivityId();
+        noteId = viewItem == null ? 0 : viewItem.getNoteId();
     }
 
     public long getNoteId() {
-        return viewItem == null ? 0 : viewItem.getNoteId();
+        return noteId;
     }
 
     StateForSelectedViewItem getStateFor(BaseNoteViewItem currentItem) {
-        if (viewItem == null || currentItem == null || loader == null || !viewItem.equals(currentItem)) {
+        if (noteId == 0 || currentItem == null || loader == null || currentItem.getNoteId() != noteId) {
             return StateForSelectedViewItem.NEW;
         }
         if (loader.isReallyWorking()) {
             return StateForSelectedViewItem.LOADING;
         }
-        return currentItem.getNoteId() == accountToNote.noteForAnyAccount.noteId
+        return currentItem.getNoteId() == menuData.noteForAnyAccount.noteId
                 ? StateForSelectedViewItem.READY
                 : StateForSelectedViewItem.NEW;
     }
 
     boolean isFor(long noteId) {
         return noteId != 0 && loader != null && !loader.needsBackgroundWork()
-                && noteId == accountToNote.noteForAnyAccount.noteId;
+                && noteId == menuData.noteForAnyAccount.noteId;
     }
 }

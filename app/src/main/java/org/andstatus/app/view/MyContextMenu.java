@@ -49,7 +49,7 @@ public class MyContextMenu implements View.OnCreateContextMenuListener {
      *  oh whose behalf we are going to execute an action on this line in the list (on a note / other actor...)
      */
     @NonNull
-    private MyAccount selectedActingAccount = MyAccount.EMPTY;
+    private volatile MyAccount selectedActingAccount = MyAccount.EMPTY;
 
     public MyContextMenu(@NonNull LoadableListActivity listActivity, int menuGroup) {
         this.listActivity = listActivity;

@@ -39,6 +39,7 @@ import org.andstatus.app.util.StringUtil;
  * @author yvolk@yurivolkov.com
  */
 public class NoteForAnyAccount {
+    private final static String TAG = NoteForAnyAccount.class.getSimpleName();
     public static final NoteForAnyAccount EMPTY = new NoteForAnyAccount(MyContext.EMPTY, 0, 0);
     public final MyContext myContext;
     @NonNull
@@ -57,7 +58,6 @@ public class NoteForAnyAccount {
         this.myContext = myContext;
         this.origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId));
         this.noteId = noteId;
-        final String method = "getData";
         SQLiteDatabase db = myContext.getDatabase();
         long authorId = 0;
         DownloadStatus statusLoc = DownloadStatus.UNKNOWN;
@@ -79,7 +79,7 @@ public class NoteForAnyAccount {
                     visibilityLoc = Visibility.fromCursor(cursor);
                 }
             } catch (Exception e) {
-                MyLog.i(this, method + "; SQL:'" + sql + "'", e);
+                MyLog.i(TAG, "SQL:'" + sql + "'", e);
             }
         }
         status = statusLoc;
