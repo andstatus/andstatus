@@ -44,26 +44,26 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class ListActivityTestHelper<T extends MyBaseListActivity> {
+public class ListScreenTestHelper<T extends MyBaseListActivity> {
     private final T mActivity;
     private ActivityMonitor mActivityMonitor = null;
     private String dialogTagToMonitor = null;
     private SelectorDialog dialogToMonitor = null;
 
-    public ListActivityTestHelper(T activity) {
+    public ListScreenTestHelper(T activity) {
         super();
         mActivity = activity;
     }
 
-    public ListActivityTestHelper(T activity, Class<? extends Activity> classOfActivityToMonitor) {
+    public ListScreenTestHelper(T activity, Class<? extends Activity> classOfActivityToMonitor) {
         super();
         addMonitor(classOfActivityToMonitor);
         mActivity = activity;
     }
 
-    public static <T extends MyBaseListActivity> ListActivityTestHelper<T> newForSelectorDialog( T activity,
-                                                              String dialogTagToMonitor) {
-        ListActivityTestHelper<T> helper = new ListActivityTestHelper<T>(activity);
+    public static <T extends MyBaseListActivity> ListScreenTestHelper<T> newForSelectorDialog(T activity,
+                                                                                              String dialogTagToMonitor) {
+        ListScreenTestHelper<T> helper = new ListScreenTestHelper<T>(activity);
         helper.dialogTagToMonitor = dialogTagToMonitor;
         return helper;
     }

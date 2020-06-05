@@ -26,7 +26,7 @@ import androidx.annotation.NonNull;
 
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.actor.ActorListType;
+import org.andstatus.app.actor.ActorsScreenType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.ContentValuesUtils;
@@ -222,7 +222,7 @@ public class Timeline implements Comparable<Timeline>, IsEmpty {
                 parsedUri.getOrigin(myContext),
                 StringUtil.isEmpty(searchQueryIn) ? parsedUri.getSearchQuery() : searchQueryIn
         );
-        if (timeline.getTimelineType() == TimelineType.UNKNOWN && parsedUri.getActorListType() == ActorListType.UNKNOWN) {
+        if (timeline.getTimelineType() == TimelineType.UNKNOWN && parsedUri.getActorsScreenType() == ActorsScreenType.UNKNOWN) {
             MyLog.w(Timeline.class, "fromParsedUri; uri:" + parsedUri.getUri() + "; " + timeline);
         }
         return timeline;

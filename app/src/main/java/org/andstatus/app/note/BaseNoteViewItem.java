@@ -25,7 +25,7 @@ import androidx.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.actor.ActorListLoader;
+import org.andstatus.app.actor.ActorsLoader;
 import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
@@ -366,14 +366,14 @@ public abstract class BaseNoteViewItem<T extends BaseNoteViewItem<T>> extends Vi
     }
 
     @Override
-    public void addActorsToLoad(ActorListLoader loader) {
+    public void addActorsToLoad(ActorsLoader loader) {
         loader.addActorToList(author.getActor());
         loader.addActorToList(inReplyToActor.getActor());
         audience.addActorsToLoad(loader::addActorToList);
     }
 
     @Override
-    public void setLoadedActors(ActorListLoader loader) {
+    public void setLoadedActors(ActorsLoader loader) {
         if (author.getActor().nonEmpty()) author = loader.getLoaded(author);
         if (inReplyToActor.getActor().nonEmpty()) inReplyToActor = loader.getLoaded(inReplyToActor);
         audience.setLoadedActors((Actor actor) -> loader.getLoaded(ActorViewItem.fromActor(actor)).getActor());

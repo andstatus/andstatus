@@ -19,8 +19,8 @@ package org.andstatus.app.service;
 import android.content.ContentValues;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.actor.ActorListLoader;
-import org.andstatus.app.actor.ActorListType;
+import org.andstatus.app.actor.ActorsLoader;
+import org.andstatus.app.actor.ActorsScreenType;
 import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.data.AvatarData;
@@ -109,7 +109,7 @@ public class AvatarDownloaderTest {
         loadAndAssertStatusForMa(ma, "Inexistent avatar",
                 DownloadStatus.HARD_ERROR, DownloadStatus.LOADED, false);
 
-        ActorListLoader aLoader = new ActorListLoader(myContextHolder.getNow(), ActorListType.ACTORS_AT_ORIGIN,
+        ActorsLoader aLoader = new ActorsLoader(myContextHolder.getNow(), ActorsScreenType.ACTORS_AT_ORIGIN,
                 ma.getOrigin(), 0, "");
         aLoader.addActorToList(ma.getActor());
         aLoader.load(progress -> {});

@@ -158,7 +158,7 @@
                 <data android:mimeType="vnd.android.cursor.item/org.andstatus.app.provider.note"/>
             </intent-filter>
         </activity>
-        <activity android:name=".actor.ActorList"
+        <activity android:name=".actor.ActorsScreen"
                   android:label="@string/user_list"
                   android:parentActivityName=".timeline.TimelineActivity">
             <intent-filter>
@@ -170,7 +170,7 @@
                 <action android:name="android.intent.action.SEARCH"/>
             </intent-filter>
         </activity>
-        <activity android:name=".actor.FollowersList"
+        <activity android:name=".actor.FollowersScreen"
                   android:label="@string/followers"
                   android:parentActivityName=".timeline.TimelineActivity">
             <intent-filter>

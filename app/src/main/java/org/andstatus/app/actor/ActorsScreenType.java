@@ -27,7 +27,7 @@ import androidx.annotation.StringRes;
 /**
  * These values define different named filters for lists of Actors / Users / Groups
  */
-public enum ActorListType {
+public enum ActorsScreenType {
     UNKNOWN("unknown", R.string.unknown_userlist, 0, ListScope.ORIGIN),
     /** Actors, related to the selected note, including mentioned actors */
     ACTORS_OF_NOTE("actors_of_note", R.string.users_of_message, 0, ListScope.ORIGIN),
@@ -44,7 +44,7 @@ public enum ActorListType {
     private final int titleResWithParamsId;
     public final ListScope scope;
 
-    ActorListType(String code, int resId, int resWithParamsId, ListScope scope) {
+    ActorsScreenType(String code, int resId, int resWithParamsId, ListScope scope) {
         this.code = code;
         this.titleResId = resId;
         titleResWithParamsId = resWithParamsId;
@@ -60,7 +60,7 @@ public enum ActorListType {
     
     @Override
     public String toString() {
-        return "ActorList:" + code;
+        return "ActorsScreen:" + code;
     }
 
     /** Localized title for UI */
@@ -79,8 +79,8 @@ public enum ActorListType {
     /**
      * Returns the enum or UNKNOWN
      */
-    public static ActorListType load(String strCode) {
-        for (ActorListType tt : ActorListType.values()) {
+    public static ActorsScreenType load(String strCode) {
+        for (ActorsScreenType tt : ActorsScreenType.values()) {
             if (tt.code.equals(strCode)) {
                 return tt;
             }

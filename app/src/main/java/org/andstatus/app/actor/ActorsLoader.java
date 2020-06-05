@@ -27,9 +27,9 @@ import org.andstatus.app.util.StringUtil;
 
 import static java.util.stream.Collectors.toList;
 
-public class ActorListLoader extends SyncLoader<ActorViewItem> {
+public class ActorsLoader extends SyncLoader<ActorViewItem> {
     final MyContext myContext;
-    protected final ActorListType mActorListType;
+    protected final ActorsScreenType actorsScreenType;
     private String searchQuery = "";
     protected final MyAccount ma;
     protected final Origin origin;
@@ -39,10 +39,10 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
 
     private LoadableListActivity.ProgressPublisher mProgress;
 
-    public ActorListLoader(MyContext myContext, ActorListType actorListType, Origin origin, long centralActorId,
-                           String searchQuery) {
+    public ActorsLoader(MyContext myContext, ActorsScreenType actorsScreenType, Origin origin, long centralActorId,
+                        String searchQuery) {
         this.myContext = myContext;
-        mActorListType = actorListType;
+        this.actorsScreenType = actorsScreenType;
         this.searchQuery = searchQuery;
         this.ma = myContext.accounts().getFirstPreferablySucceededForOrigin(origin);
         this.origin = origin;
@@ -91,7 +91,7 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
     }
 
     protected void loadInternal() {
-        Uri mContentUri = MatchedUri.getActorListUri(mActorListType, origin.getId(), centralActorId, searchQuery);
+        Uri mContentUri = MatchedUri.getActorsScreenUri(actorsScreenType, origin.getId(), centralActorId, searchQuery);
         try (Cursor c = myContext.context().getContentResolver()
                     .query(mContentUri, ActorSql.baseProjection(), getSelection(), null, null)) {
             while (c != null && c.moveToNext()) {
@@ -115,10 +115,10 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
 
     private void populateItem(Cursor cursor) {
         ActorViewItem item = ActorViewItem.EMPTY.fromCursor(myContext, cursor);
-        if (mActorListType == ActorListType.FRIENDS) {
+        if (actorsScreenType == ActorsScreenType.FRIENDS) {
             item.hideFollowedBy(centralActor);
         }
-        if (mActorListType == ActorListType.FOLLOWERS) {
+        if (actorsScreenType == ActorsScreenType.FOLLOWERS) {
             item.hideFollowing(centralActor);
         }
         int index = items.indexOf(item);
@@ -135,12 +135,12 @@ public class ActorListLoader extends SyncLoader<ActorViewItem> {
     }
 
     protected String getSubtitle() {
-        return MyPreferences.isShowDebuggingInfoInUi() ? mActorListType.toString() : "";
+        return MyPreferences.isShowDebuggingInfoInUi() ? actorsScreenType.toString() : "";
     }
 
     @Override
     public String toString() {
-        return mActorListType.toString()
+        return actorsScreenType.toString()
                 + "; central=" + centralActorId
                 + "; " + super.toString();
     }

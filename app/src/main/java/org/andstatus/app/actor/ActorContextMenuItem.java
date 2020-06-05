@@ -126,7 +126,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
-            startActorListActivity(menu, ActorListType.FOLLOWERS);
+            startActorsScreen(menu, ActorsScreenType.FOLLOWERS);
         }
     },
     FRIENDS(true) {
@@ -138,7 +138,7 @@ public enum ActorContextMenuItem implements ContextMenuItem {
 
         @Override
         void executeOnUiThread(ActorContextMenu menu, NoteEditorData editorData) {
-            startActorListActivity(menu, ActorListType.FRIENDS);
+            startActorsScreen(menu, ActorsScreenType.FRIENDS);
         }
     },
     NONEXISTENT(),
@@ -247,13 +247,13 @@ public enum ActorContextMenuItem implements ContextMenuItem {
         }
     }
 
-    void startActorListActivity(ActorContextMenu menu, ActorListType actorListType) {
-        Uri uri = MatchedUri.getActorListUri(
-                actorListType,
+    void startActorsScreen(ActorContextMenu menu, ActorsScreenType actorsScreenType) {
+        Uri uri = MatchedUri.getActorsScreenUri(
+                actorsScreenType,
                 menu.getOrigin().getId(),
                 menu.getViewItem().getActorId(), "");
         if (MyLog.isDebugEnabled()) {
-            MyLog.d(this, "startActorList, " + actorListType + ", uri:" + uri);
+            MyLog.d(this, "startActorsScreen, " + actorsScreenType + ", uri:" + uri);
         }
         menu.getActivity().startActivity(MyAction.VIEW_FOLLOWERS.getIntent(uri));
     }

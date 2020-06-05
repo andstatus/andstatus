@@ -28,7 +28,7 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.note.NoteContextMenuItem;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.ListActivityTestHelper;
+import org.andstatus.app.timeline.ListScreenTestHelper;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.TimelineActivityTest;
 import org.andstatus.app.timeline.TimelineData;
@@ -49,7 +49,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
+public class ActorsScreenTest extends TimelineActivityTest<ActivityViewItem> {
     private long noteId;
 
     @Override
@@ -76,7 +76,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
     public void testActorsOfNote() throws InterruptedException {
         final String method = "testActorsOfNote";
         TestSuite.waitForListLoaded(getActivity(), 2);
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(), ActorList.class);
+        ListScreenTestHelper<TimelineActivity> helper = new ListScreenTestHelper<>(getActivity(), ActorsScreen.class);
         String content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
         String logMsg = MyQuery.noteInfoForLog(getActivity().getMyContext(), noteId);
 
@@ -87,11 +87,11 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         assertEquals(logMsg, "unknownUser@example.com", actors.get(2).getUniqueName());
         assertEquals(logMsg, "unknownuser@example.com", actors.get(2).getWebFingerId());
 
-        ActorList actorList = Try.of(() -> tryToOpenActorList(method, helper, logMsg))
-                .recover(AssertionError.class, e -> tryToOpenActorList(method, helper, logMsg))
+        ActorsScreen actorsScreen = Try.of(() -> tryToOpenActorsScreen(method, helper, logMsg))
+                .recover(AssertionError.class, e -> tryToOpenActorsScreen(method, helper, logMsg))
                 .getOrElseThrow(AssertionError::new);
 
-        List<ActorViewItem> listItems = actorList.getListLoader().getList();
+        List<ActorViewItem> listItems = actorsScreen.getListLoader().getList();
 
         assertEquals(listItems.toString(), 5, listItems.size());
 
@@ -104,13 +104,13 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         assertTrue("Not found " + demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA.nonEmpty());
         compareAttributes(actorE, actorA, false);
 
-        ListActivityTestHelper<ActorList> actorListHelper = new ListActivityTestHelper<>(actorList);
-        actorListHelper.clickListAtPosition(method, actorListHelper.getPositionOfListItemId(listItems.get(
+        ListScreenTestHelper<ActorsScreen> actorsScreenHelper = new ListScreenTestHelper<>(actorsScreen);
+        actorsScreenHelper.clickListAtPosition(method, actorsScreenHelper.getPositionOfListItemId(listItems.get(
                 listItems.size() > 2 ? 2 : 0).getActorId()));
         DbUtils.waitMs(method, 500);
     }
 
-    private ActorList tryToOpenActorList(String method, ListActivityTestHelper<TimelineActivity> helper, String logMsg) throws InterruptedException {
+    private ActorsScreen tryToOpenActorsScreen(String method, ListScreenTestHelper<TimelineActivity> helper, String logMsg) throws InterruptedException {
         ActivityViewItem item = ActivityViewItem.EMPTY;
         TimelineData<ActivityViewItem> timelineData = getActivity().getListData();
         for (int position=0; position < timelineData.size(); position++) {
@@ -126,12 +126,12 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         assertTrue("Invoked Context menu for " + logMsg, helper.invokeContextMenuAction4ListItemId(method,
                 item.getId(), NoteContextMenuItem.ACTORS_OF_NOTE, R.id.note_wrapper));
 
-        ActorList actorList = (ActorList) helper.waitForNextActivity(method, 25000);
-        TestSuite.waitForListLoaded(actorList, 1);
-        return actorList;
+        ActorsScreen actorsScreen = (ActorsScreen) helper.waitForNextActivity(method, 25000);
+        TestSuite.waitForListLoaded(actorsScreen, 1);
+        return actorsScreen;
     }
 
-    private void compareAttributes(Actor expected, Actor actual, boolean forActorList) {
+    private void compareAttributes(Actor expected, Actor actual, boolean forActorsScreen) {
         assertEquals("Oid", expected.oid, actual.oid);
         assertEquals("Username", expected.getUsername(), actual.getUsername());
         assertEquals("WebFinger ID", expected.getWebFingerId(), actual.getWebFingerId());
@@ -140,7 +140,7 @@ public class ActorListTest extends TimelineActivityTest<ActivityViewItem> {
         assertEquals("Location", expected.location, actual.location);
         assertEquals("Profile URL", expected.getProfileUrl(), actual.getProfileUrl());
         assertEquals("Homepage", expected.getHomepage(), actual.getHomepage());
-        if (!forActorList) {
+        if (!forActorsScreen) {
             assertEquals("Avatar URL", expected.getAvatarUrl(), actual.getAvatarUrl());
             assertEquals("Endpoints", expected.endpoints, actual.endpoints);
         }

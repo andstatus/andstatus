@@ -143,7 +143,7 @@ public class PublicTimelineActivityTest extends TimelineActivityTest<ActivityVie
         for (int index = 0; index < list.getChildCount(); index++) {
             View noteView = list.getChildAt(index);
             TextView bodyView = noteView.findViewById(R.id.note_body);
-            final BaseNoteViewItem viewItem = ListActivityTestHelper.toBaseNoteViewItem(
+            final BaseNoteViewItem viewItem = ListScreenTestHelper.toBaseNoteViewItem(
                     timelineActivity.getListAdapter().getItem(noteView));
             if (bodyView != null) {
                 assertTrue("Note #" + viewItem.getId() + " '" + viewItem.getContent()

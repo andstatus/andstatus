@@ -27,7 +27,7 @@ import android.provider.BaseColumns;
 
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.actor.ActorListType;
+import org.andstatus.app.actor.ActorsScreenType;
 import org.andstatus.app.actor.GroupType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.database.table.ActivityTable;
@@ -445,13 +445,13 @@ public class MyProvider extends ContentProvider {
                 break;
 
             case ACTOR:
-            case ACTORLIST:
-            case ACTORLIST_SEARCH:
+            case ACTORS:
+            case ACTORS_SEARCH:
                 tables = Collections.singletonList(ActorSql.allTables());
                 qb.setProjectionMap(ActorSql.fullProjectionMap);
                 rawQuery = uriParser.getSearchQuery();
                 SqlWhere actorWhere = new SqlWhere().append(selectionIn);
-                if (uriParser.getActorListType() == ActorListType.GROUPS_AT_ORIGIN) {
+                if (uriParser.getActorsScreenType() == ActorsScreenType.GROUPS_AT_ORIGIN) {
                     actorWhere.append(ActorTable.GROUP_TYPE +
                         SqlIds.fromIds(GroupType.GENERIC.id, GroupType.ACTOR_OWNED.id).getSql());
                 }
@@ -468,7 +468,7 @@ public class MyProvider extends ContentProvider {
                 limit =  String.valueOf(PAGE_SIZE);
                 break;
 
-            case ACTORLIST_ITEM:
+            case ACTORS_ITEM:
                 tables = Collections.singletonList(ActorSql.allTables());
                 qb.setProjectionMap(ActorSql.fullProjectionMap);
                 selection = selectionIn;
@@ -497,9 +497,9 @@ public class MyProvider extends ContentProvider {
                     break;
 
                 case ACTOR:
-                case ACTORLIST:
-                case ACTORLIST_ITEM:
-                case ACTORLIST_SEARCH:
+                case ACTORS:
+                case ACTORS_ITEM:
+                case ACTORS_SEARCH:
                 case ACTOR_ITEM:
                     sortOrder = ActorTable.DEFAULT_SORT_ORDER;
                     break;

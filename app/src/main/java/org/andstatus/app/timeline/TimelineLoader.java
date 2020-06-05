@@ -18,8 +18,8 @@ package org.andstatus.app.timeline;
 
 import android.database.Cursor;
 
-import org.andstatus.app.actor.ActorListLoader;
-import org.andstatus.app.actor.ActorListType;
+import org.andstatus.app.actor.ActorsLoader;
+import org.andstatus.app.actor.ActorsScreenType;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.list.SyncLoader;
 import org.andstatus.app.util.I18n;
@@ -124,7 +124,7 @@ public class TimelineLoader<T extends ViewItem<T>> extends SyncLoader<T> {
 
     private List<T> loadActors(List<T> items) {
         if (items.isEmpty() && !params.timeline.hasActorProfile()) return items;
-        ActorListLoader loader = new ActorListLoader(params.getMyContext(), ActorListType.ACTORS_AT_ORIGIN,
+        ActorsLoader loader = new ActorsLoader(params.getMyContext(), ActorsScreenType.ACTORS_AT_ORIGIN,
                 getParams().getTimeline().getOrigin(), 0, "");
         items.forEach(item -> item.addActorsToLoad(loader));
         if (params.timeline.getTimelineType().hasActorProfile()) loader.addActorToList(params.timeline.actor);

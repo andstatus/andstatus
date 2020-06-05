@@ -235,7 +235,7 @@ public class ManageTimelines extends LoadableListActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.timeline_list, menu);
+        getMenuInflater().inflate(R.menu.timelines, menu);
         return super.onCreateOptionsMenu(menu);
     }
 

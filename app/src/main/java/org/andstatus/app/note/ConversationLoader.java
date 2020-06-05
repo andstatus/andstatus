@@ -22,8 +22,8 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.actor.ActorListLoader;
-import org.andstatus.app.actor.ActorListType;
+import org.andstatus.app.actor.ActorsLoader;
+import org.andstatus.app.actor.ActorsScreenType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.data.MatchedUri;
@@ -131,7 +131,7 @@ public abstract class ConversationLoader extends SyncLoader<ConversationViewItem
 
     private void loadActors(List<ConversationViewItem> items) {
         if (items.isEmpty()) return;
-        ActorListLoader loader = new ActorListLoader(myContext, ActorListType.ACTORS_AT_ORIGIN,
+        ActorsLoader loader = new ActorsLoader(myContext, ActorsScreenType.ACTORS_AT_ORIGIN,
                 ma.getOrigin(), 0, "");
         items.forEach(item -> item.addActorsToLoad(loader));
         if (loader.getList().isEmpty()) return;

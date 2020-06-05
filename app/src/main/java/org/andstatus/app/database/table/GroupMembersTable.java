@@ -20,7 +20,8 @@ import android.database.sqlite.SQLiteDatabase;
 
 import org.andstatus.app.data.DbUtils;
 
-/** Actors-members of the {@link GroupMembersTable#GROUP_ID} group */
+/** Actors-members of the group
+ * The Group is an Actor also, so {@link GroupMembersTable#GROUP_ID} refers to the same {@link ActorTable} */
 public final class GroupMembersTable {
     public static final String TABLE_NAME = "group_members";
     private GroupMembersTable() {

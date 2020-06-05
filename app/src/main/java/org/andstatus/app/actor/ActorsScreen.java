@@ -47,11 +47,11 @@ import org.andstatus.app.view.MyContextMenu;
  *  e.g. "Actors of the note", "Followers of my account(s)" etc.
  *  @author yvolk@yurivolkov.com
  */
-public class ActorList extends NoteEditorListActivity {
-    protected ActorListType mActorListType = ActorListType.UNKNOWN;
+public class ActorsScreen extends NoteEditorListActivity {
+    protected ActorsScreenType actorsScreenType = ActorsScreenType.UNKNOWN;
     private ActorContextMenu contextMenu = null;
 
-    public ActorList() {
+    public ActorsScreen() {
         mLayoutId = R.layout.my_list_swipe;
     }
 
@@ -62,14 +62,14 @@ public class ActorList extends NoteEditorListActivity {
             return;
         }
 
-        mActorListType = getParsedUri().getActorListType();
+        actorsScreenType = getParsedUri().getActorsScreenType();
         contextMenu = new ActorContextMenu(this, MyContextMenu.MENU_GROUP_OBJACTOR);
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.actor_list, menu);
+        getMenuInflater().inflate(R.menu.actors, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -104,13 +104,13 @@ public class ActorList extends NoteEditorListActivity {
     }
 
     @Override
-    protected ActorListLoader newSyncLoader(Bundle args) {
-        switch (mActorListType) {
+    protected ActorsLoader newSyncLoader(Bundle args) {
+        switch (actorsScreenType) {
             case ACTORS_OF_NOTE:
-                return new ActorsOfNoteListLoader(myContext, mActorListType, getParsedUri().getOrigin(myContext),
+                return new ActorsOfNoteLoader(myContext, actorsScreenType, getParsedUri().getOrigin(myContext),
                         centralItemId, getParsedUri().getSearchQuery());
             default:
-                return new ActorListLoader(myContext, mActorListType, getParsedUri().getOrigin(myContext),
+                return new ActorsLoader(myContext, actorsScreenType, getParsedUri().getOrigin(myContext),
                         centralItemId, getParsedUri().getSearchQuery());
         }
     }
@@ -130,27 +130,27 @@ public class ActorList extends NoteEditorListActivity {
     }
 
     @SuppressWarnings("unchecked")
-    protected ActorListLoader getListLoader() {
-        return (ActorListLoader) getLoaded();
+    protected ActorsLoader getListLoader() {
+        return (ActorsLoader) getLoaded();
     }
 
     @Override
     protected CharSequence getCustomTitle() {
         mSubtitle = I18n.trimTextAt(MyHtml.htmlToCompactPlainText(getListLoader().getSubtitle()), 80);
         final MyStringBuilder title = new MyStringBuilder();
-        if (mActorListType.scope == ListScope.ORIGIN) {
-            title.withSpace(mActorListType.title(this));
+        if (actorsScreenType.scope == ListScope.ORIGIN) {
+            title.withSpace(actorsScreenType.title(this));
             Origin origin = getParsedUri().getOrigin(myContext);
             if (origin.isValid()) {
-                title.withSpace(mActorListType.scope.timelinePreposition(myContext));
+                title.withSpace(actorsScreenType.scope.timelinePreposition(myContext));
                 title.withSpace(origin.getName());
             }
         } else {
             Actor actor = Actor.load(myContext, getParsedUri().getActorId());
             if (actor.isEmpty()) {
-                title.withSpace(mActorListType.title(this));
+                title.withSpace(actorsScreenType.title(this));
             } else {
-                title.withSpace(mActorListType.title(this, actor.getActorNameInTimeline()));
+                title.withSpace(actorsScreenType.title(this, actor.getActorNameInTimeline()));
             }
         }
         if (StringUtil.nonEmpty(getParsedUri().getSearchQuery())) {

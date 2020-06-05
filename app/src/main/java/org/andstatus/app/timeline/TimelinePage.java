@@ -18,7 +18,7 @@ package org.andstatus.app.timeline;
 
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.actor.ActorListLoader;
+import org.andstatus.app.actor.ActorsLoader;
 import org.andstatus.app.actor.ActorViewItem;
 
 import java.util.Collections;
@@ -47,7 +47,7 @@ public class TimelinePage<T extends ViewItem<T>> {
         this.items = items == null ? Collections.emptyList() : items;
     }
 
-    public void setLoadedActor(ActorListLoader loader) {
+    public void setLoadedActor(ActorsLoader loader) {
         if (params.timeline.getTimelineType().hasActorProfile()) {
             int index = loader.getList().indexOf(ActorViewItem.fromActor(params.timeline.actor));
             if (index >= 0) actorViewItem = loader.getList().get(index);

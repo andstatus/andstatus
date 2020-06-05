@@ -19,7 +19,7 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.http.HttpReadResult;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.service.MyServiceTestHelper;
-import org.andstatus.app.timeline.ListActivityTestHelper;
+import org.andstatus.app.timeline.ListScreenTestHelper;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.TimelineActivityTest;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -100,7 +100,7 @@ public class UnsentNotesTest extends TimelineActivityTest<ActivityViewItem> {
         final String method = "testGnuSocialReblog";
         MyLog.v(this, method + " started");
         TestSuite.waitForListLoaded(getActivity(), 1);
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity());
+        ListScreenTestHelper<TimelineActivity> helper = new ListScreenTestHelper<>(getActivity());
         long itemId = helper.getListItemIdOfLoadedReply(item -> !item.visibility.isPrivate());
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, itemId);
         String noteOid = MyQuery.idToOid(getActivity().getMyContext(), OidEnum.NOTE_OID, noteId, 0);

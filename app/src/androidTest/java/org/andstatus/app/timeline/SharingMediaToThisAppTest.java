@@ -65,9 +65,9 @@ public class SharingMediaToThisAppTest extends TimelineActivityTest<ActivityView
     @Test
     public void testSharingMediaToThisApp() throws InterruptedException {
         final String method = "testSharingMediaToThisApp";
-        ListActivityTestHelper<TimelineActivity> listActivityTestHelper =
-                ListActivityTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
-        listActivityTestHelper.selectIdFromSelectorDialog(method, ma.getActorId());
+        ListScreenTestHelper<TimelineActivity> listScreenTestHelper =
+                ListScreenTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
+        listScreenTestHelper.selectIdFromSelectorDialog(method, ma.getActorId());
 
         View editorView = getActivity().findViewById(R.id.note_editor);
         ActivityTestHelper.waitViewVisible(method, editorView);

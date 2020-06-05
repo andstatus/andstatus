@@ -30,7 +30,7 @@ import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.MyAction;
 import org.andstatus.app.account.AccountSelector;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.actor.ActorListType;
+import org.andstatus.app.actor.ActorsScreenType;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyProvider;
@@ -291,8 +291,8 @@ public enum NoteContextMenuItem implements ContextMenuItem {
     ACTORS_OF_NOTE(false, true) {
         @Override
         void executeOnUiThread(NoteContextMenu menu, NoteEditorData editorData) {
-            Uri uri = MatchedUri.getActorListUri(
-                    ActorListType.ACTORS_OF_NOTE, menu.getOrigin().getId(),
+            Uri uri = MatchedUri.getActorsScreenUri(
+                    ActorsScreenType.ACTORS_OF_NOTE, menu.getOrigin().getId(),
                     menu.getNoteId(), "");
             if (MyLog.isLoggable(this, MyLog.DEBUG)) {
                 MyLog.d(this, "onItemClick, startActivity=" + uri);

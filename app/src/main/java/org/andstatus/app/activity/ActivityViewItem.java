@@ -21,7 +21,7 @@ import android.database.Cursor;
 
 import androidx.annotation.NonNull;
 
-import org.andstatus.app.actor.ActorListLoader;
+import org.andstatus.app.actor.ActorsLoader;
 import org.andstatus.app.actor.ActorViewItem;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.context.MyPreferences;
@@ -181,7 +181,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     }
 
     @Override
-    public void addActorsToLoad(ActorListLoader loader) {
+    public void addActorsToLoad(ActorsLoader loader) {
         noteViewItem.addActorsToLoad(loader);
         if (activityType != ActivityType.CREATE && activityType != ActivityType.UPDATE) {
             loader.addActorToList(actor.getActor());
@@ -190,7 +190,7 @@ public class ActivityViewItem extends ViewItem<ActivityViewItem> implements Comp
     }
 
     @Override
-    public void setLoadedActors(ActorListLoader loader) {
+    public void setLoadedActors(ActorsLoader loader) {
         noteViewItem.setLoadedActors(loader);
         if (activityType != ActivityType.CREATE && activityType != ActivityType.UPDATE) {
             int index = loader.getList().indexOf(actor);

@@ -19,7 +19,7 @@ package org.andstatus.app.data;
 import android.content.UriMatcher;
 import android.net.Uri;
 
-import org.andstatus.app.actor.ActorListType;
+import org.andstatus.app.actor.ActorsScreenType;
 import org.andstatus.app.context.TestSuite;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.OriginType;
@@ -40,18 +40,18 @@ public class ParsedUriTest {
     }
 
     @Test
-    public void testActorList() {
-        assertOneActorList(demoData.getPumpioConversationOrigin().getId());
-        assertOneActorList(0);
+    public void testActorsScreen() {
+        assertOneActorsScreen(demoData.getPumpioConversationOrigin().getId());
+        assertOneActorsScreen(0);
     }
 
-    private void assertOneActorList(long originId) {
+    private void assertOneActorsScreen(long originId) {
         long noteId = 2;
-        Uri uri = MatchedUri.getActorListUri(ActorListType.ACTORS_OF_NOTE, originId, noteId, "");
+        Uri uri = MatchedUri.getActorsScreenUri(ActorsScreenType.ACTORS_OF_NOTE, originId, noteId, "");
         ParsedUri parsedUri = ParsedUri.fromUri(uri);
         String msgLog = parsedUri.toString();
         assertEquals(TimelineType.UNKNOWN, parsedUri.getTimelineType());
-        assertEquals(msgLog, ActorListType.ACTORS_OF_NOTE, parsedUri.getActorListType());
+        assertEquals(msgLog, ActorsScreenType.ACTORS_OF_NOTE, parsedUri.getActorsScreenType());
         assertEquals(msgLog, originId, parsedUri.getOriginId());
         assertEquals(msgLog, noteId, parsedUri.getNoteId());
         assertEquals(msgLog, noteId, parsedUri.getItemId());

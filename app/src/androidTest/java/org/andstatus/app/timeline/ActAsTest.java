@@ -74,7 +74,7 @@ public class ActAsTest extends TimelineActivityTest<ActivityViewItem> {
     private boolean oneAttempt(int attempt) throws InterruptedException {
         final String method = "actAsActor";
         TimelineData<ActivityViewItem> listData = getActivity().getListData();
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
+        ListScreenTestHelper<TimelineActivity> helper = new ListScreenTestHelper<>(getActivity(),
                 ConversationActivity.class);
         long listItemId = helper.getListItemIdOfLoadedReply();
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId);

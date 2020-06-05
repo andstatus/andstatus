@@ -158,7 +158,7 @@ public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable 
         }
 
         private List<ActorViewItem> loadFiltered(boolean matchGroupsOnly, String prefixString) {
-            ActorListLoader loader = new ActorListLoader(myActivity.getMyContext(), ActorListType.ACTORS_AT_ORIGIN,
+            ActorsLoader loader = new ActorsLoader(myActivity.getMyContext(), ActorsScreenType.ACTORS_AT_ORIGIN,
                     origin, 0, "") {
                 @NonNull
                 @Override

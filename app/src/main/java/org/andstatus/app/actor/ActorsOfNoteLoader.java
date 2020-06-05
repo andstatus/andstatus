@@ -28,14 +28,14 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ActorsOfNoteListLoader extends ActorListLoader {
+public class ActorsOfNoteLoader extends ActorsLoader {
     private final long selectedNoteId;
     private final Origin originOfSelectedNote;
     final String noteContent;
 
-    public ActorsOfNoteListLoader(MyContext myContext, ActorListType actorListType, Origin origin, long noteId,
-                                  String searchQuery) {
-        super(myContext, actorListType, origin, 0, searchQuery);
+    public ActorsOfNoteLoader(MyContext myContext, ActorsScreenType actorsScreenType, Origin origin, long noteId,
+                              String searchQuery) {
+        super(myContext, actorsScreenType, origin, 0, searchQuery);
         selectedNoteId = noteId;
         noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, selectedNoteId);
         originOfSelectedNote = myContextHolder.getNow().origins().fromId(

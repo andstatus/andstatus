@@ -26,7 +26,7 @@ import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.data.OidEnum;
 import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.timeline.ListActivityTestHelper;
+import org.andstatus.app.timeline.ListScreenTestHelper;
 import org.andstatus.app.util.MyLog;
 import org.junit.Test;
 
@@ -36,11 +36,11 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class ActorListWorkTest extends ActivityTest<ActorList> {
+public class ActorsScreenWorkTest extends ActivityTest<ActorsScreen> {
 
     @Override
-    protected Class<ActorList> getActivityClass() {
-        return ActorList.class;
+    protected Class<ActorsScreen> getActivityClass() {
+        return ActorsScreen.class;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
         MyLog.i(this, "setUp ended");
 
         return new Intent(MyAction.VIEW_ACTORS.getAction(),
-                MatchedUri.getActorListUri(ActorListType.ACTORS_OF_NOTE, demoData.getPumpioConversationOrigin().getId(),
+                MatchedUri.getActorsScreenUri(ActorsScreenType.ACTORS_OF_NOTE, demoData.getPumpioConversationOrigin().getId(),
                         noteId, ""));
     }
 
@@ -62,22 +62,22 @@ public class ActorListWorkTest extends ActivityTest<ActorList> {
     public void testFriendsList() throws InterruptedException {
         final String method = "testFriendsList";
         TestSuite.waitForListLoaded(getActivity(), 2);
-        ListActivityTestHelper<ActorList> helper = new ListActivityTestHelper<>(getActivity(), FollowersList.class);
+        ListScreenTestHelper<ActorsScreen> helper = new ListScreenTestHelper<>(getActivity(), FollowersScreen.class);
 
         List<ActorViewItem> listItems = getActivity().getListLoader().getList();
         assertEquals(listItems.toString(), 5, listItems.size());
 
-        Actor actor = ActorListTest.getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
+        Actor actor = ActorsScreenTest.getByActorOid(listItems, demoData.conversationAuthorThirdActorOid);
         assertTrue("Not found " + demoData.conversationAuthorThirdActorOid, actor.nonEmpty());
 
         assertTrue("Invoked Context menu for " + actor, helper.invokeContextMenuAction4ListItemId(
                 method, actor.actorId, ActorContextMenuItem.FRIENDS, 0));
 
-        FollowersList actorList = (FollowersList) helper.waitForNextActivity(method, 15000);
-        TestSuite.waitForListLoaded(actorList, 1);
+        FollowersScreen followersScreen = (FollowersScreen) helper.waitForNextActivity(method, 15000);
+        TestSuite.waitForListLoaded(followersScreen, 1);
 
-        List<ActorViewItem> items = actorList.getListLoader().getList();
-        ListActivityTestHelper<FollowersList> followersHelper = new ListActivityTestHelper<>(actorList);
+        List<ActorViewItem> items = followersScreen.getListLoader().getList();
+        ListScreenTestHelper<FollowersScreen> followersHelper = new ListScreenTestHelper<>(followersScreen);
         followersHelper.clickListAtPosition(method,
                 followersHelper.getPositionOfListItemId(items.get(0).getActorId()));
         DbUtils.waitMs(method, 500);

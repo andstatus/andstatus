@@ -26,12 +26,12 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MentionedActorsListLoader extends ActorListLoader {
+public class MentionedActorsLoader extends ActorsLoader {
     private final long selectedNoteId;
     private final Origin originOfSelectedNote;
 
-    public MentionedActorsListLoader(MyContext myContext, Origin origin, long noteId) {
-        super(myContext, ActorListType.ACTORS_OF_NOTE, origin, 0, "");
+    public MentionedActorsLoader(MyContext myContext, Origin origin, long noteId) {
+        super(myContext, ActorsScreenType.ACTORS_OF_NOTE, origin, 0, "");
         selectedNoteId = noteId;
         originOfSelectedNote = myContextHolder.getNow().origins().fromId(
                 MyQuery.noteIdToOriginId(selectedNoteId));

@@ -23,7 +23,7 @@ import androidx.annotation.NonNull;
 
 import org.andstatus.app.ClassInApplicationPackage;
 import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.actor.ActorListType;
+import org.andstatus.app.actor.ActorsScreenType;
 import org.andstatus.app.database.DatabaseHolder;
 import org.andstatus.app.database.table.ActivityTable;
 import org.andstatus.app.database.table.ActorTable;
@@ -56,11 +56,11 @@ public enum MatchedUri {
     ORIGIN(8),
     ORIGIN_ITEM(11),
     /**
-     * List of Actors
+     * Actors screens
      */
-    ACTORLIST(5),
-    ACTORLIST_SEARCH(12),
-    ACTORLIST_ITEM(13),
+    ACTORS(5),
+    ACTORS_SEARCH(12),
+    ACTORS_ITEM(13),
     /**
      * Operations on {@link ActorTable} itself
      */
@@ -133,9 +133,9 @@ public enum MatchedUri {
         URI_MATCHER.addURI(AUTHORITY, OriginTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", ORIGIN_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, OriginTable.TABLE_NAME + "/" + CONTENT_SEGMENT, ORIGIN.code);
 
-        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CONTENT_ITEM_SEGMENT + "/#", ACTORLIST_ITEM.code);
-        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#/" + SEARCH_SEGMENT + "/*", ACTORLIST_SEARCH.code);
-        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#", ACTORLIST.code);
+        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CONTENT_ITEM_SEGMENT + "/#", ACTORS_ITEM.code);
+        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#/" + SEARCH_SEGMENT + "/*", ACTORS_SEARCH.code);
+        URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + LISTTYPE_SEGMENT + "/*/" + ORIGIN_SEGMENT + "/#/" + CENTRAL_ITEM_SEGMENT + "/#", ACTORS.code);
         URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + CONTENT_ITEM_SEGMENT + "/#", ACTOR_ITEM.code);
         URI_MATCHER.addURI(AUTHORITY, ActorTable.TABLE_NAME + "/#/" + CONTENT_SEGMENT, ACTOR.code);
     }
@@ -168,7 +168,7 @@ public enum MatchedUri {
                 type = CONTENT_ITEM_TYPE_PREFIX + OriginTable.TABLE_NAME;
                 break;
             case ACTOR:
-            case ACTORLIST:
+            case ACTORS:
                 type = CONTENT_TYPE_PREFIX + ActorTable.TABLE_NAME;
                 break;
             case ACTOR_ITEM:
@@ -206,13 +206,13 @@ public enum MatchedUri {
     }
 
     /**
-     * Build an ActorList Uri for this Actor / {@link MyAccount}
+     * Build Uri for this Actor on an ActorsScreen / {@link MyAccount}
      * @param searchQuery
      */
-    public static Uri getActorListUri(ActorListType actorListType, long originId, long centralItemId,
-                                      String searchQuery) {
+    public static Uri getActorsScreenUri(ActorsScreenType actorsScreenType, long originId, long centralItemId,
+                                         String searchQuery) {
         Uri uri = getBaseAccountUri(0, ActorTable.TABLE_NAME);
-        uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + actorListType.save());
+        uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + actorsScreenType.save());
         uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + originId);
         uri = Uri.withAppendedPath(uri, CENTRAL_ITEM_SEGMENT);
         uri = ContentUris.withAppendedId(uri, centralItemId);

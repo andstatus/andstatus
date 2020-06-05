@@ -21,7 +21,7 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 
 import org.andstatus.app.IntentExtra;
-import org.andstatus.app.actor.ActorListType;
+import org.andstatus.app.actor.ActorsScreenType;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.TimelineType;
@@ -73,8 +73,8 @@ public class ParsedUri {
                 case TIMELINE_ITEM:
                 case NOTE_ITEM:
                 case ORIGIN_ITEM:
-                case ACTORLIST:
-                case ACTORLIST_SEARCH:
+                case ACTORS:
+                case ACTORS_SEARCH:
                 case ACTOR_ITEM:
                     accountActorId = Long.parseLong(uri.getPathSegments().get(1));
                     break;
@@ -99,13 +99,13 @@ public class ParsedUri {
                 case ACTOR_ITEM:
                     actorId = Long.parseLong(uri.getPathSegments().get(3));
                     break;
-                case ACTORLIST:
-                case ACTORLIST_SEARCH:
-                    if (getActorListType() == ActorListType.FOLLOWERS || getActorListType() == ActorListType.FRIENDS) {
+                case ACTORS:
+                case ACTORS_SEARCH:
+                    if (getActorsScreenType() == ActorsScreenType.FOLLOWERS || getActorsScreenType() == ActorsScreenType.FRIENDS) {
                         actorId = getItemId();
                     }
                     break;
-                case ACTORLIST_ITEM:
+                case ACTORS_ITEM:
                     actorId = getItemId();
                     break;
                 default:
@@ -133,20 +133,20 @@ public class ParsedUri {
         return TimelineType.UNKNOWN;
     }
 
-    public ActorListType getActorListType() {
+    public ActorsScreenType getActorsScreenType() {
         try {
             switch (matchedUri) {
-                case ACTORLIST:
-                case ACTORLIST_ITEM:
-                case ACTORLIST_SEARCH:
-                    return ActorListType.load(uri.getPathSegments().get(3));
+                case ACTORS:
+                case ACTORS_ITEM:
+                case ACTORS_SEARCH:
+                    return ActorsScreenType.load(uri.getPathSegments().get(3));
                 default:
                     break;
             }
         } catch (Exception e) {
             MyLog.d(this, toString(), e);
         }
-        return ActorListType.UNKNOWN;
+        return ActorsScreenType.UNKNOWN;
     }
 
     public long getOriginId() {
@@ -175,9 +175,9 @@ public class ParsedUri {
                 case NOTE_ITEM:
                     noteId = Long.parseLong(uri.getPathSegments().get(3));
                     break;
-                case ACTORLIST:
-                case ACTORLIST_SEARCH:
-                    if (getActorListType() == ActorListType.ACTORS_OF_NOTE) {
+                case ACTORS:
+                case ACTORS_SEARCH:
+                    if (getActorsScreenType() == ActorsScreenType.ACTORS_OF_NOTE) {
                         noteId = getItemId();
                     }
                     break;
@@ -202,7 +202,7 @@ public class ParsedUri {
         try {
             switch (matchedUri) {
                 case TIMELINE_SEARCH:
-                case ACTORLIST_SEARCH:
+                case ACTORS_SEARCH:
                     return StringUtil.notNull(uri.getPathSegments().get(9));
                 default:
                     break;
@@ -214,7 +214,7 @@ public class ParsedUri {
     }
 
     public long getItemId() {
-        switch (getActorListType()) {
+        switch (getActorsScreenType()) {
             case UNKNOWN:
                 switch (getTimelineType()) {
                     case UNKNOWN:

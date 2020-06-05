@@ -20,7 +20,7 @@ import android.content.Context;
 import android.database.Cursor;
 
 import org.andstatus.app.R;
-import org.andstatus.app.actor.ActorListLoader;
+import org.andstatus.app.actor.ActorsLoader;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -127,11 +127,11 @@ public class ViewItem<T extends ViewItem<T>> implements IsEmpty {
         return builder;
     }
 
-    public void addActorsToLoad(ActorListLoader loader) {
+    public void addActorsToLoad(ActorsLoader loader) {
         // Empty
     }
 
-    public void setLoadedActors(ActorListLoader loader) {
+    public void setLoadedActors(ActorsLoader loader) {
         // Empty
     }
 

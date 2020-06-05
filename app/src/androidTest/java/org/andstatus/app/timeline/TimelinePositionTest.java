@@ -61,7 +61,7 @@ public class TimelinePositionTest extends TimelineActivityTest<ActivityViewItem>
         final String method = "oneTimelineOpening" + iteration;
         TestSuite.waitForListLoaded(getActivity(), 3);
 
-        final ListActivityTestHelper<TimelineActivity> testHelper = new ListActivityTestHelper<>(getActivity());
+        final ListScreenTestHelper<TimelineActivity> testHelper = new ListScreenTestHelper<>(getActivity());
         int position1 = getFirstVisibleAdapterPosition();
         final BaseTimelineAdapter listAdapter = getActivity().getListAdapter();
         ViewItem item1 = listAdapter.getItem(position1);

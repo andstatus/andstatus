@@ -19,12 +19,12 @@ package org.andstatus.app;
 import android.widget.Spinner;
 
 import org.andstatus.app.timeline.TimelineActivity;
-import org.andstatus.app.actor.ActorList;
+import org.andstatus.app.actor.ActorsScreen;
 
 public enum SearchObjects {
     NOTES(TimelineActivity.class),
-    ACTORS(ActorList.class),
-    GROUPS(ActorList.class);
+    ACTORS(ActorsScreen.class),
+    GROUPS(ActorsScreen.class);
 
     private final Class<?> aClass;
 

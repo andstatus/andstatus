@@ -83,7 +83,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
         final String method = "testOpeningConversationActivity";
         TestSuite.waitForListLoaded(getActivity(), 7);
         assertTrue("MyService is available", MyServiceManager.isServiceAvailable());
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
+        ListScreenTestHelper<TimelineActivity> helper = new ListScreenTestHelper<>(getActivity(),
                 ConversationActivity.class);
         long noteId = helper.getListItemIdOfLoadedReply();
         helper.selectListPosition(method, helper.getPositionOfListItemId(noteId));
@@ -127,7 +127,7 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
         assertEquals(collapseDuplicates, getActivity().getListData().isCollapseDuplicates());
 
         getCurrentListPosition().logV(method + "; before selecting position " + position0);
-        new ListActivityTestHelper<>(getActivity()).selectListPosition(method, position0);
+        new ListScreenTestHelper<>(getActivity()).selectListPosition(method, position0);
 
         long itemIdOfSelected = 0;
         for (int attempt = 0; attempt < 10; attempt++) {
@@ -205,8 +205,8 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
     public void testOpeningAccountSelector() throws InterruptedException {
         final String method = "testOpeningAccountSelector";
         TestSuite.waitForListLoaded(getActivity(), 7);
-        ListActivityTestHelper<TimelineActivity> helper =
-                ListActivityTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
+        ListScreenTestHelper<TimelineActivity> helper =
+                ListScreenTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
         helper.clickView(method, R.id.selectAccountButton);
         SelectorDialog selectorDialog = helper.waitForSelectorDialog(method, 15000);
         DbUtils.waitMs(method, 500);
@@ -217,8 +217,8 @@ public class TimelineActivityTest1 extends TimelineActivityTest<ActivityViewItem
     public void testActAs() throws InterruptedException {
         final String method = "testActAs";
         TestSuite.waitForListLoaded(getActivity(), 2);
-        ListActivityTestHelper<TimelineActivity> helper =
-                ListActivityTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
+        ListScreenTestHelper<TimelineActivity> helper =
+                ListScreenTestHelper.newForSelectorDialog(getActivity(), AccountSelector.getDialogTag());
         long listItemId = helper.getListItemIdOfLoadedReply();
         long noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId);
         final MyContext myContext = myContextHolder.getNow();

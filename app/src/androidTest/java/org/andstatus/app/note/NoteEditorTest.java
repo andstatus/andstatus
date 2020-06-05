@@ -48,7 +48,7 @@ import org.andstatus.app.database.table.NoteTable;
 import org.andstatus.app.net.social.Audience;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.timeline.ListActivityTestHelper;
+import org.andstatus.app.timeline.ListScreenTestHelper;
 import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.TimelineActivityTest;
 import org.andstatus.app.timeline.meta.Timeline;
@@ -294,8 +294,8 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         final String method = "testContextMenuWhileEditing";
         TestSuite.waitForListLoaded(getActivity(), 2);
         ActivityTestHelper.openEditor(method, getActivity());
-        ListActivityTestHelper<TimelineActivity> helper =
-                new ListActivityTestHelper<>(getActivity(), ConversationActivity.class);
+        ListScreenTestHelper<TimelineActivity> helper =
+                new ListScreenTestHelper<>(getActivity(), ConversationActivity.class);
         long listItemId = helper.getListItemIdOfLoadedReply();
         String logMsg = "listItemId=" + listItemId;
         long noteId = TimelineType.HOME.showsActivities() ?
@@ -313,8 +313,8 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         final String method = "testContextMenuWhileEditing";
         TestSuite.waitForListLoaded(getActivity(), 2);
         ActivityTestHelper.openEditor(method, getActivity());
-        ListActivityTestHelper<TimelineActivity> helper =
-                new ListActivityTestHelper<>(getActivity(), ConversationActivity.class);
+        ListScreenTestHelper<TimelineActivity> helper =
+                new ListScreenTestHelper<>(getActivity(), ConversationActivity.class);
         long listItemId = helper.getListItemIdOfLoadedReply();
         String logMsg = "listItemId=" + listItemId;
 
@@ -362,7 +362,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
     public void editLoadedNote() throws InterruptedException {
         final String method = "editLoadedNote";
         TestSuite.waitForListLoaded(getActivity(), 2);
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
+        ListScreenTestHelper<TimelineActivity> helper = new ListScreenTestHelper<>(getActivity(),
                 ConversationActivity.class);
         long listItemId = helper.findListItemId("My loaded note, actorId:" + data.getMyAccount().getActorId(),
                 item -> item.author.getActorId() == data.getMyAccount().getActorId()
@@ -413,7 +413,7 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
 
         View editorView = ActivityTestHelper.hideEditorAndSaveDraft(method, getActivity());
 
-        ListActivityTestHelper<TimelineActivity> helper = new ListActivityTestHelper<>(getActivity(),
+        ListScreenTestHelper<TimelineActivity> helper = new ListScreenTestHelper<>(getActivity(),
                 ConversationActivity.class);
         ActivityViewItem viewItem = (ActivityViewItem) helper.findListItem("Some others loaded note",
                 item -> item.author.getActorId() != data.getMyAccount().getActorId()

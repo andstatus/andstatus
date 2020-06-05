@@ -37,7 +37,7 @@ import androidx.annotation.NonNull;
 import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.SearchObjects;
-import org.andstatus.app.actor.ActorListType;
+import org.andstatus.app.actor.ActorsScreenType;
 import org.andstatus.app.data.MatchedUri;
 import org.andstatus.app.origin.Origin;
 import org.andstatus.app.service.CommandData;
@@ -232,10 +232,10 @@ public class MySearchView extends LinearLayout implements CollapsibleActionView{
                 return timeline.fromSearch(parentActivity.getMyContext(), isInternetSearch())
                         .fromIsCombined(parentActivity.getMyContext(), isCombined()).getUri();
             case ACTORS:
-                return MatchedUri.getActorListUri(ActorListType.ACTORS_AT_ORIGIN,
+                return MatchedUri.getActorsScreenUri(ActorsScreenType.ACTORS_AT_ORIGIN,
                         isCombined() ? 0 : getOrigin().getId(), 0, "");
             case GROUPS:
-                return MatchedUri.getActorListUri(ActorListType.GROUPS_AT_ORIGIN,
+                return MatchedUri.getActorsScreenUri(ActorsScreenType.GROUPS_AT_ORIGIN,
                         isCombined() ? 0 : getOrigin().getId(), 0, "");
             default:
                 return Uri.EMPTY;

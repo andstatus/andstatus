@@ -32,11 +32,11 @@ import static org.andstatus.app.context.DemoData.demoData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class SearchActorsTest extends ActivityTest<ActorList> {
+public class SearchActorsTest extends ActivityTest<ActorsScreen> {
 
     @Override
-    protected Class<ActorList> getActivityClass() {
-        return ActorList.class;
+    protected Class<ActorsScreen> getActivityClass() {
+        return ActorsScreen.class;
     }
 
     @Override
@@ -46,7 +46,7 @@ public class SearchActorsTest extends ActivityTest<ActorList> {
         MyLog.i(this, "setUp ended");
 
         return new Intent(MyAction.VIEW_ACTORS.getAction(),
-            MatchedUri.getActorListUri(ActorListType.ACTORS_AT_ORIGIN, 0, 0, demoData.t131tUsername));
+            MatchedUri.getActorsScreenUri(ActorsScreenType.ACTORS_AT_ORIGIN, 0, 0, demoData.t131tUsername));
     }
 
     @Test
@@ -56,7 +56,7 @@ public class SearchActorsTest extends ActivityTest<ActorList> {
         List<ActorViewItem> listItems = getActivity().getListLoader().getList();
         assertTrue("Found only " + listItems.size() + "items\n" + listItems.toString(), listItems.size() > 1);
 
-        Actor actor = ActorListTest.getByActorOid(listItems, demoData.pumpioTestAccountActorOid);
+        Actor actor = ActorsScreenTest.getByActorOid(listItems, demoData.pumpioTestAccountActorOid);
         assertEquals("Actor was not found\n" + listItems.toString(), demoData.pumpioTestAccountActorOid, actor.oid);
     }
 }
