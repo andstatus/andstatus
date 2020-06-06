@@ -59,10 +59,6 @@
 		<service android:name="org.andstatus.app.service.MyService"
 		    android:exported="false" />
         <service
-            android:name="org.acra.sender.SenderService"
-            android:exported="false"
-            android:process=":acra" />
-        <service
             android:name="org.andstatus.app.account.AuthenticatorService"
             android:exported="false"
             android:enabled="true">
