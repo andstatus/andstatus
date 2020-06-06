@@ -17,8 +17,8 @@
     limitations under the License.
  -->
 <FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0"
-xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://gribuser.ru/xml/fictionbook/2.0/xsd/FictionBook2.xsd ../../../../../res-src/fb2/FictionBook.xsd">
+    xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://github.com/gribuser/fb2/blob/master/FictionBook.xsd ../../../../../res-src/fb2/FictionBook.xsd">
 <description>
     <title-info>
         <genre>computers</genre>
