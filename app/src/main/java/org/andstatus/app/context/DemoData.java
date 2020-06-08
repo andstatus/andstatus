@@ -134,7 +134,7 @@ public final class DemoData {
     /** See http://stackoverflow.com/questions/6602417/get-the-uri-of-an-image-stored-in-drawable */
     public final Uri localImageTestUri = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon");
     public final Uri localImageTestUri2 = Uri.parse("android.resource://org.andstatus.app/drawable/splash_logo");
-    public final Uri localVideoTestUri = Uri.parse("android.resource://org.andstatus.app.tests/drawable/video320");
+    public final Uri localVideoTestUri = Uri.parse("android.resource://org.andstatus.app.tests/raw/video320_mp4");
     public final Uri image1Url = Uri.parse("https://raw.githubusercontent.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png");
 
     private volatile String dataPath = "";

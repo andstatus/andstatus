@@ -37,6 +37,7 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import java.util.concurrent.TimeUnit;
 
 import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import static org.andstatus.app.data.DbUtils.closeSilently;
 
 public class MediaMetadata implements IsEmpty, TaggedClass {
     private final static String TAG = MediaMetadata.class.getSimpleName();
@@ -49,12 +50,16 @@ public class MediaMetadata implements IsEmpty, TaggedClass {
     public static MediaMetadata fromFilePath(String path) {
         try {
             if (MyContentType.fromPathOfSavedFile(path) == MyContentType.VIDEO) {
-                try (MediaMetadataRetriever retriever = new MediaMetadataRetriever()) {
+                MediaMetadataRetriever retriever = null;
+                try {
+                    retriever = new MediaMetadataRetriever();
                     retriever.setDataSource(myContextHolder.getNow().context(), Uri.parse(path));
                     return new MediaMetadata(
                         Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)),
                         Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)),
                         Long.parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)));
+                } finally {
+                    closeSilently(retriever);
                 }
             }
             BitmapFactory.Options options = new BitmapFactory.Options();

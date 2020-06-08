@@ -132,7 +132,12 @@ public enum MyContentType {
     @NonNull
     private static String path2MimeType(String path, @NonNull String defaultValue) {
         if (StringUtil.isEmpty(path)) return defaultValue;
-        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(path));
+        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(path);
+        if (StringUtil.isEmpty(fileExtension) && UNKNOWN.generalMimeType.equals(defaultValue)
+                && StringUtil.nonEmpty(path) ) {
+            fileExtension = MimeTypeMap.getFileExtensionFromUrl(path.replaceAll("_", "."));
+        }
+        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension);
         return isEmptyMime(mimeType) ? defaultValue : mimeType;
     }
 

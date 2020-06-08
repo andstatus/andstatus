@@ -151,34 +151,34 @@ public final class DbUtils {
         if (closeable != null) {
             try {
                 closeLegacy(closeable, message);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 MyLog.ignored(closeable, e);
             }
         }
     }
     
     private static void closeLegacy(Object toClose, String message) throws IOException {
-        if (Closeable.class.isAssignableFrom(toClose.getClass()) ) {
+        if (toClose instanceof Closeable) {
             ((Closeable) toClose).close();
-        } else if (Cursor.class.isAssignableFrom(toClose.getClass())) {
+        } else if (toClose instanceof Cursor) {
             if (!((Cursor) toClose).isClosed()) {
                 ((Cursor) toClose).close();
             }
-        } else if (FileChannel.class.isAssignableFrom(toClose.getClass())) {
+        } else if (toClose instanceof FileChannel) {
             ((FileChannel) toClose).close();
-        } else if (InputStream.class.isAssignableFrom(toClose.getClass())) {
+        } else if (toClose instanceof InputStream) {
             ((InputStream) toClose).close();
-        } else if (Reader.class.isAssignableFrom(toClose.getClass())) {
+        } else if (toClose instanceof Reader) {
             ((Reader) toClose).close();
-        } else if (SQLiteStatement.class.isAssignableFrom(toClose.getClass())) {
+        } else if (toClose instanceof SQLiteStatement) {
             ((SQLiteStatement) toClose).close();
-        } else if (OutputStream.class.isAssignableFrom(toClose.getClass())) {
+        } else if (toClose instanceof OutputStream) {
             ((OutputStream) toClose).close();
-        } else if (OutputStreamWriter.class.isAssignableFrom(toClose.getClass())) {
+        } else if (toClose instanceof OutputStreamWriter) {
             ((OutputStreamWriter) toClose).close();
-        } else if (Writer.class.isAssignableFrom(toClose.getClass())) {
+        } else if (toClose instanceof Writer) {
             ((Writer) toClose).close();
-        } else if (HttpURLConnection.class.isAssignableFrom(toClose.getClass())) {
+        } else if (toClose instanceof HttpURLConnection) {
             ((HttpURLConnection) toClose).disconnect();
         } else {
             String detailMessage = "Couldn't close silently an object of the class: "

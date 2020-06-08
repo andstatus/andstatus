@@ -1,3 +1,4 @@
+v.56.13 Fixed attachment of video files on Android before v.10.
 v.56.12 Fixed 'Reply to mentioned actors' when nobody is mentioned.
 v.56.11 Fixed repeated restarts of Timeline and Settings activities.
 v.56.09 Show numbers of likes, replies and reblogs for a Note.
