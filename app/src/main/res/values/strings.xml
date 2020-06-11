@@ -411,6 +411,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="settings_activity_title">Settings</string>
   <string name="show_buttons_below_message">Show Reply, Repost and Favorite buttons below a note</string>
   <string name="show_duplicates">Show duplicates</string>
+  <string name="show_image_animations">Show image animations</string>
   <string name="show_threads_of_conversation">Show threads of a conversation</string>
   <string name="show_timeline_messages">Open timeline</string>
   <string name="show_my_account_which_downloaded">Show my account, which downloaded the activity/note</string>

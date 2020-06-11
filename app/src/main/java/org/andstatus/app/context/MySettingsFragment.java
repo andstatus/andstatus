@@ -23,6 +23,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
@@ -34,6 +35,7 @@ import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceScreen;
 
 import org.andstatus.app.ActivityRequestCode;
 import org.andstatus.app.HelpActivity;
@@ -133,6 +135,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
        in the Preference summary?</a>
      */
     protected void showAllPreferences() {
+        showImageAnimations();
         showManageAccounts();
         showFrequency();
         showDontSynchronizeOldNotes();
@@ -359,6 +362,16 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                         .orElse(""));
                 return true;
             });
+    }
+
+    private void showImageAnimations() {
+        if (Build.VERSION.SDK_INT < 28) {
+            PreferenceScreen screen = getPreferenceScreen();
+            Preference preference = findPreference(MyPreferences.KEY_SHOW_IMAGE_ANIMATIONS);
+            if (screen != null && preference != null) {
+                screen.removePreference(preference);
+            }
+        }
     }
 
     private void showListPreference(String key) {

@@ -229,7 +229,7 @@ public class DownloadData implements IsEmpty, TaggedClass {
         hardError = false;
         if (downloadId == 0) saveToDatabase();
         fileNew = new DownloadFile(downloadType.filePrefix + "_" + Long.toString(downloadId)
-                + "_" + Long.toString(downloadNumber)
+                + "_" + downloadNumber
                 + "." + getExtension());
     }
 

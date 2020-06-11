@@ -142,14 +142,22 @@ public enum MyContentType {
     }
 
     @NonNull
-    private static String path2MimeType(String path, @NonNull String defaultValue) {
+    public static String path2MimeType(String path, @NonNull String defaultValue) {
         if (StringUtil.isEmpty(path)) return defaultValue;
         String fileExtension = MimeTypeMap.getFileExtensionFromUrl(path);
-        if (StringUtil.isEmpty(fileExtension) && UNKNOWN.generalMimeType.equals(defaultValue)
-                && StringUtil.nonEmpty(path) ) {
+        boolean clarifyType = false;
+        if (StringUtil.isEmpty(fileExtension) && defaultValue.endsWith("/*") && StringUtil.nonEmpty(path) ) {
+            // Hack allowing to set actual extension after underscore
             fileExtension = MimeTypeMap.getFileExtensionFromUrl(path.replaceAll("_", "."));
+            clarifyType = true;
         }
         String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension);
+        if (clarifyType && !isEmptyMime(mimeType) && !isEmptyMime(defaultValue)) {
+            int indSlash = defaultValue.indexOf("/");
+            if (indSlash >= 0 && !mimeType.startsWith(defaultValue.substring(0, indSlash + 1))) {
+                mimeType = "";
+            }
+        }
         return isEmptyMime(mimeType) ? defaultValue : mimeType;
     }
 

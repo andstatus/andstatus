@@ -56,4 +56,7 @@
     <org.andstatus.app.context.MultilineCheckBoxPreference android:key="rounded_avatars"
         android:defaultValue="true"
         android:title="@string/rounded_avatars" />
+    <org.andstatus.app.context.MultilineCheckBoxPreference android:key="show_image_animations"
+        android:defaultValue="true"
+        android:title="@string/show_image_animations" />
 </PreferenceScreen>

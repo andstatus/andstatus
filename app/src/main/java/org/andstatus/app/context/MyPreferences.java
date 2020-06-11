@@ -47,6 +47,7 @@ public class MyPreferences {
     public static final String KEY_BACKGROUND_COLOR = "background_color";
     public static final String KEY_THEME_SIZE = "theme_size";
     public static final String KEY_ROUNDED_AVATARS = "rounded_avatars";
+    public static final String KEY_SHOW_IMAGE_ANIMATIONS = "show_image_animations";
 
     // ----------------------------------------------------------
     // Timeline
@@ -228,6 +229,10 @@ public class MyPreferences {
         return SharedPreferencesUtil.getString(KEY_ACTION_BAR_TEXT_COLOR, "")
                 .equals("ActionBarTextBlack")
                 ? R.drawable.icon_black_24dp : R.drawable.icon_white_24dp;
+    }
+
+    public static boolean isShowImageAnimations() {
+        return SharedPreferencesUtil.getBoolean(KEY_SHOW_IMAGE_ANIMATIONS, true);
     }
 
     /**

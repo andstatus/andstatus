@@ -135,6 +135,7 @@ public final class DemoData {
     public final Uri localImageTestUri = Uri.parse("android.resource://org.andstatus.app.tests/drawable/icon");
     public final Uri localImageTestUri2 = Uri.parse("android.resource://org.andstatus.app/drawable/splash_logo");
     public final Uri localVideoTestUri = Uri.parse("android.resource://org.andstatus.app.tests/raw/video320_mp4");
+    public final Uri localGifTestUri = Uri.parse("android.resource://org.andstatus.app.tests/raw/sample_gif");
     public final Uri image1Url = Uri.parse("https://raw.githubusercontent.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png");
 
     private volatile String dataPath = "";

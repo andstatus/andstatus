@@ -41,7 +41,7 @@ import java.util.function.Consumer;
 import io.vavr.control.Try;
 
 public abstract class MediaFile implements IsEmpty, IdentifiableInstance {
-    final DownloadFile downloadFile;
+    public final DownloadFile downloadFile;
     volatile MediaMetadata mediaMetadata;
     public volatile MyContentType contentType;
     public final long downloadId;

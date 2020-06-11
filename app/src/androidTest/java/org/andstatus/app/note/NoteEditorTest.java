@@ -37,6 +37,7 @@ import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.TestSuite;
+import org.andstatus.app.data.AttachedMediaFile;
 import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.MyContentType;
@@ -203,12 +204,16 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
         onView(withId(R.id.noteBodyEditText)).check(matches(withText(content)));
 
         attachImage(test, editorView, demoData.localImageTestUri2);
-        if (toAdd == 2) {
-            attachImage(test, editorView, demoData.localImageTestUri);
+        if (toAdd > 1) {
+            attachImage(test, editorView, demoData.localGifTestUri);
         }
         final NoteEditor editor = test.getActivity().getNoteEditor();
         assertEquals("All image attached " + editor.getData().getAttachedImageFiles(), toExpect,
                 editor.getData().getAttachedImageFiles().list.size());
+        if (toAdd > 1) {
+            AttachedMediaFile mediaFile = editor.getData().getAttachedImageFiles().list.get(toExpect == 1 ? 0 : 1);
+            assertEquals("Should be animated " + mediaFile, MyContentType.ANIMATED_IMAGE, mediaFile.contentType);
+        }
 
         onView(withId(R.id.noteBodyEditText)).check(matches(withText(content + " ")));
         onView(withId(R.id.note_name_edit)).check(matches(withText(noteName)));
@@ -243,7 +248,8 @@ public class NoteEditorTest extends TimelineActivityTest<ActivityViewItem> {
 
         MyLog.i(method, "Callback from a selector");
         Intent intent2 = new Intent();
-        intent2.setDataAndType(imageUri, MyContentType.IMAGE.generalMimeType);
+        intent2.setDataAndType(imageUri, MyContentType.uri2MimeType(test.getActivity().getContentResolver(), imageUri,
+                MyContentType.IMAGE.generalMimeType));
         test.getActivity().runOnUiThread(() -> {
             test.getActivity().onActivityResult(ActivityRequestCode.ATTACH.id, Activity.RESULT_OK, intent2);
         });

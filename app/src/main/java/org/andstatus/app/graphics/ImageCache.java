@@ -23,12 +23,15 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ImageDecoder;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
+import android.graphics.drawable.Animatable;
+import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
@@ -58,6 +61,7 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
  * On LruCache usage read http://developer.android.com/reference/android/util/LruCache.html
  */
 public class ImageCache extends LruCache<String, CachedImage> {
+    private static final String TAG = ImageCache.class.getSimpleName();
 
     public final static int BYTES_PER_PIXEL = 4;
     final CacheName name;
@@ -71,6 +75,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
     final Queue<Bitmap> recycledBitmaps;
     final DisplayMetrics displayMetrics;
     volatile boolean rounded = false;
+    final boolean showImageInimations;
 
     @Override
     public void resize(int maxSize) {
@@ -79,6 +84,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
 
     public ImageCache(Context context, CacheName name, int maxBitmapHeightWidthIn, int requestedCacheSizeIn) {
         super(requestedCacheSizeIn);
+        showImageInimations = MyPreferences.isShowImageAnimations();
         this.name = name;
         displayMetrics = context.getResources().getDisplayMetrics();
         int maxBitmapHeightWidth = maxBitmapHeightWidthIn;
@@ -154,12 +160,11 @@ public class ImageCache extends LruCache<String, CachedImage> {
     private CachedImage loadImage(MediaFile mediaFile) {
         switch (MyContentType.fromPathOfSavedFile(mediaFile.getPath())) {
             case IMAGE:
-                return bitmapToCachedImage(mediaFile, imageFileToBitmap(mediaFile));
             case ANIMATED_IMAGE:
-                if (Build.VERSION.SDK_INT >= 28) {
+                if (showImageInimations && Build.VERSION.SDK_INT >= 28) {
                     return animatedFileToCachedImage(mediaFile);
                 }
-                return bitmapToCachedImage(mediaFile, imageFileToBitmap(mediaFile));
+                return imageFileToCachedImage(mediaFile);
             case VIDEO:
                 return bitmapToCachedImage(mediaFile, videoFileToBitmap(mediaFile));
             default:
@@ -169,7 +174,20 @@ public class ImageCache extends LruCache<String, CachedImage> {
 
     @TargetApi(28)
     private CachedImage animatedFileToCachedImage(MediaFile mediaFile) {
-        // TODO: Replace with specialized code for animated media
+        try {
+            ImageDecoder.Source source = ImageDecoder.createSource(mediaFile.downloadFile.getFile());
+            Drawable drawable = ImageDecoder.decodeDrawable(source);
+            if (drawable instanceof Animatable) {
+                ((Animatable) drawable).start();
+            }
+            return new CachedImage(mediaFile.downloadId, drawable);
+        } catch (Exception e) {
+            MyLog.i( TAG, "Failed to decode " + mediaFile, e);
+            return imageFileToCachedImage(mediaFile);
+        }
+    }
+
+    private CachedImage imageFileToCachedImage(MediaFile mediaFile) {
         return bitmapToCachedImage(mediaFile, imageFileToBitmap(mediaFile));
     }
 
