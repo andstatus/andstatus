@@ -35,7 +35,7 @@ import org.andstatus.app.util.MyLog;
 
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
-public class AvatarFile extends ImageFile {
+public class AvatarFile extends MediaFile {
     public static final AvatarFile EMPTY = new AvatarFile(Actor.EMPTY, "", MediaMetadata.EMPTY,
             DownloadStatus.ABSENT, DATETIME_MILLIS_NEVER);
     private final Actor actor;

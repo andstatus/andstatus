@@ -3,7 +3,6 @@ package org.andstatus.app.note;
 import org.andstatus.app.context.MyContext;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.IsEmpty;
 
 import java.util.List;
@@ -28,7 +27,7 @@ public class NoteDownloads implements IsEmpty {
 
     public DownloadData getFirstForTimeline() {
         return list.stream()
-            .filter(d -> d.getStatus() == DownloadStatus.LOADED && d.getContentType() == MyContentType.IMAGE)
+            .filter(d -> d.getStatus() == DownloadStatus.LOADED && d.getContentType().isImage())
             .findFirst()
             .orElse(
                 list.stream().filter(d -> d.getStatus() == DownloadStatus.LOADED)

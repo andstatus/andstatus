@@ -35,9 +35,9 @@ import java.util.stream.Collectors;
 public class AttachedImageFiles implements IsEmpty {
     public final static AttachedImageFiles EMPTY = new AttachedImageFiles(Collections.emptyList());
 
-    public final List<AttachedImageFile> list;
+    public final List<AttachedMediaFile> list;
 
-    public AttachedImageFiles(List<AttachedImageFile> imageFiles) {
+    public AttachedImageFiles(List<AttachedMediaFile> imageFiles) {
         list = imageFiles;
     }
 
@@ -55,39 +55,40 @@ public class AttachedImageFiles implements IsEmpty {
                 " WHERE " + DownloadTable.NOTE_ID + "=" + noteId +
                 " AND " + DownloadTable.DOWNLOAD_TYPE + "=" + DownloadType.ATTACHMENT.save() + 
                 " AND " + DownloadTable.CONTENT_TYPE +
-                " IN(" + MyContentType.IMAGE.save() + ", " + MyContentType.VIDEO.save() + ")" +
+                " IN(" + MyContentType.IMAGE.save() + ", " + MyContentType.ANIMATED_IMAGE.save() + ", " +
+                        MyContentType.VIDEO.save() + ")" +
                 " ORDER BY " + DownloadTable.DOWNLOAD_NUMBER;
-        List<AttachedImageFile> imageFiles1 = MyQuery.getList(myContext, sql, AttachedImageFile::fromCursor);
-        List<AttachedImageFile> imageFiles2 = foldPreviews(imageFiles1);
-        return new AttachedImageFiles(imageFiles2);
+        List<AttachedMediaFile> mediaFiles1 = MyQuery.getList(myContext, sql, AttachedMediaFile::fromCursor);
+        List<AttachedMediaFile> mediaFiles2 = foldPreviews(mediaFiles1);
+        return new AttachedImageFiles(mediaFiles2);
     }
 
-    private static List<AttachedImageFile> foldPreviews(List<AttachedImageFile> imageFiles) {
-        List<AttachedImageFile> out = new ArrayList<>();
-        List<Long> toSkip = imageFiles.stream().map(i -> i.previewOfDownloadId).filter(i -> i != 0)
+    private static List<AttachedMediaFile> foldPreviews(List<AttachedMediaFile> mediaFiles) {
+        List<AttachedMediaFile> out = new ArrayList<>();
+        List<Long> toSkip = mediaFiles.stream().map(i -> i.previewOfDownloadId).filter(i -> i != 0)
                 .collect(Collectors.toList());
-        for(AttachedImageFile imageFile: imageFiles) {
-            if (imageFile.isEmpty() || toSkip.contains(imageFile.downloadId)) continue;
+        for(AttachedMediaFile mediaFile: mediaFiles) {
+            if (mediaFile.isEmpty() || toSkip.contains(mediaFile.downloadId)) continue;
 
-            if (imageFile.previewOfDownloadId == 0) {
-                out.add(imageFile);
+            if (mediaFile.previewOfDownloadId == 0) {
+                out.add(mediaFile);
             } else {
-                AttachedImageFile fullImage = AttachedImageFile.EMPTY;
-                for(AttachedImageFile other: imageFiles) {
-                    if (other.downloadId == imageFile.previewOfDownloadId) {
+                AttachedMediaFile fullImage = AttachedMediaFile.EMPTY;
+                for(AttachedMediaFile other: mediaFiles) {
+                    if (other.downloadId == mediaFile.previewOfDownloadId) {
                         fullImage = other;
                         break;
                     }
                 }
-                out.add(new AttachedImageFile(imageFile, fullImage));
+                out.add(new AttachedMediaFile(mediaFile, fullImage));
             }
         }
         return out;
     }
 
     public boolean imageOrLinkMayBeShown() {
-        for (AttachedImageFile imageFile: list) {
-            if (imageFile.imageOrLinkMayBeShown()) {
+        for (AttachedMediaFile mediaFile: list) {
+            if (mediaFile.imageOrLinkMayBeShown()) {
                 return true;
             }
         }
@@ -100,9 +101,9 @@ public class AttachedImageFiles implements IsEmpty {
     }
 
     public void preloadImagesAsync() {
-        for (AttachedImageFile imageFile: list) {
-            if (imageFile.contentType == MyContentType.IMAGE) {
-                imageFile.preloadImageAsync(CacheName.ATTACHED_IMAGE);
+        for (AttachedMediaFile mediaFile: list) {
+            if (mediaFile.contentType.isImage()) {
+                mediaFile.preloadImageAsync(CacheName.ATTACHED_IMAGE);
             }
         }
     }
@@ -117,11 +118,11 @@ public class AttachedImageFiles implements IsEmpty {
         return builder.toString();
     }
 
-    public Optional<AttachedImageFile> tooLargeAttachment(long maxBytes) {
+    public Optional<AttachedMediaFile> tooLargeAttachment(long maxBytes) {
         return list.stream().filter(item -> item.downloadFile.getSize() > maxBytes).findAny();
     }
 
-    public Optional<AttachedImageFile> forUri(Uri uri) {
+    public Optional<AttachedMediaFile> forUri(Uri uri) {
         return list.stream().filter(item -> uri.equals(item.uri)).findAny();
     }
 

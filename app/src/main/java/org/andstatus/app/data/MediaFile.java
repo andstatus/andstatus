@@ -40,7 +40,7 @@ import java.util.function.Consumer;
 
 import io.vavr.control.Try;
 
-public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
+public abstract class MediaFile implements IsEmpty, IdentifiableInstance {
     final DownloadFile downloadFile;
     volatile MediaMetadata mediaMetadata;
     public volatile MyContentType contentType;
@@ -48,7 +48,7 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
     public final DownloadStatus downloadStatus;
     public final long downloadedDate;
 
-    ImageFile(String filename, MyContentType contentType, MediaMetadata mediaMetadata, long downloadId,
+    MediaFile(String filename, MyContentType contentType, MediaMetadata mediaMetadata, long downloadId,
               DownloadStatus downloadStatus,
               long downloadedDate) {
         downloadFile = new DownloadFile(filename);
@@ -155,8 +155,8 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
         private final IdentifiableImageView imageView;
         private volatile boolean logged = false;
 
-        private ImageLoader(ImageFile imageFile, MyActivity myActivity, IdentifiableImageView imageView) {
-            super(imageFile, "-asyn-" + imageView.myViewId);
+        private ImageLoader(MediaFile mediaFile, MyActivity myActivity, IdentifiableImageView imageView) {
+            super(mediaFile, "-asyn-" + imageView.myViewId);
             this.myActivity = myActivity;
             this.imageView = imageView;
         }
@@ -165,14 +165,14 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
             return TryUtils.ofNullable(
                 skip()
                     ? null
-                    : ImageCaches.loadAndGetImage(imageView.getCacheName(), imageFile));
+                    : ImageCaches.loadAndGetImage(imageView.getCacheName(), mediaFile));
         }
 
         void set(Try<CachedImage> tryImage) {
             if (skip()) return;
 
             tryImage.onSuccess(image -> {
-                if (image.id != imageFile.getId()) {
+                if (image.id != mediaFile.getId()) {
                     logResult("Loaded wrong image.id:" + image.id);
                     return;
                 }
@@ -184,7 +184,7 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
                     imageView.setLoaded();
                     logResult("Loaded");
                 } catch (Exception e) {
-                    MyLog.d(imageFile, imageFile.getMsgLog("Error on setting image", taskSuffix), e);
+                    MyLog.d(mediaFile, mediaFile.getMsgLog("Error on setting image", taskSuffix), e);
                 }
             }).onFailure( e -> logResult("No success onFinish"));
         }
@@ -198,7 +198,7 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
                 logResult("Skipped already loaded");
                 return true;
             }
-            if (imageView.getImageId() != imageFile.getId()) {
+            if (imageView.getImageId() != mediaFile.getId()) {
                 logResult("Skipped view.imageId:" + imageView.getImageId());
                 return true;
             }
@@ -208,7 +208,7 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
         private void logResult(String msgLog) {
             if (!logged) {
                 logged = true;
-                imageFile.logResult(msgLog, taskSuffix);
+                mediaFile.logResult(msgLog, taskSuffix);
             }
         }
     }
@@ -218,15 +218,15 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
         return getTaskId(taskSuffix) + "; " + msgLog + " " + downloadFile.getFilePath();
     }
 
-    static void preloadImage(ImageFile imageFile, CacheName cacheName) {
+    static void preloadImage(MediaFile mediaFile, CacheName cacheName) {
         String taskSuffix = "-prel";
-        CachedImage image = ImageCaches.loadAndGetImage(cacheName, imageFile);
+        CachedImage image = ImageCaches.loadAndGetImage(cacheName, mediaFile);
         if (image == null) {
-            imageFile.logResult("Failed to preload", taskSuffix);
-        } else if (image.id != imageFile.getId()) {
-            imageFile.logResult("Loaded wrong image.id:" + image.id, taskSuffix);
+            mediaFile.logResult("Failed to preload", taskSuffix);
+        } else if (image.id != mediaFile.getId()) {
+            mediaFile.logResult("Loaded wrong image.id:" + image.id, taskSuffix);
         } else {
-            imageFile.logResult("Preloaded", taskSuffix);
+            mediaFile.logResult("Preloaded", taskSuffix);
         }
     }
 
@@ -258,29 +258,29 @@ public abstract class ImageFile implements IsEmpty, IdentifiableInstance {
     private static class DrawableLoader extends AbstractImageLoader {
         private final CacheName cacheName;
 
-        private DrawableLoader(ImageFile imageFile, CacheName cacheName) {
-            super(imageFile, "-asynd");
+        private DrawableLoader(MediaFile mediaFile, CacheName cacheName) {
+            super(mediaFile, "-asynd");
             this.cacheName = cacheName;
         }
 
         Try<Drawable> load() {
-            return TryUtils.ofNullable(ImageCaches.loadAndGetImage(cacheName, imageFile))
+            return TryUtils.ofNullable(ImageCaches.loadAndGetImage(cacheName, mediaFile))
                     .map(CachedImage::getDrawable);
         }
     }
 
     private static class AbstractImageLoader implements IdentifiableInstance {
-        final ImageFile imageFile;
+        final MediaFile mediaFile;
         final String taskSuffix;
 
-        private AbstractImageLoader(ImageFile imageFile, String taskSuffix) {
-            this.imageFile = imageFile;
+        private AbstractImageLoader(MediaFile mediaFile, String taskSuffix) {
+            this.mediaFile = mediaFile;
             this.taskSuffix = taskSuffix;
         }
 
         @Override
         public long getInstanceId() {
-            return imageFile.getId();
+            return mediaFile.getId();
         }
 
         @Override

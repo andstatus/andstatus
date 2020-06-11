@@ -29,27 +29,27 @@ import org.andstatus.app.util.UriUtils;
 
 import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
 
-public class AttachedImageFile extends ImageFile {
-    public static final AttachedImageFile EMPTY = new AttachedImageFile();
+public class AttachedMediaFile extends MediaFile {
+    public static final AttachedMediaFile EMPTY = new AttachedMediaFile();
     public final Uri uri;
     final long previewOfDownloadId;
-    public final AttachedImageFile previewOf;
+    public final AttachedMediaFile previewOf;
 
-    private AttachedImageFile() {
+    private AttachedMediaFile() {
         super("", MyContentType.UNKNOWN, MediaMetadata.EMPTY, 0, DownloadStatus.ABSENT, DATETIME_MILLIS_NEVER);
         uri = Uri.EMPTY;
         previewOfDownloadId = 0;
-        previewOf = AttachedImageFile.EMPTY;
+        previewOf = AttachedMediaFile.EMPTY;
     }
 
-    public static AttachedImageFile fromCursor(Cursor cursor) {
+    public static AttachedMediaFile fromCursor(Cursor cursor) {
         final long downloadId = DbUtils.getLong(cursor, DownloadTable._ID);
         return downloadId == 0
                 ? EMPTY
-                : new AttachedImageFile(downloadId, cursor);
+                : new AttachedMediaFile(downloadId, cursor);
     }
 
-    private AttachedImageFile(long downloadId, Cursor cursor) {
+    private AttachedMediaFile(long downloadId, Cursor cursor) {
         super(DbUtils.getString(cursor, DownloadTable.FILE_NAME),
                 MyContentType.load(DbUtils.getLong(cursor, DownloadTable.CONTENT_TYPE)),
                 MediaMetadata.fromCursor(cursor), downloadId,
@@ -57,15 +57,15 @@ public class AttachedImageFile extends ImageFile {
                 DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE));
         uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URL));
         previewOfDownloadId = DbUtils.getLong(cursor, DownloadTable.PREVIEW_OF_DOWNLOAD_ID);
-        previewOf = AttachedImageFile.EMPTY;
+        previewOf = AttachedMediaFile.EMPTY;
     }
 
-    public AttachedImageFile(DownloadData data) {
+    public AttachedMediaFile(DownloadData data) {
         super(data.getFilename(), data.getContentType(), data.mediaMetadata, data.getDownloadId(), data.getStatus(),
                 data.getDownloadedDate());
         this.uri = data.getUri();
         this.previewOfDownloadId = 0;
-        previewOf = AttachedImageFile.EMPTY;
+        previewOf = AttachedMediaFile.EMPTY;
     }
 
     @Override
@@ -88,7 +88,7 @@ public class AttachedImageFile extends ImageFile {
         MyServiceManager.sendCommand(CommandData.newFetchAttachment(0, downloadId));
     }
 
-    AttachedImageFile(AttachedImageFile previewFile, AttachedImageFile previewOf) {
+    AttachedMediaFile(AttachedMediaFile previewFile, AttachedMediaFile previewOf) {
         super(previewFile.downloadFile.getFilename(),
                 previewFile.contentType,
                 previewFile.mediaMetadata,
@@ -101,13 +101,13 @@ public class AttachedImageFile extends ImageFile {
     }
 
     public boolean imageOrLinkMayBeShown() {
-        return contentType == MyContentType.IMAGE &&
+        return contentType.isImage() &&
                 (super.imageMayBeShown() || uri != Uri.EMPTY);
     }
 
     public Intent intentToView() {
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        AttachedImageFile fileToView = previewOf.isEmpty() ? this : previewOf;
+        AttachedMediaFile fileToView = previewOf.isEmpty() ? this : previewOf;
         final Uri mediaFileUri = fileToView.downloadFile.existsNow()
                 ? FileProvider.downloadFilenameToUri(fileToView.downloadFile.getFilename())
                 : fileToView.uri;
@@ -126,7 +126,7 @@ public class AttachedImageFile extends ImageFile {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        AttachedImageFile imageFile = (AttachedImageFile) o;
+        AttachedMediaFile imageFile = (AttachedMediaFile) o;
 
         if (previewOfDownloadId != imageFile.previewOfDownloadId) return false;
         return uri.equals(imageFile.uri);

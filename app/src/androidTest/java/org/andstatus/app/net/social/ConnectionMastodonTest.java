@@ -396,7 +396,7 @@ public class ConnectionMastodonTest {
 
         List<DownloadData> downloads = DownloadData.fromNoteId(myContextHolder.getNow(), note.noteId);
         assertEquals("Saved downloads " + downloads, 2, downloads.size());
-        DownloadData dPreview = downloads.stream().filter(d -> d.getContentType() == MyContentType.IMAGE).findAny().orElse(DownloadData.EMPTY);
+        DownloadData dPreview = downloads.stream().filter(d -> d.getContentType().isImage()).findAny().orElse(DownloadData.EMPTY);
         assertEquals("Preview URL " + downloads, preview.uri, dPreview.getUri());
         assertEquals("Preview " + downloads, 0, dPreview.getDownloadNumber());
         DownloadData dVideo = downloads.stream().filter(d -> d.getContentType() == MyContentType.VIDEO).findAny().orElse(DownloadData.EMPTY);

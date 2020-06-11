@@ -16,6 +16,7 @@
 
 package org.andstatus.app.graphics;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,13 +32,14 @@ import android.graphics.Shader;
 import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.LruCache;
 
 import androidx.annotation.Nullable;
 
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.ImageFile;
+import org.andstatus.app.data.MediaFile;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.StringUtil;
@@ -104,13 +106,13 @@ public class ImageCache extends LruCache<String, CachedImage> {
     }
 
     @Nullable
-    CachedImage getCachedImage(ImageFile imageFile) {
-        return getImage(imageFile, true);
+    CachedImage getCachedImage(MediaFile mediaFile) {
+        return getImage(mediaFile, true);
     }
 
     @Nullable
-    CachedImage loadAndGetImage(ImageFile imageFile) {
-        return getImage(imageFile, false);
+    CachedImage loadAndGetImage(MediaFile mediaFile) {
+        return getImage(mediaFile, false);
     }
 
     @Override
@@ -122,26 +124,26 @@ public class ImageCache extends LruCache<String, CachedImage> {
     }
 
     @Nullable
-    private CachedImage getImage(ImageFile imageFile, boolean fromCacheOnly) {
-        if (StringUtil.isEmpty(imageFile.getPath())) {
+    private CachedImage getImage(MediaFile mediaFile, boolean fromCacheOnly) {
+        if (StringUtil.isEmpty(mediaFile.getPath())) {
             return null;
         }
-        CachedImage image = get(imageFile.getPath());
+        CachedImage image = get(mediaFile.getPath());
         if (image != null) {
             hits.incrementAndGet();
-        } else if (brokenBitmaps.contains(imageFile.getPath())) {
+        } else if (brokenBitmaps.contains(mediaFile.getPath())) {
             hits.incrementAndGet();
             return CachedImage.BROKEN;
         } else {
             misses.incrementAndGet();
-            if (!fromCacheOnly && (new File(imageFile.getPath())).exists()) {
-                image = loadImage(imageFile);
+            if (!fromCacheOnly && (new File(mediaFile.getPath())).exists()) {
+                image = loadImage(mediaFile);
                 if (image != null) {
                     if (currentCacheSize > 0) {
-                        put(imageFile.getPath(), image);
+                        put(mediaFile.getPath(), image);
                     }
                 } else {
-                    brokenBitmaps.add(imageFile.getPath());
+                    brokenBitmaps.add(mediaFile.getPath());
                 }
             }
         }
@@ -149,16 +151,37 @@ public class ImageCache extends LruCache<String, CachedImage> {
     }
 
     @Nullable
-    private CachedImage loadImage(ImageFile imageFile) {
-        Bitmap bitmap = loadBitmap(imageFile);
+    private CachedImage loadImage(MediaFile mediaFile) {
+        switch (MyContentType.fromPathOfSavedFile(mediaFile.getPath())) {
+            case IMAGE:
+                return bitmapToCachedImage(mediaFile, imageFileToBitmap(mediaFile));
+            case ANIMATED_IMAGE:
+                if (Build.VERSION.SDK_INT >= 28) {
+                    return animatedFileToCachedImage(mediaFile);
+                }
+                return bitmapToCachedImage(mediaFile, imageFileToBitmap(mediaFile));
+            case VIDEO:
+                return bitmapToCachedImage(mediaFile, videoFileToBitmap(mediaFile));
+            default:
+                return null;
+        }
+    }
+
+    @TargetApi(28)
+    private CachedImage animatedFileToCachedImage(MediaFile mediaFile) {
+        // TODO: Replace with specialized code for animated media
+        return bitmapToCachedImage(mediaFile, imageFileToBitmap(mediaFile));
+    }
+
+    private CachedImage bitmapToCachedImage(MediaFile mediaFile, Bitmap bitmap) {
         if (bitmap == null) {
             return null;
         }
         Rect srcRect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
         Bitmap background = getSuitableRecycledBitmap(srcRect);
         if (background == null) {
-            MyLog.w(imageFile, "No suitable bitmap found to cache "
-                    + srcRect.width() + "x" + srcRect.height() + " '" + imageFile.getPath() + "'");
+            MyLog.w(mediaFile, "No suitable bitmap found to cache "
+                    + srcRect.width() + "x" + srcRect.height() + " '" + mediaFile.getPath() + "'");
             return null ;
         }
         Canvas canvas = new Canvas(background);
@@ -169,7 +192,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
             canvas.drawBitmap(bitmap, 0 , 0, null);
         }
         bitmap.recycle();
-        return new CachedImage(imageFile.getId(), background, srcRect);
+        return new CachedImage(mediaFile.getId(), background, srcRect);
     }
 
     /**
@@ -190,61 +213,49 @@ public class ImageCache extends LruCache<String, CachedImage> {
     }
 
     @Nullable
-    private Bitmap loadBitmap(ImageFile imageFile) {
-        switch (MyContentType.fromPathOfSavedFile(imageFile.getPath())) {
-            case IMAGE:
-                return imagePathToBitmap(imageFile);
-            case VIDEO:
-                return videoPathToBitmap(imageFile);
-            default:
-                return null;
-        }
-    }
-
-    @Nullable
-    private Bitmap imagePathToBitmap(ImageFile imageFile) {
+    private Bitmap imageFileToBitmap(MediaFile mediaFile) {
         try {
             final Bitmap bitmap;
-            final BitmapFactory.Options options = calculateScaling(imageFile, imageFile.getSize());
+            final BitmapFactory.Options options = calculateScaling(mediaFile, mediaFile.getSize());
             if (MyPreferences.isShowDebuggingInfoInUi()) {
-                bitmap = BitmapFactory.decodeFile(imageFile.getPath(), options);
+                bitmap = BitmapFactory.decodeFile(mediaFile.getPath(), options);
             } else {
                 try {
-                    bitmap = BitmapFactory.decodeFile(imageFile.getPath(), options);
+                    bitmap = BitmapFactory.decodeFile(mediaFile.getPath(), options);
                 } catch (OutOfMemoryError e) {
-                    MyLog.w(imageFile, getInfo(), e);
+                    MyLog.w(mediaFile, getInfo(), e);
                     evictAll();
                     return null;
                 }
             }
-            MyLog.v(imageFile, () -> (bitmap == null ? "Failed to load " + name + "'s bitmap"
+            MyLog.v(mediaFile, () -> (bitmap == null ? "Failed to load " + name + "'s bitmap"
                     : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
-                    + "x" + bitmap.getHeight()) + " '" + imageFile.getPath() + "' inSampleSize:" + options.inSampleSize);
+                    + "x" + bitmap.getHeight()) + " '" + mediaFile.getPath() + "' inSampleSize:" + options.inSampleSize);
             return bitmap;
         } catch (Exception e) {
-            MyLog.w(this, "Error loading '" + imageFile.getPath() + "'", e);
+            MyLog.w(this, "Error loading '" + mediaFile.getPath() + "'", e);
             return null;
         }
     }
 
     @Nullable
-    private Bitmap videoPathToBitmap(ImageFile imageFile) {
+    private Bitmap videoFileToBitmap(MediaFile mediaFile) {
         try (MediaMetadataRetriever retriever = new MediaMetadataRetriever()) {
-            retriever.setDataSource(myContextHolder.getNow().context(), Uri.parse(imageFile.getPath()));
+            retriever.setDataSource(myContextHolder.getNow().context(), Uri.parse(mediaFile.getPath()));
             Bitmap source = retriever.getFrameAtTime();
             if (source == null) {
                 return null;
             }
-            BitmapFactory.Options options = calculateScaling(imageFile, imageFile.getSize());
-            Bitmap bitmap = ThumbnailUtils.extractThumbnail(source, imageFile.getSize().x / options.inSampleSize,
-                    imageFile.getSize().y / options.inSampleSize);
+            BitmapFactory.Options options = calculateScaling(mediaFile, mediaFile.getSize());
+            Bitmap bitmap = ThumbnailUtils.extractThumbnail(source, mediaFile.getSize().x / options.inSampleSize,
+                    mediaFile.getSize().y / options.inSampleSize);
             source.recycle();
-            MyLog.v(imageFile,  () -> (bitmap == null ? "Failed to load " + name + "'s bitmap"
+            MyLog.v(mediaFile,  () -> (bitmap == null ? "Failed to load " + name + "'s bitmap"
                     : "Loaded " + name + "'s bitmap " + bitmap.getWidth()
-                    + "x" + bitmap.getHeight()) + " '" + imageFile.getPath() + "'");
+                    + "x" + bitmap.getHeight()) + " '" + mediaFile.getPath() + "'");
             return bitmap;
         } catch (Exception e) {
-            MyLog.w(this, "Error loading '" + imageFile.getPath() + "'", e);
+            MyLog.w(this, "Error loading '" + mediaFile.getPath() + "'", e);
             return null;
         }
     }

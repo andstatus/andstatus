@@ -31,7 +31,6 @@ import org.andstatus.app.IntentExtra;
 import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.data.NoteContextMenuData;
 import org.andstatus.app.data.NoteForAnyAccount;
 import org.andstatus.app.net.social.Actor;
@@ -189,7 +188,7 @@ public class NoteContextMenu extends MyContextMenu {
             NoteContextMenuItem.SHARE.addTo(menu, order++, R.string.menu_item_share);
             if (!getAttachedMedia().isEmpty()) {
                 NoteContextMenuItem.VIEW_MEDIA.addTo(menu, order++,
-                        getAttachedMedia().getFirstToShare().getContentType() == MyContentType.IMAGE
+                        getAttachedMedia().getFirstToShare().getContentType().isImage()
                                 ? R.string.menu_item_view_image
                                 : R.string.view_media);
             }

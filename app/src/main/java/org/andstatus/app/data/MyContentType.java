@@ -29,18 +29,19 @@ import org.andstatus.app.util.UriUtils;
 
 public enum MyContentType {
     IMAGE("image/*", 2, 1),
-    TEXT("text/*", 3, 3),
-    VIDEO("video/*", 4, 2),
-    APPLICATION("application/*", 5, 4),
-    UNKNOWN("*/*", 0, 5);
+    ANIMATED_IMAGE("image/*", 6, 2),
+    VIDEO("video/*", 4, 3),
+    TEXT("text/*", 3, 4),
+    APPLICATION("application/*", 5, 5),
+    UNKNOWN("*/*", 0, 6);
 
     private static final String TAG = MyContentType.class.getSimpleName();
     public static final String APPLICATION_JSON = "application/json";
 
     private final long code;
+    // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
     public final String generalMimeType;
     public final int attachmentsSortOrder;
-
 
     @NonNull
     public static MyContentType fromPathOfSavedFile(String mediaFilePath) {
@@ -51,10 +52,17 @@ public enum MyContentType {
 
     public static MyContentType fromUri(DownloadType downloadType, ContentResolver contentResolver, Uri uri,
                                         String defaultMimeType) {
-        if (downloadType == DownloadType.AVATAR) return MyContentType.IMAGE;
+        MyContentType myContentType = fromMimeType(uri2MimeType(contentResolver, uri, defaultMimeType));
+        return myContentType == ANIMATED_IMAGE || downloadType != DownloadType.AVATAR
+            ? myContentType
+            : IMAGE;
+    }
 
-        String mimeType = uri2MimeType(contentResolver, uri, defaultMimeType);
+    private static MyContentType fromMimeType(String mimeType) {
         if (mimeType.startsWith("image")) {
+            if (mimeType.endsWith("/gif") || mimeType.endsWith("/apng")) {
+                return ANIMATED_IMAGE;
+            }
             return IMAGE;
         } else if (mimeType.startsWith("video")) {
             return VIDEO;
@@ -91,6 +99,10 @@ public enum MyContentType {
         this.generalMimeType = generalMimeType;
         this.code = code;
         this.attachmentsSortOrder = attachmentsSortOrder;
+    }
+
+    public boolean isImage() {
+        return this == IMAGE || this == ANIMATED_IMAGE;
     }
 
     public String save() {
@@ -144,6 +156,7 @@ public enum MyContentType {
     public boolean getDownloadMediaOfThisType() {
         switch (this) {
             case IMAGE:
+            case ANIMATED_IMAGE:
                 return MyPreferences.getDownloadAndDisplayAttachedImages();
             case VIDEO:
                 return MyPreferences.getDownloadAttachedVideo();

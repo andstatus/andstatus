@@ -27,7 +27,7 @@ import androidx.annotation.NonNull;
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.context.MyTheme;
 import org.andstatus.app.data.AvatarFile;
-import org.andstatus.app.data.ImageFile;
+import org.andstatus.app.data.MediaFile;
 import org.andstatus.app.util.I18n;
 import org.andstatus.app.util.MyLog;
 import org.andstatus.app.util.SharedPreferencesUtil;
@@ -135,12 +135,12 @@ public class ImageCaches {
         return memInfo;
     }
 
-    public static CachedImage loadAndGetImage(CacheName cacheName, ImageFile imageFile) {
-        return getCache(cacheName).loadAndGetImage(imageFile);
+    public static CachedImage loadAndGetImage(CacheName cacheName, MediaFile mediaFile) {
+        return getCache(cacheName).loadAndGetImage(mediaFile);
     }
 
-    public static CachedImage getCachedImage(CacheName cacheName, ImageFile imageFile) {
-        return getCache(cacheName).getCachedImage(imageFile);
+    public static CachedImage getCachedImage(CacheName cacheName, MediaFile mediaFile) {
+        return getCache(cacheName).getCachedImage(mediaFile);
     }
 
     public static ImageCache getCache(CacheName cacheName) {

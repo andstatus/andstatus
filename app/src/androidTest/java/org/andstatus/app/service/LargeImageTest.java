@@ -19,7 +19,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.AttachedImageFile;
+import org.andstatus.app.data.AttachedMediaFile;
 import org.andstatus.app.data.DemoNoteInserter;
 import org.andstatus.app.data.DownloadData;
 import org.andstatus.app.data.DownloadStatus;
@@ -85,7 +85,7 @@ public class LargeImageTest {
     }
 
     private void loadingTest(DownloadData dd) {
-        CachedImage image = new AttachedImageFile(dd).loadAndGetImage(CacheName.ATTACHED_IMAGE);
+        CachedImage image = new AttachedMediaFile(dd).loadAndGetImage(CacheName.ATTACHED_IMAGE);
         int width = image.getImageSize().x;
         assertTrue("Not wide already " + width, width < 4000 && width > 10);
         int height = image.getImageSize().y;

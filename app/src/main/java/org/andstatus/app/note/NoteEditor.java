@@ -42,7 +42,7 @@ import org.andstatus.app.R;
 import org.andstatus.app.account.MyAccount;
 import org.andstatus.app.actor.ActorAutoCompleteAdapter;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.AttachedImageFile;
+import org.andstatus.app.data.AttachedMediaFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.data.TextMediaType;
 import org.andstatus.app.graphics.IdentifiableImageView;
@@ -551,7 +551,7 @@ public class NoteEditor {
 
         attachmentsList.removeAllViewsInLayout();
 
-        for (AttachedImageFile imageFile: editorData.getAttachedImageFiles().list) {
+        for (AttachedMediaFile imageFile: editorData.getAttachedImageFiles().list) {
             if (!imageFile.imageOrLinkMayBeShown()) continue;
 
             int attachmentLayout = imageFile.imageMayBeShown()

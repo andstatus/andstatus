@@ -28,7 +28,7 @@ import androidx.annotation.NonNull;
 
 import org.andstatus.app.R;
 import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.AttachedImageFile;
+import org.andstatus.app.data.AttachedMediaFile;
 import org.andstatus.app.data.DownloadStatus;
 import org.andstatus.app.graphics.IdentifiableImageView;
 import org.andstatus.app.net.social.SpanUtil;
@@ -166,22 +166,22 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
 
         attachmentsList.removeAllViewsInLayout();
 
-        for (AttachedImageFile imageFile: item.attachedImageFiles.list) {
-            if (!imageFile.imageOrLinkMayBeShown()) continue;
+        for (AttachedMediaFile mediaFile: item.attachedImageFiles.list) {
+            if (!mediaFile.imageOrLinkMayBeShown()) continue;
 
-            int attachmentLayout = imageFile.imageMayBeShown()
-                    ? (imageFile.isTargetVideo() ? R.layout.attachment_video_preview : R.layout.attachment_image)
+            int attachmentLayout = mediaFile.imageMayBeShown()
+                    ? (mediaFile.isTargetVideo() ? R.layout.attachment_video_preview : R.layout.attachment_image)
                     : R.layout.attachment_link;
             final View attachmentView = LayoutInflater.from(contextMenu.getActivity())
                     .inflate(attachmentLayout, attachmentsList, false);
-            if (imageFile.imageMayBeShown()) {
+            if (mediaFile.imageMayBeShown()) {
                 IdentifiableImageView imageView = attachmentView.findViewById(R.id.attachment_image);
                 preloadedImages.add(item.getNoteId());
-                imageFile.showImage(contextMenu.getActivity(), imageView);
-                setOnImageClick(imageView, imageFile);
+                mediaFile.showImage(contextMenu.getActivity(), imageView);
+                setOnImageClick(imageView, mediaFile);
             } else {
                 MyUrlSpan.showText(attachmentView, R.id.attachment_link,
-                        imageFile.getTargetUri().toString(), true, false);
+                        mediaFile.getTargetUri().toString(), true, false);
             }
             attachmentsList.addView(attachmentView);
         }
@@ -189,9 +189,9 @@ public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends Bas
         attachmentsList.setVisibility(View.VISIBLE);
     }
 
-    private void setOnImageClick(View imageView, AttachedImageFile imageFile) {
+    private void setOnImageClick(View imageView, AttachedMediaFile mediaFile) {
         imageView.setOnClickListener(view -> {
-            contextMenu.menuContainer.getActivity().startActivity(imageFile.intentToView());
+            contextMenu.menuContainer.getActivity().startActivity(mediaFile.intentToView());
         });
     }
 
