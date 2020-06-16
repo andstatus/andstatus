@@ -19,6 +19,9 @@ package org.andstatus.app.timeline;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -667,7 +670,8 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         updateTitle(mRateLimitText);
         mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome());
         if (getParamsLoaded().isAtHome()) {
-            myContext.accounts().getCurrentAccount().getActor().avatarFile.loadDrawable(mDrawerToggle::setHomeAsUpIndicator);
+            myContext.accounts().getCurrentAccount().getActor().avatarFile
+                    .loadDrawable(this::scaleDrawableForToolbar, mDrawerToggle::setHomeAsUpIndicator);
         } else {
             mDrawerToggle.setHomeAsUpIndicator(null);
         }
@@ -681,6 +685,18 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
         MyCheckBox.setEnabled(this, R.id.showSensitiveContentToggle, MyPreferences.isShowSensitiveContent());
         showSyncListButtons();
         showActorProfile();
+    }
+
+    private Drawable scaleDrawableForToolbar(Drawable drawable) {
+        Drawable scaledDrawable;
+        if (drawable instanceof BitmapDrawable) {
+            Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+            int pixels = getListAdapter().dpToPixes(32);
+            scaledDrawable = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, pixels, pixels, true));
+        } else {
+            scaledDrawable = drawable;
+        }
+        return scaledDrawable;
     }
 
     private void showRecentAccounts() {

@@ -38,6 +38,7 @@ import org.andstatus.app.util.TryUtils;
 
 import java.util.function.Consumer;
 
+import io.vavr.control.CheckedFunction;
 import io.vavr.control.Try;
 
 public abstract class MediaFile implements IsEmpty, IdentifiableInstance {
@@ -230,29 +231,29 @@ public abstract class MediaFile implements IsEmpty, IdentifiableInstance {
         }
     }
 
-    public void loadDrawable(Consumer<Drawable> consumer) {
-        final String taskSuffix = "-syncd-" + consumer.hashCode();
+    public void loadDrawable(CheckedFunction<Drawable, Drawable> mapper, Consumer<Drawable> uiConsumer) {
+        final String taskSuffix = "-syncd-" + uiConsumer.hashCode();
         if (downloadStatus != DownloadStatus.LOADED || !downloadFile.existed) {
             logResult("No image file", taskSuffix);
             requestDownload();
-            consumer.accept(null);
+            uiConsumer.accept(null);
             return;
         }
         CacheName cacheName = this instanceof AvatarFile ? CacheName.AVATAR : CacheName.ATTACHED_IMAGE;
         CachedImage cachedImage = getImageFromCache(cacheName);
         if (cachedImage == CachedImage.BROKEN) {
             logResult("Broken", taskSuffix);
-            consumer.accept(null);
+            uiConsumer.accept(null);
             return;
         } else if (cachedImage != null && !cachedImage.isExpired()) {
             logResult("Set", taskSuffix);
-            consumer.accept(cachedImage.getDrawable());
+            uiConsumer.accept(cachedImage.getDrawable());
             return;
         }
         logResult("Show default", taskSuffix);
-        consumer.accept(null);
+        uiConsumer.accept(null);
         AsyncTaskLauncher.execute(new DrawableLoader(this, cacheName),
-                DrawableLoader::load, loader -> drawableTry -> drawableTry.onSuccess(consumer));
+                loader -> loader.load().map(mapper), loader -> drawableTry -> drawableTry.onSuccess(uiConsumer));
     }
 
     private static class DrawableLoader extends AbstractImageLoader {
