@@ -31,6 +31,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.drawable.Animatable;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
@@ -177,6 +178,9 @@ public class ImageCache extends LruCache<String, CachedImage> {
         try {
             ImageDecoder.Source source = ImageDecoder.createSource(mediaFile.downloadFile.getFile());
             Drawable drawable = ImageDecoder.decodeDrawable(source);
+            if (drawable instanceof BitmapDrawable) {
+                return bitmapToCachedImage(mediaFile, ((BitmapDrawable) drawable).getBitmap());
+            }
             if (drawable instanceof Animatable) {
                 ((Animatable) drawable).start();
             }

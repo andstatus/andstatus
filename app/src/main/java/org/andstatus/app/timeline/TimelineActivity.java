@@ -23,6 +23,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -713,6 +714,9 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
 
             ma.getActor().avatarFile.showImage(this, avatarView);
             avatarView.setContentDescription(ma.getAccountName());
+            if (Build.VERSION.SDK_INT >= 26) {
+                avatarView.setTooltipText(ma.getAccountName());
+            }
             avatarView.setOnClickListener(ind == 0
                 ? v -> {
                     TimelineActivity.startForTimeline(

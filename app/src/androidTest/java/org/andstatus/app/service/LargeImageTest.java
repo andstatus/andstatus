@@ -43,7 +43,7 @@ public class LargeImageTest {
 
     @Before
     public void setUp() throws Exception {
-        TestSuite.initializeWithData(this);
+        TestSuite.initializeWithAccounts(this);
     }
 
     @Test
@@ -87,8 +87,8 @@ public class LargeImageTest {
     private void loadingTest(DownloadData dd) {
         CachedImage image = new AttachedMediaFile(dd).loadAndGetImage(CacheName.ATTACHED_IMAGE);
         int width = image.getImageSize().x;
-        assertTrue("Not wide already " + width, width < 4000 && width > 10);
+        assertTrue("Too wide: " + width, width < 4000 && width > 10);
         int height = image.getImageSize().y;
-        assertTrue("Not high already " + height, height < 4000 && height > 10);
+        assertTrue("Too high: " + height, height < 4000 && height > 10);
     }
 }
