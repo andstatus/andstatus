@@ -68,9 +68,12 @@ public class JsonUtils {
         return jso;
     }
 
-    /** Creates new shallow copy with new key */
+    /** Creates new shallow copy with new key, does nothing if key is empty or null */
     @NonNull
     public static JSONObject put(JSONObject jso, String key, Object value) {
+        if (StringUtil.isEmpty(key)) {
+            return jso == null ? new JSONObject() : jso;
+        }
         JSONObject out = shallowCopy(jso);
         try {
             out.put(key, value);

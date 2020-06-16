@@ -82,6 +82,9 @@ public interface HttpConnectionInterface {
     default Try<HttpReadResult> executeInner(HttpRequest request) {
         if (request.verb == Verb.POST && MyPreferences.isLogNetworkLevelMessages()) {
             JSONObject jso = JsonUtils.put(request.postParams.orElseGet(JSONObject::new), "loggedURL", request.uri);
+            if (request.mediaUri.isPresent()) {
+                jso = JsonUtils.put(jso, "loggedMediaUri", request.mediaUri.get().toString());
+            }
             MyLog.logNetworkLevelMessage("post", request.getLogName(), jso, "");
         }
         return request.validate()
