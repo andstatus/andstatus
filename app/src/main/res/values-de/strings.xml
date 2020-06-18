@@ -94,6 +94,10 @@
   <string name="custom_locale_title">Sprache der Anwendung</string>
   <string name="set_as_default_timeline">Als Standard-Timeline festlegen</string>
   <string name="default_timeline_summary">Timeline, die durch einen Launcher geöffnet wird: \"%s\"</string>
+  <string name="delete_origin_dialog_title">Soziales Netzwerk „%s“ löschen?</string>
+  <string name="delete_origin_dialog_text">Beim Löschen des sozialen Netzwerks (Instanz) werden alle Daten des lokalen AndStatus-Cache gelöscht: Aktivitäten,
+Notizen und Benutzer, die mit (heruntergeladen aus) diesem sozialen Netzwerk verbunden sind.
+Fortfahren?</string>
   <string name="deleted">gelöscht</string>
   <string name="device_default">Gerätestandard</string>
   <string name="dialog_summary_acquiring_an_access_token">Bitte warten, während AndStatus OAuth Request Token und Access Token austauscht</string>

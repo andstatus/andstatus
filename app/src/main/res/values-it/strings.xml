@@ -53,6 +53,7 @@
   <string name="category_title_preference_information">Informazione</string>
   <string name="category_title_preference_origin">Rete sociale</string>
   <string name="category_title_preference_settings">Impostazioni</string>
+  <string name="change_log_summary">Il registro dei cambiamenti è solo in inglese</string>
   <string name="changed">Cambiato</string>
   <string name="check_and_fix_data">Controlla e correggi i dati</string>
   <string name="check_and_fix_data_summary">Usa questa azione se pensi che AndStatus non funzioni,
@@ -87,6 +88,9 @@
   <string name="custom_locale_title">Lingua dell\'app</string>
   <string name="database_unavailable_description">Non è stato possibile aprire la cache locale (banca dati con messaggi e attività). Prova a riavviare il dispositivo o reinstallare AndStatus.</string>
   <string name="delete_old_data">Elimina i vecchi dati ora</string>
+  <string name="delete_origin_dialog_title">Eliminare la rete sociale «%s»?</string>
+  <string name="delete_origin_dialog_text">L\'eliminazione della rete sociale (istanza) eliminerà dalla cache locale di AndStatus tutti i suoi dati: attività,
+note e utenti associati con (scaricati da) questa rete sociale. Continuare?</string>
   <string name="deleted">eliminato</string>
   <string name="device_default">Valore del dispositivo</string>
   <string name="dialog_title_authentication_failed">Autenticazione non riuscita</string>

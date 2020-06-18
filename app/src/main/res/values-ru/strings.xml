@@ -99,6 +99,8 @@
   <string name="database_unavailable_description">Не удалось открыть локальный кэш (базу данных с сообщениями и т.п.). Попробуйте перезагрузить устройство или переустановите AndStatus.</string>
   <string name="default_timeline_summary">Лента времени, которая будет открыта при запуске приложения: \"%s\"</string>
   <string name="delete_old_data">Удалить старые данные прямо сейчас</string>
+  <string name="delete_origin_dialog_title">Удалить социальную сеть «%s»?</string>
+  <string name="delete_origin_dialog_text">Удаление Социальной сети удалит из кэша AndStatus все данные этой сети: действия, сообщения и актеров, связанных с (загруженных из) этой социальной сети. Продолжить?</string>
   <string name="deleted">удалил</string>
   <string name="device_default">По умолчанию в устройстве</string>
   <string name="dialog_summary_acquiring_an_access_token">Пожалуйста подождите пока AndStatus обменяет токен OAuth запроса на токен доступа</string>
@@ -198,6 +200,7 @@
 contains:ederatio
 contains://andstatus.org/</string>
   <string name="hide_replies_not_to_me_or_friends_title">Скрыть из ленты времени \"Дом\" ответы, адресованные не мне и не моим друзьям</string>
+  <string name="hint_which_instance">Какой узел сети?</string>
   <string name="history_size_entries_500">500 сообщений</string>
   <string name="history_size_entries_1000">1000 сообщений</string>
   <string name="history_size_entries_2000">2000 сообщений</string>
@@ -245,6 +248,7 @@ contains://andstatus.org/</string>
   <string name="latest_error_label">Последняя ошибка</string>
   <string name="liked">лайкнул</string>
   <string name="loading">Загрузка</string>
+  <string name="log_in_to_social_network">Войти в %s</string>
   <string name="long_press_to_open_context_menu">Длительно нажмите, чтобы открыть контекстное меню</string>
   <string name="long_press_to_open_context_menu_on">Длительно нажмите на элемент, чтобы открыть его контекстное меню</string>
   <string name="long_press_to_open_context_menu_off">Кратко нажмите на элемент, чтобы открыть его контекстное меню</string>

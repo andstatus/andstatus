@@ -99,6 +99,9 @@
   <string name="database_unavailable_description">Nous n\'avons pas pu ouvrir le cache local (base de données avec des notes et des activités). Veuillez essayer de redémarrer votre appareil ou réinstaller AndStatus.</string>
   <string name="default_timeline_summary">Timeline qui sera ouverte par un lanceur : \"%s\"</string>
   <string name="delete_old_data">Supprimer les anciennes données maintenant</string>
+  <string name="delete_origin_dialog_title">Supprimer le réseau social « %s » ?</string>
+  <string name="delete_origin_dialog_text">Supprimer le réseau social (instance) supprimera toutes ses données du cache local AndStatus : les activités,
+les notes et les utilisateurs associés avec (téléchargés depuis) le réseau social. Continuer ?</string>
   <string name="deleted">supprimé</string>
   <string name="device_default">Valeur de l\'appareil</string>
   <string name="dialog_summary_acquiring_an_access_token">Merci de patienter pendant qu\'AndStatus échange le jeton de requête OAuth contre un jeton d\'accès</string>

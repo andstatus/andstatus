@@ -100,6 +100,9 @@
   <string name="database_unavailable_description">Lokal cache (database med notater og aktiviteter) kunne ikke åbnes. Genstart din enhed, eller geninstallér AndStatus.</string>
   <string name="default_timeline_summary">Tidslinje, der vil blibe åbnet af en Startskærms-app: \"%s\"</string>
   <string name="delete_old_data">Slet gamle data nu</string>
+  <string name="delete_origin_dialog_title">%s: Slet dette sociale netværk?</string>
+  <string name="delete_origin_dialog_text">Slettes dette sociale netværk (forekomst), slettes alle dets tilknyttede (downloadede) data
+    (aktiviteter, notater og aktører) fra AndStatus-lokalcache. Fortsæt?</string>
   <string name="deleted">slettet</string>
   <string name="device_default">Enhedsstandard</string>
   <string name="dialog_summary_acquiring_an_access_token">Afvent at AndStatus udveksler en OAuth Request-token med Access token</string>
