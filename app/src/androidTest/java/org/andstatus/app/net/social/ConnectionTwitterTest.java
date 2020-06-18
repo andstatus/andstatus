@@ -165,7 +165,7 @@ public class ConnectionTwitterTest {
 
         Note note = connection.getNote("503799441900314624").get().getNote();
         assertFalse("note returned", note.isEmpty());
-        assertEquals("has attachment", 1, note.attachments.size());
+        assertEquals("Should have an attachment " + note, 1, note.attachments.size());
         assertEquals("attachment",  Attachment.fromUri("https://pbs.twimg.com/media/Bv3a7EsCAAIgigY.jpg"),
                 note.attachments.list.get(0));
         assertNotSame("attachment", Attachment.fromUri("https://pbs.twimg.com/media/Bv4a7EsCAAIgigY.jpg"),
@@ -180,11 +180,31 @@ public class ConnectionTwitterTest {
         assertFalse("note returned " + note, note.isEmpty());
         assertEquals("Body of this note " + note, "Test uploading two images via #AndStatus https://t.co/lJn9QBpWyn",
                 note.getContent());
-        assertEquals("has two attachments", 2, note.attachments.size());
+        assertEquals("Should have two attachments " + note, 2, note.attachments.size());
         assertEquals("attachment",  Attachment.fromUri("https://pbs.twimg.com/media/EKJZzZPWoAICygS.jpg"),
                 note.attachments.list.get(0));
         assertEquals("attachment",  Attachment.fromUri("https://pbs.twimg.com/media/EKJZzkYWsAELO-o.jpg"),
                 note.attachments.list.get(1));
+    }
+
+    @Test
+    public void getNoteWithAnimatedGif() throws IOException {
+        mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_animated_gif);
+
+        AActivity activity = connection.getNote("1271153637457367042").get();
+        Note note = activity.getNote();
+        assertFalse("note returned", note.isEmpty());
+        assertEquals("Should have two attachments " + note, 2, note.attachments.size());
+        Attachment attachment0 = note.attachments.list.get(0);
+        assertEquals("attachment 0 " + note,  Attachment.fromUriAndMimeType(
+                "https://video.twimg.com/tweet_video/EaQLf5eXkAIhL7_.mp4", "video/mp4"),
+                attachment0);
+        Attachment attachment1 = note.attachments.list.get(1);
+        assertEquals("attachment 1 " + note,  Attachment.fromUri("https://pbs.twimg.com/tweet_video_thumb/EaQLf5eXkAIhL7_.jpg"),
+                attachment1);
+        assertEquals("attachment 1 should be a preview " + note,  attachment0, attachment1.previewOf);
+
+        addAsGetNote(activity);
     }
 
     @Test
@@ -200,11 +220,16 @@ public class ConnectionTwitterTest {
         assertEquals("Body of this note", ",update,streckensperrung,zw,berliner,tor,bergedorf,ersatzverkehr,mit,bussen," +
                 "und,taxis,störungsdauer,bis,ca,10,uhr,hvv,#hvv,sbahnhh,#sbahnhh,", note.getContentToSearch());
 
+        addAsGetNote(activity);
+    }
+
+    private void addAsGetNote(AActivity activity) {
         MyAccount ma = demoData.getMyAccount(connection.getData().getAccountName().toString());
         CommandExecutionContext executionContext = new CommandExecutionContext(
                 myContextHolder.getNow(), CommandData.newAccountCommand(CommandEnum.GET_NOTE, ma));
         new DataUpdater(executionContext).onActivity(activity);
-        assertNotEquals("Note was not added " + activity, 0, note.noteId);
+
+        assertNotEquals("Note was not added " + activity, 0, activity.getNote().noteId);
         assertNotEquals("Activity was not added " + activity, 0, activity.getId());
     }
 
@@ -227,12 +252,7 @@ public class ConnectionTwitterTest {
                 twitterBodyToPost, note.getContentToPost());
         assertEquals("Content to Search of this note", contentToSearch, note.getContentToSearch());
 
-        MyAccount ma = demoData.getMyAccount(connection.getData().getAccountName().toString());
-        CommandExecutionContext executionContext = new CommandExecutionContext(
-                myContextHolder.getNow(), CommandData.newAccountCommand(CommandEnum.GET_NOTE, ma));
-        new DataUpdater(executionContext).onActivity(activity);
-        assertNotEquals("Note was not added " + activity, 0, note.noteId);
-        assertNotEquals("Activity was not added " + activity, 0, activity.getId());
+        addAsGetNote(activity);
     }
 
     @Test

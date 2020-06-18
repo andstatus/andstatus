@@ -312,7 +312,12 @@ public abstract class MediaFile implements IsEmpty, IdentifiableInstance {
 
     @Override
     public String toString() {
-        return isEmpty() ? "EMPTY" : instanceTag() + ":" + downloadFile;
+        return isEmpty()
+                ? "EMPTY"
+                : instanceTag() + ":"
+                + contentType + ", "
+                + mediaMetadata + ", "
+                + downloadFile;
     }
 
     @Override

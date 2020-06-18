@@ -190,6 +190,7 @@ public class FirstActivity extends AppCompatActivity implements IdentifiableInst
     }
 
     private static void startApp(Context context) {
+        MyLog.i(context, "startApp");
         Intent intent = new Intent(context, FirstActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);

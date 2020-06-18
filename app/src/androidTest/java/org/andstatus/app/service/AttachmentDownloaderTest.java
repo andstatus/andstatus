@@ -61,8 +61,7 @@ public class AttachmentDownloaderTest {
         DemoNoteInserter inserter = new DemoNoteInserter(ma);
         AActivity activity = inserter.buildActivity(inserter.buildActor(), "", body,
                 null, null, DownloadStatus.LOADED);
-        activity.addAttachment(Attachment.fromUri(
-                "https://i.picsum.photos/id/124/536/354.jpg"));
+        activity.addAttachment(Attachment.fromUri("https://picsum.photos/id/1016/3844/2563.jpg"));
         inserter.onActivity(activity);
         
         DownloadData dd = DownloadData.getSingleAttachment(activity.getNote().noteId);

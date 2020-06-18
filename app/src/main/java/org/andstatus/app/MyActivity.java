@@ -270,7 +270,7 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
                 myContextHolder.initialize(this).thenStartActivity(this.getIntent());
                 break;
             case RESTART_APP:
-                myContextHolder.thenStartApp();
+                myContextHolder.initialize(this).thenStartApp();
                 break;
             default:
                 break;

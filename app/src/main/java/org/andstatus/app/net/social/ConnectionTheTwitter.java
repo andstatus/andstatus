@@ -263,27 +263,44 @@ public class ConnectionTheTwitter extends ConnectionTwitterLike {
     }
 
     private boolean addAttachmentsFromJson(JSONObject jso, AActivity activity, String sectionName) {
-        final String method = "addAttachmentsFromJson";
-        try {
-            JSONObject entities = jso.optJSONObject(sectionName);
-            if (entities != null && entities.has(ATTACHMENTS_FIELD_NAME)) {
-                JSONArray jArr = entities.getJSONArray(ATTACHMENTS_FIELD_NAME);
-                for (int ind = 0; ind < jArr.length(); ind++) {
-                    Attachment attachment = Attachment.fromUri(
-                            UriUtils.fromAlternativeTags((JSONObject) jArr.get(ind),
-                                    "media_url_https", "media_url_http"));
-                    if (attachment.isValid()) {
-                        activity.addAttachment(attachment);
-                    } else {
-                        MyLog.d(this, method + "; invalid attachment #" + ind + "; " + jArr.toString());
-                    }
-                }
-                return true;
+        JSONObject entities = jso.optJSONObject(sectionName);
+        JSONArray jArr = entities == null ? null : entities.optJSONArray(ATTACHMENTS_FIELD_NAME);
+        if (jArr != null && jArr.length() > 0) {
+            for (int ind = 0; ind < jArr.length(); ind++) {
+                JSONObject jsoAttachment = (JSONObject) jArr.opt(ind);
+                jsonToAttachments(jsoAttachment).forEach(activity::addAttachment);
             }
-        } catch (JSONException e) {
-            MyLog.d(this, method, e);
+            return true;
         }
         return false;
+    }
+
+    private List<Attachment> jsonToAttachments(JSONObject jsoAttachment) {
+        final String method = "jsonToAttachments";
+        List<Attachment> attachments = new ArrayList<>();
+        try {
+            JSONObject jsoVideo = jsoAttachment.optJSONObject("video_info");
+            JSONArray jsoVariants = jsoVideo == null ? null : jsoVideo.optJSONArray("variants");
+            JSONObject videoVariant = jsoVariants == null || jsoVariants.length() == 0
+                    ? null
+                    : jsoVariants.optJSONObject(0);
+            Attachment video = videoVariant == null
+                    ? Attachment.EMPTY
+                    : Attachment.fromUriAndMimeType(videoVariant.optString("url"), videoVariant.optString("content_type"));
+            if (video.isValid()) attachments.add(video);
+
+            Attachment attachment = Attachment.fromUri(UriUtils.fromAlternativeTags(jsoAttachment,
+                            "media_url_https", "media_url_http"));
+            if (attachment.isValid()) {
+                if (video.isValid()) attachment.setPreviewOf(video);
+                attachments.add(attachment);
+            } else {
+                MyLog.w(this, method + "; invalid attachment: " + jsoAttachment);
+            }
+        } catch (Exception e) {
+            MyLog.w(this, method, e);
+        }
+        return attachments;
     }
 
     @Override

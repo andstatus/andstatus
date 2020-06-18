@@ -39,6 +39,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.LruCache;
+import android.util.Size;
 
 import androidx.annotation.Nullable;
 
@@ -177,7 +178,11 @@ public class ImageCache extends LruCache<String, CachedImage> {
     private CachedImage animatedFileToCachedImage(MediaFile mediaFile) {
         try {
             ImageDecoder.Source source = ImageDecoder.createSource(mediaFile.downloadFile.getFile());
-            Drawable drawable = ImageDecoder.decodeDrawable(source);
+            Drawable drawable = ImageDecoder.decodeDrawable(source, (decoder, info, source1) -> {
+                // To allow drawing bitmaps on Software canvases
+                decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE);
+                setTargetSize(mediaFile, decoder, info.getSize());
+            });
             if (drawable instanceof BitmapDrawable) {
                 return bitmapToCachedImage(mediaFile, ((BitmapDrawable) drawable).getBitmap());
             }
@@ -188,6 +193,20 @@ public class ImageCache extends LruCache<String, CachedImage> {
         } catch (Exception e) {
             MyLog.i( TAG, "Failed to decode " + mediaFile, e);
             return imageFileToCachedImage(mediaFile);
+        }
+    }
+
+    @TargetApi(28)
+    void setTargetSize(Object objTag, ImageDecoder decoder, Size imageSize) {
+        int width = imageSize.getWidth();
+        int height = imageSize.getHeight();
+        while (height > maxBitmapHeight || width > maxBitmapWidth) {
+            height = height * 3 / 4;
+            width = width * 3 / 4;
+        }
+        if (width != imageSize.getWidth() && MyLog.isVerboseEnabled()) {
+            MyLog.v(objTag, "Large bitmap " + imageSize + " scaled to " + width + "x" + height);
+            decoder.setTargetSize(width, height);
         }
     }
 
@@ -208,12 +227,22 @@ public class ImageCache extends LruCache<String, CachedImage> {
         }
         Canvas canvas = new Canvas(background);
         canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-        if (rounded) {
-            drawRoundedBitmap(canvas, bitmap);
-        } else {
-            canvas.drawBitmap(bitmap, 0 , 0, null);
+        try {
+            // On Android 8+ this may cause
+            //   java.lang.IllegalArgumentException: Software rendering doesn't support hardware bitmaps
+            // See https://stackoverflow.com/questions/58314397/java-lang-illegalstateexception-software-rendering-doesnt-support-hardware-bit
+            if (rounded) {
+                drawRoundedBitmap(canvas, bitmap);
+            } else {
+                canvas.drawBitmap(bitmap, 0 , 0, null);
+            }
+            bitmap.recycle();
+        } catch (Exception e) {
+            // TODO: better approach needed... maybe fail?!
+            MyLog.w(TAG, "Drawing bitmap of " + mediaFile, e);
+            recycledBitmaps.add(background);
+            background = bitmap;
         }
-        bitmap.recycle();
         return new CachedImage(mediaFile.getId(), background, srcRect);
     }
 

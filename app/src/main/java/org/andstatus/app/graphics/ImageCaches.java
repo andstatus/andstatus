@@ -59,9 +59,6 @@ public class ImageCaches {
     public static synchronized void initialize(Context context) {
         StopWatch stopWatch = StopWatch.createStarted();
         styledImages.clear();
-        if (attachedImagesCache != null) {
-            return;
-        }
         initializeAttachedImagesCache(context);
         initializeAvatarsCache(context);
         MyLog.i(ImageCaches.class.getSimpleName(), "imageCachesInitializedMs:" + stopWatch.getTime() + "; " + getCacheInfo());
