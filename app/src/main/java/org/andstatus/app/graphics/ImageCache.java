@@ -204,7 +204,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
             height = height * 3 / 4;
             width = width * 3 / 4;
         }
-        if (width != imageSize.getWidth() && MyLog.isVerboseEnabled()) {
+        if (width != imageSize.getWidth()) {
             MyLog.v(objTag, "Large bitmap " + imageSize + " scaled to " + width + "x" + height);
             decoder.setTargetSize(width, height);
         }
