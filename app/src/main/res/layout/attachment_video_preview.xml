@@ -15,12 +15,12 @@
 
     <ImageView
         android:id="@+id/play_image"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_centerInParent="true"
-        android:paddingLeft="4dp"
-        android:paddingRight="4dp"
-        android:paddingTop="4dp"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_alignBottom="@id/attachment_image"
+        android:layout_alignStart="@id/attachment_image"
+        android:paddingStart="4dp"
+        android:paddingBottom="4dp"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_play_circle_outline_white_24px" />
 </RelativeLayout>
