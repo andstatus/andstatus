@@ -102,8 +102,11 @@
 			</intent-filter>
         </receiver>
 
-        <activity android:name=".FirstActivity" android:label="@string/app_name" android:launchMode="singleTask">
-            <intent-filter>
+        <activity android:name=".FirstActivity"
+                  android:label="@string/app_name"
+                  android:launchMode="singleTask"
+                  android:screenOrientation="user">
+        <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
@@ -120,7 +123,9 @@
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
-        <activity android:name=".timeline.TimelineActivity" android:label="@string/app_name"
+        <activity android:name=".timeline.TimelineActivity"
+                  android:label="@string/app_name"
+                  android:screenOrientation="user"
                   android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
@@ -141,7 +146,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".note.ConversationActivity"
-                  android:label="@string/label_conversation">
+                  android:label="@string/label_conversation"
+                  android:screenOrientation="user">
             <!--
     mimeType attribute is required for intent-filter of .ConversationActivity
     as it has both custom action and Uri present in Intent,
@@ -156,6 +162,7 @@
         </activity>
         <activity android:name=".actor.ActorsScreen"
                   android:label="@string/user_list"
+                  android:screenOrientation="user"
                   android:parentActivityName=".timeline.TimelineActivity">
             <intent-filter>
                 <action android:name="org.andstatus.app.action.VIEW_ACTORS" />
@@ -168,6 +175,7 @@
         </activity>
         <activity android:name=".actor.FollowersScreen"
                   android:label="@string/followers"
+                  android:screenOrientation="user"
                   android:parentActivityName=".timeline.TimelineActivity">
             <intent-filter>
                 <action android:name="org.andstatus.app.action.VIEW_FOLLOWERS" />
@@ -177,6 +185,7 @@
         </activity>
         <activity android:name=".context.MySettingsActivity"
                   android:label="@string/settings_activity_title"
+                  android:screenOrientation="user"
                   android:launchMode="standard"
                   android:parentActivityName=".timeline.TimelineActivity">
             <intent-filter>
@@ -184,6 +193,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".HelpActivity"
+                  android:screenOrientation="user"
                   android:launchMode="singleTop"
                   android:parentActivityName=".context.MySettingsActivity">
             <intent-filter>
@@ -191,17 +201,18 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
-        <activity android:name=".appwidget.MyAppWidgetConfigure">
+        <activity android:name=".appwidget.MyAppWidgetConfigure"
+                  android:screenOrientation="user">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".account.AccountSettingsActivity"
-            android:label="@string/account_settings_activity_title"
-            android:alwaysRetainTaskState="true"
-            android:launchMode="singleTask"
-            android:parentActivityName=".context.MySettingsActivity">
+        <activity android:name=".account.AccountSettingsActivity"
+                  android:label="@string/account_settings_activity_title"
+                  android:screenOrientation="user"
+                  android:alwaysRetainTaskState="true"
+                  android:launchMode="singleTask"
+                  android:parentActivityName=".context.MySettingsActivity">
             <intent-filter>
                 <action
                     android:name="org.andstatus.app.ACCOUNT_MANAGER_ENTRY" />
@@ -228,41 +239,49 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".account.AccountSettingsWebActivity">
+        <activity android:name=".account.AccountSettingsWebActivity"
+                  android:screenOrientation="user">
         </activity>
         <activity android:name=".origin.DiscoveredOriginList"
-            android:label="@string/discover_open_instances_title"
-            android:parentActivityName=".origin.PersistentOriginList">
+                  android:label="@string/discover_open_instances_title"
+                  android:screenOrientation="user"
+                  android:parentActivityName=".origin.PersistentOriginList">
         </activity>
         <activity android:name=".origin.PersistentOriginList"
-            android:label="@string/label_origin_list"
-            android:parentActivityName=".context.MySettingsActivity">
+                  android:label="@string/label_origin_list"
+                  android:screenOrientation="user"
+                  android:parentActivityName=".context.MySettingsActivity">
         </activity>
         <activity android:name=".origin.OriginEditor"
-            android:label="@string/label_origin_system"
-            android:parentActivityName=".context.MySettingsActivity">
+                  android:label="@string/label_origin_system"
+                  android:screenOrientation="user"
+                  android:parentActivityName=".context.MySettingsActivity">
         </activity>
         <activity android:name=".backup.BackupActivity"
-            android:label="@string/label_backup"
-            android:parentActivityName=".context.MySettingsActivity">
+                  android:label="@string/label_backup"
+                  android:screenOrientation="user"
+                  android:parentActivityName=".context.MySettingsActivity">
         </activity>
         <activity android:name=".backup.RestoreActivity"
-            android:label="@string/label_restore"
-            android:parentActivityName=".context.MySettingsActivity">
+                  android:label="@string/label_restore"
+                  android:screenOrientation="user"
+                  android:parentActivityName=".context.MySettingsActivity">
         </activity>
         <activity android:name=".service.QueueViewer"
-            android:label="@string/commands_in_a_queue"
-            android:exported="true"
-            android:parentActivityName=".timeline.TimelineActivity">
+                  android:label="@string/commands_in_a_queue"
+                  android:screenOrientation="user"
+                  android:exported="true"
+                  android:parentActivityName=".timeline.TimelineActivity">
         </activity>
         <activity android:name=".timeline.meta.ManageTimelines"
-            android:label="@string/manage_timelines"
-            android:parentActivityName=".context.MySettingsActivity">
+                  android:label="@string/manage_timelines"
+                  android:screenOrientation="user"
+                  android:parentActivityName=".context.MySettingsActivity">
         </activity>
         <activity android:name=".account.ManageAccountsActivity"
-            android:label="@string/manage_accounts"
-            android:parentActivityName=".context.MySettingsActivity">
+                  android:label="@string/manage_accounts"
+                  android:screenOrientation="user"
+                  android:parentActivityName=".context.MySettingsActivity">
         </activity>
     </application>
 </manifest>
