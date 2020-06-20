@@ -16,30 +16,24 @@
 
 package org.andstatus.app.graphics;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ImageDecoder;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Shader;
-import android.graphics.drawable.Animatable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.LruCache;
-import android.util.Size;
 
 import androidx.annotation.Nullable;
 
@@ -63,14 +57,14 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
  * On LruCache usage read http://developer.android.com/reference/android/util/LruCache.html
  */
 public class ImageCache extends LruCache<String, CachedImage> {
-    private static final String TAG = ImageCache.class.getSimpleName();
+    static final String TAG = ImageCache.class.getSimpleName();
 
     public final static int BYTES_PER_PIXEL = 4;
     final CacheName name;
     private volatile int requestedCacheSize;
     private volatile int currentCacheSize;
-    private volatile int maxBitmapHeight;
-    private volatile int maxBitmapWidth;
+    volatile int maxBitmapHeight;
+    volatile int maxBitmapWidth;
     final AtomicLong hits = new AtomicLong();
     final AtomicLong misses = new AtomicLong();
     final Set<String> brokenBitmaps = new ConcurrentSkipListSet<>();
@@ -164,7 +158,7 @@ public class ImageCache extends LruCache<String, CachedImage> {
             case IMAGE:
             case ANIMATED_IMAGE:
                 if (showImageInimations && Build.VERSION.SDK_INT >= 28) {
-                    return animatedFileToCachedImage(mediaFile);
+                    return ImageCacheApi28Helper.animatedFileToCachedImage(this, mediaFile);
                 }
                 return imageFileToCachedImage(mediaFile);
             case VIDEO:
@@ -174,47 +168,11 @@ public class ImageCache extends LruCache<String, CachedImage> {
         }
     }
 
-    @TargetApi(28)
-    private CachedImage animatedFileToCachedImage(MediaFile mediaFile) {
-        try {
-            ImageDecoder.Source source = ImageDecoder.createSource(mediaFile.downloadFile.getFile());
-            Drawable drawable = ImageDecoder.decodeDrawable(source, (decoder, info, source1) -> {
-                // To allow drawing bitmaps on Software canvases
-                decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE);
-                setTargetSize(mediaFile, decoder, info.getSize());
-            });
-            if (drawable instanceof BitmapDrawable) {
-                return bitmapToCachedImage(mediaFile, ((BitmapDrawable) drawable).getBitmap());
-            }
-            if (drawable instanceof Animatable) {
-                ((Animatable) drawable).start();
-            }
-            return new CachedImage(mediaFile.downloadId, drawable);
-        } catch (Exception e) {
-            MyLog.i( TAG, "Failed to decode " + mediaFile, e);
-            return imageFileToCachedImage(mediaFile);
-        }
-    }
-
-    @TargetApi(28)
-    void setTargetSize(Object objTag, ImageDecoder decoder, Size imageSize) {
-        int width = imageSize.getWidth();
-        int height = imageSize.getHeight();
-        while (height > maxBitmapHeight || width > maxBitmapWidth) {
-            height = height * 3 / 4;
-            width = width * 3 / 4;
-        }
-        if (width != imageSize.getWidth()) {
-            MyLog.v(objTag, "Large bitmap " + imageSize + " scaled to " + width + "x" + height);
-            decoder.setTargetSize(width, height);
-        }
-    }
-
-    private CachedImage imageFileToCachedImage(MediaFile mediaFile) {
+    CachedImage imageFileToCachedImage(MediaFile mediaFile) {
         return bitmapToCachedImage(mediaFile, imageFileToBitmap(mediaFile));
     }
 
-    private CachedImage bitmapToCachedImage(MediaFile mediaFile, Bitmap bitmap) {
+    CachedImage bitmapToCachedImage(MediaFile mediaFile, Bitmap bitmap) {
         if (bitmap == null) {
             return null;
         }

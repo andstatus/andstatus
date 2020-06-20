@@ -29,22 +29,24 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="57.00" android:versionCode="331"
+    <release android:versionName="57.01" android:versionCode="332"
         versionDate="2020-06-20"
         versionTitle="Animated images and Video preview. User's preferred screen orientation">
         <changes>
-            <change>For Android 9+ only: Animations of animated images are shown by default. GIF and WebP are supported.
+            <change>For Android 9+ only: Animations of animated images are shown by default.
+                Both in attachments and in avatars.
+                GIF and WebP are supported.
                 Settings -&gt; Appearance -&gt; "Show image animations" option allows to turn this behavior off.
-                It appears that currently only ActivityPub and Pump.io networks (i.e. server parts of them)
-                support WebP and keep GIFs as is.
-                Others servers simply reject WebP and convert GIFs to video...
+                It appears that currently only ActivityPub (implemented by Pleroma) and Pump.io networks
+                (i.e. server parts of them) support WebP and keep GIFs as is.
+                Other servers simply reject WebP and convert GIFs to video...
                 <a href="https://github.com/andstatus/andstatus/issues/330">#330</a></change>
-            <change>Animated images and video on Twitter are shown as preview image with a "Play" button
+            <change>Animated image and video on Twitter is shown as a preview image with a "Play" button
                 on it. This is the same behavior as for other social networks.</change>
             <change>"Play" button on a video preview image is moved to the bottom corner
                 to allow better view of the image.</change>
-            <change>Screen orientation is not "unspecified", as before, but "The user's current preferred orientation",
-                set for the whole Android device.
+            <change>Screen orientation is not "unspecified", as before,
+                but "The user's current preferred orientation" that is set by a User to for the whole Android device.
                 In particular, this allows to use landscape mode on smartphones (and not on tablets only, as before).</change>
         </changes>
     </release>
