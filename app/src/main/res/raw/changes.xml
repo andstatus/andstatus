@@ -29,15 +29,27 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="56.13" android:versionCode="330"
-        versionDate="2020-06-08"
-        versionTitle="Fixed attachment of video files on Android before v.10">
+    <release android:versionName="57.00" android:versionCode="331"
+        versionDate="2020-06-20"
+        versionTitle="Animated images and Video preview. User's preferred screen orientation">
         <changes>
-            <change>v.56.13 Fixed attachment of video files on Android before v.10.</change>
+            <change>For Android 9+ only: Animations of animated images are shown by default. GIF and WebP are supported.
+                Settings -&gt; Appearance -&gt; "Show image animations" option allows to turn this behavior off.
+                It appears that currently only ActivityPub and Pump.io networks (i.e. server parts of them)
+                support WebP and keep GIFs as is.
+                Others servers simply reject WebP and convert GIFs to video...
+                <a href="https://github.com/andstatus/andstatus/issues/330">#330</a></change>
+            <change>Animated images and video on Twitter are shown as preview image with a "Play" button
+                on it. This is the same behavior as for other social networks.</change>
+            <change>"Play" button on a video preview image is moved to the bottom corner
+                to allow better view of the image.</change>
+            <change>Screen orientation is not "unspecified", as before, but "The user's current preferred orientation",
+                set for the whole Android device.
+                In particular, this allows to use landscape mode on smartphones (and not on tablets only, as before).</change>
         </changes>
     </release>
-    <release android:versionName="56.12" android:versionCode="329"
-        versionDate="2020-05-29"
+    <release android:versionName="56.13" android:versionCode="330"
+        versionDate="2020-06-08"
         versionTitle="Show numbers of likes, replies and reblogs for a Note">
         <changes>
             <change>Show numbers of likes, replies and reblogs for Mastodon; likes and retweets for Twitter.
@@ -47,6 +59,7 @@
                 Created landscape layout for Actor's profile.</change>
             <change>v.56.11. Fixed repeated restarts of Timeline and Settings activities.</change>
             <change>v.56.12. Fixed 'Reply to mentioned actors' when nobody is mentioned.</change>
+            <change>v.56.13. Fixed attachment of video files on Android before v.10.</change>
         </changes>
     </release>
     <release android:versionName="56.08" android:versionCode="325"

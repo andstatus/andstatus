@@ -407,6 +407,7 @@ contains://andstatus.org/</string>
   <string name="settings_activity_title">Настройки</string>
   <string name="show_buttons_below_message">Показать кнопки \"Ответить\", \"Пересказать\" и \"Добавить в избранное\" под сообщением</string>
   <string name="show_duplicates">Показать дубликаты</string>
+  <string name="show_image_animations">Показывать анимацию</string>
   <string name="show_threads_of_conversation">Показать нити в обсуждении</string>
   <string name="show_timeline_messages">Показать сообщения этой Ленты</string>
   <string name="show_my_account_which_downloaded">Показать мой аккаунт, который скачал сообщение</string>
