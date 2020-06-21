@@ -710,7 +710,11 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
             if (avatarView == null) break;
 
             ViewUtils.showView(avatarView, ma.isValid());
-            if (ma.nonValid()) continue;
+            if (ma.nonValid()) {
+                avatarView.setImageResource(R.drawable.blank_image);
+                avatarView.setVisibility(View.VISIBLE);
+                continue;
+            }
 
             ma.getActor().avatarFile.showImage(this, avatarView);
             avatarView.setContentDescription(ma.getAccountName());
