@@ -46,9 +46,9 @@
             <change>"Play" button on a video preview image is moved to the bottom corner
                 to allow better view of the image.</change>
             <change>Screen orientation is not "unspecified", as before,
-                but "The user's current preferred orientation" that is set by a User to for the whole Android device.
+                but "The user's current preferred orientation" that is set by a User for the whole Android device.
                 In particular, this allows to use landscape mode on smartphones (and not on tablets only, as before).</change>
-            <change>Added "Application instance name" setting to help identifying AndStatus backups.</change>
+            <change>Added "App instance name" setting to help identifying AndStatus backups.</change>
         </changes>
     </release>
     <release android:versionName="56.13" android:versionCode="330"

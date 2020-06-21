@@ -22,7 +22,7 @@
   <string name="action_bar_text_preference_title">Action bar text and icon color</string>
   <string name="action_menu_overflow_description">More actions&#8230;</string>
   <string name="always">Always</string>
-  <string name="app_instance_name">Application instance name</string>
+  <string name="app_instance_name">App instance name</string>
   <string name="appwidget_configure_instructions">Customize AndStatus Widget message, shown in case nothing new has happened</string>
   <string name="appwidget_nothingnew_default">Nothing new since:</string>
   <string name="appwidget_nodata">No data yet.</string>
