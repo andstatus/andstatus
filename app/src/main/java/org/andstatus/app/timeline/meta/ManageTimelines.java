@@ -128,12 +128,12 @@ public class ManageTimelines extends LoadableListActivity {
     }
 
     private void sortBy(int fieldId) {
-        if (sortByField == fieldId) {
-            sortDefault = !sortDefault;
-        } else {
-            sortDefault = true;
-        }
+        sortBy(fieldId, sortByField != fieldId);
+    }
+
+    private void sortBy(int fieldId, boolean isDefaultOrder) {
         sortByField = fieldId;
+        sortDefault = isDefaultOrder;
         showList(WhichPage.CURRENT);
     }
 
@@ -257,7 +257,7 @@ public class ManageTimelines extends LoadableListActivity {
                 break;
             case R.id.reset_timelines_order:
                 myContext.timelines().resetDefaultSelectorOrder();
-                myContext.timelines().saveChanged().thenRun(() -> sortBy(R.id.displayedInSelector));
+                myContext.timelines().saveChanged().thenRun(() -> sortBy(R.id.displayedInSelector, true));
                 break;
             case R.id.total_counters:
                 isTotal = !isTotal;
