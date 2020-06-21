@@ -39,7 +39,7 @@
             <home-page>http://www.andstatus.org</home-page>
             <email>andstatus@gmail.com</email>
         </author>
-        <date>2015-08-16</date>
+        <date>2019-03-16</date>
         <id></id>
         <version>2</version>
     </document-info>
@@ -54,6 +54,7 @@
          AndStatus combine vos comptes de tous les réseaux dans une seule timeline et vous permet de lire et poster alors même que vous êtes hors connexion.</p>
     <p>Un lien vers ce guide est disponible dans la barre d'action-&gt;Aide.</p>
     <p>Le journal des modifications sur la page suivante vous permettra de voir des descriptions et des liens vers les discussions de toutes les fonctionnalités d'AndStatus.</p>
+    <p>.</p>
 </section>
 <section>
     <title>
@@ -91,7 +92,7 @@
     </title>
     <p>
     </p>
-    <p>
+    <p>2. Entrez le contenu de votre message dans la zone de texte.
     </p>
     <p>
     </p>
@@ -115,7 +116,7 @@
         </p>
         <p>
         </p>
-        <p>
+        <p>2. Sélectionnez « Partager » dans le menu. La plupart des applications contiennent l'action « Partager »...
         </p>
         <p>
         </p>
@@ -127,7 +128,7 @@
     </section>
     <section>
         <title>
-            <p></p>
+            <p>4.2. Affichage des images jointes</p>
         </title>
         <p></p>
         <p>
@@ -152,7 +153,7 @@
 </section>
 <section>
     <title>
-        <p></p>
+        <p>6. Mentions</p>
     </title>
     <p>
     </p>
@@ -161,7 +162,7 @@
 </section>
 <section>
     <title>
-        <p></p>
+        <p>7. Recherche (recherche locale)</p>
     </title>
     <p>
     </p>
@@ -175,7 +176,7 @@
 </section>
 <section>
     <title>
-        <p></p>
+        <p>Recherche globale</p>
     </title>
     <p>
     </p>

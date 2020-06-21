@@ -196,6 +196,7 @@ Fortfahren?</string>
      Setzen Sie Phrasen in Anführungszeichen, z.B.:\nkeyword \"exakter Ausdruck\".
      Einen Teil eines Wortes oder einer URL zuordnen: contains:ederatio contains://andstatus.org/</string>
   <string name="hide_replies_not_to_me_or_friends_title">Antworten in der Home-Timeline ausblenden, die nicht an mich oder meine Freunde gerichtet sind</string>
+  <string name="hint_which_instance">Welche Instanz?</string>
   <string name="history_size_entries_500">500 Nachrichten</string>
   <string name="history_size_entries_1000">1000 Nachrichten</string>
   <string name="history_size_entries_2000">2000 Nachrichten</string>

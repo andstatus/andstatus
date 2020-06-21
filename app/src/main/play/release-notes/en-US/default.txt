@@ -1,1 +1,2 @@
 v.57.00 Animated images for Android 9+; GIF and WebP are supported. Video preview for Twitter. User's preferred screen orientation.
+v.57.03 Add "Application instance name" setting to help identifying AndStatus backups.

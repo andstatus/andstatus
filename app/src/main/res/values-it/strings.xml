@@ -345,6 +345,7 @@ note e utenti associati con (scaricati da) questa rete sociale. Continuare?</str
   <string name="settings_activity_title">Impostazioni</string>
   <string name="show_buttons_below_message">Mostra i pulsanti Rispondi, Riposta e Preferito sotto una nota</string>
   <string name="show_duplicates">Mostra duplicati</string>
+  <string name="show_image_animations">Mostra animazioni immagine</string>
   <string name="show_threads_of_conversation">Mostra i thread di una conversazione</string>
   <string name="show_timeline_messages">Apri cronologia</string>
   <string name="show_my_account_which_downloaded">Mostra il mio account, che ha scaricato l\'attività/nota</string>

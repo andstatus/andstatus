@@ -414,6 +414,7 @@
   <string name="settings_activity_title">设置</string>
   <string name="show_buttons_below_message">在消息下方显示回复、转发和收藏按钮</string>
   <string name="show_duplicates">显示重复项</string>
+  <string name="show_image_animations">显示动图</string>
   <string name="show_threads_of_conversation">显示消息的对话树</string>
   <string name="show_timeline_messages">打开此时间线</string>
   <string name="show_my_account_which_downloaded">显示拉取到此消息的帐户</string>

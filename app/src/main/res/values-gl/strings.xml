@@ -408,6 +408,7 @@ non verá na liña temporal algunhas mensaxes antiguas.</string>
   <string name="settings_activity_title">Preferencias</string>
   <string name="show_buttons_below_message">Mostrar botón Resposta, Repetir e Favorito debaixo da mensaxe</string>
   <string name="show_duplicates">Mostrar duplicados</string>
+  <string name="show_image_animations">Mostrar animacións das imaxes</string>
   <string name="show_threads_of_conversation">Mostrar fíos de unha conversa</string>
   <string name="show_timeline_messages">Mostrar mensaxes da liña temoral</string>
   <string name="show_my_account_which_downloaded">Mostrar a miña conta, que descargou a actividade/nota</string>

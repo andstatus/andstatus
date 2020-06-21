@@ -409,6 +409,7 @@
   <string name="settings_activity_title">Indstillinger</string>
   <string name="show_buttons_below_message">Vis Besvar-, Genpostnings- og Favoritknapper under et notat</string>
   <string name="show_duplicates">Vis dubletter</string>
+  <string name="show_image_animations">Vis billedanimationer</string>
   <string name="show_threads_of_conversation">Vis tråde i en samtale</string>
   <string name="show_timeline_messages">Åbn tidslinje</string>
   <string name="show_my_account_which_downloaded">Vis min konto, der downloadede aktiviteten/notatet</string>

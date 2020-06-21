@@ -22,6 +22,7 @@
   <string name="action_bar_text_preference_title">Цвет текста и иконок на Панели действий</string>
   <string name="action_menu_overflow_description">Другие действия&#8230;</string>
   <string name="always">Всегда</string>
+  <string name="app_instance_name">Название установки/экземпляра приложения</string>
   <string name="appwidget_configure_instructions">Настройте сообщение Виджета, которое показывается в том случае, если нет ничего нового:</string>
   <string name="appwidget_nothingnew_default">Ничего нового после:</string>
   <string name="appwidget_nodata">Пока нет данных.</string>

@@ -29,8 +29,8 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="57.01" android:versionCode="332"
-        versionDate="2020-06-20"
+    <release android:versionName="57.03" android:versionCode="334"
+        versionDate="2020-06-21"
         versionTitle="Animated images and Video preview. User's preferred screen orientation">
         <changes>
             <change>For Android 9+ only: Animations of animated images are shown by default.
@@ -48,6 +48,7 @@
             <change>Screen orientation is not "unspecified", as before,
                 but "The user's current preferred orientation" that is set by a User to for the whole Android device.
                 In particular, this allows to use landscape mode on smartphones (and not on tablets only, as before).</change>
+            <change>Added "Application instance name" setting to help identifying AndStatus backups.</change>
         </changes>
     </release>
     <release android:versionName="56.13" android:versionCode="330"
