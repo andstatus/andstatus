@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2016-2020 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,27 +25,25 @@ import org.andstatus.app.data.MyQuery;
 import org.andstatus.app.database.table.TimelineTable;
 import org.andstatus.app.net.social.Actor;
 import org.andstatus.app.origin.Origin;
-import org.andstatus.app.os.AsyncTaskLauncher;
 import org.andstatus.app.os.MyAsyncTask;
+import org.andstatus.app.os.NonUiThreadExecutor;
 import org.andstatus.app.util.TriState;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Save changes to Timelines not on UI thread.
  * Optionally creates default timelines: for all or for one account.
  * @author yvolk@yurivolkov.com
  */
-public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
+public class TimelineSaver {
     private static final AtomicBoolean executing = new AtomicBoolean(false);
-    private final MyContext myContext;
     private boolean addDefaults = false;
     private MyAccount myAccount = MyAccount.EMPTY;
 
-    public TimelineSaver(@NonNull MyContext myContext) {
-        super(PoolEnum.QUICK_UI);
-        this.myContext = myContext;
-    }
+    public TimelineSaver() { }
 
     public TimelineSaver setAccount(@NonNull MyAccount myAccount) {
         this.myAccount = myAccount;
@@ -57,48 +55,33 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
         return this;
     }
 
-    @Override
-    protected Void doInBackground2(Void aVoid) {
-        executeSynchronously();
-        return null;
-    }
-
-    public void executeNotOnUiThread() {
-        if (isUiThread()) {
-            AsyncTaskLauncher.execute(this, this);
+    public void execute(MyContext myContext) {
+        if (MyAsyncTask.isUiThread()) {
+            myContextHolder.with(future -> future.whenCompleteAsync(this::executeSynchronously, NonUiThreadExecutor.INSTANCE));
         } else {
-            executeSynchronously();
+            executeSynchronously(myContext, null);
         }
     }
 
-    private void executeSynchronously() {
-        long count = 10;
-        boolean lockReceived = false;
-        while (count > 0) {
-            lockReceived = executing.compareAndSet(false, true);
-            if (lockReceived) {
-                break;
+    private void executeSynchronously(MyContext myContext, Throwable throwable) {
+        for (long count = 30; count > 0; count--) {
+            if (executing.compareAndSet(false, true)) {
+                executeSequentially(myContext);
             }
-            count--;
-            if (DbUtils.waitMs(this, 1000)) {
-                break;
-            }
-        }
-        if (lockReceived) {
-            executingLockReceived();
+            DbUtils.waitMs(this, 50);
         }
     }
 
-    private void executingLockReceived() {
+    private void executeSequentially(MyContext myContext) {
         try {
             if (addDefaults) {
                if (myAccount == MyAccount.EMPTY) {
-                   addDefaultTimelinesIfNoneFound();
+                   addDefaultTimelinesIfNoneFound(myContext);
                } else {
-                   addDefaultMyAccountTimelinesIfNoneFound(myAccount);
+                   addDefaultMyAccountTimelinesIfNoneFound(myContext, myAccount);
                }
             }
-            for (Timeline timeline : timelines().values()) {
+            for (Timeline timeline : myContext.timelines().values()) {
                 timeline.save(myContext);
             }
         } finally {
@@ -106,72 +89,60 @@ public class TimelineSaver extends MyAsyncTask<Void, Void, Void> {
         }
     }
 
-    private void addDefaultTimelinesIfNoneFound() {
-        for (MyAccount ma : myContext.accounts().get()) {
-            addDefaultMyAccountTimelinesIfNoneFound(ma);
-        }
+    private void addDefaultTimelinesIfNoneFound(MyContext myContext) {
+        myContext.accounts().get().forEach(ma -> addDefaultMyAccountTimelinesIfNoneFound(myContext, ma));
     }
 
-    private void addDefaultMyAccountTimelinesIfNoneFound(MyAccount ma) {
-        if (ma.isValid() && timelines().filter(false, TriState.FALSE, TimelineType.UNKNOWN, ma.getActor(),
-                Origin.EMPTY).count() == 0) {
-            addDefaultCombinedTimelinesIfNoneFound();
-            addDefaultOriginTimelinesIfNoneFound(ma.getOrigin());
+    private void addDefaultMyAccountTimelinesIfNoneFound(MyContext myContext, MyAccount ma) {
+        if (ma.isValid() && myContext.timelines().filter(false, TriState.FALSE,
+                TimelineType.UNKNOWN, ma.getActor(), Origin.EMPTY).count() == 0) {
+            addDefaultCombinedTimelinesIfNoneFound(myContext);
+            addDefaultOriginTimelinesIfNoneFound(myContext, ma.getOrigin());
 
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
                     TimelineTable._ID, TimelineTable.ACTOR_ID + "=" + ma.getActorId());
-            if (timelineId == 0) addDefaultForMyAccount(ma);
+            if (timelineId == 0) addDefaultForMyAccount(myContext, ma);
         }
     }
 
-    private void addDefaultCombinedTimelinesIfNoneFound() {
-        if (timelines().filter(false, TriState.TRUE, TimelineType.UNKNOWN, Actor.EMPTY,
-                Origin.EMPTY).count() == 0) {
+    private void addDefaultCombinedTimelinesIfNoneFound(MyContext myContext) {
+        if (myContext.timelines().filter(false, TriState.TRUE,
+                TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY).count() == 0) {
             long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
                     TimelineTable._ID, TimelineTable.ACTOR_ID + "=0 AND " + TimelineTable.ORIGIN_ID + "=0");
-            if (timelineId == 0) addDefaultCombined();
+            if (timelineId == 0) addDefaultCombined(myContext);
         }
     }
 
-    private void addDefaultOriginTimelinesIfNoneFound(Origin origin) {
-        if (origin.isValid()) {
-            long timelineId = MyQuery.conditionToLongColumnValue(
-                    myContext.getDatabase(),
-                    origin.getName(),
-                    TimelineTable.TABLE_NAME,
-                    TimelineTable._ID,
-                    TimelineTable.ORIGIN_ID + "=" + origin.getId() + " AND " +
-                            TimelineTable.TIMELINE_TYPE + "='" + TimelineType.EVERYTHING.save() + "'");
-            if (timelineId == 0) addDefaultForOrigin(origin);
-        }
+    private void addDefaultOriginTimelinesIfNoneFound(MyContext myContext, Origin origin) {
+        if (!origin.isValid()) return;
+        long timelineId = MyQuery.conditionToLongColumnValue(myContext.getDatabase(),
+                "Any timeline for " + origin.getName(),
+                TimelineTable.TABLE_NAME, TimelineTable._ID,
+                TimelineTable.ORIGIN_ID + "=" + origin.getId());
+        if (timelineId == 0) addDefaultForOrigin(myContext, origin);
     }
 
-    public void addDefaultForMyAccount(MyAccount myAccount) {
+    public void addDefaultForMyAccount(MyContext myContext, MyAccount myAccount) {
         for (TimelineType timelineType : myAccount.getActor().getDefaultMyAccountTimelineTypes()) {
-            timelines().forUser(timelineType, myAccount.getActor()).save(myContext);
+            myContext.timelines().forUser(timelineType, myAccount.getActor()).save(myContext);
         }
     }
 
-    private void addDefaultForOrigin(Origin origin) {
+    private void addDefaultForOrigin(MyContext myContext, Origin origin) {
         for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
             if (origin.getOriginType().isTimelineTypeSyncable(timelineType)
                     || timelineType.equals(TimelineType.EVERYTHING)) {
-                timelines().get(timelineType, Actor.EMPTY, origin).save(myContext);
+                myContext.timelines().get(timelineType, Actor.EMPTY, origin).save(myContext);
             }
         }
     }
 
-    public void addDefaultCombined() {
+    public void addDefaultCombined(MyContext myContext) {
         for (TimelineType timelineType : TimelineType.values()) {
             if (timelineType.isCombinedRequired()) {
-                timelines().get(timelineType, Actor.EMPTY, Origin.EMPTY).save(myContext);
+                myContext.timelines().get(timelineType, Actor.EMPTY, Origin.EMPTY).save(myContext);
             }
         }
     }
-
-    @NonNull
-    private PersistentTimelines timelines() {
-        return myContext.timelines();
-    }
-
 }

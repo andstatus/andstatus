@@ -63,7 +63,6 @@ public enum TimelineType implements SelectableEnum {
     FOLLOWERS(ListScope.USER, "followers", R.string.followers, R.string.followers_of, GET_FOLLOWERS),
     GROUP(ListScope.USER, "group", R.string.group, R.string.group_notes, DUMMY_API),
     PUBLIC(ListScope.ORIGIN, "public", R.string.timeline_title_public, 0, PUBLIC_TIMELINE),
-    /** Private notes (direct tweets, dents...) */
     EVERYTHING(ListScope.ORIGIN, "everything", R.string.timeline_title_everything, 0, DUMMY_API),
     SEARCH(ListScope.ORIGIN, "search", R.string.options_menu_search, 0, SEARCH_NOTES),
     PRIVATE(ListScope.USER, "private", R.string.timeline_title_private, 0, PRIVATE_NOTES),

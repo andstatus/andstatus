@@ -48,6 +48,8 @@
 		android:summaryOn="@string/summary_preference_enable_android_backup_on" />
 	<org.andstatus.app.context.MultilineCheckBoxPreference android:key="backup_downloads"
 		android:title="@string/backup_downloads" />
+	<org.andstatus.app.context.MultilineEditTextPreference android:key="app_instance_name"
+		android:title="@string/app_instance_name" />
 	<Preference android:key="backup_restore"
 		android:persistent="false" />
 </PreferenceScreen>

@@ -332,8 +332,11 @@ public class MyPreferences {
                 "content://com.android.externalstorage.documents/tree/primary%3Abackups%2FAndStatus"));
     }
 
+    public static String getDeviceBrandModelString() {
+        return  (Build.BRAND + "-" + Build.MODEL).replaceAll(" ", "-");
+    }
+
     public static String getAppInstanceName() {
-        return SharedPreferencesUtil.getString(KEY_APP_INSTANCE_NAME,
-                (Build.BRAND + "-" + Build.MODEL).replaceAll(" ", "-"));
+        return SharedPreferencesUtil.getString(KEY_APP_INSTANCE_NAME, "");
     }
 }

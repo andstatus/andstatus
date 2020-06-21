@@ -193,7 +193,7 @@ public class PersistentTimelines {
     }
 
     public void saveChanged() {
-        new TimelineSaver(myContext).executeNotOnUiThread();
+        new TimelineSaver().execute(myContext);
     }
 
     public Timeline addNew(Timeline timeline) {

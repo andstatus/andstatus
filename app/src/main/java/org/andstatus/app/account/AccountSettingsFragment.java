@@ -106,6 +106,4 @@ public class AccountSettingsFragment extends Fragment {
         }
         super.onActivityCreated(savedInstanceState);
     }
-
-    
 }

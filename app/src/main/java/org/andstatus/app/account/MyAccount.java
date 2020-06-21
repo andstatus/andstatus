@@ -664,7 +664,7 @@ public final class MyAccount implements Comparable<MyAccount>, IsEmpty, TaggedCl
                                     this.toString());
                             myContext().accounts().addIfAbsent(myAccount);
                             if (myContext().isReady() && !myAccount.hasAnyTimelines()) {
-                                new TimelineSaver(myContext()).setAddDefaults(true).setAccount(myAccount).executeNotOnUiThread();
+                                new TimelineSaver().setAddDefaults(true).setAccount(myAccount).execute(myContext());
                             }
                         })
                         .onFailure(e -> MyLog.v(this, () -> "Failed to save" + this.toString() +

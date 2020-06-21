@@ -24,6 +24,7 @@ import android.os.ParcelFileDescriptor;
 
 import androidx.documentfile.provider.DocumentFile;
 
+import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.database.DatabaseCreator;
 import org.andstatus.app.util.DocumentFileUtils;
 import org.andstatus.app.util.FileDescriptorUtils;
@@ -56,13 +57,16 @@ public class MyBackupDescriptor {
      * v.4 2016-02-28 app.v.23 database schema changed
      */
     static final int BACKUP_SCHEMA_VERSION = 7;
-    static final String KEY_ACCOUNTS_COUNT = "accounts_count";
-    static final String KEY_CREATED_DATE = "created_date";
     static final String KEY_BACKUP_SCHEMA_VERSION = "backup_schema_version";
+    static final String KEY_APP_INSTANCE_NAME = MyPreferences.KEY_APP_INSTANCE_NAME;
+    static final String KEY_CREATED_DATE = "created_date";
+    static final String KEY_CREATED_DEVICE = "created_device";
     static final String KEY_APPLICATION_VERSION_CODE = "app_version_code";
     static final String KEY_APPLICATION_VERSION_NAME = "app_version_name";
+    static final String KEY_ACCOUNTS_COUNT = "accounts_count";
 
     private int backupSchemaVersion = BACKUP_SCHEMA_VERSION_UNKNOWN;
+    private String appInstanceName = "";
     private int applicationVersionCode = 0;
     private String applicationVersionName = "";
 
@@ -109,6 +113,7 @@ public class MyBackupDescriptor {
         backupSchemaVersion);
         createdDate = jso.optLong(KEY_CREATED_DATE, createdDate);
         saved = createdDate != 0;
+        appInstanceName = JsonUtils.optString(jso, KEY_APP_INSTANCE_NAME, appInstanceName);
         applicationVersionCode = jso.optInt(KEY_APPLICATION_VERSION_CODE, applicationVersionCode);
         applicationVersionName = JsonUtils.optString(jso, KEY_APPLICATION_VERSION_NAME, applicationVersionName);
         accountsCount = jso.optLong(KEY_ACCOUNTS_COUNT, accountsCount);
@@ -148,6 +153,7 @@ public class MyBackupDescriptor {
         } catch (NameNotFoundException e) {
             throw new IOException(e);
         }
+        appInstanceName = MyPreferences.getAppInstanceName();
         applicationVersionCode = pi.versionCode;
         applicationVersionName = pi.versionName;
     }
@@ -193,7 +199,9 @@ public class MyBackupDescriptor {
         if (isEmpty()) return jso;
         try {
             jso.put(KEY_BACKUP_SCHEMA_VERSION, backupSchemaVersion);
+            jso.put(KEY_APP_INSTANCE_NAME, appInstanceName);
             jso.put(KEY_CREATED_DATE, createdDate);
+            jso.put(KEY_CREATED_DEVICE, MyPreferences.getDeviceBrandModelString());
             jso.put(KEY_APPLICATION_VERSION_CODE, applicationVersionCode);
             jso.put(KEY_APPLICATION_VERSION_NAME, applicationVersionName);
             jso.put(KEY_ACCOUNTS_COUNT, accountsCount);

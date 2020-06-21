@@ -26,6 +26,7 @@ import androidx.documentfile.provider.DocumentFile;
 
 import org.andstatus.app.context.MyPreferences;
 import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.StringUtil;
 import org.andstatus.app.util.TryUtils;
 
 import java.io.FileNotFoundException;
@@ -81,8 +82,11 @@ class MyBackupManager {
             throw new FileNotFoundException("Wrong folder, backup descriptor file '" + DESCRIPTOR_FILE_NAME + "'" +
                     " already exists here: '" + backupFolder.getUri().getPath() + "'");
         }
+
+        String appInstanceName = MyPreferences.getAppInstanceName();
         final String dataFolderName = MyLog.currentDateTimeFormatted() + "-AndStatusBackup-" +
-                MyPreferences.getAppInstanceName();
+                (StringUtil.isEmpty(appInstanceName) ? "" : appInstanceName + "-") +
+                MyPreferences.getDeviceBrandModelString();
 
         DocumentFile dataFolderToBe = backupFolder.createDirectory(dataFolderName);
         if (dataFolderToBe == null) {

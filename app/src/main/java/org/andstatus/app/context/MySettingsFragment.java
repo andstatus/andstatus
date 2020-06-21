@@ -145,6 +145,7 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
         showRingtone();
         showMinLogLevel();
         showUseExternalStorage();
+        showAppInstanceName();
         showBackupRestore();
         showAuthorInTimeline();
         showTapOnATimelineTitleBehaviour();
@@ -259,6 +260,17 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
             MyLog.d(this, "showUseExternalStorage", t);
         } finally {
             mIgnorePreferenceChange = false;
+        }
+    }
+
+    private void showAppInstanceName() {
+        Preference preference = findPreference(MyPreferences.KEY_APP_INSTANCE_NAME);
+        if (preference != null) {
+            CharSequence title = MyPreferences.getAppInstanceName();
+            if (StringUtil.isEmpty(title)) {
+                title = getText(R.string.empty_in_parenthesis);
+            }
+            preference.setSummary(title);
         }
     }
 
@@ -557,6 +569,9 @@ public class MySettingsFragment extends PreferenceFragmentCompat implements
                     break;
                 case MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB:
                     showMaximumSizeOfCachedMedia();
+                    break;
+                case MyPreferences.KEY_APP_INSTANCE_NAME:
+                    showAppInstanceName();
                     break;
                 default:
                     break;

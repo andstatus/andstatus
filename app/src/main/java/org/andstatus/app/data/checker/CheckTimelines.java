@@ -73,9 +73,9 @@ class CheckTimelines extends DataChecker {
         logger.logProgress("Checking if all default timelines are present");
         long size1 = myContext.timelines().values().size();
         try {
-            new TimelineSaver(myContext).addDefaultCombined();
+            new TimelineSaver().addDefaultCombined(myContext);
             for (MyAccount myAccount: myContext.accounts().get()) {
-                new TimelineSaver(myContext).addDefaultForMyAccount(myAccount);
+                new TimelineSaver().addDefaultForMyAccount(myContext, myAccount);
             }
         } catch (Exception e) {
             String logMsg = "Error: " + e.getMessage();
