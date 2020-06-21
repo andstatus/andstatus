@@ -29,9 +29,8 @@ import org.andstatus.app.os.MyAsyncTask;
 import org.andstatus.app.os.NonUiThreadExecutor;
 import org.andstatus.app.util.TriState;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
 
 /**
  * Save changes to Timelines not on UI thread.
@@ -55,21 +54,22 @@ public class TimelineSaver {
         return this;
     }
 
-    public void execute(MyContext myContext) {
+    public CompletableFuture<MyContext> execute(MyContext myContext) {
         if (MyAsyncTask.isUiThread()) {
-            myContextHolder.with(future -> future.whenCompleteAsync(this::executeSynchronously, NonUiThreadExecutor.INSTANCE));
+            return CompletableFuture.supplyAsync(() -> executeSynchronously(myContext), NonUiThreadExecutor.INSTANCE);
         } else {
-            executeSynchronously(myContext, null);
+            return CompletableFuture.completedFuture(executeSynchronously(myContext));
         }
     }
 
-    private void executeSynchronously(MyContext myContext, Throwable throwable) {
+    private MyContext executeSynchronously(MyContext myContext) {
         for (long count = 30; count > 0; count--) {
             if (executing.compareAndSet(false, true)) {
                 executeSequentially(myContext);
             }
             DbUtils.waitMs(this, 50);
         }
+        return myContext;
     }
 
     private void executeSequentially(MyContext myContext) {

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
@@ -88,7 +89,7 @@ public class PersistentTimelines {
     public void setDefault(@NonNull Timeline timelineIn) {
         Timeline prevDefault = getDefault();
         if (!timelineIn.equals(prevDefault) && timelineIn.getSelectorOrder() >= prevDefault.getSelectorOrder()) {
-            timelineIn.setSelectorOrder(prevDefault.getSelectorOrder() - 1);
+            timelineIn.setSelectorOrder(Math.min(prevDefault.getSelectorOrder() - 1, -1));
         }
     }
 
@@ -192,8 +193,8 @@ public class PersistentTimelines {
         }
     }
 
-    public void saveChanged() {
-        new TimelineSaver().execute(myContext);
+    public CompletableFuture<MyContext> saveChanged() {
+        return new TimelineSaver().execute(myContext);
     }
 
     public Timeline addNew(Timeline timeline) {

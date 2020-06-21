@@ -79,12 +79,6 @@ public class ManageTimelines extends LoadableListActivity {
     }
 
     @Override
-    protected void onPause() {
-        myContext.timelines().saveChanged();
-        super.onPause();
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != RESULT_OK || data == null) {
             return;
@@ -97,6 +91,7 @@ public class ManageTimelines extends LoadableListActivity {
                     selectedItem.timeline.setDisplayedInSelector(displayedInSelector);
                     MyLog.v("isDisplayedInSelector", () -> displayedInSelector.save() + " " +
                             selectedItem.timeline);
+
                     if (displayedInSelector != DisplayedInSelector.IN_CONTEXT || sortByField == R.id.displayedInSelector) {
                         showList(WhichPage.CURRENT);
                     }
@@ -258,12 +253,11 @@ public class ManageTimelines extends LoadableListActivity {
         switch (item.getItemId()) {
             case R.id.reset_counters_menu_item:
                 myContext.timelines().resetCounters(isTotal);
-                myContext.timelines().saveChanged();
-                showList(WhichPage.CURRENT);
+                myContext.timelines().saveChanged().thenRun(() -> showList(WhichPage.CURRENT));
                 break;
             case R.id.reset_timelines_order:
                 myContext.timelines().resetDefaultSelectorOrder();
-                sortBy(R.id.displayedInSelector);
+                myContext.timelines().saveChanged().thenRun(() -> sortBy(R.id.displayedInSelector));
                 break;
             case R.id.total_counters:
                 isTotal = !isTotal;

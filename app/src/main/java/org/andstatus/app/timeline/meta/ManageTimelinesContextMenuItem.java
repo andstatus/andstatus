@@ -1,6 +1,6 @@
 package org.andstatus.app.timeline.meta;
 /*
- * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (c) 2016-2020 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.andstatus.app.timeline.TimelineActivity;
 import org.andstatus.app.timeline.WhichPage;
 
 public enum ManageTimelinesContextMenuItem implements ContextMenuItem {
-    SHOW_NOTES() {
+    OPEN_TIMELINE() {
         @Override
         public boolean execute(ManageTimelinesContextMenu menu, ManageTimelinesViewItem viewItem) {
             TimelineActivity.startForTimeline(menu.getActivity().getMyContext(), menu.getActivity(),
@@ -45,7 +45,7 @@ public enum ManageTimelinesContextMenuItem implements ContextMenuItem {
         @Override
         public boolean execute(ManageTimelinesContextMenu menu, ManageTimelinesViewItem viewItem) {
             menu.getActivity().getMyContext().timelines().delete(viewItem.timeline);
-            menu.getActivity().showList(WhichPage.CURRENT);
+            saveAndShowList(menu);
             return true;
         }
     },
@@ -53,7 +53,7 @@ public enum ManageTimelinesContextMenuItem implements ContextMenuItem {
         @Override
         public boolean execute(ManageTimelinesContextMenu menu, ManageTimelinesViewItem viewItem) {
             menu.getActivity().getMyContext().timelines().setDefault(viewItem.timeline);
-            menu.getActivity().showList(WhichPage.CURRENT);
+            saveAndShowList(menu);
             return true;
         }
     },
@@ -62,11 +62,16 @@ public enum ManageTimelinesContextMenuItem implements ContextMenuItem {
         public boolean execute(ManageTimelinesContextMenu menu, ManageTimelinesViewItem viewItem) {
             viewItem.timeline.forgetPositionsAndDates();
             viewItem.timeline.resetCounters(true);
-            menu.getActivity().showList(WhichPage.CURRENT);
+            saveAndShowList(menu);
             return true;
         }
     },
     UNKNOWN();
+
+    private static void saveAndShowList(ManageTimelinesContextMenu menu) {
+        menu.getActivity().getMyContext().timelines().saveChanged()
+                .thenRun(() -> menu.getActivity().showList(WhichPage.CURRENT));
+    }
 
     @Override
     public int getId() {

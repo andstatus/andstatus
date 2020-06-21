@@ -52,8 +52,6 @@ import java.util.stream.Collectors;
 
 import io.vavr.control.Try;
 
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
 public class Audience {
     private static final String TAG = Audience.class.getSimpleName();
     public final static Audience EMPTY = new Audience(Origin.EMPTY);
@@ -93,7 +91,7 @@ public class Audience {
                 GroupType.fromId(DbUtils.getLong(cursor, ActorTable.GROUP_TYPE)),
                 DbUtils.getLong(cursor, AudienceTable.ACTOR_ID),
                 DbUtils.getString(cursor, ActorTable.ACTOR_OID));
-        MyQuery.get(myContextHolder.getNow(), sql, function).forEach(audience::add);
+        MyQuery.get(origin.myContext, sql, function).forEach(audience::add);
         return audience;
     }
 
