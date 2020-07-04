@@ -22,6 +22,7 @@
   <string name="action_bar_text_preference_title">操作栏文本和图标颜色</string>
   <string name="action_menu_overflow_description">更多操作&#8230;</string>
   <string name="always">始终</string>
+  <string name="app_instance_name">应用程序实例名称</string>
   <string name="appwidget_configure_instructions">自定义 AndStatus 小部件的默认信息，没有新消息时显示：</string>
   <string name="appwidget_nothingnew_default">从何时起，算作没有新消息：</string>
   <string name="appwidget_nodata">这里空空如也。</string>

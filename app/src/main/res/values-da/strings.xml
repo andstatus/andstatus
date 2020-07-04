@@ -22,6 +22,7 @@
   <string name="action_bar_text_preference_title">Handlingsbjælkes tekst- og ikonfarve</string>
   <string name="action_menu_overflow_description">Flere handliger&#8230;</string>
   <string name="always">Altid</string>
+  <string name="app_instance_name">App-instansnavn</string>
   <string name="appwidget_configure_instructions">Tilpas AndStatus Widget-besked, der vises, når intet nyt er sket:</string>
   <string name="appwidget_nothingnew_default">Intet nyt siden:</string>
   <string name="appwidget_nodata">Ingen data endnu.</string>

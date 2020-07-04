@@ -22,6 +22,7 @@
   <string name="action_bar_text_preference_title">Couleur de la police et de l’icône de la barre d\'action</string>
   <string name="action_menu_overflow_description">Plus d\'actions&#8230;</string>
   <string name="always">Toujours</string>
+  <string name="app_instance_name">Nom de l\'instance d\'application</string>
   <string name="appwidget_configure_instructions">Personnaliser le message du widget AndStatus affiché s\'il n\'y a pas rien de nouveau :</string>
   <string name="appwidget_nothingnew_default">Rien de nouveau depuis :</string>
   <string name="appwidget_nodata">Aucune donnée.</string>
@@ -407,6 +408,7 @@ les notes et les utilisateurs associés avec (téléchargés depuis) le réseau 
   <string name="settings_activity_title">Paramétrages</string>
   <string name="show_buttons_below_message">Afficher les boutons de Réponse, Repost et Favoris sous le message</string>
   <string name="show_duplicates">Montrer les doublons</string>
+  <string name="show_image_animations">Afficher les animations de l\'image</string>
   <string name="show_threads_of_conversation">Afficher les conversations</string>
   <string name="show_timeline_messages">Montrer les messages de la Timeline</string>
   <string name="show_my_account_which_downloaded">Afficher mon compte, qui a téléchargé l’activité/la note</string>

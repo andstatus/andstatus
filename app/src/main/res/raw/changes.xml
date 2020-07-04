@@ -29,6 +29,13 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="57.04" android:versionCode="335"
+        versionDate="2020-07-04"
+        versionTitle="Fix adding new account in Pump.io">
+        <changes>
+            <change>Fix adding new account in Pump.io</change>
+        </changes>
+    </release>
     <release android:versionName="57.03" android:versionCode="334"
         versionDate="2020-06-21"
         versionTitle="Animated images and Video preview. User's preferred screen orientation">

@@ -22,6 +22,7 @@
   <string name="action_bar_text_preference_title">Cor da icona e o texto da barra de acción</string>
   <string name="action_menu_overflow_description">Máis accións&#8230;</string>
   <string name="always">Sempre</string>
+  <string name="app_instance_name">Nome da instancia da app</string>
   <string name="appwidget_configure_instructions">Personalice a mensaxe do Widget de AndStatus, mostrado e caso de que non haxa nada novo:</string>
   <string name="appwidget_nothingnew_default">Nada novo desde:</string>
   <string name="appwidget_nodata">Sen datos aínda.</string>
