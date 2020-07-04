@@ -82,8 +82,9 @@ public class HttpConnectionOAuthJavaNet extends HttpConnectionOAuth {
             writer.write(requestBody);
             writer.close();
 
-            HttpRequest request = HttpRequest.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT ,uri).asPost();
-            HttpReadResult result = request.newResult();
+            HttpReadResult result = HttpRequest.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
+                    .withConnectionData(getData())
+                    .newResult();
             setStatusCodeAndHeaders(result, conn);
             if (result.isStatusOk()) {
                 result.readStream("", o -> conn.getInputStream());
