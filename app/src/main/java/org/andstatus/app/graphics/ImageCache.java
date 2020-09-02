@@ -38,6 +38,7 @@ import android.util.LruCache;
 import androidx.annotation.Nullable;
 
 import org.andstatus.app.context.MyPreferences;
+import org.andstatus.app.data.DbUtils;
 import org.andstatus.app.data.MediaFile;
 import org.andstatus.app.data.MyContentType;
 import org.andstatus.app.util.MyLog;
@@ -249,7 +250,9 @@ public class ImageCache extends LruCache<String, CachedImage> {
 
     @Nullable
     private Bitmap videoFileToBitmap(MediaFile mediaFile) {
-        try (MediaMetadataRetriever retriever = new MediaMetadataRetriever()) {
+        MediaMetadataRetriever retriever = null;
+        try {
+            retriever = new MediaMetadataRetriever();
             retriever.setDataSource(myContextHolder.getNow().context(), Uri.parse(mediaFile.getPath()));
             Bitmap source = retriever.getFrameAtTime();
             if (source == null) {
@@ -266,6 +269,8 @@ public class ImageCache extends LruCache<String, CachedImage> {
         } catch (Exception e) {
             MyLog.w(this, "Error loading '" + mediaFile.getPath() + "'", e);
             return null;
+        } finally {
+            DbUtils.closeSilently(retriever);
         }
     }
 
