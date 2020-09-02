@@ -102,7 +102,6 @@
   <string name="dialog_summary_checking_credentials">Por favor aguarde enquanto as contas estão a ser verificadas.</string>
   <string name="dialog_summary_connection_timeout">Ligação expirada. Por favor tente mais tarde.</string>
   <string name="dialog_summary_executing_command">Por favor aguarde enquanto o comando está a ser executado no servidor.</string>
-  <string name="dialog_summary_external_storage">Foi detetado um armazenamento externo. Gostaria de o utilizar para guardar os dados do AndStatus? Os dados atuais não poderão ser movidos, mas permanecerão na memória interna.</string>
   <string name="dialog_summary_registering_client">Por favor aguarde enquanto o AndStatus se está a registar como aplicação.</string>
   <string name="dialog_summary_sending_message">Por favor aguarde pelo envio da mensagem.</string>
   <string name="dialog_summary_timeline_loading">Por favor aguarde pela atualização da cronologia. Esta operação poderá ser demorada, tendo em conta o seu tipo de ligação.</string>
@@ -484,7 +483,6 @@ toque no botão abaixo para verificar novamente as suas credenciais.</string>
   <string name="title_preference_change_log">Registo de alterações</string>
   <string name="title_preference_connection_timeout">Tempo limite de ligação</string>
   <string name="title_preference_contact_developer">Contacte o programador</string>
-  <string name="title_preference_debugging">Registos e depuração</string>
   <string name="title_preference_download_attachments_over_wifi_only">Apenas transferir os anexos por Wi-Fi</string>
   <string name="title_preference_enable_android_backup">Ativar backup automático do Android</string>
   <string name="title_preference_enter_sends_message">Tecla ENTER para enviar mensagem</string>

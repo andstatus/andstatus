@@ -60,7 +60,7 @@
   <string name="category_title_preference_information">Information</string>
   <string name="category_title_preference_origin">Réseau social</string>
   <string name="category_title_preference_settings">Réglages</string>
-  <string name="change_log_summary">Le journal des modifications est en anglais seulement</string>
+  <string name="change_log_summary">Le journal des changements est en anglais seulement</string>
   <string name="changed">Changé</string>
   <string name="check_and_fix_data">Vérifier et corriger les données</string>
   <string name="check_and_fix_data_summary">Utilisez cette action si vous estimez que AndStatus fonctionne mal mais que vous ne voulez pas le réinstaller</string>

@@ -22,6 +22,7 @@
   <string name="action_bar_text_preference_title">Text- und Symbolfarbe der Aktionsleiste</string>
   <string name="action_menu_overflow_description">Weitere Aktionen&#8230;</string>
   <string name="always">Immer</string>
+  <string name="app_instance_name">Name der Appinstanz</string>
   <string name="appwidget_configure_instructions">Passe die Mitteilung an, die im AndStatus
     Widget gezeigt wird, falls sich nichts geändert hat:</string>
   <string name="appwidget_nothingnew_default">Nichts Neues seit:</string>
@@ -36,6 +37,8 @@
   <string name="authentication_never">Bisher nicht angemeldet</string>
   <string name="authentication_successful">Anmeldung erfolgreich!</string>
   <string name="automatic">Auto</string>
+  <string name="backup_downloads">Mediendateien sichern: Anhänge und Avatare</string>
+  <string name="backup_log_files">Protokolldateien sichern</string>
   <string name="background_color_preference_title">Hintergrundfarbe für das dunkle Thema</string>
   <string name="button_add">Hinzufügen</string>
   <string name="button_add_origin">Neues Soziales Netzwerk hinzufügen</string>
@@ -58,9 +61,11 @@
   <string name="category_title_preference_information">Informationen</string>
   <string name="category_title_preference_origin">Soziales Netzwerk</string>
   <string name="category_title_preference_settings">Einstellungen</string>
+  <string name="change_log_summary">Das Änderungsprotokoll ist nur in Englisch</string>
   <string name="changed">Geändert</string>
   <string name="check_and_fix_data">Daten überprüfen und korrigieren</string>
   <string name="check_and_fix_data_summary">Verwenden Sie diese Aktion, wenn Sie das Gefühl haben, dass AndStatus fehlerhaft funktioniert, aber nicht neu installieren möchten.</string>
+  <string name="clear_the_queue">Warteschlange leeren</string>
   <string name="client_registration_failed">AndStatus Client-Registrierung fehlgeschlagen</string>
   <string name="collapse_duplicates">Duplikate einklappen</string>
   <string name="color_black">Schwarz</string>
@@ -93,7 +98,9 @@
   <string name="created_label">Erstellt</string>
   <string name="custom_locale_title">Sprache der Anwendung</string>
   <string name="set_as_default_timeline">Als Standard-Timeline festlegen</string>
+  <string name="database_unavailable_description">Lokaler Cache (Datenbank mit Notizen und Aktivitäten) konnte nicht geöffnet werden. Bitte starten Sie Ihr Gerät neu oder installieren Sie AndStatus erneut.</string>
   <string name="default_timeline_summary">Timeline, die durch einen Launcher geöffnet wird: \"%s\"</string>
+  <string name="delete_old_data">Alte Daten jetzt löschen</string>
   <string name="delete_origin_dialog_title">Soziales Netzwerk „%s“ löschen?</string>
   <string name="delete_origin_dialog_text">Beim Löschen des sozialen Netzwerks (Instanz) werden alle Daten des lokalen AndStatus-Cache gelöscht: Aktivitäten,
 Notizen und Benutzer, die mit (heruntergeladen aus) diesem sozialen Netzwerk verbunden sind.
@@ -174,6 +181,7 @@ Fortfahren?</string>
   <string name="followed_by">Wird gefolgt von</string>
   <string name="followers">Abonnenten</string>
   <string name="followers_of">Abonnenten von \"%1s\"</string>
+  <string name="follows">Folgt</string>
   <string name="forget_sync_events">Sync-Ereignisse und -Daten vergessen</string>
   <string name="friends">Freunde</string>
   <string name="friends_of">Freunde von \"%1s\"</string>
@@ -188,6 +196,8 @@ Fortfahren?</string>
   <string name="get_user">Nutzerinfos abrufen</string>
   <string name="go_to_the_top_title">Gehe nach Oben</string>
   <string name="group">Gruppe</string>
+  <string name="group_notes">%s Gruppen-Notizen</string>
+  <string name="groups">Gruppen</string>
   <string name="header_accounts">Konten</string>
   <string name="header_accounts_summary">Konten und Soziale Netzwerke verwalten</string>
   <string name="header_add_new_account">Neuen Account hinzufügen</string>
@@ -245,6 +255,7 @@ Fortfahren?</string>
   <string name="latest_error_label">Aktuelle Fehlermeldung</string>
   <string name="liked">favorisiert</string>
   <string name="loading">Lade</string>
+  <string name="log_in_to_social_network">Bei %s anmelden</string>
   <string name="long_press_to_open_context_menu">Lange drücken um das Kontextmenü zu öffnen</string>
   <string name="long_press_to_open_context_menu_on">Drücke lange um das Kontextmenü des Objekts zu öffnen</string>
   <string name="long_press_to_open_context_menu_off">Objekt antippen um sein Kontextmenü zu öffnen</string>
@@ -267,6 +278,7 @@ Fortfahren?</string>
   <string name="menu_item_destroy_reblog_pumpio">Teilen rückgängig machen</string>
   <string name="menu_item_destroy_reblog_twitter">Retweet zurücknehmen</string>
   <string name="menu_item_destroy_status">Nachricht entfernen</string>
+  <string name="menu_item_delete_note_from_local_cache">Notiz aus dem lokalen Cache löschen</string>
   <string name="menu_item_edit">Bearbeiten</string>
   <string name="menu_item_favorite">Favorit</string>
   <string name="menu_item_follow_user">Folge \"%1s\"</string>
@@ -345,6 +357,7 @@ Fortfahren?</string>
   <string name="page_top_of">am Anfang</string>
   <string name="page_younger">jünger</string>
   <string name="page_youngest">Neueste</string>
+  <string name="post_to">Auf %s veröffentlichen</string>
   <string name="preference_ssl_mode_title">SSL-Modus und Sicherheit</string>
   <string name="preference_ssl_mode_secure_summary">Sie sind sicher: Nur sichere SSL-Verbindungen erlaubt</string>
   <string name="preference_ssl_mode_insecure_summary">Warnung: Ihre Verbindungen sind nicht sicher. Bitte informieren Sie Ihren Server-Administrator, um dieses Problem zu beheben und in einem sicheren Modus fortzufahren</string>
@@ -394,15 +407,18 @@ Fortfahren?</string>
   <string name="search_users">Benutzer suchen</string>
   <string name="select_backup_folder">Backup-Ordner auswählen</string>
   <string name="select_displayed_in_selector">Wähle, ob und wann diese Timeline angezeigt wird</string>
+  <string name="sensitive">Heikel</string>
   <string name="sent">Gesendet</string>
   <string name="select_social_network">Soziales Netzwerk wählen</string>
   <string name="settings_action">Einstellungen</string>
   <string name="settings_activity_title">Einstellungen</string>
   <string name="show_buttons_below_message">Buttons für Antwort, Repost und Favorit unter der Nachricht zeigen</string>
   <string name="show_duplicates">Duplikate anzeigen</string>
+  <string name="show_image_animations">Bildanimationen anzeigen</string>
   <string name="show_threads_of_conversation">Verlauf einer Unterhaltung zeigen</string>
   <string name="show_timeline_messages">Timeline-Nachrichten anzeigen</string>
   <string name="show_my_account_which_downloaded">Zeigen Sie mein Konto, das die Aktivität/Nachricht heruntergeladen hat</string>
+  <string name="show_sensitive_content">Heiklen Inhalt anzeigen</string>
   <string name="since">Seit %s</string>
   <string name="splash_button_learn_more">Mehr erfahren</string>
   <string name="splash_button_get_started">Loslegen</string>
@@ -410,6 +426,7 @@ Fortfahren?</string>
     GNU social, Mastodon, Twitter und Pump.io</string>
   <string name="status_destroyed">Die Nachricht wurde gelöscht.</string>
   <string name="subtitle">Untertitel</string>
+  <string name="summaryCw">Zusammenfassung / Inhaltswarnung</string>
   <string name="summary_preference_accounts_absent">Noch keine AndStatus Accounts</string>
   <string name="summary_preference_accounts_present">Anzahl der AndStatus Accounts</string>
   <string name="summary_preference_add_account_oauth">Tippen Sie auf die Schaltfläche unten, um eine Seite des sozialen Netzwerks in einem Browser öffnen.</string>
@@ -542,6 +559,7 @@ Fortfahren?</string>
   <string name="unread_notifications">Ungelesene Benachrichtigungen</string>
   <string name="updated">aktualisiert</string>
   <string name="use_legacy_http_protocol_title">Veraltetes HTTP-Protokoll verwenden</string>
+  <string name="user_guide">Benutzerhandbuch</string>
   <string name="user_in_timeline_entries_username">Benutzername</string>
   <string name="user_in_timeline_entries_at_username">"\@benutzername"</string>
   <string name="user_in_timeline_entries_webfingerid">webFingerId</string>
