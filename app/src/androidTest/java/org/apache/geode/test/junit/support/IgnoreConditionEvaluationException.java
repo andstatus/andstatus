@@ -19,7 +19,7 @@ package org.apache.geode.test.junit.support;
  *
  * @see java.lang.RuntimeException
  */
-@SuppressWarnings({"serial", "unused"})
+@SuppressWarnings({"serial"})
 public class IgnoreConditionEvaluationException extends RuntimeException {
 
   public IgnoreConditionEvaluationException() {}

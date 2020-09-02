@@ -129,7 +129,6 @@ public class ActorsScreen extends NoteEditorListActivity {
                 Timeline.fromParsedUri(myContext, getParsedUri(), ""));
     }
 
-    @SuppressWarnings("unchecked")
     protected ActorsLoader getListLoader() {
         return (ActorsLoader) getLoaded();
     }

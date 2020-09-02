@@ -37,7 +37,7 @@ import java.util.Calendar;
  * @see org.apache.geode.test.junit.ConditionalIgnore
  * @see org.apache.geode.test.junit.IgnoreCondition
  */
-@SuppressWarnings({"serial", "unused"})
+@SuppressWarnings({"serial"})
 public class ConditionalIgnoreRule implements TestRule, Serializable {
 
   protected static final String DATE_FORMAT_PATTERN = "yyyy-MM-dd";

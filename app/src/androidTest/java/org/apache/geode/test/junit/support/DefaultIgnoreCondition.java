@@ -24,7 +24,6 @@ import org.junit.runner.Description;
  * @see org.apache.geode.test.junit.ConditionalIgnore
  * @see org.apache.geode.test.junit.IgnoreCondition
  */
-@SuppressWarnings("unused")
 public class DefaultIgnoreCondition implements IgnoreCondition {
 
   public static final boolean DEFAULT_IGNORE = false;

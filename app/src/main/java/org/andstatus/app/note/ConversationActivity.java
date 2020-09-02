@@ -194,7 +194,6 @@ public class ConversationActivity extends NoteEditorListActivity implements Note
         return myContext.timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, origin);
     }
 
-    @SuppressWarnings("unchecked")
     private ConversationLoader getListLoader() {
         return ((ConversationLoader)getLoaded());
     }

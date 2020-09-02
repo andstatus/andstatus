@@ -21,7 +21,6 @@ import org.junit.runner.Description;
  *
  * @see org.junit.runner.Description
  */
-@SuppressWarnings("unused")
 public interface IgnoreCondition {
 
   boolean evaluate(Description testCaseDescription);

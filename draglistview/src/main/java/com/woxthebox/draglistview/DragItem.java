@@ -170,13 +170,11 @@ public class DragItem {
         updatePosition();
     }
 
-    @SuppressWarnings("unused")
     void setX(float x) {
         mPosX = x;
         updatePosition();
     }
 
-    @SuppressWarnings("unused")
     void setY(float y) {
         mPosY = y;
         updatePosition();

@@ -36,7 +36,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Inherited  // Added by yvolk@yurivolkov.com 2017-05-29 - Now the annotation may be set on a superclass.
-@SuppressWarnings("unused")
 public @interface ConditionalIgnore {
 
   Class<? extends IgnoreCondition> condition() default DefaultIgnoreCondition.class;
