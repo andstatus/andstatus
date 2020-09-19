@@ -722,7 +722,7 @@ public class NoteEditor {
 	private Intent getIntentToPickImages() {
         return new Intent(Intent.ACTION_PICK,
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                .setType("*/*")
+                .setType("image/*")
                 .addFlags(UriUtils.flagsToTakePersistableUriPermission());
 	}
 
