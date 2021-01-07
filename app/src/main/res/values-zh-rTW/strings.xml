@@ -371,7 +371,7 @@ TLS 和 SNI協議不可用。
   <string name="reltime_minutes_ago_formats_2">2 分鐘前</string>
   <string name="reltime_minutes_ago_formats_3">{0} 分鐘之前</string>
   <string name="reltime_months_ago_formats_1">1 個月以前</string>
-  <string name="reltime_months_ago_formats_2">{} 个月以前</string>
+  <string name="reltime_months_ago_formats_2">{0} 个月以前</string>
   <string name="reltime_seconds_ago_formats_1">一秒前</string>
   <string name="reltime_seconds_ago_formats_2">{0} 秒之前</string>
   <string name="reltime_just_now">剛剛</string>
