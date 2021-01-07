@@ -1,1 +1,1 @@
-v.57.05 Fix crash on loading video in some Android devices before v.10. Translations updated.
+v.57.06 Fix Chinese Traditional translation. Translations updated.

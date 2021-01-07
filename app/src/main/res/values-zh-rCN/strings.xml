@@ -163,7 +163,7 @@
 請報告這個錯誤！</string>
   <string name="error_connection_error">發生連接錯誤</string>
   <string name="error_set_username">無法將用戶名設置為: </string>
-  <string name="error_credentials_of_other_user">這些是其他用戶的憑據</string>
+  <string name="error_credentials_of_other_user">这些是另一个账户的凭据</string>
   <string name="favorite_created">最受欢迎的创建。</string>
   <string name="favorite_destroyed">消息??</string>
   <string name="fetch_frequency_entries_3_minutes">3 分钟</string>
@@ -178,7 +178,7 @@
   <string name="fetch_frequency_entries_12_hours">12 小时</string>
   <string name="fetch_frequency_entries_1_day">天</string>
   <string name="filters_title">过滤器</string>
-  <string name="filters_summary">這些是其他用戶的憑據</string>
+  <string name="filters_summary">全局过滤器将应用到全部活动</string>
   <string name="followed">关注了</string>
   <string name="followed_by">关注者</string>
   <string name="followers">关注者</string>

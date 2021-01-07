@@ -1,1 +1,1 @@
-Client de connexió de xarxes socials de baix trànsit amb converses en arbre
+Client de diversos comptes de codi obert per a diverses xarxes socials

@@ -101,6 +101,8 @@ pero non quere reinstalalo</string>
   <string name="database_unavailable_description">Non podemos acceder a caché local (base de datos con notas e actividades). Reinicia o dispositivo ou reinstala AndStatus.</string>
   <string name="default_timeline_summary">Liña temporal que será aberta por un Lanzador: \"%s\"</string>
   <string name="delete_old_data">Borrar os datos antigos</string>
+  <string name="delete_origin_dialog_title">Eliminar a rede social \'%s\'?</string>
+  <string name="delete_origin_dialog_text">Ó eliminar a rede social (instancia) eliminarás a caché local de AndStatus e todos os seus datos: actividades, notas e actores asociados (descargados desde) esta rede social. ¿Continuar?</string>
   <string name="deleted">eliminado</string>
   <string name="device_default">Por omisión do dispositivo</string>
   <string name="dialog_summary_acquiring_an_access_token">Por favor espere mentras AndStatus intercambia una petición de testemuño OAuth de autorización</string>

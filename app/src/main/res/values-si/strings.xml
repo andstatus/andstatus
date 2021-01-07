@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Copyright (C) 2010-2019 Yuri Volkov, yvolk@yurivolkov.com and translators
+
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+	
+	     http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+ -->
+<resources>
+  <string name="account_settings_action">ඇන්ඩ්ස්ටටස් ගිණුමේ සැකසුම්</string>
+  <string name="account_settings_activity_title">ගිණුම</string>
+  <string name="automatic">ස්වයංක්‍රීය</string>
+  <string name="button_cancel">අවලංගු කරන්න</string>
+  <string name="button_create_message_twitter">ට්වීට්</string>
+  <string name="button_save">සුරකින්න</string>
+  <string name="button_send">යවන්න</string>
+  <string name="category_title_preference_information">තොරතුරු</string>
+  <string name="category_title_preference_origin">සමාජ ජාලය</string>
+  <string name="category_title_preference_settings">සැකසුම්</string>
+  <string name="color_black">කළු</string>
+  <string name="color_blue">නිල්</string>
+  <string name="color_green">කොළ</string>
+  <string name="color_white">සුදු</string>
+  <string name="dialog_title_preference_username">පරිශීලක නාමය</string>
+  <string name="error">දෝෂය</string>
+  <string name="fetch_frequency_entries_1_hour">පැය</string>
+  <string name="fetch_frequency_entries_1_day">දිනය</string>
+  <string name="groups">සමූහ</string>
+  <string name="header_accounts">ගිණුම්</string>
+  <string name="options_menu_search">සොයන්න</string>
+  <string name="origin_settings_action">සමාජ ජාලය</string>
+  <string name="remove_account_menu_item">ගිණුම ඉවත් කරන්න</string>
+  <string name="settings_action">සැකසුම්</string>
+  <string name="settings_activity_title">සැකසුම්</string>
+  <string name="subtitle">උපරැසිය</string>
+</resources>
