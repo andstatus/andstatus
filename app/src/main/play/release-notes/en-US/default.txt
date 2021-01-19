@@ -1,1 +1,2 @@
-v.57.06 Fix Chinese Traditional translation. Translations updated.
+v.57.07 Fix adding Twitter Account. It appeared that Twitter doesn't like "AndStatus" user agent anymore.
+       This is ID of the app's internal web browser that worked for more than 10 years...

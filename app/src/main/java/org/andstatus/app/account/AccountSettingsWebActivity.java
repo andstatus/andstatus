@@ -46,7 +46,6 @@ public class AccountSettingsWebActivity extends MyActivity {
             WebView view = (WebView) findViewById(R.id.accountSettingsWebView);
             view.getSettings().setBuiltInZoomControls(true);
             view.getSettings().setJavaScriptEnabled(true);
-            view.getSettings().setUserAgentString(HttpConnection.USER_AGENT);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 view.getSettings().setSafeBrowsingEnabled(false);
             }
