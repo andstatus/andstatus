@@ -13,121 +13,112 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
-
-import android.widget.ListView;
-
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
+import android.widget.ListView
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
 
 /**
  * Determines where to save / retrieve position in the list
- * Information on two rows is stored for each "position" hence two keys. 
+ * Information on two rows is stored for each "position" hence two keys.
  * Plus Query string is being stored for the search results.
- * 2014-11-15 We are storing {@link ViewItem#getDate()} for the last item to retrieve, not its ID as before
+ * 2014-11-15 We are storing [ViewItem.getDate] for the last item to retrieve, not its ID as before
  * @author yvolk@yurivolkov.com
  */
-class TimelineViewPositionStorage<T extends ViewItem<T>> {
-    private final static String TAG = TimelineViewPositionStorage.class.getSimpleName();
-    private final LoadableListActivity<T> activity;
-    private final BaseTimelineAdapter<T> adapter;
-    private final ListView listView;
-    private final TimelineParameters params;
-
-    TimelineViewPositionStorage(LoadableListActivity<T> activity, TimelineParameters listParameters) {
-        this.activity = activity;
-        this.adapter = activity.getListAdapter();
-        this.listView = activity.getListView();
-        this.params = listParameters;
-    }
-
-    void save() {
-        final String method = "save" + params.timeline.getId();
+internal class TimelineViewPositionStorage<T : ViewItem<T?>?>(private val activity: LoadableListActivity<T?>?, listParameters: TimelineParameters?) {
+    private val adapter: BaseTimelineAdapter<T?>?
+    private val listView: ListView?
+    private val params: TimelineParameters?
+    fun save() {
+        val method = "save" + params.timeline.id
         if (isEmpty()) {
-            MyLog.v(TAG, () -> method + "; skipped");
-            return;
+            MyLog.v(TAG) { "$method; skipped" }
+            return
         }
-        int itemCount = adapter.getCount();
-        int firstVisibleAdapterPosition = Integer.min(
+        val itemCount = adapter.getCount()
+        val firstVisibleAdapterPosition = Integer.min(
                 Integer.max(listView.getFirstVisiblePosition(), 0),
-                itemCount - 1);
-        LoadableListPosition pos = activity.getCurrentListPosition();
-
-        int lastPosition = Integer.min(listView.getLastVisiblePosition() + 10, itemCount - 1);
-        long minDate = adapter.getItem(lastPosition).getDate();
-
-
+                itemCount - 1)
+        val pos = activity.getCurrentListPosition()
+        val lastPosition = Integer.min(listView.getLastVisiblePosition() + 10, itemCount - 1)
+        val minDate = adapter.getItem(lastPosition).getDate()
         if (pos.itemId > 0) {
-            saveListPosition(pos.itemId, minDate, pos.y);
+            saveListPosition(pos.itemId, minDate, pos.y)
         } else if (minDate > 0) {
-            saveListPosition(0, minDate, 0);
+            saveListPosition(0, minDate, 0)
         } else {
             // Don'r clear!
         }
         if (pos.itemId <= 0 || MyLog.isVerboseEnabled()) {
-            String msgLog = "id:" + pos.itemId
+            val msgLog = ("id:" + pos.itemId
                     + ", y:" + pos.y
                     + " at pos=" + firstVisibleAdapterPosition
-                    + (pos.position != firstVisibleAdapterPosition ? " found pos=" + pos.position : "")
-                    + (StringUtil.nonEmpty(pos.description) ? ", description=" + pos.description : "")
+                    + (if (pos.position != firstVisibleAdapterPosition) " found pos=" + pos.position else "")
+                    + (if (StringUtil.nonEmpty(pos.description)) ", description=" + pos.description else "")
                     + ", minDate=" + MyLog.formatDateTime(minDate)
                     + " at pos=" + lastPosition + " of " + itemCount
                     + ", listViews=" + listView.getCount()
-                    + "; " + params.getTimeline();
+                    + "; " + params.getTimeline())
             if (pos.itemId <= 0) {
-                MyLog.i(TAG,  method + "; failed " + msgLog);
+                MyLog.i(TAG, "$method; failed $msgLog")
             } else {
-                MyLog.v(TAG, () -> method + "; succeeded " + msgLog);
+                MyLog.v(TAG) { "$method; succeeded $msgLog" }
             }
         }
-
     }
 
-    private boolean isEmpty() {
-        return listView == null || adapter == null || params.isEmpty() || adapter.getCount() == 0;
+    private fun isEmpty(): Boolean {
+        return listView == null || adapter == null || params.isEmpty() || adapter.count == 0
     }
 
-    private void saveListPosition(long firstVisibleItemId, long minDate, int y) {
-        params.getTimeline().setVisibleItemId(firstVisibleItemId);
-        params.getTimeline().setVisibleOldestDate(minDate);
-        params.getTimeline().setVisibleY(y);
+    private fun saveListPosition(firstVisibleItemId: Long, minDate: Long, y: Int) {
+        params.getTimeline().visibleItemId = firstVisibleItemId
+        params.getTimeline().visibleOldestDate = minDate
+        params.getTimeline().visibleY = y
     }
 
-    public static LoadableListPosition loadListPosition(TimelineParameters params) {
-        final long itemId = params.getTimeline().getVisibleItemId();
-        return itemId > 0
-                ? LoadableListPosition.saved(
-                    itemId,
-                    params.getTimeline().getVisibleY(),
-                    params.getTimeline().getVisibleOldestDate(), "saved itemId:" + itemId)
-                : LoadableListPosition.EMPTY;
+    fun clear() {
+        params.getTimeline().visibleItemId = 0
+        params.getTimeline().visibleOldestDate = 0
+        params.getTimeline().visibleY = 0
+        MyLog.v(TAG) { "Position forgot " + params.getTimeline() }
     }
 
-    void clear() {
-        params.getTimeline().setVisibleItemId(0);
-        params.getTimeline().setVisibleOldestDate(0);
-        params.getTimeline().setVisibleY(0);
-        MyLog.v(TAG, () -> "Position forgot " + params.getTimeline());
-    }
-    
     /**
      * Restore (the first visible item) position saved for this timeline
      * see http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview?rq=1
      */
-    public void restore() {
-        final String method = "restore" + params.timeline.getId();
+    fun restore() {
+        val method = "restore" + params.timeline.id
         if (isEmpty()) {
-            MyLog.v(TAG, () -> method + "; skipped");
-            return;
+            MyLog.v(TAG) { "$method; skipped" }
+            return
         }
-        final LoadableListPosition pos = loadListPosition(params);
-        boolean restored = LoadableListPosition.restore(listView, adapter, pos);
+        val pos = loadListPosition(params)
+        val restored: Boolean = LoadableListPosition.Companion.restore(listView, adapter, pos)
         if (MyLog.isVerboseEnabled()) {
-            pos.logV(method + "; stored " + (restored ? "succeeded" : "failed") + " " + params.getTimeline());
-            activity.getCurrentListPosition().logV(method + "; actual " + (restored ? "succeeded" : "failed"));
+            pos.logV(method + "; stored " + (if (restored) "succeeded" else "failed") + " " + params.getTimeline())
+            activity.getCurrentListPosition().logV(method + "; actual " + if (restored) "succeeded" else "failed")
         }
-        if (!restored) clear();
-        adapter.setPositionRestored(true);
+        if (!restored) clear()
+        adapter.setPositionRestored(true)
+    }
+
+    companion object {
+        private val TAG: String? = TimelineViewPositionStorage::class.java.simpleName
+        fun loadListPosition(params: TimelineParameters?): LoadableListPosition<*>? {
+            val itemId = params.getTimeline().visibleItemId
+            return if (itemId > 0) LoadableListPosition.Companion.saved(
+                    itemId,
+                    params.getTimeline().visibleY,
+                    params.getTimeline().visibleOldestDate, "saved itemId:$itemId") else LoadableListPosition.Companion.EMPTY
+        }
+    }
+
+    init {
+        adapter = activity.getListAdapter()
+        listView = activity.getListView()
+        params = listParameters
     }
 }

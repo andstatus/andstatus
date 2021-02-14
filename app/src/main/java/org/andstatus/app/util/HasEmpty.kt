@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-public interface HasEmpty<T> extends IsEmpty {
-    T empty();
+interface HasEmpty<T> : IsEmpty {
+    open fun empty(): T?
 }

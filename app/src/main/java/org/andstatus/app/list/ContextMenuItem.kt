@@ -1,4 +1,5 @@
-package org.andstatus.app.list;
+package org.andstatus.app.list
+
 /*
  * Copyright (c) 2016 yvolk (Yuri Volkov), http://yurivolkov.com
  *
@@ -14,7 +15,6 @@ package org.andstatus.app.list;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-public interface ContextMenuItem {
-    int getId();
+interface ContextMenuItem {
+    open fun getId(): Int
 }

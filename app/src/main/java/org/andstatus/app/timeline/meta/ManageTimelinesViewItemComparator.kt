@@ -13,142 +13,186 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline.meta
 
-package org.andstatus.app.timeline.meta;
-
-import org.andstatus.app.R;
-import org.andstatus.app.util.CollectionsUtil;
-
-import java.util.Comparator;
+import org.andstatus.app.R
+import org.andstatus.app.util.CollectionsUtil
+import java.util.*
 
 /**
  * @author yvolk@yurivolkov.com
  */
-class ManageTimelinesViewItemComparator implements Comparator<ManageTimelinesViewItem> {
-    private final int sortByField;
-    private final boolean sortDefault;
-    private final boolean isTotal;
-
-    ManageTimelinesViewItemComparator(int sortByField, boolean sortDefault, boolean isTotal) {
-        this.sortByField = sortByField;
-        this.sortDefault = sortDefault;
-        this.isTotal = isTotal;
-    }
-
-    @Override
-    public int compare(ManageTimelinesViewItem lhs, ManageTimelinesViewItem rhs) {
-        int result = 0;
-        switch (sortByField) {
-            case R.id.displayedInSelector:
-                result = compareAny(lhs.timeline, rhs.timeline);
+internal class ManageTimelinesViewItemComparator(private val sortByField: Int, private val sortDefault: Boolean, private val isTotal: Boolean) : Comparator<ManageTimelinesViewItem?> {
+    override fun compare(lhs: ManageTimelinesViewItem?, rhs: ManageTimelinesViewItem?): Int {
+        var result = 0
+        when (sortByField) {
+            R.id.displayedInSelector -> {
+                result = compareAny<Timeline?>(lhs.timeline, rhs.timeline)
                 if (result != 0) {
-                    break;
+                    break
                 }
-            case R.id.title:
-                result = compareAny(lhs.timelineTitle.toString().toLowerCase(),
-                        rhs.timelineTitle.toString().toLowerCase());
+                result = compareAny<String?>(lhs.timelineTitle.toString().toLowerCase(),
+                        rhs.timelineTitle.toString().toLowerCase())
                 if (result != 0) {
-                    break;
+                    break
                 }
-            case R.id.account:
-                result = compareAny(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName);
+                result = compareAny<String?>(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName)
                 if (result != 0) {
-                    break;
+                    break
                 }
-                return compareAny(lhs.timelineTitle.originName, rhs.timelineTitle.originName);
-            case R.id.origin:
-                result = compareAny(lhs.timelineTitle.originName, rhs.timelineTitle.originName);
+                return compareAny<String?>(lhs.timelineTitle.originName, rhs.timelineTitle.originName)
+            }
+            R.id.title -> {
+                result = compareAny<String?>(lhs.timelineTitle.toString().toLowerCase(),
+                        rhs.timelineTitle.toString().toLowerCase())
                 if (result != 0) {
-                    break;
+                    break
+                }
+                result = compareAny<String?>(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName)
+                if (result != 0) {
+                    break
+                }
+                return compareAny<String?>(lhs.timelineTitle.originName, rhs.timelineTitle.originName)
+            }
+            R.id.account -> {
+                result = compareAny<String?>(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName)
+                if (result != 0) {
+                    break
+                }
+                return compareAny<String?>(lhs.timelineTitle.originName, rhs.timelineTitle.originName)
+            }
+            R.id.origin -> {
+                result = compareAny<String?>(lhs.timelineTitle.originName, rhs.timelineTitle.originName)
+                result = if (result != 0) {
+                    break
                 } else {
-                    result = compareAny(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName);
+                    compareAny<String?>(lhs.timelineTitle.accountName, rhs.timelineTitle.accountName)
                 }
-                if (result != 0) {
-                    break;
+                result = if (result != 0) {
+                    break
                 } else {
-                    result = compareAny(lhs.timelineTitle.title, rhs.timelineTitle.title);
+                    compareAny<String?>(lhs.timelineTitle.title, rhs.timelineTitle.title)
                 }
                 if (result != 0) {
-                    break;
+                    break
                 }
-            case R.id.synced:
-                return compareSynced(lhs, rhs);
-            case R.id.syncedTimesCount:
+                return compareSynced(lhs, rhs)
+            }
+            R.id.synced -> return compareSynced(lhs, rhs)
+            R.id.syncedTimesCount -> {
                 result = compareLongDescending(lhs.timeline.getSyncedTimesCount(isTotal),
-                        rhs.timeline.getSyncedTimesCount(isTotal));
+                        rhs.timeline.getSyncedTimesCount(isTotal))
                 if (result != 0) {
-                    break;
+                    break
                 }
-            case R.id.downloadedItemsCount:
                 result = compareLongDescending(lhs.timeline.getDownloadedItemsCount(isTotal),
-                        rhs.timeline.getDownloadedItemsCount(isTotal));
+                        rhs.timeline.getDownloadedItemsCount(isTotal))
                 if (result != 0) {
-                    break;
+                    break
                 }
-            case R.id.newItemsCount:
                 result = compareLongDescending(lhs.timeline.getNewItemsCount(isTotal),
-                        rhs.timeline.getNewItemsCount(isTotal));
+                        rhs.timeline.getNewItemsCount(isTotal))
                 if (result != 0) {
-                    break;
+                    break
                 }
-            case R.id.syncSucceededDate:
-                result = compareLongDescending(lhs.timeline.getSyncSucceededDate(),
-                        rhs.timeline.getSyncSucceededDate());
+                result = compareLongDescending(lhs.timeline.syncSucceededDate,
+                        rhs.timeline.syncSucceededDate)
                 if (result == 0) {
-                    return compareSynced(lhs, rhs);
+                    return compareSynced(lhs, rhs)
                 }
-                break;
-            case R.id.syncFailedDate:
-            case R.id.syncFailedTimesCount:
-                result = compareLongDescending(lhs.timeline.getSyncFailedDate(),
-                        rhs.timeline.getSyncFailedDate());
+            }
+            R.id.downloadedItemsCount -> {
+                result = compareLongDescending(lhs.timeline.getDownloadedItemsCount(isTotal),
+                        rhs.timeline.getDownloadedItemsCount(isTotal))
+                if (result != 0) {
+                    break
+                }
+                result = compareLongDescending(lhs.timeline.getNewItemsCount(isTotal),
+                        rhs.timeline.getNewItemsCount(isTotal))
+                if (result != 0) {
+                    break
+                }
+                result = compareLongDescending(lhs.timeline.syncSucceededDate,
+                        rhs.timeline.syncSucceededDate)
                 if (result == 0) {
-                    return compareSynced(lhs, rhs);
+                    return compareSynced(lhs, rhs)
                 }
-                break;
-            case R.id.errorMessage:
-                result = compareAny(lhs.timeline.getErrorMessage(), rhs.timeline.getErrorMessage());
+            }
+            R.id.newItemsCount -> {
+                result = compareLongDescending(lhs.timeline.getNewItemsCount(isTotal),
+                        rhs.timeline.getNewItemsCount(isTotal))
+                if (result != 0) {
+                    break
+                }
+                result = compareLongDescending(lhs.timeline.syncSucceededDate,
+                        rhs.timeline.syncSucceededDate)
                 if (result == 0) {
-                    return compareSynced(lhs, rhs);
+                    return compareSynced(lhs, rhs)
                 }
-            case R.id.lastChangedDate:
-                result = compareLongDescending(lhs.timeline.getLastChangedDate(),
-                        rhs.timeline.getLastChangedDate());
+            }
+            R.id.syncSucceededDate -> {
+                result = compareLongDescending(lhs.timeline.syncSucceededDate,
+                        rhs.timeline.syncSucceededDate)
                 if (result == 0) {
-                    return compareSynced(lhs, rhs);
+                    return compareSynced(lhs, rhs)
                 }
-                break;
-            default:
-                break;
+            }
+            R.id.syncFailedDate, R.id.syncFailedTimesCount -> {
+                result = compareLongDescending(lhs.timeline.syncFailedDate,
+                        rhs.timeline.syncFailedDate)
+                if (result == 0) {
+                    return compareSynced(lhs, rhs)
+                }
+            }
+            R.id.errorMessage -> {
+                result = compareAny<String?>(lhs.timeline.errorMessage, rhs.timeline.errorMessage)
+                if (result == 0) {
+                    return compareSynced(lhs, rhs)
+                }
+                result = compareLongDescending(lhs.timeline.lastChangedDate,
+                        rhs.timeline.lastChangedDate)
+                if (result == 0) {
+                    return compareSynced(lhs, rhs)
+                }
+            }
+            R.id.lastChangedDate -> {
+                result = compareLongDescending(lhs.timeline.lastChangedDate,
+                        rhs.timeline.lastChangedDate)
+                if (result == 0) {
+                    return compareSynced(lhs, rhs)
+                }
+            }
+            else -> {
+            }
         }
-        return result;
+        return result
     }
 
-    private <T extends Comparable<T>> int compareAny(T lhs, T rhs) {
-        int result = lhs == null ? 0 : lhs.compareTo(rhs);
-        return result == 0 ? 0 : sortDefault ? result : 0 - result;
+    private fun <T : Comparable<T?>?> compareAny(lhs: T?, rhs: T?): Int {
+        val result = lhs?.compareTo(rhs) ?: 0
+        return if (result == 0) 0 else if (sortDefault) result else 0 - result
     }
 
-    private int compareSynced(ManageTimelinesViewItem lhs, ManageTimelinesViewItem rhs) {
-        int result = compareLongDescending(lhs.timeline.getLastSyncedDate(),
-                rhs.timeline.getLastSyncedDate());
+    private fun compareSynced(lhs: ManageTimelinesViewItem?, rhs: ManageTimelinesViewItem?): Int {
+        var result = compareLongDescending(lhs.timeline.lastSyncedDate,
+                rhs.timeline.lastSyncedDate)
         if (result == 0) {
-            result = compareCheckbox(lhs.timeline.isSyncedAutomatically(),
-                    rhs.timeline.isSyncedAutomatically());
+            result = compareCheckbox(lhs.timeline.isSyncedAutomatically,
+                    rhs.timeline.isSyncedAutomatically)
         }
         if (result == 0) {
-            result = compareCheckbox(lhs.timeline.isSyncableAutomatically(), rhs.timeline.isSyncableAutomatically());
+            result = compareCheckbox(lhs.timeline.isSyncableAutomatically, rhs.timeline.isSyncableAutomatically)
         }
-        return result;
+        return result
     }
 
-    private int compareLongDescending(long lhs, long rhs) {
-        int result = lhs == rhs ? 0 : lhs > rhs ? 1 : -1;
-        return result == 0 ? 0 : !sortDefault ? result : 0 - result;
+    private fun compareLongDescending(lhs: Long, rhs: Long): Int {
+        val result = if (lhs == rhs) 0 else if (lhs > rhs) 1 else -1
+        return if (result == 0) 0 else if (!sortDefault) result else 0 - result
     }
 
-    private int compareCheckbox(Boolean lhs, Boolean rhs) {
-        int result = CollectionsUtil.compareCheckbox(lhs, rhs);
-        return result == 0 ? 0 : sortDefault ? result : 0 - result;
+    private fun compareCheckbox(lhs: Boolean?, rhs: Boolean?): Int {
+        val result = CollectionsUtil.compareCheckbox(lhs, rhs)
+        return if (result == 0) 0 else if (sortDefault) result else 0 - result
     }
 }

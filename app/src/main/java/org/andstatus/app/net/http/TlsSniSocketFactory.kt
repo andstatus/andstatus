@@ -5,49 +5,107 @@
  * are made available under the terms of the GNU Public License v3.0
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/gpl.html
- * 
- ******************************************************************************/
-package org.andstatus.app.net.http;
+ *
+ */
+package org.andstatus.app.net.http
 
-import android.net.SSLCertificateSocketFactory;
+import android.net.SSLCertificateSocketFactory
+import cz.msebera.android.httpclient.HttpHost
+import cz.msebera.android.httpclient.conn.socket.ConnectionSocketFactory
+import cz.msebera.android.httpclient.conn.socket.LayeredConnectionSocketFactory
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.util.MyLog
 
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.util.MyLog;
+cz.msebera.android.httpclient.conn.ssl.AllowAllHostnameVerifierimport cz.msebera.android.httpclient.conn.ssl.BrowserCompatHostnameVerifierimport cz.msebera.android.httpclient.protocol.HttpContext
+import org.andstatus.app.context.CompletableFutureTest.TestData
+import org.andstatus.app.service.MyServiceTest
+import org.andstatus.app.service.AvatarDownloaderTest
+import org.andstatus.app.service.RepeatingFailingCommandTest
+import org.hamcrest.core.Is
+import org.hamcrest.core.IsNot
+import org.andstatus.app.timeline.meta.TimelineSyncTrackerTest
+import org.andstatus.app.timeline.TimelinePositionTest
+import org.andstatus.app.util.EspressoUtils
+import org.andstatus.app.timeline.TimeLineActivityLayoutToggleTest
+import org.andstatus.app.appwidget.MyAppWidgetProviderTest.DateTest
+import org.andstatus.app.appwidget.MyAppWidgetProviderTest
+import org.andstatus.app.notification.NotifierTest
+import org.andstatus.app.ActivityTestHelper.MenuItemClicker
+import org.andstatus.app.MenuItemMockimport
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.util.concurrent.ConcurrentHashMap;
+java.io.IOExceptionimport java.net.InetSocketAddressimport java.net.Socketimport java.util.concurrent.ConcurrentHashMapimport javax.net.ssl.HostnameVerifierimport javax.net.ssl.SSLPeerUnverifiedExceptionimport javax.net.ssl.SSLSocket
+class TlsSniSocketFactory(sslMode: SslModeEnum?) : LayeredConnectionSocketFactory {
+    private val secure: Boolean
+    private val sslSocketFactory: SSLCertificateSocketFactory? = null
+    @Throws(IOException::class)
+    override fun createSocket(context: HttpContext?): Socket? {
+        return sslSocketFactory.createSocket()
+    }
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLPeerUnverifiedException;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
+    @Throws(IOException::class)
+    override fun connectSocket(timeout: Int, plain: Socket?, host: HttpHost?, remoteAddr: InetSocketAddress?, localAddr: InetSocketAddress?, context: HttpContext?): Socket? {
+        MyLog.d(TAG, "Preparing direct SSL connection (without proxy) to $host")
 
-import cz.msebera.android.httpclient.HttpHost;
-import cz.msebera.android.httpclient.conn.socket.ConnectionSocketFactory;
-import cz.msebera.android.httpclient.conn.socket.LayeredConnectionSocketFactory;
-import cz.msebera.android.httpclient.conn.ssl.AllowAllHostnameVerifier;
-import cz.msebera.android.httpclient.conn.ssl.BrowserCompatHostnameVerifier;
-import cz.msebera.android.httpclient.protocol.HttpContext;
+        // we'll rather use an SSLSocket directly
+        plain.close()
 
-public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
-    private static final String TAG = TlsSniSocketFactory.class.getSimpleName();
+        // create a plain SSL socket, but don't do hostname/certificate verification yet
+        val ssl = sslSocketFactory.createSocket(remoteAddr.getAddress(), host.getPort()) as SSLSocket
 
-    private static final ConcurrentHashMap<SslModeEnum, TlsSniSocketFactory> instances = new ConcurrentHashMap<SslModeEnum, TlsSniSocketFactory>();
-    public static ConnectionSocketFactory getInstance(SslModeEnum sslMode) {
-        if (!instances.containsKey(sslMode)) {
-            instances.put(sslMode, new TlsSniSocketFactory(sslMode));
+        // connect, set SNI, shake hands, verify, print connection info
+        connectWithSNI(ssl, host.getHostName())
+        return ssl
+    }
+
+    @Throws(IOException::class)
+    override fun createLayeredSocket(plain: Socket?, host: String?, port: Int, context: HttpContext?): Socket? {
+        MyLog.d(TAG, "Preparing layered SSL connection (over proxy) to $host")
+
+        // create a layered SSL socket, but don't do hostname/certificate verification yet
+        val ssl = sslSocketFactory.createSocket(plain, host, port, true) as SSLSocket
+
+        // already connected, but verify host name again and print some connection info
+        MyLog.d(TAG, "Setting SNI/TLSv1.2 will silently fail because the handshake is already done")
+        connectWithSNI(ssl, host)
+        return ssl
+    }
+
+    @Throws(SSLPeerUnverifiedException::class)
+    private fun connectWithSNI(ssl: SSLSocket?, host: String?) {
+        // set reasonable SSL/TLS settings before the handshake:
+        // - enable all supported protocols
+        ssl.setEnabledProtocols(ssl.getSupportedProtocols())
+        MyLog.d(TAG, "Using documented SNI with host name $host")
+        sslSocketFactory.setHostname(ssl, host)
+
+        // verify hostname and certificate
+        val session = ssl.getSession()
+        if (!session.isValid) {
+            MyLog.i(TAG, "Invalid session to host:'$host'")
         }
-        return instances.get(sslMode);
+        val hostnameVerifier: HostnameVerifier = if (secure) BrowserCompatHostnameVerifier() else AllowAllHostnameVerifier()
+        if (!hostnameVerifier.verify(host, session)) {
+            throw SSLPeerUnverifiedException("Cannot verify hostname: $host")
+        }
+        MyLog.d(TAG, "Established " + session.protocol + " connection with " + session.peerHost +
+                " using " + session.cipherSuite)
     }
-    public static void forget() {
-        instances.clear();
+
+    companion object {
+        private val TAG: String? = TlsSniSocketFactory::class.java.simpleName
+        private val instances: ConcurrentHashMap<SslModeEnum?, TlsSniSocketFactory?>? = ConcurrentHashMap()
+        fun getInstance(sslMode: SslModeEnum?): ConnectionSocketFactory? {
+            if (!instances.containsKey(sslMode)) {
+                instances[sslMode] = TlsSniSocketFactory(sslMode)
+            }
+            return instances.get(sslMode)
+        }
+
+        fun forget() {
+            instances.clear()
+        }
     }
-    
-    private final boolean secure;
-    private final SSLCertificateSocketFactory sslSocketFactory;
-    
+
     /*
     For SSL connections without HTTP(S) proxy:
        1) createSocket() is called
@@ -65,75 +123,15 @@ public class TlsSniSocketFactory implements LayeredConnectionSocketFactory {
            to set up SNI before, *** SNI is not available for layered connections *** (unless
            active by Android's defaults, which it isn't at the moment).
     */
-
-    public TlsSniSocketFactory(SslModeEnum sslMode) {
-        secure = sslMode == SslModeEnum.SECURE;
+    init {
+        secure = sslMode == SslModeEnum.SECURE
         if (secure) {
-            sslSocketFactory = (SSLCertificateSocketFactory) SSLCertificateSocketFactory
-                    .getDefault(MyPreferences.getConnectionTimeoutMs());
+            sslSocketFactory = SSLCertificateSocketFactory
+                    .getDefault(MyPreferences.getConnectionTimeoutMs()) as SSLCertificateSocketFactory
         } else {
-            sslSocketFactory = (SSLCertificateSocketFactory) SSLCertificateSocketFactory
-                    .getInsecure(MyPreferences.getConnectionTimeoutMs(), null);
-            MyLog.i(TAG, "Insecure SSL allowed");
+            sslSocketFactory = SSLCertificateSocketFactory
+                    .getInsecure(MyPreferences.getConnectionTimeoutMs(), null) as SSLCertificateSocketFactory
+            MyLog.i(TAG, "Insecure SSL allowed")
         }
     }
-    
-    @Override
-    public Socket createSocket(HttpContext context) throws IOException {
-        return sslSocketFactory.createSocket();
-    }
-
-    @Override
-    public Socket connectSocket(int timeout, Socket plain, HttpHost host, InetSocketAddress remoteAddr, InetSocketAddress localAddr, HttpContext context) throws IOException {
-        MyLog.d(TAG, "Preparing direct SSL connection (without proxy) to " + host);
-        
-        // we'll rather use an SSLSocket directly
-        plain.close();
-        
-        // create a plain SSL socket, but don't do hostname/certificate verification yet
-        SSLSocket ssl = (SSLSocket)sslSocketFactory.createSocket(remoteAddr.getAddress(), host.getPort());
-        
-        // connect, set SNI, shake hands, verify, print connection info
-        connectWithSNI(ssl, host.getHostName());
-
-        return ssl;
-    }
-
-    @Override
-    public Socket createLayeredSocket(Socket plain, String host, int port, HttpContext context) throws IOException {
-        MyLog.d(TAG, "Preparing layered SSL connection (over proxy) to " + host);
-        
-        // create a layered SSL socket, but don't do hostname/certificate verification yet
-        SSLSocket ssl = (SSLSocket)sslSocketFactory.createSocket(plain, host, port, true);
-
-        // already connected, but verify host name again and print some connection info
-        MyLog.d(TAG, "Setting SNI/TLSv1.2 will silently fail because the handshake is already done");
-        connectWithSNI(ssl, host);
-
-        return ssl;
-    }
-    
-    private void connectWithSNI(SSLSocket ssl, String host) throws SSLPeerUnverifiedException {
-        // set reasonable SSL/TLS settings before the handshake:
-        // - enable all supported protocols
-        ssl.setEnabledProtocols(ssl.getSupportedProtocols());
-        
-        MyLog.d(TAG, "Using documented SNI with host name " + host);
-        sslSocketFactory.setHostname(ssl, host);
-
-        // verify hostname and certificate
-        SSLSession session = ssl.getSession();
-        if (!session.isValid()) {
-            MyLog.i(TAG, "Invalid session to host:'" + host + "'");
-        }
-
-        HostnameVerifier hostnameVerifier = secure ? new BrowserCompatHostnameVerifier() : new AllowAllHostnameVerifier();
-        if (!hostnameVerifier.verify(host, session)) {
-            throw new SSLPeerUnverifiedException("Cannot verify hostname: " + host);
-        }
-
-        MyLog.d(TAG, "Established " + session.getProtocol() + " connection with " + session.getPeerHost() +
-                " using " + session.getCipherSuite());
-    }
-    
 }

@@ -13,139 +13,116 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
+import android.content.Context
+import android.database.Cursor
+import org.andstatus.app.R
+import org.andstatus.app.actor.ActorsLoader
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.IsEmpty
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.StringUtil
+import java.util.*
 
-import android.content.Context;
-import android.database.Cursor;
-
-import org.andstatus.app.R;
-import org.andstatus.app.actor.ActorsLoader;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtil;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import androidx.annotation.NonNull;
-
-import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
-
-public class ViewItem<T extends ViewItem<T>> implements IsEmpty {
-    private final List<T> children = new ArrayList<>();
-    private final boolean isEmpty;
-    private ViewItem parent = EmptyViewItem.EMPTY;
-    protected long insertedDate = 0;
-    public final long updatedDate;
-
-    protected ViewItem(boolean isEmpty, long updatedDate) {
-        this.isEmpty = isEmpty;
-        this.updatedDate = updatedDate;
+open class ViewItem<T : ViewItem<T?>?> protected constructor(private val isEmpty: Boolean, val updatedDate: Long) : IsEmpty {
+    private val children: MutableList<T?>? = ArrayList()
+    private var parent: ViewItem<*>? = EmptyViewItem.EMPTY
+    protected var insertedDate: Long = 0
+    open fun getId(): Long {
+        return 0
     }
 
-    @NonNull
-    public static <T extends ViewItem<T>> T getEmpty(@NonNull TimelineType timelineType) {
-        return (T) ViewItemType.fromTimelineType(timelineType).emptyViewItem;
+    open fun getDate(): Long {
+        return 0
     }
 
-    public long getId() {
-        return 0;
+    fun getChildren(): MutableCollection<T?> {
+        return children
     }
 
-    public long getDate() {
-        return 0;
+    open fun duplicates(timeline: Timeline?, preferredOrigin: Origin?, other: T): DuplicationLink {
+        return DuplicationLink.NONE
     }
 
-    @NonNull
-    public final Collection<T> getChildren() {
-        return children;
+    fun isCollapsed(): Boolean {
+        return getChildrenCount() > 0
     }
 
-    @NonNull
-    public DuplicationLink duplicates(Timeline timeline, Origin preferredOrigin, @NonNull T other) {
-        return DuplicationLink.NONE;
+    fun collapse(child: T?) {
+        getChildren().addAll(child.getChildren())
+        child.getChildren().clear()
+        getChildren().add(child)
     }
 
-    public boolean isCollapsed() {
-        return getChildrenCount() > 0;
+    open fun fromCursor(myContext: MyContext?, cursor: Cursor?): T {
+        return getEmpty(TimelineType.UNKNOWN)
     }
 
-    void collapse(T child) {
-        this.getChildren().addAll(child.getChildren());
-        child.getChildren().clear();
-        this.getChildren().add(child);
+    open fun matches(filter: TimelineFilter?): Boolean {
+        return true
     }
 
-    @NonNull
-    public T fromCursor(MyContext myContext, Cursor cursor) {
-        return getEmpty(TimelineType.UNKNOWN);
+    override fun isEmpty(): Boolean {
+        return isEmpty
     }
 
-    public boolean matches(TimelineFilter filter) {
-        return true;
+    protected fun getChildrenCount(): Int {
+        return if (isEmpty()) 0 else Integer.max(getParent().getChildrenCount(), getChildren().size)
     }
 
-    @Override
-    public boolean isEmpty() {
-        return isEmpty;
+    fun setParent(parent: ViewItem<*>?) {
+        this.parent = parent
     }
 
-    protected int getChildrenCount() {
-        return isEmpty() ? 0 : Integer.max(getParent().getChildrenCount(), getChildren().size());
+    fun getParent(): ViewItem<*> {
+        return if (parent == null) EmptyViewItem.EMPTY else parent
     }
 
-    public void setParent(ViewItem parent) {
-        this.parent = parent;
-    }
-    @NonNull
-    public ViewItem getParent() {
-        return parent == null ? EmptyViewItem.EMPTY : parent;
+    fun getTopmostId(): Long {
+        return if (getParent().isEmpty()) getId() else getParent().getId()
     }
 
-    public long getTopmostId() {
-        return getParent().isEmpty() ? getId() : getParent().getId();
-    }
-
-    @NonNull
-    protected MyStringBuilder getMyStringBuilderWithTime(Context context, boolean showReceivedTime) {
-        final String difference = RelativeTime.getDifference(context, updatedDate);
-        MyStringBuilder builder = MyStringBuilder.of(difference);
-        if (showReceivedTime && updatedDate > SOME_TIME_AGO && insertedDate > updatedDate) {
-            final String receivedDifference = RelativeTime.getDifference(context, insertedDate);
-            if (!receivedDifference.equals(difference)) {
+    protected fun getMyStringBuilderWithTime(context: Context?, showReceivedTime: Boolean): MyStringBuilder {
+        val difference = RelativeTime.getDifference(context, updatedDate)
+        val builder: MyStringBuilder = MyStringBuilder.Companion.of(difference)
+        if (showReceivedTime && updatedDate > RelativeTime.SOME_TIME_AGO && insertedDate > updatedDate) {
+            val receivedDifference = RelativeTime.getDifference(context, insertedDate)
+            if (receivedDifference != difference) {
                 builder.withSpace("(" + StringUtil.format(context, R.string.received_sometime_ago,
-                        receivedDifference) + ")");
+                        receivedDifference) + ")")
             }
         }
-        return builder;
+        return builder
     }
 
-    public void addActorsToLoad(ActorsLoader loader) {
+    open fun addActorsToLoad(loader: ActorsLoader?) {
         // Empty
     }
 
-    public void setLoadedActors(ActorsLoader loader) {
+    open fun setLoadedActors(loader: ActorsLoader?) {
         // Empty
     }
 
-    @Override
-    public int hashCode() {
-        int result = Long.hashCode(getId());
-        return 31 * result + Long.hashCode(getDate());
+    override fun hashCode(): Int {
+        val result = java.lang.Long.hashCode(getId())
+        return 31 * result + java.lang.Long.hashCode(getDate())
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        T that = (T) o;
-        return getId() == that.getId() && getDate() == that.getDate();
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o == null || javaClass != o.javaClass) return false
+        val that = o as T?
+        return getId() == that.getId() && getDate() == that.getDate()
+    }
+
+    companion object {
+        fun <T : ViewItem<T?>?> getEmpty(timelineType: TimelineType): T {
+            return ViewItemType.Companion.fromTimelineType(timelineType).emptyViewItem as T
+        }
     }
 }

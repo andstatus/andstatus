@@ -13,62 +13,52 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.origin
 
-package org.andstatus.app.origin;
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.util.IsEmpty
 
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.util.IsEmpty;
-
-import static org.andstatus.app.origin.OriginType.TEXT_LIMIT_MAXIMUM;
-
-public class OriginConfig implements IsEmpty {
-    public static final int MASTODON_TEXT_LIMIT_DEFAULT = 500;
-    public static final int MAX_ATTACHMENTS_DEFAULT = 10;
-    public static final int MAX_ATTACHMENTS_MASTODON = 4;
-    public static final int MAX_ATTACHMENTS_TWITTER = 4;
-
-    private final boolean isEmpty;
-    
-    public final int textLimit;
-    public final long uploadLimit;
-    
-    public static OriginConfig getEmpty() {
-        return new OriginConfig(-1, 0);
+class OriginConfig(textLimit: Int, uploadLimit: Long) : IsEmpty {
+    private val isEmpty: Boolean
+    val textLimit: Int
+    val uploadLimit: Long
+    override fun isEmpty(): Boolean {
+        return isEmpty
     }
 
-    public static OriginConfig fromTextLimit(int textLimit, long uploadLimit) {
-        OriginConfig config = new OriginConfig(textLimit, uploadLimit);
-        return config;
-    }
-    
-    public OriginConfig(int textLimit, long uploadLimit) {
-        isEmpty = textLimit < 0;
-        this.textLimit = textLimit > 0 ? textLimit : TEXT_LIMIT_MAXIMUM;
-        this.uploadLimit = uploadLimit > 0 ? uploadLimit : MyPreferences.getMaximumSizeOfAttachmentBytes();
-    }
-
-    public boolean isEmpty() {
-        return isEmpty;
-    }
-
-    @Override
-    public String toString() {
+    override fun toString(): String {
         return "OriginConfig{" +
                 "textLimit=" + textLimit +
                 ", uploadLimit=" + uploadLimit +
-                '}';
+                '}'
     }
 
-    static int getMaxAttachmentsToSend(OriginType originType) {
-        switch (originType) {
-            case ACTIVITYPUB:
-                return MAX_ATTACHMENTS_DEFAULT;
-            case MASTODON:
-                return MAX_ATTACHMENTS_MASTODON;
-            case TWITTER:
-                return MAX_ATTACHMENTS_TWITTER;
-            default:
-                return 1;
+    companion object {
+        const val MASTODON_TEXT_LIMIT_DEFAULT = 500
+        const val MAX_ATTACHMENTS_DEFAULT = 10
+        const val MAX_ATTACHMENTS_MASTODON = 4
+        const val MAX_ATTACHMENTS_TWITTER = 4
+        fun getEmpty(): OriginConfig? {
+            return OriginConfig(-1, 0)
         }
+
+        fun fromTextLimit(textLimit: Int, uploadLimit: Long): OriginConfig? {
+            return OriginConfig(textLimit, uploadLimit)
+        }
+
+        fun getMaxAttachmentsToSend(originType: OriginType?): Int {
+            return when (originType) {
+                OriginType.ACTIVITYPUB -> MAX_ATTACHMENTS_DEFAULT
+                OriginType.MASTODON -> MAX_ATTACHMENTS_MASTODON
+                OriginType.TWITTER -> MAX_ATTACHMENTS_TWITTER
+                else -> 1
+            }
+        }
+    }
+
+    init {
+        isEmpty = textLimit < 0
+        this.textLimit = if (textLimit > 0) textLimit else OriginType.Companion.TEXT_LIMIT_MAXIMUM
+        this.uploadLimit = if (uploadLimit > 0) uploadLimit else MyPreferences.getMaximumSizeOfAttachmentBytes()
     }
 }

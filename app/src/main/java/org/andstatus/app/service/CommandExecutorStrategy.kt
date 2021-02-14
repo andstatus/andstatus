@@ -13,220 +13,197 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
+import io.vavr.control.Try
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.net.social.Connection
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.InstanceId
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.StopWatch
+import org.andstatus.app.util.TryUtils
+import java.util.concurrent.TimeUnit
+import java.util.function.Consumer
 
-import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.ApiRoutineEnum;
-import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.util.IdentifiableInstance;
-import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StopWatch;
-import org.andstatus.app.util.TryUtils;
-
-import java.util.concurrent.TimeUnit;
-
-import io.vavr.control.Try;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-class CommandExecutorStrategy implements CommandExecutorParent, IdentifiableInstance {
-    private static final String TAG = CommandExecutorStrategy.class.getSimpleName();
-    final protected CommandExecutionContext execContext;
-    protected final long instanceId = InstanceId.next();
-    private CommandExecutorParent parent = null;
-    protected static final long MIN_PROGRESS_BROADCAST_PERIOD_SECONDS = 1;
-    protected long lastProgressBroadcastAt  = 0;
-    private StopWatch stopWatch = StopWatch.createStarted();
-
-    static void executeCommand(CommandData commandData, CommandExecutorParent parent) {
-        CommandExecutorStrategy strategy = getStrategy(
-            new CommandExecutionContext(commandData.myAccount.getOrigin().myContext, commandData)).setParent(parent);
-        commandData.getResult().prepareForLaunch();
-        logLaunch(strategy);
-        // This may cause recursive calls to executors...
-        strategy.execute()
-        .onSuccess(ok -> {
-            strategy.execContext.getResult().setSoftErrorIfNotOk(ok);
-            MyLog.d(strategy, strategy.execContext.getCommandSummary() + (ok ? " succeeded" : " soft errors"));
-        })
-        .onFailure(t -> strategy.logException(t, strategy.execContext.getCommandSummary()));
-        commandData.getResult().afterExecutionEnded();
-        logEnd(strategy);
-    }
-
-    private static void logLaunch(CommandExecutorStrategy strategy) {
-        strategy.stopWatch.restart();
-        MyLog.d(strategy, "Launching " + strategy.execContext);
-    }
-
-    public boolean logSoftErrorIfStopping() {
-        if (isStopping()) {
-            if ( !execContext.getResult().hasError()) {
-                execContext.getResult().incrementNumIoExceptions();
-                execContext.getResult().setMessage("Service is stopping");
+internal open class CommandExecutorStrategy(protected val execContext: CommandExecutionContext?) : CommandExecutorParent, IdentifiableInstance {
+    protected val instanceId = InstanceId.next()
+    private var parent: CommandExecutorParent? = null
+    protected var lastProgressBroadcastAt: Long = 0
+    private val stopWatch: StopWatch? = StopWatch.Companion.createStarted()
+    fun logSoftErrorIfStopping(): Boolean {
+        if (isStopping) {
+            if (!execContext.getResult().hasError()) {
+                execContext.getResult().incrementNumIoExceptions()
+                execContext.getResult().message = "Service is stopping"
             }
-            return true;
+            return true
         }
-        return false;
+        return false
     }
 
-    protected <T> Try<T> onParseException(String message) {
-        execContext.getResult().incrementParseExceptions();
-        MyLog.w(this, message);
-        return TryUtils.failure(message);
+    protected fun <T> onParseException(message: String?): Try<T?>? {
+        execContext.getResult().incrementParseExceptions()
+        MyLog.w(this, message)
+        return TryUtils.failure(message)
     }
 
-    private static void logEnd(CommandExecutorStrategy strategy) {
-        long time = strategy.stopWatch.getTime();
-        if (time < TimeUnit.SECONDS.toMillis(MIN_PROGRESS_BROADCAST_PERIOD_SECONDS)) {
-            MyLog.d(strategy, "commandExecutedMs:" + time + "; " + strategy.execContext);
-        } else {
-            MyLog.i(strategy, "commandExecutedMs:" + time + "; " + strategy.execContext);
-        }
-    }
-
-    void broadcastProgress(String progress, boolean notTooOften) {
-        if (notTooOften){
+    fun broadcastProgress(progress: String?, notTooOften: Boolean) {
+        if (notTooOften) {
             if (!RelativeTime.moreSecondsAgoThan(lastProgressBroadcastAt, MIN_PROGRESS_BROADCAST_PERIOD_SECONDS)) {
-                return;
+                return
             }
         }
-        MyLog.v(this, () -> "Progress: " + progress);
-        lastProgressBroadcastAt = System.currentTimeMillis();
-        MyServiceEventsBroadcaster.newInstance(myContextHolder.getNow(), MyServiceState.RUNNING)
+        MyLog.v(this) { "Progress: $progress" }
+        lastProgressBroadcastAt = System.currentTimeMillis()
+        MyServiceEventsBroadcaster.Companion.newInstance(MyContextHolder.Companion.myContextHolder.getNow(), MyServiceState.RUNNING)
                 .setCommandData(execContext.getCommandData())
                 .setProgress(progress)
-                .setEvent(MyServiceEvent.PROGRESS_EXECUTING_COMMAND).broadcast();
+                .setEvent(MyServiceEvent.PROGRESS_EXECUTING_COMMAND).broadcast()
     }
 
-    static CommandExecutorStrategy getStrategy(CommandData commandData, CommandExecutorParent parent) {
-        return getStrategy(
-                new CommandExecutionContext(commandData.myAccount.getOrigin().myContext, commandData)).setParent(parent);
+    private fun setParent(parent: CommandExecutorParent?): CommandExecutorStrategy? {
+        this.parent = parent
+        return this
     }
 
-    private static CommandExecutorStrategy getStrategy(CommandExecutionContext execContext) {
-        CommandExecutorStrategy strategy;
-        switch (execContext.getCommandData().getCommand()) {
-            case GET_ATTACHMENT:
-            case GET_AVATAR:
-                strategy = new CommandExecutorOther(execContext);
-                break;
-            case GET_OPEN_INSTANCES:
-                strategy = new CommandExecutorGetOpenInstances(execContext);
-                break;
-            default:
-                if (execContext.getMyAccount().isValidAndSucceeded()) {
-                    switch (execContext.getCommandData().getCommand()) {
-                        case GET_TIMELINE:
-                        case GET_OLDER_TIMELINE:
-                            if (execContext.getCommandData().getTimeline().isSyncable()) {
-                                switch (execContext.getCommandData().getTimelineType()) {
-                                    case FOLLOWERS:
-                                    case FRIENDS:
-                                        strategy = new TimelineDownloaderFollowers(execContext);
-                                        break;
-                                    default:
-                                        strategy = new TimelineDownloaderOther(execContext);
-                                        break;
-                                }
-                            } else {
-                                MyLog.v(CommandExecutorStrategy.class, () -> "Dummy commandExecutor for " +
-                                        execContext.getCommandData().getTimeline());
-                                strategy = new CommandExecutorStrategy(execContext);
+    override fun isStopping(): Boolean {
+        return if (parent != null) {
+            parent.isStopping()
+        } else {
+            false
+        }
+    }
+
+    fun <T> logException(t: Throwable?, detailedMessage: String?): Try<T?>? {
+        val e: ConnectionException = ConnectionException.Companion.of(t)
+        val isHard = t != null && e.isHardError
+        val builder: MyStringBuilder = MyStringBuilder.Companion.of(detailedMessage)
+        if (t != null) {
+            builder.atNewLine(e.toString())
+        }
+        return logExecutionError(isHard, builder.toString())
+    }
+
+    fun <T> logExecutionError(isHard: Boolean, detailedMessage: String?): Try<T?>? {
+        if (isHard) {
+            execContext.getResult().incrementParseExceptions()
+        } else {
+            execContext.getResult().incrementNumIoExceptions()
+        }
+        val builder: MyStringBuilder = MyStringBuilder.Companion.of(detailedMessage).atNewLine(execContext.toExceptionContext())
+        execContext.getResult().message = builder.toString()
+        MyLog.w(this, builder.toString())
+        return TryUtils.failure(detailedMessage)
+    }
+
+    /** @return Success and false means soft error occurred
+     */
+    open fun execute(): Try<Boolean?>? {
+        MyLog.d(this, "Doing nothing")
+        return Try.success(true)
+    }
+
+    fun noErrors(): Boolean {
+        return !execContext.getResult().hasError()
+    }
+
+    fun getActor(): Actor? {
+        return execContext.getCommandData().timeline.actor
+    }
+
+    open fun isApiSupported(routine: ApiRoutineEnum?): Boolean {
+        return getConnection().hasApiEndpoint(routine)
+    }
+
+    fun getConnection(): Connection? {
+        return execContext.getConnection()
+    }
+
+    override fun getInstanceId(): Long {
+        return instanceId
+    }
+
+    override fun classTag(): String? {
+        return TAG
+    }
+
+    companion object {
+        private val TAG: String? = CommandExecutorStrategy::class.java.simpleName
+        protected const val MIN_PROGRESS_BROADCAST_PERIOD_SECONDS: Long = 1
+        fun executeCommand(commandData: CommandData?, parent: CommandExecutorParent?) {
+            val strategy = getStrategy(
+                    CommandExecutionContext(commandData.myAccount.origin.myContext, commandData)).setParent(parent)
+            commandData.getResult().prepareForLaunch()
+            logLaunch(strategy)
+            // This may cause recursive calls to executors...
+            strategy.execute()
+                    .onSuccess(Consumer { ok: Boolean? ->
+                        strategy.execContext.getResult().setSoftErrorIfNotOk(ok)
+                        MyLog.d(strategy, strategy.execContext.getCommandSummary() + if (ok) " succeeded" else " soft errors")
+                    })
+                    .onFailure { t: Throwable? -> strategy.logException<Any?>(t, strategy.execContext.getCommandSummary()) }
+            commandData.getResult().afterExecutionEnded()
+            logEnd(strategy)
+        }
+
+        private fun logLaunch(strategy: CommandExecutorStrategy?) {
+            strategy.stopWatch.restart()
+            MyLog.d(strategy, "Launching " + strategy.execContext)
+        }
+
+        private fun logEnd(strategy: CommandExecutorStrategy?) {
+            val time = strategy.stopWatch.getTime()
+            if (time < TimeUnit.SECONDS.toMillis(MIN_PROGRESS_BROADCAST_PERIOD_SECONDS)) {
+                MyLog.d(strategy, "commandExecutedMs:" + time + "; " + strategy.execContext)
+            } else {
+                MyLog.i(strategy, "commandExecutedMs:" + time + "; " + strategy.execContext)
+            }
+        }
+
+        fun getStrategy(commandData: CommandData?, parent: CommandExecutorParent?): CommandExecutorStrategy? {
+            return getStrategy(
+                    CommandExecutionContext(commandData.myAccount.origin.myContext, commandData)).setParent(parent)
+        }
+
+        private fun getStrategy(execContext: CommandExecutionContext?): CommandExecutorStrategy? {
+            val strategy: CommandExecutorStrategy
+            strategy = when (execContext.getCommandData().command) {
+                CommandEnum.GET_ATTACHMENT, CommandEnum.GET_AVATAR -> CommandExecutorOther(execContext)
+                CommandEnum.GET_OPEN_INSTANCES -> CommandExecutorGetOpenInstances(execContext)
+                else -> if (execContext.getMyAccount().isValidAndSucceeded) {
+                    when (execContext.getCommandData().command) {
+                        CommandEnum.GET_TIMELINE, CommandEnum.GET_OLDER_TIMELINE -> if (execContext.getCommandData().timeline.isSyncable) {
+                            when (execContext.getCommandData().timelineType) {
+                                TimelineType.FOLLOWERS, TimelineType.FRIENDS -> TimelineDownloaderFollowers(execContext)
+                                else -> TimelineDownloaderOther(execContext)
                             }
-                            break;
-                        case GET_FOLLOWERS:
-                        case GET_FRIENDS:
-                            strategy = new CommandExecutorFollowers(execContext);
-                            break;
-                        default:
-                            strategy = new CommandExecutorOther(execContext);
-                            break;
+                        } else {
+                            MyLog.v(CommandExecutorStrategy::class.java) {
+                                "Dummy commandExecutor for " +
+                                        execContext.getCommandData().timeline
+                            }
+                            CommandExecutorStrategy(execContext)
+                        }
+                        CommandEnum.GET_FOLLOWERS, CommandEnum.GET_FRIENDS -> CommandExecutorFollowers(execContext)
+                        else -> CommandExecutorOther(execContext)
                     }
                 } else {
-                    MyLog.v(CommandExecutorStrategy.class, () -> "Dummy commandExecutor for "
-                            + execContext.getMyAccount());
-                    strategy = new CommandExecutorStrategy(execContext);
+                    MyLog.v(CommandExecutorStrategy::class.java) {
+                        ("Dummy commandExecutor for "
+                                + execContext.getMyAccount())
+                    }
+                    CommandExecutorStrategy(execContext)
                 }
-                break;
+            }
+            return strategy
         }
-        return strategy;
-    }
-
-    CommandExecutorStrategy(CommandExecutionContext execContext) {
-        this.execContext = execContext;
-    }
-
-    private CommandExecutorStrategy setParent(CommandExecutorParent parent) {
-        this.parent = parent;
-        return this;
-    }
-    
-    @Override
-    public boolean isStopping() {
-        if (parent != null) {
-            return parent.isStopping();
-        } else {
-            return false;
-        }
-    }
-
-    <T> Try<T> logException(Throwable t, String detailedMessage) {
-        ConnectionException e = ConnectionException.of(t);
-        boolean isHard = t != null && e.isHardError();
-        MyStringBuilder builder = MyStringBuilder.of(detailedMessage);
-        if (t != null) {
-            builder.atNewLine(e.toString());
-        }
-        return logExecutionError(isHard, builder.toString());
-    }
-
-    <T> Try<T> logExecutionError(boolean isHard, String detailedMessage) {
-        if (isHard) {
-            execContext.getResult().incrementParseExceptions();
-        } else {
-            execContext.getResult().incrementNumIoExceptions();
-        }
-        MyStringBuilder builder = MyStringBuilder.of(detailedMessage).atNewLine(execContext.toExceptionContext());
-        execContext.getResult().setMessage(builder.toString());
-        MyLog.w(this, builder.toString());
-        return TryUtils.failure(detailedMessage);
-    }
-
-    /** @return Success and false means soft error occurred */
-    Try<Boolean> execute() {
-        MyLog.d(this, "Doing nothing");
-        return Try.success(true);
-    }
-
-    boolean noErrors() {
-        return !execContext.getResult().hasError();
-    }
-
-    Actor getActor() {
-        return execContext.getCommandData().getTimeline().actor;
-    }
-
-    boolean isApiSupported(ApiRoutineEnum routine) {
-        return getConnection().hasApiEndpoint(routine);
-    }
-
-    public Connection getConnection() {
-        return execContext.getConnection();
-    }
-
-    @Override
-    public long getInstanceId() {
-        return instanceId;
-    }
-
-    @Override
-    public String classTag() {
-        return TAG;
     }
 }

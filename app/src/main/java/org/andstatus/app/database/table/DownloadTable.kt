@@ -13,58 +13,58 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.database.table
 
-package org.andstatus.app.database.table;
+import android.database.sqlite.SQLiteDatabase
+import android.provider.BaseColumns
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.DownloadStatus
+import org.andstatus.app.data.DownloadType
+import org.andstatus.app.data.MyContentType
 
-import android.database.sqlite.SQLiteDatabase;
-import android.provider.BaseColumns;
+/** Avatar, Note's attachment...  */
+object DownloadTable : BaseColumns {
+    val TABLE_NAME: String? = "download"
 
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.DownloadType;
-import org.andstatus.app.data.MyContentType;
+    /** See [DownloadType]  */
+    val DOWNLOAD_TYPE: String? = "download_type"
 
-/** Avatar, Note's attachment... */
-public final class DownloadTable implements BaseColumns {
-    public static final String TABLE_NAME = "download";
-    private DownloadTable() {
-    }
-    /** See {@link DownloadType} */
-    public static final String DOWNLOAD_TYPE = "download_type";
-    /** Index (e.g. of an attachment for a particular note) Starting from 0 */
-    public static final String DOWNLOAD_NUMBER = "download_number";
-    /** Avatar is connected to exactly one actor */
-    public static final String ACTOR_ID = ActorTable.ACTOR_ID;
-    /** Attachment is connected to a note */
-    public static final String NOTE_ID =  NoteTable.NOTE_ID;
-    /** See {@link MyContentType} */
-    public static final String CONTENT_TYPE = "content_type";
-    public static final String MEDIA_TYPE = "media_type";
-    public static final String URL = "url";
-    public static final String PREVIEW_OF_DOWNLOAD_ID = "preview_of_download_id";
+    /** Index (e.g. of an attachment for a particular note) Starting from 0  */
+    val DOWNLOAD_NUMBER: String? = "download_number"
+
+    /** Avatar is connected to exactly one actor  */
+    val ACTOR_ID: String? = ActorTable.ACTOR_ID
+
+    /** Attachment is connected to a note  */
+    val NOTE_ID: String? = NoteTable.NOTE_ID
+
+    /** See [MyContentType]  */
+    val CONTENT_TYPE: String? = "content_type"
+    val MEDIA_TYPE: String? = "media_type"
+    val URL: String? = "url"
+    val PREVIEW_OF_DOWNLOAD_ID: String? = "preview_of_download_id"
+
     /**
-     * See {@link DownloadStatus}. Defaults to {@link DownloadStatus#UNKNOWN}
+     * See [DownloadStatus]. Defaults to [DownloadStatus.UNKNOWN]
      */
-    public static final String DOWNLOAD_STATUS = "download_status";
-    public static final String WIDTH = "width";
-    public static final String HEIGHT = "height";
-    public static final String DURATION = "duration";
-    public static final String FILE_NAME = "file_name";
-    public static final String FILE_SIZE = "file_size";
-    public static final String DOWNLOADED_DATE = "downloaded_date";
-
+    val DOWNLOAD_STATUS: String? = "download_status"
+    val WIDTH: String? = "width"
+    val HEIGHT: String? = "height"
+    val DURATION: String? = "duration"
+    val FILE_NAME: String? = "file_name"
+    val FILE_SIZE: String? = "file_size"
+    val DOWNLOADED_DATE: String? = "downloaded_date"
     /*
      * Derived columns (they are not stored in this table but are result of joins)
      */
-    /** Alias for the primary key */
-    public static final String IMAGE_ID = "image_id";
+    /** Alias for the primary key  */
+    val IMAGE_ID: String? = "image_id"
+    val AVATAR_FILE_NAME: String? = "avatar_file_name"
 
-    public static final String AVATAR_FILE_NAME = "avatar_file_name";
-    /** Alias helping to show first attached image */
-    public static final String IMAGE_FILE_NAME = "image_file_name";
-    public static final String IMAGE_URI = "image_uri";
-
-    public static void create(SQLiteDatabase db) {
+    /** Alias helping to show first attached image  */
+    val IMAGE_FILE_NAME: String? = "image_file_name"
+    val IMAGE_URI: String? = "image_uri"
+    fun create(db: SQLiteDatabase?) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + DOWNLOAD_TYPE + " INTEGER NOT NULL,"
@@ -82,20 +82,17 @@ public final class DownloadTable implements BaseColumns {
                 + FILE_NAME + " TEXT,"
                 + FILE_SIZE + " INTEGER NOT NULL DEFAULT 0,"
                 + DOWNLOADED_DATE + " INTEGER NOT NULL DEFAULT 0"
-                + ")");
-
+                + ")")
         DbUtils.execSQL(db, "CREATE INDEX idx_download_actor ON " + TABLE_NAME + " ("
                 + ACTOR_ID + ", "
                 + DOWNLOAD_STATUS
-                + ")");
-
+                + ")")
         DbUtils.execSQL(db, "CREATE INDEX idx_download_note ON " + TABLE_NAME + " ("
                 + NOTE_ID + ", "
                 + DOWNLOAD_NUMBER
-                + ")");
-
+                + ")")
         DbUtils.execSQL(db, "CREATE INDEX idx_download_downloaded_date ON " + TABLE_NAME + " ("
                 + DOWNLOADED_DATE
-                + ")");
+                + ")")
     }
 }

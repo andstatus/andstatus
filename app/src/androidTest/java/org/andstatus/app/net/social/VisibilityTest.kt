@@ -13,39 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social
 
-package org.andstatus.app.net.social;
+import org.junit.Assert
+import org.junit.Test
 
-import org.junit.Test;
-
-import static org.andstatus.app.net.social.Visibility.NOT_PUBLIC_NEEDS_CLARIFICATION;
-import static org.andstatus.app.net.social.Visibility.PRIVATE;
-import static org.andstatus.app.net.social.Visibility.PUBLIC;
-import static org.andstatus.app.net.social.Visibility.PUBLIC_AND_TO_FOLLOWERS;
-import static org.andstatus.app.net.social.Visibility.TO_FOLLOWERS;
-import static org.andstatus.app.net.social.Visibility.UNKNOWN;
-import static org.junit.Assert.assertEquals;
-
-public class VisibilityTest {
-
+class VisibilityTest {
     @Test
-    public void testAddition() {
-        for (Visibility value : Visibility.values()) {
-            assertAdd(value, value, value);
-            assertAdd(PUBLIC_AND_TO_FOLLOWERS, PUBLIC_AND_TO_FOLLOWERS, value);
-            assertAdd(value, UNKNOWN, value);
-            if (value != UNKNOWN && value != NOT_PUBLIC_NEEDS_CLARIFICATION) {
-                assertAdd(value, value, PRIVATE);
-                assertAdd(value, value, NOT_PUBLIC_NEEDS_CLARIFICATION);
+    fun testAddition() {
+        for (value in Visibility.values()) {
+            assertAdd(value, value, value)
+            assertAdd(Visibility.PUBLIC_AND_TO_FOLLOWERS, Visibility.PUBLIC_AND_TO_FOLLOWERS, value)
+            assertAdd(value, Visibility.UNKNOWN, value)
+            if (value != Visibility.UNKNOWN && value != Visibility.NOT_PUBLIC_NEEDS_CLARIFICATION) {
+                assertAdd(value, value, Visibility.PRIVATE)
+                assertAdd(value, value, Visibility.NOT_PUBLIC_NEEDS_CLARIFICATION)
             }
         }
-        assertAdd(PUBLIC_AND_TO_FOLLOWERS, TO_FOLLOWERS, PUBLIC);
-        assertAdd(TO_FOLLOWERS, PRIVATE, TO_FOLLOWERS);
-        assertAdd(PUBLIC, PRIVATE, PUBLIC);
+        assertAdd(Visibility.PUBLIC_AND_TO_FOLLOWERS, Visibility.TO_FOLLOWERS, Visibility.PUBLIC)
+        assertAdd(Visibility.TO_FOLLOWERS, Visibility.PRIVATE, Visibility.TO_FOLLOWERS)
+        assertAdd(Visibility.PUBLIC, Visibility.PRIVATE, Visibility.PUBLIC)
     }
 
-    private void assertAdd(Visibility expected, Visibility a, Visibility b) {
-        assertEquals("Test: " + a + " add " + b, expected, a.add(b));
-        assertEquals("Test: " + b + " add " + a, expected, b.add(a));
+    private fun assertAdd(expected: Visibility?, a: Visibility?, b: Visibility?) {
+        Assert.assertEquals("Test: $a add $b", expected, a.add(b))
+        Assert.assertEquals("Test: $b add $a", expected, b.add(a))
     }
 }

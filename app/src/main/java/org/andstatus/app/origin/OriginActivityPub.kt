@@ -13,34 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.origin
 
-package org.andstatus.app.origin;
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
+import java.net.MalformedURLException
+import java.net.URL
 
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-
-class OriginActivityPub extends Origin {
-
-    OriginActivityPub(MyContext myContext, OriginType originType) {
-        super(myContext, originType);
-    }
-
-    @Override
-    public String getNotePermalink(long noteId) {
-        String noteUrl = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId);
+internal class OriginActivityPub(myContext: MyContext?, originType: OriginType?) : Origin(myContext, originType) {
+    override fun getNotePermalink(noteId: Long): String? {
+        val noteUrl = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId)
         if (!StringUtil.isEmpty(noteUrl)) {
             try {
-                return new URL(noteUrl).toExternalForm();
-            } catch (MalformedURLException e) {
-                MyLog.d(this, "Malformed URL from '" + noteUrl + "'", e);
+                return URL(noteUrl).toExternalForm()
+            } catch (e: MalformedURLException) {
+                MyLog.d(this, "Malformed URL from '$noteUrl'", e)
             }
         }
-        return "";
+        return ""
     }
 }

@@ -13,76 +13,66 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data.checker
 
-package org.andstatus.app.data.checker;
-
-import android.database.Cursor;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.SqlIds;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import android.database.Cursor
+import android.provider.BaseColumns
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.data.SqlIds
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.Function
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class CheckConversations extends DataChecker {
-    private Map<Long, NoteItem> items = new TreeMap<>();
-    private Map<Long, List<NoteItem>> replies = new TreeMap<>();
-    private Set<Long> noteIdsOfOneConversation = new HashSet<>();
+class CheckConversations : DataChecker() {
+    private val items: MutableMap<Long?, NoteItem?>? = TreeMap()
+    private val replies: MutableMap<Long?, MutableList<NoteItem?>?>? = TreeMap()
+    private val noteIdsOfOneConversation: MutableSet<Long?>? = HashSet()
 
-    private class NoteItem {
-        long id = 0;
-        long originId = 0;
-        long inReplyToId_initial = 0;
-        long inReplyToId = 0;
-        long conversationId_initial = 0;
-        long conversationId = 0;
-        String conversationOid = "";
-
-        boolean fixConversationId(long conversationId) {
-            final boolean different = this.conversationId != conversationId;
+    private inner class NoteItem {
+        var id: Long = 0
+        var originId: Long = 0
+        var inReplyToId_initial: Long = 0
+        var inReplyToId: Long = 0
+        var conversationId_initial: Long = 0
+        var conversationId: Long = 0
+        var conversationOid: String? = ""
+        fun fixConversationId(conversationId: Long): Boolean {
+            val different = this.conversationId != conversationId
             if (different) {
-                this.conversationId = conversationId;
+                this.conversationId = conversationId
             }
-            return different;
+            return different
         }
 
-        boolean fixInReplyToId(int inReplyToId) {
-            final boolean different = this.inReplyToId != inReplyToId;
+        fun fixInReplyToId(inReplyToId: Int): Boolean {
+            val different = this.inReplyToId != inReplyToId.toLong()
             if (different) {
-                this.inReplyToId = inReplyToId;
+                this.inReplyToId = inReplyToId.toLong()
             }
-            return different;
+            return different
         }
 
-        public boolean isChanged() {
-            return isConversationIdChanged() || isInReplyToIdChanged();
+        fun isChanged(): Boolean {
+            return isConversationIdChanged() || isInReplyToIdChanged()
         }
 
-        boolean isConversationIdChanged() {
-            return conversationId != conversationId_initial;
+        fun isConversationIdChanged(): Boolean {
+            return conversationId != conversationId_initial
         }
 
-        boolean isInReplyToIdChanged() {
-            return inReplyToId != inReplyToId_initial;
+        fun isInReplyToIdChanged(): Boolean {
+            return inReplyToId != inReplyToId_initial
         }
 
-        @Override
-        public String toString() {
+        override fun toString(): String {
             return "MsgItem{" +
                     "id=" + id +
                     ", originId=" + originId +
@@ -91,177 +81,168 @@ public class CheckConversations extends DataChecker {
                     ", conversationId_initial=" + conversationId_initial +
                     ", conversationId=" + conversationId +
                     ", conversationOid='" + conversationOid + '\'' +
-                    '}';
+                    '}'
         }
     }
 
-    public CheckConversations setNoteIdsOfOneConversation(@NonNull Set<Long> ids) {
-        noteIdsOfOneConversation.addAll(ids);
-        return  this;
+    fun setNoteIdsOfOneConversation(ids: MutableSet<Long?>): CheckConversations? {
+        noteIdsOfOneConversation.addAll(ids)
+        return this
     }
 
-    @Override
-    long fixInternal() {
-        loadNotes();
+    public override fun fixInternal(): Long {
+        loadNotes()
         if (noteIdsOfOneConversation.isEmpty()) {
-            fixConversationsUsingReplies();
-            fixConversationsUsingConversationOid();
+            fixConversationsUsingReplies()
+            fixConversationsUsingConversationOid()
         } else {
-            fixOneConversation();
+            fixOneConversation()
         }
-        return saveChanges(countOnly);
+        return saveChanges(countOnly)
     }
 
-    private void loadNotes() {
-        items.clear();
-        replies.clear();
-        String sql = "SELECT " + NoteTable._ID
+    private fun loadNotes() {
+        items.clear()
+        replies.clear()
+        var sql = ("SELECT " + BaseColumns._ID
                 + ", " + NoteTable.ORIGIN_ID
                 + ", " + NoteTable.IN_REPLY_TO_NOTE_ID
                 + ", " + NoteTable.CONVERSATION_ID
                 + ", " + NoteTable.CONVERSATION_OID
-                + " FROM " + NoteTable.TABLE_NAME
-                ;
-        if (noteIdsOfOneConversation.size() > 0) {
-            sql += " WHERE " + NoteTable.CONVERSATION_ID + " IN ("
+                + " FROM " + NoteTable.TABLE_NAME)
+        if (noteIdsOfOneConversation.size > 0) {
+            sql += (" WHERE " + NoteTable.CONVERSATION_ID + " IN ("
                     + "SELECT DISTINCT " + NoteTable.CONVERSATION_ID
                     + " FROM " + NoteTable.TABLE_NAME + " WHERE "
-                    + NoteTable._ID + SqlIds.fromIds(noteIdsOfOneConversation).getSql()
-            + ")";
+                    + BaseColumns._ID + SqlIds.Companion.fromIds(noteIdsOfOneConversation).getSql()
+                    + ")")
         }
-
-        Cursor cursor = null;
-        long rowsCount = 0;
+        var cursor: Cursor? = null
+        var rowsCount: Long = 0
         try {
-            cursor = myContext.getDatabase().rawQuery(sql, null);
+            cursor = myContext.database.rawQuery(sql, null)
             while (cursor.moveToNext()) {
-                rowsCount++;
-                NoteItem item = new NoteItem();
-                item.id = DbUtils.getLong(cursor, NoteTable._ID);
-                item.originId = DbUtils.getLong(cursor, NoteTable.ORIGIN_ID);
-                item.inReplyToId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
-                item.inReplyToId_initial = item.inReplyToId;
-                item.conversationId = DbUtils.getLong(cursor, NoteTable.CONVERSATION_ID);
-                item.conversationId_initial = item.conversationId;
-                item.conversationOid = DbUtils.getString(cursor, NoteTable.CONVERSATION_OID);
-                items.put(item.id, item);
-                if (item.inReplyToId != 0) {
-                    replies.computeIfAbsent(item.inReplyToId, k -> new ArrayList<>()).add(item);
+                rowsCount++
+                val item = NoteItem()
+                item.id = DbUtils.getLong(cursor, BaseColumns._ID)
+                item.originId = DbUtils.getLong(cursor, NoteTable.ORIGIN_ID)
+                item.inReplyToId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID)
+                item.inReplyToId_initial = item.inReplyToId
+                item.conversationId = DbUtils.getLong(cursor, NoteTable.CONVERSATION_ID)
+                item.conversationId_initial = item.conversationId
+                item.conversationOid = DbUtils.getString(cursor, NoteTable.CONVERSATION_OID)
+                items[item.id] = item
+                if (item.inReplyToId != 0L) {
+                    replies.computeIfAbsent(item.inReplyToId, Function<Long?, MutableList<NoteItem?>?> { k: Long? -> ArrayList() }).add(item)
                 }
             }
         } finally {
-            DbUtils.closeSilently(cursor);
+            closeSilently(cursor)
         }
-        logger.logProgress(Long.toString(rowsCount) + " notes loaded");
+        logger.logProgress(java.lang.Long.toString(rowsCount) + " notes loaded")
     }
 
-    private void fixConversationsUsingReplies() {
-        AtomicInteger counter = new AtomicInteger();
-        for (NoteItem item : items.values()) {
-            if (item.inReplyToId != 0) {
-                NoteItem parent = items.get(item.inReplyToId);
+    private fun fixConversationsUsingReplies() {
+        val counter = AtomicInteger()
+        for (item in items.values) {
+            if (item.inReplyToId != 0L) {
+                val parent = items.get(item.inReplyToId)
                 if (parent == null) {
-                    item.fixInReplyToId(0);
+                    item.fixInReplyToId(0)
                 } else {
-                    if (parent.conversationId == 0) {
-                        parent.fixConversationId(item.conversationId == 0 ? parent.id : item.conversationId);
+                    if (parent.conversationId == 0L) {
+                        parent.fixConversationId(if (item.conversationId == 0L) parent.id else item.conversationId)
                     }
                     if (item.fixConversationId(parent.conversationId)) {
-                        changeConversationOfReplies(item, 200);
+                        changeConversationOfReplies(item, 200)
                     }
                 }
             }
-            counter.incrementAndGet();
-            logger.logProgressIfLongProcess(() -> "Checked replies for " + counter.get() + " notes of " + items.size());
+            counter.incrementAndGet()
+            logger.logProgressIfLongProcess { "Checked replies for " + counter.get() + " notes of " + items.size }
         }
     }
 
-    private void fixConversationsUsingConversationOid() {
-        AtomicInteger counter = new AtomicInteger();
-        Map<Long, Map<String, NoteItem>> origins = new ConcurrentHashMap<>();
-        for (NoteItem item : items.values()) {
+    private fun fixConversationsUsingConversationOid() {
+        val counter = AtomicInteger()
+        val origins: MutableMap<Long?, MutableMap<String?, NoteItem?>?> = ConcurrentHashMap()
+        for (item in items.values) {
             if (!StringUtil.isEmpty(item.conversationOid)) {
-                Map<String, NoteItem> firstConversationMembers = origins.get(item.originId);
+                var firstConversationMembers = origins[item.originId]
                 if (firstConversationMembers == null) {
-                    firstConversationMembers = new ConcurrentHashMap<>();
-                    origins.put(item.originId, firstConversationMembers);
+                    firstConversationMembers = ConcurrentHashMap()
+                    origins[item.originId] = firstConversationMembers
                 }
-                NoteItem parent = firstConversationMembers.get(item.conversationOid);
+                val parent = firstConversationMembers[item.conversationOid]
                 if (parent == null) {
-                    item.fixConversationId(item.conversationId == 0 ? item.id : item.conversationId);
-                    firstConversationMembers.put(item.conversationOid, item);
+                    item.fixConversationId(if (item.conversationId == 0L) item.id else item.conversationId)
+                    firstConversationMembers[item.conversationOid] = item
                 } else {
                     if (item.fixConversationId(parent.conversationId)) {
-                        changeConversationOfReplies(item, 200);
+                        changeConversationOfReplies(item, 200)
                     }
                 }
             }
-            counter.incrementAndGet();
-            logger.logProgressIfLongProcess(() -> "Checked conversations for " + counter + " notes of " + items.size());
+            counter.incrementAndGet()
+            logger.logProgressIfLongProcess { "Checked conversations for " + counter + " notes of " + items.size }
         }
     }
 
-    private void changeConversationOfReplies(NoteItem parent, int level) {
-        List<NoteItem> replies1 = replies.get(parent.id);
-        if (replies1 == null) {
-            return;
-        }
-        for (NoteItem item : replies1) {
+    private fun changeConversationOfReplies(parent: NoteItem?, level: Int) {
+        val replies1 = replies.get(parent.id) ?: return
+        for (item in replies1) {
             if (item.fixConversationId(parent.conversationId)) {
                 if (level > 0) {
-                    changeConversationOfReplies(item, level - 1);
+                    changeConversationOfReplies(item, level - 1)
                 } else {
-                    logger.logProgress("Too long conversation, couldn't fix noteId=" + item.id);
+                    logger.logProgress("Too long conversation, couldn't fix noteId=" + item.id)
                 }
             }
         }
     }
 
-    private void fixOneConversation() {
-        long newConversationId = items.values().stream().map(noteItem -> noteItem.conversationId)
-                .min(Long::compareTo).orElse(0L);
-        if (newConversationId == 0) throw new IllegalStateException("Conversation ID=0, " + noteIdsOfOneConversation);
-        for (NoteItem item : items.values()) {
-            item.conversationId = newConversationId;
+    private fun fixOneConversation() {
+        val newConversationId = items.values.stream().map { noteItem: NoteItem? -> noteItem.conversationId }
+                .min { obj: Long?, anotherLong: Long? -> obj.compareTo(anotherLong) }.orElse(0L)
+        check(newConversationId != 0L) { "Conversation ID=0, $noteIdsOfOneConversation" }
+        for (item in items.values) {
+            item.conversationId = newConversationId
         }
     }
 
-    private int saveChanges(boolean countOnly) {
-        AtomicInteger counter = new AtomicInteger();
-        for (NoteItem item : items.values()) {
+    private fun saveChanges(countOnly: Boolean): Int {
+        val counter = AtomicInteger()
+        for (item in items.values) {
             if (item.isChanged()) {
-                String sql = "";
+                var sql = ""
                 try {
                     if (counter.get() < 5 && MyLog.isVerboseEnabled()) {
                         MyLog.v(this, "noteId=" + item.id + "; "
-                            + (item.isInReplyToIdChanged() ? "inReplyToId changed from "
-                                + item.inReplyToId_initial + " to " + item.inReplyToId : "")
-                            + (item.isInReplyToIdChanged() && item.isConversationIdChanged() ? " and " : "")
-                            + (item.isConversationIdChanged() ? "conversationId changed from "
-                                + item.conversationId_initial + " to " + item.conversationId : "")
-                            + ", Content:'" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, item.id) + "'");
+                                + (if (item.isInReplyToIdChanged()) "inReplyToId changed from "
+                                + item.inReplyToId_initial + " to " + item.inReplyToId else "")
+                                + (if (item.isInReplyToIdChanged() && item.isConversationIdChanged()) " and " else "")
+                                + (if (item.isConversationIdChanged()) "conversationId changed from "
+                                + item.conversationId_initial + " to " + item.conversationId else "")
+                                + ", Content:'" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, item.id) + "'")
                     }
                     if (!countOnly) {
-                        sql = "UPDATE " + NoteTable.TABLE_NAME
+                        sql = ("UPDATE " + NoteTable.TABLE_NAME
                                 + " SET "
-                                + (item.isInReplyToIdChanged() ?
-                                    NoteTable.IN_REPLY_TO_NOTE_ID + "=" + DbUtils.sqlZeroToNull(item.inReplyToId) : "")
-                                + (item.isInReplyToIdChanged() && item.isConversationIdChanged() ? ", " : "")
-                                + (item.isConversationIdChanged() ?
-                                    NoteTable.CONVERSATION_ID + "=" + DbUtils.sqlZeroToNull(item.conversationId) : "")
-                                + " WHERE " + NoteTable._ID + "=" + item.id;
-                        myContext.getDatabase().execSQL(sql);
+                                + (if (item.isInReplyToIdChanged()) NoteTable.IN_REPLY_TO_NOTE_ID + "=" + DbUtils.sqlZeroToNull(item.inReplyToId) else "")
+                                + (if (item.isInReplyToIdChanged() && item.isConversationIdChanged()) ", " else "")
+                                + (if (item.isConversationIdChanged()) NoteTable.CONVERSATION_ID + "=" + DbUtils.sqlZeroToNull(item.conversationId) else "")
+                                + " WHERE " + BaseColumns._ID + "=" + item.id)
+                        myContext.database.execSQL(sql)
                     }
-                    counter.incrementAndGet();
-                    logger.logProgressIfLongProcess(() -> "Saved changes for " + counter + " notes");
-                } catch (Exception e) {
-                    String logMsg = "Error: " + e.getMessage() + ", SQL:" + sql;
-                    logger.logProgress(logMsg);
-                    MyLog.e(this, logMsg, e);
+                    counter.incrementAndGet()
+                    logger.logProgressIfLongProcess { "Saved changes for $counter notes" }
+                } catch (e: Exception) {
+                    val logMsg = "Error: " + e.message + ", SQL:" + sql
+                    logger.logProgress(logMsg)
+                    MyLog.e(this, logMsg, e)
                 }
             }
         }
-        return counter.get();
+        return counter.get()
     }
-
 }

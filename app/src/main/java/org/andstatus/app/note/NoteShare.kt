@@ -13,136 +13,116 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import org.andstatus.app.R
+import org.andstatus.app.context.ActorInTimeline
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.FileProvider
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.util.I18n
+import org.andstatus.app.util.MyHtml
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.UriUtils
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-
-import org.andstatus.app.R;
-import org.andstatus.app.context.ActorInTimeline;
-import org.andstatus.app.data.DownloadData;
-import org.andstatus.app.data.FileProvider;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyHtml;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.UriUtils;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class NoteShare {
-    private final Origin origin;
-    private final long noteId;
-    private final NoteDownloads downloads;
-    
-    public NoteShare(Origin origin, long noteId, NoteDownloads downloads) {
-        this.origin = origin;
-        this.noteId = noteId;
-        this.downloads = downloads;
-        if (origin == null) {
-            MyLog.v(this, () -> "Origin not found for noteId=" + noteId);
-        }
-    }
-
-    public void viewImage(Activity activity) {
+class NoteShare(private val origin: Origin?, private val noteId: Long, private val downloads: NoteDownloads?) {
+    fun viewImage(activity: Activity?) {
         if (downloads.nonEmpty()) {
-            activity.startActivity(intentToViewAndShare(false));
+            activity.startActivity(intentToViewAndShare(false))
         }
     }
 
     /**
      * @return true if succeeded
      */
-    public boolean share(Context context) {
+    fun share(context: Context?): Boolean {
         if (origin == null) {
-            return false;
+            return false
         }
         context.startActivity(
                 Intent.createChooser(intentToViewAndShare(true),
-                        context.getText(R.string.menu_item_share)));
-        return true;
+                        context.getText(R.string.menu_item_share)))
+        return true
     }
 
-    Intent intentToViewAndShare(boolean share) {
-        String noteName = MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId);
-        String noteSummary = MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, noteId);
-        String noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId);
-
-        CharSequence subjectString = noteName;
+    fun intentToViewAndShare(share: Boolean): Intent? {
+        val noteName = MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId)
+        val noteSummary = MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, noteId)
+        val noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId)
+        var subjectString: CharSequence = noteName
         if (StringUtil.nonEmpty(noteSummary)) {
-            subjectString = subjectString + (StringUtil.nonEmpty(subjectString) ? ". " : "") + noteSummary;
+            subjectString = subjectString.toString() + (if (StringUtil.nonEmpty(subjectString)) ". " else "") + noteSummary
         }
         if (StringUtil.isEmpty(subjectString)) {
-            subjectString = I18n.trimTextAt(MyHtml.htmlToCompactPlainText(noteContent), 80);
+            subjectString = I18n.trimTextAt(MyHtml.htmlToCompactPlainText(noteContent), 80)
         }
-        subjectString =
-                (MyQuery.isSensitive(noteId)
-                        ? "(" + myContextHolder.getNow().context().getText(R.string.sensitive) + ") "
-                        : "") +
-                myContextHolder.getNow().context().getText(origin.alternativeTermForResourceId(R.string.message)) +
-                " - " + subjectString;
-
-        Intent intent = new Intent(share ? android.content.Intent.ACTION_SEND : Intent.ACTION_VIEW);
-        DownloadData downloadData = downloads.getFirstToShare();
-        final Uri mediaFileUri = downloadData.getFile().existsNow()
-                ? FileProvider.downloadFilenameToUri(downloadData.getFilename())
-                : downloadData.getUri();
+        subjectString = (if (MyQuery.isSensitive(noteId)) "(" + MyContextHolder.Companion.myContextHolder.getNow().context().getText(R.string.sensitive) + ") " else "") +
+                MyContextHolder.Companion.myContextHolder.getNow().context().getText(origin.alternativeTermForResourceId(R.string.message)) +
+                " - " + subjectString
+        val intent = Intent(if (share) Intent.ACTION_SEND else Intent.ACTION_VIEW)
+        val downloadData = downloads.getFirstToShare()
+        val mediaFileUri = if (downloadData.file.existsNow()) FileProvider.Companion.downloadFilenameToUri(downloadData.filename) else downloadData.uri
         if (share || UriUtils.isEmpty(mediaFileUri)) {
-            intent.setType("text/*");
+            intent.type = "text/*"
         } else {
-            intent.setDataAndType(mediaFileUri, downloadData.getMimeType());
+            intent.setDataAndType(mediaFileUri, downloadData.mimeType)
         }
         if (UriUtils.nonEmpty(mediaFileUri)) {
-            intent.putExtra(Intent.EXTRA_STREAM, mediaFileUri);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.putExtra(Intent.EXTRA_STREAM, mediaFileUri)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
-        intent.putExtra(Intent.EXTRA_SUBJECT, subjectString);
-        intent.putExtra(Intent.EXTRA_TEXT, buildBody(origin, MyHtml.htmlToPlainText(noteContent), false));
-        intent.putExtra(Intent.EXTRA_HTML_TEXT, buildBody(origin, noteContent, true));
-        return intent;
+        intent.putExtra(Intent.EXTRA_SUBJECT, subjectString)
+        intent.putExtra(Intent.EXTRA_TEXT, buildBody(origin, MyHtml.htmlToPlainText(noteContent), false))
+        intent.putExtra(Intent.EXTRA_HTML_TEXT, buildBody(origin, noteContent, true))
+        return intent
     }
 
-    private static String SIGNATURE_FORMAT_HTML = "<p>-- <br />\n%s<br />\nURL: %s</p>";
-    private static String SIGNATURE_PLAIN_TEXT = "\n-- \n%s\n URL: %s";
-
-    private String buildBody(Origin origin, String noteContent, boolean isHtml) {
-        return new StringBuilder()
+    private fun buildBody(origin: Origin?, noteContent: String?, isHtml: Boolean): String? {
+        return StringBuilder()
                 .append(noteContent)
                 .append(
                         StringUtil.format(
-                                isHtml ? SIGNATURE_FORMAT_HTML
-                                        : SIGNATURE_PLAIN_TEXT,
+                                if (isHtml) SIGNATURE_FORMAT_HTML else SIGNATURE_PLAIN_TEXT,
                                 MyQuery.noteIdToUsername(
                                         NoteTable.AUTHOR_ID,
                                         noteId,
-                                        origin.isMentionAsWebFingerId() ? ActorInTimeline.WEBFINGER_ID
-                                                : ActorInTimeline.USERNAME),
+                                        if (origin.isMentionAsWebFingerId()) ActorInTimeline.WEBFINGER_ID else ActorInTimeline.USERNAME),
                                 origin.getNotePermalink(noteId)
-                                )).toString();
+                        )).toString()
     }
 
     /**
      * @return true if succeeded
      */
-    public boolean openPermalink(Context context) {
-        return origin == null ? false : openLink(context, origin.getNotePermalink(noteId));
+    fun openPermalink(context: Context?): Boolean {
+        return if (origin == null) false else openLink(context, origin.getNotePermalink(noteId))
     }
 
-    public static boolean openLink(Context context, String urlString) {
-        if (StringUtil.isEmpty(urlString)) {
-            return false;
-        } else {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse(urlString));
-            context.startActivity(intent);
-            return true;
+    companion object {
+        private val SIGNATURE_FORMAT_HTML: String? = "<p>-- <br />\n%s<br />\nURL: %s</p>"
+        private val SIGNATURE_PLAIN_TEXT: String? = "\n-- \n%s\n URL: %s"
+        fun openLink(context: Context?, urlString: String?): Boolean {
+            return if (StringUtil.isEmpty(urlString)) {
+                false
+            } else {
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse(urlString)
+                context.startActivity(intent)
+                true
+            }
         }
     }
 
+    init {
+        if (origin == null) {
+            MyLog.v(this) { "Origin not found for noteId=$noteId" }
+        }
+    }
 }

@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.lang
 
-package org.andstatus.app.lang;
+import android.content.Context
 
-import android.content.Context;
-
-public interface SelectableEnum {
-    boolean isSelectable();
-    String getCode();
-    CharSequence title(Context context);
-    int getDialogTitleResId();
+interface SelectableEnum {
+    open fun isSelectable(): Boolean
+    open fun getCode(): String?
+    open fun title(context: Context?): CharSequence?
+    open fun getDialogTitleResId(): Int
 }

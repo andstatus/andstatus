@@ -13,383 +13,353 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.context
 
-package org.andstatus.app.context;
+import android.app.ProgressDialog
+import android.content.Context
+import android.widget.Toast
+import net.jcip.annotations.GuardedBy
+import org.andstatus.app.ActivityRequestCode
+import org.andstatus.app.R
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.database.DatabaseHolder
+import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.service.MyServiceState
+import org.andstatus.app.util.DialogFactory
+import org.andstatus.app.util.FileUtils
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TriState
+import java.io.File
+import java.util.function.Supplier
 
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-
-import net.jcip.annotations.GuardedBy;
-
-import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.R;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.DatabaseHolder;
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.service.MyServiceState;
-import org.andstatus.app.util.DialogFactory;
-import org.andstatus.app.util.FileUtils;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
-
-import java.io.File;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class StorageSwitch {
-
-    static final Object MOVE_LOCK = new Object();
-    /**
-     * This semaphore helps to avoid ripple effect: changes in MyAccount cause
-     * changes in this activity ...
-     */
-    @GuardedBy("moveLock")
-    private static volatile boolean mDataBeingMoved = false;
-
-    private final MySettingsFragment parentFragment;
-    private final Context mContext;
-    private boolean mUseExternalStorageNew = false;
-
-    public StorageSwitch(MySettingsFragment myPreferenceFragment) {
-        this.parentFragment = myPreferenceFragment;
-        this.mContext = myPreferenceFragment.getActivity();
-    }
-
-    public void showSwitchStorageDialog(final ActivityRequestCode requestCode, boolean useExternalStorageNew) {
-        this.mUseExternalStorageNew = useExternalStorageNew;
+class StorageSwitch(private val parentFragment: MySettingsFragment?) {
+    private val mContext: Context?
+    private var mUseExternalStorageNew = false
+    fun showSwitchStorageDialog(requestCode: ActivityRequestCode?, useExternalStorageNew: Boolean) {
+        mUseExternalStorageNew = useExternalStorageNew
         DialogFactory.showOkCancelDialog(parentFragment, R.string.dialog_title_external_storage,
-                useExternalStorageNew ? R.string.summary_preference_storage_external_on
-                        : R.string.summary_preference_storage_external_off, 
-                        requestCode);
-    }
-    
-    void move() {
-        MyServiceManager.setServiceUnavailable();
-        AsyncTaskLauncher.execute(this, new MoveDataBetweenStoragesTask());
+                if (useExternalStorageNew) R.string.summary_preference_storage_external_on else R.string.summary_preference_storage_external_off,
+                requestCode)
     }
 
-    private boolean checkAndSetDataBeingMoved() {
-        synchronized (MOVE_LOCK) {
+    fun move() {
+        MyServiceManager.Companion.setServiceUnavailable()
+        AsyncTaskLauncher.Companion.execute(this, MoveDataBetweenStoragesTask())
+    }
+
+    private fun checkAndSetDataBeingMoved(): Boolean {
+        synchronized(MOVE_LOCK) {
             if (mDataBeingMoved) {
-                return false;
+                return false
             }
-            mDataBeingMoved = true;
-            return true;
+            mDataBeingMoved = true
+            return true
         }
     }
 
-    boolean isDataBeingMoved() {
-        synchronized (MOVE_LOCK) {
-            return mDataBeingMoved;
-        }
+    fun isDataBeingMoved(): Boolean {
+        synchronized(MOVE_LOCK) { return mDataBeingMoved }
     }
 
-    private static class TaskResult {
-        boolean success = false;
-        boolean moved = false;
-        StringBuilder messageBuilder = new StringBuilder();
-        
-        String getMessage() {
-            return messageBuilder.toString();
+    private class TaskResult {
+        var success = false
+        var moved = false
+        var messageBuilder: StringBuilder? = StringBuilder()
+        fun getMessage(): String? {
+            return messageBuilder.toString()
         }
     }
 
     /**
      * Move Data to/from External Storage
-     * 
+     *
      * @author yvolk@yurivolkov.com
      */
-    private class MoveDataBetweenStoragesTask extends MyAsyncTask<Void, Void, TaskResult> {
-        private ProgressDialog dlg;
-
-        public MoveDataBetweenStoragesTask() {
-            super(PoolEnum.LONG_UI);
-        }
-
-        @Override
-        protected void onPreExecute() {
+    private inner class MoveDataBetweenStoragesTask : MyAsyncTask<Void?, Void?, TaskResult?>(PoolEnum.LONG_UI) {
+        private var dlg: ProgressDialog? = null
+        override fun onPreExecute() {
             // indeterminate duration, not cancelable
             dlg = ProgressDialog.show(mContext,
                     mContext.getText(R.string.dialog_title_external_storage),
                     mContext.getText(R.string.dialog_summary_external_storage),
                     true,
-                    false);
+                    false)
         }
 
-        @Override
-        protected TaskResult doInBackground2(Void aVoid) {
-            TaskResult result = new TaskResult();
-            myContextHolder.getBlocking();
-            MyServiceManager.stopService();
-            for (int i=0; i<4; i++) {
-                if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) break;
-                DbUtils.waitMs(this, 500);
+        override fun doInBackground2(aVoid: Void?): TaskResult? {
+            val result = TaskResult()
+            MyContextHolder.Companion.myContextHolder.getBlocking()
+            MyServiceManager.Companion.stopService()
+            for (i in 0..3) {
+                if (MyServiceManager.Companion.getServiceState() == MyServiceState.STOPPED) break
+                DbUtils.waitMs(this, 500)
             }
-            if (MyServiceManager.getServiceState() != MyServiceState.STOPPED) {
-                result.messageBuilder.append(mContext.getText(R.string.system_is_busy_try_later));
-                return result;
+            if (MyServiceManager.Companion.getServiceState() != MyServiceState.STOPPED) {
+                result.messageBuilder.append(mContext.getText(R.string.system_is_busy_try_later))
+                return result
             }
-
             if (!checkAndSetDataBeingMoved()) {
-                return result;
+                return result
             }
             try {
-                moveAll(result);
+                moveAll(result)
             } finally {
-                synchronized (MOVE_LOCK) {
-                    mDataBeingMoved = false;
-                }
+                synchronized(MOVE_LOCK) { mDataBeingMoved = false }
             }
-            result.messageBuilder.insert(0, " Move " + strSucceeded(result.success));
-            MyLog.v(this, result::getMessage);
-            return result;
+            result.messageBuilder.insert(0, " Move " + strSucceeded(result.success))
+            MyLog.v(this) { result.getMessage() }
+            return result
         }
 
-        private void moveAll(TaskResult result) {
-            boolean useExternalStorageOld = MyStorage.isStorageExternal();
+        private fun moveAll(result: TaskResult?) {
+            val useExternalStorageOld = MyStorage.isStorageExternal()
             if (mUseExternalStorageNew
                     && !MyStorage.isWritableExternalStorageAvailable(result.messageBuilder)) {
-                mUseExternalStorageNew = false;
+                mUseExternalStorageNew = false
             }
-
             MyLog.d(this, "About to move data from " + useExternalStorageOld + " to "
-                    + mUseExternalStorageNew);
-
+                    + mUseExternalStorageNew)
             if (mUseExternalStorageNew == useExternalStorageOld) {
-                result.messageBuilder.append(" Nothing to do.");
-                result.success = true;
-                return;
+                result.messageBuilder.append(" Nothing to do.")
+                result.success = true
+                return
             }
             try {
-                result.success = moveDatabase(mUseExternalStorageNew, result.messageBuilder, DatabaseHolder.DATABASE_NAME);
+                result.success = moveDatabase(mUseExternalStorageNew, result.messageBuilder, DatabaseHolder.Companion.DATABASE_NAME)
                 if (result.success) {
-                    result.moved = true;
-                    moveFolder(mUseExternalStorageNew, result.messageBuilder, MyStorage.DIRECTORY_DOWNLOADS);
-                    moveFolder(mUseExternalStorageNew, result.messageBuilder, MyStorage.DIRECTORY_LOGS);
+                    result.moved = true
+                    moveFolder(mUseExternalStorageNew, result.messageBuilder, MyStorage.DIRECTORY_DOWNLOADS)
+                    moveFolder(mUseExternalStorageNew, result.messageBuilder, MyStorage.DIRECTORY_LOGS)
                 }
             } finally {
                 if (result.success) {
-                    saveNewSettings(mUseExternalStorageNew, result.messageBuilder);
+                    saveNewSettings(mUseExternalStorageNew, result.messageBuilder)
                 }
             }
         }
 
-        private boolean moveDatabase(boolean useExternalStorageNew, StringBuilder messageToAppend, String databaseName) {
-            final String method = "moveDatabase";
-            boolean succeeded = false;
-            boolean done = false;
+        private fun moveDatabase(useExternalStorageNew: Boolean, messageToAppend: StringBuilder?, databaseName: String?): Boolean {
+            val method = "moveDatabase"
+            var succeeded = false
+            var done = false
+
             /**
              * Did we actually copied database?
              */
-            boolean copied = false;
-            File dbFileOld = null;
-            File dbFileNew = null;
+            var copied = false
+            var dbFileOld: File? = null
+            var dbFileNew: File? = null
             try {
-                dbFileOld = myContextHolder.getNow().baseContext().getDatabasePath(
-                        databaseName);
+                dbFileOld = MyContextHolder.Companion.myContextHolder.getNow().baseContext().getDatabasePath(
+                        databaseName)
                 dbFileNew = MyStorage.getDatabasePath(
-                        databaseName, TriState.fromBoolean(useExternalStorageNew));
+                        databaseName, TriState.Companion.fromBoolean(useExternalStorageNew))
                 if (dbFileOld == null) {
-                    messageToAppend.append(" No old database " + databaseName);
-                    done = true;
+                    messageToAppend.append(" No old database $databaseName")
+                    done = true
                 }
                 if (!done) {
                     if (dbFileNew == null) {
-                        messageToAppend.append(" No new database " + databaseName);
-                        done = true;
+                        messageToAppend.append(" No new database $databaseName")
+                        done = true
                     } else {
                         if (!dbFileOld.exists()) {
-                            messageToAppend.append(" No old database " + databaseName);
-                            done = true;
-                            succeeded = true;
+                            messageToAppend.append(" No old database $databaseName")
+                            done = true
+                            succeeded = true
                         } else if (dbFileNew.exists()) {
-                            messageToAppend.insert(0, " Database already exists " + databaseName);
+                            messageToAppend.insert(0, " Database already exists $databaseName")
                             if (!dbFileNew.delete()) {
                                 messageToAppend
-                                        .insert(0, " Couldn't delete already existed files. ");
-                                done = true;
+                                        .insert(0, " Couldn't delete already existed files. ")
+                                done = true
                             }
                         }
                     }
                 }
                 if (!done) {
                     if (MyLog.isVerboseEnabled()) {
-                        MyLog.v(this, method + " from: " + dbFileOld.getPath());
-                        MyLog.v(this, method + " to: " + dbFileNew.getPath());
+                        MyLog.v(this, method + " from: " + dbFileOld.path)
+                        MyLog.v(this, method + " to: " + dbFileNew.path)
                     }
                     try {
-                        myContextHolder.release(() -> "moveDatabase");
+                        MyContextHolder.Companion.myContextHolder.release(Supplier { "moveDatabase" })
                         if (FileUtils.copyFile(this, dbFileOld, dbFileNew)) {
-                            copied = true;
-                            succeeded = true;
+                            copied = true
+                            succeeded = true
                         }
-                    } catch (Exception e) {
-                        MyLog.v(this, "Copy database " + databaseName, e);
+                    } catch (e: Exception) {
+                        MyLog.v(this, "Copy database $databaseName", e)
                         messageToAppend.insert(0, " Couldn't copy database "
-                                + databaseName + ": " + getErrorInfo(e) + ". ");
+                                + databaseName + ": " + getErrorInfo(e) + ". ")
                     }
                 }
-            } catch (Exception e) {
-                MyLog.v(this, e);
-                messageToAppend.append(method + " error: " + getErrorInfo(e) + ". ");
-                succeeded = false;
+            } catch (e: Exception) {
+                MyLog.v(this, e)
+                messageToAppend.append(method + " error: " + getErrorInfo(e) + ". ")
+                succeeded = false
             } finally {
                 // Delete unnecessary files
                 try {
                     if (succeeded) {
-                        if ( copied && dbFileOld != null
-                                && dbFileOld.exists()
+                        if (copied && dbFileOld != null && dbFileOld.exists()
                                 && !dbFileOld.delete()) {
-                            messageToAppend.append(method + " couldn't delete old files. ");
+                            messageToAppend.append("$method couldn't delete old files. ")
                         }
                     } else {
-                        if (dbFileNew != null
-                                && dbFileNew.exists()
+                        if (dbFileNew != null && dbFileNew.exists()
                                 && !dbFileNew.delete()) {
-                            messageToAppend.append(method + " couldn't delete new files. ");
+                            messageToAppend.append("$method couldn't delete new files. ")
                         }
                     }
-                } catch (Exception e) {
-                    MyLog.v(this, method + " Delete old file", e);
+                } catch (e: Exception) {
+                    MyLog.v(this, "$method Delete old file", e)
                     messageToAppend.append(method + " couldn't delete old files. " + getErrorInfo(e)
-                            + ". ");
+                            + ". ")
                 }
             }
-            MyLog.d(this, method + "; " + databaseName + " " + strSucceeded(succeeded));
-            return succeeded;
+            MyLog.d(this, method + "; " + databaseName + " " + strSucceeded(succeeded))
+            return succeeded
         }
 
-        private void moveFolder(boolean useExternalStorageNew, StringBuilder messageToAppend, String folderType) {
-            String method = "moveFolder " + folderType;
-            boolean succeeded = false;
-            boolean done = false;
-            boolean didWeCopyAnything = false;
-            File dirOld = null;
-            File dirNew = null;
+        private fun moveFolder(useExternalStorageNew: Boolean, messageToAppend: StringBuilder?, folderType: String?) {
+            val method = "moveFolder $folderType"
+            var succeeded = false
+            var done = false
+            var didWeCopyAnything = false
+            var dirOld: File? = null
+            var dirNew: File? = null
             try {
-
                 if (!done) {
-                    dirOld = MyStorage.getDataFilesDir(folderType);
+                    dirOld = MyStorage.getDataFilesDir(folderType)
                     dirNew = MyStorage.getDataFilesDir(folderType,
-                            TriState.fromBoolean(useExternalStorageNew));
+                            TriState.Companion.fromBoolean(useExternalStorageNew))
                     if (dirOld == null || !dirOld.exists()) {
-                        messageToAppend.append(" No old folder. ");
-                        done = true;
-                        succeeded = true;
+                        messageToAppend.append(" No old folder. ")
+                        done = true
+                        succeeded = true
                     }
                     if (dirNew == null) {
-                        messageToAppend.append(" No new folder?! ");
-                        done = true;
+                        messageToAppend.append(" No new folder?! ")
+                        done = true
                     }
                 }
                 if (!done) {
                     if (MyLog.isVerboseEnabled()) {
-                        MyLog.v(this, method + " from: " + dirOld.getPath());
-                        MyLog.v(this, method + " to: " + dirNew.getPath());
+                        MyLog.v(this, method + " from: " + dirOld.getPath())
+                        MyLog.v(this, method + " to: " + dirNew.getPath())
                     }
-                    String filename = "";
+                    var filename = ""
                     try {
-                        for (File fileOld : dirOld.listFiles()) {
-                            if (fileOld.isFile()) {
-                                filename = fileOld.getName();
-                                File fileNew = new File(dirNew, filename);
+                        for (fileOld in dirOld.listFiles()) {
+                            if (fileOld.isFile) {
+                                filename = fileOld.name
+                                val fileNew = File(dirNew, filename)
                                 if (FileUtils.copyFile(this, fileOld, fileNew)) {
-                                    didWeCopyAnything = true;
+                                    didWeCopyAnything = true
                                 }
                             }
                         }
-                        succeeded = true;
-                    } catch (Exception e) {
-                        String logMsg = method + " couldn't copy'" + filename + "'";
-                        MyLog.v(this, logMsg, e);
-                        messageToAppend.insert(0, " " + logMsg + ": " + e.getMessage());
+                        succeeded = true
+                    } catch (e: Exception) {
+                        val logMsg = "$method couldn't copy'$filename'"
+                        MyLog.v(this, logMsg, e)
+                        messageToAppend.insert(0, " " + logMsg + ": " + e.message)
                     }
-                    done = true;
+                    done = true
                 }
-            } catch (Exception e) {
-                MyLog.v(this, e);
-                messageToAppend.append(method + " error: " + getErrorInfo(e) + ". ");
-                succeeded = false;
+            } catch (e: Exception) {
+                MyLog.v(this, e)
+                messageToAppend.append(method + " error: " + getErrorInfo(e) + ". ")
+                succeeded = false
             } finally {
                 // Delete unnecessary files
                 try {
                     if (succeeded) {
                         if (didWeCopyAnything) {
-                            for (File fileOld : dirOld.listFiles()) {
-                                if (fileOld.isFile() && !fileOld.delete()) {
+                            for (fileOld in dirOld.listFiles()) {
+                                if (fileOld.isFile && !fileOld.delete()) {
                                     messageToAppend.append(method + " couldn't delete old file "
-                                            + fileOld.getName());
+                                            + fileOld.name)
                                 }
                             }
                         }
                     } else {
                         if (dirNew != null && dirNew.exists()) {
-                            for (File fileNew : dirNew.listFiles()) {
-                                if (fileNew.isFile() && !fileNew.delete()) {
+                            for (fileNew in dirNew.listFiles()) {
+                                if (fileNew.isFile && !fileNew.delete()) {
                                     messageToAppend.append(method + " couldn't delete new file "
-                                            + fileNew.getName());
+                                            + fileNew.name)
                                 }
                             }
                         }
                     }
-                } catch (Exception e) {
-                    String logMsg = method + " deleting unnecessary files";
-                    MyLog.v(this, logMsg, e);
-                    messageToAppend.append(logMsg + ": " + getErrorInfo(e));
+                } catch (e: Exception) {
+                    val logMsg = "$method deleting unnecessary files"
+                    MyLog.v(this, logMsg, e)
+                    messageToAppend.append(logMsg + ": " + getErrorInfo(e))
                 }
             }
-            MyLog.d(this, method + " " + strSucceeded(succeeded));
+            MyLog.d(this, method + " " + strSucceeded(succeeded))
         }
 
-        private void saveNewSettings(boolean useExternalStorageNew, StringBuilder messageToAppend) {
+        private fun saveNewSettings(useExternalStorageNew: Boolean, messageToAppend: StringBuilder?) {
             try {
-                SharedPreferencesUtil.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, useExternalStorageNew);
-                MyPreferences.onPreferencesChanged();
-            } catch (Exception e) {
-                MyLog.v(this, "Save new settings", e);
-                messageToAppend.append("Couldn't save new settings. " + getErrorInfo(e));
+                SharedPreferencesUtil.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, useExternalStorageNew)
+                MyPreferences.onPreferencesChanged()
+            } catch (e: Exception) {
+                MyLog.v(this, "Save new settings", e)
+                messageToAppend.append("Couldn't save new settings. " + getErrorInfo(e))
             }
         }
-        
+
         // This is in the UI thread, so we can mess with the UI
-        @Override
-        protected void onFinish(TaskResult result, boolean success) {
-            DialogFactory.dismissSafely(dlg);
+        override fun onFinish(result: TaskResult?, success: Boolean) {
+            DialogFactory.dismissSafely(dlg)
             if (result == null) {
-                MyLog.w(this, "Result is Null");
-                Toast.makeText(mContext, mContext.getString(R.string.error), Toast.LENGTH_LONG).show();
-                return;
+                MyLog.w(this, "Result is Null")
+                Toast.makeText(mContext, mContext.getString(R.string.error), Toast.LENGTH_LONG).show()
+                return
             }
-            MyLog.d(this, this.getClass().getSimpleName() + " ended, "
-                    + (result.success ? (result.moved ? "moved" : "didn't move") : "failed"));
-
+            MyLog.d(this, this.javaClass.simpleName + " ended, "
+                    + if (result.success) if (result.moved) "moved" else "didn't move" else "failed")
             if (!result.success) {
-                result.messageBuilder.insert(0, mContext.getString(R.string.error) + ": ");
+                result.messageBuilder.insert(0, mContext.getString(R.string.error) + ": ")
             }
-            Toast.makeText(mContext, result.getMessage(), Toast.LENGTH_LONG).show();
-            parentFragment.showUseExternalStorage();
+            Toast.makeText(mContext, result.getMessage(), Toast.LENGTH_LONG).show()
+            parentFragment.showUseExternalStorage()
         }
 
-        @Override
-        protected void onCancelled2(TaskResult result) {
-            DialogFactory.dismissSafely(dlg);
+        override fun onCancelled2(result: TaskResult?) {
+            DialogFactory.dismissSafely(dlg)
         }
     }
 
-    static String getErrorInfo(Throwable e) {
-        return StringUtil.notEmpty(e.getMessage(), "(no error message)")
-                + " (" + e.getClass().getCanonicalName() + ")";
+    companion object {
+        val MOVE_LOCK: Any? = Any()
+
+        /**
+         * This semaphore helps to avoid ripple effect: changes in MyAccount cause
+         * changes in this activity ...
+         */
+        @GuardedBy("moveLock")
+        @Volatile
+        private var mDataBeingMoved = false
+        fun getErrorInfo(e: Throwable?): String? {
+            return (StringUtil.notEmpty(e.message, "(no error message)")
+                    + " (" + e.javaClass.canonicalName + ")")
+        }
+
+        private fun strSucceeded(succeeded: Boolean): String {
+            return if (succeeded) "succeeded" else "failed"
+        }
     }
 
-    @NonNull
-    private static String strSucceeded(boolean succeeded) {
-        return succeeded ? "succeeded" : "failed";
+    init {
+        mContext = parentFragment.getActivity()
     }
 }

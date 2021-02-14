@@ -13,111 +13,98 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.InstanceId
+import org.andstatus.app.util.IsEmpty
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import java.util.*
+import java.util.concurrent.atomic.AtomicReference
 
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.util.IdentifiableInstance;
-import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicReference;
-
-class NoteEditorLock implements IsEmpty, IdentifiableInstance {
-    private static final String TAG = NoteEditorLock.class.getSimpleName();
-    static final NoteEditorLock EMPTY = new NoteEditorLock(false, 0);
-    static final AtomicReference<NoteEditorLock> lock = new AtomicReference<>(NoteEditorLock.EMPTY);
-
-    protected final long instanceId = InstanceId.next();
-    final boolean isSave;
-    final long noteId;
-    long startedAt;
-
-    NoteEditorLock(boolean isSave, long noteId) {
-        this.isSave = isSave;
-        this.noteId = noteId;
+internal class NoteEditorLock(val isSave: Boolean, val noteId: Long) : IsEmpty, IdentifiableInstance {
+    protected val instanceId = InstanceId.next()
+    var startedAt: Long = 0
+    override fun isEmpty(): Boolean {
+        return this == EMPTY
     }
 
-    @Override
-    public boolean isEmpty() {
-        return this.equals(EMPTY);
-    }
-
-    boolean acquire(boolean doWait) {
-        boolean acquired = true;
-        for (int i = 0; i < 200; i++) {
-            NoteEditorLock lockPrevious = lock.get();
+    fun acquire(doWait: Boolean): Boolean {
+        var acquired = true
+        for (i in 0..199) {
+            val lockPrevious = lock.get()
             if (lockPrevious.expired()) {
-                this.startedAt = MyLog.uniqueCurrentTimeMS();
+                startedAt = MyLog.uniqueCurrentTimeMS()
                 if (lock.compareAndSet(lockPrevious, this)) {
-                    MyLog.v(this, () -> "Received lock " + this + (lockPrevious.isEmpty() ? "" :
-                            (". Replaced expired " + lockPrevious)));
-                    break;
+                    MyLog.v(this) { "Received lock " + this + if (lockPrevious.isEmpty()) "" else ". Replaced expired $lockPrevious" }
+                    break
                 }
             } else if (isSave && !lockPrevious.isSave) {
-                this.startedAt = MyLog.uniqueCurrentTimeMS();
+                startedAt = MyLog.uniqueCurrentTimeMS()
                 if (lock.compareAndSet(lockPrevious, this)) {
-                    MyLog.v(this, () -> "Received lock " + this + ". Replaced load " + lockPrevious);
-                    break;
+                    MyLog.v(this) { "Received lock $this. Replaced load $lockPrevious" }
+                    break
                 }
             } else {
                 if (lockPrevious.isSave == isSave && lockPrevious.noteId == noteId) {
-                    MyLog.v(this, () -> "The same operation in progress: " + lockPrevious);
-                    acquired = false;
-                    break;
+                    MyLog.v(this) { "The same operation in progress: $lockPrevious" }
+                    acquired = false
+                    break
                 }
             }
             if (!doWait || DbUtils.waitBetweenRetries("acquire")) {
-                acquired = false;
-                break;
+                acquired = false
+                break
             }
         }
-        return acquired;
+        return acquired
     }
 
-    public boolean acquired() {
-        return !expired() && lock.get() == this;
+    fun acquired(): Boolean {
+        return !expired() && lock.get() === this
     }
 
-    public boolean release() {
+    fun release(): Boolean {
         if (nonEmpty()) {
             if (lock.compareAndSet(this, EMPTY)) {
-                MyLog.v(this, () -> "Released lock " + this);
-                return true;
+                MyLog.v(this) { "Released lock $this" }
+                return true
             } else {
-                MyLog.v(this, () -> "Didn't release lock " + this + ". Was " + lock.get());
+                MyLog.v(this) { "Didn't release lock " + this + ". Was " + lock.get() }
             }
         }
-        return false;
+        return false
     }
 
-    @Override
-    public String toString() {
-        MyStringBuilder builder = new MyStringBuilder();
+    override fun toString(): String {
+        val builder = MyStringBuilder()
         if (isSave) {
-            builder.withComma("save");
+            builder.withComma("save")
         }
-        if (noteId != 0) {
-            builder.withComma("noteId", noteId);
+        if (noteId != 0L) {
+            builder.withComma("noteId", noteId)
         }
-        builder.withComma("started", new Date(startedAt));
-        return MyStringBuilder.formatKeyValue(this, builder.toString());
+        builder.withComma("started", Date(startedAt))
+        return MyStringBuilder.Companion.formatKeyValue(this, builder.toString())
     }
 
-    boolean expired() {
-        return isEmpty() || Math.abs(System.currentTimeMillis() - startedAt) > 60000;
+    fun expired(): Boolean {
+        return isEmpty || Math.abs(System.currentTimeMillis() - startedAt) > 60000
     }
 
-    @Override
-    public long getInstanceId() {
-        return instanceId;
+    override fun getInstanceId(): Long {
+        return instanceId
     }
 
-    @Override
-    public String classTag() {
-        return TAG;
+    override fun classTag(): String? {
+        return TAG
+    }
+
+    companion object {
+        private val TAG: String? = NoteEditorLock::class.java.simpleName
+        val EMPTY: NoteEditorLock? = NoteEditorLock(false, 0)
+        val lock: AtomicReference<NoteEditorLock?>? = AtomicReference(EMPTY)
     }
 }

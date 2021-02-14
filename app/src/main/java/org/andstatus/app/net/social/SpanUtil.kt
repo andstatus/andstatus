@@ -13,243 +13,220 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social
 
-package org.andstatus.app.net.social;
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.Spanned
+import org.andstatus.app.data.TextMediaType
+import org.andstatus.app.util.MyHtml
+import org.andstatus.app.util.MyUrlSpan
+import org.andstatus.app.util.StringUtil
+import java.util.*
+import java.util.function.Consumer
+import java.util.function.Function
+import java.util.stream.Stream
 
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.Spanned;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.data.TextMediaType;
-import org.andstatus.app.util.MyHtml;
-import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.util.StringUtil;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import static java.lang.Character.isLetterOrDigit;
-
-public class SpanUtil {
-    private static final int MIN_SPAN_LENGTH = 3;
-    private static final int MIN_HASHTAG_LENGTH = 2;
-    public static final SpannableString EMPTY = SpannableString.valueOf("");
-
-    private SpanUtil() { /* Empty */ }
-
-    public static class Region implements Comparable<Region> {
-        final int start;
-        final int end;
-        public final CharSequence text;
-        final Optional<MyUrlSpan> urlSpan;
-        final Optional<Object> otherSpan;
-
-        private Region(Spanned spannable, Object span) {
-            int spanStart = spannable.getSpanStart(span);
-            // Sometimes "@" is not included in the span
-            start = spanStart > 0 &&
-                "@#".indexOf(spannable.charAt(spanStart)) < 0 && "@#".indexOf(spannable.charAt(spanStart - 1)) >= 0
-                    ? spanStart - 1
-                    : spanStart;
-            if (MyUrlSpan.class.isAssignableFrom(span.getClass())) {
-                urlSpan = Optional.of((MyUrlSpan) span);
-                otherSpan = Optional.empty();
-            } else {
-                urlSpan = Optional.empty();
-                otherSpan = Optional.of(span);
-            }
-            end = spannable.getSpanEnd(span);
-            text = spannable.subSequence(start, end);
-        }
-
-        private Region(Spanned spannable, int start, int end) {
-            this.start = start;
-            this.end = end;
-            urlSpan = Optional.empty();
-            otherSpan = Optional.empty();
-            text = (start < end && spannable.length() >= end)
-                    ? spannable.subSequence(start, end)
-                    : "";
-        }
-
-        @Override
-        public int compareTo(@NonNull Region o) {
-            return Integer.compare(start, o.start);
-        }
-
-        @Override
-        public String toString() {
-            return "Region{" +
-                    start + "-" + end +
-                    " '" + text + "'" +
-                    urlSpan.map(s -> ", " + s).orElse("") +
-                    otherSpan.map(s -> ", otherSpan").orElse("") +
-                    '}';
-        }
-
-        boolean isValid() {
-            return urlSpan.isPresent() || otherSpan.isPresent() || (end - start >= MIN_SPAN_LENGTH);
-        }
-    }
-
-    public static List<Region> regionsOf(Spanned spannable) {
+object SpanUtil {
+    private const val MIN_SPAN_LENGTH = 3
+    private const val MIN_HASHTAG_LENGTH = 2
+    val EMPTY = SpannableString.valueOf("")
+    fun regionsOf(spannable: Spanned?): MutableList<Region?>? {
         return Stream.concat(
-                Arrays.stream(spannable.getSpans(0, spannable.length(), Object.class))
-                    .map(span -> new Region(spannable, span)),
-                Stream.of(new Region(spannable, spannable.length(), spannable.length() + 1)))
-            .sorted()
-            .reduce(
-                new ArrayList<>(),
-                (xs, region) -> {
-                    Region prevRegion = new Region(spannable, xs.size() == 0 ? 0 : xs.get(xs.size() - 1).end, region.start);
-                    if (prevRegion.isValid()) xs.add(prevRegion);
-                    if (region.isValid()) xs.add(region);
-                    return xs;
-                },
-                (xs1, xs2) -> {xs1.addAll(xs2); return xs1;});
+                Arrays.stream(spannable.getSpans(0, spannable.length, Any::class.java))
+                        .map { span: Any? -> Region(spannable, span) },
+                Stream.of(Region(spannable, spannable.length, spannable.length + 1)))
+                .sorted()
+                .reduce(
+                        ArrayList(),
+                        { xs: ArrayList<Region?>?, region: Region? ->
+                            val prevRegion = Region(spannable, if (xs.size == 0) 0 else xs.get(xs.size - 1).end, region.start)
+                            if (prevRegion.isValid()) xs.add(prevRegion)
+                            if (region.isValid()) xs.add(region)
+                            xs
+                        },
+                        { xs1: ArrayList<Region?>?, xs2: ArrayList<Region?>? ->
+                            xs1.addAll(xs2)
+                            xs1
+                        })
     }
 
-    public static Spannable textToSpannable(String text, TextMediaType mediaType, Audience audience) {
-        return StringUtil.isEmpty(text)
-                ? EMPTY
-                : spansModifier(audience).apply(MyUrlSpan.toSpannable(
-                    mediaType == TextMediaType.PLAIN ? text : MyHtml.prepareForView(text),
-                    mediaType, true));
+    fun textToSpannable(text: String?, mediaType: TextMediaType?, audience: Audience?): Spannable? {
+        return if (StringUtil.isEmpty(text)) EMPTY else spansModifier(audience).apply(MyUrlSpan.Companion.toSpannable(
+                if (mediaType == TextMediaType.PLAIN) text else MyHtml.prepareForView(text),
+                mediaType, true))
     }
 
-    public static Function<Spannable, Spannable> spansModifier(Audience audience) {
-        return spannable -> {
-            regionsOf(spannable).forEach(modifySpansInRegion(spannable, audience));
-            return spannable;
-        };
+    fun spansModifier(audience: Audience?): Function<Spannable?, Spannable?>? {
+        return Function { spannable: Spannable? ->
+            regionsOf(spannable).forEach(modifySpansInRegion(spannable, audience))
+            spannable
+        }
     }
 
-    @NonNull
-    private static Consumer<Region> modifySpansInRegion(Spannable spannable, Audience audience) {
-        return region -> {
-            if (region.start >= spannable.length() || region.end > spannable.length()) return;
-
-            String text = spannable.subSequence(region.start, region.end).toString();
-            if (mentionAdded(spannable, audience, region, text)) return;
-
-            hashTagAdded(spannable, audience, region, text);
-        };
+    private fun modifySpansInRegion(spannable: Spannable?, audience: Audience?): Consumer<Region?> {
+        return label@ Consumer { region: Region? ->
+            if (region.start >= spannable.length || region.end > spannable.length) return@label
+            val text = spannable.subSequence(region.start, region.end).toString()
+            if (mentionAdded(spannable, audience, region, text)) return@label
+            hashTagAdded(spannable, audience, region, text)
+        }
     }
 
-    private static boolean mentionAdded(Spannable spannable, Audience audience, Region region, String text) {
+    private fun mentionAdded(spannable: Spannable?, audience: Audience?, region: Region?, text: String?): Boolean {
         if (audience.hasNonSpecial() && text.contains("@")) {
-            String upperText = text.toUpperCase();
-            Actor mentionedByAtWebfingerID = audience.getNonSpecialActors().stream()
-                    .filter(actor -> actor.isWebFingerIdValid() &&
-                            upperText.contains("@" + actor.getWebFingerId().toUpperCase())).findAny().orElse(Actor.EMPTY);
+            val upperText = text.toUpperCase()
+            val mentionedByAtWebfingerID = audience.getNonSpecialActors().stream()
+                    .filter { actor: Actor? ->
+                        actor.isWebFingerIdValid() &&
+                                upperText.contains("@" + actor.getWebFingerId().toUpperCase())
+                    }.findAny().orElse(Actor.Companion.EMPTY)
             if (mentionedByAtWebfingerID.nonEmpty()) {
                 return notesByActorSpanAdded(spannable, audience, region,
-                        "@" + mentionedByAtWebfingerID.getWebFingerId(), mentionedByAtWebfingerID);
+                        "@" + mentionedByAtWebfingerID.webFingerId, mentionedByAtWebfingerID)
             } else {
-                Actor mentionedByWebfingerID = audience.getNonSpecialActors().stream()
-                        .filter(actor -> actor.isWebFingerIdValid() &&
-                                upperText.contains(actor.getWebFingerId().toUpperCase())).findAny().orElse(Actor.EMPTY);
+                val mentionedByWebfingerID = audience.getNonSpecialActors().stream()
+                        .filter { actor: Actor? ->
+                            actor.isWebFingerIdValid() &&
+                                    upperText.contains(actor.getWebFingerId().toUpperCase())
+                        }.findAny().orElse(Actor.Companion.EMPTY)
                 if (mentionedByWebfingerID.nonEmpty()) {
                     return notesByActorSpanAdded(spannable, audience, region,
-                            mentionedByWebfingerID.getWebFingerId(), mentionedByWebfingerID);
+                            mentionedByWebfingerID.webFingerId, mentionedByWebfingerID)
                 } else {
-                    Actor mentionedByUsername = audience.getNonSpecialActors().stream()
-                            .filter(actor -> actor.isUsernameValid() &&
-                                    upperText.contains("@" + actor.getUsername().toUpperCase())).findAny().orElse(Actor.EMPTY);
+                    val mentionedByUsername = audience.getNonSpecialActors().stream()
+                            .filter { actor: Actor? ->
+                                actor.isUsernameValid() &&
+                                        upperText.contains("@" + actor.getUsername().toUpperCase())
+                            }.findAny().orElse(Actor.Companion.EMPTY)
                     if (mentionedByUsername.nonEmpty()) {
                         return notesByActorSpanAdded(spannable, audience, region,
-                                "@" + mentionedByUsername.getUsername(), mentionedByUsername);
+                                "@" + mentionedByUsername.username, mentionedByUsername)
                     }
                 }
             }
         }
-        return false;
+        return false
     }
 
-    private static boolean notesByActorSpanAdded(Spannable spannable, Audience audience, Region region, String stringFound, Actor actor) {
-        return spanAdded(spannable, audience, region, stringFound, new MyUrlSpan.Data(Optional.of(actor), Optional.empty(), Optional.empty()));
+    private fun notesByActorSpanAdded(spannable: Spannable?, audience: Audience?, region: Region?, stringFound: String?, actor: Actor?): Boolean {
+        return spanAdded(spannable, audience, region, stringFound, MyUrlSpan.Data(Optional.of(actor), Optional.empty(), Optional.empty()))
     }
 
-    private static boolean spanAdded(Spannable spannable, Audience audience, Region region, String stringFound, MyUrlSpan.Data spanData) {
+    private fun spanAdded(spannable: Spannable?, audience: Audience?, region: Region?, stringFound: String?, spanData: MyUrlSpan.Data?): Boolean {
         if (region.urlSpan.isPresent()) {
-            spannable.removeSpan(region.urlSpan.get());
-            spannable.setSpan(new MyUrlSpan(spanData), region.start, region.end, 0);
+            spannable.removeSpan(region.urlSpan.get())
+            spannable.setSpan(MyUrlSpan(spanData), region.start, region.end, 0)
         } else if (region.otherSpan.isPresent()) {
-            spannable.removeSpan(region.otherSpan.get());
-            spannable.setSpan(new MyUrlSpan(spanData), region.start, region.end, 0);
+            spannable.removeSpan(region.otherSpan.get())
+            spannable.setSpan(MyUrlSpan(spanData), region.start, region.end, 0)
         } else {
-            int indInRegion = getIndInRegion(spannable, region, stringFound);
-            if (indInRegion < 0) return false;
-
-            int start2 = region.start + indInRegion;
-            int start3 = start2 + stringFound.length();
-            if (start3 > region.end + 1) return false;
-
-            spannable.setSpan(new MyUrlSpan(spanData), start2, Math.min(start3, region.end), 0);
+            val indInRegion = getIndInRegion(spannable, region, stringFound)
+            if (indInRegion < 0) return false
+            val start2 = region.start + indInRegion
+            val start3 = start2 + stringFound.length
+            if (start3 > region.end + 1) return false
+            spannable.setSpan(MyUrlSpan(spanData), start2, Math.min(start3, region.end), 0)
             if (indInRegion >= MIN_SPAN_LENGTH) {
-                modifySpansInRegion(spannable, audience).accept(new Region(spannable, region.start, start2));
+                modifySpansInRegion(spannable, audience).accept(Region(spannable, region.start, start2))
             }
             if (start3 + MIN_SPAN_LENGTH <= region.end) {
-                modifySpansInRegion(spannable, audience).accept(new Region(spannable, start3, region.end));
+                modifySpansInRegion(spannable, audience).accept(Region(spannable, start3, region.end))
             }
         }
-        return true;
+        return true
     }
 
-    /** Case insensitive search */
-    private static int getIndInRegion(Spannable spannable, Region region, String stringFound) {
-        final String substr1 = spannable.subSequence(region.start, region.end).toString();
-        int indInRegion = substr1.indexOf(stringFound);
-        if (indInRegion >= 0) return indInRegion;
-
-        final String foundUpper = stringFound.toUpperCase();
-        int ind = 0;
+    /** Case insensitive search  */
+    private fun getIndInRegion(spannable: Spannable?, region: Region?, stringFound: String?): Int {
+        val substr1 = spannable.subSequence(region.start, region.end).toString()
+        val indInRegion = substr1.indexOf(stringFound)
+        if (indInRegion >= 0) return indInRegion
+        val foundUpper = stringFound.toUpperCase()
+        var ind = 0
         do {
-            int ind2 = substr1.substring(ind).toUpperCase().indexOf(foundUpper);
-            if (ind2 >= 0) return ind2 + ind;
-            ind++;
-        } while(ind + stringFound.length() < substr1.length());
-        return -1;
+            val ind2 = substr1.substring(ind).toUpperCase().indexOf(foundUpper)
+            if (ind2 >= 0) return ind2 + ind
+            ind++
+        } while (ind + stringFound.length < substr1.length)
+        return -1
     }
 
     /** As https://www.hashtags.org/definition/ shows, hashtags may have numbers only,
-     *  and may contain one symbol only  */
-    private static boolean hashTagAdded(Spannable spannable, Audience audience, Region region, String text) {
-        int indStart = 0;
-        String hashTag = "";
+     * and may contain one symbol only   */
+    private fun hashTagAdded(spannable: Spannable?, audience: Audience?, region: Region?, text: String?): Boolean {
+        var indStart = 0
+        var hashTag: String? = ""
         do {
-            int indTag = text.indexOf('#', indStart);
-            if (indTag < 0) return false;
-
-            hashTag = hashTagAt(text, indTag);
-            indStart = indTag + 1;
-        } while (hashTag.length() < MIN_HASHTAG_LENGTH);
-
+            val indTag = text.indexOf('#', indStart)
+            if (indTag < 0) return false
+            hashTag = hashTagAt(text, indTag)
+            indStart = indTag + 1
+        } while (hashTag.length < MIN_HASHTAG_LENGTH)
         return spanAdded(spannable, audience, region, hashTag,
-                new MyUrlSpan.Data(Optional.empty(), Optional.of(hashTag), Optional.empty()));
+                MyUrlSpan.Data(Optional.empty(), Optional.of(hashTag), Optional.empty()))
     }
 
-    private static String hashTagAt(String text, int indStart) {
-        if (indStart + 1 >= text.length() ||
-            text.charAt(indStart) != '#' ||
-            !isLetterOrDigit(text.charAt(indStart + 1)) ||
-            (indStart > 0 && isLetterOrDigit(text.charAt(indStart - 1)))
-        ) {
-            return "";
+    private fun hashTagAt(text: String?, indStart: Int): String? {
+        if (indStart + 1 >= text.length || text.get(indStart) != '#' ||
+                !Character.isLetterOrDigit(text.get(indStart + 1)) ||
+                indStart > 0 && Character.isLetterOrDigit(text.get(indStart - 1))) {
+            return ""
         }
-        int ind = indStart + 2;
-        while (ind < text.length()) {
-            final char c = text.charAt(ind);
-            if (!isLetterOrDigit(c) && c != '_') break;
-            ind++;
+        var ind = indStart + 2
+        while (ind < text.length) {
+            val c = text.get(ind)
+            if (!Character.isLetterOrDigit(c) && c != '_') break
+            ind++
         }
-        return text.substring(indStart, ind);
+        return text.substring(indStart, ind)
+    }
+
+    class Region : Comparable<Region?> {
+        val start: Int
+        val end: Int
+        val text: CharSequence?
+        val urlSpan: Optional<MyUrlSpan?>?
+        val otherSpan: Optional<Any?>?
+
+        private constructor(spannable: Spanned?, span: Any?) {
+            val spanStart = spannable.getSpanStart(span)
+            // Sometimes "@" is not included in the span
+            start = if (spanStart > 0 && "@#".indexOf(spannable.get(spanStart)) < 0 && "@#".indexOf(spannable.get(spanStart - 1)) >= 0) spanStart - 1 else spanStart
+            if (MyUrlSpan::class.java.isAssignableFrom(span.javaClass)) {
+                urlSpan = Optional.of(span as MyUrlSpan?)
+                otherSpan = Optional.empty()
+            } else {
+                urlSpan = Optional.empty()
+                otherSpan = Optional.of(span)
+            }
+            end = spannable.getSpanEnd(span)
+            text = spannable.subSequence(start, end)
+        }
+
+        private constructor(spannable: Spanned?, start: Int, end: Int) {
+            this.start = start
+            this.end = end
+            urlSpan = Optional.empty()
+            otherSpan = Optional.empty()
+            text = if (start < end && spannable.length >= end) spannable.subSequence(start, end) else ""
+        }
+
+        override operator fun compareTo(o: Region): Int {
+            return Integer.compare(start, o.start)
+        }
+
+        override fun toString(): String {
+            return "Region{" +
+                    start + "-" + end +
+                    " '" + text + "'" +
+                    urlSpan.map(Function { s: MyUrlSpan? -> ", $s" }).orElse("") +
+                    otherSpan.map(Function { s: Any? -> ", otherSpan" }).orElse("") +
+                    '}'
+        }
+
+        fun isValid(): Boolean {
+            return urlSpan.isPresent() || otherSpan.isPresent() || end - start >= MIN_SPAN_LENGTH
+        }
     }
 }

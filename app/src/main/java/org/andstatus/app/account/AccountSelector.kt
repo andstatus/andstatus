@@ -13,128 +13,109 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.account
 
-package org.andstatus.app.account;
-
-import android.content.Intent;
-import android.os.Bundle;
-import android.provider.BaseColumns;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
-
-import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.view.MyContextMenu;
-import org.andstatus.app.view.MySimpleAdapter;
-import org.andstatus.app.view.SelectorDialog;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.content.Intent
+import android.os.Bundle
+import android.provider.BaseColumns
+import android.view.View
+import android.widget.AdapterView
+import android.widget.AdapterView.OnItemClickListener
+import android.widget.TextView
+import androidx.fragment.app.FragmentActivity
+import org.andstatus.app.ActivityRequestCode
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.R
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.view.MyContextMenu
+import org.andstatus.app.view.MySimpleAdapter
+import org.andstatus.app.view.SelectorDialog
+import java.util.*
+import java.util.function.Predicate
+import java.util.stream.Collectors
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class AccountSelector extends SelectorDialog {
-    private static final String KEY_VISIBLE_NAME = "visible_name";
-    private static final String KEY_SYNC_AUTO = "sync_auto";
-
-    public static void selectAccountOfOrigin(FragmentActivity activity, ActivityRequestCode requestCode, long originId) {
-        SelectorDialog selector = new AccountSelector();
-        selector.setRequestCode(requestCode).putLong(IntentExtra.ORIGIN_ID.key, originId);
-        selector.show(activity);
-    }
-
-    public static void selectAccountForActor(FragmentActivity activity, int menuGroup,
-                                             ActivityRequestCode requestCode, Actor actor) {
-        SelectorDialog selector = new AccountSelector();
-        selector.setRequestCode(requestCode).putLong(IntentExtra.ACTOR_ID.key, actor.actorId);
-        selector.myGetArguments().putInt(IntentExtra.MENU_GROUP.key, menuGroup);
-        selector.show(activity);
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        setTitle(R.string.label_accountselector);
-
-        List<MyAccount> listData = newListData();
+class AccountSelector : SelectorDialog() {
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        setTitle(R.string.label_accountselector)
+        val listData = newListData()
         if (listData.isEmpty()) {
-            returnSelectedAccount(MyAccount.EMPTY);
-            return;
-        } else if (listData.size() == 1) {
-            returnSelectedAccount(listData.get(0));
-            return;
+            returnSelectedAccount(MyAccount.Companion.EMPTY)
+            return
+        } else if (listData.size == 1) {
+            returnSelectedAccount(listData.get(0))
+            return
         }
-
-        setListAdapter(newListAdapter(listData));
-
-        getListView().setOnItemClickListener((parent, view, position, id) -> {
-            long actorId = Long.parseLong(((TextView) view.findViewById(R.id.id)).getText().toString());
-            returnSelectedAccount(myContextHolder.getNow().accounts().fromActorId(actorId));
-        });
+        listAdapter = newListAdapter(listData)
+        listView.onItemClickListener = OnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
+            val actorId = (view.findViewById<View?>(R.id.id) as TextView).text.toString().toLong()
+            returnSelectedAccount(MyContextHolder.Companion.myContextHolder.getNow().accounts().fromActorId(actorId))
+        }
     }
 
-    private List<MyAccount> newListData() {
-        long originId = Optional.ofNullable(getArguments())
-                .map(bundle -> bundle.getLong(IntentExtra.ORIGIN_ID.key)).orElse(0L);
-        final Origin origin = myContextHolder.getNow().origins().fromId(originId);
-        List<Origin> origins = origin.isValid()
-                ? Collections.singletonList(origin)
-                : getOriginsForActor();
-        Predicate<MyAccount> predicate = origins.isEmpty()
-                ? ma -> true
-                : ma -> origins.contains(ma.getOrigin());
-        return myContextHolder.getNow().accounts().get().stream().filter(predicate).collect(Collectors.toList());
+    private fun newListData(): MutableList<MyAccount?>? {
+        val originId = Optional.ofNullable(arguments)
+                .map { bundle: Bundle? -> bundle.getLong(IntentExtra.ORIGIN_ID.key) }.orElse(0L)
+        val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromId(originId)
+        val origins: MutableList<Origin?>? = if (origin.isValid) listOf(origin) else getOriginsForActor()
+        val predicate = if (origins.isEmpty()) Predicate { ma: MyAccount? -> true } else Predicate { ma: MyAccount? -> origins.contains(ma.getOrigin()) }
+        return MyContextHolder.Companion.myContextHolder.getNow().accounts().get().stream().filter(predicate).collect(Collectors.toList())
     }
 
-    private List<Origin> getOriginsForActor() {
-        final Long actorId = Optional.ofNullable(getArguments())
-                .map(bundle -> bundle.getLong(IntentExtra.ACTOR_ID.key)).orElse(0L);
-        return Actor.load(myContextHolder.getNow(), actorId).user.knownInOrigins(myContextHolder.getNow());
+    private fun getOriginsForActor(): MutableList<Origin?>? {
+        val actorId = Optional.ofNullable(arguments)
+                .map { bundle: Bundle? -> bundle.getLong(IntentExtra.ACTOR_ID.key) }.orElse(0L)
+        return Actor.Companion.load(MyContextHolder.Companion.myContextHolder.getNow(), actorId).user.knownInOrigins(MyContextHolder.Companion.myContextHolder.getNow())
     }
 
-    private MySimpleAdapter newListAdapter(List<MyAccount> listData) {
-        List<Map<String, String>> list = new ArrayList<>();
-        final String syncText = getText(R.string.synced_abbreviated).toString();
-        for (MyAccount ma : listData) {
-            Map<String, String> map = new HashMap<>();
-            String visibleName = ma.getAccountName();
+    private fun newListAdapter(listData: MutableList<MyAccount?>?): MySimpleAdapter? {
+        val list: MutableList<MutableMap<String?, String?>?> = ArrayList()
+        val syncText = getText(R.string.synced_abbreviated).toString()
+        for (ma in listData) {
+            val map: MutableMap<String?, String?> = HashMap()
+            var visibleName = ma.getAccountName()
             if (!ma.isValidAndSucceeded()) {
-                visibleName = "(" + visibleName + ")";
+                visibleName = "($visibleName)"
             }
-            map.put(KEY_VISIBLE_NAME, visibleName);
-            map.put(KEY_SYNC_AUTO, ma.isSyncedAutomatically() && ma.isValidAndSucceeded() ? syncText : "");
-            map.put(BaseColumns._ID, Long.toString(ma.getActorId()));
-            list.add(map);
+            map[KEY_VISIBLE_NAME] = visibleName
+            map[KEY_SYNC_AUTO] = if (ma.isSyncedAutomatically() && ma.isValidAndSucceeded()) syncText else ""
+            map[BaseColumns._ID] = java.lang.Long.toString(ma.getActorId())
+            list.add(map)
+        }
+        return MySimpleAdapter(activity,
+                list,
+                R.layout.accountlist_item, arrayOf(KEY_VISIBLE_NAME, KEY_SYNC_AUTO, BaseColumns._ID), intArrayOf(R.id.visible_name, R.id.sync_auto, R.id.id), true)
+    }
+
+    private fun returnSelectedAccount(ma: MyAccount) {
+        returnSelected(Intent()
+                .putExtra(IntentExtra.ACCOUNT_NAME.key, ma.accountName)
+                .putExtra(IntentExtra.MENU_GROUP.key,
+                        myGetArguments().getInt(IntentExtra.MENU_GROUP.key, MyContextMenu.Companion.MENU_GROUP_NOTE))
+        )
+    }
+
+    companion object {
+        private val KEY_VISIBLE_NAME: String? = "visible_name"
+        private val KEY_SYNC_AUTO: String? = "sync_auto"
+        fun selectAccountOfOrigin(activity: FragmentActivity?, requestCode: ActivityRequestCode?, originId: Long) {
+            val selector: SelectorDialog = AccountSelector()
+            selector.setRequestCode(requestCode).putLong(IntentExtra.ORIGIN_ID.key, originId)
+            selector.show(activity)
         }
 
-        return new MySimpleAdapter(getActivity(),
-                list,
-                R.layout.accountlist_item,
-                new String[] {KEY_VISIBLE_NAME, KEY_SYNC_AUTO, BaseColumns._ID},
-                new int[] {R.id.visible_name, R.id.sync_auto, R.id.id}, true);
+        fun selectAccountForActor(activity: FragmentActivity?, menuGroup: Int,
+                                  requestCode: ActivityRequestCode?, actor: Actor?) {
+            val selector: SelectorDialog = AccountSelector()
+            selector.setRequestCode(requestCode).putLong(IntentExtra.ACTOR_ID.key, actor.actorId)
+            selector.myGetArguments().putInt(IntentExtra.MENU_GROUP.key, menuGroup)
+            selector.show(activity)
+        }
     }
-
-    private void returnSelectedAccount(@NonNull MyAccount ma) {
-        returnSelected(new Intent()
-                .putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName())
-                .putExtra(IntentExtra.MENU_GROUP.key,
-                        myGetArguments().getInt(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE))
-        );
-    }
-
 }

@@ -13,23 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data
 
-package org.andstatus.app.data;
-
-import android.content.ContentValues;
-
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtil;
+import android.content.ContentValues
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StringUtil
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ContentValuesUtils {
-
-    private ContentValuesUtils() {
-        // Empty
-    }
-
+object ContentValuesUtils {
     /**
      * Move boolean value of the key from valuesIn to valuesOut and remove it from valuesIn
      * @param key
@@ -37,16 +30,14 @@ public class ContentValuesUtils {
      * @param valuesOut  may be null
      * @return 1 for true, 0 for false and 2 for "not present"
      */
-    public static int moveBooleanKey(String key, String sourceSuffix, ContentValues valuesIn, ContentValues valuesOut) {
-        int ret = 2;
+    fun moveBooleanKey(key: String?, sourceSuffix: String?, valuesIn: ContentValues?, valuesOut: ContentValues?): Int {
+        var ret = 2
         if (valuesIn != null && valuesIn.containsKey(key + sourceSuffix)) {
-            ret = SharedPreferencesUtil.isTrueAsInt(valuesIn.get(key + sourceSuffix));
-            valuesIn.remove(key + sourceSuffix);
-            if (valuesOut != null) {
-                valuesOut.put(key, ret);
-            }
+            ret = SharedPreferencesUtil.isTrueAsInt(valuesIn[key + sourceSuffix])
+            valuesIn.remove(key + sourceSuffix)
+            valuesOut?.put(key, ret)
         }
-        return ret;
+        return ret
     }
 
     /**
@@ -55,13 +46,11 @@ public class ContentValuesUtils {
      * @param valuesIn
      * @param valuesOut  may be null
      */
-    public static void moveStringKey(String key, String sourceSuffix, ContentValues valuesIn, ContentValues valuesOut) {
+    fun moveStringKey(key: String?, sourceSuffix: String?, valuesIn: ContentValues?, valuesOut: ContentValues?) {
         if (valuesIn != null && valuesIn.containsKey(key + sourceSuffix)) {
-            String value = valuesIn.getAsString(key + sourceSuffix);
-            valuesIn.remove(key + sourceSuffix);
-            if (valuesOut != null) {
-                valuesOut.put(key, value);
-            }
+            val value = valuesIn.getAsString(key + sourceSuffix)
+            valuesIn.remove(key + sourceSuffix)
+            valuesOut?.put(key, value)
         }
     }
 
@@ -72,29 +61,26 @@ public class ContentValuesUtils {
      * @param valuesOut  may be null
      * @return Key value, 0 if not found
      */
-    public static long moveLongKey(String key, String sourceSuffix, ContentValues valuesIn, ContentValues valuesOut) {
-        long keyValue = 0;
+    fun moveLongKey(key: String?, sourceSuffix: String?, valuesIn: ContentValues?, valuesOut: ContentValues?): Long {
+        var keyValue: Long = 0
         if (valuesIn != null && valuesIn.containsKey(key + sourceSuffix)) {
-            Long value = valuesIn.getAsLong(key + sourceSuffix);
-            keyValue = value == null ? 0 : value;
-            valuesIn.remove(key + sourceSuffix);
-            if (valuesOut != null) {
-                valuesOut.put(key, value);
-            }
+            val value = valuesIn.getAsLong(key + sourceSuffix)
+            keyValue = value ?: 0
+            valuesIn.remove(key + sourceSuffix)
+            valuesOut?.put(key, value)
         }
-        return keyValue;
+        return keyValue
     }
 
-    public static void putNotEmpty(ContentValues values, String key, String value) {
+    fun putNotEmpty(values: ContentValues?, key: String?, value: String?) {
         if (!StringUtil.isEmpty(value)) {
-            values.put(key, value);
+            values.put(key, value)
         }
     }
 
-    public static void putNotZero(ContentValues values, String key, Long value) {
-        if (value != null && value != 0) {
-            values.put(key, value);
+    fun putNotZero(values: ContentValues?, key: String?, value: Long?) {
+        if (value != null && value != 0L) {
+            values.put(key, value)
         }
     }
-
 }

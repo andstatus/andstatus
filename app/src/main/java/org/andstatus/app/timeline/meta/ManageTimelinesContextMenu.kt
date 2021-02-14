@@ -13,70 +13,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline.meta
 
-package org.andstatus.app.timeline.meta;
+import android.view.ContextMenu
+import android.view.ContextMenu.ContextMenuInfo
+import android.view.MenuItem
+import android.view.View
+import org.andstatus.app.R
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.timeline.ContextMenuHeader
+import org.andstatus.app.timeline.LoadableListActivity
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.view.MyContextMenu
 
-import android.view.ContextMenu;
-import android.view.MenuItem;
-import android.view.View;
-
-import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.timeline.ContextMenuHeader;
-import org.andstatus.app.timeline.LoadableListActivity;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.view.MyContextMenu;
-
-public class ManageTimelinesContextMenu extends MyContextMenu {
-
-    public ManageTimelinesContextMenu(LoadableListActivity listActivity) {
-        super(listActivity, 0);
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        final String method = "onCreateContextMenu";
-        super.onCreateContextMenu(menu, v, menuInfo);
+class ManageTimelinesContextMenu(listActivity: LoadableListActivity<*>?) : MyContextMenu(listActivity, 0) {
+    override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?) {
+        val method = "onCreateContextMenu"
+        super.onCreateContextMenu(menu, v, menuInfo)
         if (getViewItem() == null) {
-            return;
+            return
         }
-
-        int order = 0;
+        var order = 0
         try {
-            TimelineTitle title = TimelineTitle.from(getMyContext(), getViewItem().timeline);
-            new ContextMenuHeader(getActivity(), menu)
+            val title: TimelineTitle = from(myContext, getViewItem().timeline)
+            ContextMenuHeader(activity, menu)
                     .setTitle(title.title)
-                    .setSubtitle(title.subTitle);
-            ManageTimelinesContextMenuItem.OPEN_TIMELINE.addTo(menu, ++order, R.string.show_timeline_messages);
-            if (getViewItem().timeline.isSyncable()) {
-                ManageTimelinesContextMenuItem.SYNC_NOW.addTo(menu, ++order, R.string.options_menu_sync);
+                    .setSubtitle(title.subTitle)
+            ManageTimelinesContextMenuItem.OPEN_TIMELINE.addTo(menu, ++order, R.string.show_timeline_messages)
+            if (getViewItem().timeline.isSyncable) {
+                ManageTimelinesContextMenuItem.SYNC_NOW.addTo(menu, ++order, R.string.options_menu_sync)
             }
-            if (!getViewItem().timeline.isRequired()) {
-                ManageTimelinesContextMenuItem.DELETE.addTo(menu, ++order, R.string.button_delete);
+            if (!getViewItem().timeline.isRequired) {
+                ManageTimelinesContextMenuItem.DELETE.addTo(menu, ++order, R.string.button_delete)
             }
-            if (!getMyContext().timelines().getDefault().equals(getViewItem().timeline)) {
-                ManageTimelinesContextMenuItem.MAKE_DEFAULT.addTo(menu, ++order, R.string.set_as_default_timeline);
+            if (myContext.timelines().default != getViewItem().timeline) {
+                ManageTimelinesContextMenuItem.MAKE_DEFAULT.addTo(menu, ++order, R.string.set_as_default_timeline)
             }
-            ManageTimelinesContextMenuItem.FORGET_SYNC_EVENTS.addTo(menu, ++order, R.string.forget_sync_events);
-        } catch (Exception e) {
-            MyLog.w(this, method, e);
+            ManageTimelinesContextMenuItem.FORGET_SYNC_EVENTS.addTo(menu, ++order, R.string.forget_sync_events)
+        } catch (e: Exception) {
+            MyLog.w(this, method, e)
         }
-
     }
 
-    public boolean onContextItemSelected(MenuItem item) {
-        ManageTimelinesContextMenuItem contextMenuItem = ManageTimelinesContextMenuItem.fromId(item.getItemId());
-        MyLog.v(this, () -> "onContextItemSelected: " + contextMenuItem +
-                "; timeline=" + getViewItem().timeline);
-        return contextMenuItem.execute(this, getViewItem());
-    }
-
-    public ManageTimelinesViewItem getViewItem() {
-        if (mViewItem.isEmpty()) {
-            return new ManageTimelinesViewItem(listActivity.getMyContext(), Timeline.EMPTY,
-                    MyAccount.EMPTY, false);
+    fun onContextItemSelected(item: MenuItem?): Boolean {
+        val contextMenuItem: ManageTimelinesContextMenuItem = ManageTimelinesContextMenuItem.Companion.fromId(item.getItemId())
+        MyLog.v(this) {
+            "onContextItemSelected: " + contextMenuItem +
+                    "; timeline=" + getViewItem().timeline
         }
-        return (ManageTimelinesViewItem) mViewItem;
+        return contextMenuItem.execute(this, getViewItem())
     }
 
+    fun getViewItem(): ManageTimelinesViewItem? {
+        return if (mViewItem.isEmpty) {
+            ManageTimelinesViewItem(listActivity.myContext, Timeline.Companion.EMPTY,
+                    MyAccount.Companion.EMPTY, false)
+        } else mViewItem as ManageTimelinesViewItem
+    }
 }

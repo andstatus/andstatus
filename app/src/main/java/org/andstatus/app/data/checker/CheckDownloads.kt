@@ -13,67 +13,62 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data.checker
 
-package org.andstatus.app.data.checker;
+import android.database.Cursor
+import android.provider.BaseColumns
+import org.andstatus.app.data.DownloadData
+import org.andstatus.app.data.DownloadStatus
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.DownloadTable
+import java.util.*
+import java.util.concurrent.atomic.AtomicLong
+import java.util.function.Consumer
+import java.util.function.Function
 
-import org.andstatus.app.data.DownloadData;
-import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.DownloadTable;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-
-class CheckDownloads extends DataChecker {
-
-    private static class Results {
-        long totalCount = 0;
-        List<Result> toFix = new ArrayList<>();
+internal class CheckDownloads : DataChecker() {
+    private class Results {
+        var totalCount: Long = 0
+        var toFix: MutableList<Result?>? = ArrayList()
     }
 
-    private static class Result {
-        final long downloadId;
+    private class Result private constructor(val downloadId: Long)
 
-        private Result(long downloadId) {
-            this.downloadId = downloadId;
-        }
-    }
-
-    @Override
-    long fixInternal() {
-        Results results = getResults();
-        if (countOnly) return results.toFix.size();
-
-        logger.logProgress("Marking " + getSomeOfTotal(results.toFix.size(), results.totalCount) + " downloads as absent");
-        AtomicLong fixedCount = new AtomicLong();
-        results.toFix.forEach(result -> {
-            String sql = "UPDATE " + DownloadTable.TABLE_NAME +
+    public override fun fixInternal(): Long {
+        val results = getResults()
+        if (countOnly) return results.toFix.size
+        logger.logProgress("Marking " + DataChecker.Companion.getSomeOfTotal(results.toFix.size.toLong(), results.totalCount) + " downloads as absent")
+        val fixedCount = AtomicLong()
+        results.toFix.forEach(Consumer { result: Result? ->
+            val sql = "UPDATE " + DownloadTable.TABLE_NAME +
                     " SET " + DownloadTable.DOWNLOAD_STATUS + "=" + DownloadStatus.ABSENT.save() +
                     ", " + DownloadTable.FILE_NAME + "=null" +
                     ", " + DownloadTable.FILE_SIZE + "=0" +
-                    " WHERE " + DownloadTable._ID + "=" + result.downloadId;
-            myContext.getDatabase().execSQL(sql);
-            fixedCount.incrementAndGet();
-        });
-        return fixedCount.get();
+                    " WHERE " + BaseColumns._ID + "=" + result.downloadId
+            myContext.database.execSQL(sql)
+            fixedCount.incrementAndGet()
+        })
+        return fixedCount.get()
     }
 
-    private Results getResults() {
-        String sql = "SELECT *"
+    private fun getResults(): Results? {
+        val sql = ("SELECT *"
                 + " FROM " + DownloadTable.TABLE_NAME
-                + " WHERE " + DownloadTable.DOWNLOAD_STATUS + "=" + DownloadStatus.LOADED.save();
-        return MyQuery.foldLeft(myContext, sql, new Results(), results -> cursor -> {
-            if (logger.isCancelled()) return results;
-
-            DownloadData dd = DownloadData.fromCursor(cursor);
-            results.totalCount++;
-            if (!dd.getFile().existsNow()) {
-                results.toFix.add(new Result(dd.getDownloadId()));
+                + " WHERE " + DownloadTable.DOWNLOAD_STATUS + "=" + DownloadStatus.LOADED.save())
+        return MyQuery.foldLeft(myContext, sql, Results(), { results: Results? ->
+            label@ Function { cursor: Cursor? ->
+                if (logger.isCancelled) return@label results
+                val dd: DownloadData = DownloadData.Companion.fromCursor(cursor)
+                results.totalCount++
+                if (!dd.file.existsNow()) {
+                    results.toFix.add(Result(dd.downloadId))
+                }
+                logger.logProgressIfLongProcess {
+                    "Will mark " +
+                            DataChecker.Companion.getSomeOfTotal(results.toFix.size.toLong(), results.totalCount) + " downloads as absent"
+                }
+                results
             }
-            logger.logProgressIfLongProcess(() -> "Will mark " +
-                    getSomeOfTotal(results.toFix.size(), results.totalCount) + " downloads as absent");
-            return results;
-        });
+        })
     }
 }

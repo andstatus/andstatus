@@ -13,35 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.database.table
 
-package org.andstatus.app.database.table;
+import android.database.sqlite.SQLiteDatabase
+import org.andstatus.app.data.DbUtils
 
-import android.database.sqlite.SQLiteDatabase;
+/** Collections of URIs for Actors  */
+object ActorEndpointTable {
+    val TABLE_NAME: String? = "actorendpoints"
+    val ACTOR_ID: String? = ActorTable.ACTOR_ID
 
-import org.andstatus.app.data.DbUtils;
+    /** [org.andstatus.app.net.social.ActorEndpointType]  */
+    val ENDPOINT_TYPE: String? = "endpoint_type"
 
-/** Collections of URIs for Actors */
-public class ActorEndpointTable {
-    public static final String TABLE_NAME = "actorendpoints";
-
-    private ActorEndpointTable() {
-    }
-
-    public static final String ACTOR_ID = ActorTable.ACTOR_ID;
-    /** {@link org.andstatus.app.net.social.ActorEndpointType} */
-    public static final String ENDPOINT_TYPE = "endpoint_type";
-    /** Index of an endpoint of a particular {@link #ENDPOINT_TYPE}, starting from 0 */
-    public static final String ENDPOINT_INDEX = "endpoint_index";
-    public static final String ENDPOINT_URI = "endpoint_uri";
-
-    public static void create(SQLiteDatabase db) {
+    /** Index of an endpoint of a particular [.ENDPOINT_TYPE], starting from 0  */
+    val ENDPOINT_INDEX: String? = "endpoint_index"
+    val ENDPOINT_URI: String? = "endpoint_uri"
+    fun create(db: SQLiteDatabase?) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + ACTOR_ID + " INTEGER NOT NULL,"
                 + ENDPOINT_TYPE + " INTEGER NOT NULL,"
                 + ENDPOINT_INDEX + " INTEGER NOT NULL DEFAULT 0,"
                 + ENDPOINT_URI + " TEXT NOT NULL,"
                 + " CONSTRAINT pk_" + TABLE_NAME + " PRIMARY KEY (" + ACTOR_ID + " ASC, " + ENDPOINT_TYPE + " ASC, " + ENDPOINT_INDEX + " ASC)"
-                + ")");
+                + ")")
     }
-
 }

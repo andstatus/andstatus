@@ -13,107 +13,93 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.http
 
-package org.andstatus.app.net.http;
+import org.andstatus.app.account.AccountConnectionData
+import org.andstatus.app.account.AccountDataReader
+import org.andstatus.app.account.AccountName
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.data.MyContentType
+import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.util.TriState
 
-import org.andstatus.app.account.AccountConnectionData;
-import org.andstatus.app.account.AccountDataReader;
-import org.andstatus.app.account.AccountName;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.net.social.ApiRoutineEnum;
-import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.util.TriState;
-
-import java.net.URL;
-import java.util.Optional;
-
-import static org.andstatus.app.data.MyContentType.APPLICATION_JSON;
-
-public class HttpConnectionData {
-    public static final HttpConnectionData EMPTY = new HttpConnectionData(AccountName.getEmpty());
-    private final AccountName accountName;
-    public URL originUrl;
-    URL urlForUserToken;
-    AccountDataReader dataReader;
-
-    public OAuthClientKeys oauthClientKeys;
-
-    private HttpConnectionData(AccountName accountName) {
-        this.accountName = accountName;
+org.andstatus.app.origin.OriginTypeimport java.net.URLimport java.util.*
+class HttpConnectionData private constructor(private val accountName: AccountName?) {
+    var originUrl: URL? = null
+    var urlForUserToken: URL? = null
+    var dataReader: AccountDataReader? = null
+    var oauthClientKeys: OAuthClientKeys? = null
+    fun copy(): HttpConnectionData? {
+        val data = HttpConnectionData(accountName)
+        data.originUrl = originUrl
+        data.urlForUserToken = urlForUserToken
+        data.dataReader = dataReader
+        data.oauthClientKeys = oauthClientKeys
+        return data
     }
 
-    public static HttpConnectionData fromAccountConnectionData(AccountConnectionData accountnData) {
-        HttpConnectionData data = new HttpConnectionData(accountnData.getAccountName());
-        data.originUrl = accountnData.getOriginUrl();
-        data.urlForUserToken = accountnData.getOriginUrl();
-        data.dataReader = accountnData.getDataReader();
-        return data;
+    fun getAccountName(): AccountName? {
+        return accountName
     }
 
-    public HttpConnectionData copy() {
-        HttpConnectionData data = new HttpConnectionData(accountName);
-        data.originUrl = originUrl;
-        data.urlForUserToken = urlForUserToken;
-        data.dataReader = dataReader;
-        data.oauthClientKeys = oauthClientKeys;
-        return data;
+    fun areOAuthClientKeysPresent(): Boolean {
+        return oauthClientKeys != null && oauthClientKeys.areKeysPresent()
     }
 
-    public AccountName getAccountName() {
-        return accountName;
-    }
-
-    public boolean areOAuthClientKeysPresent() {
-        return oauthClientKeys != null && oauthClientKeys.areKeysPresent();
-    }
-
-    @Override
-    public String toString() {
-        return "HttpConnectionData {" + accountName + ", isSsl:" + isSsl()
+    override fun toString(): String {
+        return ("HttpConnectionData {" + accountName + ", isSsl:" + isSsl()
                 + ", sslMode:" + getSslMode()
-                + (getUseLegacyHttpProtocol() != TriState.UNKNOWN ?
-                        ", HTTP:" + (getUseLegacyHttpProtocol() == TriState.TRUE ?  "legacy" : "latest") : "")
+                + (if (getUseLegacyHttpProtocol() != TriState.UNKNOWN) ", HTTP:" + (if (getUseLegacyHttpProtocol() == TriState.TRUE) "legacy" else "latest") else "")
                 + ", basicPath:" + getBasicPath()
                 + ", oauthPath:" + getOauthPath()
                 + ", originUrl:" + originUrl + ", hostForUserToken:" + urlForUserToken + ", dataReader:"
-                + dataReader + ", oauthClientKeys:" + oauthClientKeys + "}";
+                + dataReader + ", oauthClientKeys:" + oauthClientKeys + "}")
     }
 
-    public OriginType getOriginType() {
-        return accountName.getOrigin().getOriginType();
+    fun getOriginType(): OriginType? {
+        return accountName.getOrigin().originType
     }
 
-    public String getBasicPath() {
-        return getOriginType().getBasicPath();
+    fun getBasicPath(): String? {
+        return getOriginType().getBasicPath()
     }
 
-    public String getOauthPath() {
-        return getOriginType().getOauthPath();
+    fun getOauthPath(): String? {
+        return getOriginType().getOauthPath()
     }
 
-    public boolean isSsl() {
-        return accountName.getOrigin().isSsl();
+    fun isSsl(): Boolean {
+        return accountName.getOrigin().isSsl
     }
 
-    public TriState getUseLegacyHttpProtocol() {
-        return accountName.getOrigin().useLegacyHttpProtocol();
+    fun getUseLegacyHttpProtocol(): TriState? {
+        return accountName.getOrigin().useLegacyHttpProtocol()
     }
 
-    public SslModeEnum getSslMode() {
-        return accountName.getOrigin().getSslMode();
+    fun getSslMode(): SslModeEnum? {
+        return accountName.getOrigin().sslMode
     }
 
-    public String jsonContentType(ApiRoutineEnum apiRoutine) {
-        return apiRoutine.isOriginApi()
-                ? getOriginType().getContentType().orElse(APPLICATION_JSON)
-                : APPLICATION_JSON;
+    fun jsonContentType(apiRoutine: ApiRoutineEnum?): String? {
+        return if (apiRoutine.isOriginApi()) getOriginType().getContentType().orElse(MyContentType.Companion.APPLICATION_JSON) else MyContentType.Companion.APPLICATION_JSON
     }
 
-    public Optional<String> optOriginContentType() {
-        return getOriginType().getContentType();
+    fun optOriginContentType(): Optional<String?>? {
+        return getOriginType().getContentType()
     }
 
-    public MyContext myContext() {
-        return accountName.getOrigin().myContext;
+    fun myContext(): MyContext? {
+        return accountName.getOrigin().myContext
+    }
+
+    companion object {
+        val EMPTY: HttpConnectionData? = HttpConnectionData(AccountName.Companion.getEmpty())
+        fun fromAccountConnectionData(accountnData: AccountConnectionData?): HttpConnectionData? {
+            val data = HttpConnectionData(accountnData.getAccountName())
+            data.originUrl = accountnData.getOriginUrl()
+            data.urlForUserToken = accountnData.getOriginUrl()
+            data.dataReader = accountnData.getDataReader()
+            return data
+        }
     }
 }

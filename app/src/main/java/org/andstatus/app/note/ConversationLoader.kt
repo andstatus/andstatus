@@ -13,289 +13,272 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
+import android.net.Uri
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.actor.ActorsLoader
+import org.andstatus.app.actor.ActorsScreenType
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.MatchedUri
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.data.checker.CheckConversations
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.list.SyncLoader
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.Note
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.service.CommandData
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
+import java.io.Serializable
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Consumer
+import java.util.stream.Collectors
 
-import android.database.Cursor;
-import android.net.Uri;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.actor.ActorsLoader;
-import org.andstatus.app.actor.ActorsScreenType;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.checker.CheckConversations;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.list.SyncLoader;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.Note;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.timeline.LoadableListActivity;
-import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-public abstract class ConversationLoader extends SyncLoader<ConversationViewItem> {
-    private static final int MAX_INDENT_LEVEL = 19;
-    
-    protected final MyContext myContext;
-    protected final MyAccount ma;
-    private final long selectedNoteId;
-    Set<Long> conversationIds = new HashSet<>();
-    boolean fixConversation = false;
-    private boolean sync = false;
-    private boolean conversationSyncRequested = false;
-    boolean mAllowLoadingFromInternet = false;
-    private final ReplyLevelComparator<ConversationViewItem> replyLevelComparator = new ReplyLevelComparator<>();
-    private final ConversationViewItem emptyItem;
-
-    final Map<Long, ConversationViewItem> cachedConversationItems = new ConcurrentHashMap<>();
-    LoadableListActivity.ProgressPublisher mProgress;
-
-    final List<Long> idsOfItemsToFind = new ArrayList<>();
-
-    public ConversationLoader(ConversationViewItem emptyItem, MyContext myContext, Origin origin, long selectedNoteId, boolean sync) {
-        this.emptyItem = emptyItem;
-        this.myContext = myContext;
-        this.ma = myContext.accounts().getFirstPreferablySucceededForOrigin(origin);
-        this.selectedNoteId = selectedNoteId;
-        this.sync = sync || MyPreferences.isSyncWhileUsingApplicationEnabled();
-    }
-    
-    @Override
-    public void load(ProgressPublisher publisher) {
-        mProgress = publisher;
-        load1();
+abstract class ConversationLoader(private val emptyItem: ConversationViewItem?, protected val myContext: MyContext?, origin: Origin?, selectedNoteId: Long, sync: Boolean) : SyncLoader<ConversationViewItem?>() {
+    protected val ma: MyAccount?
+    private val selectedNoteId: Long
+    var conversationIds: MutableSet<Long?>? = HashSet()
+    var fixConversation = false
+    private val sync = false
+    private var conversationSyncRequested = false
+    var mAllowLoadingFromInternet = false
+    private val replyLevelComparator: ReplyLevelComparator<ConversationViewItem?>? = ReplyLevelComparator()
+    val cachedConversationItems: MutableMap<Long?, ConversationViewItem?>? = ConcurrentHashMap()
+    var mProgress: ProgressPublisher? = null
+    val idsOfItemsToFind: MutableList<Long?>? = ArrayList()
+    override fun load(publisher: ProgressPublisher?) {
+        mProgress = publisher
+        load1()
         if (fixConversation) {
-            new CheckConversations()
+            CheckConversations()
                     .setNoteIdsOfOneConversation(
-                            items.stream().map(ConversationViewItem::getNoteId).collect(Collectors.toSet()))
-                    .setMyContext(myContext).fix();
-            load1();
+                            items.stream().map { obj: ConversationViewItem? -> obj.getNoteId() }.collect(Collectors.toSet()))
+                    .setMyContext(myContext).fix()
+            load1()
         }
-        loadActors(items);
-        items.sort(replyLevelComparator);
-        enumerateNotes();
+        loadActors(items)
+        items.sort(replyLevelComparator)
+        enumerateNotes()
     }
 
-    private void load1() {
-        conversationIds.clear();
-        cachedConversationItems.clear();
-        idsOfItemsToFind.clear();
-        items.clear();
+    private fun load1() {
+        conversationIds.clear()
+        cachedConversationItems.clear()
+        idsOfItemsToFind.clear()
+        items.clear()
         if (sync) {
-            requestConversationSync(selectedNoteId);
+            requestConversationSync(selectedNoteId)
         }
-        final ConversationViewItem nonLoaded = getItem(selectedNoteId,
-                MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, selectedNoteId), 0);
-        cacheConversation(nonLoaded);
-        load2(nonLoaded);
-        addMissedFromCache();
+        val nonLoaded = getItem(selectedNoteId,
+                MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, selectedNoteId), 0)
+        cacheConversation(nonLoaded)
+        load2(nonLoaded)
+        addMissedFromCache()
     }
 
-    protected abstract void load2(ConversationViewItem nonLoaded);
-
-    void cacheConversation(ConversationViewItem item) {
+    protected abstract fun load2(nonLoaded: ConversationViewItem?)
+    open fun cacheConversation(item: ConversationViewItem?) {
         // Empty
     }
 
-    private void addMissedFromCache() {
-        if (cachedConversationItems.isEmpty()) return;
-        for (ConversationViewItem item : items) {
-            cachedConversationItems.remove(item.getId());
-            if (cachedConversationItems.isEmpty()) return;
+    private fun addMissedFromCache() {
+        if (cachedConversationItems.isEmpty()) return
+        for (item in items) {
+            cachedConversationItems.remove(item.getId())
+            if (cachedConversationItems.isEmpty()) return
         }
-        MyLog.v(this, () -> cachedConversationItems.size() + " cached notes are not connected to selected");
-        for (ConversationViewItem oNote : cachedConversationItems.values()) {
-            addItemToList(oNote);
+        MyLog.v(this) { cachedConversationItems.size.toString() + " cached notes are not connected to selected" }
+        for (oNote in cachedConversationItems.values) {
+            addItemToList(oNote)
         }
     }
 
-    private void loadActors(List<ConversationViewItem> items) {
-        if (items.isEmpty()) return;
-        ActorsLoader loader = new ActorsLoader(myContext, ActorsScreenType.ACTORS_AT_ORIGIN,
-                ma.getOrigin(), 0, "");
-        items.forEach(item -> item.addActorsToLoad(loader));
-        if (loader.getList().isEmpty()) return;
-        loader.load(progress -> {});
-        items.forEach(item -> item.setLoadedActors(loader));
+    private fun loadActors(items: MutableList<ConversationViewItem?>?) {
+        if (items.isEmpty()) return
+        val loader = ActorsLoader(myContext, ActorsScreenType.ACTORS_AT_ORIGIN,
+                ma.getOrigin(), 0, "")
+        items.forEach(Consumer { item: ConversationViewItem? -> item.addActorsToLoad(loader) })
+        if (loader.list.isEmpty()) return
+        loader.load { progress: String? -> }
+        items.forEach(Consumer { item: ConversationViewItem? -> item.setLoadedActors(loader) })
     }
 
-    /** Returns true if note was added false in a case the note existed already */
-    protected boolean addNoteIdToFind(long noteId) {
-        if (noteId == 0) {
-            return false;
+    /** Returns true if note was added false in a case the note existed already  */
+    protected fun addNoteIdToFind(noteId: Long): Boolean {
+        if (noteId == 0L) {
+            return false
         } else if (idsOfItemsToFind.contains(noteId)) {
-            MyLog.v(this, () -> "find cycled on the id=" + noteId);
-            return false;
+            MyLog.v(this) { "find cycled on the id=$noteId" }
+            return false
         }
-        idsOfItemsToFind.add(noteId);
-        return true;
+        idsOfItemsToFind.add(noteId)
+        return true
     }
 
-    @NonNull
-    protected ConversationViewItem getItem(long noteId, long conversationId, int replyLevel) {
-        ConversationViewItem item = cachedConversationItems.get(noteId);
+    protected fun getItem(noteId: Long, conversationId: Long, replyLevel: Int): ConversationViewItem {
+        var item = cachedConversationItems.get(noteId)
         if (item == null) {
-            item = emptyItem.newNonLoaded(myContext, noteId);
-            item.conversationId = conversationId;
+            item = emptyItem.newNonLoaded(myContext, noteId)
+            item.conversationId = conversationId
         }
-        item.replyLevel = replyLevel;
-        return item;
+        item.replyLevel = replyLevel
+        return item
     }
 
-    @NonNull
-    protected ConversationViewItem loadItemFromDatabase(ConversationViewItem item) {
-        if (item.isLoaded() || item.getNoteId() == 0) {
-            return item;
+    protected fun loadItemFromDatabase(item: ConversationViewItem?): ConversationViewItem {
+        if (item.isLoaded() || item.getNoteId() == 0L) {
+            return item
         }
-        ConversationViewItem cachedItem = cachedConversationItems.get(item.getNoteId());
+        val cachedItem = cachedConversationItems.get(item.getNoteId())
         if (cachedItem != null) {
-            return cachedItem;
+            return cachedItem
         }
-        Uri uri = MatchedUri.getTimelineItemUri(
-                myContext.timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.getOrigin()), item.getNoteId());
-        try (Cursor cursor = myContext.context().getContentResolver()
-                .query(uri, item.getProjection().toArray(new String[]{}), null, null, null)) {
-            if (cursor != null && cursor.moveToFirst()) {
-                ConversationViewItem loadedItem = item.fromCursor(myContext, cursor);
-                loadedItem.replyLevel = item.replyLevel;
-                cacheConversation(loadedItem);
-                MyLog.v(this, () -> "Loaded (" + loadedItem.isLoaded() + ")"
-                        + " from a database noteId=" + item.getNoteId());
-                return loadedItem;
-            }
-        }
-        MyLog.v(this, () -> "Couldn't load from a database noteId=" + item.getNoteId());
-        return item;
+        val uri: Uri = MatchedUri.Companion.getTimelineItemUri(
+                myContext.timelines()[TimelineType.EVERYTHING, Actor.Companion.EMPTY, ma.getOrigin()], item.getNoteId())
+        myContext.context().contentResolver
+                .query(uri, item.getProjection().toArray<String?>(arrayOf<String?>()), null, null, null).use { cursor ->
+                    if (cursor != null && cursor.moveToFirst()) {
+                        val loadedItem = item.fromCursor(myContext, cursor)
+                        loadedItem.replyLevel = item.replyLevel
+                        cacheConversation(loadedItem)
+                        MyLog.v(this) {
+                            ("Loaded (" + loadedItem.isLoaded + ")"
+                                    + " from a database noteId=" + item.getNoteId())
+                        }
+                        return loadedItem
+                    }
+                }
+        MyLog.v(this) { "Couldn't load from a database noteId=" + item.getNoteId() }
+        return item
     }
 
-    protected boolean addItemToList(ConversationViewItem item) {
-        boolean added = false;
+    protected fun addItemToList(item: ConversationViewItem?): Boolean {
+        var added = false
         if (items.contains(item)) {
-            MyLog.v(this, () -> "Note id=" + item.getNoteId() + " is in the list already");
+            MyLog.v(this) { "Note id=" + item.getNoteId() + " is in the list already" }
         } else {
-            items.add(item);
+            items.add(item)
             if (mProgress != null) {
-                mProgress.publish(Integer.toString(items.size()));
+                mProgress.publish(Integer.toString(items.size))
             }
-            added = true;
+            added = true
         }
-        return added;
+        return added
     }
 
-    protected void loadFromInternet(long noteId) {
+    protected fun loadFromInternet(noteId: Long) {
         if (requestConversationSync(noteId)) {
-            return;
+            return
         }
-        Note.requestDownload(ma, noteId, true);
+        Note.Companion.requestDownload(ma, noteId, true)
     }
 
-    private boolean requestConversationSync(long noteId_in) {
+    private fun requestConversationSync(noteId_in: Long): Boolean {
         if (conversationSyncRequested) {
-            return true;
+            return true
         }
-        long noteId = selectedNoteId;
-        String conversationOid = MyQuery.noteIdToConversationOid(myContext, noteId);
+        var noteId = selectedNoteId
+        var conversationOid = MyQuery.noteIdToConversationOid(myContext, noteId)
         if (StringUtil.isEmpty(conversationOid) && noteId_in != noteId) {
-            noteId = noteId_in;
-            conversationOid = MyQuery.noteIdToConversationOid(myContext, noteId);
+            noteId = noteId_in
+            conversationOid = MyQuery.noteIdToConversationOid(myContext, noteId)
         }
         if (ma.getConnection().canGetConversation(conversationOid)) {
-            conversationSyncRequested = true;
+            conversationSyncRequested = true
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "Conversation oid=" +  conversationOid + " for noteId=" + noteId
-                        + " will be loaded from the Internet");
+                MyLog.v(this, "Conversation oid=" + conversationOid + " for noteId=" + noteId
+                        + " will be loaded from the Internet")
             }
-            MyServiceManager.sendForegroundCommand(
-                    CommandData.newItemCommand(CommandEnum.GET_CONVERSATION, ma, noteId));
-            return true;
+            MyServiceManager.Companion.sendForegroundCommand(
+                    CommandData.Companion.newItemCommand(CommandEnum.GET_CONVERSATION, ma, noteId))
+            return true
         }
-        return false;
+        return false
     }
 
-    private static class ReplyLevelComparator<T extends ConversationViewItem> implements Comparator<T>, Serializable {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public int compare(T lhs, T rhs) {
-            int compared = rhs.replyLevel - lhs.replyLevel;
+    private class ReplyLevelComparator<T : ConversationViewItem?> : Comparator<T?>, Serializable {
+        override fun compare(lhs: T?, rhs: T?): Int {
+            var compared = rhs.replyLevel - lhs.replyLevel
             if (compared == 0) {
-                if (lhs.updatedDate == rhs.updatedDate) {
-                    if ( lhs.getNoteId() == rhs.getNoteId()) {
-                        compared = 0;
+                compared = if (lhs.updatedDate == rhs.updatedDate) {
+                    if (lhs.getNoteId() == rhs.getNoteId()) {
+                        0
                     } else {
-                        compared = (rhs.getNoteId() - lhs.getNoteId() > 0 ? 1 : -1);
+                        if (rhs.getNoteId() - lhs.getNoteId() > 0) 1 else -1
                     }
                 } else {
-                    compared = (rhs.updatedDate - lhs.updatedDate > 0 ? 1 : -1);
+                    if (rhs.updatedDate - lhs.updatedDate > 0) 1 else -1
                 }
             }
-            return compared;
+            return compared
+        }
+
+        companion object {
+            private const val serialVersionUID = 1L
         }
     }
 
-    private static class OrderCounters {
-        int list = -1;
-        int history = 1;
+    private class OrderCounters {
+        var list = -1
+        var history = 1
     }
-    
-    private void enumerateNotes() {
-        idsOfItemsToFind.clear();
-        for (ConversationViewItem item : items) {
-            item.mListOrder = 0;
-            item.historyOrder = 0;
+
+    private fun enumerateNotes() {
+        idsOfItemsToFind.clear()
+        for (item in items) {
+            item.mListOrder = 0
+            item.historyOrder = 0
         }
-        OrderCounters order = new OrderCounters();
-        for (int ind = items.size()-1; ind >= 0; ind--) {
-            ConversationViewItem oMsg = items.get(ind);
-            if (oMsg.mListOrder < 0 ) {
-                continue;
+        val order = OrderCounters()
+        for (ind in items.indices.reversed()) {
+            val oMsg = items[ind]
+            if (oMsg.mListOrder < 0) {
+                continue
             }
-            enumerateBranch(oMsg, order, 0);
+            enumerateBranch(oMsg, order, 0)
         }
     }
 
-    private void enumerateBranch(ConversationViewItem oMsg, OrderCounters order, int indent) {
+    private fun enumerateBranch(oMsg: ConversationViewItem?, order: OrderCounters?, indent: Int) {
         if (!addNoteIdToFind(oMsg.getNoteId())) {
-            return;
+            return
         }
-        int indentNext = indent;
-        oMsg.historyOrder = order.history++;
-        oMsg.mListOrder = order.list--;
-        oMsg.indentLevel = indent;
+        var indentNext = indent
+        oMsg.historyOrder = order.history++
+        oMsg.mListOrder = order.list--
+        oMsg.indentLevel = indent
         if ((oMsg.nReplies > 1 || oMsg.nParentReplies > 1)
                 && indentNext < MAX_INDENT_LEVEL) {
-            indentNext++;
+            indentNext++
         }
-        for (int ind = items.size() - 1; ind >= 0; ind--) {
-           ConversationViewItem reply = items.get(ind);
-           if (reply.inReplyToNoteId == oMsg.getNoteId()) {
-               reply.nParentReplies = oMsg.nReplies;
-               enumerateBranch(reply, order, indentNext);
-           }
+        for (ind in items.indices.reversed()) {
+            val reply = items[ind]
+            if (reply.inReplyToNoteId == oMsg.getNoteId()) {
+                reply.nParentReplies = oMsg.nReplies
+                enumerateBranch(reply, order, indentNext)
+            }
         }
     }
 
-    public void allowLoadingFromInternet() {
-        this.mAllowLoadingFromInternet = true;
+    override fun allowLoadingFromInternet() {
+        mAllowLoadingFromInternet = true
+    }
+
+    companion object {
+        private const val MAX_INDENT_LEVEL = 19
+    }
+
+    init {
+        ma = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
+        this.selectedNoteId = selectedNoteId
+        this.sync = sync || MyPreferences.isSyncWhileUsingApplicationEnabled()
     }
 }

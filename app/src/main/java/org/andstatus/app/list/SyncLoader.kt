@@ -13,42 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.list
 
-package org.andstatus.app.list;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.timeline.LoadableListActivity;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher
+import java.util.*
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public abstract class SyncLoader<T> {
-    protected List<T> items = new ArrayList<>();
-
-    public void allowLoadingFromInternet() {
+abstract class SyncLoader<T> {
+    protected var items: MutableList<T?>? = ArrayList()
+    open fun allowLoadingFromInternet() {
         // Empty
     }
 
-    public abstract void load(LoadableListActivity.ProgressPublisher publisher);
-
-    @NonNull
-    public List<T> getList() {
-        return items;
+    abstract fun load(publisher: ProgressPublisher?)
+    fun getList(): MutableList<T?> {
+        return items
     }
 
-    @NonNull
-    public T getLoaded(@NonNull T beforeLoad) {
-        int index = getList().indexOf(beforeLoad);
-        return index < 0
-                ? beforeLoad
-                : getList().get(index);
+    fun getLoaded(beforeLoad: T): T {
+        val index = getList().indexOf(beforeLoad)
+        return if (index < 0) beforeLoad else getList()[index]
     }
 
-    public int size() {
-        return items.size();
+    fun size(): Int {
+        return items.size
     }
 }

@@ -13,204 +13,192 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.context
 
-package org.andstatus.app.context;
-
-import android.content.Intent;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.FirstActivity;
-import org.andstatus.app.HelpActivity;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.net.http.TlsSniSocketFactory;
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.ExceptionsCounter;
-import org.andstatus.app.os.NonUiThreadExecutor;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.syncadapter.SyncInitiator;
-import org.andstatus.app.util.IdentifiableInstance;
-import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.SharedPreferencesUtil;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
-
-import io.vavr.control.Try;
+import android.content.Intent
+import android.util.AndroidRuntimeException
+import io.vavr.control.Try
+import org.andstatus.app.FirstActivity
+import org.andstatus.app.HelpActivity
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.net.http.TlsSniSocketFactory
+import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.ExceptionsCounter
+import org.andstatus.app.os.NonUiThreadExecutor
+import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.syncadapter.SyncInitiator
+import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.InstanceId
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.SharedPreferencesUtil
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
+import java.util.function.BiConsumer
+import java.util.function.Consumer
+import java.util.function.Supplier
+import java.util.function.UnaryOperator
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MyFutureContext implements IdentifiableInstance {
-    private static final String TAG = MyFutureContext.class.getSimpleName();
-
-    protected final long createdAt = MyLog.uniqueCurrentTimeMS();
-    protected final long instanceId = InstanceId.next();
-
-    @NonNull
-    private final MyContext previousContext;
-    public final CompletableFuture<MyContext> future;
-
-    public MyFutureContext releaseNow(Supplier<String> reason) {
-        MyContext previousContext = getNow();
-        release(previousContext, reason);
-        return completed(previousContext);
+class MyFutureContext private constructor(private val previousContext: MyContext, val future: CompletableFuture<MyContext?>?) : IdentifiableInstance {
+    protected val createdAt = MyLog.uniqueCurrentTimeMS()
+    protected val instanceId = InstanceId.next()
+    fun releaseNow(reason: Supplier<String?>?): MyFutureContext? {
+        val previousContext = getNow()
+        release(previousContext, reason)
+        return completed(previousContext)
     }
 
-    public boolean isCompletedExceptionally() {
-        return future.isCompletedExceptionally();
-    }
-
-    public static MyFutureContext fromPrevious(MyFutureContext previousFuture, Object calledBy) {
-        CompletableFuture<MyContext> future = previousFuture.getHealthyFuture(calledBy)
-            .thenApplyAsync(initializeMyContextIfNeeded(calledBy), NonUiThreadExecutor.INSTANCE);
-        return new MyFutureContext(previousFuture.getNow(), future);
-    }
-
-    private static UnaryOperator<MyContext> initializeMyContextIfNeeded(Object calledBy) {
-        return previousContext -> {
-            String reason;
-            if (!previousContext.isReady()) {
-                reason = "Context not ready";
-            } else if (previousContext.isExpired()) {
-                reason = "Context expired";
-            } else if (previousContext.isPreferencesChanged()) {
-                reason = "Preferences changed";
-            } else {
-                return previousContext;
-            }
-            Supplier<String> reasonSupplier = () -> "Initialization: " + reason
-                    + ", previous:" + MyStringBuilder.objToTag(previousContext)
-                    + " by " + MyStringBuilder.objToTag(calledBy);
-            MyLog.v(TAG, () -> "Preparing for " + reasonSupplier.get());
-            release(previousContext, reasonSupplier);
-            MyContext myContext = previousContext.newInitialized(calledBy);
-            SyncInitiator.register(myContext);
-            return myContext;
-        };
-    }
-
-    private static void release(MyContext previousContext, Supplier<String> reason) {
-        SyncInitiator.unregister(previousContext);
-        MyServiceManager.setServiceUnavailable();
-        TlsSniSocketFactory.forget();
-        previousContext.save(reason);
-        AsyncTaskLauncher.forget();
-        ExceptionsCounter.forget();
-        MyLog.forget();
-        SharedPreferencesUtil.forget();
-        FirstActivity.isFirstrun.set(true);
-        previousContext.release(reason);
-        // There is InterruptedException after above..., so we catch it below:
-        DbUtils.waitMs(TAG, 10);
-        MyLog.d(TAG,"Release completed, " + reason.get());
-    }
-
-    static MyFutureContext completed(MyContext myContext) {
-        return new MyFutureContext(MyContext.EMPTY, completedFuture(myContext));
-    }
-
-    private static CompletableFuture<MyContext> completedFuture(MyContext myContext) {
-        CompletableFuture<MyContext> future = new CompletableFuture<>();
-        future.complete(myContext);
-        return future;
-    }
-
-    private MyFutureContext(@NonNull MyContext previousContext, CompletableFuture<MyContext> future) {
-        this.previousContext = previousContext;
-        this.future = future;
-    }
-
-    public boolean isReady() {
-        return getNow().isReady();
-    }
-
-    public MyContext getNow() {
-        return tryNow().getOrElse(previousContext);
-    }
-
-    public Try<MyContext> tryNow() {
-        return Try.success(previousContext).map(future::getNow);
-    }
-
-    @Override
-    public long getInstanceId() {
-        return instanceId;
-    }
-
-    MyFutureContext whenSuccessAsync(Consumer<MyContext> consumer, Executor executor) {
-        return with(future -> future.whenCompleteAsync((myContext, throwable) -> {
-            MyLog.d(TAG, "whenSuccessAsync " + myContext + ", " + future);
-            if (myContext != null) {
-                consumer.accept(myContext);
-            }
-        }, executor));
-    }
-
-    MyFutureContext whenSuccessOrPreviousAsync(Consumer<MyContext> consumer, Executor executor) {
-        return with(future -> future.whenCompleteAsync((myContext, throwable) -> {
-            consumer.accept(myContext == null ? previousContext : myContext);
-        }, executor));
-    }
-
-    public MyFutureContext with(UnaryOperator<CompletableFuture<MyContext>> futures) {
-        CompletableFuture<MyContext> healthyFuture = getHealthyFuture("(with)");
-        CompletableFuture<MyContext> nextFuture = futures.apply(healthyFuture);
-        MyLog.d(TAG, "with, after apply, next: " + nextFuture);
-        return new MyFutureContext(previousContext, nextFuture);
-    }
-
-    private CompletableFuture<MyContext> getHealthyFuture(Object calledBy) {
-        if (future.isDone()) {
-            tryNow().onFailure(throwable ->
-                    MyLog.i(TAG, future.isCancelled()
-                            ? "Previous initialization was cancelled"
-                            : "Previous initialization completed exceptionally"
-                            + ", now called by " + calledBy, throwable));
-        }
+    fun isCompletedExceptionally(): Boolean {
         return future.isCompletedExceptionally()
-                ? completedFuture(previousContext)
-                : future;
     }
 
-    static void startActivity(MyContext myContext, Intent intent) {
-        if (intent != null) {
-            boolean launched = false;
-            if (myContext.isReady()) {
-                try {
-                    MyLog.d(TAG, "Start activity with intent:" + intent);
-                    myContext.context().startActivity(intent);
-                    launched = true;
-                } catch (android.util.AndroidRuntimeException e) {
+    fun isReady(): Boolean {
+        return getNow().isReady()
+    }
+
+    fun getNow(): MyContext? {
+        return tryNow().getOrElse(previousContext)
+    }
+
+    fun tryNow(): Try<MyContext?>? {
+        return Try.success(previousContext).map { valueIfAbsent: MyContext? -> future.getNow(valueIfAbsent) }
+    }
+
+    override fun getInstanceId(): Long {
+        return instanceId
+    }
+
+    fun whenSuccessAsync(consumer: Consumer<MyContext?>?, executor: Executor?): MyFutureContext? {
+        return with { future: CompletableFuture<MyContext?>? ->
+            future.whenCompleteAsync(BiConsumer { myContext: MyContext?, throwable: Throwable? ->
+                MyLog.d(TAG, "whenSuccessAsync $myContext, $future")
+                if (myContext != null) {
+                    consumer.accept(myContext)
+                }
+            }, executor)
+        }
+    }
+
+    fun whenSuccessOrPreviousAsync(consumer: Consumer<MyContext?>?, executor: Executor?): MyFutureContext? {
+        return with { future: CompletableFuture<MyContext?>? ->
+            future.whenCompleteAsync(BiConsumer { myContext: MyContext?, throwable: Throwable? ->
+                consumer.accept(myContext ?: previousContext)
+            }, executor)
+        }
+    }
+
+    fun with(futures: UnaryOperator<CompletableFuture<MyContext?>?>?): MyFutureContext? {
+        val healthyFuture = getHealthyFuture("(with)")
+        val nextFuture = futures.apply(healthyFuture)
+        MyLog.d(TAG, "with, after apply, next: $nextFuture")
+        return MyFutureContext(previousContext, nextFuture)
+    }
+
+    private fun getHealthyFuture(calledBy: Any?): CompletableFuture<MyContext?>? {
+        if (future.isDone()) {
+            tryNow().onFailure(Consumer { throwable: Throwable? ->
+                MyLog.i(TAG, if (future.isCancelled()) "Previous initialization was cancelled" else "Previous initialization completed exceptionally"
+                        + ", now called by " + calledBy, throwable)
+            })
+        }
+        return if (future.isCompletedExceptionally()) completedFuture(previousContext) else future
+    }
+
+    fun tryBlocking(): Try<MyContext?>? {
+        return Try.of { future.get() }
+    }
+
+    override fun classTag(): String? {
+        return TAG
+    }
+
+    companion object {
+        private val TAG: String? = MyFutureContext::class.java.simpleName
+        fun fromPrevious(previousFuture: MyFutureContext?, calledBy: Any?): MyFutureContext? {
+            val future = previousFuture.getHealthyFuture(calledBy)
+                    .thenApplyAsync(initializeMyContextIfNeeded(calledBy), NonUiThreadExecutor.Companion.INSTANCE)
+            return MyFutureContext(previousFuture.getNow(), future)
+        }
+
+        private fun initializeMyContextIfNeeded(calledBy: Any?): UnaryOperator<MyContext?>? {
+            return label@ UnaryOperator { previousContext: MyContext? ->
+                val reason: String
+                reason = if (!previousContext.isReady()) {
+                    "Context not ready"
+                } else if (previousContext.isExpired()) {
+                    "Context expired"
+                } else if (previousContext.isPreferencesChanged()) {
+                    "Preferences changed"
+                } else {
+                    return@label previousContext
+                }
+                val reasonSupplier = Supplier {
+                    ("Initialization: " + reason
+                            + ", previous:" + MyStringBuilder.Companion.objToTag(previousContext)
+                            + " by " + MyStringBuilder.Companion.objToTag(calledBy))
+                }
+                MyLog.v(TAG) { "Preparing for " + reasonSupplier.get() }
+                release(previousContext, reasonSupplier)
+                val myContext = previousContext.newInitialized(calledBy)
+                SyncInitiator.Companion.register(myContext)
+                myContext
+            }
+        }
+
+        private fun release(previousContext: MyContext?, reason: Supplier<String?>?) {
+            SyncInitiator.Companion.unregister(previousContext)
+            MyServiceManager.Companion.setServiceUnavailable()
+            TlsSniSocketFactory.Companion.forget()
+            previousContext.save(reason)
+            AsyncTaskLauncher.Companion.forget()
+            ExceptionsCounter.forget()
+            MyLog.forget()
+            SharedPreferencesUtil.forget()
+            FirstActivity.Companion.isFirstrun.set(true)
+            previousContext.release(reason)
+            // There is InterruptedException after above..., so we catch it below:
+            DbUtils.waitMs(TAG, 10)
+            MyLog.d(TAG, "Release completed, " + reason.get())
+        }
+
+        fun completed(myContext: MyContext?): MyFutureContext? {
+            return MyFutureContext(MyContext.Companion.EMPTY, completedFuture(myContext))
+        }
+
+        private fun completedFuture(myContext: MyContext?): CompletableFuture<MyContext?>? {
+            val future = CompletableFuture<MyContext?>()
+            future.complete(myContext)
+            return future
+        }
+
+        fun startActivity(myContext: MyContext?, intent: Intent?) {
+            if (intent != null) {
+                var launched = false
+                if (myContext.isReady()) {
                     try {
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        MyLog.d(TAG, "Start activity with intent (new task):" + intent);
-                        myContext.context().startActivity(intent);
-                        launched = true;
-                    } catch (Exception e2) {
-                        MyLog.e(TAG, "Launching activity with Intent.FLAG_ACTIVITY_NEW_TASK flag", e);
+                        MyLog.d(TAG, "Start activity with intent:$intent")
+                        myContext.context().startActivity(intent)
+                        launched = true
+                    } catch (e: AndroidRuntimeException) {
+                        try {
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            MyLog.d(TAG, "Start activity with intent (new task):$intent")
+                            myContext.context().startActivity(intent)
+                            launched = true
+                        } catch (e2: Exception) {
+                            MyLog.e(TAG, "Launching activity with Intent.FLAG_ACTIVITY_NEW_TASK flag", e)
+                        }
+                    } catch (e: SecurityException) {
+                        MyLog.d(TAG, "Launching activity", e)
                     }
-                } catch (SecurityException e) {
-                    MyLog.d(TAG, "Launching activity", e);
+                }
+                if (!launched) {
+                    HelpActivity.Companion.startMe(myContext.context(), true, HelpActivity.Companion.PAGE_LOGO)
                 }
             }
-            if (!launched) {
-                HelpActivity.startMe(myContext.context(), true, HelpActivity.PAGE_LOGO);
-            }
         }
-    }
-
-    public Try<MyContext> tryBlocking() {
-        return Try.of(future::get);
-    }
-
-    @Override
-    public String classTag() {
-        return TAG;
     }
 }

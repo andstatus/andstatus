@@ -13,147 +13,134 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-import android.content.Context;
-import android.text.TextUtils;
-
-import androidx.annotation.NonNull;
-
-import java.text.MessageFormat;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import android.content.Context
+import android.text.TextUtils
+import java.text.MessageFormat
+import java.util.regex.Pattern
 
 /**
- * i18n - Internationalization utilities 
+ * i18n - Internationalization utilities
  */
-public class I18n {
-    private static final String TAG = I18n.class.getSimpleName();
-    
-    private I18n() {
-    }
-    
+object I18n {
+    private val TAG: String? = I18n::class.java.simpleName
+
     /**
      * The function enables to have different localized message formats
-     *  (actually, any number of them)
-     *  for different quantities of something.
-     *  
-     * E.g. in Russian we need at least three different messages notifying User 
-     *  about the number of new tweets:
-     *  1 твит  (same for 21, 31, ...)
-     *  2 твита ( same for 3, 4, 22, ... )
-     *  5 твитов (same for 5, ... 11, 12, 20 ...)
-     *  ...
-     *  see /res/values-ru/arrays.xml (R.array.appwidget_message_patterns)
-     * 
+     * (actually, any number of them)
+     * for different quantities of something.
+     *
+     * E.g. in Russian we need at least three different messages notifying User
+     * about the number of new tweets:
+     * 1 твит  (same for 21, 31, ...)
+     * 2 твита ( same for 3, 4, 22, ... )
+     * 5 твитов (same for 5, ... 11, 12, 20 ...)
+     * ...
+     * see /res/values-ru/arrays.xml (R.array.appwidget_message_patterns)
+     *
      * @author yvolk@yurivolkov.com
      */
-    public static String formatQuantityMessage(Context context, int messageFormatResourceId,
-            long quantityOfSomething, int arrayPatterns, int arrayFormats) {
-        String toMatch = Long.toString(quantityOfSomething);
-        String[] p = context.getResources().getStringArray(arrayPatterns);
-        String[] f = context.getResources().getStringArray(arrayFormats);
-        String subformat = "{0} ???";
-        for (int i = 0; i < p.length; i++) {
-            Pattern pattern = Pattern.compile(p[i]);
-            Matcher m = pattern.matcher(toMatch);
+    fun formatQuantityMessage(context: Context?, messageFormatResourceId: Int,
+                              quantityOfSomething: Long, arrayPatterns: Int, arrayFormats: Int): String? {
+        val toMatch = java.lang.Long.toString(quantityOfSomething)
+        val p = context.getResources().getStringArray(arrayPatterns)
+        val f = context.getResources().getStringArray(arrayFormats)
+        var subformat: String? = "{0} ???"
+        for (i in p.indices) {
+            val pattern = Pattern.compile(p[i])
+            val m = pattern.matcher(toMatch)
             if (m.matches()) {
-                subformat = f[i];
-                break;
+                subformat = f[i]
+                break
             }
         }
-        MessageFormat msf = new MessageFormat(subformat);
-        String submessage = msf.format(new Object[] { quantityOfSomething });
-        
-        if (messageFormatResourceId == 0) {
-            return submessage;
+        val msf = MessageFormat(subformat)
+        val submessage = msf.format(arrayOf<Any?>(quantityOfSomething))
+        return if (messageFormatResourceId == 0) {
+            submessage
         } else {
-            MessageFormat mf = new MessageFormat(context.getText(messageFormatResourceId).toString());
-            return mf.format(new Object[] { submessage });
+            val mf = MessageFormat(context.getText(messageFormatResourceId).toString())
+            mf.format(arrayOf<Any?>(submessage))
         }
     }
 
-    @NonNull
-    public static CharSequence trimTextAt(CharSequence text, int maxLength) {
+    fun trimTextAt(text: CharSequence?, maxLength: Int): CharSequence {
         if (TextUtils.isEmpty(text) || maxLength < 1) {
-            return "";
+            return ""
         }
-        if (text.length() <= maxLength) {
-            return text;
+        if (text.length <= maxLength) {
+            return text
         }
-        if (text.length() == maxLength+1 && isSpace(text.charAt(maxLength))) {
-            return text.subSequence(0, maxLength);
+        if (text.length == maxLength + 1 && isSpace(text.get(maxLength))) {
+            return text.subSequence(0, maxLength)
         }
-        if (maxLength == 1 && !isSpace(text.charAt(0))) {
-            return text.subSequence(0, 1);
+        if (maxLength == 1 && !isSpace(text.get(0))) {
+            return text.subSequence(0, 1)
         }
-        int lastSpace = maxLength-1;
+        var lastSpace = maxLength - 1
         while (lastSpace > 1) {
-            if (isSpace(text.charAt(lastSpace))) {
-                break;
+            if (isSpace(text.get(lastSpace))) {
+                break
             }
-            lastSpace--;
+            lastSpace--
         }
-        final CharSequence trimmed = text.subSequence(0, lastSpace);
-        return trimmed + "…";
+        val trimmed = text.subSequence(0, lastSpace)
+        return "$trimmed…"
     }
 
-    private static boolean isSpace(char charAt) {
-        return " ,.;:()[]{}-_=+\"'".indexOf(charAt) >=0;
+    private fun isSpace(charAt: Char): Boolean {
+        return " ,.;:()[]{}-_=+\"'".indexOf(charAt) >= 0
     }
 
-    public static String localeToLanguage(String locale) {
+    fun localeToLanguage(locale: String?): String? {
         if (StringUtil.isEmpty(locale)) {
-            return "";
+            return ""
         }
-        int indHyphen = locale.indexOf('-');
-        if (indHyphen < 1) {
-            return locale;
-        }
-        return locale.substring(0, indHyphen);
+        val indHyphen = locale.indexOf('-')
+        return if (indHyphen < 1) {
+            locale
+        } else locale.substring(0, indHyphen)
     }
 
-    public static String localeToCountry(String locale) {
+    fun localeToCountry(locale: String?): String? {
         if (StringUtil.isEmpty(locale)) {
-            return "";
+            return ""
         }
-        int indHyphen = locale.indexOf("-r");
-        if (indHyphen < 0) {
-            return "";
-        }
-        return locale.substring(indHyphen+2);
+        val indHyphen = locale.indexOf("-r")
+        return if (indHyphen < 0) {
+            ""
+        } else locale.substring(indHyphen + 2)
     }
 
-    public static String formatBytes(long bytes) {
-        if (bytes == 0) {
-            return "0";
+    fun formatBytes(bytes: Long): String? {
+        if (bytes == 0L) {
+            return "0"
         }
         if (bytes < 10000) {
-            return Long.toString(bytes) + "B";
+            return java.lang.Long.toString(bytes) + "B"
         }
-        long kB = Math.round(1.0 * bytes / 1024);
+        val kB = Math.round(1.0 * bytes / 1024)
         if (kB < 10000) {
-            return Long.toString(kB) + "KB";
+            return java.lang.Long.toString(kB) + "KB"
         }
-        long mB = Math.round(1.0 * kB / 1024);
+        val mB = Math.round(1.0 * kB / 1024)
         if (mB < 10000) {
-            return Long.toString(mB) + "MB";
+            return java.lang.Long.toString(mB) + "MB"
         }
-        long gB = Math.round(1.0 * mB / 1024);
-        return Long.toString(gB) + "GB";
+        val gB = Math.round(1.0 * mB / 1024)
+        return java.lang.Long.toString(gB) + "GB"
     }
 
-    public static String notZero(long value) {
-        if (value == 0) {
-            return "";
+    fun notZero(value: Long): String? {
+        return if (value == 0L) {
+            ""
         } else {
-            return Long.toString(value);
+            java.lang.Long.toString(value)
         }
     }
 
-    @NonNull
-    public static String succeededText(boolean succeeded) {
-        return succeeded ? " succeeded" : " failed";
+    fun succeededText(succeeded: Boolean): String {
+        return if (succeeded) " succeeded" else " failed"
     }
 }

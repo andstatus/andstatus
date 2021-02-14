@@ -13,320 +13,270 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social
 
-package org.andstatus.app.net.social;
-
-import android.net.Uri;
-import android.os.Build;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.http.HttpReadResult;
-import org.andstatus.app.net.http.HttpRequest;
-import org.andstatus.app.origin.OriginConfig;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.UriUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import io.vavr.control.Try;
-
-import static org.andstatus.app.context.MyPreferences.BYTES_IN_MB;
+import android.net.Uri
+import android.os.Build
+import eu.bolt.screenshotty.ScreenshotManagerBuilder.build
+import io.vavr.control.CheckedFunction
+import io.vavr.control.Try
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.HttpReadResult
+import org.andstatus.app.net.http.HttpRequest
+import org.andstatus.app.origin.OriginConfig
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.UriUtils
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.util.*
+import java.util.function.Consumer
+import java.util.function.Function
+import java.util.stream.Collectors
 
 /**
  * Implementation of current API of the twitter.com
  * https://dev.twitter.com/rest/public
  */
-public class ConnectionTheTwitter extends ConnectionTwitterLike {
-    private static final String ATTACHMENTS_FIELD_NAME = "media";
-    private static final String SENSITIVE_PROPERTY = "possibly_sensitive";
-
-    @NonNull
-    @Override
-    protected String getApiPathFromOrigin(ApiRoutineEnum routine) {
-        String url;
-        switch(routine) {
-            case ACCOUNT_RATE_LIMIT_STATUS:
-                url = "application/rate_limit_status.json";
-                break;
-            case LIKE:
-                url = "favorites/create.json?tweet_mode=extended";
-                break;
-            case UNDO_LIKE:
-                url = "favorites/destroy.json?tweet_mode=extended";
-                break;
-            case PRIVATE_NOTES:
-                url = "direct_messages.json?tweet_mode=extended";
-                break;
-            case LIKED_TIMELINE:
-                // https://dev.twitter.com/rest/reference/get/favorites/list
-                url = "favorites/list.json?tweet_mode=extended";
-                break;
-            case GET_FOLLOWERS:
-                // https://dev.twitter.com/rest/reference/get/followers/list
-                url = "followers/list.json";
-                break;
-            case GET_FRIENDS:
-                // https://dev.twitter.com/docs/api/1.1/get/friends/list
-                url = "friends/list.json";
-                break;
-            case GET_NOTE:
-                url = "statuses/show.json" + "?id=%noteId%&tweet_mode=extended";
-                break;
-            case HOME_TIMELINE:
-                url = "statuses/home_timeline.json?tweet_mode=extended";
-                break;
-            case NOTIFICATIONS_TIMELINE:
-                // https://dev.twitter.com/docs/api/1.1/get/statuses/mentions_timeline
-                url = "statuses/mentions_timeline.json?tweet_mode=extended";
-                break;
-            case UPDATE_PRIVATE_NOTE:
-                url = "direct_messages/new.json?tweet_mode=extended";
-                break;
-            case UPDATE_NOTE:
-                url = "statuses/update.json?tweet_mode=extended";
-                break;
-            case ANNOUNCE:
-                url = "statuses/retweet/%noteId%.json?tweet_mode=extended";
-                break;
-            case UPLOAD_MEDIA:
-                // Trying to allow setting alternative Twitter host...
-                if (http.data.originUrl.getHost().equals("api.twitter.com")) {
-                    url = "https://upload.twitter.com/1.1/media/upload.json";
+class ConnectionTheTwitter : ConnectionTwitterLike() {
+    override fun getApiPathFromOrigin(routine: ApiRoutineEnum?): String {
+        val url: String
+        url = when (routine) {
+            ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS -> "application/rate_limit_status.json"
+            ApiRoutineEnum.LIKE -> "favorites/create.json?tweet_mode=extended"
+            ApiRoutineEnum.UNDO_LIKE -> "favorites/destroy.json?tweet_mode=extended"
+            ApiRoutineEnum.PRIVATE_NOTES -> "direct_messages.json?tweet_mode=extended"
+            ApiRoutineEnum.LIKED_TIMELINE ->                 // https://dev.twitter.com/rest/reference/get/favorites/list
+                "favorites/list.json?tweet_mode=extended"
+            ApiRoutineEnum.GET_FOLLOWERS ->                 // https://dev.twitter.com/rest/reference/get/followers/list
+                "followers/list.json"
+            ApiRoutineEnum.GET_FRIENDS ->                 // https://dev.twitter.com/docs/api/1.1/get/friends/list
+                "friends/list.json"
+            ApiRoutineEnum.GET_NOTE -> "statuses/show.json" + "?id=%noteId%&tweet_mode=extended"
+            ApiRoutineEnum.HOME_TIMELINE -> "statuses/home_timeline.json?tweet_mode=extended"
+            ApiRoutineEnum.NOTIFICATIONS_TIMELINE ->                 // https://dev.twitter.com/docs/api/1.1/get/statuses/mentions_timeline
+                "statuses/mentions_timeline.json?tweet_mode=extended"
+            ApiRoutineEnum.UPDATE_PRIVATE_NOTE -> "direct_messages/new.json?tweet_mode=extended"
+            ApiRoutineEnum.UPDATE_NOTE -> "statuses/update.json?tweet_mode=extended"
+            ApiRoutineEnum.ANNOUNCE -> "statuses/retweet/%noteId%.json?tweet_mode=extended"
+            ApiRoutineEnum.UPLOAD_MEDIA ->                 // Trying to allow setting alternative Twitter host...
+                if (http.data.originUrl.host == "api.twitter.com") {
+                    "https://upload.twitter.com/1.1/media/upload.json"
                 } else {
-                    url = "media/upload.json";
+                    "media/upload.json"
                 }
-                break;
-            case SEARCH_NOTES:
-                // https://dev.twitter.com/docs/api/1.1/get/search/tweets
-                url = "search/tweets.json?tweet_mode=extended";
-                break;
-            case SEARCH_ACTORS:
-                url = "users/search.json?tweet_mode=extended";
-                break;
-            case ACTOR_TIMELINE:
-                url = "statuses/user_timeline.json?tweet_mode=extended";
-                break;
-            default:
-                url = "";
-                break;
+            ApiRoutineEnum.SEARCH_NOTES ->                 // https://dev.twitter.com/docs/api/1.1/get/search/tweets
+                "search/tweets.json?tweet_mode=extended"
+            ApiRoutineEnum.SEARCH_ACTORS -> "users/search.json?tweet_mode=extended"
+            ApiRoutineEnum.ACTOR_TIMELINE -> "statuses/user_timeline.json?tweet_mode=extended"
+            else -> ""
         }
-        if (StringUtil.isEmpty(url)) {
-            return super.getApiPathFromOrigin(routine);
-        }
-        return partialPathToApiPath(url);
+        return if (StringUtil.isEmpty(url)) {
+            super.getApiPathFromOrigin(routine)
+        } else partialPathToApiPath(url)
     }
 
     /**
      * https://developer.twitter.com/en/docs/tweets/post-and-engage/api-reference/post-statuses-update
      * @return
      */
-    @Override
-    protected Try<AActivity> updateNote2(Note note) {
-        JSONObject obj = new JSONObject();
+    override fun updateNote2(note: Note?): Try<AActivity?>? {
+        val obj = JSONObject()
         try {
-            super.updateNoteSetFields(note, obj);
+            super.updateNoteSetFields(note, obj)
             if (note.isSensitive()) {
-                obj.put(SENSITIVE_PROPERTY, note.isSensitive());
+                obj.put(SENSITIVE_PROPERTY, note.isSensitive())
             }
-            List<String> ids = new ArrayList<>();
-            for (Attachment attachment : note.attachments.list) {
+            val ids: MutableList<String?> = ArrayList()
+            for (attachment in note.attachments.list) {
                 if (UriUtils.isDownloadable(attachment.uri)) {
-                    MyLog.i(this, "Skipped downloadable " + attachment);
+                    MyLog.i(this, "Skipped downloadable $attachment")
                 } else {
                     // https://developer.twitter.com/en/docs/media/upload-media/api-reference/post-media-upload
-                    JSONObject mediaObject = uploadMedia(attachment);
+                    val mediaObject = uploadMedia(attachment)
                     if (mediaObject != null && mediaObject.has("media_id_string")) {
-                        ids.add(mediaObject.get("media_id_string").toString());
+                        ids.add(mediaObject["media_id_string"].toString())
                     }
                 }
-            };
+            }
             if (!ids.isEmpty()) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    obj.put("media_ids", String.join(",", ids));
+                    obj.put("media_ids", java.lang.String.join(",", ids))
                 } else {
-                    obj.put("media_ids", ids.stream().collect(Collectors.joining(",")));
+                    obj.put("media_ids", ids.stream().collect(Collectors.joining(",")))
                 }
             }
-        } catch (JSONException e) {
-            return Try.failure(ConnectionException.hardConnectionException("Exception while preparing post params " + note, e));
-        } catch (Exception e) {
-            return Try.failure(e);
+        } catch (e: JSONException) {
+            return Try.failure(ConnectionException.Companion.hardConnectionException("Exception while preparing post params $note", e))
+        } catch (e: Exception) {
+            return Try.failure(e)
         }
         return postRequest(ApiRoutineEnum.UPDATE_NOTE, obj)
-                .flatMap(HttpReadResult::getJsonObject)
-                .map(this::activityFromJson);
+                .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+                .map { jso: JSONObject? -> activityFromJson(jso) }
     }
 
-    private JSONObject uploadMedia(Attachment attachment) throws ConnectionException {
-        return tryApiPath(data.getAccountActor(), ApiRoutineEnum.UPLOAD_MEDIA)
-        .map(uri -> HttpRequest.of(ApiRoutineEnum.UPLOAD_MEDIA, uri)
-                        .withMediaPartName("media")
-                        .withAttachmentToPost(attachment)
-        )
-        .flatMap(this::execute)
-        .flatMap(HttpReadResult::getJsonObject)
-        .filter(Objects::nonNull)
-        .onSuccess(jso -> MyLog.v(this, () -> "uploaded '" + attachment + "' " + jso.toString()))
-        .getOrElseThrow(ConnectionException::of);
+    @Throws(ConnectionException::class)
+    private fun uploadMedia(attachment: Attachment?): JSONObject? {
+        return tryApiPath(data.accountActor, ApiRoutineEnum.UPLOAD_MEDIA)
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? ->
+                    HttpRequest.Companion.of(ApiRoutineEnum.UPLOAD_MEDIA, uri)
+                            .withMediaPartName("media")
+                            .withAttachmentToPost(attachment)
+                }
+                )
+                .flatMap { request: HttpRequest? -> execute(request) }
+                .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+                .filter { obj: JSONObject? -> Objects.nonNull(obj) }
+                .onSuccess { jso: JSONObject? -> MyLog.v(this) { "uploaded '" + attachment + "' " + jso.toString() } }
+                .getOrElseThrow(Function<Throwable?, ConnectionException?> { e: Throwable? -> ConnectionException.Companion.of(e) })
     }
 
-    @Override
-    public Try<OriginConfig> getConfig() {
+    override fun getConfig(): Try<OriginConfig?>? {
         // There is https://developer.twitter.com/en/docs/developer-utilities/configuration/api-reference/get-help-configuration
         // but it doesn't have this 280 chars limit...
-        return Try.success(new OriginConfig(280, 5 * BYTES_IN_MB));
+        return Try.success(OriginConfig(280, 5 * MyPreferences.BYTES_IN_MB))
     }
 
-    @Override
-    public Try<AActivity> like(String noteOid) {
-        JSONObject out = new JSONObject();
+    override fun like(noteOid: String?): Try<AActivity?>? {
+        val out = JSONObject()
         try {
-            out.put("id", noteOid);
-        } catch (JSONException e) {
-            return Try.failure(e);
+            out.put("id", noteOid)
+        } catch (e: JSONException) {
+            return Try.failure(e)
         }
         return postRequest(ApiRoutineEnum.LIKE, out)
-            .flatMap(HttpReadResult::getJsonObject)
-            .map(this::activityFromJson);
+                .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+                .map { jso: JSONObject? -> activityFromJson(jso) }
     }
 
-    @Override
-    public Try<AActivity> undoLike(String noteOid) {
-        JSONObject out = new JSONObject();
+    override fun undoLike(noteOid: String?): Try<AActivity?>? {
+        val out = JSONObject()
         try {
-            out.put("id", noteOid);
-        } catch (JSONException e) {
-            return Try.failure(e);
+            out.put("id", noteOid)
+        } catch (e: JSONException) {
+            return Try.failure(e)
         }
         return postRequest(ApiRoutineEnum.UNDO_LIKE, out)
-            .flatMap(HttpReadResult::getJsonObject)
-            .map(this::activityFromJson);
+                .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+                .map { jso: JSONObject? -> activityFromJson(jso) }
     }
 
-    @NonNull
-    @Override
-    public Try<InputTimelinePage> searchNotes(boolean syncYounger, TimelinePosition youngestPosition,
-                                         TimelinePosition oldestPosition, int limit, String searchQuery) {
-        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_NOTES;
+    override fun searchNotes(syncYounger: Boolean, youngestPosition: TimelinePosition?,
+                             oldestPosition: TimelinePosition?, limit: Int, searchQuery: String?): Try<InputTimelinePage?> {
+        val apiRoutine = ApiRoutineEnum.SEARCH_NOTES
         return getApiPath(apiRoutine)
-        .map(Uri::buildUpon)
-        .map(b -> StringUtil.isEmpty(searchQuery) ? b : b.appendQueryParameter("q", searchQuery))
-        .map(builder -> appendPositionParameters(builder, youngestPosition, oldestPosition))
-        .map(builder -> builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)))
-        .map(Uri.Builder::build)
-        .map(uri -> HttpRequest.of(apiRoutine, uri))
-        .flatMap(this::execute)
-        .flatMap(result -> result.getJsonArrayInObject("statuses")
-            .flatMap(jArr -> jArrToTimeline(jArr, apiRoutine)))
-        .map(InputTimelinePage::of);
+                .map { obj: Uri? -> obj.buildUpon() }
+                .map { b: Uri.Builder? -> if (StringUtil.isEmpty(searchQuery)) b else b.appendQueryParameter("q", searchQuery) }
+                .map { builder: Uri.Builder? -> appendPositionParameters(builder, youngestPosition, oldestPosition) }
+                .map { builder: Uri.Builder? -> builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
+                .map(CheckedFunction<Uri.Builder?, Uri?> { Uri.Builder.build() })
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })
+                .flatMap { request: HttpRequest? -> execute(request) }
+                .flatMap { result: HttpReadResult? ->
+                    result.getJsonArrayInObject("statuses")
+                            .flatMap { jArr: JSONArray? -> jArrToTimeline(jArr, apiRoutine) }
+                }
+                .map(CheckedFunction { activities: MutableList<AActivity?>? -> InputTimelinePage.Companion.of(activities) })
     }
 
-    @NonNull
-    @Override
-    public Try<List<Actor>> searchActors(int limit, String searchQuery) {
-        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_ACTORS;
+    override fun searchActors(limit: Int, searchQuery: String?): Try<MutableList<Actor?>?> {
+        val apiRoutine = ApiRoutineEnum.SEARCH_ACTORS
         return getApiPath(apiRoutine)
-        .map(Uri::buildUpon)
-        .map(b -> StringUtil.isEmpty(searchQuery) ? b : b.appendQueryParameter("q", searchQuery))
-        .map(b -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)))
-        .map(Uri.Builder::build)
-        .map(uri -> HttpRequest.of(apiRoutine, uri))
-        .flatMap(this::execute)
-        .flatMap(result -> result.getJsonArray()
-            .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, result.request.uri)));
+                .map { obj: Uri? -> obj.buildUpon() }
+                .map { b: Uri.Builder? -> if (StringUtil.isEmpty(searchQuery)) b else b.appendQueryParameter("q", searchQuery) }
+                .map { b: Uri.Builder? -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
+                .map(CheckedFunction<Uri.Builder?, Uri?> { Uri.Builder.build() })
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })
+                .flatMap { request: HttpRequest? -> execute(request) }
+                .flatMap { result: HttpReadResult? ->
+                    result.getJsonArray()
+                            .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }
+                }
     }
 
-    @Override
-    @NonNull
-    AActivity activityFromJson2(JSONObject jso) throws ConnectionException {
-        if (jso == null) return AActivity.EMPTY;
-
-        AActivity activity = super.activityFromJson2(jso);
-        Note note =  activity.getNote();
-        note.setSensitive(jso.optBoolean(SENSITIVE_PROPERTY));
-        note.setLikesCount(jso.optLong("favorite_count"));
-        note.setReblogsCount(jso.optLong("retweet_count"));
+    @Throws(ConnectionException::class)
+    public override fun activityFromJson2(jso: JSONObject?): AActivity {
+        if (jso == null) return AActivity.Companion.EMPTY
+        val activity = super.activityFromJson2(jso)
+        val note = activity.note
+        note.isSensitive = jso.optBoolean(SENSITIVE_PROPERTY)
+        note.likesCount = jso.optLong("favorite_count")
+        note.reblogsCount = jso.optLong("retweet_count")
         if (!addAttachmentsFromJson(jso, activity, "extended_entities")) {
             // See https://developer.twitter.com/en/docs/tweets/data-dictionary/overview/entities-object
-            addAttachmentsFromJson(jso, activity, "entities");
+            addAttachmentsFromJson(jso, activity, "entities")
         }
-        return activity;
+        return activity
     }
 
-    private boolean addAttachmentsFromJson(JSONObject jso, AActivity activity, String sectionName) {
-        JSONObject entities = jso.optJSONObject(sectionName);
-        JSONArray jArr = entities == null ? null : entities.optJSONArray(ATTACHMENTS_FIELD_NAME);
+    private fun addAttachmentsFromJson(jso: JSONObject?, activity: AActivity?, sectionName: String?): Boolean {
+        val entities = jso.optJSONObject(sectionName)
+        val jArr = entities?.optJSONArray(ATTACHMENTS_FIELD_NAME)
         if (jArr != null && jArr.length() > 0) {
-            for (int ind = 0; ind < jArr.length(); ind++) {
-                JSONObject jsoAttachment = (JSONObject) jArr.opt(ind);
-                jsonToAttachments(jsoAttachment).forEach(activity::addAttachment);
+            for (ind in 0 until jArr.length()) {
+                val jsoAttachment = jArr.opt(ind) as JSONObject
+                jsonToAttachments(jsoAttachment).forEach(Consumer { attachment: Attachment? -> activity.addAttachment(attachment) })
             }
-            return true;
+            return true
         }
-        return false;
+        return false
     }
 
-    private List<Attachment> jsonToAttachments(JSONObject jsoAttachment) {
-        final String method = "jsonToAttachments";
-        List<Attachment> attachments = new ArrayList<>();
+    private fun jsonToAttachments(jsoAttachment: JSONObject?): MutableList<Attachment?>? {
+        val method = "jsonToAttachments"
+        val attachments: MutableList<Attachment?> = ArrayList()
         try {
-            JSONObject jsoVideo = jsoAttachment.optJSONObject("video_info");
-            JSONArray jsoVariants = jsoVideo == null ? null : jsoVideo.optJSONArray("variants");
-            JSONObject videoVariant = jsoVariants == null || jsoVariants.length() == 0
-                    ? null
-                    : jsoVariants.optJSONObject(0);
-            Attachment video = videoVariant == null
-                    ? Attachment.EMPTY
-                    : Attachment.fromUriAndMimeType(videoVariant.optString("url"), videoVariant.optString("content_type"));
-            if (video.isValid()) attachments.add(video);
-
-            Attachment attachment = Attachment.fromUri(UriUtils.fromAlternativeTags(jsoAttachment,
-                            "media_url_https", "media_url_http"));
-            if (attachment.isValid()) {
-                if (video.isValid()) attachment.setPreviewOf(video);
-                attachments.add(attachment);
+            val jsoVideo = jsoAttachment.optJSONObject("video_info")
+            val jsoVariants = jsoVideo?.optJSONArray("variants")
+            val videoVariant = if (jsoVariants == null || jsoVariants.length() == 0) null else jsoVariants.optJSONObject(0)
+            val video: Attachment = if (videoVariant == null) Attachment.Companion.EMPTY else Attachment.Companion.fromUriAndMimeType(videoVariant.optString("url"), videoVariant.optString("content_type"))
+            if (video.isValid) attachments.add(video)
+            val attachment: Attachment = Attachment.Companion.fromUri(UriUtils.fromAlternativeTags(jsoAttachment,
+                    "media_url_https", "media_url_http"))
+            if (attachment.isValid) {
+                if (video.isValid) attachment.setPreviewOf(video)
+                attachments.add(attachment)
             } else {
-                MyLog.w(this, method + "; invalid attachment: " + jsoAttachment);
+                MyLog.w(this, "$method; invalid attachment: $jsoAttachment")
             }
-        } catch (Exception e) {
-            MyLog.w(this, method, e);
+        } catch (e: Exception) {
+            MyLog.w(this, method, e)
         }
-        return attachments;
+        return attachments
     }
 
-    @Override
-    protected void setNoteBodyFromJson(Note note, JSONObject jso) throws JSONException {
-        boolean bodyFound = false;
+    @Throws(JSONException::class)
+    override fun setNoteBodyFromJson(note: Note?, jso: JSONObject?) {
+        var bodyFound = false
         if (!jso.isNull("full_text")) {
-            note.setContentPosted(jso.getString("full_text"));
-            bodyFound = true;
+            note.setContentPosted(jso.getString("full_text"))
+            bodyFound = true
         }
         if (!bodyFound) {
-            super.setNoteBodyFromJson(note, jso);
+            super.setNoteBodyFromJson(note, jso)
         }
     }
 
-    @Override
-    Try<List<Actor>> getActors(Actor actor, ApiRoutineEnum apiRoutine) {
-        int limit = 200;
+    public override fun getActors(actor: Actor?, apiRoutine: ApiRoutineEnum?): Try<MutableList<Actor?>?>? {
+        val limit = 200
         return getApiPathWithActorId(apiRoutine, actor.oid)
-        .map(Uri::buildUpon)
-        .map(b -> StringUtil.isEmpty(actor.oid) ? b : b.appendQueryParameter("user_id", actor.oid))
-        .map(b -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)))
-        .map(Uri.Builder::build)
-        .map(uri -> HttpRequest.of(apiRoutine, uri))
-        .flatMap(this::execute)
-        .flatMap(result -> result.getJsonArray()
-            .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, result.request.uri)));
+                .map { obj: Uri? -> obj.buildUpon() }
+                .map { b: Uri.Builder? -> if (StringUtil.isEmpty(actor.oid)) b else b.appendQueryParameter("user_id", actor.oid) }
+                .map { b: Uri.Builder? -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
+                .map(CheckedFunction<Uri.Builder?, Uri?> { Uri.Builder.build() })
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })
+                .flatMap { request: HttpRequest? -> execute(request) }
+                .flatMap { result: HttpReadResult? ->
+                    result.getJsonArray()
+                            .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }
+                }
     }
 
+    companion object {
+        private val ATTACHMENTS_FIELD_NAME: String? = "media"
+        private val SENSITIVE_PROPERTY: String? = "possibly_sensitive"
+    }
 }

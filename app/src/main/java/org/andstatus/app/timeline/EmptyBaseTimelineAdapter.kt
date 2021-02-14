@@ -13,27 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
+import android.view.View
+import android.view.ViewGroup
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.timeline.meta.Timeline
 
-import android.view.View;
-import android.view.ViewGroup;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.timeline.meta.Timeline;
-
-import java.util.Collections;
-
-/** Avoiding null value for an adapter */
-public class EmptyBaseTimelineAdapter<T extends ViewItem<T>> extends BaseTimelineAdapter<T> {
-    public final static EmptyBaseTimelineAdapter EMPTY = new EmptyBaseTimelineAdapter();
-
-    private EmptyBaseTimelineAdapter() {
-        super(MyContext.EMPTY, Timeline.EMPTY, Collections.emptyList());
+/** Avoiding null value for an adapter  */
+class EmptyBaseTimelineAdapter<T : ViewItem<T?>?> private constructor() : BaseTimelineAdapter<T?>(MyContext.Companion.EMPTY, Timeline.Companion.EMPTY, emptyList()) {
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
+        return null
     }
 
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        return null;
+    companion object {
+        val EMPTY: EmptyBaseTimelineAdapter<*>? = EmptyBaseTimelineAdapter<Any?>()
     }
 }

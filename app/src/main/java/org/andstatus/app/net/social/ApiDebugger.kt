@@ -13,56 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social
 
-package org.andstatus.app.net.social;
+import android.content.Context
+import android.net.Uri
+import io.vavr.control.CheckedFunction
+import io.vavr.control.Try
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.net.http.HttpReadResult
+import org.andstatus.app.net.http.HttpRequest
+import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.util.DialogFactory
+import java.util.function.Consumer
+import java.util.function.Function
 
-import android.content.Context;
-
-import org.andstatus.app.R;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.net.http.HttpReadResult;
-import org.andstatus.app.net.http.HttpRequest;
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.util.DialogFactory;
-
-import io.vavr.control.Try;
-
-/** Send any GET requests using current account */
-public class ApiDebugger {
-    private static volatile String previousValue = "";
-    private final MyContext myContext;
-    private final Context activityContext;
-
-    public ApiDebugger(MyContext myContext, Context activityContext) {
-        this.myContext = myContext;
-        this.activityContext = activityContext;
+/** Send any GET requests using current account  */
+class ApiDebugger(private val myContext: MyContext?, private val activityContext: Context?) {
+    fun debugGet() {
+        DialogFactory.showTextInputBox(activityContext, "Debug Social network API",
+                "Type API path to GET e.g.\nstatusnet/conversation/12345.json\nor complete URL", { text: String? -> this.debugGet(text) }, previousValue)
     }
 
-    public void debugGet() {
-        DialogFactory.showTextInputBox(activityContext,"Debug Social network API",
-                "Type API path to GET e.g.\nstatusnet/conversation/12345.json\nor complete URL",
-                this::debugGet, previousValue);
+    private fun debugGet(text: String?) {
+        AsyncTaskLauncher.Companion.execute<Any?, HttpReadResult?>(null, Function { p: Any? -> debugApiAsync(text) }, Function { p: Any? -> Consumer { results: Try<HttpReadResult?>? -> debugApiSync(results) } })
     }
 
-    private void debugGet(String text) {
-        AsyncTaskLauncher.execute(null, p -> debugApiAsync(text), p -> this::debugApiSync);
-    }
-
-    private Try<HttpReadResult> debugApiAsync(String text) {
-        previousValue = text;
-        Connection connection = myContext.accounts().getCurrentAccount().getConnection();
+    private fun debugApiAsync(text: String?): Try<HttpReadResult?>? {
+        previousValue = text
+        val connection = myContext.accounts().currentAccount.connection
         return connection.pathToUri(connection.partialPathToApiPath(text))
-        .map(uri -> HttpRequest.of(ApiRoutineEnum.HOME_TIMELINE, uri))
-        .flatMap(connection::execute);
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(ApiRoutineEnum.HOME_TIMELINE, uri) })
+                .flatMap { request: HttpRequest? -> connection.execute(request) }
     }
 
-    private void debugApiSync(Try<HttpReadResult> results) {
+    private fun debugApiSync(results: Try<HttpReadResult?>?) {
         results
-        .onSuccess(result -> {
-            DialogFactory.showOkAlertDialog(this, activityContext, android.R.string.ok, result.getResponse());
-        })
-        .onFailure( e ->
-            DialogFactory.showOkAlertDialog(this, activityContext, R.string.error_connection_error, e.toString())
-        );
+                .onSuccess(Consumer { result: HttpReadResult? -> DialogFactory.showOkAlertDialog(this, activityContext, android.R.string.ok, result.getResponse()) })
+                .onFailure { e: Throwable? -> DialogFactory.showOkAlertDialog(this, activityContext, R.string.error_connection_error, e.toString()) }
+    }
+
+    companion object {
+        @Volatile
+        private var previousValue: String? = ""
     }
 }

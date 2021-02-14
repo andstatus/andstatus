@@ -13,44 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.activity
 
-package org.andstatus.app.activity;
+import org.andstatus.app.note.NoteViewItem
+import org.andstatus.app.timeline.TimelineData
 
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.note.NoteViewItem;
-import org.andstatus.app.timeline.TimelineData;
-import org.andstatus.app.timeline.ViewItem;
-
-class TimelineDataNoteWrapper extends TimelineDataWrapper<NoteViewItem> {
-
-    TimelineDataNoteWrapper(TimelineData<ActivityViewItem> listData) {
-        super(listData);
+internal class TimelineDataNoteWrapper(listData: TimelineData<ActivityViewItem?>?) : TimelineDataWrapper<NoteViewItem?>(listData) {
+    override fun getItem(position: Int): NoteViewItem {
+        return listData.getItem(position).noteViewItem
     }
 
-    @NonNull
-    @Override
-    public NoteViewItem getItem(int position) {
-        return listData.getItem(position).noteViewItem;
-    }
-
-    @Override
-    public int getPositionById(long itemId) {
-        int position = -1;
-        if (itemId != 0) {
-            for (int ind=0; ind < listData.size(); ind++) {
-                ActivityViewItem item = listData.getItem(ind);
-                if (item.noteViewItem.getId() == itemId) {
-                    return position;
-                } else if (item.isCollapsed()) {
-                    for (ViewItem child : item.getChildren()) {
-                        if ( ((ActivityViewItem) child).noteViewItem.getId() == itemId) {
-                            return position;
+    override fun getPositionById(itemId: Long): Int {
+        val position = -1
+        if (itemId != 0L) {
+            for (ind in 0 until listData.size()) {
+                val item = listData.getItem(ind)
+                if (item.noteViewItem.id == itemId) {
+                    return position
+                } else if (item.isCollapsed) {
+                    for (child in item.children) {
+                        if ((child as ActivityViewItem).noteViewItem.id == itemId) {
+                            return position
                         }
                     }
                 }
             }
         }
-        return -1;
+        return -1
     }
 }

@@ -13,188 +13,202 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.http
 
-package org.andstatus.app.net.http;
+import com.github.scribejava.core.model.Verb
+import io.vavr.control.CheckedFunction
+import io.vavr.control.Try
+import org.andstatus.app.account.AccountDataWriter
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.util.JsonUtils
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.TriState
+import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UrlUtils
+import org.json.JSONObject
 
-import android.net.Uri;
+android.net.Uri
+import org.andstatus.app.context.NoScreenSupport
+import androidx.test.rule.ActivityTestRule
+import org.andstatus.app.context.CompletableFutureTest.TestData
+import org.andstatus.app.service.MyServiceTest
+import org.andstatus.app.service.AvatarDownloaderTest
+import org.andstatus.app.service.RepeatingFailingCommandTest
+import org.hamcrest.core.Is
+import org.hamcrest.core.IsNot
+import org.andstatus.app.timeline.meta.TimelineSyncTrackerTest
+import org.andstatus.app.timeline.TimelinePositionTest
+import org.andstatus.app.util.EspressoUtils
+import org.andstatus.app.timeline.TimeLineActivityLayoutToggleTest
+import org.andstatus.app.appwidget.MyAppWidgetProviderTest.DateTest
+import org.andstatus.app.appwidget.MyAppWidgetProviderTest
+import org.andstatus.app.notification.NotifierTest
+import org.andstatus.app.ActivityTestHelper.MenuItemClicker
+import org.andstatus.app.MenuItemMockimport
 
-import com.github.scribejava.core.model.Verb;
-
-import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.net.social.ApiRoutineEnum;
-import org.andstatus.app.util.JsonUtils;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.TryUtils;
-import org.andstatus.app.util.UriUtils;
-import org.andstatus.app.util.UrlUtils;
-import org.json.JSONObject;
-
-import io.vavr.control.Try;
-
-public interface HttpConnectionInterface {
-    String USER_AGENT = "AndStatus";
-
-    /**
-     * The URI is consistent with "scheme" and "host" in AndroidManifest
-     * Pump.io doesn't work with this scheme: "andstatus-oauth://andstatus.org"
-     */
-    Uri CALLBACK_URI = Uri.parse("http://oauth-redirect.andstatus.org");
-
-    HttpConnectionData getData();
-
-    default Try<Void> registerClient() {
+java.lang.Exceptionimport java.lang.IllegalArgumentExceptionimport java.util.concurrent.Callable
+interface HttpConnectionInterface {
+    open fun getData(): HttpConnectionData?
+    fun registerClient(): Try<Void?>? {
         // Do nothing in the default implementation
-        return Try.success(null);
+        return Try.success(null)
     }
 
-    void setHttpConnectionData(HttpConnectionData data);
-
-    default String pathToUrlString(String path) {
+    open fun setHttpConnectionData(data: HttpConnectionData?)
+    fun pathToUrlString(path: String?): String? {
         // TODO: return Try
         return UrlUtils.pathToUrlString(getData().originUrl, path, errorOnInvalidUrls())
-            .getOrElse("");
+                .getOrElse("")
     }
 
-    default boolean errorOnInvalidUrls() {
-        return true;
+    fun errorOnInvalidUrls(): Boolean {
+        return true
     }
 
-    default Try<HttpReadResult> execute(HttpRequest requestIn) {
-        HttpRequest request = requestIn.withConnectionData(getData());
-        if (request.verb == Verb.POST) {
+    fun execute(requestIn: HttpRequest?): Try<HttpReadResult?>? {
+        val request = requestIn.withConnectionData(getData())
+        return if (request.verb == Verb.POST) {
             /* See https://github.com/andstatus/andstatus/issues/249 */
-            return (getData().getUseLegacyHttpProtocol() == TriState.UNKNOWN)
-                    ? executeOneProtocol(request, false)
-                    .orElse(() -> executeOneProtocol(request, true))
-                    : executeOneProtocol(request, getData().getUseLegacyHttpProtocol().toBoolean(true));
+            if (getData().getUseLegacyHttpProtocol() == TriState.UNKNOWN) executeOneProtocol(request, false)
+                    .orElse(Callable<Try<out HttpReadResult?>?> { executeOneProtocol(request, true) }) else executeOneProtocol(request, getData().getUseLegacyHttpProtocol().toBoolean(true))
         } else {
-            return executeInner(request);
+            executeInner(request)
         }
     }
 
-    default Try<HttpReadResult> executeOneProtocol(HttpRequest request, boolean isLegacyHttpProtocol) {
-        return executeInner(request.withLegacyHttpProtocol(isLegacyHttpProtocol));
+    fun executeOneProtocol(request: HttpRequest?, isLegacyHttpProtocol: Boolean): Try<HttpReadResult?>? {
+        return executeInner(request.withLegacyHttpProtocol(isLegacyHttpProtocol))
     }
 
-    default Try<HttpReadResult> executeInner(HttpRequest request) {
+    fun executeInner(request: HttpRequest?): Try<HttpReadResult?>? {
         if (request.verb == Verb.POST && MyPreferences.isLogNetworkLevelMessages()) {
-            JSONObject jso = JsonUtils.put(request.postParams.orElseGet(JSONObject::new), "loggedURL", request.uri);
-            if (request.mediaUri.isPresent()) {
-                jso = JsonUtils.put(jso, "loggedMediaUri", request.mediaUri.get().toString());
+            var jso = JsonUtils.put(request.postParams.orElseGet { JSONObject() }, "loggedURL", request.uri)
+            if (request.mediaUri.isPresent) {
+                jso = JsonUtils.put(jso, "loggedMediaUri", request.mediaUri.get().toString())
             }
-            MyLog.logNetworkLevelMessage("post", request.getLogName(), jso, "");
+            MyLog.logNetworkLevelMessage("post", request.getLogName(), jso, "")
         }
         return request.validate()
-                .map(HttpRequest::newResult)
-                .map(result -> result.request.verb == Verb.POST
-                        ? postRequest(result)
-                        : getRequestInner(result))
-                .map(HttpReadResult::logResponse)
-                .flatMap(HttpReadResult::tryToParse);
+                .map { obj: HttpRequest? -> obj.newResult() }
+                .map { result: HttpReadResult? -> if (result.request.verb == Verb.POST) postRequest(result) else getRequestInner(result) }
+                .map { obj: HttpReadResult? -> obj.logResponse() }
+                .flatMap { obj: HttpReadResult? -> obj.tryToParse() }
     }
 
-    default HttpReadResult postRequest(HttpReadResult result) {
-        return result;
+    fun postRequest(result: HttpReadResult?): HttpReadResult? {
+        return result
     }
 
-    default HttpReadResult getRequestInner(HttpReadResult result) {
-        if (result.request.apiRoutine == ApiRoutineEnum.DOWNLOAD_FILE && !UriUtils.isDownloadable(result.request.uri)) {
-            return downloadLocalFile(result);
+    fun getRequestInner(result: HttpReadResult?): HttpReadResult? {
+        return if (result.request.apiRoutine == ApiRoutineEnum.DOWNLOAD_FILE && !UriUtils.isDownloadable(result.request.uri)) {
+            downloadLocalFile(result)
         } else {
-            return getRequest(result);
+            getRequest(result)
         }
     }
 
-    default HttpReadResult downloadLocalFile(HttpReadResult result) {
+    fun downloadLocalFile(result: HttpReadResult?): HttpReadResult? {
         return result.readStream("mediaUri='" + result.request.uri + "'",
-            o -> result.request.myContext().context().getContentResolver().openInputStream(result.request.uri))
-        .recover(Exception.class, result::setException)
-        .getOrElse(result);
+                CheckedFunction { o: Void? -> result.request.myContext().context().contentResolver.openInputStream(result.request.uri) })
+                .recover(Exception::class.java) { e: Exception? -> result.setException(e) }
+                .getOrElse(result)
     }
 
-    default HttpReadResult getRequest(HttpReadResult result) {
-        return result;
+    fun getRequest(result: HttpReadResult?): HttpReadResult? {
+        return result
     }
-    
-    default void clearAuthInformation() {
+
+    fun clearAuthInformation() {
         // Empty
     }
 
-    default void clearClientKeys() {
+    fun clearClientKeys() {
         if (getData().areOAuthClientKeysPresent()) {
-            getData().oauthClientKeys.clear();
+            getData().oauthClientKeys.clear()
         }
     }
 
-    default boolean isPasswordNeeded() {
-        return false;
+    fun isPasswordNeeded(): Boolean {
+        return false
     }
 
-    default void setPassword(String password) {
+    fun setPassword(password: String?) {
         // Nothing to do
     }
-    
-    /** return not null **/
-    default String getPassword() {
-        return "";
+
+    /** return not null  */
+    fun getPassword(): String? {
+        return ""
     }
-    
+
     /**
      * Persist the connection data
      * @return true if something changed (so it needs to be rewritten to persistence...)
      */
-    default boolean saveTo(AccountDataWriter dw) {
-        return false;
+    fun saveTo(dw: AccountDataWriter?): Boolean {
+        return false
     }
 
     /**
      * Do we have enough credentials to verify them?
      * @return true == yes
      */
-    default boolean getCredentialsPresent() {
-        return false;
+    fun getCredentialsPresent(): Boolean {
+        return false
     }
 
-    default SslModeEnum getSslMode() {
-        return getData().getSslMode();
+    fun getSslMode(): SslModeEnum? {
+        return getData().getSslMode()
     }
 
-    default void setUserTokenWithSecret(String token, String secret) {
-        throw new IllegalArgumentException("setUserTokenWithSecret is for OAuth only!");
+    fun setUserTokenWithSecret(token: String?, secret: String?) {
+        throw IllegalArgumentException("setUserTokenWithSecret is for OAuth only!")
     }
 
-    default String getUserToken() {
-        return "";
+    fun getUserToken(): String? {
+        return ""
     }
 
-    default String getUserSecret() {
-        return "";
+    fun getUserSecret(): String? {
+        return ""
     }
 
-    HttpConnectionInterface getNewInstance();
-
-    default boolean onMoved(HttpReadResult result) {
-        boolean stop;
-        result.appendToLog( "statusLine:'" + result.statusLine + "'");
-        result.redirected = true;
+    open fun getNewInstance(): HttpConnectionInterface?
+    fun onMoved(result: HttpReadResult?): Boolean {
+        val stop: Boolean
+        result.appendToLog("statusLine:'" + result.statusLine + "'")
+        result.redirected = true
         stop = TryUtils.fromOptional(result.getLocation())
-                .mapFailure(e -> new ConnectionException(ConnectionException.StatusCode.MOVED,
-                        "No 'Location' header on MOVED response"))
-                .map(result::setUrl)
-                .onFailure(result::setException)
-                .onSuccess(this::logFollowingRedirects)
-                .isFailure();
-        return stop;
+                .mapFailure { e: Throwable? ->
+                    ConnectionException(StatusCode.MOVED,
+                            "No 'Location' header on MOVED response")
+                }
+                .map { urlIn: String? -> result.setUrl(urlIn) }
+                .onFailure { e: Throwable? -> result.setException(e) }
+                .onSuccess { result: HttpReadResult? -> logFollowingRedirects(result) }
+                .isFailure
+        return stop
     }
 
-    default void logFollowingRedirects(HttpReadResult result) {
+    fun logFollowingRedirects(result: HttpReadResult?) {
         if (MyLog.isVerboseEnabled()) {
-            MyStringBuilder builder = MyStringBuilder.of("Following redirect to '" + result.getUrl());
-            result.appendHeaders(builder);
-            MyLog.v(this, builder.toString());
+            val builder: MyStringBuilder = MyStringBuilder.Companion.of("Following redirect to '" + result.getUrl())
+            result.appendHeaders(builder)
+            MyLog.v(this, builder.toString())
         }
+    }
+
+    companion object {
+        val USER_AGENT: String? = "AndStatus"
+
+        /**
+         * The URI is consistent with "scheme" and "host" in AndroidManifest
+         * Pump.io doesn't work with this scheme: "andstatus-oauth://andstatus.org"
+         */
+        val CALLBACK_URI = Uri.parse("http://oauth-redirect.andstatus.org")
     }
 }

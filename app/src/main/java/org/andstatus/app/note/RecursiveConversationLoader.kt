@@ -13,83 +13,71 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
-
-import android.database.Cursor;
-import android.net.Uri;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.ProjectionMap;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.MyLog;
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.data.ProjectionMap
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.MyLog
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class RecursiveConversationLoader extends ConversationLoader {
-    public RecursiveConversationLoader(ConversationViewItem emptyItem, MyContext myContext, Origin origin,
-                                       long selectedNoteId, boolean sync) {
-        super(emptyItem, myContext, origin, selectedNoteId, sync);
+class RecursiveConversationLoader(emptyItem: ConversationViewItem?, myContext: MyContext?, origin: Origin?,
+                                  selectedNoteId: Long, sync: Boolean) : ConversationLoader(emptyItem, myContext, origin, selectedNoteId, sync) {
+    override fun load2(nonLoaded: ConversationViewItem?) {
+        findPreviousNotesRecursively(nonLoaded)
     }
 
-    @Override
-    protected void load2(ConversationViewItem nonLoaded) {
-        findPreviousNotesRecursively(nonLoaded);
-    }
-
-    @Override
-    void cacheConversation(ConversationViewItem item) {
-        if (conversationIds.contains(item.conversationId) || item.conversationId == 0) {
-            return;
+    public override fun cacheConversation(item: ConversationViewItem?) {
+        if (conversationIds.contains(item.conversationId) || item.conversationId == 0L) {
+            return
         }
         if (!conversationIds.isEmpty()) {
-            fixConversation = true;
-            MyLog.d(this, "Another conversationId:" + item);
+            fixConversation = true
+            MyLog.d(this, "Another conversationId:$item")
         }
-        conversationIds.add(item.conversationId);
-
-        String selection = (ProjectionMap.NOTE_TABLE_ALIAS + "."
-                + NoteTable.CONVERSATION_ID + "=" + item.conversationId);
-        Uri uri = myContext.timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.getOrigin()).getUri();
-
-        try (Cursor cursor = myContext.context().getContentResolver().query(uri,
-                item.getProjection().toArray(new String[]{}),
-                selection, null, null)) {
+        conversationIds.add(item.conversationId)
+        val selection = (ProjectionMap.NOTE_TABLE_ALIAS + "."
+                + NoteTable.CONVERSATION_ID + "=" + item.conversationId)
+        val uri = myContext.timelines()[TimelineType.EVERYTHING, Actor.Companion.EMPTY, ma.origin].uri
+        myContext.context().contentResolver.query(uri,
+                item.getProjection().toArray<String?>(arrayOf<String?>()),
+                selection, null, null).use { cursor ->
             while (cursor != null && cursor.moveToNext()) {
-                ConversationViewItem itemLoaded = item.fromCursor(myContext, cursor);
-                cachedConversationItems.put(itemLoaded.getNoteId(), itemLoaded);
+                val itemLoaded = item.fromCursor(myContext, cursor)
+                cachedConversationItems[itemLoaded.noteId] = itemLoaded
             }
         }
     }
 
-    private void findPreviousNotesRecursively(ConversationViewItem itemIn) {
+    private fun findPreviousNotesRecursively(itemIn: ConversationViewItem?) {
         if (!addNoteIdToFind(itemIn.getNoteId())) {
-            return;
+            return
         }
-        ConversationViewItem item = loadItemFromDatabase(itemIn);
-        findRepliesRecursively(item);
-        MyLog.v(this, () -> "findPreviousNotesRecursively id=" + item.getNoteId() + " replies:" + item.nReplies);
-        if (item.isLoaded()) {
-            if (addItemToList(item) && item.inReplyToNoteId != 0) {
+        val item = loadItemFromDatabase(itemIn)
+        findRepliesRecursively(item)
+        MyLog.v(this) { "findPreviousNotesRecursively id=" + item.noteId + " replies:" + item.nReplies }
+        if (item.isLoaded) {
+            if (addItemToList(item) && item.inReplyToNoteId != 0L) {
                 findPreviousNotesRecursively(
-                        getItem(item.inReplyToNoteId, item.conversationId, item.replyLevel - 1));
+                        getItem(item.inReplyToNoteId, item.conversationId, item.replyLevel - 1))
             }
         } else if (mAllowLoadingFromInternet) {
-            loadFromInternet(item.getNoteId());
+            loadFromInternet(item.noteId)
         }
     }
 
-    private void findRepliesRecursively(ConversationViewItem item) {
-        MyLog.v(this, () -> "findReplies for id=" + item.getNoteId());
-        for (ConversationViewItem reply : cachedConversationItems.values()) {
+    private fun findRepliesRecursively(item: ConversationViewItem?) {
+        MyLog.v(this) { "findReplies for id=" + item.getNoteId() }
+        for (reply in cachedConversationItems.values) {
             if (reply.inReplyToNoteId == item.getNoteId()) {
-                item.nReplies++;
-                reply.replyLevel = item.replyLevel + 1;
-                findPreviousNotesRecursively(reply);
+                item.nReplies++
+                reply.replyLevel = item.replyLevel + 1
+                findPreviousNotesRecursively(reply)
             }
         }
     }

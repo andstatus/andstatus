@@ -13,74 +13,70 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.database.table
 
-package org.andstatus.app.database.table;
+import android.database.sqlite.SQLiteDatabase
+import android.provider.BaseColumns
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.net.social.AActivity
+import org.andstatus.app.net.social.ActivityType
+import org.andstatus.app.notification.NotificationEventType
+import org.andstatus.app.timeline.meta.TimelineType
 
-import android.database.sqlite.SQLiteDatabase;
-import android.provider.BaseColumns;
+/** The table holds [AActivity]  */
+object ActivityTable : BaseColumns {
+    val TABLE_NAME: String? = "activity"
+    val ORIGIN_ID: String? = "activity_" + OriginTable.ORIGIN_ID
 
-import androidx.annotation.NonNull;
+    /** id in a Social Network [OriginTable]  */
+    val ACTIVITY_OID: String? = "activity_oid"
+    val ACCOUNT_ID: String? = "account_id"
 
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.net.social.AActivity;
-import org.andstatus.app.net.social.ActivityType;
-import org.andstatus.app.notification.NotificationEventType;
-import org.andstatus.app.timeline.meta.TimelineType;
+    /** ID of [ActivityType]  */
+    val ACTIVITY_TYPE: String? = "activity_type"
+    val ACTOR_ID: String? = "activity_" + ActorTable.ACTOR_ID
 
-/** The table holds {@link AActivity} */
-public final class ActivityTable implements BaseColumns {
-    public static final String TABLE_NAME = "activity";
+    /** Note as Object  */
+    val NOTE_ID: String? = "activity_" + NoteTable.NOTE_ID
 
-    public static final String ORIGIN_ID =  "activity_" + OriginTable.ORIGIN_ID;
-    /** id in a Social Network {@link OriginTable} */
-    public static final String ACTIVITY_OID = "activity_oid";
-    public static final String ACCOUNT_ID = "account_id";
-    /** ID of {@link ActivityType} */
-    public static final String ACTIVITY_TYPE = "activity_type";
-    public static final String ACTOR_ID = "activity_" + ActorTable.ACTOR_ID;
-    /** Note as Object */
-    public static final String NOTE_ID = "activity_" + NoteTable.NOTE_ID;
-    /** Actor as Object */
-    public static final String OBJ_ACTOR_ID = "obj_" + ActorTable.ACTOR_ID;
-    /** Inner Activity as Object */
-    public static final String OBJ_ACTIVITY_ID = "obj_activity_id";
+    /** Actor as Object  */
+    val OBJ_ACTOR_ID: String? = "obj_" + ActorTable.ACTOR_ID
 
-    /** {@link #ACCOUNT_ID} is subscribed to this action or was a "Secondary target audience" */
-    public static final String SUBSCRIBED = "subscribed";
-    /** {@link #NOTIFIED_ACTOR_ID} is interacted **/
-    public static final String INTERACTED = "interacted";
-    public static final String INTERACTION_EVENT = "interaction_event";
-    /** {@link #NOTIFIED_ACTOR_ID} should be notified of this action */
-    public static final String NOTIFIED = "notified";
-    public static final String NOTIFIED_ACTOR_ID = "notified_actor_id";
-    /** {@link NotificationEventType}, it is not 0 if the notification is active */
-    public static final String NEW_NOTIFICATION_EVENT = "new_notification_event";
+    /** Inner Activity as Object  */
+    val OBJ_ACTIVITY_ID: String? = "obj_activity_id"
 
-    public static final String UPDATED_DATE = "activity_updated_date";
+    /** [.ACCOUNT_ID] is subscribed to this action or was a "Secondary target audience"  */
+    val SUBSCRIBED: String? = "subscribed"
+
+    /** [.NOTIFIED_ACTOR_ID] is interacted  */
+    val INTERACTED: String? = "interacted"
+    val INTERACTION_EVENT: String? = "interaction_event"
+
+    /** [.NOTIFIED_ACTOR_ID] should be notified of this action  */
+    val NOTIFIED: String? = "notified"
+    val NOTIFIED_ACTOR_ID: String? = "notified_actor_id"
+
+    /** [NotificationEventType], it is not 0 if the notification is active  */
+    val NEW_NOTIFICATION_EVENT: String? = "new_notification_event"
+    val UPDATED_DATE: String? = "activity_updated_date"
+
     /** Date and time when this Activity was first loaded into this database
-     * or if it was not loaded yet, when the row was inserted into this database */
-    public static final String INS_DATE = "activity_ins_date";
+     * or if it was not loaded yet, when the row was inserted into this database  */
+    val INS_DATE: String? = "activity_ins_date"
 
     // Aliases
-    public static final String ACTIVITY_ID = "activity_id";
-    public static final String AUTHOR_ID = "author_id";
-    public static final String LAST_UPDATE_ID = "last_update_id";
-
-    public static String getTimelineSortOrder(TimelineType timelineType, boolean ascending) {
-        return getTimeSortField(timelineType) + (ascending ? " ASC" : " DESC");
+    val ACTIVITY_ID: String? = "activity_id"
+    val AUTHOR_ID: String? = "author_id"
+    val LAST_UPDATE_ID: String? = "last_update_id"
+    fun getTimelineSortOrder(timelineType: TimelineType?, ascending: Boolean): String? {
+        return getTimeSortField(timelineType) + if (ascending) " ASC" else " DESC"
     }
 
-    public static String getTimeSortField(@NonNull TimelineType timelineType) {
-        return timelineType == TimelineType.UNREAD_NOTIFICATIONS
-                ? INS_DATE
-                : UPDATED_DATE;
+    fun getTimeSortField(timelineType: TimelineType): String? {
+        return if (timelineType == TimelineType.UNREAD_NOTIFICATIONS) INS_DATE else UPDATED_DATE
     }
 
-    private ActivityTable() {
-        // Empty
-    }
-
-    public static void create(SQLiteDatabase db) {
+    fun create(db: SQLiteDatabase?) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + ORIGIN_ID + " INTEGER NOT NULL,"
@@ -99,74 +95,61 @@ public final class ActivityTable implements BaseColumns {
                 + NEW_NOTIFICATION_EVENT + " INTEGER NOT NULL DEFAULT 0,"
                 + INS_DATE + " INTEGER NOT NULL,"
                 + UPDATED_DATE + " INTEGER NOT NULL DEFAULT 0"
-                + ")");
-
+                + ")")
         DbUtils.execSQL(db, "CREATE UNIQUE INDEX idx_activity_origin ON " + TABLE_NAME + " ("
-                    + ORIGIN_ID + ", "
-                    + ACTIVITY_OID
+                + ORIGIN_ID + ", "
+                + ACTIVITY_OID
                 + ")"
-        );
-
+        )
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_message ON " + TABLE_NAME + " ("
                 + NOTE_ID
                 + ")"
-        );
-
+        )
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_obj_actor ON " + TABLE_NAME + " ("
                 + OBJ_ACTOR_ID
                 + ")"
-        );
-
+        )
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_activity ON " + TABLE_NAME + " ("
                 + OBJ_ACTIVITY_ID
                 + ")"
-        );
-
+        )
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_timeline ON " + TABLE_NAME + " ("
                 + UPDATED_DATE
                 + ")"
-        );
-
+        )
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_actor_timeline ON " + TABLE_NAME + " ("
                 + ACTOR_ID + ", "
                 + UPDATED_DATE
                 + ")"
-        );
-
+        )
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_subscribed_timeline ON " + TABLE_NAME + " ("
                 + SUBSCRIBED + ", "
                 + UPDATED_DATE
                 + ")"
-        );
-
+        )
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_notified_timeline ON " + TABLE_NAME + " ("
                 + NOTIFIED + ", "
                 + UPDATED_DATE
                 + ")"
-        );
-
+        )
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_notified_actor ON " + TABLE_NAME + " ("
                 + NOTIFIED + ", "
                 + NOTIFIED_ACTOR_ID
                 + ")"
-        );
-
+        )
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_new_notification ON " + TABLE_NAME + " ("
                 + NEW_NOTIFICATION_EVENT
                 + ")"
-        );
-
+        )
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_interacted_timeline ON " + TABLE_NAME + " ("
                 + INTERACTED + ", "
                 + UPDATED_DATE
                 + ")"
-        );
-
+        )
         DbUtils.execSQL(db, "CREATE INDEX idx_activity_interacted_actor ON " + TABLE_NAME + " ("
                 + INTERACTED + ", "
                 + NOTIFIED_ACTOR_ID
                 + ")"
-        );
-
+        )
     }
 }

@@ -13,92 +13,74 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
-
-import android.content.Context;
-import android.os.Bundle;
-
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
-import org.andstatus.app.util.MyLog;
+import android.content.Context
+import android.os.Bundle
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.R
+import org.andstatus.app.util.MyLog
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public enum WhichPage {
-	ANY(8, R.string.page_current),
-    CURRENT(1, R.string.page_current),
-    YOUNGER(2, R.string.page_younger),
-    YOUNGEST(3, R.string.page_youngest),
-    TOP(4, R.string.page_top_of),
-    OLDER(6, R.string.page_older),
-    EMPTY(7, R.string.page_empty);
+enum class WhichPage(private val code: Long, private val titleResId: Int) {
+    ANY(8, R.string.page_current), CURRENT(1, R.string.page_current), YOUNGER(2, R.string.page_younger), YOUNGEST(3, R.string.page_youngest), TOP(4, R.string.page_top_of), OLDER(6, R.string.page_older), EMPTY(7, R.string.page_empty);
 
-    private static final String TAG = WhichPage.class.getSimpleName();
-    private final long code;
-    private final int titleResId;
-
-    WhichPage(long code, int titleResId) {
-        this.code = code;
-        this.titleResId = titleResId;
+    fun toBundle(): Bundle? {
+        return save(Bundle())
     }
 
-    public Bundle toBundle() {
-        return save(new Bundle());
+    fun save(bundle: Bundle?): Bundle? {
+        bundle.putString(IntentExtra.WHICH_PAGE.key, save())
+        return bundle
     }
 
-    public Bundle save(Bundle bundle) {
-        bundle.putString(IntentExtra.WHICH_PAGE.key, save());
-        return bundle;
+    fun save(): String? {
+        return java.lang.Long.toString(code)
     }
 
-    public String save() {
-        return Long.toString(code);
-    }
-
-    public static WhichPage load(String strCode, WhichPage defaultPage) {
-        if (strCode != null) {
-            try {
-                return load(Long.parseLong(strCode));
-            } catch (NumberFormatException e) {
-                MyLog.v(TAG, "Error converting '" + strCode + "'", e);
-            }
-        }
-        return defaultPage;
-    }
-
-    public static WhichPage load(long code) {
-        for(WhichPage val : values()) {
-            if (val.code == code) {
-                return val;
-            }
-        }
-        return EMPTY;
-    }
-
-    public static WhichPage load(Bundle args) {
-        if (args != null) {
-            return WhichPage.load(args.getString(IntentExtra.WHICH_PAGE.key), EMPTY);
-        }
-        return EMPTY;
-    }
-
-    public CharSequence getTitle(Context context) {
-        if (titleResId == 0 || context == null) {
-            return this.name();
+    fun getTitle(context: Context?): CharSequence? {
+        return if (titleResId == 0 || context == null) {
+            name
         } else {
-            return context.getText(titleResId);
+            context.getText(titleResId)
         }
     }
 
-    public boolean isYoungest() {
-        switch (this) {
-            case TOP:
-            case YOUNGEST:
-                return true;
-            default :
-                return false;
+    fun isYoungest(): Boolean {
+        return when (this) {
+            TOP, YOUNGEST -> true
+            else -> false
+        }
+    }
+
+    companion object {
+        private val TAG: String? = WhichPage::class.java.simpleName
+        fun load(strCode: String?, defaultPage: WhichPage?): WhichPage? {
+            if (strCode != null) {
+                try {
+                    return load(strCode.toLong())
+                } catch (e: NumberFormatException) {
+                    MyLog.v(TAG, "Error converting '$strCode'", e)
+                }
+            }
+            return defaultPage
+        }
+
+        fun load(code: Long): WhichPage? {
+            for (`val` in values()) {
+                if (`val`.code == code) {
+                    return `val`
+                }
+            }
+            return EMPTY
+        }
+
+        fun load(args: Bundle?): WhichPage? {
+            return if (args != null) {
+                load(args.getString(IntentExtra.WHICH_PAGE.key), EMPTY)
+            } else EMPTY
         }
     }
 }

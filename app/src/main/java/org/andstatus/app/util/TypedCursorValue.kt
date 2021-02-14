@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,115 +13,99 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
+import android.database.Cursor
+import org.andstatus.app.util.TypedCursorValue.CursorFieldType
+import org.json.JSONException
+import org.json.JSONObject
 
-import android.database.Cursor;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-public class TypedCursorValue {
-    private static final String KEY_TYPE = "type";
-    private static final String KEY_VALUE = "value";
-
-    public final CursorFieldType type;
-    public final Object value;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        TypedCursorValue that = (TypedCursorValue) o;
-
-        if (type != CursorFieldType.UNKNOWN && that.type != CursorFieldType.UNKNOWN) {
-            if (type != that.type) return false;
+class TypedCursorValue {
+    val type: CursorFieldType?
+    val value: Any?
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o == null || javaClass != o.javaClass) return false
+        val that = o as TypedCursorValue?
+        if (type !== CursorFieldType.UNKNOWN && that.type !== CursorFieldType.UNKNOWN) {
+            if (type !== that.type) return false
         }
-        return !(value != null ? !value.toString().equals(that.value.toString()) : that.value != null);
+        return !if (value != null) value.toString() != that.value.toString() else that.value != null
     }
 
-    @Override
-    public int hashCode() {
-        int result = type.hashCode();
-        result = 31 * result + (value != null ? value.toString().hashCode() : 0);
-        return result;
+    override fun hashCode(): Int {
+        var result = type.hashCode()
+        result = 31 * result + (value?.toString()?.hashCode() ?: 0)
+        return result
     }
 
-    private enum CursorFieldType {
-        UNKNOWN(-1),
-        STRING(Cursor.FIELD_TYPE_STRING) {
-            @Override
-            public Object columnToObject(Cursor cursor, int columnIndex) {
-                return cursor.getString(columnIndex);
+    private enum class CursorFieldType(val code: Int) {
+        UNKNOWN(-1), STRING(Cursor.FIELD_TYPE_STRING) {
+            override fun columnToObject(cursor: Cursor?, columnIndex: Int): Any? {
+                return cursor.getString(columnIndex)
             }
         },
         INTEGER(Cursor.FIELD_TYPE_INTEGER) {
-            @Override
-            public Object columnToObject(Cursor cursor, int columnIndex) {
-                return cursor.getLong(columnIndex);
+            override fun columnToObject(cursor: Cursor?, columnIndex: Int): Any? {
+                return cursor.getLong(columnIndex)
             }
         },
         BLOB(Cursor.FIELD_TYPE_BLOB) {
-            @Override
-            public Object columnToObject(Cursor cursor, int columnIndex) {
-                return cursor.getBlob(columnIndex);
+            override fun columnToObject(cursor: Cursor?, columnIndex: Int): Any? {
+                return cursor.getBlob(columnIndex)
             }
         },
         FLOAT(Cursor.FIELD_TYPE_FLOAT) {
-            @Override
-            public Object columnToObject(Cursor cursor, int columnIndex) {
-                return cursor.getDouble(columnIndex);
+            override fun columnToObject(cursor: Cursor?, columnIndex: Int): Any? {
+                return cursor.getDouble(columnIndex)
             }
         },
         NULL(Cursor.FIELD_TYPE_NULL);
 
-        final int code;
-        CursorFieldType(int fieldType) {
-            code = fieldType;
+        open fun columnToObject(cursor: Cursor?, columnIndex: Int): Any? {
+            return null
         }
 
-        public Object columnToObject(Cursor cursor, int columnIndex) {
-            return  null;
-        }
-
-        public static CursorFieldType fromColumnType(int cursorColumnType) {
-            for(CursorFieldType val : values()) {
-                if (val.code == cursorColumnType) {
-                    return val;
+        companion object {
+            fun fromColumnType(cursorColumnType: Int): CursorFieldType? {
+                for (`val` in values()) {
+                    if (`val`.code == cursorColumnType) {
+                        return `val`
+                    }
                 }
+                return UNKNOWN
             }
-            return UNKNOWN;
         }
-
     }
 
-    public static TypedCursorValue fromJson(JSONObject json) {
-        CursorFieldType type = CursorFieldType.UNKNOWN ;
-        if (json.has(KEY_TYPE)) {
-            type = CursorFieldType.fromColumnType(json.optInt(KEY_TYPE));
+    constructor(cursor: Cursor?, columnIndex: Int) {
+        type = CursorFieldType.fromColumnType(cursor.getType(columnIndex))
+        value = type.columnToObject(cursor, columnIndex)
+    }
+
+    constructor(`object`: Any?) : this(CursorFieldType.UNKNOWN, `object`) {}
+    constructor(type: CursorFieldType?, `object`: Any?) {
+        this.type = type
+        value = `object`
+    }
+
+    @Throws(JSONException::class)
+    fun toJson(): JSONObject? {
+        val json = JSONObject()
+        json.put(KEY_TYPE, type.code)
+        json.put(KEY_VALUE, value)
+        return json
+    }
+
+    companion object {
+        private val KEY_TYPE: String? = "type"
+        private val KEY_VALUE: String? = "value"
+        fun fromJson(json: JSONObject?): TypedCursorValue? {
+            var type: CursorFieldType? = CursorFieldType.UNKNOWN
+            if (json.has(KEY_TYPE)) {
+                type = CursorFieldType.fromColumnType(json.optInt(KEY_TYPE))
+            }
+            return TypedCursorValue(type, json.opt(KEY_VALUE))
         }
-        return new TypedCursorValue(type, json.opt(KEY_VALUE));
-    }
-
-    public TypedCursorValue(Cursor cursor, int columnIndex) {
-        type =  CursorFieldType.fromColumnType(cursor.getType(columnIndex));
-        value = type.columnToObject(cursor, columnIndex);
-    }
-
-    public TypedCursorValue(Object object) {
-        this(CursorFieldType.UNKNOWN, object);
-    }
-
-    public TypedCursorValue(CursorFieldType type, Object object) {
-        this.type = type ;
-        value = object;
-    }
-
-    public JSONObject toJson() throws JSONException {
-        JSONObject json = new JSONObject();
-        json.put(KEY_TYPE, type.code);
-        json.put(KEY_VALUE, value);
-        return json;
     }
 }

@@ -13,179 +13,161 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
+import io.vavr.control.CheckedConsumer
+import io.vavr.control.CheckedFunction
+import io.vavr.control.Try
+import org.andstatus.app.net.http.ConnectionException
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.*
+import java.util.function.Consumer
+import java.util.function.Function
 
-import org.andstatus.app.net.http.ConnectionException;
-import org.json.JSONArray;
-import org.json.JSONObject;
+class ObjectOrId : IsEmpty {
+    val parentObject: Optional<Any?>?
+    val name: String?
+    val `object`: Optional<JSONObject?>?
+    val array: Optional<JSONArray?>?
+    val id: Optional<String?>?
+    val error: Optional<ConnectionException?>?
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.function.Consumer;
-
-import io.vavr.control.CheckedConsumer;
-import io.vavr.control.CheckedFunction;
-import io.vavr.control.Try;
-
-public class ObjectOrId implements IsEmpty {
-    private final static ObjectOrId EMPTY = of(null);
-    public final Optional<Object> parentObject;
-    public final String name;
-    public final Optional<JSONObject> object;
-    public final Optional<JSONArray> array;
-    public final Optional<String> id;
-    public final Optional<ConnectionException> error;
-
-    public static ObjectOrId of(JSONObject parentObject, String propertyName) {
-        return new ObjectOrId(parentObject, propertyName);
+    private constructor(parentObject: JSONObject?, propertyName: String?) {
+        this.parentObject = Optional.of(parentObject)
+        name = propertyName
+        `object` = Optional.ofNullable(parentObject.optJSONObject(propertyName))
+        val jsonArray = parentObject.optJSONArray(propertyName)
+        array = if (`object`.isPresent || jsonArray == null || jsonArray.length() == 0) Optional.empty() else Optional.of(jsonArray)
+        id = if (`object`.isPresent || jsonArray != null) Optional.empty() else StringUtil.optNotEmpty(JsonUtils.optString(parentObject, propertyName))
+        error = Optional.empty()
     }
 
-    private ObjectOrId(JSONObject parentObject, String propertyName) {
-        this.parentObject = Optional.of(parentObject);
-        this.name = propertyName;
-        object = Optional.ofNullable(parentObject.optJSONObject(propertyName));
-        final JSONArray jsonArray = parentObject.optJSONArray(propertyName);
-        array = object.isPresent() || jsonArray == null || jsonArray.length() == 0
-                ? Optional.empty()
-                : Optional.of(jsonArray);
-        id = object.isPresent() || jsonArray != null
-                ? Optional.empty()
-                : StringUtil.optNotEmpty(JsonUtils.optString(parentObject, propertyName));
-        error = Optional.empty();
+    private constructor(jso: Optional<Any?>?) {
+        parentObject = jso
+        name = ""
+        `object` = jso.flatMap(Function { js: Any? -> if (js is JSONObject) Optional.of(js as JSONObject?) else Optional.empty() })
+        val jsonArray = jso.flatMap(Function { js: Any? -> if (js is JSONArray) Optional.of(js as JSONArray?) else Optional.empty() }).filter { a: JSONArray? -> a.length() > 0 }
+        array = if (`object`.isPresent || !jsonArray.isPresent) Optional.empty() else jsonArray
+        id = if (`object`.isPresent || jsonArray.isPresent) Optional.empty() else jso.flatMap(Function { js: Any? -> if (js is String) StringUtil.optNotEmpty(js) else Optional.empty() })
+        error = Optional.empty()
     }
 
-    public static ObjectOrId of(JSONArray parentArray, int index) {
-        return new ObjectOrId(Optional.ofNullable(parentArray.opt(index)));
+    private constructor(ooi: ObjectOrId?, e: Exception?) {
+        parentObject = ooi.parentObject
+        name = ooi.name
+        `object` = Optional.empty()
+        array = Optional.empty()
+        id = Optional.empty()
+        error = Optional.of(if (e is ConnectionException) e as ConnectionException? else ConnectionException.Companion.loggedJsonException(this, "Parsing JSON", e, ooi.`object`.orElse(null)))
     }
 
-    public static ObjectOrId of(Object jso) {
-        return new ObjectOrId(Optional.ofNullable(jso));
+    override fun isEmpty(): Boolean {
+        return !`object`.isPresent() && !array.isPresent() && !id.isPresent()
     }
 
-    private ObjectOrId(Optional<Object> jso) {
-        parentObject = jso;
-        name = "";
-        object = jso.flatMap(js -> js instanceof JSONObject ? Optional.of((JSONObject) js) : Optional.empty());
-        final Optional<JSONArray> jsonArray = jso.flatMap(js -> js instanceof JSONArray
-                ? Optional.of((JSONArray) js) : Optional.empty()).filter(a -> a.length() > 0);
-        array = object.isPresent() || !jsonArray.isPresent()
-                ? Optional.empty() : jsonArray;
-        id = object.isPresent() || jsonArray.isPresent()
-                ? Optional.empty()
-                : jso.flatMap(js -> js instanceof String ? StringUtil.optNotEmpty(js) : Optional.empty());
-        error = Optional.empty();
-    }
-
-    private ObjectOrId(ObjectOrId ooi, Exception e) {
-        parentObject = ooi.parentObject;
-        name = ooi.name;
-        object = Optional.empty();
-        array = Optional.empty();
-        id = Optional.empty();
-        error = Optional.of(e instanceof ConnectionException
-                ? (ConnectionException) e
-                : ConnectionException.loggedJsonException(this, "Parsing JSON", e, ooi.object.orElse(null)));
-    }
-
-    public static ObjectOrId empty() {
-        return EMPTY;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return !object.isPresent() && !array.isPresent() && !id.isPresent();
-    }
-
-    public ObjectOrId ifId(CheckedConsumer<String> consumer) {
-        return id.map(id -> {
+    fun ifId(consumer: CheckedConsumer<String?>?): ObjectOrId? {
+        return id.map(Function<String?, ObjectOrId?> { id: String? ->
             try {
-                consumer.accept(id);
-                return this;
-            } catch (Exception t) {
-                return new ObjectOrId(this, t);
+                consumer.accept(id)
+                return@map this
+            } catch (t: Exception) {
+                return@map ObjectOrId(this, t)
             }
-        }).orElse(this);
+        }).orElse(this)
     }
 
-    public ObjectOrId ifObject(CheckedConsumer<JSONObject> consumer) {
-        return object.map(object -> {
+    fun ifObject(consumer: CheckedConsumer<JSONObject?>?): ObjectOrId? {
+        return `object`.map(Function<JSONObject?, ObjectOrId?> { `object`: JSONObject? ->
             try {
-                consumer.accept(object);
-                return this;
-            } catch (Exception t) {
-                return new ObjectOrId(this, t);
+                consumer.accept(`object`)
+                return@map this
+            } catch (t: Exception) {
+                return@map ObjectOrId(this, t)
             }
-        }).orElse(this);
+        }).orElse(this)
     }
 
-    public ObjectOrId ifArray(CheckedConsumer<JSONArray> consumer) {
-        return array.map(array -> {
+    fun ifArray(consumer: CheckedConsumer<JSONArray?>?): ObjectOrId? {
+        return array.map(Function<JSONArray?, ObjectOrId?> { array: JSONArray? ->
             try {
-                consumer.accept(array);
-                return this;
-            } catch (Exception t) {
-                return new ObjectOrId(this, t);
+                consumer.accept(array)
+                return@map this
+            } catch (t: Exception) {
+                return@map ObjectOrId(this, t)
             }
-        }).orElse(this);
+        }).orElse(this)
     }
 
-    public ObjectOrId ifError(Consumer<Exception> consumer) {
-        error.ifPresent(consumer::accept);
-        return this;
+    fun ifError(consumer: Consumer<Exception?>?): ObjectOrId? {
+        error.ifPresent(Consumer { t: ConnectionException? -> consumer.accept(t) })
+        return this
     }
 
-    public <T> Try<T> mapOne(CheckedFunction<JSONObject, T> fromObject, CheckedFunction<String, T> fromId) {
-        if (object.isPresent()) {
-            return Try.success(object.get()).map(fromObject);
+    fun <T> mapOne(fromObject: CheckedFunction<JSONObject?, T?>?, fromId: CheckedFunction<String?, T?>?): Try<T?>? {
+        if (`object`.isPresent()) {
+            return Try.success(`object`.get()).map(fromObject)
         }
-        if (id.isPresent()) {
-            return Try.success(id.get()).map(fromId);
-        }
-        return Try.failure(new NoSuchElementException());
+        return if (id.isPresent()) {
+            Try.success(id.get()).map(fromId)
+        } else Try.failure(NoSuchElementException())
     }
 
-    public <T> List<T> mapAll(CheckedFunction<JSONObject, T> fromObject, CheckedFunction<String, T> fromId) {
-        if (object.isPresent()) {
-            return Try.success(object.get()).map(fromObject).map(Collections::singletonList)
-                    .getOrElse(Collections.emptyList());
+    fun <T> mapAll(fromObject: CheckedFunction<JSONObject?, T?>?, fromId: CheckedFunction<String?, T?>?): MutableList<T?>? {
+        if (`object`.isPresent()) {
+            return Try.success(`object`.get()).map(fromObject).map { o: T? -> listOf(o) }
+                    .getOrElse(emptyList())
         }
         if (array.isPresent()) {
-            return Try.success(array.get()).map(arrayOfTo -> {
-                List<T> list = new ArrayList<>();
-                for (int ind = 0; ind < arrayOfTo.length(); ind++) {
-                    ObjectOrId.of(arrayOfTo, ind)
-                            .ifObject(o -> list.add(fromObject.apply(o)))
-                            .ifId(id -> list.add(fromId.apply(id)));
+            return Try.success(array.get()).map { arrayOfTo: JSONArray? ->
+                val list: MutableList<T?> = ArrayList()
+                for (ind in 0 until arrayOfTo.length()) {
+                    of(arrayOfTo, ind)
+                            .ifObject(CheckedConsumer { o: JSONObject? -> list.add(fromObject.apply(o)) })
+                            .ifId(CheckedConsumer { id: String? -> list.add(fromId.apply(id)) })
                 }
-                return list;
-            }).getOrElse(Collections.emptyList());
+                list
+            }.getOrElse(emptyList())
         }
-        if (id.isPresent()) {
-            return Try.success(id.get()).map(fromId).map(Collections::singletonList)
-                    .getOrElse(Collections.emptyList());
-        }
-        return Collections.emptyList();
+        return if (id.isPresent()) {
+            Try.success(id.get()).map(fromId).map { o: T? -> listOf(o) }
+                    .getOrElse(emptyList())
+        } else emptyList()
     }
 
-    public <T> List<T> mapObjects(CheckedFunction<JSONObject, T> fromObject) {
-        if (object.isPresent()) {
-            return Try.success(object.get()).map(fromObject).map(Collections::singletonList)
-                    .getOrElse(Collections.emptyList());
+    fun <T> mapObjects(fromObject: CheckedFunction<JSONObject?, T?>?): MutableList<T?>? {
+        if (`object`.isPresent()) {
+            return Try.success(`object`.get()).map(fromObject).map { o: T? -> listOf(o) }
+                    .getOrElse(emptyList())
         }
-        if (array.isPresent()) {
-            return Try.success(array.get()).map(arrayOfTo -> {
-                List<T> list = new ArrayList<>();
-                for (int ind = 0; ind < arrayOfTo.length(); ind++) {
-                    ObjectOrId.of(arrayOfTo, ind)
-                            .ifObject(o -> list.add(fromObject.apply(o)));
+        return if (array.isPresent()) {
+            Try.success(array.get()).map { arrayOfTo: JSONArray? ->
+                val list: MutableList<T?> = ArrayList()
+                for (ind in 0 until arrayOfTo.length()) {
+                    of(arrayOfTo, ind)
+                            .ifObject(CheckedConsumer { o: JSONObject? -> list.add(fromObject.apply(o)) })
                 }
-                return list;
-            }).getOrElse(Collections.emptyList());
+                list
+            }.getOrElse(emptyList())
+        } else emptyList()
+    }
+
+    companion object {
+        private val EMPTY = of(null)
+        fun of(parentObject: JSONObject?, propertyName: String?): ObjectOrId? {
+            return ObjectOrId(parentObject, propertyName)
         }
-        return Collections.emptyList();
+
+        fun of(parentArray: JSONArray?, index: Int): ObjectOrId? {
+            return ObjectOrId(Optional.ofNullable(parentArray.opt(index)))
+        }
+
+        fun of(jso: Any?): ObjectOrId? {
+            return ObjectOrId(Optional.ofNullable(jso))
+        }
+
+        fun empty(): ObjectOrId? {
+            return EMPTY
+        }
     }
 }

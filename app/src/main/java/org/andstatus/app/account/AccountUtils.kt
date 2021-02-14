@@ -13,126 +13,113 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.account
 
-package org.andstatus.app.account;
+import android.accounts.Account
+import android.accounts.AccountManager
+import android.content.ContentResolver
+import android.content.Context
+import android.os.Bundle
+import io.vavr.control.CheckedFunction
+import io.vavr.control.Try
+import org.andstatus.app.data.MatchedUri
+import org.andstatus.app.util.JsonUtils
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.Permissions
+import org.andstatus.app.util.Permissions.PermissionType
+import org.json.JSONObject
+import java.util.*
+import java.util.stream.Collectors
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.PeriodicSync;
-import android.os.Bundle;
+object AccountUtils {
+    const val ACCOUNT_VERSION = 48
+    val KEY_VERSION: String? = "myversion" // Storing version of the account data
 
-import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.util.JsonUtils;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.Permissions;
-import org.json.JSONObject;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
-
-import androidx.annotation.NonNull;
-import io.vavr.control.Try;
-
-public class AccountUtils {
-    public static final int ACCOUNT_VERSION = 48;
-    public final static String KEY_VERSION = "myversion"; // Storing version of the account data
-    /** The Key for the android.accounts.Account bundle */
-    public static final String KEY_ACCOUNT = "account";
-
-    private AccountUtils() {
-        // Empty
+    /** The Key for the android.accounts.Account bundle  */
+    val KEY_ACCOUNT: String? = "account"
+    fun isVersionCurrent(context: Context?, account: Account?): Boolean {
+        return ACCOUNT_VERSION == getVersion(context, account)
     }
 
-    public static boolean isVersionCurrent(Context context, Account account) {
-        return AccountUtils.ACCOUNT_VERSION == getVersion(context, account);
-    }
-
-    public static int getVersion(Context context, Account account) {
+    fun getVersion(context: Context?, account: Account?): Int {
         return JsonUtils.toJsonObject(AccountManager.get(context).getUserData(account, KEY_ACCOUNT))
-                .map(AccountUtils::getVersion)
-                .getOrElse(0);
+                .map(CheckedFunction<JSONObject?, Int?> { obj: JSONObject? -> getVersion() })
+                .getOrElse(0)
     }
 
-    public static boolean isVersionCurrent(JSONObject jso) {
-        return AccountUtils.ACCOUNT_VERSION == getVersion(jso);
+    fun isVersionCurrent(jso: JSONObject?): Boolean {
+        return ACCOUNT_VERSION == getVersion(jso)
     }
 
-    public static int getVersion(JSONObject jso) {
-        return jso == null ? 0 : jso.optInt(KEY_VERSION);
+    fun getVersion(jso: JSONObject?): Int {
+        return jso?.optInt(KEY_VERSION) ?: 0
     }
 
-    /** Add this account to the Account Manager Without userdata yet */
-    public static Try<Account> addEmptyAccount(AccountName oAccountName, String password) {
-        return addEmptyAccount(AccountManager.get(oAccountName.getContext()), oAccountName.getName(), password);
+    /** Add this account to the Account Manager Without userdata yet  */
+    fun addEmptyAccount(oAccountName: AccountName?, password: String?): Try<Account?>? {
+        return addEmptyAccount(AccountManager.get(oAccountName.getContext()), oAccountName.getName(), password)
     }
 
-    /** Add this account to the Account Manager Without userdata yet */
-    public static Try<Account> addEmptyAccount(AccountManager am, String accountName, String password) {
-        return Try.of( () -> {
-            Account androidAccount = new Account(accountName, AuthenticatorService.ANDROID_ACCOUNT_TYPE);
+    /** Add this account to the Account Manager Without userdata yet  */
+    fun addEmptyAccount(am: AccountManager?, accountName: String?, password: String?): Try<Account?>? {
+        return Try.of {
+            val androidAccount = Account(accountName, AuthenticatorService.Companion.ANDROID_ACCOUNT_TYPE)
             if (am.addAccountExplicitly(androidAccount, password, null)) {
                 // Without SyncAdapter we got the error:
                 // SyncManager(865): can't find a sync adapter for SyncAdapterType Key
                 // {name=org.andstatus.app.data.MyProvider, type=org.andstatus.app},
                 // removing settings for it
-                MyLog.v(AccountUtils.class, () -> "Persisted " + accountName);
-                return androidAccount;
+                MyLog.v(AccountUtils::class.java) { "Persisted $accountName" }
+                return@of androidAccount
             } else {
-                String errorMessage = "Account was not added to AccountManager: " + androidAccount;
-                MyLog.e(AccountUtils.class, errorMessage);
-                throw new Exception(errorMessage);
-            }
-        });
-    }
-
-    static Try<Account> getExistingAndroidAccount(AccountName oAccountName) {
-        for (Account account : getCurrentAccounts(oAccountName.getContext())) {
-            if (oAccountName.getName().equals(account.name)) {
-                return Try.success(account);
+                val errorMessage = "Account was not added to AccountManager: $androidAccount"
+                MyLog.e(AccountUtils::class.java, errorMessage)
+                throw Exception(errorMessage)
             }
         }
-        return Try.failure(new NoSuchElementException(oAccountName.getName()));
     }
 
-    private static long getSyncFrequencySeconds(Account account) {
-        long syncFrequencySeconds = 0;
-        List<PeriodicSync> syncs = ContentResolver.getPeriodicSyncs(account, MatchedUri.AUTHORITY);
+    fun getExistingAndroidAccount(oAccountName: AccountName?): Try<Account?>? {
+        for (account in getCurrentAccounts(oAccountName.getContext())) {
+            if (oAccountName.getName() == account.name) {
+                return Try.success(account)
+            }
+        }
+        return Try.failure(NoSuchElementException(oAccountName.getName()))
+    }
+
+    private fun getSyncFrequencySeconds(account: Account?): Long {
+        var syncFrequencySeconds: Long = 0
+        val syncs = ContentResolver.getPeriodicSyncs(account, MatchedUri.Companion.AUTHORITY)
         if (!syncs.isEmpty()) {
-            syncFrequencySeconds = syncs.get(0).period;
+            syncFrequencySeconds = syncs[0].period
         }
-        return syncFrequencySeconds;
+        return syncFrequencySeconds
     }
 
-    static void setSyncFrequencySeconds(Account androidAccount, long syncFrequencySeconds) {
+    fun setSyncFrequencySeconds(androidAccount: Account?, syncFrequencySeconds: Long) {
         // See
         // http://developer.android.com/reference/android/content/ContentResolver.html#addPeriodicSync(android.accounts.Account, java.lang.String, android.os.Bundle, long)
         // and
         // http://stackoverflow.com/questions/11090604/android-syncadapter-automatically-initialize-syncing
         if (syncFrequencySeconds != getSyncFrequencySeconds(androidAccount)) {
-            ContentResolver.removePeriodicSync(androidAccount, MatchedUri.AUTHORITY, Bundle.EMPTY);
+            ContentResolver.removePeriodicSync(androidAccount, MatchedUri.Companion.AUTHORITY, Bundle.EMPTY)
             if (syncFrequencySeconds > 0) {
-                ContentResolver.addPeriodicSync(androidAccount, MatchedUri.AUTHORITY, Bundle.EMPTY, syncFrequencySeconds);
+                ContentResolver.addPeriodicSync(androidAccount, MatchedUri.Companion.AUTHORITY, Bundle.EMPTY, syncFrequencySeconds)
             }
         }
     }
 
-    @NonNull
-    public static List<Account> getCurrentAccounts(Context context) {
-        return getAllAccounts(context).stream().filter(a -> isVersionCurrent(context, a)).collect(Collectors.toList());
+    fun getCurrentAccounts(context: Context?): MutableList<Account?> {
+        return getAllAccounts(context).stream().filter { a: Account? -> isVersionCurrent(context, a) }.collect(Collectors.toList())
     }
 
-    @NonNull
-    public static List<Account> getAllAccounts(Context context) {
-        if (Permissions.checkPermission(context, Permissions.PermissionType.GET_ACCOUNTS) ) {
-            AccountManager am = AccountManager.get(context);
-            return Arrays.stream(am.getAccountsByType(AuthenticatorService.ANDROID_ACCOUNT_TYPE))
-                    .collect(Collectors.toList());
+    fun getAllAccounts(context: Context?): MutableList<Account?> {
+        if (Permissions.checkPermission(context, PermissionType.GET_ACCOUNTS)) {
+            val am = AccountManager.get(context)
+            return Arrays.stream(am.getAccountsByType(AuthenticatorService.Companion.ANDROID_ACCOUNT_TYPE))
+                    .collect(Collectors.toList())
         }
-        return Collections.emptyList();
+        return emptyList<Account?>()
     }
 }

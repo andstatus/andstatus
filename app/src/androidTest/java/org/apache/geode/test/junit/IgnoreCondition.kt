@@ -12,17 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.junit;
+package org.apache.geode.test.junit
 
-import org.junit.runner.Description;
+import org.junit.runner.Description
 
 /**
  * The IgnoreCondition class...
  *
  * @see org.junit.runner.Description
  */
-public interface IgnoreCondition {
-
-  boolean evaluate(Description testCaseDescription);
-
+interface IgnoreCondition {
+    open fun evaluate(testCaseDescription: Description?): Boolean
 }

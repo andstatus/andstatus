@@ -13,101 +13,88 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data.converter
 
-package org.andstatus.app.data.converter;
+import android.accounts.Account
+import android.accounts.AccountManager
+import org.andstatus.app.account.AccountDataReader
+import org.andstatus.app.account.AccountDataWriter
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StringUtil
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-
-import org.andstatus.app.account.AccountDataReader;
-import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtil;
-
-class AndroidAccountData implements AccountDataReader {
-    private AccountManager am;
-    private Account androidAccount;
-
-    AndroidAccountData(AccountManager am, Account androidAccount) {
-        this.am = am;
-        this.androidAccount = androidAccount;
-    }
-    
-    @Override
-    public int getDataInt(String key, int defValue) {
-        int value = defValue;
+internal class AndroidAccountData(private val am: AccountManager?, private val androidAccount: Account?) : AccountDataReader {
+    override fun getDataInt(key: String?, defValue: Int): Int {
+        var value = defValue
         try {
-            String str = getDataString(key, "null");
+            val str = getDataString(key, "null")
             if (str.compareTo("null") != 0) {
-                value = Integer.parseInt(str);
+                value = str.toInt()
             }
-        } catch (Exception e) {
-            MyLog.v(this, e);
+        } catch (e: Exception) {
+            MyLog.v(this, e)
         }
-        return value;
+        return value
     }
 
-    long getDataLong(String key, long defValue) {
-        long value = defValue;
+    fun getDataLong(key: String?, defValue: Long): Long {
+        var value = defValue
         try {
-            String str = getDataString(key, "null");
+            val str = getDataString(key, "null")
             if (str.compareTo("null") != 0) {
-                value = Long.parseLong(str);
+                value = str.toLong()
             }
-        } catch (Exception e) {
-            MyLog.v(this, e);
+        } catch (e: Exception) {
+            MyLog.v(this, e)
         }
-        return value;
+        return value
     }
 
-    boolean getDataBoolean(String key, boolean defValue) {
-        boolean value = defValue;
+    fun getDataBoolean(key: String?, defValue: Boolean): Boolean {
+        var value = defValue
         try {
-            String str = getDataString(key, "null");
+            val str = getDataString(key, "null")
             if (str.compareTo("null") != 0) {
-                value = SharedPreferencesUtil.isTrue(str);
+                value = SharedPreferencesUtil.isTrue(str)
             }
-        } catch (Exception e) {
-            MyLog.v(this, e);
+        } catch (e: Exception) {
+            MyLog.v(this, e)
         }
-        return value;
+        return value
     }
-    
-    @Override
-    public boolean dataContains(String key) {
-        boolean contains = false;
+
+    override fun dataContains(key: String?): Boolean {
+        var contains = false
         try {
-            String str = getDataString(key, "null");
+            val str = getDataString(key, "null")
             if (str.compareTo("null") != 0) {
-                contains = true;
+                contains = true
             }
-        } catch (Exception e) {
-            MyLog.v(this, e);
+        } catch (e: Exception) {
+            MyLog.v(this, e)
         }
-        return contains;
+        return contains
     }
 
     /**
      * Actor's and User Data associated with the account
      */
-    @Override
-    public String getDataString(String key, String defValue) {
-        String value = defValue;
-        String str = am.getUserData(androidAccount, key);
+    override fun getDataString(key: String?, defValue: String?): String? {
+        var value = defValue
+        val str = am.getUserData(androidAccount, key)
         if (!StringUtil.isEmpty(str)) {
-            value = str;
+            value = str
         }
-        return value;
+        return value
     }
 
-    void moveStringKeyTo(String key, AccountDataWriter accountData) {
-        accountData.setDataString(key, getDataString(key, null));
-        am.setUserData(androidAccount, key, null);
+    fun moveStringKeyTo(key: String?, accountData: AccountDataWriter?) {
+        accountData.setDataString(key, getDataString(key, null))
+        am.setUserData(androidAccount, key, null)
     }
 
-    void moveLongKeyTo(String key, AccountDataWriter accountData) {
-        accountData.setDataLong(key, getDataLong(key, 0L));
-        am.setUserData(androidAccount, key, null);
+    fun moveLongKeyTo(key: String?, accountData: AccountDataWriter?) {
+        accountData.setDataLong(key, getDataLong(key, 0L))
+        am.setUserData(androidAccount, key, null)
     }
 }

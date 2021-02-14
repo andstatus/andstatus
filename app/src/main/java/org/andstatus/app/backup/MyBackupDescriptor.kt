@@ -13,240 +13,227 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.backup
 
-package org.andstatus.app.backup;
+import android.content.Context
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
+import android.os.ParcelFileDescriptor
+import androidx.documentfile.provider.DocumentFile
+import org.andstatus.app.backup.ProgressLogger
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.database.DatabaseCreator
+import org.andstatus.app.util.DocumentFileUtils
+import org.andstatus.app.util.FileDescriptorUtils
+import org.andstatus.app.util.JsonUtils
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.BufferedWriter
+import java.io.FileDescriptor
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.OutputStream
+import java.io.OutputStreamWriter
+import java.nio.charset.StandardCharsets
 
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.os.ParcelFileDescriptor;
-
-import androidx.documentfile.provider.DocumentFile;
-
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.database.DatabaseCreator;
-import org.andstatus.app.util.DocumentFileUtils;
-import org.andstatus.app.util.FileDescriptorUtils;
-import org.andstatus.app.util.JsonUtils;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedWriter;
-import java.io.FileDescriptor;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class MyBackupDescriptor {
-    private static final Object TAG = MyBackupDescriptor.class;
-
-    static final int BACKUP_SCHEMA_VERSION_UNKNOWN = -1;
-    /** Depends, in particular, on @{@link DatabaseCreator#DATABASE_VERSION}
-     * v.7 2017-11-04 app.v.36 Moving to ActivityStreams data model
-     * v.6 2016-11-27 app.v.31 database schema changed
-     * v.5 2016-05-22 app.v.27 database schema changed
-     * v.4 2016-02-28 app.v.23 database schema changed
-     */
-    static final int BACKUP_SCHEMA_VERSION = 7;
-    static final String KEY_BACKUP_SCHEMA_VERSION = "backup_schema_version";
-    static final String KEY_APP_INSTANCE_NAME = MyPreferences.KEY_APP_INSTANCE_NAME;
-    static final String KEY_CREATED_DATE = "created_date";
-    static final String KEY_CREATED_DEVICE = "created_device";
-    static final String KEY_APPLICATION_VERSION_CODE = "app_version_code";
-    static final String KEY_APPLICATION_VERSION_NAME = "app_version_name";
-    static final String KEY_ACCOUNTS_COUNT = "accounts_count";
-
-    private int backupSchemaVersion = BACKUP_SCHEMA_VERSION_UNKNOWN;
-    private String appInstanceName = "";
-    private int applicationVersionCode = 0;
-    private String applicationVersionName = "";
-
-    private long createdDate = 0;
-    private boolean saved = false;
-    private FileDescriptor fileDescriptor = null;
-    private DocumentFile docDescriptor = null;
-
-    private long accountsCount = 0;
-
-    private final ProgressLogger progressLogger;
-
-    private MyBackupDescriptor(ProgressLogger progressLogger) {
-        this.progressLogger = progressLogger;
-    }
-
-    static MyBackupDescriptor getEmpty() {
-        return new MyBackupDescriptor(ProgressLogger.getEmpty(""));
-    }
-
-    static MyBackupDescriptor fromOldParcelFileDescriptor(ParcelFileDescriptor parcelFileDescriptor,
-                                                          ProgressLogger progressLogger) {
-        MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLogger);
-        if (parcelFileDescriptor != null) {
-            myBackupDescriptor.fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-            JSONObject jso = FileDescriptorUtils.getJSONObject(parcelFileDescriptor.getFileDescriptor());
-            myBackupDescriptor.setJson(jso);
-        }
-        return myBackupDescriptor;
-    }
-
-    static MyBackupDescriptor fromOldDocFileDescriptor(Context context, DocumentFile parcelFileDescriptor,
-                                                          ProgressLogger progressLogger) {
-        MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLogger);
-        if (parcelFileDescriptor != null) {
-            myBackupDescriptor.docDescriptor = parcelFileDescriptor;
-            myBackupDescriptor.setJson(DocumentFileUtils.getJSONObject(context, parcelFileDescriptor));
-        }
-        return myBackupDescriptor;
-    }
-
-    void setJson(JSONObject jso) {
+class MyBackupDescriptor private constructor(private val progressLogger: ProgressLogger?) {
+    private var backupSchemaVersion = BACKUP_SCHEMA_VERSION_UNKNOWN
+    private var appInstanceName: String? = ""
+    private var applicationVersionCode = 0
+    private var applicationVersionName: String? = ""
+    private var createdDate: Long = 0
+    private var saved = false
+    private var fileDescriptor: FileDescriptor? = null
+    private var docDescriptor: DocumentFile? = null
+    private var accountsCount: Long = 0
+    fun setJson(jso: JSONObject?) {
         backupSchemaVersion = jso.optInt(KEY_BACKUP_SCHEMA_VERSION,
-        backupSchemaVersion);
-        createdDate = jso.optLong(KEY_CREATED_DATE, createdDate);
-        saved = createdDate != 0;
-        appInstanceName = JsonUtils.optString(jso, KEY_APP_INSTANCE_NAME, appInstanceName);
-        applicationVersionCode = jso.optInt(KEY_APPLICATION_VERSION_CODE, applicationVersionCode);
-        applicationVersionName = JsonUtils.optString(jso, KEY_APPLICATION_VERSION_NAME, applicationVersionName);
-        accountsCount = jso.optLong(KEY_ACCOUNTS_COUNT, accountsCount);
+                backupSchemaVersion)
+        createdDate = jso.optLong(KEY_CREATED_DATE, createdDate)
+        saved = createdDate != 0L
+        appInstanceName = JsonUtils.optString(jso, KEY_APP_INSTANCE_NAME, appInstanceName)
+        applicationVersionCode = jso.optInt(KEY_APPLICATION_VERSION_CODE, applicationVersionCode)
+        applicationVersionName = JsonUtils.optString(jso, KEY_APPLICATION_VERSION_NAME, applicationVersionName)
+        accountsCount = jso.optLong(KEY_ACCOUNTS_COUNT, accountsCount)
         if (backupSchemaVersion != BACKUP_SCHEMA_VERSION) {
             try {
-                MyLog.w(TAG, "Bad backup descriptor: " + jso.toString(2) );
-            } catch (JSONException e) {
-                MyLog.d(TAG, "Bad backup descriptor: " + jso.toString(), e);
+                MyLog.w(TAG, "Bad backup descriptor: " + jso.toString(2))
+            } catch (e: JSONException) {
+                MyLog.d(TAG, "Bad backup descriptor: " + jso.toString(), e)
             }
         }
     }
 
-    static MyBackupDescriptor fromEmptyParcelFileDescriptor(ParcelFileDescriptor parcelFileDescriptor,
-                                                            ProgressLogger progressLoggerIn) throws IOException {
-        MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLoggerIn);
-        myBackupDescriptor.fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-        myBackupDescriptor.setEmptyFields(myContextHolder.getNow().baseContext());
-        myBackupDescriptor.backupSchemaVersion = BACKUP_SCHEMA_VERSION;
-        return myBackupDescriptor;
-    }
-
-    static MyBackupDescriptor fromEmptyDocumentFile(Context context, DocumentFile documentFile,
-                                                    ProgressLogger progressLoggerIn) throws IOException {
-        MyBackupDescriptor myBackupDescriptor = new MyBackupDescriptor(progressLoggerIn);
-        myBackupDescriptor.docDescriptor = documentFile;
-        myBackupDescriptor.setEmptyFields(context);
-        return myBackupDescriptor;
-    }
-
-    private void setEmptyFields(Context context) throws IOException {
-        backupSchemaVersion = BACKUP_SCHEMA_VERSION;
-
-        PackageManager pm = context.getPackageManager();
-        PackageInfo pi;
-        try {
-            pi = pm.getPackageInfo(context.getPackageName(), 0);
-        } catch (NameNotFoundException e) {
-            throw new IOException(e);
+    @Throws(IOException::class)
+    private fun setEmptyFields(context: Context?) {
+        backupSchemaVersion = BACKUP_SCHEMA_VERSION
+        val pm = context.getPackageManager()
+        val pi: PackageInfo?
+        pi = try {
+            pm.getPackageInfo(context.getPackageName(), 0)
+        } catch (e: PackageManager.NameNotFoundException) {
+            throw IOException(e)
         }
-        appInstanceName = MyPreferences.getAppInstanceName();
-        applicationVersionCode = pi.versionCode;
-        applicationVersionName = pi.versionName;
-    }
-    
-    int getBackupSchemaVersion() {
-        return backupSchemaVersion;
+        appInstanceName = MyPreferences.getAppInstanceName()
+        applicationVersionCode = pi.versionCode
+        applicationVersionName = pi.versionName
     }
 
-    long getCreatedDate() {
-        return createdDate;
+    fun getBackupSchemaVersion(): Int {
+        return backupSchemaVersion
     }
 
-    int getApplicationVersionCode() {
-        return applicationVersionCode;
+    fun getCreatedDate(): Long {
+        return createdDate
     }
 
-    public String getApplicationVersionName() {
-        return applicationVersionName;
+    fun getApplicationVersionCode(): Int {
+        return applicationVersionCode
     }
 
-    boolean isEmpty() {
-        return fileDescriptor == null && docDescriptor == null;
+    fun getApplicationVersionName(): String? {
+        return applicationVersionName
     }
 
-    void save(Context context) throws IOException {
+    fun isEmpty(): Boolean {
+        return fileDescriptor == null && docDescriptor == null
+    }
+
+    @Throws(IOException::class)
+    fun save(context: Context?) {
         if (isEmpty()) {
-            throw new FileNotFoundException("MyBackupDescriptor is empty");
+            throw FileNotFoundException("MyBackupDescriptor is empty")
         }
-        try (OutputStream outputStream = docDescriptor == null
-                ? new FileOutputStream(fileDescriptor)
-                : context.getContentResolver().openOutputStream(docDescriptor.getUri())
-        ) {
-            if (createdDate == 0) createdDate = System.currentTimeMillis();
-            writeStringToStream(toJson().toString(2), outputStream);
-            saved = true;
-        } catch (JSONException e) {
-            throw new IOException(e);
-        }
-    }
-
-    private JSONObject toJson() {
-        JSONObject jso = new JSONObject();
-        if (isEmpty()) return jso;
         try {
-            jso.put(KEY_BACKUP_SCHEMA_VERSION, backupSchemaVersion);
-            jso.put(KEY_APP_INSTANCE_NAME, appInstanceName);
-            jso.put(KEY_CREATED_DATE, createdDate);
-            jso.put(KEY_CREATED_DEVICE, MyPreferences.getDeviceBrandModelString());
-            jso.put(KEY_APPLICATION_VERSION_CODE, applicationVersionCode);
-            jso.put(KEY_APPLICATION_VERSION_NAME, applicationVersionName);
-            jso.put(KEY_ACCOUNTS_COUNT, accountsCount);
-        } catch (JSONException e) {
-            MyLog.w(this, "toJson", e);
-        }
-        return jso;
-    }
-
-    private void writeStringToStream(String string, OutputStream outputStream) throws IOException {
-        final String method = "writeStringToFileDescriptor";
-        try (Writer out = new BufferedWriter(new OutputStreamWriter(outputStream, StandardCharsets.UTF_8))) {
-            out.write(string);
-        } catch (IOException e) {
-            MyLog.d(this, method, e);
-            throw new FileNotFoundException(method + "; " + e.getLocalizedMessage());
+            if (docDescriptor == null) FileOutputStream(fileDescriptor) else context.getContentResolver().openOutputStream(docDescriptor.getUri()).use { outputStream ->
+                if (createdDate == 0L) createdDate = System.currentTimeMillis()
+                writeStringToStream(toJson().toString(2), outputStream)
+                saved = true
+            }
+        } catch (e: JSONException) {
+            throw IOException(e)
         }
     }
 
-    @Override
-    public String toString() {
-        return "MyBackupDescriptor " + toJson().toString();
-     }
-
-    boolean saved() {
-        return saved;
+    private fun toJson(): JSONObject? {
+        val jso = JSONObject()
+        if (isEmpty()) return jso
+        try {
+            jso.put(KEY_BACKUP_SCHEMA_VERSION, backupSchemaVersion)
+            jso.put(KEY_APP_INSTANCE_NAME, appInstanceName)
+            jso.put(KEY_CREATED_DATE, createdDate)
+            jso.put(KEY_CREATED_DEVICE, MyPreferences.getDeviceBrandModelString())
+            jso.put(KEY_APPLICATION_VERSION_CODE, applicationVersionCode)
+            jso.put(KEY_APPLICATION_VERSION_NAME, applicationVersionName)
+            jso.put(KEY_ACCOUNTS_COUNT, accountsCount)
+        } catch (e: JSONException) {
+            MyLog.w(this, "toJson", e)
+        }
+        return jso
     }
 
-    public long getAccountsCount() {
-        return accountsCount;
+    @Throws(IOException::class)
+    private fun writeStringToStream(string: String?, outputStream: OutputStream?) {
+        val method = "writeStringToFileDescriptor"
+        try {
+            BufferedWriter(OutputStreamWriter(outputStream, StandardCharsets.UTF_8)).use { out -> out.write(string) }
+        } catch (e: IOException) {
+            MyLog.d(this, method, e)
+            throw FileNotFoundException(method + "; " + e.localizedMessage)
+        }
     }
 
-    public void setAccountsCount(long accountsCount) {
-        this.accountsCount = accountsCount;
-        progressLogger.logProgress("Accounts backed up:" + accountsCount);
+    override fun toString(): String {
+        return "MyBackupDescriptor " + toJson().toString()
     }
 
-    public ProgressLogger getLogger() {
-        return progressLogger;
+    fun saved(): Boolean {
+        return saved
     }
 
-    public String appVersionNameAndCode() {
+    fun getAccountsCount(): Long {
+        return accountsCount
+    }
+
+    fun setAccountsCount(accountsCount: Long) {
+        this.accountsCount = accountsCount
+        progressLogger.logProgress("Accounts backed up:$accountsCount")
+    }
+
+    fun getLogger(): ProgressLogger? {
+        return progressLogger
+    }
+
+    fun appVersionNameAndCode(): String? {
         return "app version name:'" +
-            (StringUtil.isEmpty(getApplicationVersionName()) ? "???" : getApplicationVersionName()) + "'" +
-            ", version code:'" + getApplicationVersionCode() + "'";
+                (if (StringUtil.isEmpty(getApplicationVersionName())) "???" else getApplicationVersionName()) + "'" +
+                ", version code:'" + getApplicationVersionCode() + "'"
+    }
 
+    companion object {
+        private val TAG: Any? = MyBackupDescriptor::class.java
+        const val BACKUP_SCHEMA_VERSION_UNKNOWN = -1
+
+        /** Depends, in particular, on @[DatabaseCreator.DATABASE_VERSION]
+         * v.7 2017-11-04 app.v.36 Moving to ActivityStreams data model
+         * v.6 2016-11-27 app.v.31 database schema changed
+         * v.5 2016-05-22 app.v.27 database schema changed
+         * v.4 2016-02-28 app.v.23 database schema changed
+         */
+        const val BACKUP_SCHEMA_VERSION = 7
+        val KEY_BACKUP_SCHEMA_VERSION: String? = "backup_schema_version"
+        val KEY_APP_INSTANCE_NAME: String? = MyPreferences.KEY_APP_INSTANCE_NAME
+        val KEY_CREATED_DATE: String? = "created_date"
+        val KEY_CREATED_DEVICE: String? = "created_device"
+        val KEY_APPLICATION_VERSION_CODE: String? = "app_version_code"
+        val KEY_APPLICATION_VERSION_NAME: String? = "app_version_name"
+        val KEY_ACCOUNTS_COUNT: String? = "accounts_count"
+        fun getEmpty(): MyBackupDescriptor? {
+            return MyBackupDescriptor(ProgressLogger.Companion.getEmpty(""))
+        }
+
+        fun fromOldParcelFileDescriptor(parcelFileDescriptor: ParcelFileDescriptor?,
+                                        progressLogger: ProgressLogger?): MyBackupDescriptor? {
+            val myBackupDescriptor = MyBackupDescriptor(progressLogger)
+            if (parcelFileDescriptor != null) {
+                myBackupDescriptor.fileDescriptor = parcelFileDescriptor.fileDescriptor
+                val jso = FileDescriptorUtils.getJSONObject(parcelFileDescriptor.fileDescriptor)
+                myBackupDescriptor.setJson(jso)
+            }
+            return myBackupDescriptor
+        }
+
+        fun fromOldDocFileDescriptor(context: Context?, parcelFileDescriptor: DocumentFile?,
+                                     progressLogger: ProgressLogger?): MyBackupDescriptor? {
+            val myBackupDescriptor = MyBackupDescriptor(progressLogger)
+            if (parcelFileDescriptor != null) {
+                myBackupDescriptor.docDescriptor = parcelFileDescriptor
+                myBackupDescriptor.setJson(DocumentFileUtils.getJSONObject(context, parcelFileDescriptor))
+            }
+            return myBackupDescriptor
+        }
+
+        @Throws(IOException::class)
+        fun fromEmptyParcelFileDescriptor(parcelFileDescriptor: ParcelFileDescriptor?,
+                                          progressLoggerIn: ProgressLogger?): MyBackupDescriptor? {
+            val myBackupDescriptor = MyBackupDescriptor(progressLoggerIn)
+            myBackupDescriptor.fileDescriptor = parcelFileDescriptor.getFileDescriptor()
+            myBackupDescriptor.setEmptyFields(MyContextHolder.Companion.myContextHolder.getNow().baseContext())
+            myBackupDescriptor.backupSchemaVersion = BACKUP_SCHEMA_VERSION
+            return myBackupDescriptor
+        }
+
+        @Throws(IOException::class)
+        fun fromEmptyDocumentFile(context: Context?, documentFile: DocumentFile?,
+                                  progressLoggerIn: ProgressLogger?): MyBackupDescriptor? {
+            val myBackupDescriptor = MyBackupDescriptor(progressLoggerIn)
+            myBackupDescriptor.docDescriptor = documentFile
+            myBackupDescriptor.setEmptyFields(context)
+            return myBackupDescriptor
+        }
     }
 }

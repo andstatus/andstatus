@@ -13,61 +13,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.http
 
-package org.andstatus.app.net.http;
+import cz.msebera.android.httpclient.client.config.RequestConfig
+import cz.msebera.android.httpclient.config.RegistryBuilder
+import cz.msebera.android.httpclient.conn.socket.ConnectionSocketFactory
+import cz.msebera.android.httpclient.conn.socket.PlainConnectionSocketFactory
+import cz.msebera.android.httpclient.impl.client.HttpClients
+import cz.msebera.android.httpclient.impl.conn.PoolingHttpClientConnectionManager
+import org.andstatus.app.context.MyPreferences
 
-import org.andstatus.app.context.MyPreferences;
+cz.msebera.android.httpclient.client.HttpClient
+import org.andstatus.app.context.CompletableFutureTest.TestData
+import org.andstatus.app.service.MyServiceTest
+import org.andstatus.app.service.AvatarDownloaderTest
+import org.andstatus.app.service.RepeatingFailingCommandTest
+import org.hamcrest.core.Is
+import org.hamcrest.core.IsNot
+import org.andstatus.app.timeline.meta.TimelineSyncTrackerTest
+import org.andstatus.app.timeline.TimelinePositionTest
+import org.andstatus.app.util.EspressoUtils
+import org.andstatus.app.timeline.TimeLineActivityLayoutToggleTest
+import org.andstatus.app.appwidget.MyAppWidgetProviderTest.DateTest
+import org.andstatus.app.appwidget.MyAppWidgetProviderTest
+import org.andstatus.app.notification.NotifierTest
+import org.andstatus.app.ActivityTestHelper.MenuItemClicker
+import org.andstatus.app.MenuItemMock
 
-import cz.msebera.android.httpclient.client.HttpClient;
-import cz.msebera.android.httpclient.client.config.RequestConfig;
-import cz.msebera.android.httpclient.config.Registry;
-import cz.msebera.android.httpclient.config.RegistryBuilder;
-import cz.msebera.android.httpclient.conn.socket.ConnectionSocketFactory;
-import cz.msebera.android.httpclient.conn.socket.PlainConnectionSocketFactory;
-import cz.msebera.android.httpclient.impl.client.HttpClientBuilder;
-import cz.msebera.android.httpclient.impl.client.HttpClients;
-import cz.msebera.android.httpclient.impl.conn.PoolingHttpClientConnectionManager;
-
-public class MyHttpClientFactory {
-
-    /** Based on: https://github.com/rfc2822/davdroid/blob/master/src/at/bitfire/davdroid/webdav/DavHttpClient.java */
-
-    private MyHttpClientFactory() {
-        // Empty
-    }
-    
-    public static HttpClient getHttpClient(SslModeEnum sslMode) {
-        Registry<ConnectionSocketFactory> registry = 
-                RegistryBuilder.<ConnectionSocketFactory> create()
-                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                    .register("https", TlsSniSocketFactory.getInstance(sslMode))
-                    .build();
-        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry);
+object MyHttpClientFactory {
+    fun getHttpClient(sslMode: SslModeEnum?): HttpClient? {
+        val registry = RegistryBuilder.create<ConnectionSocketFactory?>()
+                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                .register("https", TlsSniSocketFactory.Companion.getInstance(sslMode))
+                .build()
+        val connectionManager = PoolingHttpClientConnectionManager(registry)
         // max.  3 connections in total
-        connectionManager.setMaxTotal(3);
+        connectionManager.maxTotal = 3
         // max.  2 connections per host
-        connectionManager.setDefaultMaxPerRoute(2);
+        connectionManager.defaultMaxPerRoute = 2
 
         // use request defaults from AndroidHttpClient
-        RequestConfig requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
+        val requestConfig = RequestConfig.copy(RequestConfig.DEFAULT)
                 .setConnectTimeout(MyPreferences.getConnectionTimeoutMs())
-                .setSocketTimeout(2*MyPreferences.getConnectionTimeoutMs())
+                .setSocketTimeout(2 * MyPreferences.getConnectionTimeoutMs())
                 .setStaleConnectionCheckEnabled(false)
-                .build();
-        
-        HttpClientBuilder builder = HttpClients.custom()
+                .build()
+        val builder = HttpClients.custom()
                 .useSystemProperties()
                 .setConnectionManager(connectionManager)
-                .setDefaultRequestConfig(requestConfig)
-                /* TODO maybe:  
+                .setDefaultRequestConfig(requestConfig) /* TODO maybe:  
                 .setRetryHandler(DavHttpRequestRetryHandler.INSTANCE)
                 .setRedirectStrategy(DavRedirectStrategy.INSTANCE)  
                 */
                 .disableRedirectHandling()
-                .setUserAgent(HttpConnection.USER_AGENT)
-                .disableCookieManagement();
-
-        return builder.build();
+                .setUserAgent(HttpConnectionInterface.Companion.USER_AGENT)
+                .disableCookieManagement()
+        return builder.build()
     }
-    
 }

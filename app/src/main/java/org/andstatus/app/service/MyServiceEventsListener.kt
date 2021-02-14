@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
-
-
-public interface MyServiceEventsListener {
-    void onReceive(CommandData commandData, MyServiceEvent myServiceEvent);
+interface MyServiceEventsListener {
+    open fun onReceive(commandData: CommandData?, myServiceEvent: MyServiceEvent?)
 }

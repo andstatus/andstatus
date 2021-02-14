@@ -13,140 +13,129 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.appwidget
 
-package org.andstatus.app.appwidget;
-
-import android.content.SharedPreferences;
-
-import org.andstatus.app.R;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.notification.NotificationEvents;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtil;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.notification.NotificationEvents
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StringUtil
 
 /**
- * Maintains the appWidget instance (defined by {@link #appWidgetId}): - state
+ * Maintains the appWidget instance (defined by [.appWidgetId]): - state
  * (that changes when new tweets etc. arrive); - preferences (that are set once
  * in the appWidget configuration activity).
- * 
+ *
  * @author yvolk@yurivolkov.com
  */
-public class MyAppWidgetData {
-    private static final String TAG = MyAppWidgetData.class.getSimpleName();
+class MyAppWidgetData private constructor(val events: NotificationEvents?, private val appWidgetId: Int) {
+    private val prefsFileName: String?
+    private var isLoaded = false
+    var nothingPref: String? = ""
 
-    /** Words shown in a case there is nothing new */
-    private static final String PREF_NOTHING_KEY = "nothing";
-    /** Date and time when counters where cleared */
-    private static final String PREF_DATESINCE_KEY = "datecleared";
-    /** Date and time when data was checked on the server last time */
-    private static final String PREF_DATECHECKED_KEY = "datechecked";
+    /**  Value of [.dateLastChecked] before counters were cleared  */
+    var dateSince: Long = 0
 
-    public final NotificationEvents events;
-    private int appWidgetId;
-
-    private final String prefsFileName;
-
-    private boolean isLoaded = false;
-
-    String nothingPref = "";
-
-    /**  Value of {@link #dateLastChecked} before counters were cleared */
-    long dateSince = 0;
     /**
-     *  Date and time, when a server was successfully checked for new notes/tweets.
-     *  If there was some new notes on the server, they were loaded at that time.
+     * Date and time, when a server was successfully checked for new notes/tweets.
+     * If there was some new notes on the server, they were loaded at that time.
      */
-    long dateLastChecked = 0;
-
-    private MyAppWidgetData(NotificationEvents events, int appWidgetId) {
-        this.events = events;
-        this.appWidgetId = appWidgetId;
-        prefsFileName = TAG + this.appWidgetId;
-    }
-
-    public static MyAppWidgetData newInstance(NotificationEvents events, int appWidgetId) {
-        MyAppWidgetData data = new MyAppWidgetData(events, appWidgetId);
-        if (myContextHolder.getNow().isReady()) {
-            data.load();
-        }
-        return data;
-    }
-    
-    private void load() {
-        SharedPreferences prefs = SharedPreferencesUtil.getSharedPreferences(prefsFileName);
+    var dateLastChecked: Long = 0
+    private fun load() {
+        val prefs = SharedPreferencesUtil.getSharedPreferences(prefsFileName)
         if (prefs == null) {
-            MyLog.w(this, "The prefs file '" + prefsFileName + "' was not loaded");
+            MyLog.w(this, "The prefs file '$prefsFileName' was not loaded")
         } else {
-            nothingPref = prefs.getString(PREF_NOTHING_KEY, null);
+            nothingPref = prefs.getString(PREF_NOTHING_KEY, null)
             if (nothingPref == null) {
-                nothingPref = events.myContext.context().getString(R.string.appwidget_nothingnew_default);
+                nothingPref = events.myContext.context().getString(R.string.appwidget_nothingnew_default)
                 if (MyPreferences.isShowDebuggingInfoInUi()) {
-                    nothingPref += " (" + appWidgetId + ")";
+                    nothingPref += " ($appWidgetId)"
                 }
             }
-            dateLastChecked = prefs.getLong(PREF_DATECHECKED_KEY, 0);
-            if (dateLastChecked == 0) {
-                clearCounters();
+            dateLastChecked = prefs.getLong(PREF_DATECHECKED_KEY, 0)
+            if (dateLastChecked == 0L) {
+                clearCounters()
             } else {
-                dateSince = prefs.getLong(PREF_DATESINCE_KEY, 0);
+                dateSince = prefs.getLong(PREF_DATESINCE_KEY, 0)
             }
-
-            MyLog.v(this, () -> "Prefs for appWidgetId=" + appWidgetId + " were loaded");
-            isLoaded = true;
+            MyLog.v(this) { "Prefs for appWidgetId=$appWidgetId were loaded" }
+            isLoaded = true
         }
     }
 
-    public void clearCounters() {
-        dateSince = dateLastChecked;
+    fun clearCounters() {
+        dateSince = dateLastChecked
     }
 
-    private void onDataCheckedOnTheServer() {
-        dateLastChecked = System.currentTimeMillis();
-        if (dateSince == 0) clearCounters();
+    private fun onDataCheckedOnTheServer() {
+        dateLastChecked = System.currentTimeMillis()
+        if (dateSince == 0L) clearCounters()
     }
-    
-    public boolean save() {
+
+    fun save(): Boolean {
         if (!isLoaded) {
-            MyLog.d(this, "Save without load is not possible");
-            return false;
+            MyLog.d(this, "Save without load is not possible")
+            return false
         }
-        final SharedPreferences prefs = SharedPreferencesUtil.getSharedPreferences(prefsFileName);
-        if (prefs == null) return false;
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(PREF_NOTHING_KEY, nothingPref);
-        editor.putLong(PREF_DATECHECKED_KEY, dateLastChecked);
-        editor.putLong(PREF_DATESINCE_KEY, dateSince);
-        editor.apply();
-        MyLog.v(this, () -> "Saved " + toString());
-        return true;
+        val prefs = SharedPreferencesUtil.getSharedPreferences(prefsFileName) ?: return false
+        val editor = prefs.edit()
+        editor.putString(PREF_NOTHING_KEY, nothingPref)
+        editor.putLong(PREF_DATECHECKED_KEY, dateLastChecked)
+        editor.putLong(PREF_DATESINCE_KEY, dateSince)
+        editor.apply()
+        MyLog.v(this) { "Saved " + toString() }
+        return true
     }
 
-    /** Delete the preferences file! */
-    public boolean delete() {
-        MyLog.v(this, () -> "Deleting data for widgetId=" + appWidgetId);
-        return SharedPreferencesUtil.delete(events.myContext.context(), prefsFileName);
+    /** Delete the preferences file!  */
+    fun delete(): Boolean {
+        MyLog.v(this) { "Deleting data for widgetId=$appWidgetId" }
+        return SharedPreferencesUtil.delete(events.myContext.context(), prefsFileName)
     }
 
-    @Override
-    public String toString() {
+    override fun toString(): String {
         return "MyAppWidgetData:{" +
                 "id:" + appWidgetId +
-                (events.isEmpty() ? "" : ", notifications:" + events) +
-                (dateLastChecked > 0 ? ", checked:" + dateLastChecked : "") +
-                (dateSince > 0 ? ", since:" + dateSince : "") +
-                (StringUtil.isEmpty(nothingPref) ? "" : ", nothing:" + nothingPref) +
-            "}";
+                (if (events.isEmpty()) "" else ", notifications:$events") +
+                (if (dateLastChecked > 0) ", checked:$dateLastChecked" else "") +
+                (if (dateSince > 0) ", since:$dateSince" else "") +
+                (if (StringUtil.isEmpty(nothingPref)) "" else ", nothing:$nothingPref") +
+                "}"
     }
 
-    public void update() {
-        onDataCheckedOnTheServer();
-        save();
+    fun update() {
+        onDataCheckedOnTheServer()
+        save()
     }
 
-    int getId() {
-        return appWidgetId;
+    fun getId(): Int {
+        return appWidgetId
+    }
+
+    companion object {
+        private val TAG: String? = MyAppWidgetData::class.java.simpleName
+
+        /** Words shown in a case there is nothing new  */
+        private val PREF_NOTHING_KEY: String? = "nothing"
+
+        /** Date and time when counters where cleared  */
+        private val PREF_DATESINCE_KEY: String? = "datecleared"
+
+        /** Date and time when data was checked on the server last time  */
+        private val PREF_DATECHECKED_KEY: String? = "datechecked"
+        fun newInstance(events: NotificationEvents?, appWidgetId: Int): MyAppWidgetData? {
+            val data = MyAppWidgetData(events, appWidgetId)
+            if (MyContextHolder.Companion.myContextHolder.getNow().isReady()) {
+                data.load()
+            }
+            return data
+        }
+    }
+
+    init {
+        prefsFileName = TAG + appWidgetId
     }
 }

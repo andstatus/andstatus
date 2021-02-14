@@ -13,105 +13,92 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.list
 
-package org.andstatus.app.list;
+import android.os.Bundle
+import android.view.View
+import android.widget.ListAdapter
+import android.widget.ListView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener
+import org.andstatus.app.MyActivity
+import org.andstatus.app.R
+import org.andstatus.app.timeline.EmptyBaseTimelineAdapter
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.widget.MySwipeRefreshLayout
+import org.andstatus.app.widget.MySwipeRefreshLayout.CanSwipeRefreshScrollUpCallback
+import java.util.*
 
-import android.os.Bundle;
-import androidx.annotation.NonNull;
-import android.view.View;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-
-import org.andstatus.app.MyActivity;
-import org.andstatus.app.R;
-import org.andstatus.app.timeline.EmptyBaseTimelineAdapter;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.widget.MySwipeRefreshLayout;
-
-import java.util.Objects;
-
-public abstract class MyBaseListActivity extends MyActivity implements
-        MySwipeRefreshLayout.CanSwipeRefreshScrollUpCallback,
-        MySwipeRefreshLayout.OnRefreshListener{
-
-    protected MySwipeRefreshLayout mSwipeLayout = null;
-    private int mPositionOfContextMenu = -1;
-    private ListAdapter mAdapter = EmptyBaseTimelineAdapter.EMPTY;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        mSwipeLayout = findSwipeLayout();
+abstract class MyBaseListActivity : MyActivity(), CanSwipeRefreshScrollUpCallback, OnRefreshListener {
+    protected var mSwipeLayout: MySwipeRefreshLayout? = null
+    private var mPositionOfContextMenu = -1
+    private var mAdapter: ListAdapter? = EmptyBaseTimelineAdapter.Companion.EMPTY
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        mSwipeLayout = findSwipeLayout()
         if (mSwipeLayout != null) {
-            mSwipeLayout.setOnRefreshListener(this);
+            mSwipeLayout.setOnRefreshListener(this)
         }
     }
 
-    protected MySwipeRefreshLayout findSwipeLayout() {
-        View view = findViewById(R.id.swipeRefreshLayout);
-        if (view != null && MySwipeRefreshLayout.class.isAssignableFrom(view.getClass())) {
-            return (MySwipeRefreshLayout) view ;
-        }
-        return null;
+    protected fun findSwipeLayout(): MySwipeRefreshLayout? {
+        val view = findViewById<View?>(R.id.swipeRefreshLayout)
+        return if (view != null && MySwipeRefreshLayout::class.java.isAssignableFrom(view.javaClass)) {
+            view as MySwipeRefreshLayout
+        } else null
     }
 
-    public int getPositionOfContextMenu() {
-        return mPositionOfContextMenu;
+    fun getPositionOfContextMenu(): Int {
+        return mPositionOfContextMenu
     }
 
-    public void setPositionOfContextMenu(int position) {
-        this.mPositionOfContextMenu = position;
+    fun setPositionOfContextMenu(position: Int) {
+        mPositionOfContextMenu = position
     }
 
-    protected void setListAdapter(@NonNull ListAdapter adapter) {
-        Objects.requireNonNull(adapter);
-        mAdapter = adapter;
-        getListView().setAdapter(mAdapter);
+    protected open fun setListAdapter(adapter: ListAdapter) {
+        Objects.requireNonNull(adapter)
+        mAdapter = adapter
+        getListView().setAdapter(mAdapter)
     }
 
-    @NonNull
-    public ListAdapter getListAdapter() {
-        return mAdapter;
+    open fun getListAdapter(): ListAdapter {
+        return mAdapter
     }
 
-    public ListView getListView() {
-        return (ListView) findViewById(android.R.id.list);
+    open fun getListView(): ListView? {
+        return findViewById<View?>(android.R.id.list) as ListView
     }
 
-    @Override
-    public boolean canSwipeRefreshChildScrollUp() {
-        boolean can = true;
+    override fun canSwipeRefreshChildScrollUp(): Boolean {
+        var can = true
         try {
             // See http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview/3035521#3035521
-            int index = getListView().getFirstVisiblePosition();
+            val index = getListView().getFirstVisiblePosition()
             if (index == 0) {
-                View v = getListView().getChildAt(0);
-                int top = (v == null) ? 0 : (v.getTop() - getListView().getPaddingTop());
-                can = top < 0;
+                val v = getListView().getChildAt(0)
+                val top = if (v == null) 0 else v.top - getListView().getPaddingTop()
+                can = top < 0
             }
-        } catch (java.lang.IllegalStateException e) {
-            MyLog.v(this, e);
-            can = false;
+        } catch (e: IllegalStateException) {
+            MyLog.v(this, e)
+            can = false
         }
-        return can;
+        return can
     }
 
-    protected void hideSyncing(String source) {
-        setCircularSyncIndicator(source, false);
+    protected open fun hideSyncing(source: String?) {
+        setCircularSyncIndicator(source, false)
     }
 
-    protected void setCircularSyncIndicator(String source, boolean isSyncing) {
-        if (mSwipeLayout != null
-                && mSwipeLayout.isRefreshing() != isSyncing
-                && !isFinishing()) {
-            MyLog.v(this, () -> source + " set Circular Syncing to " + isSyncing);
-            mSwipeLayout.setRefreshing(isSyncing);
+    protected fun setCircularSyncIndicator(source: String?, isSyncing: Boolean) {
+        if (mSwipeLayout != null && mSwipeLayout.isRefreshing() != isSyncing && !isFinishing) {
+            MyLog.v(this) { "$source set Circular Syncing to $isSyncing" }
+            mSwipeLayout.setRefreshing(isSyncing)
         }
     }
 
-    /** Stub, which immediately hides the sync indicator */
-    @Override
-    public void onRefresh() {
-        hideSyncing("Syncing not implemented in " + this.getClass().getName());
+    /** Stub, which immediately hides the sync indicator  */
+    override fun onRefresh() {
+        hideSyncing("Syncing not implemented in " + this.javaClass.name)
     }
 }

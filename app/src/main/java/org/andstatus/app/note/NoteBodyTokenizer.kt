@@ -13,85 +13,78 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.TextUtils
+import android.widget.MultiAutoCompleteTextView.Tokenizer
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.util.MyLog
+import java.util.regex.Pattern
 
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.TextUtils;
-import android.widget.MultiAutoCompleteTextView;
-
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.util.MyLog;
-
-import java.util.regex.Pattern;
-
-public class NoteBodyTokenizer implements MultiAutoCompleteTextView.Tokenizer {
-    private static final String WEBFINGER_CHARACTERS_REGEX = "[_A-Za-z0-9-+.@]+";
-    public static final int MIN_LENGHT_TO_SEARCH = 2;
-    private static final Pattern webFingerCharactersPattern = Pattern.compile(WEBFINGER_CHARACTERS_REGEX);
-    private volatile Origin origin = Origin.EMPTY;
-
-    public void setOrigin(Origin origin) {
-        this.origin = origin;
+class NoteBodyTokenizer : Tokenizer {
+    @Volatile
+    private var origin: Origin? = Origin.Companion.EMPTY
+    fun setOrigin(origin: Origin?) {
+        this.origin = origin
     }
 
-    @Override
-    public int findTokenStart(final CharSequence text, final int cursor) {
-        int i = cursor;
+    override fun findTokenStart(text: CharSequence?, cursor: Int): Int {
+        var i = cursor
         while (i > 0) {
             if (nonWebfingerIdChar(text, i - 1)) {
                 if (origin.isReferenceChar(text, i - 1)) {
-                    i--;
+                    i--
                 }
-                break;
+                break
             }
-            i--;
+            i--
         }
         if (i >= cursor - MIN_LENGHT_TO_SEARCH || !origin.isReferenceChar(text, i)) {
-            return cursor;
+            return cursor
         }
-        int start = i;  // Include reference char in the token
-        MyLog.v(this, () -> "'" + text + "', cursor=" + cursor + ", start=" + start);
-        return start;
+        val start = i // Include reference char in the token
+        MyLog.v(this) { "'$text', cursor=$cursor, start=$start" }
+        return start
     }
 
-    @Override
-    public int findTokenEnd(CharSequence text, int cursor) {
-        int i = cursor;
-        int length = text.length();
+    override fun findTokenEnd(text: CharSequence?, cursor: Int): Int {
+        var i = cursor
+        val length = text.length
         while (i < length) {
             if (nonWebfingerIdChar(text, i - 1)) {
-                return i;
+                return i
             }
-            i++;
+            i++
         }
-        return length;
+        return length
     }
 
-    @Override
-    public CharSequence terminateToken(CharSequence text) {
-        int i = text.length();
-
+    override fun terminateToken(text: CharSequence?): CharSequence? {
+        var i = text.length
         while (i > 0 && nonWebfingerIdChar(text, i)) {
-            i--;
+            i--
         }
-
         if (i > 0 && nonWebfingerIdChar(text, i)) {
-            return text;
-        } else if (text instanceof Spanned) {
-            SpannableString sp = new SpannableString(text + " ");
-            TextUtils.copySpansFrom((Spanned) text, 0, text.length(),
-                    Object.class, sp, 0);
-            return sp;
+            return text
+        } else if (text is Spanned) {
+            val sp = SpannableString("$text ")
+            TextUtils.copySpansFrom(text as Spanned?, 0, text.length,
+                    Any::class.java, sp, 0)
+            return sp
         }
-        return text + " ";
+        return text.toString() + " "
     }
 
-    private static boolean nonWebfingerIdChar(CharSequence text, int cursor) {
-        if (text == null || cursor < 0 || cursor >= text.length()) {
-            return true;
+    companion object {
+        private val WEBFINGER_CHARACTERS_REGEX: String? = "[_A-Za-z0-9-+.@]+"
+        const val MIN_LENGHT_TO_SEARCH = 2
+        private val webFingerCharactersPattern = Pattern.compile(WEBFINGER_CHARACTERS_REGEX)
+        private fun nonWebfingerIdChar(text: CharSequence?, cursor: Int): Boolean {
+            return if (text == null || cursor < 0 || cursor >= text.length) {
+                true
+            } else !webFingerCharactersPattern.matcher(text.subSequence(cursor, cursor + 1)).matches()
         }
-        return !webFingerCharactersPattern.matcher(text.subSequence(cursor, cursor + 1)).matches();
     }
 }

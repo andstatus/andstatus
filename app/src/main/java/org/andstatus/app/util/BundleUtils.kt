@@ -13,78 +13,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-import android.os.Bundle;
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.IntentExtra;
+import android.os.Bundle
+import org.andstatus.app.IntentExtra
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class BundleUtils {
-
-    private BundleUtils() {
+object BundleUtils {
+    @JvmOverloads
+    fun fromBundle(bundle: Bundle?, intentExtra: IntentExtra, defaultValue: Long = 0): Long {
+        return bundle?.getLong(intentExtra.key, defaultValue) ?: defaultValue
     }
 
-    public static long fromBundle(Bundle bundle, @NonNull IntentExtra intentExtra) {
-        return fromBundle(bundle, intentExtra, 0);
-    }
-
-    public static long fromBundle(Bundle bundle, @NonNull IntentExtra intentExtra, long defaultValue) {
-        if (bundle != null) {
-            return bundle.getLong(intentExtra.key, defaultValue);
-        }
-        return defaultValue;
-    }
-
-    public static Bundle toBundle(String key, Long value) {
-        return toBundle(null, key, value);
+    fun toBundle(key: String?, value: Long?): Bundle? {
+        return toBundle(null, key, value)
     }
 
     /**
      * Removes key if value is null
      */
-    @NonNull
-    public static Bundle toBundle(Bundle bundleIn, String key, Long value) {
-        Bundle bundle = bundleIn == null ? new Bundle() : bundleIn;
+    fun toBundle(bundleIn: Bundle?, key: String?, value: Long?): Bundle {
+        val bundle = bundleIn ?: Bundle()
         if (!StringUtil.isEmpty(key)) {
             if (value == null) {
-                bundle.remove(key);
+                bundle.remove(key)
             } else {
-                bundle.putLong(key, value);
+                bundle.putLong(key, value)
             }
         }
-        return bundle;
+        return bundle
     }
 
-    public static void putNotEmpty(Bundle bundle, IntentExtra intentExtra, String value) {
+    fun putNotEmpty(bundle: Bundle?, intentExtra: IntentExtra?, value: String?) {
         if (!StringUtil.isEmpty(value)) {
-            bundle.putString(intentExtra.key, value);
+            bundle.putString(intentExtra.key, value)
         }
     }
 
-    public static void putNotZero(Bundle bundle, IntentExtra intentExtra, Long value) {
-        if (value != null && value != 0) {
-            bundle.putLong(intentExtra.key, value);
+    fun putNotZero(bundle: Bundle?, intentExtra: IntentExtra?, value: Long?) {
+        if (value != null && value != 0L) {
+            bundle.putLong(intentExtra.key, value)
         }
     }
 
-    @NonNull
-    public static String getString(Bundle bundle, IntentExtra intentExtra) {
-        String out = "";
+    fun getString(bundle: Bundle?, intentExtra: IntentExtra?): String {
+        var out: String? = ""
         if (bundle != null && intentExtra != null) {
-            String value = bundle.getString(intentExtra.key);
+            val value = bundle.getString(intentExtra.key)
             if (!StringUtil.isEmpty(value)) {
-                out = value;
+                out = value
             }
         }
-        return out;
+        return out
     }
 
-    public static boolean hasKey(Bundle bundle, String key) {
-        return bundle != null &&  bundle.get(key) != null;
+    fun hasKey(bundle: Bundle?, key: String?): Boolean {
+        return bundle != null && bundle[key] != null
     }
 }

@@ -1,43 +1,38 @@
-package org.andstatus.app.data;
+package org.andstatus.app.data
 
-import android.content.ContentResolver;
-import android.net.Uri;
+import android.content.ContentResolver
+import android.net.Uri
+import cz.msebera.android.httpclient.entity.ContentType
+import org.andstatus.app.context.DemoData
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.util.UriUtils
+import org.junit.Assert
+import org.junit.Test
 
-import org.andstatus.app.util.UriUtils;
-import org.junit.Test;
-
-import cz.msebera.android.httpclient.entity.ContentType;
-
-import static org.andstatus.app.context.DemoData.demoData;
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-import static org.andstatus.app.data.MyContentType.IMAGE;
-import static org.andstatus.app.data.MyContentType.TEXT;
-import static org.junit.Assert.assertEquals;
-
-public class ContentTypeTest {
+class ContentTypeTest {
     @Test
-    public void testApacheContentType() {
-        ContentType contentType = ContentType.parse("image/png");
-        assertEquals("image/png", contentType.getMimeType());
-        contentType = ContentType.create("video/mp4");
-        assertEquals("video/mp4", contentType.getMimeType());
-        contentType = ContentType.parse("image/jpeg");
-        assertEquals("image/jpeg", contentType.getMimeType());
+    fun testApacheContentType() {
+        var contentType = ContentType.parse("image/png")
+        Assert.assertEquals("image/png", contentType.mimeType)
+        contentType = ContentType.create("video/mp4")
+        Assert.assertEquals("video/mp4", contentType.mimeType)
+        contentType = ContentType.parse("image/jpeg")
+        Assert.assertEquals("image/jpeg", contentType.mimeType)
     }
 
     @Test
-    public void testMyContentType() {
-        final ContentResolver contentResolver = myContextHolder.getNow().context().getContentResolver();
-        assertEquals("image/png", MyContentType.uri2MimeType(contentResolver, demoData.image1Url));
-        assertEquals("image/jpeg", MyContentType.uri2MimeType(null,
-                UriUtils.fromString("http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg")));
-        assertEquals("image/gif", MyContentType.uri2MimeType(contentResolver, demoData.localGifTestUri));
-        assertEquals("image/gif", MyContentType.uri2MimeType(contentResolver, demoData.localGifTestUri,
-                MyContentType.UNKNOWN.generalMimeType));
-        assertEquals("image/gif", MyContentType.uri2MimeType(contentResolver, demoData.localGifTestUri,
-                IMAGE.generalMimeType));
-        Uri uriTxt = Uri.parse("http://example.com/something_txt");
-        assertEquals("image/*", MyContentType.uri2MimeType(contentResolver, uriTxt, IMAGE.generalMimeType));
-        assertEquals("text/plain", MyContentType.uri2MimeType(contentResolver, uriTxt, TEXT.generalMimeType));
+    fun testMyContentType() {
+        val contentResolver: ContentResolver = MyContextHolder.Companion.myContextHolder.getNow().context().getContentResolver()
+        Assert.assertEquals("image/png", uri2MimeType(contentResolver, DemoData.Companion.demoData.image1Url))
+        Assert.assertEquals("image/jpeg", uri2MimeType(null,
+                UriUtils.fromString("http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg")))
+        Assert.assertEquals("image/gif", uri2MimeType(contentResolver, DemoData.Companion.demoData.localGifTestUri))
+        Assert.assertEquals("image/gif", MyContentType.Companion.uri2MimeType(contentResolver, DemoData.Companion.demoData.localGifTestUri,
+                MyContentType.UNKNOWN.generalMimeType))
+        Assert.assertEquals("image/gif", MyContentType.Companion.uri2MimeType(contentResolver, DemoData.Companion.demoData.localGifTestUri,
+                MyContentType.IMAGE.generalMimeType))
+        val uriTxt = Uri.parse("http://example.com/something_txt")
+        Assert.assertEquals("image/*", MyContentType.Companion.uri2MimeType(contentResolver, uriTxt, MyContentType.IMAGE.generalMimeType))
+        Assert.assertEquals("text/plain", MyContentType.Companion.uri2MimeType(contentResolver, uriTxt, MyContentType.TEXT.generalMimeType))
     }
 }

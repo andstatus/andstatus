@@ -13,727 +13,668 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.origin
 
-package org.andstatus.app.origin;
-
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
-import android.provider.BaseColumns;
-import android.text.SpannableString;
-import android.text.style.URLSpan;
-import android.text.util.Linkify;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
-
-import org.andstatus.app.account.AccountName;
-import org.andstatus.app.actor.GroupType;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.database.table.OriginTable;
-import org.andstatus.app.net.http.SslModeEnum;
-import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.MyHtml;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SelectionAndArgs;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UrlUtils;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.List;
-import java.util.Optional;
-import java.util.regex.Pattern;
-
-import static org.andstatus.app.net.social.Patterns.USERNAME_CHARS;
-import static org.junit.Assert.fail;
+import android.content.ContentValues
+import android.database.Cursor
+import android.net.Uri
+import android.provider.BaseColumns
+import android.text.SpannableString
+import android.text.style.URLSpan
+import android.text.util.Linkify
+import androidx.annotation.StringRes
+import org.andstatus.app.account.AccountName
+import org.andstatus.app.actor.GroupType
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.MyProvider
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.ActivityTable
+import org.andstatus.app.database.table.ActorTable
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.database.table.OriginTable
+import org.andstatus.app.net.http.SslModeEnum
+import org.andstatus.app.net.social.Patterns
+import org.andstatus.app.util.IsEmpty
+import org.andstatus.app.util.MyHtml
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.SelectionAndArgs
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TriState
+import org.andstatus.app.util.UrlUtils
+import org.apache.commons.lang3.StringUtils
+import org.junit.Assert
+import java.net.MalformedURLException
+import java.net.URL
+import java.util.*
+import java.util.function.Function
+import java.util.function.Supplier
+import java.util.regex.Pattern
 
 /**
  * Social network (twitter.com, identi.ca, ... ) where notes are being
  * created (it's the "Origin" of the notes)
- * 
+ *
  * @author yvolk@yurivolkov.com
  */
-public class Origin implements Comparable<Origin>, IsEmpty {
-    static final int TEXT_LIMIT_FOR_WEBFINGER_ID = 200;
-    public static final Origin EMPTY = fromType(MyContext.EMPTY, OriginType.UNKNOWN);
-    private static final String VALID_NAME_CHARS = "a-zA-Z_0-9/.-";
-    private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[" + VALID_NAME_CHARS + "]+");
-    private static final Pattern INVALID_NAME_PART_PATTERN = Pattern.compile("[^" + VALID_NAME_CHARS + "]+");
-    private static final Pattern DOTS_PATTERN = Pattern.compile("[.]+");
-
-    protected final int shortUrlLength;
-    public final MyContext myContext;
-    private final OriginType originType;
-
-    @NonNull
-    protected String name = "";
-    public static final String KEY_ORIGIN_NAME = "origin_name";
-
-    protected long id = 0;
-
-    protected URL url = null;
-
-    protected boolean ssl = true;
-    private SslModeEnum sslMode = SslModeEnum.SECURE;
-
-    private TriState mUseLegacyHttpProtocol = TriState.UNKNOWN;
-
-    private boolean allowHtml = false;
+open class Origin internal constructor(val myContext: MyContext?, private val originType: OriginType?) : Comparable<Origin?>, IsEmpty {
+    val shortUrlLength: Int
+    var name = ""
+    var id: Long = 0
+    protected var url: URL? = null
+    protected var ssl = true
+    private var sslMode: SslModeEnum? = SslModeEnum.SECURE
+    private var mUseLegacyHttpProtocol: TriState? = TriState.UNKNOWN
+    private var allowHtml = false
 
     /**
      * Maximum number of characters in a note
      */
-    private int textLimit = OriginType.TEXT_LIMIT_MAXIMUM;
+    private var textLimit: Int = OriginType.Companion.TEXT_LIMIT_MAXIMUM
 
-    
-    /** Include this system in Global Search while in Combined Timeline */
-    private boolean inCombinedGlobalSearch = false;
-    private boolean inCombinedPublicReload = false;
-    
-    private TriState mMentionAsWebFingerId = TriState.UNKNOWN;
-    private boolean isValid = false;
-
-    Origin(MyContext myContext, OriginType originType) {
-        this.myContext = myContext;
-        this.originType = originType;
-        shortUrlLength = originType.shortUrlLengthDefault.value;
-    }
-    
-    public OriginType getOriginType() {
-        return originType;
+    /** Include this system in Global Search while in Combined Timeline  */
+    private var inCombinedGlobalSearch = false
+    private var inCombinedPublicReload = false
+    private var mMentionAsWebFingerId: TriState? = TriState.UNKNOWN
+    private var isValid = false
+    fun getOriginType(): OriginType? {
+        return originType
     }
 
     /**
      * @return the Origin name, unique in the application
      */
-    public String getName() {
-        return name;
+    fun getName(): String? {
+        return name
     }
 
     /**
      * @return the OriginId in MyDatabase. 0 means that this system doesn't
-     *         exist
+     * exist
      */
-    public long getId() {
-        return id;
+    fun getId(): Long {
+        return id
     }
 
     /**
      * Was this Origin stored for future reuse?
      */
-    public boolean isPersistent() {
-        return getId() != 0;
+    fun isPersistent(): Boolean {
+        return getId() != 0L
     }
 
-    @Override
-    public boolean isEmpty() {
-        return this == EMPTY || originType == OriginType.UNKNOWN;   // TODO avoid second case
+    override fun isEmpty(): Boolean {
+        return this === EMPTY || originType === OriginType.UNKNOWN // TODO avoid second case
     }
 
-    public boolean isValid() {
-        return isValid;
+    fun isValid(): Boolean {
+        return isValid
     }
 
-    private boolean calcIsValid() {
-        return nonEmpty()
+    private fun calcIsValid(): Boolean {
+        return (nonEmpty()
                 && isNameValid()
                 && urlIsValid()
-                && (isSsl() == originType.sslDefault || originType.canChangeSsl);
+                && (isSsl() == originType.sslDefault || originType.canChangeSsl))
     }
 
-    public boolean isOAuthDefault() {
-        return originType.isOAuthDefault;
+    fun isOAuthDefault(): Boolean {
+        return originType.isOAuthDefault
     }
 
     /**
      * @return the Can OAuth connection setting can be turned on/off from the
-     *         default setting
+     * default setting
      */
-    public boolean canChangeOAuth() {
-        return originType.canChangeOAuth;
+    fun canChangeOAuth(): Boolean {
+        return originType.canChangeOAuth
     }
 
-    public boolean isUsernameValid(String username) {
-        return StringUtil.nonEmpty(username) && originType.usernameRegExPattern.matcher(username).matches();
+    fun isUsernameValid(username: String?): Boolean {
+        return StringUtil.nonEmpty(username) && originType.usernameRegExPattern.matcher(username).matches()
     }
 
-    public long usernameToId(String username) {
-        if (StringUtil.isEmpty(username)) return 0;
-
-        String key = getId() + ";" + username;
-        Long cachedId = myContext.users().originIdAndUsernameToActorId.get(key);
-        if (cachedId != null) return cachedId;
-        long storedId = MyQuery.usernameToId(myContext, getId(), username, true);
-        if (storedId != 0) {
-            myContext.users().originIdAndUsernameToActorId.put(key, storedId);
+    fun usernameToId(username: String?): Long {
+        if (StringUtil.isEmpty(username)) return 0
+        val key = getId().toString() + ";" + username
+        val cachedId = myContext.users().originIdAndUsernameToActorId[key]
+        if (cachedId != null) return cachedId
+        val storedId = MyQuery.usernameToId(myContext, getId(), username, true)
+        if (storedId != 0L) {
+            myContext.users().originIdAndUsernameToActorId[key] = storedId
         }
-        return storedId;
+        return storedId
     }
 
     /**
      * Calculates number of Characters left for this note taking shortened
      * URL's length into account.
-     * 
+     *
      * @author yvolk@yurivolkov.com
      */
-    public int charactersLeftForNote(String html) {
-        int textLength = 0;
+    fun charactersLeftForNote(html: String?): Int {
+        var textLength = 0
         if (!StringUtil.isEmpty(html)) {
-            String textToPost = MyHtml.fromContentStored(html, originType.textMediaTypeToPost);
-            textLength = textToPost.length();
-
+            val textToPost = MyHtml.fromContentStored(html, originType.textMediaTypeToPost)
+            textLength = textToPost.length
             if (shortUrlLength > 0) {
                 // Now try to adjust the length taking links into account
-                SpannableString ss = SpannableString.valueOf(textToPost);
-                Linkify.addLinks(ss, Linkify.WEB_URLS);
-                URLSpan[] spans = ss.getSpans(0, textLength, URLSpan.class);
-                long nLinks = spans.length;
-                for (int ind1 = 0; ind1 < nLinks; ind1++) {
-                    int start = ss.getSpanStart(spans[ind1]);
-                    int end = ss.getSpanEnd(spans[ind1]);
-                    textLength += shortUrlLength - (end - start);
+                val ss = SpannableString.valueOf(textToPost)
+                Linkify.addLinks(ss, Linkify.WEB_URLS)
+                val spans = ss.getSpans(0, textLength, URLSpan::class.java)
+                val nLinks = spans.size.toLong()
+                for (ind1 in 0 until nLinks) {
+                    val start = ss.getSpanStart(spans.get(ind1))
+                    val end = ss.getSpanEnd(spans.get(ind1))
+                    textLength += shortUrlLength - (end - start)
                 }
             }
         }
-        return textLimit - textLength;
+        return textLimit - textLength
     }
 
-    public int alternativeTermForResourceId(@StringRes int resId) {
-        return resId;
+    open fun alternativeTermForResourceId(@StringRes resId: Int): Int {
+        return resId
     }
 
-    public String getNotePermalink(long noteId) {
-        String msgUrl = MyQuery.noteIdToStringColumnValue(NoteTable.URL, noteId);
+    open fun getNotePermalink(noteId: Long): String? {
+        val msgUrl = MyQuery.noteIdToStringColumnValue(NoteTable.URL, noteId)
         if (!StringUtil.isEmpty(msgUrl)) {
             try {
-                return new URL(msgUrl).toExternalForm();
-            } catch (MalformedURLException e) {
-                MyLog.d(this, "Malformed URL from '" + msgUrl + "'", e);
+                return URL(msgUrl).toExternalForm()
+            } catch (e: MalformedURLException) {
+                MyLog.d(this, "Malformed URL from '$msgUrl'", e)
             }
         }
-        return alternativeNotePermalink(noteId);
+        return alternativeNotePermalink(noteId)
     }
 
-    protected String alternativeNotePermalink(long noteId) {
-        return "";
+    protected open fun alternativeNotePermalink(noteId: Long): String? {
+        return ""
     }
 
-    public boolean shouldHaveUrl() {
-        return originType.originHasUrl;
+    fun shouldHaveUrl(): Boolean {
+        return originType.originHasUrl
     }
 
-    public boolean isNameValid() {
-        return isNameValid(name);
+    fun isNameValid(): Boolean {
+        return isNameValid(name)
     }
 
-    public boolean isNameValid(String originNameToCheck) {
-        return StringUtil.nonEmpty(originNameToCheck) && VALID_NAME_PATTERN.matcher(originNameToCheck).matches();
+    fun isNameValid(originNameToCheck: String?): Boolean {
+        return StringUtil.nonEmpty(originNameToCheck) && VALID_NAME_PATTERN.matcher(originNameToCheck).matches()
     }
 
-    public URL getUrl() {
-        return url;
+    fun getUrl(): URL? {
+        return url
     }
 
-    public Uri fixUriForPermalink(Uri uri1) {
-        return uri1;
+    open fun fixUriForPermalink(uri1: Uri?): Uri? {
+        return uri1
     }
 
-    public boolean hasHost() {
-        return UrlUtils.hasHost(url);
+    fun hasHost(): Boolean {
+        return UrlUtils.hasHost(url)
     }
 
-    public boolean urlIsValid() {
-        if (originType.originHasUrl) {
-            return UrlUtils.hasHost(url);
+    fun urlIsValid(): Boolean {
+        return if (originType.originHasUrl) {
+            UrlUtils.hasHost(url)
         } else {
-            return true;
+            true
         }
     }
 
-    /** OriginName to be used in {@link AccountName#getName()} */
-    @NonNull
-    public String getOriginInAccountName(String host) {
-        List<Origin> origins = myContext.origins().allFromOriginInAccountNameAndHost(originType.getTitle(), host);
-        switch (origins.size()) {
-            case 0:
-                return "";
-            case 1:
-                return originType.getTitle();  // No ambiguity, so we can use OriginType here
-            default:
-                return getName();
+    /** OriginName to be used in [AccountName.getName]  */
+    fun getOriginInAccountName(host: String?): String {
+        val origins = myContext.origins().allFromOriginInAccountNameAndHost(originType.getTitle(), host)
+        return when (origins.size) {
+            0 -> ""
+            1 -> originType.getTitle() // No ambiguity, so we can use OriginType here
+            else -> getName()
         }
     }
 
-    /** Host to be used in {@link AccountName#getUniqueName()}  */
-    @NonNull
-    public String getAccountNameHost() {
-        return getHost();
+    /** Host to be used in [AccountName.getUniqueName]   */
+    open fun getAccountNameHost(): String {
+        return getHost()
     }
 
-    @NonNull
-    public String getHost() {
-        return UrlUtils.hasHost(url) ? url.getHost() : "";
+    fun getHost(): String {
+        return if (UrlUtils.hasHost(url)) url.getHost() else ""
     }
 
-    public boolean isSsl() {
-        return ssl;
+    fun isSsl(): Boolean {
+        return ssl
     }
 
-    public SslModeEnum getSslMode() {
-        return sslMode;
+    fun getSslMode(): SslModeEnum? {
+        return sslMode
     }
 
-    public TriState useLegacyHttpProtocol() {
-        return mUseLegacyHttpProtocol;
-    }
-    
-    public boolean isHtmlContentAllowed() {
-        return allowHtml;
+    fun useLegacyHttpProtocol(): TriState? {
+        return mUseLegacyHttpProtocol
     }
 
-    public boolean isSyncedForAllOrigins(boolean isSearch) {
+    fun isHtmlContentAllowed(): Boolean {
+        return allowHtml
+    }
+
+    fun isSyncedForAllOrigins(isSearch: Boolean): Boolean {
         if (isSearch) {
             if (isInCombinedGlobalSearch()) {
-                return true;
+                return true
             }
         } else {
             if (isInCombinedPublicReload()) {
-                return true;
+                return true
             }
         }
-        return false;
+        return false
     }
 
-    public void setInCombinedGlobalSearch(boolean inCombinedGlobalSearch) {
+    fun setInCombinedGlobalSearch(inCombinedGlobalSearch: Boolean) {
         if (originType.isSearchTimelineSyncable()) {
-            this.inCombinedGlobalSearch = inCombinedGlobalSearch;
+            this.inCombinedGlobalSearch = inCombinedGlobalSearch
         }
     }
 
-    public boolean isInCombinedGlobalSearch() {
-        return inCombinedGlobalSearch;
+    fun isInCombinedGlobalSearch(): Boolean {
+        return inCombinedGlobalSearch
     }
 
-    public boolean isInCombinedPublicReload() {
-        return inCombinedPublicReload;
+    fun isInCombinedPublicReload(): Boolean {
+        return inCombinedPublicReload
     }
 
-    private boolean isMentionAsWebFingerIdDefault() {
-        switch (originType) {
-            case PUMPIO:
-                return true;
-            case TWITTER:
-                return false;
-            default:
-                break;
+    private fun isMentionAsWebFingerIdDefault(): Boolean {
+        when (originType) {
+            OriginType.PUMPIO -> return true
+            OriginType.TWITTER -> return false
+            else -> {
+            }
         }
-        return getTextLimit() == 0 || getTextLimit() >= TEXT_LIMIT_FOR_WEBFINGER_ID;
-    }
-    
-    public TriState getMentionAsWebFingerId() {
-        return mMentionAsWebFingerId;
+        return getTextLimit() == 0 || getTextLimit() >= TEXT_LIMIT_FOR_WEBFINGER_ID
     }
 
-    public boolean isMentionAsWebFingerId() {
-        return mMentionAsWebFingerId.toBoolean(isMentionAsWebFingerIdDefault());
+    fun getMentionAsWebFingerId(): TriState? {
+        return mMentionAsWebFingerId
     }
 
-    public boolean hasAccounts() {
-        return myContext.accounts().getFirstPreferablySucceededForOrigin(this).isValid();
+    fun isMentionAsWebFingerId(): Boolean {
+        return mMentionAsWebFingerId.toBoolean(isMentionAsWebFingerIdDefault())
     }
 
-    public boolean hasNotes() {
-        if (isEmpty()) return false;
+    fun hasAccounts(): Boolean {
+        return myContext.accounts().getFirstPreferablySucceededForOrigin(this).isValid
+    }
 
-        SQLiteDatabase db = myContext.getDatabase();
+    fun hasNotes(): Boolean {
+        if (isEmpty) return false
+        val db = myContext.getDatabase()
         if (db == null) {
-            MyLog.databaseIsNull(() -> "Origin hasChildren");
-            return true;
+            MyLog.databaseIsNull { "Origin hasChildren" }
+            return true
         }
-        String sql = "SELECT * FROM " + NoteTable.TABLE_NAME + " WHERE " + NoteTable.ORIGIN_ID + "=" + id;
-        return MyQuery.dExists(db, sql);
+        val sql = "SELECT * FROM " + NoteTable.TABLE_NAME + " WHERE " + NoteTable.ORIGIN_ID + "=" + id
+        return MyQuery.dExists(db, sql)
     }
 
-    private static Origin fromType(MyContext myContext, OriginType originType) {
-        Origin origin = originType.originFactory.apply(myContext);
-        origin.url = origin.originType.getUrlDefault();
-        origin.ssl = origin.originType.sslDefault;
-        origin.allowHtml = origin.originType.allowHtmlDefault;
-        origin.textLimit = origin.originType.textLimitDefault;
-        origin.setInCombinedGlobalSearch(true);
-        origin.setInCombinedPublicReload(true);
-        return origin;
+    override fun toString(): String {
+        return if (this === EMPTY) {
+            "Origin:EMPTY"
+        } else "Origin:{" + (if (isValid()) "" else "(invalid) ") + "name:" + getName()
+        +", type:" + originType
+        +(if (getUrl() != null) ", url:" + getUrl() else "")
+        +(if (isSsl()) ", " + getSslMode() else "")
+        +(if (getMentionAsWebFingerId() != TriState.UNKNOWN) ", mentionAsWf:" + getMentionAsWebFingerId() else "")
+        +"}"
     }
 
-    @Override
-    public String toString() {
-        if (this ==  EMPTY) {
-            return "Origin:EMPTY";
-        }
-        return "Origin:{" + (isValid() ? "" : "(invalid) ") + "name:" + getName()
-                + ", type:" + originType
-                + (getUrl() != null ? ", url:" + getUrl() : "" )
-                + (isSsl() ? ", " + getSslMode() : "" )
-                + (getMentionAsWebFingerId() != TriState.UNKNOWN ? ", mentionAsWf:" + getMentionAsWebFingerId() : "" )
-                + "}";
+    fun getTextLimit(): Int {
+        return textLimit
     }
 
-    protected int getTextLimit() {
-        return textLimit;
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o == null || o !is Origin) return false
+        val origin = o as Origin?
+        return if (id != origin.id) false else StringUtil.equalsNotEmpty(name, origin.name)
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || !(o instanceof Origin)) return false;
-
-        Origin origin = (Origin) o;
-
-        if (id != origin.id) return false;
-        return StringUtil.equalsNotEmpty(name, origin.name);
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + (id xor (id ushr 32)) as Int
+        return result
     }
 
-    @Override
-    public int hashCode() {
-        int result = name.hashCode();
-        result = 31 * result + (int) (id ^ (id >>> 32));
-        return result;
-    }
-
-    public void setInCombinedPublicReload(boolean inCombinedPublicReload) {
+    fun setInCombinedPublicReload(inCombinedPublicReload: Boolean) {
         if (originType.isPublicTimeLineSyncable()) {
-            this.inCombinedPublicReload = inCombinedPublicReload;
+            this.inCombinedPublicReload = inCombinedPublicReload
         }
     }
 
-    @Override
-    public int compareTo(@NonNull Origin o) {
-        return getName().compareToIgnoreCase(o.getName());
+    override operator fun compareTo(o: Origin): Int {
+        return getName().compareTo(o.getName(), ignoreCase = true)
     }
 
-
-    public void assertContext() {
+    fun assertContext() {
         if (!myContext.isReady()) {
-            fail("Origin context should be ready " + this +
-                    "\ncontext: " + myContext);
+            Assert.fail("""
+    Origin context should be ready $this
+    context: $myContext
+    """.trimIndent())
         }
         if (myContext.getDatabase() == null) {
-            fail("Origin context should have database " + this +
-                    "\ncontext: " + myContext);
+            Assert.fail("""
+    Origin context should have database $this
+    context: $myContext
+    """.trimIndent())
         }
     }
-
 
     /**
      * The reference may be in the form of @username, @webfingerId, or wibfingerId, without "@" before it
      * @return index of the first position, where the username/webfingerId may start, -1 if not found
      */
-    public ActorReference getActorReference(String text, int textStart) {
-        if (StringUtil.isEmpty(text) || textStart >= text.length()) return ActorReference.EMPTY;
-
-        int indexOfReference = text.indexOf(actorReferenceChar(), textStart);
-        GroupType groupType = GroupType.UNKNOWN;
+    fun getActorReference(text: String?, textStart: Int): ActorReference? {
+        if (StringUtil.isEmpty(text) || textStart >= text.length) return ActorReference.Companion.EMPTY
+        var indexOfReference = text.indexOf(actorReferenceChar(), textStart)
+        var groupType = GroupType.UNKNOWN
         if (groupActorReferenceChar().isPresent()) {
-            int indexOfGroupReference = text.indexOf(groupActorReferenceChar().get(), textStart);
+            val indexOfGroupReference = text.indexOf(groupActorReferenceChar().get(), textStart)
             if (indexOfGroupReference >= textStart &&
                     (indexOfReference < textStart || indexOfGroupReference < indexOfReference)) {
-                indexOfReference = indexOfGroupReference;
-                groupType = GroupType.GENERIC;
+                indexOfReference = indexOfGroupReference
+                groupType = GroupType.GENERIC
             }
         }
-        if (indexOfReference < textStart) return ActorReference.EMPTY;
-
-        if (indexOfReference == textStart) return new ActorReference(textStart + 1, groupType);
-
-        if (USERNAME_CHARS.indexOf(text.charAt(indexOfReference - 1)) < 0) {
-            return new ActorReference(indexOfReference + 1, groupType);
+        if (indexOfReference < textStart) return ActorReference.Companion.EMPTY
+        if (indexOfReference == textStart) return ActorReference(textStart + 1, groupType)
+        if (Patterns.USERNAME_CHARS.indexOf(text.get(indexOfReference - 1)) < 0) {
+            return ActorReference(indexOfReference + 1, groupType)
         } else if (groupType == GroupType.GENERIC) {
             // Group reference shouldn't have username chars before it
-            return getActorReference(text, indexOfReference + 1);
+            return getActorReference(text, indexOfReference + 1)
         }
 
         // username part of WebfingerId before @ ?
-        int ind = indexOfReference - 1;
+        var ind = indexOfReference - 1
         while (ind > textStart) {
-            if (USERNAME_CHARS.indexOf(text.charAt(ind - 1)) < 0) break;
-            ind--;
+            if (Patterns.USERNAME_CHARS.indexOf(text.get(ind - 1)) < 0) break
+            ind--
         }
-        return new ActorReference(ind, groupType);
+        return ActorReference(ind, groupType)
     }
 
-    public boolean isReferenceChar(CharSequence text, int cursor) {
-        if (text == null || cursor < 0 || cursor >= text.length()) {
-            return false;
-        }
-        return isReferenceChar(text.charAt(cursor));
+    fun isReferenceChar(text: CharSequence?, cursor: Int): Boolean {
+        return if (text == null || cursor < 0 || cursor >= text.length) {
+            false
+        } else isReferenceChar(text[cursor])
     }
 
-    public boolean isReferenceChar(char c) {
-        if (c == actorReferenceChar()) return true;
-        return groupActorReferenceChar().map(rc -> rc == c).orElse(false);
+    fun isReferenceChar(c: Char): Boolean {
+        return if (c == actorReferenceChar()) true else groupActorReferenceChar().map(Function { rc: Char? -> rc == c }).orElse(false)
     }
 
-    public char actorReferenceChar() {
-        return '@';
+    fun actorReferenceChar(): Char {
+        return '@'
     }
 
-    public Optional<Character> groupActorReferenceChar() {
-        return Optional.empty();
+    open fun groupActorReferenceChar(): Optional<Char?>? {
+        return Optional.empty()
     }
 
-    public static final class Builder {
+    class Builder {
+        private val origin: Origin?
 
-        private final Origin origin;
         /*
          * Result of the last "save" action
          */
-        private boolean saved = false;
-
-        public boolean isSaved() {
-            return saved;
+        private var saved = false
+        fun isSaved(): Boolean {
+            return saved
         }
 
-        public Builder(MyContext myContext, OriginType originType) {
-            origin = fromType(myContext, originType);
+        constructor(myContext: MyContext?, originType: OriginType?) {
+            origin = fromType(myContext, originType)
         }
 
         /**
          * Loading persistent Origin
          */
-        public Builder(MyContext myContext, Cursor cursor) {
-            OriginType originType1 = OriginType.fromId(
-                    DbUtils.getLong(cursor, OriginTable.ORIGIN_TYPE_ID));
-            origin = fromType(myContext, originType1);
-            origin.id = DbUtils.getLong(cursor, OriginTable._ID);
-            origin.name = DbUtils.getString(cursor, OriginTable.ORIGIN_NAME);
-            setHostOrUrl(DbUtils.getString(cursor, OriginTable.ORIGIN_URL));
-            setSsl(DbUtils.getBoolean(cursor, OriginTable.SSL));
-            setSslMode(SslModeEnum.fromId(DbUtils.getLong(cursor, OriginTable.SSL_MODE)));
-            
-            origin.allowHtml = DbUtils.getBoolean(cursor, OriginTable.ALLOW_HTML);
-
-            int textLimit = DbUtils.getInt(cursor, OriginTable.TEXT_LIMIT);
-            setTextLimit(textLimit > 0
-                    ? textLimit
-                    : (originType1.textLimitDefault > 0
-                        ? originType1.textLimitDefault
-                        : OriginType.TEXT_LIMIT_MAXIMUM));
+        constructor(myContext: MyContext?, cursor: Cursor?) {
+            val originType1: OriginType = OriginType.Companion.fromId(
+                    DbUtils.getLong(cursor, OriginTable.ORIGIN_TYPE_ID))
+            origin = fromType(myContext, originType1)
+            origin.id = DbUtils.getLong(cursor, BaseColumns._ID)
+            origin.name = DbUtils.getString(cursor, OriginTable.ORIGIN_NAME)
+            setHostOrUrl(DbUtils.getString(cursor, OriginTable.ORIGIN_URL))
+            setSsl(DbUtils.getBoolean(cursor, OriginTable.SSL))
+            setSslMode(SslModeEnum.Companion.fromId(DbUtils.getLong(cursor, OriginTable.SSL_MODE)))
+            origin.allowHtml = DbUtils.getBoolean(cursor, OriginTable.ALLOW_HTML)
+            val textLimit = DbUtils.getInt(cursor, OriginTable.TEXT_LIMIT)
+            setTextLimit(if (textLimit > 0) textLimit else if (originType1.textLimitDefault > 0) originType1.textLimitDefault else OriginType.Companion.TEXT_LIMIT_MAXIMUM)
             origin.setInCombinedGlobalSearch(DbUtils.getBoolean(cursor,
-                    OriginTable.IN_COMBINED_GLOBAL_SEARCH));
+                    OriginTable.IN_COMBINED_GLOBAL_SEARCH))
             origin.setInCombinedPublicReload(DbUtils.getBoolean(cursor,
-                    OriginTable.IN_COMBINED_PUBLIC_RELOAD));
-            setMentionAsWebFingerId(DbUtils.getTriState(cursor, OriginTable.MENTION_AS_WEBFINGER_ID));
-            setUseLegacyHttpProtocol(DbUtils.getTriState(cursor, OriginTable.USE_LEGACY_HTTP));
+                    OriginTable.IN_COMBINED_PUBLIC_RELOAD))
+            setMentionAsWebFingerId(DbUtils.getTriState(cursor, OriginTable.MENTION_AS_WEBFINGER_ID))
+            setUseLegacyHttpProtocol(DbUtils.getTriState(cursor, OriginTable.USE_LEGACY_HTTP))
         }
 
-        protected void setTextLimit(int textLimit) {
+        protected fun setTextLimit(textLimit: Int) {
             if (textLimit <= 0) {
-                origin.textLimit = OriginType.TEXT_LIMIT_MAXIMUM;
+                origin.textLimit = OriginType.Companion.TEXT_LIMIT_MAXIMUM
             } else {
-                origin.textLimit = textLimit;
+                origin.textLimit = textLimit
             }
         }
-        
-        public Builder(Origin original) {
-            origin = fromType(original.myContext, original.originType);
-            origin.id = original.id;
-            origin.name = original.name;
-            setUrl(original.url);
-            setSsl(original.ssl);
-            setSslMode(original.sslMode);
-            setHtmlContentAllowed(original.allowHtml);
-            setTextLimit(original.getTextLimit());
-            setInCombinedGlobalSearch(original.inCombinedGlobalSearch);
-            setInCombinedPublicReload(original.inCombinedPublicReload);
-            setMentionAsWebFingerId(original.mMentionAsWebFingerId);
-            origin.mUseLegacyHttpProtocol = original.mUseLegacyHttpProtocol;
-            origin.isValid = origin.calcIsValid();
+
+        constructor(original: Origin?) {
+            origin = fromType(original.myContext, original.originType)
+            origin.id = original.id
+            origin.name = original.name
+            setUrl(original.url)
+            setSsl(original.ssl)
+            setSslMode(original.sslMode)
+            setHtmlContentAllowed(original.allowHtml)
+            setTextLimit(original.getTextLimit())
+            setInCombinedGlobalSearch(original.inCombinedGlobalSearch)
+            setInCombinedPublicReload(original.inCombinedPublicReload)
+            setMentionAsWebFingerId(original.mMentionAsWebFingerId)
+            origin.mUseLegacyHttpProtocol = original.mUseLegacyHttpProtocol
+            origin.isValid = origin.calcIsValid()
         }
 
-        public Origin build() {
-            return new Builder(origin).origin;
+        fun build(): Origin? {
+            return Builder(origin).origin
         }
 
-        public Builder setName(String nameIn) {
-            String name = correctedName(nameIn);
+        fun setName(nameIn: String?): Builder? {
+            val name = correctedName(nameIn)
             if (!origin.isPersistent() && origin.isNameValid(name)) {
-                origin.name = name;
+                origin.name = name
             }
-            return this;
+            return this
         }
 
-        @NonNull
-        private String correctedName(String nameIn) {
+        private fun correctedName(nameIn: String?): String {
             if (origin.isNameValid(nameIn)) {
-                return nameIn;
+                return nameIn
             }
-            if (StringUtil.isEmpty(nameIn)) {
-                return "";
-            }
+            return if (StringUtil.isEmpty(nameIn)) {
+                ""
+            } else DOTS_PATTERN.matcher(
+                    INVALID_NAME_PART_PATTERN.matcher(
+                            StringUtils.stripAccents(nameIn.trim { it <= ' ' })
+                    ).replaceAll(".")
+            ).replaceAll(".")
             // Test with: http://www.regexplanet.com/advanced/java/index.html
-            return DOTS_PATTERN.matcher(
-                INVALID_NAME_PART_PATTERN.matcher(
-                        org.apache.commons.lang3.StringUtils.stripAccents(nameIn.trim())
-                ).replaceAll(".")
-            ).replaceAll(".");
         }
 
-        public Builder setUrl(URL urlIn) {
-           return urlIn == null ? this : setHostOrUrl(urlIn.toExternalForm());
+        fun setUrl(urlIn: URL?): Builder? {
+            return if (urlIn == null) this else setHostOrUrl(urlIn.toExternalForm())
         }
-        
-        public Builder setHostOrUrl(String hostOrUrl) {
+
+        fun setHostOrUrl(hostOrUrl: String?): Builder? {
             if (origin.originType.originHasUrl) {
-               URL url1 = UrlUtils.buildUrl(hostOrUrl, origin.isSsl());
-               if (url1 != null) {
-                   if (!UrlUtils.isHostOnly(url1) && !url1.toExternalForm().endsWith("/")) {
-                       url1 = UrlUtils.fromString(url1.toExternalForm() + "/");
-                   }
-                   origin.url = url1;
-               }
-            }
-            return this;
-        }
-        
-        public Builder setSsl(boolean ssl) {
-            if (origin.originType.canChangeSsl) {
-                origin.ssl = ssl;
-                setUrl(origin.getUrl());
-            }
-            return this;
-        }
-
-        public Builder setSslMode(SslModeEnum mode) {
-            origin.sslMode = mode;
-            return this;
-        }
-        
-        public Builder setHtmlContentAllowed(boolean allowHtml) {
-            origin.allowHtml = allowHtml;
-            return this;
-        }
-
-        public Builder setInCombinedGlobalSearch(boolean inCombinedGlobalSearch) {
-            origin.setInCombinedGlobalSearch(inCombinedGlobalSearch);
-            return this;
-        }
-
-        public Builder setInCombinedPublicReload(boolean inCombinedPublicReload) {
-            origin.setInCombinedPublicReload(inCombinedPublicReload);
-            return this;
-        }
-
-        public Builder setMentionAsWebFingerId(TriState mentionAsWebFingerId) {
-            origin.mMentionAsWebFingerId = mentionAsWebFingerId;
-            return this;
-        }
-
-        public Builder setUseLegacyHttpProtocol(TriState useLegacyHttpProtocol) {
-            origin.mUseLegacyHttpProtocol = useLegacyHttpProtocol;
-            return this;
-        }
-        
-        public Builder save(OriginConfig config) {
-            setTextLimit(config.textLimit);
-            save();
-            return this;
-        }
-
-        public Builder save() {
-            saved = false;
-            origin.isValid = origin.calcIsValid(); // TODO: refactor...
-            if (!origin.isValid()) {
-                MyLog.v(this, () -> "Is not valid: " + origin.toString());
-                return this;
-            }
-            if (origin.id == 0) {
-                Origin existing = origin.myContext.origins()
-                        .fromName(origin.getName());
-                if (existing.isPersistent()) {
-                    if (origin.originType != existing.originType) {
-                        MyLog.w(this, "Origin with this name and other type already exists " + existing.toString());
-                        return this;
+                var url1 = UrlUtils.buildUrl(hostOrUrl, origin.isSsl())
+                if (url1 != null) {
+                    if (!UrlUtils.isHostOnly(url1) && !url1.toExternalForm().endsWith("/")) {
+                        url1 = UrlUtils.fromString(url1.toExternalForm() + "/")
                     }
-                    origin.id = existing.getId();
+                    origin.url = url1
                 }
             }
+            return this
+        }
 
-            ContentValues values = new ContentValues();
-            values.put(OriginTable.ORIGIN_URL, origin.url != null ? origin.url.toExternalForm() : "");
-            values.put(OriginTable.SSL, origin.ssl);
-            values.put(OriginTable.SSL_MODE, origin.getSslMode().id);
-            values.put(OriginTable.ALLOW_HTML, origin.allowHtml);
-            values.put(OriginTable.TEXT_LIMIT, origin.getTextLimit());
-            values.put(OriginTable.IN_COMBINED_GLOBAL_SEARCH, origin.inCombinedGlobalSearch);
-            values.put(OriginTable.IN_COMBINED_PUBLIC_RELOAD, origin.inCombinedPublicReload);
-            values.put(OriginTable.MENTION_AS_WEBFINGER_ID, origin.mMentionAsWebFingerId.id);
-            values.put(OriginTable.USE_LEGACY_HTTP, origin.useLegacyHttpProtocol().id);
+        fun setSsl(ssl: Boolean): Builder? {
+            if (origin.originType.canChangeSsl) {
+                origin.ssl = ssl
+                setUrl(origin.getUrl())
+            }
+            return this
+        }
 
-            boolean changed = false;
-            if (origin.id == 0) {
-                values.put(OriginTable.ORIGIN_NAME, origin.name);
-                values.put(OriginTable.ORIGIN_TYPE_ID, origin.originType.getId());
+        fun setSslMode(mode: SslModeEnum?): Builder? {
+            origin.sslMode = mode
+            return this
+        }
+
+        fun setHtmlContentAllowed(allowHtml: Boolean): Builder? {
+            origin.allowHtml = allowHtml
+            return this
+        }
+
+        fun setInCombinedGlobalSearch(inCombinedGlobalSearch: Boolean): Builder? {
+            origin.setInCombinedGlobalSearch(inCombinedGlobalSearch)
+            return this
+        }
+
+        fun setInCombinedPublicReload(inCombinedPublicReload: Boolean): Builder? {
+            origin.setInCombinedPublicReload(inCombinedPublicReload)
+            return this
+        }
+
+        fun setMentionAsWebFingerId(mentionAsWebFingerId: TriState?): Builder? {
+            origin.mMentionAsWebFingerId = mentionAsWebFingerId
+            return this
+        }
+
+        fun setUseLegacyHttpProtocol(useLegacyHttpProtocol: TriState?): Builder? {
+            origin.mUseLegacyHttpProtocol = useLegacyHttpProtocol
+            return this
+        }
+
+        fun save(config: OriginConfig?): Builder? {
+            setTextLimit(config.textLimit)
+            save()
+            return this
+        }
+
+        fun save(): Builder? {
+            saved = false
+            origin.isValid = origin.calcIsValid() // TODO: refactor...
+            if (!origin.isValid()) {
+                MyLog.v(this) { "Is not valid: " + origin.toString() }
+                return this
+            }
+            if (origin.id == 0L) {
+                val existing = origin.myContext.origins()
+                        .fromName(origin.getName())
+                if (existing.isPersistent) {
+                    if (origin.originType !== existing.originType) {
+                        MyLog.w(this, "Origin with this name and other type already exists $existing")
+                        return this
+                    }
+                    origin.id = existing.getId()
+                }
+            }
+            val values = ContentValues()
+            values.put(OriginTable.ORIGIN_URL, if (origin.url != null) origin.url.toExternalForm() else "")
+            values.put(OriginTable.SSL, origin.ssl)
+            values.put(OriginTable.SSL_MODE, origin.getSslMode().id)
+            values.put(OriginTable.ALLOW_HTML, origin.allowHtml)
+            values.put(OriginTable.TEXT_LIMIT, origin.getTextLimit())
+            values.put(OriginTable.IN_COMBINED_GLOBAL_SEARCH, origin.inCombinedGlobalSearch)
+            values.put(OriginTable.IN_COMBINED_PUBLIC_RELOAD, origin.inCombinedPublicReload)
+            values.put(OriginTable.MENTION_AS_WEBFINGER_ID, origin.mMentionAsWebFingerId.id)
+            values.put(OriginTable.USE_LEGACY_HTTP, origin.useLegacyHttpProtocol().id)
+            var changed = false
+            if (origin.id == 0L) {
+                values.put(OriginTable.ORIGIN_NAME, origin.name)
+                values.put(OriginTable.ORIGIN_TYPE_ID, origin.originType.getId())
                 DbUtils.addRowWithRetry(getMyContext(), OriginTable.TABLE_NAME, values, 3)
-                .onSuccess(idAdded -> {
-                    origin.id = idAdded;
-                });
-                changed = origin.isPersistent();
+                        .onSuccess { idAdded: Long? -> origin.id = idAdded }
+                changed = origin.isPersistent()
             } else {
                 changed = DbUtils.updateRowWithRetry(getMyContext(), OriginTable.TABLE_NAME, origin.id,
                         values, 3)
-                        .onFailure(e -> MyLog.w("Origin", "Failed to save " + this))
-                        .isSuccess();
+                        .onFailure { e: Throwable? -> MyLog.w("Origin", "Failed to save $this") }
+                        .isSuccess
             }
             if (changed && getMyContext().isReady()) {
-                MyPreferences.onPreferencesChanged();
+                MyPreferences.onPreferencesChanged()
             }
-            saved = changed;
-            return this;
+            saved = changed
+            return this
         }
 
-        public boolean delete() {
-            boolean deleted = false;
-
-            SelectionAndArgs sa = new SelectionAndArgs();
-            sa.addSelection(ActivityTable.TABLE_NAME + "." + ActivityTable.ORIGIN_ID + "=" + origin.id);
-            long deletedActivities = MyProvider.deleteActivities(getMyContext(),
-                    sa.selection, sa.selectionArgs, false);
-
-            long deletedActors = MyQuery.getLongs(getMyContext(), "SELECT " + BaseColumns._ID
+        fun delete(): Boolean {
+            var deleted = false
+            val sa = SelectionAndArgs()
+            sa.addSelection(ActivityTable.TABLE_NAME + "." + ActivityTable.ORIGIN_ID + "=" + origin.id)
+            val deletedActivities: Long = MyProvider.Companion.deleteActivities(getMyContext(),
+                    sa.selection, sa.selectionArgs, false).toLong()
+            val deletedActors = MyQuery.getLongs(getMyContext(), "SELECT " + BaseColumns._ID
                     + " FROM " + ActorTable.TABLE_NAME
                     + " WHERE " + ActorTable.ORIGIN_ID + "=" + origin.id).stream()
-                .mapToLong(actorId -> MyProvider.deleteActor(getMyContext(), actorId))
-                .sum();
-
-            deleted = !origin.hasNotes()
-                && MyProvider.delete(getMyContext(), OriginTable.TABLE_NAME, OriginTable._ID, origin.id) > 0;
-
+                    .mapToLong { actorId: Long? -> MyProvider.Companion.deleteActor(getMyContext(), actorId) }
+                    .sum()
+            deleted = (!origin.hasNotes()
+                    && MyProvider.Companion.delete(getMyContext(), OriginTable.TABLE_NAME, BaseColumns._ID, origin.id) > 0)
             if (deleted) {
                 MyLog.i(this, "Deleted Origin " + origin
                         + ", its activities: " + deletedActivities
-                        + ", actors: " + deletedActors);
-                getMyContext().setExpired(() -> "Origin " + origin + " deleted");
+                        + ", actors: " + deletedActors)
+                getMyContext().setExpired(Supplier { "Origin $origin deleted" })
             }
-            return deleted;
+            return deleted
         }
 
-        public MyContext getMyContext() {
-            return origin.myContext;
+        fun getMyContext(): MyContext? {
+            return origin.myContext
         }
 
-        @Override
-        public String toString() {
-            return "Builder" + (isSaved() ? "saved " : " not") + " saved; " + origin.toString();
+        override fun toString(): String {
+            return "Builder" + (if (isSaved()) "saved " else " not") + " saved; " + origin.toString()
         }
+    }
+
+    companion object {
+        const val TEXT_LIMIT_FOR_WEBFINGER_ID = 200
+        val EMPTY = fromType(MyContext.Companion.EMPTY, OriginType.UNKNOWN)
+        private val VALID_NAME_CHARS: String? = "a-zA-Z_0-9/.-"
+        private val VALID_NAME_PATTERN = Pattern.compile("[" + VALID_NAME_CHARS + "]+")
+        private val INVALID_NAME_PART_PATTERN = Pattern.compile("[^" + VALID_NAME_CHARS + "]+")
+        private val DOTS_PATTERN = Pattern.compile("[.]+")
+        val KEY_ORIGIN_NAME: String? = "origin_name"
+        private fun fromType(myContext: MyContext?, originType: OriginType?): Origin? {
+            val origin = originType.originFactory.apply(myContext)
+            origin.url = origin.originType.urlDefault
+            origin.ssl = origin.originType.sslDefault
+            origin.allowHtml = origin.originType.allowHtmlDefault
+            origin.textLimit = origin.originType.textLimitDefault
+            origin.isInCombinedGlobalSearch = true
+            origin.isInCombinedPublicReload = true
+            return origin
+        }
+    }
+
+    init {
+        shortUrlLength = originType.shortUrlLengthDefault.value
     }
 }

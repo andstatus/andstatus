@@ -13,131 +13,117 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data
 
-package org.andstatus.app.data;
+import android.content.Context
+import android.database.Cursor
+import android.net.Uri
+import android.text.format.Formatter
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.database.table.DownloadTable
+import org.andstatus.app.graphics.CacheName
+import org.andstatus.app.util.IsEmpty
+import org.andstatus.app.util.MyStringBuilder
+import java.util.*
+import java.util.function.Consumer
+import java.util.function.Function
+import java.util.stream.Collectors
 
-import android.content.Context;
-import android.net.Uri;
-import android.text.format.Formatter;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.graphics.CacheName;
-import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.MyStringBuilder;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-public class AttachedImageFiles implements IsEmpty {
-    public final static AttachedImageFiles EMPTY = new AttachedImageFiles(Collections.emptyList());
-
-    public final List<AttachedMediaFile> list;
-
-    public AttachedImageFiles(List<AttachedMediaFile> imageFiles) {
-        list = imageFiles;
+class AttachedImageFiles(val list: MutableList<AttachedMediaFile?>?) : IsEmpty {
+    override fun isEmpty(): Boolean {
+        return list.isEmpty()
     }
 
-    public boolean isEmpty() {
-        return list.isEmpty();
+    fun size(): Int {
+        return list.size
     }
 
-    public int size() {
-        return list.size();
-    }
-
-    public static AttachedImageFiles load(MyContext myContext, long noteId) {
-        final String sql = "SELECT *" +
-                " FROM " + DownloadTable.TABLE_NAME + 
-                " WHERE " + DownloadTable.NOTE_ID + "=" + noteId +
-                " AND " + DownloadTable.DOWNLOAD_TYPE + "=" + DownloadType.ATTACHMENT.save() + 
-                " AND " + DownloadTable.CONTENT_TYPE +
-                " IN(" + MyContentType.IMAGE.save() + ", " + MyContentType.ANIMATED_IMAGE.save() + ", " +
-                        MyContentType.VIDEO.save() + ")" +
-                " ORDER BY " + DownloadTable.DOWNLOAD_NUMBER;
-        List<AttachedMediaFile> mediaFiles1 = MyQuery.getList(myContext, sql, AttachedMediaFile::fromCursor);
-        List<AttachedMediaFile> mediaFiles2 = foldPreviews(mediaFiles1);
-        return new AttachedImageFiles(mediaFiles2);
-    }
-
-    private static List<AttachedMediaFile> foldPreviews(List<AttachedMediaFile> mediaFiles) {
-        List<AttachedMediaFile> out = new ArrayList<>();
-        List<Long> toSkip = mediaFiles.stream().map(i -> i.previewOfDownloadId).filter(i -> i != 0)
-                .collect(Collectors.toList());
-        for(AttachedMediaFile mediaFile: mediaFiles) {
-            if (mediaFile.isEmpty() || toSkip.contains(mediaFile.downloadId)) continue;
-
-            if (mediaFile.previewOfDownloadId == 0) {
-                out.add(mediaFile);
-            } else {
-                AttachedMediaFile fullImage = AttachedMediaFile.EMPTY;
-                for(AttachedMediaFile other: mediaFiles) {
-                    if (other.downloadId == mediaFile.previewOfDownloadId) {
-                        fullImage = other;
-                        break;
-                    }
-                }
-                out.add(new AttachedMediaFile(mediaFile, fullImage));
-            }
-        }
-        return out;
-    }
-
-    public boolean imageOrLinkMayBeShown() {
-        for (AttachedMediaFile mediaFile: list) {
+    fun imageOrLinkMayBeShown(): Boolean {
+        for (mediaFile in list) {
             if (mediaFile.imageOrLinkMayBeShown()) {
-                return true;
+                return true
             }
         }
-        return false;
+        return false
     }
 
-    @Override
-    public String toString() {
-        return MyStringBuilder.formatKeyValue(this, list);
+    override fun toString(): String {
+        return MyStringBuilder.Companion.formatKeyValue(this, list)
     }
 
-    public void preloadImagesAsync() {
-        for (AttachedMediaFile mediaFile: list) {
-            if (mediaFile.contentType.isImage()) {
-                mediaFile.preloadImageAsync(CacheName.ATTACHED_IMAGE);
+    fun preloadImagesAsync() {
+        for (mediaFile in list) {
+            if (mediaFile.contentType.isImage) {
+                mediaFile.preloadImageAsync(CacheName.ATTACHED_IMAGE)
             }
         }
     }
 
-    public String toMediaSummary(Context context) {
-        MyStringBuilder builder = new MyStringBuilder();
-        list.forEach( item -> {
+    fun toMediaSummary(context: Context?): String? {
+        val builder = MyStringBuilder()
+        list.forEach(Consumer { item: AttachedMediaFile? ->
             builder.withComma(
-            item.mediaMetadata.toDetails() + " "
-                    + Formatter.formatShortFileSize(context, item.downloadFile.getSize()));
-        });
-        return builder.toString();
+                    item.mediaMetadata.toDetails() + " "
+                            + Formatter.formatShortFileSize(context, item.downloadFile.size))
+        })
+        return builder.toString()
     }
 
-    public Optional<AttachedMediaFile> tooLargeAttachment(long maxBytes) {
-        return list.stream().filter(item -> item.downloadFile.getSize() > maxBytes).findAny();
+    fun tooLargeAttachment(maxBytes: Long): Optional<AttachedMediaFile?>? {
+        return list.stream().filter { item: AttachedMediaFile? -> item.downloadFile.size > maxBytes }.findAny()
     }
 
-    public Optional<AttachedMediaFile> forUri(Uri uri) {
-        return list.stream().filter(item -> uri.equals(item.uri)).findAny();
+    fun forUri(uri: Uri?): Optional<AttachedMediaFile?>? {
+        return list.stream().filter { item: AttachedMediaFile? -> uri == item.uri }.findAny()
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        AttachedImageFiles that = (AttachedImageFiles) o;
-
-        return list.equals(that.list);
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o == null || javaClass != o.javaClass) return false
+        val that = o as AttachedImageFiles?
+        return list == that.list
     }
 
-    @Override
-    public int hashCode() {
-        return list.hashCode();
+    override fun hashCode(): Int {
+        return list.hashCode()
+    }
+
+    companion object {
+        val EMPTY: AttachedImageFiles? = AttachedImageFiles(emptyList())
+        fun load(myContext: MyContext?, noteId: Long): AttachedImageFiles? {
+            val sql = "SELECT *" +
+                    " FROM " + DownloadTable.TABLE_NAME +
+                    " WHERE " + DownloadTable.NOTE_ID + "=" + noteId +
+                    " AND " + DownloadTable.DOWNLOAD_TYPE + "=" + DownloadType.ATTACHMENT.save() +
+                    " AND " + DownloadTable.CONTENT_TYPE +
+                    " IN(" + MyContentType.IMAGE.save() + ", " + MyContentType.ANIMATED_IMAGE.save() + ", " +
+                    MyContentType.VIDEO.save() + ")" +
+                    " ORDER BY " + DownloadTable.DOWNLOAD_NUMBER
+            val mediaFiles1 = MyQuery.getList(myContext, sql, Function<Cursor?, AttachedMediaFile?> { cursor: Cursor? -> AttachedMediaFile.Companion.fromCursor(cursor) })
+            val mediaFiles2 = foldPreviews(mediaFiles1)
+            return AttachedImageFiles(mediaFiles2)
+        }
+
+        private fun foldPreviews(mediaFiles: MutableList<AttachedMediaFile?>?): MutableList<AttachedMediaFile?>? {
+            val out: MutableList<AttachedMediaFile?> = ArrayList()
+            val toSkip = mediaFiles.stream().map { i: AttachedMediaFile? -> i.previewOfDownloadId }.filter { i: Long? -> i != 0L }
+                    .collect(Collectors.toList())
+            for (mediaFile in mediaFiles) {
+                if (mediaFile.isEmpty() || toSkip.contains(mediaFile.downloadId)) continue
+                if (mediaFile.previewOfDownloadId == 0L) {
+                    out.add(mediaFile)
+                } else {
+                    var fullImage: AttachedMediaFile? = AttachedMediaFile.Companion.EMPTY
+                    for (other in mediaFiles) {
+                        if (other.downloadId == mediaFile.previewOfDownloadId) {
+                            fullImage = other
+                            break
+                        }
+                    }
+                    out.add(AttachedMediaFile(mediaFile, fullImage))
+                }
+            }
+            return out
+        }
     }
 }

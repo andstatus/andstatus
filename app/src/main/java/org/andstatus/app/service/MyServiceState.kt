@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,34 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
-
-import org.andstatus.app.util.MyLog;
+import org.andstatus.app.util.MyLog
 
 /**
- * State of {@link MyService} 
+ * State of [MyService]
  */
-public enum MyServiceState {
-    RUNNING,
-    STOPPING,
-    STOPPED,
-    UNKNOWN;
-    
-    /**
-     * Like valueOf but doesn't throw exceptions: it returns UNKNOWN instead 
-     */
-    public static MyServiceState load(String str) {
-        MyServiceState state;
-        try {
-            state = valueOf(str);
-        } catch (IllegalArgumentException e) {
-            MyLog.v(MyServiceState.class, e);
-            state = UNKNOWN;
-        }
-        return state;
+enum class MyServiceState {
+    RUNNING, STOPPING, STOPPED, UNKNOWN;
+
+    fun save(): String? {
+        return this.toString()
     }
-    public String save() {
-        return this.toString();
+
+    companion object {
+        /**
+         * Like valueOf but doesn't throw exceptions: it returns UNKNOWN instead
+         */
+        fun load(str: String?): MyServiceState? {
+            val state: MyServiceState
+            state = try {
+                valueOf(str)
+            } catch (e: IllegalArgumentException) {
+                MyLog.v(MyServiceState::class.java, e)
+                UNKNOWN
+            }
+            return state
+        }
     }
 }

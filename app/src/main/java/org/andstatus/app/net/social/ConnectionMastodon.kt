@@ -13,586 +13,498 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social
 
-package org.andstatus.app.net.social;
-
-import android.net.Uri;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.http.HttpReadResult;
-import org.andstatus.app.net.http.HttpRequest;
-import org.andstatus.app.note.KeywordsFilter;
-import org.andstatus.app.origin.OriginConfig;
-import org.andstatus.app.util.JsonUtils;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.ObjectOrId;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.TryUtils;
-import org.andstatus.app.util.UriUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-
-import io.vavr.control.CheckedFunction;
-import io.vavr.control.Try;
-
-import static org.andstatus.app.context.MyPreferences.BYTES_IN_MB;
+import android.net.Uri
+import eu.bolt.screenshotty.ScreenshotManagerBuilder.build
+import io.vavr.control.CheckedFunction
+import io.vavr.control.Try
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.MyContentType
+import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.HttpReadResult
+import org.andstatus.app.net.http.HttpRequest
+import org.andstatus.app.note.KeywordsFilter
+import org.andstatus.app.origin.OriginConfig
+import org.andstatus.app.util.JsonUtils
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.ObjectOrId
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TriState
+import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.UriUtils
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.util.*
+import java.util.function.Consumer
 
 /**
- * See <a href="https://source.joinmastodon.org/mastodon/docs">API</a>
+ * See [API](https://source.joinmastodon.org/mastodon/docs)
  */
-public class ConnectionMastodon extends ConnectionTwitterLike {
-    private static final String ATTACHMENTS_FIELD_NAME = "media_attachments";
-
-    private static final String VISIBILITY_PROPERTY = "visibility";
-    private static final String VISIBILITY_PUBLIC = "public";
-    private static final String VISIBILITY_UNLISTED = "unlisted";
-    private static final String VISIBILITY_PRIVATE = "private";
-    private static final String VISIBILITY_DIRECT = "direct";
-
-    private static final String SENSITIVE_PROPERTY = "sensitive";
-    private static final String SUMMARY_PROPERTY = "spoiler_text";
-    private static final String CONTENT_PROPERTY_UPDATE = "status";
-    private static final String CONTENT_PROPERTY = "content";
-    /** Only Pleroma has this, see https://github.com/tootsuite/mastodon/issues/4915 */
-    private final static String TEXT_LIMIT_KEY = "max_toot_chars";
-
-    @NonNull
-    @Override
-    protected String getApiPathFromOrigin(ApiRoutineEnum routine) {
-        return partialPathToApiPath(partialPath(routine));
+class ConnectionMastodon : ConnectionTwitterLike() {
+    override fun getApiPathFromOrigin(routine: ApiRoutineEnum?): String {
+        return partialPathToApiPath(partialPath(routine))
     }
 
-    public static String partialPath(ApiRoutineEnum routine) {
-        switch (routine) {
-            case GET_CONFIG:
-                return "v1/instance";  // https://docs.joinmastodon.org/api/rest/instances/
-            case HOME_TIMELINE:
-                return "v1/timelines/home";
-            case NOTIFICATIONS_TIMELINE:
-                return "v1/notifications";
-            case LIKED_TIMELINE:
-                return "v1/favourites";
-            case PUBLIC_TIMELINE:
-                return "v1/timelines/public";
-            case TAG_TIMELINE:
-                return "v1/timelines/tag/%tag%";
-            case ACTOR_TIMELINE:
-                return "v1/accounts/%actorId%/statuses";
-            case PRIVATE_NOTES:
-                return "v1/conversations";
-            case ACCOUNT_VERIFY_CREDENTIALS:
-                return "v1/accounts/verify_credentials";
-            case UPDATE_NOTE:
-            case UPDATE_PRIVATE_NOTE:
-                return "v1/statuses";
-            case UPLOAD_MEDIA:
-                return "v1/media";
-            case GET_NOTE:
-                return "v1/statuses/%noteId%";
-            case SEARCH_NOTES:
-                return "v1/search"; /* actually, this is a complex search "for content" */
-            case SEARCH_ACTORS:
-                return "v1/accounts/search";
-            case GET_CONVERSATION:
-                return "v1/statuses/%noteId%/context";
-            case LIKE:
-                return "v1/statuses/%noteId%/favourite";
-            case UNDO_LIKE:
-                return "v1/statuses/%noteId%/unfavourite";
-            case FOLLOW:
-                return "v1/accounts/%actorId%/follow";
-            case UNDO_FOLLOW:
-                return "v1/accounts/%actorId%/unfollow";
-            case GET_FOLLOWERS:
-                return "v1/accounts/%actorId%/followers";
-            case GET_FRIENDS:
-                return "v1/accounts/%actorId%/following";
-            case GET_ACTOR:
-                return "v1/accounts/%actorId%";
-            case ANNOUNCE:
-                return "v1/statuses/%noteId%/reblog";
-            case UNDO_ANNOUNCE:
-                return "v1/statuses/%noteId%/unreblog";
-            default:
-                return "";
-        }
+    override fun getTimelineUriBuilder(apiRoutine: ApiRoutineEnum?, limit: Int, actor: Actor?): Try<Uri.Builder?> {
+        return getApiPathWithActorId(apiRoutine, actor.oid)
+                .map { obj: Uri? -> obj.buildUpon() }
+                .map { b: Uri.Builder? -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)) }
     }
 
-    @NonNull
-    @Override
-    protected Try<Uri.Builder> getTimelineUriBuilder(ApiRoutineEnum apiRoutine, int limit, Actor actor) {
-        return this.getApiPathWithActorId(apiRoutine, actor.oid)
-            .map(Uri::buildUpon)
-            .map(b -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)));
-    }
-
-    @Override
-    protected AActivity activityFromTwitterLikeJson(JSONObject timelineItem) throws ConnectionException {
-        if (isNotification(timelineItem)) {
-            AActivity activity = AActivity.from(data.getAccountActor(), getType(timelineItem));
-            activity.setOid(JsonUtils.optString(timelineItem, "id"));
-            activity.setUpdatedDate(dateFromJson(timelineItem, "created_at"));
-            activity.setActor(actorFromJson(timelineItem.optJSONObject("account")));
-            AActivity noteActivity = activityFromJson2(timelineItem.optJSONObject("status"));
-
-            switch (activity.type) {
-                case LIKE:
-                case UNDO_LIKE:
-                case ANNOUNCE:
-                case UNDO_ANNOUNCE:
-                    activity.setActivity(noteActivity);
-                    break;
-                case FOLLOW:
-                case UNDO_FOLLOW:
-                    activity.setObjActor(data.getAccountActor());
-                    break;
-                default:
-                    activity.setNote(noteActivity.getNote());
-                    break;
+    @Throws(ConnectionException::class)
+    override fun activityFromTwitterLikeJson(timelineItem: JSONObject?): AActivity? {
+        return if (isNotification(timelineItem)) {
+            val activity: AActivity = AActivity.Companion.from(data.accountActor, getType(timelineItem))
+            activity.oid = JsonUtils.optString(timelineItem, "id")
+            activity.updatedDate = dateFromJson(timelineItem, "created_at")
+            activity.setActor(actorFromJson(timelineItem.optJSONObject("account")))
+            val noteActivity = activityFromJson2(timelineItem.optJSONObject("status"))
+            when (activity.type) {
+                ActivityType.LIKE, ActivityType.UNDO_LIKE, ActivityType.ANNOUNCE, ActivityType.UNDO_ANNOUNCE -> activity.setActivity(noteActivity)
+                ActivityType.FOLLOW, ActivityType.UNDO_FOLLOW -> activity.setObjActor(data.accountActor)
+                else -> activity.setNote(noteActivity.note)
             }
-            return activity;
-        } else if(isConversation(timelineItem)) {
+            activity
+        } else if (isConversation(timelineItem)) {
             // https://docs.joinmastodon.org/entities/conversation/
-            AActivity noteActivity = activityFromJson2(timelineItem.optJSONObject("last_status"));
+            val noteActivity = activityFromJson2(timelineItem.optJSONObject("last_status"))
             if (noteActivity.nonEmpty()) {
-                noteActivity.getNote().setConversationOid(timelineItem.optString("id"));
+                noteActivity.note.setConversationOid(timelineItem.optString("id"))
             }
-            return noteActivity;
+            noteActivity
         } else {
-            return super.activityFromTwitterLikeJson(timelineItem);
+            super.activityFromTwitterLikeJson(timelineItem)
         }
-
     }
 
-    @NonNull
-    private ActivityType getType(JSONObject timelineItem) {
-        if (isNotification(timelineItem)) {
-            switch (JsonUtils.optString(timelineItem,"type")) {
-                case "favourite":
-                    return ActivityType.LIKE;
-                case "reblog":
-                    return ActivityType.ANNOUNCE;
-                case "follow":
-                    return ActivityType.FOLLOW;
-                case "mention":
-                    return ActivityType.UPDATE;
-                default:
-                    return ActivityType.EMPTY;
+    private fun getType(timelineItem: JSONObject?): ActivityType {
+        return if (isNotification(timelineItem)) {
+            when (JsonUtils.optString(timelineItem, "type")) {
+                "favourite" -> ActivityType.LIKE
+                "reblog" -> ActivityType.ANNOUNCE
+                "follow" -> ActivityType.FOLLOW
+                "mention" -> ActivityType.UPDATE
+                else -> ActivityType.EMPTY
             }
-        }
-        return ActivityType.UPDATE;
+        } else ActivityType.UPDATE
     }
 
-    /** https://docs.joinmastodon.org/entities/conversation/ */
-    private boolean isConversation(JSONObject activity) {
-        return activity != null && activity.has("last_status");
+    /** https://docs.joinmastodon.org/entities/conversation/  */
+    private fun isConversation(activity: JSONObject?): Boolean {
+        return activity != null && activity.has("last_status")
     }
 
-    private boolean isNotification(JSONObject activity) {
-        return activity != null && activity.has("type");
+    private fun isNotification(activity: JSONObject?): Boolean {
+        return activity != null && activity.has("type")
     }
 
-    @NonNull
-    @Override
-    public Try<InputTimelinePage> searchNotes(boolean syncYounger, TimelinePosition youngestPosition,
-                                         TimelinePosition oldestPosition, int limit, String searchQuery) {
-        String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
+    override fun searchNotes(syncYounger: Boolean, youngestPosition: TimelinePosition?,
+                             oldestPosition: TimelinePosition?, limit: Int, searchQuery: String?): Try<InputTimelinePage?> {
+        val tag = KeywordsFilter(searchQuery).firstTagOrFirstKeyword
         if (StringUtil.isEmpty(tag)) {
-            return InputTimelinePage.TRY_EMPTY;
+            return InputTimelinePage.Companion.TRY_EMPTY
         }
-        ApiRoutineEnum apiRoutine = ApiRoutineEnum.TAG_TIMELINE;
+        val apiRoutine = ApiRoutineEnum.TAG_TIMELINE
         return getApiPathWithTag(apiRoutine, tag)
-                .map(Uri::buildUpon)
-                .map(b -> appendPositionParameters(b, youngestPosition, oldestPosition))
-                .map(b -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)))
-                .map(Uri.Builder::build)
-                .map(uri -> HttpRequest.of(apiRoutine, uri))
-                .flatMap(this::execute)
-                .flatMap(result -> result.getJsonArray()
-                    .flatMap(jsonArray -> jArrToTimeline(jsonArray, apiRoutine)))
-                .map(InputTimelinePage::of);
+                .map(CheckedFunction { obj: Uri? -> obj.buildUpon() })
+                .map { b: Uri.Builder? -> appendPositionParameters(b, youngestPosition, oldestPosition) }
+                .map { b: Uri.Builder? -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)) }
+                .map(CheckedFunction<Uri.Builder?, Uri?> { Uri.Builder.build() })
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })
+                .flatMap { request: HttpRequest? -> execute(request) }
+                .flatMap { result: HttpReadResult? ->
+                    result.getJsonArray()
+                            .flatMap { jsonArray: JSONArray? -> jArrToTimeline(jsonArray, apiRoutine) }
+                }
+                .map(CheckedFunction { activities: MutableList<AActivity?>? -> InputTimelinePage.Companion.of(activities) })
     }
 
-    @NonNull
-    @Override
-    public Try<List<Actor>> searchActors(int limit, String searchQuery) {
-        String tag = new KeywordsFilter(searchQuery).getFirstTagOrFirstKeyword();
+    override fun searchActors(limit: Int, searchQuery: String?): Try<MutableList<Actor?>?> {
+        val tag = KeywordsFilter(searchQuery).firstTagOrFirstKeyword
         if (StringUtil.isEmpty(tag)) {
-            return TryUtils.emptyList();
+            return TryUtils.emptyList()
         }
-
-        ApiRoutineEnum apiRoutine = ApiRoutineEnum.SEARCH_ACTORS;
-        return getApiPath(apiRoutine).map(Uri::buildUpon)
-        .map(b -> b.appendQueryParameter("q", searchQuery)
-                .appendQueryParameter("resolve", "true")
-                .appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)))
-        .map(Uri.Builder::build)
-        .map(uri -> HttpRequest.of(apiRoutine, uri))
-        .flatMap(this::execute)
-        .flatMap(result -> result.getJsonArray()
-            .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, result.request.uri)));
+        val apiRoutine = ApiRoutineEnum.SEARCH_ACTORS
+        return getApiPath(apiRoutine).map { obj: Uri? -> obj.buildUpon() }
+                .map { b: Uri.Builder? ->
+                    b.appendQueryParameter("q", searchQuery)
+                            .appendQueryParameter("resolve", "true")
+                            .appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine))
+                }
+                .map(CheckedFunction<Uri.Builder?, Uri?> { Uri.Builder.build() })
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })
+                .flatMap { request: HttpRequest? -> execute(request) }
+                .flatMap { result: HttpReadResult? ->
+                    result.getJsonArray()
+                            .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }
+                }
     }
 
     // TODO: Delete ?
-    protected Try<Uri> getApiPathWithTag(ApiRoutineEnum routineEnum, String tag) {
-        return getApiPath(routineEnum).map(uri -> UriUtils.map(uri, s -> s.replace("%tag%", tag)));
+    protected fun getApiPathWithTag(routineEnum: ApiRoutineEnum?, tag: String?): Try<Uri?>? {
+        return getApiPath(routineEnum).map { uri: Uri? -> UriUtils.map(uri) { s: String? -> s.replace("%tag%", tag) } }
     }
 
-    @Override
-    public Try<List<AActivity>> getConversation(String conversationOid) {
+    override fun getConversation(conversationOid: String?): Try<MutableList<AActivity?>?>? {
         return noteAction(ApiRoutineEnum.GET_CONVERSATION, conversationOid)
-        .map(jsonObject -> getConversationActivities(jsonObject, conversationOid));
+                .map { jsonObject: JSONObject? -> getConversationActivities(jsonObject, conversationOid) }
     }
 
-    private List<AActivity> getConversationActivities(JSONObject mastodonContext, String conversationOid)
-            throws ConnectionException {
-        if (JsonUtils.isEmpty(mastodonContext)) return Collections.emptyList();
-
-        List<AActivity> timeline = new ArrayList<>();
+    @Throws(ConnectionException::class)
+    private fun getConversationActivities(mastodonContext: JSONObject?, conversationOid: String?): MutableList<AActivity?>? {
+        if (JsonUtils.isEmpty(mastodonContext)) return emptyList()
+        val timeline: MutableList<AActivity?> = ArrayList()
         try {
-            String ancestors = "ancestors";
+            val ancestors = "ancestors"
             if (mastodonContext.has(ancestors)) {
                 jArrToTimeline(mastodonContext.getJSONArray(ancestors), ApiRoutineEnum.GET_CONVERSATION)
-                    .onSuccess( timeline::addAll);
+                        .onSuccess { c: MutableList<AActivity?>? -> timeline.addAll(c) }
             }
-            String descendants = "descendants";
+            val descendants = "descendants"
             if (mastodonContext.has(descendants)) {
                 jArrToTimeline(mastodonContext.getJSONArray(descendants), ApiRoutineEnum.GET_CONVERSATION)
-                        .onSuccess( timeline::addAll);
+                        .onSuccess { c: MutableList<AActivity?>? -> timeline.addAll(c) }
             }
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Error getting conversation '" + conversationOid + "'",
-                    e, mastodonContext);
+        } catch (e: JSONException) {
+            throw ConnectionException.Companion.loggedJsonException(this, "Error getting conversation '$conversationOid'",
+                    e, mastodonContext)
         }
-        return timeline;
+        return timeline
     }
 
-    @Override
-    public Try<AActivity> updateNote(Note note) {
-        return updateNote2(note);
+    override fun updateNote(note: Note?): Try<AActivity?>? {
+        return updateNote2(note)
     }
 
-    @Override
-    protected Try<AActivity> updateNote2(Note note) {
-        JSONObject obj = new JSONObject();
+    override fun updateNote2(note: Note?): Try<AActivity?>? {
+        val obj = JSONObject()
         try {
-            obj.put(SUMMARY_PROPERTY, note.getSummary());
-            obj.put(VISIBILITY_PROPERTY, getVisibility(note));
-            obj.put(SENSITIVE_PROPERTY, note.isSensitive());
-            obj.put(CONTENT_PROPERTY_UPDATE, note.getContentToPost());
-            if (StringUtil.nonEmptyNonTemp(note.getInReplyTo().getOid())) {
-                obj.put("in_reply_to_id", note.getInReplyTo().getOid());
+            obj.put(SUMMARY_PROPERTY, note.getSummary())
+            obj.put(VISIBILITY_PROPERTY, getVisibility(note))
+            obj.put(SENSITIVE_PROPERTY, note.isSensitive())
+            obj.put(CONTENT_PROPERTY_UPDATE, note.getContentToPost())
+            if (StringUtil.nonEmptyNonTemp(note.getInReplyTo().oid)) {
+                obj.put("in_reply_to_id", note.getInReplyTo().oid)
             }
-            List<String> ids = new ArrayList<>();
-            for (Attachment attachment : note.attachments.list) {
+            val ids: MutableList<String?> = ArrayList()
+            for (attachment in note.attachments.list) {
                 if (UriUtils.isDownloadable(attachment.uri)) {
                     // TODO
-                    MyLog.i(this, "Skipped downloadable " + attachment);
+                    MyLog.i(this, "Skipped downloadable $attachment")
                 } else {
-                    Try<AActivity> uploaded = uploadMedia(attachment)
-                    .map( mediaObject -> {
-                        if (mediaObject != null && mediaObject.has("id")) {
-                            ids.add(mediaObject.get("id").toString());
-                        }
-                        return AActivity.EMPTY;
-                    });
-                    if (uploaded.isFailure()) return uploaded;
+                    val uploaded = uploadMedia(attachment)
+                            .map(CheckedFunction<JSONObject?, AActivity?> { mediaObject: JSONObject? ->
+                                if (mediaObject != null && mediaObject.has("id")) {
+                                    ids.add(mediaObject["id"].toString())
+                                }
+                                AActivity.Companion.EMPTY
+                            })
+                    if (uploaded.isFailure) return uploaded
                 }
             }
             if (!ids.isEmpty()) {
-                obj.put("media_ids[]", ids);
+                obj.put("media_ids[]", ids)
             }
-        } catch (JSONException e) {
-            return Try.failure(ConnectionException.loggedJsonException(this, "Error updating note", e, obj));
+        } catch (e: JSONException) {
+            return Try.failure(ConnectionException.Companion.loggedJsonException(this, "Error updating note", e, obj))
         }
         return postRequest(ApiRoutineEnum.UPDATE_NOTE, obj)
-                .flatMap(HttpReadResult::getJsonObject)
-                .map(this::activityFromJson);
+                .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+                .map { jso: JSONObject? -> activityFromJson(jso) }
     }
 
-    private String getVisibility(Note note) {
-        switch (note.audience().getVisibility()) {
-            case UNKNOWN:
-            case PUBLIC_AND_TO_FOLLOWERS:
-            case PUBLIC:
-                return VISIBILITY_PUBLIC;
-            case NOT_PUBLIC_NEEDS_CLARIFICATION:
-            case TO_FOLLOWERS:
-                return VISIBILITY_PRIVATE;
-            case PRIVATE:
-                return VISIBILITY_DIRECT;
-            default:
-                throw new IllegalStateException("Unexpected visibility: " + note.audience().getVisibility());
+    private fun getVisibility(note: Note?): String? {
+        return when (note.audience().visibility) {
+            Visibility.UNKNOWN, Visibility.PUBLIC_AND_TO_FOLLOWERS, Visibility.PUBLIC -> VISIBILITY_PUBLIC
+            Visibility.NOT_PUBLIC_NEEDS_CLARIFICATION, Visibility.TO_FOLLOWERS -> VISIBILITY_PRIVATE
+            Visibility.PRIVATE -> VISIBILITY_DIRECT
+            else -> throw IllegalStateException("Unexpected visibility: " + note.audience().visibility)
         }
     }
 
-    private Try<JSONObject> uploadMedia(Attachment attachment) {
-        return tryApiPath(data.getAccountActor(), ApiRoutineEnum.UPLOAD_MEDIA)
-        .map(uri -> HttpRequest.of(ApiRoutineEnum.UPLOAD_MEDIA, uri)
-                        .withMediaPartName("file")
-                        .withAttachmentToPost(attachment)
-        )
-        .flatMap(this::execute)
-        .flatMap(HttpReadResult::getJsonObject)
-        .filter(Objects::nonNull)
-        .onSuccess(jso -> MyLog.v(this, () -> "uploaded '" + attachment + "' " + jso.toString()));
+    private fun uploadMedia(attachment: Attachment?): Try<JSONObject?>? {
+        return tryApiPath(data.accountActor, ApiRoutineEnum.UPLOAD_MEDIA)
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? ->
+                    HttpRequest.Companion.of(ApiRoutineEnum.UPLOAD_MEDIA, uri)
+                            .withMediaPartName("file")
+                            .withAttachmentToPost(attachment)
+                }
+                )
+                .flatMap { request: HttpRequest? -> execute(request) }
+                .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+                .filter { obj: JSONObject? -> Objects.nonNull(obj) }
+                .onSuccess { jso: JSONObject? -> MyLog.v(this) { "uploaded '" + attachment + "' " + jso.toString() } }
     }
 
-    @Override
-    @NonNull
-    protected Actor actorFromJson(JSONObject jso) throws ConnectionException {
+    @Throws(ConnectionException::class)
+    override fun actorFromJson(jso: JSONObject?): Actor {
         if (jso == null) {
-            return Actor.EMPTY;
+            return Actor.Companion.EMPTY
         }
-        String oid = JsonUtils.optString(jso, "id");
-        String username = JsonUtils.optString(jso, "username");
+        val oid = JsonUtils.optString(jso, "id")
+        val username = JsonUtils.optString(jso, "username")
         if (StringUtil.isEmpty(oid) || StringUtil.isEmpty(username)) {
-            throw ConnectionException.loggedJsonException(this, "Id or username is empty", null, jso);
+            throw ConnectionException.Companion.loggedJsonException(this, "Id or username is empty", null, jso)
         }
-        Actor actor = Actor.fromOid(data.getOrigin(), oid);
-        actor.setUsername(username);
-        actor.setRealName(JsonUtils.optString(jso, "display_name"));
-        actor.setWebFingerId(JsonUtils.optString(jso, "acct"));
-        if (!SharedPreferencesUtil.isEmpty(actor.getRealName())) {
-            actor.setProfileUrlToOriginUrl(data.getOriginUrl());
+        val actor: Actor = Actor.Companion.fromOid(data.origin, oid)
+        actor.username = username
+        actor.realName = JsonUtils.optString(jso, "display_name")
+        actor.webFingerId = JsonUtils.optString(jso, "acct")
+        if (!SharedPreferencesUtil.isEmpty(actor.realName)) {
+            actor.setProfileUrlToOriginUrl(data.originUrl)
         }
-        actor.setAvatarUri(UriUtils.fromJson(jso, "avatar"));
-        actor.endpoints.add(ActorEndpointType.BANNER, UriUtils.fromJson(jso, "header"));
-        actor.setSummary(extractSummary(jso));
-        actor.setProfileUrl(JsonUtils.optString(jso, "url"));
-        actor.notesCount = jso.optLong("statuses_count");
-        actor.followingCount = jso.optLong("following_count");
-        actor.followersCount = jso.optLong("followers_count");
-        actor.setCreatedDate(dateFromJson(jso, "created_at"));
-        return actor.build();
+        actor.avatarUri = UriUtils.fromJson(jso, "avatar")
+        actor.endpoints.add(ActorEndpointType.BANNER, UriUtils.fromJson(jso, "header"))
+        actor.summary = extractSummary(jso)
+        actor.profileUrl = JsonUtils.optString(jso, "url")
+        actor.notesCount = jso.optLong("statuses_count")
+        actor.followingCount = jso.optLong("following_count")
+        actor.followersCount = jso.optLong("followers_count")
+        actor.createdDate = dateFromJson(jso, "created_at")
+        return actor.build()
     }
 
-    private String extractSummary(JSONObject jso) {
-        MyStringBuilder builder = new MyStringBuilder();
-        builder.append(JsonUtils.optString(jso, "note"));
-        JSONArray fields = jso.optJSONArray("fields");
+    private fun extractSummary(jso: JSONObject?): String? {
+        val builder = MyStringBuilder()
+        builder.append(JsonUtils.optString(jso, "note"))
+        val fields = jso.optJSONArray("fields")
         if (fields != null) {
-            for (int ind=0; ind < fields.length(); ind++) {
-                JSONObject field = fields.optJSONObject(ind);
+            for (ind in 0 until fields.length()) {
+                val field = fields.optJSONObject(ind)
                 if (field != null) {
-                    builder.append(JsonUtils.optString(field, "name"), JsonUtils.optString(field,"value"),
-                            "\n<br>", false);
+                    builder.append(JsonUtils.optString(field, "name"), JsonUtils.optString(field, "value"),
+                            "\n<br>", false)
                 }
             }
         }
-        return builder.toString();
+        return builder.toString()
     }
 
-    @Override
-    @NonNull
-    AActivity activityFromJson2(JSONObject jso) throws ConnectionException {
+    @Throws(ConnectionException::class)
+    public override fun activityFromJson2(jso: JSONObject?): AActivity {
         if (jso == null) {
-            return AActivity.EMPTY;
+            return AActivity.Companion.EMPTY
         }
-        final String method = "activityFromJson2";
-        String oid = JsonUtils.optString(jso, "id");
-        AActivity activity = newLoadedUpdateActivity(oid, dateFromJson(jso, "created_at"));
+        val method = "activityFromJson2"
+        val oid = JsonUtils.optString(jso, "id")
+        val activity = newLoadedUpdateActivity(oid, dateFromJson(jso, "created_at"))
         try {
-            JSONObject actor;
+            val actor: JSONObject?
             if (jso.has("account")) {
-                actor = jso.getJSONObject("account");
-                activity.setActor(actorFromJson(actor));
+                actor = jso.getJSONObject("account")
+                activity.setActor(actorFromJson(actor))
             }
-
-            Note note =  activity.getNote();
-            note.setSummary(JsonUtils.optString(jso, SUMMARY_PROPERTY));
-            note.setSensitive(jso.optBoolean(SENSITIVE_PROPERTY));
-            note.setContentPosted(JsonUtils.optString(jso, CONTENT_PROPERTY));
-            note.url = JsonUtils.optString(jso, "url");
-            note.setLikesCount(jso.optLong("favourites_count"));
-            note.setReblogsCount(jso.optLong("reblogs_count"));
-            note.setRepliesCount(jso.optLong("replies_count"));
-            note.audience().setVisibility(parseVisibility(jso));
+            val note = activity.note
+            note.summary = JsonUtils.optString(jso, SUMMARY_PROPERTY)
+            note.isSensitive = jso.optBoolean(SENSITIVE_PROPERTY)
+            note.setContentPosted(JsonUtils.optString(jso, CONTENT_PROPERTY))
+            note.url = JsonUtils.optString(jso, "url")
+            note.likesCount = jso.optLong("favourites_count")
+            note.reblogsCount = jso.optLong("reblogs_count")
+            note.repliesCount = jso.optLong("replies_count")
+            note.audience().visibility = parseVisibility(jso)
             if (jso.has("recipient")) {
-                JSONObject recipient = jso.getJSONObject("recipient");
-                note.audience().add(actorFromJson(recipient));
+                val recipient = jso.getJSONObject("recipient")
+                note.audience().add(actorFromJson(recipient))
             }
-            ObjectOrId.of(jso, "mentions")
-                    .mapAll(this::actorFromJson, oid1 -> Actor.EMPTY)
-                    .forEach(o -> note.audience().add(o));
-
+            ObjectOrId.Companion.of(jso, "mentions")
+                    .mapAll<Actor?>(CheckedFunction { jso: JSONObject? -> actorFromJson(jso) }, CheckedFunction<String?, Actor?> { oid1: String? -> Actor.Companion.EMPTY })
+                    .forEach(Consumer { o: Actor? -> note.audience().add(o) })
             if (!jso.isNull("application")) {
-                JSONObject application = jso.getJSONObject("application");
-                note.via = JsonUtils.optString(application, "name");
+                val application = jso.getJSONObject("application")
+                note.via = JsonUtils.optString(application, "name")
             }
             if (!jso.isNull("favourited")) {
-                note.addFavoriteBy(data.getAccountActor(),
-                        TriState.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favourited"))));
+                note.addFavoriteBy(data.accountActor,
+                        TriState.Companion.fromBoolean(SharedPreferencesUtil.isTrue(jso.getString("favourited"))))
             }
 
             // If the Msg is a Reply to other note
-            String inReplyToActorOid = "";
+            var inReplyToActorOid: String? = ""
             if (jso.has("in_reply_to_account_id")) {
-                inReplyToActorOid = jso.getString("in_reply_to_account_id");
+                inReplyToActorOid = jso.getString("in_reply_to_account_id")
             }
             if (SharedPreferencesUtil.isEmpty(inReplyToActorOid)) {
-                inReplyToActorOid = "";
+                inReplyToActorOid = ""
             }
             if (!SharedPreferencesUtil.isEmpty(inReplyToActorOid)) {
-                String inReplyToNoteOid = "";
+                var inReplyToNoteOid: String? = ""
                 if (jso.has("in_reply_to_id")) {
-                    inReplyToNoteOid = jso.getString("in_reply_to_id");
+                    inReplyToNoteOid = jso.getString("in_reply_to_id")
                 }
                 if (!SharedPreferencesUtil.isEmpty(inReplyToNoteOid)) {
                     // Construct Related note from available info
-                    AActivity inReplyTo = AActivity.newPartialNote(data.getAccountActor(),
-                            Actor.fromOid(data.getOrigin(), inReplyToActorOid), inReplyToNoteOid);
-                    note.setInReplyTo(inReplyTo);
+                    val inReplyTo: AActivity = newPartialNote(data.accountActor,
+                            Actor.Companion.fromOid(data.origin, inReplyToActorOid), inReplyToNoteOid)
+                    note.setInReplyTo(inReplyTo)
                 }
             }
-            ObjectOrId.of(jso, ATTACHMENTS_FIELD_NAME).mapObjects(jsonToAttachments(method))
-                    .forEach(attachments -> attachments.forEach(activity::addAttachment));
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Parsing note", e, jso);
-        } catch (Exception e) {
-            MyLog.w(this, method, e);
-            return AActivity.EMPTY;
+            ObjectOrId.Companion.of(jso, ATTACHMENTS_FIELD_NAME).mapObjects<MutableList<Attachment?>?>(jsonToAttachments(method))
+                    .forEach(Consumer { attachments: MutableList<Attachment?>? -> attachments.forEach(Consumer { attachment: Attachment? -> activity.addAttachment(attachment) }) })
+        } catch (e: JSONException) {
+            throw ConnectionException.Companion.loggedJsonException(this, "Parsing note", e, jso)
+        } catch (e: Exception) {
+            MyLog.w(this, method, e)
+            return AActivity.Companion.EMPTY
         }
-        return activity;
+        return activity
     }
 
-    private Visibility parseVisibility(JSONObject jso) {
-        switch (JsonUtils.optString(jso, VISIBILITY_PROPERTY)) {
-            case VISIBILITY_PUBLIC:
-            case VISIBILITY_UNLISTED:
-                return Visibility.PUBLIC_AND_TO_FOLLOWERS;
-            case VISIBILITY_PRIVATE:
-                return Visibility.TO_FOLLOWERS;
-            case VISIBILITY_DIRECT:
-                return Visibility.PRIVATE;
-            default:
-                return Visibility.UNKNOWN;
+    private fun parseVisibility(jso: JSONObject?): Visibility? {
+        return when (JsonUtils.optString(jso, VISIBILITY_PROPERTY)) {
+            VISIBILITY_PUBLIC, VISIBILITY_UNLISTED -> Visibility.PUBLIC_AND_TO_FOLLOWERS
+            VISIBILITY_PRIVATE -> Visibility.TO_FOLLOWERS
+            VISIBILITY_DIRECT -> Visibility.PRIVATE
+            else -> Visibility.UNKNOWN
         }
     }
 
-    private CheckedFunction<JSONObject, List<Attachment>> jsonToAttachments(String method) {
-        return jsoAttachment -> {
-            String type = StringUtil.notEmpty(JsonUtils.optString(jsoAttachment, "type"), "unknown");
-            if ("unknown".equals(type)) {
+    private fun jsonToAttachments(method: String?): CheckedFunction<JSONObject?, MutableList<Attachment?>?>? {
+        return label@ CheckedFunction { jsoAttachment: JSONObject? ->
+            var type = StringUtil.notEmpty(JsonUtils.optString(jsoAttachment, "type"), "unknown")
+            if ("unknown" == type) {
                 // When the type is "unknown", it is likely only remote_url is available and local url is missing
-                Uri remoteUri = UriUtils.fromJson(jsoAttachment, "remote_url");
-                Attachment attachment = Attachment.fromUri(remoteUri);
-                if (attachment.isValid()) {
-                    return Collections.singletonList(attachment);
+                val remoteUri = UriUtils.fromJson(jsoAttachment, "remote_url")
+                val attachment: Attachment = Attachment.Companion.fromUri(remoteUri)
+                if (attachment.isValid) {
+                    return@label listOf(attachment)
                 }
-                type = "";
+                type = ""
             }
-
-            List<Attachment> attachments = new ArrayList<>();
-            Uri uri = UriUtils.fromJson(jsoAttachment, "url");
-            Attachment attachment = Attachment.fromUriAndMimeType(uri, type);
-            if (attachment.isValid()) {
-                attachments.add(attachment);
-                Attachment preview =
-                        Attachment.fromUriAndMimeType(
-                                UriUtils.fromJson(jsoAttachment,"preview_url"),
-                                MyContentType.IMAGE.generalMimeType)
-                                .setPreviewOf(attachment);
-                attachments.add(preview);
+            val attachments: MutableList<Attachment?> = ArrayList()
+            val uri = UriUtils.fromJson(jsoAttachment, "url")
+            val attachment: Attachment = Attachment.Companion.fromUriAndMimeType(uri, type)
+            if (attachment.isValid) {
+                attachments.add(attachment)
+                val preview: Attachment = Attachment.Companion.fromUriAndMimeType(
+                        UriUtils.fromJson(jsoAttachment, "preview_url"),
+                        MyContentType.IMAGE.generalMimeType)
+                        .setPreviewOf(attachment)
+                attachments.add(preview)
             } else {
-                MyLog.d(this, method + "; invalid attachment " + jsoAttachment);
+                MyLog.d(this, "$method; invalid attachment $jsoAttachment")
             }
-            return attachments;
-        };
+            attachments
+        }
     }
 
-    @Override
-    AActivity rebloggedNoteFromJson(@NonNull JSONObject jso) throws ConnectionException {
-        return  activityFromJson2(jso.optJSONObject("reblog"));
+    @Throws(ConnectionException::class)
+    public override fun rebloggedNoteFromJson(jso: JSONObject): AActivity? {
+        return activityFromJson2(jso.optJSONObject("reblog"))
     }
 
-    @Override
-    public long parseDate(String stringDate) {
-        return parseIso8601Date(stringDate);
+    override fun parseDate(stringDate: String?): Long {
+        return parseIso8601Date(stringDate)
     }
 
-    @Override
-    public Try<Actor> getActor2(Actor actorIn) {
-        ApiRoutineEnum apiRoutine = ApiRoutineEnum.GET_ACTOR;
+    override fun getActor2(actorIn: Actor?): Try<Actor?>? {
+        val apiRoutine = ApiRoutineEnum.GET_ACTOR
         return getApiPathWithActorId(apiRoutine,
-                UriUtils.isRealOid(actorIn.oid) ? actorIn.oid : actorIn.getUsername())
-                .map(uri -> HttpRequest.of(apiRoutine, uri))
-                .flatMap(this::execute)
-                .flatMap(HttpReadResult::getJsonObject)
-                .map(this::actorFromJson);
+                if (UriUtils.isRealOid(actorIn.oid)) actorIn.oid else actorIn.getUsername())
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })
+                .flatMap { request: HttpRequest? -> execute(request) }
+                .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+                .map { jso: JSONObject? -> actorFromJson(jso) }
     }
 
-    @Override
-    public Try<AActivity> follow(String actorOid, Boolean follow) {
-        ApiRoutineEnum apiRoutine = follow ? ApiRoutineEnum.FOLLOW : ApiRoutineEnum.UNDO_FOLLOW;
-        Try<JSONObject> tryRelationship = getApiPathWithActorId(apiRoutine, actorOid)
-            .map(uri -> HttpRequest.of(apiRoutine, uri).asPost())
-            .flatMap(this::execute)
-            .flatMap(HttpReadResult::getJsonObject);
-
-        return tryRelationship.map(relationship -> {
+    override fun follow(actorOid: String?, follow: Boolean?): Try<AActivity?>? {
+        val apiRoutine = if (follow) ApiRoutineEnum.FOLLOW else ApiRoutineEnum.UNDO_FOLLOW
+        val tryRelationship = getApiPathWithActorId(apiRoutine, actorOid)
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri).asPost() })
+                .flatMap { request: HttpRequest? -> execute(request) }
+                .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+        return tryRelationship.map { relationship: JSONObject? ->
             if (relationship == null || relationship.isNull("following")) {
-                return AActivity.EMPTY;
+                return@map AActivity.Companion.EMPTY
             }
-            TriState following = TriState.fromBoolean(relationship.optBoolean("following"));
-            return data.getAccountActor().act(
-                    data.getAccountActor(),
-                    following.toBoolean(!follow) == follow
-                            ? (follow
-                            ? ActivityType.FOLLOW
-                            : ActivityType.UNDO_FOLLOW)
-                            : ActivityType.UPDATE,
-                    Actor.fromOid(data.getOrigin(), actorOid)
-            );
-        });
+            val following: TriState = TriState.Companion.fromBoolean(relationship.optBoolean("following"))
+            data.accountActor.act(
+                    data.accountActor,
+                    if (following.toBoolean(!follow) == follow) if (follow) ActivityType.FOLLOW else ActivityType.UNDO_FOLLOW else ActivityType.UPDATE,
+                    Actor.Companion.fromOid(data.origin, actorOid)
+            )
+        }
     }
 
-    @Override
-    public Try<Boolean> undoAnnounce(String noteOid) {
+    override fun undoAnnounce(noteOid: String?): Try<Boolean?>? {
         return postNoteAction(ApiRoutineEnum.UNDO_ANNOUNCE, noteOid)
-            .filter(Objects::nonNull)
-            .map(any -> true);
+                .filter { obj: JSONObject? -> Objects.nonNull(obj) }
+                .map { any: JSONObject? -> true }
     }
 
-    @Override
-    Try<List<Actor>> getActors(Actor actor, ApiRoutineEnum apiRoutine) {
-        int limit = 400;
+    public override fun getActors(actor: Actor?, apiRoutine: ApiRoutineEnum?): Try<MutableList<Actor?>?>? {
+        val limit = 400
         return getApiPathWithActorId(apiRoutine, actor.oid)
-            .map(Uri::buildUpon)
-            .map(b -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)))
-            .map(Uri.Builder::build)
-            .map(uri -> HttpRequest.of(apiRoutine, uri))
-            .flatMap(this::execute)
-            .flatMap(result -> result.getJsonArray()
-                .flatMap(jsonArray -> jArrToActors(jsonArray, apiRoutine, result.request.uri)));
+                .map { obj: Uri? -> obj.buildUpon() }
+                .map { b: Uri.Builder? -> b.appendQueryParameter("limit", strFixedDownloadLimit(limit, apiRoutine)) }
+                .map(CheckedFunction<Uri.Builder?, Uri?> { Uri.Builder.build() })
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })
+                .flatMap { request: HttpRequest? -> execute(request) }
+                .flatMap { result: HttpReadResult? ->
+                    result.getJsonArray()
+                            .flatMap { jsonArray: JSONArray? -> jArrToActors(jsonArray, apiRoutine, result.request.uri) }
+                }
     }
 
-    @Override
-    public Try<OriginConfig> getConfig() {
-        ApiRoutineEnum apiRoutine = ApiRoutineEnum.GET_CONFIG;
+    override fun getConfig(): Try<OriginConfig?>? {
+        val apiRoutine = ApiRoutineEnum.GET_CONFIG
         return getApiPath(apiRoutine)
-        .map(uri -> HttpRequest.of(apiRoutine, uri))
-        .flatMap(this::execute)
-        .flatMap(HttpReadResult::getJsonObject)
-        .map(result -> {
-            // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/spec/validators/status_length_validator_spec.rb
-            int textLimit = result == null || result.optInt(TEXT_LIMIT_KEY) < 1
-                    ? OriginConfig.MASTODON_TEXT_LIMIT_DEFAULT
-                    : result.optInt(TEXT_LIMIT_KEY);
-            // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/app/models/media_attachment.rb
-            return OriginConfig.fromTextLimit(textLimit, 10 * BYTES_IN_MB);
-        });
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })
+                .flatMap { request: HttpRequest? -> execute(request) }
+                .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+                .map(CheckedFunction { result: JSONObject? ->
+                    // Hardcoded in https://github.com/tootsuite/mastodon/blob/master/spec/validators/status_length_validator_spec.rb
+                    val textLimit = if (result == null || result.optInt(TEXT_LIMIT_KEY) < 1) OriginConfig.Companion.MASTODON_TEXT_LIMIT_DEFAULT else result.optInt(TEXT_LIMIT_KEY)
+                    OriginConfig.Companion.fromTextLimit(textLimit, (10 * MyPreferences.BYTES_IN_MB).toLong())
+                })
+    }
+
+    companion object {
+        private val ATTACHMENTS_FIELD_NAME: String? = "media_attachments"
+        private val VISIBILITY_PROPERTY: String? = "visibility"
+        private val VISIBILITY_PUBLIC: String? = "public"
+        private val VISIBILITY_UNLISTED: String? = "unlisted"
+        private val VISIBILITY_PRIVATE: String? = "private"
+        private val VISIBILITY_DIRECT: String? = "direct"
+        private val SENSITIVE_PROPERTY: String? = "sensitive"
+        private val SUMMARY_PROPERTY: String? = "spoiler_text"
+        private val CONTENT_PROPERTY_UPDATE: String? = "status"
+        private val CONTENT_PROPERTY: String? = "content"
+
+        /** Only Pleroma has this, see https://github.com/tootsuite/mastodon/issues/4915  */
+        private val TEXT_LIMIT_KEY: String? = "max_toot_chars"
+        fun partialPath(routine: ApiRoutineEnum?): String? {
+            return when (routine) {
+                ApiRoutineEnum.GET_CONFIG -> "v1/instance" // https://docs.joinmastodon.org/api/rest/instances/
+                ApiRoutineEnum.HOME_TIMELINE -> "v1/timelines/home"
+                ApiRoutineEnum.NOTIFICATIONS_TIMELINE -> "v1/notifications"
+                ApiRoutineEnum.LIKED_TIMELINE -> "v1/favourites"
+                ApiRoutineEnum.PUBLIC_TIMELINE -> "v1/timelines/public"
+                ApiRoutineEnum.TAG_TIMELINE -> "v1/timelines/tag/%tag%"
+                ApiRoutineEnum.ACTOR_TIMELINE -> "v1/accounts/%actorId%/statuses"
+                ApiRoutineEnum.PRIVATE_NOTES -> "v1/conversations"
+                ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS -> "v1/accounts/verify_credentials"
+                ApiRoutineEnum.UPDATE_NOTE, ApiRoutineEnum.UPDATE_PRIVATE_NOTE -> "v1/statuses"
+                ApiRoutineEnum.UPLOAD_MEDIA -> "v1/media"
+                ApiRoutineEnum.GET_NOTE -> "v1/statuses/%noteId%"
+                ApiRoutineEnum.SEARCH_NOTES -> "v1/search" /* actually, this is a complex search "for content" */
+                ApiRoutineEnum.SEARCH_ACTORS -> "v1/accounts/search"
+                ApiRoutineEnum.GET_CONVERSATION -> "v1/statuses/%noteId%/context"
+                ApiRoutineEnum.LIKE -> "v1/statuses/%noteId%/favourite"
+                ApiRoutineEnum.UNDO_LIKE -> "v1/statuses/%noteId%/unfavourite"
+                ApiRoutineEnum.FOLLOW -> "v1/accounts/%actorId%/follow"
+                ApiRoutineEnum.UNDO_FOLLOW -> "v1/accounts/%actorId%/unfollow"
+                ApiRoutineEnum.GET_FOLLOWERS -> "v1/accounts/%actorId%/followers"
+                ApiRoutineEnum.GET_FRIENDS -> "v1/accounts/%actorId%/following"
+                ApiRoutineEnum.GET_ACTOR -> "v1/accounts/%actorId%"
+                ApiRoutineEnum.ANNOUNCE -> "v1/statuses/%noteId%/reblog"
+                ApiRoutineEnum.UNDO_ANNOUNCE -> "v1/statuses/%noteId%/unreblog"
+                else -> ""
+            }
+        }
     }
 }

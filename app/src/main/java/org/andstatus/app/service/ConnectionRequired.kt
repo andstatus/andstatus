@@ -13,43 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
+import org.andstatus.app.context.MyPreferences
 
-import org.andstatus.app.context.MyPreferences;
-
-public enum ConnectionRequired {
+enum class ConnectionRequired {
     ANY,
-    /** This may be used for testing, no real command required this yet... */
-    OFFLINE,
-    SYNC,
-    DOWNLOAD_ATTACHMENT;
 
-    public boolean isConnectionStateOk(ConnectionState connectionState) {
-        switch (this) {
-            case ANY:
-                return true;
-            default:
-                switch (connectionState) {
-                    case ONLINE:
-                        switch (this) {
-                            case SYNC:
-                                return !MyPreferences.isSyncOverWiFiOnly();
-                            case DOWNLOAD_ATTACHMENT:
-                                return !MyPreferences.isSyncOverWiFiOnly()
-                                        && !MyPreferences.isDownloadAttachmentsOverWiFiOnly();
-                            case OFFLINE:
-                                return false;
-                            default:
-                                return true;
-                        }
-                    case WIFI:
-                        return (this != ConnectionRequired.OFFLINE);
-                    case OFFLINE:
-                        return (this == ConnectionRequired.OFFLINE);
-                    default:
-                        return true;
+    /** This may be used for testing, no real command required this yet...  */
+    OFFLINE, SYNC, DOWNLOAD_ATTACHMENT;
+
+    fun isConnectionStateOk(connectionState: ConnectionState?): Boolean {
+        return when (this) {
+            ANY -> true
+            else -> when (connectionState) {
+                ConnectionState.ONLINE -> when (this) {
+                    SYNC -> !MyPreferences.isSyncOverWiFiOnly()
+                    DOWNLOAD_ATTACHMENT -> !MyPreferences.isSyncOverWiFiOnly()
+                            && !MyPreferences.isDownloadAttachmentsOverWiFiOnly()
+                    OFFLINE -> false
+                    else -> true
                 }
+                ConnectionState.WIFI -> this != OFFLINE
+                ConnectionState.OFFLINE -> this == OFFLINE
+                else -> true
+            }
         }
     }
 }

@@ -13,58 +13,52 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-import android.content.Context;
-
-import java.io.StringWriter;
-
-import javax.xml.XMLConstants;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
+import android.content.Context
+import java.io.StringWriter
+import javax.xml.XMLConstants
+import javax.xml.transform.Source
+import javax.xml.transform.TransformerException
+import javax.xml.transform.TransformerFactory
+import javax.xml.transform.TransformerFactoryConfigurationError
+import javax.xml.transform.stream.StreamResult
+import javax.xml.transform.stream.StreamSource
 
 /**
- * XSLT utils 
+ * XSLT utils
  * @author yvolk@yurivolkov.com
  */
-public class Xslt {
-    private static final String TAG = Xslt.class.getSimpleName();
+object Xslt {
+    private val TAG: String? = Xslt::class.java.simpleName
 
-    private Xslt() {
-    }
-    
     /**
      * Transform XML input files using supplied XSL stylesheet and return as String
-     * @param resXml XML file to transform. This file is localized! It should be put into "raw-<language>" folder 
+     * @param resXml XML file to transform. This file is localized! It should be put into "raw-<language>" folder
      * @param resXsl XSL stylesheet. In the "raw" folder. May be single for all languages...
      * @return empty in case of error
-     */
-    public static String toHtmlString(Context context, int resXml, int resXsl) {
-        String output = "";
-        
+    </language> */
+    fun toHtmlString(context: Context?, resXml: Int, resXsl: Int): String? {
+        var output = ""
+
         // Based on http://stackoverflow.com/questions/6215001/convert-xml-file-using-xslt-in-android
         try {
 
             // This file is localized! 
-            Source xmlSource = new StreamSource(context.getResources().openRawResource(resXml));
-            Source xsltSource = new StreamSource(context.getResources().openRawResource(resXsl));
-
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            Transformer transformer = transformerFactory.newTransformer(xsltSource);
-            StringWriter stringWriter = new StringWriter();
-            StreamResult result = new StreamResult(stringWriter);
-            transformer.transform(xmlSource, result);
-            output = result.getWriter().toString();
-        } catch (TransformerFactoryConfigurationError | TransformerException e) {
-            MyLog.w(TAG, "Failed to transform XML to HTML", e);
+            val xmlSource: Source = StreamSource(context.getResources().openRawResource(resXml))
+            val xsltSource: Source = StreamSource(context.getResources().openRawResource(resXsl))
+            val transformerFactory = TransformerFactory.newInstance()
+            transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true)
+            val transformer = transformerFactory.newTransformer(xsltSource)
+            val stringWriter = StringWriter()
+            val result = StreamResult(stringWriter)
+            transformer.transform(xmlSource, result)
+            output = result.writer.toString()
+        } catch (e: TransformerFactoryConfigurationError) {
+            MyLog.w(TAG, "Failed to transform XML to HTML", e)
+        } catch (e: TransformerException) {
+            MyLog.w(TAG, "Failed to transform XML to HTML", e)
         }
-        return output;
+        return output
     }
 }

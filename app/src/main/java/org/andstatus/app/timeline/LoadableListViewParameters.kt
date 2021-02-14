@@ -13,42 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.util.TriState
+import java.util.*
 
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.util.TriState;
-
-import java.util.Optional;
-
-/** Parameters that don't require reloading of the list */
-public class LoadableListViewParameters {
-    public final static LoadableListViewParameters EMPTY =
-            new LoadableListViewParameters(TriState.UNKNOWN, 0, Optional.empty());
-    public final TriState collapseDuplicates;
-    public final long collapsedItemId;
-    public final Optional<Origin> preferredOrigin;
-
-    public static LoadableListViewParameters collapseDuplicates(boolean collapseDuplicates) {
-        return collapseOneDuplicate(collapseDuplicates, 0);
+/** Parameters that don't require reloading of the list  */
+class LoadableListViewParameters(val collapseDuplicates: TriState?, val collapsedItemId: Long, val preferredOrigin: Optional<Origin?>?) {
+    fun isViewChanging(): Boolean {
+        return collapseDuplicates.known || preferredOrigin.isPresent()
     }
 
-    public static LoadableListViewParameters collapseOneDuplicate(boolean collapseDuplicates, long collapsedItemId) {
-        return new LoadableListViewParameters(TriState.fromBoolean(collapseDuplicates), collapsedItemId, Optional.empty());
-    }
+    companion object {
+        val EMPTY: LoadableListViewParameters? = LoadableListViewParameters(TriState.UNKNOWN, 0, Optional.empty())
+        fun collapseDuplicates(collapseDuplicates: Boolean): LoadableListViewParameters? {
+            return collapseOneDuplicate(collapseDuplicates, 0)
+        }
 
-    public static LoadableListViewParameters fromOrigin(Origin preferredOrigin) {
-        return new LoadableListViewParameters(TriState.UNKNOWN, 0, Optional.ofNullable(preferredOrigin));
-    }
+        fun collapseOneDuplicate(collapseDuplicates: Boolean, collapsedItemId: Long): LoadableListViewParameters? {
+            return LoadableListViewParameters(TriState.Companion.fromBoolean(collapseDuplicates), collapsedItemId, Optional.empty())
+        }
 
-    public LoadableListViewParameters(TriState collapseDuplicates, long collapsedItemId, Optional<Origin> preferredOrigin) {
-        this.collapseDuplicates = collapseDuplicates;
-        this.collapsedItemId = collapsedItemId;
-        this.preferredOrigin = preferredOrigin;
+        fun fromOrigin(preferredOrigin: Origin?): LoadableListViewParameters? {
+            return LoadableListViewParameters(TriState.UNKNOWN, 0, Optional.ofNullable(preferredOrigin))
+        }
     }
-
-    public boolean isViewChanging() {
-        return collapseDuplicates.known || preferredOrigin.isPresent();
-    }
-
 }

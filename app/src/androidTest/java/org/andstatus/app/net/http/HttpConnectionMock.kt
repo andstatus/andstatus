@@ -13,264 +13,273 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.http
 
-package org.andstatus.app.net.http;
+import android.text.TextUtils
+import androidx.annotation.RawRes
+import io.vavr.control.CheckedFunction
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.util.InstanceId
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.RawResourceUtils
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.UrlUtils
+import org.json.JSONObject
+import org.junit.Assert
+import java.io.IOException
+import java.io.InputStream
+import java.util.*
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.function.Consumer
+import java.util.stream.Collectors
 
-import android.text.TextUtils;
+class HttpConnectionMock : HttpConnection() {
+    private val results: MutableList<HttpReadResult?>? = CopyOnWriteArrayList()
+    private val responses: MutableList<String?>? = CopyOnWriteArrayList()
 
-import androidx.annotation.RawRes;
+    @Volatile
+    var responsesCounter = 0
+    private var sameResponse = false
 
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.RawResourceUtils;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.UrlUtils;
-import org.json.JSONObject;
+    @Volatile
+    private var responseStreamSupplier: CheckedFunction<Void?, InputStream?>? = null
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
+    @Volatile
+    private var runtimeException: RuntimeException? = null
 
-import io.vavr.control.CheckedFunction;
+    @Volatile
+    private var exception: ConnectionException? = null
 
-import static org.junit.Assert.fail;
+    @Volatile
+    private var password: String? = "password"
 
-public class HttpConnectionMock extends HttpConnection {
+    @Volatile
+    private var userToken: String? = "token"
 
-    private final List<HttpReadResult> results = new CopyOnWriteArrayList<>();
-    private final List<String> responses = new CopyOnWriteArrayList<>();
-    public volatile int responsesCounter = 0;
-    private boolean sameResponse = false;
-    private volatile CheckedFunction<Void, InputStream> responseStreamSupplier = null;
+    @Volatile
+    private var userSecret: String? = "secret"
 
-    private volatile RuntimeException runtimeException = null;
-    private volatile ConnectionException exception = null;
-
-    private volatile String password = "password";
-    private volatile String userToken = "token";
-    private volatile String userSecret = "secret";
-    
-    private volatile long networkDelayMs = 1000;
-    private final long mInstanceId = InstanceId.next();
-
-    public HttpConnectionMock() {
-        MyLog.v(this, "Created, instanceId:" + mInstanceId);
+    @Volatile
+    private val networkDelayMs: Long = 1000
+    private val mInstanceId = InstanceId.next()
+    fun setSameResponse(sameResponse: Boolean) {
+        this.sameResponse = sameResponse
     }
 
-    public void setSameResponse(boolean sameResponse) {
-        this.sameResponse = sameResponse;
+    override fun errorOnInvalidUrls(): Boolean {
+        return false
     }
 
-    @Override
-    public boolean errorOnInvalidUrls() {
-        return false;
+    @Throws(IOException::class)
+    fun addResponse(@RawRes responseResourceId: Int) {
+        addResponse(RawResourceUtils.getString(responseResourceId))
     }
 
-    public void addResponse(@RawRes int responseResourceId) throws IOException {
-        addResponse(RawResourceUtils.getString(responseResourceId));
+    fun addResponse(responseString: String?) {
+        responses.add(responseString)
     }
 
-    public void addResponse(String responseString) {
-        responses.add(responseString);
+    fun setResponseStreamSupplier(responseStreamSupplier: CheckedFunction<Void?, InputStream?>?) {
+        this.responseStreamSupplier = responseStreamSupplier
     }
 
-    public void setResponseStreamSupplier(CheckedFunction<Void, InputStream> responseStreamSupplier) {
-        this.responseStreamSupplier = responseStreamSupplier;
+    fun setRuntimeException(exception: RuntimeException?) {
+        runtimeException = exception
     }
 
-    public void setRuntimeException(RuntimeException exception) {
-        runtimeException = exception;
+    fun setException(exception: ConnectionException?) {
+        this.exception = exception
     }
 
-    public void setException(ConnectionException exception) {
-        this.exception = exception;
-    }
-
-    @Override
-    public String pathToUrlString(String path) {
+    override fun pathToUrlString(path: String?): String? {
         if (data.originUrl == null) {
-            data.originUrl = UrlUtils.buildUrl("mocked.example.com", true);
+            data.originUrl = UrlUtils.buildUrl("mocked.example.com", true)
         }
-        return super.pathToUrlString(path);
+        return super.pathToUrlString(path)
     }
 
-    @Override
-    public HttpReadResult postRequest(HttpReadResult result) {
-        onRequest("postRequestWithObject", result);
-        setExceptions(result);
-        return result;
+    override fun postRequest(result: HttpReadResult?): HttpReadResult? {
+        onRequest("postRequestWithObject", result)
+        setExceptions(result)
+        return result
     }
 
-    private void setExceptions(HttpReadResult result) {
+    private fun setExceptions(result: HttpReadResult?) {
         if (runtimeException != null) {
-            result.setException(runtimeException);
+            result.setException(runtimeException)
         } else if (exception != null) {
-            result.setException(exception);
+            result.setException(exception)
         }
     }
 
-    @Override
-    public void setUserTokenWithSecret(String token, String secret) {
-        userToken = token;
-        userSecret = secret;
+    override fun setUserTokenWithSecret(token: String?, secret: String?) {
+        userToken = token
+        userSecret = secret
     }
 
-    @Override
-    public String getUserToken() {
-        return userToken;
+    override fun getUserToken(): String? {
+        return userToken
     }
 
-    @Override
-    public String getUserSecret() {
-        return userSecret;
+    override fun getUserSecret(): String? {
+        return userSecret
     }
 
-    private void onRequest(String method, HttpReadResult result) {
-        result.strResponse = getNextResponse();
+    private fun onRequest(method: String?, result: HttpReadResult?) {
+        result.strResponse = getNextResponse()
         if (responseStreamSupplier != null) {
-            result.readStream("", responseStreamSupplier);
+            result.readStream("", responseStreamSupplier)
         }
-        results.add(result);
-        MyLog.v(this, method + " num:" + results.size() + "; path:'" + result.getUrl()
-                + "', originUrl:'" + data.originUrl + "', instanceId:" + mInstanceId );
-        MyLog.v(this, Arrays.toString(Thread.currentThread().getStackTrace()));
-        DbUtils.waitMs("networkDelay", Math.toIntExact(networkDelayMs));
+        results.add(result)
+        MyLog.v(this, method + " num:" + results.size + "; path:'" + result.getUrl()
+                + "', originUrl:'" + data.originUrl + "', instanceId:" + mInstanceId)
+        MyLog.v(this, Arrays.toString(Thread.currentThread().stackTrace))
+        DbUtils.waitMs("networkDelay", Math.toIntExact(networkDelayMs))
     }
 
-    private synchronized String getNextResponse() {
-        return sameResponse
-                ? (responses.isEmpty() ? "" : responses.get(responses.size() - 1))
-                : (responsesCounter < responses.size() ? responses.get(responsesCounter++) : "");
+    @Synchronized
+    private fun getNextResponse(): String? {
+        return if (sameResponse) if (responses.isEmpty()) "" else responses.get(responses.size - 1) else if (responsesCounter < responses.size) responses.get(responsesCounter++) else ""
     }
 
-    private HttpReadResult getRequestInner(String method, HttpReadResult result) {
-        onRequest(method, result);
-        setExceptions(result);
-        return result;
+    private fun getRequestInner(method: String?, result: HttpReadResult?): HttpReadResult? {
+        onRequest(method, result)
+        setExceptions(result)
+        return result
     }
 
-    @Override
-    public void setPassword(String password) {
-        this.password = password;
+    override fun setPassword(password: String?) {
+        this.password = password
     }
 
-    @Override
-    public String getPassword() {
-        return password;
-    }
-    
-    @Override
-    public void clearAuthInformation() {
-        password = "";
-        userToken = "";
-        userSecret = "";
+    override fun getPassword(): String? {
+        return password
     }
 
-    @Override
-    public boolean getCredentialsPresent() {
-        return !StringUtil.isEmpty(password) || ( !TextUtils.isDigitsOnly(userToken) && !StringUtil.isEmpty(userSecret));
+    override fun clearAuthInformation() {
+        password = ""
+        userToken = ""
+        userSecret = ""
     }
 
-    public JSONObject getLatestPostedJSONObject() {
-        return results.get(results.size()-1).request.postParams.orElse(new JSONObject());
+    override fun getCredentialsPresent(): Boolean {
+        return !StringUtil.isEmpty(password) || !TextUtils.isDigitsOnly(userToken) && !StringUtil.isEmpty(userSecret)
     }
 
-    public List<HttpReadResult> getResults() {
-        return results;
+    fun getLatestPostedJSONObject(): JSONObject? {
+        return results.get(results.size - 1).request.postParams.orElse(JSONObject())
     }
 
-    public String substring2PostedPath(String substringToSearch) {
-        String found = "";
-        for (HttpReadResult result : getResults()) {
+    fun getResults(): MutableList<HttpReadResult?>? {
+        return results
+    }
+
+    fun substring2PostedPath(substringToSearch: String?): String? {
+        var found = ""
+        for (result in getResults()) {
             if (result.getUrl().contains(substringToSearch)) {
-                found = result.getUrl();
-                break;
+                found = result.getUrl()
+                break
             }
         }
-        return found;
-    }
-    
-    public int getRequestsCounter() {
-        return results.size();
+        return found
     }
 
-    public List<JSONObject> getPostedObjects() {
+    fun getRequestsCounter(): Int {
+        return results.size
+    }
+
+    fun getPostedObjects(): MutableList<JSONObject?>? {
         return getResults().stream()
-                .map(r -> r.request.postParams.orElse(null))
-                .collect(Collectors.toList());
+                .map { r: HttpReadResult? -> r.request.postParams.orElse(null) }
+                .collect(Collectors.toList())
     }
 
-    public int getPostedCounter() {
+    fun getPostedCounter(): Int {
         return getResults().stream().reduce(0,
-                (a, r) -> r.request.postParams.map(p -> a + 1).orElse(a),
-                (a1, a2) -> a1 + a2);
+                { a: Int?, r: HttpReadResult? -> r.request.postParams.map { p: JSONObject? -> a + 1 }.orElse(a) },
+                { a1: Int?, a2: Int? -> a1 + a2 })
     }
 
-    public void clearPostedData() {
-        results.clear();
+    fun clearPostedData() {
+        results.clear()
     }
 
-    public long getInstanceId() {
-        return mInstanceId;
+    fun getInstanceId(): Long {
+        return mInstanceId
     }
 
-    @Override
-    public HttpConnection getNewInstance() {
-        return this;
+    override fun getNewInstance(): HttpConnection? {
+        return this
     }
 
-    @Override
-    public HttpReadResult getRequest(HttpReadResult result) {
-        return getRequestInner("getRequest", result);
+    override fun getRequest(result: HttpReadResult?): HttpReadResult? {
+        return getRequestInner("getRequest", result)
     }
 
-    public HttpReadResult waitForPostContaining(String substring) {
-        for (int attempt=0; attempt < 10; attempt++) {
-            Optional<HttpReadResult> result = getResults().stream()
-                    .filter(r -> r.request.postParams.toString().contains(substring))
-                    .findFirst();
-            if (result.isPresent()) return result.get();
-            if (DbUtils.waitMs("waitForPostContaining", 2000)) break;
+    fun waitForPostContaining(substring: String?): HttpReadResult? {
+        for (attempt in 0..9) {
+            val result = getResults().stream()
+                    .filter { r: HttpReadResult? -> r.request.postParams.toString().contains(substring) }
+                    .findFirst()
+            if (result.isPresent) return result.get()
+            if (DbUtils.waitMs("waitForPostContaining", 2000)) break
         }
-        fail("The content should be sent: '" + substring + "'\n Results:" + getResults());
-        return null;
+        Assert.fail("""The content should be sent: '$substring'
+ Results:${getResults()}""")
+        return null
     }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("HttpConnectionMock [");
-        builder.append("Requests sent: " + getRequestsCounter());
-        builder.append("; Data posted " + getPostedCounter() + " times");
-        builder.append("\nSent " + responsesCounter + " responses");
-        if (results.size() > 0) {
-            builder.append("\nresults:" + results.size());
-            results.forEach(r -> builder.append("\nResult: " + r.toString()));
+    override fun toString(): String {
+        val builder = StringBuilder()
+        builder.append("HttpConnectionMock [")
+        builder.append("Requests sent: " + getRequestsCounter())
+        builder.append("; Data posted " + getPostedCounter() + " times")
+        builder.append("\nSent $responsesCounter responses")
+        if (results.size > 0) {
+            builder.append("""
+    
+    results:${results.size}
+    """.trimIndent())
+            results.forEach(Consumer { r: HttpReadResult? ->
+                builder.append("""
+    
+    Result: ${r.toString()}
+    """.trimIndent())
+            })
         }
-        if (responses.size() > 0) {
-            builder.append("\n\nresponses:" + responses.size());
-            responses.forEach(r -> builder.append("\nResponse: " + r.toString()));
+        if (responses.size > 0) {
+            builder.append("""
+    
+    
+    responses:${responses.size}
+    """.trimIndent())
+            responses.forEach(Consumer { r: String? ->
+                builder.append("""
+    
+    Response: ${r.toString()}
+    """.trimIndent())
+            })
         }
         if (exception != null) {
-            builder.append("\nexception=");
-            builder.append(exception);
+            builder.append("\nexception=")
+            builder.append(exception)
         }
-        builder.append("\npassword=");
-        builder.append(password);
-        builder.append(", userToken=");
-        builder.append(userToken);
-        builder.append(", userSecret=");
-        builder.append(userSecret);
-        builder.append(", networkDelayMs=");
-        builder.append(networkDelayMs);
-        builder.append(", mInstanceId=");
-        builder.append(mInstanceId);
-        builder.append("]");
-        return builder.toString();
+        builder.append("\npassword=")
+        builder.append(password)
+        builder.append(", userToken=")
+        builder.append(userToken)
+        builder.append(", userSecret=")
+        builder.append(userSecret)
+        builder.append(", networkDelayMs=")
+        builder.append(networkDelayMs)
+        builder.append(", mInstanceId=")
+        builder.append(mInstanceId)
+        builder.append("]")
+        return builder.toString()
+    }
+
+    init {
+        MyLog.v(this, "Created, instanceId:$mInstanceId")
     }
 }

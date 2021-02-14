@@ -13,1054 +13,1008 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline.meta
 
-package org.andstatus.app.timeline.meta;
-
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
-import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.actor.ActorsScreenType;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.ContentValuesUtils;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.ParsedUri;
-import org.andstatus.app.data.SqlWhere;
-import org.andstatus.app.database.table.TimelineTable;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.service.CommandResult;
-import org.andstatus.app.timeline.ListScope;
-import org.andstatus.app.util.BundleUtils;
-import org.andstatus.app.util.CollectionsUtil;
-import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
-
-import java.util.Date;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
+import android.content.ContentValues
+import android.database.Cursor
+import android.net.Uri
+import android.os.Bundle
+import android.provider.BaseColumns
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.actor.ActorsScreenType
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.ContentValuesUtils
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.MatchedUri
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.data.ParsedUri
+import org.andstatus.app.data.SqlWhere
+import org.andstatus.app.database.table.TimelineTable
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.service.CommandResult
+import org.andstatus.app.timeline.ListScope
+import org.andstatus.app.util.BundleUtils
+import org.andstatus.app.util.CollectionsUtil
+import org.andstatus.app.util.IsEmpty
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TriState
+import java.util.*
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
+import java.util.function.Function
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class Timeline implements Comparable<Timeline>, IsEmpty {
-    public static final Timeline EMPTY = new Timeline();
-    private static final long MIN_RETRY_PERIOD_MS = TimeUnit.SECONDS.toMillis(30);
-    public static final String TIMELINE_CLICK_HOST = "timeline.app.andstatus.org";
-    public final MyContext myContext;
-    private volatile long id;
+class Timeline : Comparable<Timeline?>, IsEmpty {
+    val myContext: MyContext?
 
-    private final TimelineType timelineType;
-    /** "Authenticated User" used to retrieve/post to... this Timeline */
-    public final MyAccount myAccountToSync;
+    @Volatile
+    private var id: Long = 0
+    private val timelineType: TimelineType?
+
+    /** "Authenticated User" used to retrieve/post to... this Timeline  */
+    val myAccountToSync: MyAccount?
+
     /** An Actor as a parameter of this timeline.
-     * This may be the same as the Authenticated User ({@link #myAccountToSync})
+     * This may be the same as the Authenticated User ([.myAccountToSync])
      * or some other User e.g. to get a list of messages by some other person/user of the Social Network
      */
-    public final Actor actor;
+    val actor: Actor?
+
     /** The Social Network of this timeline. Some timelines don't depend on
-     * an Authenticated User ({@link #myAccountToSync}), e.g. {@link TimelineType#PUBLIC} - this
-     * timeline may be fetched by any authenticated user of this Social Network */
-    private final Origin origin;
-    /** Pre-fetched string to be used to present in UI */
-    private String actorInTimeline = "";
-    /** This may be used e.g. to search {@link TimelineType#PUBLIC} timeline */
-    @NonNull
-    private final String searchQuery;
+     * an Authenticated User ([.myAccountToSync]), e.g. [TimelineType.PUBLIC] - this
+     * timeline may be fetched by any authenticated user of this Social Network  */
+    private val origin: Origin?
+
+    /** Pre-fetched string to be used to present in UI  */
+    private var actorInTimeline: String? = ""
+
+    /** This may be used e.g. to search [TimelineType.PUBLIC] timeline  */
+    private val searchQuery: String
 
     /** The timeline combines messages from all accounts
-     * or from Social Networks, e.g. Search in all Social Networks */
-    private final boolean isCombined;
+     * or from Social Networks, e.g. Search in all Social Networks  */
+    private val isCombined: Boolean
 
-    /** If this timeline can be synced */
-    private final boolean isSyncable;
-    /** If this timeline can be synced automatically */
-    private final boolean isSyncableAutomatically;
+    /** If this timeline can be synced  */
+    private val isSyncable: Boolean
+
+    /** If this timeline can be synced automatically  */
+    private val isSyncableAutomatically: Boolean
+
     /** Is it possible to sync this timeline via usage of one or more (child, not combined...)
-     * timelines for individual accounts */
-    private final boolean isSyncableForAccounts;
+     * timelines for individual accounts  */
+    private val isSyncableForAccounts: Boolean
+
     /** Is it possible to sync this timeline via usage of one or more (child, not combined...)
-     * timelines for individual Social networks */
-    private final boolean isSyncableForOrigins;
+     * timelines for individual Social networks  */
+    private val isSyncableForOrigins: Boolean
 
-    /** If the timeline is synced automatically */
-    private volatile boolean isSyncedAutomatically = false;
+    /** If the timeline is synced automatically  */
+    @Volatile
+    private var isSyncedAutomatically = false
 
-    /** If the timeline should be shown in a Timeline selector */
-    private volatile DisplayedInSelector isDisplayedInSelector = DisplayedInSelector.NEVER;
-    /** Used for sorting timelines in a selector */
-    private volatile long selectorOrder = 0;
+    /** If the timeline should be shown in a Timeline selector  */
+    @Volatile
+    private var isDisplayedInSelector: DisplayedInSelector? = DisplayedInSelector.NEVER
 
-    /** When this timeline was last time successfully synced */
-    private final AtomicLong syncSucceededDate = new AtomicLong();
-    /** When last sync error occurred */
-    private final AtomicLong syncFailedDate = new AtomicLong();
-    /** Error message at {@link #syncFailedDate} */
-    private volatile String errorMessage = "";
+    /** Used for sorting timelines in a selector  */
+    @Volatile
+    private var selectorOrder: Long = 0
 
-    /** Number of successful sync operations: "Synced {@link #syncedTimesCount} times" */
-    private final AtomicLong syncedTimesCount = new AtomicLong();
-    /** Number of failed sync operations */
-    private final AtomicLong syncFailedTimesCount = new AtomicLong();
-    private final AtomicLong downloadedItemsCount = new AtomicLong();
-    private final AtomicLong newItemsCount = new AtomicLong();
-    private final AtomicLong countSince = new AtomicLong(System.currentTimeMillis());
+    /** When this timeline was last time successfully synced  */
+    private val syncSucceededDate: AtomicLong? = AtomicLong()
 
-    /** Accumulated numbers for statistics. They are reset by a user's request */
-    private final AtomicLong syncedTimesCountTotal = new AtomicLong();
-    private final AtomicLong syncFailedTimesCountTotal = new AtomicLong();
-    private final AtomicLong downloadedItemsCountTotal = new AtomicLong();
-    private final AtomicLong newItemsCountTotal = new AtomicLong();
+    /** When last sync error occurred  */
+    private val syncFailedDate: AtomicLong? = AtomicLong()
 
-    /** Timeline position of the youngest ever downloaded message */
-    @NonNull
-    private volatile String youngestPosition = "";
-    /** Date of the item corresponding to the {@link #youngestPosition} */
-    private volatile long youngestItemDate = 0;
+    /** Error message at [.syncFailedDate]  */
+    @Volatile
+    private var errorMessage: String? = ""
+
+    /** Number of successful sync operations: "Synced [.syncedTimesCount] times"  */
+    private val syncedTimesCount: AtomicLong? = AtomicLong()
+
+    /** Number of failed sync operations  */
+    private val syncFailedTimesCount: AtomicLong? = AtomicLong()
+    private val downloadedItemsCount: AtomicLong? = AtomicLong()
+    private val newItemsCount: AtomicLong? = AtomicLong()
+    private val countSince: AtomicLong? = AtomicLong(System.currentTimeMillis())
+
+    /** Accumulated numbers for statistics. They are reset by a user's request  */
+    private val syncedTimesCountTotal: AtomicLong? = AtomicLong()
+    private val syncFailedTimesCountTotal: AtomicLong? = AtomicLong()
+    private val downloadedItemsCountTotal: AtomicLong? = AtomicLong()
+    private val newItemsCountTotal: AtomicLong? = AtomicLong()
+
+    /** Timeline position of the youngest ever downloaded message  */
+    @Volatile
+    private var youngestPosition = ""
+
+    /** Date of the item corresponding to the [.youngestPosition]  */
+    @Volatile
+    private var youngestItemDate: Long = 0
+
     /** Last date when youngest items of this timeline were successfully synced
      * (even if there were no new item at that time).
      * It may be used to calculate when it will be time for the next automatic update
      */
-    private volatile long youngestSyncedDate = 0;
+    @Volatile
+    private var youngestSyncedDate: Long = 0
 
-    /** Timeline position of the oldest ever downloaded message */
-    @NonNull
-    private volatile String oldestPosition = "";
-    /** Date of the item corresponding to the {@link #oldestPosition} */
-    private volatile long oldestItemDate = 0;
+    /** Timeline position of the oldest ever downloaded message  */
+    @Volatile
+    private var oldestPosition = ""
+
+    /** Date of the item corresponding to the [.oldestPosition]  */
+    @Volatile
+    private var oldestItemDate: Long = 0
+
     /** Last date when oldest items of this timeline were successfully synced
      * (even if there were no new item at that time).
      * It may be used to calculate when it will be time for the next automatic update
      */
-    private volatile long oldestSyncedDate = 0;
+    @Volatile
+    private var oldestSyncedDate: Long = 0
 
-    /** Position of the timeline, which a User viewed  */
-    private volatile long visibleItemId = 0;
-    private volatile int visibleY = 0;
-    private volatile long visibleOldestDate = 0;
+    /** Position of the timeline, which a User viewed   */
+    @Volatile
+    private var visibleItemId: Long = 0
 
-    private volatile boolean changed = true;
-    private volatile long lastChangedDate = 0;
+    @Volatile
+    private var visibleY = 0
 
-    public static Timeline fromCursor(MyContext myContext, Cursor cursor) {
-        Timeline timeline = new Timeline(
-                myContext,
-                DbUtils.getLong(cursor, TimelineTable._ID),
-                TimelineType.load(DbUtils.getString(cursor, TimelineTable.TIMELINE_TYPE)),
-                Actor.load(myContext, DbUtils.getLong(cursor, TimelineTable.ACTOR_ID)),
-                myContext.origins().fromId(DbUtils.getLong(cursor, TimelineTable.ORIGIN_ID)),
-                DbUtils.getString(cursor, TimelineTable.SEARCH_QUERY),
-                DbUtils.getLong(cursor, TimelineTable.SELECTOR_ORDER));
+    @Volatile
+    private var visibleOldestDate: Long = 0
 
-        timeline.changed = false;
-        timeline.actorInTimeline = DbUtils.getString(cursor, TimelineTable.ACTOR_IN_TIMELINE);
-        timeline.setSyncedAutomatically(DbUtils.getBoolean(cursor, TimelineTable.IS_SYNCED_AUTOMATICALLY));
-        timeline.isDisplayedInSelector = DisplayedInSelector.load(DbUtils.getString(cursor, TimelineTable.DISPLAYED_IN_SELECTOR));
+    @Volatile
+    private var changed = true
 
-        timeline.syncSucceededDate.set(DbUtils.getLong(cursor, TimelineTable.SYNC_SUCCEEDED_DATE));
-        timeline.syncFailedDate.set(DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_DATE));
-        timeline.errorMessage = DbUtils.getString(cursor, TimelineTable.ERROR_MESSAGE);
+    @Volatile
+    private var lastChangedDate: Long = 0
 
-        timeline.syncedTimesCount.set(DbUtils.getLong(cursor, TimelineTable.SYNCED_TIMES_COUNT));
-        timeline.syncFailedTimesCount.set(DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_TIMES_COUNT));
-        timeline.downloadedItemsCount.set(DbUtils.getLong(cursor, TimelineTable.DOWNLOADED_ITEMS_COUNT));
-        timeline.newItemsCount.set(DbUtils.getLong(cursor, TimelineTable.NEW_ITEMS_COUNT));
-        timeline.countSince.set(DbUtils.getLong(cursor, TimelineTable.COUNT_SINCE));
-        timeline.syncedTimesCountTotal.set(DbUtils.getLong(cursor, TimelineTable.SYNCED_TIMES_COUNT_TOTAL));
-        timeline.syncFailedTimesCountTotal.set(DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_TIMES_COUNT_TOTAL));
-        timeline.downloadedItemsCountTotal.set(DbUtils.getLong(cursor, TimelineTable.DOWNLOADED_ITEMS_COUNT_TOTAL));
-        timeline.newItemsCountTotal.set(DbUtils.getLong(cursor, TimelineTable.NEW_ITEMS_COUNT_TOTAL));
-
-        timeline.youngestPosition = DbUtils.getString(cursor, TimelineTable.YOUNGEST_POSITION);
-        timeline.youngestItemDate = DbUtils.getLong(cursor, TimelineTable.YOUNGEST_ITEM_DATE);
-        timeline.youngestSyncedDate = DbUtils.getLong(cursor, TimelineTable.YOUNGEST_SYNCED_DATE);
-        timeline.oldestPosition = DbUtils.getString(cursor, TimelineTable.OLDEST_POSITION);
-        timeline.oldestItemDate = DbUtils.getLong(cursor, TimelineTable.OLDEST_ITEM_DATE);
-        timeline.oldestSyncedDate = DbUtils.getLong(cursor, TimelineTable.OLDEST_SYNCED_DATE);
-
-        timeline.visibleItemId = DbUtils.getLong(cursor, TimelineTable.VISIBLE_ITEM_ID);
-        timeline.visibleY = DbUtils.getInt(cursor, TimelineTable.VISIBLE_Y);
-        timeline.visibleOldestDate = DbUtils.getLong(cursor, TimelineTable.VISIBLE_OLDEST_DATE);
-
-        timeline.lastChangedDate = DbUtils.getLong(cursor, TimelineTable.LAST_CHANGED_DATE);
-
-        return timeline;
+    private constructor() {
+        myContext = MyContext.Companion.EMPTY
+        timelineType = TimelineType.UNKNOWN
+        myAccountToSync = MyAccount.Companion.EMPTY
+        actor = Actor.Companion.EMPTY
+        origin = Origin.Companion.EMPTY
+        searchQuery = ""
+        isCombined = calcIsCombined(timelineType, origin)
+        isSyncable = false
+        isSyncableAutomatically = false
+        isSyncableForAccounts = false
+        isSyncableForOrigins = false
     }
 
-    public static Timeline fromBundle(MyContext myContext, Bundle bundle) {
-        if (bundle == null) return EMPTY;
-        Timeline timeline = myContext.timelines().fromId(bundle.getLong(IntentExtra.TIMELINE_ID.key));
-        return timeline.nonEmpty()
-                ? timeline
-                : myContext.timelines().get(
-                    TimelineType.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)),
-                    Actor.load(myContext, bundle.getLong(IntentExtra.ACTOR_ID.key)),
-                    myContext.origins().fromId(BundleUtils.fromBundle(bundle, IntentExtra.ORIGIN_ID)),
-                    BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY));
+    internal constructor(myContext: MyContext?, id: Long, timelineType: TimelineType,
+                         actor: Actor, origin: Origin, searchQuery: String?, selectorOrder: Long) {
+        Objects.requireNonNull(timelineType)
+        Objects.requireNonNull(actor)
+        Objects.requireNonNull(origin)
+        this.myContext = myContext
+        this.id = id
+        this.actor = fixedActor(timelineType, actor)
+        this.origin = fixedOrigin(timelineType, origin)
+        myAccountToSync = calcAccountToSync(myContext, timelineType, this.origin, this.actor)
+        this.searchQuery = StringUtil.optNotEmpty(searchQuery).orElse("")
+        isCombined = calcIsCombined(timelineType, this.origin)
+        this.timelineType = fixedTimelineType(timelineType)
+        isSyncable = calcIsSyncable(myAccountToSync)
+        isSyncableAutomatically = isSyncable && myAccountToSync.isSyncedAutomatically()
+        isSyncableForAccounts = calcIsSyncableForAccounts(myContext)
+        isSyncableForOrigins = calcIsSyncableForOrigins(myContext)
+        this.selectorOrder = selectorOrder
     }
 
-    public static Timeline fromParsedUri(MyContext myContext, ParsedUri parsedUri, String searchQueryIn) {
-        Timeline timeline = myContext.timelines().get(
-                parsedUri.getTimelineType(),
-                Actor.load(myContext, parsedUri.getActorId()),
-                parsedUri.getOrigin(myContext),
-                StringUtil.isEmpty(searchQueryIn) ? parsedUri.getSearchQuery() : searchQueryIn
-        );
-        if (timeline.getTimelineType() == TimelineType.UNKNOWN && parsedUri.getActorsScreenType() == ActorsScreenType.UNKNOWN) {
-            MyLog.w(Timeline.class, "fromParsedUri; uri:" + parsedUri.getUri() + "; " + timeline);
-        }
-        return timeline;
+    fun getDefaultSelectorOrder(): Long {
+        return (timelineType.ordinal + 1L) * 2 + if (isCombined) 1 else 0
     }
 
-    private Timeline() {
-        myContext = MyContext.EMPTY;
-        timelineType = TimelineType.UNKNOWN;
-        myAccountToSync = MyAccount.EMPTY;
-        actor = Actor.EMPTY;
-        origin = Origin.EMPTY;
-        searchQuery = "";
-        isCombined = calcIsCombined(timelineType, origin);
-        isSyncable = false;
-        isSyncableAutomatically = false;
-        isSyncableForAccounts = false;
-        isSyncableForOrigins = false;
-    }
-
-    Timeline(MyContext myContext, long id, @NonNull TimelineType timelineType,
-             @NonNull Actor actor, @NonNull Origin origin, String searchQuery, long selectorOrder) {
-        Objects.requireNonNull(timelineType);
-        Objects.requireNonNull(actor);
-        Objects.requireNonNull(origin);
-        this.myContext = myContext;
-        this.id = id;
-        this.actor = fixedActor(timelineType, actor);
-        this.origin = fixedOrigin(timelineType, origin);
-        this.myAccountToSync = calcAccountToSync(myContext, timelineType, this.origin, this.actor);
-        this.searchQuery = StringUtil.optNotEmpty(searchQuery).orElse("");
-        this.isCombined = calcIsCombined(timelineType, this.origin);
-        this.timelineType = fixedTimelineType(timelineType);
-        this.isSyncable = calcIsSyncable(myAccountToSync);
-        this.isSyncableAutomatically = this.isSyncable && myAccountToSync.isSyncedAutomatically();
-        this.isSyncableForAccounts = calcIsSyncableForAccounts(myContext);
-        this.isSyncableForOrigins = calcIsSyncableForOrigins(myContext);
-        this.selectorOrder = selectorOrder;
-    }
-
-    long getDefaultSelectorOrder() {
-        return (timelineType.ordinal() + 1L) * 2 + (isCombined ? 1 : 0);
-    }
-
-    private boolean calcIsSyncable(MyAccount myAccountToSync) {
-        return !isCombined() && timelineType.isSyncable()
+    private fun calcIsSyncable(myAccountToSync: MyAccount?): Boolean {
+        return (!isCombined() && timelineType.isSyncable()
                 && myAccountToSync.isValidAndSucceeded()
-                && myAccountToSync.getOrigin().getOriginType().isTimelineTypeSyncable(timelineType);
+                && myAccountToSync.getOrigin().originType.isTimelineTypeSyncable(timelineType))
     }
 
-    private boolean calcIsSyncableForAccounts(MyContext myContext) {
+    private fun calcIsSyncableForAccounts(myContext: MyContext?): Boolean {
         return isCombined &&
                 timelineType.isSyncable() && timelineType.canBeCombinedForMyAccounts() &&
-                myContext.accounts().getFirstSucceeded().isValidAndSucceeded();
+                myContext.accounts().firstSucceeded.isValidAndSucceeded
     }
 
-    private boolean calcIsSyncableForOrigins(MyContext myContext) {
+    private fun calcIsSyncableForOrigins(myContext: MyContext?): Boolean {
         return isCombined &&
                 timelineType.isSyncable() && timelineType.canBeCombinedForOrigins() &&
-                myContext.accounts().getFirstSucceeded().isValidAndSucceeded();
+                myContext.accounts().firstSucceeded.isValidAndSucceeded
     }
 
-    private boolean calcIsCombined(TimelineType timelineType, Origin origin) {
-        return timelineType.isAtOrigin() ? origin.isEmpty() : actor.isEmpty();
+    private fun calcIsCombined(timelineType: TimelineType?, origin: Origin?): Boolean {
+        return if (timelineType.isAtOrigin()) origin.isEmpty() else actor.isEmpty()
     }
 
-    @NonNull
-    private MyAccount calcAccountToSync(MyContext myContext, TimelineType timelineType, Origin origin, Actor actor) {
-        return timelineType.isAtOrigin() && origin.nonEmpty()
-                ? myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
-                : myContext.accounts().toSyncThatActor(actor);
+    private fun calcAccountToSync(myContext: MyContext?, timelineType: TimelineType?, origin: Origin?, actor: Actor?): MyAccount {
+        return if (timelineType.isAtOrigin() && origin.nonEmpty()) myContext.accounts().getFirstPreferablySucceededForOrigin(origin) else myContext.accounts().toSyncThatActor(actor)
     }
 
-    private Actor fixedActor(TimelineType timelineType, Actor actor) {
-        return timelineType.isForUser() ? actor : Actor.EMPTY;
+    private fun fixedActor(timelineType: TimelineType?, actor: Actor?): Actor? {
+        return if (timelineType.isForUser()) actor else Actor.Companion.EMPTY
     }
 
-    @NonNull
-    private Origin fixedOrigin(TimelineType timelineType, Origin origin) {
-        return timelineType.isAtOrigin() ? origin : Origin.EMPTY;
+    private fun fixedOrigin(timelineType: TimelineType?, origin: Origin?): Origin {
+        return if (timelineType.isAtOrigin()) origin else Origin.Companion.EMPTY
     }
 
-    private TimelineType fixedTimelineType(TimelineType timelineType) {
-        return isCombined || (timelineType.isAtOrigin() ? origin.isValid() : actor.nonEmpty())
-                ? timelineTypeFixEverything(timelineType)
-                : TimelineType.UNKNOWN;
+    private fun fixedTimelineType(timelineType: TimelineType?): TimelineType? {
+        return if (isCombined || (if (timelineType.isAtOrigin()) origin.isValid() else actor.nonEmpty())) timelineTypeFixEverything(timelineType) else TimelineType.UNKNOWN
     }
 
-    private TimelineType timelineTypeFixEverything(TimelineType timelineType) {
-        switch (timelineType) {
-            case EVERYTHING:
-            case SEARCH:
-                return hasSearchQuery() ? TimelineType.SEARCH : TimelineType.EVERYTHING;
-            default:
-                return timelineType;
+    private fun timelineTypeFixEverything(timelineType: TimelineType?): TimelineType? {
+        return when (timelineType) {
+            TimelineType.EVERYTHING, TimelineType.SEARCH -> if (hasSearchQuery()) TimelineType.SEARCH else TimelineType.EVERYTHING
+            else -> timelineType
         }
     }
 
-    @Override
-    public int compareTo(@NonNull Timeline another) {
-        int result = CollectionsUtil.compareCheckbox(checkBoxDisplayedInSelector(), another.checkBoxDisplayedInSelector());
-        if (result != 0) {
-            return result;
-        }
-        return ((Long) getSelectorOrder()).compareTo(another.getSelectorOrder());
+    override operator fun compareTo(another: Timeline): Int {
+        val result = CollectionsUtil.compareCheckbox(checkBoxDisplayedInSelector(), another.checkBoxDisplayedInSelector())
+        return if (result != 0) {
+            result
+        } else (getSelectorOrder() as Long).compareTo(another.getSelectorOrder())
     }
 
-    public void toContentValues(ContentValues values) {
-        ContentValuesUtils.putNotZero(values, TimelineTable._ID, id);
-        values.put(TimelineTable.TIMELINE_TYPE, timelineType.save());
-        values.put(TimelineTable.ACTOR_ID, actor.actorId);
-        values.put(TimelineTable.ACTOR_IN_TIMELINE, actorInTimeline);
-        values.put(TimelineTable.ORIGIN_ID, origin.getId());
-        values.put(TimelineTable.SEARCH_QUERY, searchQuery);
-
-        values.put(TimelineTable.IS_SYNCED_AUTOMATICALLY, isSyncedAutomatically);
-        values.put(TimelineTable.DISPLAYED_IN_SELECTOR, isDisplayedInSelector.save());
-        values.put(TimelineTable.SELECTOR_ORDER, selectorOrder);
-
-        values.put(TimelineTable.SYNC_SUCCEEDED_DATE, syncSucceededDate.get());
-        values.put(TimelineTable.SYNC_FAILED_DATE, syncFailedDate.get());
-        values.put(TimelineTable.ERROR_MESSAGE, errorMessage);
-
-        values.put(TimelineTable.SYNCED_TIMES_COUNT, syncedTimesCount.get());
-        values.put(TimelineTable.SYNC_FAILED_TIMES_COUNT, syncFailedTimesCount.get());
-        values.put(TimelineTable.DOWNLOADED_ITEMS_COUNT, downloadedItemsCount.get());
-        values.put(TimelineTable.NEW_ITEMS_COUNT, newItemsCount.get());
-        values.put(TimelineTable.COUNT_SINCE, countSince.get());
-        values.put(TimelineTable.SYNCED_TIMES_COUNT_TOTAL, syncedTimesCountTotal.get());
-        values.put(TimelineTable.SYNC_FAILED_TIMES_COUNT_TOTAL, syncFailedTimesCountTotal.get());
-        values.put(TimelineTable.DOWNLOADED_ITEMS_COUNT_TOTAL, downloadedItemsCountTotal.get());
-        values.put(TimelineTable.NEW_ITEMS_COUNT_TOTAL, newItemsCountTotal.get());
-
-        values.put(TimelineTable.YOUNGEST_POSITION, youngestPosition);
-        values.put(TimelineTable.YOUNGEST_ITEM_DATE, youngestItemDate);
-        values.put(TimelineTable.YOUNGEST_SYNCED_DATE, youngestSyncedDate);
-        values.put(TimelineTable.OLDEST_POSITION, oldestPosition);
-        values.put(TimelineTable.OLDEST_ITEM_DATE, oldestItemDate);
-        values.put(TimelineTable.OLDEST_SYNCED_DATE, oldestSyncedDate);
-
-        values.put(TimelineTable.VISIBLE_ITEM_ID, visibleItemId);
-        values.put(TimelineTable.VISIBLE_Y, visibleY);
-        values.put(TimelineTable.VISIBLE_OLDEST_DATE, visibleOldestDate);
-
-        if (lastChangedDate > 0) values.put(TimelineTable.LAST_CHANGED_DATE, lastChangedDate);
+    fun toContentValues(values: ContentValues?) {
+        ContentValuesUtils.putNotZero(values, BaseColumns._ID, id)
+        values.put(TimelineTable.TIMELINE_TYPE, timelineType.save())
+        values.put(TimelineTable.ACTOR_ID, actor.actorId)
+        values.put(TimelineTable.ACTOR_IN_TIMELINE, actorInTimeline)
+        values.put(TimelineTable.ORIGIN_ID, origin.getId())
+        values.put(TimelineTable.SEARCH_QUERY, searchQuery)
+        values.put(TimelineTable.IS_SYNCED_AUTOMATICALLY, isSyncedAutomatically)
+        values.put(TimelineTable.DISPLAYED_IN_SELECTOR, isDisplayedInSelector.save())
+        values.put(TimelineTable.SELECTOR_ORDER, selectorOrder)
+        values.put(TimelineTable.SYNC_SUCCEEDED_DATE, syncSucceededDate.get())
+        values.put(TimelineTable.SYNC_FAILED_DATE, syncFailedDate.get())
+        values.put(TimelineTable.ERROR_MESSAGE, errorMessage)
+        values.put(TimelineTable.SYNCED_TIMES_COUNT, syncedTimesCount.get())
+        values.put(TimelineTable.SYNC_FAILED_TIMES_COUNT, syncFailedTimesCount.get())
+        values.put(TimelineTable.DOWNLOADED_ITEMS_COUNT, downloadedItemsCount.get())
+        values.put(TimelineTable.NEW_ITEMS_COUNT, newItemsCount.get())
+        values.put(TimelineTable.COUNT_SINCE, countSince.get())
+        values.put(TimelineTable.SYNCED_TIMES_COUNT_TOTAL, syncedTimesCountTotal.get())
+        values.put(TimelineTable.SYNC_FAILED_TIMES_COUNT_TOTAL, syncFailedTimesCountTotal.get())
+        values.put(TimelineTable.DOWNLOADED_ITEMS_COUNT_TOTAL, downloadedItemsCountTotal.get())
+        values.put(TimelineTable.NEW_ITEMS_COUNT_TOTAL, newItemsCountTotal.get())
+        values.put(TimelineTable.YOUNGEST_POSITION, youngestPosition)
+        values.put(TimelineTable.YOUNGEST_ITEM_DATE, youngestItemDate)
+        values.put(TimelineTable.YOUNGEST_SYNCED_DATE, youngestSyncedDate)
+        values.put(TimelineTable.OLDEST_POSITION, oldestPosition)
+        values.put(TimelineTable.OLDEST_ITEM_DATE, oldestItemDate)
+        values.put(TimelineTable.OLDEST_SYNCED_DATE, oldestSyncedDate)
+        values.put(TimelineTable.VISIBLE_ITEM_ID, visibleItemId)
+        values.put(TimelineTable.VISIBLE_Y, visibleY)
+        values.put(TimelineTable.VISIBLE_OLDEST_DATE, visibleOldestDate)
+        if (lastChangedDate > 0) values.put(TimelineTable.LAST_CHANGED_DATE, lastChangedDate)
     }
 
-    public Timeline fromSearch(MyContext myContext, boolean globalSearch) {
-        return globalSearch
-                ? myContext.timelines().get(TimelineType.SEARCH, actor, origin, searchQuery)
-                : this;
+    fun fromSearch(myContext: MyContext?, globalSearch: Boolean): Timeline? {
+        return if (globalSearch) myContext.timelines().get(TimelineType.SEARCH, actor, origin, searchQuery) else this
     }
 
-    public Timeline fromIsCombined(MyContext myContext, boolean isCombinedNew) {
-        if (isCombined == isCombinedNew || (
-                !isCombined && timelineType.isForUser() && !timelineType.isAtOrigin() &&
-                    actor.user.isMyUser() != TriState.TRUE
-        )) return this;
-        return myContext.timelines().get(timelineType,
-                isCombinedNew ? Actor.EMPTY : myContext.accounts().getCurrentAccount().getActor(),
-                isCombinedNew ? Origin.EMPTY : myContext.accounts().getCurrentAccount().getOrigin(),
-                searchQuery);
+    fun fromIsCombined(myContext: MyContext?, isCombinedNew: Boolean): Timeline? {
+        return if (isCombined == isCombinedNew || !isCombined && timelineType.isForUser() && !timelineType.isAtOrigin() && actor.user.isMyUser != TriState.TRUE) this else myContext.timelines().get(timelineType,
+                if (isCombinedNew) Actor.Companion.EMPTY else myContext.accounts().currentAccount.actor,
+                if (isCombinedNew) Origin.Companion.EMPTY else myContext.accounts().currentAccount.origin,
+                searchQuery)
     }
 
-    public Timeline fromMyAccount(MyContext myContext, MyAccount myAccountNew) {
-        if (isCombined() || myAccountToSync.equals(myAccountNew)
-                || (timelineType.isForUser() && !timelineType.isAtOrigin() && actor.user.isMyUser() != TriState.TRUE)) return this;
-        return myContext.timelines().get(
+    fun fromMyAccount(myContext: MyContext?, myAccountNew: MyAccount?): Timeline? {
+        return if (isCombined() || myAccountToSync == myAccountNew || timelineType.isForUser() && !timelineType.isAtOrigin() && actor.user.isMyUser != TriState.TRUE) this else myContext.timelines().get(
                 timelineType,
                 myAccountNew.getActor(),
-                myAccountNew.getOrigin(), searchQuery);
+                myAccountNew.getOrigin(), searchQuery)
     }
 
-    @Override
-    public boolean isEmpty() {
-        return timelineType == TimelineType.UNKNOWN;
+    override fun isEmpty(): Boolean {
+        return timelineType == TimelineType.UNKNOWN
     }
 
-    public boolean isValid() {
-        return timelineType != TimelineType.UNKNOWN;
+    fun isValid(): Boolean {
+        return timelineType != TimelineType.UNKNOWN
     }
 
-    public long getId() {
-        return id;
+    fun getId(): Long {
+        return id
     }
 
-    public TimelineType getTimelineType() {
-        return timelineType;
+    fun getTimelineType(): TimelineType? {
+        return timelineType
     }
 
-    public boolean isCombined() {
-        return isCombined;
+    fun isCombined(): Boolean {
+        return isCombined
     }
 
-    @NonNull
-    public Origin getOrigin() {
-        return origin;
+    fun getOrigin(): Origin {
+        return origin
     }
 
-    @NonNull
-    public Origin preferredOrigin() {
-        return origin.nonEmpty()
-                ? origin
-                : actor.nonEmpty()
-                    ? actor.toHomeOrigin().origin
-                    : myContext.accounts().getCurrentAccount().getOrigin();
+    fun preferredOrigin(): Origin {
+        return if (origin.nonEmpty()) origin else if (actor.nonEmpty()) actor.toHomeOrigin().origin else myContext.accounts().currentAccount.origin
     }
 
-    public boolean checkBoxDisplayedInSelector() {
-        return !isDisplayedInSelector.equals(DisplayedInSelector.NEVER);
+    fun checkBoxDisplayedInSelector(): Boolean {
+        return isDisplayedInSelector != DisplayedInSelector.NEVER
     }
 
-    public DisplayedInSelector isDisplayedInSelector() {
-        return isDisplayedInSelector;
+    fun isDisplayedInSelector(): DisplayedInSelector? {
+        return isDisplayedInSelector
     }
 
-    public void setDisplayedInSelector(DisplayedInSelector displayedInSelector) {
-        if (this.isDisplayedInSelector != displayedInSelector) {
-            this.isDisplayedInSelector = displayedInSelector;
-            setChanged();
+    fun setDisplayedInSelector(displayedInSelector: DisplayedInSelector?) {
+        if (isDisplayedInSelector != displayedInSelector) {
+            isDisplayedInSelector = displayedInSelector
+            setChanged()
         }
     }
 
-    public long getSelectorOrder() {
-        return selectorOrder;
+    fun getSelectorOrder(): Long {
+        return selectorOrder
     }
 
-    public void setSelectorOrder(long selectorOrder) {
+    fun setSelectorOrder(selectorOrder: Long) {
         if (this.selectorOrder != selectorOrder) {
-            setChanged();
-            this.selectorOrder = selectorOrder;
+            setChanged()
+            this.selectorOrder = selectorOrder
         }
     }
 
-    @NonNull
-    public Timeline save(MyContext myContext) {
-        if (MyAsyncTask.isUiThread()) return this;
-
+    fun save(myContext: MyContext?): Timeline {
+        if (MyAsyncTask.Companion.isUiThread()) return this
         if (needToLoadActorInTimeline()) {
-            setChanged();
+            setChanged()
         }
-        if (timelineType.isPersistable() && (id == 0 || changed) && myContext.isReady()) {
-            boolean isNew = id == 0;
+        if (timelineType.isPersistable() && (id == 0L || changed) && myContext.isReady()) {
+            val isNew = id == 0L
             if (isNew) {
-                long duplicatedId = findDuplicateInDatabase(myContext);
-                if (duplicatedId != 0) {
-                    MyLog.i(this, "Found duplicating timeline, id=" + duplicatedId + " for " + this);
-                    return myContext.timelines().fromId(duplicatedId);
+                val duplicatedId = findDuplicateInDatabase(myContext)
+                if (duplicatedId != 0L) {
+                    MyLog.i(this, "Found duplicating timeline, id=$duplicatedId for $this")
+                    return myContext.timelines().fromId(duplicatedId)
                 }
                 if (isAddedByDefault()) {
-                    setDisplayedInSelector(DisplayedInSelector.IN_CONTEXT);
-                    setSyncedAutomatically(getTimelineType().isSyncedAutomaticallyByDefault());
+                    setDisplayedInSelector(DisplayedInSelector.IN_CONTEXT)
+                    setSyncedAutomatically(getTimelineType().isSyncedAutomaticallyByDefault())
                 }
             }
-            if (selectorOrder == 0) {
-                this.selectorOrder = getDefaultSelectorOrder();
+            if (selectorOrder == 0L) {
+                selectorOrder = getDefaultSelectorOrder()
             }
-            saveInternal(myContext);
-            if (isNew && id != 0) {
-                return myContext.timelines().fromId(id);
+            saveInternal(myContext)
+            if (isNew && id != 0L) {
+                return myContext.timelines().fromId(id)
             }
         }
-        return this;
+        return this
     }
 
-    private long findDuplicateInDatabase(MyContext myContext) {
-        SqlWhere where = new SqlWhere();
-        where.append(TimelineTable.TIMELINE_TYPE + "='" + timelineType.save() + "'");
-        where.append(TimelineTable.ORIGIN_ID + "=" + origin.getId());
-        where.append(TimelineTable.ACTOR_ID + "=" + actor.actorId);
-        where.append(TimelineTable.SEARCH_QUERY + "='" + searchQuery + "'");
+    private fun findDuplicateInDatabase(myContext: MyContext?): Long {
+        val where = SqlWhere()
+        where.append(TimelineTable.TIMELINE_TYPE + "='" + timelineType.save() + "'")
+        where.append(TimelineTable.ORIGIN_ID + "=" + origin.getId())
+        where.append(TimelineTable.ACTOR_ID + "=" + actor.actorId)
+        where.append(TimelineTable.SEARCH_QUERY + "='" + searchQuery + "'")
         return MyQuery.conditionToLongColumnValue(
                 myContext.getDatabase(),
                 "findDuplicateInDatabase",
                 TimelineTable.TABLE_NAME,
-                TimelineTable._ID,
-                where.getCondition());
+                BaseColumns._ID,
+                where.condition)
     }
 
-    private long saveInternal(MyContext myContext) {
+    private fun saveInternal(myContext: MyContext?): Long {
         if (needToLoadActorInTimeline()) {
-            actorInTimeline = MyQuery.actorIdToName(myContext, actor.actorId, MyPreferences.getActorInTimeline());
+            actorInTimeline = MyQuery.actorIdToName(myContext, actor.actorId, MyPreferences.getActorInTimeline())
         }
-        ContentValues contentValues = new ContentValues();
-        toContentValues(contentValues);
+        val contentValues = ContentValues()
+        toContentValues(contentValues)
         if (myContext.isTestRun()) {
-            MyLog.v(this, () -> "Saving " + this);
+            MyLog.v(this) { "Saving $this" }
         }
-        if (getId() == 0) {
+        if (getId() == 0L) {
             DbUtils.addRowWithRetry(myContext, TimelineTable.TABLE_NAME, contentValues, 3)
-            .onSuccess(idAdded -> {
-                id = idAdded;
-                changed = false;
-            });
+                    .onSuccess { idAdded: Long? ->
+                        id = idAdded
+                        changed = false
+                    }
         } else {
             DbUtils.updateRowWithRetry(myContext, TimelineTable.TABLE_NAME, getId(), contentValues, 3)
-            .onSuccess( o -> changed = false);
+                    .onSuccess { o: Void? -> changed = false }
         }
-        return getId();
+        return getId()
     }
 
-    private boolean needToLoadActorInTimeline() {
-        return actor.nonEmpty()
+    private fun needToLoadActorInTimeline(): Boolean {
+        return (actor.nonEmpty()
                 && StringUtil.isEmptyOrTemp(actorInTimeline)
-                && actor.user.isMyUser().untrue;
+                && actor.user.isMyUser.untrue)
     }
 
-    public void delete(MyContext myContext) {
-        if (isRequired() && myContext.timelines().stream().noneMatch(this::duplicates)) {
-            MyLog.d(this, "Cannot delete required timeline: " + this);
-            return;
+    fun delete(myContext: MyContext?) {
+        if (isRequired() && myContext.timelines().stream().noneMatch { that: Timeline? -> duplicates(that) }) {
+            MyLog.d(this, "Cannot delete required timeline: $this")
+            return
         }
-        SQLiteDatabase db = myContext.getDatabase();
+        val db = myContext.getDatabase()
         if (db == null) {
-            MyLog.d(this, "delete; Database is unavailable");
+            MyLog.d(this, "delete; Database is unavailable")
         } else {
-            String sql = "DELETE FROM " + TimelineTable.TABLE_NAME + " WHERE _ID=" + getId();
-            db.execSQL(sql);
-            MyLog.v(this, () -> "Timeline deleted: " + this);
+            val sql = "DELETE FROM " + TimelineTable.TABLE_NAME + " WHERE _ID=" + getId()
+            db.execSQL(sql)
+            MyLog.v(this) { "Timeline deleted: $this" }
         }
     }
 
-    public boolean isAddedByDefault() {
-        if (isRequired()) return true;
-        if (isCombined || !isValid() || hasSearchQuery()) return false;
-        if (timelineType.isAtOrigin()) {
-            return TimelineType.getDefaultOriginTimelineTypes().contains(timelineType)
+    fun isAddedByDefault(): Boolean {
+        if (isRequired()) return true
+        if (isCombined || !isValid() || hasSearchQuery()) return false
+        return if (timelineType.isAtOrigin()) {
+            (TimelineType.Companion.getDefaultOriginTimelineTypes().contains(timelineType)
                     && (origin.getOriginType().isTimelineTypeSyncable(timelineType)
-                    || timelineType.equals(TimelineType.EVERYTHING));
+                    || timelineType == TimelineType.EVERYTHING))
         } else {
-            return actor.user.isMyUser().isTrue && actor.getDefaultMyAccountTimelineTypes().contains(timelineType);
+            actor.user.isMyUser.isTrue && actor.getDefaultMyAccountTimelineTypes().contains(timelineType)
         }
     }
 
-    /** Required timeline cannot be deleted */
-    public boolean isRequired() {
-        return isCombined() && timelineType.isCombinedRequired() && !hasSearchQuery();
+    /** Required timeline cannot be deleted  */
+    fun isRequired(): Boolean {
+        return isCombined() && timelineType.isCombinedRequired() && !hasSearchQuery()
     }
 
-    @Override
-    public String toString() {
-        MyStringBuilder builder = new MyStringBuilder();
-
+    override fun toString(): String {
+        val builder = MyStringBuilder()
         if (timelineType.isAtOrigin()) {
-            builder.withComma(origin.isValid() ? origin.getName() : "(all origins)");
+            builder.withComma(if (origin.isValid()) origin.getName() else "(all origins)")
         }
         if (timelineType.isForUser()) {
             if (actor.isEmpty()) {
-                builder.withComma("(all accounts)");
+                builder.withComma("(all accounts)")
             } else if (myAccountToSync.isValid()) {
-                builder.withComma(myAccountToSync.getAccountName());
-                if (!myAccountToSync.getOrigin().equals(origin) && origin.isValid()) {
-                    builder.withComma("origin", origin.getName());
+                builder.withComma(myAccountToSync.getAccountName())
+                if (myAccountToSync.getOrigin() != origin && origin.isValid()) {
+                    builder.withComma("origin", origin.getName())
                 }
             } else {
-                builder.withComma(actor.user.toString());
+                builder.withComma(actor.user.toString())
             }
         }
         if (timelineType != TimelineType.UNKNOWN) {
-            builder.withComma("type", timelineType.save());
+            builder.withComma("type", timelineType.save())
         }
         if (StringUtil.nonEmpty(actorInTimeline)) {
-            builder.withCommaQuoted("actor", actorInTimeline, true);
+            builder.withCommaQuoted("actor", actorInTimeline, true)
         } else if (actor.nonEmpty()) {
-            builder.withComma("actor" + actor);
+            builder.withComma("actor$actor")
         }
         if (hasSearchQuery()) {
-            builder.withCommaQuoted("search",getSearchQuery(), true);
+            builder.withCommaQuoted("search", getSearchQuery(), true)
         }
-        if ( id != 0) {
-            builder.withComma("id", id);
+        if (id != 0L) {
+            builder.withComma("id", id)
         }
         if (!isSyncable()) {
-            builder.withComma("not syncable");
+            builder.withComma("not syncable")
         }
-        return builder.toKeyValue("Timeline");
+        return builder.toKeyValue("Timeline")
     }
 
-    public String positionsToString() {
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("TimelinePositions{");
-        if (youngestSyncedDate > SOME_TIME_AGO) {
-            builder.append("synced at " + new Date(youngestSyncedDate).toString());
-            builder.append(", pos:" + getYoungestPosition());
+    fun positionsToString(): String? {
+        val builder = StringBuilder()
+        builder.append("TimelinePositions{")
+        if (youngestSyncedDate > RelativeTime.SOME_TIME_AGO) {
+            builder.append("synced at " + Date(youngestSyncedDate).toString())
+            builder.append(", pos:" + getYoungestPosition())
         }
-        if (oldestSyncedDate > SOME_TIME_AGO) {
-            builder.append("older synced at " + new Date(oldestSyncedDate).toString());
-            builder.append(", pos:" + getOldestPosition());
+        if (oldestSyncedDate > RelativeTime.SOME_TIME_AGO) {
+            builder.append("older synced at " + Date(oldestSyncedDate).toString())
+            builder.append(", pos:" + getOldestPosition())
         }
-        builder.append('}');
-        return builder.toString();
+        builder.append('}')
+        return builder.toString()
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || !(o instanceof Timeline)) return false;
-
-        Timeline that = (Timeline) o;
-
-        if (timelineType != that.timelineType) return false;
-        if (id != 0 || that.id != 0) {
-            return id == that.id;
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o == null || o !is Timeline) return false
+        val that = o as Timeline?
+        if (timelineType != that.timelineType) return false
+        if (id != 0L || that.id != 0L) {
+            return id == that.id
         }
-        if (!origin.equals(that.origin)) return false;
-        if (!actor.equals(that.actor)) return false;
-        return StringUtil.equalsNotEmpty(searchQuery, that.searchQuery);
+        if (origin != that.origin) return false
+        return if (actor != that.actor) false else StringUtil.equalsNotEmpty(searchQuery, that.searchQuery)
     }
 
-    public boolean duplicates(Timeline that) {
-        if (equals(that)) return false;
-        if (id > 0 && id < that.id) return false;
-        if (timelineType != that.timelineType) return false;
-        if (!origin.equals(that.origin)) return false;
-        if (!actor.isSame(that.actor)) return false;
-        return StringUtil.equalsNotEmpty(searchQuery, that.searchQuery);
+    fun duplicates(that: Timeline?): Boolean {
+        if (equals(that)) return false
+        if (id > 0 && id < that.id) return false
+        if (timelineType != that.timelineType) return false
+        if (origin != that.origin) return false
+        return if (!actor.isSame(that.actor)) false else StringUtil.equalsNotEmpty(searchQuery, that.searchQuery)
     }
 
-    @Override
-    public int hashCode() {
-        int result = timelineType.hashCode();
-        if (id != 0) result = 31 * result + Long.hashCode(id);
-        result = 31 * result + origin.hashCode();
-        result = 31 * result + actor.hashCode();
-        if (!StringUtil.isEmpty(searchQuery)) result = 31 * result + searchQuery.hashCode();
-        return result;
+    override fun hashCode(): Int {
+        var result = timelineType.hashCode()
+        if (id != 0L) result = 31 * result + java.lang.Long.hashCode(id)
+        result = 31 * result + origin.hashCode()
+        result = 31 * result + actor.hashCode()
+        if (!StringUtil.isEmpty(searchQuery)) result = 31 * result + searchQuery.hashCode()
+        return result
     }
 
-    public long getActorId() {
-        return actor.actorId;
+    fun getActorId(): Long {
+        return actor.actorId
     }
 
-    public boolean hasSearchQuery() {
-        return StringUtil.nonEmpty(getSearchQuery());
+    fun hasSearchQuery(): Boolean {
+        return StringUtil.nonEmpty(getSearchQuery())
     }
 
-    @NonNull
-    public String getSearchQuery() {
-        return searchQuery;
+    fun getSearchQuery(): String {
+        return searchQuery
     }
 
-    public void toBundle(Bundle bundle) {
-        BundleUtils.putNotZero(bundle, IntentExtra.TIMELINE_ID, id);
+    fun toBundle(bundle: Bundle?) {
+        BundleUtils.putNotZero(bundle, IntentExtra.TIMELINE_ID, id)
         if (timelineType != TimelineType.UNKNOWN) {
-            bundle.putString(IntentExtra.TIMELINE_TYPE.key, timelineType.save());
+            bundle.putString(IntentExtra.TIMELINE_TYPE.key, timelineType.save())
         }
-        BundleUtils.putNotZero(bundle, IntentExtra.ORIGIN_ID, origin.getId());
-        BundleUtils.putNotZero(bundle, IntentExtra.ACTOR_ID, actor.actorId);
-        BundleUtils.putNotEmpty(bundle, IntentExtra.SEARCH_QUERY, searchQuery);
+        BundleUtils.putNotZero(bundle, IntentExtra.ORIGIN_ID, origin.getId())
+        BundleUtils.putNotZero(bundle, IntentExtra.ACTOR_ID, actor.actorId)
+        BundleUtils.putNotEmpty(bundle, IntentExtra.SEARCH_QUERY, searchQuery)
     }
 
     /**
      * @return true if it's time to auto update this timeline
      */
-    public boolean isTimeToAutoSync() {
+    fun isTimeToAutoSync(): Boolean {
         if (System.currentTimeMillis() - getLastSyncedDate() < MIN_RETRY_PERIOD_MS) {
-            return false;
+            return false
         }
-        long syncFrequencyMs = myAccountToSync.getEffectiveSyncFrequencyMillis();
+        val syncFrequencyMs = myAccountToSync.getEffectiveSyncFrequencyMillis()
         // This correction needs to take into account
         // that we stored time when sync ended, and not when Android initiated the sync.
-        long correctionForExecutionTime = syncFrequencyMs / 10;
-        long passedMs = System.currentTimeMillis() - getLastSyncedDate();
-        boolean blnOut = passedMs > syncFrequencyMs - correctionForExecutionTime;
-        MyLog.v(this, () -> "It's time to auto update " + this +
-                ". " +
-                java.util.concurrent.TimeUnit.MILLISECONDS.toMinutes(passedMs) +
-                " minutes passed.");
-        return blnOut;
+        val correctionForExecutionTime = syncFrequencyMs / 10
+        val passedMs = System.currentTimeMillis() - getLastSyncedDate()
+        val blnOut = passedMs > syncFrequencyMs - correctionForExecutionTime
+        MyLog.v(this) {
+            "It's time to auto update " + this +
+                    ". " +
+                    TimeUnit.MILLISECONDS.toMinutes(passedMs) +
+                    " minutes passed."
+        }
+        return blnOut
     }
 
-    public void forgetPositionsAndDates() {
+    fun forgetPositionsAndDates() {
         if (!StringUtil.isEmpty(youngestPosition)) {
-            youngestPosition = "";
-            setChanged();
+            youngestPosition = ""
+            setChanged()
         }
         if (youngestItemDate > 0) {
-            youngestItemDate = 0;
-            setChanged();
+            youngestItemDate = 0
+            setChanged()
         }
         if (youngestSyncedDate > 0) {
-            youngestSyncedDate = 0;
-            setChanged();
+            youngestSyncedDate = 0
+            setChanged()
         }
-
         if (!StringUtil.isEmpty(oldestPosition)) {
-            oldestPosition = "";
-            setChanged();
+            oldestPosition = ""
+            setChanged()
         }
         if (oldestItemDate > 0) {
-            oldestItemDate = 0;
-            setChanged();
+            oldestItemDate = 0
+            setChanged()
         }
         if (oldestSyncedDate > 0) {
-            oldestSyncedDate = 0;
-            setChanged();
+            oldestSyncedDate = 0
+            setChanged()
         }
-
-        setSyncSucceededDate(0);
+        setSyncSucceededDate(0)
         if (syncFailedDate.get() > 0) {
-            syncFailedDate.set(0);
-            setChanged();
+            syncFailedDate.set(0)
+            setChanged()
         }
     }
 
-    public void onNewMsg(long newDate, String youngerPosition, String olderPosition) {
-        if (newDate <= SOME_TIME_AGO) return;
-
+    fun onNewMsg(newDate: Long, youngerPosition: String?, olderPosition: String?) {
+        if (newDate <= RelativeTime.SOME_TIME_AGO) return
         if (StringUtil.nonEmpty(youngerPosition) && (youngestItemDate < newDate ||
-                ( youngestItemDate == newDate && StringUtil.isNewFilledValue(youngestPosition, youngerPosition)))) {
-            youngestItemDate = newDate;
-            youngestPosition = youngerPosition;
-            setChanged();
+                        youngestItemDate == newDate && StringUtil.isNewFilledValue(youngestPosition, youngerPosition))) {
+            youngestItemDate = newDate
+            youngestPosition = youngerPosition
+            setChanged()
         }
-        if (StringUtil.nonEmpty(olderPosition) && (oldestItemDate <= SOME_TIME_AGO || oldestItemDate > newDate ||
-                (oldestItemDate == newDate && StringUtil.isNewFilledValue(oldestPosition, olderPosition)))) {
-            oldestItemDate = newDate;
-            oldestPosition = olderPosition;
-            setChanged();
-        }
-    }
-
-    public String getYoungestPosition() {
-        return youngestPosition;
-    }
-
-    public long getYoungestItemDate() {
-        return youngestItemDate;
-    }
-
-    public long getYoungestSyncedDate() {
-        return youngestSyncedDate;
-    }
-
-    public void setYoungestSyncedDate(long newDate) {
-        if (newDate > SOME_TIME_AGO && youngestSyncedDate < newDate) {
-            youngestSyncedDate = newDate;
-            setChanged();
+        if (StringUtil.nonEmpty(olderPosition) && (oldestItemDate <= RelativeTime.SOME_TIME_AGO || oldestItemDate > newDate ||
+                        oldestItemDate == newDate && StringUtil.isNewFilledValue(oldestPosition, olderPosition))) {
+            oldestItemDate = newDate
+            oldestPosition = olderPosition
+            setChanged()
         }
     }
 
-    public long getOldestItemDate() {
-        return oldestItemDate;
+    fun getYoungestPosition(): String? {
+        return youngestPosition
     }
 
-    public String getOldestPosition() {
-        return oldestPosition;
+    fun getYoungestItemDate(): Long {
+        return youngestItemDate
     }
 
-    public long getOldestSyncedDate() {
-        return oldestSyncedDate;
+    fun getYoungestSyncedDate(): Long {
+        return youngestSyncedDate
     }
 
-    public void setOldestSyncedDate(long newDate) {
-        if (newDate > SOME_TIME_AGO && (oldestSyncedDate <= SOME_TIME_AGO || oldestSyncedDate > newDate)) {
-            oldestSyncedDate = newDate;
-            setChanged();
+    fun setYoungestSyncedDate(newDate: Long) {
+        if (newDate > RelativeTime.SOME_TIME_AGO && youngestSyncedDate < newDate) {
+            youngestSyncedDate = newDate
+            setChanged()
         }
     }
 
-    public long getVisibleItemId() {
-        return visibleItemId;
+    fun getOldestItemDate(): Long {
+        return oldestItemDate
     }
 
-    public void setVisibleItemId(long visibleItemId) {
+    fun getOldestPosition(): String? {
+        return oldestPosition
+    }
+
+    fun getOldestSyncedDate(): Long {
+        return oldestSyncedDate
+    }
+
+    fun setOldestSyncedDate(newDate: Long) {
+        if (newDate > RelativeTime.SOME_TIME_AGO && (oldestSyncedDate <= RelativeTime.SOME_TIME_AGO || oldestSyncedDate > newDate)) {
+            oldestSyncedDate = newDate
+            setChanged()
+        }
+    }
+
+    fun getVisibleItemId(): Long {
+        return visibleItemId
+    }
+
+    fun setVisibleItemId(visibleItemId: Long) {
         if (this.visibleItemId != visibleItemId) {
-            setChanged();
-            this.visibleItemId = visibleItemId;
+            setChanged()
+            this.visibleItemId = visibleItemId
         }
     }
 
-    public int getVisibleY() {
-        return visibleY;
+    fun getVisibleY(): Int {
+        return visibleY
     }
 
-    public void setVisibleY(int visibleY) {
+    fun setVisibleY(visibleY: Int) {
         if (this.visibleY != visibleY) {
-            setChanged();
-            this.visibleY = visibleY;
+            setChanged()
+            this.visibleY = visibleY
         }
     }
 
-    public long getVisibleOldestDate() {
-        return visibleOldestDate;
+    fun getVisibleOldestDate(): Long {
+        return visibleOldestDate
     }
 
-    public void setVisibleOldestDate(long visibleOldestDate) {
+    fun setVisibleOldestDate(visibleOldestDate: Long) {
         if (this.visibleOldestDate != visibleOldestDate) {
-            setChanged();
-            this.visibleOldestDate = visibleOldestDate;
+            setChanged()
+            this.visibleOldestDate = visibleOldestDate
         }
     }
 
-    public boolean isSyncedAutomatically() {
-        return isSyncedAutomatically;
+    fun isSyncedAutomatically(): Boolean {
+        return isSyncedAutomatically
     }
 
-    public void setSyncedAutomatically(boolean isSyncedAutomatically) {
+    fun setSyncedAutomatically(isSyncedAutomatically: Boolean) {
         if (this.isSyncedAutomatically != isSyncedAutomatically && isSyncableAutomatically()) {
-            this.isSyncedAutomatically = isSyncedAutomatically;
-            setChanged();
+            this.isSyncedAutomatically = isSyncedAutomatically
+            setChanged()
         }
     }
 
-    public boolean isChanged() {
-        return changed;
+    fun isChanged(): Boolean {
+        return changed
     }
 
-    public Timeline cloneForAccount(MyContext myContext, MyAccount ma) {
-        return myContext.timelines().get(0, getTimelineType(), ma.getActor(), Origin.EMPTY, getSearchQuery());
+    fun cloneForAccount(myContext: MyContext?, ma: MyAccount?): Timeline? {
+        return myContext.timelines().get(0, getTimelineType(), ma.getActor(), Origin.Companion.EMPTY, getSearchQuery())
     }
 
-    public Timeline cloneForOrigin(MyContext myContext, Origin origin) {
-        return myContext.timelines().get(0, getTimelineType(), Actor.EMPTY, origin, getSearchQuery());
+    fun cloneForOrigin(myContext: MyContext?, origin: Origin?): Timeline? {
+        return myContext.timelines().get(0, getTimelineType(), Actor.Companion.EMPTY, origin, getSearchQuery())
     }
 
-    @NonNull
-    static Timeline fromId(MyContext myContext, long id) {
-        return id == 0
-                ? Timeline.EMPTY
-                : MyQuery.get(myContext,
-                "SELECT * FROM " + TimelineTable.TABLE_NAME + " WHERE " + TimelineTable._ID + "=" + id,
-                cursor -> Timeline.fromCursor(myContext, cursor)).stream().findFirst().orElse(EMPTY);
-    }
-
-    public void onSyncEnded(MyContext myContext, CommandResult result) {
-        onSyncEnded(result).save(myContext);
+    fun onSyncEnded(myContext: MyContext?, result: CommandResult?) {
+        onSyncEnded(result).save(myContext)
         myContext.timelines().stream()
-                .filter(Timeline::isSyncable)
-                .filter(this::isSyncedSimultaneously)
-                .forEach(timeline -> timeline.onSyncedSimultaneously(this).save(myContext));
+                .filter { obj: Timeline? -> obj.isSyncable() }
+                .filter { timeline: Timeline? -> isSyncedSimultaneously(timeline) }
+                .forEach { timeline: Timeline? -> timeline.onSyncedSimultaneously(this).save(myContext) }
     }
 
-    private Timeline onSyncedSimultaneously(Timeline other) {
+    private fun onSyncedSimultaneously(other: Timeline?): Timeline? {
         if (setIfLess(syncFailedDate, other.syncFailedDate)) {
-            errorMessage = other.errorMessage;
+            errorMessage = other.errorMessage
         }
-        setIfLess(syncFailedTimesCount, other.syncFailedTimesCount);
-        setIfLess(syncFailedTimesCountTotal, other.syncFailedTimesCountTotal);
-        setIfLess(syncSucceededDate, other.syncSucceededDate);
-        setIfLess(syncedTimesCount, other.syncedTimesCount);
-        setIfLess(syncedTimesCountTotal, other.syncedTimesCountTotal);
-
-        setIfLess(newItemsCount, other.newItemsCount);
-        setIfLess(newItemsCountTotal, other.newItemsCountTotal);
-        setIfLess(downloadedItemsCount, other.downloadedItemsCount);
-        setIfLess(downloadedItemsCountTotal, other.downloadedItemsCountTotal);
-
-        onNewMsg(other.youngestItemDate, other.youngestPosition, "");
-        onNewMsg(other.oldestItemDate, "", other.oldestPosition);
-        setYoungestSyncedDate(other.youngestSyncedDate);
-        setOldestSyncedDate(other.oldestSyncedDate);
-
-        return this;
+        setIfLess(syncFailedTimesCount, other.syncFailedTimesCount)
+        setIfLess(syncFailedTimesCountTotal, other.syncFailedTimesCountTotal)
+        setIfLess(syncSucceededDate, other.syncSucceededDate)
+        setIfLess(syncedTimesCount, other.syncedTimesCount)
+        setIfLess(syncedTimesCountTotal, other.syncedTimesCountTotal)
+        setIfLess(newItemsCount, other.newItemsCount)
+        setIfLess(newItemsCountTotal, other.newItemsCountTotal)
+        setIfLess(downloadedItemsCount, other.downloadedItemsCount)
+        setIfLess(downloadedItemsCountTotal, other.downloadedItemsCountTotal)
+        onNewMsg(other.youngestItemDate, other.youngestPosition, "")
+        onNewMsg(other.oldestItemDate, "", other.oldestPosition)
+        setYoungestSyncedDate(other.youngestSyncedDate)
+        setOldestSyncedDate(other.oldestSyncedDate)
+        return this
     }
 
-    private static boolean setIfLess(AtomicLong value, AtomicLong other) {
-        if (value.get() < other.get()) {
-            value.set(other.get());
-            return true;
-        }
-        return false;
+    private fun isSyncedSimultaneously(timeline: Timeline?): Boolean {
+        return (this != timeline
+                && !timeline.isCombined
+                && getTimelineType().getConnectionApiRoutine() == timeline.getTimelineType().getConnectionApiRoutine() && searchQuery == timeline.searchQuery && myAccountToSync == timeline.myAccountToSync && actor == timeline.actor && origin == timeline.origin)
     }
 
-    private boolean isSyncedSimultaneously(Timeline timeline) {
-        return !this.equals(timeline)
-            && !timeline.isCombined
-            && getTimelineType().getConnectionApiRoutine() == timeline.getTimelineType().getConnectionApiRoutine()
-            && searchQuery.equals(timeline.searchQuery)
-            && myAccountToSync.equals(timeline.myAccountToSync)
-            && actor.equals(timeline.actor)
-            && origin.equals(timeline.origin);
-    }
-
-    private Timeline onSyncEnded(CommandResult result) {
+    private fun onSyncEnded(result: CommandResult?): Timeline? {
         if (result.hasError()) {
-            syncFailedDate.set(System.currentTimeMillis());
+            syncFailedDate.set(System.currentTimeMillis())
             if (!StringUtil.isEmpty(result.getMessage())) {
-                errorMessage = result.getMessage();
+                errorMessage = result.getMessage()
             }
-            syncFailedTimesCount.incrementAndGet();
-            syncFailedTimesCountTotal.incrementAndGet();
+            syncFailedTimesCount.incrementAndGet()
+            syncFailedTimesCountTotal.incrementAndGet()
         } else {
-            syncSucceededDate.set(System.currentTimeMillis());
-            syncedTimesCount.incrementAndGet();
-            syncedTimesCountTotal.incrementAndGet();
+            syncSucceededDate.set(System.currentTimeMillis())
+            syncedTimesCount.incrementAndGet()
+            syncedTimesCountTotal.incrementAndGet()
         }
         if (result.getNewCount() > 0) {
-            newItemsCount.addAndGet(result.getNewCount());
-            newItemsCountTotal.addAndGet(result.getNewCount());
+            newItemsCount.addAndGet(result.getNewCount())
+            newItemsCountTotal.addAndGet(result.getNewCount())
         }
         if (result.getDownloadedCount() > 0) {
-            downloadedItemsCount.addAndGet(result.getDownloadedCount());
-            downloadedItemsCountTotal.addAndGet(result.getDownloadedCount());
+            downloadedItemsCount.addAndGet(result.getDownloadedCount())
+            downloadedItemsCountTotal.addAndGet(result.getDownloadedCount())
         }
-        setChanged();
-        return this;
+        setChanged()
+        return this
     }
 
-    public long getSyncSucceededDate() {
-        return syncSucceededDate.get();
+    fun getSyncSucceededDate(): Long {
+        return syncSucceededDate.get()
     }
 
-    public void setSyncSucceededDate(long syncSucceededDate) {
-        if(this.syncSucceededDate.get() != syncSucceededDate) {
-            this.syncSucceededDate.set(syncSucceededDate);
-            setChanged();
+    fun setSyncSucceededDate(syncSucceededDate: Long) {
+        if (this.syncSucceededDate.get() != syncSucceededDate) {
+            this.syncSucceededDate.set(syncSucceededDate)
+            setChanged()
         }
     }
 
-    public boolean isSynableSomehow() {
-        return isSyncable || isSyncableForOrigins() || isSyncableForAccounts();
+    fun isSynableSomehow(): Boolean {
+        return isSyncable || isSyncableForOrigins() || isSyncableForAccounts()
     }
 
-    public boolean isSyncable() {
-        return isSyncable;
+    fun isSyncable(): Boolean {
+        return isSyncable
     }
 
-    public boolean isSyncableAutomatically() {
-        return isSyncableAutomatically;
+    fun isSyncableAutomatically(): Boolean {
+        return isSyncableAutomatically
     }
 
-    public boolean isSyncableForAccounts() {
-        return isSyncableForAccounts;
+    fun isSyncableForAccounts(): Boolean {
+        return isSyncableForAccounts
     }
 
-    public boolean isSyncableForOrigins() {
-        return isSyncableForOrigins;
+    fun isSyncableForOrigins(): Boolean {
+        return isSyncableForOrigins
     }
 
-    public boolean isSyncedByOtherUser() {
-        return actor.isEmpty() || myAccountToSync.getActor().notSameUser(actor);
+    fun isSyncedByOtherUser(): Boolean {
+        return actor.isEmpty() || myAccountToSync.getActor().notSameUser(actor)
     }
 
-    public long getDownloadedItemsCount(boolean isTotal) {
-        return isTotal ? downloadedItemsCountTotal.get() : downloadedItemsCount.get();
+    fun getDownloadedItemsCount(isTotal: Boolean): Long {
+        return if (isTotal) downloadedItemsCountTotal.get() else downloadedItemsCount.get()
     }
 
-    public long getNewItemsCount(boolean isTotal) {
-        return isTotal ? newItemsCountTotal.get() : newItemsCount.get();
+    fun getNewItemsCount(isTotal: Boolean): Long {
+        return if (isTotal) newItemsCountTotal.get() else newItemsCount.get()
     }
 
-    public long getSyncedTimesCount(boolean isTotal) {
-        return isTotal ? syncedTimesCountTotal.get() : syncedTimesCount.get();
+    fun getSyncedTimesCount(isTotal: Boolean): Long {
+        return if (isTotal) syncedTimesCountTotal.get() else syncedTimesCount.get()
     }
 
-    public long getSyncFailedDate() {
-        return syncFailedDate.get();
+    fun getSyncFailedDate(): Long {
+        return syncFailedDate.get()
     }
 
-    public long getSyncFailedTimesCount(boolean isTotal) {
-        return isTotal ? syncFailedTimesCountTotal.get() : syncFailedTimesCount.get();
+    fun getSyncFailedTimesCount(isTotal: Boolean): Long {
+        return if (isTotal) syncFailedTimesCountTotal.get() else syncFailedTimesCount.get()
     }
 
-    public String getErrorMessage() {
-        return errorMessage;
+    fun getErrorMessage(): String? {
+        return errorMessage
     }
 
-    public long getLastSyncedDate() {
-        return Long.max(getSyncSucceededDate(), getSyncFailedDate());
+    fun getLastSyncedDate(): Long {
+        return java.lang.Long.max(getSyncSucceededDate(), getSyncFailedDate())
     }
 
-    @NonNull
-    public String getActorInTimeline() {
-        if (StringUtil.isEmpty(actorInTimeline)) {
+    fun getActorInTimeline(): String {
+        return if (StringUtil.isEmpty(actorInTimeline)) {
             if (needToLoadActorInTimeline()) {
-                return "...";
+                "..."
             } else {
-                return actor.user.getKnownAs();
+                actor.user.knownAs
             }
         } else {
-            return actorInTimeline;
+            actorInTimeline
         }
     }
 
-    public void resetCounters(boolean all) {
+    fun resetCounters(all: Boolean) {
         if (all) {
-            syncFailedTimesCountTotal.set(0);
-            syncedTimesCountTotal.set(0);
-            downloadedItemsCountTotal.set(0);
-            newItemsCountTotal.set(0);
+            syncFailedTimesCountTotal.set(0)
+            syncedTimesCountTotal.set(0)
+            downloadedItemsCountTotal.set(0)
+            newItemsCountTotal.set(0)
         }
-        errorMessage = "";
-        syncFailedTimesCount.set(0);
-        syncedTimesCount.set(0);
-        downloadedItemsCount.set(0);
-        newItemsCount.set(0);
-        countSince.set(System.currentTimeMillis());
-        changed = true;
+        errorMessage = ""
+        syncFailedTimesCount.set(0)
+        syncedTimesCount.set(0)
+        downloadedItemsCount.set(0)
+        newItemsCount.set(0)
+        countSince.set(System.currentTimeMillis())
+        changed = true
     }
 
-    public long getCountSince() {
-        return countSince.get();
+    fun getCountSince(): Long {
+        return countSince.get()
     }
 
-    public Uri getUri() {
-        return MatchedUri.getTimelineUri(this);
+    fun getUri(): Uri? {
+        return MatchedUri.Companion.getTimelineUri(this)
     }
 
-    public Uri getClickUri() {
-        return Uri.parse("content://" + TIMELINE_CLICK_HOST + getUri().getEncodedPath());
+    fun getClickUri(): Uri? {
+        return Uri.parse("content://" + TIMELINE_CLICK_HOST + getUri().getEncodedPath())
     }
 
-    private void setChanged() {
-        changed = true;
-        lastChangedDate = System.currentTimeMillis();
+    private fun setChanged() {
+        changed = true
+        lastChangedDate = System.currentTimeMillis()
     }
 
-    public long getLastChangedDate() {
-        return lastChangedDate;
+    fun getLastChangedDate(): Long {
+        return lastChangedDate
     }
 
-    public boolean match(boolean isForSelector, TriState isTimelineCombined, @NonNull TimelineType timelineType,
-                         @NonNull Actor actor, @NonNull Origin origin) {
+    fun match(isForSelector: Boolean, isTimelineCombined: TriState?, timelineType: TimelineType,
+              actor: Actor, origin: Origin): Boolean {
         if (isForSelector && isDisplayedInSelector() == DisplayedInSelector.ALWAYS) {
-            return true;
+            return true
         } else if (isForSelector && isDisplayedInSelector() == DisplayedInSelector.NEVER) {
-            return false;
+            return false
         } else if (timelineType != TimelineType.UNKNOWN && timelineType != getTimelineType()) {
-            return false;
+            return false
         } else if (isTimelineCombined == TriState.TRUE) {
-            return isCombined();
+            return isCombined()
         } else if (isTimelineCombined == TriState.FALSE && isCombined()) {
-            return false;
+            return false
         } else if (timelineType == TimelineType.UNKNOWN || timelineType.scope == ListScope.ACTOR_AT_ORIGIN) {
-            return (actor.actorId == 0 || actor.actorId == getActorId())
-                    && (origin.isEmpty() || origin.equals(getOrigin())) ;
-        } else if (timelineType.isAtOrigin()) {
-            return origin.isEmpty() || origin.equals(getOrigin());
+            return ((actor.actorId == 0L || actor.actorId == getActorId())
+                    && (origin.isEmpty || origin == getOrigin()))
+        } else if (timelineType.isAtOrigin) {
+            return origin.isEmpty || origin == getOrigin()
         }
-        return actor.actorId == 0 || actor.actorId == getActorId();
+        return actor.actorId == 0L || actor.actorId == getActorId()
     }
 
-    public boolean hasActorProfile() {
-        return !isCombined && actor.nonEmpty() && timelineType.hasActorProfile();
+    fun hasActorProfile(): Boolean {
+        return !isCombined && actor.nonEmpty() && timelineType.hasActorProfile()
     }
 
-    public Timeline orElse(Timeline aDefault) {
-        return isEmpty() ? aDefault : this;
+    fun orElse(aDefault: Timeline?): Timeline? {
+        return if (isEmpty) aDefault else this
+    }
+
+    companion object {
+        val EMPTY: Timeline? = Timeline()
+        private val MIN_RETRY_PERIOD_MS = TimeUnit.SECONDS.toMillis(30)
+        val TIMELINE_CLICK_HOST: String? = "timeline.app.andstatus.org"
+        fun fromCursor(myContext: MyContext?, cursor: Cursor?): Timeline? {
+            val timeline = Timeline(
+                    myContext,
+                    DbUtils.getLong(cursor, BaseColumns._ID),
+                    TimelineType.Companion.load(DbUtils.getString(cursor, TimelineTable.TIMELINE_TYPE)),
+                    Actor.Companion.load(myContext, DbUtils.getLong(cursor, TimelineTable.ACTOR_ID)),
+                    myContext.origins().fromId(DbUtils.getLong(cursor, TimelineTable.ORIGIN_ID)),
+                    DbUtils.getString(cursor, TimelineTable.SEARCH_QUERY),
+                    DbUtils.getLong(cursor, TimelineTable.SELECTOR_ORDER))
+            timeline.changed = false
+            timeline.actorInTimeline = DbUtils.getString(cursor, TimelineTable.ACTOR_IN_TIMELINE)
+            timeline.setSyncedAutomatically(DbUtils.getBoolean(cursor, TimelineTable.IS_SYNCED_AUTOMATICALLY))
+            timeline.isDisplayedInSelector = DisplayedInSelector.Companion.load(DbUtils.getString(cursor, TimelineTable.DISPLAYED_IN_SELECTOR))
+            timeline.syncSucceededDate.set(DbUtils.getLong(cursor, TimelineTable.SYNC_SUCCEEDED_DATE))
+            timeline.syncFailedDate.set(DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_DATE))
+            timeline.errorMessage = DbUtils.getString(cursor, TimelineTable.ERROR_MESSAGE)
+            timeline.syncedTimesCount.set(DbUtils.getLong(cursor, TimelineTable.SYNCED_TIMES_COUNT))
+            timeline.syncFailedTimesCount.set(DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_TIMES_COUNT))
+            timeline.downloadedItemsCount.set(DbUtils.getLong(cursor, TimelineTable.DOWNLOADED_ITEMS_COUNT))
+            timeline.newItemsCount.set(DbUtils.getLong(cursor, TimelineTable.NEW_ITEMS_COUNT))
+            timeline.countSince.set(DbUtils.getLong(cursor, TimelineTable.COUNT_SINCE))
+            timeline.syncedTimesCountTotal.set(DbUtils.getLong(cursor, TimelineTable.SYNCED_TIMES_COUNT_TOTAL))
+            timeline.syncFailedTimesCountTotal.set(DbUtils.getLong(cursor, TimelineTable.SYNC_FAILED_TIMES_COUNT_TOTAL))
+            timeline.downloadedItemsCountTotal.set(DbUtils.getLong(cursor, TimelineTable.DOWNLOADED_ITEMS_COUNT_TOTAL))
+            timeline.newItemsCountTotal.set(DbUtils.getLong(cursor, TimelineTable.NEW_ITEMS_COUNT_TOTAL))
+            timeline.youngestPosition = DbUtils.getString(cursor, TimelineTable.YOUNGEST_POSITION)
+            timeline.youngestItemDate = DbUtils.getLong(cursor, TimelineTable.YOUNGEST_ITEM_DATE)
+            timeline.youngestSyncedDate = DbUtils.getLong(cursor, TimelineTable.YOUNGEST_SYNCED_DATE)
+            timeline.oldestPosition = DbUtils.getString(cursor, TimelineTable.OLDEST_POSITION)
+            timeline.oldestItemDate = DbUtils.getLong(cursor, TimelineTable.OLDEST_ITEM_DATE)
+            timeline.oldestSyncedDate = DbUtils.getLong(cursor, TimelineTable.OLDEST_SYNCED_DATE)
+            timeline.visibleItemId = DbUtils.getLong(cursor, TimelineTable.VISIBLE_ITEM_ID)
+            timeline.visibleY = DbUtils.getInt(cursor, TimelineTable.VISIBLE_Y)
+            timeline.visibleOldestDate = DbUtils.getLong(cursor, TimelineTable.VISIBLE_OLDEST_DATE)
+            timeline.lastChangedDate = DbUtils.getLong(cursor, TimelineTable.LAST_CHANGED_DATE)
+            return timeline
+        }
+
+        fun fromBundle(myContext: MyContext?, bundle: Bundle?): Timeline? {
+            if (bundle == null) return EMPTY
+            val timeline = myContext.timelines().fromId(bundle.getLong(IntentExtra.TIMELINE_ID.key))
+            return if (timeline.nonEmpty()) timeline else myContext.timelines()[TimelineType.Companion.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)), Actor.Companion.load(myContext, bundle.getLong(IntentExtra.ACTOR_ID.key)), myContext.origins().fromId(fromBundle(bundle, IntentExtra.ORIGIN_ID)), BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY)]
+        }
+
+        fun fromParsedUri(myContext: MyContext?, parsedUri: ParsedUri?, searchQueryIn: String?): Timeline? {
+            val timeline = myContext.timelines()[parsedUri.getTimelineType(), Actor.Companion.load(myContext, parsedUri.getActorId()), parsedUri.getOrigin(myContext), if (StringUtil.isEmpty(searchQueryIn)) parsedUri.getSearchQuery() else searchQueryIn]
+            if (timeline.timelineType == TimelineType.UNKNOWN && parsedUri.getActorsScreenType() == ActorsScreenType.UNKNOWN) {
+                MyLog.w(Timeline::class.java, "fromParsedUri; uri:" + parsedUri.getUri() + "; " + timeline)
+            }
+            return timeline
+        }
+
+        fun fromId(myContext: MyContext?, id: Long): Timeline {
+            return if (id == 0L) EMPTY else MyQuery.get(myContext,
+                    "SELECT * FROM " + TimelineTable.TABLE_NAME + " WHERE " + BaseColumns._ID + "=" + id,
+                    Function { cursor: Cursor? -> fromCursor(myContext, cursor) }).stream().findFirst().orElse(EMPTY)
+        }
+
+        private fun setIfLess(value: AtomicLong?, other: AtomicLong?): Boolean {
+            if (value.get() < other.get()) {
+                value.set(other.get())
+                return true
+            }
+            return false
+        }
     }
 }

@@ -13,126 +13,117 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
-
-import android.content.ContentValues;
-import android.database.Cursor;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.table.CommandTable;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.LazyVal;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtil;
-
-import java.util.Objects;
+import android.content.ContentValues
+import android.database.Cursor
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.database.table.CommandTable
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.LazyVal
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.StringUtil
+import java.util.*
+import java.util.function.Supplier
 
 /**
  * Command data about a Timeline. The timeline is lazily evaluated
  * @author yvolk@yurivolkov.com
  */
-class CommandTimeline {
-    LazyVal<Timeline> timeline;
-    private MyContext myContext;
-    private long id;
-    TimelineType timelineType;
-    private long actorId;
-    Origin origin;
-    String searchQuery;
-
-    static CommandTimeline of(Timeline timeline) {
-        CommandTimeline data = new CommandTimeline();
-        data.timeline = LazyVal.of(timeline);
-        data.myContext = timeline.myContext;
-        data.id = timeline.getId();
-        data.timelineType = timeline.getTimelineType();
-        data.actorId = timeline.getActorId();
-        data.origin = timeline.getOrigin();
-        data.searchQuery = timeline.getSearchQuery();
-        return data;
+internal class CommandTimeline {
+    var timeline: LazyVal<Timeline?>? = null
+    private var myContext: MyContext? = null
+    private var id: Long = 0
+    var timelineType: TimelineType? = null
+    private var actorId: Long = 0
+    var origin: Origin? = null
+    var searchQuery: String? = null
+    private fun evaluateTimeline(): Timeline? {
+        if (id != 0L) return myContext.timelines().fromId(id)
+        val actor: Actor = Actor.Companion.load(myContext, actorId)
+        return myContext.timelines().get(id, timelineType, actor, origin, searchQuery)
     }
 
-    static CommandTimeline fromCursor(MyContext myContext, Cursor cursor) {
-        CommandTimeline data = new CommandTimeline();
-        data.timeline = LazyVal.of(data::evaluateTimeline);
-        data.myContext = myContext;
-        data.id = DbUtils.getLong(cursor, CommandTable.TIMELINE_ID);
-        data.timelineType = TimelineType.load(DbUtils.getString(cursor, CommandTable.TIMELINE_TYPE));
-        data.actorId = DbUtils.getLong(cursor, CommandTable.ACTOR_ID);
-        data.origin = myContext.origins().fromId(DbUtils.getLong(cursor, CommandTable.ORIGIN_ID));
-        data.searchQuery = DbUtils.getString(cursor, CommandTable.SEARCH_QUERY);
-        return data;
+    fun toContentValues(values: ContentValues?) {
+        values.put(CommandTable.TIMELINE_ID, getId())
+        values.put(CommandTable.TIMELINE_TYPE, timelineType.save())
+        values.put(CommandTable.ACTOR_ID, actorId)
+        values.put(CommandTable.ORIGIN_ID, origin.getId())
+        values.put(CommandTable.SEARCH_QUERY, searchQuery)
     }
 
-    private Timeline evaluateTimeline() {
-        if (id != 0) return myContext.timelines().fromId(id);
-
-        Actor actor = Actor.load(myContext, actorId);
-        return myContext.timelines().get(id, timelineType, actor, origin, searchQuery);
+    private fun getId(): Long {
+        return if (timeline.isEvaluated()) timeline.get().getId() else id
     }
 
-    void toContentValues(ContentValues values) {
-        values.put(CommandTable.TIMELINE_ID, getId());
-        values.put(CommandTable.TIMELINE_TYPE, timelineType.save());
-        values.put(CommandTable.ACTOR_ID, actorId);
-        values.put(CommandTable.ORIGIN_ID, origin.getId());
-        values.put(CommandTable.SEARCH_QUERY, searchQuery);
+    fun isValid(): Boolean {
+        return timelineType != TimelineType.UNKNOWN
     }
 
-    private long getId() {
-        return timeline.isEvaluated() ? timeline.get().getId() : id;
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o == null || javaClass != o.javaClass) return false
+        val data = o as CommandTimeline?
+        return getId() == data.getId() && actorId == data.actorId && timelineType == data.timelineType && origin == data.origin && searchQuery == data.searchQuery
     }
 
-    boolean isValid() {
-        return timelineType != TimelineType.UNKNOWN;
+    override fun hashCode(): Int {
+        return Objects.hash(getId(), timelineType, actorId, origin, searchQuery)
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        CommandTimeline data = (CommandTimeline) o;
-        return getId() == data.getId() &&
-                actorId == data.actorId &&
-                timelineType == data.timelineType &&
-                origin.equals(data.origin) &&
-                searchQuery.equals(data.searchQuery);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(getId(), timelineType, actorId, origin, searchQuery);
-    }
-
-    @Override
-    public String toString() {
-        if (timeline.isEvaluated()) return timeline.get().toString();
-
-        MyStringBuilder builder = new MyStringBuilder();
+    override fun toString(): String {
+        if (timeline.isEvaluated()) return timeline.get().toString()
+        val builder = MyStringBuilder()
         if (timelineType.isAtOrigin()) {
-            builder.withComma(origin.isValid() ? origin.getName() : "(all origins)");
+            builder.withComma(if (origin.isValid()) origin.getName() else "(all origins)")
         }
         if (timelineType.isForUser()) {
-            if (actorId == 0) {
-                builder.withComma("(all accounts)");
-        }}
-        if (timelineType != TimelineType.UNKNOWN) {
-            builder.withComma("type", timelineType.save());
+            if (actorId == 0L) {
+                builder.withComma("(all accounts)")
+            }
         }
-        if (actorId != 0) {
-            builder.withComma("actorId", actorId);
+        if (timelineType != TimelineType.UNKNOWN) {
+            builder.withComma("type", timelineType.save())
+        }
+        if (actorId != 0L) {
+            builder.withComma("actorId", actorId)
         }
         if (StringUtil.nonEmpty(searchQuery)) {
-            builder.withCommaQuoted("search", searchQuery, true);
+            builder.withCommaQuoted("search", searchQuery, true)
         }
-        if ( id != 0) {
-            builder.withComma("id", id);
+        if (id != 0L) {
+            builder.withComma("id", id)
         }
-        return builder.toKeyValue("CommandTimeline");
+        return builder.toKeyValue("CommandTimeline")
+    }
+
+    companion object {
+        fun of(timeline: Timeline?): CommandTimeline? {
+            val data = CommandTimeline()
+            data.timeline = LazyVal.Companion.of<Timeline?>(timeline)
+            data.myContext = timeline.myContext
+            data.id = timeline.getId()
+            data.timelineType = timeline.getTimelineType()
+            data.actorId = timeline.getActorId()
+            data.origin = timeline.getOrigin()
+            data.searchQuery = timeline.getSearchQuery()
+            return data
+        }
+
+        fun fromCursor(myContext: MyContext?, cursor: Cursor?): CommandTimeline? {
+            val data = CommandTimeline()
+            data.timeline = LazyVal.Companion.of<Timeline?>(Supplier { data.evaluateTimeline() })
+            data.myContext = myContext
+            data.id = DbUtils.getLong(cursor, CommandTable.TIMELINE_ID)
+            data.timelineType = TimelineType.Companion.load(DbUtils.getString(cursor, CommandTable.TIMELINE_TYPE))
+            data.actorId = DbUtils.getLong(cursor, CommandTable.ACTOR_ID)
+            data.origin = myContext.origins().fromId(DbUtils.getLong(cursor, CommandTable.ORIGIN_ID))
+            data.searchQuery = DbUtils.getString(cursor, CommandTable.SEARCH_QUERY)
+            return data
+        }
     }
 }

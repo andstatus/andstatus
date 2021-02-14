@@ -13,144 +13,127 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
+import android.content.Context
+import android.database.Cursor
+import org.andstatus.app.actor.ActorViewItem
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.TimelineSql
+import org.andstatus.app.database.table.ActivityTable
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.net.social.ActivityType
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.RelativeTime
 
-import android.content.Context;
-import android.database.Cursor;
+class ConversationViewItem : BaseNoteViewItem<ConversationViewItem?>, Comparable<ConversationViewItem?> {
+    var inReplyToViewItem: ConversationViewItem? = null
+    var activityType: ActivityType? = ActivityType.EMPTY
+    var conversationId: Long = 0
+    var reversedListOrder = false
 
-import androidx.annotation.NonNull;
+    /** Numeration starts from 0  */
+    var mListOrder = 0
 
-import org.andstatus.app.actor.ActorViewItem;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.TimelineSql;
-import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.social.ActivityType;
-import org.andstatus.app.util.MyStringBuilder;
-
-import java.util.Set;
-
-import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
-
-public class ConversationViewItem extends BaseNoteViewItem<ConversationViewItem> implements Comparable<ConversationViewItem> {
-    public static final ConversationViewItem EMPTY = new ConversationViewItem(true, DATETIME_MILLIS_NEVER);
-
-    ConversationViewItem inReplyToViewItem = null;
-
-    ActivityType activityType = ActivityType.EMPTY;
-    long conversationId = 0;
-    boolean reversedListOrder = false;
-    /** Numeration starts from 0 **/
-    int mListOrder = 0;
     /**
-     * This order is reverse to the {@link #mListOrder}. 
+     * This order is reverse to the [.mListOrder].
      * First note in the conversation has order == 1.
      * The number is visible to a User.
      */
-    int historyOrder = 0;
-    int nReplies = 0;
-    int nParentReplies = 0;
-    int indentLevel = 0;
-    int replyLevel = 0;
+    var historyOrder = 0
+    var nReplies = 0
+    var nParentReplies = 0
+    var indentLevel = 0
+    var replyLevel = 0
 
-    protected ConversationViewItem(boolean isEmpty, long updatedDate) {
-        super(isEmpty, updatedDate);
+    protected constructor(isEmpty: Boolean, updatedDate: Long) : super(isEmpty, updatedDate) {}
+    internal constructor(myContext: MyContext?, cursor: Cursor?) : super(myContext, cursor) {
+        conversationId = DbUtils.getLong(cursor, NoteTable.CONVERSATION_ID)
+        author = ActorViewItem.Companion.fromActorId(origin, DbUtils.getLong(cursor, NoteTable.AUTHOR_ID))
+        inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID)
+        activityType = ActivityType.Companion.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE))
+        setOtherViewProperties(cursor)
     }
 
-    ConversationViewItem(MyContext myContext, Cursor cursor) {
-        super(myContext, cursor);
-        conversationId = DbUtils.getLong(cursor, NoteTable.CONVERSATION_ID);
-        author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
-        inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID);
-        activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE));
-        setOtherViewProperties(cursor);
+    fun newNonLoaded(myContext: MyContext?, id: Long): ConversationViewItem? {
+        val item = ConversationViewItem(false, RelativeTime.DATETIME_MILLIS_NEVER)
+        item.setMyContext(myContext)
+        item.noteId = id
+        return item
     }
 
-    protected ConversationViewItem newNonLoaded(MyContext myContext, long id) {
-        ConversationViewItem item = new ConversationViewItem(false, DATETIME_MILLIS_NEVER);
-        item.setMyContext(myContext);
-        item.setNoteId(id);
-        return item;
-    }
-
-    public void setReversedListOrder(boolean reversedListOrder) {
-        this.reversedListOrder = reversedListOrder;
+    fun setReversedListOrder(reversedListOrder: Boolean) {
+        this.reversedListOrder = reversedListOrder
     }
 
     /**
      * The newest replies are first, "branches" look up
      */
-    @Override
-    public int compareTo(ConversationViewItem another) {
-        int compared = mListOrder - another.mListOrder;
+    override fun compareTo(another: ConversationViewItem?): Int {
+        var compared = mListOrder - another.mListOrder
         if (compared == 0) {
-            if (updatedDate == another.updatedDate) {
-                if ( getNoteId() == another.getNoteId()) {
-                    compared = 0;
+            compared = if (updatedDate == another.updatedDate) {
+                if (noteId == another.getNoteId()) {
+                    0
                 } else {
-                    compared = (another.getNoteId() - getNoteId() > 0 ? 1 : -1);
+                    if (another.getNoteId() - noteId > 0) 1 else -1
                 }
             } else {
-                compared = (another.updatedDate - updatedDate > 0 ? 1 : -1);
+                if (another.updatedDate - updatedDate > 0) 1 else -1
             }
         }
-        if (reversedListOrder) compared = 0 - compared;
-        return compared;
+        if (reversedListOrder) compared = 0 - compared
+        return compared
     }
 
-    public boolean isLoaded() {
-        return updatedDate > 0;
+    fun isLoaded(): Boolean {
+        return updatedDate > 0
     }
 
-    @Override
-    public final boolean equals(Object o) {
-        if (o == this) {
-            return true;
+    override fun equals(o: Any?): Boolean {
+        if (o === this) {
+            return true
         }
-        if (!(o instanceof ConversationViewItem)) {
-            return false;
+        if (o !is ConversationViewItem) {
+            return false
         }
-        final ConversationViewItem other = (ConversationViewItem) o;
-        return getNoteId() == other.getNoteId();
+        val other = o as ConversationViewItem?
+        return noteId == other.getNoteId()
     }
 
-    @Override
-    public final int hashCode() {
-        return Long.valueOf(getNoteId()).hashCode();
+    override fun hashCode(): Int {
+        return java.lang.Long.valueOf(noteId).hashCode()
     }
 
-    Set<String> getProjection() {
-        return TimelineSql.getConversationProjection();
+    fun getProjection(): MutableSet<String?>? {
+        return TimelineSql.getConversationProjection()
     }
 
-    @Override
-    public MyStringBuilder getDetails(Context context, boolean showReceivedTime) {
-        final MyStringBuilder builder = super.getDetails(context, showReceivedTime);
+    override fun getDetails(context: Context?, showReceivedTime: Boolean): MyStringBuilder? {
+        val builder = super.getDetails(context, showReceivedTime)
         if (inReplyToViewItem != null) {
-            builder.withSpace("(" + inReplyToViewItem.historyOrder + ")");
+            builder.withSpace("(" + inReplyToViewItem.historyOrder + ")")
         }
         if (MyPreferences.isShowDebuggingInfoInUi()) {
-            builder.withSpace("(i" + indentLevel + ",r" + replyLevel + ")");
+            builder.withSpace("(i$indentLevel,r$replyLevel)")
         }
-        return builder;
+        return builder
     }
 
-    @NonNull
-    @Override
-    public ConversationViewItem fromCursor(MyContext myContext, Cursor cursor) {
-        return new ConversationViewItem(myContext, cursor);
+    override fun fromCursor(myContext: MyContext?, cursor: Cursor?): ConversationViewItem {
+        return ConversationViewItem(myContext, cursor)
     }
 
-    boolean isActorAConversationParticipant() {
-        switch (activityType) {
-            case CREATE:
-            case UPDATE:
-                return true;
-            default:
-                return false;
+    fun isActorAConversationParticipant(): Boolean {
+        return when (activityType) {
+            ActivityType.CREATE, ActivityType.UPDATE -> true
+            else -> false
         }
+    }
+
+    companion object {
+        val EMPTY: ConversationViewItem? = ConversationViewItem(true, RelativeTime.DATETIME_MILLIS_NEVER)
     }
 }

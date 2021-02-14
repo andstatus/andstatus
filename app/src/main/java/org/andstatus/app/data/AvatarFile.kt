@@ -13,98 +13,80 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data
 
-package org.andstatus.app.data;
+import android.database.Cursor
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.database.table.DownloadTable
+import org.andstatus.app.graphics.CachedImage
+import org.andstatus.app.graphics.ImageCaches
+import org.andstatus.app.graphics.MediaMetadata
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.service.CommandData
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.RelativeTime
 
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.R;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.graphics.CachedImage;
-import org.andstatus.app.graphics.ImageCaches;
-import org.andstatus.app.graphics.MediaMetadata;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.MyLog;
-
-import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
-
-public class AvatarFile extends MediaFile {
-    public static final AvatarFile EMPTY = new AvatarFile(Actor.EMPTY, "", MediaMetadata.EMPTY,
-            DownloadStatus.ABSENT, DATETIME_MILLIS_NEVER);
-    private final Actor actor;
-    public static final int AVATAR_SIZE_DIP = 48;
-    
-    @NonNull
-    public static AvatarFile fromCursor(Actor actor, Cursor cursor) {
-        final String filename = DbUtils.getString(cursor, DownloadTable.AVATAR_FILE_NAME);
-        return actor.isEmpty()
-                ? AvatarFile.EMPTY
-                : new AvatarFile(actor, filename, MediaMetadata.fromCursor(cursor),
-                    DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
-                    DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE));
+class AvatarFile private constructor(private val actor: Actor?, filename: String?, mediaMetadata: MediaMetadata?, downloadStatus: DownloadStatus?,
+                                     downloadedDate: Long) : MediaFile(filename, MyContentType.IMAGE, mediaMetadata, 0, downloadStatus, downloadedDate) {
+    override fun getId(): Long {
+        return getActor().actorId
     }
 
-    public static AvatarFile fromActorOnly(Actor actor) {
-        return actor.isEmpty()
-                ? AvatarFile.EMPTY
-                : new AvatarFile(actor, "", MediaMetadata.EMPTY, DownloadStatus.UNKNOWN, DATETIME_MILLIS_NEVER);
+    fun getActor(): Actor {
+        return actor ?: Actor.Companion.EMPTY
     }
 
-    private AvatarFile(Actor actor, String filename, MediaMetadata mediaMetadata, DownloadStatus downloadStatus,
-                       long downloadedDate) {
-        super(filename, MyContentType.IMAGE, mediaMetadata, 0, downloadStatus, downloadedDate);
-        this.actor = actor;
-    }
-
-    @Override
-    public long getId() {
-        return getActor().actorId;
-    }
-
-    @NonNull
-    public Actor getActor() {
-        return actor == null ? Actor.EMPTY : actor;
-    }
-
-    @Override
-    public CachedImage getDefaultImage() {
-        if (getActor().groupType.isGroupLike) {
-            return ImageCaches.getStyledImage(R.drawable.ic_people_black_24dp, R.drawable.ic_people_white_24dp);
+    public override fun getDefaultImage(): CachedImage? {
+        return if (getActor().groupType.isGroupLike) {
+            ImageCaches.getStyledImage(R.drawable.ic_people_black_24dp, R.drawable.ic_people_white_24dp)
         } else {
-            return ImageCaches.getStyledImage(R.drawable.ic_person_black_36dp, R.drawable.ic_person_white_36dp);
+            ImageCaches.getStyledImage(R.drawable.ic_person_black_36dp, R.drawable.ic_person_white_36dp)
         }
     }
 
-    @Override
-    public void requestDownload() {
-        if (getActor().actorId == 0 || !getActor().hasAvatar() || !contentType.getDownloadMediaOfThisType()) return;
-
-        MyLog.v(this, () -> "Requesting download " + getActor() + "\n" + this);
-        MyServiceManager.sendCommand(
-                CommandData.newActorCommandAtOrigin(CommandEnum.GET_AVATAR, getActor(),
-                        getActor().getUsername(), getActor().origin));
+    public override fun requestDownload() {
+        if (getActor().actorId == 0L || !getActor().hasAvatar() || !contentType.downloadMediaOfThisType) return
+        MyLog.v(this) {
+            """
+     Requesting download ${getActor()}
+     $this
+     """.trimIndent()
+        }
+        MyServiceManager.Companion.sendCommand(
+                CommandData.Companion.newActorCommandAtOrigin(CommandEnum.GET_AVATAR, getActor(),
+                        getActor().username, getActor().origin))
     }
 
-    @Override
-    protected boolean isDefaultImageRequired() {
-        return true;
+    override fun isDefaultImageRequired(): Boolean {
+        return true
     }
 
-    public void resetAvatarErrors(MyContext myContext) {
-        SQLiteDatabase db = myContext.getDatabase();
-        if (getActor().actorId == 0 || db == null) return;
-
+    fun resetAvatarErrors(myContext: MyContext?) {
+        val db = myContext.getDatabase()
+        if (getActor().actorId == 0L || db == null) return
         db.execSQL("UPDATE " + DownloadTable.TABLE_NAME +
                 " SET " + DownloadTable.DOWNLOAD_STATUS + "=" + DownloadStatus.ABSENT.save() +
                 " WHERE " + DownloadTable.ACTOR_ID + "=" + getActor().actorId +
                 " AND " + DownloadTable.DOWNLOAD_STATUS + "<>" + DownloadStatus.LOADED.save()
-        );
+        )
+    }
+
+    companion object {
+        val EMPTY: AvatarFile? = AvatarFile(Actor.Companion.EMPTY, "", MediaMetadata.Companion.EMPTY,
+                DownloadStatus.ABSENT, RelativeTime.DATETIME_MILLIS_NEVER)
+        const val AVATAR_SIZE_DIP = 48
+        fun fromCursor(actor: Actor?, cursor: Cursor?): AvatarFile {
+            val filename = DbUtils.getString(cursor, DownloadTable.AVATAR_FILE_NAME)
+            return if (actor.isEmpty()) EMPTY else AvatarFile(actor, filename, MediaMetadata.Companion.fromCursor(cursor),
+                    DownloadStatus.Companion.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
+                    DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE))
+        }
+
+        fun fromActorOnly(actor: Actor?): AvatarFile? {
+            return if (actor.isEmpty()) EMPTY else AvatarFile(actor, "", MediaMetadata.Companion.EMPTY, DownloadStatus.UNKNOWN, RelativeTime.DATETIME_MILLIS_NEVER)
+        }
     }
 }

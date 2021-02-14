@@ -13,100 +13,94 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.http
 
-package org.andstatus.app.net.http;
+import cz.msebera.android.httpclient.HttpEntity
+import cz.msebera.android.httpclient.NameValuePair
+import cz.msebera.android.httpclient.client.HttpClient
+import cz.msebera.android.httpclient.entity.ContentType
+import cz.msebera.android.httpclient.entity.mime.MultipartEntityBuilder
+import cz.msebera.android.httpclient.message.BasicNameValuePair
+import cz.msebera.android.httpclient.protocol.HTTP
+import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.util.FileUtils
+import org.andstatus.app.util.JsonUtils
+import org.andstatus.app.util.StringUtil
+import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.util.*
 
-import android.content.ContentResolver;
-import android.net.Uri;
-
-import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.util.FileUtils;
-import org.andstatus.app.util.JsonUtils;
-import org.andstatus.app.util.StringUtil;
-import org.json.JSONObject;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import cz.msebera.android.httpclient.HttpEntity;
-import cz.msebera.android.httpclient.NameValuePair;
-import cz.msebera.android.httpclient.client.HttpClient;
-import cz.msebera.android.httpclient.entity.ContentType;
-import cz.msebera.android.httpclient.entity.mime.MultipartEntityBuilder;
-import cz.msebera.android.httpclient.message.BasicNameValuePair;
-import cz.msebera.android.httpclient.protocol.HTTP;
-
-class ApacheHttpClientUtils {
-
-    static MultipartFormEntityBytes buildMultipartFormEntityBytes(HttpRequest request) throws ConnectionException {
-        HttpEntity httpEntity = multiPartFormEntity(request);
-        return new MultipartFormEntityBytes(
-                httpEntity.getContentType().getName(),
-                httpEntity.getContentType().getValue(),
-                httpEntityToBytes(httpEntity));
+internal object ApacheHttpClientUtils {
+    @Throws(ConnectionException::class)
+    fun buildMultipartFormEntityBytes(request: HttpRequest?): MultipartFormEntityBytes? {
+        val httpEntity = multiPartFormEntity(request)
+        return MultipartFormEntityBytes(
+                httpEntity.getContentType().name,
+                httpEntity.getContentType().value,
+                httpEntityToBytes(httpEntity))
     }
 
-    static HttpEntity multiPartFormEntity(HttpRequest request) throws ConnectionException {
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        request.postParams.ifPresent(formParams -> {
-            Iterator<String> iterator = formParams.keys();
-            ContentType textContentType = ContentType.create(HTTP.PLAIN_TEXT_TYPE, HTTP.UTF_8);
+    @Throws(ConnectionException::class)
+    fun multiPartFormEntity(request: HttpRequest?): HttpEntity? {
+        val builder = MultipartEntityBuilder.create()
+        request.postParams.ifPresent { formParams: JSONObject? ->
+            val iterator = formParams.keys()
+            val textContentType = ContentType.create(HTTP.PLAIN_TEXT_TYPE, HTTP.UTF_8)
             while (iterator.hasNext()) {
-                String name = iterator.next();
-                String value = JsonUtils.optString(formParams, name);
+                val name = iterator.next()
+                val value = JsonUtils.optString(formParams, name)
                 // see http://stackoverflow.com/questions/19292169/multipartentitybuilder-and-charset
-                builder.addTextBody(name, value, textContentType);
-            }
-        });
-        final ContentResolver contentResolver = request.myContext().context().getContentResolver();
-        if (contentResolver == null) {
-            throw ConnectionException.fromStatusCode(ConnectionException.StatusCode.NOT_FOUND,
-                    "Content Resolver is null in " + request.myContext().context());
-        }
-        if (request.mediaUri.isPresent()) {
-            Uri mediaUri = request.mediaUri.get();
-            try (InputStream ins = contentResolver.openInputStream(mediaUri)) {
-                ContentType mediaContentType = ContentType.create(
-                        MyContentType.uri2MimeType(contentResolver, mediaUri));
-                builder.addBinaryBody(request.mediaPartName, FileUtils.getBytes(ins), mediaContentType, mediaUri.getPath());
-            } catch (SecurityException | IOException e) {
-                throw ConnectionException.hardConnectionException("mediaUri='" + mediaUri + "'", e);
+                builder.addTextBody(name, value, textContentType)
             }
         }
-        return builder.build();
+        val contentResolver = request.myContext().context().contentResolver
+                ?: throw ConnectionException.Companion.fromStatusCode(StatusCode.NOT_FOUND,
+                        "Content Resolver is null in " + request.myContext().context())
+        if (request.mediaUri.isPresent) {
+            val mediaUri = request.mediaUri.get()
+            try {
+                contentResolver.openInputStream(mediaUri).use { ins ->
+                    val mediaContentType = ContentType.create(
+                            uri2MimeType(contentResolver, mediaUri))
+                    builder.addBinaryBody(request.mediaPartName, FileUtils.getBytes(ins), mediaContentType, mediaUri.path)
+                }
+            } catch (e: SecurityException) {
+                throw ConnectionException.Companion.hardConnectionException("mediaUri='$mediaUri'", e)
+            } catch (e: IOException) {
+                throw ConnectionException.Companion.hardConnectionException("mediaUri='$mediaUri'", e)
+            }
+        }
+        return builder.build()
     }
 
-    private static byte[] httpEntityToBytes(HttpEntity httpEntity) throws ConnectionException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
+    @Throws(ConnectionException::class)
+    private fun httpEntityToBytes(httpEntity: HttpEntity?): ByteArray? {
+        val out = ByteArrayOutputStream()
         try {
-            httpEntity.writeTo(out);
-            out.flush();
-        } catch (IOException e) {
-            throw new ConnectionException("httpEntityToBytes", e);
+            httpEntity.writeTo(out)
+            out.flush()
+        } catch (e: IOException) {
+            throw ConnectionException("httpEntityToBytes", e)
         }
-        return out.toByteArray();
+        return out.toByteArray()
     }
 
-    static List<NameValuePair> jsonToNameValuePair(JSONObject jso) {
-        List<NameValuePair> formParams = new ArrayList<>();
-        Iterator<String> iterator =  jso.keys();
+    fun jsonToNameValuePair(jso: JSONObject?): MutableList<NameValuePair?>? {
+        val formParams: MutableList<NameValuePair?> = ArrayList()
+        val iterator = jso.keys()
         while (iterator.hasNext()) {
-            String name = iterator.next();
-            String value = JsonUtils.optString(jso, name);
+            val name = iterator.next()
+            val value = JsonUtils.optString(jso, name)
             if (!StringUtil.isEmpty(value)) {
-                formParams.add(new BasicNameValuePair(name, value));
+                formParams.add(BasicNameValuePair(name, value))
             }
         }
-        return formParams;
+        return formParams
     }
 
-    static HttpClient getHttpClient(SslModeEnum sslMode) {
-        return sslMode == SslModeEnum.MISCONFIGURED ?
-                MisconfiguredSslHttpClientFactory.getHttpClient() :
-                    MyHttpClientFactory.getHttpClient(sslMode) ;
+    fun getHttpClient(sslMode: SslModeEnum?): HttpClient? {
+        return if (sslMode == SslModeEnum.MISCONFIGURED) MisconfiguredSslHttpClientFactory.getHttpClient() else MyHttpClientFactory.getHttpClient(sslMode)
     }
 }

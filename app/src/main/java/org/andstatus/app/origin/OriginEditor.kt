@@ -13,303 +13,263 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.origin
 
-package org.andstatus.app.origin;
-
-import android.content.Context;
-import android.content.Intent;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.TextView;
-
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyActivity;
-import org.andstatus.app.R;
-import org.andstatus.app.lang.SelectableEnumList;
-import org.andstatus.app.net.http.SslModeEnum;
-import org.andstatus.app.os.NonUiThreadExecutor;
-import org.andstatus.app.os.UiThreadExecutor;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.DialogFactory;
-import org.andstatus.app.util.MyCheckBox;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UrlUtils;
-import org.andstatus.app.util.ViewUtils;
-
-import java.util.concurrent.CompletableFuture;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.content.Context
+import android.content.Intent
+import android.media.RingtoneManager
+import android.os.Bundle
+import android.text.TextUtils
+import android.view.View
+import android.view.View.OnFocusChangeListener
+import android.widget.AdapterView
+import android.widget.AdapterView.OnItemSelectedListener
+import android.widget.Button
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.Spinner
+import android.widget.TextView
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.MyActivity
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.lang.SelectableEnumList
+import org.andstatus.app.net.http.SslModeEnum
+import org.andstatus.app.os.NonUiThreadExecutor
+import org.andstatus.app.os.UiThreadExecutor
+import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.util.DialogFactory
+import org.andstatus.app.util.MyCheckBox
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyUrlSpan
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TriState
+import org.andstatus.app.util.UrlUtils
+import org.andstatus.app.util.ViewUtils
+import java.util.concurrent.CompletableFuture
 
 /**
  * Add/Update Microblogging system
  * @author yvolk@yurivolkov.com
  */
-public class OriginEditor extends MyActivity {
-    private static final String TAG = OriginEditor.class.getSimpleName();
-    private Origin.Builder builder;
-
-    private Button buttonSave;
-    private Button buttonDelete;
-    private final SelectableEnumList<OriginType> originTypes = SelectableEnumList.newInstance(OriginType.class);
-    private Spinner spinnerOriginType;
-    private EditText editTextOriginName;
-    private EditText editTextHost;
-    private CheckBox checkBoxIsSsl;
-    private Spinner spinnerSslMode;
-    private Spinner spinnerMentionAsWebFingerId;
-    private Spinner spinnerUseLegacyHttpProtocol;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        MyServiceManager.setServiceUnavailable();
-
-        builder = new Origin.Builder(myContextHolder.getNow(), OriginType.GNUSOCIAL);
-        mLayoutId = R.layout.origin_editor;
-        super.onCreate(savedInstanceState);
-
-        buttonSave = (Button) findViewById(R.id.button_save);
-        Button buttonDiscard = (Button) findViewById(R.id.button_discard);
-        buttonDiscard.setOnClickListener(v -> finish());
-        buttonDelete = (Button) findViewById(R.id.button_delete);
-        buttonDelete.setOnClickListener(v -> {
+class OriginEditor : MyActivity() {
+    private var builder: Origin.Builder? = null
+    private var buttonSave: Button? = null
+    private var buttonDelete: Button? = null
+    private val originTypes: SelectableEnumList<OriginType?>? = SelectableEnumList.Companion.newInstance<OriginType?>(OriginType::class.java)
+    private var spinnerOriginType: Spinner? = null
+    private var editTextOriginName: EditText? = null
+    private var editTextHost: EditText? = null
+    private var checkBoxIsSsl: CheckBox? = null
+    private var spinnerSslMode: Spinner? = null
+    private var spinnerMentionAsWebFingerId: Spinner? = null
+    private var spinnerUseLegacyHttpProtocol: Spinner? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
+        MyServiceManager.Companion.setServiceUnavailable()
+        builder = Origin.Builder(MyContextHolder.Companion.myContextHolder.getNow(), OriginType.GNUSOCIAL)
+        mLayoutId = R.layout.origin_editor
+        super.onCreate(savedInstanceState)
+        buttonSave = findViewById<View?>(R.id.button_save) as Button
+        val buttonDiscard = findViewById<View?>(R.id.button_discard) as Button
+        buttonDiscard.setOnClickListener { v: View? -> finish() }
+        buttonDelete = findViewById<View?>(R.id.button_delete) as Button
+        buttonDelete.setOnClickListener(View.OnClickListener { v: View? ->
             if (builder.build().hasNotes()) {
-                DialogFactory.showOkCancelDialog(this,
-                    String.format(getText(R.string.delete_origin_dialog_title).toString(), builder.build().name),
-                    getText(R.string.delete_origin_dialog_text),
-                    this::deleteOrigin);
+                DialogFactory.showOkCancelDialog(this, String.format(getText(R.string.delete_origin_dialog_title).toString(), builder.build().name),
+                        getText(R.string.delete_origin_dialog_text)) { confirmed: Boolean? -> deleteOrigin(confirmed) }
             } else {
-                deleteOrigin(true);
+                deleteOrigin(true)
             }
-        });
-        
-        spinnerOriginType = (Spinner) findViewById(R.id.origin_type);
-        spinnerOriginType.setAdapter(originTypes.getSpinnerArrayAdapter(this));
-        editTextOriginName = (EditText) findViewById(R.id.origin_name);
-        editTextHost = (EditText) findViewById(R.id.host);
-        checkBoxIsSsl = (CheckBox) findViewById(R.id.is_ssl);
-        spinnerSslMode = (Spinner) findViewById(R.id.ssl_mode);
-        spinnerMentionAsWebFingerId = (Spinner) findViewById(R.id.mention_as_webfingerid);
-        spinnerUseLegacyHttpProtocol = (Spinner) findViewById(R.id.use_legacy_http_protocol);
-
-        processNewIntent(getIntent());
+        })
+        spinnerOriginType = findViewById<View?>(R.id.origin_type) as Spinner
+        spinnerOriginType.setAdapter(originTypes.getSpinnerArrayAdapter(this))
+        editTextOriginName = findViewById<View?>(R.id.origin_name) as EditText
+        editTextHost = findViewById<View?>(R.id.host) as EditText
+        checkBoxIsSsl = findViewById<View?>(R.id.is_ssl) as CheckBox
+        spinnerSslMode = findViewById<View?>(R.id.ssl_mode) as Spinner
+        spinnerMentionAsWebFingerId = findViewById<View?>(R.id.mention_as_webfingerid) as Spinner
+        spinnerUseLegacyHttpProtocol = findViewById<View?>(R.id.use_legacy_http_protocol) as Spinner
+        processNewIntent(intent)
     }
 
-    private void deleteOrigin(boolean confirmed) {
-        if (!confirmed) return;
-
-        CompletableFuture.supplyAsync(() -> builder.delete(), NonUiThreadExecutor.INSTANCE)
-        .thenAcceptAsync(ok -> { if (ok) {
-                setResult(RESULT_OK);
-                finish();
-            }}
-            , UiThreadExecutor.INSTANCE);
+    private fun deleteOrigin(confirmed: Boolean) {
+        if (!confirmed) return
+        CompletableFuture.supplyAsync({ builder.delete() }, NonUiThreadExecutor.Companion.INSTANCE)
+                .thenAcceptAsync({ ok: Boolean? ->
+                    if (ok) {
+                        setResult(RESULT_OK)
+                        finish()
+                    }
+                }, UiThreadExecutor.Companion.INSTANCE)
     }
 
-    private void processNewIntent(final Intent intentNew) {
-        String editorAction = intentNew.getAction();
-        
-        if (Intent.ACTION_INSERT.equals(editorAction)) {
-            buttonSave.setOnClickListener(new AddOrigin());
-            buttonSave.setText(R.string.button_add);
-            Origin origin = DiscoveredOrigins.fromName(intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key));
-            if (origin.isValid()) {
-                builder = new Origin.Builder(origin);
+    private fun processNewIntent(intentNew: Intent?) {
+        val editorAction = intentNew.getAction()
+        if (Intent.ACTION_INSERT == editorAction) {
+            buttonSave.setOnClickListener(AddOrigin())
+            buttonSave.setText(R.string.button_add)
+            val origin = DiscoveredOrigins.fromName(intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key))
+            if (origin.isValid) {
+                builder = Origin.Builder(origin)
             } else {
-                OriginType originType = OriginType.fromCode(intentNew.getStringExtra(IntentExtra.ORIGIN_TYPE.key));
-                builder = new Origin.Builder(myContextHolder.getNow(), OriginType.UNKNOWN.equals(originType) ? OriginType.GNUSOCIAL : originType);
-                if (!OriginType.UNKNOWN.equals(originType)) {
-                    spinnerOriginType.setEnabled(false);
+                val originType: OriginType = OriginType.Companion.fromCode(intentNew.getStringExtra(IntentExtra.ORIGIN_TYPE.key))
+                builder = Origin.Builder(MyContextHolder.Companion.myContextHolder.getNow(), if (OriginType.UNKNOWN == originType) OriginType.GNUSOCIAL else originType)
+                if (OriginType.UNKNOWN != originType) {
+                    spinnerOriginType.setEnabled(false)
                 }
             }
         } else {
-            buttonSave.setOnClickListener(new SaveOrigin());
-            spinnerOriginType.setEnabled(false);
-            editTextOriginName.setEnabled(false);
-            Origin origin = myContextHolder.getNow().origins().fromName(
-                    intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key));
-            builder = new Origin.Builder(origin);
+            buttonSave.setOnClickListener(SaveOrigin())
+            spinnerOriginType.setEnabled(false)
+            editTextOriginName.setEnabled(false)
+            val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromName(
+                    intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key))
+            builder = Origin.Builder(origin)
         }
-
-        Origin origin = builder.build();
-        MyLog.v(TAG, () -> "processNewIntent: " + origin.toString());
-        spinnerOriginType.setSelection(originTypes.getIndex(origin.getOriginType()));
+        val origin = builder.build()
+        MyLog.v(TAG) { "processNewIntent: $origin" }
+        spinnerOriginType.setSelection(originTypes.getIndex(origin.originType))
         if (spinnerOriginType.isEnabled()) {
-            spinnerOriginType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    if (!builder.build().getOriginType().equals(
-                            originTypes.get(spinnerOriginType.getSelectedItemPosition()))) {
+            spinnerOriginType.setOnItemSelectedListener(object : OnItemSelectedListener {
+                override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    if (builder.build().originType != originTypes.get(spinnerOriginType.getSelectedItemPosition())) {
                         intentNew.putExtra(IntentExtra.ORIGIN_TYPE.key,
-                                originTypes.get(spinnerOriginType.getSelectedItemPosition()).getCode());
-                        processNewIntent(intentNew);
+                                originTypes.get(spinnerOriginType.getSelectedItemPosition()).getCode())
+                        processNewIntent(intentNew)
                     }
                 }
 
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-
-                }
-            });
+                override fun onNothingSelected(parent: AdapterView<*>?) {}
+            })
         }
-
-        editTextOriginName.setText(origin.getName());
-        
-        final boolean showHostOrUrl = origin.shouldHaveUrl();
+        editTextOriginName.setText(origin.getName())
+        val showHostOrUrl = origin.shouldHaveUrl()
         if (showHostOrUrl) {
-            final String strHostOrUrl;
-            if (UrlUtils.isHostOnly(origin.getUrl())) {
-                strHostOrUrl = origin.getUrl().getHost();
+            val strHostOrUrl: String?
+            strHostOrUrl = if (UrlUtils.isHostOnly(origin.getUrl())) {
+                origin.getUrl().host
             } else if (origin.getUrl() != null) {
-                strHostOrUrl = origin.getUrl().toExternalForm();
+                origin.getUrl().toExternalForm()
             } else {
-                strHostOrUrl = "";
+                ""
             }
-            editTextHost.setText(strHostOrUrl);
-            editTextHost.setHint(origin.alternativeTermForResourceId(R.string.host_hint));
-
-            if (Intent.ACTION_INSERT.equals(editorAction) && StringUtil.isEmpty(origin.getName())) {
-                editTextHost.setOnFocusChangeListener((v, hasFocus) -> {
+            editTextHost.setText(strHostOrUrl)
+            editTextHost.setHint(origin.alternativeTermForResourceId(R.string.host_hint))
+            if (Intent.ACTION_INSERT == editorAction && StringUtil.isEmpty(origin.getName())) {
+                editTextHost.setOnFocusChangeListener(OnFocusChangeListener { v: View?, hasFocus: Boolean ->
                     if (!hasFocus) {
-                        originNameFromHost();
+                        originNameFromHost()
                     }
-                });
+                })
             }
-
-            MyUrlSpan.showLabel(this, R.id.label_host, origin.alternativeTermForResourceId(R.string.label_host));
+            MyUrlSpan.Companion.showLabel(this, R.id.label_host, origin.alternativeTermForResourceId(R.string.label_host))
         } else {
-            ViewUtils.showView(this, R.id.label_host, false);
+            ViewUtils.showView(this, R.id.label_host, false)
         }
-        ViewUtils.showView(editTextHost, showHostOrUrl);
-
-        MyCheckBox.set(this, R.id.is_ssl, origin.isSsl() , new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                showSslMode(isChecked);
-            }
-        });
-        spinnerSslMode.setSelection(origin.getSslMode().getEntriesPosition());
-        spinnerSslMode.setOnItemSelectedListener(new OnItemSelectedListener() {
-
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                showSslModeSummary(SslModeEnum.fromEntriesPosition(position));
+        ViewUtils.showView(editTextHost, showHostOrUrl)
+        MyCheckBox.set(this, R.id.is_ssl, origin.isSsl) { buttonView, isChecked -> showSslMode(isChecked) }
+        spinnerSslMode.setSelection(origin.sslMode.entriesPosition)
+        spinnerSslMode.setOnItemSelectedListener(object : OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                showSslModeSummary(SslModeEnum.Companion.fromEntriesPosition(position))
             }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+            override fun onNothingSelected(parent: AdapterView<*>?) {
                 // Empty
             }
-        });
-        showSslModeSummary(origin.getSslMode());
-        showSslMode(origin.isSsl());
-        MyCheckBox.setEnabled(this, R.id.allow_html, origin.isHtmlContentAllowed());
-
-        spinnerMentionAsWebFingerId.setSelection(origin.getMentionAsWebFingerId().getEntriesPosition());
-        spinnerUseLegacyHttpProtocol.setSelection(origin.useLegacyHttpProtocol().getEntriesPosition());
-        
-        buttonDelete.setVisibility(origin.hasAccounts() ? View.GONE : View.VISIBLE);
-
-        MyCheckBox.set(this, R.id.in_combined_global_search, origin.isInCombinedGlobalSearch(),
-                origin.getOriginType().isSearchTimelineSyncable());
-        MyCheckBox.set(this, R.id.in_combined_public_reload, origin.isInCombinedPublicReload(),
-                origin.getOriginType().isPublicTimeLineSyncable());
-
-        String title = getText(R.string.label_origin_system).toString();
-        if (origin.isPersistent()) {
-            title = origin.getName() + " - " + title;
+        })
+        showSslModeSummary(origin.sslMode)
+        showSslMode(origin.isSsl)
+        MyCheckBox.setEnabled(this, R.id.allow_html, origin.isHtmlContentAllowed)
+        spinnerMentionAsWebFingerId.setSelection(origin.mentionAsWebFingerId.entriesPosition)
+        spinnerUseLegacyHttpProtocol.setSelection(origin.useLegacyHttpProtocol().entriesPosition)
+        buttonDelete.setVisibility(if (origin.hasAccounts()) View.GONE else View.VISIBLE)
+        MyCheckBox.set(this, R.id.in_combined_global_search, origin.isInCombinedGlobalSearch,
+                origin.originType.isSearchTimelineSyncable)
+        MyCheckBox.set(this, R.id.in_combined_public_reload, origin.isInCombinedPublicReload,
+                origin.originType.isPublicTimeLineSyncable)
+        var title = getText(R.string.label_origin_system).toString()
+        if (origin.isPersistent) {
+            title = origin.getName() + " - " + title
         }
-        setTitle(title);
+        setTitle(title)
     }
 
-    void originNameFromHost() {
+    fun originNameFromHost() {
         if (TextUtils.isEmpty(editTextOriginName.getText())) {
-            Origin origin = new Origin.Builder(
+            val origin = Origin.Builder(
                     builder.getMyContext(), originTypes.get(spinnerOriginType.getSelectedItemPosition()))
-                    .setHostOrUrl(editTextHost.getText().toString()).build();
+                    .setHostOrUrl(editTextHost.getText().toString()).build()
             if (origin.getUrl() != null) {
-                editTextOriginName.setText(origin.getUrl().getHost());
+                editTextOriginName.setText(origin.getUrl().host)
             }
         }
     }
 
-    void showSslModeSummary(SslModeEnum sslMode) {
-        ((TextView)findViewById(R.id.ssl_mode_summary)).setText(sslMode.getSummaryResourceId());
-    }
-    
-    void showSslMode(boolean isSsl) {
-        findViewById(R.id.ssl_mode_container).setVisibility(isSsl ? View.VISIBLE : View.GONE);
-    }
-    
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        processNewIntent(intent);
+    fun showSslModeSummary(sslMode: SslModeEnum?) {
+        (findViewById<View?>(R.id.ssl_mode_summary) as TextView).setText(sslMode.getSummaryResourceId())
     }
 
-    private class AddOrigin implements OnClickListener {
-        @Override
-        public void onClick(View v) {
-            originNameFromHost();
-            builder = new Origin.Builder(builder.getMyContext(), originTypes.get(spinnerOriginType.getSelectedItemPosition()))
-                    .setName(editTextOriginName.getText().toString());
-            saveOthers();
+    fun showSslMode(isSsl: Boolean) {
+        findViewById<View?>(R.id.ssl_mode_container).visibility = if (isSsl) View.VISIBLE else View.GONE
+    }
+
+    public override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        processNewIntent(intent)
+    }
+
+    private inner class AddOrigin : View.OnClickListener {
+        override fun onClick(v: View?) {
+            originNameFromHost()
+            builder = Origin.Builder(builder.getMyContext(), originTypes.get(spinnerOriginType.getSelectedItemPosition()))
+                    .setName(editTextOriginName.getText().toString())
+            saveOthers()
         }
     }
-    
-    private class SaveOrigin implements OnClickListener {
-        @Override
-        public void onClick(View v) {
-            saveOthers();
+
+    private inner class SaveOrigin : View.OnClickListener {
+        override fun onClick(v: View?) {
+            saveOthers()
         }
     }
-    
-    private void saveOthers() {
+
+    private fun saveOthers() {
         builder.setHostOrUrl(editTextHost.getText().toString())
                 .setSsl(checkBoxIsSsl.isChecked())
-                .setSslMode(SslModeEnum.fromEntriesPosition(spinnerSslMode.getSelectedItemPosition()))
+                .setSslMode(SslModeEnum.Companion.fromEntriesPosition(spinnerSslMode.getSelectedItemPosition()))
                 .setHtmlContentAllowed(MyCheckBox.isChecked(this, R.id.allow_html, false))
-                .setMentionAsWebFingerId(TriState.fromEntriesPosition(
+                .setMentionAsWebFingerId(TriState.Companion.fromEntriesPosition(
                         spinnerMentionAsWebFingerId.getSelectedItemPosition()))
-                .setUseLegacyHttpProtocol(TriState.fromEntriesPosition(
+                .setUseLegacyHttpProtocol(TriState.Companion.fromEntriesPosition(
                         spinnerUseLegacyHttpProtocol.getSelectedItemPosition()))
                 .setInCombinedGlobalSearch(MyCheckBox.isChecked(this, R.id.in_combined_global_search, false))
                 .setInCombinedPublicReload(MyCheckBox.isChecked(this, R.id.in_combined_public_reload, false))
-                .save();
-        MyLog.v(TAG, () -> (builder.isSaved() ? "Saved" : "Not saved") + ": " + builder.build().toString());
+                .save()
+        MyLog.v(TAG) { (if (builder.isSaved()) "Saved" else "Not saved") + ": " + builder.build().toString() }
         if (builder.isSaved()) {
-            builder.getMyContext().origins().initialize();
-            setResult(RESULT_OK);
-            finish();
+            builder.getMyContext().origins().initialize()
+            setResult(RESULT_OK)
+            finish()
         } else {
-            beep(this);
+            beep(this)
         }
     }
-    
-    /**
-     * See http://stackoverflow.com/questions/4441334/how-to-play-an-android-notification-sound/9622040
-     */
-    private static void beep(Context context) {
-        try {
-            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            Ringtone r = RingtoneManager.getRingtone(context, notification);
-            r.play();
-        } catch (Exception e) {
-            MyLog.w(TAG, "beep", e);
-        }        
+
+    companion object {
+        private val TAG: String? = OriginEditor::class.java.simpleName
+
+        /**
+         * See http://stackoverflow.com/questions/4441334/how-to-play-an-android-notification-sound/9622040
+         */
+        private fun beep(context: Context?) {
+            try {
+                val notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                val r = RingtoneManager.getRingtone(context, notification)
+                r.play()
+            } catch (e: Exception) {
+                MyLog.w(TAG, "beep", e)
+            }
+        }
     }
 }

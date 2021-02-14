@@ -13,56 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
-
-import android.database.Cursor;
-import android.net.Uri;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.ProjectionMap;
-import org.andstatus.app.data.SqlIds;
-import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.Audience;
-import org.andstatus.app.net.social.Visibility;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.meta.TimelineType;
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.data.ProjectionMap
+import org.andstatus.app.data.SqlIds
+import org.andstatus.app.database.table.ActivityTable
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.Audience
+import org.andstatus.app.net.social.Visibility
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.timeline.meta.TimelineType
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class PrivateNotesConversationLoader extends ConversationLoader {
-    public PrivateNotesConversationLoader(ConversationViewItem emptyItem, MyContext myContext, Origin origin,
-                                          long selectedNoteId, boolean sync) {
-        super(emptyItem, myContext, origin, selectedNoteId, sync);
+class PrivateNotesConversationLoader(emptyItem: ConversationViewItem?, myContext: MyContext?, origin: Origin?,
+                                     selectedNoteId: Long, sync: Boolean) : ConversationLoader(emptyItem, myContext, origin, selectedNoteId, sync) {
+    override fun load2(nonLoaded: ConversationViewItem?) {
+        val actorId = MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, nonLoaded.getNoteId())
+        val audience: Audience = fromNoteId(ma.origin, nonLoaded.getNoteId())
+        val selection = getSelectionForActorAndAudience("=$actorId",
+                SqlIds.Companion.actorIdsOf(audience.nonSpecialActors).getSql())
+        val uri = myContext.timelines()[TimelineType.EVERYTHING, Actor.Companion.EMPTY, ma.origin].uri
+        myContext.context().contentResolver
+                .query(uri, nonLoaded.getProjection().toArray<String?>(arrayOf<String?>()), selection, null, null).use { cursor ->
+                    while (cursor != null && cursor.moveToNext()) {
+                        addItemToList(nonLoaded.fromCursor(myContext, cursor))
+                    }
+                }
     }
 
-    @Override
-    protected void load2(ConversationViewItem nonLoaded) {
-        long actorId = MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, nonLoaded.getNoteId());
-        Audience audience = Audience.fromNoteId(ma.getOrigin(), nonLoaded.getNoteId());
-        String selection = getSelectionForActorAndAudience("=" + actorId,
-                SqlIds.actorIdsOf(audience.getNonSpecialActors()).getSql());
-        Uri uri = myContext.timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.getOrigin()).getUri();
-        try (Cursor cursor = myContext.context().getContentResolver()
-                .query(uri, nonLoaded.getProjection().toArray(new String[]{}), selection, null, null)) {
-            while (cursor != null && cursor.moveToNext()) {
-                addItemToList(nonLoaded.fromCursor(myContext, cursor));
-            }
-        }
-    }
-
-    @NonNull
     // TODO: Actually this is not exactly what we need, because we don't check recipients
-    private String getSelectionForActorAndAudience(String actor, String audienceIds) {
-        return "(" + NoteTable.VISIBILITY + "=" + Visibility.PRIVATE.id
+    private fun getSelectionForActorAndAudience(actor: String?, audienceIds: String?): String {
+        return ("(" + NoteTable.VISIBILITY + "=" + Visibility.PRIVATE.id
                 + " AND (" + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + actor
-                + " OR " + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + audienceIds + "))";
+                + " OR " + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.ACTOR_ID + audienceIds + "))")
     }
-
 }

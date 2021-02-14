@@ -13,24 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.activity
 
-package org.andstatus.app.activity;
+import org.andstatus.app.actor.ActorContextMenu
+import org.andstatus.app.actor.ActorViewItem
+import org.andstatus.app.note.NoteEditorContainer
+import org.andstatus.app.view.MyContextMenu
 
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.note.NoteEditorContainer;
-import org.andstatus.app.actor.ActorViewItem;
-import org.andstatus.app.view.MyContextMenu;
-
-public class ActorOfActivityContextMenu extends org.andstatus.app.actor.ActorContextMenu {
-
-    public ActorOfActivityContextMenu(NoteEditorContainer menuContainer) {
-        super(menuContainer, MyContextMenu.MENU_GROUP_ACTOR);
-    }
-
-    @NonNull
-    @Override
-    protected ActorViewItem getViewItem(ActivityViewItem activityViewItem) {
-        return activityViewItem.actor;
+class ActorOfActivityContextMenu(menuContainer: NoteEditorContainer?) : ActorContextMenu(menuContainer, MyContextMenu.Companion.MENU_GROUP_ACTOR) {
+    override fun getViewItem(activityViewItem: ActivityViewItem?): ActorViewItem {
+        return activityViewItem.actor
     }
 }

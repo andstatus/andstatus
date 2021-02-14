@@ -13,173 +13,155 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.origin
 
-package org.andstatus.app.origin;
-
-import android.content.Intent;
-import android.os.Bundle;
-import android.provider.BaseColumns;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.ListAdapter;
-import android.widget.TextView;
-
-import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.FirstActivity;
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
-import org.andstatus.app.context.MySettingsActivity;
-import org.andstatus.app.list.MyListActivity;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.view.MySimpleAdapter;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.content.Intent
+import android.os.Bundle
+import android.provider.BaseColumns
+import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
+import android.widget.AdapterView.OnItemClickListener
+import android.widget.BaseAdapter
+import android.widget.ListAdapter
+import android.widget.TextView
+import org.andstatus.app.ActivityRequestCode
+import org.andstatus.app.FirstActivity
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MySettingsActivity
+import org.andstatus.app.list.MyListActivity
+import org.andstatus.app.origin.OriginList
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.view.MySimpleAdapter
+import java.util.*
 
 /**
  * Select or Manage Origins
  * @author yvolk@yurivolkov.com
  */
-public abstract class OriginList extends MyListActivity {
-    protected static final String KEY_VISIBLE_NAME = "visible_name";
-    protected static final String KEY_NAME = "name";
-    
-    private final List<Map<String, String>> data = new ArrayList<>();
-    protected boolean addEnabled = false;
-    protected OriginType originType = OriginType.UNKNOWN;
-    
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = getLayoutResourceId();
-        super.onCreate(savedInstanceState);
-        if (isFinishing()) return;
-
-        processNewIntent(getIntent());
+abstract class OriginList : MyListActivity() {
+    private val data: MutableList<MutableMap<String?, String?>?>? = ArrayList()
+    protected var addEnabled = false
+    protected var originType: OriginType? = OriginType.UNKNOWN
+    override fun onCreate(savedInstanceState: Bundle?) {
+        mLayoutId = getLayoutResourceId()
+        super.onCreate(savedInstanceState)
+        if (isFinishing) return
+        processNewIntent(intent)
     }
 
-    protected int getLayoutResourceId() {
-        return R.layout.my_list;
+    protected open fun getLayoutResourceId(): Int {
+        return R.layout.my_list
     }
 
     /**
      * Change the Activity according to the new intent. This procedure is done
-     * both {@link #onCreate(Bundle)} and {@link #onNewIntent(Intent)}
+     * both [.onCreate] and [.onNewIntent]
      */
-    private void processNewIntent(Intent intentNew) {
-        String action = intentNew.getAction();
-        if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_INSERT.equals(action)) {
-            getListView().setOnItemClickListener(this::onPickOrigin);
+    private fun processNewIntent(intentNew: Intent?) {
+        val action = intentNew.getAction()
+        if (Intent.ACTION_PICK == action || Intent.ACTION_INSERT == action) {
+            listView.onItemClickListener = OnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long -> onPickOrigin(parent, view, position, id) }
         } else {
-            getListView().setOnItemClickListener(this::onEditOrigin);
+            listView.onItemClickListener = OnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long -> onEditOrigin(parent, view, position, id) }
         }
-        addEnabled = !Intent.ACTION_PICK.equals(action);
-        originType = OriginType.fromCode(intentNew.getStringExtra(IntentExtra.ORIGIN_TYPE.key));
-        if (Intent.ACTION_INSERT.equals(action)) {
-            getSupportActionBar().setTitle(R.string.select_social_network);
+        addEnabled = Intent.ACTION_PICK != action
+        originType = OriginType.Companion.fromCode(intentNew.getStringExtra(IntentExtra.ORIGIN_TYPE.key))
+        if (Intent.ACTION_INSERT == action) {
+            supportActionBar.setTitle(R.string.select_social_network)
         }
-
-        ListAdapter adapter = new MySimpleAdapter(this,
+        val adapter: ListAdapter = MySimpleAdapter(this,
                 data,
-                R.layout.origin_list_item,
-                new String[] {KEY_VISIBLE_NAME, KEY_NAME},
-                new int[] {R.id.visible_name, R.id.name}, true);
+                R.layout.origin_list_item, arrayOf(KEY_VISIBLE_NAME, KEY_NAME), intArrayOf(R.id.visible_name, R.id.name), true)
         // Bind to our new adapter.
-        setListAdapter(adapter);
-
-        fillList();
+        listAdapter = adapter
+        fillList()
     }
 
-    protected void fillList() {
-        data.clear();
-        fillData(data);
-        data.sort((lhs, rhs) -> lhs.get(KEY_VISIBLE_NAME).compareToIgnoreCase(rhs.get(KEY_VISIBLE_NAME)));
-        MyLog.v(this, () -> "fillList, " + data.size() + " items");
-        ((BaseAdapter) getListAdapter()).notifyDataSetChanged();
+    protected fun fillList() {
+        data.clear()
+        fillData(data)
+        data.sort(java.util.Comparator { lhs: MutableMap<String?, String?>?, rhs: MutableMap<String?, String?>? -> lhs.get(KEY_VISIBLE_NAME).compareTo(rhs.get(KEY_VISIBLE_NAME), ignoreCase = true) })
+        MyLog.v(this) { "fillList, " + data.size + " items" }
+        (listAdapter as BaseAdapter).notifyDataSetChanged()
     }
 
-    protected final void fillData(List<Map<String, String>> data) {
-        for (Origin origin : getOrigins()) {
-            if (originType.equals(OriginType.UNKNOWN) || originType.equals(origin.getOriginType())) {
-                Map<String, String> map = new HashMap<>();
-                String visibleName = origin.getName();
-                map.put(KEY_VISIBLE_NAME, visibleName);
-                map.put(KEY_NAME, origin.getName());
-                map.put(BaseColumns._ID, Long.toString(origin.getId()));
-                data.add(map);
+    protected fun fillData(data: MutableList<MutableMap<String?, String?>?>?) {
+        for (origin in getOrigins()) {
+            if (originType == OriginType.UNKNOWN || originType == origin.getOriginType()) {
+                val map: MutableMap<String?, String?> = HashMap()
+                val visibleName = origin.getName()
+                map[KEY_VISIBLE_NAME] = visibleName
+                map[KEY_NAME] = origin.getName()
+                map[BaseColumns._ID] = java.lang.Long.toString(origin.getId())
+                data.add(map)
             }
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (myContextHolder.needToRestartActivity()) {
-            FirstActivity.closeAllActivities(this);
-            myContextHolder.initialize(this).thenStartActivity(getIntent());
+    override fun onResume() {
+        super.onResume()
+        if (MyContextHolder.Companion.myContextHolder.needToRestartActivity()) {
+            FirstActivity.Companion.closeAllActivities(this)
+            MyContextHolder.Companion.myContextHolder.initialize(this).thenStartActivity(intent)
         }
     }
 
-    protected abstract Iterable<Origin> getOrigins();
-
-    public void onPickOrigin(AdapterView<?> parent, View view, int position, long id) {
-        String name = ((TextView)view.findViewById(R.id.name)).getText().toString();
-        Intent dataToReturn = new Intent();
-        dataToReturn.putExtra(IntentExtra.ORIGIN_NAME.key, name);
-        OriginList.this.setResult(RESULT_OK, dataToReturn);
-        finish();
+    protected abstract fun getOrigins(): Iterable<Origin?>?
+    fun onPickOrigin(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+        val name = (view.findViewById<View?>(R.id.name) as TextView).text.toString()
+        val dataToReturn = Intent()
+        dataToReturn.putExtra(IntentExtra.ORIGIN_NAME.key, name)
+        this@OriginList.setResult(RESULT_OK, dataToReturn)
+        finish()
     }
 
-    public void onEditOrigin(AdapterView<?> parent, View view, int position, long id) {
-        String name = ((TextView)view.findViewById(R.id.name)).getText().toString();
-        Origin origin = myContextHolder.getNow().origins().fromName(name);
-        if (origin.isPersistent()) {
-            Intent intent = new Intent(OriginList.this, OriginEditor.class);
-            intent.setAction(Intent.ACTION_EDIT);
-            intent.putExtra(IntentExtra.ORIGIN_NAME.key, origin.getName());
-            startActivityForResult(intent, ActivityRequestCode.EDIT_ORIGIN.id);
+    fun onEditOrigin(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+        val name = (view.findViewById<View?>(R.id.name) as TextView).text.toString()
+        val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromName(name)
+        if (origin.isPersistent) {
+            val intent = Intent(this@OriginList, OriginEditor::class.java)
+            intent.action = Intent.ACTION_EDIT
+            intent.putExtra(IntentExtra.ORIGIN_NAME.key, origin.getName())
+            startActivityForResult(intent, ActivityRequestCode.EDIT_ORIGIN.id)
         }
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        processNewIntent(intent);
-    }
-    
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(getMenuResourceId(), menu);
-        return super.onCreateOptionsMenu(menu);
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        processNewIntent(intent)
     }
 
-    protected abstract int getMenuResourceId();
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(getMenuResourceId(), menu)
+        return super.onCreateOptionsMenu(menu)
+    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                MySettingsActivity.goToMySettingsAccounts(this);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+    protected abstract fun getMenuResourceId(): Int
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when (item.getItemId()) {
+            android.R.id.home -> {
+                MySettingsActivity.Companion.goToMySettingsAccounts(this)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            MySettingsActivity.goToMySettingsAccounts(this);
-            return true;
+            MySettingsActivity.Companion.goToMySettingsAccounts(this)
+            return true
         }
-        return super.onKeyDown(keyCode, event);
+        return super.onKeyDown(keyCode, event)
     }
 
+    companion object {
+        protected val KEY_VISIBLE_NAME: String? = "visible_name"
+        protected val KEY_NAME: String? = "name"
+    }
 }

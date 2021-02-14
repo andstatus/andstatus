@@ -13,152 +13,140 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social
 
-package org.andstatus.app.net.social;
+import org.andstatus.app.actor.GroupType
+import org.andstatus.app.context.DemoData
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.TestSuite
+import org.andstatus.app.origin.Origin
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
 
-import org.andstatus.app.actor.GroupType;
-import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.origin.Origin;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.List;
-
-import static org.andstatus.app.context.DemoData.demoData;
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
-public class ActorTest {
-
+class ActorTest {
     @Before
-    public void setUp() throws Exception {
-        TestSuite.initializeWithAccounts(this);
+    @Throws(Exception::class)
+    fun setUp() {
+        TestSuite.initializeWithAccounts(this)
     }
 
     @Test
-    public void testFromBodyText1() {
-        Origin origin = myContextHolder.getNow().origins().fromName(demoData.gnusocialTestOriginName);
-        String anotherUser2 = "anotherUser@somedomain.org";
-        String shortUsername3 = "shortusername";
-        String groupname1 = "gnusocial";
-        String body = "@" + demoData.gnusocialTestAccountUsername +
-                " @" + demoData.gnusocialTestAccount2Username +
-                " Please take this into account\n@" + anotherUser2 +
-                " @" + demoData.gnusocialTestAccount2Username +
-                " And we also send this to the group !" + groupname1 +
-                " And let me mention: @" + shortUsername3;
-        List<Actor> actors = Actor.newUnknown(origin, GroupType.UNKNOWN).extractActorsFromContent(body, Actor.EMPTY);
-        String msgLog = body + " ->\n" + actors;
-        assertEquals(msgLog, 6, actors.size());
-        assertEquals(msgLog, demoData.gnusocialTestAccountUsername, actors.get(0).getUsername());
-        assertEquals(msgLog, demoData.gnusocialTestAccount2Username, actors.get(1).getUsername());
-        assertEquals(msgLog, anotherUser2.toLowerCase(), actors.get(2).getWebFingerId());
-        assertEquals(msgLog, GroupType.UNKNOWN, actors.get(3).groupType);
-        assertEquals(msgLog, groupname1, actors.get(4).getUsername());
-        assertEquals(msgLog, GroupType.GENERIC, actors.get(4).groupType);
-        assertEquals(msgLog, shortUsername3, actors.get(5).getUsername());
+    fun testFromBodyText1() {
+        val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.gnusocialTestOriginName)
+        val anotherUser2 = "anotherUser@somedomain.org"
+        val shortUsername3 = "shortusername"
+        val groupname1 = "gnusocial"
+        val body = """@${DemoData.Companion.demoData.gnusocialTestAccountUsername} @${DemoData.Companion.demoData.gnusocialTestAccount2Username} Please take this into account
+@$anotherUser2 @${DemoData.Companion.demoData.gnusocialTestAccount2Username} And we also send this to the group !$groupname1 And let me mention: @$shortUsername3"""
+        val actors: MutableList<Actor?> = Actor.Companion.newUnknown(origin, GroupType.UNKNOWN).extractActorsFromContent(body, Actor.Companion.EMPTY)
+        val msgLog = "$body ->\n$actors"
+        Assert.assertEquals(msgLog, 6, actors.size.toLong())
+        Assert.assertEquals(msgLog, DemoData.Companion.demoData.gnusocialTestAccountUsername, actors[0].getUsername())
+        Assert.assertEquals(msgLog, DemoData.Companion.demoData.gnusocialTestAccount2Username, actors[1].getUsername())
+        Assert.assertEquals(msgLog, anotherUser2.toLowerCase(), actors[2].getWebFingerId())
+        Assert.assertEquals(msgLog, GroupType.UNKNOWN, actors[3].groupType)
+        Assert.assertEquals(msgLog, groupname1, actors[4].getUsername())
+        Assert.assertEquals(msgLog, GroupType.GENERIC, actors[4].groupType)
+        Assert.assertEquals(msgLog, shortUsername3, actors[5].getUsername())
     }
 
     @Test
-    public void testFromBodyText2() {
-        final String USERNAME1 = "FontSelinstin";
-        final String SKIPPED_USERNAME2 = "rocuhdjekrt";
-        final String SKIPPED_USERNAME3 = "kauiwoeieurt";
-        final String USERNAME4 = "djjerekwerwewer";
-
-        Origin origin = myContextHolder.getNow().origins().fromName(demoData.twitterTestOriginName);
-        String body = "Starting post @ #ThisIsTagofsome-event-and entertainment by @" +
+    fun testFromBodyText2() {
+        val USERNAME1 = "FontSelinstin"
+        val SKIPPED_USERNAME2 = "rocuhdjekrt"
+        val SKIPPED_USERNAME3 = "kauiwoeieurt"
+        val USERNAME4 = "djjerekwerwewer"
+        val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.twitterTestOriginName)
+        val body = "Starting post @ #ThisIsTagofsome-event-and entertainment by @" +
                 USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3 +
                 " &amp; @" + USERNAME4 +
                 " No reference !skippedGroupName" +
-                " https://t.co/djkdfeowefPh";
-        List<Actor> actors = Actor.newUnknown(origin, GroupType.UNKNOWN).extractActorsFromContent(body, Actor.EMPTY);
-        String msgLog = body + " -> " + actors;
-        assertEquals(msgLog, 2, actors.size());
-        Actor actor0 = actors.get(0);
-        assertEquals(msgLog, USERNAME1, actor0.getUsername());
-        assertFalse(msgLog, actor0.isOidReal());
-        assertFalse(msgLog +
-                "\nusername:" + actor0.getUsername() +
-                "\ntempOid: " + actor0.toTempOid() +
-                "\naltOid:  " + actor0.toAltTempOid(), actor0.hasAltTempOid());
-
-        assertEquals(msgLog, USERNAME4, actors.get(1).getUsername());
+                " https://t.co/djkdfeowefPh"
+        val actors: MutableList<Actor?> = Actor.Companion.newUnknown(origin, GroupType.UNKNOWN).extractActorsFromContent(body, Actor.Companion.EMPTY)
+        val msgLog = "$body -> $actors"
+        Assert.assertEquals(msgLog, 2, actors.size.toLong())
+        val actor0 = actors[0]
+        Assert.assertEquals(msgLog, USERNAME1, actor0.getUsername())
+        Assert.assertFalse(msgLog, actor0.isOidReal())
+        Assert.assertFalse("""
+    $msgLog
+    username:${actor0.getUsername()}
+    tempOid: ${actor0.toTempOid()}
+    altOid:  ${actor0.toAltTempOid()}
+    """.trimIndent(), actor0.hasAltTempOid())
+        Assert.assertEquals(msgLog, USERNAME4, actors[1].getUsername())
     }
 
     @Test
-    public void testIsWebFingerIdValid() {
-        checkWebFingerId("", false);
-        checkWebFingerId("someUser.", false);
-        checkWebFingerId("someUser ", false);
-        checkWebFingerId("some.user", false);
-        checkWebFingerId("some.user@example.com", true);
-        checkWebFingerId("so+me.user@example.com", true);
-        checkWebFingerId("some.us+er@example.com", false);
-        checkWebFingerId("t131t@identi.ca/PumpIo", false);
-        checkWebFingerId("some@example.com.", false);
-        checkWebFingerId("some@user", false);
-        checkWebFingerId("someuser@gs.kawa-kun.com", true);
-        checkWebFingerId("AndStatus@datamost.com", true);
+    fun testIsWebFingerIdValid() {
+        checkWebFingerId("", false)
+        checkWebFingerId("someUser.", false)
+        checkWebFingerId("someUser ", false)
+        checkWebFingerId("some.user", false)
+        checkWebFingerId("some.user@example.com", true)
+        checkWebFingerId("so+me.user@example.com", true)
+        checkWebFingerId("some.us+er@example.com", false)
+        checkWebFingerId("t131t@identi.ca/PumpIo", false)
+        checkWebFingerId("some@example.com.", false)
+        checkWebFingerId("some@user", false)
+        checkWebFingerId("someuser@gs.kawa-kun.com", true)
+        checkWebFingerId("AndStatus@datamost.com", true)
     }
 
-    private void checkWebFingerId(String username, boolean valid) {
-        assertEquals("Username '" + username + "' " + (valid ? "is valid" : "invalid"), valid,
-                Actor.isWebFingerIdValid(username));
-    }
-
-    @Test
-    public void testEquals() {
-        Origin origin = myContextHolder.getNow().origins().fromId(18);
-        Actor actor1 = Actor.fromOid(origin, "acct:fourthWithoutAvatar@pump.example.com");
-        actor1.actorId = 11;
-        actor1.setUsername("fourthWithoutAvatar@pump.example.com");
-        actor1.setRealName("Real Fourth");
-        actor1.setProfileUrl("http://pump.example.com/fourthWithoutAvatar");
-        actor1.build();
-
-        Actor actor2 = Actor.fromId(origin, 11);
-        actor2.setUsername("fourthWithoutAvatar@pump.example.com");
-        actor2.build();
-
-        assertEquals(actor1, actor2);
-        assertEquals(actor1.toString() + " vs " + actor2, actor1.hashCode(), actor2.hashCode());
-
+    private fun checkWebFingerId(username: String?, valid: Boolean) {
+        Assert.assertEquals("Username '" + username + "' " + if (valid) "is valid" else "invalid", valid,
+                Actor.Companion.isWebFingerIdValid(username))
     }
 
     @Test
-    public void extractActorsFromContent() {
-        String content = "<a href=\"https://loadaverage.org/andstatus\">AndStatus</a> started following" +
-                " <a href=\"https://gnusocial.no/mcscx2\">ex mcscx2@quitter.no</a>.";
-        List<Actor> actors = Actor.newUnknown(demoData.getPumpioConversationAccount().getOrigin(), GroupType.UNKNOWN)
-                .extractActorsFromContent(content, Actor.EMPTY);
-        assertEquals("Actors: " + actors, 1, actors.size());
-        assertEquals("Actors: " + actors, "mcscx2@quitter.no", actors.get(0).getWebFingerId());
+    fun testEquals() {
+        val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromId(18)
+        val actor1: Actor = Actor.Companion.fromOid(origin, "acct:fourthWithoutAvatar@pump.example.com")
+        actor1.actorId = 11
+        actor1.username = "fourthWithoutAvatar@pump.example.com"
+        actor1.realName = "Real Fourth"
+        actor1.profileUrl = "http://pump.example.com/fourthWithoutAvatar"
+        actor1.build()
+        val actor2: Actor = Actor.Companion.fromId(origin, 11)
+        actor2.username = "fourthWithoutAvatar@pump.example.com"
+        actor2.build()
+        Assert.assertEquals(actor1, actor2)
+        Assert.assertEquals("$actor1 vs $actor2", actor1.hashCode().toLong(), actor2.hashCode().toLong())
     }
 
     @Test
-    public void extractActorsFromContentActivityPub() {
-        String actorUniqueName = "me" + demoData.testRunUid + "@mastodon.example.com";
-        final String content = "Sending note to the unknown yet Actor @" + actorUniqueName;
-        List<Actor> actors = demoData.getMyAccount(demoData.activityPubTestAccountName).getActor()
-                .extractActorsFromContent(content, Actor.EMPTY);
-        assertEquals("Actors: " + actors, 1, actors.size());
-        assertEquals("Actors: " + actors, actorUniqueName, actors.get(0).getUniqueName());
+    fun extractActorsFromContent() {
+        val content = "<a href=\"https://loadaverage.org/andstatus\">AndStatus</a> started following" +
+                " <a href=\"https://gnusocial.no/mcscx2\">ex mcscx2@quitter.no</a>."
+        val actors: MutableList<Actor?> = Actor.Companion.newUnknown(DemoData.Companion.demoData.getPumpioConversationAccount().getOrigin(), GroupType.UNKNOWN)
+                .extractActorsFromContent(content, Actor.Companion.EMPTY)
+        Assert.assertEquals("Actors: $actors", 1, actors.size.toLong())
+        Assert.assertEquals("Actors: $actors", "mcscx2@quitter.no", actors[0].getWebFingerId())
     }
 
     @Test
-    public void extractActorsByUsername() {
-        extractOneUsername("peter");
-        extractOneUsername("AndStatus");
-        extractOneUsername("Jet");
+    fun extractActorsFromContentActivityPub() {
+        val actorUniqueName = "me" + DemoData.Companion.demoData.testRunUid + "@mastodon.example.com"
+        val content = "Sending note to the unknown yet Actor @$actorUniqueName"
+        val actors: MutableList<Actor?> = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.activityPubTestAccountName).getActor()
+                .extractActorsFromContent(content, Actor.Companion.EMPTY)
+        Assert.assertEquals("Actors: $actors", 1, actors.size.toLong())
+        Assert.assertEquals("Actors: $actors", actorUniqueName, actors[0].getUniqueName())
     }
 
-    public void extractOneUsername(String username) {
-        final String content = "Sending note to the unknown yet Actor @" + username + " from the Fediverse";
-        List<Actor> actors = demoData.getMyAccount(demoData.activityPubTestAccountName).getActor()
-                .extractActorsFromContent(content, Actor.EMPTY);
-        assertEquals("Actors from '" + content + "': \n" + actors, 1, actors.size());
-        assertEquals("Actors from '" + content + "': \n" + actors, username, actors.get(0).getUsername());
+    @Test
+    fun extractActorsByUsername() {
+        extractOneUsername("peter")
+        extractOneUsername("AndStatus")
+        extractOneUsername("Jet")
+    }
+
+    fun extractOneUsername(username: String?) {
+        val content = "Sending note to the unknown yet Actor @$username from the Fediverse"
+        val actors: MutableList<Actor?> = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.activityPubTestAccountName).getActor()
+                .extractActorsFromContent(content, Actor.Companion.EMPTY)
+        Assert.assertEquals("Actors from '$content': \n$actors", 1, actors.size.toLong())
+        Assert.assertEquals("Actors from '$content': \n$actors", username, actors[0].getUsername())
     }
 }

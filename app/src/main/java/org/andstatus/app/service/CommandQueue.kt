@@ -13,586 +13,551 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
-
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.table.CommandTable;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StopWatch;
-import org.andstatus.app.util.TryUtils;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-
-import io.vavr.control.Try;
+import android.content.ContentValues
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
+import io.vavr.control.CheckedFunction
+import io.vavr.control.Try
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.database.table.CommandTable
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.StopWatch
+import org.andstatus.app.util.TryUtils
+import java.util.*
+import java.util.concurrent.PriorityBlockingQueue
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
+import java.util.function.Consumer
+import java.util.function.Function
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class CommandQueue {
-    private static final String TAG = CommandQueue.class.getSimpleName();
+class CommandQueue(private val myContext: MyContext?) {
+    private val mRetryQueueProcessedAt: AtomicLong? = AtomicLong()
+    private val queues: MutableMap<QueueType?, OneQueue?>? = HashMap()
+    private val generalAccessor: Accessor?
+    private val accessors: MutableMap<AccessorType?, Accessor?>? = HashMap()
 
-    private static final int INITIAL_CAPACITY = 100;
-    private static final long RETRY_QUEUE_PROCESSING_PERIOD_SECONDS = 900;
-    private static final long MIN_RETRY_PERIOD_SECONDS = 900;
-    private static final long MAX_DAYS_IN_ERROR_QUEUE = 10;
-    private final static OneQueue preQueue = new OneQueue(QueueType.PRE);
+    @Volatile
+    private var loaded = false
 
-    private final MyContext myContext;
-    private final AtomicLong mRetryQueueProcessedAt = new AtomicLong();
-    private final Map<QueueType, OneQueue> queues = new HashMap<>();
-    private final Accessor generalAccessor;
-    private final Map<AccessorType, Accessor> accessors = new HashMap<>();
-    private volatile boolean loaded = false;
-    private volatile boolean changed = false;
+    @Volatile
+    private var changed = false
 
-    static void addToPreQueue(CommandData commandData) {
-        preQueue.addToQueue(commandData);
-    }
-
-    static class OneQueue {
-        final QueueType queueType;
-        Queue<CommandData> queue = new PriorityBlockingQueue<>(INITIAL_CAPACITY);
-
-        private OneQueue(QueueType queueType) {
-            this.queueType = queueType;
+    internal class OneQueue private constructor(val queueType: QueueType?) {
+        var queue: Queue<CommandData?>? = PriorityBlockingQueue(INITIAL_CAPACITY)
+        fun clear() {
+            queue.clear()
         }
 
-        public void clear() {
-            queue.clear();
+        fun isEmpty(): Boolean {
+            return queue.isEmpty()
         }
 
-        public boolean isEmpty() {
-            return queue.isEmpty();
-        }
-
-        private boolean hasForegroundTasks() {
-            for (CommandData commandData : queue) {
+        private fun hasForegroundTasks(): Boolean {
+            for (commandData in queue) {
                 if (commandData.isInForeground()) {
-                    return true;
+                    return true
                 }
             }
-            return false;
+            return false
         }
 
-        boolean addToQueue(CommandData commandData) {
-            switch (commandData.getCommand()) {
-                case EMPTY:
-                case UNKNOWN:
-                    MyLog.v(TAG, () -> "Didn't add unknown command to " + queueType + " queue: " + commandData);
-                    return true;
-                default:
-                    break;
+        fun addToQueue(commandData: CommandData?): Boolean {
+            when (commandData.getCommand()) {
+                CommandEnum.EMPTY, CommandEnum.UNKNOWN -> {
+                    MyLog.v(TAG) { "Didn't add unknown command to $queueType queue: $commandData" }
+                    return true
+                }
+                else -> {
+                }
             }
-
             if (queueType.onAddRemoveExisting) {
                 if (queue.remove(commandData)) {
-                    MyLog.v(TAG, () -> "Removed equal command from " + queueType + " queue");
+                    MyLog.v(TAG) { "Removed equal command from $queueType queue" }
                 }
             } else {
                 if (queue.contains(commandData)) {
-                    MyLog.v(TAG, () -> "Didn't add to " + queueType + " queue. Already found " + commandData);
-                    return true;
+                    MyLog.v(TAG) { "Didn't add to $queueType queue. Already found $commandData" }
+                    return true
                 }
             }
-
             if (queueType == QueueType.CURRENT && queueType == QueueType.DOWNLOADS) {
-                commandData.getResult().prepareForLaunch();
+                commandData.getResult().prepareForLaunch()
             }
-            MyLog.v(TAG, () -> "Adding to " + queueType + " queue " + commandData);
+            MyLog.v(TAG) { "Adding to $queueType queue $commandData" }
             if (queue.offer(commandData)) {
-                return true;
+                return true
             }
-            MyLog.e(TAG, "Couldn't add to the " + queueType + " queue, size=" + queue.size());
-            return false;
+            MyLog.e(TAG, "Couldn't add to the " + queueType + " queue, size=" + queue.size)
+            return false
         }
 
-        public int size() {
-            return queue.size();
+        fun size(): Int {
+            return queue.size
         }
     }
 
-    public CommandQueue(MyContext myContext) {
-        this.myContext = myContext;
-
-        for (QueueType queueType : QueueType.values()) {
-            if (queueType.createQueue) queues.put(queueType, new OneQueue(queueType));
-        }
-        queues.put(QueueType.PRE, preQueue);
-
-        generalAccessor = new Accessor(this, AccessorType.GENERAL);
-        accessors.put(AccessorType.GENERAL, generalAccessor);
-        accessors.put(AccessorType.DOWNLOADS, new Accessor(this, AccessorType.DOWNLOADS));
+    fun getAccessor(accessorType: AccessorType?): Accessor {
+        val accessor = accessors.get(accessorType)
+        return accessor ?: generalAccessor
     }
 
-    @NonNull
-    Accessor getAccessor(AccessorType accessorType) {
-        Accessor accessor = accessors.get(accessorType);
-        return accessor == null ? generalAccessor : accessor;
+    operator fun get(queueType: QueueType?): OneQueue {
+        return queues.get(queueType) ?: throw IllegalArgumentException("Unknown queueType $queueType")
     }
 
-    @NonNull
-    public OneQueue get(QueueType queueType) {
-        OneQueue oneQueue = queues.get(queueType);
-        if (oneQueue == null) throw new IllegalArgumentException("Unknown queueType " + queueType);
-        return oneQueue;
-    }
-
-    public synchronized CommandQueue load() {
+    @Synchronized
+    fun load(): CommandQueue? {
         if (loaded) {
-            MyLog.v(TAG, "Already loaded");
+            MyLog.v(TAG, "Already loaded")
         } else {
-            StopWatch stopWatch = StopWatch.createStarted();
-            int count = load(QueueType.CURRENT) + load(QueueType.DOWNLOADS)
-                    + load(QueueType.SKIPPED) + load(QueueType.RETRY);
-            int countError = load(QueueType.ERROR);
-            MyLog.i(TAG, "commandQueueInitializedMs:" + stopWatch.getTime() + ";"
-                    + (count > 0 ? Integer.toString(count) : " no") + " msg in queues"
-                    + (countError > 0 ? ", plus " + countError + " in Error queue" : "")
-            );
-            loaded = true;
+            val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+            val count = (load(QueueType.CURRENT) + load(QueueType.DOWNLOADS)
+                    + load(QueueType.SKIPPED) + load(QueueType.RETRY))
+            val countError = load(QueueType.ERROR)
+            MyLog.i(TAG, "commandQueueInitializedMs:" + stopWatch.time + ";"
+                    + (if (count > 0) Integer.toString(count) else " no") + " msg in queues"
+                    + if (countError > 0) ", plus $countError in Error queue" else ""
+            )
+            loaded = true
         }
-        return this;
+        return this
     }
 
-    /** @return Number of items loaded */
-    private int load(@NonNull QueueType queueType) {
-        final String method = "loadQueue-" + queueType.save();
-        OneQueue oneQueue = get(queueType);
-        Queue<CommandData> queue = oneQueue.queue;
-        int count = 0;
-        SQLiteDatabase db = myContext.getDatabase();
+    /** @return Number of items loaded
+     */
+    private fun load(queueType: QueueType): Int {
+        val method = "loadQueue-" + queueType.save()
+        val oneQueue = get(queueType)
+        val queue = oneQueue.queue
+        var count = 0
+        val db = myContext.getDatabase()
         if (db == null) {
-            MyLog.d(TAG, method + "; Database is unavailable");
-            return 0;
+            MyLog.d(TAG, "$method; Database is unavailable")
+            return 0
         }
-        String sql = "SELECT * FROM " + CommandTable.TABLE_NAME + " WHERE " + CommandTable.QUEUE_TYPE + "='"
-                + queueType.save() + "'";
-        Cursor c = null;
+        val sql = ("SELECT * FROM " + CommandTable.TABLE_NAME + " WHERE " + CommandTable.QUEUE_TYPE + "='"
+                + queueType.save() + "'")
+        var c: Cursor? = null
         try {
-            c = db.rawQuery(sql, null);
+            c = db.rawQuery(sql, null)
             while (c.moveToNext()) {
-                CommandData cd = CommandData.fromCursor(myContext, c);
-                if (CommandEnum.EMPTY.equals(cd.getCommand())) {
-                    MyLog.w(TAG, method + "; empty skipped " + cd);
+                val cd: CommandData = CommandData.Companion.fromCursor(myContext, c)
+                if (CommandEnum.EMPTY == cd.command) {
+                    MyLog.w(TAG, "$method; empty skipped $cd")
                 } else if (queue.contains(cd)) {
-                    MyLog.w(TAG, method + "; duplicate skipped " + cd);
+                    MyLog.w(TAG, "$method; duplicate skipped $cd")
                 } else {
                     if (queue.offer(cd)) {
-                        count++;
-                        if (MyLog.isVerboseEnabled() && (count < 6 || cd.getCommand() == CommandEnum.UPDATE_NOTE)) {
-                            MyLog.v(TAG, method + "; " + count + ": " + cd.toString());
+                        count++
+                        if (MyLog.isVerboseEnabled() && (count < 6 || cd.command == CommandEnum.UPDATE_NOTE)) {
+                            MyLog.v(TAG, "$method; $count: $cd")
                         }
                     } else {
-                        MyLog.e(TAG, method + "; Couldn't edd to queue " + cd);
+                        MyLog.e(TAG, "$method; Couldn't edd to queue $cd")
                     }
                 }
             }
         } finally {
-            DbUtils.closeSilently(c);
+            closeSilently(c)
         }
-        MyLog.d(TAG, method + "; loaded " + count + " commands from '" + queueType + "'");
-        return count;
+        MyLog.d(TAG, "$method; loaded $count commands from '$queueType'")
+        return count
     }
 
-    public synchronized void save() {
+    @Synchronized
+    fun save() {
         if (!changed && preQueue.isEmpty()) {
-            MyLog.v(TAG, () -> "save; Nothing to save. changed:" + changed + "; preQueueIsEmpty:" + preQueue.isEmpty());
-            return;
+            MyLog.v(TAG) { "save; Nothing to save. changed:" + changed + "; preQueueIsEmpty:" + preQueue.isEmpty() }
+            return
         }
-
-        SQLiteDatabase db = myContext.getDatabase();
+        val db = myContext.getDatabase()
         if (db == null) {
-            MyLog.d(TAG, "save; Database is unavailable");
-            return;
+            MyLog.d(TAG, "save; Database is unavailable")
+            return
         }
         if (!myContext.isReady() && !myContext.isExpired()) {
-            MyLog.d(TAG, "save; Cannot save: context is " + myContext.state());
-            return;
+            MyLog.d(TAG, "save; Cannot save: context is " + myContext.state())
+            return
         }
-        accessors.values().forEach(Accessor::moveCommandsFromPreToMainQueue);
-        if (loaded) clearQueuesInDatabase(db);
-
-        Try<Integer> countNotError = save(db, QueueType.CURRENT)
-                .flatMap(i1 -> save(db, QueueType.DOWNLOADS).map(i2 -> i1 + i2))
-                .flatMap(i1 -> save(db, QueueType.SKIPPED).map(i2 -> i1 + i2))
-                .flatMap(i1 -> save(db, QueueType.RETRY).map(i2 -> i1 + i2));
-        Try<Integer> countError = save(db, QueueType.ERROR);
-        MyLog.d(TAG, (loaded ? "Queues saved" : "Saved new queued commands only") + ", "
-            + ( countNotError.isFailure() || countError.isFailure()
-                ? " Error saving commands!"
-                : ((countNotError.get() > 0 ? Integer.toString(countNotError.get()) : "no") + " commands"
-                    + (countError.get() > 0 ? ", plus " + countError.get() + " in Error queue" : ""))
-            )
-        );
-        changed = false;
+        accessors.values.forEach(Consumer { obj: Accessor? -> obj.moveCommandsFromPreToMainQueue() })
+        if (loaded) clearQueuesInDatabase(db)
+        val countNotError = save(db, QueueType.CURRENT)
+                .flatMap(CheckedFunction<Int?, Try<out Int?>?> { i1: Int? -> save(db, QueueType.DOWNLOADS).map(CheckedFunction { i2: Int? -> i1 + i2 }) })
+                .flatMap { i1: Int? -> save(db, QueueType.SKIPPED).map(CheckedFunction { i2: Int? -> i1 + i2 }) }
+                .flatMap { i1: Int? -> save(db, QueueType.RETRY).map(CheckedFunction { i2: Int? -> i1 + i2 }) }
+        val countError = save(db, QueueType.ERROR)
+        MyLog.d(TAG, (if (loaded) "Queues saved" else "Saved new queued commands only") + ", "
+                + if (countNotError.isFailure || countError.isFailure()) " Error saving commands!" else (if (countNotError.get() > 0) Integer.toString(countNotError.get()) else "no") + " commands"
+                + if (countError.get() > 0) ", plus " + countError.get() + " in Error queue" else ""
+        )
+        changed = false
     }
 
-    /** @return Number of items persisted */
-    private Try<Integer> save(@NonNull SQLiteDatabase db, @NonNull QueueType queueType) {
-        final String method = "saveQueue-" + queueType.save();
-        OneQueue oneQueue = get(queueType);
-        Queue<CommandData> queue = oneQueue.queue;
-        int count = 0;
+    /** @return Number of items persisted
+     */
+    private fun save(db: SQLiteDatabase, queueType: QueueType): Try<Int?>? {
+        val method = "saveQueue-" + queueType.save()
+        val oneQueue = get(queueType)
+        val queue = oneQueue.queue
+        var count = 0
         try {
             if (!queue.isEmpty()) {
-                List<CommandData> commands = new ArrayList<>();
+                val commands: MutableList<CommandData?> = ArrayList()
                 while (!queue.isEmpty() && count < 300) {
-                    CommandData cd = queue.poll();
-                    ContentValues values = new ContentValues();
-                    cd.toContentValues(values);
-                    values.put(CommandTable.QUEUE_TYPE, queueType.save());
-                    db.insert(CommandTable.TABLE_NAME, null, values);
-                    count++;
-                    commands.add(cd);
+                    val cd = queue.poll()
+                    val values = ContentValues()
+                    cd.toContentValues(values)
+                    values.put(CommandTable.QUEUE_TYPE, queueType.save())
+                    db.insert(CommandTable.TABLE_NAME, null, values)
+                    count++
+                    commands.add(cd)
                     if (MyLog.isVerboseEnabled() && (count < 6 || cd.getCommand() == CommandEnum.UPDATE_NOTE)) {
-                        MyLog.v(TAG, method + "; " + count + ": " + cd.toString());
+                        MyLog.v(TAG, method + "; " + count + ": " + cd.toString())
                     }
                     if (myContext.isTestRun() && queue.contains(cd)) {
-                        MyLog.e(TAG, method + "; Duplicated command in a queue:" + count + " " + cd.toString());
+                        MyLog.e(TAG, method + "; Duplicated command in a queue:" + count + " " + cd.toString())
                     }
                 }
-                int left = queue.size();
+                val left = queue.size
                 // And add all commands back to the queue, so we won't need to reload them from a database
-                commands.forEach(queue::offer);
+                commands.forEach(Consumer { e: CommandData? -> queue.offer(e) })
                 MyLog.d(TAG, method + "; " + count + " saved" +
-                        (left == 0 ? " all" : ", " + left + " left"));
+                        if (left == 0) " all" else ", $left left")
             }
-        } catch (Exception e) {
-            String msgLog = method + "; " + count + " saved, " + queue.size() + " left.";
-            MyLog.e(TAG, msgLog, e);
-            return TryUtils.failure(msgLog, e);
+        } catch (e: Exception) {
+            val msgLog = method + "; " + count + " saved, " + queue.size + " left."
+            MyLog.e(TAG, msgLog, e)
+            return TryUtils.failure(msgLog, e)
         }
-        return Try.success(count);
+        return Try.success(count)
     }
 
-    private synchronized Try<Void> clearQueuesInDatabase(@NonNull SQLiteDatabase db) {
-        final String method = "clearQueuesInDatabase";
+    @Synchronized
+    private fun clearQueuesInDatabase(db: SQLiteDatabase): Try<Void?>? {
+        val method = "clearQueuesInDatabase"
         try {
-            String sql = "DELETE FROM " + CommandTable.TABLE_NAME;
-            DbUtils.execSQL(db, sql);
-        } catch (Exception e) {
-            MyLog.e(TAG, method, e);
-            return TryUtils.failure(method, e);
+            val sql = "DELETE FROM " + CommandTable.TABLE_NAME
+            DbUtils.execSQL(db, sql)
+        } catch (e: Exception) {
+            MyLog.e(TAG, method, e)
+            return TryUtils.failure(method, e)
         }
-        return TryUtils.SUCCESS;
+        return TryUtils.SUCCESS
     }
 
-    Try<Void> clear() {
-        loaded = true;
-        for ( Map.Entry<QueueType, OneQueue> entry : queues.entrySet()) {
-            entry.getValue().clear();
+    fun clear(): Try<Void?>? {
+        loaded = true
+        for ((_, value) in queues) {
+            value.clear()
         }
-        preQueue.clear();
-        changed = true;
-        save();
-        MyLog.v(TAG, "Queues cleared");
-        return TryUtils.SUCCESS;
+        preQueue.clear()
+        changed = true
+        save()
+        MyLog.v(TAG, "Queues cleared")
+        return TryUtils.SUCCESS
     }
 
-    Try<Void> deleteCommand(CommandData commandData) {
-        for (OneQueue oneQueue : queues.values()) {
+    fun deleteCommand(commandData: CommandData?): Try<Void?>? {
+        for (oneQueue in queues.values) {
             if (commandData.deleteFromQueue(oneQueue)) {
-                changed = true;
+                changed = true
             }
         }
-        if (commandData.getResult().getDownloadedCount() == 0) {
-            commandData.getResult().incrementParseExceptions();
-            commandData.getResult().setMessage("Didn't delete command #" + commandData.itemId);
+        if (commandData.getResult().downloadedCount == 0L) {
+            commandData.getResult().incrementParseExceptions()
+            commandData.getResult().message = "Didn't delete command #" + commandData.itemId
         }
-        commandData.getResult().afterExecutionEnded();
-        return TryUtils.SUCCESS;
+        commandData.getResult().afterExecutionEnded()
+        return TryUtils.SUCCESS
     }
 
-    int totalSizeToExecute() {
-        int size = 0;
-        for ( Map.Entry<QueueType, OneQueue> entry : queues.entrySet()) {
-            if (entry.getKey().isExecutable()) {
-                size += entry.getValue().size();
+    fun totalSizeToExecute(): Int {
+        var size = 0
+        for ((key, value) in queues) {
+            if (key.isExecutable()) {
+                size += value.size()
             }
         }
-        return size + preQueue.size();
+        return size + preQueue.size()
     }
 
-    /** @return true if success */
-    boolean addToQueue(QueueType queueTypeIn, CommandData commandData) {
+    /** @return true if success
+     */
+    fun addToQueue(queueTypeIn: QueueType?, commandData: CommandData?): Boolean {
         if (get(queueTypeIn).addToQueue(commandData)) {
-            changed = true;
-            return true;
+            changed = true
+            return true
         }
-        return false;
+        return false
     }
 
-    boolean isAnythingToExecuteNow() {
-        return accessors.values().stream().anyMatch(Accessor::isAnythingToExecuteNow);
+    fun isAnythingToExecuteNow(): Boolean {
+        return accessors.values.stream().anyMatch { obj: Accessor? -> obj.isAnythingToExecuteNow() }
     }
 
-    enum AccessorType {
-        GENERAL,
-        DOWNLOADS
+    internal enum class AccessorType {
+        GENERAL, DOWNLOADS
     }
 
-    static class Accessor {
-        private final CommandQueue cq;
-        final AccessorType accessorType;
-
-        private Accessor(CommandQueue commandQueue, AccessorType accessorType) {
-            this.cq = commandQueue;
-            this.accessorType = accessorType;
+    internal class Accessor private constructor(private val cq: CommandQueue?, val accessorType: AccessorType?) {
+        fun isAnythingToExecuteNow(): Boolean {
+            moveCommandsFromPreToMainQueue()
+            return (!cq.loaded
+                    || isAnythingToExecuteNowIn(mainQueueType())
+                    || isAnythingToExecuteNowIn(QueueType.SKIPPED)
+                    || isTimeToProcessRetryQueue() && isAnythingToExecuteNowIn(QueueType.RETRY))
         }
 
-        boolean isAnythingToExecuteNow() {
-            moveCommandsFromPreToMainQueue();
-            return !cq.loaded
-                || isAnythingToExecuteNowIn(mainQueueType())
-                || isAnythingToExecuteNowIn(QueueType.SKIPPED)
-                || isTimeToProcessRetryQueue() && isAnythingToExecuteNowIn(QueueType.RETRY);
-        }
-
-        long countToExecuteNow() {
-            return countToExecuteNowIn(mainQueueType())
+        fun countToExecuteNow(): Long {
+            return (countToExecuteNowIn(mainQueueType())
                     + countToExecuteNowIn(QueueType.PRE)
                     + countToExecuteNowIn(QueueType.SKIPPED)
-                    + (isTimeToProcessRetryQueue() ? countToExecuteNowIn(QueueType.RETRY) : 0);
+                    + if (isTimeToProcessRetryQueue()) countToExecuteNowIn(QueueType.RETRY) else 0)
         }
 
-        private boolean isForAccessor(CommandData cd) {
-            boolean commandForDownloads = cd.getCommand() == CommandEnum.GET_ATTACHMENT
-                    || cd.getCommand() == CommandEnum.GET_AVATAR;
-            return accessorType == AccessorType.GENERAL ^ commandForDownloads;
+        private fun isForAccessor(cd: CommandData?): Boolean {
+            val commandForDownloads = (cd.getCommand() == CommandEnum.GET_ATTACHMENT
+                    || cd.getCommand() == CommandEnum.GET_AVATAR)
+            return accessorType == AccessorType.GENERAL xor commandForDownloads
         }
 
-        private QueueType mainQueueType() {
-            return accessorType == AccessorType.GENERAL
-                    ? QueueType.CURRENT
-                    : QueueType.DOWNLOADS;
+        private fun mainQueueType(): QueueType? {
+            return if (accessorType == AccessorType.GENERAL) QueueType.CURRENT else QueueType.DOWNLOADS
         }
 
-        private boolean isTimeToProcessRetryQueue() {
+        private fun isTimeToProcessRetryQueue(): Boolean {
             return RelativeTime.moreSecondsAgoThan(cq.mRetryQueueProcessedAt.get(),
-                    RETRY_QUEUE_PROCESSING_PERIOD_SECONDS);
+                    RETRY_QUEUE_PROCESSING_PERIOD_SECONDS)
         }
 
-        private long countToExecuteNowIn(@NonNull QueueType queueType) {
-            long counter = 0;
+        private fun countToExecuteNowIn(queueType: QueueType): Long {
+            var counter: Long = 0
             if (!cq.loaded) {
-                return 0;
+                return 0
             }
-            Queue<CommandData> queue = cq.get(queueType).queue;
-            for (CommandData cd : queue) {
-                if (isForAccessor(cd) && !skip(cd)) counter++;
+            val queue = cq.get(queueType).queue
+            for (cd in queue) {
+                if (isForAccessor(cd) && !skip(cd)) counter++
             }
-            return counter;
+            return counter
         }
 
-        private boolean isAnythingToExecuteNowIn(@NonNull QueueType queueType) {
+        private fun isAnythingToExecuteNowIn(queueType: QueueType): Boolean {
             if (!cq.loaded) {
-                return true;
+                return true
             }
-            Queue<CommandData> queue = cq.get(queueType).queue;
-            for (CommandData cd : queue) {
-                if (isForAccessor(cd) && !skip(cd)) return true;
+            val queue = cq.get(queueType).queue
+            for (cd in queue) {
+                if (isForAccessor(cd) && !skip(cd)) return true
             }
-            return false;
+            return false
         }
 
-        CommandData pollQueue() {
-            moveCommandsFromPreToMainQueue();
-            CommandData commandData;
+        fun pollQueue(): CommandData? {
+            moveCommandsFromPreToMainQueue()
+            var commandData: CommandData?
             do {
-                commandData = cq.get(mainQueueType()).queue.poll();
+                commandData = cq.get(mainQueueType()).queue.poll()
                 if (commandData == null && isTimeToProcessRetryQueue() && isAnythingToExecuteNowIn(QueueType.RETRY)) {
-                    moveCommandsFromRetryToMainQueue();
-                    commandData = cq.get(mainQueueType()).queue.poll();
+                    moveCommandsFromRetryToMainQueue()
+                    commandData = cq.get(mainQueueType()).queue.poll()
                 }
                 if (commandData == null) {
-                    break;
+                    break
                 }
-                commandData = findInRetryQueue(commandData);
+                commandData = findInRetryQueue(commandData)
                 if (commandData != null) {
-                    commandData = findInErrorQueue(commandData);
+                    commandData = findInErrorQueue(commandData)
                 }
                 if (skip(commandData)) {
-                    cq.addToQueue(QueueType.SKIPPED, commandData);
-                    commandData = null;
+                    cq.addToQueue(QueueType.SKIPPED, commandData)
+                    commandData = null
                 }
-            } while (commandData == null);
-            MyLog.v(TAG, "Polled " + accessorType + " in "
-                    + (cq.myContext.isInForeground() ? "foreground "
-                    + (MyPreferences.isSyncWhileUsingApplicationEnabled() ? "enabled" : "disabled")
-                    : "background")
-                    + (commandData == null ? " (no command)" : " " + commandData));
+            } while (commandData == null)
+            MyLog.v(TAG, "Polled $accessorType in "
+                    + (if (cq.myContext.isInForeground()) "foreground "
+                    + if (MyPreferences.isSyncWhileUsingApplicationEnabled()) "enabled" else "disabled" else "background")
+                    + if (commandData == null) " (no command)" else " $commandData")
             if (commandData != null) {
-                cq.changed = true;
-                commandData.setManuallyLaunched(false);
+                cq.changed = true
+                commandData.isManuallyLaunched = false
             }
-            return commandData;
+            return commandData
         }
 
-        private boolean skip(CommandData commandData) {
-            if (commandData == null) return false;
-
-            if (!commandData.isInForeground() && cq.myContext.isInForeground()
+        private fun skip(commandData: CommandData?): Boolean {
+            if (commandData == null) return false
+            if (!commandData.isInForeground && cq.myContext.isInForeground()
                     && !MyPreferences.isSyncWhileUsingApplicationEnabled()) {
-                return true;
+                return true
             }
-            if (!commandData.getCommand().getConnectionRequired()
-                    .isConnectionStateOk(cq.myContext.getConnectionState())) {
-                return true;
-            }
-            return false;
+            return if (!commandData.command.connectionRequired
+                            .isConnectionStateOk(cq.myContext.getConnectionState())) {
+                true
+            } else false
         }
 
-        private void moveCommandsFromPreToMainQueue() {
-            for (CommandData cd : preQueue.queue) {
+        private fun moveCommandsFromPreToMainQueue() {
+            for (cd in preQueue.queue) {
                 if (addToMainOrSkipQueue(cd)) {
-                    preQueue.queue.remove(cd);
+                    preQueue.queue.remove(cd)
                 }
             }
         }
 
-        void moveCommandsFromSkippedToMainQueue() {
-            Queue<CommandData> queue = cq.get(QueueType.SKIPPED).queue;
-            for (CommandData cd : queue) {
+        fun moveCommandsFromSkippedToMainQueue() {
+            val queue = cq.get(QueueType.SKIPPED).queue
+            for (cd in queue) {
                 if (!skip(cd)) {
-                    queue.remove(cd);
+                    queue.remove(cd)
                     if (!addToMainOrSkipQueue(cd)) {
-                        queue.add(cd);
+                        queue.add(cd)
                     }
                 }
             }
         }
 
-        /** @return true if success */
-        private boolean addToMainOrSkipQueue(CommandData commandData) {
-            if (!isForAccessor(commandData)) return false;
-
-            if (skip(commandData)) {
-                return cq.addToQueue(QueueType.SKIPPED, commandData);
+        /** @return true if success
+         */
+        private fun addToMainOrSkipQueue(commandData: CommandData?): Boolean {
+            if (!isForAccessor(commandData)) return false
+            return if (skip(commandData)) {
+                cq.addToQueue(QueueType.SKIPPED, commandData)
             } else {
-                return cq.addToQueue(mainQueueType(), commandData);
+                cq.addToQueue(mainQueueType(), commandData)
             }
         }
 
-        private void moveCommandsFromRetryToMainQueue() {
-            Queue<CommandData> queue = cq.get(QueueType.RETRY).queue;
-            for (CommandData cd : queue) {
+        private fun moveCommandsFromRetryToMainQueue() {
+            val queue = cq.get(QueueType.RETRY).queue
+            for (cd in queue) {
                 if (cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS) && addToMainOrSkipQueue(cd)) {
-                    queue.remove(cd);
-                    cq.changed = true;
-                    MyLog.v(TAG, () -> "Moved from Retry to Main queue: " + cd);
+                    queue.remove(cd)
+                    cq.changed = true
+                    MyLog.v(TAG) { "Moved from Retry to Main queue: $cd" }
                 }
             }
-            cq.mRetryQueueProcessedAt.set(System.currentTimeMillis());
+            cq.mRetryQueueProcessedAt.set(System.currentTimeMillis())
         }
 
-        private CommandData findInRetryQueue(CommandData cdIn) {
-            Queue<CommandData> queue = cq.get(QueueType.RETRY).queue;
-            CommandData cdOut = cdIn;
+        private fun findInRetryQueue(cdIn: CommandData?): CommandData? {
+            val queue = cq.get(QueueType.RETRY).queue
+            var cdOut = cdIn
             if (queue.contains(cdIn)) {
-                for (CommandData cd : queue) {
-                    if (cd.equals(cdIn)) {
-                        cd.resetRetries();
-                        if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
-                            cdOut = cd;
-                            queue.remove(cd);
-                            cq.changed = true;
-                            MyLog.v(TAG, () -> "Returned from Retry queue: " + cd);
+                for (cd in queue) {
+                    if (cd == cdIn) {
+                        cd.resetRetries()
+                        if (cdIn.isManuallyLaunched || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
+                            cdOut = cd
+                            queue.remove(cd)
+                            cq.changed = true
+                            MyLog.v(TAG) { "Returned from Retry queue: $cd" }
                         } else {
-                            cdOut = null;
-                            MyLog.v(TAG, () -> "Found in Retry queue, but left there: " + cd);
+                            cdOut = null
+                            MyLog.v(TAG) { "Found in Retry queue, but left there: $cd" }
                         }
-                        break;
+                        break
                     }
                 }
             }
-            return cdOut;
+            return cdOut
         }
 
-        private CommandData findInErrorQueue(CommandData cdIn) {
-            Queue<CommandData> queue = cq.get(QueueType.ERROR).queue;
-            CommandData cdOut = cdIn;
+        private fun findInErrorQueue(cdIn: CommandData?): CommandData? {
+            val queue = cq.get(QueueType.ERROR).queue
+            var cdOut = cdIn
             if (queue.contains(cdIn)) {
-                for (CommandData cd : queue) {
-                    if (cd.equals(cdIn)) {
-                        if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
-                            cdOut = cd;
-                            queue.remove(cd);
-                            cq.changed = true;
-                            MyLog.v(TAG, () -> "Returned from Error queue: " + cd);
-                            cd.resetRetries();
+                for (cd in queue) {
+                    if (cd == cdIn) {
+                        if (cdIn.isManuallyLaunched || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
+                            cdOut = cd
+                            queue.remove(cd)
+                            cq.changed = true
+                            MyLog.v(TAG) { "Returned from Error queue: $cd" }
+                            cd.resetRetries()
                         } else {
-                            cdOut = null;
-                            MyLog.v(TAG, () -> "Found in Error queue, but left there: " + cd);
+                            cdOut = null
+                            MyLog.v(TAG) { "Found in Error queue, but left there: $cd" }
                         }
                     } else {
                         if (cd.executedMoreSecondsAgoThan(TimeUnit.DAYS.toSeconds(MAX_DAYS_IN_ERROR_QUEUE))) {
-                            queue.remove(cd);
-                            cq.changed = true;
-                            MyLog.i(TAG, "Removed old from Error queue: " + cd);
+                            queue.remove(cd)
+                            cq.changed = true
+                            MyLog.i(TAG, "Removed old from Error queue: $cd")
                         }
                     }
                 }
             }
-            return cdOut;
+            return cdOut
         }
     }
 
-    @NonNull
-    CommandData getFromAnyQueue(CommandData dataIn) {
+    fun getFromAnyQueue(dataIn: CommandData?): CommandData {
         return inWhichQueue(dataIn)
-                .map(oneQueue -> getFromQueue(oneQueue.queueType, dataIn))
-                .orElse(CommandData.EMPTY);
+                .map(Function { oneQueue: OneQueue? -> getFromQueue(oneQueue.queueType, dataIn) })
+                .orElse(CommandData.Companion.EMPTY)
     }
 
-    @NonNull
-    CommandData getFromQueue(QueueType queueType, CommandData dataIn) {
-        for (Object data : get(queueType).queue) {
-            if (dataIn.equals(data)) return (CommandData) data;
+    fun getFromQueue(queueType: QueueType?, dataIn: CommandData?): CommandData {
+        for (data in get(queueType).queue) {
+            if (dataIn == data) return data as CommandData
         }
-        return CommandData.EMPTY;
+        return CommandData.Companion.EMPTY
     }
 
-    Optional<OneQueue> inWhichQueue(CommandData commandData) {
-        for (OneQueue oneQueue : queues.values()) {
-            Queue<CommandData> queue = oneQueue.queue;
+    fun inWhichQueue(commandData: CommandData?): Optional<OneQueue?>? {
+        for (oneQueue in queues.values) {
+            val queue = oneQueue.queue
             if (queue.contains(commandData)) {
-                return Optional.of(oneQueue);
+                return Optional.of(oneQueue)
             }
         }
-        return Optional.empty();
+        return Optional.empty()
     }
 
-    @Override
-    public String toString() {
-        MyStringBuilder builder = new MyStringBuilder();
-        long count = 0;
-        for (OneQueue oneQueue : queues.values()) {
-            Queue<CommandData> queue = oneQueue.queue;
+    override fun toString(): String {
+        val builder = MyStringBuilder()
+        var count: Long = 0
+        for (oneQueue in queues.values) {
+            val queue = oneQueue.queue
             if (!queue.isEmpty()) {
-                count += queue.size();
-                builder.withComma(oneQueue.queueType.toString(), queue.toString());
+                count += queue.size.toLong()
+                builder.withComma(oneQueue.queueType.toString(), queue.toString())
             }
         }
-        builder.withComma("sizeOfAllQueues", count);
-        return builder.toKeyValue("CommandQueue");
+        builder.withComma("sizeOfAllQueues", count)
+        return builder.toKeyValue("CommandQueue")
+    }
+
+    companion object {
+        private val TAG: String? = CommandQueue::class.java.simpleName
+        private const val INITIAL_CAPACITY = 100
+        private const val RETRY_QUEUE_PROCESSING_PERIOD_SECONDS: Long = 900
+        private const val MIN_RETRY_PERIOD_SECONDS: Long = 900
+        private const val MAX_DAYS_IN_ERROR_QUEUE: Long = 10
+        private val preQueue: OneQueue? = OneQueue(QueueType.PRE)
+        fun addToPreQueue(commandData: CommandData?) {
+            preQueue.addToQueue(commandData)
+        }
+    }
+
+    init {
+        for (queueType in QueueType.values()) {
+            if (queueType.createQueue) queues[queueType] = OneQueue(queueType)
+        }
+        queues[QueueType.PRE] = preQueue
+        generalAccessor = Accessor(this, AccessorType.GENERAL)
+        accessors[AccessorType.GENERAL] = generalAccessor
+        accessors[AccessorType.DOWNLOADS] = Accessor(this, AccessorType.DOWNLOADS)
     }
 }

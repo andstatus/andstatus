@@ -1,75 +1,60 @@
-package org.andstatus.app.service;
+package org.andstatus.app.service
 
-import android.content.Context;
+import android.content.Context
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.net.social.Connection
+import org.andstatus.app.timeline.meta.Timeline
 
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.timeline.meta.Timeline;
-
-import androidx.annotation.NonNull;
-
-public class CommandExecutionContext {
-    private CommandData commandData;
-    public final MyContext myContext;
-
-    public CommandExecutionContext(MyContext myContext, CommandData commandData) {
-        if (commandData == null) {
-            throw new IllegalArgumentException( "CommandData is null");
-        }
-        this.commandData = commandData;
-        this.myContext = myContext;
+class CommandExecutionContext(myContext: MyContext?, commandData: CommandData?) {
+    private val commandData: CommandData?
+    val myContext: MyContext?
+    fun getConnection(): Connection? {
+        return getMyAccount().connection
     }
 
-    public Connection getConnection() {
-        return getMyAccount().getConnection();
+    fun getMyAccount(): MyAccount {
+        if (commandData.myAccount.isValid) return commandData.myAccount
+        return if (getTimeline().myAccountToSync.isValid) getTimeline().myAccountToSync else myContext.accounts().firstSucceeded
     }
 
-    @NonNull
-    public MyAccount getMyAccount() {
-        if (commandData.myAccount.isValid()) return commandData.myAccount;
-
-        if (getTimeline().myAccountToSync.isValid()) return getTimeline().myAccountToSync;
-
-        return myContext.accounts().getFirstSucceeded();
+    fun getMyContext(): MyContext? {
+        return myContext
     }
 
-    public MyContext getMyContext() {
-        return myContext;
+    fun getContext(): Context? {
+        return myContext.context()
     }
 
-    public Context getContext() {
-        return myContext.context();
+    fun getTimeline(): Timeline? {
+        return commandData.getTimeline()
     }
 
-    public Timeline getTimeline() {
-        return commandData.getTimeline();
+    fun getCommandData(): CommandData? {
+        return commandData
     }
 
-    public CommandData getCommandData() {
-        return commandData;
+    fun getResult(): CommandResult? {
+        return commandData.getResult()
     }
 
-    public CommandResult getResult() {
-        return commandData.getResult();
-    }
-
-    @Override
-    public String toString() {
-        return commandData.toString();
+    override fun toString(): String {
+        return commandData.toString()
     }
 
     // TODO: Do we need this?
-    public String toExceptionContext() {
-        return toString();
+    fun toExceptionContext(): String? {
+        return toString()
     }
 
-    public String getCommandSummary() {
-        CommandData commandData = getCommandData();
-        if (commandData == null) {
-            return "No command";
-        }
-        return commandData.toCommandSummary(getMyContext());
+    fun getCommandSummary(): String? {
+        val commandData = getCommandData() ?: return "No command"
+        return commandData.toCommandSummary(getMyContext())
     }
 
+    init {
+        requireNotNull(commandData) { "CommandData is null" }
+        this.commandData = commandData
+        this.myContext = myContext
+    }
 }

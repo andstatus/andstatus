@@ -13,85 +13,75 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-import android.app.Activity;
-import androidx.annotation.NonNull;
-import android.view.View;
-import android.view.ViewGroup;
+import android.app.Activity
+import android.view.View
+import android.view.ViewGroup.MarginLayoutParams
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ViewUtils {
-    private ViewUtils() {
-        // Non instantiable
-    }
-
-    public static int getHeightWithMargins(@NonNull View view) {
-        int height = view.getMeasuredHeight();
-        if (ViewGroup.MarginLayoutParams.class.isAssignableFrom(view.getLayoutParams().getClass())) {
-            ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+object ViewUtils {
+    fun getHeightWithMargins(view: View): Int {
+        var height = view.measuredHeight
+        if (MarginLayoutParams::class.java.isAssignableFrom(view.layoutParams.javaClass)) {
+            val layoutParams = view.layoutParams as MarginLayoutParams
             if (height == 0) {
-                height += layoutParams.height;
+                height += layoutParams.height
             }
-            height += layoutParams.topMargin + layoutParams.bottomMargin;
+            height += layoutParams.topMargin + layoutParams.bottomMargin
         }
-        return height;
+        return height
     }
 
-    public static int getWidthWithMargins(@NonNull View view) {
-        int width = view.getMeasuredWidth();
-        if (ViewGroup.MarginLayoutParams.class.isAssignableFrom(view.getLayoutParams().getClass())) {
-            ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+    fun getWidthWithMargins(view: View): Int {
+        var width = view.measuredWidth
+        if (MarginLayoutParams::class.java.isAssignableFrom(view.layoutParams.javaClass)) {
+            val layoutParams = view.layoutParams as MarginLayoutParams
             if (width == 0) {
-                width += layoutParams.width;
+                width += layoutParams.width
             }
-            width += layoutParams.leftMargin + layoutParams.rightMargin;
+            width += layoutParams.leftMargin + layoutParams.rightMargin
         }
-        return width;
+        return width
     }
 
     /**
      * @return true if succeeded
      */
-    public static boolean showView(Activity activity, int viewId, boolean show) {
-        return activity != null && showView(activity.findViewById(viewId), show);
+    fun showView(activity: Activity?, viewId: Int, show: Boolean): Boolean {
+        return activity != null && showView(activity.findViewById(viewId), show)
     }
 
     /**
      * @return true if succeeded
      */
-    public static boolean showView(View parentView, int viewId, boolean show) {
-        return parentView != null && showView(parentView.findViewById(viewId), show);
+    fun showView(parentView: View?, viewId: Int, show: Boolean): Boolean {
+        return parentView != null && showView(parentView.findViewById(viewId), show)
     }
 
     /**
      * @return true if succeeded
      */
-    public static boolean showView(View view, boolean show) {
-        boolean success = view != null;
+    fun showView(view: View?, show: Boolean): Boolean {
+        val success = view != null
         if (success) {
             if (show) {
                 if (view.getVisibility() != View.VISIBLE) {
-                    view.setVisibility(View.VISIBLE);
+                    view.setVisibility(View.VISIBLE)
                 }
             } else {
                 if (view.getVisibility() != View.GONE) {
-                    view.setVisibility(View.GONE);
+                    view.setVisibility(View.GONE)
                 }
             }
         }
-        return success;
+        return success
     }
 
-    public static boolean isVisible(@NonNull Activity activity, int viewId) {
-        View view = activity.findViewById(viewId);
-        if (view == null) {
-            return false;
-        }
-        return view.getVisibility() == View.VISIBLE;
+    fun isVisible(activity: Activity, viewId: Int): Boolean {
+        val view = activity.findViewById<View?>(viewId) ?: return false
+        return view.visibility == View.VISIBLE
     }
-
 }

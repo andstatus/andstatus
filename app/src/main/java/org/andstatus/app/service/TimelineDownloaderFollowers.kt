@@ -13,43 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
+import io.vavr.control.Try
+import org.andstatus.app.net.social.ApiRoutineEnum
 
-import org.andstatus.app.net.social.ApiRoutineEnum;
-
-import io.vavr.control.Try;
-
-class TimelineDownloaderFollowers extends TimelineDownloader {
-
-    TimelineDownloaderFollowers(CommandExecutionContext execContext) {
-        super(execContext);
+internal class TimelineDownloaderFollowers(execContext: CommandExecutionContext?) : TimelineDownloader(execContext) {
+    override fun download(): Try<Boolean?>? {
+        val strategy: CommandExecutorStrategy = CommandExecutorFollowers(execContext)
+        return strategy.execute()
     }
 
-    @Override
-    public Try<Boolean> download() {
-        CommandExecutorStrategy strategy = new CommandExecutorFollowers(execContext);
-        return strategy.execute();
+    public override fun isApiSupported(routine: ApiRoutineEnum?): Boolean {
+        return super.isApiSupported(routine) || super.isApiSupported(getAlternativeApiRoutine(routine))
     }
 
-    @Override
-    boolean isApiSupported(ApiRoutineEnum routine) {
-        return super.isApiSupported(routine) || super.isApiSupported(getAlternativeApiRoutine(routine));
-    }
-
-    private ApiRoutineEnum getAlternativeApiRoutine(ApiRoutineEnum routine) {
-        switch (routine) {
-            case GET_FOLLOWERS:
-                return ApiRoutineEnum.GET_FOLLOWERS_IDS;
-            case GET_FOLLOWERS_IDS:
-                return ApiRoutineEnum.GET_FOLLOWERS;
-            case GET_FRIENDS:
-                return ApiRoutineEnum.GET_FRIENDS_IDS;
-            case GET_FRIENDS_IDS:
-                return ApiRoutineEnum.GET_FRIENDS;
-            default:
-                return ApiRoutineEnum.DUMMY_API;
+    private fun getAlternativeApiRoutine(routine: ApiRoutineEnum?): ApiRoutineEnum? {
+        return when (routine) {
+            ApiRoutineEnum.GET_FOLLOWERS -> ApiRoutineEnum.GET_FOLLOWERS_IDS
+            ApiRoutineEnum.GET_FOLLOWERS_IDS -> ApiRoutineEnum.GET_FOLLOWERS
+            ApiRoutineEnum.GET_FRIENDS -> ApiRoutineEnum.GET_FRIENDS_IDS
+            ApiRoutineEnum.GET_FRIENDS_IDS -> ApiRoutineEnum.GET_FRIENDS
+            else -> ApiRoutineEnum.DUMMY_API
         }
-
     }
 }

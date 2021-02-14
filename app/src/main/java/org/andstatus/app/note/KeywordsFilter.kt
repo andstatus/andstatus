@@ -13,198 +13,172 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
+import org.andstatus.app.util.IsEmpty
+import org.andstatus.app.util.MyHtml
+import org.andstatus.app.util.StringUtil
+import java.util.*
 
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.MyHtml;
-import org.andstatus.app.util.StringUtil;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-public class KeywordsFilter implements IsEmpty {
-    static final String CONTAINS_PREFIX = "contains:";
-
-    static class Keyword {
-        final String value;
-        final boolean contains;
-        final boolean nonEmpty;
-
-        Keyword(String value) {
-            this(value, false);
+class KeywordsFilter(keywordsIn: String?) : IsEmpty {
+    internal class Keyword @JvmOverloads constructor(val value: String?, val contains: Boolean = false) {
+        val nonEmpty: Boolean
+        override fun equals(o: Any?): Boolean {
+            if (this === o) return true
+            if (o == null || javaClass != o.javaClass) return false
+            val keyword = o as Keyword?
+            return contains == keyword.contains && value == keyword.value
         }
 
-        Keyword(String value, boolean contains) {
-            this.value = value;
-            this.contains = contains;
-            nonEmpty = StringUtil.nonEmpty(value);
+        override fun hashCode(): Int {
+            return Objects.hash(value, contains)
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Keyword keyword = (Keyword) o;
-            return contains == keyword.contains && Objects.equals(value, keyword.value);
+        override fun toString(): String {
+            return "{" + (if (contains) CONTAINS_PREFIX else "") + value + "}"
         }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(value, contains);
-        }
-
-        @Override
-        public String toString() {
-            return "{" + (contains ? CONTAINS_PREFIX : "") + value + "}";
+        init {
+            nonEmpty = StringUtil.nonEmpty(value)
         }
     }
 
-    final List<Keyword> keywordsToFilter;
-    private final List<String> keywordsRaw;
-    private static final char DOUBLE_QUOTE = '"';
-
-    public KeywordsFilter(String keywordsIn) {
-        keywordsRaw = parseFilterString(keywordsIn);
-        keywordsToFilter = rawToActual(keywordsRaw);
-    }
-
-    @NonNull
-    private List<String> parseFilterString(String text) {
-        List<String> keywords = new ArrayList<>();
+    val keywordsToFilter: MutableList<Keyword?>?
+    private val keywordsRaw: MutableList<String?>?
+    private fun parseFilterString(text: String?): MutableList<String?> {
+        val keywords: MutableList<String?> = ArrayList()
         if (StringUtil.isEmpty(text)) {
-            return keywords;
+            return keywords
         }
-        boolean inQuote = false;
-        for (int atPos = 0; atPos < text.length();) {
-            int separatorInd = inQuote ? nextQuote(text, atPos) : nextSeparatorInd(text, atPos);
+        var inQuote = false
+        var atPos = 0
+        while (atPos < text.length) {
+            val separatorInd = if (inQuote) nextQuote(text, atPos) else nextSeparatorInd(text, atPos)
             if (atPos > separatorInd) {
-                break;
+                break
             }
-            String item = text.substring(atPos, separatorInd);
+            val item = text.substring(atPos, separatorInd)
             if (!StringUtil.isEmpty(item) && !keywords.contains(item)) {
-                keywords.add(item);
+                keywords.add(item)
             }
-            if (separatorInd < text.length() && text.charAt(separatorInd) == '"') {
-                inQuote = !inQuote;
+            if (separatorInd < text.length && text.get(separatorInd) == '"') {
+                inQuote = !inQuote
             }
-            atPos = separatorInd + 1;
+            atPos = separatorInd + 1
         }
-        return keywords;
+        return keywords
     }
 
-    private int nextQuote(String text, int atPos) {
-        for (int ind=atPos; ind < text.length(); ind++) {
-            if (DOUBLE_QUOTE == text.charAt(ind)) {
-                return ind;
+    private fun nextQuote(text: String?, atPos: Int): Int {
+        for (ind in atPos until text.length) {
+            if (DOUBLE_QUOTE == text.get(ind)) {
+                return ind
             }
         }
-        return text.length();
+        return text.length
     }
 
-    private int nextSeparatorInd(String text, int atPos) {
-        final String SEPARATORS = ", " + DOUBLE_QUOTE;
-        for (int ind=atPos; ind < text.length(); ind++) {
-            if (SEPARATORS.indexOf(text.charAt(ind)) >= 0) {
-                return ind;
+    private fun nextSeparatorInd(text: String?, atPos: Int): Int {
+        val SEPARATORS = ", " + DOUBLE_QUOTE
+        for (ind in atPos until text.length) {
+            if (SEPARATORS.indexOf(text.get(ind)) >= 0) {
+                return ind
             }
         }
-        return text.length();
+        return text.length
     }
 
-    @NonNull
-    private List<Keyword> rawToActual(List<String> keywordsRaw) {
-        List<Keyword> keywords = new ArrayList<>();
-        for (String itemRaw : keywordsRaw) {
-            boolean contains = itemRaw.startsWith(CONTAINS_PREFIX);
-            final String contentToSearch = MyHtml.getContentToSearch(contains
-                            ? itemRaw.substring(CONTAINS_PREFIX.length())
-                            : itemRaw);
-            final String withContains = contains && contentToSearch.length() > 2
-                    ? contentToSearch.substring(1, contentToSearch.length() - 1)
-                    : contentToSearch;
-            Keyword item = new Keyword(withContains, contains);
+    private fun rawToActual(keywordsRaw: MutableList<String?>?): MutableList<Keyword?> {
+        val keywords: MutableList<Keyword?> = ArrayList()
+        for (itemRaw in keywordsRaw) {
+            val contains = itemRaw.startsWith(CONTAINS_PREFIX)
+            val contentToSearch = MyHtml.getContentToSearch(if (contains) itemRaw.substring(CONTAINS_PREFIX.length) else itemRaw)
+            val withContains = if (contains && contentToSearch.length > 2) contentToSearch.substring(1, contentToSearch.length - 1) else contentToSearch
+            val item = Keyword(withContains, contains)
             if (item.nonEmpty && !keywords.contains(item)) {
-                keywords.add(item);
+                keywords.add(item)
             }
         }
-        return keywords;
+        return keywords
     }
 
-    public boolean matchedAny(String s) {
+    fun matchedAny(s: String?): Boolean {
         if (keywordsToFilter.isEmpty() || StringUtil.isEmpty(s)) {
-            return false;
+            return false
         }
-        for (Keyword keyword : keywordsToFilter) {
+        for (keyword in keywordsToFilter) {
             if (s.contains(keyword.value)) {
-                return true;
+                return true
             }
         }
-        return false;
+        return false
     }
 
-    public boolean matchedAll(String s) {
+    fun matchedAll(s: String?): Boolean {
         if (keywordsToFilter.isEmpty() || StringUtil.isEmpty(s)) {
-            return false;
+            return false
         }
-        for (Keyword keyword : keywordsToFilter) {
+        for (keyword in keywordsToFilter) {
             if (!s.contains(keyword.value)) {
-                return false;
+                return false
             }
         }
-        return true;
+        return true
     }
 
-    @NonNull
-    public String getSqlSelection(String fieldName) {
-        if (isEmpty()) {
-            return "";
+    fun getSqlSelection(fieldName: String?): String {
+        if (isEmpty) {
+            return ""
         }
-        StringBuilder selection = new StringBuilder();
-        for (int ind = 0; ind < keywordsToFilter.size(); ind++) {
+        val selection = StringBuilder()
+        for (ind in keywordsToFilter.indices) {
             if (ind > 0) {
-                selection.append(" AND ");
+                selection.append(" AND ")
             }
-            selection.append(fieldName + " LIKE ?");
+            selection.append("$fieldName LIKE ?")
         }
-        return selection.length() == 0 ? "" : "(" + selection.toString() + ")";
+        return if (selection.length == 0) "" else "($selection)"
     }
 
-    @NonNull
-    public String[] prependSqlSelectionArgs(String[] selectionArgs) {
-        String[] selectionArgsOut = selectionArgs;
-        for (Keyword keyword : keywordsToFilter) {
-            selectionArgsOut = StringUtil.addBeforeArray(selectionArgsOut, "%" + keyword.value + "%");
+    fun prependSqlSelectionArgs(selectionArgs: Array<String?>?): Array<String?> {
+        var selectionArgsOut = selectionArgs
+        for (keyword in keywordsToFilter) {
+            selectionArgsOut = StringUtil.addBeforeArray(selectionArgsOut, "%" + keyword.value + "%")
         }
-        return selectionArgsOut;
+        return selectionArgsOut
     }
 
-    @NonNull
-    public String getFirstTagOrFirstKeyword() {
-        for (String keyword : keywordsRaw) {
+    fun getFirstTagOrFirstKeyword(): String {
+        for (keyword in keywordsRaw) {
             if (keyword.startsWith("#")) {
-                return keyword.substring(1);
+                return keyword.substring(1)
             }
         }
-        return keywordsRaw.isEmpty() ? "" : keywordsRaw.get(0);
+        return if (keywordsRaw.isEmpty()) "" else keywordsRaw.get(0)
     }
 
-    public boolean isEmpty() {
-        return keywordsToFilter.isEmpty();
+    override fun isEmpty(): Boolean {
+        return keywordsToFilter.isEmpty()
     }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        for (String keyword : keywordsRaw) {
-            if (builder.length() > 0) {
-                builder.append(", ");
+    override fun toString(): String {
+        val builder = StringBuilder()
+        for (keyword in keywordsRaw) {
+            if (builder.length > 0) {
+                builder.append(", ")
             }
-            builder.append("\"" + keyword + "\"");
+            builder.append("\"" + keyword + "\"")
         }
-        return builder.toString();
+        return builder.toString()
+    }
+
+    companion object {
+        val CONTAINS_PREFIX: String? = "contains:"
+        private const val DOUBLE_QUOTE = '"'
+    }
+
+    init {
+        keywordsRaw = parseFilterString(keywordsIn)
+        keywordsToFilter = rawToActual(keywordsRaw)
     }
 }

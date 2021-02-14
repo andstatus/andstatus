@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
+enum class DuplicationLink {
+    DUPLICATES, IS_DUPLICATED, NONE;
 
-public enum DuplicationLink {
-    DUPLICATES,
-    IS_DUPLICATED,
-    NONE;
-
-    boolean exists() {
-        return this != NONE;
+    fun exists(): Boolean {
+        return this != NONE
     }
 }

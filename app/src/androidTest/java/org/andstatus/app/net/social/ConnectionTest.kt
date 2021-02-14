@@ -1,36 +1,28 @@
-package org.andstatus.app.net.social;
+package org.andstatus.app.net.social
 
-import org.andstatus.app.context.TestSuite;
-import org.junit.Test;
+import org.andstatus.app.context.TestSuite
+import org.junit.Assert
+import org.junit.Test
+import java.util.*
 
-import java.util.Calendar;
-import java.util.Date;
-
-import static org.junit.Assert.assertEquals;
-
-public class ConnectionTest {
-
+class ConnectionTest {
     @Test
-    public void testParseDate() {
-        Connection connection = ConnectionEmpty.EMPTY;
-        
-        String badStringDate = "Wrong Date Format";
-        long unixDate = connection.parseDate(badStringDate);
-        assertEquals("Bad date (" + badStringDate + ") " + new Date(unixDate), 0, unixDate );
-
-        parseOneDate(connection, "Fri Oct 24 13:34:38 -0700 2014", 
-                TestSuite.utcTime(2014, Calendar.OCTOBER, 24, 20, 34, 38));
-        
-        parseOneDate(connection, "Wed Nov 27 09:27:01 -0300 2013", 
-                TestSuite.utcTime(2013, Calendar.NOVEMBER, 27, 12, 27, 01));
-
-        parseOneDate(connection, "Thu Sep 26 22:23:05 GMT+04:00 2013", 
-                TestSuite.utcTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 05));
+    fun testParseDate() {
+        val connection: Connection = ConnectionEmpty.Companion.EMPTY
+        val badStringDate = "Wrong Date Format"
+        val unixDate = connection.parseDate(badStringDate)
+        Assert.assertEquals("Bad date (" + badStringDate + ") " + Date(unixDate), 0, unixDate)
+        parseOneDate(connection, "Fri Oct 24 13:34:38 -0700 2014",
+                TestSuite.utcTime(2014, Calendar.OCTOBER, 24, 20, 34, 38))
+        parseOneDate(connection, "Wed Nov 27 09:27:01 -0300 2013",
+                TestSuite.utcTime(2013, Calendar.NOVEMBER, 27, 12, 27, 1))
+        parseOneDate(connection, "Thu Sep 26 22:23:05 GMT+04:00 2013",
+                TestSuite.utcTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 5))
     }
 
-    private void parseOneDate(Connection connection, String stringDate, Date date) {
-        long unixDate;
-        unixDate = connection.parseDate(stringDate);
-        assertEquals("Testing the date: " + date + " (string: " + stringDate + ") vs " + new Date(unixDate).toString() + "; ", date.getTime(), unixDate);
+    private fun parseOneDate(connection: Connection?, stringDate: String?, date: Date?) {
+        val unixDate: Long
+        unixDate = connection.parseDate(stringDate)
+        Assert.assertEquals("Testing the date: " + date + " (string: " + stringDate + ") vs " + Date(unixDate).toString() + "; ", date.getTime(), unixDate)
     }
 }

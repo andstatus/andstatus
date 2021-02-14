@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
-
-import org.andstatus.app.timeline.meta.Timeline;
+import org.andstatus.app.timeline.meta.Timeline
 
 /**
- * Activity should implement this interface in order to use {@link NoteContextMenu}
+ * Activity should implement this interface in order to use [NoteContextMenu]
  * @author yvolk@yurivolkov.com
  */
-public interface NoteContextMenuContainer extends NoteEditorContainer {
-    Timeline getTimeline();
+interface NoteContextMenuContainer : NoteEditorContainer {
+    open fun getTimeline(): Timeline?
 }

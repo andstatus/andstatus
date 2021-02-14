@@ -13,34 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
-
-import android.content.Context;
-import android.view.ContextMenu;
-import android.view.View;
-import android.widget.TextView;
-
-import org.andstatus.app.R;
+import android.content.Context
+import android.view.ContextMenu
+import android.view.View
+import android.widget.TextView
+import org.andstatus.app.R
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ContextMenuHeader {
-    private final View header;
-
-    public ContextMenuHeader(Context context, ContextMenu contextMenu) {
-        header = View.inflate(context, R.layout.context_menu_header, null);
-        contextMenu.setHeaderView(header);
+class ContextMenuHeader(context: Context?, contextMenu: ContextMenu?) {
+    private val header: View?
+    fun setTitle(title: String?): ContextMenuHeader? {
+        (header.findViewById<View?>(R.id.title) as TextView).text = title
+        return this
     }
 
-    public ContextMenuHeader setTitle(String title) {
-        ((TextView)header.findViewById(R.id.title)).setText(title);
-        return this;
+    fun setSubtitle(subtitle: String?): ContextMenuHeader? {
+        (header.findViewById<View?>(R.id.subTitle) as TextView).text = subtitle
+        return this
     }
 
-    public ContextMenuHeader setSubtitle(String subtitle) {
-        ((TextView)header.findViewById(R.id.subTitle)).setText(subtitle);
-        return this;
+    init {
+        header = View.inflate(context, R.layout.context_menu_header, null)
+        contextMenu.setHeaderView(header)
     }
 }

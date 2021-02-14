@@ -13,210 +13,179 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
-
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CheckBox;
-
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.drawerlayout.widget.DrawerLayout;
-
-import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.list.SyncLoader;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.service.QueueViewer;
-import org.andstatus.app.timeline.BaseTimelineAdapter;
-import org.andstatus.app.timeline.ListScope;
-import org.andstatus.app.timeline.LoadableListPosition;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.BundleUtils;
-import org.andstatus.app.util.MyCheckBox;
-import org.andstatus.app.util.MyStringBuilder;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.content.Intent
+import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.CheckBox
+import android.widget.CompoundButton
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.drawerlayout.widget.DrawerLayout
+import org.andstatus.app.ActivityRequestCode
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.R
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.list.SyncLoader
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.note.ConversationViewItem
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.service.QueueViewer
+import org.andstatus.app.timeline.BaseTimelineAdapter
+import org.andstatus.app.timeline.ListScope
+import org.andstatus.app.timeline.LoadableListPosition
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.BundleUtils
+import org.andstatus.app.util.MyCheckBox
+import org.andstatus.app.util.MyStringBuilder
 
 /**
  * One selected note and, optionally, the whole conversation
- * 
+ *
  * @author yvolk@yurivolkov.com
  */
-public class ConversationActivity extends NoteEditorListActivity implements NoteContextMenuContainer {
-    private NoteContextMenu mContextMenu;
-
-    DrawerLayout mDrawerLayout;
-    ActionBarDrawerToggle mDrawerToggle;
-    private boolean showThreadsOfConversation;
-    private boolean oldNotesFirstInConversation;
-    private Origin origin = Origin.EMPTY;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.conversation;
-        super.onCreate(savedInstanceState);
-        if (isFinishing()) {
-            return;
+class ConversationActivity : NoteEditorListActivity<Any?>(), NoteContextMenuContainer {
+    private var mContextMenu: NoteContextMenu? = null
+    var mDrawerLayout: DrawerLayout? = null
+    var mDrawerToggle: ActionBarDrawerToggle? = null
+    private var showThreadsOfConversation = false
+    private var oldNotesFirstInConversation = false
+    private var origin: Origin? = Origin.Companion.EMPTY
+    override fun onCreate(savedInstanceState: Bundle?) {
+        mLayoutId = R.layout.conversation
+        super.onCreate(savedInstanceState)
+        if (isFinishing) {
+            return
         }
-
-        origin = getParsedUri().getOrigin(getMyContext());
-        mContextMenu = new NoteContextMenu(this);
-
-        showThreadsOfConversation = MyPreferences.isShowThreadsOfConversation();
-        oldNotesFirstInConversation = MyPreferences.areOldNotesFirstInConversation();
-        MyCheckBox.setEnabled(this, R.id.showSensitiveContentToggle, MyPreferences.isShowSensitiveContent());
-
-        initializeDrawer();
+        origin = parsedUri.getOrigin(getMyContext())
+        mContextMenu = NoteContextMenu(this)
+        showThreadsOfConversation = MyPreferences.isShowThreadsOfConversation()
+        oldNotesFirstInConversation = MyPreferences.areOldNotesFirstInConversation()
+        MyCheckBox.setEnabled(this, R.id.showSensitiveContentToggle, MyPreferences.isShowSensitiveContent())
+        initializeDrawer()
     }
 
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        mDrawerToggle.syncState();
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+        mDrawerToggle.syncState()
     }
 
-    private void initializeDrawer() {
-        mDrawerLayout = findViewById(R.id.drawer_layout);
+    private fun initializeDrawer() {
+        mDrawerLayout = findViewById(R.id.drawer_layout)
         if (mDrawerLayout != null) {
-            mDrawerToggle = new ActionBarDrawerToggle(
+            mDrawerToggle = object : ActionBarDrawerToggle(
                     this,
                     mDrawerLayout,
                     R.string.drawer_open,
                     R.string.drawer_close
-            ) {
-            };
-            mDrawerLayout.addDrawerListener(mDrawerToggle);
+            ) {}
+            mDrawerLayout.addDrawerListener(mDrawerToggle)
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (ActivityRequestCode.fromId(requestCode)) {
-            case SELECT_ACCOUNT_TO_ACT_AS:
-                if (resultCode == RESULT_OK) {
-                    MyAccount myAccount = myContextHolder.getNow().accounts().fromAccountName(
-                            data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
-                    if (myAccount.isValid()) {
-                        mContextMenu.setSelectedActingAccount(myAccount);
-                        mContextMenu.showContextMenu();
-                    }
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (ActivityRequestCode.Companion.fromId(requestCode)) {
+            ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS -> if (resultCode == RESULT_OK) {
+                val myAccount: MyAccount = MyContextHolder.Companion.myContextHolder.getNow().accounts().fromAccountName(
+                        data.getStringExtra(IntentExtra.ACCOUNT_NAME.key))
+                if (myAccount.isValid) {
+                    mContextMenu.setSelectedActingAccount(myAccount)
+                    mContextMenu.showContextMenu()
                 }
-                break;
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-                break;
+            }
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        mContextMenu.onContextItemSelected(item);
-        return super.onContextItemSelected(item);
+    override fun onContextItemSelected(item: MenuItem?): Boolean {
+        mContextMenu.onContextItemSelected(item)
+        return super.onContextItemSelected(item)
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.conversation, menu);
-        return true;
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.conversation, menu)
+        return true
     }
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        prepareDrawer();
-        return super.onPrepareOptionsMenu(menu);
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        prepareDrawer()
+        return super.onPrepareOptionsMenu(menu)
     }
 
-    private void prepareDrawer() {
-        View drawerView = findViewById(R.id.navigation_drawer);
-        if (drawerView == null) {
-            return;
-        }
+    private fun prepareDrawer() {
+        val drawerView = findViewById<View?>(R.id.navigation_drawer) ?: return
         MyCheckBox.set(drawerView, R.id.showThreadsOfConversation,
-                showThreadsOfConversation, this::onShowThreadsOfConversationChanged);
+                showThreadsOfConversation) { v: CompoundButton?, isChecked: Boolean -> onShowThreadsOfConversationChanged(v, isChecked) }
         MyCheckBox.set(drawerView, R.id.oldNotesFirstInConversation,
-                oldNotesFirstInConversation, this::onOldNotesFirstInConversationChanged);
+                oldNotesFirstInConversation) { v: CompoundButton?, isChecked: Boolean -> onOldNotesFirstInConversationChanged(v, isChecked) }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
+            return true
         }
-        switch (item.getItemId()) {
-            case R.id.commands_queue_id:
-                startActivity(new Intent(getActivity(), QueueViewer.class));
-                break;
-            default:
-                return super.onOptionsItemSelected(item);
+        when (item.getItemId()) {
+            R.id.commands_queue_id -> startActivity(Intent(activity, QueueViewer::class.java))
+            else -> return super.onOptionsItemSelected(item)
         }
-        return false;
+        return false
     }
 
-    public void onShowThreadsOfConversationChanged(View v, boolean isChecked) {
-        closeDrawer();
-        showThreadsOfConversation = isChecked;
-        MyPreferences.setShowThreadsOfConversation(isChecked);
-        updateList(LoadableListPosition.EMPTY);
+    fun onShowThreadsOfConversationChanged(v: View?, isChecked: Boolean) {
+        closeDrawer()
+        showThreadsOfConversation = isChecked
+        MyPreferences.setShowThreadsOfConversation(isChecked)
+        updateList(LoadableListPosition.Companion.EMPTY)
     }
 
-    public void onOldNotesFirstInConversationChanged(View v, boolean isChecked) {
-        closeDrawer();
-        oldNotesFirstInConversation = isChecked;
-        MyPreferences.setOldNotesFirstInConversation(isChecked);
-        updateList(LoadableListPosition.EMPTY);
+    fun onOldNotesFirstInConversationChanged(v: View?, isChecked: Boolean) {
+        closeDrawer()
+        oldNotesFirstInConversation = isChecked
+        MyPreferences.setOldNotesFirstInConversation(isChecked)
+        updateList(LoadableListPosition.Companion.EMPTY)
     }
 
-    public void onShowSensitiveContentToggleClick(View view) {
-        closeDrawer();
-        MyPreferences.setShowSensitiveContent(((CheckBox) view).isChecked());
-        updateList(LoadableListPosition.EMPTY);
+    fun onShowSensitiveContentToggleClick(view: View?) {
+        closeDrawer()
+        MyPreferences.setShowSensitiveContent((view as CheckBox?).isChecked())
+        updateList(LoadableListPosition.Companion.EMPTY)
     }
 
-    private void closeDrawer() {
-        ViewGroup mDrawerList = findViewById(R.id.navigation_drawer);
-        mDrawerLayout.closeDrawer(mDrawerList);
+    private fun closeDrawer() {
+        val mDrawerList = findViewById<ViewGroup?>(R.id.navigation_drawer)
+        mDrawerLayout.closeDrawer(mDrawerList)
     }
 
-    @Override
-    public Timeline getTimeline() {
-        return myContext.timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, origin);
+    override fun getTimeline(): Timeline? {
+        return myContext.timelines().get(TimelineType.EVERYTHING, Actor.Companion.EMPTY, origin)
     }
 
-    private ConversationLoader getListLoader() {
-        return ((ConversationLoader)getLoaded());
-    }
-    
-    @Override
-    protected SyncLoader newSyncLoader(Bundle args) {
-        return new ConversationLoaderFactory().
-                getLoader(ConversationViewItem.EMPTY,
-                getMyContext(), origin, centralItemId, BundleUtils.hasKey(args, IntentExtra.SYNC.key));
+    private fun getListLoader(): ConversationLoader? {
+        return loaded as ConversationLoader
     }
 
-    @Override
-    protected BaseTimelineAdapter newListAdapter() {
-        return new ConversationAdapter(mContextMenu, origin, centralItemId, getListLoader().getList(),
-                showThreadsOfConversation, oldNotesFirstInConversation);
+    override fun newSyncLoader(args: Bundle?): SyncLoader<*>? {
+        return ConversationLoaderFactory().getLoader(ConversationViewItem.Companion.EMPTY,
+                getMyContext(), origin, centralItemId, BundleUtils.hasKey(args, IntentExtra.SYNC.key))
     }
 
-    @Override
-    protected CharSequence getCustomTitle() {
-        mSubtitle = "";
-        final StringBuilder title = new StringBuilder(getText(R.string.label_conversation));
-        MyStringBuilder.appendWithSpace(title, ListScope.ORIGIN.timelinePreposition(myContext));
-        MyStringBuilder.appendWithSpace(title, origin.getName());
-        return title;
+    override fun newListAdapter(): BaseTimelineAdapter<*>? {
+        return ConversationAdapter(mContextMenu, origin, centralItemId, getListLoader().getList(),
+                showThreadsOfConversation, oldNotesFirstInConversation)
+    }
+
+    override fun getCustomTitle(): CharSequence? {
+        mSubtitle = ""
+        val title = StringBuilder(getText(R.string.label_conversation))
+        MyStringBuilder.Companion.appendWithSpace(title, ListScope.ORIGIN.timelinePreposition(myContext))
+        MyStringBuilder.Companion.appendWithSpace(title, origin.getName())
+        return title
     }
 }

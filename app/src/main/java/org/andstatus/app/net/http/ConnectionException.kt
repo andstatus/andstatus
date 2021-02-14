@@ -13,195 +13,156 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.http
 
-package org.andstatus.app.net.http;
+import android.content.res.Resources.NotFoundException
+import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.UrlUtils
 
-import android.content.res.Resources;
-
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.UrlUtils;
-
-import java.io.IOException;
-import java.net.URL;
-
+java.io.IOExceptionimport java.lang.Exceptionimport java.net.URL
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ConnectionException extends IOException {
-    private static final long serialVersionUID = 1L;
+class ConnectionException : IOException {
+    enum class StatusCode {
+        UNKNOWN, OK, UNSUPPORTED_API, NOT_FOUND, BAD_REQUEST, AUTHENTICATION_ERROR, CREDENTIALS_OF_OTHER_ACCOUNT, NO_CREDENTIALS_FOR_HOST, UNAUTHORIZED, FORBIDDEN, INTERNAL_SERVER_ERROR, BAD_GATEWAY, SERVICE_UNAVAILABLE, MOVED, REQUEST_ENTITY_TOO_LARGE, LENGTH_REQUIRED, CLIENT_ERROR, SERVER_ERROR;
 
-    public enum StatusCode {
-        UNKNOWN,
-        OK,
-        UNSUPPORTED_API,
-        NOT_FOUND,
-        BAD_REQUEST,
-        AUTHENTICATION_ERROR,
-        CREDENTIALS_OF_OTHER_ACCOUNT,
-        NO_CREDENTIALS_FOR_HOST, 
-        UNAUTHORIZED, 
-        FORBIDDEN, INTERNAL_SERVER_ERROR, BAD_GATEWAY, SERVICE_UNAVAILABLE, MOVED,
-        REQUEST_ENTITY_TOO_LARGE,
-        LENGTH_REQUIRED,
-        CLIENT_ERROR,
-        SERVER_ERROR;
-        
-        public static StatusCode fromResponseCode(int responseCode) {
-            switch (responseCode) {
-	            case 200:
-                case 201:
-	            case 304:
-	            	return OK;
-                case 301:
-                case 302:
-                case 303:
-                case 307:
-                    return MOVED;
-                case 400:
-                    return BAD_REQUEST;
-                case 401:
-                    return UNAUTHORIZED;
-                case 403:
-                    return FORBIDDEN;
-                case 404:
-                    return NOT_FOUND;
-                case 411:
-                    return LENGTH_REQUIRED;
-                case 413:
-                    return REQUEST_ENTITY_TOO_LARGE;
-                case 500:
-                    return INTERNAL_SERVER_ERROR;
-                case 502:
-                    return BAD_GATEWAY;
-                case 503:
-                    return SERVICE_UNAVAILABLE;
-                default:
-                    if (responseCode >= 500) {
-                        return SERVER_ERROR;
-                    } else if (responseCode >= 400) {
-                        return CLIENT_ERROR;
+        companion object {
+            fun fromResponseCode(responseCode: Int): StatusCode? {
+                return when (responseCode) {
+                    200, 201, 304 -> OK
+                    301, 302, 303, 307 -> MOVED
+                    400 -> BAD_REQUEST
+                    401 -> UNAUTHORIZED
+                    403 -> FORBIDDEN
+                    404 -> NOT_FOUND
+                    411 -> LENGTH_REQUIRED
+                    413 -> REQUEST_ENTITY_TOO_LARGE
+                    500 -> INTERNAL_SERVER_ERROR
+                    502 -> BAD_GATEWAY
+                    503 -> SERVICE_UNAVAILABLE
+                    else -> {
+                        if (responseCode >= 500) {
+                            return SERVER_ERROR
+                        } else if (responseCode >= 400) {
+                            return CLIENT_ERROR
+                        }
+                        UNKNOWN
                     }
-                    return UNKNOWN;
+                }
             }
         }
     }
-    private final StatusCode statusCode;
-    private final boolean isHardError;
-    private final URL url;
 
-    public static ConnectionException of(Throwable e) {
-        if (e instanceof ConnectionException) return (ConnectionException) e;
+    private val statusCode: StatusCode?
+    private val isHardError: Boolean
+    private val url: URL?
 
-        if (e instanceof Resources.NotFoundException) {
-            return ConnectionException.fromStatusCode(StatusCode.NOT_FOUND, e.getMessage());
+    private constructor(result: HttpReadResult?) : super(result.logMsg(), result.getException()) {
+        statusCode = result.getStatusCode()
+        url = UrlUtils.fromString(result.getUrl())
+        isHardError = isHardFromStatusCode(result.getException() is ConnectionException &&
+                (result.getException() as ConnectionException).isHardError(), statusCode)
+    }
+
+    constructor(throwable: Throwable?) : this(null, throwable) {}
+    constructor(detailMessage: String?) : this(StatusCode.UNKNOWN, detailMessage) {}
+    constructor(detailMessage: String?, throwable: Throwable?) : this(StatusCode.OK, detailMessage, throwable, null, false) {}
+
+    @JvmOverloads
+    constructor(statusCode: StatusCode?, detailMessage: String?, url: URL? = null) : this(statusCode, detailMessage, null, url, false) {
+    }
+
+    fun append(toAppend: String?): ConnectionException? {
+        return ConnectionException(statusCode,
+                message + (if (StringUtil.nonEmpty(message)) ". " else "") + toAppend,
+                cause, url, isHardError)
+    }
+
+    private constructor(statusCode: StatusCode?, detailMessage: String?,
+                        throwable: Throwable?, url: URL?, isHardIn: Boolean) : super(detailMessage, throwable) {
+        this.statusCode = statusCode
+        this.url = url
+        isHardError = isHardFromStatusCode(isHardIn, statusCode)
+    }
+
+    fun getStatusCode(): StatusCode? {
+        return statusCode
+    }
+
+    override fun toString(): String {
+        return """
+            Status code: ${statusCode}; ${if (isHardError) "hard" else "soft"}${if (url == null) "" else "; URL: $url"}; 
+            ${super.message}${
+            if (super.cause != null) """
+     ; 
+     Caused by ${super.cause.toString()}
+     """.trimIndent() else ""
         }
-        return new ConnectionException("Unexpected exception", e);
+            """.trimIndent()
     }
 
-    public static ConnectionException from(HttpReadResult result) {
-        return new ConnectionException(result);
+    fun isHardError(): Boolean {
+        return isHardError
     }
 
-    private ConnectionException(HttpReadResult result) {
-        super(result.logMsg(), result.getException());
-        this.statusCode = result.getStatusCode();
-        this.url = UrlUtils.fromString(result.getUrl());
-        this.isHardError = isHardFromStatusCode(result.getException() instanceof ConnectionException &&
-                ((ConnectionException) result.getException()).isHardError(), statusCode);
-    }
+    companion object {
+        private const val serialVersionUID = 1L
+        fun of(e: Throwable?): ConnectionException? {
+            if (e is ConnectionException) return e as ConnectionException?
+            return if (e is NotFoundException) {
+                fromStatusCode(StatusCode.NOT_FOUND, e.message)
+            } else ConnectionException("Unexpected exception", e)
+        }
 
-    public static ConnectionException loggedHardJsonException(Object objTag, String detailMessage, Exception e, Object jso) {
-        return loggedJsonException(objTag, detailMessage, e, jso, true);
-    }
-    
-    public static ConnectionException loggedJsonException(Object objTag, String detailMessage, Exception e, Object jso) {
-        return loggedJsonException(objTag, detailMessage, e, jso, false);
-    }
+        fun from(result: HttpReadResult?): ConnectionException? {
+            return ConnectionException(result)
+        }
 
-    private static ConnectionException loggedJsonException(Object objTag, String detailMessage, Exception e, Object jso, 
-            boolean isHard) {
-        MyLog.d(objTag, detailMessage + (e != null ? ": " + e.getMessage() : ""));
-        if (jso != null) {
-            String fileName = MyLog.uniqueDateTimeFormatted();
-            if (e != null) {
-                String stackTrace = MyLog.getStackTrace(e);
-                MyLog.writeStringToFile(stackTrace, fileName + "_JsonException.txt");
-                MyLog.v(objTag, () -> "stack trace: " + stackTrace);
+        fun loggedHardJsonException(objTag: Any?, detailMessage: String?, e: Exception?, jso: Any?): ConnectionException? {
+            return loggedJsonException(objTag, detailMessage, e, jso, true)
+        }
+
+        fun loggedJsonException(objTag: Any?, detailMessage: String?, e: Exception?, jso: Any?): ConnectionException? {
+            return loggedJsonException(objTag, detailMessage, e, jso, false)
+        }
+
+        private fun loggedJsonException(objTag: Any?, detailMessage: String?, e: Exception?, jso: Any?,
+                                        isHard: Boolean): ConnectionException? {
+            MyLog.d(objTag, detailMessage + if (e != null) ": " + e.message else "")
+            if (jso != null) {
+                val fileName = MyLog.uniqueDateTimeFormatted()
+                if (e != null) {
+                    val stackTrace = MyLog.getStackTrace(e)
+                    MyLog.writeStringToFile(stackTrace, fileName + "_JsonException.txt")
+                    MyLog.v(objTag) { "stack trace: $stackTrace" }
+                }
+                MyLog.logJson(objTag, "json_exception", jso, fileName)
             }
-            MyLog.logJson(objTag, "json_exception", jso, fileName);
+            return ConnectionException(StatusCode.OK, MyStringBuilder.Companion.objToTag(objTag) + ": " + detailMessage, e, null, isHard)
         }
-        return new ConnectionException(StatusCode.OK, MyStringBuilder.objToTag(objTag) + ": " + detailMessage, e, null, isHard);
-    }
 
-    public static ConnectionException fromStatusCode(StatusCode statusCode, final String detailMessage) {
-        return fromStatusCodeAndThrowable(statusCode, detailMessage, null);
-    }
+        fun fromStatusCode(statusCode: StatusCode?, detailMessage: String?): ConnectionException? {
+            return fromStatusCodeAndThrowable(statusCode, detailMessage, null)
+        }
 
-    public static ConnectionException fromStatusCodeAndThrowable(StatusCode statusCode, final String detailMessage, Throwable throwable) {
-        return new ConnectionException(statusCode, detailMessage, throwable, null, false);
-    }
-    
-    public static ConnectionException fromStatusCodeAndHost(StatusCode statusCode, final String detailMessage, URL host2) {
-        return new ConnectionException(statusCode, detailMessage, host2);
-    }
+        fun fromStatusCodeAndThrowable(statusCode: StatusCode?, detailMessage: String?, throwable: Throwable?): ConnectionException? {
+            return ConnectionException(statusCode, detailMessage, throwable, null, false)
+        }
 
-    public static ConnectionException hardConnectionException(String detailMessage, Throwable throwable) {
-        return new ConnectionException(StatusCode.OK, detailMessage, throwable, null, true);
-    }
-    
-    public ConnectionException(Throwable throwable) {
-        this(null, throwable);
-    }
+        fun fromStatusCodeAndHost(statusCode: StatusCode?, detailMessage: String?, host2: URL?): ConnectionException? {
+            return ConnectionException(statusCode, detailMessage, host2)
+        }
 
-    public ConnectionException(String detailMessage) {
-        this(StatusCode.UNKNOWN, detailMessage);
-    }
+        fun hardConnectionException(detailMessage: String?, throwable: Throwable?): ConnectionException? {
+            return ConnectionException(StatusCode.OK, detailMessage, throwable, null, true)
+        }
 
-    public ConnectionException(StatusCode statusCode, String detailMessage) {
-        this(statusCode, detailMessage, null);
-    }
-    
-    public ConnectionException(String detailMessage, Throwable throwable) {
-        this(StatusCode.OK, detailMessage, throwable, null, false);
-    }
-    
-    public ConnectionException(StatusCode statusCode, String detailMessage, URL url) {
-        this(statusCode, detailMessage, null, url, false);
-    }
-
-    public ConnectionException append(String toAppend) {
-        return new ConnectionException(statusCode,
-            getMessage() + (StringUtil.nonEmpty(getMessage()) ? ". " : "") + toAppend,
-            getCause(), url, isHardError);
-    }
-
-    private ConnectionException(StatusCode statusCode, String detailMessage, 
-            Throwable throwable, URL url, boolean isHardIn) {
-        super(detailMessage, throwable);
-        this.statusCode = statusCode;
-        this.url = url;
-        this.isHardError = isHardFromStatusCode(isHardIn, statusCode);
-    }
-
-    private static boolean isHardFromStatusCode(boolean isHardIn, StatusCode statusCode) {
-        return isHardIn || (statusCode != StatusCode.UNKNOWN && statusCode != StatusCode.OK);
-    }
-
-    public StatusCode getStatusCode() {
-        return this.statusCode;
-    }
-
-    @Override
-    public String toString() {
-        return "Status code: " + this.statusCode + "; " + (isHardError ? "hard" : "soft")
-			+ (url == null ? "" : "; URL: " + url)
-			+ "; \n" + super.getMessage()
-		    + (super.getCause() != null ? "; \nCaused by " + super.getCause().toString() : "");
-    }
-
-    public boolean isHardError() {
-        return isHardError;
+        private fun isHardFromStatusCode(isHardIn: Boolean, statusCode: StatusCode?): Boolean {
+            return isHardIn || statusCode != StatusCode.UNKNOWN && statusCode != StatusCode.OK
+        }
     }
 }

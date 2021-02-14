@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,93 +13,77 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.origin
 
-package org.andstatus.app.origin;
+import android.os.Bundle
+import android.view.MenuItem
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.service.CommandData
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.service.MyServiceEvent
+import org.andstatus.app.service.MyServiceEventsListener
+import org.andstatus.app.service.MyServiceEventsReceiver
+import org.andstatus.app.service.MyServiceManager
 
-import android.os.Bundle;
-import android.view.MenuItem;
-
-import org.andstatus.app.R;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyServiceEvent;
-import org.andstatus.app.service.MyServiceEventsListener;
-import org.andstatus.app.service.MyServiceEventsReceiver;
-import org.andstatus.app.service.MyServiceManager;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class DiscoveredOriginList extends OriginList implements MyServiceEventsListener {
-    MyServiceEventsReceiver mServiceConnector = new MyServiceEventsReceiver(myContextHolder.getNow(), this);
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+class DiscoveredOriginList : OriginList(), MyServiceEventsListener {
+    var mServiceConnector: MyServiceEventsReceiver? = MyServiceEventsReceiver(MyContextHolder.Companion.myContextHolder.getNow(), this)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         if (DiscoveredOrigins.get().isEmpty()) {
-            mSwipeLayout.setRefreshing(true);
-            manualSync();
+            mSwipeLayout.isRefreshing = true
+            manualSync()
         }
     }
 
-    @Override
-    public void onRefresh() {
-        manualSync();
+    override fun onRefresh() {
+        manualSync()
     }
 
-    protected Iterable<Origin> getOrigins() {
-        return DiscoveredOrigins.get();
+    override fun getOrigins(): Iterable<Origin?>? {
+        return DiscoveredOrigins.get()
     }
 
-    private void manualSync() {
-        MyServiceManager.setServiceAvailable();
-        MyServiceManager.sendForegroundCommand(
-                CommandData.newOriginCommand(CommandEnum.GET_OPEN_INSTANCES,
-                        myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL)
-                        ));
+    private fun manualSync() {
+        MyServiceManager.Companion.setServiceAvailable()
+        MyServiceManager.Companion.sendForegroundCommand(
+                CommandData.Companion.newOriginCommand(CommandEnum.GET_OPEN_INSTANCES,
+                        MyContextHolder.Companion.myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL)
+                ))
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        MyServiceManager.setServiceAvailable();
-        mServiceConnector.registerReceiver(this);
+    override fun onResume() {
+        super.onResume()
+        MyServiceManager.Companion.setServiceAvailable()
+        mServiceConnector.registerReceiver(this)
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mServiceConnector.unregisterReceiver(this);
+    override fun onPause() {
+        super.onPause()
+        mServiceConnector.unregisterReceiver(this)
     }
-    
-    @Override
-    public void onReceive(CommandData commandData, MyServiceEvent myServiceEvent) {
-        if (MyServiceEvent.AFTER_EXECUTING_COMMAND.equals(myServiceEvent) 
-                && CommandEnum.GET_OPEN_INSTANCES.equals(commandData.getCommand())) {
-            fillList();
-            mSwipeLayout.setRefreshing(false);
+
+    override fun onReceive(commandData: CommandData?, myServiceEvent: MyServiceEvent?) {
+        if (MyServiceEvent.AFTER_EXECUTING_COMMAND == myServiceEvent && CommandEnum.GET_OPEN_INSTANCES == commandData.getCommand()) {
+            fillList()
+            mSwipeLayout.isRefreshing = false
         }
     }
 
-    @Override
-    protected int getLayoutResourceId() {
-        return R.layout.my_list_swipe;
+    override fun getLayoutResourceId(): Int {
+        return R.layout.my_list_swipe
     }
-    
-    @Override
-    protected int getMenuResourceId() {
-        return R.menu.discovered_origin_list;
+
+    override fun getMenuResourceId(): Int {
+        return R.menu.discovered_origin_list
     }
-    
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.sync_menu_item:
-                manualSync();
-                break;
-            default:
-                break;
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item.getItemId()) {
+            R.id.sync_menu_item -> manualSync()
+            else -> {
+            }
         }
-        return super.onOptionsItemSelected(item);
+        return super.onOptionsItemSelected(item)
     }
-    
 }

@@ -13,53 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.actor
 
-package org.andstatus.app.actor;
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import org.andstatus.app.R
+import org.andstatus.app.timeline.BaseTimelineAdapter
+import org.andstatus.app.timeline.TimelineData
+import org.andstatus.app.timeline.meta.Timeline
 
-import androidx.annotation.NonNull;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+class ActorAdapter : BaseTimelineAdapter<ActorViewItem?> {
+    private val contextMenu: ActorContextMenu?
+    private val listItemLayoutId: Int
+    val populator: ActorViewItemPopulator?
 
-import org.andstatus.app.R;
-import org.andstatus.app.timeline.BaseTimelineAdapter;
-import org.andstatus.app.timeline.TimelineData;
-import org.andstatus.app.timeline.meta.Timeline;
-
-import java.util.List;
-
-public class ActorAdapter extends BaseTimelineAdapter<ActorViewItem> {
-    private final ActorContextMenu contextMenu;
-    private final int listItemLayoutId;
-    public final ActorViewItemPopulator populator;
-
-    public ActorAdapter(@NonNull ActorContextMenu contextMenu, TimelineData<ActorViewItem> listData) {
-        super(contextMenu.getActivity().getMyContext(), listData);
-        this.contextMenu = contextMenu;
-        this.listItemLayoutId = R.id.actor_wrapper;
-        populator = new ActorViewItemPopulator(contextMenu.getActivity(), isCombined(), showAvatars);
+    constructor(contextMenu: ActorContextMenu, listData: TimelineData<ActorViewItem?>?) : super(contextMenu.activity.myContext, listData) {
+        this.contextMenu = contextMenu
+        listItemLayoutId = R.id.actor_wrapper
+        populator = ActorViewItemPopulator(contextMenu.activity, isCombined, showAvatars)
     }
 
-    ActorAdapter(@NonNull ActorContextMenu contextMenu, int listItemLayoutId, List<ActorViewItem> items,
-                 Timeline timeline) {
-        super(contextMenu.getActivity().getMyContext(), timeline, items);
-        this.contextMenu = contextMenu;
-        this.listItemLayoutId = listItemLayoutId;
-        populator = new ActorViewItemPopulator(contextMenu.getActivity(), isCombined(), showAvatars);
+    internal constructor(contextMenu: ActorContextMenu, listItemLayoutId: Int, items: MutableList<ActorViewItem?>?,
+                         timeline: Timeline?) : super(contextMenu.activity.myContext, timeline, items) {
+        this.contextMenu = contextMenu
+        this.listItemLayoutId = listItemLayoutId
+        populator = ActorViewItemPopulator(contextMenu.activity, isCombined, showAvatars)
     }
 
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View view = convertView == null ? newView() : convertView;
-        view.setOnCreateContextMenuListener(contextMenu);
-        view.setOnClickListener(this);
-        setPosition(view, position);
-        ActorViewItem item = getItem(position);
-        populator.populateView(view, item, position);
-        return view;
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
+        val view = convertView ?: newView()
+        view.setOnCreateContextMenuListener(contextMenu)
+        view.setOnClickListener(this)
+        setPosition(view, position)
+        val item = getItem(position)
+        populator.populateView(view, item, position)
+        return view
     }
 
-    private View newView() {
-        return LayoutInflater.from(contextMenu.getActivity()).inflate(listItemLayoutId, null);
+    private fun newView(): View? {
+        return LayoutInflater.from(contextMenu.getActivity()).inflate(listItemLayoutId, null)
     }
 }

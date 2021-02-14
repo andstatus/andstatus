@@ -13,107 +13,101 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data
 
-package org.andstatus.app.data;
+import org.andstatus.app.context.MyStorage
+import org.andstatus.app.util.IsEmpty
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.StringUtil
+import java.io.File
+import java.util.*
 
-import androidx.annotation.NonNull;
+class DownloadFile(filename: String?) : IsEmpty {
+    private val filename: String?
+    private val file: File? = null
 
-import org.andstatus.app.context.MyStorage;
-import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtil;
-
-import java.io.File;
-import java.util.Objects;
-
-public class DownloadFile implements IsEmpty {
-    public static final DownloadFile EMPTY = new DownloadFile("");
-
-    private final String filename;
-    private final File file;
-    /** Existence is checked at the moment of the object creation */
-    public final boolean existed;
-
-    public DownloadFile(String filename) {
-        Objects.requireNonNull(filename);
-        this.filename = filename;
-        if (StringUtil.isEmpty(filename)) {
-            file = null;
-            existed = false;
-        } else {
-            file = MyStorage.newMediaFile(filename);
-            existed = existsNow();
-        }
+    /** Existence is checked at the moment of the object creation  */
+    val existed = false
+    override fun isEmpty(): Boolean {
+        return file == null
     }
 
-    public final boolean isEmpty() {
-        return file == null;
+    fun existsNow(): Boolean {
+        return nonEmpty() && file.exists() && file.isFile()
     }
 
-    public final boolean existsNow() {
-        return nonEmpty() && file.exists() && file.isFile();
-    }
-    
-    public File getFile() {
-        return file;
+    fun getFile(): File? {
+        return file
     }
 
-    @NonNull
-    public String getFilePath() {
-        return file == null ? "" : file.getAbsolutePath();
+    fun getFilePath(): String {
+        return if (file == null) "" else file.absolutePath
     }
 
-    public long getSize() {
-        return existsNow() ? file.length() : 0;
+    fun getSize(): Long {
+        return if (existsNow()) file.length() else 0
     }
 
-    public String getFilename() {
-        return filename;
+    fun getFilename(): String? {
+        return filename
     }
 
-    /** returns true if the file existed and was deleted */
-    public boolean delete() {
-        return deleteFileLogged(file);
+    /** returns true if the file existed and was deleted  */
+    fun delete(): Boolean {
+        return deleteFileLogged(file)
     }
-    
-    private boolean deleteFileLogged(File file) {
-        boolean deleted = false;
-        if(existsNow()) {
-            deleted = file.delete();
+
+    private fun deleteFileLogged(file: File?): Boolean {
+        var deleted = false
+        if (existsNow()) {
+            deleted = file.delete()
             if (deleted) {
-                MyLog.v(this, () -> "Deleted file " + file);
+                MyLog.v(this) { "Deleted file $file" }
             } else {
-                MyLog.e(this, "Couldn't delete file " + file);
+                MyLog.e(this, "Couldn't delete file $file")
             }
         }
-        return deleted;
+        return deleted
     }
 
-    @Override
-    public String toString() {
-        return MyStringBuilder.objToTag(this)
+    override fun toString(): String {
+        return (MyStringBuilder.Companion.objToTag(this)
                 + " filename:" + filename
-                + (existed ? ", existed" : "");
+                + if (existed) ", existed" else "")
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + filename.hashCode();
-        return result;
+    override fun hashCode(): Int {
+        val prime = 31
+        var result = 1
+        result = prime * result + filename.hashCode()
+        return result
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    override fun equals(o: Any?): Boolean {
+        if (this === o) {
+            return true
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (o == null || javaClass != o.javaClass) {
+            return false
         }
-        DownloadFile other = (DownloadFile) o;
-        return filename.equals(other.filename);
+        val other = o as DownloadFile?
+        return filename == other.filename
+    }
+
+    companion object {
+        val EMPTY: DownloadFile? = DownloadFile("")
+    }
+
+    init {
+        Objects.requireNonNull(filename)
+        this.filename = filename
+        if (StringUtil.isEmpty(filename)) {
+            file = null
+            existed = false
+        } else {
+            file = MyStorage.newMediaFile(filename)
+            existed = existsNow()
+        }
     }
 }

@@ -13,69 +13,60 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social.pumpio
 
-package org.andstatus.app.net.social.pumpio;
+import org.andstatus.app.util.JsonUtils
+import org.json.JSONObject
 
-import org.andstatus.app.util.JsonUtils;
-import org.json.JSONObject;
-
-/** @see <a href="https://www.w3.org/TR/activitystreams-vocabulary/#activity-types">Object Types</a>
- * */
-enum PObjectType {
+/** @see [Object Types](https://www.w3.org/TR/activitystreams-vocabulary/.activity-types)
+ *
+ */
+internal enum class PObjectType(val id: String?, compatibleType: PObjectType?) {
     ACTIVITY("activity", null) {
-        @Override
-        public boolean isTypeOf(JSONObject jso) {
-            boolean is = false;
+        override fun isTypeOf(jso: JSONObject?): Boolean {
+            var `is` = false
             if (jso != null) {
-                if (jso.has("objecttype")) {
-                    is = super.isTypeOf(jso);
+                `is` = if (jso.has("objecttype")) {
+                    super.isTypeOf(jso)
                 } else {
                     // It may not have the "objectType" field as in the specification:
                     //   http://activitystrea.ms/specs/json/1.0/
-                    is = jso.has("verb") && jso.has("object");
+                    jso.has("verb") && jso.has("object")
                 }
             }
-            return is;
+            return `is`
         }
     },
-    APPLICATION("application", null),
-    PERSON("person", null),
-    COMMENT("comment", null),
-    IMAGE("image", COMMENT),
-    VIDEO("video", COMMENT),
-    NOTE("note", COMMENT),
-    COLLECTION("collection", null),
-    UNKNOWN("unknown", null);
-    
-    public final String id;
-    private PObjectType compatibleType = this;
+    APPLICATION("application", null), PERSON("person", null), COMMENT("comment", null), IMAGE("image", COMMENT), VIDEO("video", COMMENT), NOTE("note", COMMENT), COLLECTION("collection", null), UNKNOWN("unknown", null);
 
-    PObjectType(String fieldName, PObjectType compatibleType) {
-        this.id = fieldName;
-        if (compatibleType != null) {
-            this.compatibleType = compatibleType;
-        }
-    }
-
-    public boolean isTypeOf(JSONObject jso) {
-        boolean is = false;
+    private val compatibleType: PObjectType? = this
+    open fun isTypeOf(jso: JSONObject?): Boolean {
+        var `is` = false
         if (jso != null) {
-            is = id.equalsIgnoreCase(JsonUtils.optString(jso, "objectType"));
+            `is` = id.equals(JsonUtils.optString(jso, "objectType"), ignoreCase = true)
         }
-        return is;
+        return `is`
     }
 
-    public static PObjectType compatibleWith(JSONObject jso) {
-        PObjectType type = fromJson(jso);
-        return type.compatibleType == null ? UNKNOWN : type.compatibleType;
-    }
+    companion object {
+        fun compatibleWith(jso: JSONObject?): PObjectType? {
+            val type = fromJson(jso)
+            return type.compatibleType ?: UNKNOWN
+        }
 
-    public static PObjectType fromJson(JSONObject jso) {
-        for(PObjectType type : PObjectType.values()) {
-            if (type.isTypeOf(jso)) {
-                return type;
+        fun fromJson(jso: JSONObject?): PObjectType? {
+            for (type in values()) {
+                if (type.isTypeOf(jso)) {
+                    return type
+                }
             }
+            return UNKNOWN
         }
-        return UNKNOWN;
+    }
+
+    init {
+        if (compatibleType != null) {
+            this.compatibleType = compatibleType
+        }
     }
 }

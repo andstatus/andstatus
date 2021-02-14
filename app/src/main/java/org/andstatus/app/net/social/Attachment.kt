@@ -13,138 +13,122 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social
 
-package org.andstatus.app.net.social;
+import android.content.ContentResolver
+import android.net.Uri
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.DownloadData
+import org.andstatus.app.data.DownloadType
+import org.andstatus.app.data.FileProvider
+import org.andstatus.app.data.MyContentType
+import org.andstatus.app.util.IsEmpty
+import org.andstatus.app.util.UriUtils
+import java.util.*
 
-import android.content.ContentResolver;
-import android.net.Uri;
+class Attachment : Comparable<Attachment?>, IsEmpty {
+    val uri: Uri
+    val mimeType: String
+    val contentType: MyContentType
+    var previewOf = EMPTY
+    var downloadData: DownloadData? = DownloadData.Companion.EMPTY
+    private var optNewDownloadNumber: Optional<Long?>? = Optional.empty()
 
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.data.DownloadData;
-import org.andstatus.app.data.DownloadType;
-import org.andstatus.app.data.FileProvider;
-import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.UriUtils;
-
-import java.util.Objects;
-import java.util.Optional;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class Attachment implements Comparable<Attachment>, IsEmpty {
-    public static final Attachment EMPTY = new Attachment(null, Uri.EMPTY, "");
-    @NonNull
-    public final Uri uri;
-    @NonNull
-    public final String mimeType;
-    @NonNull
-    public final MyContentType contentType;
-    Attachment previewOf = Attachment.EMPTY;
-
-    DownloadData downloadData = DownloadData.EMPTY;
-    private Optional<Long> optNewDownloadNumber = Optional.empty();
-
-    /** #previewOf cannot be set here **/
-    Attachment(@NonNull DownloadData downloadData) {
-        this.downloadData = downloadData;
-        uri = downloadData.getUri();
-        mimeType = downloadData.getMimeType();
-        contentType = downloadData.getContentType();
+    /** #previewOf cannot be set here  */
+    internal constructor(downloadData: DownloadData) {
+        this.downloadData = downloadData
+        uri = downloadData.uri
+        mimeType = downloadData.mimeType
+        contentType = downloadData.contentType
     }
 
-    private Attachment(ContentResolver contentResolver, @NonNull Uri uri, @NonNull String mimeType) {
-        this.uri = uri;
-        this.mimeType = MyContentType.uri2MimeType(contentResolver, uri, mimeType);
-        contentType = MyContentType.fromUri(DownloadType.ATTACHMENT, contentResolver, uri, mimeType);
+    private constructor(contentResolver: ContentResolver?, uri: Uri, mimeType: String) {
+        this.uri = uri
+        this.mimeType = MyContentType.Companion.uri2MimeType(contentResolver, uri, mimeType)
+        contentType = MyContentType.Companion.fromUri(DownloadType.ATTACHMENT, contentResolver, uri, mimeType)
     }
 
-    public static Attachment fromUri(String uriString) {
-        return fromUriAndMimeType(uriString, "");
+    fun setPreviewOf(previewOf: Attachment): Attachment? {
+        this.previewOf = previewOf
+        return this
     }
 
-    public static Attachment fromUri(Uri uriIn) {
-        return fromUriAndMimeType(uriIn, "");
+    fun isValid(): Boolean {
+        return nonEmpty() && contentType != MyContentType.UNKNOWN
     }
 
-    public static Attachment fromUriAndMimeType(String uriString, @NonNull String mimeTypeIn) {
-        return fromUriAndMimeType(Uri.parse(uriString), mimeTypeIn);
+    override fun hashCode(): Int {
+        val prime = 31
+        var result = 1
+        result = prime * result + contentType.hashCode()
+        result = prime * result + uri.hashCode()
+        result = prime * result + mimeType.hashCode()
+        return result
     }
 
-    public static Attachment fromUriAndMimeType(Uri uriIn, @NonNull String mimeTypeIn) {
-        Objects.requireNonNull(uriIn);
-        Objects.requireNonNull(mimeTypeIn);
-        return new Attachment(myContextHolder.getNow().context().getContentResolver(), uriIn, mimeTypeIn);
+    fun getDownloadNumber(): Long {
+        return optNewDownloadNumber.orElse(downloadData.getDownloadNumber())
     }
 
-    Attachment setPreviewOf(@NonNull Attachment previewOf) {
-        this.previewOf = previewOf;
-        return this;
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o == null || javaClass != o.javaClass) return false
+        val other = o as Attachment?
+        return contentType == other.contentType && uri == other.uri && mimeType == other.mimeType
     }
 
-    public boolean isValid() {
-        return nonEmpty() && contentType != MyContentType.UNKNOWN;
+    override fun toString(): String {
+        return "Attachment [uri='$uri', $contentType, mime=$mimeType]"
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + contentType.hashCode();
-        result = prime * result + uri.hashCode();
-        result = prime * result + mimeType.hashCode();
-        return result;
+    fun getUri(): Uri? {
+        return uri
     }
 
-    public long getDownloadNumber() {
-        return optNewDownloadNumber.orElse(downloadData.getDownloadNumber());
+    fun mediaUriToPost(): Uri? {
+        return if (downloadData.isEmpty() || UriUtils.isDownloadable(getUri())) {
+            Uri.EMPTY
+        } else FileProvider.Companion.downloadFilenameToUri(downloadData.getFile().filename)
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Attachment other = (Attachment) o;
-        return contentType == other.contentType && uri.equals(other.uri) && mimeType.equals(other.mimeType);
+    override operator fun compareTo(other: Attachment): Int {
+        if (previewOf == other) return -1
+        if (other.previewOf == this) return 1
+        return if (contentType != other.contentType) {
+            if (contentType.attachmentsSortOrder > other.contentType.attachmentsSortOrder) 1 else -1
+        } else 0
     }
 
-    @Override
-    public String toString() {
-        return "Attachment [uri='" + uri + "', " + contentType + ", mime=" + mimeType + "]";
+    override fun isEmpty(): Boolean {
+        return uri === Uri.EMPTY
     }
 
-    public Uri getUri() {
-        return uri;
+    fun getDownloadId(): Long {
+        return downloadData.getDownloadId()
     }
 
-    public Uri mediaUriToPost() {
-        if (downloadData.isEmpty() || UriUtils.isDownloadable(getUri())) {
-            return Uri.EMPTY;
+    fun setDownloadNumber(downloadNumber: Long) {
+        optNewDownloadNumber = Optional.of(downloadNumber)
+    }
+
+    companion object {
+        val EMPTY: Attachment? = Attachment(null, Uri.EMPTY, "")
+        fun fromUri(uriString: String?): Attachment? {
+            return fromUriAndMimeType(uriString, "")
         }
-        return FileProvider.downloadFilenameToUri(downloadData.getFile().getFilename());
-    }
 
-    @Override
-    public int compareTo(@NonNull Attachment other) {
-        if (previewOf.equals(other)) return -1;
-        if (other.previewOf.equals(this)) return 1;
-        if (contentType != other.contentType) {
-            return contentType.attachmentsSortOrder > other.contentType.attachmentsSortOrder ? 1 : -1;
+        fun fromUri(uriIn: Uri?): Attachment? {
+            return fromUriAndMimeType(uriIn, "")
         }
-        return 0;
-    }
 
-    @Override
-    public boolean isEmpty() {
-        return uri == Uri.EMPTY;
-    }
+        fun fromUriAndMimeType(uriString: String?, mimeTypeIn: String): Attachment? {
+            return fromUriAndMimeType(Uri.parse(uriString), mimeTypeIn)
+        }
 
-    public long getDownloadId() {
-        return downloadData.getDownloadId();
-    }
-
-    public void setDownloadNumber(long downloadNumber) {
-        optNewDownloadNumber = Optional.of(downloadNumber);
+        fun fromUriAndMimeType(uriIn: Uri?, mimeTypeIn: String): Attachment? {
+            Objects.requireNonNull(uriIn)
+            Objects.requireNonNull(mimeTypeIn)
+            return Attachment(MyContextHolder.Companion.myContextHolder.getNow().context().getContentResolver(), uriIn, mimeTypeIn)
+        }
     }
 }

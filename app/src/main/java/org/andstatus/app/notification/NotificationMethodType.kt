@@ -13,78 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.notification
 
-package org.andstatus.app.notification;
-
-import android.net.Uri;
-import android.provider.Settings;
-
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtil;
-
-import androidx.annotation.NonNull;
+import android.net.Uri
+import android.provider.Settings
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StringUtil
 
 /**
  * How to notify a User
  */
-public enum NotificationMethodType {
-    NOTIFICATION_AREA(1, "notification_in_notification_area", true),
-    VIBRATION(2, "vibration", true),
-    SOUND(3, MyPreferences.KEY_NOTIFICATION_METHOD_SOUND, false),
-    EMPTY(0, "", false),
-    ;
+enum class NotificationMethodType(val id: Long, val preferenceKey: String?, val defaultValue: Boolean) {
+    NOTIFICATION_AREA(1, "notification_in_notification_area", true), VIBRATION(2, "vibration", true), SOUND(3, MyPreferences.KEY_NOTIFICATION_METHOD_SOUND, false), EMPTY(0, "", false);
 
-    public final long id;
-    public final String preferenceKey;
-    final boolean defaultValue;
-
-    NotificationMethodType(long id, String preferenceKey, boolean defaultValue) {
-        this.id = id;
-        this.preferenceKey = preferenceKey;
-        this.defaultValue = defaultValue;
-    }
-
-    public boolean isEnabled() {
-        if (StringUtil.isEmpty(preferenceKey) ) return false;
-        switch (this) {
-            case SOUND:
-                return StringUtil.nonEmpty(SharedPreferencesUtil.getString(preferenceKey, ""));
-            default:
-                return SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue);
+    fun isEnabled(): Boolean {
+        return if (StringUtil.isEmpty(preferenceKey)) false else when (this) {
+            SOUND -> StringUtil.nonEmpty(SharedPreferencesUtil.getString(preferenceKey, ""))
+            else -> SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue)
         }
     }
 
-    @NonNull
-    public Uri getUri() {
-        switch (this) {
-            case SOUND:
-                String uriString = SharedPreferencesUtil.getString(preferenceKey,
-                        Settings.System.DEFAULT_NOTIFICATION_URI.toString());
-                return StringUtil.isEmpty(uriString)
-                        ? Uri.EMPTY
-                        : Uri.parse(uriString);
-            default:
-                return Uri.EMPTY;
-        }
-    }
-
-    void setEnabled(boolean enabled) {
-        if (StringUtil.nonEmpty(preferenceKey)) SharedPreferencesUtil.putBoolean(preferenceKey, enabled);
-    }
-
-    /** @return the enum or {@link #EMPTY} */
-    @NonNull
-    public static NotificationMethodType fromId(long id) {
-        for (NotificationMethodType type : values()) {
-            if (type.id == id) {
-                return type;
+    fun getUri(): Uri {
+        return when (this) {
+            SOUND -> {
+                val uriString = SharedPreferencesUtil.getString(preferenceKey,
+                        Settings.System.DEFAULT_NOTIFICATION_URI.toString())
+                if (StringUtil.isEmpty(uriString)) Uri.EMPTY else Uri.parse(uriString)
             }
+            else -> Uri.EMPTY
         }
-        return EMPTY;
     }
 
-    public boolean isEmpty() {
-        return this == EMPTY;
+    fun setEnabled(enabled: Boolean) {
+        if (StringUtil.nonEmpty(preferenceKey)) SharedPreferencesUtil.putBoolean(preferenceKey, enabled)
+    }
+
+    fun isEmpty(): Boolean {
+        return this == EMPTY
+    }
+
+    companion object {
+        /** @return the enum or [.EMPTY]
+         */
+        fun fromId(id: Long): NotificationMethodType {
+            for (type in values()) {
+                if (type.id == id) {
+                    return type
+                }
+            }
+            return EMPTY
+        }
     }
 }

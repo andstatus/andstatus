@@ -13,123 +13,116 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
+import android.net.Uri
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.note.NoteEditorData
+import org.andstatus.app.util.IsEmpty
+import org.andstatus.app.util.UriUtils
+import java.util.*
 
-import android.net.Uri;
+class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, previousData: NoteEditorData? = NoteEditorData.Companion.EMPTY) : IsEmpty {
+    @Volatile
+    private var currentNoteId: Long? = null
+    private var mediaUri = Uri.EMPTY
+    private var mediaType: Optional<String?>? = Optional.empty()
+    var beingEdited = false
+    var showAfterSave = false
 
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.UriUtils;
+    @Volatile
+    private var lock: NoteEditorLock? = NoteEditorLock.Companion.EMPTY
 
-import java.util.Optional;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class NoteEditorCommand implements IsEmpty {
-    private volatile Long currentNoteId = null;
-    private Uri mediaUri = Uri.EMPTY;
-    private Optional<String> mediaType = Optional.empty();
-    boolean beingEdited = false;
-    boolean showAfterSave = false;
-    private volatile NoteEditorLock lock = NoteEditorLock.EMPTY;
-    
-    volatile NoteEditorData currentData;
-    final NoteEditorData previousData;
-
-    public NoteEditorCommand(NoteEditorData currentData) {
-        this(currentData, NoteEditorData.EMPTY);
-    }
-
-    public NoteEditorCommand(NoteEditorData currentData, NoteEditorData previousData) {
-        if (currentData == null) {
-            throw new IllegalArgumentException("currentData is null");
-        }
-        this.currentData = currentData;
-        this.previousData = previousData == null ? NoteEditorData.EMPTY : previousData;
-    }
-
-    public boolean acquireLock(boolean wait) {
+    @Volatile
+    var currentData: NoteEditorData?
+    val previousData: NoteEditorData?
+    fun acquireLock(wait: Boolean): Boolean {
         if (hasLock()) {
-            return true;
+            return true
         }
-        NoteEditorLock lock1 = new NoteEditorLock(true, getCurrentNoteId());
+        val lock1 = NoteEditorLock(true, getCurrentNoteId())
         if (lock1.acquire(wait)) {
-            lock = lock1;
-            return true;
+            lock = lock1
+            return true
         }
-        return false;
+        return false
     }
 
-    public boolean releaseLock() {
-        return lock.release();
+    fun releaseLock(): Boolean {
+        return lock.release()
     }
 
-    public boolean hasLock() {
-        return lock.acquired();
+    fun hasLock(): Boolean {
+        return lock.acquired()
     }
-    
-    public long getCurrentNoteId() {
+
+    fun getCurrentNoteId(): Long {
         if (currentData.isValid()) {
-            return currentData.getNoteId();
+            return currentData.getNoteId()
         }
         if (currentNoteId == null) {
-            currentNoteId = MyPreferences.getBeingEditedNoteId();
+            currentNoteId = MyPreferences.getBeingEditedNoteId()
         }
-        return currentNoteId;
+        return currentNoteId
     }
 
-    public void loadCurrent() {
-        currentData = NoteEditorData.load(myContextHolder.getNow(), getCurrentNoteId());
+    fun loadCurrent() {
+        currentData = NoteEditorData.Companion.load(MyContextHolder.Companion.myContextHolder.getNow(), getCurrentNoteId())
     }
 
-    public boolean isEmpty() {
-        return currentData.isEmpty() && previousData.isEmpty() && mediaUri == Uri.EMPTY;
+    override fun isEmpty(): Boolean {
+        return currentData.isEmpty() && previousData.isEmpty() && mediaUri === Uri.EMPTY
     }
 
-    public NoteEditorCommand setMediaUri(Uri mediaUri) {
-        this.mediaUri = UriUtils.notNull(mediaUri);
-        return this;
+    fun setMediaUri(mediaUri: Uri?): NoteEditorCommand? {
+        this.mediaUri = UriUtils.notNull(mediaUri)
+        return this
     }
 
-    public Uri getMediaUri() {
-        return mediaUri;
+    fun getMediaUri(): Uri? {
+        return mediaUri
     }
 
-    public boolean needToSavePreviousData() {
-        return previousData.isValid() && previousData.nonEmpty()
-                && (previousData.getNoteId() == 0 || currentData.getNoteId() != previousData.getNoteId());
+    fun needToSavePreviousData(): Boolean {
+        return (previousData.isValid() && previousData.nonEmpty()
+                && (previousData.getNoteId() == 0L || currentData.getNoteId() != previousData.getNoteId()))
     }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder("Save ");
-        if (currentData == NoteEditorData.EMPTY) {
-            builder.append("current draft,");
+    override fun toString(): String {
+        val builder = StringBuilder("Save ")
+        if (currentData === NoteEditorData.Companion.EMPTY) {
+            builder.append("current draft,")
         } else {
-            builder.append(currentData.toString());
+            builder.append(currentData.toString())
         }
-        if(showAfterSave) {
-            builder.append("show,");
+        if (showAfterSave) {
+            builder.append("show,")
         }
-        if(beingEdited) {
-            builder.append("edit,");
+        if (beingEdited) {
+            builder.append("edit,")
         }
-        if(!UriUtils.isEmpty(mediaUri)) {
-            builder.append("media:'" + mediaUri + "',");
+        if (!UriUtils.isEmpty(mediaUri)) {
+            builder.append("media:'$mediaUri',")
         }
-        return builder.toString();
+        return builder.toString()
     }
 
-    public void setMediaType(Optional<String> mediaType) {
-        this.mediaType = mediaType;
+    fun setMediaType(mediaType: Optional<String?>?) {
+        this.mediaType = mediaType
     }
 
-    public Optional<String> getMediaType() {
-        return mediaType;
+    fun getMediaType(): Optional<String?>? {
+        return mediaType
     }
 
-    public boolean hasMedia() {
-        return UriUtils.nonEmpty(mediaUri);
+    fun hasMedia(): Boolean {
+        return UriUtils.nonEmpty(mediaUri)
+    }
+
+    init {
+        requireNotNull(currentData) { "currentData is null" }
+        this.currentData = currentData
+        this.previousData = previousData ?: NoteEditorData.Companion.EMPTY
     }
 }

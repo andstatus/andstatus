@@ -1,142 +1,128 @@
-package org.andstatus.app.data;
+package org.andstatus.app.data
 
-import android.net.Uri;
+import android.net.Uri
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.context.MyStorage
+import org.andstatus.app.context.TestSuite
+import org.andstatus.app.net.social.Attachment
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import java.net.MalformedURLException
+import java.util.*
+import java.util.concurrent.TimeUnit
 
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.context.MyStorage;
-import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.File;
-import java.net.MalformedURLException;
-import java.util.Date;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-import static org.andstatus.app.context.MyPreferences.BYTES_IN_MB;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-
-public class DataPrunerTest {
-
+class DataPrunerTest {
     @Before
-    public void setUp() throws Exception {
-        TestSuite.initialize(this);
-        assertTrue(TestSuite.setAndWaitForIsInForeground(false));
+    @Throws(Exception::class)
+    fun setUp() {
+        TestSuite.initialize(this)
+        Assert.assertTrue(TestSuite.setAndWaitForIsInForeground(false))
     }
 
     @Test
-    public void testPrune() throws MalformedURLException {
-        final String method = "testPrune";
-        MyLog.v(this, method + "; Started");
+    @Throws(MalformedURLException::class)
+    fun testPrune() {
+        val method = "testPrune"
+        MyLog.v(this, "$method; Started")
+        val isLogEnabled = MyLog.isLogToFileEnabled()
+        MyLog.setLogToFile(false)
+        MyLog.setLogToFile(true)
+        val filename = MyLog.getLogFilename()
+        val logFile1 = MyLog.getFileInLogDir(filename, true)
+        MyLog.v(this, method)
+        MyLog.setLogToFile(false)
+        Assert.assertTrue(logFile1.exists())
+        clearPrunedDate()
+        val dp = DataPruner(MyContextHolder.Companion.myContextHolder.getNow())
+        Assert.assertTrue("Pruned", dp.prune())
+        Assert.assertTrue("File is fresh", logFile1.exists())
+        val pruneDate1 = SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE)
+        Assert.assertTrue(
+                "Pruning date updated $pruneDate1 - "
+                        + RelativeTime.getDifference(MyContextHolder.Companion.myContextHolder.getNow().context(),
+                        pruneDate1),
+                !RelativeTime.moreSecondsAgoThan(pruneDate1, 300))
+        Assert.assertFalse("Second prune skipped", dp.prune())
+        Assert.assertEquals("No more pruning", pruneDate1,
+                SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE))
 
-        boolean isLogEnabled = MyLog.isLogToFileEnabled();
-        MyLog.setLogToFile(false);
-        MyLog.setLogToFile(true);
-        String filename = MyLog.getLogFilename();
-        File logFile1 = MyLog.getFileInLogDir(filename, true);
-        MyLog.v(this, method);
-        MyLog.setLogToFile(false);
-        assertTrue(logFile1.exists());
-        clearPrunedDate();
-        DataPruner dp = new DataPruner(myContextHolder.getNow());
-        assertTrue("Pruned", dp.prune());
-        
-        assertTrue("File is fresh", logFile1.exists());
-        long pruneDate1 = SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE);
-        assertTrue(
-                "Pruning date updated " + pruneDate1 + " - "
-                        + RelativeTime.getDifference(myContextHolder.getNow().context(),
-                                pruneDate1),
-                !RelativeTime.moreSecondsAgoThan(pruneDate1, 300));
-        assertFalse("Second prune skipped", dp.prune());
-        assertEquals("No more pruning", pruneDate1,
-                SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE));
-        
         // See http://stackoverflow.com/questions/6633748/file-lastmodified-is-never-what-was-set-with-file-setlastmodified
-        long lastModifiedNew = ((System.currentTimeMillis()
-                - java.util.concurrent.TimeUnit.DAYS.toMillis(DataPruner.MAX_DAYS_LOGS_TO_KEEP + 1)) / 1000) * 1000;
+        val lastModifiedNew = (System.currentTimeMillis()
+                - TimeUnit.DAYS.toMillis(DataPruner.Companion.MAX_DAYS_LOGS_TO_KEEP + 1)) / 1000 * 1000
         if (logFile1.setLastModified(lastModifiedNew)) {
-            MyLog.v(this, method + "; Last modified date set for " + filename);
-            clearPrunedDate();
-            File logFile2 = MyLog.getFileInLogDir(filename, true);
-            assertEquals(lastModifiedNew, logFile2.lastModified());
-            assertTrue("Pruned", dp.prune());
-            assertFalse("File " + logFile2.getName() + " was old: " + millisToDateString(lastModifiedNew), 
-                    logFile2.exists());
+            MyLog.v(this, "$method; Last modified date set for $filename")
+            clearPrunedDate()
+            val logFile2 = MyLog.getFileInLogDir(filename, true)
+            Assert.assertEquals(lastModifiedNew, logFile2.lastModified())
+            Assert.assertTrue("Pruned", dp.prune())
+            Assert.assertFalse("File " + logFile2.name + " was old: " + millisToDateString(lastModifiedNew),
+                    logFile2.exists())
         } else {
-            String msg = method + "; Couldn't set modification date of '" + logFile1.getAbsolutePath()
+            val msg = (method + "; Couldn't set modification date of '" + logFile1.absolutePath
                     + "' to " + millisToDateString(lastModifiedNew)
-                    + " actual: " + millisToDateString(logFile1.lastModified());
+                    + " actual: " + millisToDateString(logFile1.lastModified()))
             // TODO: Is this really a bug in Android?!
-            MyLog.e(this, msg);
+            MyLog.e(this, msg)
         }
-
-        clearPrunedDate();
-        assertTrue(TestSuite.setAndWaitForIsInForeground(true));
-        assertFalse("Prune while in foreground skipped", dp.prune());
-
+        clearPrunedDate()
+        Assert.assertTrue(TestSuite.setAndWaitForIsInForeground(true))
+        Assert.assertFalse("Prune while in foreground skipped", dp.prune())
         if (isLogEnabled) {
-            MyLog.setLogToFile(true);
+            MyLog.setLogToFile(true)
         }
-        MyLog.v(this, method + "; Ended");
+        MyLog.v(this, "$method; Ended")
     }
 
     @Test
-    public void testPruneParentlessAttachments() {
-        DataPruner dp = new DataPruner(myContextHolder.getNow());
-        dp.pruneParentlessAttachments();
-        DownloadData dd = DownloadData.fromAttachment(-555L,
-                Attachment.fromUriAndMimeType(Uri.parse("http://example.com/image.png"), ""));
-        dd.saveToDatabase();
-        assertEquals(1, dp.pruneParentlessAttachments());
-        assertEquals(0, dp.pruneParentlessAttachments());
+    fun testPruneParentlessAttachments() {
+        val dp = DataPruner(MyContextHolder.Companion.myContextHolder.getNow())
+        dp.pruneParentlessAttachments()
+        val dd: DownloadData = DownloadData.Companion.fromAttachment(-555L,
+                Attachment.Companion.fromUriAndMimeType(Uri.parse("http://example.com/image.png"), ""))
+        dd.saveToDatabase()
+        Assert.assertEquals(1, dp.pruneParentlessAttachments())
+        Assert.assertEquals(0, dp.pruneParentlessAttachments())
     }
 
-
     @Test
-    public void testPruneMedia() {
-        long dirSize1 = MyStorage.getMediaFilesSize();
-        long newSizeOfAttachmentMb = 1;
-        long newSizeOfAttachment = newSizeOfAttachmentMb * BYTES_IN_MB;
-        long attachmentsStoredMin = DataPruner.ATTACHMENTS_TO_STORE_MIN + 2;
+    fun testPruneMedia() {
+        val dirSize1 = MyStorage.getMediaFilesSize()
+        val newSizeOfAttachmentMb: Long = 1
+        val newSizeOfAttachment = newSizeOfAttachmentMb * MyPreferences.BYTES_IN_MB
+        val attachmentsStoredMin: Long = DataPruner.Companion.ATTACHMENTS_TO_STORE_MIN + 2
         if (dirSize1 < attachmentsStoredMin * newSizeOfAttachment) {
-            MyLog.i(this, "Too few media files to prune, size " + dirSize1);
-            return;
+            MyLog.i(this, "Too few media files to prune, size $dirSize1")
+            return
         }
-        long maximumSizeOfStoredMediaMb = Math.round(
-                (dirSize1 - DataPruner.ATTACHMENTS_TO_STORE_MIN * newSizeOfAttachment) / BYTES_IN_MB - 1
-        );
-        SharedPreferencesUtil.forget();
-        SharedPreferencesUtil.putLong(MyPreferences.KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB, newSizeOfAttachmentMb);
-        SharedPreferencesUtil.putLong(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, maximumSizeOfStoredMediaMb);
-
-        DataPruner dp = new DataPruner(myContextHolder.getNow());
-        long prunedCount1 = dp.pruneMedia();
-        long dirSize2 = MyStorage.getMediaFilesSize();
-        long prunedCount2 = dp.pruneMedia();
-        long dirSize3 = MyStorage.getMediaFilesSize();
-
-        SharedPreferencesUtil.removeKey(MyPreferences.KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB);
-        SharedPreferencesUtil.removeKey(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB);
-
-        assertNotEquals("Something should be pruned, dir size: " + dirSize1
-                + " max: " + maximumSizeOfStoredMediaMb + " MB", 0, prunedCount1);
-        assertTrue("Dir size should decrease " + dirSize1 + " -> " + dirSize2, dirSize1 > dirSize2);
-        assertEquals("Nothing should be pruned, " + dirSize2 + " -> " + dirSize3, 0, prunedCount2);
+        val maximumSizeOfStoredMediaMb = Math.round((
+                (dirSize1 - DataPruner.Companion.ATTACHMENTS_TO_STORE_MIN * newSizeOfAttachment) / MyPreferences.BYTES_IN_MB - 1
+                ).toFloat())
+        SharedPreferencesUtil.forget()
+        SharedPreferencesUtil.putLong(MyPreferences.KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB, newSizeOfAttachmentMb)
+        SharedPreferencesUtil.putLong(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, maximumSizeOfStoredMediaMb)
+        val dp = DataPruner(MyContextHolder.Companion.myContextHolder.getNow())
+        val prunedCount1 = dp.pruneMedia()
+        val dirSize2 = MyStorage.getMediaFilesSize()
+        val prunedCount2 = dp.pruneMedia()
+        val dirSize3 = MyStorage.getMediaFilesSize()
+        SharedPreferencesUtil.removeKey(MyPreferences.KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB)
+        SharedPreferencesUtil.removeKey(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB)
+        Assert.assertNotEquals("Something should be pruned, dir size: " + dirSize1
+                + " max: " + maximumSizeOfStoredMediaMb + " MB", 0, prunedCount1)
+        Assert.assertTrue("Dir size should decrease $dirSize1 -> $dirSize2", dirSize1 > dirSize2)
+        Assert.assertEquals("Nothing should be pruned, $dirSize2 -> $dirSize3", 0, prunedCount2)
     }
 
-    private void clearPrunedDate() {
-        SharedPreferencesUtil.putLong(MyPreferences.KEY_DATA_PRUNED_DATE, 0);
+    private fun clearPrunedDate() {
+        SharedPreferencesUtil.putLong(MyPreferences.KEY_DATA_PRUNED_DATE, 0)
     }
 
-    private String millisToDateString(long dateTime) {
-        return new Date(dateTime).toString();
+    private fun millisToDateString(dateTime: Long): String? {
+        return Date(dateTime).toString()
     }
 }

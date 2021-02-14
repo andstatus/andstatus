@@ -13,367 +13,319 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
-
-import android.os.Bundle;
-import android.text.style.URLSpan;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.view.MenuItem;
-import android.view.SubMenu;
-import android.view.View;
-import android.view.accessibility.AccessibilityManager;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.data.NoteContextMenuData;
-import org.andstatus.app.data.NoteForAnyAccount;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.ApiRoutineEnum;
-import org.andstatus.app.net.social.Note;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.ContextMenuHeader;
-import org.andstatus.app.timeline.TimelineActivity;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.view.MyContextMenu;
-
-import java.util.function.Consumer;
-
-import static android.content.Context.ACCESSIBILITY_SERVICE;
+import android.content.Context
+import android.os.Bundle
+import android.text.style.URLSpan
+import android.view.ContextMenu
+import android.view.ContextMenu.ContextMenuInfo
+import android.view.MenuItem
+import android.view.View
+import android.view.accessibility.AccessibilityManager
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.R
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.activity.ActivityViewItem
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.net.social.Note
+import org.andstatus.app.note.FutureNoteContextMenuData.StateForSelectedViewItem
+import org.andstatus.app.note.NoteViewItem
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.timeline.ContextMenuHeader
+import org.andstatus.app.timeline.TimelineActivity
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyUrlSpan
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.view.MyContextMenu
+import java.util.function.Consumer
 
 /**
  * Context menu and corresponding actions on notes from the list
  * @author yvolk@yurivolkov.com
  */
-public class NoteContextMenu extends MyContextMenu {
-    final NoteContextMenuContainer menuContainer;
-    private volatile FutureNoteContextMenuData futureData = FutureNoteContextMenuData.EMPTY;
-    private String selectedMenuItemTitle = "";
-
-    public NoteContextMenu(NoteContextMenuContainer menuContainer) {
-        super(menuContainer.getActivity(), MyContextMenu.MENU_GROUP_NOTE);
-        this.menuContainer = menuContainer;
+class NoteContextMenu(val menuContainer: NoteContextMenuContainer?) : MyContextMenu(menuContainer.getActivity(), MyContextMenu.Companion.MENU_GROUP_NOTE) {
+    @Volatile
+    private var futureData: FutureNoteContextMenuData? = FutureNoteContextMenuData.Companion.EMPTY
+    private var selectedMenuItemTitle: String? = ""
+    override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?) {
+        onCreateContextMenu(menu, v, menuInfo, null)
     }
 
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        onCreateContextMenu(menu, v, menuInfo, null);
-    }
-
-    void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo, Consumer<NoteContextMenu> next) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        switch (futureData.getStateFor(getViewItem())) {
-            case READY:
-                if (next != null) {
-                    next.accept(this);
-                }
+    fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?, next: Consumer<NoteContextMenu?>?) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        when (futureData.getStateFor(getViewItem())) {
+            StateForSelectedViewItem.READY -> {
+                next?.accept(this)
                 if (menu != null) {
-                    createContextMenu(menu, v, getViewItem());
+                    createContextMenu(menu, v, getViewItem())
                 }
-                break;
-            case NEW:
-                FutureNoteContextMenuData.loadAsync(this, v, getViewItem(), next);
-                break;
-            default:
-                break;
+            }
+            StateForSelectedViewItem.NEW -> FutureNoteContextMenuData.Companion.loadAsync(this, v, getViewItem(), next)
+            else -> {
+            }
         }
     }
 
-    private void createContextMenu(ContextMenu menu, View v, BaseNoteViewItem viewItem) {
-        final String method = "createContextMenu";
-        NoteContextMenuData menuData = futureData.menuData;
-        NoteForAnyAccount noteForAnyAccount = futureData.menuData.noteForAnyAccount;
-        if (getSelectedActingAccount().isValid() && !getSelectedActingAccount().equals(menuData.getMyAccount())) {
-            setSelectedActingAccount(menuData.getMyAccount());
+    private fun createContextMenu(menu: ContextMenu?, v: View?, viewItem: BaseNoteViewItem<*>?) {
+        val method = "createContextMenu"
+        val menuData = futureData.menuData
+        val noteForAnyAccount = futureData.menuData.noteForAnyAccount
+        if (selectedActingAccount.isValid && selectedActingAccount != menuData.myAccount) {
+            selectedActingAccount = menuData.myAccount
         }
-        if (futureData == FutureNoteContextMenuData.EMPTY) return;
-
-        int order = 0;
+        if (futureData === FutureNoteContextMenuData.Companion.EMPTY) return
+        var order = 0
         try {
-            new ContextMenuHeader(getActivity(), menu).setTitle(noteForAnyAccount.getBodyTrimmed())
-                    .setSubtitle(getActingAccount().getAccountName());
-            if (((AccessibilityManager) getMyContext().context().
-                    getSystemService(ACCESSIBILITY_SERVICE)).isTouchExplorationEnabled()) {
-                addNoteLinksSubmenu(menu, v, order++);
+            ContextMenuHeader(activity, menu).setTitle(noteForAnyAccount.bodyTrimmed)
+                    .setSubtitle(actingAccount.accountName)
+            if ((myContext.context().getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager).isTouchExplorationEnabled) {
+                addNoteLinksSubmenu(menu, v, order++)
             }
-            if (!ConversationActivity.class.isAssignableFrom(getActivity().getClass())) {
-                NoteContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation);
+            if (!ConversationActivity::class.java.isAssignableFrom(activity.javaClass)) {
+                NoteContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation)
             }
-
             if (menuContainer.getTimeline().actor.notSameUser(noteForAnyAccount.actor)
-                    || menuContainer.getTimeline().getTimelineType() != TimelineType.SENT) {
+                    || menuContainer.getTimeline().timelineType != TimelineType.SENT) {
                 // Notes, where an Actor of this note is an Actor ("Sent timeline" of that actor)
                 NoteContextMenuItem.NOTES_BY_ACTOR.addTo(menu, order++,
                         StringUtil.format(
-                                getActivity(), R.string.menu_item_user_messages,
-                                noteForAnyAccount.actor.getActorNameInTimeline()));
+                                activity, R.string.menu_item_user_messages,
+                                noteForAnyAccount.actor.actorNameInTimeline))
             }
-
             if (viewItem.isCollapsed()) {
-                NoteContextMenuItem.SHOW_DUPLICATES.addTo(menu, order++, R.string.show_duplicates);
-            } else if (getActivity().getListData().canBeCollapsed(getActivity().getPositionOfContextMenu())) {
-                NoteContextMenuItem.COLLAPSE_DUPLICATES.addTo(menu, order++, R.string.collapse_duplicates);
+                NoteContextMenuItem.SHOW_DUPLICATES.addTo(menu, order++, R.string.show_duplicates)
+            } else if (activity.listData.canBeCollapsed(activity.positionOfContextMenu)) {
+                NoteContextMenuItem.COLLAPSE_DUPLICATES.addTo(menu, order++, R.string.collapse_duplicates)
             }
-            NoteContextMenuItem.ACTORS_OF_NOTE.addTo(menu, order++, R.string.users_of_message);
-
-            if (menuData.isAuthorSucceededMyAccount() && Note.mayBeEdited(
-                    noteForAnyAccount.origin.getOriginType(),
-                    noteForAnyAccount.status)) {
-                NoteContextMenuItem.EDIT.addTo(menu, order++, R.string.menu_item_edit);
+            NoteContextMenuItem.ACTORS_OF_NOTE.addTo(menu, order++, R.string.users_of_message)
+            if (menuData.isAuthorSucceededMyAccount && Note.Companion.mayBeEdited(
+                            noteForAnyAccount.origin.originType,
+                            noteForAnyAccount.status)) {
+                NoteContextMenuItem.EDIT.addTo(menu, order++, R.string.menu_item_edit)
             }
             if (noteForAnyAccount.status.mayBeSent()) {
-                NoteContextMenuItem.RESEND.addTo(menu, order++, R.string.menu_item_resend);
+                NoteContextMenuItem.RESEND.addTo(menu, order++, R.string.menu_item_resend)
             }
-
             if (isEditorVisible()) {
-                NoteContextMenuItem.COPY_TEXT.addTo(menu, order++, R.string.menu_item_copy_text);
-                NoteContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author);
+                NoteContextMenuItem.COPY_TEXT.addTo(menu, order++, R.string.menu_item_copy_text)
+                NoteContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author)
             }
-
-            if (menuData.getMyActor().notSameUser(noteForAnyAccount.actor)) {
+            if (menuData.myActor.notSameUser(noteForAnyAccount.actor)) {
                 if (menuData.actorFollowed) {
                     NoteContextMenuItem.UNDO_FOLLOW_ACTOR.addTo(menu, order++,
                             StringUtil.format(
-                                    getActivity(), R.string.menu_item_stop_following_user,
-                                    noteForAnyAccount.actor.getActorNameInTimeline()));
+                                    activity, R.string.menu_item_stop_following_user,
+                                    noteForAnyAccount.actor.actorNameInTimeline))
                 } else {
                     NoteContextMenuItem.FOLLOW_ACTOR.addTo(menu, order++,
                             StringUtil.format(
-                                    getActivity(), R.string.menu_item_follow_user,
-                                    noteForAnyAccount.actor.getActorNameInTimeline()));
+                                    activity, R.string.menu_item_follow_user,
+                                    noteForAnyAccount.actor.actorNameInTimeline))
                 }
             }
-
             if (noteForAnyAccount.actor.notSameUser(noteForAnyAccount.author)) {
                 if (menuContainer.getTimeline().actor.notSameUser(noteForAnyAccount.author)
-                        || menuContainer.getTimeline().getTimelineType() != TimelineType.SENT) {
+                        || menuContainer.getTimeline().timelineType != TimelineType.SENT) {
                     // Sent timeline of that actor
                     NoteContextMenuItem.NOTES_BY_AUTHOR.addTo(menu, order++,
                             StringUtil.format(
-                                    getActivity(), R.string.menu_item_user_messages,
-                                    noteForAnyAccount.author.getActorNameInTimeline()));
+                                    activity, R.string.menu_item_user_messages,
+                                    noteForAnyAccount.author.actorNameInTimeline))
                 }
-                if (menuData.getMyActor().notSameUser(noteForAnyAccount.author)) {
+                if (menuData.myActor.notSameUser(noteForAnyAccount.author)) {
                     if (menuData.authorFollowed) {
                         NoteContextMenuItem.UNDO_FOLLOW_AUTHOR.addTo(menu, order++,
                                 StringUtil.format(
-                                        getActivity(), R.string.menu_item_stop_following_user,
-                                        noteForAnyAccount.author.getActorNameInTimeline()));
+                                        activity, R.string.menu_item_stop_following_user,
+                                        noteForAnyAccount.author.actorNameInTimeline))
                     } else {
                         NoteContextMenuItem.FOLLOW_AUTHOR.addTo(menu, order++,
                                 StringUtil.format(
-                                        getActivity(), R.string.menu_item_follow_user,
-                                        noteForAnyAccount.author.getActorNameInTimeline()));
+                                        activity, R.string.menu_item_follow_user,
+                                        noteForAnyAccount.author.actorNameInTimeline))
                     }
                 }
             }
-
-            if (noteForAnyAccount.isLoaded() && (!noteForAnyAccount.visibility.isPrivate() ||
-                    noteForAnyAccount.origin.getOriginType().isPrivateNoteAllowsReply()) && !isEditorVisible()) {
-                NoteContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply);
+            if (noteForAnyAccount.isLoaded && (!noteForAnyAccount.visibility.isPrivate ||
+                            noteForAnyAccount.origin.originType.isPrivateNoteAllowsReply) && !isEditorVisible()) {
+                NoteContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply)
                 NoteContextMenuItem.REPLY_TO_CONVERSATION_PARTICIPANTS.addTo(menu, order++,
-                        R.string.menu_item_reply_to_conversation_participants);
+                        R.string.menu_item_reply_to_conversation_participants)
                 NoteContextMenuItem.REPLY_TO_MENTIONED_ACTORS.addTo(menu, order++,
-                        R.string.menu_item_reply_to_mentioned_users);
+                        R.string.menu_item_reply_to_mentioned_users)
             }
-            NoteContextMenuItem.SHARE.addTo(menu, order++, R.string.menu_item_share);
-            if (!getAttachedMedia().isEmpty()) {
+            NoteContextMenuItem.SHARE.addTo(menu, order++, R.string.menu_item_share)
+            if (!getAttachedMedia().isEmpty) {
                 NoteContextMenuItem.VIEW_MEDIA.addTo(menu, order++,
-                        getAttachedMedia().getFirstToShare().getContentType().isImage()
-                                ? R.string.menu_item_view_image
-                                : R.string.view_media);
+                        if (getAttachedMedia().firstToShare.contentType.isImage) R.string.menu_item_view_image else R.string.view_media)
             }
-
-            if (noteForAnyAccount.isLoaded() && !noteForAnyAccount.visibility.isPrivate()) {
+            if (noteForAnyAccount.isLoaded && !noteForAnyAccount.visibility.isPrivate) {
                 if (menuData.favorited) {
                     NoteContextMenuItem.UNDO_LIKE.addTo(menu, order++,
-                            R.string.menu_item_destroy_favorite);
+                            R.string.menu_item_destroy_favorite)
                 } else {
                     NoteContextMenuItem.LIKE.addTo(menu, order++,
-                            R.string.menu_item_favorite);
+                            R.string.menu_item_favorite)
                 }
                 if (menuData.reblogged) {
                     NoteContextMenuItem.UNDO_ANNOUNCE.addTo(menu, order++,
-                            getActingAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog));
+                            actingAccount.alternativeTermForResourceId(R.string.menu_item_destroy_reblog))
                 } else {
                     // Don't allow an Actor to reblog himself
-                    if (getActingAccount().getActorId() != noteForAnyAccount.actor.actorId) {
+                    if (actingAccount.actorId != noteForAnyAccount.actor.actorId) {
                         NoteContextMenuItem.ANNOUNCE.addTo(menu, order++,
-                                getActingAccount().alternativeTermForResourceId(R.string.menu_item_reblog));
+                                actingAccount.alternativeTermForResourceId(R.string.menu_item_reblog))
                     }
                 }
             }
-
-            if (noteForAnyAccount.isLoaded()) {
-                NoteContextMenuItem.OPEN_NOTE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink);
+            if (noteForAnyAccount.isLoaded) {
+                NoteContextMenuItem.OPEN_NOTE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink)
             }
-
-            if (noteForAnyAccount.isLoaded()) {
-                switch (getMyContext().accounts().succeededForSameOrigin(noteForAnyAccount.origin).size()) {
-                    case 0:
-                    case 1:
-                        break;
-                    case 2:
-                        NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT.addTo(menu, order++,
-                                StringUtil.format(
-                                getActivity(), R.string.menu_item_act_as_user,
-                                getMyContext().accounts()
-                                    .firstOtherSucceededForSameOrigin(noteForAnyAccount.origin, getActingAccount())
-                                    .getShortestUniqueAccountName()));
-                        break;
-                    default:
-                        NoteContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as);
-                        break;
+            if (noteForAnyAccount.isLoaded) {
+                when (myContext.accounts().succeededForSameOrigin(noteForAnyAccount.origin).size) {
+                    0, 1 -> {
+                    }
+                    2 -> NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT.addTo(menu, order++,
+                            StringUtil.format(
+                                    activity, R.string.menu_item_act_as_user,
+                                    myContext.accounts()
+                                            .firstOtherSucceededForSameOrigin(noteForAnyAccount.origin, actingAccount)
+                                            .shortestUniqueAccountName))
+                    else -> NoteContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as)
                 }
             }
-            if (noteForAnyAccount.isPresentAtServer()) {
-                NoteContextMenuItem.GET_NOTE.addTo(menu, order, R.string.get_message);
+            if (noteForAnyAccount.isPresentAtServer) {
+                NoteContextMenuItem.GET_NOTE.addTo(menu, order, R.string.get_message)
             }
-            if (menuData.isAuthorSucceededMyAccount()) {
-                if (noteForAnyAccount.isPresentAtServer()) {
-                    if (!menuData.reblogged && getActingAccount().getConnection()
-                            .hasApiEndpoint(ApiRoutineEnum.DELETE_NOTE)) {
+            if (menuData.isAuthorSucceededMyAccount) {
+                if (noteForAnyAccount.isPresentAtServer) {
+                    if (!menuData.reblogged && actingAccount.connection
+                                    .hasApiEndpoint(ApiRoutineEnum.DELETE_NOTE)) {
                         NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++,
-                                R.string.menu_item_destroy_status);
+                                R.string.menu_item_destroy_status)
                     }
                 } else {
-                    NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++, R.string.button_discard);
+                    NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++, R.string.button_discard)
                 }
             } else {
-                NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++, R.string.menu_item_delete_note_from_local_cache);
+                NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++, R.string.menu_item_delete_note_from_local_cache)
             }
-        } catch (Exception e) {
-            MyLog.w(this, method, e);
+        } catch (e: Exception) {
+            MyLog.w(this, method, e)
         }
     }
 
-    @NonNull
-    BaseNoteViewItem getViewItem() {
-        if (mViewItem.isEmpty()) {
-            return NoteViewItem.EMPTY;
+    fun getViewItem(): BaseNoteViewItem<*> {
+        if (mViewItem.isEmpty) {
+            return NoteViewItem.Companion.EMPTY
         }
-        if (mViewItem instanceof BaseNoteViewItem) {
-            return (BaseNoteViewItem) mViewItem;
-        } else if (mViewItem instanceof ActivityViewItem){
-            return ((ActivityViewItem) mViewItem).noteViewItem;
+        if (mViewItem is BaseNoteViewItem<*>) {
+            return mViewItem as BaseNoteViewItem<*>
+        } else if (mViewItem is ActivityViewItem) {
+            return (mViewItem as ActivityViewItem).noteViewItem
         }
-        return NoteViewItem.EMPTY;
+        return NoteViewItem.Companion.EMPTY
     }
 
-    private void addNoteLinksSubmenu(ContextMenu menu, View v, int order) {
-        URLSpan[] links = MyUrlSpan.getUrlSpans(v.findViewById(R.id.note_body));
-        switch (links.length) {
-            case 0:
-                break;
-            case 1:
-                menu.add(ContextMenu.NONE, NoteContextMenuItem.OPEN_NOTE_LINK.getId(),
-                            order, getActivity().getText(R.string.n_message_link).toString() +
-                                NoteContextMenuItem.NOTE_LINK_SEPARATOR +
-                                links[0].getURL());
-                break;
-            default:
-                SubMenu subMenu = menu.addSubMenu(ContextMenu.NONE, ContextMenu.NONE, order,
-                        StringUtil.format(getActivity(), R.string.n_message_links,
-                                        links.length));
-                int orderSubmenu = 0;
-                for (URLSpan link : links) {
-                    subMenu.add(ContextMenu.NONE, NoteContextMenuItem.OPEN_NOTE_LINK.getId(),
-                            orderSubmenu++, link.getURL());
+    private fun addNoteLinksSubmenu(menu: ContextMenu?, v: View?, order: Int) {
+        val links: Array<URLSpan?> = MyUrlSpan.Companion.getUrlSpans(v.findViewById<View?>(R.id.note_body))
+        when (links.size) {
+            0 -> {
+            }
+            1 -> menu.add(ContextMenu.NONE, NoteContextMenuItem.OPEN_NOTE_LINK.id,
+                    order, activity.getText(R.string.n_message_link).toString() +
+                    NoteContextMenuItem.Companion.NOTE_LINK_SEPARATOR +
+                    links[0].getURL())
+            else -> {
+                val subMenu = menu.addSubMenu(ContextMenu.NONE, ContextMenu.NONE, order,
+                        StringUtil.format(activity, R.string.n_message_links,
+                                links.size))
+                var orderSubmenu = 0
+                for (link in links) {
+                    subMenu.add(ContextMenu.NONE, NoteContextMenuItem.OPEN_NOTE_LINK.id,
+                            orderSubmenu++, link.getURL())
                 }
-                break;
+            }
         }
     }
 
-    @Override
-    public void setSelectedActingAccount(@NonNull MyAccount myAccount) {
-        if (!myAccount.equals(futureData.menuData.getMyAccount())) {
-            futureData = FutureNoteContextMenuData.EMPTY;
+    override fun setSelectedActingAccount(myAccount: MyAccount) {
+        if (myAccount != futureData.menuData.myAccount) {
+            futureData = FutureNoteContextMenuData.Companion.EMPTY
         }
-        super.setSelectedActingAccount(myAccount);
+        super.setSelectedActingAccount(myAccount)
     }
 
-    @NonNull
-    NoteDownloads getAttachedMedia() {
-        return futureData.menuData.noteForAnyAccount.downloads;
+    fun getAttachedMedia(): NoteDownloads {
+        return futureData.menuData.noteForAnyAccount.downloads
     }
 
-    private boolean isEditorVisible() {
-        return menuContainer.getNoteEditor().isVisible();
+    private fun isEditorVisible(): Boolean {
+        return menuContainer.getNoteEditor().isVisible
     }
 
-    public void onContextItemSelected(MenuItem item) {
+    fun onContextItemSelected(item: MenuItem?) {
         if (item != null) {
-            this.selectedMenuItemTitle = StringUtil.notNull(String.valueOf(item.getTitle()));
-            onContextItemSelected(NoteContextMenuItem.fromId(item.getItemId()), getNoteId());
+            selectedMenuItemTitle = StringUtil.notNull(item.title.toString())
+            onContextItemSelected(NoteContextMenuItem.Companion.fromId(item.itemId), getNoteId())
         }
     }
 
-    void onContextItemSelected(NoteContextMenuItem contextMenuItem, long noteId) {
+    fun onContextItemSelected(contextMenuItem: NoteContextMenuItem?, noteId: Long) {
         if (futureData.isFor(noteId)) {
-            contextMenuItem.execute(this);
+            contextMenuItem.execute(this)
         }
     }
 
-    void switchTimelineActivityView(Timeline timeline) {
-        if (TimelineActivity.class.isAssignableFrom(getActivity().getClass())) {
-            ((TimelineActivity) getActivity()).switchView(timeline);
+    fun switchTimelineActivityView(timeline: Timeline?) {
+        if (TimelineActivity::class.java.isAssignableFrom(activity.javaClass)) {
+            (activity as TimelineActivity<*>).switchView(timeline)
         } else {
-            TimelineActivity.startForTimeline(getMyContext(), getActivity(),  timeline);
+            startForTimeline(myContext, activity, timeline)
         }
     }
 
-    public void loadState(Bundle savedInstanceState) {
+    fun loadState(savedInstanceState: Bundle?) {
         if (savedInstanceState != null && savedInstanceState.containsKey(IntentExtra.ACCOUNT_NAME.key)) {
-            setSelectedActingAccount(menuContainer.getActivity().getMyContext().accounts().fromAccountName(
+            selectedActingAccount = menuContainer.getActivity().myContext.accounts().fromAccountName(
                     savedInstanceState.getString(IntentExtra.ACCOUNT_NAME.key,
-                            menuContainer.getActivity().getMyContext().accounts().getCurrentAccount().getAccountName())));
+                            menuContainer.getActivity().myContext.accounts().currentAccount.accountName))
         }
     }
 
-    public void saveState(Bundle outState) {
-        outState.putString(IntentExtra.ACCOUNT_NAME.key, getSelectedActingAccount().getAccountName());
+    fun saveState(outState: Bundle?) {
+        outState.putString(IntentExtra.ACCOUNT_NAME.key, selectedActingAccount.accountName)
     }
 
-    public long getNoteId() {
-        return futureData.getNoteId();
+    fun getNoteId(): Long {
+        return futureData.getNoteId()
     }
 
-    @NonNull
-    public Origin getOrigin() {
-        return futureData.menuData.noteForAnyAccount.origin;
+    fun getOrigin(): Origin {
+        return futureData.menuData.noteForAnyAccount.origin
     }
 
-    @NonNull
-    @Override
-    public MyAccount getActingAccount() {
-        return getSelectedActingAccount().nonEmpty()
-                ? getSelectedActingAccount()
-                : futureData.menuData.getMyAccount();
+    override fun getActingAccount(): MyAccount {
+        return if (selectedActingAccount.nonEmpty()) selectedActingAccount else futureData.menuData.myAccount
     }
 
-    public Actor getActor() {
-        return futureData.menuData.noteForAnyAccount.actor;
+    fun getActor(): Actor? {
+        return futureData.menuData.noteForAnyAccount.actor
     }
 
-    public Actor getAuthor() {
-        return futureData.menuData.noteForAnyAccount.author;
+    fun getAuthor(): Actor? {
+        return futureData.menuData.noteForAnyAccount.author
     }
 
-    @NonNull
-    String getSelectedMenuItemTitle() {
-        return selectedMenuItemTitle;
+    fun getSelectedMenuItemTitle(): String {
+        return selectedMenuItemTitle
     }
 
-    void setFutureData(FutureNoteContextMenuData futureData) {
-        this.futureData = futureData;
+    fun setFutureData(futureData: FutureNoteContextMenuData?) {
+        this.futureData = futureData
     }
 }

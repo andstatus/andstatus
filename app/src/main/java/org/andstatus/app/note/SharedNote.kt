@@ -13,55 +13,50 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
+import android.content.Intent
+import android.net.Uri
+import org.andstatus.app.data.TextMediaType
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.UriUtils
+import java.util.*
+import java.util.function.Function
 
-import android.content.Intent;
-import android.net.Uri;
-
-import org.andstatus.app.data.TextMediaType;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.UriUtils;
-
-import java.util.Optional;
-
-import androidx.annotation.NonNull;
-
-public class SharedNote {
-    Optional<String> name;
-    Optional<String> content;
-    TextMediaType textMediaType;
-    Optional<Uri> mediaUri;
-    Optional<String> mediaType;
-
-    public static Optional<SharedNote> fromIntent(Intent intent) {
-        SharedNote shared = new SharedNote();
-        shared.name = StringUtil.optNotEmpty(intent.getStringExtra(Intent.EXTRA_SUBJECT));
-        Optional<String> html = StringUtil.optNotEmpty(intent.getStringExtra(Intent.EXTRA_HTML_TEXT));
-        if (html.isPresent()) {
-            shared.content = html;
-            shared.textMediaType = TextMediaType.HTML;
-        } else {
-            shared.content = StringUtil.optNotEmpty(intent.getStringExtra(Intent.EXTRA_TEXT));
-            shared.textMediaType = TextMediaType.PLAIN;
-        }
-        shared.mediaUri = Optional.ofNullable(intent.getParcelableExtra(Intent.EXTRA_STREAM))
-                .map(Object::toString)
-                .flatMap(UriUtils::toOptional);
-        shared.mediaType = shared.mediaUri.flatMap(u -> Optional.ofNullable(intent.getType()));
-        return shared.isEmpty() ? Optional.empty() : Optional.of(shared);
+class SharedNote {
+    var name: Optional<String?>? = null
+    var content: Optional<String?>? = null
+    var textMediaType: TextMediaType? = null
+    var mediaUri: Optional<Uri?>? = null
+    var mediaType: Optional<String?>? = null
+    fun isEmpty(): Boolean {
+        return !name.isPresent() && !content.isPresent() && !mediaUri.isPresent()
     }
 
-    boolean isEmpty() {
-        return !name.isPresent() && !content.isPresent() && !mediaUri.isPresent();
-    }
-
-    @NonNull
-    @Override
-    public String toString() {
+    override fun toString(): String {
         return "Share via this app " +
-            name.map(s -> "; title:'" + s + "'").orElse("") +
-            content.map(s -> "; content:'" + s + "' " + textMediaType).orElse("") +
-            mediaUri.map(s -> "; media:'" + s + "' " + mediaType.orElse("")).orElse("");
+                name.map(Function { s: String? -> "; title:'$s'" }).orElse("") +
+                content.map(Function { s: String? -> "; content:'$s' $textMediaType" }).orElse("") +
+                mediaUri.map(Function { s: Uri? -> "; media:'" + s + "' " + mediaType.orElse("") }).orElse("")
+    }
+
+    companion object {
+        fun fromIntent(intent: Intent?): Optional<SharedNote?>? {
+            val shared = SharedNote()
+            shared.name = StringUtil.optNotEmpty(intent.getStringExtra(Intent.EXTRA_SUBJECT))
+            val html = StringUtil.optNotEmpty(intent.getStringExtra(Intent.EXTRA_HTML_TEXT))
+            if (html.isPresent) {
+                shared.content = html
+                shared.textMediaType = TextMediaType.HTML
+            } else {
+                shared.content = StringUtil.optNotEmpty(intent.getStringExtra(Intent.EXTRA_TEXT))
+                shared.textMediaType = TextMediaType.PLAIN
+            }
+            shared.mediaUri = Optional.ofNullable<Any?>(intent.getParcelableExtra(Intent.EXTRA_STREAM))
+                    .map { obj: Any? -> obj.toString() }
+                    .flatMap { obj: String? -> UriUtils.toOptional() }
+            shared.mediaType = shared.mediaUri.flatMap(Function { u: Uri? -> Optional.ofNullable(intent.getType()) })
+            return if (shared.isEmpty()) Optional.empty() else Optional.of(shared)
+        }
     }
 }

@@ -13,73 +13,58 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline.meta
 
-package org.andstatus.app.timeline.meta;
+import android.content.Context
+import org.andstatus.app.R
+import org.andstatus.app.lang.SelectableEnum
 
-import android.content.Context;
-import androidx.annotation.NonNull;
+enum class DisplayedInSelector(
+        /** Code - identifier of the type  */
+        private val code: String?,
+        /** The id of the string resource with the localized name of this enum to use in UI  */
+        private val titleResId: Int) : SelectableEnum {
+    ALWAYS("always", R.string.always), IN_CONTEXT("in_context", R.string.in_context), NEVER("no", R.string.never);
 
-import org.andstatus.app.R;
-import org.andstatus.app.lang.SelectableEnum;
-
-public enum DisplayedInSelector implements SelectableEnum {
-    ALWAYS("always", R.string.always),
-    IN_CONTEXT("in_context", R.string.in_context),
-    NEVER("no", R.string.never);
-
-    /** Code - identifier of the type */
-    private final String code;
-    /** The id of the string resource with the localized name of this enum to use in UI */
-    private final int titleResId;
-
-    DisplayedInSelector(String code, int titleResId) {
-        this.code = code;
-        this.titleResId = titleResId;
+    /** String to be used for persistence  */
+    fun save(): String? {
+        return code
     }
 
-    /** Returns the enum or NEVER */
-    @NonNull
-    public static DisplayedInSelector load(String strCode) {
-        for (DisplayedInSelector value : DisplayedInSelector.values()) {
-            if (value.code.equals(strCode)) {
-                return value;
-            }
-        }
-        return NEVER;
+    override fun toString(): String {
+        return "DisplayedInSelector:$code"
     }
 
-    /** String to be used for persistence */
-    public String save() {
-        return code;
-    }
-
-    @Override
-    public String toString() {
-        return "DisplayedInSelector:" + code;
-    }
-
-    /** Localized title for UI */
-    @Override
-    public CharSequence title(Context context) {
-        if (titleResId == 0 || context == null) {
-            return this.code;
+    /** Localized title for UI  */
+    override fun title(context: Context?): CharSequence? {
+        return if (titleResId == 0 || context == null) {
+            this.code
         } else {
-            return context.getText(titleResId);
+            context.getText(titleResId)
         }
     }
 
-    @Override
-    public boolean isSelectable() {
-        return true;
+    override fun isSelectable(): Boolean {
+        return true
     }
 
-    @Override
-    public String getCode() {
-        return code;
+    override fun getCode(): String? {
+        return code
     }
 
-    @Override
-    public int getDialogTitleResId() {
-        return R.string.select_displayed_in_selector;
+    override fun getDialogTitleResId(): Int {
+        return R.string.select_displayed_in_selector
+    }
+
+    companion object {
+        /** Returns the enum or NEVER  */
+        fun load(strCode: String?): DisplayedInSelector {
+            for (value in values()) {
+                if (value.code == strCode) {
+                    return value
+                }
+            }
+            return NEVER
+        }
     }
 }

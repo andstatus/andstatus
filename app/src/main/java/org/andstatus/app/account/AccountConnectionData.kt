@@ -13,104 +13,90 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.account
 
-package org.andstatus.app.account;
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.net.http.HttpConnection
+import org.andstatus.app.net.http.HttpConnectionEmpty
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.origin.OriginType
+import org.andstatus.app.util.TriState
+import java.net.URL
 
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.net.http.HttpConnection;
-import org.andstatus.app.net.http.HttpConnectionEmpty;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.util.TriState;
-
-import java.net.URL;
-
-public class AccountConnectionData {
-    private boolean isOAuth;
-    private URL originUrl;
-
-    private final MyAccount myAccount;
-    private final Origin origin;
-
-    private final Class<? extends org.andstatus.app.net.http.HttpConnection> httpConnectionClass;
-
-    public static AccountConnectionData fromOrigin(Origin origin, TriState triStateOAuth) {
-        return new AccountConnectionData(MyAccount.EMPTY, origin, triStateOAuth);
+class AccountConnectionData private constructor(private val myAccount: MyAccount?, private val origin: Origin?, triStateOAuth: TriState?) {
+    private val isOAuth: Boolean
+    private var originUrl: URL?
+    private val httpConnectionClass: Class<out HttpConnection?>?
+    fun getAccountActor(): Actor {
+        return myAccount.getActor()
     }
 
-    public static AccountConnectionData fromMyAccount(MyAccount myAccount, TriState triStateOAuth) {
-        return new AccountConnectionData(myAccount, myAccount.getOrigin(), triStateOAuth);
+    fun getMyAccount(): MyAccount {
+        return myAccount
     }
 
-    private AccountConnectionData(MyAccount myAccount, Origin origin, TriState triStateOAuth) {
-        this.myAccount = myAccount;
-        this.origin = origin;
-        originUrl = origin.getUrl();
-        isOAuth = origin.getOriginType().fixIsOAuth(triStateOAuth);
-        httpConnectionClass = origin.getOriginType().getHttpConnectionClass(isOAuth());
+    fun getAccountName(): AccountName? {
+        return myAccount.getOAccountName()
     }
 
-    @NonNull
-    public Actor getAccountActor() {
-        return myAccount.getActor();
+    fun getOriginType(): OriginType? {
+        return origin.getOriginType()
     }
 
-    @NonNull
-    public MyAccount getMyAccount() {
-        return myAccount;
+    fun getOrigin(): Origin? {
+        return origin
     }
 
-    public AccountName getAccountName() {
-        return myAccount.getOAccountName();
+    fun isSsl(): Boolean {
+        return origin.isSsl()
     }
 
-    public OriginType getOriginType() {
-        return origin.getOriginType();
+    fun isOAuth(): Boolean {
+        return isOAuth
     }
 
-    public Origin getOrigin() {
-        return origin;
+    fun getOriginUrl(): URL? {
+        return originUrl
     }
 
-    public boolean isSsl() {
-        return origin.isSsl();
+    fun setOriginUrl(urlIn: URL?) {
+        originUrl = urlIn
     }
 
-    public boolean isOAuth() {
-        return isOAuth;
+    fun getDataReader(): AccountDataReader? {
+        return myAccount.data
     }
 
-    public URL getOriginUrl() {
-        return originUrl;
+    fun newHttpConnection(): HttpConnection? {
+        val http = origin.myContext.httpConnectionMock
+        return http
+                ?: try {
+                    httpConnectionClass.newInstance()
+                } catch (e: InstantiationException) {
+                    HttpConnectionEmpty.Companion.EMPTY
+                } catch (e: IllegalAccessException) {
+                    HttpConnectionEmpty.Companion.EMPTY
+                }
     }
 
-    public void setOriginUrl(URL urlIn) {
-        this.originUrl = urlIn;
+    override fun toString(): String {
+        return if (myAccount.isEmpty()) if (origin.hasHost()) origin.getHost() else originUrl.toString() else myAccount.getAccountName()
     }
 
-    public AccountDataReader getDataReader() {
-        return myAccount.data;
-    }
+    companion object {
+        fun fromOrigin(origin: Origin?, triStateOAuth: TriState?): AccountConnectionData? {
+            return AccountConnectionData(MyAccount.Companion.EMPTY, origin, triStateOAuth)
+        }
 
-    public HttpConnection newHttpConnection() {
-        HttpConnection http = origin.myContext.getHttpConnectionMock();
-        if (http != null) return http;
-        try {
-            return httpConnectionClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            return HttpConnectionEmpty.EMPTY;
+        fun fromMyAccount(myAccount: MyAccount?, triStateOAuth: TriState?): AccountConnectionData? {
+            return AccountConnectionData(myAccount, myAccount.getOrigin(), triStateOAuth)
         }
     }
 
-    @NonNull
-    @Override
-    public String toString() {
-        return myAccount.isEmpty()
-            ? (origin.hasHost()
-                ? origin.getHost()
-                : originUrl.toString())
-            : myAccount.getAccountName();
+    init {
+        originUrl = origin.getUrl()
+        isOAuth = origin.getOriginType().fixIsOAuth(triStateOAuth)
+        httpConnectionClass = origin.getOriginType().getHttpConnectionClass(isOAuth())
     }
 }

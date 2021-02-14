@@ -13,44 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.actor
 
-package org.andstatus.app.actor;
-
-import android.os.Bundle;
-
-import org.andstatus.app.R;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyServiceManager;
+import android.os.Bundle
+import org.andstatus.app.R
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.service.CommandData
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.service.MyServiceManager
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class FollowersScreen extends ActorsScreen {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+class FollowersScreen : ActorsScreen() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
     }
 
-    private long getFollowedActorId() {
-        return centralItemId;
+    private fun getFollowedActorId(): Long {
+        return centralItemId
     }
 
-    protected void syncWithInternet(boolean manuallyLaunched) {
-        final String method = "syncWithInternet";
-        showSyncing(method, getText(R.string.options_menu_sync));
-        CommandEnum command = actorsScreenType == ActorsScreenType.FOLLOWERS ?
-                CommandEnum.GET_FOLLOWERS : CommandEnum.GET_FRIENDS;
-        MyServiceManager.sendForegroundCommand(
-                CommandData.newActorCommand(command, Actor.load(myContext, getFollowedActorId()), "")
-                    .setManuallyLaunched(manuallyLaunched));
+    override fun syncWithInternet(manuallyLaunched: Boolean) {
+        val method = "syncWithInternet"
+        showSyncing(method, getText(R.string.options_menu_sync))
+        val command = if (actorsScreenType == ActorsScreenType.FOLLOWERS) CommandEnum.GET_FOLLOWERS else CommandEnum.GET_FRIENDS
+        MyServiceManager.Companion.sendForegroundCommand(
+                CommandData.Companion.newActorCommand(command, Actor.Companion.load(myContext, getFollowedActorId()), "")
+                        .setManuallyLaunched(manuallyLaunched))
     }
 
-    @Override
-    protected ActorsLoader newSyncLoader(Bundle args) {
-        return new FriendsAndFollowersLoader(myContext, actorsScreenType, getParsedUri().getOrigin(myContext),
-                getFollowedActorId(), getParsedUri().getSearchQuery());
+    override fun newSyncLoader(args: Bundle?): ActorsLoader? {
+        return FriendsAndFollowersLoader(myContext, actorsScreenType, parsedUri.getOrigin(myContext),
+                getFollowedActorId(), parsedUri.searchQuery)
     }
 }

@@ -13,147 +13,137 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-import android.content.Context;
-
-import java.util.Arrays;
-import java.util.Optional;
+import android.content.Context
+import java.util.*
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class StringUtil {
-    private static final String TEMP_OID_PREFIX = "andstatustemp:";
-
-    public static String stripTempPrefix(String oid) {
-        return isTemp(oid) ? oid.substring(TEMP_OID_PREFIX.length()) : oid;
+object StringUtil {
+    private val TEMP_OID_PREFIX: String? = "andstatustemp:"
+    fun stripTempPrefix(oid: String?): String? {
+        return if (isTemp(oid)) oid.substring(TEMP_OID_PREFIX.length) else oid
     }
 
-    public static String toTempOid(String oid) {
-        return toTempOidIf(true, oid);
+    fun toTempOid(oid: String?): String? {
+        return toTempOidIf(true, oid)
     }
 
-    public static String toTempOidIf(boolean transformToTempOid, String oid) {
-        return !transformToTempOid || isTemp(oid) ? oid : TEMP_OID_PREFIX + oid;
+    fun toTempOidIf(transformToTempOid: Boolean, oid: String?): String? {
+        return if (!transformToTempOid || isTemp(oid)) oid else TEMP_OID_PREFIX + oid
     }
 
-    public static boolean nonEmptyNonTemp(String string) {
-        return !isEmptyOrTemp(string);
+    fun nonEmptyNonTemp(string: String?): Boolean {
+        return !isEmptyOrTemp(string)
     }
 
-    public static boolean isEmptyOrTemp(String string) {
-        return isEmpty(string) || string.startsWith(TEMP_OID_PREFIX);
+    fun isEmptyOrTemp(string: String?): Boolean {
+        return isEmpty(string) || string.startsWith(TEMP_OID_PREFIX)
     }
 
-    public static boolean isTemp(String string) {
-        return nonEmpty(string) && string.startsWith(TEMP_OID_PREFIX);
+    fun isTemp(string: String?): Boolean {
+        return nonEmpty(string) && string.startsWith(TEMP_OID_PREFIX)
     }
 
-    /** empty and null strings are treated as the same */
-    public static boolean equalsNotEmpty(String first, String second) {
-        return notEmpty(first, "").equals(notEmpty(second, ""));
+    /** empty and null strings are treated as the same  */
+    fun equalsNotEmpty(first: String?, second: String?): Boolean {
+        return notEmpty(first, "") == notEmpty(second, "")
     }
 
-    public static boolean nonEmpty(CharSequence value) {
-        return !isEmpty(value);
+    fun nonEmpty(value: CharSequence?): Boolean {
+        return !isEmpty(value)
     }
 
-    public static boolean isEmpty(CharSequence value) {
-        return value == null || value.length() == 0;
+    fun isEmpty(value: CharSequence?): Boolean {
+        return value == null || value.length == 0
     }
 
-    public static String notEmpty(String value, String valueIfEmpty) {
-        return StringUtil.isEmpty(value) ? valueIfEmpty : value;
+    fun notEmpty(value: String?, valueIfEmpty: String?): String? {
+        return if (isEmpty(value)) valueIfEmpty else value
     }
 
-    public static Optional<String> optNotEmpty(Object value) {
-        return Optional.ofNullable(value).map(Object::toString).map(String::trim).filter(s -> s.length() > 0);
+    fun optNotEmpty(value: Any?): Optional<String?>? {
+        return Optional.ofNullable(value).map { obj: Any? -> obj.toString() }.map { obj: String? -> obj.trim { it <= ' ' } }.filter { s: String? -> s.length > 0 }
     }
 
-    public static String notNull(String value) {
-        return value == null ? "" : value;
+    fun notNull(value: String?): String? {
+        return value ?: ""
     }
 
-    public static long toLong(String s) {
-        long value = 0;
+    fun toLong(s: String?): Long {
+        var value: Long = 0
         try {
-            value = Long.parseLong(s);
-        } catch (NumberFormatException e) {
-            MyLog.ignored(s, e);
+            value = s.toLong()
+        } catch (e: NumberFormatException) {
+            MyLog.ignored(s, e)
         }
-        return value;
+        return value
     }
 
     /**
      * From http://stackoverflow.com/questions/767759/occurrences-of-substring-in-a-string
      */
-    public static int countOfOccurrences(String str, String findStr) {
-        int lastIndex = 0;
-        int count = 0;
+    fun countOfOccurrences(str: String?, findStr: String?): Int {
+        var lastIndex = 0
+        var count = 0
         while (lastIndex != -1) {
-            lastIndex = str.indexOf(findStr, lastIndex);
+            lastIndex = str.indexOf(findStr, lastIndex)
             if (lastIndex != -1) {
-                count++;
-                lastIndex += findStr.length();
+                count++
+                lastIndex += findStr.length
             }
         }
-        return count;
+        return count
     }
 
-    public static String[] addBeforeArray(String[] array, String s) {
-        int length = array == null ? 0 : array.length;
-        String[] ans = new String[length + 1];
+    fun addBeforeArray(array: Array<String?>?, s: String?): Array<String?>? {
+        val length = array?.size ?: 0
+        val ans = arrayOfNulls<String?>(length + 1)
         if (length > 0) {
-            System.arraycopy(array, 0, ans, 1, length);
+            System.arraycopy(array, 0, ans, 1, length)
         }
-        ans[0] = s;
-        return ans;
+        ans[0] = s
+        return ans
     }
 
-    public static boolean isFilled(String value) {
-        return !StringUtil.isEmpty(value);
+    fun isFilled(value: String?): Boolean {
+        return !isEmpty(value)
     }
 
-    public static boolean isNewFilledValue(String oldValue, String newValue) {
-        return isFilled(newValue) && (oldValue == null || !oldValue.equals(newValue));
+    fun isNewFilledValue(oldValue: String?, newValue: String?): Boolean {
+        return isFilled(newValue) && (oldValue == null || oldValue != newValue)
     }
 
-    /** Doesn't throw exceptions */
-    public static String format(Context context, int resourceId, Object ... args) {
-        if (resourceId == 0) return "";
-        if (context == null) return "Error no context resourceId=" + resourceId + argsToString(args);
-        try {
-            return format(context.getText(resourceId).toString(), args);
-        } catch (Exception e2) {
-            String msg = "Error formatting resourceId=" + resourceId + argsToString(args);
-            MyLog.w(context, msg, e2);
-            return msg;
+    /** Doesn't throw exceptions  */
+    fun format(context: Context?, resourceId: Int, vararg args: Any?): String? {
+        if (resourceId == 0) return ""
+        return if (context == null) "Error no context resourceId=" + resourceId + argsToString(args) else try {
+            format(context.getText(resourceId).toString(), *args)
+        } catch (e2: Exception) {
+            val msg = "Error formatting resourceId=" + resourceId + argsToString(args)
+            MyLog.w(context, msg, e2)
+            msg
         }
     }
 
-    /** Doesn't throw exceptions */
-    public static String format(String format, Object ... args) {
-        if (args == null || args.length == 0) {
-            return format;
+    /** Doesn't throw exceptions  */
+    fun format(format: String?, vararg args: Any?): String? {
+        if (args == null || args.size == 0) {
+            return format
         }
         if (nonEmpty(format)) {
             try {
-                return String.format(format, args);
-            } catch (Exception e) {
-                MyLog.w(StringUtil.class, "Error formatting \"" + format + "\"" + argsToString(args), e);
+                return String.format(format, *args)
+            } catch (e: Exception) {
+                MyLog.w(StringUtil::class.java, "Error formatting \"" + format + "\"" + argsToString(args), e)
             }
         }
-        return notEmpty(format, "(no format)") + argsToString(args);
+        return notEmpty(format, "(no format)") + argsToString(args)
     }
 
-    private static String argsToString(Object[] args) {
-        return args == null
-            ? ""
-            : " " + (args.length == 1
-                ? args[0].toString()
-                : Arrays.toString(args));
+    private fun argsToString(args: Array<Any?>?): String? {
+        return if (args == null) "" else " " + if (args.size == 1) args[0].toString() else Arrays.toString(args)
     }
-
 }

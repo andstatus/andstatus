@@ -12,42 +12,32 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.junit.support;
+package org.apache.geode.test.junit.support
 
-import org.apache.geode.test.junit.IgnoreCondition;
-import org.junit.runner.Description;
+import org.apache.geode.test.junit.IgnoreCondition
+import org.junit.runner.Description
 
 /**
  * The DefaultIgnoreCondition class...
  *
  * @see org.junit.runner.Description
+ *
  * @see org.apache.geode.test.junit.ConditionalIgnore
+ *
  * @see org.apache.geode.test.junit.IgnoreCondition
  */
-public class DefaultIgnoreCondition implements IgnoreCondition {
+class DefaultIgnoreCondition @JvmOverloads constructor(private val ignore: Boolean = DEFAULT_IGNORE) : IgnoreCondition {
+    fun isIgnore(): Boolean {
+        return ignore
+    }
 
-  public static final boolean DEFAULT_IGNORE = false;
+    override fun evaluate(testCaseDescription: Description?): Boolean {
+        return isIgnore()
+    }
 
-  public static final DefaultIgnoreCondition DO_NOT_IGNORE = new DefaultIgnoreCondition(false);
-  public static final DefaultIgnoreCondition IGNORE = new DefaultIgnoreCondition(true);
-
-  private final boolean ignore;
-
-  public DefaultIgnoreCondition() {
-    this(DEFAULT_IGNORE);
-  }
-
-  public DefaultIgnoreCondition(final boolean ignore) {
-    this.ignore = ignore;
-  }
-
-  public boolean isIgnore() {
-    return this.ignore;
-  }
-
-  @Override
-  public boolean evaluate(final Description testCaseDescription) {
-    return isIgnore();
-  }
-
+    companion object {
+        const val DEFAULT_IGNORE = false
+        val DO_NOT_IGNORE: DefaultIgnoreCondition? = DefaultIgnoreCondition(false)
+        val IGNORE: DefaultIgnoreCondition? = DefaultIgnoreCondition(true)
+    }
 }

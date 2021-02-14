@@ -13,521 +13,464 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social.activitypub
 
-package org.andstatus.app.net.social.activitypub;
+import android.net.Uri
+import io.vavr.control.CheckedConsumer
+import io.vavr.control.CheckedFunction
+import io.vavr.control.Try
+import org.andstatus.app.account.AccountConnectionData
+import org.andstatus.app.actor.GroupType
+import org.andstatus.app.data.DownloadStatus
+import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.HttpReadResult
+import org.andstatus.app.net.http.HttpRequest
+import org.andstatus.app.net.social.AActivity
+import org.andstatus.app.net.social.AJsonCollection
+import org.andstatus.app.net.social.AObjectType
+import org.andstatus.app.net.social.ActivityType
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.ActorEndpointType
+import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.net.social.Attachment
+import org.andstatus.app.net.social.Audience
+import org.andstatus.app.net.social.Connection
+import org.andstatus.app.net.social.ConnectionMastodon
+import org.andstatus.app.net.social.InputActorPage
+import org.andstatus.app.net.social.InputTimelinePage
+import org.andstatus.app.net.social.Note
+import org.andstatus.app.net.social.TimelinePosition
+import org.andstatus.app.net.social.Visibility
+import org.andstatus.app.origin.OriginType
+import org.andstatus.app.util.JsonUtils
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.ObjectOrId
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UrlUtils
+import org.json.JSONException
+import org.json.JSONObject
+import java.util.*
+import java.util.concurrent.Callable
+import java.util.function.Consumer
 
-import android.net.Uri;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.account.AccountConnectionData;
-import org.andstatus.app.actor.GroupType;
-import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.http.HttpReadResult;
-import org.andstatus.app.net.http.HttpRequest;
-import org.andstatus.app.net.social.AActivity;
-import org.andstatus.app.net.social.AJsonCollection;
-import org.andstatus.app.net.social.AObjectType;
-import org.andstatus.app.net.social.ActivityType;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.ActorEndpointType;
-import org.andstatus.app.net.social.ApiRoutineEnum;
-import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.net.social.Audience;
-import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.net.social.ConnectionMastodon;
-import org.andstatus.app.net.social.InputActorPage;
-import org.andstatus.app.net.social.InputTimelinePage;
-import org.andstatus.app.net.social.Note;
-import org.andstatus.app.net.social.TimelinePosition;
-import org.andstatus.app.net.social.Visibility;
-import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.util.JsonUtils;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.ObjectOrId;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TryUtils;
-import org.andstatus.app.util.UriUtils;
-import org.andstatus.app.util.UrlUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.List;
-import java.util.Optional;
-
-import io.vavr.control.Try;
-
-import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
-
-public class ConnectionActivityPub extends Connection {
-    private static final String TAG = ConnectionActivityPub.class.getSimpleName();
-    static final String PUBLIC_COLLECTION_ID = "https://www.w3.org/ns/activitystreams#Public";
-    static final String APPLICATION_ID = "http://andstatus.org/andstatus";
-    static final String NAME_PROPERTY = "name";
-    static final String SUMMARY_PROPERTY = "summary";
-    static final String SENSITIVE_PROPERTY = "sensitive";
-    static final String CONTENT_PROPERTY = "content";
-    static final String VIDEO_OBJECT = "stream";
-    static final String IMAGE_OBJECT = "image";
-    public static final String FULL_IMAGE_OBJECT = "fullImage";
-
-    @Override
-    public Connection setAccountConnectionData(AccountConnectionData connectionData) {
-        final String host = connectionData.getAccountActor().getConnectionHost();
+class ConnectionActivityPub : Connection() {
+    override fun setAccountConnectionData(connectionData: AccountConnectionData?): Connection? {
+        val host = connectionData.getAccountActor().connectionHost
         if (StringUtil.nonEmpty(host)) {
-            connectionData.setOriginUrl(UrlUtils.buildUrl(host, connectionData.isSsl()));
+            connectionData.setOriginUrl(UrlUtils.buildUrl(host, connectionData.isSsl()))
         }
-        return super.setAccountConnectionData(connectionData);
+        return super.setAccountConnectionData(connectionData)
     }
 
-    @NonNull
-    @Override
-    protected String getApiPathFromOrigin(ApiRoutineEnum routine) {
-        String url;
-        switch(routine) {
-            case ACCOUNT_VERIFY_CREDENTIALS:
-                url = "whoami";
-                break;
-            default:
-                url = "";
-                break;
+    override fun getApiPathFromOrigin(routine: ApiRoutineEnum?): String {
+        val url: String
+        url = when (routine) {
+            ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS -> "whoami"
+            else -> ""
         }
-        return partialPathToApiPath(url);
+        return partialPathToApiPath(url)
     }
 
-    @Override
-    @NonNull
-    public Try<Actor> verifyCredentials(Optional<Uri> whoAmI) {
+    override fun verifyCredentials(whoAmI: Optional<Uri?>?): Try<Actor?> {
         return TryUtils.fromOptional(whoAmI)
-        .filter(UriUtils::isDownloadable)
-        .orElse(() -> getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS))
-        .map(uri -> HttpRequest.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri))
-        .flatMap(this::execute)
-        .recoverWith(Exception.class, this::mastodonsHackToVerifyCredentials)
-        .flatMap(HttpReadResult::getJsonObject)
-        .map(this::actorFromJson);
+                .filter { obj: Uri? -> UriUtils.isDownloadable() }
+                .orElse { getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS) }
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri) })
+                .flatMap { request: HttpRequest? -> execute(request) }
+                .recoverWith(Exception::class.java) { originalException: Exception? -> mastodonsHackToVerifyCredentials(originalException) }
+                .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+                .map { jso: JSONObject? -> actorFromJson(jso) }
     }
 
-    /** @return  original error, if this Mastodon's hack didn't work */
-    private Try<HttpReadResult> mastodonsHackToVerifyCredentials(Exception originalException) {
+    /** @return  original error, if this Mastodon's hack didn't work
+     */
+    private fun mastodonsHackToVerifyCredentials(originalException: Exception?): Try<HttpReadResult?>? {
         // Get Username first by partially parsing Mastodon's non-ActivityPub response
-        Try<String> userNameInMastodon = Try.success(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS)
-        .map(ConnectionMastodon::partialPath)
-        .map(OriginType.MASTODON::partialPathToApiPath)
-        .flatMap(this::pathToUri)
-        .map(uri -> HttpRequest.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri))
-        .flatMap(this::execute)
-        .flatMap(HttpReadResult::getJsonObject)
-        .map(jso -> JsonUtils.optString(jso, "username"))
-        .filter(StringUtil::nonEmpty);
+        val userNameInMastodon = Try.success(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS)
+                .map(CheckedFunction<ApiRoutineEnum?, String?> { routine: ApiRoutineEnum? -> ConnectionMastodon.Companion.partialPath(routine) })
+                .map { partialPath: String? -> OriginType.MASTODON.partialPathToApiPath(partialPath) }
+                .flatMap { path: String? -> pathToUri(path) }
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS, uri) })
+                .flatMap { request: HttpRequest? -> execute(request) }
+                .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+                .map { jso: JSONObject? -> JsonUtils.optString(jso, "username") }
+                .filter { obj: String? -> StringUtil.nonEmpty() }
 
         // Now build the Actor's Uri artificially using Mastodon's known URL pattern
-        return userNameInMastodon.map(username -> "users/" + username)
-        .flatMap(this::pathToUri)
-        .map(uri -> HttpRequest.of(ApiRoutineEnum.GET_ACTOR, uri))
-        .flatMap(this::execute)
-        .recoverWith(Exception.class, newException -> Try.failure(originalException));
+        return userNameInMastodon.map { username: String? -> "users/$username" }
+                .flatMap { path: String? -> pathToUri(path) }
+                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(ApiRoutineEnum.GET_ACTOR, uri) })
+                .flatMap { request: HttpRequest? -> execute(request) }
+                .recoverWith(Exception::class.java) { newException: Exception? -> Try.failure(originalException) }
     }
 
-    @NonNull
-    private Actor actorFromJson(JSONObject jso) {
-        switch (ApObjectType.fromJson(jso)) {
-            case PERSON:
-                return actorFromPersonTypeJson(jso);
-            case COLLECTION:
-            case ORDERED_COLLECTION:
-                return actorFromCollectionTypeJson(jso);
-            case UNKNOWN:
-                return Actor.EMPTY;
-            default:
-                MyLog.w(TAG, "Unexpected object type for Actor: " + ApObjectType.fromJson(jso) + ", JSON:\n" + jso);
-                return Actor.EMPTY;
+    private fun actorFromJson(jso: JSONObject?): Actor {
+        return when (ApObjectType.Companion.fromJson(jso)) {
+            ApObjectType.PERSON -> actorFromPersonTypeJson(jso)
+            ApObjectType.COLLECTION, ApObjectType.ORDERED_COLLECTION -> actorFromCollectionTypeJson(jso)
+            ApObjectType.UNKNOWN -> Actor.Companion.EMPTY
+            else -> {
+                MyLog.w(TAG, """
+     Unexpected object type for Actor: ${ApObjectType.Companion.fromJson(jso)}, JSON:
+     $jso
+     """.trimIndent())
+                Actor.Companion.EMPTY
+            }
         }
     }
 
-    @NonNull
-    private Actor actorFromCollectionTypeJson(JSONObject jso) {
-        Actor actor = Actor.fromTwoIds(data.getOrigin(), GroupType.COLLECTION, 0, JsonUtils.optString(jso, "id"));
-        return actor.build();
+    private fun actorFromCollectionTypeJson(jso: JSONObject?): Actor {
+        val actor: Actor = Actor.Companion.fromTwoIds(data.origin, GroupType.COLLECTION, 0, JsonUtils.optString(jso, "id"))
+        return actor.build()
     }
 
-    @NonNull
-    private Actor actorFromPersonTypeJson(JSONObject jso) {
-        Actor actor = actorFromOid(JsonUtils.optString(jso, "id"));
-        actor.setUsername(JsonUtils.optString(jso, "preferredUsername"));
-        actor.setRealName(JsonUtils.optString(jso, NAME_PROPERTY));
-        actor.setAvatarUrl(JsonUtils.optStringInside(jso, "icon", "url"));
-        actor.location = JsonUtils.optStringInside(jso, "location", NAME_PROPERTY);
-        actor.setSummary(JsonUtils.optString(jso, "summary"));
-        actor.setHomepage(JsonUtils.optString(jso, "url"));
-        actor.setProfileUrl(JsonUtils.optString(jso, "url"));
-        actor.setUpdatedDate(dateFromJson(jso, "updated"));
+    private fun actorFromPersonTypeJson(jso: JSONObject?): Actor {
+        val actor = actorFromOid(JsonUtils.optString(jso, "id"))
+        actor.setUsername(JsonUtils.optString(jso, "preferredUsername"))
+        actor.setRealName(JsonUtils.optString(jso, NAME_PROPERTY))
+        actor.setAvatarUrl(JsonUtils.optStringInside(jso, "icon", "url"))
+        actor.location = JsonUtils.optStringInside(jso, "location", NAME_PROPERTY)
+        actor.setSummary(JsonUtils.optString(jso, "summary"))
+        actor.setHomepage(JsonUtils.optString(jso, "url"))
+        actor.setProfileUrl(JsonUtils.optString(jso, "url"))
+        actor.setUpdatedDate(dateFromJson(jso, "updated"))
         actor.endpoints
-            .add(ActorEndpointType.API_PROFILE, JsonUtils.optString(jso, "id"))
-            .add(ActorEndpointType.API_INBOX, JsonUtils.optString(jso, "inbox"))
-            .add(ActorEndpointType.API_OUTBOX, JsonUtils.optString(jso, "outbox"))
-            .add(ActorEndpointType.API_FOLLOWING, JsonUtils.optString(jso, "following"))
-            .add(ActorEndpointType.API_FOLLOWERS, JsonUtils.optString(jso, "followers"))
-            .add(ActorEndpointType.BANNER, JsonUtils.optStringInside(jso, "image", "url"))
-            .add(ActorEndpointType.API_SHARED_INBOX, JsonUtils.optStringInside(jso, "endpoints", "sharedInbox"))
-            .add(ActorEndpointType.API_UPLOAD_MEDIA, JsonUtils.optStringInside(jso, "endpoints", "uploadMedia"));
-        return actor.build();
+                .add(ActorEndpointType.API_PROFILE, JsonUtils.optString(jso, "id"))
+                .add(ActorEndpointType.API_INBOX, JsonUtils.optString(jso, "inbox"))
+                .add(ActorEndpointType.API_OUTBOX, JsonUtils.optString(jso, "outbox"))
+                .add(ActorEndpointType.API_FOLLOWING, JsonUtils.optString(jso, "following"))
+                .add(ActorEndpointType.API_FOLLOWERS, JsonUtils.optString(jso, "followers"))
+                .add(ActorEndpointType.BANNER, JsonUtils.optStringInside(jso, "image", "url"))
+                .add(ActorEndpointType.API_SHARED_INBOX, JsonUtils.optStringInside(jso, "endpoints", "sharedInbox"))
+                .add(ActorEndpointType.API_UPLOAD_MEDIA, JsonUtils.optStringInside(jso, "endpoints", "uploadMedia"))
+        return actor.build()
     }
 
-    @Override
-    public long parseDate(String stringDate) {
-        return parseIso8601Date(stringDate);
+    override fun parseDate(stringDate: String?): Long {
+        return parseIso8601Date(stringDate)
     }
 
-    @Override
-    public Try<AActivity> undoLike(String noteOid) {
-        return actOnNote(ActivityType.UNDO_LIKE, noteOid);
+    override fun undoLike(noteOid: String?): Try<AActivity?>? {
+        return actOnNote(ActivityType.UNDO_LIKE, noteOid)
     }
 
-    @Override
-    public Try<AActivity> like(String noteOid) {
-        return actOnNote(ActivityType.LIKE, noteOid);
+    override fun like(noteOid: String?): Try<AActivity?>? {
+        return actOnNote(ActivityType.LIKE, noteOid)
     }
 
-    @Override
-    public Try<Boolean> deleteNote(String noteOid) {
-        return actOnNote(ActivityType.DELETE, noteOid).map(AActivity::isEmpty);
+    override fun deleteNote(noteOid: String?): Try<Boolean?>? {
+        return actOnNote(ActivityType.DELETE, noteOid).map(CheckedFunction { obj: AActivity? -> obj.isEmpty() })
     }
 
-    private Try<AActivity> actOnNote(ActivityType activityType, String noteId) {
-        return ActivitySender.fromId(this, noteId).send(activityType);
+    private fun actOnNote(activityType: ActivityType?, noteId: String?): Try<AActivity?>? {
+        return ActivitySender.Companion.fromId(this, noteId).send(activityType)
     }
 
-    @Override
-    public Try<InputActorPage> getFriendsOrFollowers(ApiRoutineEnum routineEnum, TimelinePosition position, Actor actor) {
-        return getActors(routineEnum, position, actor);
+    override fun getFriendsOrFollowers(routineEnum: ApiRoutineEnum?, position: TimelinePosition?, actor: Actor?): Try<InputActorPage?>? {
+        return getActors(routineEnum, position, actor)
     }
 
-    @NonNull
-    private Try<InputActorPage> getActors(ApiRoutineEnum apiRoutine, TimelinePosition position, Actor actor) {
-        return ConnectionAndUrl.fromActor(this, apiRoutine, position, actor)
-        .flatMap(conu -> conu.execute(conu.newRequest())
-            .flatMap(HttpReadResult::getJsonObject)
-            .map(jsonObject -> {
-                AJsonCollection jsonCollection = AJsonCollection.of(jsonObject);
-                List<Actor> actors = jsonCollection.mapAll(this::actorFromJson, this::actorFromOid);
-                MyLog.v(TAG, () -> apiRoutine + " '" + conu.uri + "' " + actors.size() + " actors");
-                return InputActorPage.of(jsonCollection, actors);
-            })
-        );
+    private fun getActors(apiRoutine: ApiRoutineEnum?, position: TimelinePosition?, actor: Actor?): Try<InputActorPage?> {
+        return ConnectionAndUrl.Companion.fromActor(this, apiRoutine, position, actor)
+                .flatMap<InputActorPage?>(CheckedFunction<ConnectionAndUrl?, Try<out InputActorPage?>?> { conu: ConnectionAndUrl? ->
+                    conu.execute(conu.newRequest())
+                            .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+                            .map(CheckedFunction { jsonObject: JSONObject? ->
+                                val jsonCollection: AJsonCollection = of(jsonObject)
+                                val actors = jsonCollection.mapAll({ jso: JSONObject? -> actorFromJson(jso) }) { id: String? -> actorFromOid(id) }
+                                MyLog.v(TAG) { apiRoutine.toString() + " '" + conu.uri + "' " + actors.size + " actors" }
+                                InputActorPage.Companion.of(jsonCollection, actors)
+                            })
+                }
+                )
     }
 
-    @Override
-    protected Try<AActivity> getNote1(String noteOid) {
-        return execute(HttpRequest.of(ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid)))
-        .flatMap(HttpReadResult::getJsonObject)
-        .map(this::activityFromJson);
+    override fun getNote1(noteOid: String?): Try<AActivity?>? {
+        return execute(HttpRequest.Companion.of(ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid)))
+                .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+                .map { jsoActivity: JSONObject? -> this.activityFromJson(jsoActivity) }
     }
 
-    @Override
-    public Try<AActivity> updateNote(Note note) {
-        return ActivitySender.fromContent(this, note).send(ActivityType.CREATE);
+    override fun updateNote(note: Note?): Try<AActivity?>? {
+        return ActivitySender.Companion.fromContent(this, note).send(ActivityType.CREATE)
     }
 
-    @Override
-    public Try<AActivity> announce(String rebloggedNoteOid) {
-        return actOnNote(ActivityType.ANNOUNCE, rebloggedNoteOid);
+    override fun announce(rebloggedNoteOid: String?): Try<AActivity?>? {
+        return actOnNote(ActivityType.ANNOUNCE, rebloggedNoteOid)
     }
 
-    @Override
-    public boolean canGetConversation(String conversationOid) {
-        Uri uri = UriUtils.fromString(conversationOid);
-        return UriUtils.isDownloadable(uri);
+    override fun canGetConversation(conversationOid: String?): Boolean {
+        val uri = UriUtils.fromString(conversationOid)
+        return UriUtils.isDownloadable(uri)
     }
 
-    @Override
-    public Try<List<AActivity>> getConversation(String conversationOid) {
-        Uri uri = UriUtils.fromString(conversationOid);
-        if (UriUtils.isDownloadable(uri)) {
-            return ConnectionAndUrl
-            .fromUriActor(uri, this, ApiRoutineEnum.GET_CONVERSATION, data.getAccountActor())
-            .flatMap(this::getActivities)
-            .map(p -> p.items);
+    override fun getConversation(conversationOid: String?): Try<MutableList<AActivity?>?>? {
+        val uri = UriUtils.fromString(conversationOid)
+        return if (UriUtils.isDownloadable(uri)) {
+            ConnectionAndUrl.Companion.fromUriActor(uri, this, ApiRoutineEnum.GET_CONVERSATION, data.accountActor)
+                    .flatMap<InputTimelinePage?>(CheckedFunction<ConnectionAndUrl?, Try<out InputTimelinePage?>?> { conu: ConnectionAndUrl? -> getActivities(conu) })
+                    .map<MutableList<AActivity?>?>(CheckedFunction { p: InputTimelinePage? -> p.items })
         } else {
-            return super.getConversation(conversationOid);
+            super.getConversation(conversationOid)
         }
     }
 
-    @NonNull
-    @Override
-    public Try<InputTimelinePage> getTimeline(boolean syncYounger, ApiRoutineEnum apiRoutine,
-                  TimelinePosition youngestPosition, TimelinePosition oldestPosition, int limit, Actor actor) {
-        TimelinePosition requestedPosition = syncYounger ? youngestPosition : oldestPosition;
+    override fun getTimeline(syncYounger: Boolean, apiRoutine: ApiRoutineEnum?,
+                             youngestPosition: TimelinePosition?, oldestPosition: TimelinePosition?, limit: Int, actor: Actor?): Try<InputTimelinePage?> {
+        val requestedPosition = if (syncYounger) youngestPosition else oldestPosition
 
         // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
-        return ConnectionAndUrl.fromActor(this, apiRoutine, requestedPosition, actor)
-        .map(conu -> conu.withSyncDirection(syncYounger))
-        .flatMap(this::getActivities);
+        return ConnectionAndUrl.Companion.fromActor(this, apiRoutine, requestedPosition, actor)
+                .map<ConnectionAndUrl?>(CheckedFunction { conu: ConnectionAndUrl? -> conu.withSyncDirection(syncYounger) })
+                .flatMap<InputTimelinePage?>(CheckedFunction<ConnectionAndUrl?, Try<out InputTimelinePage?>?> { conu: ConnectionAndUrl? -> getActivities(conu) })
     }
 
-    private Try<InputTimelinePage> getActivities(ConnectionAndUrl conu) {
+    private fun getActivities(conu: ConnectionAndUrl?): Try<InputTimelinePage?>? {
         return conu.execute(conu.newRequest())
-        .flatMap(HttpReadResult::getJsonObject)
-        .map(root -> {
-            AJsonCollection jsonCollection = AJsonCollection.of(root);
-            List<AActivity> activities = jsonCollection.mapObjects(item ->
-                activityFromJson(ObjectOrId.of(item))
-                    .setTimelinePositions(jsonCollection.getPrevId(), jsonCollection.getNextId())
-            );
-            MyLog.d(TAG, "getTimeline " + conu.apiRoutine + " '" + conu.uri + "' " + activities.size() + " activities");
-            return InputTimelinePage.of(jsonCollection, activities);
-        });
+                .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+                .map(CheckedFunction { root: JSONObject? ->
+                    val jsonCollection: AJsonCollection = of(root)
+                    val activities = jsonCollection.mapObjects(CheckedFunction<JSONObject?, AActivity?> { item: JSONObject? ->
+                        activityFromJson(ObjectOrId.Companion.of(item))
+                                .setTimelinePositions(jsonCollection.prevId, jsonCollection.nextId)
+                    }
+                    )
+                    MyLog.d(TAG, "getTimeline " + conu.apiRoutine + " '" + conu.uri + "' " + activities.size + " activities")
+                    InputTimelinePage.Companion.of(jsonCollection, activities)
+                })
     }
 
-    @Override
-    public int fixedDownloadLimit(int limit, ApiRoutineEnum apiRoutine) {
-        final int maxLimit = apiRoutine == ApiRoutineEnum.GET_FRIENDS ? 200 : 20;
-        int out = super.fixedDownloadLimit(limit, apiRoutine);
+    override fun fixedDownloadLimit(limit: Int, apiRoutine: ApiRoutineEnum?): Int {
+        val maxLimit = if (apiRoutine == ApiRoutineEnum.GET_FRIENDS) 200 else 20
+        var out = super.fixedDownloadLimit(limit, apiRoutine)
         if (out > maxLimit) {
-            out = maxLimit;
+            out = maxLimit
         }
-        return out;
+        return out
     }
 
-    @NonNull
-    AActivity activityFromJson(JSONObject jsoActivity) throws ConnectionException {
-        if (jsoActivity == null) return AActivity.EMPTY;
-
-        final ActivityType activityType = ActivityType.from(JsonUtils.optString(jsoActivity, "type"));
-        AActivity activity = AActivity.from(data.getAccountActor(),
-                activityType == ActivityType.EMPTY ? ActivityType.UPDATE : activityType);
-        try {
+    @Throws(ConnectionException::class)
+    fun activityFromJson(jsoActivity: JSONObject?): AActivity {
+        if (jsoActivity == null) return AActivity.Companion.EMPTY
+        val activityType: ActivityType = ActivityType.Companion.from(JsonUtils.optString(jsoActivity, "type"))
+        val activity: AActivity = AActivity.Companion.from(data.accountActor,
+                if (activityType == ActivityType.EMPTY) ActivityType.UPDATE else activityType)
+        return try {
             if (ApObjectType.ACTIVITY.isTypeOf(jsoActivity)) {
-                return parseActivity(activity, jsoActivity);
+                parseActivity(activity, jsoActivity)
             } else {
-                return parseObjectOfActivity(activity, jsoActivity);
+                parseObjectOfActivity(activity, jsoActivity)
             }
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Parsing activity", e, jsoActivity);
+        } catch (e: JSONException) {
+            throw ConnectionException.Companion.loggedJsonException(this, "Parsing activity", e, jsoActivity)
         }
     }
 
-    @NonNull
-    AActivity activityFromOid(String oid) {
-        if (StringUtil.isEmptyOrTemp(oid)) return AActivity.EMPTY;
-        return AActivity.from(data.getAccountActor(), ActivityType.UPDATE);
+    fun activityFromOid(oid: String?): AActivity {
+        return if (StringUtil.isEmptyOrTemp(oid)) AActivity.Companion.EMPTY else AActivity.Companion.from(data.accountActor, ActivityType.UPDATE)
     }
 
-    @NonNull
-    private AActivity activityFromJson(ObjectOrId objectOrId) throws ConnectionException {
-        if (objectOrId.id.isPresent()) {
-            return AActivity.newPartialNote(data.getAccountActor(), Actor.EMPTY, objectOrId.id.get())
-                .setOid(objectOrId.id.get());
-        } else if (objectOrId.object.isPresent()) {
-            return activityFromJson(objectOrId.object.get());
+    @Throws(ConnectionException::class)
+    private fun activityFromJson(objectOrId: ObjectOrId?): AActivity {
+        return if (objectOrId.id.isPresent) {
+            newPartialNote(data.accountActor, Actor.Companion.EMPTY, objectOrId.id.get())
+                    .setOid(objectOrId.id.get())
+        } else if (objectOrId.`object`.isPresent) {
+            activityFromJson(objectOrId.`object`.get())
         } else {
-            return AActivity.EMPTY;
+            AActivity.Companion.EMPTY
         }
     }
 
-    private AActivity parseActivity(AActivity activity, JSONObject jsoActivity) throws JSONException, ConnectionException {
-        String oid = JsonUtils.optString(jsoActivity, "id");
+    @Throws(JSONException::class, ConnectionException::class)
+    private fun parseActivity(activity: AActivity?, jsoActivity: JSONObject?): AActivity? {
+        val oid = JsonUtils.optString(jsoActivity, "id")
         if (StringUtil.isEmpty(oid)) {
-            MyLog.d(this, "Activity has no id:" + jsoActivity.toString(2));
-            return AActivity.EMPTY;
+            MyLog.d(this, "Activity has no id:" + jsoActivity.toString(2))
+            return AActivity.Companion.EMPTY
         }
-        activity.setOid(oid)
-            .setUpdatedDate(updatedOrCreatedDate(jsoActivity));
-
-        actorFromProperty(jsoActivity, "actor").onSuccess(activity::setActor);
-
-        ObjectOrId object = ObjectOrId.of(jsoActivity, "object")
-            .ifId(id -> {
-           switch (ApObjectType.fromId(activity.type, id)) {
-               case PERSON:
-                   activity.setObjActor(actorFromOid(id));
-                   break;
-               case NOTE:
-                   activity.setNote(Note.fromOriginAndOid(data.getOrigin(), id, DownloadStatus.UNKNOWN));
-                   break;
-               default:
-                   MyLog.w(this, "Unknown type of id:" + id);
-                   break;
-           }
-        }).ifObject(objectOfActivity -> {
-            if (ApObjectType.ACTIVITY.isTypeOf(objectOfActivity)) {
-                // Simplified dealing with nested activities
-                AActivity innerActivity = activityFromJson(objectOfActivity);
-                activity.setObjActor(innerActivity.getObjActor());
-                activity.setNote(innerActivity.getNote());
-            } else {
-                parseObjectOfActivity(activity, objectOfActivity);
-            }
-        });
-        if (object.error.isPresent()) throw object.error.get();
-
-        if (activity.getObjectType().equals(AObjectType.NOTE)) {
-            setAudience(activity, jsoActivity);
-            if(activity.getAuthor().isEmpty()) {
-                activity.setAuthor(activity.getActor());
+        activity.setOid(oid).updatedDate = updatedOrCreatedDate(jsoActivity)
+        actorFromProperty(jsoActivity, "actor").onSuccess(Consumer { actor: Actor? -> activity.setActor(actor) })
+        val `object`: ObjectOrId = ObjectOrId.Companion.of(jsoActivity, "object")
+                .ifId(CheckedConsumer { id: String? ->
+                    when (ApObjectType.Companion.fromId(activity.type, id)) {
+                        ApObjectType.PERSON -> activity.setObjActor(actorFromOid(id))
+                        ApObjectType.NOTE -> activity.setNote(Note.Companion.fromOriginAndOid(data.origin, id, DownloadStatus.UNKNOWN))
+                        else -> MyLog.w(this, "Unknown type of id:$id")
+                    }
+                }).ifObject(CheckedConsumer { objectOfActivity: JSONObject? ->
+                    if (ApObjectType.ACTIVITY.isTypeOf(objectOfActivity)) {
+                        // Simplified dealing with nested activities
+                        val innerActivity = activityFromJson(objectOfActivity)
+                        activity.setObjActor(innerActivity.objActor)
+                        activity.setNote(innerActivity.note)
+                    } else {
+                        parseObjectOfActivity(activity, objectOfActivity)
+                    }
+                })
+        if (`object`.error.isPresent) throw `object`.error.get()
+        if (activity.getObjectType() == AObjectType.NOTE) {
+            setAudience(activity, jsoActivity)
+            if (activity.getAuthor().isEmpty) {
+                activity.setAuthor(activity.getActor())
             }
         }
-        return activity;
+        return activity
     }
 
-    private Try<Actor> actorFromProperty(JSONObject parentObject, String propertyName) {
-        return ObjectOrId.of(parentObject, propertyName).mapOne(this::actorFromJson, this::actorFromOid);
+    private fun actorFromProperty(parentObject: JSONObject?, propertyName: String?): Try<Actor?>? {
+        return ObjectOrId.Companion.of(parentObject, propertyName).mapOne<Actor?>(CheckedFunction { jso: JSONObject? -> actorFromJson(jso) }, CheckedFunction { id: String? -> actorFromOid(id) })
     }
 
-    private void setAudience(AActivity activity, JSONObject jso) {
-        Audience audience = new Audience(data.getOrigin());
-        ObjectOrId.of(jso, "to")
-                .mapAll(this::actorFromJson, this::actorFromOid)
-                .forEach(o -> addRecipient(o, audience));
-        ObjectOrId.of(jso, "cc")
-                .mapAll(this::actorFromJson, this::actorFromOid)
-                .forEach(o -> addRecipient(o, audience));
+    private fun setAudience(activity: AActivity?, jso: JSONObject?) {
+        val audience = Audience(data.origin)
+        ObjectOrId.Companion.of(jso, "to")
+                .mapAll<Actor?>(CheckedFunction { jso: JSONObject? -> actorFromJson(jso) }, CheckedFunction { id: String? -> actorFromOid(id) })
+                .forEach(Consumer { o: Actor? -> addRecipient(o, audience) })
+        ObjectOrId.Companion.of(jso, "cc")
+                .mapAll<Actor?>(CheckedFunction { jso: JSONObject? -> actorFromJson(jso) }, CheckedFunction { id: String? -> actorFromOid(id) })
+                .forEach(Consumer { o: Actor? -> addRecipient(o, audience) })
         if (audience.hasNonSpecial()) {
-            audience.addVisibility(Visibility.PRIVATE);
+            audience.addVisibility(Visibility.PRIVATE)
         }
-        activity.getNote().setAudience(audience);
+        activity.getNote().setAudience(audience)
     }
 
-    private void addRecipient(Actor recipient, Audience audience) {
+    private fun addRecipient(recipient: Actor?, audience: Audience?) {
         audience.add(
-                PUBLIC_COLLECTION_ID.equals(recipient.oid)
-                        ? Actor.PUBLIC
-                        : recipient);
+                if (PUBLIC_COLLECTION_ID == recipient.oid) Actor.Companion.PUBLIC else recipient)
     }
 
-    private Actor actorFromOid(String id) {
-        return Actor.fromOid(data.getOrigin(), id);
+    private fun actorFromOid(id: String?): Actor? {
+        return Actor.Companion.fromOid(data.origin, id)
     }
 
-    public long updatedOrCreatedDate(JSONObject jso) {
-        long dateUpdated = dateFromJson(jso, "updated");
-        if (dateUpdated > SOME_TIME_AGO) return dateUpdated;
-
-        return dateFromJson(jso, "published");
+    fun updatedOrCreatedDate(jso: JSONObject?): Long {
+        val dateUpdated = dateFromJson(jso, "updated")
+        return if (dateUpdated > RelativeTime.SOME_TIME_AGO) dateUpdated else dateFromJson(jso, "published")
     }
 
-    private AActivity parseObjectOfActivity(AActivity activity, JSONObject objectOfActivity) throws ConnectionException {
+    @Throws(ConnectionException::class)
+    private fun parseObjectOfActivity(activity: AActivity?, objectOfActivity: JSONObject?): AActivity? {
         if (ApObjectType.PERSON.isTypeOf(objectOfActivity)) {
-            activity.setObjActor(actorFromJson(objectOfActivity));
+            activity.setObjActor(actorFromJson(objectOfActivity))
             if (activity.getOid().isEmpty()) {
-                activity.setOid(activity.getObjActor().oid);
+                activity.setOid(activity.getObjActor().oid)
             }
-        } else if (ApObjectType.compatibleWith(objectOfActivity) == ApObjectType.NOTE) {
-            noteFromJson(activity, objectOfActivity);
+        } else if (ApObjectType.Companion.compatibleWith(objectOfActivity) === ApObjectType.NOTE) {
+            noteFromJson(activity, objectOfActivity)
             if (activity.getOid().isEmpty()) {
-                activity.setOid(activity.getNote().oid);
+                activity.setOid(activity.getNote().oid)
             }
         }
-        return activity;
+        return activity
     }
 
-    private void noteFromJson(AActivity parentActivity, JSONObject jso) throws ConnectionException {
+    @Throws(ConnectionException::class)
+    private fun noteFromJson(parentActivity: AActivity?, jso: JSONObject?) {
         try {
-            String oid = JsonUtils.optString(jso, "id");
+            val oid = JsonUtils.optString(jso, "id")
             if (StringUtil.isEmpty(oid)) {
-                MyLog.d(TAG, "ActivityPub object has no id:" + jso.toString(2));
-                return;
+                MyLog.d(TAG, "ActivityPub object has no id:" + jso.toString(2))
+                return
             }
-            Actor author = actorFromProperty(jso, "attributedTo")
-                    .orElse(() -> actorFromProperty(jso, "author")).getOrElse(Actor.EMPTY);
-
-            final AActivity noteActivity = AActivity.newPartialNote(
-                    data.getAccountActor(),
+            val author = actorFromProperty(jso, "attributedTo")
+                    .orElse(Callable<Try<out Actor?>?> { actorFromProperty(jso, "author") }).getOrElse(Actor.Companion.EMPTY)
+            val noteActivity: AActivity = AActivity.Companion.newPartialNote(
+                    data.accountActor,
                     author,
                     oid,
                     updatedOrCreatedDate(jso),
-                    DownloadStatus.LOADED);
-
-            final AActivity activity;
-            switch (parentActivity.type) {
-                case UPDATE:
-                case CREATE:
-                case DELETE:
-                    activity = parentActivity;
-                    activity.setNote(noteActivity.getNote());
-                    if (activity.getActor().isEmpty()) {
-                        MyLog.d(this, "No Actor in outer activity " + activity);
-                        activity.setActor(noteActivity.getActor());
+                    DownloadStatus.LOADED)
+            val activity: AActivity?
+            when (parentActivity.type) {
+                ActivityType.UPDATE, ActivityType.CREATE, ActivityType.DELETE -> {
+                    activity = parentActivity
+                    activity.setNote(noteActivity.note)
+                    if (activity.getActor().isEmpty) {
+                        MyLog.d(this, "No Actor in outer activity $activity")
+                        activity.setActor(noteActivity.actor)
                     }
-                    break;
-                default:
-                    activity = noteActivity;
-                    parentActivity.setActivity(noteActivity);
-                    break;
+                }
+                else -> {
+                    activity = noteActivity
+                    parentActivity.setActivity(noteActivity)
+                }
             }
-
-            Note note =  activity.getNote();
-            note.setName(JsonUtils.optString(jso, NAME_PROPERTY));
-            note.setSummary(JsonUtils.optString(jso, SUMMARY_PROPERTY));
-            note.setContentPosted(JsonUtils.optString(jso, CONTENT_PROPERTY));
-            note.setSensitive(jso.optBoolean(SENSITIVE_PROPERTY));
-
-            note.setLikesCount(jso.optLong("likesCount")); // I didn't see this field yet
-            note.setReblogsCount(jso.optLong("reblogsCount")); // I didn't see this field yet
-            note.setRepliesCount(jso.optLong("repliesCount"));
-
+            val note = activity.getNote()
+            note.name = JsonUtils.optString(jso, NAME_PROPERTY)
+            note.summary = JsonUtils.optString(jso, SUMMARY_PROPERTY)
+            note.setContentPosted(JsonUtils.optString(jso, CONTENT_PROPERTY))
+            note.isSensitive = jso.optBoolean(SENSITIVE_PROPERTY)
+            note.likesCount = jso.optLong("likesCount") // I didn't see this field yet
+            note.reblogsCount = jso.optLong("reblogsCount") // I didn't see this field yet
+            note.repliesCount = jso.optLong("repliesCount")
             note.setConversationOid(StringUtil.optNotEmpty(JsonUtils.optString(jso, "conversation"))
-                    .orElseGet(() -> JsonUtils.optString(jso, "context")));
-
-            setAudience(activity, jso);
+                    .orElseGet { JsonUtils.optString(jso, "context") })
+            setAudience(activity, jso)
 
             // If the Note is a Reply to the other note
-            ObjectOrId.of(jso, "inReplyTo")
-                    .mapOne(this::activityFromJson, this::activityFromOid)
-                    .onSuccess(note::setInReplyTo);
-
+            ObjectOrId.Companion.of(jso, "inReplyTo")
+                    .mapOne<AActivity?>(CheckedFunction { jsoActivity: JSONObject? -> this.activityFromJson(jsoActivity) }, CheckedFunction { oid: String? -> activityFromOid(oid) })
+                    .onSuccess(Consumer { activity: AActivity? -> note.setInReplyTo(activity) })
             if (jso.has("replies")) {
-                JSONObject replies = jso.getJSONObject("replies");
+                val replies = jso.getJSONObject("replies")
                 if (replies.has("items")) {
-                    JSONArray jArr = replies.getJSONArray("items");
-                    for (int index = 0; index < jArr.length(); index++) {
-                        AActivity item = activityFromJson(ObjectOrId.of(jArr, index));
-                        if (item != AActivity.EMPTY) {
-                            note.replies.add(item);
+                    val jArr = replies.getJSONArray("items")
+                    for (index in 0 until jArr.length()) {
+                        val item: AActivity = activityFromJson(ObjectOrId.Companion.of(jArr, index))
+                        if (item !== AActivity.Companion.EMPTY) {
+                            note.replies.add(item)
                         }
                     }
                 }
             }
-
-            ObjectOrId.of(jso, "attachment")
-                    .mapAll(ConnectionActivityPub::attachmentFromJson, Attachment::fromUri)
-                    .forEach(activity::addAttachment);
-        } catch (JSONException e) {
-            throw ConnectionException.loggedJsonException(this, "Parsing note", e, jso);
+            ObjectOrId.Companion.of(jso, "attachment")
+                    .mapAll<Attachment?>(CheckedFunction { jso: JSONObject? -> attachmentFromJson(jso) }, CheckedFunction<String?, Attachment?> { uriString: String? -> Attachment.Companion.fromUri(uriString) })
+                    .forEach(Consumer { attachment: Attachment? -> activity.addAttachment(attachment) })
+        } catch (e: JSONException) {
+            throw ConnectionException.Companion.loggedJsonException(this, "Parsing note", e, jso)
         }
     }
 
-    @NonNull
-    private static Attachment attachmentFromJson(JSONObject jso) {
-        return ObjectOrId.of(jso, "url")
-                .mapAll(ConnectionActivityPub::attachmentFromUrlObject,
-                        url -> Attachment.fromUriAndMimeType(url, JsonUtils.optString(jso, "mediaType")))
-                .stream().findFirst().orElse(Attachment.EMPTY);
+    override fun follow(actorOid: String?, follow: Boolean?): Try<AActivity?>? {
+        return actOnActor(if (follow) ActivityType.FOLLOW else ActivityType.UNDO_FOLLOW, actorOid)
     }
 
-    @NonNull
-    private static Attachment attachmentFromUrlObject(JSONObject jso) {
-        return Attachment.fromUriAndMimeType(JsonUtils.optString(jso, "href"), JsonUtils.optString(jso, "mediaType"));
+    private fun actOnActor(activityType: ActivityType?, actorId: String?): Try<AActivity?>? {
+        return ActivitySender.Companion.fromId(this, actorId).send(activityType)
     }
 
-    @Override
-    public Try<AActivity> follow(String actorOid, Boolean follow) {
-        return actOnActor(follow ? ActivityType.FOLLOW : ActivityType.UNDO_FOLLOW, actorOid);
+    public override fun getActor2(actorIn: Actor?): Try<Actor?>? {
+        return ConnectionAndUrl.Companion.fromActor(this, ApiRoutineEnum.GET_ACTOR, TimelinePosition.Companion.EMPTY, actorIn)
+                .flatMap<HttpReadResult?>(CheckedFunction<ConnectionAndUrl?, Try<out HttpReadResult?>?> { connectionAndUrl: ConnectionAndUrl? -> connectionAndUrl.execute(connectionAndUrl.newRequest()) })
+                .flatMap<JSONObject?>(CheckedFunction<HttpReadResult?, Try<out JSONObject?>?> { obj: HttpReadResult? -> obj.getJsonObject() })
+                .map<Actor?>(CheckedFunction { jso: JSONObject? -> actorFromJson(jso) })
     }
 
-    private Try<AActivity> actOnActor(ActivityType activityType, String actorId) {
-        return ActivitySender.fromId(this, actorId).send(activityType);
-    }
+    companion object {
+        private val TAG: String? = ConnectionActivityPub::class.java.simpleName
+        val PUBLIC_COLLECTION_ID: String? = "https://www.w3.org/ns/activitystreams#Public"
+        val APPLICATION_ID: String? = "http://andstatus.org/andstatus"
+        val NAME_PROPERTY: String? = "name"
+        val SUMMARY_PROPERTY: String? = "summary"
+        val SENSITIVE_PROPERTY: String? = "sensitive"
+        val CONTENT_PROPERTY: String? = "content"
+        val VIDEO_OBJECT: String? = "stream"
+        val IMAGE_OBJECT: String? = "image"
+        val FULL_IMAGE_OBJECT: String? = "fullImage"
+        private fun attachmentFromJson(jso: JSONObject?): Attachment {
+            return ObjectOrId.Companion.of(jso, "url")
+                    .mapAll<Attachment?>(CheckedFunction { jso: JSONObject? -> attachmentFromUrlObject(jso) },
+                            CheckedFunction<String?, Attachment?> { url: String? -> Attachment.Companion.fromUriAndMimeType(url, JsonUtils.optString(jso, "mediaType")) })
+                    .stream().findFirst().orElse(Attachment.Companion.EMPTY)
+        }
 
-    @Override
-    public Try<Actor> getActor2(Actor actorIn) {
-        return ConnectionAndUrl
-        .fromActor(this, ApiRoutineEnum.GET_ACTOR, TimelinePosition.EMPTY, actorIn)
-        .flatMap(connectionAndUrl -> connectionAndUrl.execute(connectionAndUrl.newRequest()))
-        .flatMap(HttpReadResult::getJsonObject)
-        .map(this::actorFromJson);
+        private fun attachmentFromUrlObject(jso: JSONObject?): Attachment {
+            return Attachment.Companion.fromUriAndMimeType(JsonUtils.optString(jso, "href"), JsonUtils.optString(jso, "mediaType"))
+        }
     }
-
 }

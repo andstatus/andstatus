@@ -13,97 +13,81 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.account
 
-package org.andstatus.app.account;
+import android.accounts.AccountManager
+import android.app.Activity
+import android.content.Intent
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import org.andstatus.app.ActivityRequestCode
+import org.andstatus.app.R
+import org.andstatus.app.account.AccountSettingsActivity.FragmentAction
+import org.andstatus.app.os.NonUiThreadExecutor
+import org.andstatus.app.os.UiThreadExecutor
+import org.andstatus.app.util.MyLog
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
-import android.accounts.AccountManager;
-import android.app.Activity;
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-
-import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.R;
-import org.andstatus.app.os.NonUiThreadExecutor;
-import org.andstatus.app.os.UiThreadExecutor;
-import org.andstatus.app.util.MyLog;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
-public class AccountSettingsFragment extends Fragment {
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+class AccountSettingsFragment : Fragment() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (ActivityRequestCode.fromId(requestCode)) {
-            case REMOVE_ACCOUNT:
-                if (Activity.RESULT_OK == resultCode) {
-                    onRemoveAccount();
-                }
-                break;
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-                break;
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (ActivityRequestCode.Companion.fromId(requestCode)) {
+            ActivityRequestCode.REMOVE_ACCOUNT -> if (Activity.RESULT_OK == resultCode) {
+                onRemoveAccount()
+            }
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
-    private void onRemoveAccount() {
-        StateOfAccountChangeProcess state = ((AccountSettingsActivity) getActivity()).getState();
-        if (state.builder != null && state.builder.isPersistent()) {
-            for (android.accounts.Account account : AccountUtils.getCurrentAccounts(getActivity())) {
-                if (state.getAccount().getAccountName().equals(account.name)) {
-                    MyLog.i(this, "Removing account: " + account.name);
-                    android.accounts.AccountManager am = AccountManager.get(getActivity());
-                    CompletableFuture.supplyAsync(() -> {
+    private fun onRemoveAccount() {
+        val state = (activity as AccountSettingsActivity?).getState()
+        if (state.builder != null && state.builder.isPersistent) {
+            for (account in AccountUtils.getCurrentAccounts(activity)) {
+                if (state.account.accountName == account.name) {
+                    MyLog.i(this, "Removing account: " + account.name)
+                    val am = AccountManager.get(activity)
+                    CompletableFuture.supplyAsync({
                         try {
-                            Bundle result = am.removeAccount(account, getActivity(), null, null)
-                                .getResult(10, TimeUnit.SECONDS);
-                            return result != null && result.getBoolean(AccountManager.KEY_BOOLEAN_RESULT);
-                        } catch (Exception e) {
-                            MyLog.w(this, "Failed to remove account " + account.name, e);
-                            return false;
+                            val result = am.removeAccount(account, activity, null, null)
+                                    .getResult(10, TimeUnit.SECONDS)
+                            return@supplyAsync result != null && result.getBoolean(AccountManager.KEY_BOOLEAN_RESULT)
+                        } catch (e: Exception) {
+                            MyLog.w(this, "Failed to remove account " + account.name, e)
+                            return@supplyAsync false
                         }
-                    }, NonUiThreadExecutor.INSTANCE)
-                    .thenAcceptAsync(ok -> {
-                        if (ok) {
-                            getActivity().finish();
-                        }
-                    }, UiThreadExecutor.INSTANCE);
-                    break;
+                    }, NonUiThreadExecutor.Companion.INSTANCE)
+                            .thenAcceptAsync({ ok: Boolean? ->
+                                if (ok) {
+                                    activity.finish()
+                                }
+                            }, UiThreadExecutor.Companion.INSTANCE)
+                    break
                 }
             }
         }
     }
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.account_settings, container, false);
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.account_settings, container, false)
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        final AccountSettingsActivity activity = (AccountSettingsActivity) getActivity();
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        val activity = activity as AccountSettingsActivity?
         if (activity != null) {
-            activity.updateScreen();
-            switch (AccountSettingsActivity.FragmentAction.fromBundle(getArguments())) {
-                case ON_ORIGIN_SELECTED:
-                    activity.goToAddAccount();
-                    break;
-                default:
-                    break;
+            activity.updateScreen()
+            when (FragmentAction.Companion.fromBundle(arguments)) {
+                FragmentAction.ON_ORIGIN_SELECTED -> activity.goToAddAccount()
+                else -> {
+                }
             }
         }
-        super.onActivityCreated(savedInstanceState);
+        super.onActivityCreated(savedInstanceState)
     }
 }

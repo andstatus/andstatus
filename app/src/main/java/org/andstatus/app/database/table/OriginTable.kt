@@ -13,63 +13,58 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.database.table
 
-package org.andstatus.app.database.table;
-
-import android.database.sqlite.SQLiteDatabase;
-import android.provider.BaseColumns;
-
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.net.http.SslModeEnum;
-import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.util.TriState;
+import android.database.sqlite.SQLiteDatabase
+import android.provider.BaseColumns
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.net.http.SslModeEnum
+import org.andstatus.app.util.TriState
 
 /**
  * @author yvolk@yurivolkov.com
- * {@link org.andstatus.app.origin.Origin}
+ * [org.andstatus.app.origin.Origin]
  */
-public final class OriginTable implements BaseColumns {
-    public static final String TABLE_NAME = "origin";
+object OriginTable : BaseColumns {
+    val TABLE_NAME: String? = "origin"
 
-    private OriginTable() {
-    }
+    /** Alias for [._ID]  */
+    val ORIGIN_ID: String? = "origin_id"
 
-    /** Alias for {@link #_ID} */
-    public static final String ORIGIN_ID =  "origin_id";
+    /** Reference to [OriginType.getId]  */
+    val ORIGIN_TYPE_ID: String? = "origin_type_id"
+    val ORIGIN_NAME: String? = "origin_name"
+    val ORIGIN_URL: String? = "origin_url"
+    val SSL: String? = "ssl"
+    val SSL_MODE: String? = "ssl_mode"
+    val ALLOW_HTML: String? = "allow_html"
+    val TEXT_LIMIT: String? = "text_limit"
+    val MENTION_AS_WEBFINGER_ID: String? = "mention_as_webfinger_id"
+    val USE_LEGACY_HTTP: String? = "use_legacy_http"
 
-    /** Reference to {@link OriginType#getId()} */
-    public static final String ORIGIN_TYPE_ID = "origin_type_id";
-    public static final String ORIGIN_NAME = "origin_name";
-    public static final String ORIGIN_URL = "origin_url";
-    public static final String SSL = "ssl";
-    public static final String SSL_MODE = "ssl_mode";
-    public static final String ALLOW_HTML = "allow_html";
-    public static final String TEXT_LIMIT = "text_limit";
-    public static final String MENTION_AS_WEBFINGER_ID = "mention_as_webfinger_id";
-    public static final String USE_LEGACY_HTTP = "use_legacy_http";
     /**
      * Include this system in Global Search while in Combined Timeline
      */
-    public static final String IN_COMBINED_GLOBAL_SEARCH = "in_combined_global_search";
+    val IN_COMBINED_GLOBAL_SEARCH: String? = "in_combined_global_search"
+
     /**
      * Include this system in Reload while in Combined Public Timeline
      */
-    public static final String IN_COMBINED_PUBLIC_RELOAD = "in_combined_public_reload";
-
-    public static void create(SQLiteDatabase db) {
+    val IN_COMBINED_PUBLIC_RELOAD: String? = "in_combined_public_reload"
+    fun create(db: SQLiteDatabase?) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + ORIGIN_TYPE_ID + " INTEGER NOT NULL,"
                 + ORIGIN_NAME + " TEXT NOT NULL,"
                 + ORIGIN_URL + " TEXT NOT NULL,"
                 + SSL + " BOOLEAN NOT NULL DEFAULT 1,"
-                + SSL_MODE + " INTEGER NOT NULL DEFAULT " + SslModeEnum.SECURE.id +","
+                + SSL_MODE + " INTEGER NOT NULL DEFAULT " + SslModeEnum.SECURE.id + ","
                 + ALLOW_HTML + " BOOLEAN NOT NULL DEFAULT 1,"
                 + TEXT_LIMIT + " INTEGER NOT NULL,"
                 + MENTION_AS_WEBFINGER_ID + " INTEGER NOT NULL DEFAULT " + TriState.UNKNOWN.id + ","
                 + USE_LEGACY_HTTP + " INTEGER NOT NULL DEFAULT " + TriState.UNKNOWN.id + ","
                 + IN_COMBINED_GLOBAL_SEARCH + " BOOLEAN NOT NULL DEFAULT 1,"
                 + IN_COMBINED_PUBLIC_RELOAD + " BOOLEAN NOT NULL DEFAULT 1"
-                + ")");
+                + ")")
     }
 }

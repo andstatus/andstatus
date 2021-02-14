@@ -13,61 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-import java.util.function.Supplier;
+import java.util.function.Supplier
 
 /** Lazy holder of a non Null / or Nullable value
  * Blocks on parallel evaluation
  * Inspired by https://www.sitepoint.com/lazy-computations-in-java-with-a-lazy-type/
- * and https://dzone.com/articles/be-lazy-with-java-8 */
-public class LazyVal<T> implements Supplier<T> {
-    private final Supplier<T> supplier;
-    public final boolean isNullable;
-    private volatile T value = null;
-    private volatile boolean isEvaluated = false;
+ * and https://dzone.com/articles/be-lazy-with-java-8  */
+class LazyVal<T> private constructor(private val supplier: Supplier<T?>?, val isNullable: Boolean) : Supplier<T?> {
+    @Volatile
+    private var value: T? = null
 
-    public static <T> LazyVal<T> of(Supplier<T> supplier) {
-        return new LazyVal<>(supplier, false);
+    @Volatile
+    private var isEvaluated = false
+    override fun get(): T? {
+        val storedValue = value
+        return if (isEvaluated) storedValue else evaluate()
     }
 
-    public static <T> LazyVal<T> of(T value) {
-        LazyVal<T> lazyVal = new LazyVal<>(null, value == null);
-        lazyVal.value = value;
-        lazyVal.isEvaluated = true;
-        return lazyVal;
+    fun isEvaluated(): Boolean {
+        return isEvaluated
     }
 
-    public static <T> LazyVal<T> ofNullable(Supplier<T> supplier) {
-        return new LazyVal<>(supplier, true);
+    @Synchronized
+    private fun evaluate(): T? {
+        if (value != null) return value
+        val evaluatedValue = supplier.get()
+        value = evaluatedValue
+        isEvaluated = isNullable || value != null
+        return evaluatedValue
     }
 
-    private LazyVal(Supplier<T> supplier, boolean isNullable) {
-        this.supplier = supplier;
-        this.isNullable = isNullable;
+    fun reset() {
+        value = null
     }
 
-    @Override
-    public T get() {
-        T storedValue = value;
-        return isEvaluated ? storedValue : evaluate();
-    }
+    companion object {
+        fun <T> of(supplier: Supplier<T?>?): LazyVal<T?>? {
+            return LazyVal(supplier, false)
+        }
 
-    public boolean isEvaluated() {
-        return isEvaluated;
-    }
+        fun <T> of(value: T?): LazyVal<T?>? {
+            val lazyVal = LazyVal<T?>(null, value == null)
+            lazyVal.value = value
+            lazyVal.isEvaluated = true
+            return lazyVal
+        }
 
-    private synchronized T evaluate() {
-        if (value != null) return value;
-
-        T evaluatedValue = supplier.get();
-        value = evaluatedValue;
-        isEvaluated = isNullable || value != null;
-        return evaluatedValue;
-    }
-
-    public void reset() {
-        value = null;
+        fun <T> ofNullable(supplier: Supplier<T?>?): LazyVal<T?>? {
+            return LazyVal(supplier, true)
+        }
     }
 }

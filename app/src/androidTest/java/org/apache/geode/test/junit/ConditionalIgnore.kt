@@ -12,16 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.junit;
+package org.apache.geode.test.junit
 
-import org.apache.geode.test.junit.support.DefaultIgnoreCondition;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.geode.test.junit.support.DefaultIgnoreCondition
+import java.lang.annotation.Documented
+import java.lang.annotation.Inherited
+import java.lang.annotation.Retention
+import java.lang.annotation.RetentionPolicy
+import kotlin.reflect.KClass
 
 /**
  * The ConditionalIgnore class is a Java Annotation used to annotated a test suite class test case
@@ -29,19 +27,13 @@ import java.lang.annotation.Target;
  * predetermined condition provided by the IgnoreCondition interface.
  *
  * @see java.lang.annotation.Annotation
+ *
  * @see org.apache.geode.test.junit.IgnoreCondition
+ *
  * @see org.apache.geode.test.junit.support.DefaultIgnoreCondition
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-@Inherited  // Added by yvolk@yurivolkov.com 2017-05-29 - Now the annotation may be set on a superclass.
-public @interface ConditionalIgnore {
-
-  Class<? extends IgnoreCondition> condition() default DefaultIgnoreCondition.class;
-
-  String until() default "1970-01-01";
-
-  String value() default "";
-
-}
+@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER)
+@Inherited // Added by yvolk@yurivolkov.com 2017-05-29 - Now the annotation may be set on a superclass.
+annotation class ConditionalIgnore(val condition: KClass<out IgnoreCondition?> = DefaultIgnoreCondition::class, val until: String = "1970-01-01", val value: String = "")

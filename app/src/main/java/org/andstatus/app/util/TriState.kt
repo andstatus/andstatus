@@ -13,103 +13,90 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
+import android.os.Bundle
+import org.andstatus.app.IntentExtra
 
-import android.os.Bundle;
+/** @author yvolk@yurivolkov.com
+ */
+enum class TriState(val id: Long, val isTrue: Boolean, isFalse: Boolean) {
+    TRUE(2, true, false), FALSE(1, false, true), UNKNOWN(3, false, false);
 
-import org.andstatus.app.IntentExtra;
-
-/** @author yvolk@yurivolkov.com */
-public enum TriState {
-    TRUE(2, true, false),
-    FALSE(1, false, true),
-    UNKNOWN(3, false, false);
-
-    public final long id;
-    public final boolean isTrue;
-    /** https://philosophy.stackexchange.com/questions/38542/what-is-the-difference-if-any-between-not-true-and-false */
-    public final boolean untrue;
-    public final boolean isFalse;
-    public final boolean notFalse;
-    public final boolean known;
-    public final boolean unknown;
-
-    TriState(long id, boolean isTrue, boolean isFalse) {
-        this.id = id;
-        this.isTrue = isTrue;
-        untrue = !isTrue;
-        this.isFalse = isFalse;
-        notFalse = !isFalse;
-        known = isTrue || isFalse;
-        unknown = !known;
+    /** https://philosophy.stackexchange.com/questions/38542/what-is-the-difference-if-any-between-not-true-and-false  */
+    val untrue: Boolean
+    val isFalse: Boolean
+    val notFalse: Boolean
+    val known: Boolean
+    val unknown: Boolean
+    fun getEntriesPosition(): Int {
+        return ordinal
     }
-    
-    public static TriState fromId(long id) {
-        for (TriState tt : TriState.values()) {
-            if (tt.id == id) {
-                return tt;
+
+    override fun toString(): String {
+        return "TriState:" + name
+    }
+
+    fun toBoolean(defaultValue: Boolean): Boolean {
+        return when (this) {
+            FALSE -> false
+            TRUE -> true
+            else -> defaultValue
+        }
+    }
+
+    fun toBundle(bundle: Bundle?, key: String?): Bundle? {
+        bundle.putLong(key, id)
+        return bundle
+    }
+
+    fun <T> select(ifTrue: T?, ifFalse: T?, ifUnknown: T?): T? {
+        return when (this) {
+            TRUE -> ifTrue
+            FALSE -> ifFalse
+            else -> ifUnknown
+        }
+    }
+
+    companion object {
+        fun fromId(id: Long): TriState? {
+            for (tt in values()) {
+                if (tt.id == id) {
+                    return tt
+                }
+            }
+            return UNKNOWN
+        }
+
+        fun fromBundle(bundle: Bundle?, intentExtra: IntentExtra?): TriState? {
+            return fromId(BundleUtils.fromBundle(bundle, intentExtra, UNKNOWN.id))
+        }
+
+        fun fromEntriesPosition(position: Int): TriState? {
+            var obj: TriState? = UNKNOWN
+            for (`val` in values()) {
+                if (`val`.ordinal == position) {
+                    obj = `val`
+                    break
+                }
+            }
+            return obj
+        }
+
+        fun fromBoolean(booleanToConvert: Boolean): TriState? {
+            return if (booleanToConvert) {
+                TRUE
+            } else {
+                FALSE
             }
         }
-        return UNKNOWN;
     }
 
-    public static TriState fromBundle(Bundle bundle, IntentExtra intentExtra) {
-        return fromId(BundleUtils.fromBundle(bundle, intentExtra, UNKNOWN.id));
-    }
-
-    public int getEntriesPosition() {
-        return ordinal();
-    }
-    
-    public static TriState fromEntriesPosition(int position) {
-        TriState obj = UNKNOWN;
-        for(TriState val : values()) {
-            if (val.ordinal() == position) {
-                obj = val;
-                break;
-            }
-        }
-        return obj;
-    }
-    
-    @Override
-    public String toString() {
-        return "TriState:" + this.name();
-    }
-    
-    public boolean toBoolean(boolean defaultValue) {
-        switch (this){
-            case FALSE:
-                return false;
-            case TRUE:
-                return true;
-            default:
-                return defaultValue;
-        }
-    }
-
-    public static TriState fromBoolean(boolean booleanToConvert) {
-        if (booleanToConvert) {
-            return TRUE;
-        } else {
-            return FALSE;
-        }
-    }
-
-    public Bundle toBundle(Bundle bundle, String key) {
-        bundle.putLong(key, id);
-        return bundle;
-    }
-
-    public <T> T select(T ifTrue, T ifFalse, T ifUnknown) {
-        switch (this) {
-            case TRUE:
-                return ifTrue;
-            case FALSE:
-                return ifFalse;
-            default:
-                return ifUnknown;
-        }
+    init {
+        untrue = !isTrue
+        this.isFalse = isFalse
+        notFalse = !isFalse
+        known = isTrue || isFalse
+        unknown = !known
     }
 }

@@ -13,45 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.note;
+package org.andstatus.app.note
 
-import android.database.Cursor;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.actor.ActorViewItem;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyStringBuilder;
-
-import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
+import android.database.Cursor
+import org.andstatus.app.actor.ActorViewItem
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.database.table.ActivityTable
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.util.RelativeTime
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class NoteViewItem extends BaseNoteViewItem<NoteViewItem> {
-    public final static NoteViewItem EMPTY = new NoteViewItem(true, DATETIME_MILLIS_NEVER);
+class NoteViewItem : BaseNoteViewItem<NoteViewItem?> {
+    constructor(isEmpty: Boolean, updatedDate: Long) : super(isEmpty, updatedDate) {}
 
-    protected NoteViewItem(boolean isEmpty, long updatedDate) {
-        super(isEmpty, updatedDate);
+    override fun fromCursor(myContext: MyContext?, cursor: Cursor?): NoteViewItem {
+        return NoteViewItem(myContext, cursor)
     }
 
-    @Override
-    @NonNull
-    public NoteViewItem fromCursor(MyContext myContext, Cursor cursor) {
-        return new NoteViewItem(myContext, cursor);
+    private constructor(myContext: MyContext?, cursor: Cursor?) : super(myContext, cursor) {
+        setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID))
+        contentToSearch = DbUtils.getString(cursor, NoteTable.CONTENT_TO_SEARCH)
+        insertedDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE)
+        activityUpdatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE)
+        author = ActorViewItem.Companion.fromActorId(origin, DbUtils.getLong(cursor, NoteTable.AUTHOR_ID))
+        setOtherViewProperties(cursor)
     }
 
-    private NoteViewItem (MyContext myContext, Cursor cursor) {
-        super(myContext, cursor);
-        setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID));
-        contentToSearch = DbUtils.getString(cursor, NoteTable.CONTENT_TO_SEARCH);
-        insertedDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE);
-        activityUpdatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE);
-        author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID));
-        setOtherViewProperties(cursor);
+    companion object {
+        val EMPTY: NoteViewItem? = NoteViewItem(true, RelativeTime.DATETIME_MILLIS_NEVER)
     }
 }

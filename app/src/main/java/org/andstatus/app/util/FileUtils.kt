@@ -13,240 +13,231 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
+import android.os.Build
+import org.andstatus.app.data.DbUtils
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.nio.charset.Charset
+import java.util.*
 
-import android.os.Build;
-
-import org.andstatus.app.data.DbUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-import java.util.Arrays;
-
-public class FileUtils {
-    public static final String ROOT_FOLDER = "/";
-    private static final int BUFFER_LENGTH = 4 * 1024;
-
-    private FileUtils() {
-        // Empty
-    }
-    
-    public static JSONArray getJSONArray(File file) throws IOException {
-        JSONArray jso = null;
-        String fileString = utf8File2String(file);
+object FileUtils {
+    val ROOT_FOLDER: String? = "/"
+    private const val BUFFER_LENGTH = 4 * 1024
+    @Throws(IOException::class)
+    fun getJSONArray(file: File?): JSONArray? {
+        var jso: JSONArray? = null
+        val fileString = utf8File2String(file)
         if (!StringUtil.isEmpty(fileString)) {
-            try {
-                jso = new JSONArray(fileString);
-            } catch (JSONException e) {
-                MyLog.v(FileUtils.class, e);
-                jso = null;
+            jso = try {
+                JSONArray(fileString)
+            } catch (e: JSONException) {
+                MyLog.v(FileUtils::class.java, e)
+                null
             }
         }
         if (jso == null) {
-            jso = new JSONArray();
+            jso = JSONArray()
         }
-        return jso;
+        return jso
     }
-    
-    public static JSONObject getJSONObject(File file) throws IOException {
-        JSONObject jso = null;
-        String fileString = utf8File2String(file);
+
+    @Throws(IOException::class)
+    fun getJSONObject(file: File?): JSONObject? {
+        var jso: JSONObject? = null
+        val fileString = utf8File2String(file)
         if (!StringUtil.isEmpty(fileString)) {
-            try {
-                jso = new JSONObject(fileString);
-            } catch (JSONException e) {
-                MyLog.v(FileUtils.class, e);
-                jso = null;
+            jso = try {
+                JSONObject(fileString)
+            } catch (e: JSONException) {
+                MyLog.v(FileUtils::class.java, e)
+                null
             }
         }
         if (jso == null) {
-            jso = new JSONObject();
+            jso = JSONObject()
         }
-        return jso;
+        return jso
     }
 
-    private static String utf8File2String(File file) throws IOException {
-        return new String(getBytes(file), Charset.forName("UTF-8"));
+    @Throws(IOException::class)
+    private fun utf8File2String(file: File?): String? {
+        return String(getBytes(file), Charset.forName("UTF-8"))
     }
 
-    /** Reads the whole file */
-    public static byte[] getBytes(File file) throws IOException {
+    /** Reads the whole file  */
+    @Throws(IOException::class)
+    fun getBytes(file: File?): ByteArray? {
         if (file != null) {
-            try (InputStream is = new FileInputStream(file)) {
-                return getBytes(is);
-            }
+            FileInputStream(file).use { `is` -> return getBytes(`is`) }
         }
-        return new byte[0];
+        return ByteArray(0)
     }
 
-    /** Read the stream into an array; the stream is not closed **/
-    public static byte[] getBytes(InputStream is) throws IOException {
-        if (is != null) {
-            byte[] readBuffer = new byte[BUFFER_LENGTH];
-            try (ByteArrayOutputStream bout = new ByteArrayOutputStream()) {
-                int read;
+    /** Read the stream into an array; the stream is not closed  */
+    @Throws(IOException::class)
+    fun getBytes(`is`: InputStream?): ByteArray? {
+        if (`is` != null) {
+            val readBuffer = ByteArray(BUFFER_LENGTH)
+            ByteArrayOutputStream().use { bout ->
+                var read: Int
                 do {
-                    read = is.read(readBuffer, 0, readBuffer.length);
-                    if(read == -1) {
-                        break;
+                    read = `is`.read(readBuffer, 0, readBuffer.size)
+                    if (read == -1) {
+                        break
                     }
-                    bout.write(readBuffer, 0, read);
-                } while(true);
-                return bout.toByteArray();
+                    bout.write(readBuffer, 0, read)
+                } while (true)
+                return bout.toByteArray()
             }
         }
-        return new byte[0];
-    }
-    
-    /** Reads up to 'size' bytes, starting from 'offset' */
-    public static byte[] getBytes(File file, int offset, int size) throws IOException {
-        if (file == null) return new byte[0];
-
-        try (InputStream is = new FileInputStream(file)) {
-            return getBytes(is, file.getAbsolutePath(), offset, size);
-        }
+        return ByteArray(0)
     }
 
-    /** Reads up to 'size' bytes, starting from 'offset' */
-    public static byte[] getBytes(InputStream is, String path, int offset, int size) throws IOException {
-        byte[] readBuffer = new byte[size];
-        long bytesSkipped = is.skip(offset);
+    /** Reads up to 'size' bytes, starting from 'offset'  */
+    @Throws(IOException::class)
+    fun getBytes(file: File?, offset: Int, size: Int): ByteArray? {
+        if (file == null) return ByteArray(0)
+        FileInputStream(file).use { `is` -> return getBytes(`is`, file.absolutePath, offset, size) }
+    }
+
+    /** Reads up to 'size' bytes, starting from 'offset'  */
+    @Throws(IOException::class)
+    fun getBytes(`is`: InputStream?, path: String?, offset: Int, size: Int): ByteArray? {
+        val readBuffer = ByteArray(size)
+        val bytesSkipped = `is`.skip(offset.toLong())
         if (bytesSkipped < offset) {
-            throw new FileNotFoundException("Skipped only " + bytesSkipped
-                    + " of " + offset + " bytes in path='" + path + "'");
+            throw FileNotFoundException("Skipped only " + bytesSkipped
+                    + " of " + offset + " bytes in path='" + path + "'")
         }
-        int bytesRead = is.read(readBuffer, 0, size);
-        if (bytesRead == readBuffer.length) {
-            return readBuffer;
+        val bytesRead = `is`.read(readBuffer, 0, size)
+        if (bytesRead == readBuffer.size) {
+            return readBuffer
         } else if (bytesRead > 0) {
-            return Arrays.copyOf(readBuffer, bytesRead);
+            return Arrays.copyOf(readBuffer, bytesRead)
         }
-        return new byte[0];
+        return ByteArray(0)
     }
 
-    public static void deleteFilesRecursively(File rootDirectory) {
+    fun deleteFilesRecursively(rootDirectory: File?) {
         if (rootDirectory == null) {
-            return;
+            return
         }
-        MyLog.i(FileUtils.class, "On delete all files inside '" + rootDirectory.getAbsolutePath() +"'");
-        MyLog.i(FileUtils.class, "Deleted files and dirs: " + deleteFilesRecursively(rootDirectory, 1));
+        MyLog.i(FileUtils::class.java, "On delete all files inside '" + rootDirectory.absolutePath + "'")
+        MyLog.i(FileUtils::class.java, "Deleted files and dirs: " + deleteFilesRecursively(rootDirectory, 1))
     }
 
-    private static long deleteFilesRecursively(File rootDirectory, long level) {
+    private fun deleteFilesRecursively(rootDirectory: File?, level: Long): Long {
         if (rootDirectory == null) {
-            return 0;
+            return 0
         }
-        File[] files = rootDirectory.listFiles();
+        val files = rootDirectory.listFiles()
         if (files == null) {
-            MyLog.v(FileUtils.class, () -> "No files inside " + rootDirectory.getAbsolutePath());
-            return 0;
+            MyLog.v(FileUtils::class.java) { "No files inside " + rootDirectory.absolutePath }
+            return 0
         }
-        long nDeleted = 0;
-        for (File file : files) {
-            if (file.isDirectory()) {
-                nDeleted += deleteFilesRecursively(file, level + 1);
+        var nDeleted: Long = 0
+        for (file in files) {
+            if (file.isDirectory) {
+                nDeleted += deleteFilesRecursively(file, level + 1)
                 if (level > 1) {
-                    nDeleted += deleteAndCountFile(file);
+                    nDeleted += deleteAndCountFile(file)
                 }
             } else {
-                nDeleted += deleteAndCountFile(file);
+                nDeleted += deleteAndCountFile(file)
             }
         }
-        return nDeleted;
+        return nDeleted
     }
 
-    private static long deleteAndCountFile(File file) {
-        long nDeleted = 0;
+    private fun deleteAndCountFile(file: File?): Long {
+        var nDeleted: Long = 0
         if (file.delete()) {
-            nDeleted++;
+            nDeleted++
         } else {
-            MyLog.w(FileUtils.class, "Couldn't delete " + file.getAbsolutePath());
+            MyLog.w(FileUtils::class.java, "Couldn't delete " + file.getAbsolutePath())
         }
-        return nDeleted;
+        return nDeleted
     }
 
     /**
      * Accepts null argument
      */
-    public static boolean exists(File file) {
-        if (file == null) {
-            return false;
-        }
-        return file.exists();
+    fun exists(file: File?): Boolean {
+        return file?.exists() ?: false
     }
 
     /**
-     * Based on <a href="http://www.screaming-penguin.com/node/7749">Backing
-     * up your Android SQLite database to the SD card</a>
+     * Based on [Backing
+ * up your Android SQLite database to the SD card](http://www.screaming-penguin.com/node/7749)
      *
      * @param src
      * @param dst
      * @return true if success
      * @throws IOException
      */
-    public static boolean copyFile(Object objTag, File src, File dst) throws IOException {
-        long sizeIn = -1;
-        long sizeCopied = 0;
-        boolean ok = false;
+    @Throws(IOException::class)
+    fun copyFile(objTag: Any?, src: File?, dst: File?): Boolean {
+        var sizeIn: Long = -1
+        var sizeCopied: Long = 0
+        var ok = false
         if (src != null && src.exists()) {
-            sizeIn = src.length();
+            sizeIn = src.length()
             if (!dst.createNewFile()) {
-                MyLog.w(objTag, "New file was not created: '" + dst.getCanonicalPath() + "'");
-            } else if (src.getCanonicalPath().compareTo(dst.getCanonicalPath()) == 0) {
-                MyLog.i(objTag, "Cannot copy to itself: '" + src.getCanonicalPath() + "'");
+                MyLog.w(objTag, "New file was not created: '" + dst.getCanonicalPath() + "'")
+            } else if (src.canonicalPath.compareTo(dst.getCanonicalPath()) == 0) {
+                MyLog.i(objTag, "Cannot copy to itself: '" + src.canonicalPath + "'")
             } else {
-                try (
-                        FileInputStream fileInputStream = new FileInputStream(src);
-                        java.nio.channels.FileChannel inChannel = fileInputStream.getChannel();
-                        FileOutputStream fileOutputStream = newFileOutputStreamWithRetry(dst);
-                        java.nio.channels.FileChannel outChannel = fileOutputStream.getChannel();
-                ) {
-                    sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel);
-                    ok = (sizeIn == sizeCopied);
+                FileInputStream(src).use { fileInputStream ->
+                    fileInputStream.channel.use { inChannel ->
+                        newFileOutputStreamWithRetry(dst).use { fileOutputStream ->
+                            fileOutputStream.getChannel().use { outChannel ->
+                                sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel)
+                                ok = sizeIn == sizeCopied
+                            }
+                        }
+                    }
                 }
-                dst.setLastModified(src.lastModified());
+                dst.setLastModified(src.lastModified())
             }
         }
-        MyLog.d(objTag, "Copied " + sizeCopied + " bytes of " + sizeIn);
-        return ok;
+        MyLog.d(objTag, "Copied $sizeCopied bytes of $sizeIn")
+        return ok
     }
 
-    public static FileOutputStream newFileOutputStreamWithRetry(File file) throws FileNotFoundException {
-        return newFileOutputStreamWithRetry(file, false);
-    }
-
-    public static FileOutputStream newFileOutputStreamWithRetry(File file, boolean append) throws FileNotFoundException {
-        try {
-            return new FileOutputStream(file, append);
-        } catch (FileNotFoundException e) {
-            MyLog.i(FileUtils.class, "Retrying to create FileOutputStream for " +
-                    file.getAbsolutePath() + " : " + e.getMessage());
-            DbUtils.waitMs(FileUtils.class, 100);
-            return new FileOutputStream(file, append);
+    @JvmOverloads
+    @Throws(FileNotFoundException::class)
+    fun newFileOutputStreamWithRetry(file: File?, append: Boolean = false): FileOutputStream? {
+        return try {
+            FileOutputStream(file, append)
+        } catch (e: FileNotFoundException) {
+            MyLog.i(FileUtils::class.java, "Retrying to create FileOutputStream for " +
+                    file.getAbsolutePath() + " : " + e.message)
+            DbUtils.waitMs(FileUtils::class.java, 100)
+            FileOutputStream(file, append)
         }
     }
 
-    public static boolean isFileInsideFolder(File file, File folder) {
+    fun isFileInsideFolder(file: File?, folder: File?): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return file.toPath().normalize().startsWith(folder.toPath());
+            return file.toPath().normalize().startsWith(folder.toPath())
         } else {
             try {
-                return file.getCanonicalPath().startsWith(folder.getCanonicalPath());
-            } catch (Exception e) {
-                MyLog.d(FileUtils.class, "Failed to check path of the file: " + file.getAbsolutePath() +
-                        ". Error message:" + e.getMessage());
+                return file.getCanonicalPath().startsWith(folder.getCanonicalPath())
+            } catch (e: Exception) {
+                MyLog.d(FileUtils::class.java, "Failed to check path of the file: " + file.getAbsolutePath() +
+                        ". Error message:" + e.message)
             }
         }
-        return false;
+        return false
     }
 }

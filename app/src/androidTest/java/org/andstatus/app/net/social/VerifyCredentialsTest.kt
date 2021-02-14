@@ -13,93 +13,81 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social
 
-package org.andstatus.app.net.social;
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.DemoData
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.TestSuite
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.data.OidEnum
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.net.http.OAuthClientKeys
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.origin.OriginType
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UrlUtils
+import org.junit.After
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import java.io.IOException
+import java.util.*
 
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.http.HttpConnectionData;
-import org.andstatus.app.net.http.OAuthClientKeys;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.UriUtils;
-import org.andstatus.app.util.UrlUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.util.Optional;
-
-import static org.andstatus.app.context.DemoData.demoData;
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-public class VerifyCredentialsTest {
-    private Connection connection;
-    private ConnectionMock mock;
-
-    private String keyStored;
-    private String secretStored;
-
+class VerifyCredentialsTest {
+    private var connection: Connection? = null
+    private var mock: ConnectionMock? = null
+    private var keyStored: String? = null
+    private var secretStored: String? = null
     @Before
-    public void setUp() throws Exception {
-        TestSuite.initializeWithAccounts(this);
-
-        mock = ConnectionMock.newFor(demoData.twitterTestAccountName);
-        connection = mock.connection;
-
-        HttpConnectionData data = mock.getHttp().data;
-        data.originUrl = UrlUtils.fromString("https://twitter.com");
-        data.oauthClientKeys = OAuthClientKeys.fromConnectionData(data);
-        keyStored = data.oauthClientKeys.getConsumerKey();
-        secretStored = data.oauthClientKeys.getConsumerSecret();
-
+    @Throws(Exception::class)
+    fun setUp() {
+        TestSuite.initializeWithAccounts(this)
+        mock = ConnectionMock.Companion.newFor(DemoData.Companion.demoData.twitterTestAccountName)
+        connection = mock.connection
+        val data = mock.getHttp().data
+        data.originUrl = UrlUtils.fromString("https://twitter.com")
+        data.oauthClientKeys = OAuthClientKeys.Companion.fromConnectionData(data)
+        keyStored = data.oauthClientKeys.consumerKey
+        secretStored = data.oauthClientKeys.consumerSecret
         if (!data.oauthClientKeys.areKeysPresent()) {
-            data.oauthClientKeys.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232");
+            data.oauthClientKeys.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232")
         }
     }
 
     @After
-    public void tearDown() {
+    fun tearDown() {
         if (!StringUtil.isEmpty(keyStored)) {
-            mock.getHttp().data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);
+            mock.getHttp().data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored)
         }
     }
 
     @Test
-    public void testVerifyCredentials() throws IOException {
-        mock.addResponse(org.andstatus.app.tests.R.raw.verify_credentials_twitter);
-
-        Actor actor = connection.verifyCredentials(Optional.empty()).get();
-        assertEquals("Actor's oid is actorOid of this account", demoData.twitterTestAccountActorOid, actor.oid);
-
-        Origin origin = myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER);
-        MyAccount.Builder builder = MyAccount.Builder.fromAccountName(mock.getData().getAccountName());
-        builder.onCredentialsVerified(actor);
-        assertTrue("Account is persistent", builder.isPersistent());
-        long actorId = builder.getAccount().getActorId();
-        assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0);
-        assertEquals("Account actorOid", builder.getAccount().getActorOid(), actor.oid);
-        assertEquals("Actor in the database for id=" + actorId,
+    @Throws(IOException::class)
+    fun testVerifyCredentials() {
+        mock.addResponse(org.andstatus.app.tests.R.raw.verify_credentials_twitter)
+        val actor = connection.verifyCredentials(Optional.empty()).get()
+        Assert.assertEquals("Actor's oid is actorOid of this account", DemoData.Companion.demoData.twitterTestAccountActorOid, actor.oid)
+        val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
+        val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(mock.getData().accountName)
+        builder.onCredentialsVerified(actor)
+        Assert.assertTrue("Account is persistent", builder.isPersistent)
+        val actorId = builder.account.actorId
+        Assert.assertTrue("Account " + actor.username + " has ActorId", actorId != 0L)
+        Assert.assertEquals("Account actorOid", builder.account.actorOid, actor.oid)
+        Assert.assertEquals("Actor in the database for id=$actorId",
                 actor.oid,
-                MyQuery.idToOid(myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0));
-
-        String noteOid = "383296535213002752";
-        long noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), noteOid) ;
-        assertTrue("Note not found", noteId != 0);
-        long actorIdM = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, noteId);
-        assertEquals("Note not by " + actor.getUsername() + " found", actorId, actorIdM);
-
-        assertEquals("Note permalink at twitter",
-                "https://" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.getUrl())).getHost()
+                MyQuery.idToOid(MyContextHolder.Companion.myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0))
+        val noteOid = "383296535213002752"
+        val noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, noteOid)
+        Assert.assertTrue("Note not found", noteId != 0L)
+        val actorIdM = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, noteId)
+        Assert.assertEquals("Note not by " + actor.username + " found", actorId, actorIdM)
+        Assert.assertEquals("Note permalink at twitter",
+                "https://" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.url)).host
                         + "/"
-                        + builder.getAccount().getUsername() + "/status/" + noteOid,
-                origin.getNotePermalink(noteId));
+                        + builder.account.username + "/status/" + noteOid,
+                origin.getNotePermalink(noteId))
     }
 }

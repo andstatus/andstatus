@@ -13,86 +13,79 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.database
 
-package org.andstatus.app.database;
+import android.content.Context
+import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteOpenHelper
+import org.andstatus.app.context.MyContextState
+import org.andstatus.app.context.MyStorage
+import org.andstatus.app.data.converter.DatabaseConverterController
+import org.andstatus.app.util.MyLog
+import java.util.concurrent.atomic.AtomicBoolean
 
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-
-import org.andstatus.app.context.MyContextState;
-import org.andstatus.app.context.MyStorage;
-import org.andstatus.app.data.converter.DatabaseConverterController;
-import org.andstatus.app.util.MyLog;
-
-import java.io.File;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-public final class DatabaseHolder extends SQLiteOpenHelper  {
-    private final boolean creationEnabled;
-    private volatile boolean databaseWasNotCreated = false;
-    private final AtomicBoolean onUpgradeTriggered = new AtomicBoolean(false);
-
-    public static final String DATABASE_NAME = "andstatus.sqlite";
-
-    public DatabaseHolder(Context context, boolean creationEnabled) {
-        super(context, DATABASE_NAME, null, DatabaseCreator.DATABASE_VERSION);
-        this.creationEnabled = creationEnabled;
-        File databasePath = context.getDatabasePath(DATABASE_NAME);
-        if (databasePath == null || (!creationEnabled && !databasePath.exists())) {
-            databaseWasNotCreated = true;
-        }
-    }
-
-    public MyContextState checkState() {
+class DatabaseHolder(context: Context?, private val creationEnabled: Boolean) : SQLiteOpenHelper(context, DATABASE_NAME, null, DatabaseCreator.Companion.DATABASE_VERSION) {
+    @Volatile
+    private var databaseWasNotCreated = false
+    private val onUpgradeTriggered: AtomicBoolean? = AtomicBoolean(false)
+    fun checkState(): MyContextState? {
         if (databaseWasNotCreated) {
-            return MyContextState.DATABASE_UNAVAILABLE;
+            return MyContextState.DATABASE_UNAVAILABLE
         }
-        if (DatabaseConverterController.isUpgradeError()) {
-            return MyContextState.ERROR;
+        if (DatabaseConverterController.Companion.isUpgradeError()) {
+            return MyContextState.ERROR
         }
-        MyContextState state = MyContextState.ERROR;
+        var state = MyContextState.ERROR
         try {
-            onUpgradeTriggered.set(false);
+            onUpgradeTriggered.set(false)
             if (MyStorage.isDataAvailable()) {
-                SQLiteDatabase db = getWritableDatabase();
-                if (onUpgradeTriggered.get() || DatabaseConverterController.isUpgrading()) {
-                    state = MyContextState.UPGRADING;
+                val db = writableDatabase
+                if (onUpgradeTriggered.get() || DatabaseConverterController.Companion.isUpgrading()) {
+                    state = MyContextState.UPGRADING
                 } else {
-                    if (db != null && db.isOpen()) {
-                        state = MyContextState.DATABASE_READY;
+                    if (db != null && db.isOpen) {
+                        state = MyContextState.DATABASE_READY
                     }
                 }
             }
-        } catch (IllegalStateException e) {
-            MyLog.v(this, e);
+        } catch (e: IllegalStateException) {
+            MyLog.v(this, e)
             if (onUpgradeTriggered.get()) {
-                state = MyContextState.UPGRADING;
+                state = MyContextState.UPGRADING
             }
         }
-        return state;
+        return state
     }
-    
-    @Override
-    public void onCreate(SQLiteDatabase db) {
+
+    override fun onCreate(db: SQLiteDatabase?) {
         if (!creationEnabled) {
-            databaseWasNotCreated = true;
-            MyLog.e(this, "Database creation disabled");
-            return;
+            databaseWasNotCreated = true
+            MyLog.e(this, "Database creation disabled")
+            return
         }
-        new DatabaseCreator(db).create().insertData();
+        DatabaseCreator(db).create().insertData()
     }
 
     /**
      * We need here neither try-catch nor transactions because they are
      * being used in calling method
-     * 
-     * @see android.database.sqlite.SQLiteOpenHelper#getWritableDatabase
+     *
+     * @see android.database.sqlite.SQLiteOpenHelper.getWritableDatabase
      */
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)  {
+    override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         if (onUpgradeTriggered.compareAndSet(false, true)) {
-            new DatabaseConverterController().onUpgrade(db, oldVersion, newVersion);
+            DatabaseConverterController().onUpgrade(db, oldVersion, newVersion)
+        }
+    }
+
+    companion object {
+        val DATABASE_NAME: String? = "andstatus.sqlite"
+    }
+
+    init {
+        val databasePath = context.getDatabasePath(DATABASE_NAME)
+        if (databasePath == null || !creationEnabled && !databasePath.exists()) {
+            databaseWasNotCreated = true
         }
     }
 }

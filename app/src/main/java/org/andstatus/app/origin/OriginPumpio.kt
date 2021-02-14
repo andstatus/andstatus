@@ -13,38 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.origin
 
-package org.andstatus.app.origin;
+import androidx.annotation.StringRes
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContext
 
-import org.andstatus.app.R;
-import org.andstatus.app.context.MyContext;
-
-import androidx.annotation.StringRes;
-
-public class OriginPumpio extends Origin {
-    public static final String ACCOUNT_PREFIX = "acct:";
-
-    OriginPumpio(MyContext myContext, OriginType originType) {
-        super(myContext, originType);
+class OriginPumpio internal constructor(myContext: MyContext?, originType: OriginType?) : Origin(myContext, originType) {
+    override fun alternativeTermForResourceId(@StringRes resId: Int): Int {
+        val resIdOut: Int
+        resIdOut = when (resId) {
+            R.string.menu_item_destroy_reblog -> R.string.menu_item_destroy_reblog_pumpio
+            R.string.menu_item_reblog -> R.string.menu_item_reblog_pumpio
+            R.string.reblogged_by -> R.string.reblogged_by_pumpio
+            else -> resId
+        }
+        return resIdOut
     }
 
-    @Override
-    public int alternativeTermForResourceId(@StringRes int resId) {
-        int resIdOut;
-        switch (resId) {
-            case R.string.menu_item_destroy_reblog:
-                resIdOut = R.string.menu_item_destroy_reblog_pumpio;
-                break;
-            case R.string.menu_item_reblog:
-                resIdOut = R.string.menu_item_reblog_pumpio;
-                break;
-            case R.string.reblogged_by:
-                resIdOut = R.string.reblogged_by_pumpio;
-                break;
-            default:
-                resIdOut = resId;
-                break;
-        }
-        return resIdOut;
+    companion object {
+        val ACCOUNT_PREFIX: String? = "acct:"
     }
 }

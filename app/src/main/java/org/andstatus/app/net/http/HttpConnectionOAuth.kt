@@ -13,164 +13,141 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.http
 
-package org.andstatus.app.net.http;
+import android.net.Uri
+import android.text.TextUtils
+import com.github.scribejava.core.oauth.OAuth20Service
+import org.andstatus.app.account.AccountDataWriter
+import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.UriUtils
 
-import android.net.Uri;
-import android.text.TextUtils;
-
-import com.github.scribejava.core.oauth.OAuth20Service;
-
-import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.net.social.ApiRoutineEnum;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.UriUtils;
-
-import java.util.Map;
-
-abstract class HttpConnectionOAuth extends HttpConnection implements OAuthService {
-    private static final String TAG = HttpConnectionOAuth.class.getSimpleName();
-    public boolean logMe = false;
-
-    private String userTokenKey() {
-        return "user_token";
+internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
+    var logMe = false
+    private fun userTokenKey(): String? {
+        return "user_token"
     }
-    
-    private String userSecretKey() {
-        return "user_secret";
-    }
-    
-    private String userToken;
-    private String userSecret;
 
-    @Override
-    public void setHttpConnectionData(HttpConnectionData connectionData) {
-        super.setHttpConnectionData(connectionData);
-        connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData);
+    private fun userSecretKey(): String? {
+        return "user_secret"
+    }
+
+    private var userToken: String? = null
+    private var userSecret: String? = null
+    override fun setHttpConnectionData(connectionData: HttpConnectionData?) {
+        super.setHttpConnectionData(connectionData)
+        connectionData.oauthClientKeys = OAuthClientKeys.Companion.fromConnectionData(connectionData)
         // We look for saved user keys
         if (connectionData.dataReader.dataContains(userTokenKey()) && connectionData.dataReader.dataContains(userSecretKey())) {
-            userToken = connectionData.dataReader.getDataString(userTokenKey());
-            userSecret = connectionData.dataReader.getDataString(userSecretKey());
-            setUserTokenWithSecret(userToken, userSecret);
+            userToken = connectionData.dataReader.getDataString(userTokenKey())
+            userSecret = connectionData.dataReader.getDataString(userSecretKey())
+            setUserTokenWithSecret(userToken, userSecret)
         }
-    }  
-    
-    @Override
-    public boolean getCredentialsPresent() {
-        boolean yes = data.oauthClientKeys.areKeysPresent()
-            && StringUtil.nonEmpty(userToken)
-            && StringUtil.nonEmpty(userSecret);
-        if (!yes && logMe) {
-            MyLog.v(this, () -> "Credentials presence: clientKeys:" + data.oauthClientKeys.areKeysPresent()
-                    + "; userKeys:" + !StringUtil.isEmpty(userToken) + "," + !StringUtil.isEmpty(userSecret));
-        }
-        return yes;
     }
 
-    protected Uri getApiUri(ApiRoutineEnum routine) {
-        String url;
-        switch(routine) {
-            case OAUTH_ACCESS_TOKEN:
-                url =  data.getOauthPath() + "/access_token";
-                break;
-            case OAUTH_AUTHORIZE:
-                url = data.getOauthPath() + "/authorize";
-                break;
-            case OAUTH_REQUEST_TOKEN:
-                url = data.getOauthPath() + "/request_token";
-                break;
-            case OAUTH_REGISTER_CLIENT:
-                url = data.getBasicPath() + "/client/register";
-                break;
-            default:
-                url = "";
-                break;
+    override fun getCredentialsPresent(): Boolean {
+        val yes = (data.oauthClientKeys.areKeysPresent()
+                && StringUtil.nonEmpty(userToken)
+                && StringUtil.nonEmpty(userSecret))
+        if (!yes && logMe) {
+            MyLog.v(this) {
+                ("Credentials presence: clientKeys:" + data.oauthClientKeys.areKeysPresent()
+                        + "; userKeys:" + !StringUtil.isEmpty(userToken) + "," + !StringUtil.isEmpty(userSecret))
+            }
+        }
+        return yes
+    }
+
+    open fun getApiUri(routine: ApiRoutineEnum?): Uri? {
+        var url: String?
+        url = when (routine) {
+            ApiRoutineEnum.OAUTH_ACCESS_TOKEN -> data.oauthPath + "/access_token"
+            ApiRoutineEnum.OAUTH_AUTHORIZE -> data.oauthPath + "/authorize"
+            ApiRoutineEnum.OAUTH_REQUEST_TOKEN -> data.oauthPath + "/request_token"
+            ApiRoutineEnum.OAUTH_REGISTER_CLIENT -> data.basicPath + "/client/register"
+            else -> ""
         }
         if (!StringUtil.isEmpty(url)) {
-            url = pathToUrlString(url);
+            url = pathToUrlString(url)
         }
-        return UriUtils.fromString(url);
+        return UriUtils.fromString(url)
     }
 
-    @Override
-    public OAuth20Service getService(boolean redirect) {
-        return null;
+    override fun getService(redirect: Boolean): OAuth20Service? {
+        return null
     }
 
-    @Override
-    public boolean isOAuth2() {
-        return false;
+    override fun isOAuth2(): Boolean {
+        return false
     }
 
-    @Override
-    public Map<String, String> getAdditionalAuthorizationParams() {
-        return null;
+    override fun getAdditionalAuthorizationParams(): MutableMap<String?, String?>? {
+        return null
     }
 
     /**
      * @param token empty value means to clear the old values
      * @param secret
      */
-    @Override
-    public void setUserTokenWithSecret(String token, String secret) {
-        synchronized (this) {
-            userToken = token;
-            userSecret = secret;
+    override fun setUserTokenWithSecret(token: String?, secret: String?) {
+        synchronized(this) {
+            userToken = token
+            userSecret = secret
         }
         if (logMe) {
-            MyLog.v(this, () -> "Credentials set?: " + !StringUtil.isEmpty(token)
-                    + ", " + !StringUtil.isEmpty(secret));
+            MyLog.v(this) {
+                ("Credentials set?: " + !StringUtil.isEmpty(token)
+                        + ", " + !StringUtil.isEmpty(secret))
+            }
         }
     }
 
-    @Override
-    public String getUserToken() {
-        return userToken;
+    override fun getUserToken(): String? {
+        return userToken
     }
 
-    @Override
-    public String getUserSecret() {
-        return userSecret;
+    override fun getUserSecret(): String? {
+        return userSecret
     }
 
-    @Override
-    public boolean saveTo(AccountDataWriter dw) {
-        boolean changed = super.saveTo(dw);
-
-        if ( !TextUtils.equals(userToken, dw.getDataString(userTokenKey())) ||
-                !TextUtils.equals(userSecret, dw.getDataString(userSecretKey()))
-                ) {
-            changed = true;
-
+    override fun saveTo(dw: AccountDataWriter?): Boolean {
+        var changed = super.saveTo(dw)
+        if (!TextUtils.equals(userToken, dw.getDataString(userTokenKey())) ||
+                !TextUtils.equals(userSecret, dw.getDataString(userSecretKey()))) {
+            changed = true
             if (StringUtil.isEmpty(userToken)) {
-                dw.setDataString(userTokenKey(), "");
+                dw.setDataString(userTokenKey(), "")
                 if (logMe) {
-                    MyLog.d(TAG, "Clearing OAuth Token");
+                    MyLog.d(TAG, "Clearing OAuth Token")
                 }
             } else {
-                dw.setDataString(userTokenKey(), userToken);
+                dw.setDataString(userTokenKey(), userToken)
                 if (logMe) {
-                    MyLog.d(TAG, "Saving OAuth Token: " + userToken);
+                    MyLog.d(TAG, "Saving OAuth Token: $userToken")
                 }
             }
             if (StringUtil.isEmpty(userSecret)) {
-                dw.setDataString(userSecretKey(), "");
+                dw.setDataString(userSecretKey(), "")
                 if (logMe) {
-                    MyLog.d(TAG, "Clearing OAuth Secret");
+                    MyLog.d(TAG, "Clearing OAuth Secret")
                 }
             } else {
-                dw.setDataString(userSecretKey(), userSecret);
+                dw.setDataString(userSecretKey(), userSecret)
                 if (logMe) {
-                    MyLog.d(TAG, "Saving OAuth Secret: " + userSecret);
+                    MyLog.d(TAG, "Saving OAuth Secret: $userSecret")
                 }
             }
         }
-        return changed;
+        return changed
     }
 
-    @Override
-    public void clearAuthInformation() {
-        setUserTokenWithSecret("", "");
+    override fun clearAuthInformation() {
+        setUserTokenWithSecret("", "")
+    }
+
+    companion object {
+        private val TAG: String? = HttpConnectionOAuth::class.java.simpleName
     }
 }

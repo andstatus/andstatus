@@ -13,59 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.widget
 
-package org.andstatus.app.widget;
-
-import android.content.Context;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.AttributeSet;
+import android.content.Context
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.AttributeSet
+import androidx.appcompat.widget.AppCompatEditText
 
 /**
  * @author yvolk@yurivolkov.com
  * Inspired by http://stackoverflow.com/questions/31832665/android-how-to-create-edit-text-with-single-line-input-and-multiline-hint
  */
-public class LongHintEditText extends androidx.appcompat.widget.AppCompatEditText {
-    boolean singleLine = false;
+class LongHintEditText : AppCompatEditText {
+    var singleLine = false
 
-    public LongHintEditText(Context context) {
-        super(context);
-        setTextChangedListener();
+    constructor(context: Context?) : super(context) {
+        setTextChangedListener()
     }
 
-    private void setTextChangedListener() {
-        addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                boolean singleLineNew = s.length() > 0;
+    private fun setTextChangedListener() {
+        addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val singleLineNew = s.length > 0
                 if (singleLine != singleLineNew) {
-                    singleLine = singleLineNew;
-                    LongHintEditText.this.setSingleLine(s.length() > 0);
+                    singleLine = singleLineNew
+                    this@LongHintEditText.isSingleLine = s.length > 0
                     if (singleLine) {
-                        LongHintEditText.this.setSelection(s.length());
+                        this@LongHintEditText.setSelection(s.length)
                     }
                 }
             }
-        });
+        })
     }
 
-    public LongHintEditText(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        setTextChangedListener();
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {
+        setTextChangedListener()
     }
 
-    public LongHintEditText(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        setTextChangedListener();
+    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+        setTextChangedListener()
     }
 }

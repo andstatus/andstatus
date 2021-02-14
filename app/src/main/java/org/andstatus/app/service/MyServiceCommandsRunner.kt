@@ -13,65 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
+import android.content.SyncResult
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.util.MyLog
+import java.util.function.Function
 
-import android.content.SyncResult;
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.util.MyLog;
-
-import java.util.List;
-
-public class MyServiceCommandsRunner {
-
-    private final MyContext myContext;
-    private boolean ignoreServiceAvailability = false;
-
-    public MyServiceCommandsRunner(MyContext myContext) {
-        this.myContext = myContext;
-    }
-
-    public void autoSyncAccount(@NonNull MyAccount ma, SyncResult syncResult) {
-        final String method = "syncAccount " + ma.getAccountName();
+class MyServiceCommandsRunner(private val myContext: MyContext?) {
+    private var ignoreServiceAvailability = false
+    fun autoSyncAccount(ma: MyAccount, syncResult: SyncResult?) {
+        val method = "syncAccount " + ma.accountName
         if (!myContext.isReady()) {
-            MyLog.d(this, method + "; Context is not ready");
-            return;
+            MyLog.d(this, "$method; Context is not ready")
+            return
         }
         if (ma.nonValid()) {
-            MyLog.d(this, method + "; The account was not loaded");
-            return;      
-        } else if (!ma.isValidAndSucceeded()) {
-            syncResult.stats.numAuthExceptions++;
-            MyLog.d(this, method + "; Credentials failed, skipping");
-            return;
+            MyLog.d(this, "$method; The account was not loaded")
+            return
+        } else if (!ma.isValidAndSucceeded) {
+            syncResult.stats.numAuthExceptions++
+            MyLog.d(this, "$method; Credentials failed, skipping")
+            return
         }
-        final List<Timeline> timelines = myContext.timelines().toAutoSyncForAccount(ma);
+        val timelines = myContext.timelines().toAutoSyncForAccount(ma)
         if (timelines.isEmpty()) {
-            MyLog.d(this, method + "; No timelines to sync");
-            return;
+            MyLog.d(this, "$method; No timelines to sync")
+            return
         }
-        MyLog.v(this, () -> method + " started, " + timelines.size() + " timelines");
+        MyLog.v(this) { method + " started, " + timelines.size + " timelines" }
         timelines.stream()
-                .map(t -> CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, t))
-                .forEach(this::sendCommand);
-        MyLog.v(this, () -> method + " ended, " + timelines.size() + " timelines requested: " + timelines);
+                .map(Function<Timeline?, CommandData?> { t: Timeline? -> CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, t) })
+                .forEach { commandData: CommandData? -> sendCommand(commandData) }
+        MyLog.v(this) { method + " ended, " + timelines.size + " timelines requested: " + timelines }
     }
 
-    private void sendCommand(CommandData commandData) {
+    private fun sendCommand(commandData: CommandData?) {
         // we don't wait for completion anymore.
         // TODO: Implement Synchronous background sync ?!
         if (ignoreServiceAvailability) {
-            MyServiceManager.sendCommandIgnoringServiceAvailability(commandData);
+            MyServiceManager.Companion.sendCommandIgnoringServiceAvailability(commandData)
         } else {
-            MyServiceManager.sendCommand(commandData);
+            MyServiceManager.Companion.sendCommand(commandData)
         }
     }
 
-    void setIgnoreServiceAvailability(boolean ignoreServiceAvailability) {
-        this.ignoreServiceAvailability = ignoreServiceAvailability;
+    fun setIgnoreServiceAvailability(ignoreServiceAvailability: Boolean) {
+        this.ignoreServiceAvailability = ignoreServiceAvailability
     }
 }

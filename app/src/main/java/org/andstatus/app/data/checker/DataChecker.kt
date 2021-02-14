@@ -13,149 +13,134 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data.checker
 
-package org.andstatus.app.data.checker;
-
-import org.andstatus.app.backup.ProgressLogger;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StopWatch;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import org.andstatus.app.backup.ProgressLogger
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StopWatch
+import java.util.*
+import java.util.concurrent.TimeUnit
+import java.util.function.Supplier
+import java.util.stream.Collectors
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public abstract class DataChecker {
-    private static final String TAG = DataChecker.class.getSimpleName();
-
-    MyContext myContext;
-    ProgressLogger logger = ProgressLogger.getEmpty("DataChecker");
-    boolean includeLong = false;
-    boolean countOnly = false;
-
-    static String getSomeOfTotal(long some, long total) {
-        return (some == 0
-                ? "none"
-                : some == total
-                    ? "all"
-                    : String.valueOf(some))
-                + " of " + total;
+abstract class DataChecker {
+    var myContext: MyContext? = null
+    var logger: ProgressLogger? = ProgressLogger.Companion.getEmpty("DataChecker")
+    var includeLong = false
+    var countOnly = false
+    fun setMyContext(myContext: MyContext?): DataChecker? {
+        this.myContext = myContext
+        return this
     }
 
-    public DataChecker setMyContext(MyContext myContext) {
-        this.myContext = myContext;
-        return this;
+    fun setLogger(logger: ProgressLogger?): DataChecker? {
+        this.logger = logger.makeServiceUnavalable()
+        return this
     }
 
-    public DataChecker setLogger(ProgressLogger logger) {
-        this.logger = logger.makeServiceUnavalable();
-        return this;
+    private fun setIncludeLong(includeLong: Boolean): DataChecker? {
+        this.includeLong = includeLong
+        return this
     }
 
-    public static void fixDataAsync(ProgressLogger logger, boolean includeLong, boolean countOnly) {
-        AsyncTaskLauncher.execute(
-                logger.logTag,
-                new MyAsyncTask<Void, Void, Void>(logger.logTag, MyAsyncTask.PoolEnum.thatCannotBeShutDown()) {
-
-                    @Override
-                    protected Void doInBackground2(Void aVoid) {
-                        fixData(logger, includeLong, countOnly);
-                        DbUtils.waitMs(TAG, 3000);
-                        myContextHolder.release(() -> "fixDataAsync");
-                        myContextHolder.initialize(null, TAG).getBlocking();
-                        return null;
-                    }
-
-                    @Override
-                    protected void onCancelled() {
-                        logger.logFailure();
-                    }
-
-                    @Override
-                    protected void onPostExecute2(Void aVoid) {
-                        logger.logSuccess();
-                    }
-                });
+    fun setCountOnly(countOnly: Boolean): DataChecker? {
+        this.countOnly = countOnly
+        return this
     }
 
-    public static long fixData(final ProgressLogger logger, final boolean includeLong, boolean countOnly) {
-        long counter = 0;
-        MyContext myContext = myContextHolder.getNow();
-        if (!myContext.isReady()) {
-            MyLog.w(TAG, "fixData skipped: context is not ready " + myContext);
-            return counter;
-        }
-        StopWatch stopWatch = StopWatch.createStarted();
-        try {
-            MyLog.i(TAG, "fixData started" + (includeLong ? ", including long tasks" : ""));
-            List<DataChecker> allCheckers = Arrays.asList(
-                    new CheckTimelines(),
-                    new CheckDownloads(),
-                    new MergeActors(),
-                    new CheckUsers(),
-                    new CheckConversations(),
-                    new CheckAudience(),
-                    new SearchIndexUpdate());
-
-            // TODO: define scope in parameters
-            String scope = "All";
-            List<DataChecker> selectedCheckers = allCheckers.stream()
-                    .filter(c -> scope.contains("All") || scope.contains(c.getClass().getSimpleName()))
-                    .collect(Collectors.toList());
-
-            for(DataChecker checker : selectedCheckers) {
-                if (logger.isCancelled()) break;
-
-                MyServiceManager.setServiceUnavailable();
-                counter += checker.setMyContext(myContext).setIncludeLong(includeLong).setLogger(logger)
-                        .setCountOnly(countOnly)
-                        .fix();
-            }
-        } finally {
-            MyServiceManager.setServiceAvailable();
-        }
-        MyLog.i(TAG, "fixData ended in " + stopWatch.getTime(TimeUnit.MINUTES) + " min, counted: " + counter);
-        return counter;
-    }
-
-    private DataChecker setIncludeLong(boolean includeLong) {
-        this.includeLong = includeLong;
-        return this;
-    }
-
-    public DataChecker setCountOnly(boolean countOnly) {
-        this.countOnly = countOnly;
-        return this;
-    }
-
-    private String checkerName() {
-        return this.getClass().getSimpleName();
+    private fun checkerName(): String? {
+        return this.javaClass.simpleName
     }
 
     /**
      * @return number of changed items (or needed to change)
      */
-    public long fix() {
-        StopWatch stopWatch = StopWatch.createStarted();
-        logger.logProgress(checkerName() + " checker started");
-        long changedCount = fixInternal();
+    fun fix(): Long {
+        val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+        logger.logProgress(checkerName() + " checker started")
+        val changedCount = fixInternal()
         logger.logProgress(checkerName() + " checker ended in " + stopWatch.getTime(TimeUnit.SECONDS) + " sec, " +
-            (changedCount > 0
-                ? (countOnly ? "need to change " : "changed ") + changedCount + " items"
-                : " no changes were needed"));
-        DbUtils.waitMs(checkerName(), changedCount == 0 ? 1000 : 3000);
-        return changedCount;
+                if (changedCount > 0) (if (countOnly) "need to change " else "changed ") + changedCount + " items" else " no changes were needed")
+        DbUtils.waitMs(checkerName(), if (changedCount == 0L) 1000 else 3000)
+        return changedCount
     }
 
-    abstract long fixInternal();
+    abstract fun fixInternal(): Long
+
+    companion object {
+        private val TAG: String? = DataChecker::class.java.simpleName
+        fun getSomeOfTotal(some: Long, total: Long): String? {
+            return ((if (some == 0L) "none" else if (some == total) "all" else some.toString())
+                    + " of " + total)
+        }
+
+        fun fixDataAsync(logger: ProgressLogger?, includeLong: Boolean, countOnly: Boolean) {
+            AsyncTaskLauncher.Companion.execute(
+                    logger.logTag,
+                    object : MyAsyncTask<Void?, Void?, Void?>(logger.logTag, PoolEnum.Companion.thatCannotBeShutDown()) {
+                        override fun doInBackground2(aVoid: Void?): Void? {
+                            fixData(logger, includeLong, countOnly)
+                            DbUtils.waitMs(TAG, 3000)
+                            MyContextHolder.Companion.myContextHolder.release(Supplier { "fixDataAsync" })
+                            MyContextHolder.Companion.myContextHolder.initialize(null, TAG).getBlocking()
+                            return null
+                        }
+
+                        override fun onCancelled() {
+                            logger.logFailure()
+                        }
+
+                        override fun onPostExecute2(aVoid: Void?) {
+                            logger.logSuccess()
+                        }
+                    })
+        }
+
+        fun fixData(logger: ProgressLogger?, includeLong: Boolean, countOnly: Boolean): Long {
+            var counter: Long = 0
+            val myContext: MyContext = MyContextHolder.Companion.myContextHolder.getNow()
+            if (!myContext.isReady) {
+                MyLog.w(TAG, "fixData skipped: context is not ready $myContext")
+                return counter
+            }
+            val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+            try {
+                MyLog.i(TAG, "fixData started" + if (includeLong) ", including long tasks" else "")
+                val allCheckers = Arrays.asList(
+                        CheckTimelines(),
+                        CheckDownloads(),
+                        MergeActors(),
+                        CheckUsers(),
+                        CheckConversations(),
+                        CheckAudience(),
+                        SearchIndexUpdate())
+
+                // TODO: define scope in parameters
+                val scope = "All"
+                val selectedCheckers = allCheckers.stream()
+                        .filter { c: DataChecker? -> scope.contains("All") || scope.contains(c.javaClass.simpleName) }
+                        .collect(Collectors.toList())
+                for (checker in selectedCheckers) {
+                    if (logger.isCancelled()) break
+                    MyServiceManager.Companion.setServiceUnavailable()
+                    counter += checker.setMyContext(myContext).setIncludeLong(includeLong).setLogger(logger)
+                            .setCountOnly(countOnly)
+                            .fix()
+                }
+            } finally {
+                MyServiceManager.Companion.setServiceAvailable()
+            }
+            MyLog.i(TAG, "fixData ended in " + stopWatch.getTime(TimeUnit.MINUTES) + " min, counted: " + counter)
+            return counter
+        }
+    }
 }

@@ -13,142 +13,122 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
+import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.service.CommandQueue.AccessorType
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Consumer
 
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-
-import java.util.concurrent.atomic.AtomicReference;
-
-/** Two specialized threads to execute {@link CommandQueue} */
-class QueueExecutors {
-    private final MyService myService;
-    private final AtomicReference<QueueExecutor> general = new AtomicReference<>();
-    private final AtomicReference<QueueExecutor> downloads = new AtomicReference<>();
-
-    QueueExecutors(MyService myService) {
-        this.myService = myService;
+/** Two specialized threads to execute [CommandQueue]  */
+internal class QueueExecutors(private val myService: MyService?) {
+    private val general: AtomicReference<QueueExecutor?>? = AtomicReference()
+    private val downloads: AtomicReference<QueueExecutor?>? = AtomicReference()
+    fun ensureExecutorsStarted() {
+        ensureExecutorStarted(AccessorType.GENERAL)
+        ensureExecutorStarted(AccessorType.DOWNLOADS)
     }
 
-    void ensureExecutorsStarted() {
-        ensureExecutorStarted(CommandQueue.AccessorType.GENERAL);
-        ensureExecutorStarted(CommandQueue.AccessorType.DOWNLOADS);
-    }
-
-    private void ensureExecutorStarted(CommandQueue.AccessorType accessorType) {
-        final String method = "ensureExecutorStarted-" + accessorType;
-        MyStringBuilder logMessageBuilder = new MyStringBuilder();
-        QueueExecutor previous = getRef(accessorType).get();
-        boolean replace = previous == null;
-        if ( !replace && previous.completedBackgroundWork()) {
-            logMessageBuilder.withComma("Removing completed Executor " + previous);
-            replace = true;
+    private fun ensureExecutorStarted(accessorType: AccessorType?) {
+        val method = "ensureExecutorStarted-$accessorType"
+        val logMessageBuilder = MyStringBuilder()
+        val previous = getRef(accessorType).get()
+        var replace = previous == null
+        if (!replace && previous.completedBackgroundWork()) {
+            logMessageBuilder.withComma("Removing completed Executor $previous")
+            replace = true
         }
-        if ( !replace && !previous.isReallyWorking()) {
-            logMessageBuilder.withComma("Cancelling stalled Executor " + previous);
-            replace = true;
+        if (!replace && !previous.isReallyWorking()) {
+            logMessageBuilder.withComma("Cancelling stalled Executor $previous")
+            replace = true
         }
         if (replace) {
-            CommandQueue.Accessor accessor = myService.myContext.queues().getAccessor(accessorType);
-            QueueExecutor current = accessor.isAnythingToExecuteNow()
-                ? new QueueExecutor(myService, accessorType)
-                : null;
+            val accessor = myService.myContext.queues().getAccessor(accessorType)
+            val current = if (accessor.isAnythingToExecuteNow) QueueExecutor(myService, accessorType) else null
             if (current == null && previous == null) {
-                logMessageBuilder.withComma("Nothing to execute");
+                logMessageBuilder.withComma("Nothing to execute")
             } else {
                 if (replaceExecutor(logMessageBuilder, accessorType, previous, current)) {
                     if (current == null) {
-                        logMessageBuilder.withComma("Nothing to execute");
+                        logMessageBuilder.withComma("Nothing to execute")
                     } else {
-                        logMessageBuilder.withComma("Starting new Executor " + current);
-                        AsyncTaskLauncher.execute( myService.classTag() + "-" + accessorType, current)
-                                .onFailure(throwable -> {
-                                    logMessageBuilder.withComma("Failed to start new executor: " + throwable);
-                                    replaceExecutor(logMessageBuilder, accessorType, current, null);
-                                });
+                        logMessageBuilder.withComma("Starting new Executor $current")
+                        AsyncTaskLauncher.Companion.execute(myService.classTag() + "-" + accessorType, current)
+                                .onFailure(Consumer { throwable: Throwable? ->
+                                    logMessageBuilder.withComma("Failed to start new executor: $throwable")
+                                    replaceExecutor(logMessageBuilder, accessorType, current, null)
+                                })
                     }
                 }
             }
         } else {
-            logMessageBuilder.withComma("There is an Executor already " + previous);
+            logMessageBuilder.withComma("There is an Executor already $previous")
         }
-        if (logMessageBuilder.length() > 0) {
-            MyLog.v(myService, () -> method + "; " + logMessageBuilder);
+        if (logMessageBuilder.length > 0) {
+            MyLog.v(myService) { "$method; $logMessageBuilder" }
         }
     }
 
-    @NonNull
-    AtomicReference<QueueExecutor> getRef(CommandQueue.AccessorType accessorType) {
-        return accessorType == CommandQueue.AccessorType.GENERAL
-                ? general
-                : downloads;
+    fun getRef(accessorType: AccessorType?): AtomicReference<QueueExecutor?> {
+        return if (accessorType == AccessorType.GENERAL) general else downloads
     }
 
-    private boolean replaceExecutor(MyStringBuilder logMessageBuilder, CommandQueue.AccessorType accessorType,
-                                    QueueExecutor previous, QueueExecutor current) {
+    private fun replaceExecutor(logMessageBuilder: MyStringBuilder?, accessorType: AccessorType?,
+                                previous: QueueExecutor?, current: QueueExecutor?): Boolean {
         if (getRef(accessorType).compareAndSet(previous, current)) {
             if (previous == null) {
-                logMessageBuilder.withComma(current == null
-                        ? "No executor"
-                        : "Executor set to " + current);
+                logMessageBuilder.withComma(if (current == null) "No executor" else "Executor set to $current")
             } else {
                 if (previous.needsBackgroundWork()) {
-                    logMessageBuilder.withComma("Cancelling previous");
-                    previous.cancelLogged(true);
+                    logMessageBuilder.withComma("Cancelling previous")
+                    previous.cancelLogged(true)
                 }
-                logMessageBuilder.withComma(current == null
-                        ? "Removed executor " + previous
-                        : "Replaced executor " + previous + " with " + current);
+                logMessageBuilder.withComma(if (current == null) "Removed executor $previous" else "Replaced executor $previous with $current")
             }
-            return true;
+            return true
         }
-        return false;
+        return false
     }
 
-    boolean stopExecutor(boolean forceNow) {
-        return stopExecutor(CommandQueue.AccessorType.GENERAL, forceNow)
-              && stopExecutor(CommandQueue.AccessorType.DOWNLOADS, forceNow);
+    fun stopExecutor(forceNow: Boolean): Boolean {
+        return (stopExecutor(AccessorType.GENERAL, forceNow)
+                && stopExecutor(AccessorType.DOWNLOADS, forceNow))
     }
 
-    private boolean stopExecutor(CommandQueue.AccessorType accessorType, boolean forceNow) {
-        final String method = "couldStopExecutor-" + accessorType;
-        MyStringBuilder logMessageBuilder = new MyStringBuilder();
-
-        AtomicReference<QueueExecutor> executorRef = getRef(accessorType);
-        QueueExecutor previous = executorRef.get();
-        boolean success = previous == null;
-        boolean doStop = !success;
-        if (doStop && previous.needsBackgroundWork() && previous.isReallyWorking() ) {
+    private fun stopExecutor(accessorType: AccessorType?, forceNow: Boolean): Boolean {
+        val method = "couldStopExecutor-$accessorType"
+        val logMessageBuilder = MyStringBuilder()
+        val executorRef = getRef(accessorType)
+        val previous = executorRef.get()
+        var success = previous == null
+        var doStop = !success
+        if (doStop && previous.needsBackgroundWork() && previous.isReallyWorking()) {
             if (forceNow) {
-                logMessageBuilder.withComma("Cancelling working Executor" + previous);
+                logMessageBuilder.withComma("Cancelling working Executor$previous")
             } else {
-                logMessageBuilder.withComma("Cannot stop now Executor " + previous);
-                doStop = false;
+                logMessageBuilder.withComma("Cannot stop now Executor $previous")
+                doStop = false
             }
         }
         if (doStop) {
-            success = replaceExecutor(logMessageBuilder, accessorType, previous, null);
+            success = replaceExecutor(logMessageBuilder, accessorType, previous, null)
         }
         if (logMessageBuilder.nonEmpty()) {
-            MyLog.v(myService, () -> method + "; " + logMessageBuilder);
+            MyLog.v(myService) { "$method; $logMessageBuilder" }
         }
-        return success;
+        return success
     }
 
-    boolean isReallyWorking() {
-        QueueExecutor gExecutor = general.get();
-        QueueExecutor dExecutor = downloads.get();
-        return gExecutor != null && (gExecutor.isReallyWorking()
-                || dExecutor != null && dExecutor.isReallyWorking());
+    fun isReallyWorking(): Boolean {
+        val gExecutor = general.get()
+        val dExecutor = downloads.get()
+        return gExecutor != null && (gExecutor.isReallyWorking
+                || dExecutor != null && dExecutor.isReallyWorking)
     }
 
-    @NonNull
-    @Override
-    public String toString() {
-        return general.toString() + "; " + downloads.toString();
+    override fun toString(): String {
+        return general.toString() + "; " + downloads.toString()
     }
 }

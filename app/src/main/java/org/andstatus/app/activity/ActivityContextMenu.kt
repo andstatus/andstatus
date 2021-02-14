@@ -13,45 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.activity
 
-package org.andstatus.app.activity;
+import android.os.Bundle
+import android.view.MenuItem
+import org.andstatus.app.actor.ActorContextMenu
+import org.andstatus.app.note.NoteContextMenu
+import org.andstatus.app.note.NoteContextMenuContainer
+import org.andstatus.app.view.MyContextMenu
 
-import android.os.Bundle;
-import android.view.MenuItem;
-
-import org.andstatus.app.actor.ActorContextMenu;
-import org.andstatus.app.note.NoteContextMenu;
-import org.andstatus.app.note.NoteContextMenuContainer;
-import org.andstatus.app.view.MyContextMenu;
-
-public class ActivityContextMenu {
-    public final ActorOfActivityContextMenu actor;
-    public final NoteContextMenu note;
-    public final ActorContextMenu objActor;
-
-    public ActivityContextMenu(NoteContextMenuContainer container) {
-        actor = new ActorOfActivityContextMenu(container);
-        note = new NoteContextMenu(container);
-        objActor = new ActorContextMenu(container, MyContextMenu.MENU_GROUP_OBJACTOR);
-    }
-
-    public void onContextItemSelected(MenuItem item) {
-        switch (item.getGroupId()) {
-            case MyContextMenu.MENU_GROUP_ACTOR:
-                actor.onContextItemSelected(item);
-                break;
-            case MyContextMenu.MENU_GROUP_NOTE:
-                note.onContextItemSelected(item);
-                break;
-            case MyContextMenu.MENU_GROUP_OBJACTOR:
-                objActor.onContextItemSelected(item);
-                break;
-            default:
-                break;
+class ActivityContextMenu(container: NoteContextMenuContainer?) {
+    val actor: ActorOfActivityContextMenu?
+    val note: NoteContextMenu?
+    val objActor: ActorContextMenu?
+    fun onContextItemSelected(item: MenuItem?) {
+        when (item.getGroupId()) {
+            MyContextMenu.Companion.MENU_GROUP_ACTOR -> actor.onContextItemSelected(item)
+            MyContextMenu.Companion.MENU_GROUP_NOTE -> note.onContextItemSelected(item)
+            MyContextMenu.Companion.MENU_GROUP_OBJACTOR -> objActor.onContextItemSelected(item)
+            else -> {
+            }
         }
     }
 
-    public void saveState(Bundle outState) {
-        note.saveState(outState);
+    fun saveState(outState: Bundle?) {
+        note.saveState(outState)
+    }
+
+    init {
+        actor = ActorOfActivityContextMenu(container)
+        note = NoteContextMenu(container)
+        objActor = ActorContextMenu(container, MyContextMenu.Companion.MENU_GROUP_OBJACTOR)
     }
 }

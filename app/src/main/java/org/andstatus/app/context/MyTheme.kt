@@ -13,133 +13,122 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.context
 
-package org.andstatus.app.context;
-
-import android.app.Activity;
-import android.content.Context;
-import android.content.res.Resources;
-import android.util.TypedValue;
-import android.view.View;
-
-import org.andstatus.app.MyActivity;
-import org.andstatus.app.R;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtil;
-
-import androidx.annotation.NonNull;
+import android.app.Activity
+import android.content.Context
+import android.util.TypedValue
+import android.view.View
+import org.andstatus.app.MyActivity
+import org.andstatus.app.R
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StringUtil
 
 /**
  * Theme and style-relates utility class
  * 2015-07-12: As I found out, we cannot cache a theme here for reuse
  * @author yvolk@yurivolkov.com
  */
-public class MyTheme {
+object MyTheme {
+    @Volatile
+    private var isLightTheme = true
 
-    private static volatile boolean isLightTheme = true;
-    private static volatile boolean isDeviceDefaultTheme = false;
-
-    private MyTheme() {
-        // Empty
-    }
-
-    public static void forget() {
-        isLightTheme = true;
-        isDeviceDefaultTheme = false;
+    @Volatile
+    private var isDeviceDefaultTheme = false
+    fun forget() {
+        isLightTheme = true
+        isDeviceDefaultTheme = false
     }
 
     /**
      * Load a theme according to the preferences.
      */
-    public static void loadTheme(@NonNull Context context) {
-        String themeName = getThemeName(context);
-        isLightTheme = themeName.contains(".Light");
-        isDeviceDefaultTheme = themeName.contains(".DeviceDefault");
-        context.setTheme(getThemeId(context, themeName));
-        applyStyles(context, false);
+    fun loadTheme(context: Context) {
+        val themeName = getThemeName(context)
+        isLightTheme = themeName.contains(".Light")
+        isDeviceDefaultTheme = themeName.contains(".DeviceDefault")
+        context.setTheme(getThemeId(context, themeName))
+        applyStyles(context, false)
     }
 
-    @NonNull
-    public static String getThemeName(Context context) {
-        if (context instanceof MyActivity && ((MyActivity) context).isFinishing()) {
-            return "Theme.Transparent";
-        }
-        return "Theme.AndStatus." + SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_COLOR, "DeviceDefault");
+    fun getThemeName(context: Context?): String {
+        return if (context is MyActivity && (context as MyActivity?).isFinishing()) {
+            "Theme.Transparent"
+        } else "Theme.AndStatus." + SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_COLOR, "DeviceDefault")
     }
 
-    public static boolean isThemeLight() {
-        return isLightTheme;
+    fun isThemeLight(): Boolean {
+        return isLightTheme
     }
 
-    public static int getThemeId(Context context, String themeName) {
-        return getStyleId(context, themeName, R.style.Theme_AndStatus_Light);
+    fun getThemeId(context: Context?, themeName: String?): Int {
+        return getStyleId(context, themeName, R.style.Theme_AndStatus_Light)
     }
 
-    private static int getStyleId(Context context, String styleName, int defaultId) {
-        int styleId = 0;
+    private fun getStyleId(context: Context?, styleName: String?, defaultId: Int): Int {
+        var styleId = 0
         if (!StringUtil.isEmpty(styleName)) {
-            styleId = context.getResources().getIdentifier(styleName, "style", "org.andstatus.app");
+            styleId = context.getResources().getIdentifier(styleName, "style", "org.andstatus.app")
             if (styleId == 0 || MyLog.isVerboseEnabled()) {
-                String text = "getStyleId; name:\"" + styleName + "\"; id:" + Integer.toHexString(styleId)
-                        + "; default:" + Integer.toHexString(defaultId);
+                val text = ("getStyleId; name:\"" + styleName + "\"; id:" + Integer.toHexString(styleId)
+                        + "; default:" + Integer.toHexString(defaultId))
                 if (styleId == 0) {
-                    MyLog.e(context, text);
+                    MyLog.e(context, text)
                 } else {
-                    MyLog.v(context, text);
+                    MyLog.v(context, text)
                 }
             }
         }
         if (styleId == 0) {
-            styleId = defaultId;
+            styleId = defaultId
         }
-        return styleId;
+        return styleId
     }
 
-    public static void applyStyles(Context context, boolean isDialog) {
-        Resources.Theme theme = context.getTheme();
-        int actionBarTextStyleId = R.style.ActionBarTextWhite;
+    fun applyStyles(context: Context?, isDialog: Boolean) {
+        val theme = context.getTheme()
+        var actionBarTextStyleId = R.style.ActionBarTextWhite
         if (!isDeviceDefaultTheme) {
             theme.applyStyle(
                     getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_ACTION_BAR_BACKGROUND_COLOR, ""), R.style.ActionBarMyBlue),
-                    false);
+                    false)
             theme.applyStyle(
                     getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_BACKGROUND_COLOR, ""), R.style.BackgroundColorBlack),
-                    false);
+                    false)
             actionBarTextStyleId = getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_ACTION_BAR_TEXT_COLOR, ""),
-                    R.style.ActionBarTextWhite);
-            theme.applyStyle(actionBarTextStyleId, false);
+                    R.style.ActionBarTextWhite)
+            theme.applyStyle(actionBarTextStyleId, false)
         }
-        theme.applyStyle(actionBarTextStyleId == R.style.ActionBarTextWhite ?
-                R.style.ActionBarIconsWhite : R.style.ActionBarIconsBlack, false);
+        theme.applyStyle(if (actionBarTextStyleId == R.style.ActionBarTextWhite) R.style.ActionBarIconsWhite else R.style.ActionBarIconsBlack, false)
         theme.applyStyle(
                 getStyleId(context, SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_SIZE, ""), R.style.StandardSize),
-                false);
+                false)
         if (isDialog) {
-            theme.applyStyle(R.style.AndStatusDialogStyle, true);
+            theme.applyStyle(R.style.AndStatusDialogStyle, true)
         }
     }
 
-    public static void setContentView(Activity activity, int layoutId) {
-        activity.setContentView(layoutId);
+    fun setContentView(activity: Activity?, layoutId: Int) {
+        activity.setContentView(layoutId)
     }
 
     /** See http://stackoverflow.com/questions/7896615/android-how-to-get-value-of-an-attribute-in-code
-    * See also {@link android.app.AlertDialog} #resolveDialogTheme for resource resolution
-    */
-    private static void setBackgroundColor(Activity activity) {
-        TypedValue typedValue = new TypedValue();
-        activity.getTheme().resolveAttribute(R.attr.myBackgroundColor, typedValue, true);
-        int color = typedValue.data;
-        setBackgroundColor(activity.findViewById(R.id.my_layout_parent), color);
-        setBackgroundColor(activity.findViewById(R.id.relative_list_parent), color);
-        setBackgroundColor(activity.findViewById(android.R.id.list), color);
+     * See also [android.app.AlertDialog] #resolveDialogTheme for resource resolution
+     */
+    private fun setBackgroundColor(activity: Activity?) {
+        val typedValue = TypedValue()
+        activity.getTheme().resolveAttribute(R.attr.myBackgroundColor, typedValue, true)
+        val color = typedValue.data
+        setBackgroundColor(activity.findViewById(R.id.my_layout_parent), color)
+        setBackgroundColor(activity.findViewById(R.id.relative_list_parent), color)
+        setBackgroundColor(activity.findViewById(android.R.id.list), color)
     }
 
-    private static void setBackgroundColor(View view, int color) {
+    private fun setBackgroundColor(view: View?, color: Int) {
         if (view != null) {
-            view.setBackground(null);
-            view.setBackgroundColor(color);
+            view.background = null
+            view.setBackgroundColor(color)
         }
     }
 }

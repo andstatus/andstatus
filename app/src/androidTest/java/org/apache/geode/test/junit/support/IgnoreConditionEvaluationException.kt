@@ -12,28 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.junit.support;
+package org.apache.geode.test.junit.support
 
 /**
  * The IgnoreConditionEvaluationException class...
  *
  * @see java.lang.RuntimeException
  */
-@SuppressWarnings({"serial"})
-public class IgnoreConditionEvaluationException extends RuntimeException {
-
-  public IgnoreConditionEvaluationException() {}
-
-  public IgnoreConditionEvaluationException(final String message) {
-    super(message);
-  }
-
-  public IgnoreConditionEvaluationException(final Throwable cause) {
-    super(cause);
-  }
-
-  public IgnoreConditionEvaluationException(final String message, final Throwable cause) {
-    super(message, cause);
-  }
-
+class IgnoreConditionEvaluationException : RuntimeException {
+    constructor() {}
+    constructor(message: String?) : super(message) {}
+    constructor(cause: Throwable?) : super(cause) {}
+    constructor(message: String?, cause: Throwable?) : super(message, cause) {}
 }

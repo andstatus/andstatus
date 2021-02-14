@@ -13,362 +13,347 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
+import android.content.Context
+import android.content.SharedPreferences
+import android.text.TextUtils
+import android.view.View
+import android.widget.CheckBox
+import androidx.preference.ListPreference
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.PreferenceManager
+import org.andstatus.app.context.MyContextHolder
+import java.io.File
+import java.text.MessageFormat
+import java.util.concurrent.ConcurrentHashMap
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.text.TextUtils;
-import android.view.View;
-import android.widget.CheckBox;
-
-import androidx.annotation.NonNull;
-import androidx.preference.ListPreference;
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceManager;
-
-import java.io.File;
-import java.text.MessageFormat;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class SharedPreferencesUtil {
-    private static final String TAG = SharedPreferencesUtil.class.getSimpleName();
-
-    public static final String FILE_EXTENSION = ".xml";
-    private static final Map<String, Object> cachedValues = new ConcurrentHashMap<>();
-
-    private SharedPreferencesUtil() {
+object SharedPreferencesUtil {
+    private val TAG: String? = SharedPreferencesUtil::class.java.simpleName
+    val FILE_EXTENSION: String? = ".xml"
+    private val cachedValues: MutableMap<String?, Any?>? = ConcurrentHashMap()
+    fun forget() {
+        cachedValues.clear()
     }
 
-    public static void forget() {
-        cachedValues.clear();
-    }
-
-    public static File defaultSharedPreferencesPath(Context context) {
-        return new File(prefsDirectory(context),
-                context.getPackageName() + "_preferences" + FILE_EXTENSION);
+    fun defaultSharedPreferencesPath(context: Context?): File? {
+        return File(prefsDirectory(context),
+                context.getPackageName() + "_preferences" + FILE_EXTENSION)
     }
 
     /**
      * @return Directory for files of SharedPreferences
      */
-    public static File prefsDirectory(Context context) {
-        String dataDir = context.getApplicationInfo().dataDir;
-        return new File(dataDir, "shared_prefs");
+    fun prefsDirectory(context: Context?): File? {
+        val dataDir = context.getApplicationInfo().dataDir
+        return File(dataDir, "shared_prefs")
     }
 
     /**
      * Delete the preferences file!
-     * 
+     *
      * @return Was the file deleted?
      */
-    public static boolean delete(Context context, String prefsFileName) {
-        boolean isDeleted;
-
+    fun delete(context: Context?, prefsFileName: String?): Boolean {
+        val isDeleted: Boolean
         if (context == null || StringUtil.isEmpty(prefsFileName)) {
-            MyLog.v(TAG, () -> "delete '" + prefsFileName + "' - nothing to do");
-            return false;
+            MyLog.v(TAG) { "delete '$prefsFileName' - nothing to do" }
+            return false
         }
-        File prefFile = new File(prefsDirectory(context), prefsFileName + FILE_EXTENSION);
+        val prefFile = File(prefsDirectory(context), prefsFileName + FILE_EXTENSION)
         if (prefFile.exists()) {
-            isDeleted = prefFile.delete();
+            isDeleted = prefFile.delete()
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(TAG, () -> "The prefs file '" + prefFile.getAbsolutePath() + "' was "
-                        + (isDeleted ? "" : "not ") + " deleted");
+                MyLog.v(TAG) {
+                    ("The prefs file '" + prefFile.absolutePath + "' was "
+                            + (if (isDeleted) "" else "not ") + " deleted")
+                }
             }
         } else {
-            isDeleted = false;
+            isDeleted = false
             if (MyLog.isLoggable(TAG, MyLog.DEBUG)) {
-                MyLog.d(TAG, "The prefs file '" + prefFile.getAbsolutePath() + "' was not found");
+                MyLog.d(TAG, "The prefs file '" + prefFile.absolutePath + "' was not found")
             }
         }
-        return isDeleted;
+        return isDeleted
     }
 
     /**
      * @param fragment Preference Activity
      * @param preferenceKey android:key - Name of the preference key
      * @param valuesR android:entryValues
-     * @param entriesR Almost like android:entries but to show in the summary (may be the same as android:entries) 
+     * @param entriesR Almost like android:entries but to show in the summary (may be the same as android:entries)
      * @param summaryR If 0 then the selected entry will be put into the summary as is.
      */
-    public static void showListPreference(PreferenceFragmentCompat fragment, String preferenceKey,
-                                          int valuesR, int entriesR, int summaryR) {
-        ListPreference listPref = (ListPreference) fragment.findPreference(preferenceKey);
+    fun showListPreference(fragment: PreferenceFragmentCompat?, preferenceKey: String?,
+                           valuesR: Int, entriesR: Int, summaryR: Int) {
+        val listPref = fragment.findPreference<Preference?>(preferenceKey) as ListPreference?
         if (listPref != null) {
-            listPref.setSummary(getSummaryForListPreference(fragment.getActivity(),
-                    listPref.getValue(), valuesR, entriesR, summaryR));
+            listPref.summary = getSummaryForListPreference(fragment.getActivity(),
+                    listPref.value, valuesR, entriesR, summaryR)
         }
     }
 
-    public static String getSummaryForListPreference(Context context, String listValue,
-                                                        int valuesR, int entriesR, int summaryR) {
-        String[] values = context.getResources().getStringArray(valuesR);
-        String[] entries = context.getResources().getStringArray(entriesR);
-        String summary = entries[0];
-        for (int i = 0; i < values.length; i++) {
-            if (listValue.equals(values[i])) {
-                summary = entries[i];
-                break;
+    fun getSummaryForListPreference(context: Context?, listValue: String?,
+                                    valuesR: Int, entriesR: Int, summaryR: Int): String? {
+        val values = context.getResources().getStringArray(valuesR)
+        val entries = context.getResources().getStringArray(entriesR)
+        var summary = entries[0]
+        for (i in values.indices) {
+            if (listValue == values[i]) {
+                summary = entries[i]
+                break
             }
         }
         if (summaryR != 0) {
-            MessageFormat messageFormat = new MessageFormat(context.getText(summaryR)
-                    .toString());
-            summary = messageFormat.format(new Object[] { summary });
+            val messageFormat = MessageFormat(context.getText(summaryR)
+                    .toString())
+            summary = messageFormat.format(arrayOf<Any?>(summary))
         }
-        return summary;
+        return summary
     }
 
     /**
      * @return true if input string is null, a zero-length string, or "null"
      */
-    public static boolean isEmpty(CharSequence str) {
-        return TextUtils.isEmpty(str) || "null".equals(str);
+    fun isEmpty(str: CharSequence?): Boolean {
+        return TextUtils.isEmpty(str) || "null" == str
     }
 
-    public static int isTrueAsInt(Object o) {
-        return isTrue(o) ? 1 : 0;
+    fun isTrueAsInt(o: Any?): Int {
+        return if (isTrue(o)) 1 else 0
     }
 
     /**
      * Returns true not only for boolean true or String "true", but for "1" also
      */
-    public static boolean isTrue(Object o) {
-        boolean is = false;
+    fun isTrue(o: Any?): Boolean {
+        var `is` = false
         try {
             if (o != null) {
-                if (o instanceof Boolean) {
-                    is = (Boolean) o;
+                if (o is Boolean) {
+                    `is` = o as Boolean?
                 } else {
-                    String string = o.toString();
+                    val string = o.toString()
                     if (!isEmpty(string)) {
-                        is = Boolean.parseBoolean(string);
-                        if (!is && string.compareTo("1") == 0) {
-                            is = true;
+                        `is` = java.lang.Boolean.parseBoolean(string)
+                        if (!`is` && string.compareTo("1") == 0) {
+                            `is` = true
                         }
                     }
                 }
             }
-        } catch (Exception e) {
-            MyLog.v(TAG, o.toString(), e);
+        } catch (e: Exception) {
+            MyLog.v(TAG, o.toString(), e)
         }
-        return is;
+        return `is`
     }
 
-    public static long copyAll(SharedPreferences from, SharedPreferences to) {
-        if (from == null || to == null) return 0;
-
-        long entryCounter = 0;
-        Editor editor = to.edit();
-        for (Entry<String, ?> entry : from.getAll().entrySet()) {
-            Object value = entry.getValue();
-            if (Boolean.class.isInstance(value)) {
-                editor.putBoolean(entry.getKey(), (Boolean) value);
-            } else if (Integer.class.isInstance(value)) {
-                editor.putInt(entry.getKey(), (Integer) value);
-            } else if (Long.class.isInstance(value)) {
-                editor.putLong(entry.getKey(), (Long) value);
-            } else if (Float.class.isInstance(value)) {
-                editor.putFloat(entry.getKey(), (Float) value);
-            } else if (String.class.isInstance(value)) {
-                editor.putString(entry.getKey(), value.toString());
+    fun copyAll(from: SharedPreferences?, to: SharedPreferences?): Long {
+        if (from == null || to == null) return 0
+        var entryCounter: Long = 0
+        val editor = to.edit()
+        for ((key, value) in from.all) {
+            if (Boolean::class.java.isInstance(value)) {
+                editor.putBoolean(key, value as Boolean?)
+            } else if (Int::class.java.isInstance(value)) {
+                editor.putInt(key, value as Int?)
+            } else if (Long::class.java.isInstance(value)) {
+                editor.putLong(key, value as Long?)
+            } else if (Float::class.java.isInstance(value)) {
+                editor.putFloat(key, value as Float?)
+            } else if (String::class.java.isInstance(value)) {
+                editor.putString(key, value.toString())
             } else {
                 MyLog.e(TAG, "Unknown type of shared preference: "
-                        + value.getClass() + ", value: " + value.toString());
-                entryCounter--;
+                        + value.javaClass + ", value: " + value.toString())
+                entryCounter--
             }
-            entryCounter++;
+            entryCounter++
         }
-        editor.commit();
-        forget();
-        return entryCounter;
+        editor.commit()
+        forget()
+        return entryCounter
     }
 
-    public static TriState areDefaultPreferenceValuesSet() {
-        SharedPreferences sp = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES);
-        if (sp == null) {
-            return TriState.UNKNOWN;
+    fun areDefaultPreferenceValuesSet(): TriState? {
+        val sp = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES)
+        return if (sp == null) {
+            TriState.UNKNOWN
         } else {
-            return TriState.fromBoolean(
-                    sp.getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false));
+            TriState.Companion.fromBoolean(
+                    sp.getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false))
         }
     }
 
-    public static void resetHasSetDefaultValues() {
-        SharedPreferences sp = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES);
-        if (sp != null) {
-            sp.edit().clear().commit();
-        }
-        forget();
+    fun resetHasSetDefaultValues() {
+        val sp = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES)
+        sp?.edit()?.clear()?.commit()
+        forget()
     }
 
-    public static SharedPreferences getDefaultSharedPreferences() {
-        Context context = myContextHolder.getNow().context();
-        if (context == null) {
-            return null;
+    fun getDefaultSharedPreferences(): SharedPreferences? {
+        val context: Context = MyContextHolder.Companion.myContextHolder.getNow().context()
+        return if (context == null) {
+            null
         } else {
-            return PreferenceManager.getDefaultSharedPreferences(context);
+            PreferenceManager.getDefaultSharedPreferences(context)
         }
     }
 
-    public static SharedPreferences getSharedPreferences(String name) {
-        Context context = myContextHolder.getNow().context();
-        if (context == null) {
-            MyLog.e(TAG, "getSharedPreferences for " + name + " - were not initialized yet");
-            for(StackTraceElement element : Thread.currentThread().getStackTrace()) {
-                MyLog.v(TAG, element::toString);
+    fun getSharedPreferences(name: String?): SharedPreferences? {
+        val context: Context = MyContextHolder.Companion.myContextHolder.getNow().context()
+        return if (context == null) {
+            MyLog.e(TAG, "getSharedPreferences for $name - were not initialized yet")
+            for (element in Thread.currentThread().stackTrace) {
+                MyLog.v(TAG) { element.toString() }
             }
-            return null;
+            null
         } else {
-            return context.getSharedPreferences(name, Context.MODE_PRIVATE);
+            context.getSharedPreferences(name, Context.MODE_PRIVATE)
         }
     }
 
-    public static int getIntStoredAsString(@NonNull String key, int defaultValue) {
-        long longValue = getLongStoredAsString(key, defaultValue);
-        return (longValue >= Integer.MIN_VALUE && longValue <= Integer.MAX_VALUE) ? (int) longValue : defaultValue;
+    fun getIntStoredAsString(key: String, defaultValue: Int): Int {
+        val longValue = getLongStoredAsString(key, defaultValue.toLong())
+        return if (longValue >= Int.MIN_VALUE && longValue <= Int.MAX_VALUE) longValue as Int else defaultValue
     }
 
-    public static long getLongStoredAsString(@NonNull String key, long defaultValue) {
-        long value = defaultValue;
+    fun getLongStoredAsString(key: String, defaultValue: Long): Long {
+        var value = defaultValue
         try {
-            long longValueStored = Long.parseLong(getString(key, Long.toString(Long.MIN_VALUE)));
+            val longValueStored = getString(key, java.lang.Long.toString(Long.MIN_VALUE)).toLong()
             if (longValueStored > Long.MIN_VALUE) {
-                value = longValueStored;
+                value = longValueStored
             }
-        } catch (NumberFormatException e) {
-            MyLog.ignored(TAG, e);
+        } catch (e: NumberFormatException) {
+            MyLog.ignored(TAG, e)
         }
-        return value;
+        return value
     }
 
-    public static void putString(@NonNull String key, String value) {
+    fun putString(key: String, value: String?) {
         if (value == null) {
-            removeKey(key);
+            removeKey(key)
         } else {
-            SharedPreferences sp = getDefaultSharedPreferences();
+            val sp = getDefaultSharedPreferences()
             if (sp != null) {
-                sp.edit().putString(key, value).apply();
-                putToCache(key, value);
+                sp.edit().putString(key, value).apply()
+                putToCache(key, value)
             }
         }
     }
 
-    public static void removeKey(@NonNull String key) {
-        SharedPreferences sp = getDefaultSharedPreferences();
+    fun removeKey(key: String) {
+        val sp = getDefaultSharedPreferences()
         if (sp != null) {
-            sp.edit().remove(key).apply();
-            putToCache(key, null);
+            sp.edit().remove(key).apply()
+            putToCache(key, null)
         }
     }
 
-    public static String getString(@NonNull String key, String defaultValue) {
-        Object cachedValue = cachedValues.get(key);
+    fun getString(key: String, defaultValue: String?): String? {
+        val cachedValue = cachedValues.get(key)
         if (cachedValue != null) {
             try {
-                return (String) cachedValue;
-            } catch (ClassCastException e) {
-                MyLog.ignored("getString, key=" + key, e);
-                cachedValues.remove(key);
+                return cachedValue as String?
+            } catch (e: ClassCastException) {
+                MyLog.ignored("getString, key=$key", e)
+                cachedValues.remove(key)
             }
         }
-        String value = defaultValue;
-        SharedPreferences sp = getDefaultSharedPreferences();
+        var value = defaultValue
+        val sp = getDefaultSharedPreferences()
         if (sp != null) {
-            try {
-                value = sp.getString(key, defaultValue);
-            } catch (ClassCastException e) {
-                MyLog.ignored("getString, key=" + key, e);
-                value = Long.toString(sp.getLong(key, Long.parseLong(defaultValue)));
+            value = try {
+                sp.getString(key, defaultValue)
+            } catch (e: ClassCastException) {
+                MyLog.ignored("getString, key=$key", e)
+                java.lang.Long.toString(sp.getLong(key, defaultValue.toLong()))
             }
-            putToCache(key, value);
+            putToCache(key, value)
         }
-        return value;
+        return value
     }
 
-    private static Object putToCache(@NonNull String key, Object value) {
-        if (value == null) {
-            Object oldValue = cachedValues.get(key);
-            cachedValues.remove(key);
-            return oldValue;
+    private fun putToCache(key: String, value: Any?): Any? {
+        return if (value == null) {
+            val oldValue = cachedValues.get(key)
+            cachedValues.remove(key)
+            oldValue
         } else {
-            return cachedValues.put(key, value);
+            cachedValues.put(key, value)
         }
     }
 
-    public static void putBoolean(@NonNull String key, View checkBox) {
-        if (checkBox != null && CheckBox.class.isAssignableFrom(checkBox.getClass())) {
-            final boolean value = ((CheckBox) checkBox).isChecked();
-            putBoolean(key, value);
+    fun putBoolean(key: String, checkBox: View?) {
+        if (checkBox != null && CheckBox::class.java.isAssignableFrom(checkBox.javaClass)) {
+            val value = (checkBox as CheckBox?).isChecked()
+            putBoolean(key, value)
         }
     }
 
-    public static void putBoolean(@NonNull String key, boolean value) {
-        SharedPreferences sp = getDefaultSharedPreferences();
+    fun putBoolean(key: String, value: Boolean) {
+        val sp = getDefaultSharedPreferences()
         if (sp != null) {
-            sp.edit().putBoolean(key, value).apply();
-            cachedValues.put(key, value);
+            sp.edit().putBoolean(key, value).apply()
+            cachedValues[key] = value
         }
     }
 
-    public static void putLong(@NonNull String key, long value) {
-        SharedPreferences sp = getDefaultSharedPreferences();
+    fun putLong(key: String, value: Long) {
+        val sp = getDefaultSharedPreferences()
         if (sp != null) {
-            sp.edit().putLong(key, value).apply();
-            cachedValues.put(key, value);
+            sp.edit().putLong(key, value).apply()
+            cachedValues[key] = value
         }
     }
 
-    public static long getLong(@NonNull String key) {
-        return getLong(key, 0);
+    fun getLong(key: String): Long {
+        return getLong(key, 0)
     }
 
-    public static long getLong(@NonNull String key, long defaultValue) {
-        Object cachedValue = cachedValues.get(key);
+    fun getLong(key: String, defaultValue: Long): Long {
+        val cachedValue = cachedValues.get(key)
         if (cachedValue != null) {
             try {
-                return (long) cachedValue;
-            } catch (ClassCastException e) {
-                MyLog.ignored("getLong, key=" + key, e);
-                cachedValues.remove(key);
+                return cachedValue as Long
+            } catch (e: ClassCastException) {
+                MyLog.ignored("getLong, key=$key", e)
+                cachedValues.remove(key)
             }
         }
-        long value = defaultValue;
-        SharedPreferences sp = getDefaultSharedPreferences();
+        var value = defaultValue
+        val sp = getDefaultSharedPreferences()
         if (sp != null) {
             try {
-                value = sp.getLong(key, defaultValue);
-                cachedValues.put(key, value);
-            } catch (ClassCastException e) {
-                removeKey(key);
-                MyLog.ignored("getLong", e);
+                value = sp.getLong(key, defaultValue)
+                cachedValues[key] = value
+            } catch (e: ClassCastException) {
+                removeKey(key)
+                MyLog.ignored("getLong", e)
             }
         }
-        return value;
+        return value
     }
 
-    public static boolean getBoolean(@NonNull String key, boolean defaultValue) {
-        Object cachedValue = cachedValues.get(key);
+    fun getBoolean(key: String, defaultValue: Boolean): Boolean {
+        val cachedValue = cachedValues.get(key)
         if (cachedValue != null) {
             try {
-                return (boolean) cachedValue;
-            } catch (ClassCastException e) {
-                MyLog.ignored("getBoolean, key=" + key, e);
-                cachedValues.remove(key);
+                return cachedValue as Boolean
+            } catch (e: ClassCastException) {
+                MyLog.ignored("getBoolean, key=$key", e)
+                cachedValues.remove(key)
             }
         }
-        boolean value = defaultValue;
-        SharedPreferences sp = getDefaultSharedPreferences();
+        var value = defaultValue
+        val sp = getDefaultSharedPreferences()
         if (sp != null) {
-            value = sp.getBoolean(key, defaultValue);
-            cachedValues.put(key, value);
+            value = sp.getBoolean(key, defaultValue)
+            cachedValues[key] = value
         }
-        return value;
+        return value
     }
 }

@@ -13,824 +13,787 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.account
 
-package org.andstatus.app.account;
-
-import android.accounts.Account;
-import android.content.ContentResolver;
-import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
-import org.andstatus.app.SearchObjects;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DataUpdater;
-import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.converter.DatabaseConverterController;
-import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.database.table.OriginTable;
-import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.http.ConnectionException.StatusCode;
-import org.andstatus.app.net.http.OAuthService;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.ApiRoutineEnum;
-import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.net.social.ConnectionEmpty;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineSaver;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TaggedClass;
-import org.andstatus.app.util.TriState;
-import org.json.JSONObject;
-
-import java.util.concurrent.TimeUnit;
-
-import io.vavr.control.Try;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.accounts.Account
+import android.content.ContentResolver
+import android.os.Bundle
+import android.os.Parcel
+import android.os.Parcelable
+import io.vavr.control.Try
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.R
+import org.andstatus.app.SearchObjects
+import org.andstatus.app.account.AccountData
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.DataUpdater
+import org.andstatus.app.data.MatchedUri
+import org.andstatus.app.data.converter.DatabaseConverterController
+import org.andstatus.app.database.table.ActorTable
+import org.andstatus.app.database.table.OriginTable
+import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.net.http.OAuthService
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.net.social.Connection
+import org.andstatus.app.net.social.ConnectionEmpty
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.origin.OriginConfig
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.timeline.meta.TimelineSaver
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.IsEmpty
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TaggedClass
+import org.andstatus.app.util.TriState
+import org.json.JSONObject
+import java.util.concurrent.TimeUnit
+import java.util.function.Consumer
+import java.util.function.Supplier
 
 /**
- * Immutable class that holds "AndStatus account"-specific information including: 
+ * Immutable class that holds "AndStatus account"-specific information including:
  * a Social network (twitter.com, identi.ca etc.),
- * Username in that system and {@link Connection} to it.
+ * Username in that system and [Connection] to it.
  *
  * @author yvolk@yurivolkov.com
  */
-public final class MyAccount implements Comparable<MyAccount>, IsEmpty, TaggedClass {
-    private static final String TAG = MyAccount.class.getSimpleName();
-    public static final MyAccount EMPTY = new MyAccount(AccountName.getEmpty());
+class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccount?>, IsEmpty, TaggedClass {
+    private var actor: Actor?
 
-    public static final String KEY_ACCOUNT_NAME = "account_name";
-    /** Username for the account */
-    public static final String KEY_USERNAME = "username";
-    /** A name that is unique for an origin */
-    public static final String KEY_UNIQUE_NAME = "unique_name";
-    /** {@link ActorTable#_ID} in our System. */
-    public static final String KEY_ACTOR_ID = "user_id";
-    /** {@link ActorTable#ACTOR_OID} in Microblogging System. */
-    public static final String KEY_ACTOR_OID = "user_oid";
-    /** Is OAuth on for this MyAccount? */
-    public static final String KEY_OAUTH = "oauth";
-    /** This account is in the process of deletion and should be ignored... */
-    public static final String KEY_DELETED = "deleted";
-    /** @see android.content.ContentResolver#getIsSyncable(Account, String) */
-    public static final String KEY_IS_SYNCABLE = "is_syncable";
-    /** This corresponds to turning syncing on/off in Android Accounts
-     * @see android.content.ContentResolver#getSyncAutomatically(Account, String) */
-    public static final String KEY_IS_SYNCED_AUTOMATICALLY = "sync_automatically";
-    public static final String KEY_ORDER = "order";
+    @Volatile
+    private var connection: Connection? = null
 
-    @NonNull
-    final AccountData data;
-    private Actor actor;
-
-    private volatile Connection connection = null;
     /** Was this account authenticated last time _current_ credentials were verified?
-     *  CredentialsVerified.NEVER - after changes of "credentials": password/OAuth...
+     * CredentialsVerified.NEVER - after changes of "credentials": password/OAuth...
      */
-    private CredentialsVerificationStatus credentialsVerified = CredentialsVerificationStatus.NEVER;
-    /** Is this account authenticated with OAuth? */
-    private boolean isOAuth = true;
-    private long syncFrequencySeconds = 0;
-    boolean isSyncable = true;
-    private boolean isSyncedAutomatically = true;
-    private boolean deleted;
-    private int order = 0;
+    private var credentialsVerified: CredentialsVerificationStatus? = CredentialsVerificationStatus.NEVER
 
-    public static MyAccount fromBundle(MyContext myContext, Bundle bundle) {
-        return bundle == null
-                ? EMPTY
-                : myContext.accounts().fromAccountName(bundle.getString(IntentExtra.ACCOUNT_NAME.key));
+    /** Is this account authenticated with OAuth?  */
+    private var isOAuth = true
+    private var syncFrequencySeconds: Long = 0
+    var isSyncable = true
+    private var isSyncedAutomatically = true
+    private val deleted: Boolean
+    private var order = 0
+
+    internal constructor(accountName: AccountName?) : this(AccountData.Companion.fromAccountName(accountName)) {}
+
+    fun getValidOrCurrent(myContext: MyContext?): MyAccount? {
+        return if (isValid()) this else myContext.accounts().currentAccount
     }
 
-    MyAccount(AccountName accountName) {
-        this(AccountData.fromAccountName(accountName));
+    fun getOAccountName(): AccountName? {
+        return data.accountName
     }
 
-    MyAccount(@NonNull AccountData accountDataIn) {
-        this.data = accountDataIn;
-        actor = Actor.load(data.myContext(), data.getDataLong(KEY_ACTOR_ID, 0L), false,
-                () -> Actor.fromOid(data.accountName.getOrigin(), data.getDataString(KEY_ACTOR_OID))
-                        .withUniqueName(data.accountName.getUniqueName())
-                        .lookupUser());
-        deleted = data.getDataBoolean(KEY_DELETED, false);
-        syncFrequencySeconds = data.getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0L);
-        isSyncable = data.getDataBoolean(KEY_IS_SYNCABLE, true);
-        isSyncedAutomatically = data.getDataBoolean(KEY_IS_SYNCED_AUTOMATICALLY, true);
-        setOAuth(TriState.fromBoolean(data.getDataBoolean(KEY_OAUTH, getOrigin().isOAuthDefault())));
-        setConnection();
-        getConnection().setPassword(data.getDataString(Connection.KEY_PASSWORD));
-        credentialsVerified = CredentialsVerificationStatus.load(data);
-        order = data.getDataInt(KEY_ORDER, 1);
+    fun getActor(): Actor? {
+        return Actor.Companion.load(data.myContext(), actor.actorId, false, Supplier { actor })
     }
 
-    public MyAccount getValidOrCurrent(MyContext myContext) {
-        return isValid()
-                ? this
-                : myContext.accounts().getCurrentAccount();
+    fun getWebFingerId(): String? {
+        return actor.getWebFingerId()
     }
 
-    public AccountName getOAccountName() {
-        return data.accountName;
+    override fun isEmpty(): Boolean {
+        return this === EMPTY
     }
 
-    public Actor getActor() {
-        return Actor.load(data.myContext(), actor.actorId, false, () -> actor);
+    fun setConnection(): Connection? {
+        connection = Connection.Companion.fromMyAccount(this, TriState.Companion.fromBoolean(isOAuth))
+        return connection
     }
 
-    public String getWebFingerId() {
-        return actor.getWebFingerId();
+    private fun getNewOrExistingAndroidAccount(): Try<Account?>? {
+        return AccountUtils.getExistingAndroidAccount(data.accountName).recoverWith(Exception::class.java
+        ) { notFound: Exception? -> if (isValidAndSucceeded()) AccountUtils.addEmptyAccount(data.accountName, getPassword()) else Try.failure(notFound) }
     }
 
-    @Override
-    public boolean isEmpty() {
-        return this == EMPTY;
+    fun getCredentialsPresent(): Boolean {
+        return getConnection() != null && getConnection().getCredentialsPresent()
     }
 
-    public Connection setConnection() {
-        connection = Connection.fromMyAccount(this, TriState.fromBoolean(isOAuth));
-        return connection;
+    fun getCredentialsVerified(): CredentialsVerificationStatus? {
+        return credentialsVerified
     }
 
-    private Try<Account> getNewOrExistingAndroidAccount() {
-        return AccountUtils.getExistingAndroidAccount(data.accountName).recoverWith(Exception.class,
-                notFound -> isValidAndSucceeded()
-                    ? AccountUtils.addEmptyAccount(data.accountName, getPassword())
-                    : Try.failure(notFound));
+    fun isValidAndSucceeded(): Boolean {
+        return isValid() && getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED
     }
 
-    public boolean getCredentialsPresent() {
-        return getConnection() != null && getConnection().getCredentialsPresent();
+    private fun isPersistent(): Boolean {
+        return data.isPersistent
     }
 
-    public CredentialsVerificationStatus getCredentialsVerified() {
-        return credentialsVerified;
+    fun isFollowing(thatActor: Actor?): Boolean {
+        return data.myContext().users().friendsOfMyActors.entries.stream()
+                .filter { entry: MutableMap.MutableEntry<Long?, MutableSet<Long?>?>? -> entry.key == thatActor.actorId }
+                .anyMatch { entry: MutableMap.MutableEntry<Long?, MutableSet<Long?>?>? -> entry.value.contains(getActor().actorId) }
     }
 
-    public boolean isValidAndSucceeded() {
-        return isValid() && getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED;
-    }
-
-    private boolean isPersistent() {
-        return data.isPersistent();
-    }
-
-    public boolean isFollowing(Actor thatActor) {
-        return data.myContext().users().friendsOfMyActors.entrySet().stream()
-                .filter(entry -> entry.getKey() == thatActor.actorId)
-                .anyMatch(entry -> entry.getValue().contains(getActor().actorId));
-    }
-
-    public String getShortestUniqueAccountName() {
-        String uniqueName = getAccountName();
-
-        boolean found = false;
-
-        String possiblyUnique = getActor().getUniqueName();
-        for (MyAccount persistentAccount : data.myContext().accounts().get()) {
-            if (!persistentAccount.toString().equalsIgnoreCase(toString())
-                    && persistentAccount.getActor().getUniqueName().equalsIgnoreCase(possiblyUnique)) {
-                found = true;
-                break;
+    fun getShortestUniqueAccountName(): String? {
+        var uniqueName = getAccountName()
+        var found = false
+        var possiblyUnique = getActor().getUniqueName()
+        for (persistentAccount in data.myContext().accounts().get()) {
+            if (!persistentAccount.toString().equals(toString(), ignoreCase = true)
+                    && persistentAccount.actor.uniqueName.equals(possiblyUnique, ignoreCase = true)) {
+                found = true
+                break
             }
         }
         if (!found) {
-            uniqueName = possiblyUnique;
+            uniqueName = possiblyUnique
         }
-
         if (!found) {
-            possiblyUnique = getUsername();
-            for (MyAccount persistentAccount : data.myContext().accounts().get()) {
-                if (!persistentAccount.toString().equalsIgnoreCase(toString())
-                        && persistentAccount.getUsername().equalsIgnoreCase(possiblyUnique)) {
-                    found = true;
-                    break;
+            possiblyUnique = getUsername()
+            for (persistentAccount in data.myContext().accounts().get()) {
+                if (!persistentAccount.toString().equals(toString(), ignoreCase = true)
+                        && persistentAccount.username.equals(possiblyUnique, ignoreCase = true)) {
+                    found = true
+                    break
                 }
             }
             if (!found) {
-                uniqueName = possiblyUnique;
+                uniqueName = possiblyUnique
             }
         }
-
         if (!found) {
-            int indAt = uniqueName.indexOf('@');
+            var indAt = uniqueName.indexOf('@')
             if (indAt > 0) {
-                possiblyUnique = uniqueName.substring(0, indAt);
-                for (MyAccount persistentAccount : data.myContext().accounts().get()) {
-                    if (!persistentAccount.toString().equalsIgnoreCase(toString())) {
-                        String toCompareWith = persistentAccount.getUsername();
-                        indAt = toCompareWith.indexOf('@');
+                possiblyUnique = uniqueName.substring(0, indAt)
+                for (persistentAccount in data.myContext().accounts().get()) {
+                    if (!persistentAccount.toString().equals(toString(), ignoreCase = true)) {
+                        var toCompareWith = persistentAccount.username
+                        indAt = toCompareWith.indexOf('@')
                         if (indAt > 0) {
-                            toCompareWith = toCompareWith.substring(0, indAt);
+                            toCompareWith = toCompareWith.substring(0, indAt)
                         }
-                        if (toCompareWith.equalsIgnoreCase(possiblyUnique)) {
-                            found = true;
-                            break;
+                        if (toCompareWith.equals(possiblyUnique, ignoreCase = true)) {
+                            found = true
+                            break
                         }
                     }
                 }
                 if (!found) {
-                    uniqueName = possiblyUnique;
+                    uniqueName = possiblyUnique
                 }
             }
         }
-
-        return uniqueName;
+        return uniqueName
     }
 
-    public boolean nonValid() {
-        return !isValid();
+    fun nonValid(): Boolean {
+        return !isValid()
     }
 
-    public boolean isValid() {
-        return !deleted
-                && actor.actorId != 0
-                && connection != null
-                && data.accountName.isValid
-                && !StringUtil.isEmpty(actor.oid);
+    fun isValid(): Boolean {
+        return (!deleted
+                && actor.actorId != 0L && connection != null && data.accountName.isValid
+                && !StringUtil.isEmpty(actor.oid))
     }
 
-    private void setOAuth(TriState isOAuthTriState) {
-        boolean isOAuthBoolean = true;
-        if (isOAuthTriState == TriState.UNKNOWN) {
-            isOAuthBoolean = data.getDataBoolean(KEY_OAUTH, getOrigin().isOAuthDefault());
+    private fun setOAuth(isOAuthTriState: TriState?) {
+        var isOAuthBoolean = true
+        isOAuthBoolean = if (isOAuthTriState == TriState.UNKNOWN) {
+            data.getDataBoolean(KEY_OAUTH, getOrigin().isOAuthDefault())
         } else {
-            isOAuthBoolean = isOAuthTriState.toBoolean(getOrigin().isOAuthDefault());
+            isOAuthTriState.toBoolean(getOrigin().isOAuthDefault())
         }
-        isOAuth = getOrigin().getOriginType().fixIsOAuth(isOAuthBoolean);
+        isOAuth = getOrigin().getOriginType().fixIsOAuth(isOAuthBoolean)
     }
 
-    public String getUsername() {
-        return actor.getUsername();
+    fun getUsername(): String? {
+        return actor.getUsername()
     }
 
     /**
      * @return account name, unique for this application and suitable for android.accounts.AccountManager
-     * The name is permanent and cannot be changed. This is why it may be used as Id 
+     * The name is permanent and cannot be changed. This is why it may be used as Id
      */
-    public String getAccountName() {
-        return data.accountName.getName();
+    fun getAccountName(): String? {
+        return data.accountName.name
     }
 
-    public long getActorId() {
-        return actor.actorId;
+    fun getActorId(): Long {
+        return actor.actorId
     }
 
-    public String getActorOid() {
-        return actor.oid;
+    fun getActorOid(): String? {
+        return actor.oid
     }
 
     /**
-     * @return The system in which the Account is defined, see {@link OriginTable}
+     * @return The system in which the Account is defined, see [OriginTable]
      */
-    public Origin getOrigin() {
-        return data.accountName.origin;
+    fun getOrigin(): Origin? {
+        return data.accountName.origin
     }
 
-    public long getOriginId() {
-        return getOrigin().getId();
+    fun getOriginId(): Long {
+        return getOrigin().getId()
     }
 
-    public Connection getConnection() {
-        return connection == null ? ConnectionEmpty.EMPTY : connection;
+    fun getConnection(): Connection? {
+        return if (connection == null) ConnectionEmpty.Companion.EMPTY else connection
     }
 
-    public boolean areClientKeysPresent() {
-        return getConnection().areOAuthClientKeysPresent();
+    fun areClientKeysPresent(): Boolean {
+        return getConnection().areOAuthClientKeysPresent()
     }
 
-    public OAuthService getOAuthService() {
-        return getConnection().getOAuthService();
+    fun getOAuthService(): OAuthService? {
+        return getConnection().getOAuthService()
     }
 
-    public int getOrder() {
-        return order;
+    fun getOrder(): Int {
+        return order
     }
 
-    public int charactersLeftForNote(String html) {
-        return getOrigin().charactersLeftForNote(html);
+    fun charactersLeftForNote(html: String?): Int {
+        return getOrigin().charactersLeftForNote(html)
     }
 
-    public int alternativeTermForResourceId(int resId) {
-        return getOrigin().alternativeTermForResourceId(resId);
+    fun alternativeTermForResourceId(resId: Int): Int {
+        return getOrigin().alternativeTermForResourceId(resId)
     }
 
-    public boolean isOAuth() {
-        return isOAuth;
+    fun isOAuth(): Boolean {
+        return isOAuth
     }
 
-    public String getPassword() {
-        return getConnection().getPassword();
+    fun getPassword(): String? {
+        return getConnection().getPassword()
     }
 
-    public boolean isUsernameNeededToStartAddingNewAccount() {
-        return getOrigin().getOriginType().isUsernameNeededToStartAddingNewAccount(isOAuth());
+    fun isUsernameNeededToStartAddingNewAccount(): Boolean {
+        return getOrigin().getOriginType().isUsernameNeededToStartAddingNewAccount(isOAuth())
     }
 
-    public boolean isUsernameValid() {
-        return actor.isUsernameValid();
+    fun isUsernameValid(): Boolean {
+        return actor.isUsernameValid()
     }
 
-    public boolean isSearchSupported(SearchObjects searchObjects) {
-        return getConnection().hasApiEndpoint(searchObjects == SearchObjects.NOTES
-                ? ApiRoutineEnum.SEARCH_NOTES : ApiRoutineEnum.SEARCH_ACTORS);
+    fun isSearchSupported(searchObjects: SearchObjects?): Boolean {
+        return getConnection().hasApiEndpoint(if (searchObjects == SearchObjects.NOTES) ApiRoutineEnum.SEARCH_NOTES else ApiRoutineEnum.SEARCH_ACTORS)
     }
 
-    public void requestSync() {
-        if (!isPersistent()) return;
+    fun requestSync() {
+        if (!isPersistent()) return
         AccountUtils.getExistingAndroidAccount(data.accountName)
-                .onSuccess(a -> ContentResolver.requestSync(a, MatchedUri.AUTHORITY, new Bundle()));
+                .onSuccess { a: Account? -> ContentResolver.requestSync(a, MatchedUri.Companion.AUTHORITY, Bundle()) }
     }
 
-    public long getSyncFrequencySeconds() {
-        return syncFrequencySeconds;
+    fun getSyncFrequencySeconds(): Long {
+        return syncFrequencySeconds
     }
 
-    public long getEffectiveSyncFrequencyMillis() {
-        long effectiveSyncFrequencySeconds = getSyncFrequencySeconds();
+    fun getEffectiveSyncFrequencyMillis(): Long {
+        var effectiveSyncFrequencySeconds = getSyncFrequencySeconds()
         if (effectiveSyncFrequencySeconds <= 0) {
-            effectiveSyncFrequencySeconds= MyPreferences.getSyncFrequencySeconds();
+            effectiveSyncFrequencySeconds = MyPreferences.getSyncFrequencySeconds()
         }
-        return TimeUnit.SECONDS.toMillis(effectiveSyncFrequencySeconds);
+        return TimeUnit.SECONDS.toMillis(effectiveSyncFrequencySeconds)
     }
 
-    @Override
-    public String toString() {
-        if (EMPTY == this) {
-            return MyStringBuilder.formatKeyValue(this, "EMPTY");
+    override fun toString(): String {
+        if (EMPTY === this) {
+            return MyStringBuilder.Companion.formatKeyValue(this, "EMPTY")
         }
-
-        String members = (isValid() ? "" : "(invalid) ") + "accountName:" + data.accountName + ",";
+        var members = (if (isValid()) "" else "(invalid) ") + "accountName:" + data.accountName + ","
         try {
             if (actor != null && actor.nonEmpty()) {
-                members += actor + ",";
+                members += actor.toString() + ","
             }
             if (!isPersistent()) {
-                members += "not persistent,";
+                members += "not persistent,"
             }
             if (isOAuth()) {
-                members += "OAuth,";
+                members += "OAuth,"
             }
             if (getCredentialsVerified() != CredentialsVerificationStatus.SUCCEEDED) {
-                members += "verified:" + getCredentialsVerified().name() + ",";
+                members += "verified:" + getCredentialsVerified().name + ","
             }
             if (getCredentialsPresent()) {
-                members += "credentialsPresent,";
+                members += "credentialsPresent,"
             }
             if (connection == null) {
-                members += "connection:null,";
+                members += "connection:null,"
             }
             if (syncFrequencySeconds > 0) {
-                members += "syncFrequency:" + syncFrequencySeconds + ",";
+                members += "syncFrequency:$syncFrequencySeconds,"
             }
             if (isSyncable) {
-                members += "syncable,";
+                members += "syncable,"
             }
             if (isSyncedAutomatically) {
-                members += "syncauto,";
+                members += "syncauto,"
             }
             if (deleted) {
-                members += "deleted,";
+                members += "deleted,"
             }
-        } catch (Exception e) {
-            MyLog.v(this, members, e);
+        } catch (e: Exception) {
+            MyLog.v(this, members, e)
         }
-        return MyStringBuilder.formatKeyValue(this, members);
-    }
-    
-    public JSONObject toJson() {
-        return data.updateFrom(this).toJSon();
+        return MyStringBuilder.Companion.formatKeyValue(this, members)
     }
 
-    public String toAccountButtonText() {
-        String accountButtonText = getShortestUniqueAccountName();
+    fun toJson(): JSONObject? {
+        return data.updateFrom(this).toJSon()
+    }
+
+    fun toAccountButtonText(): String? {
+        var accountButtonText = getShortestUniqueAccountName()
         if (!isValidAndSucceeded()) {
-            accountButtonText = "(" + accountButtonText + ")";
+            accountButtonText = "($accountButtonText)"
         }
-        return accountButtonText;
+        return accountButtonText
     }
 
-    @Override
-    public int compareTo(MyAccount another) {
-        if (this == another) {
-            return 0;
+    override fun compareTo(another: MyAccount?): Int {
+        if (this === another) {
+            return 0
         }
         if (another == null) {
-            return -1;
+            return -1
         }
         if (isValid() != another.isValid()) {
-            return isValid() ? -1 : 1;
+            return if (isValid()) -1 else 1
         }
-        return order > another.order
-            ? 1
-            : (order < another.order
-                ? -1
-                : getAccountName().compareTo(another.getAccountName()));
+        return if (order > another.order) 1 else if (order < another.order) -1 else getAccountName().compareTo(another.getAccountName())
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MyAccount)) return false;
-
-        MyAccount myAccount = (MyAccount) o;
-        if (!data.accountName.equals(myAccount.data.accountName)) return false;
-        return StringUtil.equalsNotEmpty(actor.oid, myAccount.actor.oid);
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o !is MyAccount) return false
+        val myAccount = o as MyAccount?
+        return if (data.accountName != myAccount.data.accountName) false else StringUtil.equalsNotEmpty(actor.oid, myAccount.actor.oid)
     }
 
-    @Override
-    public int hashCode() {
-        int result = data.accountName.hashCode();
+    override fun hashCode(): Int {
+        var result = data.accountName.hashCode()
         if (!StringUtil.isEmpty(actor.oid)) {
-            result = 31 * result + actor.oid.hashCode();
+            result = 31 * result + actor.oid.hashCode()
         }
-        return result;
+        return result
     }
 
-    public boolean shouldBeSyncedAutomatically() {
-        return isSyncedAutomatically() && isValidAndSucceeded() && getEffectiveSyncFrequencyMillis() > 0;
+    fun shouldBeSyncedAutomatically(): Boolean {
+        return isSyncedAutomatically() && isValidAndSucceeded() && getEffectiveSyncFrequencyMillis() > 0
     }
 
-    public boolean isSyncedAutomatically() {
-        return isSyncedAutomatically;
+    fun isSyncedAutomatically(): Boolean {
+        return isSyncedAutomatically
     }
 
-    public long getLastSyncSucceededDate() {
-        return (isValid() && isPersistent())
-                ? data.myContext().timelines()
-                    .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, actor, Origin.EMPTY)
-                    .map(Timeline::getSyncSucceededDate).max(Long::compareTo).orElse(0L)
-                : 0L;
+    fun getLastSyncSucceededDate(): Long {
+        return if (isValid() && isPersistent()) data.myContext().timelines()
+                .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, actor, Origin.Companion.EMPTY)
+                .map { obj: Timeline? -> obj.getSyncSucceededDate() }.max { obj: Long?, anotherLong: Long? -> obj.compareTo(anotherLong) }.orElse(0L) else 0L
     }
 
-    public boolean hasAnyTimelines() {
-        for (Timeline timeline : data.myContext().timelines().values()) {
-            if (timeline.myAccountToSync.equals(this)) {
-                return true;
+    fun hasAnyTimelines(): Boolean {
+        for (timeline in data.myContext().timelines().values()) {
+            if (timeline.myAccountToSync == this) {
+                return true
             }
         }
-        MyLog.v(this, () -> this.getAccountName() + " doesn't have any timeline");
-        return false;
+        MyLog.v(this) { getAccountName() + " doesn't have any timeline" }
+        return false
     }
 
-    @Override
-    public String classTag() {
-        return TAG;
+    override fun classTag(): String? {
+        return TAG
     }
 
-    /** Companion class used to load/create/change/delete {@link MyAccount}'s data */
-    public static final class Builder implements Parcelable, TaggedClass {
-        private static final String TAG = MyAccount.TAG + "." + Builder.class.getSimpleName();
-
-        private volatile MyAccount myAccount;
-
-        /**
-         * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
-         */
-        public static Builder fromAccountName(AccountName accountName) {
-            return fromMyAccount(myAccountFromName(accountName));
-        }
-
-        /**
-         * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
-         */
-        private static MyAccount myAccountFromName(AccountName accountName) {
-            MyAccount persistentAccount = accountName.myContext().accounts().fromAccountName(accountName);
-            return persistentAccount.isValid()
-                    ? persistentAccount
-                    : new MyAccount(accountName);
-        }
-
-        /** Loads existing account from Persistence */
-        static Builder loadFromAndroidAccount(MyContext myContext, @NonNull android.accounts.Account account) {
-            return loadFromAccountData(AccountData.fromAndroidAccount(myContext, account),"fromAndroidAccount");
-        }
-
-        static Builder loadFromAccountData(@NonNull AccountData accountData, String method) {
-            MyAccount myAccount = new MyAccount(accountData);
-            Builder builder = fromMyAccount(myAccount);
-            if (!myContextHolder.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently();
-            builder.logLoadResult(method);
-            return builder;
-        }
-
-        static Builder fromMyAccount(MyAccount ma) {
-            return new Builder(ma);
-        }
-
-        private Builder(MyAccount myAccount) {
-            this.myAccount = myAccount;
-        }
-
-        private void fixInconsistenciesWithChangedEnvironmentSilently() {
-            boolean changed = false;
-            if (isPersistent() && myAccount.actor.actorId == 0) {
-                changed = true;
-                assignActorId();
+    /** Companion class used to load/create/change/delete [MyAccount]'s data  */
+    class Builder private constructor(@field:Volatile private var myAccount: MyAccount?) : Parcelable, TaggedClass {
+        private fun fixInconsistenciesWithChangedEnvironmentSilently() {
+            var changed = false
+            if (isPersistent() && myAccount.actor.actorId == 0L) {
+                changed = true
+                assignActorId()
                 MyLog.i(this, "MyAccount '" + myAccount.getAccountName()
-                        + "' was not connected to the Actor table. actorId=" + myAccount.actor.actorId);
+                        + "' was not connected to the Actor table. actorId=" + myAccount.actor.actorId)
             }
             if (!myAccount.getCredentialsPresent()
                     && myAccount.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
-                MyLog.i(this, "Account's credentials were lost?! Fixing...");
-                setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
-                changed = true;
+                MyLog.i(this, "Account's credentials were lost?! Fixing...")
+                setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
+                changed = true
             }
             if (changed && isPersistent()) {
-                saveSilently();
+                saveSilently()
             }
         }
 
-        private void logLoadResult(String method) {
+        private fun logLoadResult(method: String?) {
             if (myAccount.isValid()) {
-                MyLog.v(this, () -> method + " Loaded " + this.toString());
+                MyLog.v(this) { "$method Loaded $this" }
             } else {
-                MyLog.i(this, method + " Failed to load: Invalid account; " + this + "\n" +
-                        MyLog.getStackTrace(new Exception()));
+                MyLog.i(this, """$method Failed to load: Invalid account; $this
+${MyLog.getStackTrace(Exception())}""")
             }
         }
 
-
-        public void setOrigin(Origin origin) {
-            rebuildMyAccount(origin, getUniqueName());
+        fun setOrigin(origin: Origin?) {
+            rebuildMyAccount(origin, getUniqueName())
         }
 
-        public void setUniqueName(String uniqueName) {
-            rebuildMyAccount(getOrigin(), uniqueName);
+        fun setUniqueName(uniqueName: String?) {
+            rebuildMyAccount(getOrigin(), uniqueName)
         }
 
-        public Builder setOAuth(boolean isOauthBoolean) {
-            TriState isOauth = isOauthBoolean == getOrigin().isOAuthDefault()
-                    ? TriState.UNKNOWN
-                    : TriState.fromBoolean(isOauthBoolean);
-            myAccount.setOAuth(isOauth);
-            return this;
+        fun setOAuth(isOauthBoolean: Boolean): Builder? {
+            val isOauth = if (isOauthBoolean == getOrigin().isOAuthDefault()) TriState.UNKNOWN else TriState.Companion.fromBoolean(isOauthBoolean)
+            myAccount.setOAuth(isOauth)
+            return this
         }
 
-        void rebuildMyAccount(MyContext myContext) {
-            rebuildMyAccount(myContext.origins().fromName(getOrigin().getName()), getUniqueName());
+        fun rebuildMyAccount(myContext: MyContext?) {
+            rebuildMyAccount(myContext.origins().fromName(getOrigin().getName()), getUniqueName())
         }
 
-        private void rebuildMyAccount(Origin origin, String uniqueName) {
-            rebuildMyAccount(AccountName.fromOriginAndUniqueName(origin, uniqueName));
+        private fun rebuildMyAccount(origin: Origin?, uniqueName: String?) {
+            rebuildMyAccount(AccountName.Companion.fromOriginAndUniqueName(origin, uniqueName))
         }
 
-        void rebuildMyAccount(AccountName accountName) {
-            MyAccount ma = accountName.myContext().accounts().fromAccountName(accountName.getName());
-            myAccount = ma.isValid()
-                    ? ma
-                    : new MyAccount(getAccount().data.withAccountName(accountName));
+        fun rebuildMyAccount(accountName: AccountName?) {
+            val ma = accountName.myContext().accounts().fromAccountName(accountName.getName())
+            myAccount = if (ma.isValid) ma else MyAccount(getAccount().data.withAccountName(accountName))
         }
 
-        public Origin getOrigin() {
-            return myAccount.getOrigin();
+        fun getOrigin(): Origin? {
+            return myAccount.getOrigin()
         }
 
-        public String getUniqueName() {
-            return getAccount().getOAccountName().getUniqueName();
+        fun getUniqueName(): String? {
+            return getAccount().getOAccountName().getUniqueName()
         }
 
-        public String getPassword() {
-            return getAccount().getPassword();
+        fun getPassword(): String? {
+            return getAccount().getPassword()
         }
 
-        boolean isOAuth() {
-            return getAccount().isOAuth();
+        fun isOAuth(): Boolean {
+            return getAccount().isOAuth()
         }
 
-        public MyAccount getAccount() {
-            return myAccount;
+        fun getAccount(): MyAccount? {
+            return myAccount
         }
 
         /**
          * @return Is this object persistent
          */
-        public boolean isPersistent() {
-            return myAccount.isPersistent();
+        fun isPersistent(): Boolean {
+            return myAccount.isPersistent()
         }
 
         /**
          * Delete all Account's data
          * @return true = success
          */
-        boolean deleteData() {
-            boolean ok = true;
-
-            if (isPersistent() && myAccount.actor.actorId != 0) {
+        fun deleteData(): Boolean {
+            val ok = true
+            if (isPersistent() && myAccount.actor.actorId != 0L) {
                 // TODO: Delete data for this Account ?!
-                myAccount.actor.actorId = 0;
+                myAccount.actor.actorId = 0
             }
-            setAndroidAccountDeleted();
-            return ok;
+            setAndroidAccountDeleted()
+            return ok
         }
 
-        private void setAndroidAccountDeleted() {
-            myAccount.data.setDataBoolean(KEY_DELETED, true);
+        private fun setAndroidAccountDeleted() {
+            myAccount.data.setDataBoolean(KEY_DELETED, true)
         }
 
-        public void setSyncedAutomatically(boolean syncedAutomatically) {
-            myAccount.isSyncedAutomatically = syncedAutomatically;
+        fun setSyncedAutomatically(syncedAutomatically: Boolean) {
+            myAccount.isSyncedAutomatically = syncedAutomatically
         }
 
-        public void setOrder(int order) {
-            this.myAccount.order = order;
+        fun setOrder(order: Int) {
+            myAccount.order = order
         }
 
-        void save() {
+        fun save() {
             if (saveSilently().getOrElse(false) && myContext().isReady()) {
-                MyPreferences.onPreferencesChanged();
+                MyPreferences.onPreferencesChanged()
             }
         }
 
-        /** Save this MyAccount to AccountManager */
-        Try<Boolean> saveSilently() {
-            if (myAccount.isValid()) {
-                return myAccount.getNewOrExistingAndroidAccount()
-                        .onSuccess(account -> myAccount.data.updateFrom(myAccount))
-                        .flatMap(account -> myAccount.data.saveIfChanged(account))
-                        .onFailure(e -> myAccount.data.setPersistent(false))
-                        .onSuccess(result1 -> {
-                            MyLog.v(this, () -> (result1 ? " Saved " : " Didn't change ") +
-                                    this.toString());
-                            myContext().accounts().addIfAbsent(myAccount);
-                            if (myContext().isReady() && !myAccount.hasAnyTimelines()) {
-                                new TimelineSaver().setAddDefaults(true).setAccount(myAccount).execute(myContext());
+        /** Save this MyAccount to AccountManager  */
+        fun saveSilently(): Try<Boolean?>? {
+            return if (myAccount.isValid()) {
+                myAccount.getNewOrExistingAndroidAccount()
+                        .onSuccess(Consumer { account: Account? -> myAccount.data.updateFrom(myAccount) })
+                        .flatMap { account: Account? -> myAccount.data.saveIfChanged(account) }
+                        .onFailure { e: Throwable? -> myAccount.data.isPersistent = false }
+                        .onSuccess { result1: Boolean? ->
+                            MyLog.v(this) {
+                                (if (result1) " Saved " else " Didn't change ") +
+                                        this.toString()
                             }
-                        })
-                        .onFailure(e -> MyLog.v(this, () -> "Failed to save" + this.toString() +
-                                "; Error: " + e.getMessage()));
+                            myContext().accounts().addIfAbsent(myAccount)
+                            if (myContext().isReady() && !myAccount.hasAnyTimelines()) {
+                                TimelineSaver().setAddDefaults(true).setAccount(myAccount).execute(myContext())
+                            }
+                        }
+                        .onFailure { e: Throwable? ->
+                            MyLog.v(this) {
+                                "Failed to save" + this.toString() +
+                                        "; Error: " + e.message
+                            }
+                        }
             } else {
-                MyLog.v(this, () -> "Didn't save invalid account: " + myAccount);
-                return Try.failure(new Exception());
+                MyLog.v(this) { "Didn't save invalid account: $myAccount" }
+                Try.failure(Exception())
             }
         }
 
-        Try<Builder> getOriginConfig() {
-            return getConnection().getConfig().map(config -> {
+        fun getOriginConfig(): Try<Builder?>? {
+            return getConnection().getConfig().map { config: OriginConfig? ->
                 if (config.nonEmpty()) {
-                    Origin.Builder originBuilder = new Origin.Builder(myAccount.getOrigin());
-                    originBuilder.save(config);
-                    MyLog.v(this, "Get Origin config succeeded " + config);
+                    val originBuilder = Origin.Builder(myAccount.getOrigin())
+                    originBuilder.save(config)
+                    MyLog.v(this, "Get Origin config succeeded $config")
                 }
-                return this;
-            });
+                this
+            }
         }
 
-        public Try<Builder> onCredentialsVerified(@NonNull Actor actor) {
-            boolean ok = actor.nonEmpty() && StringUtil.nonEmpty(actor.oid) && actor.isUsernameValid();
-            boolean errorSettingUsername = !ok;
-
-            boolean credentialsOfOtherAccount = false;
+        fun onCredentialsVerified(actor: Actor): Try<Builder?>? {
+            var ok = actor.nonEmpty() && StringUtil.nonEmpty(actor.oid) && actor.isUsernameValid
+            val errorSettingUsername = !ok
+            var credentialsOfOtherAccount = false
             // We are comparing usernames ignoring case, but we fix correct case
             // as the Originating system tells us.
             if (ok && !StringUtil.isEmpty(myAccount.getUsername())
-                    && myAccount.data.accountName.username.compareToIgnoreCase(actor.getUsername()) != 0) {
+                    && myAccount.data.accountName.username.compareTo(actor.username, ignoreCase = true) != 0) {
                 // Credentials belong to other Account ??
-                ok = false;
-                credentialsOfOtherAccount = true;
+                ok = false
+                credentialsOfOtherAccount = true
             }
-
             if (ok) {
-                setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED);
-                actor.lookupActorId();
-                actor.lookupUser();
-                actor.user.setIsMyUser(TriState.TRUE);
-                actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
-                myAccount.actor = actor;
-                if (DatabaseConverterController.isUpgrading()) {
-                    MyLog.v(this, "Upgrade in progress");
-                    myAccount.actor.actorId = myAccount.data.getDataLong(KEY_ACTOR_ID, myAccount.actor.actorId);
+                setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED)
+                actor.lookupActorId()
+                actor.lookupUser()
+                actor.user.setIsMyUser(TriState.TRUE)
+                actor.updatedDate = MyLog.uniqueCurrentTimeMS()
+                myAccount.actor = actor
+                if (DatabaseConverterController.Companion.isUpgrading()) {
+                    MyLog.v(this, "Upgrade in progress")
+                    myAccount.actor.actorId = myAccount.data.getDataLong(KEY_ACTOR_ID, myAccount.actor.actorId)
                 } else {
-                    new DataUpdater(myAccount).onActivity(actor.update(actor));
+                    DataUpdater(myAccount).onActivity(actor.update(actor))
                 }
                 if (!isPersistent()) {
                     // Now we know the name (or proper case of the name) of this Account!
-                    boolean sameName = myAccount.data.accountName.getUniqueName().equals(actor.getUniqueName());
+                    val sameName = myAccount.data.accountName.uniqueName == actor.uniqueName
                     if (!sameName) {
-                        MyLog.i(this, "name changed from " + myAccount.data.accountName.getUniqueName() +
-                                " to " + actor.getUniqueName());
-                        myAccount.data.updateFrom(myAccount);
-                        AccountData newData = myAccount.data.withAccountName(
-                                AccountName.fromOriginAndUniqueName(myAccount.getOrigin(), actor.getUniqueName()));
-                        myAccount = loadFromAccountData(newData, "onCredentialsVerified").myAccount;
+                        MyLog.i(this, "name changed from " + myAccount.data.accountName.uniqueName +
+                                " to " + actor.uniqueName)
+                        myAccount.data.updateFrom(myAccount)
+                        val newData = myAccount.data.withAccountName(
+                                AccountName.Companion.fromOriginAndUniqueName(myAccount.getOrigin(), actor.uniqueName))
+                        myAccount = loadFromAccountData(newData, "onCredentialsVerified").myAccount
                     }
-                    save();
+                    save()
                 }
             }
             if (!ok || !myAccount.getCredentialsPresent()) {
-                setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED);
+                setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
             }
-            save();
-
+            save()
             if (credentialsOfOtherAccount) {
-                MyLog.w(this, myContext().context().getText(R.string.error_credentials_of_other_user) + ": " +
-                        actor.getUniqueNameWithOrigin() +
+                MyLog.w(this, myContext().context().getText(R.string.error_credentials_of_other_user).toString() + ": " +
+                        actor.uniqueNameWithOrigin +
                         " account name: " + myAccount.getAccountName() +
-                        " vs username: " + actor.getUsername());
-                return Try.failure(new ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT, actor.getUniqueNameWithOrigin()));
+                        " vs username: " + actor.username)
+                return Try.failure(ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT, actor.uniqueNameWithOrigin))
             }
             if (errorSettingUsername) {
-                String msg = myContext().context().getText(R.string.error_set_username) + " " + actor.getUsername();
-                MyLog.w(this, msg);
-                return Try.failure(new ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg));
+                val msg = myContext().context().getText(R.string.error_set_username).toString() + " " + actor.username
+                MyLog.w(this, msg)
+                return Try.failure(ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg))
             }
-            return Try.success(this);
+            return Try.success(this)
         }
 
-        public void setUserTokenWithSecret(String token, String secret) {
-            getConnection().setUserTokenWithSecret(token, secret);
+        fun setUserTokenWithSecret(token: String?, secret: String?) {
+            getConnection().setUserTokenWithSecret(token, secret)
         }
 
-        public void setCredentialsVerificationStatus(CredentialsVerificationStatus cv) {
-            myAccount.credentialsVerified = cv;
+        fun setCredentialsVerificationStatus(cv: CredentialsVerificationStatus?) {
+            myAccount.credentialsVerified = cv
             if (cv != CredentialsVerificationStatus.SUCCEEDED) {
-                getConnection().clearAuthInformation();
+                getConnection().clearAuthInformation()
             }
         }
 
-        public void registerClient() throws ConnectionException {
-            MyLog.v(this, () -> "Registering client application for " + myAccount.getUsername());
-            myAccount.setConnection();
-            getConnection().registerClientForAccount();
+        @Throws(ConnectionException::class)
+        fun registerClient() {
+            MyLog.v(this) { "Registering client application for " + myAccount.getUsername() }
+            myAccount.setConnection()
+            getConnection().registerClientForAccount()
         }
 
-        Connection getConnection() {
-            return myAccount.getConnection().isEmpty()
-                ? Connection.fromOrigin(getOrigin(), TriState.fromBoolean(isOAuth()))
-                : myAccount.getConnection();
+        fun getConnection(): Connection? {
+            return if (myAccount.getConnection().isEmpty()) Connection.Companion.fromOrigin(getOrigin(), TriState.Companion.fromBoolean(isOAuth())) else myAccount.getConnection()
         }
 
-        public void setPassword(String password) {
+        fun setPassword(password: String?) {
             if (StringUtil.notEmpty(password, "").compareTo(getConnection().getPassword()) != 0) {
-                setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER);
-                getConnection().setPassword(password);
+                setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
+                getConnection().setPassword(password)
             }
         }
 
-        private void assignActorId() {
-            myAccount.actor.actorId = myAccount.getOrigin().usernameToId(myAccount.getUsername());
-            if (myAccount.actor.actorId == 0) {
+        private fun assignActorId() {
+            myAccount.actor.actorId = myAccount.getOrigin().usernameToId(myAccount.getUsername())
+            if (myAccount.actor.actorId == 0L) {
                 try {
-                    new DataUpdater(myAccount).onActivity(myAccount.actor.update(myAccount.actor));
-                } catch (Exception e) {
-                    MyLog.e(this, "assignUserId to " + myAccount, e);
+                    DataUpdater(myAccount).onActivity(myAccount.actor.update(myAccount.actor))
+                } catch (e: Exception) {
+                    MyLog.e(this, "assignUserId to $myAccount", e)
                 }
             }
         }
 
-        @Override
-        public int describeContents() {
-            return 0;
+        override fun describeContents(): Int {
+            return 0
         }
 
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            save();
-            dest.writeParcelable(myAccount.data, flags);
+        override fun writeToParcel(dest: Parcel?, flags: Int) {
+            save()
+            dest.writeParcelable(myAccount.data, flags)
         }
 
-        public static final Creator<Builder> CREATOR = new Creator<Builder>() {
-            @Override
-            public Builder createFromParcel(Parcel source) {
-                return loadFromAccountData(AccountData.CREATOR.createFromParcel(source), "createFromParcel");
+        override fun toString(): String {
+            return myAccount.toString()
+        }
+
+        fun clearClientKeys() {
+            myAccount.connection.clearClientKeys()
+        }
+
+        fun setSyncFrequencySeconds(syncFrequencySeconds: Long) {
+            myAccount.syncFrequencySeconds = syncFrequencySeconds
+        }
+
+        fun myContext(): MyContext? {
+            return myAccount.data.myContext()
+        }
+
+        override fun classTag(): String? {
+            return TAG
+        }
+
+        companion object {
+            private val TAG: String? = MyAccount.TAG + "." + Builder::class.java.simpleName
+
+            /**
+             * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
+             */
+            fun fromAccountName(accountName: AccountName?): Builder? {
+                return fromMyAccount(myAccountFromName(accountName))
             }
 
-            @Override
-            public Builder[] newArray(int size) {
-                return new Builder[size];
+            /**
+             * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
+             */
+            private fun myAccountFromName(accountName: AccountName?): MyAccount? {
+                val persistentAccount = accountName.myContext().accounts().fromAccountName(accountName)
+                return if (persistentAccount.isValid) persistentAccount else MyAccount(accountName)
             }
-        };
 
-        @Override
-        public String toString() {
-            return myAccount.toString();
-        }
+            /** Loads existing account from Persistence  */
+            fun loadFromAndroidAccount(myContext: MyContext?, account: Account): Builder? {
+                return loadFromAccountData(AccountData.Companion.fromAndroidAccount(myContext, account), "fromAndroidAccount")
+            }
 
-        public void clearClientKeys() {
-            myAccount.connection.clearClientKeys();
-        }
+            fun loadFromAccountData(accountData: AccountData, method: String?): Builder? {
+                val myAccount = MyAccount(accountData)
+                val builder = fromMyAccount(myAccount)
+                if (!MyContextHolder.Companion.myContextHolder.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently()
+                builder.logLoadResult(method)
+                return builder
+            }
 
-        void setSyncFrequencySeconds(long syncFrequencySeconds) {
-            myAccount.syncFrequencySeconds = syncFrequencySeconds;
-        }
+            fun fromMyAccount(ma: MyAccount?): Builder? {
+                return Builder(ma)
+            }
 
-        public MyContext myContext() {
-            return myAccount.data.myContext();
-        }
+            val CREATOR: Parcelable.Creator<Builder?>? = object : Parcelable.Creator<Builder?> {
+                override fun createFromParcel(source: Parcel?): Builder? {
+                    return loadFromAccountData(AccountData.Companion.this.createFromParcel(source), "createFromParcel")
+                }
 
-        @Override
-        public String classTag() {
-            return TAG;
+                override fun newArray(size: Int): Array<Builder?>? {
+                    return arrayOfNulls<Builder?>(size)
+                }
+            }
         }
+    }
+
+    companion object {
+        private val TAG: String? = MyAccount::class.java.simpleName
+        val EMPTY: MyAccount? = MyAccount(AccountName.Companion.getEmpty())
+        val KEY_ACCOUNT_NAME: String? = "account_name"
+
+        /** Username for the account  */
+        val KEY_USERNAME: String? = "username"
+
+        /** A name that is unique for an origin  */
+        val KEY_UNIQUE_NAME: String? = "unique_name"
+
+        /** [ActorTable._ID] in our System.  */
+        val KEY_ACTOR_ID: String? = "user_id"
+
+        /** [ActorTable.ACTOR_OID] in Microblogging System.  */
+        val KEY_ACTOR_OID: String? = "user_oid"
+
+        /** Is OAuth on for this MyAccount?  */
+        val KEY_OAUTH: String? = "oauth"
+
+        /** This account is in the process of deletion and should be ignored...  */
+        val KEY_DELETED: String? = "deleted"
+
+        /** @see android.content.ContentResolver.getIsSyncable
+         */
+        val KEY_IS_SYNCABLE: String? = "is_syncable"
+
+        /** This corresponds to turning syncing on/off in Android Accounts
+         * @see android.content.ContentResolver.getSyncAutomatically
+         */
+        val KEY_IS_SYNCED_AUTOMATICALLY: String? = "sync_automatically"
+        val KEY_ORDER: String? = "order"
+        fun fromBundle(myContext: MyContext?, bundle: Bundle?): MyAccount? {
+            return if (bundle == null) EMPTY else myContext.accounts().fromAccountName(bundle.getString(IntentExtra.ACCOUNT_NAME.key))
+        }
+    }
+
+    init {
+        actor = Actor.Companion.load(data.myContext(), data.getDataLong(KEY_ACTOR_ID, 0L), false,
+                Supplier<Actor?> {
+                    Actor.Companion.fromOid(data.accountName.getOrigin(), data.getDataString(KEY_ACTOR_OID))
+                            .withUniqueName(data.accountName.uniqueName)
+                            .lookupUser()
+                })
+        deleted = data.getDataBoolean(KEY_DELETED, false)
+        syncFrequencySeconds = data.getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0L)
+        isSyncable = data.getDataBoolean(KEY_IS_SYNCABLE, true)
+        isSyncedAutomatically = data.getDataBoolean(KEY_IS_SYNCED_AUTOMATICALLY, true)
+        setOAuth(TriState.Companion.fromBoolean(data.getDataBoolean(KEY_OAUTH, getOrigin().isOAuthDefault())))
+        setConnection()
+        getConnection().setPassword(data.getDataString(Connection.Companion.KEY_PASSWORD))
+        credentialsVerified = CredentialsVerificationStatus.Companion.load(data)
+        order = data.getDataInt(KEY_ORDER, 1)
     }
 }

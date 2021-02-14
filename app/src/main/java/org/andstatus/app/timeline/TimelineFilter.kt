@@ -13,25 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.note.KeywordsFilter
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.SharedPreferencesUtil
 
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.note.KeywordsFilter;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.SharedPreferencesUtil;
+class TimelineFilter internal constructor(timeline: Timeline?) {
+    val keywordsFilter: KeywordsFilter?
+    val hideRepliesNotToMeOrFriends: Boolean
+    val searchQuery: KeywordsFilter?
 
-public class TimelineFilter {
-    public final KeywordsFilter keywordsFilter;
-    public final boolean hideRepliesNotToMeOrFriends;
-    public final KeywordsFilter searchQuery;
-
-    TimelineFilter(Timeline timeline) {
-        keywordsFilter = new KeywordsFilter(
-                SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS, ""));
-        hideRepliesNotToMeOrFriends = timeline.getTimelineType() == TimelineType.HOME
-                && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false);
-        searchQuery = new KeywordsFilter(timeline.getSearchQuery());
+    init {
+        keywordsFilter = KeywordsFilter(
+                SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS, ""))
+        hideRepliesNotToMeOrFriends = (timeline.getTimelineType() == TimelineType.HOME
+                && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false))
+        searchQuery = KeywordsFilter(timeline.getSearchQuery())
     }
 }

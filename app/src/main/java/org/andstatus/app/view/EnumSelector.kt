@@ -13,70 +13,54 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.view
 
-package org.andstatus.app.view;
-
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-
-import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
-import org.andstatus.app.lang.SelectableEnum;
-import org.andstatus.app.lang.SelectableEnumList;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import android.content.Intent
+import android.os.Bundle
+import android.widget.AdapterView.OnItemClickListener
+import org.andstatus.app.ActivityRequestCode
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.R
+import org.andstatus.app.lang.SelectableEnum
+import org.andstatus.app.lang.SelectableEnumList
+import java.util.*
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class EnumSelector<E extends Enum<E> & SelectableEnum> extends SelectorDialog {
-    private static final String KEY_VISIBLE_NAME = "visible_name";
-    private SelectableEnumList<E> enumList = null;
-
-    public static <E extends Enum<E> & SelectableEnum> SelectorDialog newInstance(
-            ActivityRequestCode requestCode, Class<E> clazz) {
-        EnumSelector selector = new EnumSelector();
-        selector.setRequestCode(requestCode);
-        selector.enumList = SelectableEnumList.newInstance(clazz);
-        return selector;
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+class EnumSelector<E> : SelectorDialog() where E : Enum<E?>?, E : SelectableEnum? {
+    private var enumList: SelectableEnumList<E?>? = null
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
         if (enumList == null || enumList.getDialogTitleResId() == 0) {  // We don't save a state of the dialog
-            dismiss();
-            return;
+            dismiss()
+            return
         }
-        setTitle(enumList.getDialogTitleResId());
-        setListAdapter(newListAdapter());
-
-        getListView().setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                returnSelected(new Intent().putExtra(IntentExtra.SELECTABLE_ENUM.key, enumList.get(position).getCode()));
-            }
-        });
+        setTitle(enumList.getDialogTitleResId())
+        listAdapter = newListAdapter()
+        getListView().onItemClickListener = OnItemClickListener { parent, view, position, id -> returnSelected(Intent().putExtra(IntentExtra.SELECTABLE_ENUM.key, enumList.get(position).getCode())) }
     }
 
-    private MySimpleAdapter newListAdapter() {
-        List<Map<String, String>> list = new ArrayList<>();
-        for(SelectableEnum value : enumList.getList()){
-            Map<String, String> map = new HashMap<>();
-            map.put(KEY_VISIBLE_NAME, value.title(getActivity()).toString());
-            list.add(map);
+    private fun newListAdapter(): MySimpleAdapter? {
+        val list: MutableList<MutableMap<String?, String?>?> = ArrayList()
+        for (value in enumList.getList()) {
+            val map: MutableMap<String?, String?> = HashMap()
+            map[KEY_VISIBLE_NAME] = value.title(activity).toString()
+            list.add(map)
         }
-
-        return new MySimpleAdapter(getActivity(),
+        return MySimpleAdapter(activity,
                 list,
-                R.layout.accountlist_item,
-                new String[] {KEY_VISIBLE_NAME},
-                new int[] {R.id.visible_name}, true);
+                R.layout.accountlist_item, arrayOf(KEY_VISIBLE_NAME), intArrayOf(R.id.visible_name), true)
+    }
+
+    companion object {
+        private val KEY_VISIBLE_NAME: String? = "visible_name"
+        fun <E> newInstance(
+                requestCode: ActivityRequestCode?, clazz: Class<E?>?): SelectorDialog? where E : Enum<E?>?, E : SelectableEnum? {
+            val selector: EnumSelector<*> = EnumSelector<Any?>()
+            selector.setRequestCode(requestCode)
+            selector.enumList = SelectableEnumList.Companion.newInstance(clazz)
+            return selector
+        }
     }
 }

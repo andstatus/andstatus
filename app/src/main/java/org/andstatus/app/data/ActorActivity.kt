@@ -13,149 +13,146 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data
 
-package org.andstatus.app.data;
-
-import android.database.sqlite.SQLiteDatabase;
-import android.provider.BaseColumns;
-
-import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.util.MyLog;
-
-import java.util.Date;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
+import android.database.sqlite.SQLiteDatabase
+import android.provider.BaseColumns
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.ActorActivity
+import org.andstatus.app.database.table.ActivityTable
+import org.andstatus.app.database.table.ActorTable
+import org.andstatus.app.util.MyLog
+import java.util.*
 
 /**
  * Manages minimal information about the latest downloaded note by one Actor (or a User represented by the Actor).
  * We count notes where the Actor is either a Actor or an Author
  */
-public final class ActorActivity {
-    private static final String TAG = ActorActivity.class.getSimpleName();
+class ActorActivity {
+    private var actorId: Long = 0
 
-    private long actorId = 0;
-    
     /**
      * The id of the latest downloaded Note by this Actor
      * 0 - none were downloaded
      */
-    private long lastActivityId = 0;
+    private var lastActivityId: Long = 0
+
     /**
      * 0 - none were downloaded
      */
-    private long lastActivityDate = 0;
-    
+    private var lastActivityDate: Long = 0
+
     /**
      * We will update only what really changed
      */
-    private boolean changed = false;
-    
+    private var changed = false
+
     /**
      * Retrieve from the database information about the last downloaded activity by this Actor
      */
-    public ActorActivity(long actorIdIn) {
-        actorId = actorIdIn;
-        if (actorId == 0) {
-            throw new IllegalArgumentException(TAG + ": actorId==0");
-        }
-        lastActivityId = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId);
-        lastActivityDate = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_DATE, actorId);
+    constructor(actorIdIn: Long) {
+        actorId = actorIdIn
+        require(actorId != 0L) { "$TAG: actorId==0" }
+        lastActivityId = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId)
+        lastActivityDate = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_DATE, actorId)
     }
 
     /**
      * All information is supplied in this constructor, so it doesn't lookup anything in the database
      */
-    public ActorActivity(long actorIdIn, long activityId, long activityDate) {
-        if (actorIdIn != 0 && activityId != 0) {
-            actorId = actorIdIn;
-            onNewActivity(activityId, activityDate);
+    constructor(actorIdIn: Long, activityId: Long, activityDate: Long) {
+        if (actorIdIn != 0L && activityId != 0L) {
+            actorId = actorIdIn
+            onNewActivity(activityId, activityDate)
         }
     }
-    
-    public long getActorId() {
-        return actorId;
+
+    fun getActorId(): Long {
+        return actorId
     }
-    
+
     /**
      * @return Id of the last downloaded note by this Actor
      */
-    public long getLastActivityId() {
-        return lastActivityId;
+    fun getLastActivityId(): Long {
+        return lastActivityId
     }
 
     /**
      * @return Sent Date of the last downloaded note by this Actor
      */
-    public long getLastActivityDate() {
-        return lastActivityDate;
+    fun getLastActivityDate(): Long {
+        return lastActivityDate
     }
 
     /** If this note is newer than any we got earlier, remember it
      * @param updatedDateIn may be 0 (will be retrieved here)
      */
-    public void onNewActivity(long activityId, long updatedDateIn) {
-        if (actorId == 0 || activityId == 0) {
-            return; 
+    fun onNewActivity(activityId: Long, updatedDateIn: Long) {
+        if (actorId == 0L || activityId == 0L) {
+            return
         }
-        long activityDate = updatedDateIn;
-        if (activityDate == 0) {
-            activityDate = MyQuery.activityIdToLongColumnValue(ActivityTable.UPDATED_DATE, activityId);
+        var activityDate = updatedDateIn
+        if (activityDate == 0L) {
+            activityDate = MyQuery.activityIdToLongColumnValue(ActivityTable.UPDATED_DATE, activityId)
         }
         if (activityDate > lastActivityDate) {
-            lastActivityDate = activityDate;
-            lastActivityId = activityId;
-            changed = true;
+            lastActivityDate = activityDate
+            lastActivityId = activityId
+            changed = true
         }
     }
-    
+
     /**
      * Persist the info into the Database
      * @return true if succeeded
      */
-    public boolean save() {
-        MyLog.v(this, () -> "actorId " + actorId + ": " +
-                        MyQuery.actorIdToWebfingerId(myContextHolder.getNow(), actorId)
-                + " Latest activity update at " + (new Date(getLastActivityDate()).toString())
-                + (changed ? "" : " not changed")
-                );
+    fun save(): Boolean {
+        MyLog.v(this
+        ) {
+            ("actorId " + actorId + ": " +
+                    MyQuery.actorIdToWebfingerId(MyContextHolder.Companion.myContextHolder.getNow(), actorId)
+                    + " Latest activity update at " + Date(getLastActivityDate()).toString()
+                    + if (changed) "" else " not changed")
+        }
         if (!changed) {
-            return true;
+            return true
         }
 
         // As a precaution compare with stored values ones again
-        long activityDate = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_DATE, actorId);
+        val activityDate = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_DATE, actorId)
         if (activityDate > lastActivityDate) {
-            lastActivityDate = activityDate;
-            lastActivityId = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId);
-            MyLog.v(this, () -> "There is newer information in the database. Actor " + actorId + ": "
-                    + MyQuery.actorIdToWebfingerId(myContextHolder.getNow(), actorId)
-                    + " Latest activity at " + (new Date(getLastActivityDate()).toString()));
-            changed = false;
-            return true;
-        }
-
-        String sql = "";
-        try {
-            sql += ActorTable.ACTOR_ACTIVITY_ID + "=" + lastActivityId;
-            sql += ", " + ActorTable.ACTOR_ACTIVITY_DATE + "=" + lastActivityDate;
-
-            sql = "UPDATE " + ActorTable.TABLE_NAME + " SET " + sql
-                    + " WHERE " + BaseColumns._ID + "=" + actorId;
-
-            SQLiteDatabase db = myContextHolder.getNow().getDatabase();
-            if (db == null) {
-                MyLog.databaseIsNull(() -> "Save " + this);
-                return false;
+            lastActivityDate = activityDate
+            lastActivityId = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId)
+            MyLog.v(this) {
+                ("There is newer information in the database. Actor " + actorId + ": "
+                        + MyQuery.actorIdToWebfingerId(MyContextHolder.Companion.myContextHolder.getNow(), actorId)
+                        + " Latest activity at " + Date(getLastActivityDate()).toString())
             }
-            db.execSQL(sql);
-            
-            changed = false;
-        } catch (Exception e) {
-            MyLog.w(this, "save: sql='" + sql + "'", e);
-            return false;
+            changed = false
+            return true
         }
-        return true;
+        var sql = ""
+        try {
+            sql += ActorTable.ACTOR_ACTIVITY_ID + "=" + lastActivityId
+            sql += ", " + ActorTable.ACTOR_ACTIVITY_DATE + "=" + lastActivityDate
+            sql = ("UPDATE " + ActorTable.TABLE_NAME + " SET " + sql
+                    + " WHERE " + BaseColumns._ID + "=" + actorId)
+            val db: SQLiteDatabase = MyContextHolder.Companion.myContextHolder.getNow().getDatabase()
+            if (db == null) {
+                MyLog.databaseIsNull { "Save $this" }
+                return false
+            }
+            db.execSQL(sql)
+            changed = false
+        } catch (e: Exception) {
+            MyLog.w(this, "save: sql='$sql'", e)
+            return false
+        }
+        return true
+    }
+
+    companion object {
+        private val TAG: String? = ActorActivity::class.java.simpleName
     }
 }

@@ -13,140 +13,110 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline.meta
 
-package org.andstatus.app.timeline.meta;
-
-import org.andstatus.app.MyActivity;
-import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtil;
+import org.andstatus.app.MyActivity
+import org.andstatus.app.R
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.StringUtil
 
 /**
  * Data to show on UI. May be created on UI thread
  * @author yvolk@yurivolkov.com
  */
-public class TimelineTitle {
-    public enum Destination {
-        TIMELINE_ACTIVITY,
-        DEFAULT
+class TimelineTitle private constructor(val title: String?, val subTitle: String?, // Optional names 
+                                        val accountName: String?, val originName: String?) {
+    enum class Destination {
+        TIMELINE_ACTIVITY, DEFAULT
     }
 
-
-    public final String title;
-    public final String subTitle;
-
-    // Optional names 
-    public final String accountName;
-    public final String originName;
-
-    private TimelineTitle(String title, String subtitle, String accountName, String originName) {
-        this.title = title;
-        this.subTitle = subtitle;
-        this.accountName = accountName;
-        this.originName = originName;
+    fun updateActivityTitle(activity: MyActivity?, additionalTitleText: String?) {
+        activity.setTitle(if (StringUtil.nonEmpty(additionalTitleText) && StringUtil.isEmpty(subTitle)) MyStringBuilder.Companion.of(title).withSpace(additionalTitleText) else title)
+        activity.setSubtitle(if (StringUtil.isEmpty(subTitle)) "" else MyStringBuilder.Companion.of(subTitle).withSpace(additionalTitleText))
+        MyLog.v(activity) { "Title: " + toString() }
     }
 
-    public static TimelineTitle from(MyContext myContext, Timeline timeline, MyAccount accountToHide,
-                                     boolean namesAreHidden, Destination destination) {
-        return new TimelineTitle(
-                calcTitle(myContext, timeline, accountToHide, namesAreHidden, destination),
-                calcSubtitle(myContext, timeline, accountToHide, namesAreHidden, destination),
-                timeline.getTimelineType().isForUser() && timeline.myAccountToSync.isValid()
-                        ? timeline.myAccountToSync.toAccountButtonText() : "",
-                timeline.getTimelineType().isAtOrigin() && timeline.getOrigin().isValid()
-                        ? timeline.getOrigin().getName() : ""
-        );
+    override fun toString(): String {
+        return MyStringBuilder.Companion.of(title).withSpace(subTitle).toString()
     }
 
-    public static TimelineTitle from(MyContext myContext, Timeline timeline) {
-        return from(myContext, timeline, MyAccount.EMPTY, true, Destination.DEFAULT);
-    }
-
-    private static String calcTitle(MyContext myContext, Timeline timeline, MyAccount accountToHide,
-                                    boolean namesAreHidden, Destination destination) {
-        if (timeline.isEmpty() && destination == Destination.TIMELINE_ACTIVITY) {
-            return "AndStatus";
+    companion object {
+        @JvmOverloads
+        fun from(myContext: MyContext?, timeline: Timeline?, accountToHide: MyAccount? = MyAccount.Companion.EMPTY,
+                 namesAreHidden: Boolean = true, destination: Destination? = Destination.DEFAULT): TimelineTitle? {
+            return TimelineTitle(
+                    calcTitle(myContext, timeline, accountToHide, namesAreHidden, destination),
+                    calcSubtitle(myContext, timeline, accountToHide, namesAreHidden, destination),
+                    if (timeline.getTimelineType().isForUser && timeline.myAccountToSync.isValid) timeline.myAccountToSync.toAccountButtonText() else "",
+                    if (timeline.getTimelineType().isAtOrigin && timeline.getOrigin().isValid) timeline.getOrigin().name else ""
+            )
         }
 
-        MyStringBuilder title = new MyStringBuilder();
-        if (showActor(timeline, accountToHide, namesAreHidden)) {
-            if (isActorMayBeShownInSubtitle(timeline)) {
-                title.withSpace(timeline.getTimelineType().title(myContext.context()));
+        private fun calcTitle(myContext: MyContext?, timeline: Timeline?, accountToHide: MyAccount?,
+                              namesAreHidden: Boolean, destination: Destination?): String? {
+            if (timeline.isEmpty() && destination == Destination.TIMELINE_ACTIVITY) {
+                return "AndStatus"
+            }
+            val title = MyStringBuilder()
+            if (showActor(timeline, accountToHide, namesAreHidden)) {
+                if (isActorMayBeShownInSubtitle(timeline)) {
+                    title.withSpace(timeline.getTimelineType().title(myContext.context()))
+                } else {
+                    title.withSpace(
+                            timeline.getTimelineType().title(myContext.context(), getActorName(timeline)))
+                }
             } else {
-                title.withSpace(
-                        timeline.getTimelineType().title(myContext.context(), getActorName(timeline)));
+                title.withSpace(timeline.getTimelineType().title(myContext.context()))
+                if (showOrigin(timeline, namesAreHidden)) {
+                    title.withSpaceQuoted(timeline.getSearchQuery())
+                }
             }
-        } else {
-            title.withSpace(timeline.getTimelineType().title(myContext.context()));
-            if (showOrigin(timeline, namesAreHidden)) {
-                title.withSpaceQuoted(timeline.getSearchQuery());
+            return title.toString()
+        }
+
+        private fun isActorMayBeShownInSubtitle(timeline: Timeline?): Boolean {
+            return !timeline.hasSearchQuery() && timeline.getTimelineType().titleResWithParamsId == 0
+        }
+
+        private fun calcSubtitle(myContext: MyContext?, timeline: Timeline?, accountToHide: MyAccount?,
+                                 namesAreHidden: Boolean, destination: Destination?): String? {
+            if (timeline.isEmpty() && destination == Destination.TIMELINE_ACTIVITY) {
+                return ""
             }
-        }
-        return title.toString();
-    }
-
-    private static boolean isActorMayBeShownInSubtitle(Timeline timeline) {
-        return !timeline.hasSearchQuery() && timeline.getTimelineType().titleResWithParamsId == 0;
-    }
-
-    private static String calcSubtitle(MyContext myContext, Timeline timeline, MyAccount accountToHide,
-                                       boolean namesAreHidden, Destination destination) {
-        if (timeline.isEmpty() && destination == Destination.TIMELINE_ACTIVITY) {
-            return "";
-        }
-
-        MyStringBuilder title = new MyStringBuilder();
-        if (showActor(timeline, accountToHide, namesAreHidden)) {
-            if (isActorMayBeShownInSubtitle(timeline)) {
-                title.withSpace(getActorName(timeline));
+            val title = MyStringBuilder()
+            if (showActor(timeline, accountToHide, namesAreHidden)) {
+                if (isActorMayBeShownInSubtitle(timeline)) {
+                    title.withSpace(getActorName(timeline))
+                }
+            } else if (showOrigin(timeline, namesAreHidden)) {
+                title.withSpace(timeline.getTimelineType().scope.timelinePreposition(myContext))
+                title.withSpace(timeline.getOrigin().name)
             }
-        } else if (showOrigin(timeline, namesAreHidden)) {
-            title.withSpace(timeline.getTimelineType().scope.timelinePreposition(myContext));
-            title.withSpace(timeline.getOrigin().getName());
+            if (!showOrigin(timeline, namesAreHidden)) {
+                title.withSpaceQuoted(timeline.getSearchQuery())
+            }
+            if (timeline.isCombined()) {
+                title.withSpace(if (myContext.context() == null) "combined" else myContext.context().getText(R.string.combined_timeline_on))
+            }
+            return title.toString()
         }
-        if (!showOrigin(timeline, namesAreHidden)) {
-            title.withSpaceQuoted(timeline.getSearchQuery());
+
+        private fun getActorName(timeline: Timeline?): String? {
+            return if (timeline.isSyncedByOtherUser()) timeline.actor.actorNameInTimeline else timeline.myAccountToSync.toAccountButtonText()
         }
-        if (timeline.isCombined()) {
-            title.withSpace(myContext.context() == null
-                    ? "combined"
-                    : myContext.context().getText(R.string.combined_timeline_on));
+
+        private fun showActor(timeline: Timeline?, accountToHide: MyAccount?, namesAreHidden: Boolean): Boolean {
+            return (timeline.getTimelineType().isForUser
+                    && !timeline.isCombined() && timeline.actor.nonEmpty()
+                    && timeline.actor.notSameUser(accountToHide.getActor())
+                    && (timeline.actor.user.isMyUser.untrue || namesAreHidden))
         }
-        return title.toString();
-    }
 
-    private static String getActorName(Timeline timeline) {
-        return timeline.isSyncedByOtherUser()
-                ? timeline.actor.getActorNameInTimeline()
-                : timeline.myAccountToSync.toAccountButtonText();
-    }
-
-    private static boolean showActor(Timeline timeline, MyAccount accountToHide, boolean namesAreHidden) {
-        return timeline.getTimelineType().isForUser()
-                && !timeline.isCombined() && timeline.actor.nonEmpty()
-                && timeline.actor.notSameUser(accountToHide.getActor())
-                && (timeline.actor.user.isMyUser().untrue || namesAreHidden);
-    }
-
-    private static boolean showOrigin(Timeline timeline, boolean namesAreHidden) {
-        return timeline.getTimelineType().isAtOrigin() && !timeline.isCombined() && namesAreHidden;
-    }
-
-    public void updateActivityTitle(MyActivity activity, String additionalTitleText) {
-        activity.setTitle(StringUtil.nonEmpty(additionalTitleText) && StringUtil.isEmpty(subTitle)
-                ? MyStringBuilder.of(title).withSpace(additionalTitleText)
-                : title);
-        activity.setSubtitle(StringUtil.isEmpty(subTitle)
-                ? ""
-                : MyStringBuilder.of(subTitle).withSpace(additionalTitleText));
-        MyLog.v(activity, () -> "Title: " + toString());
-    }
-
-    @Override
-    public String toString() {
-        return MyStringBuilder.of(title).withSpace(subTitle).toString();
+        private fun showOrigin(timeline: Timeline?, namesAreHidden: Boolean): Boolean {
+            return timeline.getTimelineType().isAtOrigin && !timeline.isCombined() && namesAreHidden
+        }
     }
 }

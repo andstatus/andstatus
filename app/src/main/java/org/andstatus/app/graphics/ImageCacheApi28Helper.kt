@@ -13,55 +13,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.graphics
 
-package org.andstatus.app.graphics;
-
-import android.annotation.TargetApi;
-import android.graphics.ImageDecoder;
-import android.graphics.drawable.Animatable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.util.Size;
-
-import org.andstatus.app.data.MediaFile;
-import org.andstatus.app.util.MyLog;
+import android.annotation.TargetApi
+import android.graphics.ImageDecoder
+import android.graphics.ImageDecoder.ImageInfo
+import android.graphics.drawable.Animatable
+import android.graphics.drawable.BitmapDrawable
+import android.util.Size
+import org.andstatus.app.data.MediaFile
+import org.andstatus.app.util.MyLog
 
 /** @author yvolk@yurivolkov.com
- * Methods extracted in a separate class to avoid initialization attempts of absent classes  */
+ * Methods extracted in a separate class to avoid initialization attempts of absent classes
+ */
 @TargetApi(28)
-public class ImageCacheApi28Helper {
-
-    static CachedImage animatedFileToCachedImage(ImageCache imageCache, MediaFile mediaFile) {
-        try {
-            ImageDecoder.Source source = ImageDecoder.createSource(mediaFile.downloadFile.getFile());
-            Drawable drawable = ImageDecoder.decodeDrawable(source, (decoder, info, source1) -> {
+object ImageCacheApi28Helper {
+    fun animatedFileToCachedImage(imageCache: ImageCache?, mediaFile: MediaFile?): CachedImage? {
+        return try {
+            val source = ImageDecoder.createSource(mediaFile.downloadFile.file)
+            val drawable = ImageDecoder.decodeDrawable(source) { decoder: ImageDecoder?, info: ImageInfo?, source1: ImageDecoder.Source? ->
                 // To allow drawing bitmaps on Software canvases
-                decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE);
-                setTargetSize(imageCache, mediaFile, decoder, info.getSize());
-            });
-            if (drawable instanceof BitmapDrawable) {
-                return imageCache.bitmapToCachedImage(mediaFile, ((BitmapDrawable) drawable).getBitmap());
+                decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE)
+                setTargetSize(imageCache, mediaFile, decoder, info.getSize())
             }
-            if (drawable instanceof Animatable) {
-                ((Animatable) drawable).start();
+            if (drawable is BitmapDrawable) {
+                return imageCache.bitmapToCachedImage(mediaFile, (drawable as BitmapDrawable).bitmap)
             }
-            return new CachedImage(mediaFile.downloadId, drawable);
-        } catch (Exception e) {
-            MyLog.i( imageCache.TAG, "Failed to decode " + mediaFile, e);
-            return imageCache.imageFileToCachedImage(mediaFile);
+            if (drawable is Animatable) {
+                (drawable as Animatable).start()
+            }
+            CachedImage(mediaFile.downloadId, drawable)
+        } catch (e: Exception) {
+            MyLog.i(ImageCache.Companion.TAG, "Failed to decode $mediaFile", e)
+            imageCache.imageFileToCachedImage(mediaFile)
         }
     }
 
-    private static void setTargetSize(ImageCache imageCache, Object objTag, ImageDecoder decoder, Size imageSize) {
-        int width = imageSize.getWidth();
-        int height = imageSize.getHeight();
+    private fun setTargetSize(imageCache: ImageCache?, objTag: Any?, decoder: ImageDecoder?, imageSize: Size?) {
+        var width = imageSize.getWidth()
+        var height = imageSize.getHeight()
         while (height > imageCache.maxBitmapHeight || width > imageCache.maxBitmapWidth) {
-            height = height * 3 / 4;
-            width = width * 3 / 4;
+            height = height * 3 / 4
+            width = width * 3 / 4
         }
         if (width != imageSize.getWidth()) {
-            MyLog.v(objTag, "Large bitmap " + imageSize + " scaled to " + width + "x" + height);
-            decoder.setTargetSize(width, height);
+            MyLog.v(objTag, "Large bitmap " + imageSize + " scaled to " + width + "x" + height)
+            decoder.setTargetSize(width, height)
         }
     }
 }

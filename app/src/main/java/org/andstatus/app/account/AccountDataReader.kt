@@ -13,18 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.andstatus.app.account;
+package org.andstatus.app.account
 
 /**
- * Interface that allows to read the {@link MyAccount}'s persistent data (including account's connection data) 
+ * Interface that allows to read the [MyAccount]'s persistent data (including account's connection data)
  */
-public interface AccountDataReader {
-
-    boolean dataContains(String key);
-
-    default String getDataString(String key) {
-        return getDataString(key, "");
+interface AccountDataReader {
+    open fun dataContains(key: String?): Boolean
+    fun getDataString(key: String?): String? {
+        return getDataString(key, "")
     }
 
     /**
@@ -32,7 +29,6 @@ public interface AccountDataReader {
      * @param defValue Default value
      * @return Returns null only in case defValue is null
      */
-    String getDataString(String key, String defValue);
-
-    int getDataInt(String key, int defValue);    
+    open fun getDataString(key: String?, defValue: String?): String?
+    open fun getDataInt(key: String?, defValue: Int): Int
 }

@@ -13,16 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.graphics
 
-package org.andstatus.app.graphics;
-
-public enum CacheName {
-    ATTACHED_IMAGE("Attached images"),
-    AVATAR("Avatars");
-
-    final String title;
-
-    CacheName(String title) {
-        this.title = title;
-    }
+enum class CacheName(val title: String?) {
+    ATTACHED_IMAGE("Attached images"), AVATAR("Avatars");
 }

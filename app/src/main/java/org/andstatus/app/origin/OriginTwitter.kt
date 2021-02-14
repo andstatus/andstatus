@@ -13,97 +13,73 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.origin
 
-package org.andstatus.app.origin;
+import android.net.Uri
+import androidx.annotation.StringRes
+import org.andstatus.app.R
+import org.andstatus.app.context.ActorInTimeline
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.net.social.Visibility
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.UriUtils
 
-import android.net.Uri;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
-
-import org.andstatus.app.R;
-import org.andstatus.app.context.ActorInTimeline;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.social.Visibility;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.UriUtils;
-
-class OriginTwitter extends Origin {
-
-    public static final String API_DOT = "api.";
-
-    OriginTwitter(MyContext myContext, OriginType originType) {
-        super(myContext, originType);
-    }
-
+internal class OriginTwitter(myContext: MyContext?, originType: OriginType?) : Origin(myContext, originType) {
     /**
-     * In order to comply with Twitter's "Developer Display Requirements" 
-     *   https://dev.twitter.com/terms/display-requirements
+     * In order to comply with Twitter's "Developer Display Requirements"
+     * https://dev.twitter.com/terms/display-requirements
      * @param resId
      * @return Id of alternative (proprietary) term/phrase
      */
-    @Override
-    public int alternativeTermForResourceId(@StringRes int resId) {
-        int resIdOut;
-        switch (resId) {
-            case R.string.button_create_message:
-                resIdOut = R.string.button_create_message_twitter;
-                break;
-            case R.string.menu_item_destroy_reblog:
-                resIdOut = R.string.menu_item_destroy_reblog_twitter;
-                break;
-            case R.string.menu_item_reblog:
-                resIdOut = R.string.menu_item_reblog_twitter;
-                break;
-            case R.string.message:
-                resIdOut = R.string.message_twitter;
-                break;
-            case R.string.reblogged_by:
-                resIdOut = R.string.reblogged_by_twitter;
-                break;
-            default:
-                resIdOut = resId;
-                break;
+    override fun alternativeTermForResourceId(@StringRes resId: Int): Int {
+        val resIdOut: Int
+        resIdOut = when (resId) {
+            R.string.button_create_message -> R.string.button_create_message_twitter
+            R.string.menu_item_destroy_reblog -> R.string.menu_item_destroy_reblog_twitter
+            R.string.menu_item_reblog -> R.string.menu_item_reblog_twitter
+            R.string.message -> R.string.message_twitter
+            R.string.reblogged_by -> R.string.reblogged_by_twitter
+            else -> resId
         }
-        return resIdOut;
+        return resIdOut
     }
 
-    @Override
-    protected String alternativeNotePermalink(long noteId) {
+    override fun alternativeNotePermalink(noteId: Long): String? {
         if (url == null) {
-            return "";
+            return ""
         }
-        final Uri uri = fixUriForPermalink(UriUtils.fromUrl(url));
-        if (Visibility.fromNoteId(noteId).isPrivate()) {
-            return Uri.withAppendedPath(uri, "messages").toString();
+        val uri = fixUriForPermalink(UriUtils.fromUrl(url))
+        return if (Visibility.Companion.fromNoteId(noteId).isPrivate()) {
+            Uri.withAppendedPath(uri, "messages").toString()
         } else {
-            String username = MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, noteId, ActorInTimeline.USERNAME);
-            final String oid = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId);
-            return Uri.withAppendedPath(uri, username + "/status/" + oid).toString();
+            val username = MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, noteId, ActorInTimeline.USERNAME)
+            val oid = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId)
+            Uri.withAppendedPath(uri, "$username/status/$oid").toString()
         }
     }
 
-    @NonNull
-    @Override
-    public String getAccountNameHost() {
-        String host = super.getAccountNameHost();
-        return host.startsWith(API_DOT) ? host.substring(API_DOT.length()) : host ;
+    override fun getAccountNameHost(): String {
+        val host = super.getAccountNameHost()
+        return if (host.startsWith(API_DOT)) host.substring(API_DOT.length) else host
     }
 
-    @Override
-    public Uri fixUriForPermalink(Uri uri1) {
-        Uri uri2 = uri1;
-        if( uri2 != null) {
+    override fun fixUriForPermalink(uri1: Uri?): Uri? {
+        var uri2 = uri1
+        if (uri2 != null) {
             try {
-                if (uri2.getHost().startsWith(API_DOT)) {
-                    uri2 = Uri.parse(uri1.toString().replace("//" + API_DOT, "//"));
+                if (uri2.host.startsWith(API_DOT)) {
+                    uri2 = Uri.parse(uri1.toString().replace("//" + API_DOT, "//"))
                 }
-            } catch (NullPointerException e) {
-                MyLog.d(this, "Malformed Uri from '" + uri2.toString() + "'", e);
+            } catch (e: NullPointerException) {
+                MyLog.d(this, "Malformed Uri from '$uri2'", e)
             }
         }
-        return uri2;
+        return uri2
+    }
+
+    companion object {
+        val API_DOT: String? = "api."
     }
 }

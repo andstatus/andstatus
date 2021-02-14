@@ -13,265 +13,233 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
-
-import android.text.SpannableString;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.R;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.AttachedMediaFile;
-import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.graphics.IdentifiableImageView;
-import org.andstatus.app.net.social.SpanUtil;
-import org.andstatus.app.timeline.BaseTimelineAdapter;
-import org.andstatus.app.timeline.TimelineData;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.util.SharedPreferencesUtil;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import static org.andstatus.app.util.I18n.notZero;
+import android.text.SpannableString
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.TextView
+import org.andstatus.app.R
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.AttachedMediaFile
+import org.andstatus.app.data.DownloadStatus
+import org.andstatus.app.graphics.IdentifiableImageView
+import org.andstatus.app.net.social.SpanUtil
+import org.andstatus.app.timeline.BaseTimelineAdapter
+import org.andstatus.app.timeline.TimelineData
+import org.andstatus.app.util.I18n
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.MyUrlSpan
+import org.andstatus.app.util.SharedPreferencesUtil
+import java.util.*
+import java.util.function.Consumer
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public abstract class BaseNoteAdapter<T extends BaseNoteViewItem<T>> extends BaseTimelineAdapter<T> {
-    protected final boolean showButtonsBelowNotes =
-            SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_NOTE, true);
-    protected final NoteContextMenu contextMenu;
-    protected Set<Long> preloadedImages = new HashSet<>(100);
-
-    public BaseNoteAdapter(@NonNull NoteContextMenu contextMenu, TimelineData<T> listData) {
-        super(contextMenu.getMyContext(), listData);
-        this.contextMenu = contextMenu;
+abstract class BaseNoteAdapter<T : BaseNoteViewItem<T?>?>(contextMenu: NoteContextMenu, listData: TimelineData<T?>?) : BaseTimelineAdapter<T?>(contextMenu.myContext, listData) {
+    protected val showButtonsBelowNotes = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_NOTE, true)
+    protected val contextMenu: NoteContextMenu?
+    protected var preloadedImages: MutableSet<Long?>? = HashSet(100)
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
+        val view = getEmptyView(convertView)
+        view.setOnCreateContextMenuListener(contextMenu)
+        view.setOnClickListener(this)
+        setPosition(view, position)
+        val item = getItem(position)
+        populateView(view, item, false, position)
+        return view
     }
 
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewGroup view = getEmptyView(convertView);
-        view.setOnCreateContextMenuListener(contextMenu);
-        view.setOnClickListener(this);
-        setPosition(view, position);
-        T item = getItem(position);
-        populateView(view, item, false, position);
-        return view;
-    }
-
-    public void populateView(ViewGroup view, T item, boolean showReceivedTime, int position) {
-        showRebloggers(view, item);
-        MyUrlSpan.showText(view, R.id.note_author, item.author.getActor().getActorNameInTimelineWithOrigin(), false, false);
-        showNoteName(view, item);
-        showNoteSummary(view, item);
-        showNoteContent(view, item);
-        MyUrlSpan.showText(view, R.id.note_details, item.getDetails(contextMenu.getActivity(), showReceivedTime)
-                .toString(), false, false);
-
-        showAvatarEtc(view, item);
-
+    fun populateView(view: ViewGroup?, item: T?, showReceivedTime: Boolean, position: Int) {
+        showRebloggers(view, item)
+        MyUrlSpan.Companion.showText(view, R.id.note_author, item.author.actor.actorNameInTimelineWithOrigin, false, false)
+        showNoteName(view, item)
+        showNoteSummary(view, item)
+        showNoteContent(view, item)
+        MyUrlSpan.Companion.showText(view, R.id.note_details, item.getDetails(contextMenu.getActivity(), showReceivedTime)
+                .toString(), false, false)
+        showAvatarEtc(view, item)
         if (showAttachedImages) {
-            showAttachedImages(view, item);
+            showAttachedImages(view, item)
         }
         if (markRepliesToMe) {
-            removeReplyToMeMarkerView(view);
-            showMarkRepliesToMe(view, item);
+            removeReplyToMeMarkerView(view)
+            showMarkRepliesToMe(view, item)
         }
         if (showButtonsBelowNotes) {
-            showButtonsBelowNote(view, item);
+            showButtonsBelowNote(view, item)
         } else {
-            showFavorited(view, item);
+            showFavorited(view, item)
         }
-        showNoteNumberEtc(view, item, position);
+        showNoteNumberEtc(view, item, position)
     }
 
-    protected abstract void showAvatarEtc(ViewGroup view, T item);
-
-    protected abstract void showNoteNumberEtc(ViewGroup view, T item, int position);
-
-    protected ViewGroup getEmptyView(View convertView) {
-        if (convertView == null) return newView();
-        convertView.setBackgroundResource(0);
-        View noteIndented = convertView.findViewById(R.id.note_indented);
-        noteIndented.setBackgroundResource(0);
-        return (ViewGroup) convertView;
+    protected abstract fun showAvatarEtc(view: ViewGroup?, item: T?)
+    protected abstract fun showNoteNumberEtc(view: ViewGroup?, item: T?, position: Int)
+    protected fun getEmptyView(convertView: View?): ViewGroup? {
+        if (convertView == null) return newView()
+        convertView.setBackgroundResource(0)
+        val noteIndented = convertView.findViewById<View?>(R.id.note_indented)
+        noteIndented.setBackgroundResource(0)
+        return convertView as ViewGroup?
     }
 
-    @Override
-    public long getItemId(int position) {
-        return getItem(position).getNoteId();
+    override fun getItemId(position: Int): Long {
+        return getItem(position).getNoteId()
     }
 
-    protected ViewGroup newView() {
-        ViewGroup view = (ViewGroup) LayoutInflater.from(contextMenu.getActivity()).inflate(R.layout.note, null);
-        setupButtons(view);
-        return view;
+    protected fun newView(): ViewGroup? {
+        val view = LayoutInflater.from(contextMenu.getActivity()).inflate(R.layout.note, null) as ViewGroup
+        setupButtons(view)
+        return view
     }
 
-    protected void showRebloggers(View view, T item) {
-        View viewGroup = view.findViewById(R.id.reblogged);
+    protected fun showRebloggers(view: View?, item: T?) {
+        val viewGroup = view.findViewById<View?>(R.id.reblogged)
         if (viewGroup == null) {
-            return;
+            return
         } else if (item.isReblogged()) {
-            viewGroup.setVisibility(View.VISIBLE);
-            MyStringBuilder rebloggers = new MyStringBuilder();
-            item.rebloggers.values().forEach(rebloggers::withComma);
-            MyUrlSpan.showText(viewGroup, R.id.rebloggers, rebloggers.toString(), false, false);
+            viewGroup.visibility = View.VISIBLE
+            val rebloggers = MyStringBuilder()
+            item.rebloggers.values.forEach(Consumer { text: String? -> rebloggers.withComma(text) })
+            MyUrlSpan.Companion.showText(viewGroup, R.id.rebloggers, rebloggers.toString(), false, false)
         } else {
-            viewGroup.setVisibility(View.GONE);
+            viewGroup.visibility = View.GONE
         }
     }
 
-    protected void showNoteName(View view, T item) {
-        MyUrlSpan.showSpannable(view.findViewById(R.id.note_name),
-            item.isSensitive() && !MyPreferences.isShowSensitiveContent() ? SpanUtil.EMPTY : item.getName(), false);
+    protected fun showNoteName(view: View?, item: T?) {
+        MyUrlSpan.Companion.showSpannable(view.findViewById<TextView?>(R.id.note_name),
+                if (item.isSensitive() && !MyPreferences.isShowSensitiveContent()) SpanUtil.EMPTY else item.getName(), false)
     }
 
-    protected void showNoteSummary(View view, T item) {
-        MyUrlSpan.showSpannable(view.findViewById(R.id.note_summary), item.getSummary(), false);
+    protected fun showNoteSummary(view: View?, item: T?) {
+        MyUrlSpan.Companion.showSpannable(view.findViewById<TextView?>(R.id.note_summary), item.getSummary(), false)
     }
 
-    protected void showNoteContent(View view, T item) {
-        MyUrlSpan.showSpannable(view.findViewById(R.id.note_body),
-            item.isSensitive() && !MyPreferences.isShowSensitiveContent()
-                    ? SpannableString.valueOf("(" + myContext.context().getText(R.string.sensitive) + ")")
-                    : item.getContent(),
-                false);
+    protected fun showNoteContent(view: View?, item: T?) {
+        MyUrlSpan.Companion.showSpannable(view.findViewById<TextView?>(R.id.note_body),
+                if (item.isSensitive() && !MyPreferences.isShowSensitiveContent()) SpannableString.valueOf("(" + myContext.context().getText(R.string.sensitive) + ")") else item.getContent(),
+                false)
     }
 
-    protected void showAvatar(View view, T item) {
-        item.author.showAvatar(contextMenu.getActivity(), view.findViewById(R.id.avatar_image));
+    protected fun showAvatar(view: View?, item: T?) {
+        item.author.showAvatar(contextMenu.getActivity(), view.findViewById(R.id.avatar_image))
     }
 
-    private void showAttachedImages(View view, T item) {
-        final LinearLayout attachmentsList = view.findViewById(R.id.attachments_wrapper);
-        if (attachmentsList == null) return;
-
-        if (!contextMenu.getActivity().isMyResumed() ||
-            item.isSensitive() && !MyPreferences.isShowSensitiveContent() ||
-            !item.attachedImageFiles.imageOrLinkMayBeShown()) {
-
-            attachmentsList.setVisibility(View.GONE);
-            return;
+    private fun showAttachedImages(view: View?, item: T?) {
+        val attachmentsList = view.findViewById<LinearLayout?>(R.id.attachments_wrapper) ?: return
+        if (!contextMenu.getActivity().isMyResumed || item.isSensitive() && !MyPreferences.isShowSensitiveContent() ||
+                !item.attachedImageFiles.imageOrLinkMayBeShown()) {
+            attachmentsList.visibility = View.GONE
+            return
         }
-
-        attachmentsList.removeAllViewsInLayout();
-
-        for (AttachedMediaFile mediaFile: item.attachedImageFiles.list) {
-            if (!mediaFile.imageOrLinkMayBeShown()) continue;
-
-            int attachmentLayout = mediaFile.imageMayBeShown()
-                    ? (mediaFile.isTargetVideo() ? R.layout.attachment_video_preview : R.layout.attachment_image)
-                    : R.layout.attachment_link;
-            final View attachmentView = LayoutInflater.from(contextMenu.getActivity())
-                    .inflate(attachmentLayout, attachmentsList, false);
+        attachmentsList.removeAllViewsInLayout()
+        for (mediaFile in item.attachedImageFiles.list) {
+            if (!mediaFile.imageOrLinkMayBeShown()) continue
+            val attachmentLayout = if (mediaFile.imageMayBeShown()) if (mediaFile.isTargetVideo) R.layout.attachment_video_preview else R.layout.attachment_image else R.layout.attachment_link
+            val attachmentView = LayoutInflater.from(contextMenu.getActivity())
+                    .inflate(attachmentLayout, attachmentsList, false)
             if (mediaFile.imageMayBeShown()) {
-                IdentifiableImageView imageView = attachmentView.findViewById(R.id.attachment_image);
-                preloadedImages.add(item.getNoteId());
-                mediaFile.showImage(contextMenu.getActivity(), imageView);
-                setOnImageClick(imageView, mediaFile);
+                val imageView: IdentifiableImageView = attachmentView.findViewById(R.id.attachment_image)
+                preloadedImages.add(item.getNoteId())
+                mediaFile.showImage(contextMenu.getActivity(), imageView)
+                setOnImageClick(imageView, mediaFile)
             } else {
-                MyUrlSpan.showText(attachmentView, R.id.attachment_link,
-                        mediaFile.getTargetUri().toString(), true, false);
+                MyUrlSpan.Companion.showText(attachmentView, R.id.attachment_link,
+                        mediaFile.targetUri.toString(), true, false)
             }
-            attachmentsList.addView(attachmentView);
+            attachmentsList.addView(attachmentView)
         }
-
-        attachmentsList.setVisibility(View.VISIBLE);
+        attachmentsList.visibility = View.VISIBLE
     }
 
-    private void setOnImageClick(View imageView, AttachedMediaFile mediaFile) {
-        imageView.setOnClickListener(view -> {
-            contextMenu.menuContainer.getActivity().startActivity(mediaFile.intentToView());
-        });
+    private fun setOnImageClick(imageView: View?, mediaFile: AttachedMediaFile?) {
+        imageView.setOnClickListener(View.OnClickListener { view: View? -> contextMenu.menuContainer.activity.startActivity(mediaFile.intentToView()) })
     }
 
-    public void removeReplyToMeMarkerView(ViewGroup view) {
-        View oldView = view.findViewById(R.id.reply_timeline_marker);
+    fun removeReplyToMeMarkerView(view: ViewGroup?) {
+        val oldView = view.findViewById<View?>(R.id.reply_timeline_marker)
         if (oldView != null) {
-            view.removeView(oldView);
+            view.removeView(oldView)
         }
     }
 
-    private void showMarkRepliesToMe(ViewGroup view, T item) {
-        if (myContext.users().isMe(item.inReplyToActor.getActor()) &&
-                !myContext.users().isMe(item.author.getActor())) {
-            View referencedView = view.findViewById(R.id.note_indented);
-            ImageView replyToMeMarkerView = new ConversationIndentImageView(myContext.context(), referencedView, dpToPixes(6),
-                    R.drawable.reply_timeline_marker_light, R.drawable.reply_timeline_marker);
-            replyToMeMarkerView.setId(R.id.reply_timeline_marker);
-            view.addView(replyToMeMarkerView, 1);
-            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)  replyToMeMarkerView.getLayoutParams();
-            layoutParams.leftMargin = dpToPixes(3);
+    private fun showMarkRepliesToMe(view: ViewGroup?, item: T?) {
+        if (myContext.users().isMe(item.inReplyToActor.actor) &&
+                !myContext.users().isMe(item.author.actor)) {
+            val referencedView = view.findViewById<View?>(R.id.note_indented)
+            val replyToMeMarkerView: ImageView = ConversationIndentImageView(myContext.context(), referencedView, dpToPixes(6),
+                    R.drawable.reply_timeline_marker_light, R.drawable.reply_timeline_marker)
+            replyToMeMarkerView.id = R.id.reply_timeline_marker
+            view.addView(replyToMeMarkerView, 1)
+            val layoutParams = replyToMeMarkerView.layoutParams as RelativeLayout.LayoutParams
+            layoutParams.leftMargin = dpToPixes(3)
         }
     }
 
-    public void setupButtons(View view) {
+    fun setupButtons(view: View?) {
         if (showButtonsBelowNotes) {
-            View buttons = view.findViewById(R.id.note_buttons);
+            val buttons = view.findViewById<View?>(R.id.note_buttons)
             if (buttons != null) {
-                buttons.setVisibility(View.VISIBLE);
-                setOnButtonClick(buttons, R.id.reply_button, NoteContextMenuItem.REPLY);
-                setOnButtonClick(buttons, R.id.reblog_button, NoteContextMenuItem.ANNOUNCE);
-                setOnButtonClick(buttons, R.id.reblog_button_tinted, NoteContextMenuItem.UNDO_ANNOUNCE);
-                setOnButtonClick(buttons, R.id.favorite_button, NoteContextMenuItem.LIKE);
-                setOnButtonClick(buttons, R.id.favorite_button_tinted, NoteContextMenuItem.UNDO_LIKE);
-                setOnClickShowContextMenu(buttons, R.id.more_button);
+                buttons.visibility = View.VISIBLE
+                setOnButtonClick(buttons, R.id.reply_button, NoteContextMenuItem.REPLY)
+                setOnButtonClick(buttons, R.id.reblog_button, NoteContextMenuItem.ANNOUNCE)
+                setOnButtonClick(buttons, R.id.reblog_button_tinted, NoteContextMenuItem.UNDO_ANNOUNCE)
+                setOnButtonClick(buttons, R.id.favorite_button, NoteContextMenuItem.LIKE)
+                setOnButtonClick(buttons, R.id.favorite_button_tinted, NoteContextMenuItem.UNDO_LIKE)
+                setOnClickShowContextMenu(buttons, R.id.more_button)
             }
         }
     }
 
-    private void setOnButtonClick(View viewGroup, int buttonId, NoteContextMenuItem menuItem) {
-        viewGroup.findViewById(buttonId).setOnClickListener(view -> {
-            T item = getItem(view);
+    private fun setOnButtonClick(viewGroup: View?, buttonId: Int, menuItem: NoteContextMenuItem?) {
+        viewGroup.findViewById<View?>(buttonId).setOnClickListener { view: View? ->
+            val item = getItem(view)
             if (item != null && (item.noteStatus == DownloadStatus.LOADED || menuItem.appliedToUnsentNotesAlso)) {
-                contextMenu.onCreateContextMenu(null, view, null, contextMenu -> {
-                    contextMenu.onContextItemSelected(menuItem, item.getNoteId());
-                });
+                contextMenu.onCreateContextMenu(null, view, null, Consumer { contextMenu: NoteContextMenu? -> contextMenu.onContextItemSelected(menuItem, item.noteId) })
             }
-        });
-    }
-
-    private void setOnClickShowContextMenu(final View viewGroup, int buttonId) {
-        viewGroup.findViewById(buttonId).setOnClickListener(view -> {
-            viewGroup.showContextMenu();
-        });
-    }
-
-    protected void showButtonsBelowNote(View view, T item) {
-        View viewGroup = view.findViewById(R.id.note_buttons);
-        if (viewGroup == null) {
-            return;
-        } else if (showButtonsBelowNotes && item.noteStatus == DownloadStatus.LOADED) {
-            viewGroup.setVisibility(View.VISIBLE);
-            tintIcon(viewGroup, item.reblogged, R.id.reblog_button, R.id.reblog_button_tinted);
-            tintIcon(viewGroup, item.favorited, R.id.favorite_button, R.id.favorite_button_tinted);
-            MyUrlSpan.showText(viewGroup, R.id.likes_count, notZero(item.likesCount), false, true);
-            MyUrlSpan.showText(viewGroup, R.id.reblogs_count, notZero(item.reblogsCount), false, true);
-            MyUrlSpan.showText(viewGroup, R.id.replies_count, notZero(item.repliesCount), false, true);
-        } else {
-            viewGroup.setVisibility(View.GONE);
         }
     }
 
-    private void tintIcon(View viewGroup, boolean colored, int viewId, int viewIdColored) {
-        ImageView imageView = viewGroup.findViewById(viewId);
-        ImageView imageViewTinted = viewGroup.findViewById(viewIdColored);
-        imageView.setVisibility(colored ? View.GONE : View.VISIBLE);
-        imageViewTinted.setVisibility(colored ? View.VISIBLE : View.GONE);
+    private fun setOnClickShowContextMenu(viewGroup: View?, buttonId: Int) {
+        viewGroup.findViewById<View?>(buttonId).setOnClickListener { view: View? -> viewGroup.showContextMenu() }
     }
 
-    protected void showFavorited(View view, T item) {
-        View favorited = view.findViewById(R.id.note_favorited);
-        favorited.setVisibility(item.favorited ? View.VISIBLE : View.GONE );
+    protected fun showButtonsBelowNote(view: View?, item: T?) {
+        val viewGroup = view.findViewById<View?>(R.id.note_buttons)
+        if (viewGroup == null) {
+            return
+        } else if (showButtonsBelowNotes && item.noteStatus == DownloadStatus.LOADED) {
+            viewGroup.visibility = View.VISIBLE
+            tintIcon(viewGroup, item.reblogged, R.id.reblog_button, R.id.reblog_button_tinted)
+            tintIcon(viewGroup, item.favorited, R.id.favorite_button, R.id.favorite_button_tinted)
+            MyUrlSpan.Companion.showText(viewGroup, R.id.likes_count, I18n.notZero(item.likesCount), false, true)
+            MyUrlSpan.Companion.showText(viewGroup, R.id.reblogs_count, I18n.notZero(item.reblogsCount), false, true)
+            MyUrlSpan.Companion.showText(viewGroup, R.id.replies_count, I18n.notZero(item.repliesCount), false, true)
+        } else {
+            viewGroup.visibility = View.GONE
+        }
+    }
+
+    private fun tintIcon(viewGroup: View?, colored: Boolean, viewId: Int, viewIdColored: Int) {
+        val imageView = viewGroup.findViewById<ImageView?>(viewId)
+        val imageViewTinted = viewGroup.findViewById<ImageView?>(viewIdColored)
+        imageView.visibility = if (colored) View.GONE else View.VISIBLE
+        imageViewTinted.visibility = if (colored) View.VISIBLE else View.GONE
+    }
+
+    protected fun showFavorited(view: View?, item: T?) {
+        val favorited = view.findViewById<View?>(R.id.note_favorited)
+        favorited.visibility = if (item.favorited) View.VISIBLE else View.GONE
+    }
+
+    init {
+        this.contextMenu = contextMenu
     }
 }

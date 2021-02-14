@@ -1,80 +1,65 @@
-package oauth.signpost.commonshttp;
+package oauth.signpost.commonshttp
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import cz.msebera.android.httpclient.HttpEntity
+import cz.msebera.android.httpclient.HttpEntityEnclosingRequest
+import cz.msebera.android.httpclient.client.methods.HttpUriRequest
+import oauth.signpost.http.HttpRequest
+import java.io.IOException
+import java.io.InputStream
+import java.util.*
 
-import cz.msebera.android.httpclient.Header;
-import cz.msebera.android.httpclient.HttpEntity;
-import cz.msebera.android.httpclient.HttpEntityEnclosingRequest;
-import cz.msebera.android.httpclient.client.methods.HttpUriRequest;
+class HttpRequestAdapter(private val request: HttpUriRequest?) : HttpRequest {
+    private val entity: HttpEntity? = null
+    override fun getMethod(): String? {
+        return request.getRequestLine().method
+    }
 
-public class HttpRequestAdapter implements oauth.signpost.http.HttpRequest {
+    override fun getRequestUrl(): String? {
+        return request.getURI().toString()
+    }
 
-    private HttpUriRequest request;
+    override fun setRequestUrl(url: String?) {
+        throw RuntimeException(UnsupportedOperationException())
+    }
 
-    private HttpEntity entity;
+    override fun getHeader(name: String?): String? {
+        val header = request.getFirstHeader(name) ?: return null
+        return header.value
+    }
 
-    public HttpRequestAdapter(cz.msebera.android.httpclient.client.methods.HttpUriRequest request) {
-        this.request = request;
-        if (request instanceof HttpEntityEnclosingRequest) {
-            entity = ((HttpEntityEnclosingRequest) request).getEntity();
+    override fun setHeader(name: String?, value: String?) {
+        request.setHeader(name, value)
+    }
+
+    override fun getAllHeaders(): MutableMap<String?, String?>? {
+        val origHeaders = request.getAllHeaders()
+        val headers = HashMap<String?, String?>()
+        for (h in origHeaders) {
+            headers[h.name] = h.value
         }
+        return headers
     }
 
-    public String getMethod() {
-        return request.getRequestLine().getMethod();
-    }
-
-    public String getRequestUrl() {
-        return request.getURI().toString();
-    }
-
-    public void setRequestUrl(String url) {
-        throw new RuntimeException(new UnsupportedOperationException());
-    }
-
-    public String getHeader(String name) {
-        Header header = request.getFirstHeader(name);
-        if (header == null) {
-            return null;
-        }
-        return header.getValue();
-    }
-
-    public void setHeader(String name, String value) {
-        request.setHeader(name, value);
-    }
-
-    public Map<String, String> getAllHeaders() {
-        Header[] origHeaders = request.getAllHeaders();
-        HashMap<String, String> headers = new HashMap<String, String>();
-        for (Header h : origHeaders) {
-            headers.put(h.getName(), h.getValue());
-        }
-        return headers;
-    }
-
-    public String getContentType() {
+    override fun getContentType(): String? {
         if (entity == null) {
-            return null;
+            return null
         }
-        Header header = entity.getContentType();
-        if (header == null) {
-            return null;
-        }
-        return header.getValue();
+        val header = entity.contentType ?: return null
+        return header.value
     }
 
-    public InputStream getMessagePayload() throws IOException {
-        if (entity == null) {
-            return null;
-        }
-        return entity.getContent();
+    @Throws(IOException::class)
+    override fun getMessagePayload(): InputStream? {
+        return entity?.content
     }
 
-    public Object unwrap() {
-        return request;
+    override fun unwrap(): Any? {
+        return request
+    }
+
+    init {
+        if (request is HttpEntityEnclosingRequest) {
+            entity = (request as HttpEntityEnclosingRequest?).getEntity()
+        }
     }
 }

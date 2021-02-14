@@ -13,43 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.activity
 
-package org.andstatus.app.activity;
+import org.andstatus.app.actor.ActorViewItem
+import org.andstatus.app.timeline.TimelineData
 
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.timeline.TimelineData;
-import org.andstatus.app.timeline.ViewItem;
-import org.andstatus.app.actor.ActorViewItem;
-
-class TimelineDataObjActorWrapper extends TimelineDataWrapper<ActorViewItem> {
-
-    TimelineDataObjActorWrapper(TimelineData<ActivityViewItem> listData) {
-        super(listData);
+internal class TimelineDataObjActorWrapper(listData: TimelineData<ActivityViewItem?>?) : TimelineDataWrapper<ActorViewItem?>(listData) {
+    override fun getItem(position: Int): ActorViewItem {
+        return listData.getItem(position).objActorItem
     }
 
-    @NonNull
-    @Override
-    public ActorViewItem getItem(int position) {
-        return listData.getItem(position).getObjActorItem();
-    }
-
-    @Override
-    public int getPositionById(long itemId) {
-        if (itemId != 0) {
-            for (int position=0; position < listData.size(); position++) {
-                ActivityViewItem item = listData.getItem(position);
-                if (item.getObjActorItem().getId() == itemId) {
-                    return position;
-                } else if (item.isCollapsed()) {
-                    for (ViewItem child : item.getChildren()) {
-                        if ( ((ActivityViewItem) child).getObjActorItem().getId() == itemId) {
-                            return position;
+    override fun getPositionById(itemId: Long): Int {
+        if (itemId != 0L) {
+            for (position in 0 until listData.size()) {
+                val item = listData.getItem(position)
+                if (item.objActorItem.id == itemId) {
+                    return position
+                } else if (item.isCollapsed) {
+                    for (child in item.children) {
+                        if ((child as ActivityViewItem).objActorItem.id == itemId) {
+                            return position
                         }
                     }
                 }
             }
         }
-        return -1;
+        return -1
     }
 }

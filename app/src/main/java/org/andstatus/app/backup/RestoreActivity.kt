@@ -13,166 +13,145 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.backup
 
-package org.andstatus.app.backup;
+import android.content.Intent
+import android.os.Build
+import android.os.Bundle
+import android.provider.DocumentsContract
+import android.view.View
+import android.widget.TextView
+import androidx.documentfile.provider.DocumentFile
+import io.vavr.control.Try
+import org.andstatus.app.ActivityRequestCode
+import org.andstatus.app.MyActivity
+import org.andstatus.app.R
+import org.andstatus.app.backup.RestoreActivity
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.util.Permissions
+import org.andstatus.app.util.Permissions.PermissionType
 
-import android.content.Intent;
-import android.os.Build;
-import android.os.Bundle;
-import android.provider.DocumentsContract;
-import android.view.View;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.documentfile.provider.DocumentFile;
-
-import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.MyActivity;
-import org.andstatus.app.R;
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.util.Permissions;
-
-import io.vavr.control.Try;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class RestoreActivity extends MyActivity implements ProgressLogger.ProgressListener {
-    private static final int MAX_RESTORE_SECONDS = 600;
-    DocumentFile dataFolder = null;
-    RestoreTask asyncTask = null;
-    private int progressCounter = 0;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.restore;
-        super.onCreate(savedInstanceState);
-
-        Permissions.checkPermissionAndRequestIt(this, Permissions.PermissionType.READ_EXTERNAL_STORAGE);
-
-        findViewById(R.id.button_restore).setOnClickListener(this::doRestore);
-        findViewById(R.id.backup_folder).setOnClickListener(this::selectBackupFolder);
-        findViewById(R.id.button_select_backup_folder).setOnClickListener(this::selectBackupFolder);
-        showDataFolder();
+class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
+    var dataFolder: DocumentFile? = null
+    var asyncTask: RestoreTask? = null
+    private var progressCounter = 0
+    override fun onCreate(savedInstanceState: Bundle?) {
+        mLayoutId = R.layout.restore
+        super.onCreate(savedInstanceState)
+        Permissions.checkPermissionAndRequestIt(this, PermissionType.READ_EXTERNAL_STORAGE)
+        findViewById<View?>(R.id.button_restore).setOnClickListener { v: View? -> doRestore(v) }
+        findViewById<View?>(R.id.backup_folder).setOnClickListener { v: View? -> selectBackupFolder(v) }
+        findViewById<View?>(R.id.button_select_backup_folder).setOnClickListener { v: View? -> selectBackupFolder(v) }
+        showDataFolder()
     }
 
-    private void doRestore(View v) {
+    private fun doRestore(v: View?) {
         if (asyncTask == null || asyncTask.completedBackgroundWork()) {
-            resetProgress();
-            asyncTask = (RestoreTask) new RestoreTask(RestoreActivity.this)
-                    .setMaxCommandExecutionSeconds(MAX_RESTORE_SECONDS)
-                    .setCancelable(false);
-            new AsyncTaskLauncher<DocumentFile>().execute(this, asyncTask, getDataFolder());
+            resetProgress()
+            asyncTask = RestoreTask(this@RestoreActivity)
+                    .setMaxCommandExecutionSeconds(MAX_RESTORE_SECONDS.toLong())
+                    .setCancelable(false) as RestoreTask
+            AsyncTaskLauncher<DocumentFile?>().execute(this, asyncTask, getDataFolder())
         }
     }
 
-    private void selectBackupFolder(View v) {
-        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+    private fun selectBackupFolder(v: View?) {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, getDataFolder().getUri());
+            intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, getDataFolder().uri)
         }
-        startActivityForResult(intent, ActivityRequestCode.SELECT_BACKUP_FOLDER.id);
+        startActivityForResult(intent, ActivityRequestCode.SELECT_BACKUP_FOLDER.id)
     }
 
-    @NonNull
-    private DocumentFile getDataFolder() {
-        if (dataFolder != null && dataFolder.exists()) {
-            return dataFolder;
-        }
-        return MyBackupManager.getDefaultBackupFolder(this);
+    private fun getDataFolder(): DocumentFile {
+        return if (dataFolder != null && dataFolder.exists()) {
+            dataFolder
+        } else MyBackupManager.Companion.getDefaultBackupFolder(this)
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (ActivityRequestCode.fromId(requestCode)) {
-            case SELECT_BACKUP_FOLDER:
-                if (resultCode == RESULT_OK) {
-                  setDataFolder(DocumentFile.fromTreeUri(this, data.getData()));
-                }
-                break;
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-                break;
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when (ActivityRequestCode.Companion.fromId(requestCode)) {
+            ActivityRequestCode.SELECT_BACKUP_FOLDER -> if (resultCode == RESULT_OK) {
+                setDataFolder(DocumentFile.fromTreeUri(this, data.getData()))
+            }
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
-    void setDataFolder(DocumentFile selectedFolder) {
-        resetProgress();
-        if ( selectedFolder == null ) {
-            addProgressMessage("No backup data folder selected");
-            return;
-        } else if (selectedFolder.exists() ) {
-            if (!selectedFolder.isDirectory()) {
-                addProgressMessage("Is not a folder: '" + selectedFolder.getUri().getPath() + "'");
-                return;
+    fun setDataFolder(selectedFolder: DocumentFile?) {
+        resetProgress()
+        if (selectedFolder == null) {
+            addProgressMessage("No backup data folder selected")
+            return
+        } else if (selectedFolder.exists()) {
+            if (!selectedFolder.isDirectory) {
+                addProgressMessage("Is not a folder: '" + selectedFolder.uri.path + "'")
+                return
             }
         } else {
-            addProgressMessage("The folder doesn't exist: '" + selectedFolder.getUri().getPath() + "'");
-            return;
+            addProgressMessage("The folder doesn't exist: '" + selectedFolder.uri.path + "'")
+            return
         }
-        Try<DocumentFile> descriptorFile = MyBackupManager.getExistingDescriptorFile(selectedFolder);
-        if (descriptorFile.isFailure()) {
+        val descriptorFile: Try<DocumentFile?> = MyBackupManager.Companion.getExistingDescriptorFile(selectedFolder)
+        if (descriptorFile.isFailure) {
             addProgressMessage("This is not an AndStatus backup folder." +
-                    " Descriptor file " + MyBackupManager.DESCRIPTOR_FILE_NAME +
-                    " doesn't exist in: '" + selectedFolder.getUri().getPath() + "'");
-            return;
+                    " Descriptor file " + MyBackupManager.Companion.DESCRIPTOR_FILE_NAME +
+                    " doesn't exist in: '" + selectedFolder.uri.path + "'")
+            return
         }
-
-        this.dataFolder = selectedFolder;
-        showDataFolder();
-        resetProgress();
+        dataFolder = selectedFolder
+        showDataFolder()
+        resetProgress()
     }
 
-    private void showDataFolder() {
-        TextView view = findViewById(R.id.backup_folder);
+    private fun showDataFolder() {
+        val view = findViewById<TextView?>(R.id.backup_folder)
         if (view != null) {
-            DocumentFile folder = getDataFolder();
-            view.setText(MyBackupManager.isDataFolder(folder) ? folder.getUri().getPath() : getText(R.string.not_set));
+            val folder = getDataFolder()
+            view.text = if (MyBackupManager.Companion.isDataFolder(folder)) folder.uri.path else getText(R.string.not_set)
         }
     }
 
-    private static class RestoreTask extends MyAsyncTask<DocumentFile, CharSequence, Void> {
-        private final RestoreActivity activity;
-
-        RestoreTask(RestoreActivity activity) {
-            super(PoolEnum.thatCannotBeShutDown());
-            this.activity = activity;
-        }
-
-        @Override
-        protected Void doInBackground2(DocumentFile dataFolder) {
-            MyBackupManager.restoreInteractively(dataFolder, activity, activity);
-            return null;
+    private class RestoreTask internal constructor(private val activity: RestoreActivity?) : MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.Companion.thatCannotBeShutDown()) {
+        override fun doInBackground2(dataFolder: DocumentFile?): Void? {
+            MyBackupManager.Companion.restoreInteractively(dataFolder, activity, activity)
+            return null
         }
     }
 
-    private void resetProgress() {
-        progressCounter = 0;
-        TextView progressLog = findViewById(R.id.progress_log);
-        progressLog.setText("");
+    private fun resetProgress() {
+        progressCounter = 0
+        val progressLog = findViewById<TextView?>(R.id.progress_log)
+        progressLog.text = ""
     }
 
-    private void addProgressMessage(CharSequence message) {
-        progressCounter++;
-        TextView progressLog = findViewById(R.id.progress_log);
-        String log = Integer.toString(progressCounter) + ". " + message + "\n" + progressLog.getText();
-        progressLog.setText(log);
+    private fun addProgressMessage(message: CharSequence?) {
+        progressCounter++
+        val progressLog = findViewById<TextView?>(R.id.progress_log)
+        val log = """
+            ${Integer.toString(progressCounter)}. $message
+            ${progressLog.text}
+            """.trimIndent()
+        progressLog.text = log
     }
 
-    @Override
-    protected void onResume() {
-        myContextHolder.getNow().setInForeground(true);
-        super.onResume();
+    override fun onResume() {
+        MyContextHolder.Companion.myContextHolder.getNow().setInForeground(true)
+        super.onResume()
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        myContextHolder.getNow().setInForeground(false);
+    override fun onPause() {
+        super.onPause()
+        MyContextHolder.Companion.myContextHolder.getNow().setInForeground(false)
     }
 
-    @Override
-    public void onProgressMessage(CharSequence message) {
-        runOnUiThread( () -> addProgressMessage(message));
+    override fun onProgressMessage(message: CharSequence?) {
+        runOnUiThread { addProgressMessage(message) }
+    }
+
+    companion object {
+        private const val MAX_RESTORE_SECONDS = 600
     }
 }

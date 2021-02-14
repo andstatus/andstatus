@@ -13,410 +13,393 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
-
-import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.Build;
-import android.os.IBinder;
-import android.os.PowerManager;
-
-import net.jcip.annotations.GuardedBy;
-
-import org.andstatus.app.MyAction;
-import org.andstatus.app.appwidget.AppWidgets;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.notification.NotificationData;
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.util.IdentifiableInstance;
-import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.RelativeTime;
-
-import java.lang.ref.WeakReference;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-import static org.andstatus.app.notification.NotificationEventType.SERVICE_RUNNING;
+import android.app.Service
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
+import android.os.IBinder
+import android.os.PowerManager
+import android.os.PowerManager.WakeLock
+import net.jcip.annotations.GuardedBy
+import org.andstatus.app.MyAction
+import org.andstatus.app.appwidget.AppWidgets
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.notification.NotificationData
+import org.andstatus.app.notification.NotificationEventType
+import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.MyAsyncTask.PoolEnum
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.InstanceId
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.RelativeTime
+import java.lang.ref.WeakReference
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Consumer
 
 /**
  * This service asynchronously executes commands, mostly related to communication
  * between this Android Device and Social networks.
  */
-public class MyService extends Service implements IdentifiableInstance {
-    private static final String TAG = MyService.class.getSimpleName();
-    private final static long STOP_ON_INACTIVITY_AFTER_SECONDS = 10;
+class MyService : Service(), IdentifiableInstance {
+    protected val instanceId = InstanceId.next()
 
-    protected final long instanceId = InstanceId.next();
-    volatile MyContext myContext = MyContext.EMPTY;
-    private volatile long startedForegrounLastTime = 0;
-    /** No way back */
-    private volatile boolean mForcedToStop = false;
-    volatile long latestActivityTime = 0;
+    @Volatile
+    var myContext: MyContext? = MyContext.Companion.EMPTY
 
-    /** Flag to control the Service state persistence */
-    private final AtomicBoolean initialized = new AtomicBoolean(false);
-    private volatile long initializedTime = 0;
-    /** We are stopping this service */
-    private final AtomicBoolean isStopping = new AtomicBoolean(false);
+    @Volatile
+    private var startedForegrounLastTime: Long = 0
 
-    final QueueExecutors executors = new QueueExecutors(this);
-    private final AtomicReference<HeartBeat> heartBeatRef = new AtomicReference<>();
+    /** No way back  */
+    @Volatile
+    private var mForcedToStop = false
+
+    @Volatile
+    var latestActivityTime: Long = 0
+
+    /** Flag to control the Service state persistence  */
+    private val initialized: AtomicBoolean? = AtomicBoolean(false)
+
+    @Volatile
+    private var initializedTime: Long = 0
+
+    /** We are stopping this service  */
+    private val isStopping: AtomicBoolean? = AtomicBoolean(false)
+    val executors: QueueExecutors? = QueueExecutors(this)
+    private val heartBeatRef: AtomicReference<HeartBeat?>? = AtomicReference()
 
     /**
      * The reference to the wake lock used to keep the CPU from stopping during
      * background operations.
      */
-    private final AtomicReference<PowerManager.WakeLock> wakeLockRef = new AtomicReference<>();
-
-    private static final AtomicBoolean widgetsInitialized = new AtomicBoolean(false);
-
-    private MyServiceState getServiceState() {
-        if (initialized.get()) {
+    private val wakeLockRef: AtomicReference<WakeLock?>? = AtomicReference()
+    private fun getServiceState(): MyServiceState? {
+        return if (initialized.get()) {
             if (isStopping.get()) {
-                return MyServiceState.STOPPING;
+                MyServiceState.STOPPING
             } else {
-                return MyServiceState.RUNNING;
+                MyServiceState.RUNNING
             }
-        }
-        return MyServiceState.STOPPED;
+        } else MyServiceState.STOPPED
     }
 
-    boolean isStopping() {
-        return isStopping.get();
-    }
-    
-    @Override
-    public void onCreate() {
-        MyLog.v(TAG, () -> "MyService " + instanceId + " created");
-        myContext = myContextHolder.initialize(this).getNow();
+    fun isStopping(): Boolean {
+        return isStopping.get()
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        MyLog.v(TAG, () -> "MyService " + instanceId + " onStartCommand: startid=" + startId);
+    override fun onCreate() {
+        MyLog.v(TAG) { "MyService $instanceId created" }
+        myContext = MyContextHolder.Companion.myContextHolder.initialize(this).getNow()
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        MyLog.v(TAG) { "MyService $instanceId onStartCommand: startid=$startId" }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForeground();
+            startForeground()
         }
-        receiveCommand(intent, startId);
-        return START_NOT_STICKY;
+        receiveCommand(intent, startId)
+        return START_NOT_STICKY
     }
 
-    /** See https://stackoverflow.com/questions/44425584/context-startforegroundservice-did-not-then-call-service-startforeground */
-    private void startForeground() {
-        long currentTimeMillis = System.currentTimeMillis();
-        if (Math.abs(currentTimeMillis - startedForegrounLastTime) < 1000) return;
-
-        startedForegrounLastTime = currentTimeMillis;
-        final NotificationData data = new NotificationData(SERVICE_RUNNING, Actor.EMPTY, currentTimeMillis);
-        myContext.getNotifier().createNotificationChannel(data);
-        startForeground(SERVICE_RUNNING.notificationId(), myContext.getNotifier().getAndroidNotification(data));
+    /** See https://stackoverflow.com/questions/44425584/context-startforegroundservice-did-not-then-call-service-startforeground  */
+    private fun startForeground() {
+        val currentTimeMillis = System.currentTimeMillis()
+        if (Math.abs(currentTimeMillis - startedForegrounLastTime) < 1000) return
+        startedForegrounLastTime = currentTimeMillis
+        val data = NotificationData(NotificationEventType.SERVICE_RUNNING, Actor.Companion.EMPTY, currentTimeMillis)
+        myContext.getNotifier().createNotificationChannel(data)
+        startForeground(NotificationEventType.SERVICE_RUNNING.notificationId(), myContext.getNotifier().getAndroidNotification(data))
     }
 
     @GuardedBy("serviceStateLock")
-    private BroadcastReceiver intentReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context arg0, Intent intent) {
-            MyLog.v(TAG, () -> "MyService " + instanceId + " onReceive " + intent.toString());
-            receiveCommand(intent, 0);
-        }
-    };
-    
-    private void receiveCommand(Intent intent, int startId) {
-        CommandData commandData = CommandData.fromIntent(myContext, intent);
-        switch (commandData.getCommand()) {
-            case STOP_SERVICE:
-                MyLog.v(TAG, () -> "MyService " + instanceId + " command " + commandData.getCommand() + " received");
-                stopDelayed(false);
-                break;
-            case BROADCAST_SERVICE_STATE:
-                if (isStopping.get()) {
-                    stopDelayed(false);
-                }
-                broadcastAfterExecutingCommand(commandData);
-                break;
-            default:
-                latestActivityTime = System.currentTimeMillis();
-                if (isForcedToStop()) {
-                    stopDelayed(true);
-                } else {
-                    ensureInitialized();
-                    startStopExecution();
-                }
-                break;
+    private val intentReceiver: BroadcastReceiver? = object : BroadcastReceiver() {
+        override fun onReceive(arg0: Context?, intent: Intent?) {
+            MyLog.v(TAG) { "MyService " + instanceId + " onReceive " + intent.toString() }
+            receiveCommand(intent, 0)
         }
     }
 
-    private boolean isForcedToStop() {
-        return mForcedToStop || myContextHolder.isShuttingDown();
-    }
-
-    void broadcastBeforeExecutingCommand(CommandData commandData) {
-        MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
-            .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast();
-    }
-
-    void broadcastAfterExecutingCommand(CommandData commandData) {
-        MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
-            .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
-    }
-    
-    void ensureInitialized() {
-        if (initialized.get() || isStopping.get()) return;
-
-        if (!myContext.isReady()) {
-            myContext = myContextHolder.initialize(this).getBlocking();
-            if (!myContext.isReady()) return;
-        }
-
-        if (initialized.compareAndSet(false, true)) {
-            initializedTime = System.currentTimeMillis();
-            registerReceiver(intentReceiver, new IntentFilter(MyAction.EXECUTE_COMMAND.getAction()));
-            if (widgetsInitialized.compareAndSet(false, true)) {
-                AppWidgets.of(myContext).updateViews();
+    private fun receiveCommand(intent: Intent?, startId: Int) {
+        val commandData: CommandData = CommandData.Companion.fromIntent(myContext, intent)
+        when (commandData.command) {
+            CommandEnum.STOP_SERVICE -> {
+                MyLog.v(TAG) { "MyService " + instanceId + " command " + commandData.command + " received" }
+                stopDelayed(false)
             }
-            reviveHeartBeat();
-            MyLog.d(TAG, "MyService " + instanceId + " initialized");
-            MyServiceEventsBroadcaster.newInstance(myContext, getServiceState()).broadcast();
+            CommandEnum.BROADCAST_SERVICE_STATE -> {
+                if (isStopping.get()) {
+                    stopDelayed(false)
+                }
+                broadcastAfterExecutingCommand(commandData)
+            }
+            else -> {
+                latestActivityTime = System.currentTimeMillis()
+                if (isForcedToStop()) {
+                    stopDelayed(true)
+                } else {
+                    ensureInitialized()
+                    startStopExecution()
+                }
+            }
         }
     }
 
-    void reviveHeartBeat() {
-        final HeartBeat previous = heartBeatRef.get();
-        boolean replace = previous == null;
+    private fun isForcedToStop(): Boolean {
+        return mForcedToStop || MyContextHolder.Companion.myContextHolder.isShuttingDown()
+    }
+
+    fun broadcastBeforeExecutingCommand(commandData: CommandData?) {
+        MyServiceEventsBroadcaster.Companion.newInstance(myContext, getServiceState())
+                .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast()
+    }
+
+    fun broadcastAfterExecutingCommand(commandData: CommandData?) {
+        MyServiceEventsBroadcaster.Companion.newInstance(myContext, getServiceState())
+                .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
+    }
+
+    fun ensureInitialized() {
+        if (initialized.get() || isStopping.get()) return
+        if (!myContext.isReady()) {
+            myContext = MyContextHolder.Companion.myContextHolder.initialize(this).getBlocking()
+            if (!myContext.isReady()) return
+        }
+        if (initialized.compareAndSet(false, true)) {
+            initializedTime = System.currentTimeMillis()
+            registerReceiver(intentReceiver, IntentFilter(MyAction.EXECUTE_COMMAND.action))
+            if (widgetsInitialized.compareAndSet(false, true)) {
+                AppWidgets.Companion.of(myContext).updateViews()
+            }
+            reviveHeartBeat()
+            MyLog.d(TAG, "MyService $instanceId initialized")
+            MyServiceEventsBroadcaster.Companion.newInstance(myContext, getServiceState()).broadcast()
+        }
+    }
+
+    fun reviveHeartBeat() {
+        val previous = heartBeatRef.get()
+        var replace = previous == null
         if (!replace && !previous.isReallyWorking()) {
-            replace = true;
+            replace = true
         }
         if (replace) {
-            HeartBeat current = new HeartBeat(this);
+            val current = HeartBeat(this)
             if (heartBeatRef.compareAndSet(previous, current)) {
-                if (previous != null) {
-                    previous.cancelLogged(true);
-                }
-                AsyncTaskLauncher.execute(TAG, current).onFailure( t -> {
-                    heartBeatRef.compareAndSet(current, null);
-                    MyLog.w(TAG, "MyService " + instanceId + " Failed to revive heartbeat", t);
-                });
+                previous?.cancelLogged(true)
+                AsyncTaskLauncher.Companion.execute(TAG, current).onFailure(Consumer { t: Throwable? ->
+                    heartBeatRef.compareAndSet(current, null)
+                    MyLog.w(TAG, "MyService $instanceId Failed to revive heartbeat", t)
+                })
             }
         }
     }
 
-    void startStopExecution() {
-        if (!initialized.get()) return;
-
-        if (isStopping.get() || !myContext.isReady() || isForcedToStop() || (
-                !isAnythingToExecuteNow()
-                && RelativeTime.moreSecondsAgoThan(latestActivityTime, STOP_ON_INACTIVITY_AFTER_SECONDS))) {
-            stopDelayed(false);
+    fun startStopExecution() {
+        if (!initialized.get()) return
+        if (isStopping.get() || !myContext.isReady() || isForcedToStop() || (!isAnythingToExecuteNow()
+                        && RelativeTime.moreSecondsAgoThan(latestActivityTime, STOP_ON_INACTIVITY_AFTER_SECONDS))) {
+            stopDelayed(false)
         } else if (isAnythingToExecuteNow()) {
-            startExecution();
+            startExecution()
         }
     }
 
-    private void startExecution() {
-        acquireWakeLock();
+    private fun startExecution() {
+        acquireWakeLock()
         try {
-            executors.ensureExecutorsStarted();
-        } catch (Exception e) {
-            MyLog.i(TAG, "Couldn't start executor", e);
-            executors.stopExecutor(true);
-            releaseWakeLock();
+            executors.ensureExecutorsStarted()
+        } catch (e: Exception) {
+            MyLog.i(TAG, "Couldn't start executor", e)
+            executors.stopExecutor(true)
+            releaseWakeLock()
         }
     }
-    
-    private void acquireWakeLock() {
-        PowerManager.WakeLock previous = wakeLockRef.get();
+
+    private fun acquireWakeLock() {
+        val previous = wakeLockRef.get()
         if (previous == null) {
-            MyLog.v(TAG, () -> "MyService " + instanceId + " acquiring wakelock");
-            PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+            MyLog.v(TAG) { "MyService $instanceId acquiring wakelock" }
+            val pm = getSystemService(POWER_SERVICE) as PowerManager
             if (pm == null) {
-                MyLog.w(TAG, "No Power Manager ???");
-                return;
+                MyLog.w(TAG, "No Power Manager ???")
+                return
             }
-
-            PowerManager.WakeLock current = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, MyService.class.getName());
+            val current = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, MyService::class.java.name)
             if (current != null && wakeLockRef.compareAndSet(previous, current)) {
-                current.acquire();
+                current.acquire()
             }
         }
     }
 
-    private boolean isAnythingToExecuteNow() {
-        return myContext.queues().isAnythingToExecuteNow() || executors.isReallyWorking();
+    private fun isAnythingToExecuteNow(): Boolean {
+        return myContext.queues().isAnythingToExecuteNow || executors.isReallyWorking()
     }
 
-    @Override
-    public void onDestroy() {
+    override fun onDestroy() {
         if (initialized.get()) {
-            mForcedToStop = true;
-            MyLog.v(TAG, () -> "MyService " + instanceId + " onDestroy");
-            stopDelayed(true);
+            mForcedToStop = true
+            MyLog.v(TAG) { "MyService $instanceId onDestroy" }
+            stopDelayed(true)
         }
-        MyLog.v(TAG, () -> "MyService " + instanceId + " destroyed");
-        MyLog.setNextLogFileName();
+        MyLog.v(TAG) { "MyService $instanceId destroyed" }
+        MyLog.setNextLogFileName()
     }
-    
+
     /**
      * Notify background processes that the service is stopping.
      * Stop if background processes has finished.
      * Persist everything that we'll need on next Service creation and free resources
      */
-    private void stopDelayed(boolean forceNow) {
+    private fun stopDelayed(forceNow: Boolean) {
         if (isStopping.compareAndSet(false, true)) {
-            MyLog.v(TAG, () -> "MyService " + instanceId + " stopping" + (forceNow ? ", forced" : ""));
+            MyLog.v(TAG) { "MyService " + instanceId + " stopping" + if (forceNow) ", forced" else "" }
         }
-        startedForegrounLastTime = 0;
+        startedForegrounLastTime = 0
         if (!executors.stopExecutor(forceNow) && !forceNow) {
-            return;
+            return
         }
-        unInitialize();
-        MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
-                .setEvent(MyServiceEvent.ON_STOP).broadcast();
+        unInitialize()
+        MyServiceEventsBroadcaster.Companion.newInstance(myContext, getServiceState())
+                .setEvent(MyServiceEvent.ON_STOP).broadcast()
     }
 
-    private void unInitialize() {
-        if (!initialized.compareAndSet(true, false)) return;
-
+    private fun unInitialize() {
+        if (!initialized.compareAndSet(true, false)) return
         try {
-            unregisterReceiver(intentReceiver);
-        } catch (Exception e) {
-            MyLog.d(TAG, "MyService " + instanceId + " on unregisterReceiver", e);
+            unregisterReceiver(intentReceiver)
+        } catch (e: Exception) {
+            MyLog.d(TAG, "MyService $instanceId on unregisterReceiver", e)
         }
-        mForcedToStop = false;
-
-        final HeartBeat heartBeat = heartBeatRef.get();
+        mForcedToStop = false
+        val heartBeat = heartBeatRef.get()
         if (heartBeat != null && heartBeatRef.compareAndSet(heartBeat, null)) {
-            heartBeat.cancelLogged(true);
+            heartBeat.cancelLogged(true)
         }
-
-        AsyncTaskLauncher.cancelPoolTasks(MyAsyncTask.PoolEnum.SYNC);
-        releaseWakeLock();
-        stopSelf();
-        myContext.getNotifier().clearAndroidNotification(SERVICE_RUNNING);
-        MyLog.i(TAG, "MyService " + instanceId + " stopped, myServiceWorkMs:" + (System.currentTimeMillis() - initializedTime));
-        isStopping.set(false);
+        AsyncTaskLauncher.Companion.cancelPoolTasks(PoolEnum.SYNC)
+        releaseWakeLock()
+        stopSelf()
+        myContext.getNotifier().clearAndroidNotification(NotificationEventType.SERVICE_RUNNING)
+        MyLog.i(TAG, "MyService " + instanceId + " stopped, myServiceWorkMs:" + (System.currentTimeMillis() - initializedTime))
+        isStopping.set(false)
     }
 
-    private void releaseWakeLock() {
-        PowerManager.WakeLock wakeLock = wakeLockRef.get();
+    private fun releaseWakeLock() {
+        val wakeLock = wakeLockRef.get()
         if (wakeLock != null && wakeLockRef.compareAndSet(wakeLock, null)) {
-            MyLog.v(TAG, () -> "MyService " + instanceId + " releasing wakelock");
-            wakeLock.release();
+            MyLog.v(TAG) { "MyService $instanceId releasing wakelock" }
+            wakeLock.release()
         }
     }
 
-    @Override
-    public long getInstanceId() {
-        return instanceId;
+    override fun getInstanceId(): Long {
+        return instanceId
     }
 
-    @Override
-    public String instanceTag() {
-        return TAG;
+    override fun instanceTag(): String? {
+        return TAG
     }
 
-    private static class HeartBeat extends MyAsyncTask<Void, Long, Void> {
-        private final static String TAG = "HeartBeat";
-        private final WeakReference<MyService> myServiceRef;
-        private static final long HEARTBEAT_PERIOD_SECONDS = 11;
-        private volatile long previousBeat = createdAt;
-        private volatile long mIteration = 0;
+    private class HeartBeat internal constructor(myService: MyService?) : MyAsyncTask<Void?, Long?, Void?>(TAG, PoolEnum.SYNC) {
+        private val myServiceRef: WeakReference<MyService?>?
 
-        HeartBeat(MyService myService) {
-            super(TAG, PoolEnum.SYNC);
-            this.myServiceRef = new WeakReference<>(myService);
-        }
+        @Volatile
+        private var previousBeat = createdAt
 
-        @Override
-        protected Void doInBackground2(Void aVoid) {
-            MyLog.v(this, () -> "Started");
-            String breakReason = "";
-            for (long iteration = 1; iteration < 10000; iteration++) {
-                MyService myService = myServiceRef.get();
+        @Volatile
+        private var mIteration: Long = 0
+        override fun doInBackground2(aVoid: Void?): Void? {
+            MyLog.v(this) { "Started" }
+            var breakReason = ""
+            for (iteration in 1..9999) {
+                val myService = myServiceRef.get()
                 if (myService == null) {
-                    breakReason = "No reference to MyService";
-                    break;
+                    breakReason = "No reference to MyService"
+                    break
                 }
-
-                final HeartBeat heartBeat = myService.heartBeatRef.get();
-                if (heartBeat != null && heartBeat != this && heartBeat.isReallyWorking() ) {
-                    breakReason = "Other instance found: " + heartBeat;
-                    break;
+                val heartBeat = myService.heartBeatRef.get()
+                if (heartBeat != null && heartBeat !== this && heartBeat.isReallyWorking) {
+                    breakReason = "Other instance found: $heartBeat"
+                    break
                 }
-
-                if (isCancelled()) {
-                    breakReason = "Cancelled";
-                    break;
+                if (isCancelled) {
+                    breakReason = "Cancelled"
+                    break
                 }
                 if (DbUtils.waitMs("HeartBeatSleeping",
-                        Math.toIntExact(java.util.concurrent.TimeUnit.SECONDS.toMillis(HEARTBEAT_PERIOD_SECONDS)))) {
-                    breakReason = "InterruptedException";
-                    break;
+                                Math.toIntExact(TimeUnit.SECONDS.toMillis(HEARTBEAT_PERIOD_SECONDS)))) {
+                    breakReason = "InterruptedException"
+                    break
                 }
                 if (!myService.initialized.get()) {
-                    breakReason = "Not initialized";
-                    break;
+                    breakReason = "Not initialized"
+                    break
                 }
-                publishProgress(iteration);
+                publishProgress(iteration)
             }
-            String breakReasonVal = breakReason;
-            MyLog.v(this, () -> "Ended " + breakReasonVal + "; " + this);
-            MyService myService = myServiceRef.get();
-            if (myService != null) {
-                myService.heartBeatRef.compareAndSet(this, null);
-            }
-            return null;
+            val breakReasonVal = breakReason
+            MyLog.v(this) { "Ended $breakReasonVal; $this" }
+            val myService = myServiceRef.get()
+            myService?.heartBeatRef?.compareAndSet(this, null)
+            return null
         }
 
-        @Override
-        protected void onProgressUpdate(Long... values) {
-            mIteration = values[0];
-            previousBeat = MyLog.uniqueCurrentTimeMS();
+        override fun onProgressUpdate(vararg values: Long?) {
+            mIteration = values[0]
+            previousBeat = MyLog.uniqueCurrentTimeMS()
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, () -> "onProgressUpdate; " + this);
+                MyLog.v(this) { "onProgressUpdate; $this" }
             }
             if (MyLog.isDebugEnabled() && RelativeTime.moreSecondsAgoThan(createdAt,
-                    QueueExecutor.MAX_EXECUTION_TIME_SECONDS)) {
-                MyLog.d(this, AsyncTaskLauncher.threadPoolInfo());
+                            QueueExecutor.Companion.MAX_EXECUTION_TIME_SECONDS)) {
+                MyLog.d(this, AsyncTaskLauncher.Companion.threadPoolInfo())
             }
-            MyService myService = myServiceRef.get();
-            if (myService != null) {
-                myService.startStopExecution();
-            }
+            val myService = myServiceRef.get()
+            myService?.startStopExecution()
         }
 
-        @Override
-        public String toString() {
-            return instanceTag() + "; " + super.toString();
+        override fun toString(): String {
+            return instanceTag() + "; " + super.toString()
         }
 
-        @Override
-        public String instanceTag() {
-            return super.instanceTag() + "-it" + mIteration;
+        override fun instanceTag(): String? {
+            return super.instanceTag() + "-it" + mIteration
         }
 
-        @Override
-        public String classTag() {
-            return TAG;
+        override fun classTag(): String? {
+            return TAG
         }
 
-        @Override
-        public boolean isReallyWorking() {
-            return needsBackgroundWork() && !RelativeTime.
-                    wasButMoreSecondsAgoThan(previousBeat, HEARTBEAT_PERIOD_SECONDS * 2);
+        override fun isReallyWorking(): Boolean {
+            return needsBackgroundWork() && !RelativeTime.wasButMoreSecondsAgoThan(previousBeat, HEARTBEAT_PERIOD_SECONDS * 2)
+        }
+
+        companion object {
+            private val TAG: String? = "HeartBeat"
+            private const val HEARTBEAT_PERIOD_SECONDS: Long = 11
+        }
+
+        init {
+            myServiceRef = WeakReference(myService)
         }
     }
-    
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
+    }
+
+    companion object {
+        private val TAG: String? = MyService::class.java.simpleName
+        private const val STOP_ON_INACTIVITY_AFTER_SECONDS: Long = 10
+        private val widgetsInitialized: AtomicBoolean? = AtomicBoolean(false)
     }
 }

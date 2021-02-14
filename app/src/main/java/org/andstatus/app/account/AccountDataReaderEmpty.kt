@@ -13,24 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.account
 
-package org.andstatus.app.account;
-
-public class AccountDataReaderEmpty implements AccountDataReader {
-
-    @Override
-    public boolean dataContains(String key) {
-        return false;
+class AccountDataReaderEmpty : AccountDataReader {
+    override fun dataContains(key: String?): Boolean {
+        return false
     }
 
-    @Override
-    public String getDataString(String key, String defValue) {
-        return defValue;
+    override fun getDataString(key: String?, defValue: String?): String? {
+        return defValue
     }
 
-    @Override
-    public int getDataInt(String key, int defValue) {
-        return defValue;
+    override fun getDataInt(key: String?, defValue: Int): Int {
+        return defValue
     }
-
 }

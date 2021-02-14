@@ -13,168 +13,139 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app
 
-package org.andstatus.app;
-
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.Intent;
-import android.content.res.Configuration;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.View;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
-import org.andstatus.app.context.MyLocale;
-import org.andstatus.app.context.MyTheme;
-import org.andstatus.app.util.IdentifiableInstance;
-import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.TriState;
-
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.content.res.Configuration
+import android.os.Bundle
+import android.view.InflateException
+import android.view.Menu
+import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyLocale
+import org.andstatus.app.context.MyTheme
+import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.InstanceId
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.TriState
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Supplier
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MyActivity extends AppCompatActivity implements IdentifiableInstance {
-    private static volatile long previousErrorInflatingTime = 0;
-
-    protected enum OnFinishAction {
-        RESTART_APP,
-        RESTART_ME,
-        DONE,
-        NONE
+open class MyActivity : AppCompatActivity(), IdentifiableInstance {
+    protected enum class OnFinishAction {
+        RESTART_APP, RESTART_ME, DONE, NONE
     }
 
     // introduce this in order to avoid duplicated restarts: we have one place, where we restart anything
-    protected AtomicReference<OnFinishAction> onFinishAction = new AtomicReference<>(OnFinishAction.NONE);
+    protected var onFinishAction: AtomicReference<OnFinishAction?>? = AtomicReference(OnFinishAction.NONE)
+    protected val instanceId = InstanceId.next()
+    protected var mLayoutId = 0
+    protected var myResumed = false
 
-    protected final long instanceId = InstanceId.next();
-    protected int mLayoutId = 0;
-    protected boolean myResumed = false;
     /**
      * We are going to finish/restart this Activity (e.g. onResume or even onCreate)
      */
-    private volatile boolean mFinishing = false;
-    private Menu mOptionsMenu = null;
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(MyLocale.onAttachBaseContext(newBase));
+    @Volatile
+    private var mFinishing = false
+    private var mOptionsMenu: Menu? = null
+    override fun attachBaseContext(newBase: Context?) {
+        super.attachBaseContext(MyLocale.onAttachBaseContext(newBase))
     }
 
-    @Override
-    public void applyOverrideConfiguration(Configuration overrideConfiguration) {
+    override fun applyOverrideConfiguration(overrideConfiguration: Configuration?) {
         super.applyOverrideConfiguration(
-            MyLocale.applyOverrideConfiguration(getBaseContext(), overrideConfiguration)
-        );
+                MyLocale.applyOverrideConfiguration(baseContext, overrideConfiguration)
+        )
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        MyLog.v(this, () -> "onCreate" + (isFinishing() ? " finishing" : ""));
-        MyTheme.loadTheme(this);
-        super.onCreate(savedInstanceState);
-        if (isFinishing()) {
-            return;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        MyLog.v(this) { "onCreate" + if (isFinishing) " finishing" else "" }
+        MyTheme.loadTheme(this)
+        super.onCreate(savedInstanceState)
+        if (isFinishing) {
+            return
         }
-
         if (mLayoutId != 0) {
             try {
-                MyTheme.setContentView(this, mLayoutId);
-            } catch (android.view.InflateException e) {
-                String logMsg = "Error inflating layoutId:" + mLayoutId
-                        + (previousErrorInflatingTime == 0 ? ", going Home..."
-                        : ", again. Similar error occurred "
-                        + RelativeTime.getDifference(this, previousErrorInflatingTime));
-                MyLog.e(this, logMsg, e);
-                if (previousErrorInflatingTime == 0) {
-                    previousErrorInflatingTime = System.currentTimeMillis();
-                    finish();
-                    myContextHolder.getNow().setExpired(() -> logMsg);
-                    FirstActivity.goHome(this);
+                MyTheme.setContentView(this, mLayoutId)
+            } catch (e: InflateException) {
+                val logMsg = ("Error inflating layoutId:$mLayoutId"
+                        + if (previousErrorInflatingTime == 0L) ", going Home..." else ", again. Similar error occurred "
+                        + RelativeTime.getDifference(this, previousErrorInflatingTime))
+                MyLog.e(this, logMsg, e)
+                if (previousErrorInflatingTime == 0L) {
+                    previousErrorInflatingTime = System.currentTimeMillis()
+                    finish()
+                    MyContextHolder.Companion.myContextHolder.getNow().setExpired(Supplier { logMsg })
+                    FirstActivity.Companion.goHome(this)
                 } else {
-                    throw new IllegalStateException(logMsg, e);
+                    throw IllegalStateException(logMsg, e)
                 }
-                return;
+                return
             }
         }
-        Toolbar toolbar = findViewById(R.id.my_action_bar);
-        if (toolbar != null) {
-            setSupportActionBar(toolbar);
-        }
-        ActionBar actionBar = getSupportActionBar();
+        val toolbar = findViewById<Toolbar?>(R.id.my_action_bar)
+        toolbar?.let { setSupportActionBar(it) }
+        val actionBar = supportActionBar
         if (actionBar != null) {
-            actionBar.setDisplayShowHomeEnabled(true);
-            actionBar.setDisplayHomeAsUpEnabled(true);
-        }
-
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        mOptionsMenu = menu;
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    public Menu getOptionsMenu() {
-        return mOptionsMenu;
-    }
-
-    public void setTitle(String title) {
-        ActionBar bar = getSupportActionBar();
-        if (bar != null) {
-            bar.setTitle(title);
+            actionBar.setDisplayShowHomeEnabled(true)
+            actionBar.setDisplayHomeAsUpEnabled(true)
         }
     }
 
-    public void setSubtitle(CharSequence subtitle) {
-        ActionBar bar = getSupportActionBar();
-        if (bar != null) {
-            bar.setSubtitle(subtitle);
-        }
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        mOptionsMenu = menu
+        return super.onCreateOptionsMenu(menu)
     }
 
-    public boolean isMyResumed() {
-        return myResumed;
+    fun getOptionsMenu(): Menu? {
+        return mOptionsMenu
     }
 
-    @Override
-    protected void onPause() {
-        myResumed = false;
-        super.onPause();
-        toggleFullscreen(TriState.FALSE);
+    fun setTitle(title: String?) {
+        val bar = supportActionBar
+        bar?.setTitle(title)
     }
 
-    @Override
-    protected void onResume() {
-        myResumed = true;
-        super.onResume();
+    fun setSubtitle(subtitle: CharSequence?) {
+        val bar = supportActionBar
+        bar?.setSubtitle(subtitle)
     }
 
-    @Override
-    public void startActivityForResult(Intent intent, int requestCode) {
+    fun isMyResumed(): Boolean {
+        return myResumed
+    }
+
+    override fun onPause() {
+        myResumed = false
+        super.onPause()
+        toggleFullscreen(TriState.FALSE)
+    }
+
+    override fun onResume() {
+        myResumed = true
+        super.onResume()
+    }
+
+    override fun startActivityForResult(intent: Intent?, requestCode: Int) {
         try {
-            super.startActivityForResult(intent, requestCode);
-        } catch (ActivityNotFoundException e) {
-            MyLog.w(this, "requestCode=" + requestCode, e);
+            super.startActivityForResult(intent, requestCode)
+        } catch (e: ActivityNotFoundException) {
+            MyLog.w(this, "requestCode=$requestCode", e)
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
     }
 
     /**
@@ -183,107 +154,99 @@ public class MyActivity extends AppCompatActivity implements IdentifiableInstanc
      * Based on http://stackoverflow.com/a/30224178/297710
      * On Immersive mode: https://developer.android.com/training/system-ui/immersive.html
      */
-    public void toggleFullscreen(TriState fullScreenIn) {
-        int uiOptionsNew = getWindow().getDecorView().getSystemUiVisibility();
-        boolean fullscreenNew = fullScreenIn.known
-                ? fullScreenIn.toBoolean(false)
-                : !isFullScreen();
-        hideActionBar(fullscreenNew);
+    fun toggleFullscreen(fullScreenIn: TriState?) {
+        var uiOptionsNew = window.decorView.systemUiVisibility
+        val fullscreenNew = if (fullScreenIn.known) fullScreenIn.toBoolean(false) else !isFullScreen()
+        hideActionBar(fullscreenNew)
         if (fullscreenNew) {
-            uiOptionsNew |= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-            uiOptionsNew |= View.SYSTEM_UI_FLAG_FULLSCREEN;
-            uiOptionsNew |= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            uiOptionsNew = uiOptionsNew or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            uiOptionsNew = uiOptionsNew or View.SYSTEM_UI_FLAG_FULLSCREEN
+            uiOptionsNew = uiOptionsNew or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         } else {
-            uiOptionsNew &= ~View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-            uiOptionsNew &= ~View.SYSTEM_UI_FLAG_FULLSCREEN;
-            uiOptionsNew &= ~View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            uiOptionsNew = uiOptionsNew and View.SYSTEM_UI_FLAG_HIDE_NAVIGATION.inv()
+            uiOptionsNew = uiOptionsNew and View.SYSTEM_UI_FLAG_FULLSCREEN.inv()
+            uiOptionsNew = uiOptionsNew and View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY.inv()
         }
-        getWindow().getDecorView().setSystemUiVisibility(uiOptionsNew);
-        onFullScreenToggle(fullscreenNew);
+        window.decorView.systemUiVisibility = uiOptionsNew
+        onFullScreenToggle(fullscreenNew)
     }
 
-    protected void onFullScreenToggle(boolean fullscreenNew) { }
-
-    public boolean isFullScreen() {
-        ActionBar actionBar = getSupportActionBar();
-        return !(
-            actionBar != null
-            ? actionBar.isShowing()
-            : (getWindow().getDecorView().getSystemUiVisibility() & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0
-        );
+    protected open fun onFullScreenToggle(fullscreenNew: Boolean) {}
+    fun isFullScreen(): Boolean {
+        val actionBar = supportActionBar
+        return !(actionBar?.isShowing ?: (window.decorView.systemUiVisibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0))
     }
 
-
-    public void hideActionBar(boolean hide) {
-        ActionBar actionBar = getSupportActionBar();
+    fun hideActionBar(hide: Boolean) {
+        val actionBar = supportActionBar
         if (actionBar != null) {
             if (hide) {
-                actionBar.hide();
+                actionBar.hide()
             } else {
-                actionBar.show();
+                actionBar.show()
             }
         }
     }
 
-    protected void showFragment(@NonNull Class<? extends Fragment> fragmentClass, Bundle args) {
-        ClassLoader classLoader = fragmentClass.getClassLoader();
+    protected fun showFragment(fragmentClass: Class<out Fragment?>, args: Bundle?) {
+        val classLoader = fragmentClass.classLoader
         if (classLoader == null) {
-            MyLog.e(this, "No class loader for " + fragmentClass);
+            MyLog.e(this, "No class loader for $fragmentClass")
         } else {
-            FragmentManager fragmentManager = getSupportFragmentManager();
-            Fragment fragment = fragmentManager.getFragmentFactory().instantiate(classLoader, fragmentClass.getName());
-            if (args != null) fragment.setArguments(args);
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragmentOne, fragment, "fragment").commit();
+            val fragmentManager = supportFragmentManager
+            val fragment = fragmentManager.fragmentFactory.instantiate(classLoader, fragmentClass.name)
+            if (args != null) fragment.arguments = args
+            val transaction = supportFragmentManager.beginTransaction()
+            transaction.replace(R.id.fragmentOne, fragment, "fragment").commit()
         }
     }
 
-    /** @return true if the Activity is finishing */
-    public boolean restartMeIfNeeded() {
-        return myContextHolder.needToRestartActivity() && initializeThenRestartActivity()
-                || isFinishing();
+    /** @return true if the Activity is finishing
+     */
+    fun restartMeIfNeeded(): Boolean {
+        return (MyContextHolder.Companion.myContextHolder.needToRestartActivity() && initializeThenRestartActivity()
+                || isFinishing)
     }
 
-    /** @return true if we are restarting */
-    public boolean initializeThenRestartActivity() {
+    /** @return true if we are restarting
+     */
+    fun initializeThenRestartActivity(): Boolean {
         if (onFinishAction.compareAndSet(OnFinishAction.NONE, OnFinishAction.RESTART_ME)) {
-            finish();
-            return true;
+            finish()
+            return true
         }
-        return false;
+        return false
     }
 
-    @Override
-    public void finish() {
-        OnFinishAction actionToDo = onFinishAction.getAndSet(OnFinishAction.DONE);
+    override fun finish() {
+        val actionToDo = onFinishAction.getAndSet(OnFinishAction.DONE)
         if (actionToDo == OnFinishAction.DONE) {
-            return;
+            return
         }
-        boolean isFinishing1 = isFinishing();
-        mFinishing = true;
-        MyLog.v(this,() -> "finish: " + onFinishAction.get() + (isFinishing1 ? ", already finishing" : ""));
+        val isFinishing1 = isFinishing
+        mFinishing = true
+        MyLog.v(this) { "finish: " + onFinishAction.get() + if (isFinishing1) ", already finishing" else "" }
         if (!isFinishing1) {
-            super.finish();
+            super.finish()
         }
-        switch (actionToDo) {
-            case RESTART_ME:
-                myContextHolder.initialize(this).thenStartActivity(this.getIntent());
-                break;
-            case RESTART_APP:
-                myContextHolder.initialize(this).thenStartApp();
-                break;
-            default:
-                break;
+        when (actionToDo) {
+            OnFinishAction.RESTART_ME -> MyContextHolder.Companion.myContextHolder.initialize(this).thenStartActivity(this.intent)
+            OnFinishAction.RESTART_APP -> MyContextHolder.Companion.myContextHolder.initialize(this).thenStartApp()
+            else -> {
+            }
         }
     }
 
-    @Override
-    public boolean isFinishing() {
-        return mFinishing || super.isFinishing();
+    override fun isFinishing(): Boolean {
+        return mFinishing || super.isFinishing()
     }
 
-    @Override
-    public long getInstanceId() {
-        return instanceId;
+    override fun getInstanceId(): Long {
+        return instanceId
+    }
+
+    companion object {
+        @Volatile
+        private var previousErrorInflatingTime: Long = 0
     }
 }

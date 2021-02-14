@@ -13,32 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.actor
 
-package org.andstatus.app.actor;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.GroupMembership;
-import org.andstatus.app.origin.Origin;
-
-import java.util.Collections;
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.data.GroupMembership
+import org.andstatus.app.origin.Origin
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class FriendsAndFollowersLoader extends ActorsLoader {
-
-    public FriendsAndFollowersLoader(MyContext myContext, ActorsScreenType actorsScreenType, Origin origin,
-                                     long centralItemId, String searchQuery) {
-        super(myContext, actorsScreenType, origin, centralItemId, searchQuery);
+class FriendsAndFollowersLoader(myContext: MyContext?, actorsScreenType: ActorsScreenType?, origin: Origin?,
+                                centralItemId: Long, searchQuery: String?) : ActorsLoader(myContext, actorsScreenType, origin, centralItemId, searchQuery) {
+    override fun getSqlActorIds(): String? {
+        val groupType = if (actorsScreenType == ActorsScreenType.FOLLOWERS) GroupType.FOLLOWERS else GroupType.FRIENDS
+        return " IN (" + GroupMembership.Companion.selectMemberIds(listOf<Long?>(centralActorId), groupType, false) + ")"
     }
 
-    protected String getSqlActorIds() {
-        GroupType groupType = actorsScreenType == ActorsScreenType.FOLLOWERS ? GroupType.FOLLOWERS : GroupType.FRIENDS;
-        return " IN (" + GroupMembership.selectMemberIds(Collections.singletonList(centralActorId), groupType, false) + ")";
-    }
-
-    @Override
-    protected String getSubtitle() {
-        return ma.toAccountButtonText();
+    override fun getSubtitle(): String? {
+        return ma.toAccountButtonText()
     }
 }

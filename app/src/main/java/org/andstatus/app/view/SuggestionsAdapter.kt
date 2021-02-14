@@ -13,162 +13,139 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.view
 
-package org.andstatus.app.view;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.Filter;
-import android.widget.Filterable;
-
-import org.andstatus.app.R;
-import org.andstatus.app.SearchObjects;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.timeline.LoadableListActivity;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.util.CollectionsUtil;
-import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.util.StringUtil;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import android.text.TextUtils
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseAdapter
+import android.widget.Filter
+import android.widget.Filterable
+import org.andstatus.app.R
+import org.andstatus.app.SearchObjects
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.timeline.LoadableListActivity
+import org.andstatus.app.util.CollectionsUtil
+import org.andstatus.app.util.MyUrlSpan
+import org.andstatus.app.util.StringUtil
+import java.util.*
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * For now Timeline suggestions are taken from Search timelines, user suggestions are not persistent
  */
-public class SuggestionsAdapter extends BaseAdapter implements Filterable {
-    private static final List<String> notesSuggestions = new CopyOnWriteArrayList<>();
-    private static final List<String> actorsSuggestions = new CopyOnWriteArrayList<>();
-    private final LayoutInflater mInflater;
-
-    private final SearchObjects searchObjects;
-    private ArrayFilter mFilter;
-    private List<String> items = new ArrayList<>();
-
-    public SuggestionsAdapter(@NonNull LoadableListActivity activity, @NonNull SearchObjects searchObjects) {
-        mInflater = LayoutInflater.from(activity);
-        this.searchObjects = searchObjects;
-        for (Timeline timeline : activity.getMyContext().timelines().values()) {
-            if (timeline.hasSearchQuery() && !notesSuggestions.contains(timeline.getSearchQuery())) {
-                notesSuggestions.add(timeline.getSearchQuery());
-            }
-        }
+class SuggestionsAdapter(activity: LoadableListActivity<*>, searchObjects: SearchObjects) : BaseAdapter(), Filterable {
+    private val mInflater: LayoutInflater?
+    private val searchObjects: SearchObjects?
+    private var mFilter: ArrayFilter? = null
+    private var items: MutableList<String?>? = ArrayList()
+    override fun getCount(): Int {
+        return items.size
     }
 
-    @Override
-    public int getCount() {
-        return items.size();
+    override fun getItem(position: Int): String? {
+        return items.get(position)
     }
 
-    @Override
-    public @Nullable
-    String getItem(int position) {
-        return items.get(position);
+    override fun getItemId(position: Int): Long {
+        return position
     }
 
-    @Override
-    public long getItemId(int position) {
-        return position;
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val view: View?
+        view = convertView ?: mInflater.inflate(R.layout.suggestion_item, parent, false)
+        val item = getItem(position)
+        MyUrlSpan.Companion.showText(view, R.id.suggestion, item, false, true)
+        return view
     }
 
-    @Override
-    public @NonNull View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        final View view;
-        if (convertView == null) {
-            view = mInflater.inflate(R.layout.suggestion_item, parent, false);
-        } else {
-            view = convertView;
-        }
-        final String item = getItem(position);
-        MyUrlSpan.showText(view, R.id.suggestion, item, false, true);
-        return view;
-    }
-
-    @Override
-    public @NonNull Filter getFilter() {
+    override fun getFilter(): Filter {
         if (mFilter == null) {
-            mFilter = new ArrayFilter();
+            mFilter = ArrayFilter()
         }
-        return mFilter;
+        return mFilter
     }
 
     /**
-     * <p>An array filter constrains the content of the array adapter with
+     *
+     * An array filter constrains the content of the array adapter with
      * a prefix. Each item that does not start with the supplied prefix
-     * is removed from the list.</p>
+     * is removed from the list.
      */
-    private class ArrayFilter extends Filter {
-        @Override
-        protected FilterResults performFiltering(CharSequence prefix) {
-            List<String> filteredValues = new ArrayList<>();
+    private inner class ArrayFilter : Filter() {
+        override fun performFiltering(prefix: CharSequence?): FilterResults? {
+            var filteredValues: MutableList<String?>? = ArrayList()
             if (!TextUtils.isEmpty(prefix)) {
-                final String prefixString = prefix.toString().toLowerCase();
-                filteredValues = loadFiltered(prefixString);
-                CollectionsUtil.sort(filteredValues);
+                val prefixString = prefix.toString().toLowerCase()
+                filteredValues = loadFiltered(prefixString)
+                CollectionsUtil.sort(filteredValues)
             }
-            final FilterResults results = new FilterResults();
-            results.values = filteredValues;
-            results.count = filteredValues.size();
-            return results;
+            val results = FilterResults()
+            results.values = filteredValues
+            results.count = filteredValues.size
+            return results
         }
 
-        private List<String> loadFiltered(final String prefixString) {
+        private fun loadFiltered(prefixString: String?): MutableList<String?>? {
             if (StringUtil.isEmpty(prefixString)) {
-                return Collections.emptyList();
+                return emptyList<String?>()
             }
-            List<String> filteredValues = new ArrayList<>();
-            for (String item : getAllSuggestions(searchObjects)) {
+            val filteredValues: MutableList<String?> = ArrayList()
+            for (item in getAllSuggestions(searchObjects)) {
                 if (item.toLowerCase().startsWith(prefixString)) {
-                    filteredValues.add(item);
+                    filteredValues.add(item)
                 }
             }
             if (MyPreferences.isShowDebuggingInfoInUi()) {
-                filteredValues.add("prefix:" + prefixString);
-                filteredValues.add("inAllSuggestions:" + getAllSuggestions(searchObjects).size() + "items");
+                filteredValues.add("prefix:$prefixString")
+                filteredValues.add("inAllSuggestions:" + getAllSuggestions(searchObjects).size + "items")
             }
-            return filteredValues;
+            return filteredValues
         }
 
-        @Override
-        protected void publishResults(CharSequence constraint, FilterResults results) {
-            //noinspection unchecked
-            items = (List<String>) results.values;
+        override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+            items = results.values as MutableList<String?>
             if (results.count > 0) {
-                notifyDataSetChanged();
+                notifyDataSetChanged()
             } else {
-                notifyDataSetInvalidated();
+                notifyDataSetInvalidated()
             }
         }
 
-        @Override
-        public CharSequence convertResultToString(Object resultValue) {
-            if (resultValue == null) {
-                return "(null)";
+        override fun convertResultToString(resultValue: Any?): CharSequence? {
+            return if (resultValue == null) {
+                "(null)"
+            } else resultValue as String?
+        }
+    }
+
+    companion object {
+        private val notesSuggestions: MutableList<String?>? = CopyOnWriteArrayList()
+        private val actorsSuggestions: MutableList<String?>? = CopyOnWriteArrayList()
+        fun addSuggestion(searchObjects: SearchObjects?, suggestion: String?) {
+            if (StringUtil.isEmpty(suggestion)) {
+                return
             }
-            return (String) resultValue;
+            val suggestions = getAllSuggestions(searchObjects)
+            if (suggestions.contains(suggestion)) {
+                suggestions.remove(suggestion)
+            }
+            suggestions.add(0, suggestion)
+        }
+
+        private fun getAllSuggestions(searchObjects: SearchObjects?): MutableList<String?> {
+            return if (SearchObjects.NOTES == searchObjects) notesSuggestions else actorsSuggestions
         }
     }
 
-    public static void addSuggestion(SearchObjects searchObjects, String suggestion) {
-        if (StringUtil.isEmpty(suggestion)) {
-            return;
+    init {
+        mInflater = LayoutInflater.from(activity)
+        this.searchObjects = searchObjects
+        for (timeline in activity.myContext.timelines().values()) {
+            if (timeline.hasSearchQuery() && !notesSuggestions.contains(timeline.searchQuery)) {
+                notesSuggestions.add(timeline.searchQuery)
+            }
         }
-        List<String> suggestions = getAllSuggestions(searchObjects);
-        if (suggestions.contains(suggestion)) {
-            suggestions.remove(suggestion);
-        }
-        suggestions.add(0, suggestion);
-    }
-
-    @NonNull
-    private static List<String> getAllSuggestions(SearchObjects searchObjects) {
-        return SearchObjects.NOTES.equals(searchObjects) ? notesSuggestions : actorsSuggestions;
     }
 }

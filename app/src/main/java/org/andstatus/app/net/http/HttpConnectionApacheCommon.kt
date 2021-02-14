@@ -13,126 +13,113 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.http
 
-package org.andstatus.app.net.http;
+import cz.msebera.android.httpclient.Header
+import cz.msebera.android.httpclient.HttpEntity
+import cz.msebera.android.httpclient.HttpResponse
+import cz.msebera.android.httpclient.HttpVersion
+import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity
+import cz.msebera.android.httpclient.client.methods.HttpGet
+import cz.msebera.android.httpclient.client.methods.HttpPost
+import cz.msebera.android.httpclient.protocol.HTTP
+import io.vavr.control.CheckedFunction
+import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.util.MyLog
+import org.json.JSONObject
+import java.io.InputStream
+import java.io.UnsupportedEncodingException
+import java.util.*
+import java.util.function.Function
 
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.util.MyLog;
-import org.json.JSONObject;
-
-import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
-import java.util.List;
-
-import cz.msebera.android.httpclient.Header;
-import cz.msebera.android.httpclient.HttpEntity;
-import cz.msebera.android.httpclient.HttpResponse;
-import cz.msebera.android.httpclient.HttpVersion;
-import cz.msebera.android.httpclient.NameValuePair;
-import cz.msebera.android.httpclient.StatusLine;
-import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity;
-import cz.msebera.android.httpclient.client.methods.HttpGet;
-import cz.msebera.android.httpclient.client.methods.HttpPost;
-import cz.msebera.android.httpclient.protocol.HTTP;
-
-public class HttpConnectionApacheCommon {
-    private final HttpConnectionApacheSpecific specific;
-    private final HttpConnectionData data;
-
-    HttpConnectionApacheCommon(HttpConnectionApacheSpecific specificIn, HttpConnectionData data) {
-        this.specific = specificIn;
-        this.data = data;
-    }
-
-    protected HttpReadResult postRequest(HttpReadResult result) {
-        HttpPost httpPost = new HttpPost(result.getUrl());
-        if (result.request.isLegacyHttpProtocol()) {
-            httpPost.setProtocolVersion(HttpVersion.HTTP_1_0);
+class HttpConnectionApacheCommon internal constructor(private val specific: HttpConnectionApacheSpecific?, private val data: HttpConnectionData?) {
+    fun postRequest(result: HttpReadResult?): HttpReadResult? {
+        val httpPost = HttpPost(result.getUrl())
+        if (result.request.isLegacyHttpProtocol) {
+            httpPost.protocolVersion = HttpVersion.HTTP_1_0
         }
-        if (result.request.mediaUri.isPresent()) {
+        if (result.request.mediaUri.isPresent) {
             try {
-                httpPost.setEntity(ApacheHttpClientUtils.multiPartFormEntity(result.request));
-            } catch (Exception e) {
-                result.setException(e);
-                MyLog.i(this, e);
+                httpPost.entity = ApacheHttpClientUtils.multiPartFormEntity(result.request)
+            } catch (e: Exception) {
+                result.setException(e)
+                MyLog.i(this, e)
             }
         } else {
-            result.request.postParams.ifPresent(params -> {
+            result.request.postParams.ifPresent { params: JSONObject? ->
                 try {
-                    data.optOriginContentType().ifPresent(value -> httpPost.addHeader("Content-Type", value));
-                    fillSinglePartPost(httpPost, params);
-                } catch (Exception e) {
-                    result.setException(e);
-                    MyLog.i(this, e);
+                    data.optOriginContentType().ifPresent { value: String? -> httpPost.addHeader("Content-Type", value) }
+                    fillSinglePartPost(httpPost, params)
+                } catch (e: Exception) {
+                    result.setException(e)
+                    MyLog.i(this, e)
                 }
-            });
+            }
         }
-        return specific.httpApachePostRequest(httpPost, result);
+        return specific.httpApachePostRequest(httpPost, result)
     }
 
-    private void fillSinglePartPost(HttpPost httpPost, JSONObject formParams)
-            throws UnsupportedEncodingException {
-        List<NameValuePair> nvFormParams = ApacheHttpClientUtils.jsonToNameValuePair(formParams);
+    @Throws(UnsupportedEncodingException::class)
+    private fun fillSinglePartPost(httpPost: HttpPost?, formParams: JSONObject?) {
+        val nvFormParams = ApacheHttpClientUtils.jsonToNameValuePair(formParams)
         if (nvFormParams != null) {
-            HttpEntity formEntity = new UrlEncodedFormEntity(nvFormParams, HTTP.UTF_8);
-            httpPost.setEntity(formEntity);
+            val formEntity: HttpEntity = UrlEncodedFormEntity(nvFormParams, HTTP.UTF_8)
+            httpPost.setEntity(formEntity)
         }
     }
 
-    protected HttpReadResult getRequest(HttpReadResult result) {
-        HttpResponse response = null;
+    fun getRequest(result: HttpReadResult?): HttpReadResult? {
+        var response: HttpResponse? = null
         try {
-            boolean stop = false;
+            var stop = false
             do {
-                HttpGet httpGet = newHttpGet(result.getUrl());
-                data.optOriginContentType().ifPresent(value -> httpGet.addHeader("Accept", value));
+                val httpGet = newHttpGet(result.getUrl())
+                data.optOriginContentType().ifPresent { value: String? -> httpGet.addHeader("Accept", value) }
                 if (result.authenticate()) {
-                    specific.httpApacheSetAuthorization(httpGet);
+                    specific.httpApacheSetAuthorization(httpGet)
                 }
                 // See http://hc.apache.org/httpcomponents-client-ga/tutorial/html/fundamentals.html
-                response = specific.httpApacheGetResponse(httpGet);
-                setStatusCodeAndHeaders(result, response);
-                switch (result.getStatusCode()) {
-                    case OK:
-                    case UNKNOWN:
-                        HttpEntity entity = response.getEntity();
+                response = specific.httpApacheGetResponse(httpGet)
+                setStatusCodeAndHeaders(result, response)
+                when (result.getStatusCode()) {
+                    StatusCode.OK, StatusCode.UNKNOWN -> {
+                        val entity = response.entity
                         if (entity != null) {
-                            result.readStream("", o -> entity.getContent());
+                            result.readStream("", CheckedFunction { o: Void? -> entity.content })
                         }
-                        stop = true;
-                        break;
-                    case MOVED:
-                        stop = specific.onMoved(result);
-                        break;
-                    default:
-                        entity = response.getEntity();
+                        stop = true
+                    }
+                    StatusCode.MOVED -> stop = specific.onMoved(result)
+                    else -> {
+                        entity = response.entity
                         if (entity != null) {
-                            result.readStream("", o -> entity.getContent());
+                            result.readStream("", CheckedFunction<Void?, InputStream?> { o: Void? -> entity.getContent() })
                         }
-                        stop =  result.noMoreHttpRetries();
-                        break;
+                        stop = result.noMoreHttpRetries()
+                    }
                 }
-                DbUtils.closeSilently(response);
-            } while (!stop);
-        } catch (Exception e) {
-            result.setException(e);
+                closeSilently(response)
+            } while (!stop)
+        } catch (e: Exception) {
+            result.setException(e)
         } finally {
-            DbUtils.closeSilently(response);
+            closeSilently(response)
         }
-        return result;
+        return result
     }
 
-    static void setStatusCodeAndHeaders(HttpReadResult result, HttpResponse httpResponse) {
-        StatusLine statusLine = httpResponse.getStatusLine();
-        result.statusLine = statusLine.toString();
-        result.setStatusCode(statusLine.getStatusCode());
-        result.setHeaders(Arrays.stream(httpResponse.getAllHeaders()), Header::getName, Header::getValue);
+    private fun newHttpGet(url: String?): HttpGet? {
+        val httpGet = HttpGet(url)
+        httpGet.setHeader("User-Agent", HttpConnectionInterface.Companion.USER_AGENT)
+        return httpGet
     }
 
-    private HttpGet newHttpGet(String url) {
-        HttpGet httpGet = new HttpGet(url);
-        httpGet.setHeader("User-Agent", HttpConnection.USER_AGENT);
-        return httpGet;
+    companion object {
+        fun setStatusCodeAndHeaders(result: HttpReadResult?, httpResponse: HttpResponse?) {
+            val statusLine = httpResponse.getStatusLine()
+            result.statusLine = statusLine.toString()
+            result.setStatusCode(statusLine.statusCode)
+            result.setHeaders(Arrays.stream(httpResponse.getAllHeaders()), Function { obj: Header? -> obj.getName() }, Function { obj: Header? -> obj.getValue() })
+        }
     }
-
 }

@@ -13,126 +13,109 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.context
 
-package org.andstatus.app.context;
-
-import android.app.ActivityManager;
-import android.app.Application;
-import android.content.Context;
-import android.content.res.Configuration;
-import android.database.DatabaseErrorHandler;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabase.CursorFactory;
-
-import androidx.annotation.NonNull;
-
-import org.acra.ACRA;
-import org.acra.annotation.AcraCore;
-import org.acra.annotation.AcraDialog;
-import org.acra.annotation.AcraMailSender;
-import org.andstatus.app.R;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TamperingDetector;
-
-import java.io.File;
-import java.util.List;
+import android.app.ActivityManager
+import android.app.Application
+import android.content.Context
+import android.content.res.Configuration
+import android.database.DatabaseErrorHandler
+import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteDatabase.CursorFactory
+import android.os.Process
+import org.acra.ACRA
+import org.acra.annotation.AcraCore
+import org.acra.annotation.AcraDialog
+import org.acra.annotation.AcraMailSender
+import org.andstatus.app.R
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TamperingDetector
+import java.io.File
 
 @AcraMailSender(mailTo = "andstatus@gmail.com")
-@AcraDialog(
-        resIcon = R.drawable.icon,
-        resText = R.string.crash_dialog_text,
-        resCommentPrompt = R.string.crash_dialog_comment_prompt)
+@AcraDialog(resIcon = R.drawable.icon, resText = R.string.crash_dialog_text, resCommentPrompt = R.string.crash_dialog_comment_prompt)
 @AcraCore(alsoReportToAndroidFramework = true)
-public class MyApplication extends Application {
-    public volatile boolean isAcraProcess = false;
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        String processName = getCurrentProcessName(this);
-        isAcraProcess = processName.endsWith(":acra");
+class MyApplication : Application() {
+    @Volatile
+    var isAcraProcess = false
+    override fun onCreate() {
+        super.onCreate()
+        val processName = getCurrentProcessName(this)
+        isAcraProcess = processName.endsWith(":acra")
         MyLog.i(this, "onCreate "
-                + (isAcraProcess ? "ACRA" : "'" + processName + "'") + " process");
+                + (if (isAcraProcess) "ACRA" else "'$processName'") + " process")
         if (!isAcraProcess) {
-            MyContextHolder.myContextHolder.storeContextIfNotPresent(this, this);
-            MyLocale.setLocale(this);
+            MyContextHolder.Companion.myContextHolder.storeContextIfNotPresent(this, this)
+            MyLocale.setLocale(this)
         }
     }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(isAcraProcess ? newConfig :
-                MyLocale.onConfigurationChanged(this, newConfig));
-    }
-    
-    @Override
-    public File getDatabasePath(String name) {
-        return isAcraProcess ? super.getDatabasePath(name) : MyStorage.getDatabasePath(name);
+    override fun onConfigurationChanged(newConfig: Configuration?) {
+        super.onConfigurationChanged(if (isAcraProcess) newConfig else MyLocale.onConfigurationChanged(this, newConfig))
     }
 
-    @Override
-    protected void attachBaseContext(Context base) {
-        MyLog.v(this, () -> "attachBaseContext started" + (isAcraProcess ? ". ACRA process" : ""));
-        super.attachBaseContext(base);
-        ACRA.init(this);
-        TamperingDetector.initialize(this);
+    override fun getDatabasePath(name: String?): File? {
+        return if (isAcraProcess) super.getDatabasePath(name) else MyStorage.getDatabasePath(name)
     }
 
-    @Override
-    public SQLiteDatabase openOrCreateDatabase(String name, int mode, CursorFactory factory) {
+    override fun attachBaseContext(base: Context?) {
+        MyLog.v(this) { "attachBaseContext started" + if (isAcraProcess) ". ACRA process" else "" }
+        super.attachBaseContext(base)
+        ACRA.init(this)
+        TamperingDetector.initialize(this)
+    }
+
+    override fun openOrCreateDatabase(name: String?, mode: Int, factory: CursorFactory?): SQLiteDatabase? {
         if (isAcraProcess) {
-            return super.openOrCreateDatabase(name, mode, factory);
+            return super.openOrCreateDatabase(name, mode, factory)
         }
-        SQLiteDatabase db;
-        File dbAbsolutePath = getDatabasePath(name);
-        if (dbAbsolutePath != null) {
-            db = SQLiteDatabase.openDatabase(dbAbsolutePath.getPath(), factory,
-                    SQLiteDatabase.CREATE_IF_NECESSARY + SQLiteDatabase.OPEN_READWRITE );
+        val db: SQLiteDatabase?
+        val dbAbsolutePath = getDatabasePath(name)
+        db = if (dbAbsolutePath != null) {
+            SQLiteDatabase.openDatabase(dbAbsolutePath.path, factory,
+                    SQLiteDatabase.CREATE_IF_NECESSARY + SQLiteDatabase.OPEN_READWRITE)
         } else {
-            db = null;
+            null
         }
-        MyLog.v(this, () -> "openOrCreateDatabase, name:" + name
-            + ( db == null
-                ? " NOT opened"
-                : " opened '" + db.getPath() + "'")
-        );
-        return db;
+        MyLog.v(this
+        ) {
+            ("openOrCreateDatabase, name:" + name
+                    + if (db == null) " NOT opened" else " opened '" + db.path + "'")
+        }
+        return db
     }
-    
+
     /**
      * Since: API Level 11
      * Simplified implementation
      */
-    @Override
-    public SQLiteDatabase openOrCreateDatabase(String name, int mode, CursorFactory factory,
-            DatabaseErrorHandler errorHandler) {
-        if (isAcraProcess) {
-            return super.openOrCreateDatabase(name, mode, factory, errorHandler);
-        }
-        return openOrCreateDatabase(name, mode, factory);
+    override fun openOrCreateDatabase(name: String?, mode: Int, factory: CursorFactory?,
+                                      errorHandler: DatabaseErrorHandler?): SQLiteDatabase? {
+        return if (isAcraProcess) {
+            super.openOrCreateDatabase(name, mode, factory, errorHandler)
+        } else openOrCreateDatabase(name, mode, factory)
     }
 
-    @Override
-    public String toString() {
-        return "AndStatus. " + (isAcraProcess ? "acra." : "") + super.toString();
+    override fun toString(): String {
+        return "AndStatus. " + (if (isAcraProcess) "acra." else "") + super.toString()
     }
 
-    @NonNull
-    private static String getCurrentProcessName(@NonNull Application app) {
-        final int processId = android.os.Process.myPid();
-        final ActivityManager manager = (ActivityManager) app.getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.RunningAppProcessInfo> processInfos = manager.getRunningAppProcesses();
-        String processName = null;
-        if (processInfos != null) {
-            for (final ActivityManager.RunningAppProcessInfo processInfo : processInfos) {
-                if (processInfo.pid == processId) {
-                    processName = processInfo.processName;
-                    break;
+    companion object {
+        private fun getCurrentProcessName(app: Application): String {
+            val processId = Process.myPid()
+            val manager = app.getSystemService(ACTIVITY_SERVICE) as ActivityManager
+            val processInfos = manager.runningAppProcesses
+            var processName: String? = null
+            if (processInfos != null) {
+                for (processInfo in processInfos) {
+                    if (processInfo.pid == processId) {
+                        processName = processInfo.processName
+                        break
+                    }
                 }
             }
+            return if (StringUtil.isEmpty(processName)) "?" else processName
         }
-        return StringUtil.isEmpty(processName) ? "?" : processName;
     }
-
 }

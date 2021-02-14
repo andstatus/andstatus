@@ -13,104 +13,81 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social.activitypub
 
-package org.andstatus.app.net.social.activitypub;
+import org.andstatus.app.net.social.ActivityType
+import org.andstatus.app.util.JsonUtils
+import org.json.JSONObject
 
-import org.andstatus.app.net.social.ActivityType;
-import org.andstatus.app.util.JsonUtils;
-import org.json.JSONObject;
-
-import static org.andstatus.app.net.social.ActivityType.EMPTY;
-
-/** @see <a href="https://www.w3.org/TR/activitystreams-vocabulary/#activity-types">Activity Types</a>
- * <a href="https://www.w3.org/TR/activitystreams-vocabulary/#actor-types">Actor Types</a>
- * */
-enum ApObjectType {
+/** @see [Activity Types](https://www.w3.org/TR/activitystreams-vocabulary/.activity-types)
+ * [Actor Types](https://www.w3.org/TR/activitystreams-vocabulary/.actor-types)
+ *
+ */
+internal enum class ApObjectType(private val id: String?, compatibleType: ApObjectType?) {
     ACTIVITY("Activity", null) {
-        @Override
-        public boolean isTypeOf(JSONObject jso) {
-            boolean is = false;
+        override fun isTypeOf(jso: JSONObject?): Boolean {
+            var `is` = false
             if (jso != null) {
-                if (jso.has("type")) {
-                    is = super.isTypeOf(jso) ||
-                            (ActivityType.from(JsonUtils.optString(jso, "type")) != EMPTY && jso.has("object"));
+                `is` = if (jso.has("type")) {
+                    super.isTypeOf(jso) ||
+                            ActivityType.Companion.from(JsonUtils.optString(jso, "type")) != ActivityType.EMPTY && jso.has("object")
                 } else {
-                    is = jso.has("object");
+                    jso.has("object")
                 }
             }
-            return is;
+            return `is`
         }
     },
-    APPLICATION("application", null),
-    PERSON("Person", null),
-    NOTE("Note", null),
-    IMAGE("Image", NOTE),
-    VIDEO("Video", NOTE),
-    COLLECTION("Collection", null),
-    ORDERED_COLLECTION("OrderedCollection", null),
-    COLLECTION_PAGE("CollectionPage", null),
-    ORDERED_COLLECTION_PAGE("OrderedCollectionPage", null),
-    RELATIONSHIP("Relationship", null),
-    UNKNOWN("unknown", null);
+    APPLICATION("application", null), PERSON("Person", null), NOTE("Note", null), IMAGE("Image", NOTE), VIDEO("Video", NOTE), COLLECTION("Collection", null), ORDERED_COLLECTION("OrderedCollection", null), COLLECTION_PAGE("CollectionPage", null), ORDERED_COLLECTION_PAGE("OrderedCollectionPage", null), RELATIONSHIP("Relationship", null), UNKNOWN("unknown", null);
 
-    private String id;
-    private ApObjectType compatibleType = this;
+    private val compatibleType: ApObjectType? = this
+    fun id(): String? {
+        return id
+    }
 
-    ApObjectType(String id, ApObjectType compatibleType) {
-        this.id = id;
-        if (compatibleType != null) {
-            this.compatibleType = compatibleType;
-        }
-    }
-    
-    public String id() {
-        return id;
-    }
-    
-    public boolean isTypeOf(JSONObject jso) {
-        boolean is = false;
+    open fun isTypeOf(jso: JSONObject?): Boolean {
+        var `is` = false
         if (jso != null) {
-            is = id().equalsIgnoreCase(JsonUtils.optString(jso, "type"));
+            `is` = id().equals(JsonUtils.optString(jso, "type"), ignoreCase = true)
         }
-        return is;
+        return `is`
     }
 
-    public static ApObjectType compatibleWith(JSONObject jso) {
-        ApObjectType type = fromJson(jso);
-        return type.compatibleType == null ? type : type.compatibleType;
-    }
+    companion object {
+        fun compatibleWith(jso: JSONObject?): ApObjectType? {
+            val type = fromJson(jso)
+            return type.compatibleType ?: type
+        }
 
-    public static ApObjectType fromJson(JSONObject jso) {
-        for(ApObjectType type : ApObjectType.values()) {
-            if (type.isTypeOf(jso)) {
-                return type;
+        fun fromJson(jso: JSONObject?): ApObjectType? {
+            for (type in values()) {
+                if (type.isTypeOf(jso)) {
+                    return type
+                }
+            }
+            return UNKNOWN
+        }
+
+        fun fromId(activityType: ActivityType?, oid: String?): ApObjectType? {
+            return when (activityType) {
+                ActivityType.FOLLOW, ActivityType.UNDO_FOLLOW -> PERSON
+                ActivityType.LIKE, ActivityType.CREATE, ActivityType.DELETE, ActivityType.UPDATE, ActivityType.ANNOUNCE, ActivityType.UNDO_LIKE, ActivityType.UNDO_ANNOUNCE -> {
+                    // TODO: Too simple...
+                    if (oid.contains("/users/") && !oid.contains("/statuses/")) {
+                        return PERSON
+                    }
+                    if (oid.contains("/activities/")) {
+                        ACTIVITY
+                    } else NOTE
+                }
+                else -> UNKNOWN
             }
         }
-        return UNKNOWN;
     }
 
-    public static ApObjectType fromId(ActivityType activityType, String oid) {
-        switch (activityType) {
-            case FOLLOW:
-            case UNDO_FOLLOW:
-                return ApObjectType.PERSON;
-            case LIKE:
-            case CREATE:
-            case DELETE:
-            case UPDATE:
-            case ANNOUNCE:
-            case UNDO_LIKE:
-            case UNDO_ANNOUNCE:
-                // TODO: Too simple...
-                if (oid.contains("/users/") && !oid.contains("/statuses/")) {
-                    return ApObjectType.PERSON;
-                }
-                if (oid.contains("/activities/")) {
-                    return ApObjectType.ACTIVITY;
-                }
-                return ApObjectType.NOTE;
-            default:
-                return ApObjectType.UNKNOWN;
+    init {
+        if (compatibleType != null) {
+            this.compatibleType = compatibleType
         }
     }
 }

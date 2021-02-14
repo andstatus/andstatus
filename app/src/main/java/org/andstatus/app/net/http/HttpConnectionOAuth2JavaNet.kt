@@ -13,276 +13,267 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.http
 
-package org.andstatus.app.net.http;
-
-import android.net.Uri;
-
-import com.github.scribejava.core.builder.ServiceBuilder;
-import com.github.scribejava.core.httpclient.jdk.JDKHttpClientConfig;
-import com.github.scribejava.core.model.OAuth2AccessToken;
-import com.github.scribejava.core.model.OAuthConstants;
-import com.github.scribejava.core.model.OAuthRequest;
-import com.github.scribejava.core.model.Response;
-import com.github.scribejava.core.model.Verb;
-import com.github.scribejava.core.oauth.OAuth20Service;
-
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.net.social.ApiRoutineEnum;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import io.vavr.control.Try;
-import oauth.signpost.OAuthConsumer;
-import oauth.signpost.OAuthProvider;
-
-import static org.andstatus.app.net.http.ConnectionException.StatusCode.OK;
+import com.github.scribejava.core.builder.ServiceBuilder
+import com.github.scribejava.core.httpclient.jdk.JDKHttpClientConfig
+import com.github.scribejava.core.model.OAuth2AccessToken
+import com.github.scribejava.core.model.OAuthConstants
+import com.github.scribejava.core.model.OAuthRequest
+import com.github.scribejava.core.model.Response
+import com.github.scribejava.core.model.Verb
+import com.github.scribejava.core.oauth.OAuth20Service
+import io.vavr.control.CheckedFunction
+import io.vavr.control.Try
+import oauth.signpost.OAuthConsumer
+import oauth.signpost.OAuthProvider
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.json.JSONException
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.nio.charset.StandardCharsets
+import java.util.Map
+import java.util.function.Consumer
+import java.util.function.Function
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class HttpConnectionOAuth2JavaNet extends HttpConnectionOAuthJavaNet {
-    public static final String OAUTH_SCOPES = "read write follow";
-
-    @Override
-    public Try<Void> registerClient() {
-        Uri uri = getApiUri(ApiRoutineEnum.OAUTH_REGISTER_CLIENT);
-        MyStringBuilder logmsg = MyStringBuilder.of("registerClient; for " + data.originUrl
-                + "; URL='" + uri + "'");
-        MyLog.v(this, logmsg::toString);
-        data.oauthClientKeys.clear();
-        try {
-            JSONObject params = new JSONObject();
-            params.put("client_name", HttpConnection.USER_AGENT);
-            params.put("redirect_uris", HttpConnection.CALLBACK_URI.toString());
-            params.put("scopes", OAUTH_SCOPES);
-            params.put("website", "http://andstatus.org");
-
-            HttpRequest request = HttpRequest.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
-                .withPostParams(params);
-            return execute(request)
-            .flatMap(HttpReadResult::getJsonObject)
-            .map(jso -> {
-                String consumerKey = jso.getString("client_id");
-                String consumerSecret = jso.getString("client_secret");
-                data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret);
-                return data.oauthClientKeys.areKeysPresent();
-            })
-            .flatMap(keysArePresent -> {
-                if (keysArePresent) {
-                    MyLog.v(this, () -> "Completed " + logmsg);
-                    return Try.success(null);
-                } else {
-                    return Try.failure(ConnectionException.fromStatusCodeAndHost(
-                            ConnectionException.StatusCode.NO_CREDENTIALS_FOR_HOST,
-                            "Failed to obtain client keys for host; " + logmsg, data.originUrl));
-                }
-            });
-        } catch (JSONException e) {
-            return Try.failure(ConnectionException.loggedJsonException(this, logmsg.toString(), e, null));
+open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
+    override fun registerClient(): Try<Void?>? {
+        val uri = getApiUri(ApiRoutineEnum.OAUTH_REGISTER_CLIENT)
+        val logmsg: MyStringBuilder = MyStringBuilder.Companion.of("registerClient; for " + data.originUrl
+                + "; URL='" + uri + "'")
+        MyLog.v(this) { logmsg.toString() }
+        data.oauthClientKeys.clear()
+        return try {
+            val params = JSONObject()
+            params.put("client_name", HttpConnectionInterface.Companion.USER_AGENT)
+            params.put("redirect_uris", HttpConnectionInterface.Companion.CALLBACK_URI.toString())
+            params.put("scopes", OAUTH_SCOPES)
+            params.put("website", "http://andstatus.org")
+            val request: HttpRequest = HttpRequest.Companion.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
+                    .withPostParams(params)
+            execute(request)
+                    .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
+                    .map { jso: JSONObject? ->
+                        val consumerKey = jso.getString("client_id")
+                        val consumerSecret = jso.getString("client_secret")
+                        data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret)
+                        data.oauthClientKeys.areKeysPresent()
+                    }
+                    .flatMap { keysArePresent: Boolean? ->
+                        if (keysArePresent) {
+                            MyLog.v(this) { "Completed $logmsg" }
+                            return@flatMap Try.success<Void?>(null)
+                        } else {
+                            return@flatMap Try.failure<Void?>(ConnectionException.Companion.fromStatusCodeAndHost(
+                                    StatusCode.NO_CREDENTIALS_FOR_HOST,
+                                    "Failed to obtain client keys for host; $logmsg", data.originUrl))
+                        }
+                    }
+        } catch (e: JSONException) {
+            Try.failure(ConnectionException.Companion.loggedJsonException(this, logmsg.toString(), e, null))
         }
     }
 
-    @Override
-    public HttpReadResult postRequest(HttpReadResult result) {
-        if (data.areOAuthClientKeysPresent()) {
-            return postRequestOauth(result);
+    override fun postRequest(result: HttpReadResult?): HttpReadResult? {
+        return if (data.areOAuthClientKeysPresent()) {
+            postRequestOauth(result)
         } else {
-            return super.postRequest(result);
+            super.postRequest(result)
         }
     }
 
-    private HttpReadResult postRequestOauth(HttpReadResult result) {
+    private fun postRequestOauth(result: HttpReadResult?): HttpReadResult? {
         try {
-            OAuth20Service service = getService(false);
-            final OAuthRequest request = new OAuthRequest(Verb.POST, result.getUrlObj().toString());
-            if (result.request.mediaUri.isPresent()) {
-                MultipartFormEntityBytes bytes = ApacheHttpClientUtils.buildMultipartFormEntityBytes(result.request);
-                request.addHeader(bytes.contentTypeName, bytes.contentTypeValue);
-                request.setPayload(bytes.bytes);
-            } else if(result.request.postParams.isPresent()) {
-                JSONObject params = result.request.postParams.get();
-                if (data.optOriginContentType().map(value -> {
-                    request.addHeader("Content-Type", value);
-                    request.setPayload(params.toString().getBytes(StandardCharsets.UTF_8));
-                    return false;
-                }).orElse(true)) {
-                    Iterator<String> iterator = params.keys();
+            val service = getService(false)
+            val request = OAuthRequest(Verb.POST, result.getUrlObj().toString())
+            if (result.request.mediaUri.isPresent) {
+                val bytes = ApacheHttpClientUtils.buildMultipartFormEntityBytes(result.request)
+                request.addHeader(bytes.contentTypeName, bytes.contentTypeValue)
+                request.setPayload(bytes.bytes)
+            } else if (result.request.postParams.isPresent) {
+                val params = result.request.postParams.get()
+                if (data.optOriginContentType().map { value: String? ->
+                            request.addHeader("Content-Type", value)
+                            request.setPayload(params.toString().toByteArray(StandardCharsets.UTF_8))
+                            false
+                        }.orElse(true)) {
+                    val iterator = params.keys()
                     while (iterator.hasNext()) {
-                        String key = iterator.next();
+                        val key = iterator.next()
                         try {
-                            Object value = params.get(key);
+                            val value = params[key]
                             if (value != null) {
-                                if (value instanceof List) {
-                                    ((List<String>) value).forEach( v -> request.addBodyParameter(key, v));
+                                if (value is MutableList<*>) {
+                                    (value as MutableList<String?>).forEach(Consumer { v: String? -> request.addBodyParameter(key, v) })
                                 } else {
-                                    request.addBodyParameter(key, value.toString());
+                                    request.addBodyParameter(key, value.toString())
                                 }
                             }
-                        } catch (JSONException e) {
-                            MyLog.w(this, "Failed to get key " + key, e);
-                            result.setException(e);
+                        } catch (e: JSONException) {
+                            MyLog.w(this, "Failed to get key $key", e)
+                            result.setException(e)
                         }
                     }
                 }
             }
-            signRequest(request, service, false);
-            final Response response = service.execute(request);
-            setStatusCodeAndHeaders(result, response);
-            result.readStream("", o -> response.getStream());
-            if (result.getStatusCode() != OK) {
-                result.setException(result.getExceptionFromJsonErrorResponse());
+            signRequest(request, service, false)
+            val response = service.execute(request)
+            setStatusCodeAndHeaders(result, response)
+            result.readStream("", CheckedFunction { o: Void? -> response.stream })
+            if (result.getStatusCode() != StatusCode.OK) {
+                result.setException(result.getExceptionFromJsonErrorResponse())
             }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            result.setException(e);
-        } catch (Exception e) {
-            result.setException(e);
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            result.setException(e)
+        } catch (e: Exception) {
+            result.setException(e)
         }
-        return result;
+        return result
     }
 
-    @Override
-    public HttpReadResult getRequest(HttpReadResult result) {
-        Response responseCopy = null;
+    override fun getRequest(result: HttpReadResult?): HttpReadResult? {
+        var responseCopy: Response? = null
         try {
-            OAuth20Service service = getService(false);
-            boolean redirected = false;
-            boolean stop = false;
+            val service = getService(false)
+            var redirected = false
+            var stop = false
             do {
-                OAuthRequest request = new OAuthRequest(Verb.GET, result.getUrlObj().toString());
-                data.optOriginContentType().ifPresent(value -> request.addHeader("Accept", value));
+                val request = OAuthRequest(Verb.GET, result.getUrlObj().toString())
+                data.optOriginContentType().ifPresent { value: String? -> request.addHeader("Accept", value) }
                 if (result.authenticate()) {
-                    signRequest(request, service, redirected);
+                    signRequest(request, service, redirected)
                 }
-                responseCopy = service.execute(request);
-                Response response = responseCopy;
-                setStatusCodeAndHeaders(result, response);
-                switch(result.getStatusCode()) {
-                    case OK:
-                        result.readStream("", o -> response.getStream());
-                        stop = true;
-                        break;
-                    case MOVED:
-                        redirected = true;
-                        stop = onMoved(result);
-                        // TODO: ?! ...disconnect();
-                        break;
-                    default:
-                        result.readStream("", o -> response.getStream());
-                        stop =  result.noMoreHttpRetries();
-                        break;
+                responseCopy = service.execute(request)
+                val response = responseCopy
+                setStatusCodeAndHeaders(result, response)
+                when (result.getStatusCode()) {
+                    StatusCode.OK -> {
+                        result.readStream("", CheckedFunction { o: Void? -> response.stream })
+                        stop = true
+                    }
+                    StatusCode.MOVED -> {
+                        redirected = true
+                        stop = onMoved(result)
+                    }
+                    else -> {
+                        result.readStream("", CheckedFunction { o: Void? -> response.stream })
+                        stop = result.noMoreHttpRetries()
+                    }
                 }
-            } while (!stop);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            result.setException(e);
-        } catch(Exception e) {
-            result.setException(e);
+            } while (!stop)
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            result.setException(e)
+        } catch (e: Exception) {
+            result.setException(e)
         } finally {
-            DbUtils.closeSilently(responseCopy);
+            closeSilently(responseCopy)
         }
-        return result;
+        return result
     }
 
-    private void setStatusCodeAndHeaders(HttpReadResult result, Response response) {
-        result.setStatusCode(response.getCode());
-        result.setHeaders(response.getHeaders().entrySet().stream(), Map.Entry::getKey, Map.Entry::getValue);
+    private fun setStatusCodeAndHeaders(result: HttpReadResult?, response: Response?) {
+        result.setStatusCode(response.getCode())
+        result.setHeaders(response.getHeaders().entries.stream(), Function { Map.Entry.key }, Function { Map.Entry.value })
     }
 
-    @Override
-    public OAuth20Service getService(boolean redirect) {
-        final JDKHttpClientConfig clientConfig = JDKHttpClientConfig.defaultConfig();
-        clientConfig.setConnectTimeout(MyPreferences.getConnectionTimeoutMs());
-        clientConfig.setReadTimeout(2*MyPreferences.getConnectionTimeoutMs());
-        clientConfig.setFollowRedirects(false);
-        final ServiceBuilder serviceBuilder = new ServiceBuilder(data.oauthClientKeys.getConsumerKey())
-                .apiSecret(data.oauthClientKeys.getConsumerSecret())
-                .httpClientConfig(clientConfig);
+    override fun getService(redirect: Boolean): OAuth20Service? {
+        val clientConfig = JDKHttpClientConfig.defaultConfig()
+        clientConfig.connectTimeout = MyPreferences.getConnectionTimeoutMs()
+        clientConfig.readTimeout = 2 * MyPreferences.getConnectionTimeoutMs()
+        clientConfig.isFollowRedirects = false
+        val serviceBuilder = ServiceBuilder(data.oauthClientKeys.consumerKey)
+                .apiSecret(data.oauthClientKeys.consumerSecret)
+                .httpClientConfig(clientConfig)
         if (redirect) {
-            serviceBuilder.callback(HttpConnection.CALLBACK_URI.toString());
+            serviceBuilder.callback(HttpConnectionInterface.Companion.CALLBACK_URI.toString())
         }
-        return serviceBuilder.build(new OAuthApi20(this));
+        return serviceBuilder.build(OAuthApi20(this))
     }
 
-    private void signRequest(OAuthRequest request, OAuth20Service service, boolean redirected) throws ConnectionException {
-        if (!getCredentialsPresent()) {
-            return;
+    @Throws(ConnectionException::class)
+    private fun signRequest(request: OAuthRequest?, service: OAuth20Service?, redirected: Boolean) {
+        if (!credentialsPresent) {
+            return
         }
         try {
-            if (data.originUrl.getHost().contentEquals(data.urlForUserToken.getHost())) {
-                OAuth2AccessToken token = new OAuth2AccessToken(getUserToken(), getUserSecret());
-                service.signRequest(token, request);
+            if (data.originUrl.host.contentEquals(data.urlForUserToken.host)) {
+                val token = OAuth2AccessToken(userToken, userSecret)
+                service.signRequest(token, request)
             } else {
                 // See http://tools.ietf.org/html/draft-prodromou-dialback-00
                 if (redirected) {
-                    OAuth2AccessToken token = new OAuth2AccessToken("", null);
-                    service.signRequest(token, request);
+                    val token = OAuth2AccessToken("", null)
+                    service.signRequest(token, request)
                 } else {
-                    request.addParameter("Authorization", "Dialback");
-                    request.addParameter("host", data.urlForUserToken.getHost());
-                    request.addParameter("token", getUserToken());
-                    MyLog.v(this, () -> "Dialback authorization at " + data.originUrl
-                            + "; urlForUserToken=" + data.urlForUserToken + "; token=" + getUserToken());
-                    OAuth2AccessToken token = new OAuth2AccessToken(getUserToken(), null);
-                    service.signRequest(token, request);
+                    request.addParameter("Authorization", "Dialback")
+                    request.addParameter("host", data.urlForUserToken.host)
+                    request.addParameter("token", userToken)
+                    MyLog.v(this) {
+                        ("Dialback authorization at " + data.originUrl
+                                + "; urlForUserToken=" + data.urlForUserToken + "; token=" + userToken)
+                    }
+                    val token = OAuth2AccessToken(userToken, null)
+                    service.signRequest(token, request)
                 }
             }
-        } catch (Exception e) {
-            throw ConnectionException.of(e);
+        } catch (e: Exception) {
+            throw ConnectionException.Companion.of(e)
         }
     }
 
-    @Override
-    protected void signConnection(HttpURLConnection conn, OAuthConsumer consumer,  boolean redirected) throws
-            ConnectionException {
-        if (!getCredentialsPresent()) {
-            return;
+    @Throws(ConnectionException::class)
+    override fun signConnection(conn: HttpURLConnection?, consumer: OAuthConsumer?, redirected: Boolean) {
+        if (!credentialsPresent) {
+            return
         }
         try {
-            OAuth2AccessToken token;
-            if (data.originUrl.getHost().contentEquals(data.urlForUserToken.getHost())) {
-                token = new OAuth2AccessToken(getUserToken(), getUserSecret());
+            val token: OAuth2AccessToken
+            token = if (data.originUrl.host.contentEquals(data.urlForUserToken.host)) {
+                OAuth2AccessToken(userToken, userSecret)
             } else {
                 if (redirected) {
-                    token = new OAuth2AccessToken("", null);
+                    OAuth2AccessToken("", null)
                 } else {
-                    conn.setRequestProperty("Authorization", "Dialback");
-                    conn.setRequestProperty("host", data.urlForUserToken.getHost());
-                    conn.setRequestProperty("token", getUserToken());
-                    MyLog.v(this, () -> "Dialback authorization at " + data.originUrl + "; urlForUserToken="
-                            + data.urlForUserToken + "; token=" + getUserToken());
-                    token = new OAuth2AccessToken(getUserToken(), null);
+                    conn.setRequestProperty("Authorization", "Dialback")
+                    conn.setRequestProperty("host", data.urlForUserToken.host)
+                    conn.setRequestProperty("token", userToken)
+                    MyLog.v(this) {
+                        ("Dialback authorization at " + data.originUrl + "; urlForUserToken="
+                                + data.urlForUserToken + "; token=" + userToken)
+                    }
+                    OAuth2AccessToken(userToken, null)
                 }
             }
-            conn.setRequestProperty(OAuthConstants.ACCESS_TOKEN, token.getAccessToken());
-        } catch (Exception e) {
-            throw ConnectionException.of(e);
+            conn.setRequestProperty(OAuthConstants.ACCESS_TOKEN, token.accessToken)
+        } catch (e: Exception) {
+            throw ConnectionException.Companion.of(e)
         }
     }
 
-    @Override
-    public OAuthConsumer getConsumer() {
-        return null;
+    override fun getConsumer(): OAuthConsumer? {
+        return null
     }
 
-    @Override
-    public OAuthProvider getProvider() throws ConnectionException {
-        return null;
+    @Throws(ConnectionException::class)
+    override fun getProvider(): OAuthProvider? {
+        return null
     }
 
-    @Override
-    public boolean isOAuth2() {
-        return true;
+    override fun isOAuth2(): Boolean {
+        return true
     }
 
+    companion object {
+        val OAUTH_SCOPES: String? = "read write follow"
+    }
 }

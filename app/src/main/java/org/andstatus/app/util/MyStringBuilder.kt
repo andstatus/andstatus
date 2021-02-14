@@ -13,229 +13,184 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
+import java.util.*
+import java.util.function.Function
+import java.util.function.Predicate
+import java.util.function.Supplier
+import java.util.function.UnaryOperator
 
-import androidx.annotation.NonNull;
+/** Adds convenience methods to [StringBuilder]  */
+class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder? = StringBuilder()) : CharSequence, IsEmpty {
+    private constructor(text: CharSequence?) : this(StringBuilder(text)) {}
 
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.function.UnaryOperator;
-
-/** Adds convenience methods to {@link StringBuilder} */
-public class MyStringBuilder implements CharSequence, IsEmpty {
-    public static final String COMMA = ",";
-    public final StringBuilder builder;
-
-    public static MyStringBuilder of(CharSequence text) {
-        return new MyStringBuilder(text);
+    fun <T> withCommaNonEmpty(label: CharSequence?, obj: T?): MyStringBuilder {
+        return withComma(label, obj, { obj: T? -> nonEmptyObj(obj) })
     }
 
-    private MyStringBuilder(CharSequence text) {
-        this(new StringBuilder(text));
+    fun <T> withComma(label: CharSequence?, obj: T?, predicate: Predicate<T?>?): MyStringBuilder {
+        return if (obj == null || !predicate.test(obj)) this else withComma(label, obj)
     }
 
-    public MyStringBuilder() {
-        this(new StringBuilder());
+    fun withComma(label: CharSequence?, obj: Any?, filter: Supplier<Boolean?>?): MyStringBuilder {
+        return if (obj == null || !filter.get()) this else withComma(label, obj)
     }
 
-    public MyStringBuilder(StringBuilder builder) {
-        this.builder = builder;
+    fun withComma(label: CharSequence?, obj: Any?): MyStringBuilder {
+        return append(label, obj, ", ", false)
     }
 
-    public static MyStringBuilder of(Optional<String> content) {
-        return content.map(MyStringBuilder::of).orElse(new MyStringBuilder());
+    fun withCommaQuoted(label: CharSequence?, obj: Any?, quoted: Boolean): MyStringBuilder {
+        return append(label, obj, ", ", quoted)
     }
 
-    @NonNull
-    public static String formatKeyValue(Object keyIn, Object valueIn) {
-        String key = objToTag(keyIn);
-        if (keyIn == null) {
-            return key;
-        }
-        String value = "null";
-        if (valueIn != null) {
-            value = valueIn.toString();
-        }
-        return formatKeyValue(key, value);
+    fun withComma(text: CharSequence?): MyStringBuilder {
+        return append("", text, ", ", false)
     }
 
-    /** Strips value from leading and trailing commas */
-    @NonNull
-    public static String formatKeyValue(Object key, String value) {
-        String out = "";
-        if (!StringUtil.isEmpty(value)) {
-            out = value.trim();
-            if (out.substring(0, 1).equals(COMMA)) {
-                out = out.substring(1);
-            }
-            int ind = out.lastIndexOf(COMMA);
-            if (ind > 0 && ind == out.length()-1) {
-                out = out.substring(0, ind);
-            }
-        }
-        return objToTag(key) + ":{" + out + "}";
+    fun withSpaceQuoted(text: CharSequence?): MyStringBuilder {
+        return append("", text, " ", true)
     }
 
-    @NonNull
-    public static String objToTag(Object objTag) {
-        final String tag;
-        if (objTag == null) {
-            tag = "(null)";
-        } else if (objTag instanceof IdentifiableInstance) {
-            tag = ((IdentifiableInstance) objTag).instanceTag();
-        } else if (objTag instanceof TaggedClass) {
-            tag = ((TaggedClass) objTag).classTag();
-        } else if (objTag instanceof String) {
-            tag = (String) objTag;
-        } else if (objTag instanceof Enum<?>) {
-            tag = objTag.toString();
-        } else if (objTag instanceof Class<?>) {
-            tag = ((Class<?>) objTag).getSimpleName();
-        } else {
-            tag = objTag.getClass().getSimpleName();
-        }
-        if (tag.trim().isEmpty()) {
-            return "(empty)";
-        }
-        return tag;
+    fun withSpace(text: CharSequence?): MyStringBuilder {
+        return append("", text, " ", false)
     }
 
-    @NonNull
-    public <T> MyStringBuilder withCommaNonEmpty(CharSequence label, T obj) {
-        return withComma(label, obj, MyStringBuilder::nonEmptyObj);
+    fun atNewLine(label: CharSequence?, text: CharSequence?): MyStringBuilder? {
+        return append(label, text, ", \n", false)
     }
 
-    @NonNull
-    public static <T> boolean nonEmptyObj(T obj) {
-        return !isEmptyObj(obj);
+    fun atNewLine(text: CharSequence?): MyStringBuilder? {
+        return append("", text, ", \n", false)
     }
 
-    @NonNull
-    public static <T> boolean isEmptyObj(T obj) {
-        if (obj instanceof IsEmpty) return ((IsEmpty) obj).isEmpty();
-        if (obj instanceof Number) return ((Number) obj).longValue() == 0;
-        if (obj instanceof String) return StringUtil.isEmpty((String) obj);
-        return obj == null;
+    fun append(label: CharSequence?, obj: Any?, separator: String, quoted: Boolean): MyStringBuilder {
+        if (obj == null) return this
+        val text = obj.toString()
+        if (StringUtil.isEmpty(text)) return this
+        if (builder.length > 0) builder.append(separator)
+        if (StringUtil.nonEmpty(label)) builder.append(label).append(": ")
+        if (quoted) builder.append("\"")
+        builder.append(text)
+        if (quoted) builder.append("\"")
+        return this
     }
 
-    @NonNull
-    public <T> MyStringBuilder withComma(CharSequence label, T obj, Predicate<T> predicate) {
-        return obj == null || !predicate.test(obj)
-                ? this
-                : withComma(label, obj);
-    }
-
-    @NonNull
-    public MyStringBuilder withComma(CharSequence label, Object obj, Supplier<Boolean> filter) {
-        return obj == null || !filter.get()
-                ? this
-                : withComma(label, obj);
-    }
-
-    @NonNull
-    public MyStringBuilder withComma(CharSequence label, Object obj) {
-        return append(label, obj, ", ", false);
-    }
-
-    @NonNull
-    public MyStringBuilder withCommaQuoted(CharSequence label, Object obj, boolean quoted) {
-        return append(label, obj, ", ", quoted);
-    }
-
-    @NonNull
-    public MyStringBuilder withComma(CharSequence text) {
-        return append("", text, ", ", false);
-    }
-
-    @NonNull
-    public MyStringBuilder withSpaceQuoted(CharSequence text) {
-        return append("", text, " ", true);
-    }
-
-    @NonNull
-    public MyStringBuilder withSpace(CharSequence text) {
-        return append("", text, " ", false);
-    }
-
-    public MyStringBuilder atNewLine(CharSequence label, CharSequence text) {
-        return append(label, text, ", \n", false);
-    }
-
-    public MyStringBuilder atNewLine(CharSequence text) {
-        return append("", text, ", \n", false);
-    }
-
-    @NonNull
-    public MyStringBuilder append(CharSequence label, Object obj, @NonNull String separator, boolean quoted) {
-        if (obj == null) return this;
-
-        String text = obj.toString();
-        if (StringUtil.isEmpty(text)) return this;
-
-        if (builder.length() > 0) builder.append(separator);
-        if (StringUtil.nonEmpty(label)) builder.append(label).append(": ");
-        if (quoted) builder.append("\"");
-        builder.append(text);
-        if (quoted) builder.append("\"");
-        return this;
-    }
-
-    @NonNull
-    public MyStringBuilder append(CharSequence text) {
+    fun append(text: CharSequence?): MyStringBuilder {
         if (StringUtil.nonEmpty(text)) {
-            builder.append(text);
+            builder.append(text)
         }
-        return this;
+        return this
     }
 
-    @Override
-    public int length() {
-        return builder.length();
+    override fun length(): Int {
+        return builder.length
     }
 
-    @Override
-    public char charAt(int index) {
-        return builder.charAt(index);
+    override fun charAt(index: Int): Char {
+        return builder.get(index)
     }
 
-    @Override
-    public CharSequence subSequence(int start, int end) {
-        return builder.subSequence(start, end);
+    override fun subSequence(start: Int, end: Int): CharSequence? {
+        return builder.subSequence(start, end)
     }
 
-    @Override
-    @NonNull
-    public String toString() {
-        return builder.toString();
+    override fun toString(): String {
+        return builder.toString()
     }
 
-    @NonNull
-    public static StringBuilder appendWithSpace(StringBuilder builder, CharSequence text) {
-        return new MyStringBuilder(builder).withSpace(text).builder;
-    }
-
-    @NonNull
-    public MyStringBuilder prependWithSeparator(CharSequence text, @NonNull String separator) {
-        if (text.length() > 0) {
-            builder.insert(0, separator);
-            builder.insert(0, text);
+    fun prependWithSeparator(text: CharSequence?, separator: String): MyStringBuilder {
+        if (text.length > 0) {
+            builder.insert(0, separator)
+            builder.insert(0, text)
         }
-        return this;
+        return this
     }
 
-    @NonNull
-    public MyStringBuilder apply(UnaryOperator<MyStringBuilder> unaryOperator) {
-        return unaryOperator.apply(this);
+    fun apply(unaryOperator: UnaryOperator<MyStringBuilder?>?): MyStringBuilder {
+        return unaryOperator.apply(this)
     }
 
-    @Override
-    public boolean isEmpty() {
-        return length() == 0;
+    override fun isEmpty(): Boolean {
+        return length == 0
     }
 
-    public String toKeyValue(Object key) {
-        return formatKeyValue(key, toString());
+    fun toKeyValue(key: Any?): String? {
+        return formatKeyValue(key, toString())
+    }
+
+    companion object {
+        val COMMA: String? = ","
+        fun of(text: CharSequence?): MyStringBuilder? {
+            return MyStringBuilder(text)
+        }
+
+        fun of(content: Optional<String?>?): MyStringBuilder? {
+            return content.map(Function { text: String? -> of(text) }).orElse(MyStringBuilder())
+        }
+
+        fun formatKeyValue(keyIn: Any?, valueIn: Any?): String {
+            val key = objToTag(keyIn)
+            if (keyIn == null) {
+                return key
+            }
+            var value = "null"
+            if (valueIn != null) {
+                value = valueIn.toString()
+            }
+            return formatKeyValue(key, value)
+        }
+
+        /** Strips value from leading and trailing commas  */
+        fun formatKeyValue(key: Any?, value: String?): String {
+            var out = ""
+            if (!StringUtil.isEmpty(value)) {
+                out = value.trim { it <= ' ' }
+                if (out.substring(0, 1) == COMMA) {
+                    out = out.substring(1)
+                }
+                val ind = out.lastIndexOf(COMMA)
+                if (ind > 0 && ind == out.length - 1) {
+                    out = out.substring(0, ind)
+                }
+            }
+            return objToTag(key) + ":{" + out + "}"
+        }
+
+        fun objToTag(objTag: Any?): String {
+            val tag: String?
+            tag = if (objTag == null) {
+                "(null)"
+            } else if (objTag is IdentifiableInstance) {
+                (objTag as IdentifiableInstance?).instanceTag()
+            } else if (objTag is TaggedClass) {
+                (objTag as TaggedClass?).classTag()
+            } else if (objTag is String) {
+                objTag as String?
+            } else (objTag as? Enum<*>)?.toString()
+                    ?: if (objTag is Class<*>) {
+                        (objTag as Class<*>?).getSimpleName()
+                    } else {
+                        objTag.javaClass.simpleName
+                    }
+            return if (tag.trim { it <= ' ' }.isEmpty()) {
+                "(empty)"
+            } else tag
+        }
+
+        fun <T> nonEmptyObj(obj: T?): Boolean {
+            return !isEmptyObj(obj)
+        }
+
+        fun <T> isEmptyObj(obj: T?): Boolean {
+            if (obj is IsEmpty) return (obj as IsEmpty?).isEmpty()
+            if (obj is Number) return (obj as Number?).toLong() == 0L
+            return if (obj is String) StringUtil.isEmpty(obj as String?) else obj == null
+        }
+
+        fun appendWithSpace(builder: StringBuilder?, text: CharSequence?): StringBuilder {
+            return MyStringBuilder(builder).withSpace(text).builder
+        }
     }
 }

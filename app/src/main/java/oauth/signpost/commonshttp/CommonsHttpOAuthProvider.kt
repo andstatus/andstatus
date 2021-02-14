@@ -8,76 +8,71 @@
  * KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-package oauth.signpost.commonshttp;
+package oauth.signpost.commonshttp
 
-import org.andstatus.app.util.MyLog;
-
-import java.io.IOException;
-
-import cz.msebera.android.httpclient.HttpEntity;
-import cz.msebera.android.httpclient.HttpResponse;
-import cz.msebera.android.httpclient.client.HttpClient;
-import cz.msebera.android.httpclient.client.methods.HttpPost;
-import cz.msebera.android.httpclient.client.methods.HttpUriRequest;
-import cz.msebera.android.httpclient.impl.client.DefaultHttpClient;
-import oauth.signpost.AbstractOAuthProvider;
-import oauth.signpost.http.HttpRequest;
+import cz.msebera.android.httpclient.client.HttpClient
+import cz.msebera.android.httpclient.client.methods.HttpPost
+import cz.msebera.android.httpclient.client.methods.HttpUriRequest
+import cz.msebera.android.httpclient.impl.client.DefaultHttpClient
+import oauth.signpost.AbstractOAuthProvider
+import oauth.signpost.http.HttpRequest
+import oauth.signpost.http.HttpResponse
+import org.andstatus.app.util.MyLog
+import java.io.IOException
 
 /**
- * This implementation uses the Apache Commons {@link HttpClient} 4.x HTTP
+ * This implementation uses the Apache Commons [HttpClient] 4.x HTTP
  * implementation to fetch OAuth tokens from a service provider. Android users
  * should use this provider implementation in favor of the default one, since
  * the latter is known to cause problems with Android's Apache Harmony
  * underpinnings.
- * 
+ *
  * @author Matthias Kaeppler
  */
-public class CommonsHttpOAuthProvider extends AbstractOAuthProvider {
+class CommonsHttpOAuthProvider : AbstractOAuthProvider {
+    @Transient
+    private var httpClient: HttpClient?
 
-    private static final long serialVersionUID = 1L;
-
-    private transient HttpClient httpClient;
-
-    public CommonsHttpOAuthProvider(String requestTokenEndpointUrl, String accessTokenEndpointUrl,
-            String authorizationWebsiteUrl) {
-        super(requestTokenEndpointUrl, accessTokenEndpointUrl, authorizationWebsiteUrl);
-        this.httpClient = new DefaultHttpClient();
+    constructor(requestTokenEndpointUrl: String?, accessTokenEndpointUrl: String?,
+                authorizationWebsiteUrl: String?) : super(requestTokenEndpointUrl, accessTokenEndpointUrl, authorizationWebsiteUrl) {
+        httpClient = DefaultHttpClient()
     }
 
-    public CommonsHttpOAuthProvider(String requestTokenEndpointUrl, String accessTokenEndpointUrl,
-            String authorizationWebsiteUrl, HttpClient httpClient) {
-        super(requestTokenEndpointUrl, accessTokenEndpointUrl, authorizationWebsiteUrl);
-        this.httpClient = httpClient;
+    constructor(requestTokenEndpointUrl: String?, accessTokenEndpointUrl: String?,
+                authorizationWebsiteUrl: String?, httpClient: HttpClient?) : super(requestTokenEndpointUrl, accessTokenEndpointUrl, authorizationWebsiteUrl) {
+        this.httpClient = httpClient
     }
 
-    public void setHttpClient(HttpClient httpClient) {
-        this.httpClient = httpClient;
+    fun setHttpClient(httpClient: HttpClient?) {
+        this.httpClient = httpClient
     }
 
-    @Override
-    protected HttpRequest createRequest(String endpointUrl) throws Exception {
-        HttpPost request = new HttpPost(endpointUrl);
-        return new HttpRequestAdapter(request);
+    @Throws(Exception::class)
+    override fun createRequest(endpointUrl: String?): HttpRequest? {
+        val request = HttpPost(endpointUrl)
+        return HttpRequestAdapter(request)
     }
 
-    @Override
-    protected oauth.signpost.http.HttpResponse sendRequest(HttpRequest request) throws Exception {
-        HttpResponse response = httpClient.execute((HttpUriRequest) request.unwrap());
-        return new HttpResponseAdapter(response);
+    @Throws(Exception::class)
+    override fun sendRequest(request: HttpRequest?): HttpResponse? {
+        val response = httpClient.execute(request.unwrap() as HttpUriRequest)
+        return HttpResponseAdapter(response)
     }
 
-    @Override
-    protected void closeConnection(HttpRequest request, oauth.signpost.http.HttpResponse response) {
-        if (response == null) return;
-
-        HttpEntity entity = ((HttpResponse) response.unwrap()).getEntity();
+    override fun closeConnection(request: HttpRequest?, response: HttpResponse?) {
+        if (response == null) return
+        val entity = (response.unwrap() as cz.msebera.android.httpclient.HttpResponse).entity
         if (entity != null) {
             try {
                 // free the connection
-                entity.consumeContent();
-            } catch (IOException e) {
-                MyLog.v(this, "HTTP keep-alive is not possible", e);
+                entity.consumeContent()
+            } catch (e: IOException) {
+                MyLog.v(this, "HTTP keep-alive is not possible", e)
             }
         }
+    }
+
+    companion object {
+        private const val serialVersionUID = 1L
     }
 }

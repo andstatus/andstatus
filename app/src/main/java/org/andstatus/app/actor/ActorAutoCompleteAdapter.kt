@@ -13,199 +13,157 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.actor
 
-package org.andstatus.app.actor;
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseAdapter
+import android.widget.Filter
+import android.widget.Filterable
+import org.andstatus.app.R
+import org.andstatus.app.database.table.ActorTable
+import org.andstatus.app.graphics.AvatarView
+import org.andstatus.app.note.NoteBodyTokenizer
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.timeline.LoadableListActivity
+import org.andstatus.app.util.CollectionsUtil
+import org.andstatus.app.util.I18n
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyUrlSpan
+import org.andstatus.app.util.StringUtil
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.Filter;
-import android.widget.Filterable;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import org.andstatus.app.R;
-import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.graphics.AvatarView;
-import org.andstatus.app.note.NoteBodyTokenizer;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.LoadableListActivity;
-import org.andstatus.app.util.CollectionsUtil;
-import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.util.StringUtil;
-
-import java.util.Collections;
-import java.util.List;
-
-public class ActorAutoCompleteAdapter extends BaseAdapter implements Filterable {
-    private final Origin origin;
-    private final LoadableListActivity myActivity;
-    private final LayoutInflater mInflater;
-
-    private ArrayFilter mFilter;
-    private FilteredValues items = FilteredValues.EMPTY;
-
-    public ActorAutoCompleteAdapter(@NonNull LoadableListActivity myActivity, @NonNull Origin origin) {
-        this.origin = origin;
-        this.myActivity =myActivity;
-        mInflater = LayoutInflater.from(myActivity);
+class ActorAutoCompleteAdapter(myActivity: LoadableListActivity<*>, origin: Origin) : BaseAdapter(), Filterable {
+    private val origin: Origin?
+    private val myActivity: LoadableListActivity<*>?
+    private val mInflater: LayoutInflater?
+    private var mFilter: ArrayFilter? = null
+    private var items = FilteredValues.EMPTY
+    fun getOrigin(): Origin? {
+        return origin
     }
 
-    public Origin getOrigin() {
-        return origin;
+    override fun getCount(): Int {
+        return items.viewItems.size
     }
 
-    @Override
-    public int getCount() {
-        return items.viewItems.size();
+    override fun getItem(position: Int): ActorViewItem? {
+        return items.viewItems.get(position)
     }
 
-    @Override
-    public @Nullable
-    ActorViewItem getItem(int position) {
-        return items.viewItems.get(position);
+    override fun getItemId(position: Int): Long {
+        return position
     }
 
-    @Override
-    public long getItemId(int position) {
-        return position;
-    }
-
-    @Override
-    public @NonNull View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        final View view;
-        if (convertView == null) {
-            view = mInflater.inflate(R.layout.actor_lookup, parent, false);
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val view: View?
+        view = convertView ?: mInflater.inflate(R.layout.actor_lookup, parent, false)
+        val item = getItem(position)
+        if (item == null || item.actor.isEmpty) {
+            MyUrlSpan.Companion.showText(view, R.id.username,
+                    myActivity.getText(R.string.nothing_in_the_loadable_list).toString(), false, true)
         } else {
-            view = convertView;
+            val username = item.getActor().uniqueName
+            MyUrlSpan.Companion.showAsPlainText(view, R.id.username, username, true)
+            MyUrlSpan.Companion.showAsPlainText(view, R.id.description,
+                    I18n.trimTextAt(item.actor.summary, 80).toString(), false)
+            showAvatar(view, item)
         }
-        final ActorViewItem item = getItem(position);
-        if (item == null || item.actor.isEmpty()) {
-            MyUrlSpan.showText(view, R.id.username,
-                    myActivity.getText(R.string.nothing_in_the_loadable_list).toString(),false,true);
-        } else {
-            String username = item.getActor().getUniqueName();
-            MyUrlSpan.showAsPlainText(view, R.id.username, username,true);
-            MyUrlSpan.showAsPlainText(view, R.id.description,
-                    I18n.trimTextAt(item.actor.getSummary(), 80).toString(), false);
-            showAvatar(view, item);
-        }
-        return view;
+        return view
     }
 
-    private void showAvatar(View view, ActorViewItem item) {
-        AvatarView avatarView = view.findViewById(R.id.avatar_image);
+    private fun showAvatar(view: View?, item: ActorViewItem?) {
+        val avatarView: AvatarView = view.findViewById(R.id.avatar_image)
         if (item == null) {
-            avatarView.setVisibility(View.INVISIBLE);
+            avatarView.visibility = View.INVISIBLE
         } else {
-            item.showAvatar(myActivity, avatarView);
+            item.showAvatar(myActivity, avatarView)
         }
     }
 
-    @Override
-    public @NonNull Filter getFilter() {
+    override fun getFilter(): Filter {
         if (mFilter == null) {
-            mFilter = new ArrayFilter();
+            mFilter = ArrayFilter()
         }
-        return mFilter;
+        return mFilter
     }
 
-    private static class FilteredValues {
-        final static FilteredValues EMPTY = new FilteredValues(false, "", Collections.emptyList());
-
-        final boolean matchGroupsOnly;
-        final String referenceChar;
-        final List<ActorViewItem> viewItems;
-
-        private FilteredValues(boolean matchGroupsOnly, String referenceChar, List<ActorViewItem> viewItems) {
-            this.matchGroupsOnly = matchGroupsOnly;
-            this.referenceChar = referenceChar;
-            this.viewItems = viewItems;
+    private class FilteredValues private constructor(val matchGroupsOnly: Boolean, val referenceChar: String?, val viewItems: MutableList<ActorViewItem?>?) {
+        companion object {
+            val EMPTY: FilteredValues? = FilteredValues(false, "", emptyList())
         }
     }
 
     /**
-     * <p>An array filter constrains the content of the array adapter with
+     *
+     * An array filter constrains the content of the array adapter with
      * a prefix. Each item that does not start with the supplied prefix
-     * is removed from the list.</p>
+     * is removed from the list.
      */
-    private class ArrayFilter extends Filter {
-
-        @Override
-        protected FilterResults performFiltering(CharSequence prefixWithReferenceChar) {
-            if (!origin.isValid() || StringUtil.isEmpty(prefixWithReferenceChar) ||
-                    prefixWithReferenceChar.length() < NoteBodyTokenizer.MIN_LENGHT_TO_SEARCH + 1) {
-                final FilterResults results = new FilterResults();
-                results.values = FilteredValues.EMPTY;
-                results.count = 0;
-                return results;
+    private inner class ArrayFilter : Filter() {
+        override fun performFiltering(prefixWithReferenceChar: CharSequence?): FilterResults? {
+            if (!origin.isValid() || StringUtil.isEmpty(prefixWithReferenceChar) || prefixWithReferenceChar.length < NoteBodyTokenizer.Companion.MIN_LENGHT_TO_SEARCH + 1) {
+                val results = FilterResults()
+                results.values = FilteredValues.EMPTY
+                results.count = 0
+                return results
             }
-            char referenceChar = prefixWithReferenceChar.charAt(0);
-            String prefixString = prefixWithReferenceChar.toString().substring(1);
-            boolean matchGroupsOnly = origin.groupActorReferenceChar().map(c -> c == referenceChar).orElse(false);
-
-            List<ActorViewItem> viewItems = loadFiltered(matchGroupsOnly, prefixString.toLowerCase());
-            CollectionsUtil.sort(viewItems);
-
-            final FilterResults results = new FilterResults();
-            results.values = new FilteredValues(matchGroupsOnly, String.valueOf(referenceChar), viewItems);
-            results.count = viewItems.size();
-            return results;
+            val referenceChar = prefixWithReferenceChar.get(0)
+            val prefixString = prefixWithReferenceChar.toString().substring(1)
+            val matchGroupsOnly = origin.groupActorReferenceChar().map { c: Char? -> c == referenceChar }.orElse(false)
+            val viewItems = loadFiltered(matchGroupsOnly, prefixString.toLowerCase())
+            CollectionsUtil.sort(viewItems)
+            val results = FilterResults()
+            results.values = FilteredValues(matchGroupsOnly, referenceChar.toString(), viewItems)
+            results.count = viewItems.size
+            return results
         }
 
-        private List<ActorViewItem> loadFiltered(boolean matchGroupsOnly, String prefixString) {
-            ActorsLoader loader = new ActorsLoader(myActivity.getMyContext(), ActorsScreenType.ACTORS_AT_ORIGIN,
+        private fun loadFiltered(matchGroupsOnly: Boolean, prefixString: String?): MutableList<ActorViewItem?>? {
+            val loader: ActorsLoader = object : ActorsLoader(myActivity.getMyContext(), ActorsScreenType.ACTORS_AT_ORIGIN,
                     origin, 0, "") {
-                @NonNull
-                @Override
-                protected String getSelection() {
-                    if (matchGroupsOnly) {
-                        return ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + origin.getId() + " AND " +
+                override fun getSelection(): String {
+                    return if (matchGroupsOnly) {
+                        ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + origin.id + " AND " +
                                 ActorTable.TABLE_NAME + "." + ActorTable.GROUP_TYPE +
                                 " IN (" + GroupType.GENERIC.id + ", " + GroupType.ACTOR_OWNED.id + ") AND " +
-                                ActorTable.TABLE_NAME + "." + ActorTable.USERNAME + " LIKE '" + prefixString + "%'";
+                                ActorTable.TABLE_NAME + "." + ActorTable.USERNAME + " LIKE '" + prefixString + "%'"
                     } else {
-                        return ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + origin.getId() + " AND "
-                                + ActorTable.TABLE_NAME + "." + ActorTable.WEBFINGER_ID + " LIKE '" + prefixString + "%'";
+                        (ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + origin.id + " AND "
+                                + ActorTable.TABLE_NAME + "." + ActorTable.WEBFINGER_ID + " LIKE '" + prefixString + "%'")
                     }
                 }
-            };
-            loader.load(null);
-            List<ActorViewItem> filteredValues = loader.getList();
-            for (ActorViewItem viewItem : filteredValues) {
-                MyLog.v(this, () -> "filtered: " + viewItem.actor);
             }
-            return filteredValues;
+            loader.load(null)
+            val filteredValues = loader.list
+            for (viewItem in filteredValues) {
+                MyLog.v(this) { "filtered: " + viewItem.actor }
+            }
+            return filteredValues
         }
 
-        @Override
-        protected void publishResults(CharSequence constraint, FilterResults results) {
-            //noinspection
-            items = (FilteredValues) results.values;
+        override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+            items = results.values as FilteredValues
             if (results.count > 0) {
-                notifyDataSetChanged();
+                notifyDataSetChanged()
             } else {
-                notifyDataSetInvalidated();
+                notifyDataSetInvalidated()
             }
         }
 
-        @Override
-        public CharSequence convertResultToString(Object resultValue) {
-            if (!(resultValue instanceof ActorViewItem)) {
-                return "";
+        override fun convertResultToString(resultValue: Any?): CharSequence? {
+            if (resultValue !is ActorViewItem) {
+                return ""
             }
-            ActorViewItem item = (ActorViewItem) resultValue;
+            val item = resultValue as ActorViewItem?
             return items.referenceChar +
-                (item.getActor().isEmpty()
-                    ? ""
-                    : origin.isMentionAsWebFingerId() && !items.matchGroupsOnly
-                        ? item.actor.getUniqueName()
-                        : item.actor.getUsername()
-                );
+                    if (item.getActor().isEmpty) "" else if (origin.isMentionAsWebFingerId() && !items.matchGroupsOnly) item.actor.uniqueName else item.actor.username
         }
+    }
+
+    init {
+        this.origin = origin
+        this.myActivity = myActivity
+        mInflater = LayoutInflater.from(myActivity)
     }
 }

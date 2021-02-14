@@ -13,53 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.graphics
 
-package org.andstatus.app.graphics;
-
-import android.content.Context;
-import androidx.appcompat.widget.AppCompatImageView;
-import android.util.AttributeSet;
-
-import org.andstatus.app.util.InstanceId;
+import android.content.Context
+import android.util.AttributeSet
+import androidx.appcompat.widget.AppCompatImageView
+import org.andstatus.app.util.InstanceId
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class IdentifiableImageView extends AppCompatImageView {
-    public final long myViewId = InstanceId.next();
-    private volatile long imageId = 0;
-    private volatile boolean loaded = false;
+open class IdentifiableImageView : AppCompatImageView {
+    val myViewId = InstanceId.next()
 
-    public IdentifiableImageView(Context context) {
-        super(context);
+    @Volatile
+    private var imageId: Long = 0
+
+    @Volatile
+    private var loaded = false
+
+    constructor(context: Context?) : super(context) {}
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
+    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {}
+
+    fun getImageId(): Long {
+        return imageId
     }
 
-    public IdentifiableImageView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+    fun setImageId(imageId: Long) {
+        this.imageId = imageId
+        loaded = false
     }
 
-    public IdentifiableImageView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+    fun isLoaded(): Boolean {
+        return loaded
     }
 
-    public long getImageId() {
-        return imageId;
+    fun setLoaded() {
+        loaded = true
     }
 
-    public void setImageId(long imageId) {
-        this.imageId = imageId;
-        loaded = false;
-    }
-
-    public boolean isLoaded() {
-        return loaded;
-    }
-
-    public void setLoaded() {
-        this.loaded = true;
-    }
-
-    public CacheName getCacheName() {
-        return CacheName.ATTACHED_IMAGE;
+    open fun getCacheName(): CacheName? {
+        return CacheName.ATTACHED_IMAGE
     }
 }

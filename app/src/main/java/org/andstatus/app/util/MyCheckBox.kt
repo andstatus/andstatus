@@ -13,77 +13,66 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-import android.app.Activity;
-import androidx.annotation.IdRes;
-import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
+import android.app.Activity
+import android.view.View
+import android.widget.CheckBox
+import android.widget.CompoundButton
+import androidx.annotation.IdRes
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MyCheckBox {
-    private final static CompoundButton.OnCheckedChangeListener EMPTY_ON_CHECKED_CHANGE_LISTENER =
-            new CompoundButton.OnCheckedChangeListener() {
-        @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-            // Empty;
-        }
-    };
-
-    private MyCheckBox() {
-        // Empty
+object MyCheckBox {
+    private val EMPTY_ON_CHECKED_CHANGE_LISTENER: CompoundButton.OnCheckedChangeListener? = CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
+        // Empty;
     }
 
-    public static boolean isChecked(Activity activity, @IdRes int checkBoxViewId, boolean defaultValue) {
-        View view = activity.findViewById(checkBoxViewId);
-        if (view == null || !CheckBox.class.isAssignableFrom(view.getClass())) {
-            return defaultValue;
-        }
-        return ((CheckBox)view).isChecked();
+    fun isChecked(activity: Activity?, @IdRes checkBoxViewId: Int, defaultValue: Boolean): Boolean {
+        val view = activity.findViewById<View?>(checkBoxViewId)
+        return if (view == null || !CheckBox::class.java.isAssignableFrom(view.javaClass)) {
+            defaultValue
+        } else (view as CheckBox).isChecked
     }
 
-    public static boolean setEnabled(Activity activity, @IdRes int viewId, boolean checked) {
-        return set(activity, viewId, checked, true);
+    fun setEnabled(activity: Activity?, @IdRes viewId: Int, checked: Boolean): Boolean {
+        return set(activity, viewId, checked, true)
     }
 
-    public static boolean setEnabled(View parentView, @IdRes int viewId, boolean checked) {
-        return set(parentView, viewId, checked, EMPTY_ON_CHECKED_CHANGE_LISTENER);
+    fun setEnabled(parentView: View?, @IdRes viewId: Int, checked: Boolean): Boolean {
+        return set(parentView, viewId, checked, EMPTY_ON_CHECKED_CHANGE_LISTENER)
     }
 
-    public static boolean set(Activity activity, @IdRes int viewId, boolean checked, boolean enabled) {
-        return set(activity, viewId, checked, enabled ? EMPTY_ON_CHECKED_CHANGE_LISTENER : null);
+    operator fun set(activity: Activity?, @IdRes viewId: Int, checked: Boolean, enabled: Boolean): Boolean {
+        return set(activity, viewId, checked, if (enabled) EMPTY_ON_CHECKED_CHANGE_LISTENER else null)
     }
 
-    public static boolean set(Activity activity, @IdRes int viewId, boolean checked,
-                              CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
-        return set(activity.findViewById(viewId), checked, onCheckedChangeListener);
+    operator fun set(activity: Activity?, @IdRes viewId: Int, checked: Boolean,
+                     onCheckedChangeListener: CompoundButton.OnCheckedChangeListener?): Boolean {
+        return set(activity.findViewById(viewId), checked, onCheckedChangeListener)
     }
 
-    public static boolean set(View parentView, @IdRes int viewId, boolean checked,
-                              CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
-        return set(parentView.findViewById(viewId), checked, onCheckedChangeListener);
+    operator fun set(parentView: View?, @IdRes viewId: Int, checked: Boolean,
+                     onCheckedChangeListener: CompoundButton.OnCheckedChangeListener?): Boolean {
+        return set(parentView.findViewById(viewId), checked, onCheckedChangeListener)
     }
 
     /**
      * @return true if succeeded
      */
-    public static boolean set(View checkBoxIn, boolean checked,
-                              CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
-        boolean success = checkBoxIn != null && CheckBox.class.isAssignableFrom(checkBoxIn.getClass());
+    operator fun set(checkBoxIn: View?, checked: Boolean,
+                     onCheckedChangeListener: CompoundButton.OnCheckedChangeListener?): Boolean {
+        val success = checkBoxIn != null && CheckBox::class.java.isAssignableFrom(checkBoxIn.javaClass)
         if (success) {
-            CheckBox checkBox = (CheckBox) checkBoxIn;
-            checkBox.setOnCheckedChangeListener(null);
-            checkBox.setChecked(checked);
-            checkBox.setEnabled(onCheckedChangeListener != null);
-            if (onCheckedChangeListener != null && onCheckedChangeListener != EMPTY_ON_CHECKED_CHANGE_LISTENER) {
-                checkBox.setOnCheckedChangeListener(onCheckedChangeListener);
+            val checkBox = checkBoxIn as CheckBox?
+            checkBox.setOnCheckedChangeListener(null)
+            checkBox.setChecked(checked)
+            checkBox.setEnabled(onCheckedChangeListener != null)
+            if (onCheckedChangeListener != null && onCheckedChangeListener !== EMPTY_ON_CHECKED_CHANGE_LISTENER) {
+                checkBox.setOnCheckedChangeListener(onCheckedChangeListener)
             }
         }
-        return success;
+        return success
     }
-
 }

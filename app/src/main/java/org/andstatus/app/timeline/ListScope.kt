@@ -13,26 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContext
 
-import org.andstatus.app.R;
-import org.andstatus.app.context.MyContext;
+enum class ListScope(private val timelinePrepositionResId: Int) {
+    ORIGIN(R.string.combined_timeline_off_origin), USER(R.string.combined_timeline_off_account), ACTOR_AT_ORIGIN(0);
 
-public enum ListScope {
-    ORIGIN(R.string.combined_timeline_off_origin),
-    USER(R.string.combined_timeline_off_account),
-    ACTOR_AT_ORIGIN(0);
-
-    private final int timelinePrepositionResId;
-
-    ListScope(int timelinePrepositionResId) {
-        this.timelinePrepositionResId = timelinePrepositionResId;
-    }
-
-    public CharSequence timelinePreposition(MyContext myContext) {
-        return myContext == null || myContext.context() == null || timelinePrepositionResId == 0
-                ? ""
-                : myContext.context().getText(timelinePrepositionResId);
+    fun timelinePreposition(myContext: MyContext?): CharSequence? {
+        return if (myContext == null || myContext.context() == null || timelinePrepositionResId == 0) "" else myContext.context().getText(timelinePrepositionResId)
     }
 }

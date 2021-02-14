@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.andstatus.app.account;
-
+package org.andstatus.app.account
 
 /**
- * Interface that allows to read and write the {@link MyAccount}'s persistent data 
+ * Interface that allows to read and write the [MyAccount]'s persistent data
  */
-public interface AccountDataWriter extends AccountDataReader {
-    void setDataInt(String key, int value);
-    void setDataLong(String key, long dataLong);
-    void setDataString(String key, String value);
+interface AccountDataWriter : AccountDataReader {
+    open fun setDataInt(key: String?, value: Int)
+    open fun setDataLong(key: String?, dataLong: Long)
+    open fun setDataString(key: String?, value: String?)
 }

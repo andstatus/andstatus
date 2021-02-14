@@ -13,160 +13,76 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data
 
-package org.andstatus.app.data;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-
-import java.util.List;
-
-import static java.util.stream.Collectors.toList;
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import java.util.stream.Collectors
 
 /**
- * Helper class to find out a relation of a Note to {@link #myAccount}
+ * Helper class to find out a relation of a Note to [.myAccount]
  * @author yvolk@yurivolkov.com
  */
-public class NoteContextMenuData {
-    private final static String TAG = NoteContextMenuData.class.getSimpleName();
-    public static final NoteContextMenuData EMPTY = new NoteContextMenuData(NoteForAnyAccount.EMPTY, MyAccount.EMPTY);
-    @NonNull
-    public final NoteForAnyAccount noteForAnyAccount;
-    private boolean isAuthorMySucceededMyAccount = false;
-    @NonNull
-    private final MyAccount myAccount;
-    public boolean isSubscribed = false;
-    public boolean isAuthor = false;
-    public boolean isActor = false;
-    private boolean isRecipient = false;
-    public boolean favorited = false;
-    public boolean reblogged = false;
-    public boolean actorFollowed = false;
-    public boolean authorFollowed = false;
-
-    public static MyAccount getBestAccountToDownloadNote(MyContext myContext, long noteId) {
-        NoteForAnyAccount noteForAnyAccount = new NoteForAnyAccount(myContext, 0, noteId);
-        boolean subscribedFound = false;
-        NoteContextMenuData bestFit = NoteContextMenuData.EMPTY;
-        for(NoteContextMenuData menuData : getMenuData(myContext, noteForAnyAccount)) {
-            if(menuData.hasPrivateAccess()) {
-                bestFit = menuData;
-                break;
-            }
-            if(menuData.isSubscribed) {
-                bestFit = menuData;
-                subscribedFound = true;
-            }
-            if(menuData.isTiedToThisAccount() && !subscribedFound) {
-                bestFit = menuData;
-            }
-        }
-        return bestFit.equals(EMPTY)
-            ? myContext.accounts().getFirstPreferablySucceededForOrigin(noteForAnyAccount.origin)
-            : bestFit.myAccount;
+class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: MyAccount?) {
+    private var isAuthorMySucceededMyAccount = false
+    private val myAccount: MyAccount
+    var isSubscribed = false
+    var isAuthor = false
+    var isActor = false
+    private var isRecipient = false
+    var favorited = false
+    var reblogged = false
+    var actorFollowed = false
+    var authorFollowed = false
+    private fun calculateMyAccount(origin: Origin?, ma: MyAccount?): MyAccount {
+        return if (ma == null || !origin.isValid() || ma.origin != origin || ma.nonValid()) {
+            MyAccount.Companion.EMPTY
+        } else ma
     }
 
-    private static List<NoteContextMenuData> getMenuData(MyContext myContext, NoteForAnyAccount noteForAnyAccount) {
-        return myContext.accounts().succeededForSameOrigin(noteForAnyAccount.origin).stream()
-                .map(a -> new NoteContextMenuData(noteForAnyAccount, a)).collect(toList());
+    private fun loadData() {
+        isRecipient = noteForAnyAccount.audience.findSame(myAccount.actor).isSuccess
+        isAuthor = myAccount.actorId == noteForAnyAccount.author.actorId
+        isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded
+        val actorToNote = MyQuery.favoritedAndReblogged(noteForAnyAccount.myContext,
+                noteForAnyAccount.noteId, myAccount.actorId)
+        favorited = actorToNote.favorited
+        reblogged = actorToNote.reblogged
+        isSubscribed = actorToNote.subscribed
+        authorFollowed = myAccount.isFollowing(noteForAnyAccount.author)
+        isActor = noteForAnyAccount.actor.actorId == myAccount.actorId
+        actorFollowed = !isActor && if (noteForAnyAccount.actor.actorId == noteForAnyAccount.author.actorId) authorFollowed else myAccount.isFollowing(noteForAnyAccount.actor)
     }
 
-    public static NoteContextMenuData getAccountToActOnNote(MyContext myContext, long activityId, long noteId,
-                                                            @NonNull MyAccount myActingAccount,
-                                                            @NonNull MyAccount currentAccount) {
-        NoteForAnyAccount noteForAnyAccount = new NoteForAnyAccount(myContext, activityId, noteId);
-        final List<NoteContextMenuData> menuDataList = getMenuData(myContext, noteForAnyAccount);
-
-        NoteContextMenuData acting = menuDataList.stream().filter(atn -> atn.myAccount.equals(myActingAccount))
-                .findAny().orElse(EMPTY);
-        if (!acting.equals(EMPTY)) return acting;
-
-        NoteContextMenuData bestFit = menuDataList.stream().filter(atn -> atn.myAccount.equals(currentAccount))
-                .findAny().orElse(EMPTY);
-        for(NoteContextMenuData menuData : menuDataList) {
-            if (!bestFit.myAccount.isValidAndSucceeded()) {
-                bestFit = menuData;
-            }
-            if(menuData.hasPrivateAccess()) {
-                bestFit = menuData;
-                break;
-            }
-            if(menuData.isSubscribed && !bestFit.isSubscribed) {
-                bestFit = menuData;
-            }
-            if(menuData.isTiedToThisAccount() && !bestFit.isTiedToThisAccount()) {
-                bestFit = menuData;
-            }
-        }
-        return bestFit;
+    fun getMyAccount(): MyAccount {
+        return myAccount
     }
 
-    public NoteContextMenuData(@NonNull NoteForAnyAccount noteForAnyAccount, MyAccount myAccount) {
-        this.noteForAnyAccount = noteForAnyAccount;
-        this.myAccount = calculateMyAccount(noteForAnyAccount.origin, myAccount);
-        if (this.myAccount.isValid()) {
-            loadData();
-        }
+    fun getMyActor(): Actor {
+        return myAccount.actor
     }
 
-    @NonNull
-    private MyAccount calculateMyAccount(Origin origin, MyAccount ma) {
-        if (ma == null || !origin.isValid() || !ma.getOrigin().equals(origin) || ma.nonValid()) {
-            return MyAccount.EMPTY;
-        }
-        return ma;
+    fun isTiedToThisAccount(): Boolean {
+        return (isRecipient || favorited || reblogged || isAuthor
+                || actorFollowed || authorFollowed)
     }
 
-    private void loadData() {
-        isRecipient = noteForAnyAccount.audience.findSame(this.myAccount.getActor()).isSuccess();
-        isAuthor = (this.myAccount.getActorId() == noteForAnyAccount.author.actorId);
-        isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded();
-        ActorToNote actorToNote = MyQuery.favoritedAndReblogged(noteForAnyAccount.myContext,
-                noteForAnyAccount.noteId, this.myAccount.getActorId());
-        favorited = actorToNote.favorited;
-        reblogged = actorToNote.reblogged;
-        isSubscribed = actorToNote.subscribed;
-        authorFollowed = myAccount.isFollowing(noteForAnyAccount.author);
-        isActor = noteForAnyAccount.actor.actorId == this.myAccount.getActorId();
-        actorFollowed = !isActor && (noteForAnyAccount.actor.actorId == noteForAnyAccount.author.actorId
-                ? authorFollowed
-                : myAccount.isFollowing(noteForAnyAccount.actor));
+    fun hasPrivateAccess(): Boolean {
+        return isRecipient || isAuthor
     }
 
-    @NonNull
-    public MyAccount getMyAccount() {
-        return myAccount;
+    fun isAuthorSucceededMyAccount(): Boolean {
+        return isAuthorMySucceededMyAccount
     }
 
-    @NonNull
-    public Actor getMyActor() {
-        return myAccount.getActor();
-    }
-
-    public boolean isTiedToThisAccount() {
-        return isRecipient || favorited || reblogged || isAuthor
-                || actorFollowed || authorFollowed;
-    }
-
-    public boolean hasPrivateAccess() {
-        return isRecipient || isAuthor;
-    }
-
-    public boolean isAuthorSucceededMyAccount() {
-        return isAuthorMySucceededMyAccount;
-    }
-
-    @Override
-    public String toString() {
+    override fun toString(): String {
         return TAG + "{" +
                 "noteForAnyAccount=" + noteForAnyAccount +
                 ", isAuthorMySucceededMyAccount=" + isAuthorMySucceededMyAccount +
-                ", myAccount=" + myAccount.getAccountName() +
-                ", accountActorId=" + this.myAccount.getActorId() +
+                ", myAccount=" + myAccount.accountName +
+                ", accountActorId=" + myAccount.actorId +
                 ", isSubscribed=" + isSubscribed +
                 ", isAuthor=" + isAuthor +
                 ", isActor=" + isActor +
@@ -175,6 +91,70 @@ public class NoteContextMenuData {
                 ", reblogged=" + reblogged +
                 ", actorFollowed=" + actorFollowed +
                 ", authorFollowed=" + authorFollowed +
-                '}';
+                '}'
+    }
+
+    companion object {
+        private val TAG: String? = NoteContextMenuData::class.java.simpleName
+        val EMPTY: NoteContextMenuData? = NoteContextMenuData(NoteForAnyAccount.Companion.EMPTY, MyAccount.Companion.EMPTY)
+        fun getBestAccountToDownloadNote(myContext: MyContext?, noteId: Long): MyAccount? {
+            val noteForAnyAccount = NoteForAnyAccount(myContext, 0, noteId)
+            var subscribedFound = false
+            var bestFit = EMPTY
+            for (menuData in getMenuData(myContext, noteForAnyAccount)) {
+                if (menuData.hasPrivateAccess()) {
+                    bestFit = menuData
+                    break
+                }
+                if (menuData.isSubscribed) {
+                    bestFit = menuData
+                    subscribedFound = true
+                }
+                if (menuData.isTiedToThisAccount() && !subscribedFound) {
+                    bestFit = menuData
+                }
+            }
+            return if (bestFit == EMPTY) myContext.accounts().getFirstPreferablySucceededForOrigin(noteForAnyAccount.origin) else bestFit.myAccount
+        }
+
+        private fun getMenuData(myContext: MyContext?, noteForAnyAccount: NoteForAnyAccount?): MutableList<NoteContextMenuData?>? {
+            return myContext.accounts().succeededForSameOrigin(noteForAnyAccount.origin).stream()
+                    .map { a: MyAccount? -> NoteContextMenuData(noteForAnyAccount, a) }.collect(Collectors.toList())
+        }
+
+        fun getAccountToActOnNote(myContext: MyContext?, activityId: Long, noteId: Long,
+                                  myActingAccount: MyAccount,
+                                  currentAccount: MyAccount): NoteContextMenuData? {
+            val noteForAnyAccount = NoteForAnyAccount(myContext, activityId, noteId)
+            val menuDataList = getMenuData(myContext, noteForAnyAccount)
+            val acting = menuDataList.stream().filter { atn: NoteContextMenuData? -> atn.myAccount == myActingAccount }
+                    .findAny().orElse(EMPTY)
+            if (acting != EMPTY) return acting
+            var bestFit = menuDataList.stream().filter { atn: NoteContextMenuData? -> atn.myAccount == currentAccount }
+                    .findAny().orElse(EMPTY)
+            for (menuData in menuDataList) {
+                if (!bestFit.myAccount.isValidAndSucceeded) {
+                    bestFit = menuData
+                }
+                if (menuData.hasPrivateAccess()) {
+                    bestFit = menuData
+                    break
+                }
+                if (menuData.isSubscribed && !bestFit.isSubscribed) {
+                    bestFit = menuData
+                }
+                if (menuData.isTiedToThisAccount() && !bestFit.isTiedToThisAccount()) {
+                    bestFit = menuData
+                }
+            }
+            return bestFit
+        }
+    }
+
+    init {
+        this.myAccount = calculateMyAccount(noteForAnyAccount.origin, myAccount)
+        if (this.myAccount.isValid) {
+            loadData()
+        }
     }
 }

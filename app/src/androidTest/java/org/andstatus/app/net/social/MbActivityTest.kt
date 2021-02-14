@@ -13,31 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social
 
-package org.andstatus.app.net.social;
+import org.andstatus.app.context.TestSuite
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
 
-import org.andstatus.app.context.TestSuite;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-
-public class MbActivityTest {
+class MbActivityTest {
     @Before
-    public void setUp() throws Exception {
-        TestSuite.initialize(this);
+    @Throws(Exception::class)
+    fun setUp() {
+        TestSuite.initialize(this)
     }
 
     @Test
-    public void testEmpty() {
-        AActivity empty = AActivity.EMPTY;
-        assertEquals(empty.toString(), true, empty.isEmpty());
-        assertEquals(Actor.EMPTY, empty.accountActor);
-        assertEquals(Actor.EMPTY, empty.getActor());
-        assertEquals(Actor.EMPTY, empty.getAuthor());
-        assertEquals(empty.toString(), Actor.EMPTY, empty.getObjActor());
-        assertEquals(Note.EMPTY, empty.getNote());
-        assertEquals(AActivity.EMPTY, empty.getActivity());
-        assertEquals(AObjectType.EMPTY, empty.getObjectType());
+    fun testEmpty() {
+        val empty: AActivity = AActivity.Companion.EMPTY
+        Assert.assertEquals(empty.toString(), true, empty.isEmpty)
+        Assert.assertEquals(Actor.Companion.EMPTY, empty.accountActor)
+        Assert.assertEquals(Actor.Companion.EMPTY, empty.actor)
+        Assert.assertEquals(Actor.Companion.EMPTY, empty.author)
+        Assert.assertEquals(empty.toString(), Actor.Companion.EMPTY, empty.objActor)
+        Assert.assertEquals(Note.Companion.EMPTY, empty.note)
+        Assert.assertEquals(AActivity.Companion.EMPTY, empty.activity)
+        Assert.assertEquals(AObjectType.EMPTY, empty.objectType)
     }
 }

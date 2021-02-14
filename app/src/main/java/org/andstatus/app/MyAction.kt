@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,65 +13,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app
 
-package org.andstatus.app;
+import android.content.Intent
+import android.net.Uri
+import org.andstatus.app.service.MyService
+import org.andstatus.app.service.MyServiceManager
 
-import android.content.Intent;
-import android.net.Uri;
-
-import org.andstatus.app.service.MyService;
-import org.andstatus.app.service.MyServiceManager;
-
-public enum MyAction {
+enum class MyAction(actionOrSuffix: String?) {
     /**
-     * This action is used in intent sent to {@link MyService}. 
+     * This action is used in intent sent to [MyService].
      * This intent will be received by MyService only if it's initialized
-     * (and corresponding broadcast receiver registered). 
+     * (and corresponding broadcast receiver registered).
      */
     EXECUTE_COMMAND("EXECUTE_COMMAND"),
+
     /**
-     * Broadcast with this action is being sent by {@link MyService} to notify of its state.
-     *  Actually {@link MyServiceManager} receives it.
+     * Broadcast with this action is being sent by [MyService] to notify of its state.
+     * Actually [MyServiceManager] receives it.
      */
-    SERVICE_STATE("SERVICE_STATE"),
-    VIEW_CONVERSATION("VIEW_CONVERSATION"),
-    VIEW_FOLLOWERS("VIEW_FOLLOWERS"),
-    VIEW_ACTORS("VIEW_ACTORS"),
-    BOOT_COMPLETED("android.intent.action.BOOT_COMPLETED"),
-    ACTION_SHUTDOWN("android.intent.action.ACTION_SHUTDOWN"),
-    SYNC("SYNC"),
-    INITIALIZE_APP("INITIALIZE_APP"),
-    SET_DEFAULT_VALUES("SET_DEFAULT_VALUES"),
-    CLOSE_ALL_ACTIVITIES("CLOSE_ALL_ACTIVITIES"),
-    UNKNOWN("UNKNOWN");
-    
-    private final String action;
-    
-    MyAction(String actionOrSuffix) {
-        this.action = actionOrSuffix.contains(".")
-                ? actionOrSuffix
-                : ClassInApplicationPackage.PACKAGE_NAME + ".action." + actionOrSuffix;
+    SERVICE_STATE("SERVICE_STATE"), VIEW_CONVERSATION("VIEW_CONVERSATION"), VIEW_FOLLOWERS("VIEW_FOLLOWERS"), VIEW_ACTORS("VIEW_ACTORS"), BOOT_COMPLETED("android.intent.action.BOOT_COMPLETED"), ACTION_SHUTDOWN("android.intent.action.ACTION_SHUTDOWN"), SYNC("SYNC"), INITIALIZE_APP("INITIALIZE_APP"), SET_DEFAULT_VALUES("SET_DEFAULT_VALUES"), CLOSE_ALL_ACTIVITIES("CLOSE_ALL_ACTIVITIES"), UNKNOWN("UNKNOWN");
+
+    private val action: String?
+    fun getIntent(): Intent? {
+        return Intent(getAction())
     }
 
-    public Intent getIntent() {
-        return new Intent(getAction());
+    fun getIntent(uri: Uri?): Intent? {
+        return Intent(getAction(), uri)
     }
 
-    public Intent getIntent(Uri uri) {
-        return new Intent(getAction(), uri);
+    fun getAction(): String? {
+        return action
     }
-    
-    public static MyAction fromIntent(Intent intent) {
-        String action = intent == null ? "(null)" : intent.getAction();
-        for (MyAction value : MyAction.values()) {
-            if (value.action.equals(action)) {
-                return value;
+
+    companion object {
+        fun fromIntent(intent: Intent?): MyAction? {
+            val action = if (intent == null) "(null)" else intent.action
+            for (value in values()) {
+                if (value.action == action) {
+                    return value
+                }
             }
+            return UNKNOWN
         }
-        return UNKNOWN;
     }
-    
-    public String getAction() {
-        return action;
+
+    init {
+        action = if (actionOrSuffix.contains(".")) actionOrSuffix else ClassInApplicationPackage.PACKAGE_NAME + ".action." + actionOrSuffix
     }
 }

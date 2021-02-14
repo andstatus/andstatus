@@ -13,28 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.andstatus.app.util;
-
-import static org.andstatus.app.util.MyLog.MAX_TAG_LENGTH;
+package org.andstatus.app.util
 
 /**
  * Helps easier distinguish instances of a class e.g. in log messages
  * @author yvolk@yurivolkov.com
  */
-public interface IdentifiableInstance extends TaggedClass {
-
-    long getInstanceId();
-
-    default String instanceIdString() {
-        return String.valueOf(getInstanceId());
+interface IdentifiableInstance : TaggedClass {
+    open fun getInstanceId(): Long
+    fun instanceIdString(): String? {
+        return getInstanceId().toString()
     }
 
-    default String instanceTag() {
-        String className = classTag();
-        String idString = instanceIdString();
-        int maxClassNameLength = MAX_TAG_LENGTH - idString.length();
-        return (className.length() > maxClassNameLength ? className.substring(0, maxClassNameLength) : className)
-                + idString;
+    fun instanceTag(): String? {
+        val className = classTag()
+        val idString = instanceIdString()
+        val maxClassNameLength = MyLog.MAX_TAG_LENGTH - idString.length
+        return ((if (className.length > maxClassNameLength) className.substring(0, maxClassNameLength) else className)
+                + idString)
     }
 }

@@ -13,73 +13,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-import androidx.annotation.NonNull;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import io.vavr.control.Try;
+import io.vavr.control.Try
+import java.util.*
+import java.util.function.BiFunction
+import java.util.function.Predicate
+import java.util.stream.Collectors
 
 /**
  * @author yvolk@yurivolkov.com
  * See also http://www.javacreed.com/sorting-a-copyonwritearraylist/
  */
-public class CollectionsUtil {
-
-    private CollectionsUtil() {
-        // Empty
+object CollectionsUtil {
+    fun <T : Comparable<in T?>?> sort(list: MutableList<T?>?) {
+        val sortableList: MutableList<T?> = ArrayList(list)
+        Collections.sort(sortableList)
+        list.clear()
+        list.addAll(sortableList)
     }
 
-    public static <T extends Comparable<? super T>> void sort(List<T> list) {
-        List<T> sortableList = new ArrayList<>(list);
-        Collections.sort(sortableList);
-        list.clear();
-        list.addAll(sortableList);
+    fun compareCheckbox(lhs: Boolean, rhs: Boolean): Int {
+        val result = if (lhs == rhs) 0 else if (lhs) 1 else -1
+        return 0 - result
     }
 
-    public static int compareCheckbox(boolean lhs, boolean rhs) {
-        int result = lhs == rhs ? 0 : lhs ? 1 : -1;
-        return 0 - result;
+    /** Helper for [java.util.Map.compute] where the map value is an immutable [Set].  */
+    fun <T> addValue(toAdd: T?): BiFunction<T?, MutableSet<T?>?, MutableSet<T?>?> {
+        return label@ BiFunction { key: T?, valuesNullable: MutableSet<T?>? ->
+            if (valuesNullable != null && valuesNullable.contains(toAdd)) return@label valuesNullable
+            val values: MutableSet<T?> = HashSet()
+            if (valuesNullable != null) values.addAll(valuesNullable)
+            values.add(toAdd)
+            values
+        }
     }
 
-    /** Helper for {@link java.util.Map#compute(Object, BiFunction)} where the map value is an immutable {@link Set}. */
-    @NonNull
-    public static <T> BiFunction<T, Set<T>, Set<T>> addValue(T toAdd) {
-        return (key, valuesNullable) -> {
-            if (valuesNullable != null && valuesNullable.contains(toAdd)) return valuesNullable;
-
-            Set<T> values = new HashSet<>();
-            if (valuesNullable != null) values.addAll(valuesNullable);
-            values.add(toAdd);
-            return values;
-        };
+    /** Helper for [java.util.Map.compute] where the map value is an immutable [Set].  */
+    fun <T> removeValue(toRemove: T?): BiFunction<T?, MutableSet<T?>?, MutableSet<T?>?> {
+        return BiFunction { key: T?, valuesNullable: MutableSet<T?>? -> if (valuesNullable != null && valuesNullable.contains(toRemove)) valuesNullable.stream().filter { key2: T? -> key2 !== toRemove }.collect(Collectors.toSet()) else valuesNullable }
     }
 
-    /** Helper for {@link java.util.Map#compute(Object, BiFunction)} where the map value is an immutable {@link Set}. */
-    @NonNull
-    public static <T> BiFunction<T, Set<T>, Set<T>> removeValue(T toRemove) {
-        return (key, valuesNullable) -> valuesNullable != null && valuesNullable.contains(toRemove)
-                ? valuesNullable.stream().filter(key2 -> key2 != toRemove).collect(Collectors.toSet())
-                : valuesNullable;
-    }
-
-    public static <T> Try<T> findAny(Collection<T> collection, Predicate<T> predicate) {
-        for (T item : collection) {
+    fun <T> findAny(collection: MutableCollection<T?>?, predicate: Predicate<T?>?): Try<T?>? {
+        for (item in collection) {
             if (predicate.test(item)) {
-                return Try.success(item);
+                return Try.success(item)
             }
         }
-        return TryUtils.notFound();
+        return TryUtils.notFound()
     }
-
 }

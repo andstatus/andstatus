@@ -13,136 +13,133 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline.meta
 
-package org.andstatus.app.timeline.meta;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.TimelineTable;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.os.NonUiThreadExecutor;
-import org.andstatus.app.util.TriState;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
+import android.provider.BaseColumns
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.TimelineTable
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.NonUiThreadExecutor
+import org.andstatus.app.util.TriState
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.function.Consumer
 
 /**
  * Save changes to Timelines not on UI thread.
  * Optionally creates default timelines: for all or for one account.
  * @author yvolk@yurivolkov.com
  */
-public class TimelineSaver {
-    private static final AtomicBoolean executing = new AtomicBoolean(false);
-    private boolean addDefaults = false;
-    private MyAccount myAccount = MyAccount.EMPTY;
-
-    public TimelineSaver() { }
-
-    public TimelineSaver setAccount(@NonNull MyAccount myAccount) {
-        this.myAccount = myAccount;
-        return this;
+class TimelineSaver {
+    private var addDefaults = false
+    private var myAccount: MyAccount? = MyAccount.Companion.EMPTY
+    fun setAccount(myAccount: MyAccount): TimelineSaver? {
+        this.myAccount = myAccount
+        return this
     }
 
-    public TimelineSaver setAddDefaults(boolean addDefaults) {
-        this.addDefaults = addDefaults;
-        return this;
+    fun setAddDefaults(addDefaults: Boolean): TimelineSaver? {
+        this.addDefaults = addDefaults
+        return this
     }
 
-    public CompletableFuture<MyContext> execute(MyContext myContext) {
-        if (MyAsyncTask.isUiThread()) {
-            return CompletableFuture.supplyAsync(() -> executeSynchronously(myContext), NonUiThreadExecutor.INSTANCE);
+    fun execute(myContext: MyContext?): CompletableFuture<MyContext?>? {
+        return if (MyAsyncTask.Companion.isUiThread()) {
+            CompletableFuture.supplyAsync({ executeSynchronously(myContext) }, NonUiThreadExecutor.Companion.INSTANCE)
         } else {
-            return CompletableFuture.completedFuture(executeSynchronously(myContext));
+            CompletableFuture.completedFuture(executeSynchronously(myContext))
         }
     }
 
-    private MyContext executeSynchronously(MyContext myContext) {
-        for (long count = 30; count > 0; count--) {
+    private fun executeSynchronously(myContext: MyContext?): MyContext? {
+        for (count in 30 downTo 1) {
             if (executing.compareAndSet(false, true)) {
-                executeSequentially(myContext);
+                executeSequentially(myContext)
             }
-            DbUtils.waitMs(this, 50);
+            DbUtils.waitMs(this, 50)
         }
-        return myContext;
+        return myContext
     }
 
-    private void executeSequentially(MyContext myContext) {
+    private fun executeSequentially(myContext: MyContext?) {
         try {
             if (addDefaults) {
-               if (myAccount == MyAccount.EMPTY) {
-                   addDefaultTimelinesIfNoneFound(myContext);
-               } else {
-                   addDefaultMyAccountTimelinesIfNoneFound(myContext, myAccount);
-               }
+                if (myAccount === MyAccount.Companion.EMPTY) {
+                    addDefaultTimelinesIfNoneFound(myContext)
+                } else {
+                    addDefaultMyAccountTimelinesIfNoneFound(myContext, myAccount)
+                }
             }
-            for (Timeline timeline : myContext.timelines().values()) {
-                timeline.save(myContext);
+            for (timeline in myContext.timelines().values()) {
+                timeline.save(myContext)
             }
         } finally {
-            executing.set(false);
+            executing.set(false)
         }
     }
 
-    private void addDefaultTimelinesIfNoneFound(MyContext myContext) {
-        myContext.accounts().get().forEach(ma -> addDefaultMyAccountTimelinesIfNoneFound(myContext, ma));
+    private fun addDefaultTimelinesIfNoneFound(myContext: MyContext?) {
+        myContext.accounts().get().forEach(Consumer { ma: MyAccount? -> addDefaultMyAccountTimelinesIfNoneFound(myContext, ma) })
     }
 
-    private void addDefaultMyAccountTimelinesIfNoneFound(MyContext myContext, MyAccount ma) {
+    private fun addDefaultMyAccountTimelinesIfNoneFound(myContext: MyContext?, ma: MyAccount?) {
         if (ma.isValid() && myContext.timelines().filter(false, TriState.FALSE,
-                TimelineType.UNKNOWN, ma.getActor(), Origin.EMPTY).count() == 0) {
-            addDefaultCombinedTimelinesIfNoneFound(myContext);
-            addDefaultOriginTimelinesIfNoneFound(myContext, ma.getOrigin());
-
-            long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
-                    TimelineTable._ID, TimelineTable.ACTOR_ID + "=" + ma.getActorId());
-            if (timelineId == 0) addDefaultForMyAccount(myContext, ma);
+                        TimelineType.UNKNOWN, ma.getActor(), Origin.Companion.EMPTY).count() == 0L) {
+            addDefaultCombinedTimelinesIfNoneFound(myContext)
+            addDefaultOriginTimelinesIfNoneFound(myContext, ma.getOrigin())
+            val timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
+                    BaseColumns._ID, TimelineTable.ACTOR_ID + "=" + ma.getActorId())
+            if (timelineId == 0L) addDefaultForMyAccount(myContext, ma)
         }
     }
 
-    private void addDefaultCombinedTimelinesIfNoneFound(MyContext myContext) {
+    private fun addDefaultCombinedTimelinesIfNoneFound(myContext: MyContext?) {
         if (myContext.timelines().filter(false, TriState.TRUE,
-                TimelineType.UNKNOWN, Actor.EMPTY, Origin.EMPTY).count() == 0) {
-            long timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
-                    TimelineTable._ID, TimelineTable.ACTOR_ID + "=0 AND " + TimelineTable.ORIGIN_ID + "=0");
-            if (timelineId == 0) addDefaultCombined(myContext);
+                        TimelineType.UNKNOWN, Actor.Companion.EMPTY, Origin.Companion.EMPTY).count() == 0L) {
+            val timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
+                    BaseColumns._ID, TimelineTable.ACTOR_ID + "=0 AND " + TimelineTable.ORIGIN_ID + "=0")
+            if (timelineId == 0L) addDefaultCombined(myContext)
         }
     }
 
-    private void addDefaultOriginTimelinesIfNoneFound(MyContext myContext, Origin origin) {
-        if (!origin.isValid()) return;
-        long timelineId = MyQuery.conditionToLongColumnValue(myContext.getDatabase(),
+    private fun addDefaultOriginTimelinesIfNoneFound(myContext: MyContext?, origin: Origin?) {
+        if (!origin.isValid()) return
+        val timelineId = MyQuery.conditionToLongColumnValue(myContext.getDatabase(),
                 "Any timeline for " + origin.getName(),
-                TimelineTable.TABLE_NAME, TimelineTable._ID,
-                TimelineTable.ORIGIN_ID + "=" + origin.getId());
-        if (timelineId == 0) addDefaultForOrigin(myContext, origin);
+                TimelineTable.TABLE_NAME, BaseColumns._ID,
+                TimelineTable.ORIGIN_ID + "=" + origin.getId())
+        if (timelineId == 0L) addDefaultForOrigin(myContext, origin)
     }
 
-    public void addDefaultForMyAccount(MyContext myContext, MyAccount myAccount) {
-        for (TimelineType timelineType : myAccount.getActor().getDefaultMyAccountTimelineTypes()) {
-            myContext.timelines().forUser(timelineType, myAccount.getActor()).save(myContext);
+    fun addDefaultForMyAccount(myContext: MyContext?, myAccount: MyAccount?) {
+        for (timelineType in myAccount.getActor().defaultMyAccountTimelineTypes) {
+            myContext.timelines().forUser(timelineType, myAccount.getActor()).save(myContext)
         }
     }
 
-    private void addDefaultForOrigin(MyContext myContext, Origin origin) {
-        for (TimelineType timelineType : TimelineType.getDefaultOriginTimelineTypes()) {
+    private fun addDefaultForOrigin(myContext: MyContext?, origin: Origin?) {
+        for (timelineType in TimelineType.Companion.getDefaultOriginTimelineTypes()) {
             if (origin.getOriginType().isTimelineTypeSyncable(timelineType)
-                    || timelineType.equals(TimelineType.EVERYTHING)) {
-                myContext.timelines().get(timelineType, Actor.EMPTY, origin).save(myContext);
+                    || timelineType == TimelineType.EVERYTHING) {
+                myContext.timelines().get(timelineType, Actor.Companion.EMPTY, origin).save(myContext)
             }
         }
     }
 
-    public void addDefaultCombined(MyContext myContext) {
-        for (TimelineType timelineType : TimelineType.values()) {
-            if (timelineType.isCombinedRequired()) {
-                myContext.timelines().get(timelineType, Actor.EMPTY, Origin.EMPTY).save(myContext);
+    fun addDefaultCombined(myContext: MyContext?) {
+        for (timelineType in TimelineType.values()) {
+            if (timelineType.isCombinedRequired) {
+                myContext.timelines()[timelineType, Actor.Companion.EMPTY, Origin.Companion.EMPTY].save(myContext)
             }
         }
+    }
+
+    companion object {
+        private val executing: AtomicBoolean? = AtomicBoolean(false)
     }
 }

@@ -13,92 +13,75 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.origin
 
-package org.andstatus.app.origin;
+import android.content.Intent
+import android.view.Menu
+import android.view.MenuItem
+import org.andstatus.app.ActivityRequestCode
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
 
-import android.app.Activity;
-import android.content.Intent;
-import android.view.Menu;
-import android.view.MenuItem;
-
-import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class PersistentOriginList extends OriginList {
-
-    protected Iterable<Origin> getOrigins() {
-        return myContextHolder.getNow().origins().collection();
+class PersistentOriginList : OriginList() {
+    override fun getOrigins(): Iterable<Origin?>? {
+        return MyContextHolder.Companion.myContextHolder.getNow().origins().collection()
     }
-    
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem item = menu.findItem(R.id.addOriginButton);
+
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        var item = menu.findItem(R.id.addOriginButton)
         if (item != null) {
-            item.setEnabled(addEnabled);
-            item.setVisible(addEnabled);
+            item.isEnabled = addEnabled
+            item.isVisible = addEnabled
         }
         // TODO: Currently no corresponding services work
-        item = menu.findItem(R.id.discoverOpenInstances);
+        item = menu.findItem(R.id.discoverOpenInstances)
         if (item != null) {
-            item.setEnabled(false);
-            item.setVisible(false);
+            item.isEnabled = false
+            item.isVisible = false
         }
-        return super.onPrepareOptionsMenu(menu);
-    }
-    
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.addOriginButton:
-                onAddOriginSelected("");
-                break;
-            case R.id.discoverOpenInstances:
-                Intent intent = new Intent(this, DiscoveredOriginList.class);
-                intent.setAction(Intent.ACTION_PICK);
-                startActivityForResult(intent, ActivityRequestCode.SELECT_OPEN_INSTANCE.id);
-                break;
-            default:
-                break;
-        }
-        return super.onOptionsItemSelected(item);
+        return super.onPrepareOptionsMenu(menu)
     }
 
-    private void onAddOriginSelected(String originName) {
-        Intent intent = new Intent(this, OriginEditor.class);
-        intent.setAction(Intent.ACTION_INSERT);
-        intent.putExtra(IntentExtra.ORIGIN_NAME.key, originName);
-        intent.putExtra(IntentExtra.ORIGIN_TYPE.key, originType.getCode());
-        startActivityForResult(intent, ActivityRequestCode.EDIT_ORIGIN.id);
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item.getItemId()) {
+            R.id.addOriginButton -> onAddOriginSelected("")
+            R.id.discoverOpenInstances -> {
+                val intent = Intent(this, DiscoveredOriginList::class.java)
+                intent.action = Intent.ACTION_PICK
+                startActivityForResult(intent, ActivityRequestCode.SELECT_OPEN_INSTANCE.id)
+            }
+            else -> {
+            }
+        }
+        return super.onOptionsItemSelected(item)
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        MyLog.v(this, () -> "onActivityResult " + ActivityRequestCode.fromId(requestCode) );
-        switch (ActivityRequestCode.fromId(requestCode)) {
-            case EDIT_ORIGIN:
-                fillList();
-                break;
-            case SELECT_OPEN_INSTANCE:
-                if (resultCode == Activity.RESULT_OK) {
-                    String originName = data.getStringExtra(IntentExtra.ORIGIN_NAME.key);
-                    if (!StringUtil.isEmpty(originName)) {
-                        onAddOriginSelected(originName);
-                    }
+    private fun onAddOriginSelected(originName: String?) {
+        val intent = Intent(this, OriginEditor::class.java)
+        intent.action = Intent.ACTION_INSERT
+        intent.putExtra(IntentExtra.ORIGIN_NAME.key, originName)
+        intent.putExtra(IntentExtra.ORIGIN_TYPE.key, originType.code)
+        startActivityForResult(intent, ActivityRequestCode.EDIT_ORIGIN.id)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        MyLog.v(this) { "onActivityResult " + ActivityRequestCode.Companion.fromId(requestCode) }
+        when (ActivityRequestCode.Companion.fromId(requestCode)) {
+            ActivityRequestCode.EDIT_ORIGIN -> fillList()
+            ActivityRequestCode.SELECT_OPEN_INSTANCE -> if (resultCode == RESULT_OK) {
+                val originName = data.getStringExtra(IntentExtra.ORIGIN_NAME.key)
+                if (!StringUtil.isEmpty(originName)) {
+                    onAddOriginSelected(originName)
                 }
-                break;
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-                break;
+            }
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
-    @Override
-    protected int getMenuResourceId() {
-        return R.menu.persistent_origin_list;
+    override fun getMenuResourceId(): Int {
+        return R.menu.persistent_origin_list
     }
 }

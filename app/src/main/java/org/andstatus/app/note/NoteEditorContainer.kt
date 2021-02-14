@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
-
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.timeline.LoadableListActivity;
+import org.andstatus.app.timeline.LoadableListActivity
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public interface NoteEditorContainer {
-    LoadableListActivity getActivity();
-    void onNoteEditorVisibilityChange();
-    NoteEditor getNoteEditor();
+interface NoteEditorContainer {
+    open fun getActivity(): LoadableListActivity<*>?
+    open fun onNoteEditorVisibilityChange()
+    open fun getNoteEditor(): NoteEditor?
 }

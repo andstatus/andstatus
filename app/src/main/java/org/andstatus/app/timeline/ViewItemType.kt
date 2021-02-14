@@ -13,47 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
+import org.andstatus.app.activity.ActivityViewItem
+import org.andstatus.app.actor.ActorViewItem
+import org.andstatus.app.note.ConversationViewItem
+import org.andstatus.app.note.NoteViewItem
+import org.andstatus.app.service.QueueData
+import org.andstatus.app.timeline.meta.TimelineType
 
-import androidx.annotation.NonNull;
+enum class ViewItemType(val emptyViewItem: ViewItem<*>?) {
+    ACTIVITY(ActivityViewItem.Companion.EMPTY), NOTE(NoteViewItem.Companion.EMPTY), ACTOR(ActorViewItem.Companion.EMPTY), CONVERSATION(ConversationViewItem.Companion.EMPTY), COMMANDS_QUEUE(QueueData.Companion.EMPTY), UNKNOWN(EmptyViewItem.EMPTY);
 
-import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.actor.ActorViewItem;
-import org.andstatus.app.note.ConversationViewItem;
-import org.andstatus.app.note.NoteViewItem;
-import org.andstatus.app.service.QueueData;
-import org.andstatus.app.timeline.meta.TimelineType;
-
-public enum ViewItemType {
-    ACTIVITY(ActivityViewItem.EMPTY),
-    NOTE(NoteViewItem.EMPTY),
-    ACTOR(ActorViewItem.EMPTY),
-    CONVERSATION(ConversationViewItem.EMPTY),
-    COMMANDS_QUEUE(QueueData.EMPTY),
-    UNKNOWN(EmptyViewItem.EMPTY);
-
-    final ViewItem emptyViewItem;
-
-    ViewItemType(ViewItem emptyViewItem) {
-        this.emptyViewItem = emptyViewItem;
-    }
-
-    static ViewItemType fromTimelineType(@NonNull TimelineType timelineType) {
-        if (timelineType.showsActivities()) {
-            return ACTIVITY;
-        }
-        switch (timelineType) {
-            case ACTORS:
-                return ACTOR;
-            case CONVERSATION:
-                return CONVERSATION;
-            case COMMANDS_QUEUE:
-                return COMMANDS_QUEUE;
-            case UNKNOWN:
-                return UNKNOWN;
-            default:
-                return NOTE;
+    companion object {
+        fun fromTimelineType(timelineType: TimelineType): ViewItemType? {
+            return if (timelineType.showsActivities()) {
+                ACTIVITY
+            } else when (timelineType) {
+                TimelineType.ACTORS -> ACTOR
+                TimelineType.CONVERSATION -> CONVERSATION
+                TimelineType.COMMANDS_QUEUE -> COMMANDS_QUEUE
+                TimelineType.UNKNOWN -> UNKNOWN
+                else -> NOTE
+            }
         }
     }
 }

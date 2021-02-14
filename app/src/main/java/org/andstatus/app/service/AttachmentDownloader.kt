@@ -13,31 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.DownloadData
+import org.andstatus.app.data.NoteContextMenuData
+import org.andstatus.app.util.MyLog
 
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.NoteContextMenuData;
-import org.andstatus.app.data.DownloadData;
-import org.andstatus.app.util.MyLog;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class AttachmentDownloader extends FileDownloader {
-
-    protected AttachmentDownloader(MyContext myContext, DownloadData data) {
-        super(myContext, data);
+class AttachmentDownloader(myContext: MyContext?, data: DownloadData?) : FileDownloader(myContext, data) {
+    override fun findBestAccountForDownload(): MyAccount? {
+        return NoteContextMenuData.Companion.getBestAccountToDownloadNote(MyContextHolder.Companion.myContextHolder.getNow(), data.noteId)
     }
 
-    @Override
-    protected MyAccount findBestAccountForDownload() {
-        return NoteContextMenuData.getBestAccountToDownloadNote(myContextHolder.getNow(), data.noteId);
+    override fun onSuccessfulLoad() {
+        MyLog.v(this) { "Loaded attachment $data" }
     }
-
-    @Override
-    protected void onSuccessfulLoad() {
-        MyLog.v(this, () -> "Loaded attachment " + data);
-    }
-
 }

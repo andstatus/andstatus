@@ -13,62 +13,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data.converter
 
-package org.andstatus.app.data.converter;
+import android.database.Cursor
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.util.StringUtil
+import java.util.*
+import java.util.function.Consumer
+import java.util.function.Function
 
-import android.database.Cursor;
-
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.util.StringUtil;
-
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-
-import androidx.annotation.NonNull;
-
-class Convert44 extends ConvertOneStep {
-    Convert44() {
-        versionTo = 47;
-    }
-
-    private static class Data {
-        final long id;
-        @NonNull
-        final String username;
-
-        static Optional<Data> fromCursor(Cursor cursor) {
-            final String username = DbUtils.getString(cursor, "username");
-            int index = StringUtil.isEmpty(username)
-                    ? -1
-                    : username.indexOf("@");
-            return  (index > 0)
-                    ? Optional.of(new Data(DbUtils.getLong(cursor, "_id"), username.substring(0, index)))
-                    : Optional.empty();
-        }
-
-        private Data(long id, @NonNull String username) {
-            this.id = id;
-            this.username = username;
+internal class Convert44 : ConvertOneStep() {
+    private class Data private constructor(val id: Long, val username: String) {
+        companion object {
+            fun fromCursor(cursor: Cursor?): Optional<Data?>? {
+                val username = DbUtils.getString(cursor, "username")
+                val index = if (StringUtil.isEmpty(username)) -1 else username.indexOf("@")
+                return if (index > 0) Optional.of(Data(DbUtils.getLong(cursor, "_id"), username.substring(0, index))) else Optional.empty()
+            }
         }
     }
 
-    @Override
-    protected void execute2() {
-        progressLogger.logProgress(stepTitle + ": Transforming Pump.io actors");
-        sql ="SELECT actor._id, username FROM actor INNER JOIN origin on actor.origin_id=origin._id" +
-                " WHERE origin.origin_type_id=2";
-        MyQuery.<Set<Data>>foldLeft(db, sql, new HashSet<>(), set -> cursor -> {
-            Data.fromCursor(cursor).ifPresent(set::add);
-            return set;
-        }).forEach( data ->
+    override fun execute2() {
+        progressLogger.logProgress("$stepTitle: Transforming Pump.io actors")
+        sql = "SELECT actor._id, username FROM actor INNER JOIN origin on actor.origin_id=origin._id" +
+                " WHERE origin.origin_type_id=2"
+        MyQuery.foldLeft(db, sql, HashSet(), { set: MutableSet<Data?>? ->
+            Function { cursor: Cursor? ->
+                Data.fromCursor(cursor).ifPresent(Consumer { e: Data? -> set.add(e) })
+                set
+            }
+        }).forEach(Consumer { data: Data? ->
             DbUtils.execSQL(db, "UPDATE actor SET username='" + data.username + "'" +
                     " WHERE _id=" + data.id)
-        );
+        }
+        )
+        progressLogger.logProgress("$stepTitle: Adding previews to downloads")
+        sql = "ALTER TABLE download ADD COLUMN preview_of_download_id INTEGER"
+        DbUtils.execSQL(db, sql)
+    }
 
-        progressLogger.logProgress(stepTitle + ": Adding previews to downloads");
-        sql = "ALTER TABLE download ADD COLUMN preview_of_download_id INTEGER";
-        DbUtils.execSQL(db, sql);
+    init {
+        versionTo = 47
     }
 }

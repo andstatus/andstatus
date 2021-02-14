@@ -13,269 +13,243 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline.meta
 
-package org.andstatus.app.timeline.meta;
-
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
-import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.list.SyncLoader;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.BaseTimelineAdapter;
-import org.andstatus.app.timeline.LoadableListActivity;
-import org.andstatus.app.timeline.LoadableListPosition;
-import org.andstatus.app.timeline.WhichPage;
-import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyCheckBox;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.view.EnumSelector;
-
-import java.util.stream.Collectors;
+import android.content.Intent
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.CheckBox
+import android.widget.CompoundButton
+import android.widget.LinearLayout
+import android.widget.TextView
+import org.andstatus.app.ActivityRequestCode
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.R
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.list.SyncLoader
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.timeline.BaseTimelineAdapter
+import org.andstatus.app.timeline.LoadableListActivity
+import org.andstatus.app.timeline.LoadableListPosition
+import org.andstatus.app.timeline.WhichPage
+import org.andstatus.app.timeline.meta.ManageTimelines
+import org.andstatus.app.util.I18n
+import org.andstatus.app.util.MyCheckBox
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyUrlSpan
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.view.EnumSelector
+import java.util.stream.Collectors
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ManageTimelines extends LoadableListActivity {
-    private int sortByField = R.id.synced;
-    private boolean sortDefault = true;
-    private ViewGroup columnHeadersParent = null;
-    private ManageTimelinesContextMenu contextMenu = null;
-    private ManageTimelinesViewItem selectedItem = null;
-    private boolean isTotal = false;
-    private volatile long countersSince = 0;
+class ManageTimelines : LoadableListActivity<Any?>() {
+    private var sortByField = R.id.synced
+    private var sortDefault = true
+    private var columnHeadersParent: ViewGroup? = null
+    private var contextMenu: ManageTimelinesContextMenu? = null
+    private var selectedItem: ManageTimelinesViewItem? = null
+    private var isTotal = false
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.timeline_list;
-        super.onCreate(savedInstanceState);
-
-        contextMenu = new ManageTimelinesContextMenu(this);
-        LinearLayout linearLayout = findViewById(R.id.linear_list_wrapper);
-        LayoutInflater inflater = getLayoutInflater();
-        View listHeader = inflater.inflate(R.layout.timeline_list_header, linearLayout, false);
-        linearLayout.addView(listHeader, 0);
-
-        columnHeadersParent = listHeader.findViewById(R.id.columnHeadersParent);
-        for (int i = 0; i < columnHeadersParent.getChildCount(); i++) {
-            columnHeadersParent.getChildAt(i).setOnClickListener(v -> sortBy(v.getId()));
+    @Volatile
+    private var countersSince: Long = 0
+    override fun onCreate(savedInstanceState: Bundle?) {
+        mLayoutId = R.layout.timeline_list
+        super.onCreate(savedInstanceState)
+        contextMenu = ManageTimelinesContextMenu(this)
+        val linearLayout = findViewById<LinearLayout?>(R.id.linear_list_wrapper)
+        val inflater = layoutInflater
+        val listHeader = inflater.inflate(R.layout.timeline_list_header, linearLayout, false)
+        linearLayout.addView(listHeader, 0)
+        columnHeadersParent = listHeader.findViewById(R.id.columnHeadersParent)
+        for (i in 0 until columnHeadersParent.getChildCount()) {
+            columnHeadersParent.getChildAt(i).setOnClickListener { v: View? -> sortBy(v.getId()) }
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (resultCode != RESULT_OK || data == null) {
-            return;
+            return
         }
-        switch (ActivityRequestCode.fromId(requestCode)) {
-            case SELECT_DISPLAYED_IN_SELECTOR:
-                if (selectedItem != null) {
-                    final DisplayedInSelector displayedInSelector = DisplayedInSelector.load(
-                            data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key));
-                    selectedItem.timeline.setDisplayedInSelector(displayedInSelector);
-                    MyLog.v("isDisplayedInSelector", () -> displayedInSelector.save() + " " +
-                            selectedItem.timeline);
-
-                    if (displayedInSelector != DisplayedInSelector.IN_CONTEXT || sortByField == R.id.displayedInSelector) {
-                        showList(WhichPage.CURRENT);
-                    }
+        when (ActivityRequestCode.Companion.fromId(requestCode)) {
+            ActivityRequestCode.SELECT_DISPLAYED_IN_SELECTOR -> if (selectedItem != null) {
+                val displayedInSelector: DisplayedInSelector = DisplayedInSelector.Companion.load(
+                        data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key))
+                selectedItem.timeline.isDisplayedInSelector = displayedInSelector
+                MyLog.v("isDisplayedInSelector") {
+                    displayedInSelector.save() + " " +
+                            selectedItem.timeline
                 }
-                break;
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-                break;
+                if (displayedInSelector != DisplayedInSelector.IN_CONTEXT || sortByField == R.id.displayedInSelector) {
+                    showList(WhichPage.CURRENT)
+                }
+            }
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
-    @Override
-    public void onLoadFinished(LoadableListPosition pos) {
-        showSortColumn();
-        super.onLoadFinished(pos);
+    override fun onLoadFinished(pos: LoadableListPosition<*>?) {
+        showSortColumn()
+        super.onLoadFinished(pos)
     }
 
-    private void showSortColumn() {
-        for (int i = 0; i < columnHeadersParent.getChildCount(); i++) {
-            View view = columnHeadersParent.getChildAt(i);
-            if (!TextView.class.isAssignableFrom(view.getClass())) {
-                continue;
+    private fun showSortColumn() {
+        for (i in 0 until columnHeadersParent.getChildCount()) {
+            val view = columnHeadersParent.getChildAt(i)
+            if (!TextView::class.java.isAssignableFrom(view.javaClass)) {
+                continue
             }
-            TextView textView = (TextView) view;
-            String text = textView.getText().toString();
-            if (!StringUtil.isEmpty(text) && "▲▼↑↓".indexOf(text.charAt(0)) >= 0) {
-                text = text.substring(1);
-                textView.setText(text);
+            val textView = view as TextView
+            var text = textView.text.toString()
+            if (!StringUtil.isEmpty(text) && "▲▼↑↓".indexOf(text[0]) >= 0) {
+                text = text.substring(1)
+                textView.text = text
             }
-            if (textView.getId() == sortByField) {
-                textView.setText((sortDefault ? '▲' : '▼') + text);
+            if (textView.id == sortByField) {
+                textView.text = (if (sortDefault) '▲' else '▼').toString() + text
             }
         }
     }
 
-    private void sortBy(int fieldId) {
-        sortBy(fieldId, sortByField != fieldId);
+    private fun sortBy(fieldId: Int, isDefaultOrder: Boolean = sortByField != fieldId) {
+        sortByField = fieldId
+        sortDefault = isDefaultOrder
+        showList(WhichPage.CURRENT)
     }
 
-    private void sortBy(int fieldId, boolean isDefaultOrder) {
-        sortByField = fieldId;
-        sortDefault = isDefaultOrder;
-        showList(WhichPage.CURRENT);
-    }
-
-    @Override
-    protected SyncLoader newSyncLoader(Bundle args) {
-        return new SyncLoader<ManageTimelinesViewItem>() {
-            @Override
-            public void load(ProgressPublisher publisher) {
+    override fun newSyncLoader(args: Bundle?): SyncLoader<*>? {
+        return object : SyncLoader<ManageTimelinesViewItem?>() {
+            override fun load(publisher: ProgressPublisher?) {
                 items = myContext.timelines()
                         .stream()
-                        .map(timeline -> new ManageTimelinesViewItem(myContext, timeline,
-                                MyAccount.EMPTY, false))
-                        .sorted(new ManageTimelinesViewItemComparator(sortByField, sortDefault, isTotal))
-                        .collect(Collectors.toList());
-                countersSince = items.stream().map(item -> item.countSince).filter(count -> count > 0)
-                        .min(Long::compareTo).orElse(0L);
+                        .map { timeline: Timeline? ->
+                            ManageTimelinesViewItem(myContext, timeline,
+                                    MyAccount.Companion.EMPTY, false)
+                        }
+                        .sorted(ManageTimelinesViewItemComparator(sortByField, sortDefault, isTotal))
+                        .collect(Collectors.toList())
+                countersSince = items.stream().map { item: ManageTimelinesViewItem? -> item.countSince }.filter { count: Long? -> count > 0 }
+                        .min { obj: Long?, anotherLong: Long? -> obj.compareTo(anotherLong) }.orElse(0L)
             }
-        };
+        }
     }
 
-    @Override
-    protected BaseTimelineAdapter newListAdapter() {
-
-        return new BaseTimelineAdapter<ManageTimelinesViewItem>(myContext,
-                myContext.timelines().get(TimelineType.MANAGE_TIMELINES, Actor.EMPTY, Origin.EMPTY),
-                getLoaded().getList()) {
-            Timeline defaultTimeline = myContext.timelines().getDefault();
-
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = convertView == null ? newView() : convertView;
-                view.setOnCreateContextMenuListener(contextMenu);
-                view.setOnClickListener(this);
-                setPosition(view, position);
-                final ManageTimelinesViewItem item = getItem(position);
-                MyUrlSpan.showText(view, R.id.title, item.timelineTitle.toString(), false, true);
-                MyUrlSpan.showText(view, R.id.account, item.timelineTitle.accountName, false, true);
-                MyUrlSpan.showText(view, R.id.origin, item.timelineTitle.originName, false, true);
-                showDisplayedInSelector(view, item);
-                MyCheckBox.set(view, R.id.synced, item.timeline.isSyncedAutomatically(),
-                        item.timeline.isSyncableAutomatically() ?
-                                (CompoundButton.OnCheckedChangeListener) (buttonView, isChecked) -> {
-                                    item.timeline.setSyncedAutomatically(isChecked);
-                                    MyLog.v("isSyncedAutomatically", () ->
-                                            (isChecked ? "+ " : "- ") + item.timeline);
-                            } : null);
-                MyUrlSpan.showText(view, R.id.syncedTimesCount,
-                        I18n.notZero(item.timeline.getSyncedTimesCount(isTotal)), false, true);
-                MyUrlSpan.showText(view, R.id.downloadedItemsCount,
-                        I18n.notZero(item.timeline.getDownloadedItemsCount(isTotal)), false, true);
-                MyUrlSpan.showText(view, R.id.newItemsCount,
-                        I18n.notZero(item.timeline.getNewItemsCount(isTotal)), false, true);
-                MyUrlSpan.showText(view, R.id.syncSucceededDate,
-                        RelativeTime.getDifference(ManageTimelines.this, item.timeline.getSyncSucceededDate()),
-                        false, true);
-                MyUrlSpan.showText(view, R.id.syncFailedTimesCount,
-                        I18n.notZero(item.timeline.getSyncFailedTimesCount(isTotal)), false, true);
-                MyUrlSpan.showText(view, R.id.syncFailedDate,
-                        RelativeTime.getDifference(ManageTimelines.this, item.timeline.getSyncFailedDate()),
-                        false, true);
-                MyUrlSpan.showText(view, R.id.errorMessage, item.timeline.getErrorMessage(), false, true);
-                MyUrlSpan.showText(view, R.id.lastChangedDate,
-                        RelativeTime.getDifference(ManageTimelines.this, item.timeline.getLastChangedDate()),
-                        false, true);
-                return view;
+    override fun newListAdapter(): BaseTimelineAdapter<*>? {
+        return object : BaseTimelineAdapter<ManageTimelinesViewItem?>(myContext,
+                myContext.timelines()[TimelineType.MANAGE_TIMELINES, Actor.Companion.EMPTY, Origin.Companion.EMPTY],
+                loaded.getList()) {
+            var defaultTimeline: Timeline? = myContext.timelines().default
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
+                val view = convertView ?: newView()
+                view.setOnCreateContextMenuListener(contextMenu)
+                view.setOnClickListener(this)
+                setPosition(view, position)
+                val item = getItem(position)
+                MyUrlSpan.Companion.showText(view, R.id.title, item.timelineTitle.toString(), false, true)
+                MyUrlSpan.Companion.showText(view, R.id.account, item.timelineTitle.accountName, false, true)
+                MyUrlSpan.Companion.showText(view, R.id.origin, item.timelineTitle.originName, false, true)
+                showDisplayedInSelector(view, item)
+                MyCheckBox.set(view, R.id.synced, item.timeline.isSyncedAutomatically,
+                        if (item.timeline.isSyncableAutomatically) CompoundButton.OnCheckedChangeListener { buttonView: CompoundButton?, isChecked: Boolean ->
+                            item.timeline.isSyncedAutomatically = isChecked
+                            MyLog.v("isSyncedAutomatically") { (if (isChecked) "+ " else "- ") + item.timeline }
+                        } as CompoundButton.OnCheckedChangeListener else null)
+                MyUrlSpan.Companion.showText(view, R.id.syncedTimesCount,
+                        I18n.notZero(item.timeline.getSyncedTimesCount(isTotal)), false, true)
+                MyUrlSpan.Companion.showText(view, R.id.downloadedItemsCount,
+                        I18n.notZero(item.timeline.getDownloadedItemsCount(isTotal)), false, true)
+                MyUrlSpan.Companion.showText(view, R.id.newItemsCount,
+                        I18n.notZero(item.timeline.getNewItemsCount(isTotal)), false, true)
+                MyUrlSpan.Companion.showText(view, R.id.syncSucceededDate,
+                        RelativeTime.getDifference(this@ManageTimelines, item.timeline.syncSucceededDate),
+                        false, true)
+                MyUrlSpan.Companion.showText(view, R.id.syncFailedTimesCount,
+                        I18n.notZero(item.timeline.getSyncFailedTimesCount(isTotal)), false, true)
+                MyUrlSpan.Companion.showText(view, R.id.syncFailedDate,
+                        RelativeTime.getDifference(this@ManageTimelines, item.timeline.syncFailedDate),
+                        false, true)
+                MyUrlSpan.Companion.showText(view, R.id.errorMessage, item.timeline.errorMessage, false, true)
+                MyUrlSpan.Companion.showText(view, R.id.lastChangedDate,
+                        RelativeTime.getDifference(this@ManageTimelines, item.timeline.lastChangedDate),
+                        false, true)
+                return view
             }
 
-            protected void showDisplayedInSelector(View parentView, final ManageTimelinesViewItem item) {
-                CheckBox view = parentView.findViewById(R.id.displayedInSelector);
+            protected fun showDisplayedInSelector(parentView: View?, item: ManageTimelinesViewItem?) {
+                val view = parentView.findViewById<CheckBox?>(R.id.displayedInSelector)
                 MyCheckBox.set(parentView,
                         R.id.displayedInSelector,
-                        item.timeline.isDisplayedInSelector() != DisplayedInSelector.NEVER,
-                        (buttonView, isChecked) -> {
-                            if (isChecked) {
-                                selectedItem = item;
-                                EnumSelector.newInstance(
-                                        ActivityRequestCode.SELECT_DISPLAYED_IN_SELECTOR,
-                                        DisplayedInSelector.class).show(ManageTimelines.this);
-                            } else {
-                                item.timeline.setDisplayedInSelector(DisplayedInSelector.NEVER);
-                                buttonView.setText("");
-                            }
-                            MyLog.v("isDisplayedInSelector", () -> (isChecked ? "+ " : "- ") + item.timeline);
-                        });
-                view.setText(item.timeline.equals(defaultTimeline) ? "D" :
-                        (item.timeline.isDisplayedInSelector() == DisplayedInSelector.ALWAYS ? "*" : ""));
+                        item.timeline.isDisplayedInSelector != DisplayedInSelector.NEVER
+                ) { buttonView: CompoundButton?, isChecked: Boolean ->
+                    if (isChecked) {
+                        selectedItem = item
+                        EnumSelector.Companion.newInstance<DisplayedInSelector?>(
+                                ActivityRequestCode.SELECT_DISPLAYED_IN_SELECTOR,
+                                DisplayedInSelector::class.java).show(this@ManageTimelines)
+                    } else {
+                        item.timeline.isDisplayedInSelector = DisplayedInSelector.NEVER
+                        buttonView.setText("")
+                    }
+                    MyLog.v("isDisplayedInSelector") { (if (isChecked) "+ " else "- ") + item.timeline }
+                }
+                view.text = if (item.timeline == defaultTimeline) "D" else if (item.timeline.isDisplayedInSelector == DisplayedInSelector.ALWAYS) "*" else ""
             }
 
-            private View newView() {
-                return LayoutInflater.from(ManageTimelines.this).inflate(R.layout.timeline_list_item, null);
+            private fun newView(): View? {
+                return LayoutInflater.from(this@ManageTimelines).inflate(R.layout.timeline_list_item, null)
             }
-        };
+        }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.timelines, menu);
-        return super.onCreateOptionsMenu(menu);
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.timelines, menu)
+        return super.onCreateOptionsMenu(menu)
     }
 
-    @Override
-    protected CharSequence getCustomTitle() {
-        StringBuilder title = new StringBuilder(getTitle()
-                + (getListAdapter().getCount() == 0 ? "" : " " + getListAdapter().getCount())
-                + " / ");
+    override fun getCustomTitle(): CharSequence? {
+        val title = StringBuilder(title
+                .toString() + (if (listAdapter.getCount() == 0) "" else " " + listAdapter.getCount())
+                + " / ")
         if (isTotal) {
-            title.append(getText(R.string.total_counters));
+            title.append(getText(R.string.total_counters))
         } else if (countersSince > 0) {
             title.append(StringUtil.format(this, R.string.since,
-                    RelativeTime.getDifference(this, countersSince)));
+                    RelativeTime.getDifference(this, countersSince)))
         }
-        return title;
+        return title
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.reset_counters_menu_item:
-                myContext.timelines().resetCounters(isTotal);
-                myContext.timelines().saveChanged().thenRun(() -> showList(WhichPage.CURRENT));
-                break;
-            case R.id.reset_timelines_order:
-                myContext.timelines().resetDefaultSelectorOrder();
-                myContext.timelines().saveChanged().thenRun(() -> sortBy(R.id.displayedInSelector, true));
-                break;
-            case R.id.total_counters:
-                isTotal = !isTotal;
-                item.setChecked(isTotal);
-                showList(WhichPage.CURRENT);
-                break;
-            default:
-                return super.onOptionsItemSelected(item);
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item.getItemId()) {
+            R.id.reset_counters_menu_item -> {
+                myContext.timelines().resetCounters(isTotal)
+                myContext.timelines().saveChanged().thenRun { showList(WhichPage.CURRENT) }
+            }
+            R.id.reset_timelines_order -> {
+                myContext.timelines().resetDefaultSelectorOrder()
+                myContext.timelines().saveChanged().thenRun { sortBy(R.id.displayedInSelector, true) }
+            }
+            R.id.total_counters -> {
+                isTotal = !isTotal
+                item.setChecked(isTotal)
+                showList(WhichPage.CURRENT)
+            }
+            else -> return super.onOptionsItemSelected(item)
         }
-        return false;
+        return false
     }
 
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
+    override fun onContextItemSelected(item: MenuItem?): Boolean {
         if (contextMenu != null) {
-            contextMenu.onContextItemSelected(item);
+            contextMenu.onContextItemSelected(item)
         }
-        return super.onContextItemSelected(item);
+        return super.onContextItemSelected(item)
     }
-
 }

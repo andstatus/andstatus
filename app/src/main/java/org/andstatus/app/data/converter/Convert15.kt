@@ -13,114 +13,100 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data.converter
 
-package org.andstatus.app.data.converter;
+import android.accounts.Account
+import android.accounts.AccountManager
+import android.database.sqlite.SQLiteDatabase
+import org.andstatus.app.account.AccountData
+import org.andstatus.app.account.AccountUtils
+import org.andstatus.app.account.CredentialsVerificationStatus
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.util.MyLog
+import org.json.JSONObject
+import java.util.*
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.database.sqlite.SQLiteDatabase;
-
-import org.andstatus.app.account.AccountData;
-import org.andstatus.app.account.AccountUtils;
-import org.andstatus.app.account.CredentialsVerificationStatus;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.util.MyLog;
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-import java.util.Collection;
-
-import static org.andstatus.app.account.AccountUtils.KEY_VERSION;
-import static org.andstatus.app.account.MyAccount.KEY_USERNAME;
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-class Convert15 extends ConvertOneStep {
-    private final static String TAG = Convert15.class.getSimpleName();
-
-    @Override
-    protected void execute2() {
-        versionTo = 16;
-        boolean ok = convertAccounts(db, oldVersion) == versionTo;
+internal class Convert15 : ConvertOneStep() {
+    override fun execute2() {
+        versionTo = 16
+        val ok = convertAccounts(db, oldVersion) == versionTo
         if (ok) {
-            sql = "DELETE FROM Origin WHERE _ID IN(6, 7)";
-            DbUtils.execSQL(db, sql);
+            sql = "DELETE FROM Origin WHERE _ID IN(6, 7)"
+            DbUtils.execSQL(db, sql)
         }
     }
 
-    static int convertAccounts(SQLiteDatabase db, int oldVersion) {
-        final String method = "convert14to16";
-        final int versionTo = 16;
-        boolean ok = false;
-        try {
-            MyLog.i(TAG, "Accounts upgrading step from version " + oldVersion + " to version " + versionTo );
-            MyContext myContext = myContextHolder.getNow();
-            myContext.origins().initialize(db);
-
-            android.accounts.AccountManager am = AccountManager.get(myContext.context());
-            Collection<Account> accountsToRemove = new ArrayList<>();
-            for (Account androidAccount : AccountUtils.getAllAccounts(myContext.context())) {
-                DatabaseConverterController.stillUpgrading();
-                AndroidAccountData androidAccountData = new AndroidAccountData(am, androidAccount);
-                int versionOldBefore16 = androidAccountData.getDataInt(KEY_VERSION, 0);
-                AccountData accountDataOld = AccountData.fromAndroidAccount(myContext, androidAccount);
-                int versionOld2 = accountDataOld.getDataInt(KEY_VERSION, 0);
-                if (versionOld2 == versionTo) {
-                    MyLog.i(TAG, "Account " + androidAccount.name + " is already converted?!, skipping");
-                } else if ( versionOldBefore16 == 14 &&
-                        !androidAccountData.getDataBoolean(MyAccount.KEY_DELETED, false)) {
-                    MyLog.v(TAG, "Upgrading account " + androidAccount.name);
-                    am.setUserData(androidAccount, KEY_VERSION, null);
-
-                    AccountData accountData = AccountData.fromJson(myContext, new JSONObject(), false);
-                    androidAccountData.moveStringKeyTo(KEY_USERNAME, accountData);
-                    androidAccountData.moveStringKeyTo(Origin.KEY_ORIGIN_NAME, accountData);
-                    androidAccountData.moveStringKeyTo(MyAccount.KEY_ACTOR_OID, accountData);
-                    androidAccountData.moveLongKeyTo(MyAccount.KEY_ACTOR_ID, accountData);
-
-                    Origin origin = myContext.origins().fromName(
-                            accountData.getDataString(Origin.KEY_ORIGIN_NAME));
-
-                    boolean isOauth = androidAccountData.getDataBoolean(MyAccount.KEY_OAUTH, origin.isOAuthDefault());
-                    accountData.setDataBoolean(MyAccount.KEY_OAUTH, isOauth);
-                    am.setUserData(androidAccount, MyAccount.KEY_OAUTH, null);
-                    if (isOauth) {
-                        androidAccountData.moveStringKeyTo("user_token", accountData);
-                        androidAccountData.moveStringKeyTo("user_secret", accountData);
+    companion object {
+        private val TAG: String? = Convert15::class.java.simpleName
+        fun convertAccounts(db: SQLiteDatabase?, oldVersion: Int): Int {
+            val method = "convert14to16"
+            val versionTo = 16
+            var ok = false
+            try {
+                MyLog.i(TAG, "Accounts upgrading step from version $oldVersion to version $versionTo")
+                val myContext: MyContext = MyContextHolder.Companion.myContextHolder.getNow()
+                myContext.origins().initialize(db)
+                val am = AccountManager.get(myContext.context())
+                val accountsToRemove: MutableCollection<Account?> = ArrayList()
+                for (androidAccount in AccountUtils.getAllAccounts(myContext.context())) {
+                    DatabaseConverterController.Companion.stillUpgrading()
+                    val androidAccountData = AndroidAccountData(am, androidAccount)
+                    val versionOldBefore16 = androidAccountData.getDataInt(AccountUtils.KEY_VERSION, 0)
+                    val accountDataOld: AccountData = AccountData.Companion.fromAndroidAccount(myContext, androidAccount)
+                    val versionOld2 = accountDataOld.getDataInt(AccountUtils.KEY_VERSION, 0)
+                    if (versionOld2 == versionTo) {
+                        MyLog.i(TAG, "Account " + androidAccount.name + " is already converted?!, skipping")
+                    } else if (versionOldBefore16 == 14 &&
+                            !androidAccountData.getDataBoolean(MyAccount.Companion.KEY_DELETED, false)) {
+                        MyLog.v(TAG, "Upgrading account " + androidAccount.name)
+                        am.setUserData(androidAccount, AccountUtils.KEY_VERSION, null)
+                        val accountData: AccountData = AccountData.Companion.fromJson(myContext, JSONObject(), false)
+                        androidAccountData.moveStringKeyTo(MyAccount.Companion.KEY_USERNAME, accountData)
+                        androidAccountData.moveStringKeyTo(Origin.Companion.KEY_ORIGIN_NAME, accountData)
+                        androidAccountData.moveStringKeyTo(MyAccount.Companion.KEY_ACTOR_OID, accountData)
+                        androidAccountData.moveLongKeyTo(MyAccount.Companion.KEY_ACTOR_ID, accountData)
+                        val origin = myContext.origins().fromName(
+                                accountData.getDataString(Origin.Companion.KEY_ORIGIN_NAME))
+                        val isOauth = androidAccountData.getDataBoolean(MyAccount.Companion.KEY_OAUTH, origin.isOAuthDefault)
+                        accountData.setDataBoolean(MyAccount.Companion.KEY_OAUTH, isOauth)
+                        am.setUserData(androidAccount, MyAccount.Companion.KEY_OAUTH, null)
+                        if (isOauth) {
+                            androidAccountData.moveStringKeyTo("user_token", accountData)
+                            androidAccountData.moveStringKeyTo("user_secret", accountData)
+                        } else {
+                            androidAccountData.moveStringKeyTo("password", accountData)
+                        }
+                        CredentialsVerificationStatus.Companion.load(androidAccountData).put(accountData)
+                        am.setUserData(androidAccount, CredentialsVerificationStatus.Companion.KEY, null)
+                        MyLog.v(TAG, method + "; " + accountData.toJsonString())
+                        androidAccountData.moveLongKeyTo(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, accountData)
+                        accountData.saveIfChanged(androidAccount).onFailure { e: Throwable? ->
+                            MyLog.e(TAG, "Failed to convert account " + androidAccount.name + ", deleting")
+                            accountsToRemove.add(androidAccount)
+                        }
                     } else {
-                        androidAccountData.moveStringKeyTo("password", accountData);
+                        MyLog.e(TAG, "Account " + androidAccount.name +
+                                " version less than 14 is not supported (" + versionOldBefore16 + "), deleting")
+                        accountsToRemove.add(androidAccount)
                     }
-
-                    CredentialsVerificationStatus.load(androidAccountData).put(accountData);
-                    am.setUserData(androidAccount, CredentialsVerificationStatus.KEY, null);
-
-                    MyLog.v(TAG, method + "; " + accountData.toJsonString());
-
-                    androidAccountData.moveLongKeyTo(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, accountData);
-                    accountData.saveIfChanged(androidAccount).onFailure(e -> {
-                        MyLog.e(TAG, "Failed to convert account " + androidAccount.name + ", deleting");
-                        accountsToRemove.add(androidAccount);
-                    });
-                } else {
-                    MyLog.e(TAG, "Account " + androidAccount.name +
-                            " version less than 14 is not supported (" + versionOldBefore16 + "), deleting");
-                    accountsToRemove.add(androidAccount);
                 }
+                AccountConverter.removeOldAccounts(am, accountsToRemove)
+                ok = true
+            } catch (e: Exception) {
+                MyLog.e(TAG, e)
             }
-            AccountConverter.removeOldAccounts(am, accountsToRemove);
-            ok = true;
-        } catch (Exception e) {
-            MyLog.e(TAG, e);
+            if (ok) {
+                MyLog.i(TAG, "Accounts upgrading step successfully upgraded accounts from " + oldVersion +
+                        " to version " + versionTo)
+            } else {
+                MyLog.e(TAG, "Error upgrading accounts from $oldVersion to version $versionTo")
+            }
+            return if (ok) versionTo else oldVersion
         }
-        if (ok) {
-            MyLog.i(TAG, "Accounts upgrading step successfully upgraded accounts from " + oldVersion +
-                    " to version " + versionTo);
-        } else {
-            MyLog.e(TAG, "Error upgrading accounts from " + oldVersion + " to version " + versionTo);
-        }
-        return ok ? versionTo : oldVersion;
     }
 }

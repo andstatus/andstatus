@@ -13,110 +13,99 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-import android.content.Context;
-
-import org.andstatus.app.R;
-
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
+import android.content.Context
+import org.andstatus.app.R
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class RelativeTime {
-    public final static long DATETIME_MILLIS_NEVER = 0;
-    public final static long SOME_TIME_AGO = 1; // We don't know exact date
-
-    private RelativeTime() {
-        // Empty
-    }
+object RelativeTime {
+    const val DATETIME_MILLIS_NEVER: Long = 0
+    const val SOME_TIME_AGO: Long = 1 // We don't know exact date
 
     /**
      * Difference to Now
      */
-    public static String getDifference(Context context, long fromMs) {
-        return getDifference(context, fromMs, System.currentTimeMillis());
+    fun getDifference(context: Context?, fromMs: Long): String? {
+        return getDifference(context, fromMs, System.currentTimeMillis())
     }
 
-    public static String getDifference(Context context, long fromMs, long toMs) {
-        if (fromMs <= DATETIME_MILLIS_NEVER || toMs <= DATETIME_MILLIS_NEVER) return "";
-        if (fromMs == SOME_TIME_AGO) return context.getString(R.string.reltime_some_time_ago);
-
-        long numSeconds = TimeUnit.MILLISECONDS.toSeconds(toMs - fromMs);
+    fun getDifference(context: Context?, fromMs: Long, toMs: Long): String? {
+        if (fromMs <= DATETIME_MILLIS_NEVER || toMs <= DATETIME_MILLIS_NEVER) return ""
+        if (fromMs == SOME_TIME_AGO) return context.getString(R.string.reltime_some_time_ago)
+        val numSeconds = TimeUnit.MILLISECONDS.toSeconds(toMs - fromMs)
         if (numSeconds < 1) {
-            return context.getString(R.string.reltime_just_now);
+            return context.getString(R.string.reltime_just_now)
         }
-        long numMinutes = TimeUnit.SECONDS.toMinutes(numSeconds);
+        val numMinutes = TimeUnit.SECONDS.toMinutes(numSeconds)
         if (numMinutes < 2) {
             return I18n.formatQuantityMessage(context,
                     0,
                     numSeconds,
                     R.array.reltime_seconds_ago_patterns,
-                    R.array.reltime_seconds_ago_formats);
+                    R.array.reltime_seconds_ago_formats)
         }
-        long numHours = TimeUnit.SECONDS.toHours(numSeconds);
+        val numHours = TimeUnit.SECONDS.toHours(numSeconds)
         if (numHours < 2) {
             return I18n.formatQuantityMessage(context,
                     0,
                     numMinutes,
                     R.array.reltime_minutes_ago_patterns,
-                    R.array.reltime_minutes_ago_formats);
+                    R.array.reltime_minutes_ago_formats)
         }
-        long numDays = TimeUnit.SECONDS.toDays(numSeconds);
+        val numDays = TimeUnit.SECONDS.toDays(numSeconds)
         if (numDays < 2) {
             return I18n.formatQuantityMessage(context,
                     0,
                     numHours,
                     R.array.reltime_hours_ago_patterns,
-                    R.array.reltime_hours_ago_formats);
+                    R.array.reltime_hours_ago_formats)
         }
-        long numMonths = getMonthsDifference(fromMs, toMs);
-        if (numMonths < 3) {
-            return I18n.formatQuantityMessage(context,
+        val numMonths = getMonthsDifference(fromMs, toMs)
+        return if (numMonths < 3) {
+            I18n.formatQuantityMessage(context,
                     0,
                     numDays,
                     R.array.reltime_days_ago_patterns,
-                    R.array.reltime_days_ago_formats);
-        }
-        // TODO: Years...
-        return I18n.formatQuantityMessage(context,
+                    R.array.reltime_days_ago_formats)
+        } else I18n.formatQuantityMessage(context,
                 0,
                 numMonths,
                 R.array.reltime_months_ago_patterns,
-                R.array.reltime_months_ago_formats);
+                R.array.reltime_months_ago_formats)
+        // TODO: Years...
     }
 
-    private static long getMonthsDifference(long fromMs, long toMs) {
-        if (fromMs <= DATETIME_MILLIS_NEVER || toMs <= fromMs ) {
-            return 0;
+    private fun getMonthsDifference(fromMs: Long, toMs: Long): Long {
+        if (fromMs <= DATETIME_MILLIS_NEVER || toMs <= fromMs) {
+            return 0
         }
         // TODO: Migrate to java.util.time, see http://stackoverflow.com/questions/1086396/java-date-month-difference
-        Date date1 = new Date(fromMs);
-        Date date2 = new Date(toMs);
-        return (date2.getYear() - date1.getYear()) * 12L + (date2.getMonth() - date1.getMonth());
+        val date1 = Date(fromMs)
+        val date2 = Date(toMs)
+        return (date2.year - date1.year) * 12L + (date2.month - date1.month)
     }
 
-    /** Returns false if previousTime <= 0 */
-    public static boolean wasButMoreSecondsAgoThan(long previousTime, long predefinedPeriodSeconds) {
-        return previousTime > 0 && secondsAgo(previousTime) > predefinedPeriodSeconds;
+    /** Returns false if previousTime <= 0  */
+    fun wasButMoreSecondsAgoThan(previousTime: Long, predefinedPeriodSeconds: Long): Boolean {
+        return previousTime > 0 && secondsAgo(previousTime) > predefinedPeriodSeconds
     }
 
-    public static boolean moreSecondsAgoThan(long previousTime, long predefinedPeriodSeconds) {
-        return secondsAgo(previousTime) > predefinedPeriodSeconds;
+    fun moreSecondsAgoThan(previousTime: Long, predefinedPeriodSeconds: Long): Boolean {
+        return secondsAgo(previousTime) > predefinedPeriodSeconds
     }
 
-    public static long secondsAgo(long previousTime) {
-        return java.util.concurrent.TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()
-                - previousTime);
+    fun secondsAgo(previousTime: Long): Long {
+        return TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()
+                - previousTime)
     }
 
-    /** Minimum, but real date */
-    public static long minDate(long date1, long date2) {
-        return date1 > SOME_TIME_AGO
-                ? (date2 > SOME_TIME_AGO ? Long.min(date1, date2) : date1)
-                : (date2 > SOME_TIME_AGO ? date2 : Long.max(date1, date2));
+    /** Minimum, but real date  */
+    fun minDate(date1: Long, date2: Long): Long {
+        return if (date1 > SOME_TIME_AGO) if (date2 > SOME_TIME_AGO) java.lang.Long.min(date1, date2) else date1 else if (date2 > SOME_TIME_AGO) date2 else java.lang.Long.max(date1, date2)
     }
 }

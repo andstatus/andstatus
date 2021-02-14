@@ -1,64 +1,59 @@
-package org.andstatus.app.account;
+package org.andstatus.app.account
 
-import android.content.SharedPreferences;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import android.content.SharedPreferences
+import org.json.JSONException
+import org.json.JSONObject
 
 /**
  *
  */
-public enum CredentialsVerificationStatus {
+enum class CredentialsVerificationStatus(private val id: Int) {
     /**
      * NEVER - means that the Account was never successfully authenticated with current credentials.
      * This is why we reset the state to NEVER every time credentials have been changed.
      */
-    NEVER(1),
-    FAILED(2),
+    NEVER(1), FAILED(2),
+
     /**
      * The Account was successfully authenticated
      */
     SUCCEEDED(3);
 
-    private int id;
-
-    public static final String KEY = "credentials_verified";
-
-    private CredentialsVerificationStatus(int id) {
-        this.id = id;
+    fun put(dw: AccountDataWriter?) {
+        dw.setDataInt(KEY, id)
     }
 
-    public void put(AccountDataWriter dw) {
-        dw.setDataInt(KEY, id);
+    @Throws(JSONException::class)
+    fun put(jso: JSONObject?) {
+        jso.put(KEY, id)
     }
 
-    public void put(JSONObject jso) throws JSONException {
-        jso.put(KEY, id);
-    }
-
-    public static CredentialsVerificationStatus load(SharedPreferences sp) {
-        int id = sp.getInt(KEY, NEVER.id);
-        return fromId(id);
-    }
-
-    public static CredentialsVerificationStatus fromId(long id) {
-        CredentialsVerificationStatus status = NEVER;
-        for (CredentialsVerificationStatus status1 : values()) {
-            if (status1.id == id) {
-                status = status1;
-                break;
-            }
+    companion object {
+        val KEY: String? = "credentials_verified"
+        fun load(sp: SharedPreferences?): CredentialsVerificationStatus? {
+            val id = sp.getInt(KEY, NEVER.id)
+            return fromId(id.toLong())
         }
-        return status;
-    }
 
-    public static CredentialsVerificationStatus load(AccountDataReader dr) {
-        int id = dr.getDataInt(KEY, NEVER.id);
-        return fromId(id);
-    }
+        fun fromId(id: Long): CredentialsVerificationStatus? {
+            var status: CredentialsVerificationStatus? = NEVER
+            for (status1 in values()) {
+                if (status1.id.toLong() == id) {
+                    status = status1
+                    break
+                }
+            }
+            return status
+        }
 
-    public static CredentialsVerificationStatus load(JSONObject jso) {
-        int id = jso.optInt(KEY, NEVER.id);
-        return fromId(id);
+        fun load(dr: AccountDataReader?): CredentialsVerificationStatus? {
+            val id = dr.getDataInt(KEY, NEVER.id)
+            return fromId(id.toLong())
+        }
+
+        fun load(jso: JSONObject?): CredentialsVerificationStatus? {
+            val id = jso.optInt(KEY, NEVER.id)
+            return fromId(id.toLong())
+        }
     }
 }

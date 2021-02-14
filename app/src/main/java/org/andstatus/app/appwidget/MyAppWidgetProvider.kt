@@ -13,62 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.appwidget
 
-package org.andstatus.app.appwidget;
-
-import android.appwidget.AppWidgetManager;
-import android.appwidget.AppWidgetProvider;
-import android.content.Context;
-import android.content.Intent;
-
-import org.andstatus.app.notification.NotificationEvents;
-import org.andstatus.app.util.MyLog;
-
-import java.util.Arrays;
-import java.util.function.Predicate;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
+import android.content.Context
+import android.content.Intent
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.notification.NotificationEvents
+import org.andstatus.app.util.MyLog
+import java.util.*
+import java.util.function.Consumer
+import java.util.function.Predicate
 
 /**
- * A widget provider. It uses {@link MyAppWidgetData} to store preferences and to
+ * A widget provider. It uses [MyAppWidgetData] to store preferences and to
  * accumulate data (notifications...) received.
- * 
+ *
  * @author yvolk@yurivolkov.com
  */
-public class MyAppWidgetProvider extends AppWidgetProvider {
-    private static final String TAG = MyAppWidgetProvider.class.getSimpleName();
-    
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        MyLog.i(TAG, "onReceive; action=" + intent.getAction());
-        myContextHolder.initialize(context, TAG).getBlocking();
-        super.onReceive(context, intent);
+class MyAppWidgetProvider : AppWidgetProvider() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+        MyLog.i(TAG, "onReceive; action=" + intent.getAction())
+        MyContextHolder.Companion.myContextHolder.initialize(context, TAG).getBlocking()
+        super.onReceive(context, intent)
     }
 
-    @Override
-    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        MyLog.v(TAG, () -> "onUpdate; ids=" + Arrays.toString(appWidgetIds));
-        AppWidgets.of(NotificationEvents.newInstance()).updateViews(appWidgetManager, filterIds(appWidgetIds));
+    override fun onUpdate(context: Context?, appWidgetManager: AppWidgetManager?, appWidgetIds: IntArray?) {
+        MyLog.v(TAG) { "onUpdate; ids=" + Arrays.toString(appWidgetIds) }
+        AppWidgets.Companion.of(NotificationEvents.Companion.newInstance()).updateViews(appWidgetManager, filterIds(appWidgetIds))
     }
 
-    private static Predicate<MyAppWidgetData> filterIds(int[] appWidgetIds) {
-        return data -> Arrays.stream(appWidgetIds).boxed().anyMatch(id -> data.getId() == id);
+    override fun onDeleted(context: Context?, appWidgetIds: IntArray?) {
+        MyLog.v(TAG) { "onDeleted; ids=" + Arrays.toString(appWidgetIds) }
+        AppWidgets.Companion.of(NotificationEvents.Companion.newInstance()).list()
+                .stream().filter(filterIds(appWidgetIds)).forEach(Consumer { obj: MyAppWidgetData? -> obj.update() })
     }
 
-    @Override
-    public void onDeleted(Context context, int[] appWidgetIds) {
-        MyLog.v(TAG, () -> "onDeleted; ids=" + Arrays.toString(appWidgetIds));
-        AppWidgets.of(NotificationEvents.newInstance()).list()
-                .stream().filter(filterIds(appWidgetIds)).forEach(MyAppWidgetData::update);
+    override fun onEnabled(context: Context?) {
+        MyLog.v(TAG, "onEnabled")
     }
 
-    @Override
-    public void onEnabled(Context context) {
-        MyLog.v(TAG, "onEnabled");
+    override fun onDisabled(context: Context?) {
+        MyLog.v(TAG, "onDisabled")
     }
 
-    @Override
-    public void onDisabled(Context context) {
-        MyLog.v(TAG, "onDisabled");
+    companion object {
+        private val TAG: String? = MyAppWidgetProvider::class.java.simpleName
+        private fun filterIds(appWidgetIds: IntArray?): Predicate<MyAppWidgetData?>? {
+            return Predicate { data: MyAppWidgetData? -> Arrays.stream(appWidgetIds).boxed().anyMatch { id: Int? -> data.getId() == id } }
+        }
     }
 }

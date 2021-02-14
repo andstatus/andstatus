@@ -13,96 +13,91 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.widget
 
-package org.andstatus.app.widget;
+import android.content.Context
+import android.os.Build
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.webkit.WebView
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.annotation.RawRes
+import androidx.fragment.app.Fragment
+import org.andstatus.app.R
+import org.andstatus.app.context.MyLocale
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.Xslt
 
-import android.content.Context;
-import android.os.Build;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.webkit.WebView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.RawRes;
-import androidx.fragment.app.Fragment;
-
-import org.andstatus.app.R;
-import org.andstatus.app.context.MyLocale;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.Xslt;
-
-public class WebViewFragment extends Fragment {
-    private static final String SOURCE_XML = "sourceXml";
-    private static final String SOURCE_XSL = "sourceXsl";
-
-    public static WebViewFragment from(@RawRes int resXml, @RawRes int resXsl) {
-        WebViewFragment fragment = new WebViewFragment();
-        Bundle bundle = new Bundle();
-        bundle.putInt(SOURCE_XML, resXml);
-        bundle.putInt(SOURCE_XSL, resXsl);
-        fragment.setArguments(bundle);
-        return fragment;
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Context context = inflater.getContext();
-        String output = getTransformedContent(context);
-        try {
-            WebView view = (WebView) inflater.inflate(R.layout.webview_fragment, container, false);
+class WebViewFragment : Fragment() {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val context = inflater.context
+        val output = getTransformedContent(context)
+        return try {
+            val view = inflater.inflate(R.layout.webview_fragment, container, false) as WebView
             // See http://stackoverflow.com/questions/14474223/utf-8-not-encoding-html-in-webview-android
-            view.getSettings().setDefaultTextEncodingName("utf-8");
-            view.getSettings().setTextZoom(configuredTextZoom());
-            view.getSettings().setJavaScriptEnabled(true);
+            view.settings.defaultTextEncodingName = "utf-8"
+            view.settings.textZoom = configuredTextZoom()
+            view.settings.javaScriptEnabled = true
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                view.getSettings().setSafeBrowsingEnabled(false);
+                view.settings.safeBrowsingEnabled = false
             }
             // Used this answer for adding a stylesheet: http://stackoverflow.com/a/7736654/297710
             // See also http://stackoverflow.com/questions/13638892/where-is-the-path-file-android-asset-documented
-            view.loadDataWithBaseURL("file:///android_asset/", output,"text/html","utf-8", null);
-            return view;
-        } catch (Throwable e) {
-            LinearLayout view = (LinearLayout) inflater.inflate(R.layout.empty_layout, container, false);
-            TextView contentView = view.findViewById(R.id.content);
-            String text = "Error initializing WebView: " + e.getMessage() + "\n\n" + output;
-            contentView.setText(text);
-            MyLog.w(this, text, e);
-            return view;
+            view.loadDataWithBaseURL("file:///android_asset/", output, "text/html", "utf-8", null)
+            view
+        } catch (e: Throwable) {
+            val view = inflater.inflate(R.layout.empty_layout, container, false) as LinearLayout
+            val contentView = view.findViewById<TextView?>(R.id.content)
+            val text = """
+                Error initializing WebView: ${e.message}
+                
+                $output
+                """.trimIndent()
+            contentView.text = text
+            MyLog.w(this, text, e)
+            view
         }
     }
 
-    private String getTransformedContent(Context context) {
-        try {
-            String output = Xslt.toHtmlString(context, getArguments().getInt(SOURCE_XML),
-                    getArguments().getInt(SOURCE_XSL));
+    private fun getTransformedContent(context: Context?): String? {
+        return try {
+            var output = Xslt.toHtmlString(context, arguments.getInt(SOURCE_XML),
+                    arguments.getInt(SOURCE_XSL))
             if (!MyLocale.isEnLocale()) {
                 output = output.replace("Translator credits",
-                        context.getText(R.string.translator_credits));
+                        context.getText(R.string.translator_credits))
             }
-            return output;
-        } catch (Exception e) {
-            return "Error during transformation: " + e.getMessage();
+            output
+        } catch (e: Exception) {
+            "Error during transformation: " + e.message
         }
     }
 
-    private static int configuredTextZoom() {
-        switch (SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_SIZE, "")) {
-        case "Large":
-            return 170;
-        case "Larger":
-            return 145;
-        case "Smaller":
-            return 108;
-        case "Small":
-            return 90;
-        default:
-            return 125;
+    companion object {
+        private val SOURCE_XML: String? = "sourceXml"
+        private val SOURCE_XSL: String? = "sourceXsl"
+        fun from(@RawRes resXml: Int, @RawRes resXsl: Int): WebViewFragment? {
+            val fragment = WebViewFragment()
+            val bundle = Bundle()
+            bundle.putInt(SOURCE_XML, resXml)
+            bundle.putInt(SOURCE_XSL, resXsl)
+            fragment.arguments = bundle
+            return fragment
+        }
+
+        private fun configuredTextZoom(): Int {
+            return when (SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_SIZE, "")) {
+                "Large" -> 170
+                "Larger" -> 145
+                "Smaller" -> 108
+                "Small" -> 90
+                else -> 125
+            }
         }
     }
 }

@@ -13,99 +13,83 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social.activitypub
 
-package org.andstatus.app.net.social.activitypub;
+import android.net.Uri
+import io.vavr.control.CheckedFunction
+import io.vavr.control.Try
+import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.net.http.HttpConnection
+import org.andstatus.app.net.http.HttpReadResult
+import org.andstatus.app.net.http.HttpRequest
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.ActorEndpointType
+import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.net.social.TimelinePosition
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.UrlUtils
 
-import android.net.Uri;
-
-import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.http.HttpConnection;
-import org.andstatus.app.net.http.HttpConnectionData;
-import org.andstatus.app.net.http.HttpReadResult;
-import org.andstatus.app.net.http.HttpRequest;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.ActorEndpointType;
-import org.andstatus.app.net.social.ApiRoutineEnum;
-import org.andstatus.app.net.social.TimelinePosition;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.UrlUtils;
-
-import java.util.Optional;
-
-import io.vavr.control.Try;
-
-class ConnectionAndUrl {
-    final ApiRoutineEnum apiRoutine;
-    public final Uri uri;
-    final HttpConnection httpConnection;
-    boolean syncYounger = true;
-
-    private ConnectionAndUrl(ApiRoutineEnum apiRoutine, Uri uri, HttpConnection httpConnection) {
-        this.apiRoutine = apiRoutine;
-        this.uri = uri;
-        this.httpConnection = httpConnection;
+internal class ConnectionAndUrl private constructor(val apiRoutine: ApiRoutineEnum?, val uri: Uri?, val httpConnection: HttpConnection?) {
+    var syncYounger = true
+    fun withUri(newUri: Uri?): ConnectionAndUrl? {
+        return ConnectionAndUrl(apiRoutine, newUri, httpConnection)
+                .withSyncDirection(syncYounger)
     }
 
-    ConnectionAndUrl withUri(Uri newUri) {
-        return new ConnectionAndUrl(apiRoutine, newUri, httpConnection)
-            .withSyncDirection(syncYounger);
+    fun newRequest(): HttpRequest? {
+        return HttpRequest.Companion.of(apiRoutine, uri)
     }
 
-    static Try<ConnectionAndUrl> fromUriActor(Uri uri, ConnectionActivityPub connection,
-                                              ApiRoutineEnum apiRoutine, Actor actor) {
-        return getConnection(connection, apiRoutine, actor).map(conu -> new ConnectionAndUrl(apiRoutine, uri, conu));
+    fun execute(request: HttpRequest?): Try<HttpReadResult?>? {
+        return httpConnection.execute(request)
     }
 
-    static Try<ConnectionAndUrl> fromActor(ConnectionActivityPub connection, ApiRoutineEnum apiRoutine,
-                                           TimelinePosition position, Actor actor) {
-        final Optional<Uri> endpoint = position.optUri().isPresent()
-                ? position.optUri()
-                : actor.getEndpoint(ActorEndpointType.from(apiRoutine));
-        if (!endpoint.isPresent()) {
-            return Try.failure(new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
-                    ": endpoint is empty for " + actor));
+    fun withSyncDirection(syncYounger: Boolean): ConnectionAndUrl? {
+        this.syncYounger = syncYounger
+        return this
+    }
+
+    companion object {
+        fun fromUriActor(uri: Uri?, connection: ConnectionActivityPub?,
+                         apiRoutine: ApiRoutineEnum?, actor: Actor?): Try<ConnectionAndUrl?>? {
+            return getConnection(connection, apiRoutine, actor).map(CheckedFunction { conu: HttpConnection? -> ConnectionAndUrl(apiRoutine, uri, conu) })
         }
-        return getConnection(connection, apiRoutine, actor).map(httpConnection ->
-                new ConnectionAndUrl(apiRoutine, endpoint.get(), httpConnection));
-    }
 
-    private static Try<HttpConnection> getConnection(ConnectionActivityPub connection, ApiRoutineEnum apiRoutine,
-                                                Actor actor) {
-        HttpConnection httpConnection = connection.getHttp();
-        String host = actor.getConnectionHost();
-        if (StringUtil.isEmpty(host)) {
-            return Try.failure(new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
-                    ": host is empty for " + actor));
-        } else if (connection.getHttp().data.originUrl == null || host.compareToIgnoreCase(
-                connection.getHttp().data.originUrl.getHost()) != 0) {
-            MyLog.v(connection, () -> "Requesting data from the host: " + host);
-            HttpConnectionData connectionData1 = connection.getHttp().data.copy();
-            connectionData1.oauthClientKeys = null;
-            connectionData1.originUrl = UrlUtils.buildUrl(host, connectionData1.isSsl());
-            httpConnection = connection.getHttp().getNewInstance();
-            httpConnection.setHttpConnectionData(connectionData1);
+        fun fromActor(connection: ConnectionActivityPub?, apiRoutine: ApiRoutineEnum?,
+                      position: TimelinePosition?, actor: Actor?): Try<ConnectionAndUrl?>? {
+            val endpoint = if (position.optUri().isPresent) position.optUri() else actor.getEndpoint(ActorEndpointType.Companion.from(apiRoutine))
+            return if (!endpoint.isPresent) {
+                Try.failure(ConnectionException(StatusCode.BAD_REQUEST, apiRoutine.toString() +
+                        ": endpoint is empty for " + actor))
+            } else getConnection(connection, apiRoutine, actor).map(CheckedFunction { httpConnection: HttpConnection? -> ConnectionAndUrl(apiRoutine, endpoint.get(), httpConnection) })
         }
-        if (!httpConnection.data.areOAuthClientKeysPresent()) {
-            httpConnection.registerClient();
-            if (!httpConnection.getCredentialsPresent()) {
-                return Try.failure(ConnectionException.fromStatusCodeAndHost(ConnectionException.StatusCode.NO_CREDENTIALS_FOR_HOST,
-                        "No credentials", httpConnection.data.originUrl));
+
+        private fun getConnection(connection: ConnectionActivityPub?, apiRoutine: ApiRoutineEnum?,
+                                  actor: Actor?): Try<HttpConnection?>? {
+            var httpConnection = connection.getHttp()
+            val host = actor.getConnectionHost()
+            if (StringUtil.isEmpty(host)) {
+                return Try.failure(ConnectionException(StatusCode.BAD_REQUEST, apiRoutine.toString() +
+                        ": host is empty for " + actor))
+            } else if (connection.getHttp().data.originUrl == null || host.compareTo(
+                            connection.getHttp().data.originUrl.host, ignoreCase = true) != 0) {
+                MyLog.v(connection) { "Requesting data from the host: $host" }
+                val connectionData1 = connection.getHttp().data.copy()
+                connectionData1.oauthClientKeys = null
+                connectionData1.originUrl = UrlUtils.buildUrl(host, connectionData1.isSsl)
+                httpConnection = connection.getHttp().newInstance
+                httpConnection.setHttpConnectionData(connectionData1)
             }
+            if (!httpConnection.data.areOAuthClientKeysPresent()) {
+                httpConnection.registerClient()
+                if (!httpConnection.credentialsPresent) {
+                    return Try.failure(ConnectionException.Companion.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,
+                            "No credentials", httpConnection.data.originUrl))
+                }
+            }
+            return Try.success(httpConnection)
         }
-        return Try.success(httpConnection);
-    }
-
-    HttpRequest newRequest() {
-        return HttpRequest.of(apiRoutine, uri);
-    }
-
-    Try<HttpReadResult> execute(HttpRequest request) {
-        return httpConnection.execute(request);
-    }
-
-    public ConnectionAndUrl withSyncDirection(boolean syncYounger) {
-        this.syncYounger = syncYounger;
-        return this;
     }
 }

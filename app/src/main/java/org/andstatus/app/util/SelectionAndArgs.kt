@@ -13,74 +13,74 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-import java.util.Arrays;
+import java.util.*
 
 /**
  * Add selection and it's argument (for query...)
  */
-public final class SelectionAndArgs implements TaggedClass {
-    private static final String TAG = SelectionAndArgs.class.getSimpleName();
-    public volatile String selection;
-    public volatile String[] selectionArgs;
-    private volatile int nArgs;
+class SelectionAndArgs @JvmOverloads constructor(selection_in: String? = "") : TaggedClass {
+    @Volatile
+    var selection: String?
 
-    public SelectionAndArgs() {
-        this("");
+    @Volatile
+    var selectionArgs: Array<String?>?
+
+    @Volatile
+    private var nArgs = 0
+    fun clear() {
+        selection = ""
+        selectionArgs = arrayOf()
+        nArgs = 0
     }
 
-    public SelectionAndArgs(String selection_in) {
-        clear();
-        selection = selection_in;
+    fun addSelection(selection_in: String?): Int {
+        return addSelection(selection_in, arrayOf())
     }
 
-    public void clear() {
-        selection = "";
-        selectionArgs = new String[] {};
-        nArgs = 0;
+    fun addSelection(selectionAdd: String?, selectionArgAdd: String?): Int {
+        return addSelection(selectionAdd, arrayOf(selectionArgAdd))
     }
 
-    public int addSelection(String selection_in) {
-        return addSelection(selection_in, new String[] {});
-    }
-
-    public int addSelection(String selectionAdd, String selectionArgAdd) {
-        return addSelection(selectionAdd, new String[] { selectionArgAdd});
-    }
-
-    public int addSelection(String selectionAdd, String[] selectionArgsAdd) {
-        int nArgsAdd = selectionArgsAdd == null ? 0 : selectionArgsAdd.length;
+    fun addSelection(selectionAdd: String?, selectionArgsAdd: Array<String?>?): Int {
+        val nArgsAdd = selectionArgsAdd?.size ?: 0
         if (!StringUtil.isEmpty(selectionAdd)) {
-            if (selection.length() == 0) {
-                selection = selectionAdd;
+            selection = if (selection.length == 0) {
+                selectionAdd
             } else {
-                selection = "(" + selection + ") AND (" + selectionAdd + ")";
+                "($selection) AND ($selectionAdd)"
             }
         }
         if (nArgsAdd > 0) {
-            int nArgs2 = nArgs + nArgsAdd;
-            String[] selectionArgs2 = new String[nArgs2];
-            System.arraycopy(selectionArgs, 0, selectionArgs2, 0, nArgs);
-            System.arraycopy(selectionArgsAdd, 0, selectionArgs2, nArgs, nArgsAdd);
-            selectionArgs = selectionArgs2;
-            nArgs = nArgs2;
+            val nArgs2 = nArgs + nArgsAdd
+            val selectionArgs2 = arrayOfNulls<String?>(nArgs2)
+            System.arraycopy(selectionArgs, 0, selectionArgs2, 0, nArgs)
+            System.arraycopy(selectionArgsAdd, 0, selectionArgs2, nArgs, nArgsAdd)
+            selectionArgs = selectionArgs2
+            nArgs = nArgs2
         }
-        return nArgs;
+        return nArgs
     }
 
-    public boolean isEmpty() {
-        return nArgs == 0;
+    fun isEmpty(): Boolean {
+        return nArgs == 0
     }
 
-    @Override
-    public String toString() {
-        return MyStringBuilder.formatKeyValue(this, selection + ", args:" + Arrays.toString(selectionArgs));
+    override fun toString(): String {
+        return MyStringBuilder.Companion.formatKeyValue(this, selection + ", args:" + Arrays.toString(selectionArgs))
     }
 
-    @Override
-    public String classTag() {
-        return TAG;
+    override fun classTag(): String? {
+        return TAG
+    }
+
+    companion object {
+        private val TAG: String? = SelectionAndArgs::class.java.simpleName
+    }
+
+    init {
+        clear()
+        selection = selection_in
     }
 }

@@ -13,51 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data.converter
 
-package org.andstatus.app.data.converter;
-
-import org.andstatus.app.account.AccountUtils;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.util.MyLog;
-import org.json.JSONObject;
-
-import java.util.Collection;
-import java.util.NoSuchElementException;
-
-import io.vavr.control.Try;
+import android.accounts.Account
+import android.accounts.AccountManager
+import io.vavr.control.Try
+import org.andstatus.app.account.AccountUtils
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.util.MyLog
+import org.json.JSONObject
+import java.util.*
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class AccountConverter {
-
-    private static final String TAG = AccountConverter.class.getSimpleName();
-
-    private AccountConverter() { /* Empty*/ }
-
-    static void removeOldAccounts(android.accounts.AccountManager am,
-                                  Collection<android.accounts.Account> accountsToRemove) {
+object AccountConverter {
+    private val TAG: String? = AccountConverter::class.java.simpleName
+    fun removeOldAccounts(am: AccountManager?,
+                          accountsToRemove: MutableCollection<Account?>?) {
         if (!accountsToRemove.isEmpty()) {
-            MyLog.i(TAG, "Removing " + accountsToRemove.size() + " old accounts");
-            for (android.accounts.Account account : accountsToRemove) {
-                MyLog.i(TAG, "Removing old account: " + account.name);
-                am.removeAccount(account, null, null);
+            MyLog.i(TAG, "Removing " + accountsToRemove.size + " old accounts")
+            for (account in accountsToRemove) {
+                MyLog.i(TAG, "Removing old account: " + account.name)
+                am.removeAccount(account, null, null)
             }
         }
     }
 
-    public static Try<JSONObject> convertJson(MyContext myContext, JSONObject jsonIn, boolean isPersistent) {
-        int version = AccountUtils.getVersion(jsonIn);
-        switch (version) {
-            case AccountUtils.ACCOUNT_VERSION:
-                return Try.success(jsonIn);
-            case 0:
-                return Try.failure(new NoSuchElementException("No version info found in " + jsonIn));
-            case 16:
-                return Try.success(jsonIn).flatMap(json -> Convert47.convertJson16(myContext, json, isPersistent));
-            default:
-                return Try.failure(new IllegalArgumentException("Unsuppoerted account version: " + version));
+    fun convertJson(myContext: MyContext?, jsonIn: JSONObject?, isPersistent: Boolean): Try<JSONObject?>? {
+        val version = AccountUtils.getVersion(jsonIn)
+        return when (version) {
+            AccountUtils.ACCOUNT_VERSION -> Try.success(jsonIn)
+            0 -> Try.failure(NoSuchElementException("No version info found in $jsonIn"))
+            16 -> Try.success(jsonIn).flatMap { json: JSONObject? -> Convert47.Companion.convertJson16(myContext, json, isPersistent) }
+            else -> Try.failure(IllegalArgumentException("Unsuppoerted account version: $version"))
         }
     }
-
 }

@@ -13,73 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.activity
 
-package org.andstatus.app.activity;
+import org.andstatus.app.timeline.LoadableListViewParameters
+import org.andstatus.app.timeline.TimelineData
+import org.andstatus.app.timeline.TimelinePage
+import org.andstatus.app.timeline.ViewItem
 
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.timeline.LoadableListViewParameters;
-import org.andstatus.app.timeline.TimelineData;
-import org.andstatus.app.timeline.TimelinePage;
-import org.andstatus.app.timeline.ViewItem;
-
-abstract class TimelineDataWrapper<T extends ViewItem<T>> extends TimelineData<T> {
-    final TimelineData<ActivityViewItem> listData;
-
-    TimelineDataWrapper(TimelineData<ActivityViewItem> listData) {
-        super(null, new TimelinePage<>(listData.params, null));
-        this.listData = listData;
+internal abstract class TimelineDataWrapper<T : ViewItem<T?>?>(val listData: TimelineData<ActivityViewItem?>?) : TimelineData<T?>(null, TimelinePage<T?>(listData.params, null)) {
+    override fun size(): Int {
+        return listData.size()
     }
 
-    @Override
-    public int size() {
-        return listData.size();
+    abstract fun getItem(position: Int): T
+    override fun getById(itemId: Long): T {
+        val position = getPositionById(itemId)
+        return if (position < 0) {
+            pages[0].emptyItem
+        } else getItem(position)
     }
 
-    @NonNull
-    @Override
-    public abstract T getItem(int position);
-
-    @NonNull
-    @Override
-    public T getById(long itemId) {
-        int position = getPositionById(itemId);
-        if (position < 0) {
-            return pages.get(0).getEmptyItem();
-        }
-        return getItem(position);
+    abstract fun getPositionById(itemId: Long): Int
+    override fun mayHaveYoungerPage(): Boolean {
+        return listData != null && listData.mayHaveYoungerPage()
     }
 
-    @Override
-    public abstract int getPositionById(long itemId);
-
-    @Override
-    public boolean mayHaveYoungerPage() {
-        return listData != null && listData.mayHaveYoungerPage();
+    override fun mayHaveOlderPage(): Boolean {
+        return listData.mayHaveOlderPage()
     }
 
-    @Override
-    public boolean mayHaveOlderPage() {
-        return listData.mayHaveOlderPage();
+    override fun toString(): String {
+        return listData.toString()
     }
 
-    @Override
-    public String toString() {
-        return listData.toString();
+    override fun isCollapseDuplicates(): Boolean {
+        return listData != null && listData.isCollapseDuplicates
     }
 
-    @Override
-    public boolean isCollapseDuplicates() {
-        return listData != null && listData.isCollapseDuplicates();
+    override fun canBeCollapsed(position: Int): Boolean {
+        return listData.canBeCollapsed(position)
     }
 
-    @Override
-    public boolean canBeCollapsed(int position) {
-        return listData.canBeCollapsed(position);
-    }
-
-    @Override
-    public void updateView(LoadableListViewParameters viewParameters) {
+    override fun updateView(viewParameters: LoadableListViewParameters?) {
         // Empty
     }
 }

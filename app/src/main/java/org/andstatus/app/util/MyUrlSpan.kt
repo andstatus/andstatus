@@ -14,298 +14,275 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-import android.app.Activity;
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.os.Parcel;
-import android.text.Html;
-import android.text.Layout;
-import android.text.Selection;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.ClickableSpan;
-import android.text.style.URLSpan;
-import android.text.util.Linkify;
-import android.view.MotionEvent;
-import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.annotation.IdRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
-
-import org.andstatus.app.R;
-import org.andstatus.app.data.TextMediaType;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineType;
-
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import static android.text.Html.FROM_HTML_MODE_COMPACT;
-import static java.util.stream.Collectors.joining;
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.os.Parcel
+import android.os.Parcelable
+import android.text.Html
+import android.text.Selection
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ClickableSpan
+import android.text.style.URLSpan
+import android.text.util.Linkify
+import android.view.MotionEvent
+import android.view.View
+import android.view.View.OnTouchListener
+import android.widget.TextView
+import android.widget.Toast
+import androidx.annotation.IdRes
+import androidx.annotation.StringRes
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.TextMediaType
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.MyUrlSpan
+import java.util.*
+import java.util.function.Function
+import java.util.stream.Collectors
+import java.util.stream.Stream
 
 /** Prevents ActivityNotFoundException for malformed links,
  * see https://github.com/andstatus/andstatus/issues/300
- * Based on http://commonsware.com/blog/2013/10/23/linkify-autolink-need-custom-urlspan.html  */
-public class MyUrlSpan extends URLSpan {
-    public static final MyUrlSpan EMPTY = new MyUrlSpan("");
-
-    public static final String SOFT_HYPHEN = "\u00AD";
-    public static final Spannable EMPTY_SPANNABLE = new SpannableString("");
-    public static final String EMPTY_URL = "content://";
-
-    public static final class Data {
-        public final Optional<Actor> actor;
-        public final Optional<String> searchQuery;
-        private final Optional<String> url;
-
-        public Data(Optional<Actor> actor, Optional<String> searchQuery, Optional<String> url) {
-            this.actor = actor;
-            this.searchQuery = searchQuery;
-            this.url = url;
+ * Based on http://commonsware.com/blog/2013/10/23/linkify-autolink-need-custom-urlspan.html   */
+class MyUrlSpan : URLSpan {
+    class Data(val actor: Optional<Actor?>?, val searchQuery: Optional<String?>?, private val url: Optional<String?>?) {
+        fun getURL(): String? {
+            return url.orElse(getTimeline().getClickUri().toString())
         }
 
-        public String getURL() {
-            return url.orElse(getTimeline().getClickUri().toString());
+        fun getTimeline(): Timeline? {
+            return searchQuery.map(Function<String?, Timeline?> { s: String? -> MyContextHolder.Companion.myContextHolder.getNow().timelines().get(TimelineType.SEARCH, Actor.Companion.EMPTY, Origin.Companion.EMPTY, s) })
+                    .orElse(actor.map(Function<Actor?, Timeline?> { a: Actor? -> MyContextHolder.Companion.myContextHolder.getNow().timelines().forUserAtHomeOrigin(TimelineType.SENT, a) })
+                            .orElse(Timeline.Companion.EMPTY))
         }
 
-        public Timeline getTimeline() {
-            return searchQuery.map(s ->
-                    myContextHolder.getNow().timelines().get(TimelineType.SEARCH, Actor.EMPTY, Origin.EMPTY, s))
-                    .orElse(actor.map(a -> myContextHolder.getNow().timelines().forUserAtHomeOrigin(TimelineType.SENT, a))
-                            .orElse(Timeline.EMPTY));
-        }
-
-        @Override
-        public String toString() {
+        override fun toString(): String {
             return "MyUrlSpan{" +
                     Stream.of(
-                        actor.map(Actor::toString),
-                        searchQuery.map(String::toString),
-                        url.map(String::toString))
-                            .filter(Optional::isPresent).map(Optional::get)
-                            .collect(joining(", ")) +
-                    '}';
+                            actor.map(Function { obj: Actor? -> obj.toString() }),
+                            searchQuery.map(Function { obj: String? -> obj.toString() }),
+                            url.map(Function { obj: String? -> obj.toString() }))
+                            .filter { obj: Optional<String?>? -> obj.isPresent() }.map { obj: Optional<String?>? -> obj.get() }
+                            .collect(Collectors.joining(", ")) +
+                    '}'
         }
     }
 
-    public final Data data;
+    val data: Data?
 
-    public static final Creator<MyUrlSpan> CREATOR = new Creator<MyUrlSpan>() {
-        @Override
-        public MyUrlSpan createFromParcel(Parcel in) {
-            return new MyUrlSpan(in.readString());
-        }
-
-        @Override
-        public MyUrlSpan[] newArray(int size) {
-            return new MyUrlSpan[size];
-        }
-    };
-
-    public MyUrlSpan(Data data) {
-        super(EMPTY_URL);
-        this.data = data;
+    constructor(data: Data?) : super(EMPTY_URL) {
+        this.data = data
     }
 
-    public MyUrlSpan(String url) {
-        super(url);
-        this.data = new Data(Optional.empty(), Optional.empty(), Optional.of(url));
+    constructor(url: String?) : super(url) {
+        data = Data(Optional.empty(), Optional.empty(), Optional.of(url))
     }
 
-    @Override
-    public void onClick(@NonNull View widget) {
+    override fun onClick(widget: View) {
         try {
-            super.onClick(widget);
-        } catch (ActivityNotFoundException | SecurityException e) {
-            MyLog.v(this, e);
+            super.onClick(widget)
+        } catch (e: ActivityNotFoundException) {
+            MyLog.v(this, e)
             try {
-                MyLog.i(this, "Malformed link:'" + getURL() + "', " + data);
-                Context context = myContextHolder.getNow().context();
+                MyLog.i(this, "Malformed link:'$url', $data")
+                val context: Context = MyContextHolder.Companion.myContextHolder.getNow().context()
                 if (context != null) {
                     Toast.makeText(context, context.getText(R.string.malformed_link)
-                                    + "\n URL:'" + getURL() + "'", Toast.LENGTH_SHORT).show();
+                            .toString() + "\n URL:'" + url + "'", Toast.LENGTH_SHORT).show()
                 }
-            } catch (Exception e2) {
-                MyLog.d(this, "Couldn't show a toast", e2);
+            } catch (e2: Exception) {
+                MyLog.d(this, "Couldn't show a toast", e2)
+            }
+        } catch (e: SecurityException) {
+            MyLog.v(this, e)
+            try {
+                MyLog.i(this, "Malformed link:'$url', $data")
+                val context: Context = MyContextHolder.Companion.myContextHolder.getNow().context()
+                if (context != null) {
+                    Toast.makeText(context, context.getText(R.string.malformed_link)
+                            .toString() + "\n URL:'" + url + "'", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e2: Exception) {
+                MyLog.d(this, "Couldn't show a toast", e2)
             }
         }
     }
 
-    @Override
-    public String getURL() {
-        return data.getURL();
+    override fun getURL(): String? {
+        return data.getURL()
     }
 
-    public static void showLabel(Activity activity, @IdRes int viewId, @StringRes int stringResId) {
-        showText(activity.findViewById(viewId), activity.getText(stringResId).toString(), TextMediaType.UNKNOWN, false, false);
+    override fun toString(): String {
+        return data.toString()
     }
 
-    public static void showAsPlainText(View parentView, @IdRes int viewId, String text, boolean showIfEmpty) {
-        showText(parentView, viewId, MyHtml.htmlToCompactPlainText(text), TextMediaType.PLAIN, false, showIfEmpty);
-    }
-
-    public static void showText(View parentView, @IdRes int viewId, String text, boolean linkify, boolean showIfEmpty) {
-        showText(parentView, viewId, text, TextMediaType.UNKNOWN, linkify, showIfEmpty);
-    }
-
-    public static void showText(View parentView, @IdRes int viewId, String text, TextMediaType mediaType, boolean linkify, boolean showIfEmpty) {
-        showText(parentView.findViewById(viewId), text, mediaType, linkify, showIfEmpty);
-    }
-
-    public static void showText(TextView textView, String text, TextMediaType mediaType, boolean linkify, boolean showIfEmpty) {
-        showSpannable(textView, toSpannable(text, mediaType, linkify), showIfEmpty);
-    }
-
-    public static void showSpannable(TextView textView, @NonNull Spannable spannable, boolean showIfEmpty) {
-        if (textView == null) return;
-        if (spannable.length() == 0) {
-            textView.setText("");
-            ViewUtils.showView(textView, showIfEmpty);
-        } else {
-            textView.setText(spannable);
-            if (hasSpans(spannable)) {
-                textView.setFocusable(true);
-                textView.setFocusableInTouchMode(true);
-                textView.setLinksClickable(true);
-                setOnTouchListener(textView);
+    companion object {
+        val EMPTY: MyUrlSpan? = MyUrlSpan("")
+        val SOFT_HYPHEN: String? = "\u00AD"
+        val EMPTY_SPANNABLE: Spannable? = SpannableString("")
+        val EMPTY_URL: String? = "content://"
+        val CREATOR: Parcelable.Creator<MyUrlSpan?>? = object : Parcelable.Creator<MyUrlSpan?> {
+            override fun createFromParcel(`in`: Parcel?): MyUrlSpan? {
+                return MyUrlSpan(`in`.readString())
             }
-            ViewUtils.showView(textView, true);
+
+            override fun newArray(size: Int): Array<MyUrlSpan?>? {
+                return arrayOfNulls<MyUrlSpan?>(size)
+            }
         }
-    }
 
-    public static Spannable toSpannable(String text, TextMediaType mediaType, boolean linkify) {
-        if (StringUtil.isEmpty(text)) return EMPTY_SPANNABLE;
-
-        // Android 6 bug, see https://github.com/andstatus/andstatus/issues/334
-        // Setting setMovementMethod to not null causes a crash if text is SOFT_HYPHEN only:
-        if (text.contains(SOFT_HYPHEN)) {
-            text = text.replace(SOFT_HYPHEN, "-");
+        fun showLabel(activity: Activity?, @IdRes viewId: Int, @StringRes stringResId: Int) {
+            showText(activity.findViewById(viewId), activity.getText(stringResId).toString(), TextMediaType.UNKNOWN, false, false)
         }
-        Spannable spannable = mediaType == TextMediaType.HTML ||
-            (mediaType == TextMediaType.UNKNOWN && MyHtml.hasHtmlMarkup(text))
-                ? htmlToSpannable(text)
-                : new SpannableString(text);
-        if (linkify && !hasUrlSpans(spannable)) {
-            Linkify.addLinks(spannable, Linkify.WEB_URLS);
+
+        fun showAsPlainText(parentView: View?, @IdRes viewId: Int, text: String?, showIfEmpty: Boolean) {
+            showText(parentView, viewId, MyHtml.htmlToCompactPlainText(text), TextMediaType.PLAIN, false, showIfEmpty)
         }
-        fixUrlSpans(spannable);
-        return spannable;
-    }
 
-    private static Spannable htmlToSpannable(String text) {
-        final Spanned spanned = Html.fromHtml(text, FROM_HTML_MODE_COMPACT);
-        return Spannable.class.isAssignableFrom(spanned.getClass())
-                ? (Spannable) spanned
-                : SpannableString.valueOf(spanned);
-    }
+        fun showText(parentView: View?, @IdRes viewId: Int, text: String?, linkify: Boolean, showIfEmpty: Boolean) {
+            showText(parentView, viewId, text, TextMediaType.UNKNOWN, linkify, showIfEmpty)
+        }
 
-    public static String getText(View parentView, @IdRes int viewId) {
-        View view = parentView.findViewById(viewId);
-        return view == null || !TextView.class.isAssignableFrom(view.getClass()) ? ""
-                : ((TextView) view).getText().toString();
-    }
+        fun showText(parentView: View?, @IdRes viewId: Int, text: String?, mediaType: TextMediaType?, linkify: Boolean, showIfEmpty: Boolean) {
+            showText(parentView.findViewById(viewId), text, mediaType, linkify, showIfEmpty)
+        }
 
-    /**
-     * Substitute for: textView.setMovementMethod(LinkMovementMethod.getInstance());
-     * setMovementMethod intercepts click on a text part without links,
-     * so we replace it with our own method.
-     * Solution to have clickable both links and other text is found here:
-     * http://stackoverflow.com/questions/7236840/android-textview-linkify-intercepts-with-parent-view-gestures
-     * following an advice from here:
-     * http://stackoverflow.com/questions/7515710/listview-onclick-event-doesnt-fire-with-linkified-email-address?rq=1
-     */
-    public static void setOnTouchListener(TextView textView) {
-        textView.setMovementMethod(null);
-        textView.setOnTouchListener((v, event) -> onTouchEvent(v, event));
-    }
+        fun showText(textView: TextView?, text: String?, mediaType: TextMediaType?, linkify: Boolean, showIfEmpty: Boolean) {
+            showSpannable(textView, toSpannable(text, mediaType, linkify), showIfEmpty)
+        }
 
-    private static boolean onTouchEvent(View view, MotionEvent event) {
-        TextView widget = (TextView) view;
-        Object text = widget.getText();
-        if (text instanceof Spanned) {
-            Spanned buffer = (Spanned) text;
-            int action = event.getAction();
-            if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
-                int x = (int) event.getX();
-                int y = (int) event.getY();
+        fun showSpannable(textView: TextView?, spannable: Spannable, showIfEmpty: Boolean) {
+            if (textView == null) return
+            if (spannable.length == 0) {
+                textView.text = ""
+                ViewUtils.showView(textView, showIfEmpty)
+            } else {
+                textView.text = spannable
+                if (hasSpans(spannable)) {
+                    textView.isFocusable = true
+                    textView.isFocusableInTouchMode = true
+                    textView.linksClickable = true
+                    setOnTouchListener(textView)
+                }
+                ViewUtils.showView(textView, true)
+            }
+        }
 
-                x -= widget.getTotalPaddingLeft();
-                y -= widget.getTotalPaddingTop();
+        fun toSpannable(text: String?, mediaType: TextMediaType?, linkify: Boolean): Spannable? {
+            var text = text
+            if (StringUtil.isEmpty(text)) return EMPTY_SPANNABLE
 
-                x += widget.getScrollX();
-                y += widget.getScrollY();
+            // Android 6 bug, see https://github.com/andstatus/andstatus/issues/334
+            // Setting setMovementMethod to not null causes a crash if text is SOFT_HYPHEN only:
+            if (text.contains(SOFT_HYPHEN)) {
+                text = text.replace(SOFT_HYPHEN, "-")
+            }
+            val spannable = if (mediaType == TextMediaType.HTML ||
+                    mediaType == TextMediaType.UNKNOWN && MyHtml.hasHtmlMarkup(text)) htmlToSpannable(text) else SpannableString(text)
+            if (linkify && !hasUrlSpans(spannable)) {
+                Linkify.addLinks(spannable, Linkify.WEB_URLS)
+            }
+            fixUrlSpans(spannable)
+            return spannable
+        }
 
-                Layout layout = widget.getLayout();
-                int line = layout.getLineForVertical(y);
-                int off = layout.getOffsetForHorizontal(line, x);
+        private fun htmlToSpannable(text: String?): Spannable? {
+            val spanned = Html.fromHtml(text, Html.FROM_HTML_MODE_COMPACT)
+            return if (Spannable::class.java.isAssignableFrom(spanned.javaClass)) spanned as Spannable else SpannableString.valueOf(spanned)
+        }
 
-                ClickableSpan[] link = buffer.getSpans(off, off,
-                        ClickableSpan.class);
+        fun getText(parentView: View?, @IdRes viewId: Int): String? {
+            val view = parentView.findViewById<View?>(viewId)
+            return if (view == null || !TextView::class.java.isAssignableFrom(view.javaClass)) "" else (view as TextView).text.toString()
+        }
 
-                if (link.length > 0) {
-                    if (action == MotionEvent.ACTION_UP) {
-                        link[0].onClick(widget);
-                    } else if (buffer instanceof Spannable) {
-                            Selection.setSelection( (Spannable) buffer,
+        /**
+         * Substitute for: textView.setMovementMethod(LinkMovementMethod.getInstance());
+         * setMovementMethod intercepts click on a text part without links,
+         * so we replace it with our own method.
+         * Solution to have clickable both links and other text is found here:
+         * http://stackoverflow.com/questions/7236840/android-textview-linkify-intercepts-with-parent-view-gestures
+         * following an advice from here:
+         * http://stackoverflow.com/questions/7515710/listview-onclick-event-doesnt-fire-with-linkified-email-address?rq=1
+         */
+        fun setOnTouchListener(textView: TextView?) {
+            textView.setMovementMethod(null)
+            textView.setOnTouchListener(OnTouchListener { v: View?, event: MotionEvent? -> onTouchEvent(v, event) })
+        }
+
+        private fun onTouchEvent(view: View?, event: MotionEvent?): Boolean {
+            val widget = view as TextView?
+            val text: Any? = widget.getText()
+            if (text is Spanned) {
+                val buffer = text as Spanned?
+                val action = event.getAction()
+                if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
+                    var x = event.getX() as Int
+                    var y = event.getY() as Int
+                    x -= widget.getTotalPaddingLeft()
+                    y -= widget.getTotalPaddingTop()
+                    x += widget.getScrollX()
+                    y += widget.getScrollY()
+                    val layout = widget.getLayout()
+                    val line = layout.getLineForVertical(y)
+                    val off = layout.getOffsetForHorizontal(line, x.toFloat())
+                    val link = buffer.getSpans(off, off,
+                            ClickableSpan::class.java)
+                    if (link.size > 0) {
+                        if (action == MotionEvent.ACTION_UP) {
+                            link[0].onClick(widget)
+                        } else if (buffer is Spannable) {
+                            Selection.setSelection(buffer as Spannable?,
                                     buffer.getSpanStart(link[0]),
-                                    buffer.getSpanEnd(link[0]));
+                                    buffer.getSpanEnd(link[0]))
+                        }
+                        return true
                     }
-                    return true;
+                }
+            }
+            return false
+        }
+
+        private fun hasSpans(spanned: Spanned?): Boolean {
+            if (spanned == null) return false
+            val spans = spanned.getSpans(0, spanned.length, Any::class.java)
+            return spans != null && spans.size > 0
+        }
+
+        private fun hasUrlSpans(spanned: Spanned?): Boolean {
+            if (spanned == null) return false
+            val spans = spanned.getSpans(0, spanned.length, URLSpan::class.java)
+            return spans != null && spans.size > 0
+        }
+
+        private fun fixUrlSpans(spannable: Spannable?) {
+            val spans = spannable.getSpans(0, spannable.length, URLSpan::class.java)
+            for (span in spans) {
+                if (!MyUrlSpan::class.java.isAssignableFrom(span.javaClass)) {
+                    val start = spannable.getSpanStart(span)
+                    val end = spannable.getSpanEnd(span)
+                    spannable.removeSpan(span)
+                    spannable.setSpan(MyUrlSpan(span.url), start, end, 0)
                 }
             }
         }
-        return false;
-    }
 
-
-    private static boolean hasSpans (Spanned spanned) {
-        if (spanned == null) return  false;
-
-        Object[] spans = spanned.getSpans(0, spanned.length(), Object.class);
-        return spans != null && spans.length > 0;
-    }
-
-    private static boolean hasUrlSpans (Spanned spanned) {
-        if (spanned == null) return  false;
-
-        URLSpan[] spans = spanned.getSpans(0, spanned.length(), URLSpan.class);
-        return spans != null && spans.length > 0;
-    }
-
-    private static void fixUrlSpans(Spannable spannable) {
-        URLSpan[] spans = spannable.getSpans(0, spannable.length(), URLSpan.class);
-        for (URLSpan span : spans) {
-            if (!MyUrlSpan.class.isAssignableFrom(span.getClass())) {
-                int start = spannable.getSpanStart(span);
-                int end = spannable.getSpanEnd(span);
-                spannable.removeSpan(span);
-                spannable.setSpan(new MyUrlSpan(span.getURL()), start, end, 0);
+        fun getUrlSpans(view: View?): Array<URLSpan?>? {
+            if (view != null && TextView::class.java.isAssignableFrom(view.javaClass)) {
+                val text = (view as TextView?).getText()
+                if (Spanned::class.java.isAssignableFrom(text.javaClass)) {
+                    return (text as Spanned).getSpans(0, text.length, URLSpan::class.java)
+                }
             }
+            return arrayOf()
         }
-    }
-
-    @Override
-    public String toString() {
-        return data.toString();
-    }
-
-    public static URLSpan[] getUrlSpans(View view) {
-        if (view != null && TextView.class.isAssignableFrom(view.getClass())) {
-            CharSequence text = ((TextView) view).getText();
-            if (Spanned.class.isAssignableFrom(text.getClass())) {
-                return ((Spanned) text).getSpans(0, text.length(), URLSpan.class);
-            }
-        }
-        return new URLSpan[] {};
     }
 }

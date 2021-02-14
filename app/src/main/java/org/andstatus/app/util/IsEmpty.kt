@@ -13,13 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-public interface IsEmpty {
-    boolean isEmpty();
-
-    default boolean nonEmpty() {
-        return !isEmpty();
+interface IsEmpty {
+    open fun isEmpty(): Boolean
+    fun nonEmpty(): Boolean {
+        return !isEmpty()
     }
 }

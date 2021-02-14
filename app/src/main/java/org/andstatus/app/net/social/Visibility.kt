@@ -13,119 +13,107 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social
 
-package org.andstatus.app.net.social;
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.NoteTable
 
-import android.database.Cursor;
+android.database.Cursor
+import org.andstatus.app.context.NoScreenSupport
+import androidx.test.rule.ActivityTestRule
+import org.andstatus.app.context.CompletableFutureTest.TestData
+import org.andstatus.app.service.MyServiceTest
+import org.andstatus.app.service.AvatarDownloaderTest
+import org.andstatus.app.service.RepeatingFailingCommandTest
+import org.hamcrest.core.Is
+import org.hamcrest.core.IsNot
+import org.andstatus.app.timeline.meta.TimelineSyncTrackerTest
+import org.andstatus.app.timeline.TimelinePositionTest
+import org.andstatus.app.util.EspressoUtils
+import org.andstatus.app.timeline.TimeLineActivityLayoutToggleTest
+import org.andstatus.app.appwidget.MyAppWidgetProviderTest.DateTest
+import org.andstatus.app.appwidget.MyAppWidgetProviderTest
+import org.andstatus.app.notification.NotifierTest
+import org.andstatus.app.ActivityTestHelper.MenuItemClicker
+import org.andstatus.app.MenuItemMock
 
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.NoteTable;
+/** @author yvolk@yurivolkov.com
+ */
+enum class Visibility(val id: Long) {
+    UNKNOWN(3), PUBLIC_AND_TO_FOLLOWERS(4), PUBLIC(5), NOT_PUBLIC_NEEDS_CLARIFICATION(6), TO_FOLLOWERS(8), PRIVATE(10);
 
-/** @author yvolk@yurivolkov.com */
-public enum Visibility {
-    UNKNOWN(3),
-    PUBLIC_AND_TO_FOLLOWERS(4),
-    PUBLIC(5),
-    NOT_PUBLIC_NEEDS_CLARIFICATION(6),
-    TO_FOLLOWERS(8),
-    PRIVATE(10),
-    ;
-
-    public final long id;
-
-    Visibility(long id) {
-        this.id = id;
+    fun isKnown(): Boolean {
+        return this != UNKNOWN
     }
 
-    public static Visibility fromId(long id) {
-        // Special handling of values, created before v.55
-        if (id == 2) return PUBLIC;
-        if (id == 1) return NOT_PUBLIC_NEEDS_CLARIFICATION;
+    fun isPublicCheckbox(): Boolean {
+        return this == UNKNOWN || isPublic()
+    }
 
-        for (Visibility value : Visibility.values()) {
-            if (value.id == id) {
-                return value;
+    fun isPublic(): Boolean {
+        return when (this) {
+            PUBLIC_AND_TO_FOLLOWERS, PUBLIC -> true
+            else -> false
+        }
+    }
+
+    fun isFollowers(): Boolean {
+        return when (this) {
+            PUBLIC_AND_TO_FOLLOWERS, TO_FOLLOWERS -> true
+            else -> false
+        }
+    }
+
+    fun getKnown(): Visibility? {
+        val v1 = if (isPublic()) PUBLIC else PRIVATE
+        return if (isFollowers()) v1.add(TO_FOLLOWERS) else v1
+    }
+
+    fun add(other: Visibility?): Visibility? {
+        if (this == other) return this
+        if (this == UNKNOWN) return other
+        if (other == UNKNOWN) return this
+        if (this == NOT_PUBLIC_NEEDS_CLARIFICATION) return other
+        return if (other == NOT_PUBLIC_NEEDS_CLARIFICATION) this else when (other) {
+            PUBLIC -> if (id <= id) PUBLIC_AND_TO_FOLLOWERS else PUBLIC
+            TO_FOLLOWERS -> if (id <= id) PUBLIC_AND_TO_FOLLOWERS else TO_FOLLOWERS
+            UNKNOWN -> this
+            else -> if (id < other.id) this else other
+        }
+    }
+
+    fun isPrivate(): Boolean {
+        return this == PRIVATE
+    }
+
+    companion object {
+        fun fromId(id: Long): Visibility? {
+            // Special handling of values, created before v.55
+            if (id == 2L) return PUBLIC
+            if (id == 1L) return NOT_PUBLIC_NEEDS_CLARIFICATION
+            for (value in values()) {
+                if (value.id == id) {
+                    return value
+                }
+            }
+            return UNKNOWN
+        }
+
+        fun fromNoteId(noteId: Long): Visibility? {
+            return fromId(MyQuery.noteIdToLongColumnValue(NoteTable.VISIBILITY, noteId))
+        }
+
+        fun fromCursor(cursor: Cursor?): Visibility? {
+            return fromId(DbUtils.getLong(cursor, NoteTable.VISIBILITY))
+        }
+
+        fun fromCheckboxes(isPublic: Boolean, isFollowers: Boolean): Visibility? {
+            return if (isPublic) {
+                if (isFollowers) PUBLIC_AND_TO_FOLLOWERS else PUBLIC
+            } else {
+                if (isFollowers) TO_FOLLOWERS else PRIVATE
             }
         }
-        return UNKNOWN;
-    }
-
-    public static Visibility fromNoteId(long noteId) {
-        return fromId(MyQuery.noteIdToLongColumnValue(NoteTable.VISIBILITY, noteId));
-    }
-
-    public static Visibility fromCursor(Cursor cursor) {
-        return fromId(DbUtils.getLong(cursor, NoteTable.VISIBILITY));
-    }
-
-    public static Visibility fromCheckboxes(boolean isPublic, boolean isFollowers) {
-        if (isPublic) {
-            return isFollowers ? PUBLIC_AND_TO_FOLLOWERS : PUBLIC;
-        } else {
-            return isFollowers ? TO_FOLLOWERS : PRIVATE;
-        }
-    }
-
-    public boolean isKnown() {
-        return this != UNKNOWN;
-    }
-
-    public boolean isPublicCheckbox() {
-        return this == UNKNOWN || isPublic();
-    }
-
-    public boolean isPublic() {
-        switch (this) {
-            case PUBLIC_AND_TO_FOLLOWERS:
-            case PUBLIC:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    public boolean isFollowers() {
-        switch (this) {
-            case PUBLIC_AND_TO_FOLLOWERS:
-            case TO_FOLLOWERS:
-                return true;
-            default:
-                return false;
-        }
-    }
-
-    public Visibility getKnown() {
-        Visibility v1 = isPublic()
-                ? Visibility.PUBLIC
-                : Visibility.PRIVATE;
-        return isFollowers()
-                ? v1.add(Visibility.TO_FOLLOWERS)
-                : v1;
-    }
-
-    public Visibility add(Visibility other) {
-        if (this == other) return this;
-
-        if (this == UNKNOWN) return other;
-        if (other == UNKNOWN) return this;
-
-        if (this == NOT_PUBLIC_NEEDS_CLARIFICATION) return other;
-        if (other == NOT_PUBLIC_NEEDS_CLARIFICATION) return this;
-
-        switch (other) {
-            case PUBLIC:
-                return this.id <= TO_FOLLOWERS.id ? PUBLIC_AND_TO_FOLLOWERS : PUBLIC;
-            case TO_FOLLOWERS:
-                return this.id <= PUBLIC.id ? PUBLIC_AND_TO_FOLLOWERS : TO_FOLLOWERS;
-            case UNKNOWN:
-                return this;
-            default:
-                return this.id < other.id ? this : other;
-        }
-    }
-
-    public boolean isPrivate() {
-        return this == PRIVATE;
     }
 }

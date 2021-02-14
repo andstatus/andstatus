@@ -13,57 +13,51 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
-
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyAction;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.MyAction
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.util.InstanceId
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public final class MyServiceEventsReceiver extends BroadcastReceiver {
-    private final long mInstanceId = InstanceId.next();
-    private final MyServiceEventsListener listener;
-    private final MyContext myContext;
-
-    public MyServiceEventsReceiver(MyContext myContext, MyServiceEventsListener listener) {
-        super();
-        this.myContext = myContext;
-        this.listener = listener;
-        MyLog.v(this, () -> "Created, instanceId=" + mInstanceId
-                + (listener == null ? "" : "; listener=" + MyStringBuilder.objToTag(listener)));
-    }
-    
-    public void registerReceiver(Context context) {
-        context.registerReceiver(this, new IntentFilter(MyAction.SERVICE_STATE.getAction()));
+class MyServiceEventsReceiver(private val myContext: MyContext?, private val listener: MyServiceEventsListener?) : BroadcastReceiver() {
+    private val mInstanceId = InstanceId.next()
+    fun registerReceiver(context: Context?) {
+        context.registerReceiver(this, IntentFilter(MyAction.SERVICE_STATE.action))
     }
 
-    public void unregisterReceiver(Context context) {
+    fun unregisterReceiver(context: Context?) {
         try {
-            context.unregisterReceiver(this);
-        } catch (IllegalArgumentException e) {
+            context.unregisterReceiver(this)
+        } catch (e: IllegalArgumentException) {
             // Thrown when the "Receiver not registered: org.andstatus.app.service.MyServiceReceiver@..."
-            MyLog.ignored(this, e);
+            MyLog.ignored(this, e)
         }
     }
-    
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        MyServiceEvent event = MyServiceEvent.load(intent.getStringExtra(IntentExtra.SERVICE_EVENT.key));
-        if (event == MyServiceEvent.UNKNOWN) return;
 
-        MyLog.v(this, () -> "onReceive " + event + " for " + MyStringBuilder.objToTag(listener)
-                + ", instanceId:" + mInstanceId);
-        listener.onReceive(CommandData.fromIntent(myContext, intent), event);
+    override fun onReceive(context: Context?, intent: Intent?) {
+        val event: MyServiceEvent = MyServiceEvent.Companion.load(intent.getStringExtra(IntentExtra.SERVICE_EVENT.key))
+        if (event == MyServiceEvent.UNKNOWN) return
+        MyLog.v(this) {
+            ("onReceive " + event + " for " + MyStringBuilder.Companion.objToTag(listener)
+                    + ", instanceId:" + mInstanceId)
+        }
+        listener.onReceive(CommandData.Companion.fromIntent(myContext, intent), event)
+    }
+
+    init {
+        MyLog.v(this) {
+            ("Created, instanceId=" + mInstanceId
+                    + if (listener == null) "" else "; listener=" + MyStringBuilder.Companion.objToTag(listener))
+        }
     }
 }

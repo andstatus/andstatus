@@ -13,101 +13,86 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.view
 
-package org.andstatus.app.view;
-
-import androidx.annotation.NonNull;
-import android.view.ContextMenu;
-import android.view.Menu;
-import android.view.View;
-
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.timeline.EmptyViewItem;
-import org.andstatus.app.timeline.LoadableListActivity;
-import org.andstatus.app.timeline.ViewItem;
-import org.andstatus.app.util.MyLog;
-
-import java.util.Objects;
+import android.view.ContextMenu
+import android.view.ContextMenu.ContextMenuInfo
+import android.view.Menu
+import android.view.View
+import android.view.View.OnCreateContextMenuListener
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.timeline.EmptyViewItem
+import org.andstatus.app.timeline.LoadableListActivity
+import org.andstatus.app.timeline.ViewItem
+import org.andstatus.app.util.MyLog
+import java.util.*
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MyContextMenu implements View.OnCreateContextMenuListener {
-    public static final int MENU_GROUP_ACTOR = Menu.FIRST;
-    public static final int MENU_GROUP_NOTE = Menu.FIRST + 1;
-    public static final int MENU_GROUP_OBJACTOR = Menu.FIRST + 2;
-    public static final int MENU_GROUP_ACTOR_PROFILE = Menu.FIRST + 3;
+open class MyContextMenu(protected val listActivity: LoadableListActivity<*>, val menuGroup: Int) : OnCreateContextMenuListener {
+    private var viewOfTheContext: View? = null
+    protected var mViewItem: ViewItem<*>? = EmptyViewItem.EMPTY
 
-    @NonNull
-    protected final LoadableListActivity listActivity;
-    public final int menuGroup;
-    private View viewOfTheContext = null;
-    protected ViewItem mViewItem = EmptyViewItem.EMPTY;
     /**
-     *  Corresponding account information ( "Reply As..." ... )
-     *  oh whose behalf we are going to execute an action on this line in the list (on a note / other actor...)
+     * Corresponding account information ( "Reply As..." ... )
+     * oh whose behalf we are going to execute an action on this line in the list (on a note / other actor...)
      */
-    @NonNull
-    private volatile MyAccount selectedActingAccount = MyAccount.EMPTY;
-
-    public MyContextMenu(@NonNull LoadableListActivity listActivity, int menuGroup) {
-        this.listActivity = listActivity;
-        this.menuGroup = menuGroup;
+    @Volatile
+    private var selectedActingAccount: MyAccount = MyAccount.Companion.EMPTY
+    override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?) {
+        saveContextOfSelectedItem(v)
     }
 
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        saveContextOfSelectedItem(v);
-    }
-
-    private void saveContextOfSelectedItem(View v) {
-        viewOfTheContext = v;
-        ViewItem viewItem = menuGroup == MENU_GROUP_ACTOR_PROFILE
-                ? listActivity.getListData().getActorViewItem()
-                : listActivity.saveContextOfSelectedItem(v);
-        if (viewItem.isEmpty() || mViewItem.isEmpty() || mViewItem.getId() != viewItem.getId()) {
-            selectedActingAccount = MyAccount.EMPTY;
+    private fun saveContextOfSelectedItem(v: View?) {
+        viewOfTheContext = v
+        val viewItem = if (menuGroup == MENU_GROUP_ACTOR_PROFILE) listActivity.listData.actorViewItem else listActivity.saveContextOfSelectedItem(v)
+        if (viewItem.isEmpty || mViewItem.isEmpty() || mViewItem.getId() != viewItem.id) {
+            selectedActingAccount = MyAccount.Companion.EMPTY
         }
-        mViewItem = viewItem;
+        mViewItem = viewItem
     }
 
-    public LoadableListActivity getActivity() {
-        return listActivity;
+    fun getActivity(): LoadableListActivity<*>? {
+        return listActivity
     }
 
-    public void showContextMenu() {
-        if (viewOfTheContext != null && viewOfTheContext.getParent() != null && listActivity.isMyResumed()) {
-            viewOfTheContext.post(new Runnable() {
-
-                @Override
-                public void run() {
+    fun showContextMenu() {
+        if (viewOfTheContext != null && viewOfTheContext.getParent() != null && listActivity.isMyResumed) {
+            viewOfTheContext.post(object : Runnable {
+                override fun run() {
                     try {
-                        listActivity.openContextMenu(viewOfTheContext);
-                    } catch (NullPointerException e) {
-                        MyLog.d(this, "on showContextMenu", e);
+                        listActivity.openContextMenu(viewOfTheContext)
+                    } catch (e: NullPointerException) {
+                        MyLog.d(this, "on showContextMenu", e)
                     }
                 }
-            });
+            })
         }
     }
 
-    @NonNull
-    public MyAccount getActingAccount() {
-        return getSelectedActingAccount();
+    open fun getActingAccount(): MyAccount {
+        return getSelectedActingAccount()
     }
 
-    @NonNull
-    final public MyAccount getSelectedActingAccount() {
-        return selectedActingAccount;
+    fun getSelectedActingAccount(): MyAccount {
+        return selectedActingAccount
     }
 
-    public void setSelectedActingAccount(@NonNull MyAccount myAccount) {
-        Objects.requireNonNull(myAccount);
-        this.selectedActingAccount = myAccount;
+    open fun setSelectedActingAccount(myAccount: MyAccount) {
+        Objects.requireNonNull(myAccount)
+        selectedActingAccount = myAccount
     }
 
-    public MyContext getMyContext() {
-        return getActivity().getMyContext();
+    fun getMyContext(): MyContext? {
+        return getActivity().getMyContext()
+    }
+
+    companion object {
+        const val MENU_GROUP_ACTOR = Menu.FIRST
+        const val MENU_GROUP_NOTE = Menu.FIRST + 1
+        const val MENU_GROUP_OBJACTOR = Menu.FIRST + 2
+        const val MENU_GROUP_ACTOR_PROFILE = Menu.FIRST + 3
     }
 }

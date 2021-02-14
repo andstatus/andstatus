@@ -13,142 +13,118 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.account
 
-package org.andstatus.app.account;
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import io.vavr.control.Try
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.origin.OriginType
+import org.andstatus.app.os.UiThreadExecutor
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.TryUtils
+import org.andstatus.app.util.UrlUtils
+import java.util.concurrent.CompletableFuture
+import java.util.function.Consumer
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
-
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.os.UiThreadExecutor;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.TryUtils;
-import org.andstatus.app.util.UrlUtils;
-
-import java.net.URL;
-import java.util.concurrent.CompletableFuture;
-
-import io.vavr.control.Try;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class InstanceForNewAccountFragment extends Fragment {
-    private OriginType originType = OriginType.UNKNOWN;
-    private Origin origin = Origin.EMPTY;
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+class InstanceForNewAccountFragment : Fragment() {
+    private var originType: OriginType? = OriginType.UNKNOWN
+    private var origin: Origin? = Origin.Companion.EMPTY
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
     }
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.instance_for_new_account, container, false);
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.instance_for_new_account, container, false)
     }
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        final AccountSettingsActivity activity = (AccountSettingsActivity) getActivity();
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        val activity = activity as AccountSettingsActivity?
         if (activity != null) {
-            origin = activity.getState().getAccount().getOrigin();
-            originType = origin.nonEmpty()
-                    ? origin.getOriginType()
-                    : OriginType.fromCode(getArguments().getString(IntentExtra.ORIGIN_TYPE.key));
-            prepareScreen(activity);
-            activity.updateScreen();
+            origin = activity.state.account.origin
+            originType = if (origin.nonEmpty()) origin.getOriginType() else OriginType.Companion.fromCode(arguments.getString(IntentExtra.ORIGIN_TYPE.key))
+            prepareScreen(activity)
+            activity.updateScreen()
             if (origin.isPersistent()) {
-                MyLog.i(this, "Launching verifyCredentials");
-                activity.verifyCredentials(true);
+                MyLog.i(this, "Launching verifyCredentials")
+                activity.verifyCredentials(true)
             }
         }
-        super.onActivityCreated(savedInstanceState);
+        super.onActivityCreated(savedInstanceState)
     }
 
-    private void prepareScreen(AccountSettingsActivity activity) {
-        TextView instanceTextView = (TextView) activity.findFragmentViewById(R.id.originInstance);
+    private fun prepareScreen(activity: AccountSettingsActivity?) {
+        val instanceTextView = activity.findFragmentViewById(R.id.originInstance) as TextView
         if (instanceTextView != null) {
-            String hint = getText(R.string.hint_which_instance).toString() +  "\n\n"
-                + getText(originType == OriginType.MASTODON
-                    ? R.string.host_hint_mastodon
-                    : R.string.host_hint);
-            instanceTextView.setHint(hint);
+            val hint = """
+                ${getText(R.string.hint_which_instance)}
+                
+                ${getText(if (originType === OriginType.MASTODON) R.string.host_hint_mastodon else R.string.host_hint)}
+                """.trimIndent()
+            instanceTextView.hint = hint
             if (origin.nonEmpty()) {
-                instanceTextView.setText(origin.getHost());
+                instanceTextView.text = origin.getHost()
             }
         }
-
-        String buttonText = String.format(getText(R.string.log_in_to_social_network).toString(),
-            originType.title(activity));
-        TextView buttonTextView = activity.showTextView(R.id.log_in_to_social_network, buttonText, true);
-        if (buttonTextView != null) {
-            buttonTextView.setOnClickListener(this::onLogInClick);
-        }
+        val buttonText = String.format(getText(R.string.log_in_to_social_network).toString(),
+                originType.title(activity))
+        val buttonTextView = activity.showTextView(R.id.log_in_to_social_network, buttonText, true)
+        buttonTextView?.setOnClickListener { view: View? -> onLogInClick(view) }
     }
 
-    private void onLogInClick(View view) {
-        final AccountSettingsActivity activity = (AccountSettingsActivity) getActivity();
-        if (activity == null) return;;
-
-        activity.clearError();
+    private fun onLogInClick(view: View?) {
+        val activity = activity as AccountSettingsActivity? ?: return
+        activity.clearError()
         getNewOrExistingOrigin(activity)
-        .onFailure(e -> {
-            activity.appendError(e.getMessage());
-            activity.showErrors();
-        })
-        .onSuccess(originNew -> onNewOrigin(activity, originNew));
+                .onFailure(Consumer { e: Throwable? ->
+                    activity.appendError(e.message)
+                    activity.showErrors()
+                })
+                .onSuccess { originNew: Origin? -> onNewOrigin(activity, originNew) }
     }
 
-    private Try<Origin> getNewOrExistingOrigin(AccountSettingsActivity activity) {
-        TextView instanceTextView = (TextView) activity.findFragmentViewById(R.id.originInstance);
-        if (instanceTextView == null) return TryUtils.failure("No text view ???");
-
-        String hostOrUrl = instanceTextView.getText().toString();
-        URL url1 = UrlUtils.buildUrl(hostOrUrl, true);
-        if (url1 == null) {
-            return TryUtils.failure(getText(R.string.error_invalid_value) + ": '" + hostOrUrl + "'");
-        }
-        String host = url1.getHost();
-        for (Origin existing: myContextHolder.getBlocking().origins().originsOfType(originType)) {
-            if (host.equals(existing.getHost())) {
-                return Try.success(existing);
+    private fun getNewOrExistingOrigin(activity: AccountSettingsActivity?): Try<Origin?>? {
+        val instanceTextView = activity.findFragmentViewById(R.id.originInstance) as TextView
+                ?: return TryUtils.failure("No text view ???")
+        val hostOrUrl = instanceTextView.text.toString()
+        val url1 = UrlUtils.buildUrl(hostOrUrl, true)
+                ?: return TryUtils.failure(getText(R.string.error_invalid_value).toString() + ": '" + hostOrUrl + "'")
+        val host = url1.host
+        for (existing in MyContextHolder.Companion.myContextHolder.getBlocking().origins().originsOfType(originType)) {
+            if (host == existing.getHost()) {
+                return Try.success(existing)
             }
         }
-        Origin origin = new Origin.Builder(myContextHolder.getBlocking(), originType)
+        val origin = Origin.Builder(MyContextHolder.Companion.myContextHolder.getBlocking(), originType)
                 .setHostOrUrl(hostOrUrl)
                 .setName(host)
                 .save()
-                .build();
-        return origin.isPersistent()
-                ? Try.success(origin)
-                : TryUtils.failure(getText(R.string.error_invalid_value) + ": " + origin);
+                .build()
+        return if (origin.isPersistent) Try.success(origin) else TryUtils.failure(getText(R.string.error_invalid_value).toString() + ": " + origin)
     }
 
-    private void onNewOrigin(AccountSettingsActivity activity, Origin originNew) {
-        if (originNew.equals(origin) || myContextHolder.getNow().isReady()) {
-            if (!activity.getState().getAccount().getOrigin().equals(originNew)) {
-                activity.getState().builder.setOrigin(originNew);
+    private fun onNewOrigin(activity: AccountSettingsActivity?, originNew: Origin?) {
+        if (originNew == origin || MyContextHolder.Companion.myContextHolder.getNow().isReady()) {
+            if (activity.getState().account.origin != originNew) {
+                activity.getState().builder.origin = originNew
             }
-            activity.verifyCredentials(true);
+            activity.verifyCredentials(true)
         } else {
-            CompletableFuture<MyContext> future1 = myContextHolder.initialize(activity).getFuture().future;
-            MyLog.d(this, "onNewOrigin After 'initialize' " + future1);
-            CompletableFuture<MyContext> future2 = myContextHolder.whenSuccessAsync(myContext -> {
-                    activity.finish();
-                    AccountSettingsActivity.startAddNewAccount(myContext.context(), originNew.getName(), true);
-                }, UiThreadExecutor.INSTANCE).getFuture().future;
-            MyLog.d(this, "onNewOrigin After 'whenSuccessAsync' " + future2);
+            val future1: CompletableFuture<MyContext?> = MyContextHolder.Companion.myContextHolder.initialize(activity).getFuture().future
+            MyLog.d(this, "onNewOrigin After 'initialize' $future1")
+            val future2: CompletableFuture<MyContext?> = MyContextHolder.Companion.myContextHolder.whenSuccessAsync(Consumer { myContext: MyContext? ->
+                activity.finish()
+                AccountSettingsActivity.Companion.startAddNewAccount(myContext.context(), originNew.getName(), true)
+            }, UiThreadExecutor.Companion.INSTANCE).getFuture().future
+            MyLog.d(this, "onNewOrigin After 'whenSuccessAsync' $future2")
         }
     }
-
 }

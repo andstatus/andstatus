@@ -13,111 +13,96 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
-
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyServiceEvent;
-import org.andstatus.app.service.MyServiceEventsBroadcaster;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.service.MyServiceState;
-import org.andstatus.app.util.MyLog;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.DownloadStatus
+import org.andstatus.app.data.MyProvider
+import org.andstatus.app.note.NoteEditorData
+import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.service.CommandData
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.service.MyServiceEvent
+import org.andstatus.app.service.MyServiceEventsBroadcaster
+import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.service.MyServiceState
+import org.andstatus.app.util.MyLog
 
 /**
- * Asynchronously save, delete and send a note, prepared by {@link NoteEditor}
+ * Asynchronously save, delete and send a note, prepared by [NoteEditor]
  */
-public class NoteSaver extends MyAsyncTask<NoteEditorCommand, Void, NoteEditorData> {
-    private final NoteEditor editor;
-    private volatile NoteEditorCommand command = new NoteEditorCommand(NoteEditorData.EMPTY);
-
-    public NoteSaver(NoteEditor editor) {
-        super(PoolEnum.QUICK_UI);
-        this.editor = editor;
-    }
-
-    @Override
-    protected NoteEditorData doInBackground2(NoteEditorCommand commandIn) {
-        command = commandIn;
-        MyLog.v(NoteEditorData.TAG, () -> "Started: " + command);
+class NoteSaver(private val editor: NoteEditor?) : MyAsyncTask<NoteEditorCommand?, Void?, NoteEditorData?>(PoolEnum.QUICK_UI) {
+    @Volatile
+    private var command: NoteEditorCommand? = NoteEditorCommand(NoteEditorData.Companion.EMPTY)
+    override fun doInBackground2(commandIn: NoteEditorCommand?): NoteEditorData? {
+        command = commandIn
+        MyLog.v(NoteEditorData.Companion.TAG) { "Started: $command" }
         if (!command.acquireLock(true)) {
-            return command.currentData;
+            return command.currentData
         }
-        savePreviousData();
-        if (!command.currentData.isValid()) {
-            command.loadCurrent();
+        savePreviousData()
+        if (!command.currentData.isValid) {
+            command.loadCurrent()
         }
-        saveCurrentData();
-        return command.showAfterSave
-                ? NoteEditorData.load(myContextHolder.getNow(), command.currentData.getNoteId())
-                : NoteEditorData.EMPTY;
+        saveCurrentData()
+        return if (command.showAfterSave) NoteEditorData.Companion.load(MyContextHolder.Companion.myContextHolder.getNow(), command.currentData.noteId) else NoteEditorData.Companion.EMPTY
     }
 
-    private void savePreviousData() {
+    private fun savePreviousData() {
         if (command.needToSavePreviousData()) {
-            MyLog.v(NoteEditorData.TAG, () -> "Saving previous data:" + command.previousData);
-            command.previousData.save();
-            broadcastDataChanged(command.previousData);
+            MyLog.v(NoteEditorData.Companion.TAG) { "Saving previous data:" + command.previousData }
+            command.previousData.save()
+            broadcastDataChanged(command.previousData)
         }
     }
 
-    private void saveCurrentData() {
-        MyLog.v(NoteEditorData.TAG, () -> "Saving current data:" + command.currentData);
-        if (command.currentData.activity.getNote().getStatus() == DownloadStatus.DELETED) {
-            MyProvider.deleteNoteAndItsActivities(myContextHolder.getNow(), command.currentData.getNoteId());
+    private fun saveCurrentData() {
+        MyLog.v(NoteEditorData.Companion.TAG) { "Saving current data:" + command.currentData }
+        if (command.currentData.activity.note.status == DownloadStatus.DELETED) {
+            MyProvider.Companion.deleteNoteAndItsActivities(MyContextHolder.Companion.myContextHolder.getNow(), command.currentData.noteId)
         } else {
             if (command.hasMedia()) {
-                command.currentData.addAttachment(command.getMediaUri(), command.getMediaType());
+                command.currentData.addAttachment(command.getMediaUri(), command.getMediaType())
             }
-            command.currentData.save();
+            command.currentData.save()
             if (command.beingEdited) {
-                MyPreferences.setBeingEditedNoteId(command.currentData.getNoteId());
+                MyPreferences.setBeingEditedNoteId(command.currentData.noteId)
             }
-            if (command.currentData.activity.getNote().getStatus() == DownloadStatus.SENDING) {
-                CommandData commandData = CommandData.newUpdateStatus(
-                        command.currentData.getMyAccount(),
-                        command.currentData.activity.getId(), command.currentData.getNoteId());
-                MyServiceManager.sendManualForegroundCommand(commandData);
+            if (command.currentData.activity.note.status == DownloadStatus.SENDING) {
+                val commandData: CommandData = CommandData.Companion.newUpdateStatus(
+                        command.currentData.myAccount,
+                        command.currentData.activity.id, command.currentData.noteId)
+                MyServiceManager.Companion.sendManualForegroundCommand(commandData)
             }
         }
-        broadcastDataChanged(command.currentData);
+        broadcastDataChanged(command.currentData)
     }
 
-    private void broadcastDataChanged(NoteEditorData data) {
+    private fun broadcastDataChanged(data: NoteEditorData?) {
         if (data.isEmpty()) {
-            return;
+            return
         }
-        CommandData commandData = data.activity.getNote().getStatus() == DownloadStatus.DELETED ?
-                CommandData.newItemCommand(CommandEnum.DELETE_NOTE, data.getMyAccount(), data.getNoteId()) :
-                CommandData.newUpdateStatus(data.getMyAccount(), data.activity.getId(), data.getNoteId());
-        MyServiceEventsBroadcaster.newInstance(myContextHolder.getNow(), MyServiceState.UNKNOWN)
-                .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast();
+        val commandData: CommandData = if (data.activity.note.status == DownloadStatus.DELETED) CommandData.Companion.newItemCommand(CommandEnum.DELETE_NOTE, data.getMyAccount(), data.getNoteId()) else CommandData.Companion.newUpdateStatus(data.getMyAccount(), data.activity.id, data.getNoteId())
+        MyServiceEventsBroadcaster.Companion.newInstance(MyContextHolder.Companion.myContextHolder.getNow(), MyServiceState.UNKNOWN)
+                .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
     }
 
-    @Override
-    protected void onCancelled() {
-        command.releaseLock();
+    override fun onCancelled() {
+        command.releaseLock()
     }
 
-    @Override
-    protected void onPostExecute2(NoteEditorData data) {
+    override fun onPostExecute2(data: NoteEditorData?) {
         if (data.isValid()) {
             if (command.hasLock()) {
-                MyLog.v(NoteEditorData.TAG, () -> "Saved; Future data: " + data);
-                editor.showData(data);
+                MyLog.v(NoteEditorData.Companion.TAG) { "Saved; Future data: $data" }
+                editor.showData(data)
             } else {
-                MyLog.v(NoteEditorData.TAG, () -> "Saved; Result skipped: no lock");
+                MyLog.v(NoteEditorData.Companion.TAG) { "Saved; Result skipped: no lock" }
             }
         } else {
-            MyLog.v(NoteEditorData.TAG, "Saved; No future data");
+            MyLog.v(NoteEditorData.Companion.TAG, "Saved; No future data")
         }
-        command.releaseLock();
+        command.releaseLock()
     }
-
 }

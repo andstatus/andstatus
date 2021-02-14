@@ -13,80 +13,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.timeline.ViewItem;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.timeline.ViewItem
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class QueueData extends ViewItem<QueueData> implements Comparable<QueueData> {
-    public final static QueueData EMPTY = new QueueData(QueueType.UNKNOWN, CommandData.EMPTY);
-
-    @NonNull
-    final QueueType queueType;
-    @NonNull
-    final CommandData commandData;
-
-    static QueueData getNew(@NonNull QueueType queueType, @NonNull CommandData commandData) {
-        return new QueueData(queueType, commandData);
+class QueueData protected constructor(val queueType: QueueType, val commandData: CommandData) : ViewItem<QueueData?>(false, commandData.createdDate), Comparable<QueueData?> {
+    override fun getId(): Long {
+        return commandData.hashCode()
     }
 
-    protected QueueData(@NonNull QueueType queueType, @NonNull CommandData commandData) {
-        super(false, commandData.getCreatedDate());
-        this.queueType = queueType;
-        this.commandData = commandData;
+    override fun getDate(): Long {
+        return commandData.createdDate
     }
 
-    @Override
-    public long getId() {
-        return commandData.hashCode();
+    fun toSharedSubject(): String? {
+        return (queueType.acronym + "; "
+                + commandData.toCommandSummary(MyContextHolder.Companion.myContextHolder.getNow()))
     }
 
-    @Override
-    public long getDate() {
-        return commandData.getCreatedDate();
+    fun toSharedText(): String? {
+        return (queueType.acronym + "; "
+                + commandData.share(MyContextHolder.Companion.myContextHolder.getNow()))
     }
 
-    public String toSharedSubject() {
-        return queueType.getAcronym() + "; "
-                + commandData.toCommandSummary(myContextHolder.getNow());
+    override operator fun compareTo(another: QueueData): Int {
+        return -longCompare(date, another.date)
     }
 
-    public String toSharedText() {
-        return queueType.getAcronym() + "; "
-                + commandData.share(myContextHolder.getNow());
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o == null || javaClass != o.javaClass) return false
+        val queueData = o as QueueData?
+        return if (queueType != queueData.queueType) false else commandData.createdDate == queueData.commandData.createdDate
     }
 
-    @Override
-    public int compareTo(@NonNull QueueData another) {
-        return -longCompare(getDate(), another.getDate());
+    override fun hashCode(): Int {
+        var result = queueType.hashCode()
+        result = 31 * result + (commandData.createdDate xor (commandData.createdDate ushr 32)) as Int
+        return result
     }
 
-    // TODO: Replace with Long.compare for API >= 19
-    private static int longCompare(long lhs, long rhs) {
-        return lhs < rhs ? -1 : (lhs == rhs ? 0 : 1);
-    }
+    companion object {
+        val EMPTY: QueueData? = QueueData(QueueType.UNKNOWN, CommandData.Companion.EMPTY)
+        fun getNew(queueType: QueueType, commandData: CommandData): QueueData? {
+            return QueueData(queueType, commandData)
+        }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        QueueData queueData = (QueueData) o;
-        if (queueType != queueData.queueType) return false;
-        return commandData.getCreatedDate() == queueData.commandData.getCreatedDate();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = queueType.hashCode();
-        result = 31 * result + (int) (commandData.getCreatedDate() ^ (commandData.getCreatedDate() >>> 32));
-        return result;
+        // TODO: Replace with Long.compare for API >= 19
+        private fun longCompare(lhs: Long, rhs: Long): Int {
+            return if (lhs < rhs) -1 else if (lhs == rhs) 0 else 1
+        }
     }
 }

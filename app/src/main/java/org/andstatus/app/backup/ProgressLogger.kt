@@ -13,115 +13,123 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.backup
 
-package org.andstatus.app.backup;
+import org.andstatus.app.backup.ProgressLogger
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.StringUtil
+import java.util.*
+import java.util.concurrent.atomic.AtomicLong
+import java.util.function.Consumer
+import java.util.function.Function
+import java.util.function.Supplier
 
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtil;
+class ProgressLogger {
+    @Volatile
+    private var lastLoggedAt = 0L
 
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Supplier;
+    @Volatile
+    private var makeServiceUnavalable = false
+    val progressListener: Optional<ProgressListener?>?
+    val logTag: String?
 
-public class ProgressLogger {
-    public static final int PROGRESS_REPORT_PERIOD_SECONDS = 20;
-    private static final String TAG = ProgressLogger.class.getSimpleName();
-    private volatile long lastLoggedAt = 0L;
-    private volatile boolean makeServiceUnavalable = false;
-    public final Optional<ProgressListener> progressListener;
-    public final String logTag;
+    fun interface ProgressListener {
+        open fun onProgressMessage(message: CharSequence?)
+        fun onComplete(success: Boolean) {}
+        fun onActivityFinish() {}
+        fun setCancelable(isCancelable: Boolean) {}
+        fun cancel() {}
+        fun isCancelled(): Boolean {
+            return false
+        }
 
-    public static final AtomicLong startedAt = new AtomicLong(0);
-
-    public static long newStartingTime() {
-        final long iStartedAt = MyLog.uniqueCurrentTimeMS();
-        startedAt.set(iStartedAt);
-        return iStartedAt;
+        fun getLogTag(): String? {
+            return TAG
+        }
     }
 
-    @FunctionalInterface
-    public interface ProgressListener {
-        void onProgressMessage(CharSequence message);
-        default void onComplete(boolean success) {}
-        default void onActivityFinish() {}
-        default void setCancelable(boolean isCancelable) {}
-        default void cancel() {}
-        default boolean isCancelled() { return false; }
-        default String getLogTag() { return TAG; }
-    }
-
-    private static class EmptyListener implements ProgressListener {
-        @Override
-        public void onProgressMessage(CharSequence message) {
+    private class EmptyListener : ProgressListener {
+        override fun onProgressMessage(message: CharSequence?) {
             // Empty
         }
     }
-    public static final ProgressListener EMPTY_LISTENER = new EmptyListener();
 
-    public ProgressLogger(ProgressListener progressListener) {
-        this.progressListener = Optional.ofNullable(progressListener);
-        this.logTag = this.progressListener.map(ProgressListener::getLogTag).orElse(TAG);
+    constructor(progressListener: ProgressListener?) {
+        this.progressListener = Optional.ofNullable(progressListener)
+        logTag = this.progressListener.map(Function { obj: ProgressListener? -> obj.getLogTag() }).orElse(TAG)
     }
 
-    private ProgressLogger(String logTag) {
-        this.progressListener = Optional.empty();
-        this.logTag = StringUtil.notEmpty(logTag, TAG);
+    private constructor(logTag: String?) {
+        progressListener = Optional.empty()
+        this.logTag = StringUtil.notEmpty(logTag, TAG)
     }
 
-    public boolean isCancelled() {
-        return progressListener.map(ProgressListener::isCancelled).orElse(false);
+    fun isCancelled(): Boolean {
+        return progressListener.map(Function { obj: ProgressListener? -> obj.isCancelled() }).orElse(false)
     }
 
-    public void logSuccess() {
-        onComplete(true);
+    fun logSuccess() {
+        onComplete(true)
     }
 
-    public void logFailure() {
-        onComplete(false);
+    fun logFailure() {
+        onComplete(false)
     }
 
-    public void onComplete(boolean success) {
-        logProgressAndPause(success ? "Completed successfully" : "Failed", 1);
-        progressListener.ifPresent(c -> c.onComplete(success));
+    fun onComplete(success: Boolean) {
+        logProgressAndPause(if (success) "Completed successfully" else "Failed", 1)
+        progressListener.ifPresent(Consumer { c: ProgressListener? -> c.onComplete(success) })
     }
 
-    public boolean loggedMoreSecondsAgoThan(long secondsAgo) {
-        return RelativeTime.moreSecondsAgoThan(lastLoggedAt, secondsAgo);
+    fun loggedMoreSecondsAgoThan(secondsAgo: Long): Boolean {
+        return RelativeTime.moreSecondsAgoThan(lastLoggedAt, secondsAgo)
     }
 
-    public ProgressLogger makeServiceUnavalable() {
-        this.makeServiceUnavalable = true;
-        return this;
+    fun makeServiceUnavalable(): ProgressLogger? {
+        makeServiceUnavalable = true
+        return this
     }
 
-    public void logProgressIfLongProcess(Supplier<CharSequence> supplier) {
-        if (loggedMoreSecondsAgoThan(ProgressLogger.PROGRESS_REPORT_PERIOD_SECONDS)) {
-            logProgress(supplier.get());
+    fun logProgressIfLongProcess(supplier: Supplier<CharSequence?>?) {
+        if (loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS.toLong())) {
+            logProgress(supplier.get())
         }
     }
 
-    public void logProgressAndPause(CharSequence message, long pauseIfPositive) {
-        logProgress(message);
+    fun logProgressAndPause(message: CharSequence?, pauseIfPositive: Long) {
+        logProgress(message)
         if (pauseIfPositive > 0 && progressListener.isPresent()) {
-            DbUtils.waitMs(this, 2000);
+            DbUtils.waitMs(this, 2000)
         }
     }
 
-    public void logProgress(CharSequence message) {
-        updateLastLoggedTime();
-        MyLog.i(logTag, message.toString());
-        if (makeServiceUnavalable) MyServiceManager.setServiceUnavailable();
-        progressListener.ifPresent(c -> c.onProgressMessage(message));
+    fun logProgress(message: CharSequence?) {
+        updateLastLoggedTime()
+        MyLog.i(logTag, message.toString())
+        if (makeServiceUnavalable) MyServiceManager.Companion.setServiceUnavailable()
+        progressListener.ifPresent(Consumer { c: ProgressListener? -> c.onProgressMessage(message) })
     }
 
-    public void updateLastLoggedTime() {
-        lastLoggedAt = System.currentTimeMillis();
+    fun updateLastLoggedTime() {
+        lastLoggedAt = System.currentTimeMillis()
     }
 
-    public static ProgressLogger getEmpty(String logTag) {
-        return new ProgressLogger(logTag);
+    companion object {
+        const val PROGRESS_REPORT_PERIOD_SECONDS = 20
+        private val TAG: String? = ProgressLogger::class.java.simpleName
+        val startedAt: AtomicLong? = AtomicLong(0)
+        fun newStartingTime(): Long {
+            val iStartedAt = MyLog.uniqueCurrentTimeMS()
+            startedAt.set(iStartedAt)
+            return iStartedAt
+        }
+
+        val EMPTY_LISTENER: ProgressListener? = EmptyListener()
+        fun getEmpty(logTag: String?): ProgressLogger? {
+            return ProgressLogger(logTag)
+        }
     }
 }

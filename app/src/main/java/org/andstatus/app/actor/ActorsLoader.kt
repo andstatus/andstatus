@@ -1,148 +1,132 @@
-package org.andstatus.app.actor;
+package org.andstatus.app.actor
 
-import android.database.Cursor;
-import android.net.Uri;
-import android.provider.BaseColumns;
+import android.database.Cursor
+import android.net.Uri
+import android.provider.BaseColumns
+import org.andstatus.app.R
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.ActorSql
+import org.andstatus.app.data.MatchedUri
+import org.andstatus.app.data.SqlIds
+import org.andstatus.app.data.SqlWhere
+import org.andstatus.app.database.table.ActorTable
+import org.andstatus.app.list.SyncLoader
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StopWatch
+import org.andstatus.app.util.StringUtil
+import java.util.stream.Collectors
 
-import androidx.annotation.NonNull;
+open class ActorsLoader(val myContext: MyContext?, protected val actorsScreenType: ActorsScreenType?, origin: Origin?, centralActorId: Long,
+                        searchQuery: String?) : SyncLoader<ActorViewItem?>() {
+    private val searchQuery: String? = ""
+    protected val ma: MyAccount?
+    protected val origin: Origin?
+    protected var mAllowLoadingFromInternet = false
+    protected val centralActorId: Long
 
-import org.andstatus.app.R;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.ActorSql;
-import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.SqlIds;
-import org.andstatus.app.data.SqlWhere;
-import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.list.SyncLoader;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.LoadableListActivity;
-import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher;
-import org.andstatus.app.timeline.ViewItem;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StopWatch;
-import org.andstatus.app.util.StringUtil;
-
-import static java.util.stream.Collectors.toList;
-
-public class ActorsLoader extends SyncLoader<ActorViewItem> {
-    final MyContext myContext;
-    protected final ActorsScreenType actorsScreenType;
-    private String searchQuery = "";
-    protected final MyAccount ma;
-    protected final Origin origin;
-    protected boolean mAllowLoadingFromInternet = false;
-    protected final long centralActorId;
-    private volatile Actor centralActor = Actor.EMPTY;
-
-    private LoadableListActivity.ProgressPublisher mProgress;
-
-    public ActorsLoader(MyContext myContext, ActorsScreenType actorsScreenType, Origin origin, long centralActorId,
-                        String searchQuery) {
-        this.myContext = myContext;
-        this.actorsScreenType = actorsScreenType;
-        this.searchQuery = searchQuery;
-        this.ma = myContext.accounts().getFirstPreferablySucceededForOrigin(origin);
-        this.origin = origin;
-        this.centralActorId = centralActorId;
+    @Volatile
+    private var centralActor: Actor? = Actor.Companion.EMPTY
+    private var mProgress: ProgressPublisher? = null
+    override fun allowLoadingFromInternet() {
+        mAllowLoadingFromInternet = ma.isValidAndSucceeded()
     }
 
-    @Override
-    public void allowLoadingFromInternet() {
-        mAllowLoadingFromInternet = ma.isValidAndSucceeded();
-    }
-
-    @Override
-    public final void load(ProgressPublisher publisher) {
-        final String method = "load";
-        final StopWatch stopWatch = StopWatch.createStarted();
+    override fun load(publisher: ProgressPublisher?) {
+        val method = "load"
+        val stopWatch: StopWatch = StopWatch.Companion.createStarted()
         if (MyLog.isDebugEnabled()) {
-            MyLog.d(this, method + " started");
+            MyLog.d(this, "$method started")
         }
-        mProgress = publisher;
-        centralActor = Actor.load(myContext, centralActorId);
-        loadInternal();
+        mProgress = publisher
+        centralActor = Actor.Companion.load(myContext, centralActorId)
+        loadInternal()
         if (MyLog.isDebugEnabled()) {
-            MyLog.d(this, "Loaded " + size() + " items, " + stopWatch.getTime() + "ms");
+            MyLog.d(this, "Loaded " + size() + " items, " + stopWatch.time + "ms")
         }
         if (items.isEmpty()) {
-            items.add(ActorViewItem.newEmpty(myContext.context()
-                        .getText(R.string.nothing_in_the_loadable_list).toString()));
+            items.add(ActorViewItem.Companion.newEmpty(myContext.context()
+                    .getText(R.string.nothing_in_the_loadable_list).toString()))
         }
     }
 
-    public Actor addActorIdToList(Origin origin, long actorId) {
-        return actorId == 0 ? Actor.EMPTY : addActorToList(Actor.fromId(origin, actorId));
+    fun addActorIdToList(origin: Origin?, actorId: Long): Actor? {
+        return if (actorId == 0L) Actor.Companion.EMPTY else addActorToList(Actor.Companion.fromId(origin, actorId))
     }
 
-    public Actor addActorToList(Actor actor) {
-        if (actor.isEmpty()) return Actor.EMPTY;
-        ActorViewItem item = ActorViewItem.fromActor(actor);
-        int existing = items.indexOf(item);
-        if (existing >= 0) return items.get(existing).actor;
-        items.add(item);
-        if (actor.actorId == 0 && mAllowLoadingFromInternet) actor.requestDownload(false);
+    fun addActorToList(actor: Actor?): Actor? {
+        if (actor.isEmpty()) return Actor.Companion.EMPTY
+        val item: ActorViewItem = ActorViewItem.Companion.fromActor(actor)
+        val existing = items.indexOf(item)
+        if (existing >= 0) return items[existing].actor
+        items.add(item)
+        if (actor.actorId == 0L && mAllowLoadingFromInternet) actor.requestDownload(false)
         if (mProgress != null) {
-            mProgress.publish(Integer.toString(size()));
+            mProgress.publish(Integer.toString(size()))
         }
-        return actor;
+        return actor
     }
 
-    protected void loadInternal() {
-        Uri mContentUri = MatchedUri.getActorsScreenUri(actorsScreenType, origin.getId(), centralActorId, searchQuery);
-        try (Cursor c = myContext.context().getContentResolver()
-                    .query(mContentUri, ActorSql.baseProjection(), getSelection(), null, null)) {
-            while (c != null && c.moveToNext()) {
-                populateItem(c);
-            }
-        }
+    protected open fun loadInternal() {
+        val mContentUri: Uri = MatchedUri.Companion.getActorsScreenUri(actorsScreenType, origin.getId(), centralActorId, searchQuery)
+        myContext.context().contentResolver
+                .query(mContentUri, ActorSql.baseProjection(), getSelection(), null, null).use { c ->
+                    while (c != null && c.moveToNext()) {
+                        populateItem(c)
+                    }
+                }
     }
 
-    @NonNull
-    protected String getSelection() {
-        SqlWhere where = new SqlWhere();
-        String sqlActorIds = getSqlActorIds();
+    protected open fun getSelection(): String {
+        val where = SqlWhere()
+        val sqlActorIds = getSqlActorIds()
         if (StringUtil.nonEmpty(sqlActorIds)) {
-            where.append(ActorTable.TABLE_NAME + "." + BaseColumns._ID + sqlActorIds);
+            where.append(ActorTable.TABLE_NAME + "." + BaseColumns._ID + sqlActorIds)
         } else if (origin.isValid()) {
-            where.append(ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + origin.getId());
+            where.append(ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + origin.getId())
         }
-        return where.getCondition();
-
+        return where.condition
     }
 
-    private void populateItem(Cursor cursor) {
-        ActorViewItem item = ActorViewItem.EMPTY.fromCursor(myContext, cursor);
+    private fun populateItem(cursor: Cursor?) {
+        val item: ActorViewItem = ActorViewItem.Companion.EMPTY.fromCursor(myContext, cursor)
         if (actorsScreenType == ActorsScreenType.FRIENDS) {
-            item.hideFollowedBy(centralActor);
+            item.hideFollowedBy(centralActor)
         }
         if (actorsScreenType == ActorsScreenType.FOLLOWERS) {
-            item.hideFollowing(centralActor);
+            item.hideFollowing(centralActor)
         }
-        int index = items.indexOf(item);
+        val index = items.indexOf(item)
         if (index < 0) {
-            items.add(item);
+            items.add(item)
         } else {
-            items.set(index, item);
+            items[index] = item
         }
     }
 
-    protected String getSqlActorIds() {
-        SqlIds sqlIds = SqlIds.fromIds(items.stream().map(ViewItem::getId).collect(toList()));
-        return sqlIds.isEmpty() ? "" : sqlIds.getSql();
+    protected open fun getSqlActorIds(): String? {
+        val sqlIds: SqlIds = SqlIds.Companion.fromIds(items.stream().map { obj: ActorViewItem? -> obj.getId() }.collect(Collectors.toList()))
+        return if (sqlIds.isEmpty) "" else sqlIds.sql
     }
 
-    protected String getSubtitle() {
-        return MyPreferences.isShowDebuggingInfoInUi() ? actorsScreenType.toString() : "";
+    open fun getSubtitle(): String? {
+        return if (MyPreferences.isShowDebuggingInfoInUi()) actorsScreenType.toString() else ""
     }
 
-    @Override
-    public String toString() {
-        return actorsScreenType.toString()
+    override fun toString(): String {
+        return (actorsScreenType.toString()
                 + "; central=" + centralActorId
-                + "; " + super.toString();
+                + "; " + super.toString())
     }
 
+    init {
+        this.searchQuery = searchQuery
+        ma = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
+        this.origin = origin
+        this.centralActorId = centralActorId
+    }
 }

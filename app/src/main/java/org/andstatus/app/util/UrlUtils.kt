@@ -13,129 +13,114 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
+import android.net.Uri
+import io.vavr.control.CheckedFunction
+import io.vavr.control.Try
+import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.json.JSONException
+import org.json.JSONObject
+import java.net.MalformedURLException
+import java.net.URL
+import java.util.*
+import java.util.regex.Pattern
 
-import android.net.Uri;
+object UrlUtils {
+    private val TAG: String? = UrlUtils::class.java.simpleName
 
-import org.andstatus.app.net.http.ConnectionException;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.regex.Pattern;
-
-import io.vavr.control.Try;
-
-public final class UrlUtils {
-    private static final String TAG = UrlUtils.class.getSimpleName();
     // From http://stackoverflow.com/questions/106179/regular-expression-to-match-hostname-or-ip-address?rq=1
-    private static final String validHostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
-    private static final Pattern validHostnameRegexPattern = Pattern.compile(validHostnameRegex);
-    public static final URL MALFORMED = fromString("http://127.0.0.1/malformedUrl");
-
-    private UrlUtils() {
-        // Empty
+    private val validHostnameRegex: String? = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$"
+    private val validHostnameRegexPattern = Pattern.compile(validHostnameRegex)
+    val MALFORMED = fromString("http://127.0.0.1/malformedUrl")
+    fun getHost(strUrl: String?): Optional<String?>? {
+        return Optional.ofNullable(fromString(strUrl)).map { obj: URL? -> obj.getHost() }.filter { obj: String? -> hostIsValid() }
     }
 
-    public static Optional<String> getHost(String strUrl) {
-        return Optional.ofNullable(fromString(strUrl)).map(URL::getHost).filter(UrlUtils::hostIsValid);
+    fun hostIsValid(host: String?): Boolean {
+        return !StringUtil.isEmpty(host) && validHostnameRegexPattern.matcher(host).matches()
     }
 
-    public static boolean hostIsValid(String host) {
-        return !StringUtil.isEmpty(host) && validHostnameRegexPattern.matcher(host).matches();
+    fun hasHost(url: URL?): Boolean {
+        return url != null && hostIsValid(url.host)
     }
 
-    public static boolean hasHost(URL url) {
-        return url != null && hostIsValid(url.getHost());
+    fun isHostOnly(url: URL?): Boolean {
+        return (url != null && StringUtil.isEmpty(url.file)
+                && url.host.contentEquals(url.authority))
     }
 
-    public static boolean isHostOnly(URL url) {
-        return url != null && StringUtil.isEmpty(url.getFile())
-                && url.getHost().contentEquals(url.getAuthority());
-    }
-
-    public static URL fromString(String strUrl) {
-        if (StringUtil.isEmpty(strUrl)) return null;
-
-        try {
-            return new URL(strUrl);
-        } catch (MalformedURLException e) {
-            return null;
+    fun fromString(strUrl: String?): URL? {
+        return if (StringUtil.isEmpty(strUrl)) null else try {
+            URL(strUrl)
+        } catch (e: MalformedURLException) {
+            null
         }
     }
 
-    public static URL fromUri(Uri uri) {
-        if (uri == null || uri == Uri.EMPTY) {
-            return null;
+    fun fromUri(uri: Uri?): URL? {
+        return if (uri == null || uri === Uri.EMPTY) {
+            null
         } else {
-            return fromString(uri.toString());
+            fromString(uri.toString())
         }
     }
-    
-    public static URL fromJson(JSONObject jso, String urlTag) throws JSONException {
+
+    @Throws(JSONException::class)
+    fun fromJson(jso: JSONObject?, urlTag: String?): URL? {
         if (jso != null && !StringUtil.isEmpty(urlTag) && jso.has(urlTag)) {
-            String strUrl = jso.getString(urlTag);
+            val strUrl = jso.getString(urlTag)
             try {
-                return new URL(strUrl);
-            } catch (MalformedURLException e) {
-                MyLog.d(TAG, "tag:'" + urlTag + "' has malformed URL:'" + strUrl + "'", e);
+                return URL(strUrl)
+            } catch (e: MalformedURLException) {
+                MyLog.d(TAG, "tag:'$urlTag' has malformed URL:'$strUrl'", e)
             }
-        } 
-        return null;
+        }
+        return null
     }
 
-    public static URL buildUrl(String hostOrUrl, boolean isSsl) {
+    fun buildUrl(hostOrUrl: String?, isSsl: Boolean): URL? {
         if (StringUtil.isEmpty(hostOrUrl)) {
-            return null;
+            return null
         }
-        String corrected = correctedHostOrUrl(hostOrUrl); 
+        val corrected = correctedHostOrUrl(hostOrUrl)
         if (hostIsValid(corrected)) {
-            return fromString("http" + (isSsl ? "s" : "") + "://" + corrected);
+            return fromString("http" + (if (isSsl) "s" else "") + "://" + corrected)
         }
-        URL urlIn = fromString(corrected);
-        if (urlIn == null || urlIn.getProtocol().equals(isSsl ? "https" : "http")) {
-            return urlIn;
-        }
-        return fromString( (isSsl ? "https" : "http") + urlIn.toExternalForm().substring(urlIn.toExternalForm().indexOf(":")));
+        val urlIn = fromString(corrected)
+        return if (urlIn == null || urlIn.protocol == if (isSsl) "https" else "http") {
+            urlIn
+        } else fromString((if (isSsl) "https" else "http") + urlIn.toExternalForm().substring(urlIn.toExternalForm().indexOf(":")))
     }
 
-    private static String correctedHostOrUrl(String hostOrUrl) {
-        if (StringUtil.isEmpty(hostOrUrl)) {
-            return "";
-        }
+    private fun correctedHostOrUrl(hostOrUrl: String?): String? {
+        return if (StringUtil.isEmpty(hostOrUrl)) {
+            ""
+        } else hostOrUrl.replace(" ".toRegex(), "").toLowerCase(Locale.ENGLISH)
         // Test with: http://www.regexplanet.com/advanced/java/index.html
-        return hostOrUrl.replaceAll(" ","").toLowerCase(Locale.ENGLISH);
     }
-    
-    public static Try<String> pathToUrlString(URL originUrl, String path, boolean failOnInvalid) {
-        Try<URL> url = pathToUrl(originUrl, path);
+
+    fun pathToUrlString(originUrl: URL?, path: String?, failOnInvalid: Boolean): Try<String?>? {
+        val url = pathToUrl(originUrl, path)
         if (url.isFailure()) {
-            return failOnInvalid
-                ? Try.failure(ConnectionException.hardConnectionException("URL is unknown or malformed. System URL:'"
-                    + originUrl + "', path:'" + path + "'", null))
-                : Try.success("");
+            return if (failOnInvalid) Try.failure(ConnectionException.Companion.hardConnectionException("URL is unknown or malformed. System URL:'"
+                    + originUrl + "', path:'" + path + "'", null)) else Try.success("")
         }
-        String host = url.map(URL::getHost).getOrElse("");
-        if (failOnInvalid && (host.equals("example.com") || host.endsWith(".example.com"))) {
-            return Try.failure(ConnectionException.fromStatusCode(ConnectionException.StatusCode.NOT_FOUND,
-                    "URL: '" + url.get().toExternalForm() + "'"));
-        }
-        return url.map(URL::toExternalForm);
+        val host = url.map(CheckedFunction { obj: URL? -> obj.getHost() }).getOrElse("")
+        return if (failOnInvalid && (host == "example.com" || host.endsWith(".example.com"))) {
+            Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.NOT_FOUND,
+                    "URL: '" + url.get().toExternalForm() + "'"))
+        } else url.map(CheckedFunction { obj: URL? -> obj.toExternalForm() })
     }
 
-    public static Try<URL> pathToUrl(URL originUrl, String path) {
-        try {
+    fun pathToUrl(originUrl: URL?, path: String?): Try<URL?>? {
+        return try {
             if (path != null && path.contains("://")) {
-                return Try.success(new URL(path));
-            }
-            return Try.success(new URL(originUrl, path));
-        } catch (MalformedURLException e) {
-            return TryUtils.failure("Malformed URL, originUrl:'" + originUrl + "', path:'" + path + "'");
+                Try.success(URL(path))
+            } else Try.success(URL(originUrl, path))
+        } catch (e: MalformedURLException) {
+            TryUtils.failure("Malformed URL, originUrl:'$originUrl', path:'$path'")
         }
     }
-
 }

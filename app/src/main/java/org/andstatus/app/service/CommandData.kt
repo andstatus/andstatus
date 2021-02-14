@@ -13,531 +13,491 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
-
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.Intent;
-import android.database.Cursor;
-import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
-import org.andstatus.app.SearchObjects;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.ContentValuesUtils;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.CommandTable;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.ListScope;
-import org.andstatus.app.timeline.WhichPage;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineTitle;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.BundleUtils;
-import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyHtml;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TaggedClass;
-
-import java.util.Objects;
-import java.util.Queue;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.content.ContentValues
+import android.content.Context
+import android.content.Intent
+import android.database.Cursor
+import android.os.Bundle
+import android.provider.BaseColumns
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.R
+import org.andstatus.app.SearchObjects
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.ContentValuesUtils
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.CommandTable
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.service.CommandQueue.OneQueue
+import org.andstatus.app.timeline.ListScope
+import org.andstatus.app.timeline.WhichPage
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.BundleUtils
+import org.andstatus.app.util.I18n
+import org.andstatus.app.util.MyHtml
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TaggedClass
+import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Command data store
- * 
+ *
  * @author yvolk@yurivolkov.com
  */
-public class CommandData implements Comparable<CommandData>, TaggedClass {
-    private static final String TAG = CommandData.class.getSimpleName();
-    public final static CommandData EMPTY = newCommand(CommandEnum.EMPTY);
-    private final long commandId;
-    private final CommandEnum command;
-    public final MyAccount myAccount;
-    private final long createdDate;
-    private String description = "";
+class CommandData private constructor(commandId: Long, command: CommandEnum?, myAccount: MyAccount?, commandTimeline: CommandTimeline?, createdDate: Long) : Comparable<CommandData?>, TaggedClass {
+    private val commandId: Long
+    private val command: CommandEnum?
+    val myAccount: MyAccount?
+    private val createdDate: Long
+    private var description: String? = ""
 
-    private volatile boolean mInForeground = false;
-    private volatile boolean mManuallyLaunched = false;
+    @Volatile
+    private var mInForeground = false
 
-    /** {@link MyAccount} for this command. Invalid account if command is not Account
+    @Volatile
+    private var mManuallyLaunched = false
+
+    /** [MyAccount] for this command. Invalid account if command is not Account
      * specific ( do we have such? )
      * It holds actorId for command, which need such parameter (not only for a timeline)
      */
-    private final CommandTimeline commandTimeline;
-    /** This is: 1. Generally: Note ID ({@link NoteTable#NOTE_ID} of the {@link NoteTable})...
+    private val commandTimeline: CommandTimeline?
+
+    /** This is: 1. Generally: Note ID ([NoteTable.NOTE_ID] of the [NoteTable])...
      */
-    protected long itemId = 0;
-    /** Sometimes we don't know {@link Timeline#actor} yet...
-     * Used for Actor search also */
-    private String username = "";
+    var itemId: Long = 0
 
-    private CommandResult commandResult = new CommandResult();
-
-    public static CommandData newSearch(SearchObjects searchObjects,
-                                        MyContext myContext, Origin origin, String queryString) {
-        if (searchObjects == SearchObjects.NOTES) {
-            Timeline timeline =  myContext.timelines().get(TimelineType.SEARCH, Actor.EMPTY, origin, queryString);
-            return new CommandData(0, CommandEnum.GET_TIMELINE, timeline.myAccountToSync,
-                    CommandTimeline.of(timeline), 0);
-        } else {
-            return newActorCommand(CommandEnum.SEARCH_ACTORS, Actor.EMPTY, queryString);
-        }
-    }
-
-    public static CommandData newUpdateStatus(MyAccount myAccount, long unsentActivityId, long noteId) {
-        CommandData commandData = newAccountCommand(CommandEnum.UPDATE_NOTE, myAccount);
-        commandData.itemId = unsentActivityId;
-        commandData.setTrimmedNoteContentAsDescription(noteId);
-        return commandData;
-    }
-
-    public static CommandData newFetchAttachment(long noteId, long downloadDataRowId) {
-        CommandData commandData = newOriginCommand(CommandEnum.GET_ATTACHMENT, Origin.EMPTY);
-        commandData.itemId = downloadDataRowId;
-        commandData.setTrimmedNoteContentAsDescription(noteId);
-        return commandData;
-    }
-
-    private void setTrimmedNoteContentAsDescription(long noteId) {
-        if (noteId != 0) {
+    /** Sometimes we don't know [Timeline.actor] yet...
+     * Used for Actor search also  */
+    private var username: String? = ""
+    private var commandResult: CommandResult? = CommandResult()
+    private fun setTrimmedNoteContentAsDescription(noteId: Long) {
+        if (noteId != 0L) {
             description = trimConditionally(
-                            MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId), true)
-                            .toString();
+                    MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId), true)
+                    .toString()
         }
-    }
-
-    @NonNull
-    public static CommandData newActorCommand(CommandEnum command, Actor actor, String username) {
-        return newActorCommandAtOrigin(command, actor, username, Origin.EMPTY);
-    }
-
-    @NonNull
-    public static CommandData newActorCommandAtOrigin(CommandEnum command, Actor actor, String username, Origin origin) {
-        CommandData commandData = newTimelineCommand(command,
-                myContextHolder.getNow().timelines().get(
-                        origin.isEmpty() ? TimelineType.SENT : TimelineType.SENT_AT_ORIGIN, actor, origin));
-        commandData.setUsername(username);
-        commandData.description = commandData.getUsername();
-        return commandData;
-    }
-
-    public static CommandData newCommand(CommandEnum command) {
-        return newOriginCommand(command, Origin.EMPTY);
-    }
-
-    public static CommandData newItemCommand(CommandEnum command, @NonNull MyAccount myAccount, long itemId) {
-        CommandData commandData = newAccountCommand(command, myAccount);
-        commandData.itemId = itemId;
-        return commandData;
-    }
-
-    public static CommandData actOnActorCommand(CommandEnum command, MyAccount myAccount, Actor actor, String username) {
-        if (myAccount.nonValid() || (actor.isEmpty() && StringUtil.isEmpty(username))) return CommandData.EMPTY;
-
-        Timeline timeline = myContextHolder.getNow().timelines().get(TimelineType.SENT, actor, Origin.EMPTY);
-        CommandData commandData = actor.isEmpty()
-                ? newAccountCommand(command, myAccount)
-                : new CommandData(0, command, myAccount, CommandTimeline.of(timeline), 0);
-        commandData.setUsername(username);
-        commandData.description = commandData.getUsername();
-        return commandData;
-    }
-
-    public static CommandData newAccountCommand(CommandEnum command, @NonNull MyAccount myAccount) {
-        return new CommandData(0, command, myAccount, CommandTimeline.of(Timeline.EMPTY), 0);
-    }
-
-    public static CommandData newOriginCommand(CommandEnum command, @NonNull Origin origin) {
-        return newTimelineCommand(command, origin.isEmpty()
-                ? Timeline.EMPTY
-                : myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, origin));
-    }
-
-    public static CommandData newTimelineCommand(CommandEnum command, @NonNull MyAccount myAccount,
-                                                 TimelineType timelineType) {
-        return newTimelineCommand(command, myContextHolder.getNow().timelines()
-                .get(timelineType, myAccount.getActor(), Origin.EMPTY));
-    }
-
-    public static CommandData newTimelineCommand(CommandEnum command, Timeline timeline) {
-        return new CommandData(0, command, timeline.myAccountToSync, CommandTimeline.of(timeline), 0);
-    }
-
-    private CommandData(long commandId, CommandEnum command, MyAccount myAccount, CommandTimeline commandTimeline, long createdDate) {
-        this.commandId = commandId == 0 ? MyLog.uniqueCurrentTimeMS() : commandId;
-        this.command = command;
-        this.myAccount = myAccount;
-        this.commandTimeline = commandTimeline;
-        this.createdDate = createdDate > 0 ? createdDate : this.commandId;
-        resetRetries();
-    }
-
-    /**
-     * Used to decode command from the Intent upon receiving it
-     */
-    @NonNull
-    public static CommandData fromIntent(MyContext myContext, Intent intent) {
-        return intent == null  ? EMPTY : fromBundle(myContext, intent.getExtras());
-    }
-
-    private static CommandData fromBundle(MyContext myContext, Bundle bundle) {
-        CommandData commandData;
-        CommandEnum command = CommandEnum.fromBundle(bundle);
-        switch (command) {
-            case UNKNOWN:
-            case EMPTY:
-                commandData = EMPTY;
-                break;
-            default:
-                commandData = new CommandData(
-                        bundle.getLong(IntentExtra.COMMAND_ID.key, 0),
-                        command,
-                        MyAccount.fromBundle(myContext, bundle),
-                        CommandTimeline.of(Timeline.fromBundle(myContext, bundle)),
-                        bundle.getLong(IntentExtra.CREATED_DATE.key));
-                commandData.itemId = bundle.getLong(IntentExtra.ITEM_ID.key);
-                commandData.setUsername(BundleUtils.getString(bundle, IntentExtra.USERNAME));
-                commandData.description = BundleUtils.getString(bundle, IntentExtra.COMMAND_DESCRIPTION);
-                commandData.mInForeground = bundle.getBoolean(IntentExtra.IN_FOREGROUND.key);
-                commandData.mManuallyLaunched = bundle.getBoolean(IntentExtra.MANUALLY_LAUNCHED.key);
-                commandData.commandResult = bundle.getParcelable(IntentExtra.COMMAND_RESULT.key);
-                break;
-        }
-        return commandData;
     }
 
     /**
      * @return Intent to be sent to MyService
      */
-    public Intent toIntent(Intent intent) {
-        Objects.requireNonNull(intent);
-        intent.putExtras(toBundle());
-        return intent;
+    fun toIntent(intent: Intent?): Intent? {
+        Objects.requireNonNull(intent)
+        intent.putExtras(toBundle())
+        return intent
     }
 
-    private Bundle toBundle() {
-        Bundle bundle = new Bundle();
-        BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND, command.save());
-        if (command == CommandEnum.EMPTY) return bundle;
-
-        BundleUtils.putNotZero(bundle, IntentExtra.COMMAND_ID, commandId);
+    private fun toBundle(): Bundle? {
+        val bundle = Bundle()
+        BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND, command.save())
+        if (command == CommandEnum.EMPTY) return bundle
+        BundleUtils.putNotZero(bundle, IntentExtra.COMMAND_ID, commandId)
         if (myAccount.isValid()) {
-            bundle.putString(IntentExtra.ACCOUNT_NAME.key, myAccount.getAccountName());
+            bundle.putString(IntentExtra.ACCOUNT_NAME.key, myAccount.getAccountName())
         }
-        getTimeline().toBundle(bundle);
-        BundleUtils.putNotZero(bundle, IntentExtra.ITEM_ID, itemId);
-        BundleUtils.putNotEmpty(bundle, IntentExtra.USERNAME, username);
-        BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND_DESCRIPTION, description);
-        bundle.putBoolean(IntentExtra.IN_FOREGROUND.key, mInForeground);
-        bundle.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key, mManuallyLaunched);
-        bundle.putParcelable(IntentExtra.COMMAND_RESULT.key, commandResult);
-        return bundle;
+        getTimeline().toBundle(bundle)
+        BundleUtils.putNotZero(bundle, IntentExtra.ITEM_ID, itemId)
+        BundleUtils.putNotEmpty(bundle, IntentExtra.USERNAME, username)
+        BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND_DESCRIPTION, description)
+        bundle.putBoolean(IntentExtra.IN_FOREGROUND.key, mInForeground)
+        bundle.putBoolean(IntentExtra.MANUALLY_LAUNCHED.key, mManuallyLaunched)
+        bundle.putParcelable(IntentExtra.COMMAND_RESULT.key, commandResult)
+        return bundle
     }
 
-    public void toContentValues(ContentValues values) {
-        ContentValuesUtils.putNotZero(values, CommandTable._ID, commandId);
-        ContentValuesUtils.putNotZero(values, CommandTable.CREATED_DATE, createdDate);
-        values.put(CommandTable.COMMAND_CODE, command.save());
-        values.put(CommandTable.ACCOUNT_ID, myAccount.getActorId());
-        ContentValuesUtils.putNotEmpty(values, CommandTable.DESCRIPTION, description);
-        values.put(CommandTable.IN_FOREGROUND, mInForeground);
-        values.put(CommandTable.MANUALLY_LAUNCHED, mManuallyLaunched);
-        commandTimeline.toContentValues(values);
-        ContentValuesUtils.putNotZero(values, CommandTable.ITEM_ID, itemId);
-        values.put(CommandTable.USERNAME, username);
-        commandResult.toContentValues(values);
+    fun toContentValues(values: ContentValues?) {
+        ContentValuesUtils.putNotZero(values, BaseColumns._ID, commandId)
+        ContentValuesUtils.putNotZero(values, CommandTable.CREATED_DATE, createdDate)
+        values.put(CommandTable.COMMAND_CODE, command.save())
+        values.put(CommandTable.ACCOUNT_ID, myAccount.getActorId())
+        ContentValuesUtils.putNotEmpty(values, CommandTable.DESCRIPTION, description)
+        values.put(CommandTable.IN_FOREGROUND, mInForeground)
+        values.put(CommandTable.MANUALLY_LAUNCHED, mManuallyLaunched)
+        commandTimeline.toContentValues(values)
+        ContentValuesUtils.putNotZero(values, CommandTable.ITEM_ID, itemId)
+        values.put(CommandTable.USERNAME, username)
+        commandResult.toContentValues(values)
     }
 
-    public static CommandData fromCursor(MyContext myContext, Cursor cursor) {
-        CommandEnum command = CommandEnum.load(DbUtils.getString(cursor, CommandTable.COMMAND_CODE));
-        if (CommandEnum.UNKNOWN.equals(command)) return CommandData.EMPTY;
-
-        CommandData commandData = new CommandData(
-                DbUtils.getLong(cursor, CommandTable._ID),
-                command,
-                myContext.accounts().fromActorId(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID)),
-                CommandTimeline.fromCursor(myContext, cursor),
-                DbUtils.getLong(cursor, CommandTable.CREATED_DATE));
-        commandData.description = DbUtils.getString(cursor, CommandTable.DESCRIPTION);
-        commandData.mInForeground = DbUtils.getBoolean(cursor, CommandTable.IN_FOREGROUND);
-        commandData.mManuallyLaunched = DbUtils.getBoolean(cursor, CommandTable.MANUALLY_LAUNCHED);
-        commandData.itemId = DbUtils.getLong(cursor, CommandTable.ITEM_ID);
-        commandData.setUsername(DbUtils.getString(cursor, CommandTable.USERNAME));
-        commandData.commandResult = CommandResult.fromCursor(cursor);
-        return commandData;
+    fun getSearchQuery(): String? {
+        return commandTimeline.searchQuery
     }
 
-    public String getSearchQuery() {
-        return commandTimeline.searchQuery;
-    }
-
-    @Override
-    public String toString() {
-        if (this == EMPTY) return MyStringBuilder.formatKeyValue(this, "EMPTY");
-
-        MyStringBuilder builder = new MyStringBuilder();
-        builder.withComma("command", command.save());
+    override fun toString(): String {
+        if (this === EMPTY) return MyStringBuilder.Companion.formatKeyValue(this, "EMPTY")
+        val builder = MyStringBuilder()
+        builder.withComma("command", command.save())
         if (mManuallyLaunched) {
-            builder.withComma("manual");
+            builder.withComma("manual")
         }
         if (mInForeground) {
-            builder.withComma("foreground");
+            builder.withComma("foreground")
         }
-        builder.withComma("account", myAccount.getAccountName(), myAccount::nonEmpty);
-        builder.withComma("username", username);
-        if (StringUtil.nonEmpty(description) && !description.equals(username)) {
-            builder.withSpaceQuoted(description);
+        builder.withComma("account", myAccount.getAccountName()) { myAccount.nonEmpty() }
+        builder.withComma("username", username)
+        if (StringUtil.nonEmpty(description) && description != username) {
+            builder.withSpaceQuoted(description)
         }
         if (commandTimeline.isValid()) {
-            builder.withComma(commandTimeline.toString());
+            builder.withComma(commandTimeline.toString())
         }
-        builder.withComma("itemId", itemId, () -> itemId != 0);
-        builder.withComma("created:" + RelativeTime.getDifference(myContextHolder.getNow().context(), getCreatedDate()));
-        builder.withComma(CommandResult.toString(commandResult));
-        return MyStringBuilder.formatKeyValue(this, builder);
+        builder.withComma("itemId", itemId) { itemId != 0L }
+        builder.withComma("created:" + RelativeTime.getDifference(MyContextHolder.Companion.myContextHolder.getNow().context(), getCreatedDate()))
+        builder.withComma(CommandResult.Companion.toString(commandResult))
+        return MyStringBuilder.Companion.formatKeyValue(this, builder)
     }
 
-
-    /** We need to distinguish duplicated commands but to ignore differences in results! */
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1 + command.save().hashCode();
-        result = prime * result + myAccount.hashCode();
-        result += prime * commandTimeline.hashCode();
-        result += prime * itemId;
-        return result;
+    /** We need to distinguish duplicated commands but to ignore differences in results!  */
+    override fun hashCode(): Int {
+        val prime = 31
+        var result = 1 + command.save().hashCode()
+        result = prime * result + myAccount.hashCode()
+        result += prime * commandTimeline.hashCode()
+        result += (prime * itemId).toInt()
+        return result
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof CommandData)) return false;
-
-        CommandData other = (CommandData) o;
-        if (!command.equals(other.command)) return false;
-        if (!myAccount.equals(other.myAccount)) return false;
-        if (!commandTimeline.equals(other.commandTimeline)) return false;
-        return itemId == other.itemId;
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o !is CommandData) return false
+        val other = o as CommandData?
+        if (command != other.command) return false
+        if (myAccount != other.myAccount) return false
+        return if (commandTimeline != other.commandTimeline) false else itemId == other.itemId
     }
 
-    @Override
-    public int compareTo(@NonNull CommandData another) {
-        int greater;
+    override operator fun compareTo(another: CommandData): Int {
+        val greater: Int
         if (isInForeground() != another.isInForeground()) {
-            return isInForeground() ? -1 : 1;
+            return if (isInForeground()) -1 else 1
         }
-        if (commandId == another.commandId) {
-            return 0;
+        greater = if (commandId == another.commandId) {
+            return 0
         } else if (command.getPriority() == another.command.getPriority()) {
-            greater = commandId > another.commandId ? 1 : -1;
+            if (commandId > another.commandId) 1 else -1
         } else {
-            greater = command.getPriority() > another.command.getPriority() ? 1 : -1;
+            if (command.getPriority() > another.command.getPriority()) 1 else -1
         }
-        return greater;
+        return greater
     }
 
-    public CommandEnum getCommand() {
-        return command;
+    fun getCommand(): CommandEnum? {
+        return command
     }
 
-    public TimelineType getTimelineType() {
-        return  commandTimeline.timelineType;
+    fun getTimelineType(): TimelineType? {
+        return commandTimeline.timelineType
     }
 
-    public boolean isManuallyLaunched() {
-        return mManuallyLaunched;
+    fun isManuallyLaunched(): Boolean {
+        return mManuallyLaunched
     }
 
-    public CommandData setManuallyLaunched(boolean manuallyLaunched) {
-        this.mManuallyLaunched = manuallyLaunched;
-        return this;
+    fun setManuallyLaunched(manuallyLaunched: Boolean): CommandData? {
+        mManuallyLaunched = manuallyLaunched
+        return this
     }
 
-    public CommandResult getResult() {
-        return commandResult;
+    fun getResult(): CommandResult? {
+        return commandResult
     }
 
-    public String share(MyContext myContext) {
-        return toUserFriendlyForm(myContext, false);
+    fun share(myContext: MyContext?): String? {
+        return toUserFriendlyForm(myContext, false)
     }
 
-    public String toCommandSummary(MyContext myContext) {
-        return toUserFriendlyForm(myContext, true);
+    fun toCommandSummary(myContext: MyContext?): String? {
+        return toUserFriendlyForm(myContext, true)
     }
 
-    private String toUserFriendlyForm(MyContext myContext, boolean summaryOnly) {
-        MyStringBuilder builder = MyStringBuilder.of(
-                command == CommandEnum.GET_TIMELINE || command == CommandEnum.GET_OLDER_TIMELINE ? "" :
-                toShortCommandName(myContext));
+    private fun toUserFriendlyForm(myContext: MyContext?, summaryOnly: Boolean): String? {
+        val builder: MyStringBuilder = MyStringBuilder.Companion.of(
+                if (command == CommandEnum.GET_TIMELINE || command == CommandEnum.GET_OLDER_TIMELINE) "" else toShortCommandName(myContext))
         if (!summaryOnly) {
-            if (mInForeground) builder.withSpace(", foreground");
-            if (mManuallyLaunched) builder.withSpace( ", manual");
+            if (mInForeground) builder.withSpace(", foreground")
+            if (mManuallyLaunched) builder.withSpace(", manual")
         }
-        switch (command) {
-            case GET_AVATAR:
-                builder.withSpace(ListScope.USER.timelinePreposition(myContext));
-                builder.withSpace(getTimeline().actor.getWebFingerId());
-                if (myContext.accounts().getDistinctOriginsCount() > 1) {
-                    builder.withSpace(ListScope.ORIGIN.timelinePreposition(myContext));
-                    builder.withSpace(commandTimeline.origin.getName());
+        when (command) {
+            CommandEnum.GET_AVATAR -> {
+                builder.withSpace(ListScope.USER.timelinePreposition(myContext))
+                builder.withSpace(getTimeline().actor.webFingerId)
+                if (myContext.accounts().distinctOriginsCount > 1) {
+                    builder.withSpace(ListScope.ORIGIN.timelinePreposition(myContext))
+                    builder.withSpace(commandTimeline.origin.name)
                 }
-                break;
-            case GET_ATTACHMENT:
-            case UPDATE_NOTE:
-                builder.withSpaceQuoted(trimConditionally(description, summaryOnly));
-                break;
-            case GET_TIMELINE:
-                builder.append(TimelineTitle.from(myContext, getTimeline()).toString());
-                break;
-            case GET_OLDER_TIMELINE:
-                builder.append(WhichPage.OLDER.getTitle(myContext.context()));
-                builder.withSpace(TimelineTitle.from(myContext, getTimeline()).toString());
-                break;
-            case FOLLOW:
-            case UNDO_FOLLOW:
-            case GET_FOLLOWERS:
-            case GET_FRIENDS:
-                builder.withSpace(getTimeline().actor.getActorNameInTimeline());
-                break;
-            case GET_ACTOR:
-            case SEARCH_ACTORS:
-                if (StringUtil.nonEmpty(getUsername())) builder.withSpaceQuoted(getUsername());
-                break;
-            default:
-                appendScopeName(myContext, builder);
-                break;
+            }
+            CommandEnum.GET_ATTACHMENT, CommandEnum.UPDATE_NOTE -> builder.withSpaceQuoted(trimConditionally(description, summaryOnly))
+            CommandEnum.GET_TIMELINE -> builder.append(from(myContext, getTimeline()).toString())
+            CommandEnum.GET_OLDER_TIMELINE -> {
+                builder.append(WhichPage.OLDER.getTitle(myContext.context()))
+                builder.withSpace(from(myContext, getTimeline()).toString())
+            }
+            CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW, CommandEnum.GET_FOLLOWERS, CommandEnum.GET_FRIENDS -> builder.withSpace(getTimeline().actor.actorNameInTimeline)
+            CommandEnum.GET_ACTOR, CommandEnum.SEARCH_ACTORS -> if (StringUtil.nonEmpty(getUsername())) builder.withSpaceQuoted(getUsername())
+            else -> appendScopeName(myContext, builder)
         }
-        if (!summaryOnly) {            
-            builder.atNewLine(createdDateWithLabel(myContext.context()));
-            builder.atNewLine(getResult().toSummary());
+        if (!summaryOnly) {
+            builder.atNewLine(createdDateWithLabel(myContext.context()))
+            builder.atNewLine(getResult().toSummary())
         }
-        return builder.toString();
+        return builder.toString()
     }
 
-    private void appendScopeName(MyContext myContext, MyStringBuilder builder) {
-        if (getTimeline().myAccountToSync.isValid()) {
-            builder.withSpace(getTimelineType().scope.timelinePreposition(myContext));
+    private fun appendScopeName(myContext: MyContext?, builder: MyStringBuilder?) {
+        if (getTimeline().myAccountToSync.isValid) {
+            builder.withSpace(getTimelineType().scope.timelinePreposition(myContext))
             if (getTimelineType().isAtOrigin()) {
-                builder.withSpace(commandTimeline.origin.getName());
+                builder.withSpace(commandTimeline.origin.name)
             } else {
-                builder.withSpace(getTimeline().myAccountToSync.getAccountName());
+                builder.withSpace(getTimeline().myAccountToSync.accountName)
             }
         }
     }
 
-    public String createdDateWithLabel(Context context) {
-        return context.getText(R.string.created_label) + " " + RelativeTime.getDifference(context, getCreatedDate());
+    fun createdDateWithLabel(context: Context?): String? {
+        return context.getText(R.string.created_label).toString() + " " + RelativeTime.getDifference(context, getCreatedDate())
     }
 
-    @NonNull
-    private static CharSequence trimConditionally(String text, boolean trim) {
-        if ( StringUtil.isEmpty(text)) {
-            return "";
-        } else if (trim) {
-            return I18n.trimTextAt(MyHtml.htmlToCompactPlainText(text), 40);
-        } else {
-            return text;
+    fun toCommandProgress(myContext: MyContext?): String? {
+        return toShortCommandName(myContext) + "; " + getResult().getProgress()
+    }
+
+    private fun toShortCommandName(myContext: MyContext?): String? {
+        val builder = StringBuilder()
+        when (command) {
+            CommandEnum.GET_TIMELINE -> builder.append(getTimelineType().title(myContext.context()))
+            CommandEnum.GET_OLDER_TIMELINE -> {
+                builder.append(WhichPage.OLDER.getTitle(myContext.context()))
+                builder.append(" ")
+                builder.append(getTimelineType().title(myContext.context()))
+            }
+            else -> builder.append(command.getTitle(myContext, getTimeline().myAccountToSync.accountName))
         }
+        return builder.toString()
     }
 
-    public String toCommandProgress(MyContext myContext) {
-        return toShortCommandName(myContext) + "; " + getResult().getProgress();
-    }
-
-    private String toShortCommandName(MyContext myContext) {
-        StringBuilder builder = new StringBuilder();
-        switch (command) {
-            case GET_TIMELINE:
-                builder.append(getTimelineType().title(myContext.context()));
-                break;
-            case GET_OLDER_TIMELINE:
-                builder.append(WhichPage.OLDER.getTitle(myContext.context()));
-                builder.append(" ");
-                builder.append(getTimelineType().title(myContext.context()));
-                break;
-            default:
-                builder.append(command.getTitle(myContext, getTimeline().myAccountToSync.getAccountName()));
-                break;
-        }
-        return builder.toString();
-    }
-
-    /** @return true if the command was deleted */
-    boolean deleteFromQueue(CommandQueue.OneQueue oneQueue) {
-        Queue<CommandData> queue = oneQueue.queue;
-        AtomicBoolean deleted = new AtomicBoolean(false);
-        String method = "deleteFromQueue " + oneQueue.queueType;
-        for (CommandData cd : queue) {
-            if (cd.getCommandId() == commandId) {
+    /** @return true if the command was deleted
+     */
+    fun deleteFromQueue(oneQueue: OneQueue?): Boolean {
+        val queue = oneQueue.queue
+        val deleted = AtomicBoolean(false)
+        val method = "deleteFromQueue " + oneQueue.queueType
+        for (cd in queue) {
+            if (cd.commandId == commandId) {
                 if (queue.remove(cd)) {
-                    deleted.set(true);
+                    deleted.set(true)
                 }
-                getResult().incrementDownloadedCount();
-                MyLog.v(this, () -> method + " deleted: " + cd);
+                getResult().incrementDownloadedCount()
+                MyLog.v(this) { "$method deleted: $cd" }
             }
         }
-        MyLog.v(this, () -> method + " id=" + commandId + (deleted.get() ? " deleted" : " not found")
-                + ", processed queue: " + queue.size());
-        return deleted.get();
+        MyLog.v(this) {
+            (method + " id=" + commandId + (if (deleted.get()) " deleted" else " not found")
+                    + ", processed queue: " + queue.size)
+        }
+        return deleted.get()
     }
 
-    public boolean isInForeground() {
-        return mInForeground;
+    fun isInForeground(): Boolean {
+        return mInForeground
     }
 
-    public CommandData setInForeground(boolean inForeground) {
-        mInForeground = inForeground;
-        return this;
+    fun setInForeground(inForeground: Boolean): CommandData? {
+        mInForeground = inForeground
+        return this
     }
 
-    public boolean executedMoreSecondsAgoThan(long predefinedPeriodSeconds) {
+    fun executedMoreSecondsAgoThan(predefinedPeriodSeconds: Long): Boolean {
         return RelativeTime.moreSecondsAgoThan(getResult().getLastExecutedDate(),
-                predefinedPeriodSeconds);
+                predefinedPeriodSeconds)
     }
 
-    public final void resetRetries() {
-        getResult().resetRetries(getCommand());
+    fun resetRetries() {
+        getResult().resetRetries(getCommand())
     }
 
-    public long getCommandId() {
-        return commandId;
+    fun getCommandId(): Long {
+        return commandId
     }
 
-    public long getCreatedDate() {
-        return createdDate;
+    fun getCreatedDate(): Long {
+        return createdDate
     }
 
-    public Timeline getTimeline() {
-        return commandTimeline.timeline.get();
+    fun getTimeline(): Timeline? {
+        return commandTimeline.timeline.get()
     }
 
-    public String getUsername() {
-        return username;
+    fun getUsername(): String? {
+        return username
     }
 
-    public void setUsername(String username) {
+    fun setUsername(username: String?) {
         if (StringUtil.isEmpty(this.username) && !StringUtil.isEmpty(username)) {
-            this.username = username;
+            this.username = username
         }
     }
 
-    @Override
-    public String classTag() {
-        return TAG;
+    override fun classTag(): String? {
+        return TAG
+    }
+
+    companion object {
+        private val TAG: String? = CommandData::class.java.simpleName
+        val EMPTY = newCommand(CommandEnum.EMPTY)
+        fun newSearch(searchObjects: SearchObjects?,
+                      myContext: MyContext?, origin: Origin?, queryString: String?): CommandData? {
+            return if (searchObjects == SearchObjects.NOTES) {
+                val timeline = myContext.timelines().get(TimelineType.SEARCH, Actor.Companion.EMPTY, origin, queryString)
+                CommandData(0, CommandEnum.GET_TIMELINE, timeline.myAccountToSync,
+                        CommandTimeline.Companion.of(timeline), 0)
+            } else {
+                newActorCommand(CommandEnum.SEARCH_ACTORS, Actor.Companion.EMPTY, queryString)
+            }
+        }
+
+        fun newUpdateStatus(myAccount: MyAccount?, unsentActivityId: Long, noteId: Long): CommandData? {
+            val commandData = newAccountCommand(CommandEnum.UPDATE_NOTE, myAccount)
+            commandData.itemId = unsentActivityId
+            commandData.setTrimmedNoteContentAsDescription(noteId)
+            return commandData
+        }
+
+        fun newFetchAttachment(noteId: Long, downloadDataRowId: Long): CommandData? {
+            val commandData = newOriginCommand(CommandEnum.GET_ATTACHMENT, Origin.Companion.EMPTY)
+            commandData.itemId = downloadDataRowId
+            commandData.setTrimmedNoteContentAsDescription(noteId)
+            return commandData
+        }
+
+        fun newActorCommand(command: CommandEnum?, actor: Actor?, username: String?): CommandData {
+            return newActorCommandAtOrigin(command, actor, username, Origin.Companion.EMPTY)
+        }
+
+        fun newActorCommandAtOrigin(command: CommandEnum?, actor: Actor?, username: String?, origin: Origin?): CommandData {
+            val commandData = newTimelineCommand(command,
+                    MyContextHolder.Companion.myContextHolder.getNow().timelines().get(
+                            if (origin.isEmpty()) TimelineType.SENT else TimelineType.SENT_AT_ORIGIN, actor, origin))
+            commandData.setUsername(username)
+            commandData.description = commandData.getUsername()
+            return commandData
+        }
+
+        fun newCommand(command: CommandEnum?): CommandData? {
+            return newOriginCommand(command, Origin.Companion.EMPTY)
+        }
+
+        fun newItemCommand(command: CommandEnum?, myAccount: MyAccount, itemId: Long): CommandData? {
+            val commandData = newAccountCommand(command, myAccount)
+            commandData.itemId = itemId
+            return commandData
+        }
+
+        fun actOnActorCommand(command: CommandEnum?, myAccount: MyAccount?, actor: Actor?, username: String?): CommandData? {
+            if (myAccount.nonValid() || actor.isEmpty() && StringUtil.isEmpty(username)) return EMPTY
+            val timeline: Timeline = MyContextHolder.Companion.myContextHolder.getNow().timelines().get(TimelineType.SENT, actor, Origin.Companion.EMPTY)
+            val commandData = if (actor.isEmpty()) newAccountCommand(command, myAccount) else CommandData(0, command, myAccount, CommandTimeline.Companion.of(timeline), 0)
+            commandData.setUsername(username)
+            commandData.description = commandData.getUsername()
+            return commandData
+        }
+
+        fun newAccountCommand(command: CommandEnum?, myAccount: MyAccount): CommandData? {
+            return CommandData(0, command, myAccount, CommandTimeline.Companion.of(Timeline.Companion.EMPTY), 0)
+        }
+
+        fun newOriginCommand(command: CommandEnum?, origin: Origin): CommandData? {
+            return newTimelineCommand(command, if (origin.isEmpty) Timeline.Companion.EMPTY else MyContextHolder.Companion.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.Companion.EMPTY, origin))
+        }
+
+        fun newTimelineCommand(command: CommandEnum?, myAccount: MyAccount,
+                               timelineType: TimelineType?): CommandData? {
+            return newTimelineCommand(command, MyContextHolder.Companion.myContextHolder.getNow().timelines()
+                    .get(timelineType, myAccount.actor, Origin.Companion.EMPTY))
+        }
+
+        fun newTimelineCommand(command: CommandEnum?, timeline: Timeline?): CommandData? {
+            return CommandData(0, command, timeline.myAccountToSync, CommandTimeline.Companion.of(timeline), 0)
+        }
+
+        /**
+         * Used to decode command from the Intent upon receiving it
+         */
+        fun fromIntent(myContext: MyContext?, intent: Intent?): CommandData {
+            return if (intent == null) EMPTY else fromBundle(myContext, intent.extras)
+        }
+
+        private fun fromBundle(myContext: MyContext?, bundle: Bundle?): CommandData? {
+            val commandData: CommandData?
+            val command: CommandEnum = CommandEnum.Companion.fromBundle(bundle)
+            when (command) {
+                CommandEnum.UNKNOWN, CommandEnum.EMPTY -> commandData = EMPTY
+                else -> {
+                    commandData = CommandData(
+                            bundle.getLong(IntentExtra.COMMAND_ID.key, 0),
+                            command,
+                            MyAccount.Companion.fromBundle(myContext, bundle),
+                            CommandTimeline.Companion.of(Timeline.Companion.fromBundle(myContext, bundle)),
+                            bundle.getLong(IntentExtra.CREATED_DATE.key))
+                    commandData.itemId = bundle.getLong(IntentExtra.ITEM_ID.key)
+                    commandData.setUsername(BundleUtils.getString(bundle, IntentExtra.USERNAME))
+                    commandData.description = BundleUtils.getString(bundle, IntentExtra.COMMAND_DESCRIPTION)
+                    commandData.mInForeground = bundle.getBoolean(IntentExtra.IN_FOREGROUND.key)
+                    commandData.mManuallyLaunched = bundle.getBoolean(IntentExtra.MANUALLY_LAUNCHED.key)
+                    commandData.commandResult = bundle.getParcelable(IntentExtra.COMMAND_RESULT.key)
+                }
+            }
+            return commandData
+        }
+
+        fun fromCursor(myContext: MyContext?, cursor: Cursor?): CommandData? {
+            val command: CommandEnum = CommandEnum.Companion.load(DbUtils.getString(cursor, CommandTable.COMMAND_CODE))
+            if (CommandEnum.UNKNOWN == command) return EMPTY
+            val commandData = CommandData(
+                    DbUtils.getLong(cursor, BaseColumns._ID),
+                    command,
+                    myContext.accounts().fromActorId(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID)),
+                    CommandTimeline.Companion.fromCursor(myContext, cursor),
+                    DbUtils.getLong(cursor, CommandTable.CREATED_DATE))
+            commandData.description = DbUtils.getString(cursor, CommandTable.DESCRIPTION)
+            commandData.mInForeground = DbUtils.getBoolean(cursor, CommandTable.IN_FOREGROUND)
+            commandData.mManuallyLaunched = DbUtils.getBoolean(cursor, CommandTable.MANUALLY_LAUNCHED)
+            commandData.itemId = DbUtils.getLong(cursor, CommandTable.ITEM_ID)
+            commandData.setUsername(DbUtils.getString(cursor, CommandTable.USERNAME))
+            commandData.commandResult = CommandResult.Companion.fromCursor(cursor)
+            return commandData
+        }
+
+        private fun trimConditionally(text: String?, trim: Boolean): CharSequence {
+            return if (StringUtil.isEmpty(text)) {
+                ""
+            } else if (trim) {
+                I18n.trimTextAt(MyHtml.htmlToCompactPlainText(text), 40)
+            } else {
+                text
+            }
+        }
+    }
+
+    init {
+        this.commandId = if (commandId == 0L) MyLog.uniqueCurrentTimeMS() else commandId
+        this.command = command
+        this.myAccount = myAccount
+        this.commandTimeline = commandTimeline
+        this.createdDate = if (createdDate > 0) createdDate else this.commandId
+        resetRetries()
     }
 }

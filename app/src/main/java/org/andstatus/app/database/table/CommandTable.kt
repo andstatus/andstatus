@@ -13,59 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.database.table
 
-package org.andstatus.app.database.table;
-
-import android.database.sqlite.SQLiteDatabase;
-import android.provider.BaseColumns;
-
-import org.andstatus.app.data.DbUtils;
+import android.database.sqlite.SQLiteDatabase
+import android.provider.BaseColumns
+import org.andstatus.app.data.DbUtils
 
 /**
  * Command queues
  * @author yvolk@yurivolkov.com
  */
-public final class CommandTable implements BaseColumns {
-    public static final String TABLE_NAME = "command";
-
-    private CommandTable() {
-        // Empty
-    }
-
-    public static final String QUEUE_TYPE = "queue_type";
-
-    public static final String COMMAND_CODE = "command_code";
-    public static final String CREATED_DATE = "command_created_date";
-    public static final String IN_FOREGROUND = "in_foreground";
-    public static final String MANUALLY_LAUNCHED = "manually_launched";
-    public static final String DESCRIPTION = "command_description";
+object CommandTable : BaseColumns {
+    val TABLE_NAME: String? = "command"
+    val QUEUE_TYPE: String? = "queue_type"
+    val COMMAND_CODE: String? = "command_code"
+    val CREATED_DATE: String? = "command_created_date"
+    val IN_FOREGROUND: String? = "in_foreground"
+    val MANUALLY_LAUNCHED: String? = "manually_launched"
+    val DESCRIPTION: String? = "command_description"
 
     /** Timeline attributes
-     * Timeline here may have ID=0 for non-persistent timelines */
-    public static final String TIMELINE_ID = TimelineTable.TIMELINE_ID;
-    public static final String TIMELINE_TYPE = TimelineTable.TIMELINE_TYPE;
-    public static final String ACCOUNT_ID = ActorTable.ACCOUNT_ID;
-    public static final String ACTOR_ID = TimelineTable.ACTOR_ID;
-    /** This is used e.g. when a {@link #ACTOR_ID} is not known */
-    public static final String USERNAME = ActorTable.USERNAME;
-    public static final String ORIGIN_ID = TimelineTable.ORIGIN_ID;
-    public static final String SEARCH_QUERY = TimelineTable.SEARCH_QUERY;
+     * Timeline here may have ID=0 for non-persistent timelines  */
+    val TIMELINE_ID: String? = TimelineTable.TIMELINE_ID
+    val TIMELINE_TYPE: String? = TimelineTable.TIMELINE_TYPE
+    val ACCOUNT_ID: String? = ActorTable.ACCOUNT_ID
+    val ACTOR_ID: String? = TimelineTable.ACTOR_ID
 
-    /** This is MessageId mostly, but not only... */
-    public static final String ITEM_ID = "item_id";
+    /** This is used e.g. when a [.ACTOR_ID] is not known  */
+    val USERNAME: String? = ActorTable.USERNAME
+    val ORIGIN_ID: String? = TimelineTable.ORIGIN_ID
+    val SEARCH_QUERY: String? = TimelineTable.SEARCH_QUERY
+
+    /** This is MessageId mostly, but not only...  */
+    val ITEM_ID: String? = "item_id"
 
     // Command execution result is below
-    public static final String LAST_EXECUTED_DATE = "last_executed_date";
-    public static final String EXECUTION_COUNT = "execution_count";
-    public static final String RETRIES_LEFT = "retries_left";
-    public static final String NUM_AUTH_EXCEPTIONS = "num_auth_exceptions";
-    public static final String NUM_IO_EXCEPTIONS = "num_io_exceptions";
-    public static final String NUM_PARSE_EXCEPTIONS = "num_parse_exceptions";
-    public static final String ERROR_MESSAGE = "error_message";
-    public static final String DOWNLOADED_COUNT = "downloaded_count";
-    public static final String PROGRESS_TEXT = "progress_text";
-
-    public static void create(SQLiteDatabase db) {
+    val LAST_EXECUTED_DATE: String? = "last_executed_date"
+    val EXECUTION_COUNT: String? = "execution_count"
+    val RETRIES_LEFT: String? = "retries_left"
+    val NUM_AUTH_EXCEPTIONS: String? = "num_auth_exceptions"
+    val NUM_IO_EXCEPTIONS: String? = "num_io_exceptions"
+    val NUM_PARSE_EXCEPTIONS: String? = "num_parse_exceptions"
+    val ERROR_MESSAGE: String? = "error_message"
+    val DOWNLOADED_COUNT: String? = "downloaded_count"
+    val PROGRESS_TEXT: String? = "progress_text"
+    fun create(db: SQLiteDatabase?) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY NOT NULL,"
                 + QUEUE_TYPE + " TEXT NOT NULL,"
@@ -74,17 +66,14 @@ public final class CommandTable implements BaseColumns {
                 + DESCRIPTION + " TEXT,"
                 + IN_FOREGROUND + " BOOLEAN NOT NULL DEFAULT 0,"
                 + MANUALLY_LAUNCHED + " BOOLEAN NOT NULL DEFAULT 0,"
-
                 + TIMELINE_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + TIMELINE_TYPE + " TEXT NOT NULL,"
                 + ACCOUNT_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + ACTOR_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + ORIGIN_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + SEARCH_QUERY + " TEXT,"
-
                 + ITEM_ID + " INTEGER NOT NULL DEFAULT 0,"
                 + USERNAME + " TEXT,"
-
                 + LAST_EXECUTED_DATE + " INTEGER NOT NULL DEFAULT 0,"
                 + EXECUTION_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + RETRIES_LEFT + " INTEGER NOT NULL DEFAULT 0,"
@@ -94,6 +83,6 @@ public final class CommandTable implements BaseColumns {
                 + ERROR_MESSAGE + " TEXT,"
                 + DOWNLOADED_COUNT + " INTEGER NOT NULL DEFAULT 0,"
                 + PROGRESS_TEXT + " TEXT"
-                + ")");
+                + ")")
     }
 }

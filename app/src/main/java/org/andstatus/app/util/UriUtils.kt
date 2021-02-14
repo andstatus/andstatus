@@ -13,180 +13,146 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
+import android.content.Context
+import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.Uri
+import org.andstatus.app.service.ConnectionState
+import org.json.JSONObject
+import java.net.URL
+import java.util.*
+import java.util.function.Function
 
-import android.content.Context;
-import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.Uri;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.service.ConnectionState;
-import org.json.JSONObject;
-
-import java.net.URL;
-import java.util.Optional;
-import java.util.function.Function;
-
-public class UriUtils {
-
-    private UriUtils() {
-        // Empty
-    }
-
-    @NonNull
-    public static Uri fromAlternativeTags(JSONObject jso, String tag1, String tag2) {
-        Uri uri = fromJson(jso, tag1);
+object UriUtils {
+    fun fromAlternativeTags(jso: JSONObject?, tag1: String?, tag2: String?): Uri {
+        var uri = fromJson(jso, tag1)
         if (isEmpty(uri)) {
-            uri = fromJson(jso, tag2);
+            uri = fromJson(jso, tag2)
         }
-        return uri;
+        return uri
     }
 
-    public static boolean nonEmpty(Uri uri) {
-        return !isEmpty(uri);
+    fun nonEmpty(uri: Uri?): Boolean {
+        return !isEmpty(uri)
     }
 
-    /** @return true for null also */
-    public static boolean isEmpty(Uri uri) {
-        return uri == null || Uri.EMPTY.equals(uri);
+    /** @return true for null also
+     */
+    fun isEmpty(uri: Uri?): Boolean {
+        return uri == null || Uri.EMPTY == uri
     }
 
-    @NonNull
-    public static Uri fromJson(JSONObject jsoIn, String pathIn) {
-        if (jsoIn == null || StringUtil.isEmpty(pathIn)) return Uri.EMPTY;
-
-        String[] path = pathIn.split("/");
-        JSONObject jso = path.length == 2 ? jsoIn.optJSONObject(path[0]) : jsoIn;
-        String urlTag = path.length == 2 ? path[1] : pathIn;
-        if (jso != null && !StringUtil.isEmpty(urlTag) && jso.has(urlTag)) {
-            return fromString(JsonUtils.optString(jso, urlTag));
-        }
-        return Uri.EMPTY;
+    fun fromJson(jsoIn: JSONObject?, pathIn: String?): Uri {
+        if (jsoIn == null || StringUtil.isEmpty(pathIn)) return Uri.EMPTY
+        val path: Array<String?> = pathIn.split("/".toRegex()).toTypedArray()
+        val jso = if (path.size == 2) jsoIn.optJSONObject(path[0]) else jsoIn
+        val urlTag = if (path.size == 2) path[1] else pathIn
+        return if (jso != null && !StringUtil.isEmpty(urlTag) && jso.has(urlTag)) {
+            fromString(JsonUtils.optString(jso, urlTag))
+        } else Uri.EMPTY
     }
 
-    @NonNull
-    public static Uri map(Uri uri, Function<String, String> mapper) {
-        return fromString(mapper.apply(uri.toString()));
+    fun map(uri: Uri?, mapper: Function<String?, String?>?): Uri {
+        return fromString(mapper.apply(uri.toString()))
     }
 
-    @NonNull
-    public static Optional<Uri> toDownloadableOptional(String uriString) {
-        return toOptional(uriString).filter(UriUtils::isDownloadable);
+    fun toDownloadableOptional(uriString: String?): Optional<Uri?> {
+        return toOptional(uriString).filter { obj: Uri? -> isDownloadable() }
     }
 
-    @NonNull
-    public static Optional<Uri> toOptional(String uriString) {
-        if (StringUtil.isEmpty(uriString)) return Optional.empty();
-
-        Uri uri = fromString(uriString);
-        return uri == Uri.EMPTY
-                ? Optional.empty()
-                : Optional.of(uri);
+    fun toOptional(uriString: String?): Optional<Uri?> {
+        if (StringUtil.isEmpty(uriString)) return Optional.empty()
+        val uri = fromString(uriString)
+        return if (uri === Uri.EMPTY) Optional.empty() else Optional.of(uri)
     }
 
-    @NonNull
-    public static Uri fromString(String strUri) {
-        return SharedPreferencesUtil.isEmpty(strUri) ? Uri.EMPTY : Uri.parse(strUri.trim());
+    fun fromString(strUri: String?): Uri {
+        return if (SharedPreferencesUtil.isEmpty(strUri)) Uri.EMPTY else Uri.parse(strUri.trim { it <= ' ' })
     }
 
-    @NonNull
-    public static Uri notNull(Uri uri) {
-        return uri == null ? Uri.EMPTY : uri;
+    fun notNull(uri: Uri?): Uri {
+        return uri ?: Uri.EMPTY
     }
 
-    @NonNull
-    public static Uri fromUrl(URL url) {
-        if (url == null) {
-            return Uri.EMPTY;
+    fun fromUrl(url: URL?): Uri {
+        return if (url == null) {
+            Uri.EMPTY
         } else {
-            return fromString(url.toExternalForm());
+            fromString(url.toExternalForm())
         }
     }
-    
-    /** See http://developer.android.com/guide/topics/providers/document-provider.html */
-   public static int flagsToTakePersistableUriPermission() {
-        int flags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
-        flags = flags | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION;
-        return flags;
+
+    /** See http://developer.android.com/guide/topics/providers/document-provider.html  */
+    fun flagsToTakePersistableUriPermission(): Int {
+        var flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+        flags = flags or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+        return flags
     }
-    
-    /** See http://stackoverflow.com/questions/25999886/android-content-provider-uri-doesnt-work-after-reboot */
-    public static void takePersistableUriPermission(Context context, Uri uri, int takeFlagsIn) {
-        if ((takeFlagsIn & Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION) != 0) {
-            final int takeFlags = takeFlagsIn & (Intent.FLAG_GRANT_READ_URI_PERMISSION
-                            | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+    /** See http://stackoverflow.com/questions/25999886/android-content-provider-uri-doesnt-work-after-reboot  */
+    fun takePersistableUriPermission(context: Context?, uri: Uri?, takeFlagsIn: Int) {
+        if (takeFlagsIn and Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION != 0) {
+            val takeFlags = takeFlagsIn and (Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
             try {
-                context.getContentResolver().takePersistableUriPermission(uri, takeFlags);
-            } catch (SecurityException e) {
-                MyLog.i(context,"Exception while taking persistable URI permission for '" + uri + "'", e);
+                context.getContentResolver().takePersistableUriPermission(uri, takeFlags)
+            } catch (e: SecurityException) {
+                MyLog.i(context, "Exception while taking persistable URI permission for '$uri'", e)
             }
         } else {
-            MyLog.i(context,"No persistable URI permission for '" + uri + "'");
+            MyLog.i(context, "No persistable URI permission for '$uri'")
         }
     }
 
-    public static boolean isDownloadable(Uri uri) {
+    fun isDownloadable(uri: Uri?): Boolean {
         if (uri != null) {
-            String scheme = uri.getScheme();
+            val scheme = uri.scheme
             if (scheme != null) {
-                switch (scheme) {
-                    case "http":
-                    case "https":
-                        return true;
-                    default:
-                        break;
+                when (scheme) {
+                    "http", "https" -> return true
+                    else -> {
+                    }
                 }
             }
         }
-        return false;
+        return false
     }
 
-    public static boolean isRealOid(String oid) {
-        return !nonRealOid(oid);
+    fun isRealOid(oid: String?): Boolean {
+        return !nonRealOid(oid)
     }
 
-    public static boolean nonRealOid(String oid) {
-        return StringUtil.isEmptyOrTemp(oid);
+    fun nonRealOid(oid: String?): Boolean {
+        return StringUtil.isEmptyOrTemp(oid)
     }
 
-    public static boolean nonEmptyOid(String oid) {
-        return !isEmptyOid(oid);
+    fun nonEmptyOid(oid: String?): Boolean {
+        return !isEmptyOid(oid)
     }
 
-    public static boolean isEmptyOid(String oid) {
-        return SharedPreferencesUtil.isEmpty(oid);
+    fun isEmptyOid(oid: String?): Boolean {
+        return SharedPreferencesUtil.isEmpty(oid)
     }
 
     /**
      * Based on http://stackoverflow.com/questions/1560788/how-to-check-internet-access-on-android-inetaddress-never-timeouts
      */
-    public static ConnectionState getConnectionState(Context context) {
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (connectivityManager == null) {
-            return ConnectionState.UNKNOWN;
-        }
-        ConnectionState state = ConnectionState.OFFLINE;
-        NetworkInfo networkInfoOnline = connectivityManager.getActiveNetworkInfo();
-        if (networkInfoOnline == null) {
-            return state;
-        }
-        if (networkInfoOnline.isAvailable() && networkInfoOnline.isConnected()) {
-            state = ConnectionState.ONLINE;
+    fun getConnectionState(context: Context?): ConnectionState? {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                ?: return ConnectionState.UNKNOWN
+        var state = ConnectionState.OFFLINE
+        val networkInfoOnline = connectivityManager.activeNetworkInfo ?: return state
+        state = if (networkInfoOnline.isAvailable && networkInfoOnline.isConnected) {
+            ConnectionState.ONLINE
         } else {
-            return state;
+            return state
         }
-        NetworkInfo networkInfoWiFi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        if (networkInfoWiFi == null) {
-            return state;
+        val networkInfoWiFi = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI) ?: return state
+        if (networkInfoWiFi.isAvailable && networkInfoWiFi.isConnected) {
+            state = ConnectionState.WIFI
         }
-        if (networkInfoWiFi.isAvailable() && networkInfoWiFi.isConnected()) {
-            state = ConnectionState.WIFI;
-        }
-        return state;
+        return state
     }
 }

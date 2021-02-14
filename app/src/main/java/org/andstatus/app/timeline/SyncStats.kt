@@ -1,58 +1,50 @@
-package org.andstatus.app.timeline;
+package org.andstatus.app.timeline
 
-import org.andstatus.app.timeline.meta.Timeline;
-
-import java.util.stream.Stream;
-
-import static org.andstatus.app.util.RelativeTime.minDate;
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.util.RelativeTime
+import java.util.function.BiFunction
+import java.util.function.BinaryOperator
+import java.util.stream.Stream
 
 /**
  *
  */
-class SyncStats {
-    final long syncSucceededDate;
-    final long itemDate;
+internal class SyncStats private constructor(val syncSucceededDate: Long, val itemDate: Long) {
+    companion object {
+        fun fromYoungestDates(timelines: Stream<Timeline?>?): SyncStats? {
+            return timelines.reduce(SyncStats(0, 0), BiFunction { stats: SyncStats?, timeline: Timeline? -> youngestAccumulator(stats, timeline) }, BinaryOperator { stats: SyncStats?, stats2: SyncStats? -> youngestCombiner(stats, stats2) })
+        }
 
-    static SyncStats fromYoungestDates(Stream<Timeline> timelines) {
-        return timelines.reduce(new SyncStats(0, 0),
-                SyncStats::youngestAccumulator, SyncStats::youngestCombiner);
-    }
+        private fun youngestAccumulator(stats: SyncStats?, timeline: Timeline?): SyncStats? {
+            return SyncStats(
+                    java.lang.Long.max(timeline.getSyncSucceededDate(), stats.syncSucceededDate),
+                    java.lang.Long.max(timeline.getYoungestItemDate(), stats.itemDate)
+            )
+        }
 
-    private SyncStats(long syncSucceededDate, long itemDate) {
-        this.syncSucceededDate = syncSucceededDate;
-        this.itemDate = itemDate;
-    }
+        private fun youngestCombiner(stats: SyncStats?, stats2: SyncStats?): SyncStats? {
+            return SyncStats(
+                    java.lang.Long.max(stats2.syncSucceededDate, stats.syncSucceededDate),
+                    java.lang.Long.max(stats2.itemDate, stats.itemDate)
+            )
+        }
 
-    private static SyncStats youngestAccumulator(SyncStats stats, Timeline timeline) {
-        return new SyncStats(
-                Long.max(timeline.getSyncSucceededDate(), stats.syncSucceededDate),
-                Long.max(timeline.getYoungestItemDate(), stats.itemDate)
-        );
-    }
+        fun fromOldestDates(timelines: Stream<Timeline?>?): SyncStats? {
+            return timelines.reduce(SyncStats(0, 0), BiFunction { stats: SyncStats?, timeline: Timeline? -> oldestAccumulator(stats, timeline) }, BinaryOperator { stats: SyncStats?, stats2: SyncStats? -> oldestCombiner(stats, stats2) })
+        }
 
-    private static SyncStats youngestCombiner(SyncStats stats, SyncStats stats2) {
-        return new SyncStats(
-                Long.max(stats2.syncSucceededDate, stats.syncSucceededDate),
-                Long.max(stats2.itemDate, stats.itemDate)
-        );
-    }
+        private fun oldestAccumulator(stats: SyncStats?, timeline: Timeline?): SyncStats? {
+            return SyncStats(
+                    java.lang.Long.max(timeline.getSyncSucceededDate(), stats.syncSucceededDate),
+                    RelativeTime.minDate(timeline.getOldestItemDate(), stats.itemDate)
+            )
+        }
 
-    static SyncStats fromOldestDates(Stream<Timeline> timelines) {
-        return timelines.reduce(new SyncStats(0, 0),
-                SyncStats::oldestAccumulator, SyncStats::oldestCombiner);
-    }
-
-    private static SyncStats oldestAccumulator(SyncStats stats, Timeline timeline) {
-        return new SyncStats(
-                Long.max(timeline.getSyncSucceededDate(), stats.syncSucceededDate),
-                minDate(timeline.getOldestItemDate(), stats.itemDate)
-        );
-    }
-
-    private static SyncStats oldestCombiner(SyncStats stats, SyncStats stats2) {
-        return new SyncStats(
-                Long.max(stats2.syncSucceededDate, stats.syncSucceededDate),
-                minDate(stats2.itemDate, stats.itemDate)
-        );
+        private fun oldestCombiner(stats: SyncStats?, stats2: SyncStats?): SyncStats? {
+            return SyncStats(
+                    java.lang.Long.max(stats2.syncSucceededDate, stats.syncSucceededDate),
+                    RelativeTime.minDate(stats2.itemDate, stats.itemDate)
+            )
+        }
     }
 }

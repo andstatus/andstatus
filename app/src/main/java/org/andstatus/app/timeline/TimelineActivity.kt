@@ -13,366 +13,298 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
-
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
-import android.os.Build;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.text.format.DateUtils;
-import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AbsListView;
-import android.widget.CheckBox;
-import android.widget.ListView;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.drawerlayout.widget.DrawerLayout;
-
-import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.FirstActivity;
-import org.andstatus.app.HelpActivity;
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyAction;
-import org.andstatus.app.R;
-import org.andstatus.app.account.AccountSelector;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.activity.ActivityAdapter;
-import org.andstatus.app.activity.ActivityContextMenu;
-import org.andstatus.app.activity.ActivityViewItem;
-import org.andstatus.app.actor.ActorProfileViewer;
-import org.andstatus.app.context.DemoData;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.context.MySettingsActivity;
-import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.data.ParsedUri;
-import org.andstatus.app.graphics.AvatarView;
-import org.andstatus.app.list.SyncLoader;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.ApiDebugger;
-import org.andstatus.app.note.NoteAdapter;
-import org.andstatus.app.note.NoteContextMenu;
-import org.andstatus.app.note.NoteContextMenuContainer;
-import org.andstatus.app.note.NoteEditorListActivity;
-import org.andstatus.app.note.NoteViewItem;
-import org.andstatus.app.note.SharedNote;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginSelector;
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.service.MyServiceState;
-import org.andstatus.app.service.QueueViewer;
-import org.andstatus.app.test.SelectorActivityMock;
-import org.andstatus.app.timeline.meta.ManageTimelines;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineSelector;
-import org.andstatus.app.timeline.meta.TimelineTitle;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.BundleUtils;
-import org.andstatus.app.util.MyCheckBox;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyUrlSpan;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.ViewUtils;
-import org.andstatus.app.view.MyContextMenu;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
-import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
+import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.text.TextUtils
+import android.text.format.DateUtils
+import android.view.Gravity
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AbsListView
+import android.widget.CheckBox
+import android.widget.TextView
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.drawerlayout.widget.DrawerLayout
+import org.andstatus.app.ActivityRequestCode
+import org.andstatus.app.FirstActivity
+import org.andstatus.app.HelpActivity
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.MyAction
+import org.andstatus.app.R
+import org.andstatus.app.account.AccountSelector
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.activity.ActivityAdapter
+import org.andstatus.app.activity.ActivityContextMenu
+import org.andstatus.app.activity.ActivityViewItem
+import org.andstatus.app.actor.ActorProfileViewer
+import org.andstatus.app.context.DemoData
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.context.MySettingsActivity
+import org.andstatus.app.data.MatchedUri
+import org.andstatus.app.data.ParsedUri
+import org.andstatus.app.graphics.AvatarView
+import org.andstatus.app.list.SyncLoader
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.ApiDebugger
+import org.andstatus.app.note.NoteAdapter
+import org.andstatus.app.note.NoteContextMenu
+import org.andstatus.app.note.NoteContextMenuContainer
+import org.andstatus.app.note.NoteEditorListActivity
+import org.andstatus.app.note.NoteViewItem
+import org.andstatus.app.note.SharedNote
+import org.andstatus.app.origin.OriginSelector
+import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.service.CommandData
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.service.MyServiceState
+import org.andstatus.app.service.QueueViewer
+import org.andstatus.app.test.SelectorActivityMock
+import org.andstatus.app.timeline.meta.ManageTimelines
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.timeline.meta.TimelineSelector
+import org.andstatus.app.timeline.meta.TimelineTitle
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.MyCheckBox
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyUrlSpan
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TriState
+import org.andstatus.app.util.ViewUtils
+import org.andstatus.app.view.MyContextMenu
+import java.util.*
+import java.util.function.BooleanSupplier
+import java.util.function.Consumer
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActivity<T> implements
-        NoteContextMenuContainer, AbsListView.OnScrollListener {
-    public static final String HORIZONTAL_ELLIPSIS = "\u2026";
+class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteContextMenuContainer, AbsListView.OnScrollListener {
+    /** Parameters for the next page request, not necessarily requested already  */
+    @Volatile
+    private var paramsNew: TimelineParameters? = null
 
-    /** Parameters for the next page request, not necessarily requested already */
-    private volatile TimelineParameters paramsNew = null;
-    /** Last parameters, requested to load. Thread safe. They are taken by a Loader at some time */
-    private volatile TimelineParameters paramsToLoad;
-    private volatile TimelineData<T> listData;
+    /** Last parameters, requested to load. Thread safe. They are taken by a Loader at some time  */
+    @Volatile
+    private var paramsToLoad: TimelineParameters? = null
 
-    private ActivityContextMenu contextMenu;
+    @Volatile
+    private var listData: TimelineData<T?>? = null
+    private var contextMenu: ActivityContextMenu? = null
 
-    private volatile Optional<SharedNote> sharedNote = Optional.empty();
+    @Volatile
+    private var sharedNote: Optional<SharedNote?>? = Optional.empty()
+    private var mRateLimitText: String? = ""
+    var mDrawerLayout: DrawerLayout? = null
+    var mDrawerToggle: ActionBarDrawerToggle? = null
 
-    private String mRateLimitText = "";
-
-    DrawerLayout mDrawerLayout;
-    ActionBarDrawerToggle mDrawerToggle;
-
-    private volatile SelectorActivityMock selectorActivityMock;
-    View syncYoungerView = null;
-    View syncOlderView = null;
-    ActorProfileViewer actorProfileViewer = null;
-
-    public static void startForTimeline(MyContext myContext, Context context, Timeline timeline) {
-        startForTimeline(myContext, context, timeline, false, false);
+    @Volatile
+    private var selectorActivityMock: SelectorActivityMock? = null
+    var syncYoungerView: View? = null
+    var syncOlderView: View? = null
+    var actorProfileViewer: ActorProfileViewer? = null
+    override fun onRefresh() {
+        syncWithInternet(getParamsLoaded().getTimeline(), true, true)
     }
 
-    public static void startForTimeline(MyContext myContext, Context context, Timeline timeline, boolean clearTask,
-                                        boolean initialAccountSync) {
-        timeline.save(myContext);
-        final Intent intent = getIntentForTimeline(myContext, timeline, clearTask);
-        if (initialAccountSync) {
-            intent.putExtra(IntentExtra.INITIAL_ACCOUNT_SYNC.key, true);
-        }
-        context.startActivity(intent);
-    }
-
-    @NonNull
-    private static Intent getIntentForTimeline(MyContext myContext, Timeline timeline, boolean clearTask) {
-        Intent intent = new Intent(myContext.context(), clearTask ? FirstActivity.class : TimelineActivity.class);
-        intent.setData(timeline.getUri());
-        if (clearTask) {
-            // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-        }
-        return intent;
-    }
-
-    @Override
-    public void onRefresh() {
-        syncWithInternet(getParamsLoaded().getTimeline(), true, true);
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.timeline;
-        super.onCreate(savedInstanceState);
-        showSyncIndicatorSetting = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, false);
-        if (isFinishing()) return;
-
-        contextMenu = new ActivityContextMenu(this);
-
-        initializeDrawer();
-        getListView().setOnScrollListener(this);
-
-        View view = findViewById(R.id.my_action_bar);
-        if (view != null) {
-            view.setOnClickListener(this::onTimelineTitleClick);
-        }
-
-        syncYoungerView = View.inflate(this, R.layout.sync_younger, null);
-        syncYoungerView.findViewById(R.id.sync_younger_button).setOnClickListener(
-                v -> syncWithInternet(getParamsLoaded().getTimeline(), true, true));
-
-        syncOlderView = View.inflate(this, R.layout.sync_older, null);
-        syncOlderView.findViewById(R.id.sync_older_button).setOnClickListener(
-                v -> syncWithInternet(getParamsLoaded().getTimeline(), false, true));
-
-        actorProfileViewer = new ActorProfileViewer(this);
-
-        addSyncButtons();
-
-        searchView = findViewById(R.id.my_search_view);
-        searchView.initialize(this);
-
+    override fun onCreate(savedInstanceState: Bundle?) {
+        mLayoutId = R.layout.timeline
+        super.onCreate(savedInstanceState)
+        showSyncIndicatorSetting = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SYNC_INDICATOR_ON_TIMELINE, false)
+        if (isFinishing) return
+        contextMenu = ActivityContextMenu(this)
+        initializeDrawer()
+        listView.setOnScrollListener(this)
+        val view = findViewById<View?>(R.id.my_action_bar)
+        view?.setOnClickListener { item: View? -> onTimelineTitleClick(item) }
+        syncYoungerView = View.inflate(this, R.layout.sync_younger, null)
+        syncYoungerView.findViewById<View?>(R.id.sync_younger_button).setOnClickListener { v: View? -> syncWithInternet(getParamsLoaded().getTimeline(), true, true) }
+        syncOlderView = View.inflate(this, R.layout.sync_older, null)
+        syncOlderView.findViewById<View?>(R.id.sync_older_button).setOnClickListener { v: View? -> syncWithInternet(getParamsLoaded().getTimeline(), false, true) }
+        actorProfileViewer = ActorProfileViewer(this)
+        addSyncButtons()
+        searchView = findViewById(R.id.my_search_view)
+        searchView.initialize(this)
         if (savedInstanceState != null) {
-            restoreActivityState(savedInstanceState);
+            restoreActivityState(savedInstanceState)
         } else {
-            parseNewIntent(getIntent());
+            parseNewIntent(intent)
         }
     }
 
-    @NonNull
-    @Override
-    protected BaseTimelineAdapter<T> newListAdapter() {
-        if (getParamsNew().getTimelineType().showsActivities()) {
-            return (BaseTimelineAdapter<T>) new ActivityAdapter(contextMenu,
-                    (TimelineData<ActivityViewItem>) getListData());
-        }
-        return (BaseTimelineAdapter<T>) new NoteAdapter(
-                contextMenu.note, (TimelineData<NoteViewItem>) getListData());
+    override fun newListAdapter(): BaseTimelineAdapter<T?> {
+        return if (getParamsNew().timelineType.showsActivities()) {
+            ActivityAdapter(contextMenu,
+                    getListData() as TimelineData<ActivityViewItem?>) as BaseTimelineAdapter<T?>
+        } else NoteAdapter(
+                contextMenu.note, getListData() as TimelineData<NoteViewItem?>) as BaseTimelineAdapter<T?>
     }
 
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-        mDrawerToggle.syncState();
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+        mDrawerToggle.syncState()
     }
 
-    private void initializeDrawer() {
-        mDrawerLayout = findViewById(R.id.drawer_layout);
+    private fun initializeDrawer() {
+        mDrawerLayout = findViewById(R.id.drawer_layout)
         if (mDrawerLayout != null) {
-            mDrawerToggle = new ActionBarDrawerToggle(
+            mDrawerToggle = object : ActionBarDrawerToggle(
                     this,
                     mDrawerLayout,
                     R.string.drawer_open,
                     R.string.drawer_close
-            ) {
-            };
-            mDrawerLayout.addDrawerListener(mDrawerToggle);
-            mDrawerToggle.setHomeAsUpIndicator(MyPreferences.getActionBarTextHomeIconResourceId());
+            ) {}
+            mDrawerLayout.addDrawerListener(mDrawerToggle)
+            mDrawerToggle.setHomeAsUpIndicator(MyPreferences.getActionBarTextHomeIconResourceId())
         }
     }
 
-    private void restoreActivityState(@NonNull Bundle savedInstanceState) {
-        ParsedUri parsedUri = ParsedUri.fromUri(
-                Uri.parse(savedInstanceState.getString(IntentExtra.MATCHED_URI.key,"")));
-        final Timeline timeline = Timeline.fromParsedUri(myContext, parsedUri, "");
-        TimelineParameters params = new TimelineParameters(myContext,
-                timeline.isEmpty() ? myContext.timelines().getDefault() : timeline, WhichPage.CURRENT);
-        setParamsNew(params);
-
+    private fun restoreActivityState(savedInstanceState: Bundle) {
+        val parsedUri: ParsedUri = ParsedUri.Companion.fromUri(
+                Uri.parse(savedInstanceState.getString(IntentExtra.MATCHED_URI.key, "")))
+        val timeline: Timeline = Timeline.Companion.fromParsedUri(myContext, parsedUri, "")
+        val params = TimelineParameters(myContext,
+                if (timeline.isEmpty) myContext.timelines().default else timeline, WhichPage.CURRENT)
+        setParamsNew(params)
         if (timeline.nonEmpty()) {
-            contextMenu.note.loadState(savedInstanceState);
+            contextMenu.note.loadState(savedInstanceState)
         }
-        LoadableListViewParameters viewParameters = new LoadableListViewParameters(
-                TriState.fromBoolean(savedInstanceState.getBoolean(
-                    IntentExtra.COLLAPSE_DUPLICATES.key, MyPreferences.isCollapseDuplicates())),
+        val viewParameters = LoadableListViewParameters(
+                TriState.Companion.fromBoolean(savedInstanceState.getBoolean(
+                        IntentExtra.COLLAPSE_DUPLICATES.key, MyPreferences.isCollapseDuplicates())),
                 0,
                 Optional.of(myContext.origins().fromId(savedInstanceState.getLong(
                         IntentExtra.ORIGIN_ID.key)))
-        );
-        getListData().updateView(viewParameters);
-        actorProfileViewer.ensureView(getParamsNew().getTimeline().hasActorProfile());
-        MyLog.v(this, () -> "restoreActivityState; " + getParamsNew());
+        )
+        getListData().updateView(viewParameters)
+        actorProfileViewer.ensureView(getParamsNew().getTimeline().hasActorProfile())
+        MyLog.v(this) { "restoreActivityState; " + getParamsNew() }
     }
 
-    public void onTimelineTitleClick(View item) {
-        switch (MyPreferences.getTapOnATimelineTitleBehaviour()) {
-            case SWITCH_TO_DEFAULT_TIMELINE:
-                if (getParamsLoaded().isAtHome()) {
-                    onTimelineTypeButtonClick(item);
-                } else {
-                    FirstActivity.goHome(this);
-                }
-                break;
-            case GO_TO_THE_TOP:
-                onGoToTheTopButtonClick(item);
-                break;
-            case SELECT_TIMELINE:
-                onTimelineTypeButtonClick(item);
-                break;
-            default:
-                break;
+    fun onTimelineTitleClick(item: View?) {
+        when (MyPreferences.getTapOnATimelineTitleBehaviour()) {
+            TapOnATimelineTitleBehaviour.SWITCH_TO_DEFAULT_TIMELINE -> if (getParamsLoaded().isAtHome) {
+                onTimelineTypeButtonClick(item)
+            } else {
+                FirstActivity.Companion.goHome(this)
+            }
+            TapOnATimelineTitleBehaviour.GO_TO_THE_TOP -> onGoToTheTopButtonClick(item)
+            TapOnATimelineTitleBehaviour.SELECT_TIMELINE -> onTimelineTypeButtonClick(item)
+            else -> {
+            }
         }
     }
 
-    public void onSwitchToDefaultTimelineButtonClick(View item) {
-        closeDrawer();
-        FirstActivity.goHome(this);
+    fun onSwitchToDefaultTimelineButtonClick(item: View?) {
+        closeDrawer()
+        FirstActivity.Companion.goHome(this)
     }
 
-    public void onGoToTheTopButtonClick(View item) {
-        closeDrawer();
+    fun onGoToTheTopButtonClick(item: View?) {
+        closeDrawer()
         if (getListData().mayHaveYoungerPage()) {
-            showList(WhichPage.TOP);
+            showList(WhichPage.TOP)
         } else {
-            LoadableListPosition.setPosition(getListView(), 0);
+            LoadableListPosition.Companion.setPosition(listView, 0)
         }
     }
 
-    public void onCombinedTimelineToggleClick(View item) {
-        closeDrawer();
-        switchView( getParamsLoaded().getTimeline().fromIsCombined(myContext, !getParamsLoaded().isTimelineCombined()));
+    fun onCombinedTimelineToggleClick(item: View?) {
+        closeDrawer()
+        switchView(getParamsLoaded().getTimeline().fromIsCombined(myContext, !getParamsLoaded().isTimelineCombined))
     }
 
-    private void closeDrawer() {
-        ViewGroup mDrawerList = findViewById(R.id.navigation_drawer);
-        mDrawerLayout.closeDrawer(mDrawerList);
+    private fun closeDrawer() {
+        val mDrawerList = findViewById<ViewGroup?>(R.id.navigation_drawer)
+        mDrawerLayout.closeDrawer(mDrawerList)
     }
 
-    public void onCollapseDuplicatesToggleClick(View view) {
-        closeDrawer();
-        updateList(LoadableListViewParameters.collapseDuplicates(((CheckBox) view).isChecked()));
+    fun onCollapseDuplicatesToggleClick(view: View?) {
+        closeDrawer()
+        updateList(LoadableListViewParameters.Companion.collapseDuplicates((view as CheckBox?).isChecked()))
     }
 
-    public void onShowSensitiveContentToggleClick(View view) {
-        closeDrawer();
-        MyPreferences.setShowSensitiveContent(((CheckBox) view).isChecked());
-        updateList(LoadableListViewParameters.EMPTY);
+    fun onShowSensitiveContentToggleClick(view: View?) {
+        closeDrawer()
+        MyPreferences.setShowSensitiveContent((view as CheckBox?).isChecked())
+        updateList(LoadableListViewParameters.Companion.EMPTY)
     }
 
-    public void onTimelineTypeButtonClick(View item) {
-        TimelineSelector.selectTimeline(this, ActivityRequestCode.SELECT_TIMELINE,
-                getParamsNew().getTimeline(), myContext.accounts().getCurrentAccount());
-        closeDrawer();
+    fun onTimelineTypeButtonClick(item: View?) {
+        TimelineSelector.Companion.selectTimeline(this, ActivityRequestCode.SELECT_TIMELINE,
+                getParamsNew().getTimeline(), myContext.accounts().currentAccount)
+        closeDrawer()
     }
 
-    public void onSelectAccountButtonClick(View item) {
+    fun onSelectAccountButtonClick(item: View?) {
         if (myContext.accounts().size() > 1) {
-            AccountSelector.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT, 0);
+            AccountSelector.Companion.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT, 0)
         }
-        closeDrawer();
+        closeDrawer()
     }
 
-    public void onSelectProfileOriginButtonClick(View view) {
-        OriginSelector.selectOriginForActor(this, MyContextMenu.MENU_GROUP_ACTOR_PROFILE,
-                ActivityRequestCode.SELECT_ORIGIN, getParamsLoaded().timeline.actor);
+    fun onSelectProfileOriginButtonClick(view: View?) {
+        OriginSelector.Companion.selectOriginForActor(this, MyContextMenu.Companion.MENU_GROUP_ACTOR_PROFILE,
+                ActivityRequestCode.SELECT_ORIGIN, getParamsLoaded().timeline.actor)
     }
 
     /**
-     * See <a href="http://developer.android.com/guide/topics/search/search-dialog.html">Creating 
-     * a Search Interface</a>
+     * See [Creating
+ * a Search Interface](http://developer.android.com/guide/topics/search/search-dialog.html)
      */
-    @Override
-    public boolean onSearchRequested() {
+    override fun onSearchRequested(): Boolean {
         if (searchView != null) {
-            searchView.showSearchView(getParamsLoaded().getTimeline());
-            return true;
+            searchView.showSearchView(getParamsLoaded().getTimeline())
+            return true
         }
-        return false;
+        return false
     }
 
-    @Override
-    protected void onResume() {
-        String method = "onResume";
-        if (!isFinishing()) {
-            if (myContext.accounts().getCurrentAccount().isValid()) {
-                if (isContextNeedsUpdate()) {
-                    MyLog.v(this, () ->
-                            method + "; Restarting this Activity to apply all new changes of configuration");
-                    finish();
-                    switchView(getParamsLoaded().getTimeline());
+    override fun onResume() {
+        val method = "onResume"
+        if (!isFinishing) {
+            if (myContext.accounts().currentAccount.isValid) {
+                if (isContextNeedsUpdate) {
+                    MyLog.v(this) { "$method; Restarting this Activity to apply all new changes of configuration" }
+                    finish()
+                    switchView(getParamsLoaded().getTimeline())
                 }
-            } else { 
-                MyLog.v(this, () ->
-                        method + "; Finishing this Activity and going Home because there is no Account selected");
-                FirstActivity.goHome(this);
-                finish();
+            } else {
+                MyLog.v(this) { "$method; Finishing this Activity and going Home because there is no Account selected" }
+                FirstActivity.Companion.goHome(this)
+                finish()
             }
         }
-        super.onResume();
+        super.onResume()
     }
 
-    @Override
-    protected void onPause() {
-        final String method = "onPause";
-        MyLog.v(this, method);
-        hideLoading(method);
-        hideSyncing(method);
-        DemoData.crashTest(() -> getNoteEditor() != null
-                && getNoteEditor().getData().getContent().startsWith("Crash me on pause 2015-04-10"));
-        saveTimelinePosition();
-        myContext.timelines().saveChanged();
-        super.onPause();
+    override fun onPause() {
+        val method = "onPause"
+        MyLog.v(this, method)
+        hideLoading(method)
+        hideSyncing(method)
+        DemoData.Companion.crashTest(BooleanSupplier {
+            (noteEditor != null
+                    && noteEditor.data.content.startsWith("Crash me on pause 2015-04-10"))
+        })
+        saveTimelinePosition()
+        myContext.timelines().saveChanged()
+        super.onPause()
     }
 
     /**
@@ -380,420 +312,346 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
      * That advice doesn't fit here:
      * see http://stackoverflow.com/questions/5996885/how-to-wait-for-android-runonuithread-to-be-finished
      */
-    protected void saveTimelinePosition() {
-        if (getParamsLoaded().isLoaded() && isPositionRestored()) {
-            new TimelineViewPositionStorage<>(this, getParamsLoaded()).save();
+    protected fun saveTimelinePosition() {
+        if (getParamsLoaded().isLoaded() && isPositionRestored) {
+            TimelineViewPositionStorage(this, getParamsLoaded()).save()
         }
     }
 
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        if (item.getGroupId() == MyContextMenu.MENU_GROUP_ACTOR_PROFILE) {
-            actorProfileViewer.contextMenu.onContextItemSelected(item);
+    override fun onContextItemSelected(item: MenuItem?): Boolean {
+        if (item.getGroupId() == MyContextMenu.Companion.MENU_GROUP_ACTOR_PROFILE) {
+            actorProfileViewer.contextMenu.onContextItemSelected(item)
         } else {
-            contextMenu.onContextItemSelected(item);
+            contextMenu.onContextItemSelected(item)
         }
-        return super.onContextItemSelected(item);
+        return super.onContextItemSelected(item)
     }
-    
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.create_note, menu);
-        prepareMarkAllAsReadButton(menu);
-        super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.timeline, menu);
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.create_note, menu)
+        prepareMarkAllAsReadButton(menu)
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.timeline, menu)
         if (MyPreferences.isShowDebuggingInfoInUi()) {
-            MenuItem item = menu.findItem(R.id.debug_api);
+            val item = menu.findItem(R.id.debug_api)
             if (item != null) {
-                item.setVisible(true);
+                item.isVisible = true
             }
         }
-        return true;
+        return true
     }
 
-    private void prepareMarkAllAsReadButton(Menu menu) {
-        MenuItem item = menu.findItem(R.id.markAllAsReadButton);
+    private fun prepareMarkAllAsReadButton(menu: Menu?) {
+        val item = menu.findItem(R.id.markAllAsReadButton)
         if (item != null) {
-            boolean enable = getParamsNew().timeline.getTimelineType() == TimelineType.UNREAD_NOTIFICATIONS;
-            item.setEnabled(enable);
-            item.setVisible(enable);
+            val enable = getParamsNew().timeline.timelineType == TimelineType.UNREAD_NOTIFICATIONS
+            item.isEnabled = enable
+            item.isVisible = enable
             if (enable) {
-                item.setOnMenuItemClickListener(item1 -> {
-                    clearNotifications(this);
-                    return true;
-                });
+                item.setOnMenuItemClickListener { item1: MenuItem? ->
+                    clearNotifications(this)
+                    true
+                }
             }
         }
     }
 
-    private static <T extends ViewItem<T>> void clearNotifications(TimelineActivity<T> timelineActivity) {
-        final Timeline timeline = timelineActivity.getParamsLoaded().getTimeline();
-        AsyncTaskLauncher.execute(timelineActivity,
-                new MyAsyncTask<Void, Void, Void>("clearNotifications" + timeline.getId(),
-                        MyAsyncTask.PoolEnum.QUICK_UI) {
-                    @Override
-                    protected Void doInBackground2(Void aVoid) {
-                        timelineActivity.myContext.clearNotifications(timeline);
-                        return null;
-                    }
-
-                    @Override
-                    protected void onPostExecute2(Void v) {
-                        timelineActivity.refreshFromCache();
-                    }
-                }
-        );
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        MyAccount ma = myContext.accounts().getCurrentAccount();
-        boolean enableSync = (getParamsLoaded().getTimeline().isCombined() || ma.isValidAndSucceeded())
-                && getParamsLoaded().getTimeline().isSynableSomehow();
-        MenuItem item = menu.findItem(R.id.sync_menu_item);
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        val ma = myContext.accounts().currentAccount
+        val enableSync = ((getParamsLoaded().getTimeline().isCombined || ma.isValidAndSucceeded)
+                && getParamsLoaded().getTimeline().isSynableSomehow)
+        val item = menu.findItem(R.id.sync_menu_item)
         if (item != null) {
-            item.setEnabled(enableSync);
-            item.setVisible(enableSync);
+            item.isEnabled = enableSync
+            item.isVisible = enableSync
         }
-
-        prepareDrawer();
-
+        prepareDrawer()
         if (contextMenu != null) {
-            contextMenu.note.setSelectedActingAccount(MyAccount.EMPTY);
+            contextMenu.note.selectedActingAccount = MyAccount.Companion.EMPTY
         }
-        return super.onPrepareOptionsMenu(menu);
+        return super.onPrepareOptionsMenu(menu)
     }
 
-    private void prepareDrawer() {
-        View drawerView = findViewById(R.id.navigation_drawer);
-        if (drawerView == null) {
-            return;
+    private fun prepareDrawer() {
+        val drawerView = findViewById<View?>(R.id.navigation_drawer) ?: return
+        val item = drawerView.findViewById<TextView?>(R.id.timelineTypeButton)
+        if (item != null) {
+            item.text = timelineTypeButtonText()
         }
-        TextView item = drawerView.findViewById(R.id.timelineTypeButton);
-        if (item !=  null) {
-            item.setText(timelineTypeButtonText());
-        }
-        prepareCombinedTimelineToggle(drawerView);
-        updateAccountButtonText(drawerView);
+        prepareCombinedTimelineToggle(drawerView)
+        updateAccountButtonText(drawerView)
     }
 
-    private void prepareCombinedTimelineToggle(View drawerView) {
-        if (ViewUtils.showView(drawerView, R.id.combinedTimelineToggle,
-                // Show the "Combined" toggle even for one account to see notes,
-                // which are not on the timeline.
-                // E.g. notes by actors, downloaded on demand.
-                getParamsNew().getSelectedActorId() == 0 ||
-                        getParamsNew().getSelectedActorId() == getParamsNew().getMyAccount().getActorId())) {
+    private fun prepareCombinedTimelineToggle(drawerView: View?) {
+        if (ViewUtils.showView(drawerView, R.id.combinedTimelineToggle,  // Show the "Combined" toggle even for one account to see notes,
+                        // which are not on the timeline.
+                        // E.g. notes by actors, downloaded on demand.
+                        getParamsNew().selectedActorId == 0L ||
+                                getParamsNew().selectedActorId == getParamsNew().myAccount.actorId)) {
             MyCheckBox.setEnabled(drawerView, R.id.combinedTimelineToggle,
-                    getParamsLoaded().getTimeline().isCombined());
+                    getParamsLoaded().getTimeline().isCombined)
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
+            return true
         }
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                if (mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
-                    mDrawerLayout.closeDrawer(Gravity.LEFT);
-                } else {
-                    mDrawerLayout.openDrawer(Gravity.LEFT);
-                }
-                break;
-            case R.id.search_menu_id:
-                onSearchRequested();
-                break;
-            case R.id.sync_menu_item:
-                syncWithInternet(getParamsLoaded().getTimeline(), true, true);
-                break;
-            case R.id.refresh_menu_item:
-                refreshFromCache();
-                break;
-            case R.id.commands_queue_id:
-                startActivity(new Intent(getActivity(), QueueViewer.class));
-                break;
-            case R.id.manage_timelines:
-                startActivity(new Intent(getActivity(), ManageTimelines.class));
-                break;
-            case R.id.preferences_menu_id:
-                startMyPreferenceActivity();
-                break;
-            case R.id.help_menu_id:
-                onHelp();
-                break;
-            case R.id.debug_api:
-                new ApiDebugger(myContext, this).debugGet();
-                break;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-        return false;
-    }
-
-    private void refreshFromCache() {
-        if (getListData().mayHaveYoungerPage() || getListView().getLastVisiblePosition() > TimelineParameters.PAGE_SIZE / 2) {
-            showList(WhichPage.CURRENT);
-        } else {
-            showList(WhichPage.YOUNGEST);
-        }
-    }
-
-    private void onHelp() {
-        HelpActivity.startMe(this, false, HelpActivity.PAGE_CHANGELOG);
-    }
-
-    public void onItemClick(NoteViewItem item) {
-        MyAccount ma = myContext.accounts().getAccountForThisNote(item.getOrigin(),
-                getParamsNew().getMyAccount(), item.getLinkedMyAccount(), false);
-        MyLog.v(this, () -> "onItemClick, " + item + "; " + item + " account=" + ma.getAccountName());
-        if (item.getNoteId() <= 0) return;
-
-        Uri uri = MatchedUri.getTimelineItemUri(
-                myContext.timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, item.getOrigin()),
-                item.getNoteId());
-
-        String action = getIntent().getAction();
-        if (Intent.ACTION_PICK.equals(action) || Intent.ACTION_GET_CONTENT.equals(action)) {
-            if (MyLog.isLoggable(this, MyLog.DEBUG)) {
-                MyLog.d(this, "onItemClick, setData=" + uri);
+        when (item.getItemId()) {
+            android.R.id.home -> if (mDrawerLayout.isDrawerOpen(Gravity.LEFT)) {
+                mDrawerLayout.closeDrawer(Gravity.LEFT)
+            } else {
+                mDrawerLayout.openDrawer(Gravity.LEFT)
             }
-            setResult(Activity.RESULT_OK, new Intent().setData(uri));
+            R.id.search_menu_id -> onSearchRequested()
+            R.id.sync_menu_item -> syncWithInternet(getParamsLoaded().getTimeline(), true, true)
+            R.id.refresh_menu_item -> refreshFromCache()
+            R.id.commands_queue_id -> startActivity(Intent(activity, QueueViewer::class.java))
+            R.id.manage_timelines -> startActivity(Intent(activity, ManageTimelines::class.java))
+            R.id.preferences_menu_id -> startMyPreferenceActivity()
+            R.id.help_menu_id -> onHelp()
+            R.id.debug_api -> ApiDebugger(myContext, this).debugGet()
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return false
+    }
+
+    private fun refreshFromCache() {
+        if (getListData().mayHaveYoungerPage() || listView.lastVisiblePosition > TimelineParameters.Companion.PAGE_SIZE / 2) {
+            showList(WhichPage.CURRENT)
+        } else {
+            showList(WhichPage.YOUNGEST)
+        }
+    }
+
+    private fun onHelp() {
+        HelpActivity.Companion.startMe(this, false, HelpActivity.Companion.PAGE_CHANGELOG)
+    }
+
+    fun onItemClick(item: NoteViewItem?) {
+        val ma = myContext.accounts().getAccountForThisNote(item.getOrigin(),
+                getParamsNew().myAccount, item.getLinkedMyAccount(), false)
+        MyLog.v(this) { "onItemClick, " + item + "; " + item + " account=" + ma.accountName }
+        if (item.getNoteId() <= 0) return
+        val uri: Uri = MatchedUri.Companion.getTimelineItemUri(
+                myContext.timelines()[TimelineType.EVERYTHING, Actor.Companion.EMPTY, item.getOrigin()],
+                item.getNoteId())
+        val action = intent.action
+        if (Intent.ACTION_PICK == action || Intent.ACTION_GET_CONTENT == action) {
+            if (MyLog.isLoggable(this, MyLog.DEBUG)) {
+                MyLog.d(this, "onItemClick, setData=$uri")
+            }
+            setResult(RESULT_OK, Intent().setData(uri))
         } else {
             if (MyLog.isLoggable(this, MyLog.DEBUG)) {
-                MyLog.d(this, "onItemClick, startActivity=" + uri);
+                MyLog.d(this, "onItemClick, startActivity=$uri")
             }
-            startActivity(MyAction.VIEW_CONVERSATION.getIntent(uri));
+            startActivity(MyAction.VIEW_CONVERSATION.getIntent(uri))
         }
     }
 
-    @Override
-    public void onScrollStateChanged(AbsListView view, int scrollState) {
+    override fun onScrollStateChanged(view: AbsListView?, scrollState: Int) {
         // Empty
     }
 
-    @Override
-    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
-                         int totalItemCount) {
-        boolean up = false;
+    override fun onScroll(view: AbsListView?, firstVisibleItem: Int, visibleItemCount: Int,
+                          totalItemCount: Int) {
+        var up = false
         if (firstVisibleItem == 0) {
-            View v = getListView().getChildAt(0);
-            int offset = (v == null) ? 0 : v.getTop();
-            up = offset == 0;
+            val v = listView.getChildAt(0)
+            val offset = v?.top ?: 0
+            up = offset == 0
             if (up && getListData().mayHaveYoungerPage()) {
-                showList(WhichPage.YOUNGER);
+                showList(WhichPage.YOUNGER)
             }
         }
         // Idea from http://stackoverflow.com/questions/1080811/android-endless-list
-        if ( !up && (visibleItemCount > 0)
-                && (firstVisibleItem + visibleItemCount >= totalItemCount - 1)
+        if (!up && visibleItemCount > 0
+                && firstVisibleItem + visibleItemCount >= totalItemCount - 1
                 && getListData().mayHaveOlderPage()) {
-            MyLog.d(this, "Start Loading older items, rows=" + totalItemCount);
-            showList(WhichPage.OLDER);
+            MyLog.d(this, "Start Loading older items, rows=$totalItemCount")
+            showList(WhichPage.OLDER)
         }
     }
 
-    private String timelineTypeButtonText() {
-        return TimelineTitle.from(myContext, getParamsLoaded().getTimeline(),
-                MyAccount.EMPTY, false, TimelineTitle.Destination.DEFAULT).toString();
+    private fun timelineTypeButtonText(): String? {
+        return TimelineTitle.Companion.from(myContext, getParamsLoaded().getTimeline(),
+                MyAccount.Companion.EMPTY, false, TimelineTitle.Destination.DEFAULT).toString()
     }
 
-    private void updateAccountButtonText(View drawerView) {
-        TextView textView = drawerView.findViewById(R.id.selectAccountButton);
-        if (textView == null) {
-            return;
+    private fun updateAccountButtonText(drawerView: View?) {
+        val textView = drawerView.findViewById<TextView?>(R.id.selectAccountButton) ?: return
+        val accountButtonText = myContext.accounts().currentAccount.toAccountButtonText()
+        textView.text = accountButtonText
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        if (isFinishing) {
+            MyLog.v(this) { "onNewIntent, Is finishing" }
+            return
         }
-        String accountButtonText = myContext.accounts().getCurrentAccount().toAccountButtonText();
-        textView.setText(accountButtonText);
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        if (isFinishing()) {
-            MyLog.v(this, () -> "onNewIntent, Is finishing");
-            return;
+        MyLog.v(this) { "onNewIntent" }
+        super.onNewIntent(intent)
+        parseNewIntent(intent)
+        checkForInitialSync(intent)
+        if (isMyResumed || getListData().size() > 0 || isLoading) {
+            showList(getParamsNew().whichPage)
         }
-        MyLog.v(this, () -> "onNewIntent");
-        super.onNewIntent(intent);
-        parseNewIntent(intent);
-        checkForInitialSync(intent);
-        if (isMyResumed() || getListData().size() > 0 || isLoading()) {
-            showList(getParamsNew().whichPage);
-		}
     }
 
-    private void checkForInitialSync(Intent intent) {
-        Timeline timeline = getParamsNew().timeline;
-        if (timeline.isTimeToAutoSync() && timeline.getLastSyncedDate() == DATETIME_MILLIS_NEVER) {
+    private fun checkForInitialSync(intent: Intent?) {
+        val timeline = getParamsNew().timeline
+        if (timeline.isTimeToAutoSync && timeline.lastSyncedDate == RelativeTime.DATETIME_MILLIS_NEVER) {
             if (intent.hasExtra(IntentExtra.INITIAL_ACCOUNT_SYNC.key)) {
-                timeline.setSyncSucceededDate(System.currentTimeMillis()); // To avoid repetition
-                MyServiceManager.setServiceAvailable();
-                MyServiceManager.sendManualForegroundCommand(
-                    CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline));
-                MyServiceManager.sendCommand(
-                    CommandData.newActorCommand(CommandEnum.GET_FRIENDS, timeline.myAccountToSync.getActor(), ""));
+                timeline.syncSucceededDate = System.currentTimeMillis() // To avoid repetition
+                MyServiceManager.Companion.setServiceAvailable()
+                MyServiceManager.Companion.sendManualForegroundCommand(
+                        CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, timeline))
+                MyServiceManager.Companion.sendCommand(
+                        CommandData.Companion.newActorCommand(CommandEnum.GET_FRIENDS, timeline.myAccountToSync.actor, ""))
             } else {
-                onNoRowsLoaded(timeline);
+                onNoRowsLoaded(timeline)
             }
         }
     }
 
-    private void parseNewIntent(Intent intentNew) {
+    private fun parseNewIntent(intentNew: Intent?) {
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, "parseNewIntent");
+            MyLog.v(this, "parseNewIntent")
         }
-        mRateLimitText = "";
-        WhichPage whichPage = WhichPage.load(intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.CURRENT);
-        String searchQuery = intentNew.getStringExtra(IntentExtra.SEARCH_QUERY.key);
-        ParsedUri parsedUri = ParsedUri.fromUri(intentNew.getData());
-        Timeline timeline = Timeline.fromParsedUri(myContext, parsedUri, searchQuery);
-        setParamsNew(new TimelineParameters(myContext,
-                timeline.isEmpty() ? myContext.timelines().getDefault() : timeline,
-                whichPage));
-
-        actorProfileViewer.ensureView(getParamsNew().getTimeline().hasActorProfile());
-
-        if (Intent.ACTION_SEND.equals(intentNew.getAction())) {
-            sharedNote = SharedNote.fromIntent(intentNew);
-            sharedNote.ifPresent(shared -> {
-                MyLog.v(this, shared.toString());
-                AccountSelector.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA, 0);
-            });
+        mRateLimitText = ""
+        val whichPage: WhichPage = WhichPage.Companion.load(intentNew.getStringExtra(IntentExtra.WHICH_PAGE.key), WhichPage.CURRENT)
+        val searchQuery = intentNew.getStringExtra(IntentExtra.SEARCH_QUERY.key)
+        val parsedUri: ParsedUri = ParsedUri.Companion.fromUri(intentNew.getData())
+        val timeline: Timeline = Timeline.Companion.fromParsedUri(myContext, parsedUri, searchQuery)
+        setParamsNew(TimelineParameters(myContext,
+                if (timeline.isEmpty) myContext.timelines().default else timeline,
+                whichPage))
+        actorProfileViewer.ensureView(getParamsNew().getTimeline().hasActorProfile())
+        if (Intent.ACTION_SEND == intentNew.getAction()) {
+            sharedNote = SharedNote.Companion.fromIntent(intentNew)
+            sharedNote.ifPresent(Consumer { shared: SharedNote? ->
+                MyLog.v(this, shared.toString())
+                AccountSelector.Companion.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA, 0)
+            })
         }
     }
 
-    @Override
-    public void updateScreen() {
-        MyServiceManager.setServiceAvailable();
-        invalidateOptionsMenu();
-        getNoteEditor().updateScreen();
-        updateTitle(mRateLimitText);
-        mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome());
-        if (getParamsLoaded().isAtHome()) {
-            myContext.accounts().getCurrentAccount().getActor().avatarFile
-                    .loadDrawable(this::scaleDrawableForToolbar, mDrawerToggle::setHomeAsUpIndicator);
+    override fun updateScreen() {
+        MyServiceManager.Companion.setServiceAvailable()
+        invalidateOptionsMenu()
+        noteEditor.updateScreen()
+        updateTitle(mRateLimitText)
+        mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome)
+        if (getParamsLoaded().isAtHome) {
+            myContext.accounts().currentAccount.actor.avatarFile
+                    .loadDrawable({ drawable: Drawable? -> scaleDrawableForToolbar(drawable) }) { indicator: Drawable? -> mDrawerToggle.setHomeAsUpIndicator(indicator) }
         } else {
-            mDrawerToggle.setHomeAsUpIndicator(null);
+            mDrawerToggle.setHomeAsUpIndicator(null)
         }
-        showRecentAccounts();
+        showRecentAccounts()
         ViewUtils.showView(
-                findViewById(R.id.switchToDefaultTimelineButton), !getParamsLoaded().isAtHome());
+                findViewById(R.id.switchToDefaultTimelineButton), !getParamsLoaded().isAtHome)
         ViewUtils.showView(this, R.id.collapseDuplicatesToggle,
-                MyPreferences.getMaxDistanceBetweenDuplicates() > 0);
+                MyPreferences.getMaxDistanceBetweenDuplicates() > 0)
         MyCheckBox.setEnabled(this, R.id.collapseDuplicatesToggle,
-                getListData().isCollapseDuplicates());
-        MyCheckBox.setEnabled(this, R.id.showSensitiveContentToggle, MyPreferences.isShowSensitiveContent());
-        showSyncListButtons();
-        showActorProfile();
+                getListData().isCollapseDuplicates)
+        MyCheckBox.setEnabled(this, R.id.showSensitiveContentToggle, MyPreferences.isShowSensitiveContent())
+        showSyncListButtons()
+        showActorProfile()
     }
 
-    private Drawable scaleDrawableForToolbar(Drawable drawable) {
-        Drawable scaledDrawable;
-        if (drawable instanceof BitmapDrawable) {
-            Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-            int pixels = getListAdapter().dpToPixes(32);
-            scaledDrawable = new BitmapDrawable(getResources(), Bitmap.createScaledBitmap(bitmap, pixels, pixels, true));
+    private fun scaleDrawableForToolbar(drawable: Drawable?): Drawable? {
+        val scaledDrawable: Drawable?
+        scaledDrawable = if (drawable is BitmapDrawable) {
+            val bitmap = (drawable as BitmapDrawable?).getBitmap()
+            val pixels = listAdapter.dpToPixes(32)
+            BitmapDrawable(resources, Bitmap.createScaledBitmap(bitmap, pixels, pixels, true))
         } else {
-            scaledDrawable = drawable;
+            drawable
         }
-        return scaledDrawable;
+        return scaledDrawable
     }
 
-    private void showRecentAccounts() {
-        List<MyAccount> recentAccounts = new ArrayList<>(myContext.accounts().recentAccounts);
-        for (int ind = 0; ind < 3; ind++) {
-            MyAccount ma = recentAccounts.size() > ind ? recentAccounts.get(ind) : MyAccount.EMPTY;
-            AvatarView avatarView = findViewById(ind == 0
-                    ? R.id.current_account_avatar_image
-                    : (ind == 1 ? R.id.account_avatar_image_1 : R.id.account_avatar_image_2));
-            if (avatarView == null) break;
-
-            ViewUtils.showView(avatarView, ma.isValid());
+    private fun showRecentAccounts() {
+        val recentAccounts: MutableList<MyAccount?> = ArrayList(myContext.accounts().recentAccounts)
+        for (ind in 0..2) {
+            val ma = if (recentAccounts.size > ind) recentAccounts[ind] else MyAccount.Companion.EMPTY
+            val avatarView = findViewById<AvatarView?>(if (ind == 0) R.id.current_account_avatar_image else if (ind == 1) R.id.account_avatar_image_1 else R.id.account_avatar_image_2)
+                    ?: break
+            ViewUtils.showView(avatarView, ma.isValid())
             if (ma.nonValid()) {
-                avatarView.setImageResource(R.drawable.blank_image);
-                avatarView.setVisibility(View.VISIBLE);
-                continue;
+                avatarView.setImageResource(R.drawable.blank_image)
+                avatarView.visibility = View.VISIBLE
+                continue
             }
-
-            ma.getActor().avatarFile.showImage(this, avatarView);
-            avatarView.setContentDescription(ma.getAccountName());
+            ma.getActor().avatarFile.showImage(this, avatarView)
+            avatarView.contentDescription = ma.getAccountName()
             if (Build.VERSION.SDK_INT >= 26) {
-                avatarView.setTooltipText(ma.getAccountName());
+                avatarView.tooltipText = ma.getAccountName()
             }
-            avatarView.setOnClickListener(ind == 0
-                ? v -> {
-                    TimelineActivity.startForTimeline(
+            avatarView.setOnClickListener(if (ind == 0) View.OnClickListener { v: View? ->
+                startForTimeline(
                         getMyContext(), this,
-                        getMyContext().timelines().forUser(TimelineType.SENT, ma.getActor()));
-                    closeDrawer();
-                    }
-                : v -> {
-                    onAccountSelected(ma);
-                    closeDrawer();
-                    }
-            );
+                        getMyContext().timelines().forUser(TimelineType.SENT, ma.getActor()))
+                closeDrawer()
+            } else View.OnClickListener { v: View? ->
+                onAccountSelected(ma)
+                closeDrawer()
+            }
+            )
         }
     }
 
-    @Override
-    protected void updateTitle(String additionalTitleText) {
-        TimelineTitle.from(myContext, getParamsLoaded().getTimeline(), MyAccount.EMPTY,true,
-                TimelineTitle.Destination.TIMELINE_ACTIVITY).updateActivityTitle(this, additionalTitleText);
+    override fun updateTitle(additionalTitleText: String?) {
+        TimelineTitle.Companion.from(myContext, getParamsLoaded().getTimeline(), MyAccount.Companion.EMPTY, true,
+                TimelineTitle.Destination.TIMELINE_ACTIVITY).updateActivityTitle(this, additionalTitleText)
     }
 
-    NoteContextMenu getContextMenu() {
-        return contextMenu.note;
+    fun getContextMenu(): NoteContextMenu? {
+        return contextMenu.note
     }
 
-    /** Parameters of currently shown Timeline */
-    @NonNull
-    private TimelineParameters getParamsLoaded() {
-        return getListData().params;
+    /** Parameters of currently shown Timeline  */
+    private fun getParamsLoaded(): TimelineParameters {
+        return getListData().params
     }
 
-    @Override
-    @NonNull
-    public TimelineData<T> getListData() {
+    override fun getListData(): TimelineData<T?> {
         if (listData == null) {
-            listData = new TimelineData<>(null, new TimelinePage<T>(getParamsNew(), Collections.emptyList()));
+            listData = TimelineData(null, TimelinePage(getParamsNew(), emptyList()))
         }
-        return listData;
+        return listData
     }
 
-    @NonNull
-    private TimelineData<T> setListData(TimelinePage<T> pageLoaded) {
-        listData = new TimelineData<T>(listData, pageLoaded);
-        return listData;
+    private fun setListData(pageLoaded: TimelinePage<T?>?): TimelineData<T?> {
+        listData = TimelineData(listData, pageLoaded)
+        return listData
     }
 
-    @Override
-    public void showList(WhichPage whichPage) {
-        showList(whichPage, TriState.FALSE);
+    override fun showList(whichPage: WhichPage?) {
+        showList(whichPage, TriState.FALSE)
     }
 
-    protected void showList(WhichPage whichPage, TriState chainedRequest) {
-        showList(TimelineParameters.clone(getReferenceParametersFor(whichPage), whichPage),
-                chainedRequest);
+    protected fun showList(whichPage: WhichPage?, chainedRequest: TriState?) {
+        showList(TimelineParameters.Companion.clone(getReferenceParametersFor(whichPage), whichPage),
+                chainedRequest)
     }
 
-    @NonNull
-    private TimelineParameters getReferenceParametersFor(WhichPage whichPage) {
-        switch (whichPage) {
-            case OLDER:
+    private fun getReferenceParametersFor(whichPage: WhichPage?): TimelineParameters {
+        return when (whichPage) {
+            WhichPage.OLDER -> {
                 if (getListData().size() > 0) {
-                    return getListData().pages.get(getListData().pages.size()-1).params;
-                }
-                return getParamsLoaded();
-            case YOUNGER:
+                    getListData().pages[getListData().pages.size - 1].params
+                } else getParamsLoaded()
+            }
+            WhichPage.YOUNGER -> {
                 if (getListData().size() > 0) {
-                    return getListData().pages.get(0).params;
-                }
-                return getParamsLoaded();
-            case EMPTY:
-                return new TimelineParameters(myContext, Timeline.EMPTY, WhichPage.EMPTY);
-            default:
-                return getParamsNew();
+                    getListData().pages[0].params
+                } else getParamsLoaded()
+            }
+            WhichPage.EMPTY -> TimelineParameters(myContext, Timeline.Companion.EMPTY, WhichPage.EMPTY)
+            else -> getParamsNew()
         }
     }
 
@@ -802,450 +660,433 @@ public class TimelineActivity<T extends ViewItem<T>> extends NoteEditorListActiv
      * This is done asynchronously.
      * This method should be called from UI thread only.
      */
-    protected void showList(TimelineParameters params, TriState chainedRequest) {
-        final String method = "showList";
+    protected fun showList(params: TimelineParameters?, chainedRequest: TriState?) {
+        val method = "showList"
         if (params.isEmpty()) {
-            MyLog.v(this, method + "; ignored empty request");
-            return;
+            MyLog.v(this, "$method; ignored empty request")
+            return
         }
-        boolean isDifferentRequest = !params.equals(paramsToLoad);
-        paramsToLoad = params;
-        if (isLoading() && chainedRequest != TriState.TRUE) {
-            if(MyLog.isVerboseEnabled()) {
+        val isDifferentRequest = params != paramsToLoad
+        paramsToLoad = params
+        if (isLoading && chainedRequest != TriState.TRUE) {
+            if (MyLog.isVerboseEnabled()) {
                 if (isDifferentRequest) {
-                    MyLog.v(this, () -> method + "; different while loading " + params.toSummary());
+                    MyLog.v(this) { method + "; different while loading " + params.toSummary() }
                 } else {
-                    MyLog.v(this, () -> method + "; ignored duplicating " + params.toSummary());
+                    MyLog.v(this) { method + "; ignored duplicating " + params.toSummary() }
                 }
             }
         } else {
-            MyLog.v(this, () -> method
-                    + (chainedRequest == TriState.TRUE ? "; chained" : "")
-                    + "; requesting " + (isDifferentRequest ? "" : "duplicating ")
-                    + params.toSummary());
-            if (chainedRequest.untrue) saveTimelinePosition();
-            disableHeaderSyncButton(R.string.loading);
-            disableFooterButton(R.string.loading);
-            showLoading(method, getText(R.string.loading) + " "
-                    + paramsToLoad.toSummary() + HORIZONTAL_ELLIPSIS);
+            MyLog.v(this) {
+                (method
+                        + (if (chainedRequest == TriState.TRUE) "; chained" else "")
+                        + "; requesting " + (if (isDifferentRequest) "" else "duplicating ")
+                        + params.toSummary())
+            }
+            if (chainedRequest.untrue) saveTimelinePosition()
+            disableHeaderSyncButton(R.string.loading)
+            disableFooterButton(R.string.loading)
+            showLoading(method, getText(R.string.loading).toString() + " "
+                    + paramsToLoad.toSummary() + HORIZONTAL_ELLIPSIS)
             super.showList(chainedRequest.toBundle(paramsToLoad.whichPage.toBundle(),
-                    IntentExtra.CHAINED_REQUEST.key));
+                    IntentExtra.CHAINED_REQUEST.key))
         }
     }
 
-    @Override
-    protected SyncLoader<T> newSyncLoader(Bundle args) {
-        final String method = "newSyncLoader";
-        WhichPage whichPage = WhichPage.load(args);
-        TimelineParameters params = paramsToLoad == null || whichPage == WhichPage.EMPTY
-                ? new TimelineParameters(myContext, Timeline.EMPTY, whichPage) : paramsToLoad;
+    override fun newSyncLoader(args: Bundle?): SyncLoader<T?>? {
+        val method = "newSyncLoader"
+        val whichPage: WhichPage = WhichPage.Companion.load(args)
+        val params = if (paramsToLoad == null || whichPage == WhichPage.EMPTY) TimelineParameters(myContext, Timeline.Companion.EMPTY, whichPage) else paramsToLoad
         if (params.whichPage != WhichPage.EMPTY) {
-            MyLog.v(this, () -> method + ": " + params);
-            Intent intent = getIntent();
-            if (!params.getContentUri().equals(intent.getData())) {
-                intent.setData(params.getContentUri());
+            MyLog.v(this) { "$method: $params" }
+            val intent = intent
+            if (params.getContentUri() != intent.data) {
+                intent.data = params.getContentUri()
             }
         }
-        return new TimelineLoader<T>(params, BundleUtils.fromBundle(args, IntentExtra.INSTANCE_ID));
+        return TimelineLoader(params, fromBundle(args, IntentExtra.INSTANCE_ID))
     }
 
-    @Override
-    public void onLoadFinished(LoadableListPosition posIn) {
-        final String method = "onLoadFinished";
-        if (MyLog.isVerboseEnabled()) posIn.logV(method + " started;");
-        TimelineData<T> dataLoaded = setListData(((TimelineLoader<T>) getLoaded()).getPage());
-        MyLog.v(this, () -> method + "; " + dataLoaded.params.toSummary());
-
-        LoadableListPosition pos = posIn.nonEmpty() && getListData().isSameTimeline &&
-            isPositionRestored() && dataLoaded.params.whichPage != WhichPage.TOP
-                ? posIn
-                : TimelineViewPositionStorage.loadListPosition(dataLoaded.params);
-        super.onLoadFinished(pos);
+    override fun onLoadFinished(posIn: LoadableListPosition<*>?) {
+        val method = "onLoadFinished"
+        if (MyLog.isVerboseEnabled()) posIn.logV("$method started;")
+        val dataLoaded = setListData((loaded as TimelineLoader<T?>).page)
+        MyLog.v(this) { method + "; " + dataLoaded.params.toSummary() }
+        val pos = if (posIn.nonEmpty() && getListData().isSameTimeline &&
+                isPositionRestored && dataLoaded.params.whichPage != WhichPage.TOP) posIn else TimelineViewPositionStorage.Companion.loadListPosition(dataLoaded.params)
+        super.onLoadFinished(pos)
         if (dataLoaded.params.whichPage == WhichPage.TOP) {
-            LoadableListPosition.setPosition(getListView(), 0);
-            getListAdapter().setPositionRestored(true);
+            LoadableListPosition.Companion.setPosition(listView, 0)
+            listAdapter.isPositionRestored = true
         }
-
-        if (!isPositionRestored()) {
-            new TimelineViewPositionStorage<T>(this, dataLoaded.params).restore();
+        if (!isPositionRestored) {
+            TimelineViewPositionStorage(this, dataLoaded.params).restore()
         }
-
-        TimelineParameters otherParams = paramsToLoad;
-        boolean isParamsChanged = otherParams != null && !dataLoaded.params.equals(otherParams);
-        WhichPage otherPageToRequest;
+        val otherParams = paramsToLoad
+        val isParamsChanged = otherParams != null && dataLoaded.params != otherParams
+        val otherPageToRequest: WhichPage
         if (!isParamsChanged && getListData().size() < 10) {
             if (getListData().mayHaveYoungerPage()) {
-                otherPageToRequest = WhichPage.YOUNGER;
+                otherPageToRequest = WhichPage.YOUNGER
             } else if (getListData().mayHaveOlderPage()) {
-                otherPageToRequest = WhichPage.OLDER;
-            } else if (!dataLoaded.params.whichPage.isYoungest()) {
-                otherPageToRequest = WhichPage.YOUNGEST;
+                otherPageToRequest = WhichPage.OLDER
+            } else if (!dataLoaded.params.whichPage.isYoungest) {
+                otherPageToRequest = WhichPage.YOUNGEST
             } else if (dataLoaded.params.rowsLoaded == 0) {
-                otherPageToRequest = WhichPage.EMPTY;
-                onNoRowsLoaded(dataLoaded.params.timeline);
+                otherPageToRequest = WhichPage.EMPTY
+                onNoRowsLoaded(dataLoaded.params.timeline)
             } else {
-                otherPageToRequest = WhichPage.EMPTY;
+                otherPageToRequest = WhichPage.EMPTY
             }
         } else {
-            otherPageToRequest = WhichPage.EMPTY;
+            otherPageToRequest = WhichPage.EMPTY
         }
-        hideLoading(method);
-        updateScreen();
+        hideLoading(method)
+        updateScreen()
         if (isParamsChanged) {
-            MyLog.v(this, () -> method + "; Parameters changed, requesting " + otherParams.toSummary());
-            showList(otherParams, TriState.TRUE);
+            MyLog.v(this) { method + "; Parameters changed, requesting " + otherParams.toSummary() }
+            showList(otherParams, TriState.TRUE)
         } else if (otherPageToRequest != WhichPage.EMPTY) {
-            MyLog.v(this, () -> method + "; Other page requested " + otherPageToRequest);
-            showList(otherPageToRequest, TriState.TRUE);
+            MyLog.v(this) { "$method; Other page requested $otherPageToRequest" }
+            showList(otherPageToRequest, TriState.TRUE)
         }
     }
 
-    private void addSyncButtons() {
-        final ListView listView = getListView();
+    private fun addSyncButtons() {
+        val listView = listView
         if (listView != null) {
-            if (listView.getHeaderViewsCount() == 0) {
-                listView.addHeaderView(syncYoungerView);
-                disableHeaderSyncButton(R.string.loading);
+            if (listView.headerViewsCount == 0) {
+                listView.addHeaderView(syncYoungerView)
+                disableHeaderSyncButton(R.string.loading)
             }
-            if (listView.getFooterViewsCount() == 0) {
-                listView.addFooterView(syncOlderView);
-                disableFooterButton(R.string.loading);
+            if (listView.footerViewsCount == 0) {
+                listView.addFooterView(syncOlderView)
+                disableFooterButton(R.string.loading)
             }
         }
     }
 
-    private void showSyncListButtons() {
-        showHeaderSyncButton();
-        showFooterSyncButton();
+    private fun showSyncListButtons() {
+        showHeaderSyncButton()
+        showFooterSyncButton()
     }
 
-    private void showHeaderSyncButton() {
+    private fun showHeaderSyncButton() {
         if (getListData().mayHaveYoungerPage()) {
-            disableHeaderSyncButton(R.string.loading);
-            return;
+            disableHeaderSyncButton(R.string.loading)
+            return
         }
-        if (!getParamsLoaded().getTimeline().isSynableSomehow()) {
-            disableHeaderSyncButton(R.string.not_syncable);
-            return;
+        if (!getParamsLoaded().getTimeline().isSynableSomehow) {
+            disableHeaderSyncButton(R.string.not_syncable)
+            return
         }
-        SyncStats stats = SyncStats.fromYoungestDates(myContext.timelines().toTimelinesToSync(getParamsLoaded().getTimeline()));
-        String format = getText(stats.itemDate > SOME_TIME_AGO
-                ? R.string.sync_younger_messages
-                : R.string.options_menu_sync).toString();
-        MyUrlSpan.showText(syncYoungerView, R.id.sync_younger_button,
+        val stats: SyncStats = SyncStats.Companion.fromYoungestDates(myContext.timelines().toTimelinesToSync(getParamsLoaded().getTimeline()))
+        val format = getText(if (stats.itemDate > RelativeTime.SOME_TIME_AGO) R.string.sync_younger_messages else R.string.options_menu_sync).toString()
+        MyUrlSpan.Companion.showText(syncYoungerView, R.id.sync_younger_button,
                 StringUtil.format(format,
-                    stats.syncSucceededDate > SOME_TIME_AGO
-                            ? RelativeTime.getDifference(this, stats.syncSucceededDate)
-                            : getText(R.string.never),
-                    DateUtils.getRelativeTimeSpanString(this, stats.itemDate)),
-                false,
-                false);
-        syncYoungerView.setEnabled(true);
-    }
-
-    private void disableHeaderSyncButton(int resInfo) {
-        MyUrlSpan.showText(syncYoungerView, R.id.sync_younger_button,
-                getText(resInfo).toString(),
-                false,
-                false);
-        syncYoungerView.setEnabled(false);
-    }
-
-    private void showFooterSyncButton() {
-        if (getListData().mayHaveOlderPage()) {
-            disableFooterButton(R.string.loading);
-            return;
-        }
-        if (!getParamsLoaded().getTimeline().isSynableSomehow()) {
-            disableFooterButton(R.string.no_more_messages);
-            return;
-        }
-        SyncStats stats = SyncStats.fromOldestDates(myContext.timelines().toTimelinesToSync(getParamsLoaded().getTimeline()));
-        MyUrlSpan.showText(syncOlderView, R.id.sync_older_button,
-                StringUtil.format(this, stats.itemDate > SOME_TIME_AGO
-                                ? R.string.sync_older_messages
-                                : R.string.options_menu_sync,
+                        if (stats.syncSucceededDate > RelativeTime.SOME_TIME_AGO) RelativeTime.getDifference(this, stats.syncSucceededDate) else getText(R.string.never),
                         DateUtils.getRelativeTimeSpanString(this, stats.itemDate)),
                 false,
-                false);
-        syncOlderView.setEnabled(true);
+                false)
+        syncYoungerView.setEnabled(true)
     }
 
-    private void disableFooterButton(int resInfo) {
-        MyUrlSpan.showText(syncOlderView, R.id.sync_older_button,
+    private fun disableHeaderSyncButton(resInfo: Int) {
+        MyUrlSpan.Companion.showText(syncYoungerView, R.id.sync_younger_button,
                 getText(resInfo).toString(),
                 false,
-                false);
-        syncOlderView.setEnabled(false);
+                false)
+        syncYoungerView.setEnabled(false)
     }
 
-    private void showActorProfile() {
+    private fun showFooterSyncButton() {
+        if (getListData().mayHaveOlderPage()) {
+            disableFooterButton(R.string.loading)
+            return
+        }
+        if (!getParamsLoaded().getTimeline().isSynableSomehow) {
+            disableFooterButton(R.string.no_more_messages)
+            return
+        }
+        val stats: SyncStats = SyncStats.Companion.fromOldestDates(myContext.timelines().toTimelinesToSync(getParamsLoaded().getTimeline()))
+        MyUrlSpan.Companion.showText(syncOlderView, R.id.sync_older_button,
+                StringUtil.format(this, if (stats.itemDate > RelativeTime.SOME_TIME_AGO) R.string.sync_older_messages else R.string.options_menu_sync,
+                        DateUtils.getRelativeTimeSpanString(this, stats.itemDate)),
+                false,
+                false)
+        syncOlderView.setEnabled(true)
+    }
+
+    private fun disableFooterButton(resInfo: Int) {
+        MyUrlSpan.Companion.showText(syncOlderView, R.id.sync_older_button,
+                getText(resInfo).toString(),
+                false,
+                false)
+        syncOlderView.setEnabled(false)
+    }
+
+    private fun showActorProfile() {
         if (getParamsLoaded().timeline.hasActorProfile()) {
-            actorProfileViewer.populateView();
+            actorProfileViewer.populateView()
         }
     }
 
-    private void onNoRowsLoaded(@NonNull Timeline timeline) {
-        MyAccount ma = timeline.myAccountToSync;
-        if (!timeline.isSyncable() || !timeline.isTimeToAutoSync() || !ma.isValidAndSucceeded()) {
-            return;
+    private fun onNoRowsLoaded(timeline: Timeline) {
+        val ma = timeline.myAccountToSync
+        if (!timeline.isSyncable || !timeline.isTimeToAutoSync || !ma.isValidAndSucceeded) {
+            return
         }
-        timeline.setSyncSucceededDate(System.currentTimeMillis()); // To avoid repetition
-        syncWithInternet(timeline, true, false);
+        timeline.syncSucceededDate = System.currentTimeMillis() // To avoid repetition
+        syncWithInternet(timeline, true, false)
     }
 
-    protected void syncWithInternet(Timeline timelineToSync, boolean syncYounger, boolean manuallyLaunched) {
+    protected fun syncWithInternet(timelineToSync: Timeline?, syncYounger: Boolean, manuallyLaunched: Boolean) {
         myContext.timelines().toTimelinesToSync(timelineToSync)
-                .forEach(timeline -> syncOneTimeline(timeline, syncYounger, manuallyLaunched));
+                .forEach { timeline: Timeline? -> syncOneTimeline(timeline, syncYounger, manuallyLaunched) }
     }
 
-    private void syncOneTimeline(Timeline timeline, boolean syncYounger, boolean manuallyLaunched) {
-        final String method = "syncOneTimeline";
+    private fun syncOneTimeline(timeline: Timeline?, syncYounger: Boolean, manuallyLaunched: Boolean) {
+        val method = "syncOneTimeline"
         if (timeline.isSyncable()) {
-            setCircularSyncIndicator(method, true);
-            showSyncing(method, getText(R.string.options_menu_sync));
-            MyServiceManager.sendForegroundCommand(
-                    CommandData.newTimelineCommand(syncYounger ? CommandEnum.GET_TIMELINE :
-                            CommandEnum.GET_OLDER_TIMELINE, timeline)
+            setCircularSyncIndicator(method, true)
+            showSyncing(method, getText(R.string.options_menu_sync))
+            MyServiceManager.Companion.sendForegroundCommand(
+                    CommandData.Companion.newTimelineCommand(if (syncYounger) CommandEnum.GET_TIMELINE else CommandEnum.GET_OLDER_TIMELINE, timeline)
                             .setManuallyLaunched(manuallyLaunched)
-            );
+            )
         }
     }
 
-    protected void startMyPreferenceActivity() {
-        startActivity(new Intent(this, MySettingsActivity.class));
-        finish();
+    protected fun startMyPreferenceActivity() {
+        startActivity(Intent(this, MySettingsActivity::class.java))
+        finish()
     }
 
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        getParamsNew().saveState(outState);
-        outState.putBoolean(IntentExtra.COLLAPSE_DUPLICATES.key, getListData().isCollapseDuplicates());
-        if (getListData().getPreferredOrigin().nonEmpty()) {
-            outState.putLong(IntentExtra.ORIGIN_ID.key, getListData().getPreferredOrigin().getId());
+    protected override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        getParamsNew().saveState(outState)
+        outState.putBoolean(IntentExtra.COLLAPSE_DUPLICATES.key, getListData().isCollapseDuplicates)
+        if (getListData().preferredOrigin.nonEmpty()) {
+            outState.putLong(IntentExtra.ORIGIN_ID.key, getListData().preferredOrigin.id)
         }
-        contextMenu.saveState(outState);
+        contextMenu.saveState(outState)
     }
 
-    @Override
-    public void startActivityForResult(Intent intent, int requestCode) {
+    override fun startActivityForResult(intent: Intent?, requestCode: Int) {
         if (selectorActivityMock != null) {
-            selectorActivityMock.startActivityForResult(intent, requestCode);
+            selectorActivityMock.startActivityForResult(intent, requestCode)
         } else {
-            super.startActivityForResult(intent, requestCode);
+            super.startActivityForResult(intent, requestCode)
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        MyLog.v(this, () -> "onActivityResult; request:" + requestCode
-                + ", result:" + (resultCode == Activity.RESULT_OK ? "ok" : "fail"));
-        if (resultCode != Activity.RESULT_OK || data == null) {
-            return;
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        MyLog.v(this) {
+            ("onActivityResult; request:" + requestCode
+                    + ", result:" + if (resultCode == RESULT_OK) "ok" else "fail")
         }
-        switch (ActivityRequestCode.fromId(requestCode)) {
-            case SELECT_ACCOUNT:
-                onAccountSelected(data);
-                break;
-            case SELECT_ACCOUNT_TO_ACT_AS:
-                setSelectedActingAccount(data);
-                break;
-            case SELECT_ACCOUNT_TO_SHARE_VIA:
-                sharedNote.ifPresent(shared -> getNoteEditor().startEditingSharedData(
+        if (resultCode != RESULT_OK || data == null) {
+            return
+        }
+        when (ActivityRequestCode.Companion.fromId(requestCode)) {
+            ActivityRequestCode.SELECT_ACCOUNT -> onAccountSelected(data)
+            ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS -> setSelectedActingAccount(data)
+            ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA -> sharedNote.ifPresent(Consumer { shared: SharedNote? ->
+                noteEditor.startEditingSharedData(
                         myContext.accounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)),
                         shared)
-                );
-                break;
-            case SELECT_TIMELINE:
-                Timeline timeline = myContext.timelines()
-                        .fromId(data.getLongExtra(IntentExtra.TIMELINE_ID.key, 0));
-                if (timeline.isValid()) {
-                    switchView(timeline);
+            }
+            )
+            ActivityRequestCode.SELECT_TIMELINE -> {
+                val timeline = myContext.timelines()
+                        .fromId(data.getLongExtra(IntentExtra.TIMELINE_ID.key, 0))
+                if (timeline.isValid) {
+                    switchView(timeline)
                 }
-                break;
-            case SELECT_ORIGIN:
-                onOriginSelected(data);
-                break;
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-                break;
+            }
+            ActivityRequestCode.SELECT_ORIGIN -> onOriginSelected(data)
+            else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
-    private void onAccountSelected(Intent data) {
-        onAccountSelected(myContext.accounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)));
+    private fun onAccountSelected(data: Intent?) {
+        onAccountSelected(myContext.accounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)))
     }
 
-    private void onAccountSelected(MyAccount ma) {
+    private fun onAccountSelected(ma: MyAccount?) {
         if (ma.isValid()) {
-            myContext.accounts().setCurrentAccount(ma);
-            switchView(getParamsLoaded().getTimeline().isCombined() ?
-                    getParamsLoaded().getTimeline() :
-                    getParamsLoaded().getTimeline().fromMyAccount(myContext, ma));
+            myContext.accounts().setCurrentAccount(ma)
+            switchView(if (getParamsLoaded().getTimeline().isCombined) getParamsLoaded().getTimeline() else getParamsLoaded().getTimeline().fromMyAccount(myContext, ma))
         }
     }
 
-    private void onOriginSelected(Intent data) {
-        Origin origin = myContext.origins().fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key));
-        if (origin.isValid() && getParamsLoaded().getTimeline().hasActorProfile()) {
-            updateList(LoadableListViewParameters.fromOrigin(origin));
+    private fun onOriginSelected(data: Intent?) {
+        val origin = myContext.origins().fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key))
+        if (origin.isValid && getParamsLoaded().getTimeline().hasActorProfile()) {
+            updateList(LoadableListViewParameters.Companion.fromOrigin(origin))
         }
     }
 
-    private void setSelectedActingAccount(Intent data) {
-        MyAccount ma = myContext.accounts().fromAccountName(
-                data.getStringExtra(IntentExtra.ACCOUNT_NAME.key));
-        if (ma.isValid()) {
-            MyContextMenu contextMenu = getContextMenu(
-                    data.getIntExtra(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE));
-            contextMenu.setSelectedActingAccount(ma);
-            contextMenu.showContextMenu();
+    private fun setSelectedActingAccount(data: Intent?) {
+        val ma = myContext.accounts().fromAccountName(
+                data.getStringExtra(IntentExtra.ACCOUNT_NAME.key))
+        if (ma.isValid) {
+            val contextMenu = getContextMenu(
+                    data.getIntExtra(IntentExtra.MENU_GROUP.key, MyContextMenu.Companion.MENU_GROUP_NOTE))
+            contextMenu.selectedActingAccount = ma
+            contextMenu.showContextMenu()
         }
     }
 
-    @NonNull
-    private MyContextMenu getContextMenu(int menuGroup) {
-        switch (menuGroup) {
-            case MyContextMenu.MENU_GROUP_ACTOR:
-                return contextMenu.actor;
-            case MyContextMenu.MENU_GROUP_OBJACTOR:
-                return contextMenu.objActor;
-            case MyContextMenu.MENU_GROUP_ACTOR_PROFILE:
-                return actorProfileViewer == null
-                    ? contextMenu.note
-                    : actorProfileViewer.contextMenu;
-            default:
-                return contextMenu.note;
+    private fun getContextMenu(menuGroup: Int): MyContextMenu {
+        return when (menuGroup) {
+            MyContextMenu.Companion.MENU_GROUP_ACTOR -> contextMenu.actor
+            MyContextMenu.Companion.MENU_GROUP_OBJACTOR -> contextMenu.objActor
+            MyContextMenu.Companion.MENU_GROUP_ACTOR_PROFILE -> if (actorProfileViewer == null) contextMenu.note else actorProfileViewer.contextMenu
+            else -> contextMenu.note
         }
     }
 
-    @Override
-    protected boolean isEditorVisible() {
-        return getNoteEditor().isVisible();
+    override fun isEditorVisible(): Boolean {
+        return noteEditor.isVisible
     }
 
-    @Override
-    protected boolean isCommandToShowInSyncIndicator(CommandData commandData) {
-        switch (commandData.getCommand()) {
-            case GET_TIMELINE:
-            case GET_OLDER_TIMELINE:
-            case GET_ATTACHMENT:
-            case GET_AVATAR:
-            case UPDATE_NOTE:
-            case DELETE_NOTE:
-            case LIKE:
-            case UNDO_LIKE:
-            case FOLLOW:
-            case UNDO_FOLLOW:
-            case ANNOUNCE:
-            case UNDO_ANNOUNCE:
-                return true;
-            default:
-                return false;
+    override fun isCommandToShowInSyncIndicator(commandData: CommandData?): Boolean {
+        return when (commandData.getCommand()) {
+            CommandEnum.GET_TIMELINE, CommandEnum.GET_OLDER_TIMELINE, CommandEnum.GET_ATTACHMENT, CommandEnum.GET_AVATAR, CommandEnum.UPDATE_NOTE, CommandEnum.DELETE_NOTE, CommandEnum.LIKE, CommandEnum.UNDO_LIKE, CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW, CommandEnum.ANNOUNCE, CommandEnum.UNDO_ANNOUNCE -> true
+            else -> false
         }
     }
 
-    @Override
-    public boolean canSwipeRefreshChildScrollUp() {
-        return getListData().mayHaveYoungerPage() || super.canSwipeRefreshChildScrollUp();
+    override fun canSwipeRefreshChildScrollUp(): Boolean {
+        return getListData().mayHaveYoungerPage() || super.canSwipeRefreshChildScrollUp()
     }
 
-    @Override
-    protected void onReceiveAfterExecutingCommand(CommandData commandData) {
-        switch (commandData.getCommand()) {
-            case RATE_LIMIT_STATUS:
-                if (commandData.getResult().getHourlyLimit() > 0) {
-                    mRateLimitText = commandData.getResult().getRemainingHits() + "/"
-                            + commandData.getResult().getHourlyLimit();
-                    updateTitle(mRateLimitText);
-                }
-                break;
-            default:
-                break;
+    override fun onReceiveAfterExecutingCommand(commandData: CommandData?) {
+        when (commandData.getCommand()) {
+            CommandEnum.RATE_LIMIT_STATUS -> if (commandData.getResult().hourlyLimit > 0) {
+                mRateLimitText = (commandData.getResult().remainingHits.toString() + "/"
+                        + commandData.getResult().hourlyLimit)
+                updateTitle(mRateLimitText)
+            }
+            else -> {
+            }
         }
-        if (commandData.getCommand().isGetTimeline()) {
-            setCircularSyncIndicator("onReceiveAfterExecutingCommand ", false);
+        if (commandData.getCommand().isGetTimeline) {
+            setCircularSyncIndicator("onReceiveAfterExecutingCommand ", false)
         }
         if (!TextUtils.isEmpty(syncingText)) {
-            if (MyServiceManager.getServiceState() != MyServiceState.RUNNING) {
-                hideSyncing("Service is not running");
+            if (MyServiceManager.Companion.getServiceState() != MyServiceState.RUNNING) {
+                hideSyncing("Service is not running")
             } else if (isCommandToShowInSyncIndicator(commandData)) {
-                showSyncing("After executing " + commandData.getCommand(), HORIZONTAL_ELLIPSIS);
+                showSyncing("After executing " + commandData.getCommand(), HORIZONTAL_ELLIPSIS)
             }
         }
-        super.onReceiveAfterExecutingCommand(commandData);
+        super.onReceiveAfterExecutingCommand(commandData)
     }
 
-    @Override
-    public boolean isRefreshNeededAfterExecuting(CommandData commandData) {
-        boolean needed = super.isRefreshNeededAfterExecuting(commandData);
-        switch (commandData.getCommand()) {
-            case GET_TIMELINE:
-            case GET_OLDER_TIMELINE:
+    public override fun isRefreshNeededAfterExecuting(commandData: CommandData?): Boolean {
+        var needed = super.isRefreshNeededAfterExecuting(commandData)
+        when (commandData.getCommand()) {
+            CommandEnum.GET_TIMELINE, CommandEnum.GET_OLDER_TIMELINE -> {
                 if (!getParamsLoaded().isLoaded()
-                        || getParamsLoaded().getTimelineType() != commandData.getTimelineType()) {
-                    break;
+                        || getParamsLoaded().timelineType != commandData.getTimelineType()) {
+                    break
                 }
-                if (commandData.getResult().getDownloadedCount() > 0) {
-                    needed = true;
+                if (commandData.getResult().downloadedCount > 0) {
+                    needed = true
                 } else {
-                    showSyncListButtons();
+                    showSyncListButtons()
                 }
-                break;
-            default:
-                break;
+            }
+            else -> {
+            }
         }
-        return needed;
+        return needed
     }
 
-    @Override
-    protected boolean isAutoRefreshNow(boolean onStop) {
-        return super.isAutoRefreshNow(onStop) && MyPreferences.isRefreshTimelineAutomatically();
+    override fun isAutoRefreshNow(onStop: Boolean): Boolean {
+        return super.isAutoRefreshNow(onStop) && MyPreferences.isRefreshTimelineAutomatically()
     }
 
-    @Override
-    public void onNoteEditorVisibilityChange() {
-        hideSyncing("onNoteEditorVisibilityChange");
-        super.onNoteEditorVisibilityChange();
+    override fun onNoteEditorVisibilityChange() {
+        hideSyncing("onNoteEditorVisibilityChange")
+        super.onNoteEditorVisibilityChange()
     }
 
-    @Override
-    public Timeline getTimeline() {
-        return getParamsLoaded().getTimeline();
+    override fun getTimeline(): Timeline? {
+        return getParamsLoaded().getTimeline()
     }
 
-    public void switchView(Timeline timeline) {
-        timeline.save(myContext);
-
-        if (isFinishing() || !timeline.equals(getParamsLoaded().getTimeline())) {
-            MyLog.v(this, () -> "switchTimelineActivity; " + timeline);
-            if (isFinishing()) {
-                final Intent intent = getIntentForTimeline(myContext, timeline, false);
-                myContextHolder.initialize(this).thenStartActivity(intent);
+    fun switchView(timeline: Timeline?) {
+        timeline.save(myContext)
+        if (isFinishing || timeline != getParamsLoaded().getTimeline()) {
+            MyLog.v(this) { "switchTimelineActivity; $timeline" }
+            if (isFinishing) {
+                val intent = getIntentForTimeline(myContext, timeline, false)
+                MyContextHolder.Companion.myContextHolder.initialize(this).thenStartActivity(intent)
             } else {
-                TimelineActivity.startForTimeline(myContext, this, timeline);
+                startForTimeline(myContext, this, timeline)
             }
         } else {
-            showList(WhichPage.CURRENT);
+            showList(WhichPage.CURRENT)
         }
     }
 
-    @NonNull
-    public TimelineParameters setParamsNew(TimelineParameters params) {
-        paramsNew = params;
-        return paramsNew;
+    fun setParamsNew(params: TimelineParameters?): TimelineParameters {
+        paramsNew = params
+        return paramsNew
     }
 
-    @NonNull
-    public TimelineParameters getParamsNew() {
+    fun getParamsNew(): TimelineParameters {
         if (paramsNew == null) {
-            paramsNew = new TimelineParameters(myContext, Timeline.EMPTY, WhichPage.EMPTY);
+            paramsNew = TimelineParameters(myContext, Timeline.Companion.EMPTY, WhichPage.EMPTY)
         }
-        return paramsNew;
+        return paramsNew
     }
 
-    public void setSelectorActivityMock(SelectorActivityMock selectorActivityMock) {
-        this.selectorActivityMock = selectorActivityMock;
+    fun setSelectorActivityMock(selectorActivityMock: SelectorActivityMock?) {
+        this.selectorActivityMock = selectorActivityMock
+    }
+
+    companion object {
+        val HORIZONTAL_ELLIPSIS: String? = "\u2026"
+        @JvmOverloads
+        fun startForTimeline(myContext: MyContext?, context: Context?, timeline: Timeline?, clearTask: Boolean = false,
+                             initialAccountSync: Boolean = false) {
+            timeline.save(myContext)
+            val intent = getIntentForTimeline(myContext, timeline, clearTask)
+            if (initialAccountSync) {
+                intent.putExtra(IntentExtra.INITIAL_ACCOUNT_SYNC.key, true)
+            }
+            context.startActivity(intent)
+        }
+
+        private fun getIntentForTimeline(myContext: MyContext?, timeline: Timeline?, clearTask: Boolean): Intent {
+            val intent = Intent(myContext.context(), if (clearTask) FirstActivity::class.java else TimelineActivity::class.java)
+            intent.data = timeline.getUri()
+            if (clearTask) {
+                // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            return intent
+        }
+
+        private fun <T : ViewItem<T?>?> clearNotifications(timelineActivity: TimelineActivity<T?>?) {
+            val timeline = timelineActivity.getParamsLoaded().getTimeline()
+            AsyncTaskLauncher.Companion.execute(timelineActivity,
+                    object : MyAsyncTask<Void?, Void?, Void?>("clearNotifications" + timeline.id,
+                            PoolEnum.QUICK_UI) {
+                        override fun doInBackground2(aVoid: Void?): Void? {
+                            timelineActivity.myContext.clearNotifications(timeline)
+                            return null
+                        }
+
+                        override fun onPostExecute2(v: Void?) {
+                            timelineActivity.refreshFromCache()
+                        }
+                    }
+            )
+        }
     }
 }

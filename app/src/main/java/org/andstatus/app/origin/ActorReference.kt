@@ -13,21 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.origin
 
-package org.andstatus.app.origin;
-
-import org.andstatus.app.actor.GroupType;
+import org.andstatus.app.actor.GroupType
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ActorReference {
-    public final static ActorReference EMPTY = new ActorReference(-1, GroupType.UNKNOWN);
-    public final int index;
-    public final GroupType groupType;
-
-    ActorReference(int index, GroupType groupType) {
-        this.index = index;
-        this.groupType = groupType;
+class ActorReference internal constructor(val index: Int, val groupType: GroupType?) {
+    companion object {
+        val EMPTY: ActorReference? = ActorReference(-1, GroupType.UNKNOWN)
     }
 }

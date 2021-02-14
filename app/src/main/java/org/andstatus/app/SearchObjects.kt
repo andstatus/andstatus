@@ -13,39 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app
 
-package org.andstatus.app;
+import android.widget.Spinner
+import org.andstatus.app.actor.ActorsScreen
+import org.andstatus.app.timeline.TimelineActivity
 
-import android.widget.Spinner;
+enum class SearchObjects(private val aClass: Class<*>?) {
+    NOTES(TimelineActivity::class.java), ACTORS(ActorsScreen::class.java), GROUPS(ActorsScreen::class.java);
 
-import org.andstatus.app.timeline.TimelineActivity;
-import org.andstatus.app.actor.ActorsScreen;
-
-public enum SearchObjects {
-    NOTES(TimelineActivity.class),
-    ACTORS(ActorsScreen.class),
-    GROUPS(ActorsScreen.class);
-
-    private final Class<?> aClass;
-
-    SearchObjects(Class<?> aClass) {
-        this.aClass = aClass;
+    fun getActivityClass(): Class<*>? {
+        return aClass
     }
 
-    public Class<?> getActivityClass() {
-        return aClass;
-    }
-
-    public static SearchObjects fromSpinner(Spinner spinner) {
-        SearchObjects obj = NOTES;
-        if (spinner != null) {
-            for (SearchObjects val : values()) {
-                if (val.ordinal() == spinner.getSelectedItemPosition()) {
-                    obj = val;
-                    break;
+    companion object {
+        fun fromSpinner(spinner: Spinner?): SearchObjects? {
+            var obj: SearchObjects? = NOTES
+            if (spinner != null) {
+                for (`val` in values()) {
+                    if (`val`.ordinal == spinner.selectedItemPosition) {
+                        obj = `val`
+                        break
+                    }
                 }
             }
+            return obj
         }
-        return obj;
     }
 }

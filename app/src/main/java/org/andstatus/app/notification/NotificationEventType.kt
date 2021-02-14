@@ -13,97 +13,76 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.notification
 
-package org.andstatus.app.notification;
-
-import org.andstatus.app.R;
-import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtil;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import androidx.annotation.NonNull;
+import org.andstatus.app.R
+import org.andstatus.app.util.IsEmpty
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StringUtil
+import java.util.*
 
 /**
  * Types of events, about which a User may be notified and which are shown in the "Notifications" timeline
  */
-public enum NotificationEventType implements IsEmpty {
-    ANNOUNCE(1, "notifications_announce", true, R.string.notification_events_announce),
-    FOLLOW(2, "notifications_follow", true, R.string.notification_events_follow),
-    LIKE(3, "notifications_like", true, R.string.notification_events_like),
-    MENTION(4, "notifications_mention", true, R.string.notification_events_mention),
-    OUTBOX(5, "notifications_outbox", true, org.andstatus.app.R.string.notification_events_outbox),
-    PRIVATE(6, "notifications_private", true, R.string.notification_events_private),
-    SERVICE_RUNNING(8, "", true, R.string.syncing),
-    HOME(9, "notifications_home", true, R.string.options_menu_home_timeline_cond),
-    EMPTY(0, "", false, R.string.empty_in_parenthesis),
-    ;
+enum class NotificationEventType(id: Int, preferenceKey: String?, defaultValue: Boolean, titleResId: Int) : IsEmpty {
+    ANNOUNCE(1, "notifications_announce", true, R.string.notification_events_announce), FOLLOW(2, "notifications_follow", true, R.string.notification_events_follow), LIKE(3, "notifications_like", true, R.string.notification_events_like), MENTION(4, "notifications_mention", true, R.string.notification_events_mention), OUTBOX(5, "notifications_outbox", true, R.string.notification_events_outbox), PRIVATE(6, "notifications_private", true, R.string.notification_events_private), SERVICE_RUNNING(8, "", true, R.string.syncing), HOME(9, "notifications_home", true, R.string.options_menu_home_timeline_cond), EMPTY(0, "", false, R.string.empty_in_parenthesis);
 
-    public static final List<NotificationEventType> validValues = validValues();
-
-    public final long id;
-    public final String preferenceKey;
-    final boolean defaultValue;
-    public final int titleResId;
-
-    NotificationEventType(int id, String preferenceKey, boolean defaultValue, int titleResId) {
-        this.id = id;
-        this.preferenceKey = preferenceKey;
-        this.defaultValue = defaultValue;
-        this.titleResId = titleResId;
+    val id: Long
+    val preferenceKey: String?
+    val defaultValue: Boolean
+    val titleResId: Int
+    fun notificationId(): Int {
+        return id as Int
     }
 
-    public int notificationId() {
-        return (int) id;
+    fun isEnabled(): Boolean {
+        return if (StringUtil.nonEmpty(preferenceKey)) SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue) else defaultValue
     }
 
-    public boolean isEnabled() {
-        return StringUtil.nonEmpty(preferenceKey) ? SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue) :
-                defaultValue;
+    fun setEnabled(enabled: Boolean) {
+        if (StringUtil.nonEmpty(preferenceKey)) SharedPreferencesUtil.putBoolean(preferenceKey, enabled)
     }
 
-    void setEnabled(boolean enabled) {
-        if (StringUtil.nonEmpty(preferenceKey)) SharedPreferencesUtil.putBoolean(preferenceKey, enabled);
+    fun isInteracted(): Boolean {
+        return when (this) {
+            ANNOUNCE, FOLLOW, LIKE, MENTION, PRIVATE -> true
+            else -> false
+        }
     }
 
-    /** @return the enum or {@link #EMPTY} */
-    @NonNull
-    public static NotificationEventType fromId(long id) {
-        for (NotificationEventType type : values()) {
-            if (type.id == id) {
-                return type;
+    override fun isEmpty(): Boolean {
+        return this == EMPTY
+    }
+
+    companion object {
+        val validValues = validValues()
+
+        /** @return the enum or [.EMPTY]
+         */
+        fun fromId(id: Long): NotificationEventType {
+            for (type in values()) {
+                if (type.id == id) {
+                    return type
+                }
             }
+            return EMPTY
         }
-        return EMPTY;
-    }
 
-    private static List<NotificationEventType> validValues() {
-        List<NotificationEventType> validValues = new ArrayList<>();
-        for (NotificationEventType event : values()) {
-            if (event.nonEmpty()) {
-                validValues.add(event);
+        private fun validValues(): MutableList<NotificationEventType?>? {
+            val validValues: MutableList<NotificationEventType?> = ArrayList()
+            for (event in values()) {
+                if (event.nonEmpty()) {
+                    validValues.add(event)
+                }
             }
-        }
-        return Collections.unmodifiableList(validValues);
-    }
-
-    public boolean isInteracted() {
-        switch(this) {
-            case ANNOUNCE:
-            case FOLLOW:
-            case LIKE:
-            case MENTION:
-            case PRIVATE:
-                return true;
-            default:
-                return false;
+            return Collections.unmodifiableList(validValues)
         }
     }
 
-    public boolean isEmpty() {
-        return this == EMPTY;
+    init {
+        this.id = id.toLong()
+        this.preferenceKey = preferenceKey
+        this.defaultValue = defaultValue
+        this.titleResId = titleResId
     }
 }

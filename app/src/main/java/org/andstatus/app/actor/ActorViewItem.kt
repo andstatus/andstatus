@@ -13,173 +13,143 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.actor
 
-package org.andstatus.app.actor;
+import android.database.Cursor
+import org.andstatus.app.MyActivity
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.AvatarFile
+import org.andstatus.app.graphics.IdentifiableImageView
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.timeline.DuplicationLink
+import org.andstatus.app.timeline.TimelineFilter
+import org.andstatus.app.timeline.ViewItem
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.NullUtil
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.StringUtil
+import java.util.stream.Stream
 
-import android.database.Cursor;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.MyActivity;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.AvatarFile;
-import org.andstatus.app.graphics.IdentifiableImageView;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.DuplicationLink;
-import org.andstatus.app.timeline.TimelineFilter;
-import org.andstatus.app.timeline.ViewItem;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.NullUtil;
-import org.andstatus.app.util.StringUtil;
-
-import java.util.Collections;
-import java.util.stream.Stream;
-
-import static org.andstatus.app.timeline.DuplicationLink.DUPLICATES;
-import static org.andstatus.app.timeline.DuplicationLink.IS_DUPLICATED;
-import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
-
-public class ActorViewItem extends ViewItem<ActorViewItem> implements Comparable<ActorViewItem> {
-    public static final ActorViewItem EMPTY = new ActorViewItem(Actor.EMPTY, true);
-    boolean populated = false;
-    @NonNull
-    final Actor actor;
-    private Actor myActorFollowingToHide = Actor.EMPTY;
-    private Actor myActorFollowedToHide = Actor.EMPTY;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        ActorViewItem that = (ActorViewItem) o;
-        return actor.equals(that.actor);
+class ActorViewItem private constructor(val actor: Actor, isEmpty: Boolean) : ViewItem<ActorViewItem?>(isEmpty, RelativeTime.DATETIME_MILLIS_NEVER), Comparable<ActorViewItem?> {
+    var populated = false
+    private var myActorFollowingToHide: Actor? = Actor.Companion.EMPTY
+    private var myActorFollowedToHide: Actor? = Actor.Companion.EMPTY
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o == null || javaClass != o.javaClass) return false
+        val that = o as ActorViewItem?
+        return actor == that.actor
     }
 
-    @Override
-    public int hashCode() {
-        return actor.hashCode();
+    override fun hashCode(): Int {
+        return actor.hashCode()
     }
 
-    private ActorViewItem(@NonNull Actor actor, boolean isEmpty) {
-        super(isEmpty, DATETIME_MILLIS_NEVER);
-        this.actor = actor;
+    fun getActor(): Actor {
+        return actor
     }
 
-    public static ActorViewItem newEmpty(String description) {
-        Actor actor = StringUtil.isEmpty(description) ? Actor.EMPTY :
-                Actor.newUnknown(Origin.EMPTY, GroupType.UNKNOWN).setSummary(description);
-        return fromActor(actor);
+    fun getActorId(): Long {
+        return actor.actorId
     }
 
-    public static ActorViewItem fromActorId(Origin origin, long actorId) {
-        return actorId == 0 ? ActorViewItem.EMPTY : fromActor(Actor.fromId(origin, actorId));
-    }
-
-    public static ActorViewItem fromActor(@NonNull Actor actor) {
-        return actor.isEmpty() ? ActorViewItem.EMPTY : new ActorViewItem(actor, false);
-    }
-
-    @NonNull
-    public Actor getActor() {
-        return actor;
-    }
-
-    public long getActorId() {
-        return actor.actorId;
-    }
-
-    public String getDescription() {
-        StringBuilder builder = new StringBuilder(actor.getSummary());
+    fun getDescription(): String? {
+        val builder = StringBuilder(actor.summary)
         if (MyPreferences.isShowDebuggingInfoInUi()) {
-            MyStringBuilder.appendWithSpace(builder, "(id=" + getActor().actorId + ")");
+            MyStringBuilder.Companion.appendWithSpace(builder, "(id=" + getActor().actorId + ")")
         }
-        return builder.toString();
+        return builder.toString()
     }
 
-    @Override
-    public String toString() {
+    override fun toString(): String {
         return "ActorViewItem{" +
                 actor +
-                '}';
+                '}'
     }
 
-    public boolean isEmpty() {
-        return actor.isEmpty();
+    override fun isEmpty(): Boolean {
+        return actor.isEmpty
     }
 
-    @Override
-    public long getId() {
-        return getActor().actorId;
+    override fun getId(): Long {
+        return getActor().actorId
     }
 
-    @Override
-    public long getDate() {
-        return actor.getUpdatedDate();
+    override fun getDate(): Long {
+        return actor.updatedDate
     }
 
-    @Override
-    public int compareTo(@NonNull ActorViewItem o) {
-        return actor.getUniqueName().compareTo(o.actor.getUniqueName());
+    override operator fun compareTo(o: ActorViewItem): Int {
+        return actor.uniqueName.compareTo(o.actor.uniqueName)
     }
 
-    public AvatarFile getAvatarFile() {
-        return actor.avatarFile;
+    fun getAvatarFile(): AvatarFile? {
+        return actor.avatarFile
     }
 
-    public void showAvatar(MyActivity myActivity, IdentifiableImageView imageView) {
-        getAvatarFile().showImage(myActivity, imageView);
+    fun showAvatar(myActivity: MyActivity?, imageView: IdentifiableImageView?) {
+        getAvatarFile().showImage(myActivity, imageView)
     }
 
-    @Override
-    @NonNull
-    public ActorViewItem fromCursor(MyContext myContext, @NonNull Cursor cursor) {
-        Actor actor = Actor.fromCursor(myContext, cursor, true);
-        ActorViewItem item = new ActorViewItem(actor, false);
-        item.populated = true;
-        return item;
+    override fun fromCursor(myContext: MyContext?, cursor: Cursor): ActorViewItem {
+        val actor: Actor = Actor.Companion.fromCursor(myContext, cursor, true)
+        val item = ActorViewItem(actor, false)
+        item.populated = true
+        return item
     }
 
-    @Override
-    public boolean matches(TimelineFilter filter) {
+    override fun matches(filter: TimelineFilter?): Boolean {
         // TODO: implement filtering
-        return super.matches(filter);
+        return super.matches(filter)
     }
 
-    @NonNull
-    @Override
-    public DuplicationLink duplicates(Timeline timeline, Origin preferredOrigin, @NonNull ActorViewItem other) {
-        if (isEmpty() || other.isEmpty()) return DuplicationLink.NONE;
-        if (preferredOrigin.nonEmpty() && !actor.origin.equals(other.actor.origin)) {
-            if (preferredOrigin.equals(actor.origin)) return IS_DUPLICATED;
-            if (preferredOrigin.equals(other.actor.origin)) return DUPLICATES;
+    override fun duplicates(timeline: Timeline?, preferredOrigin: Origin?, other: ActorViewItem): DuplicationLink {
+        if (isEmpty || other.isEmpty) return DuplicationLink.NONE
+        if (preferredOrigin.nonEmpty() && actor.origin != other.actor.origin) {
+            if (preferredOrigin == actor.origin) return DuplicationLink.IS_DUPLICATED
+            if (preferredOrigin == other.actor.origin) return DuplicationLink.DUPLICATES
         }
-        return super.duplicates(timeline, preferredOrigin, other);
+        return super.duplicates(timeline, preferredOrigin, other)
     }
 
-    public void hideFollowedBy(Actor myActor) {
-        myActorFollowingToHide = myActor;
+    fun hideFollowedBy(myActor: Actor?) {
+        myActorFollowingToHide = myActor
     }
 
-    Stream<Actor> getMyActorsFollowingTheActor(MyContext myContext) {
-        return NullUtil.getOrDefault(myContext.users().friendsOfMyActors, actor.actorId, Collections.emptySet()).stream()
-                .filter(id -> id != myActorFollowingToHide.actorId)
-                .map(id -> NullUtil.getOrDefault(myContext.users().actors, id, Actor.EMPTY))
-                .filter(Actor::nonEmpty);
+    fun getMyActorsFollowingTheActor(myContext: MyContext?): Stream<Actor?>? {
+        return NullUtil.getOrDefault<Long?, MutableSet<Long?>?>(myContext.users().friendsOfMyActors, actor.actorId, emptySet<Long?>()).stream()
+                .filter { id: Long? -> id != myActorFollowingToHide.actorId }
+                .map { id: Long? -> NullUtil.getOrDefault(myContext.users().actors, id, Actor.Companion.EMPTY) }
+                .filter { obj: Actor? -> obj.nonEmpty() }
     }
 
-    public void hideFollowing(Actor myActor) {
-        myActorFollowedToHide = myActor;
+    fun hideFollowing(myActor: Actor?) {
+        myActorFollowedToHide = myActor
     }
 
-    Stream<Actor> getMyActorsFollowedByTheActor(MyContext myContext) {
-        return NullUtil.getOrDefault(myContext.users().followersOfMyActors, actor.actorId, Collections.emptySet()).stream()
-                .filter(id -> id != myActorFollowedToHide.actorId)
-                .map(id -> NullUtil.getOrDefault(myContext.users().actors, id, Actor.EMPTY))
-                .filter(Actor::nonEmpty);
+    fun getMyActorsFollowedByTheActor(myContext: MyContext?): Stream<Actor?>? {
+        return NullUtil.getOrDefault<Long?, MutableSet<Long?>?>(myContext.users().followersOfMyActors, actor.actorId, emptySet<Long?>()).stream()
+                .filter { id: Long? -> id != myActorFollowedToHide.actorId }
+                .map { id: Long? -> NullUtil.getOrDefault(myContext.users().actors, id, Actor.Companion.EMPTY) }
+                .filter { obj: Actor? -> obj.nonEmpty() }
     }
 
+    companion object {
+        val EMPTY: ActorViewItem? = ActorViewItem(Actor.Companion.EMPTY, true)
+        fun newEmpty(description: String?): ActorViewItem? {
+            val actor: Actor = if (StringUtil.isEmpty(description)) Actor.Companion.EMPTY else Actor.Companion.newUnknown(Origin.Companion.EMPTY, GroupType.UNKNOWN).setSummary(description)
+            return fromActor(actor)
+        }
+
+        fun fromActorId(origin: Origin?, actorId: Long): ActorViewItem? {
+            return if (actorId == 0L) EMPTY else fromActor(Actor.Companion.fromId(origin, actorId))
+        }
+
+        fun fromActor(actor: Actor): ActorViewItem? {
+            return if (actor.isEmpty) EMPTY else ActorViewItem(actor, false)
+        }
+    }
 }

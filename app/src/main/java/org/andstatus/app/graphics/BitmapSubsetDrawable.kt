@@ -13,60 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.graphics
 
-package org.andstatus.app.graphics;
-
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.ColorFilter;
-import android.graphics.PixelFormat;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
-import androidx.annotation.NonNull;
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.ColorFilter
+import android.graphics.PixelFormat
+import android.graphics.Rect
+import android.graphics.drawable.Drawable
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class BitmapSubsetDrawable extends Drawable {
-    private Bitmap bitmap;
-    private Rect scrRect;
-
-    public BitmapSubsetDrawable(@NonNull Bitmap bitmap, @NonNull Rect srcRect) {
-        this.bitmap = bitmap;
-        this.scrRect = srcRect;
+class BitmapSubsetDrawable(bitmap: Bitmap, srcRect: Rect) : Drawable() {
+    private val bitmap: Bitmap?
+    private val scrRect: Rect?
+    override fun getIntrinsicWidth(): Int {
+        return scrRect.width()
     }
 
-    @Override
-    public int getIntrinsicWidth() {
-        return scrRect.width();
+    override fun getIntrinsicHeight(): Int {
+        return scrRect.height()
     }
 
-    @Override
-    public int getIntrinsicHeight() {
-        return scrRect.height();
+    override fun draw(canvas: Canvas?) {
+        canvas.drawBitmap(bitmap, scrRect, bounds, null)
     }
 
-    @Override
-    public void draw(Canvas canvas) {
-        canvas.drawBitmap(bitmap, scrRect, getBounds(), null);
-    }
-
-    @Override
-    public void setAlpha(int alpha) {
+    override fun setAlpha(alpha: Int) {
         // Empty
     }
 
-    @Override
-    public void setColorFilter(ColorFilter cf) {
+    override fun setColorFilter(cf: ColorFilter?) {
         // Empty
     }
 
-    @Override
-    public int getOpacity() {
-        return PixelFormat.OPAQUE;
+    override fun getOpacity(): Int {
+        return PixelFormat.OPAQUE
     }
 
-    public Bitmap getBitmap() {
-        return bitmap;
+    fun getBitmap(): Bitmap? {
+        return bitmap
+    }
+
+    init {
+        this.bitmap = bitmap
+        scrRect = srcRect
     }
 }

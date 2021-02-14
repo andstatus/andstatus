@@ -13,258 +13,230 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
+import android.app.LoaderManager
+import android.database.Cursor
+import android.net.Uri
+import android.os.Bundle
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.data.TimelineSql
+import org.andstatus.app.database.table.ActivityTable
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.SelectionAndArgs
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TaggedClass
 
-import android.app.LoaderManager;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.TimelineSql;
-import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineTitle;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.SelectionAndArgs;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TaggedClass;
-
-import java.util.Set;
-
-public class TimelineParameters implements TaggedClass {
-    private static final String TAG = TimelineParameters.class.getSimpleName();
-    private final MyContext myContext;
-
-    LoaderManager.LoaderCallbacks<Cursor> mLoaderCallbacks = null;
-
-    /**
-     * Msg are being loaded into the list starting from one page. More Msg
-     * are being loaded in a case User scrolls down to the end of list.
-     */
-    static final int PAGE_SIZE = 200;
-    final Timeline timeline;
-
-    final WhichPage whichPage;
-    private Set<String> mProjection;
-
-    long maxDate = 0;
+class TimelineParameters(private val myContext: MyContext?, val timeline: Timeline?, val whichPage: WhichPage?) : TaggedClass {
+    var mLoaderCallbacks: LoaderManager.LoaderCallbacks<Cursor?>? = null
+    private var mProjection: MutableSet<String?>? = null
+    var maxDate: Long = 0
 
     // These params are updated just before page loading
-    volatile long minDate = 0;
-    volatile SelectionAndArgs selectionAndArgs = new SelectionAndArgs();
-    volatile String sortOrderAndLimit = "";
+    @Volatile
+    var minDate: Long = 0
+
+    @Volatile
+    var selectionAndArgs: SelectionAndArgs? = SelectionAndArgs()
+
+    @Volatile
+    var sortOrderAndLimit: String? = ""
 
     // Execution state / loaded data:
-    volatile boolean isLoaded = false;
-    volatile int rowsLoaded = 0;
-    volatile long minDateLoaded = 0;
-    volatile long maxDateLoaded = 0;
+    @Volatile
+    var isLoaded = false
 
-    public TimelineParameters(MyContext myContext, Timeline timeline, WhichPage whichPage) {
-        this.myContext = myContext;
-        this.timeline = timeline;
-        this.whichPage = whichPage;
+    @Volatile
+    var rowsLoaded = 0
+
+    @Volatile
+    var minDateLoaded: Long = 0
+
+    @Volatile
+    var maxDateLoaded: Long = 0
+    fun isLoaded(): Boolean {
+        return isLoaded
     }
 
-    public static TimelineParameters clone(@NonNull TimelineParameters prev, WhichPage whichPage) {
-        TimelineParameters params = new TimelineParameters(prev.myContext,
-                whichPage == WhichPage.EMPTY ? Timeline.EMPTY : prev.timeline,
-                whichPage == WhichPage.ANY ? prev.whichPage : whichPage);
-        if (whichPage != WhichPage.EMPTY) {
-            enrichNonEmptyParameters(params, prev);
-        }
-        return params;
+    fun mayHaveYoungerPage(): Boolean {
+        return (maxDate > 0
+                || minDate > 0 && rowsLoaded > 0 && minDate < maxDateLoaded)
     }
 
-    private static void enrichNonEmptyParameters(TimelineParameters params, TimelineParameters prev) {
-        params.mLoaderCallbacks = prev.mLoaderCallbacks;
-
-        switch (params.whichPage) {
-            case OLDER:
-                if (prev.mayHaveOlderPage()) {
-                    params.maxDate = prev.minDateLoaded;
-                } else {
-                    params.maxDate = prev.maxDate;
-                }
-                break;
-            case YOUNGER:
-                if (prev.mayHaveYoungerPage()) {
-                    params.minDate = prev.maxDateLoaded;
-                } else {
-                    params.minDate = prev.minDate;
-                }
-                break;
-            default:
-                break;
-        }
-        MyLog.v(TimelineParameters.class, () -> "Constructing " + params.toSummary());
-
-        params.mProjection = ViewItemType.fromTimelineType(params.timeline.getTimelineType())
-                .equals(ViewItemType.ACTIVITY)
-                ? TimelineSql.getActivityProjection()
-                : TimelineSql.getTimelineProjection();
+    fun mayHaveOlderPage(): Boolean {
+        return whichPage == WhichPage.CURRENT || minDate > 0 || maxDate > 0 && rowsLoaded > 0 && maxDate > minDateLoaded
     }
 
-    public boolean isLoaded() {
-        return isLoaded;
+    fun isSortOrderAscending(): Boolean {
+        return maxDate == 0L && minDate > 0
     }
 
-    public boolean mayHaveYoungerPage() {
-        return maxDate > 0
-                || (minDate > 0 && rowsLoaded > 0 && minDate < maxDateLoaded);
+    fun isEmpty(): Boolean {
+        return timeline.isEmpty() || whichPage == WhichPage.EMPTY
     }
 
-    public boolean mayHaveOlderPage() {
-        return whichPage.equals(WhichPage.CURRENT)
-                || minDate > 0
-                || (maxDate > 0 && rowsLoaded > 0 && maxDate > minDateLoaded);
+    fun isAtHome(): Boolean {
+        return timeline == myContext.timelines().default
     }
 
-    public boolean isSortOrderAscending() {
-        return maxDate == 0 && minDate > 0;
-    }
-
-    public boolean isEmpty() {
-        return timeline.isEmpty() || whichPage == WhichPage.EMPTY;
-    }
-
-    public boolean isAtHome() {
-        return  timeline.equals(myContext.timelines().getDefault());
-    }
-
-    @Override
-    public String toString() {
-        return MyStringBuilder.formatKeyValue(this,
+    override fun toString(): String {
+        return MyStringBuilder.Companion.formatKeyValue(this,
                 toSummary()
-                + ", account=" + timeline.myAccountToSync.getAccountName()
-                + (timeline.getActorId() == 0 ? "" : ", selectedActorId=" + timeline.getActorId())
-            //    + ", projection=" + Arrays.toString(mProjection)
-                + (minDate > 0 ? ", minDate=" + MyLog.formatDateTime(minDate) : "")
-                + (maxDate > 0 ? ", maxDate=" + MyLog.formatDateTime(maxDate) : "")
-                + (selectionAndArgs.isEmpty() ? "" : ", sa=" + selectionAndArgs)
-                + (StringUtil.isEmpty(sortOrderAndLimit) ? "" : ", sortOrder=" + sortOrderAndLimit)
-                + (isLoaded  ? ", loaded" : "")
-                + (mLoaderCallbacks == null ? "" : ", loaderCallbacks=" + mLoaderCallbacks)
-        );
+                        + ", account=" + timeline.myAccountToSync.accountName
+                        + (if (timeline.getActorId() == 0L) "" else ", selectedActorId=" + timeline.getActorId()) //    + ", projection=" + Arrays.toString(mProjection)
+                        + (if (minDate > 0) ", minDate=" + MyLog.formatDateTime(minDate) else "")
+                        + (if (maxDate > 0) ", maxDate=" + MyLog.formatDateTime(maxDate) else "")
+                        + (if (selectionAndArgs.isEmpty()) "" else ", sa=$selectionAndArgs")
+                        + (if (StringUtil.isEmpty(sortOrderAndLimit)) "" else ", sortOrder=$sortOrderAndLimit")
+                        + (if (isLoaded) ", loaded" else "")
+                        + if (mLoaderCallbacks == null) "" else ", loaderCallbacks=$mLoaderCallbacks"
+        )
     }
 
-    public Timeline getTimeline() {
-        return timeline;
+    fun getTimeline(): Timeline? {
+        return timeline
     }
 
-    public TimelineType getTimelineType() {
-        return timeline.getTimelineType();
+    fun getTimelineType(): TimelineType? {
+        return timeline.getTimelineType()
     }
 
-    public long getSelectedActorId() {
-        return timeline.getActorId();
+    fun getSelectedActorId(): Long {
+        return timeline.getActorId()
     }
 
-    public boolean isTimelineCombined() {
-        return timeline.isCombined();
+    fun isTimelineCombined(): Boolean {
+        return timeline.isCombined()
     }
 
-    public void saveState(Bundle outState) {
-        outState.putString(IntentExtra.MATCHED_URI.key, timeline.getUri().toString());
+    fun saveState(outState: Bundle?) {
+        outState.putString(IntentExtra.MATCHED_URI.key, timeline.getUri().toString())
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        TimelineParameters that = (TimelineParameters) o;
-
-        if (!timeline.equals(that.timeline)) return false;
-        if (!whichPage.equals(WhichPage.CURRENT) && !that.whichPage.equals(WhichPage.CURRENT)) {
-            if (minDate != that.minDate) return false;
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o == null || javaClass != o.javaClass) return false
+        val that = o as TimelineParameters?
+        if (timeline != that.timeline) return false
+        if (whichPage != WhichPage.CURRENT && that.whichPage != WhichPage.CURRENT) {
+            if (minDate != that.minDate) return false
         }
-        return maxDate == that.maxDate;
+        return maxDate == that.maxDate
     }
 
-    @Override
-    public int hashCode() {
-        int result = timeline.hashCode();
-        if (whichPage.equals(WhichPage.CURRENT)) {
-            result = 31 * result + (-1 ^ (-1 >>> 32));
+    override fun hashCode(): Int {
+        var result = timeline.hashCode()
+        result = if (whichPage == WhichPage.CURRENT) {
+            31 * result + (-1 xor (-1 ushr 32))
         } else {
-            result = 31 * result + (int) (minDate ^ (minDate >>> 32));
+            31 * result + (minDate xor (minDate ushr 32)) as Int
         }
-        result = 31 * result + (int) (maxDate ^ (maxDate >>> 32));
-        return result;
+        result = 31 * result + (maxDate xor (maxDate ushr 32)) as Int
+        return result
     }
 
-    public String toSummary() {
-        return whichPage.getTitle(myContext.context()) + " " + TimelineTitle.from(myContext, timeline);
+    fun toSummary(): String? {
+        return whichPage.getTitle(myContext.context()).toString() + " " + from(myContext, timeline)
     }
 
-    @NonNull
-    public MyAccount getMyAccount() {
-        return timeline.myAccountToSync;
+    fun getMyAccount(): MyAccount {
+        return timeline.myAccountToSync
     }
 
-    public void rememberItemDateLoaded(long date) {
-        if (minDateLoaded == 0 || minDateLoaded > date) {
-            minDateLoaded = date;
+    fun rememberItemDateLoaded(date: Long) {
+        if (minDateLoaded == 0L || minDateLoaded > date) {
+            minDateLoaded = date
         }
-        if (maxDateLoaded == 0 || maxDateLoaded < date) {
-            maxDateLoaded = date;
+        if (maxDateLoaded == 0L || maxDateLoaded < date) {
+            maxDateLoaded = date
         }
     }
 
-    private void prepareQueryParameters() {
-        switch (whichPage) {
-            case CURRENT:
-                minDate = TimelineViewPositionStorage.loadListPosition(this).minSentDate;
-                break;
-            default:
-                break;
+    private fun prepareQueryParameters() {
+        when (whichPage) {
+            WhichPage.CURRENT -> minDate = TimelineViewPositionStorage.Companion.loadListPosition(this).minSentDate
+            else -> {
+            }
         }
-        sortOrderAndLimit = buildSortOrderAndLimit();
-        selectionAndArgs = buildSelectionAndArgs();
+        sortOrderAndLimit = buildSortOrderAndLimit()
+        selectionAndArgs = buildSelectionAndArgs()
     }
 
-    private String buildSortOrderAndLimit() {
-        return  ActivityTable.getTimelineSortOrder(getTimelineType(), isSortOrderAscending())
-                + (minDate > 0 && maxDate > 0 ? "" : " LIMIT " + PAGE_SIZE);
+    private fun buildSortOrderAndLimit(): String? {
+        return (ActivityTable.getTimelineSortOrder(getTimelineType(), isSortOrderAscending())
+                + if (minDate > 0 && maxDate > 0) "" else " LIMIT " + PAGE_SIZE)
     }
 
-    private SelectionAndArgs buildSelectionAndArgs() {
-        SelectionAndArgs sa = new SelectionAndArgs();
-        final long minDateActual = minDate > 0 ? minDate : 1;
-        sa.addSelection(ActivityTable.getTimeSortField(getTimelineType()) + " >= ?",
-                String.valueOf(minDateActual));
+    private fun buildSelectionAndArgs(): SelectionAndArgs? {
+        val sa = SelectionAndArgs()
+        val minDateActual = if (minDate > 0) minDate else 1
+        sa.addSelection(ActivityTable.getTimeSortField(getTimelineType()) + " >= ?", minDateActual.toString())
         if (maxDate > 0) {
-            sa.addSelection(ActivityTable.getTimeSortField(getTimelineType()) + " <= ?",
-                    String.valueOf(maxDate >= minDateActual ? maxDate : minDateActual));
+            sa.addSelection(ActivityTable.getTimeSortField(getTimelineType()) + " <= ?", if (maxDate >= minDateActual) maxDate else minDateActual.toString())
         }
-        return sa;
+        return sa
     }
 
-    Cursor queryDatabase() {
-        prepareQueryParameters();
-        return myContext.context().getContentResolver().query(getContentUri(), mProjection.toArray(new String[]{}),
-                selectionAndArgs.selection, selectionAndArgs.selectionArgs, sortOrderAndLimit);
+    fun queryDatabase(): Cursor? {
+        prepareQueryParameters()
+        return myContext.context().contentResolver.query(getContentUri(), mProjection.toArray<String?>(arrayOf<String?>()),
+                selectionAndArgs.selection, selectionAndArgs.selectionArgs, sortOrderAndLimit)
     }
 
-    public Uri getContentUri() {
-        return timeline.getUri();
+    fun getContentUri(): Uri? {
+        return timeline.getUri()
     }
 
-    public MyContext getMyContext() {
-        return myContext;
+    fun getMyContext(): MyContext? {
+        return myContext
     }
 
-    @Override
-    public String classTag() {
-        return TAG;
+    override fun classTag(): String? {
+        return TAG
+    }
+
+    companion object {
+        private val TAG: String? = TimelineParameters::class.java.simpleName
+
+        /**
+         * Msg are being loaded into the list starting from one page. More Msg
+         * are being loaded in a case User scrolls down to the end of list.
+         */
+        const val PAGE_SIZE = 200
+        fun clone(prev: TimelineParameters, whichPage: WhichPage?): TimelineParameters? {
+            val params = TimelineParameters(prev.myContext,
+                    if (whichPage == WhichPage.EMPTY) Timeline.Companion.EMPTY else prev.timeline,
+                    if (whichPage == WhichPage.ANY) prev.whichPage else whichPage)
+            if (whichPage != WhichPage.EMPTY) {
+                enrichNonEmptyParameters(params, prev)
+            }
+            return params
+        }
+
+        private fun enrichNonEmptyParameters(params: TimelineParameters?, prev: TimelineParameters?) {
+            params.mLoaderCallbacks = prev.mLoaderCallbacks
+            when (params.whichPage) {
+                WhichPage.OLDER -> if (prev.mayHaveOlderPage()) {
+                    params.maxDate = prev.minDateLoaded
+                } else {
+                    params.maxDate = prev.maxDate
+                }
+                WhichPage.YOUNGER -> if (prev.mayHaveYoungerPage()) {
+                    params.minDate = prev.maxDateLoaded
+                } else {
+                    params.minDate = prev.minDate
+                }
+                else -> {
+                }
+            }
+            MyLog.v(TimelineParameters::class.java) { "Constructing " + params.toSummary() }
+            params.mProjection = if (ViewItemType.Companion.fromTimelineType(params.timeline.getTimelineType())
+                    == ViewItemType.ACTIVITY) TimelineSql.getActivityProjection() else TimelineSql.getTimelineProjection()
+        }
     }
 }

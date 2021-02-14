@@ -13,163 +13,150 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.view
 
-package org.andstatus.app.view;
-
-import android.app.Activity;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ListView;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.StringRes;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentTransaction;
-
-import org.andstatus.app.ActivityRequestCode;
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyActivity;
-import org.andstatus.app.R;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyTheme;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.app.Activity
+import android.app.Dialog
+import android.content.DialogInterface
+import android.content.Intent
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ListView
+import androidx.annotation.StringRes
+import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentActivity
+import org.andstatus.app.ActivityRequestCode
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.MyActivity
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyTheme
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class SelectorDialog extends DialogFragment {
-    public final static String dialogTag = SelectorDialog.class.getSimpleName();
-    Toolbar toolbar = null;
-    ListView listView = null;
-    private int mLayoutId = R.layout.my_list_dialog;
-    protected MyContext myContext = myContextHolder.getNow();
-    private boolean resultReturned = false;
-
-    public Bundle setRequestCode(ActivityRequestCode requestCode) {
-        Bundle args = new Bundle();
-        args.putInt(IntentExtra.REQUEST_CODE.key, requestCode.id);
-        setArguments(args);
-        return args;
+open class SelectorDialog : DialogFragment() {
+    var toolbar: Toolbar? = null
+    var listView: ListView? = null
+    private val mLayoutId = R.layout.my_list_dialog
+    protected var myContext: MyContext? = MyContextHolder.Companion.myContextHolder.getNow()
+    private var resultReturned = false
+    fun setRequestCode(requestCode: ActivityRequestCode?): Bundle? {
+        val args = Bundle()
+        args.putInt(IntentExtra.REQUEST_CODE.key, requestCode.id)
+        arguments = args
+        return args
     }
 
-    public static String getDialogTag() {
-        return dialogTag;
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = Dialog(activity,
+                MyTheme.getThemeId(activity, MyTheme.getThemeName(activity)))
+        MyTheme.applyStyles(dialog.context, true)
+        return dialog
     }
 
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog = new Dialog(getActivity(),
-                MyTheme.getThemeId(getActivity(), MyTheme.getThemeName(getActivity())));
-        MyTheme.applyStyles(dialog.getContext(), true);
-        return dialog;
+    fun getListView(): ListView? {
+        return listView
     }
 
-    public ListView getListView() {
-        return listView;
-    }
-
-    protected void setListAdapter(MySimpleAdapter adapter) {
+    protected fun setListAdapter(adapter: MySimpleAdapter?) {
         if (listView != null) {
-            listView.setAdapter(adapter);
+            listView.setAdapter(adapter)
         }
     }
 
-    public MySimpleAdapter getListAdapter() {
-        if (listView != null) {
-             return (MySimpleAdapter) listView.getAdapter();
-        }
-        return null;
+    fun getListAdapter(): MySimpleAdapter? {
+        return if (listView != null) {
+            listView.getAdapter() as MySimpleAdapter
+        } else null
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(mLayoutId, container, false);
-        toolbar = (Toolbar) view.findViewById(R.id.my_action_bar);
-        listView = (ListView) view.findViewById(android.R.id.list);
-        return view;
+    override fun onCreateView(inflater: LayoutInflater?, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
+        val view = inflater.inflate(mLayoutId, container, false)
+        toolbar = view.findViewById<View?>(R.id.my_action_bar) as Toolbar
+        listView = view.findViewById<View?>(android.R.id.list) as ListView
+        return view
     }
 
-    public void setTitle(@StringRes int resId) {
+    fun setTitle(@StringRes resId: Int) {
         if (toolbar != null) {
-            toolbar.setTitle(resId);
+            toolbar.setTitle(resId)
         }
     }
 
-    public void setTitle(String title) {
+    fun setTitle(title: String?) {
         if (toolbar != null) {
-            toolbar.setTitle(title);
+            toolbar.setTitle(title)
         }
     }
 
-    protected void returnSelected(Intent selectedData) {
-        boolean returnResult = false;
+    protected fun returnSelected(selectedData: Intent?) {
+        var returnResult = false
         if (!resultReturned) {
-            resultReturned = true;
-            returnResult = true;
+            resultReturned = true
+            returnResult = true
         }
-        dismiss();
+        dismiss()
         if (returnResult) {
-            Activity activity = getActivity();
+            val activity: Activity? = activity
             if (activity != null) {
-                ((MyActivity) activity).onActivityResult(
+                (activity as MyActivity?).onActivityResult(
                         myGetArguments().getInt(IntentExtra.REQUEST_CODE.key),
                         Activity.RESULT_OK,
                         selectedData
-                );
+                )
             }
         }
     }
 
-    @Override
-    public void onDismiss(DialogInterface dialog) {
-        super.onDismiss(dialog);
+    override fun onDismiss(dialog: DialogInterface?) {
+        super.onDismiss(dialog)
         if (!resultReturned) {
-            resultReturned = true;
-            Activity activity = getActivity();
+            resultReturned = true
+            val activity: Activity? = activity
             if (activity != null) {
-                ((MyActivity) activity).onActivityResult(
+                (activity as MyActivity?).onActivityResult(
                         myGetArguments().getInt(IntentExtra.REQUEST_CODE.key),
                         Activity.RESULT_CANCELED,
-                        new Intent()
-                );
+                        Intent()
+                )
             }
         }
     }
 
-    public void show(FragmentActivity fragmentActivity) {
+    fun show(fragmentActivity: FragmentActivity?) {
         try {
-            FragmentTransaction ft = fragmentActivity.getSupportFragmentManager().beginTransaction();
-            Fragment prev = fragmentActivity.getSupportFragmentManager().findFragmentByTag(dialogTag);
+            val ft = fragmentActivity.getSupportFragmentManager().beginTransaction()
+            val prev = fragmentActivity.getSupportFragmentManager().findFragmentByTag(dialogTag)
             if (prev != null) {
-                ft.remove(prev);
+                ft.remove(prev)
             }
-            ft.addToBackStack(null);
-            show(ft, dialogTag);
-        } catch (Exception e) {
-            MyLog.w(fragmentActivity, "Failed to show " + MyStringBuilder.objToTag(this) , e);
+            ft.addToBackStack(null)
+            show(ft, dialogTag)
+        } catch (e: Exception) {
+            MyLog.w(fragmentActivity, "Failed to show " + MyStringBuilder.Companion.objToTag(this), e)
         }
     }
 
-    @NonNull
-    public Bundle myGetArguments() {
-        Bundle arguments = getArguments();
-        if (arguments != null) return arguments;
+    fun myGetArguments(): Bundle {
+        val arguments = arguments
+        if (arguments != null) return arguments
+        val newArguments = Bundle()
+        if (!isStateSaved) setArguments(newArguments)
+        return newArguments
+    }
 
-        Bundle newArguments = new Bundle();
-        if (!isStateSaved()) setArguments(newArguments);
-        return newArguments;
+    companion object {
+        val dialogTag: String? = SelectorDialog::class.java.simpleName
+        fun getDialogTag(): String? {
+            return dialogTag
+        }
     }
 }

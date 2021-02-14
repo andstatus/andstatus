@@ -1,53 +1,46 @@
-package org.andstatus.app.origin;
+package org.andstatus.app.origin
 
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
+import java.util.concurrent.ConcurrentHashMap
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-public class DiscoveredOrigins {
-    private static final Map<String,Origin> mOrigins = new ConcurrentHashMap<String, Origin>();
-
-    private DiscoveredOrigins() {
-        // Empty
-    }
-    
-    public static void replaceAll(List<Origin> newOrigins) {
+object DiscoveredOrigins {
+    private val mOrigins: MutableMap<String?, Origin?>? = ConcurrentHashMap()
+    fun replaceAll(newOrigins: MutableList<Origin?>?) {
         if (newOrigins.isEmpty()) {
-            return;
+            return
         }
-        int oldCount = 0;
-        OriginType type = newOrigins.get(0).getOriginType();
-        for (Origin origin : mOrigins.values()) {
-            if (origin.getOriginType() == type) {
-                mOrigins.remove(origin.getName());
-                oldCount++;
+        var oldCount = 0
+        val type = newOrigins.get(0).getOriginType()
+        for (origin in mOrigins.values) {
+            if (origin.getOriginType() === type) {
+                mOrigins.remove(origin.getName())
+                oldCount++
             }
         }
-        for (Origin origin : newOrigins) {
-            mOrigins.put(origin.getName(), origin);
+        for (origin in newOrigins) {
+            mOrigins[origin.getName()] = origin
         }
-        int removed = oldCount;
-        MyLog.v(DiscoveredOrigins.class, () -> "Removed " + removed + " and added " + newOrigins.size()
-                + " " + type.name() + " origins");
+        val removed = oldCount
+        MyLog.v(DiscoveredOrigins::class.java) {
+            ("Removed " + removed + " and added " + newOrigins.size
+                    + " " + type.name + " origins")
+        }
     }
 
-    public static void clear() {
-        mOrigins.clear();
-    }
-    
-    public static Collection<Origin> get() {
-        return mOrigins.values();
+    fun clear() {
+        mOrigins.clear()
     }
 
-    public static Origin fromName(String originName) {
-        if (!StringUtil.isEmpty(originName) && mOrigins.containsKey(originName)) {
-            return mOrigins.get(originName);
+    fun get(): MutableCollection<Origin?>? {
+        return mOrigins.values
+    }
+
+    fun fromName(originName: String?): Origin? {
+        return if (!StringUtil.isEmpty(originName) && mOrigins.containsKey(originName)) {
+            mOrigins.get(originName)
         } else {
-            return Origin.EMPTY;
+            Origin.Companion.EMPTY
         }
     }
 }

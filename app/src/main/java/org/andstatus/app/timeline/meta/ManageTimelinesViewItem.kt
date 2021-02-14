@@ -13,37 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline.meta
 
-package org.andstatus.app.timeline.meta;
-
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.timeline.ViewItem;
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.timeline.ViewItem
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ManageTimelinesViewItem extends ViewItem<ManageTimelinesViewItem> {
-    final Timeline timeline;
-    final TimelineTitle timelineTitle;
-    final long countSince;
-
-    protected ManageTimelinesViewItem(MyContext myContext, Timeline timeline,
-                                 MyAccount accountToHide, boolean namesAreHidden) {
-        super(false, timeline.getLastChangedDate());
-        this.timeline = timeline;
-        timelineTitle = TimelineTitle.from(myContext, timeline, accountToHide, namesAreHidden,
-                TimelineTitle.Destination.DEFAULT);
-        countSince = timeline.getCountSince();
+class ManageTimelinesViewItem(myContext: MyContext?, val timeline: Timeline?,
+                              accountToHide: MyAccount?, namesAreHidden: Boolean) : ViewItem<ManageTimelinesViewItem?>(false, timeline.getLastChangedDate()) {
+    val timelineTitle: TimelineTitle?
+    val countSince: Long
+    override fun getId(): Long {
+        return timeline?.id ?: 0
     }
 
-    @Override
-    public long getId() {
-        return timeline == null ? 0 : timeline.getId();
+    override fun getDate(): Long {
+        return timeline?.lastSyncedDate ?: 0
     }
 
-    @Override
-    public long getDate() {
-        return timeline == null ? 0 : timeline.getLastSyncedDate();
+    init {
+        timelineTitle = TimelineTitle.Companion.from(myContext, timeline, accountToHide, namesAreHidden,
+                TimelineTitle.Destination.DEFAULT)
+        countSince = timeline.getCountSince()
     }
 }

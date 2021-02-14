@@ -13,319 +13,279 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.os
 
-package org.andstatus.app.os;
-
-import android.database.sqlite.SQLiteDatabaseLockedException;
-import android.database.sqlite.SQLiteDiskIOException;
-import android.os.AsyncTask;
-import android.os.Looper;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.util.IdentifiableInstance;
-import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtil;
-
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import io.vavr.control.Try;
-
-import static org.andstatus.app.os.ExceptionsCounter.logSystemInfo;
-import static org.andstatus.app.os.ExceptionsCounter.onDiskIoException;
+import android.database.sqlite.SQLiteDatabaseLockedException
+import android.database.sqlite.SQLiteDiskIOException
+import android.os.AsyncTask
+import android.os.Looper
+import io.vavr.control.Try
+import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.os.MyAsyncTask.PoolEnum
+import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.InstanceId
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.StringUtil
+import java.util.function.Consumer
+import java.util.function.Function
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public abstract class MyAsyncTask<Params, Progress, Result> extends AsyncTask<Params, Progress, Result>
-        implements IdentifiableInstance {
-    private static final long MAX_WAITING_BEFORE_EXECUTION_SECONDS = 600;
-    static final long MAX_COMMAND_EXECUTION_SECONDS = 600;
-    private static final long MAX_EXECUTION_AFTER_CANCEL_SECONDS = 600;
-    private static final long DELAY_AFTER_EXECUTOR_ENDED_SECONDS = 1;
-    private long maxCommandExecutionSeconds = MAX_COMMAND_EXECUTION_SECONDS;
+abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any, pool: PoolEnum?) : AsyncTask<Params?, Progress?, Result?>(), IdentifiableInstance {
+    private var maxCommandExecutionSeconds = MAX_COMMAND_EXECUTION_SECONDS
+    private val taskId: String?
+    protected val createdAt = MyLog.uniqueCurrentTimeMS()
+    protected val instanceId = InstanceId.next()
+    private var singleInstance = true
 
-    private final String taskId;
-    protected final long createdAt = MyLog.uniqueCurrentTimeMS();
-    protected final long instanceId = InstanceId.next();
-    private boolean singleInstance = true;
+    @Volatile
+    var backgroundStartedAt: Long = 0
 
-    protected volatile long backgroundStartedAt;
-    protected volatile long backgroundEndedAt;
+    @Volatile
+    var backgroundEndedAt: Long = 0
 
-    /** This allows to control execution time of single steps/commands by this AsyncTask */
-    protected volatile long currentlyExecutingSince = 0;
-    /** Description of execution or lack of it */
-    protected volatile String currentlyExecutingDescription = "(didn't start)";
+    /** This allows to control execution time of single steps/commands by this AsyncTask  */
+    @Volatile
+    protected var currentlyExecutingSince: Long = 0
 
-    boolean cancelable = true;
-    private volatile long cancelledAt = 0;
-    private volatile String firstError = "";
-    volatile boolean hasExecutor = true;
+    /** Description of execution or lack of it  */
+    @Volatile
+    protected var currentlyExecutingDescription: String? = "(didn't start)"
+    var cancelable = true
 
-    public enum PoolEnum {
-        SYNC(3, MAX_COMMAND_EXECUTION_SECONDS, true),
-        FILE_DOWNLOAD(1, MAX_COMMAND_EXECUTION_SECONDS, true),
-        QUICK_UI(0, 20, false),
-        LONG_UI(1, MAX_COMMAND_EXECUTION_SECONDS, true);
+    @Volatile
+    private var cancelledAt: Long = 0
 
-        protected final int corePoolSize;
-        final long maxCommandExecutionSeconds;
-        final boolean mayBeShutDown;
+    @Volatile
+    private var firstError: String? = ""
 
-        PoolEnum(int corePoolSize, long maxCommandExecutionSeconds, boolean mayBeShutDown) {
-            this.corePoolSize = corePoolSize;
-            this.maxCommandExecutionSeconds = maxCommandExecutionSeconds;
-            this.mayBeShutDown = mayBeShutDown;
-        }
+    @Volatile
+    var hasExecutor = true
 
-        public static PoolEnum thatCannotBeShutDown() {
-            for (PoolEnum pool: PoolEnum.values()) {
-                if (!pool.mayBeShutDown) return pool;
+    enum class PoolEnum(val corePoolSize: Int, val maxCommandExecutionSeconds: Long, val mayBeShutDown: Boolean) {
+        SYNC(3, MAX_COMMAND_EXECUTION_SECONDS, true), FILE_DOWNLOAD(1, MAX_COMMAND_EXECUTION_SECONDS, true), QUICK_UI(0, 20, false), LONG_UI(1, MAX_COMMAND_EXECUTION_SECONDS, true);
+
+        companion object {
+            fun thatCannotBeShutDown(): PoolEnum? {
+                for (pool in values()) {
+                    if (!pool.mayBeShutDown) return pool
+                }
+                throw IllegalStateException("All pools may be shut down")
             }
-            throw new IllegalStateException("All pools may be shut down");
         }
     }
 
-    public final PoolEnum pool;
-    public boolean isSingleInstance() {
-        return singleInstance;
+    val pool: PoolEnum?
+    fun isSingleInstance(): Boolean {
+        return singleInstance
     }
 
-    public void setSingleInstance(boolean singleInstance) {
-        this.singleInstance = singleInstance;
+    fun setSingleInstance(singleInstance: Boolean) {
+        this.singleInstance = singleInstance
     }
 
-    public MyAsyncTask setMaxCommandExecutionSeconds(long seconds) {
-        this.maxCommandExecutionSeconds = seconds;
-        return this;
+    fun setMaxCommandExecutionSeconds(seconds: Long): MyAsyncTask<*, *, *>? {
+        maxCommandExecutionSeconds = seconds
+        return this
     }
 
-    public MyAsyncTask setCancelable(boolean cancelable) {
-        this.cancelable = cancelable;
-        return this;
+    fun setCancelable(cancelable: Boolean): MyAsyncTask<*, *, *>? {
+        this.cancelable = cancelable
+        return this
     }
 
-    public MyAsyncTask(PoolEnum pool) {
-        this(MyAsyncTask.class, pool);
+    constructor(pool: PoolEnum?) : this(MyAsyncTask::class.java, pool) {}
+
+    override fun onCancelled() {
+        rememberWhenCancelled()
+        ExceptionsCounter.showErrorDialogIfErrorsPresent()
+        super.onCancelled()
     }
 
-    public MyAsyncTask(@NonNull Object taskId, PoolEnum pool) {
-        this.taskId = MyStringBuilder.objToTag(taskId);
-        this.pool = pool;
-        maxCommandExecutionSeconds = pool.maxCommandExecutionSeconds;
-    }
-
-    @Override
-    protected void onCancelled() {
-        rememberWhenCancelled();
-        ExceptionsCounter.showErrorDialogIfErrorsPresent();
-        super.onCancelled();
-    }
-
-    @Override
-    protected final Result doInBackground(Params... params) {
-        backgroundStartedAt = System.currentTimeMillis();
-        currentlyExecutingSince = backgroundStartedAt;
+    override fun doInBackground(vararg params: Params?): Result? {
+        backgroundStartedAt = System.currentTimeMillis()
+        currentlyExecutingSince = backgroundStartedAt
         try {
-            if (!isCancelled()) {
-                return doInBackground2(params != null && params.length > 0 ? params[0] : null);
+            if (!isCancelled) {
+                return doInBackground2(if (params != null && params.size > 0) params[0] else null)
             }
-        } catch (SQLiteDiskIOException e) {
-            onDiskIoException(e);
-        } catch (SQLiteDatabaseLockedException e) {
+        } catch (e: SQLiteDiskIOException) {
+            ExceptionsCounter.onDiskIoException(e)
+        } catch (e: SQLiteDatabaseLockedException) {
             // see also https://github.com/greenrobot/greenDAO/issues/191
-            logError("Database lock error, probably related to the application re-initialization", e);
-        } catch (AssertionError | Exception e) {
-            logSystemInfo(e);
+            logError("Database lock error, probably related to the application re-initialization", e)
+        } catch (e: AssertionError) {
+            ExceptionsCounter.logSystemInfo(e)
+        } catch (e: Exception) {
+            ExceptionsCounter.logSystemInfo(e)
         }
-        return null;
+        return null
     }
 
-    protected abstract Result doInBackground2(Params params);
-
-    @Override
-    final protected void onPostExecute(Result result) {
-        backgroundEndedAt = System.currentTimeMillis();
-        ExceptionsCounter.showErrorDialogIfErrorsPresent();
-        onPostExecute2(result);
-        super.onPostExecute(result);
-        onFinish(result, true);
+    protected abstract fun doInBackground2(params: Params?): Result?
+    override fun onPostExecute(result: Result?) {
+        backgroundEndedAt = System.currentTimeMillis()
+        ExceptionsCounter.showErrorDialogIfErrorsPresent()
+        onPostExecute2(result)
+        super.onPostExecute(result)
+        onFinish(result, true)
     }
 
-    protected void onPostExecute2(Result result) {
+    protected open fun onPostExecute2(result: Result?) {}
+    override fun onCancelled(result: Result?) {
+        backgroundEndedAt = System.currentTimeMillis()
+        onCancelled2(result)
+        super.onCancelled(result)
+        onFinish(result, false)
     }
 
-    @Override
-    final protected void onCancelled(Result result) {
-        backgroundEndedAt = System.currentTimeMillis();
-        onCancelled2(result);
-        super.onCancelled(result);
-        onFinish(result, false);
+    protected open fun onCancelled2(result: Result?) {}
+
+    /** Is called in both cases: Cancelled or not, before changing status to FINISH   */
+    protected open fun onFinish(result: Result?, success: Boolean) {}
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o == null || javaClass != o.javaClass) return false
+        val that = o as MyAsyncTask<*, *, *>?
+        return taskId == that.taskId
     }
 
-    protected void onCancelled2(Result result) {
+    override fun hashCode(): Int {
+        return taskId.hashCode()
     }
 
-    /** Is called in both cases: Cancelled or not, before changing status to FINISH  */
-    protected void onFinish(Result result, boolean success) {
+    override fun getInstanceId(): Long {
+        return instanceId
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        MyAsyncTask<?, ?, ?> that = (MyAsyncTask<?, ?, ?>) o;
-
-        return taskId.equals(that.taskId);
+    fun isBackgroundStarted(): Boolean {
+        return backgroundStartedAt > 0
     }
 
-    @Override
-    public int hashCode() {
-        return taskId.hashCode();
+    fun isBackgroundCompleted(): Boolean {
+        return backgroundEndedAt > 0
     }
 
-    @Override
-    public long getInstanceId() {
-        return instanceId;
-    }
-
-    public boolean isBackgroundStarted() {
-        return backgroundStartedAt > 0;
-    }
-
-    public boolean isBackgroundCompleted() {
-        return backgroundEndedAt > 0;
-    }
-
-    @Override
-    public String toString() {
-        return taskId + " on " + pool.name()
+    override fun toString(): String {
+        return (taskId + " on " + pool.name
                 + "; age " + RelativeTime.secondsAgo(createdAt) + "sec"
                 + "; " + stateSummary()
-                + "; instanceId=" + instanceId + "; " + super.toString();
+                + "; instanceId=" + instanceId + "; " + super.toString())
     }
 
-    private String stateSummary() {
-        String summary = "";
-        switch (getStatus()) {
-            case PENDING:
-                summary = "PENDING " + RelativeTime.secondsAgo(createdAt) + " sec ago";
-                break;
-            case FINISHED:
-                if (backgroundEndedAt == 0) {
-                    summary = "FINISHED, but didn't complete";
-                } else {
-                    summary = "FINISHED " + RelativeTime.secondsAgo(backgroundEndedAt) + " sec ago";
-                }
-                break;
-            default:
-                if (backgroundStartedAt == 0) {
-                    summary = "QUEUED " + RelativeTime.secondsAgo(createdAt) + " sec ago";
-                } else if (backgroundEndedAt == 0) {
-                    summary = "RUNNING for " + RelativeTime.secondsAgo(backgroundStartedAt) + " sec";
-                } else {
-                    summary = "FINISHING " +  RelativeTime.secondsAgo(backgroundEndedAt) + " sec ago";
-                }
-                break;
+    private fun stateSummary(): String? {
+        var summary = ""
+        summary = when (status) {
+            Status.PENDING -> "PENDING " + RelativeTime.secondsAgo(createdAt) + " sec ago"
+            Status.FINISHED -> if (backgroundEndedAt == 0L) {
+                "FINISHED, but didn't complete"
+            } else {
+                "FINISHED " + RelativeTime.secondsAgo(backgroundEndedAt) + " sec ago"
+            }
+            else -> if (backgroundStartedAt == 0L) {
+                "QUEUED " + RelativeTime.secondsAgo(createdAt) + " sec ago"
+            } else if (backgroundEndedAt == 0L) {
+                "RUNNING for " + RelativeTime.secondsAgo(backgroundStartedAt) + " sec"
+            } else {
+                "FINISHING " + RelativeTime.secondsAgo(backgroundEndedAt) + " sec ago"
+            }
         }
-        if (isCancelled()) {
-            rememberWhenCancelled();
-            summary += ", cancelled " + RelativeTime.secondsAgo(cancelledAt) + " sec ago";
+        if (isCancelled) {
+            rememberWhenCancelled()
+            summary += ", cancelled " + RelativeTime.secondsAgo(cancelledAt) + " sec ago"
         }
-        if (!hasExecutor) summary += ", no executor";
-        return summary;
+        if (!hasExecutor) summary += ", no executor"
+        return summary
     }
 
-    public boolean isReallyWorking() {
-        return needsBackgroundWork() && !expectedToBeFinishedNow();
+    open fun isReallyWorking(): Boolean {
+        return needsBackgroundWork() && !expectedToBeFinishedNow()
     }
 
-    private boolean expectedToBeFinishedNow() {
-        return RelativeTime.wasButMoreSecondsAgoThan(backgroundEndedAt, DELAY_AFTER_EXECUTOR_ENDED_SECONDS)
+    private fun expectedToBeFinishedNow(): Boolean {
+        return (RelativeTime.wasButMoreSecondsAgoThan(backgroundEndedAt, DELAY_AFTER_EXECUTOR_ENDED_SECONDS)
                 || RelativeTime.wasButMoreSecondsAgoThan(currentlyExecutingSince, maxCommandExecutionSeconds)
                 || cancelledLongAgo()
-                || (getStatus() == Status.PENDING
-                    && RelativeTime.wasButMoreSecondsAgoThan(createdAt, MAX_WAITING_BEFORE_EXECUTION_SECONDS));
+                || (status == Status.PENDING
+                && RelativeTime.wasButMoreSecondsAgoThan(createdAt, MAX_WAITING_BEFORE_EXECUTION_SECONDS)))
     }
 
-    public boolean cancelledLongAgo() {
-        return RelativeTime.wasButMoreSecondsAgoThan(cancelledAt, MAX_EXECUTION_AFTER_CANCEL_SECONDS);
+    fun cancelledLongAgo(): Boolean {
+        return RelativeTime.wasButMoreSecondsAgoThan(cancelledAt, MAX_EXECUTION_AFTER_CANCEL_SECONDS)
     }
 
-    /** If yes, the task may be not in FINISHED state yet: during execution of onPostExecute */
-    public boolean completedBackgroundWork() {
-        return !needsBackgroundWork();
+    /** If yes, the task may be not in FINISHED state yet: during execution of onPostExecute  */
+    fun completedBackgroundWork(): Boolean {
+        return !needsBackgroundWork()
     }
 
-    public boolean needsBackgroundWork() {
-        switch (getStatus()) {
-            case PENDING:
-                return true;
-            case FINISHED:
-                return false;
-            default:
-                return backgroundEndedAt == 0;
+    fun needsBackgroundWork(): Boolean {
+        return when (status) {
+            Status.PENDING -> true
+            Status.FINISHED -> false
+            else -> backgroundEndedAt == 0L
         }
     }
 
-    public boolean cancelLogged(boolean mayInterruptIfRunning) {
-        rememberWhenCancelled();
-        return super.cancel(mayInterruptIfRunning);
+    fun cancelLogged(mayInterruptIfRunning: Boolean): Boolean {
+        rememberWhenCancelled()
+        return super.cancel(mayInterruptIfRunning)
     }
 
-    private void rememberWhenCancelled() {
-        if (cancelledAt == 0) {
-            cancelledAt = System.currentTimeMillis();
+    private fun rememberWhenCancelled() {
+        if (cancelledAt == 0L) {
+            cancelledAt = System.currentTimeMillis()
         }
     }
 
-    public String getFirstError() {
-        return firstError;
+    fun getFirstError(): String? {
+        return firstError
     }
 
-    private void logError(String msgLog, Throwable tr) {
-        MyLog.w(this, msgLog, tr);
+    private fun logError(msgLog: String?, tr: Throwable?) {
+        MyLog.w(this, msgLog, tr)
         if (!StringUtil.isEmpty(firstError) || tr == null) {
-            return;
+            return
         }
-        firstError = MyLog.getStackTrace(tr);
+        firstError = MyLog.getStackTrace(tr)
     }
 
-    public static boolean nonUiThread() {
-        return !isUiThread();
-    }
+    companion object {
+        private const val MAX_WAITING_BEFORE_EXECUTION_SECONDS: Long = 600
+        const val MAX_COMMAND_EXECUTION_SECONDS: Long = 600
+        private const val MAX_EXECUTION_AFTER_CANCEL_SECONDS: Long = 600
+        private const val DELAY_AFTER_EXECUTOR_ENDED_SECONDS: Long = 1
+        fun nonUiThread(): Boolean {
+            return !isUiThread()
+        }
 
-    // See http://stackoverflow.com/questions/11411022/how-to-check-if-current-thread-is-not-main-thread
-    public static boolean isUiThread() {
-        return Looper.myLooper() == Looper.getMainLooper();
-    }
+        // See http://stackoverflow.com/questions/11411022/how-to-check-if-current-thread-is-not-main-thread
+        fun isUiThread(): Boolean {
+            return Looper.myLooper() == Looper.getMainLooper()
+        }
 
-    public static <Params, Progress, Result> MyAsyncTask<Params, Progress, Try<Result>> fromFunc(Params params,
-        Function<Params, Try<Result>> backgroundFunc,
-        Function<Params, Consumer<Try<Result>>> uiConsumer) {
-        return new MyAsyncTask<Params, Progress, Try<Result>>(params, PoolEnum.LONG_UI) {
-            @Override
-            protected Try<Result> doInBackground2(Params params) {
-                return backgroundFunc.apply(params);
+        fun <Params, Progress, Result> fromFunc(params: Params?,
+                                                backgroundFunc: Function<Params?, Try<Result?>?>?,
+                                                uiConsumer: Function<Params?, Consumer<Try<Result?>?>?>?): MyAsyncTask<Params?, Progress?, Try<Result?>?>? {
+            return object : MyAsyncTask<Params?, Progress?, Try<Result?>?>(params, PoolEnum.LONG_UI) {
+                override fun doInBackground2(params: Params?): Try<Result?>? {
+                    return backgroundFunc.apply(params)
+                }
+
+                override fun onFinish(results: Try<Result?>?, success: Boolean) {
+                    val results2 = if (results == null) Try.failure(Exception("No results of the Async task")) else if (success) results else if (results.isFailure) results else Try.failure(Exception("Failed to execute Async task"))
+                    uiConsumer.apply(params).accept(results2)
+                }
             }
+        }
+    }
 
-            @Override
-            protected void onFinish(Try<Result> results, boolean success) {
-                Try<Result> results2 = results == null
-                    ? Try.failure(new Exception("No results of the Async task"))
-                    : success
-                        ? results
-                        : (results.isFailure()
-                            ? results
-                            : Try.failure(new Exception("Failed to execute Async task")));
-                uiConsumer.apply(params).accept(results2);
-            }
-        };
+    init {
+        this.taskId = MyStringBuilder.Companion.objToTag(taskId)
+        this.pool = pool
+        maxCommandExecutionSeconds = pool.maxCommandExecutionSeconds
     }
 }

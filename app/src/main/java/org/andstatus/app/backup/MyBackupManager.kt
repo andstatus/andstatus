@@ -13,198 +13,179 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.backup
 
-package org.andstatus.app.backup;
-
-import android.app.Activity;
-import android.app.backup.BackupAgent;
-import android.content.Context;
-import android.os.Environment;
-
-import androidx.annotation.NonNull;
-import androidx.documentfile.provider.DocumentFile;
-
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TryUtils;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Arrays;
-
-import io.vavr.control.Try;
-
-import static java.util.function.UnaryOperator.identity;
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.app.Activity
+import android.app.backup.BackupAgent
+import android.content.Context
+import android.os.Environment
+import androidx.documentfile.provider.DocumentFile
+import io.vavr.control.CheckedFunction
+import io.vavr.control.Try
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TryUtils
+import java.io.FileNotFoundException
+import java.io.IOException
+import java.util.*
+import java.util.function.UnaryOperator
 
 /**
  * Creates backups in the local file system:
- * 1. Using stock Android {@link BackupAgent} interface 
+ * 1. Using stock Android [BackupAgent] interface
  * 2. Or using custom interface, launched from your application
- * 
+ *
  * One backup consists of:
  * 1. Backup descriptor file
- * 2. Folder with: 
- *      For each backup "key": header file and data file  
+ * 2. Folder with:
+ * For each backup "key": header file and data file
  * @author yvolk (Yuri Volkov), http://yurivolkov.com
  */
-class MyBackupManager {
-    public static final String DESCRIPTOR_FILE_NAME = "_descriptor.json";
-    private DocumentFile dataFolder = null;
-    private MyBackupDescriptor newDescriptor = MyBackupDescriptor.getEmpty();
-
-    private MyBackupAgent backupAgent;
-    private final Activity activity;
-    private final ProgressLogger progressLogger;
-
-    MyBackupManager(Activity activity, ProgressLogger.ProgressListener progressListener) {
-        this.activity = activity;
-        this.progressLogger = new ProgressLogger(progressListener);
-    }
-
-    static void backupInteractively(DocumentFile backupFolder, Activity activity, ProgressLogger.ProgressListener progressListener) {
-        MyBackupManager backupManager = new MyBackupManager(activity, progressListener);
-        try {
-            backupManager.prepareForBackup(backupFolder);
-            backupManager.backup();
-        } catch (Throwable e) {
-            backupManager.progressLogger.logProgress(e.getMessage());
-            backupManager.progressLogger.logFailure();
-            MyLog.w(backupManager, "Backup failed", e);
-        }
-    }
-    
-    void prepareForBackup(DocumentFile backupFolder) throws IOException {
+internal class MyBackupManager(private val activity: Activity?, progressListener: ProgressLogger.ProgressListener?) {
+    private var dataFolder: DocumentFile? = null
+    private var newDescriptor: MyBackupDescriptor? = MyBackupDescriptor.Companion.getEmpty()
+    private var backupAgent: MyBackupAgent? = null
+    private val progressLogger: ProgressLogger?
+    @Throws(IOException::class)
+    fun prepareForBackup(backupFolder: DocumentFile?) {
         progressLogger.logProgress("Data folder will be created inside: '"
-                + backupFolder.getUri() + "'");
+                + backupFolder.getUri() + "'")
         if (backupFolder.exists() && getExistingDescriptorFile(backupFolder).isSuccess()) {
-            throw new FileNotFoundException("Wrong folder, backup descriptor file '" + DESCRIPTOR_FILE_NAME + "'" +
-                    " already exists here: '" + backupFolder.getUri().getPath() + "'");
+            throw FileNotFoundException("Wrong folder, backup descriptor file '" + DESCRIPTOR_FILE_NAME + "'" +
+                    " already exists here: '" + backupFolder.getUri().path + "'")
         }
-
-        String appInstanceName = MyPreferences.getAppInstanceName();
-        final String dataFolderName = MyLog.currentDateTimeFormatted() + "-AndStatusBackup-" +
-                (StringUtil.isEmpty(appInstanceName) ? "" : appInstanceName + "-") +
-                MyPreferences.getDeviceBrandModelString();
-
-        DocumentFile dataFolderToBe = backupFolder.createDirectory(dataFolderName);
-        if (dataFolderToBe == null) {
-            throw new IOException("Couldn't create subfolder '" + dataFolderName + "'" +
-                    " inside '" + backupFolder.getUri() + "'");
+        val appInstanceName = MyPreferences.getAppInstanceName()
+        val dataFolderName = MyLog.currentDateTimeFormatted() + "-AndStatusBackup-" +
+                (if (StringUtil.isEmpty(appInstanceName)) "" else "$appInstanceName-") +
+                MyPreferences.getDeviceBrandModelString()
+        val dataFolderToBe = backupFolder.createDirectory(dataFolderName)
+                ?: throw IOException("Couldn't create subfolder '" + dataFolderName + "'" +
+                        " inside '" + backupFolder.getUri() + "'")
+        if (dataFolderToBe.listFiles().size > 0) {
+            throw IOException("Data folder is not empty: '" + dataFolderToBe.uri + "'")
         }
-        if (dataFolderToBe.listFiles().length > 0) {
-            throw new IOException("Data folder is not empty: '" + dataFolderToBe.getUri() + "'");
-        }
-        DocumentFile descriptorFile = dataFolderToBe.createFile("", DESCRIPTOR_FILE_NAME);
-        if (descriptorFile == null) {
-            throw new IOException("Couldn't create descriptor file '" + DESCRIPTOR_FILE_NAME + "'" +
-                    " inside '" + dataFolderToBe.getUri() + "'");
-        }
-        dataFolder = dataFolderToBe;
+        val descriptorFile = dataFolderToBe.createFile("", DESCRIPTOR_FILE_NAME)
+                ?: throw IOException("Couldn't create descriptor file '" + DESCRIPTOR_FILE_NAME + "'" +
+                        " inside '" + dataFolderToBe.uri + "'")
+        dataFolder = dataFolderToBe
     }
 
-    DocumentFile getDataFolder() {
-        return dataFolder;
+    fun getDataFolder(): DocumentFile? {
+        return dataFolder
     }
 
-    static boolean isDataFolder(DocumentFile dataFolder) {
-        if (dataFolder != null && dataFolder.exists() && dataFolder.isDirectory() ) {
-            return getExistingDescriptorFile(dataFolder).isSuccess();
-        }
-        return false;
-    }
-
-    static Try<DocumentFile> getExistingDescriptorFile(DocumentFile dataFolder) {
-        return TryUtils.ofNullableCallable(() -> dataFolder.findFile(DESCRIPTOR_FILE_NAME));
-    }
-
-    void backup() {
-        progressLogger.logProgress("Starting backup to data folder:'" + dataFolder.getUri() + "'");
-        backupAgent = new MyBackupAgent();
-        backupAgent.setActivity(activity);
-
-        MyBackupDataOutput dataOutput = new MyBackupDataOutput(backupAgent, dataFolder);
-
+    fun backup() {
+        progressLogger.logProgress("Starting backup to data folder:'" + dataFolder.getUri() + "'")
+        backupAgent = MyBackupAgent()
+        backupAgent.setActivity(activity)
+        val dataOutput = MyBackupDataOutput(backupAgent, dataFolder)
         getExistingDescriptorFile(dataFolder)
-        .map( df -> {
-                newDescriptor = MyBackupDescriptor.fromEmptyDocumentFile(backupAgent, df, progressLogger);
-                backupAgent.onBackup(MyBackupDescriptor.getEmpty(), dataOutput, newDescriptor);
-                progressLogger.logSuccess();
-                return true;
-            })
-        .get(); // Return Try instead of throwing
+                .map(CheckedFunction { df: DocumentFile? ->
+                    newDescriptor = MyBackupDescriptor.Companion.fromEmptyDocumentFile(backupAgent, df, progressLogger)
+                    backupAgent.onBackup(MyBackupDescriptor.Companion.getEmpty(), dataOutput, newDescriptor)
+                    progressLogger.logSuccess()
+                    true
+                })
+                .get() // Return Try instead of throwing
     }
 
-    static void restoreInteractively(DocumentFile dataFolder, Activity activity, ProgressLogger.ProgressListener progressListener) {
-        MyBackupManager backupManager = new MyBackupManager(activity, progressListener);
-        try {
-            backupManager.prepareForRestore(dataFolder);
-            backupManager.restore();
-
-            DocumentFile backupFolder = dataFolder.getParentFile();
-            if (backupFolder != null) {
-                MyPreferences.setLastBackupUri(backupFolder.getUri());
-            }
-        } catch (Throwable e) {
-            MyLog.ignored(backupManager, e);
-            backupManager.progressLogger.logProgress(e.getMessage());
-            backupManager.progressLogger.logFailure();
-        }
-    }
-
-    void prepareForRestore(DocumentFile dataFolder) throws Throwable {
+    @Throws(Throwable::class)
+    fun prepareForRestore(dataFolder: DocumentFile?) {
         if (dataFolder == null) {
-            throw new FileNotFoundException("Data folder is not selected");
+            throw FileNotFoundException("Data folder is not selected")
         }
         if (!dataFolder.exists()) {
-            throw new FileNotFoundException("Data folder doesn't exist:'" + dataFolder.getUri() + "'");
+            throw FileNotFoundException("Data folder doesn't exist:'" + dataFolder.uri + "'")
         }
-        Try<DocumentFile> descriptorFile = getExistingDescriptorFile(dataFolder);
+        val descriptorFile = getExistingDescriptorFile(dataFolder)
         if (descriptorFile.isFailure()) {
-            throw new FileNotFoundException("Descriptor file " + DESCRIPTOR_FILE_NAME +
-                    " doesn't exist: '" + descriptorFile.getCause().getMessage() + "'");
+            throw FileNotFoundException("Descriptor file " + DESCRIPTOR_FILE_NAME +
+                    " doesn't exist: '" + descriptorFile.getCause().message + "'")
         }
-
-        this.dataFolder = dataFolder;
-        newDescriptor = descriptorFile.map(df -> {
-            MyBackupDescriptor descriptor = MyBackupDescriptor.fromOldDocFileDescriptor(
-                    myContextHolder.getNow().baseContext(), df, progressLogger);
-            if (descriptor.getBackupSchemaVersion() != MyBackupDescriptor.BACKUP_SCHEMA_VERSION) {
-                throw new FileNotFoundException(
-                        "Unsupported backup schema version: " + descriptor.getBackupSchemaVersion() +
-                                "; created with " + descriptor.appVersionNameAndCode() +
-                                "\nData folder:'" + this.dataFolder.getUri().getPath() + "'." +
-                                "\nPlease use older AndStatus version to restore this backup."
-                );
+        this.dataFolder = dataFolder
+        newDescriptor = descriptorFile.map(CheckedFunction { df: DocumentFile? ->
+            val descriptor: MyBackupDescriptor = MyBackupDescriptor.Companion.fromOldDocFileDescriptor(
+                    MyContextHolder.Companion.myContextHolder.getNow().baseContext(), df, progressLogger)
+            if (descriptor.backupSchemaVersion != MyBackupDescriptor.Companion.BACKUP_SCHEMA_VERSION) {
+                throw FileNotFoundException(
+                        """
+                        Unsupported backup schema version: ${descriptor.backupSchemaVersion}; created with ${descriptor.appVersionNameAndCode()}
+                        Data folder:'${this.dataFolder.getUri().path}'.
+                        Please use older AndStatus version to restore this backup.
+                        """.trimIndent()
+                )
             }
-            return descriptor;
-        }).getOrElseThrow(identity());
+            descriptor
+        }).getOrElseThrow(UnaryOperator.identity())
     }
 
-    void restore() throws IOException {
-        backupAgent = new MyBackupAgent();
-        backupAgent.setActivity(activity);
-        MyBackupDataInput dataInput = new MyBackupDataInput(backupAgent, dataFolder);
-        if (dataInput.listKeys().size() < 3) {
-            throw new FileNotFoundException("Not enough keys in the backup: " + Arrays.toString(dataInput.listKeys().toArray()));
+    @Throws(IOException::class)
+    fun restore() {
+        backupAgent = MyBackupAgent()
+        backupAgent.setActivity(activity)
+        val dataInput = MyBackupDataInput(backupAgent, dataFolder)
+        if (dataInput.listKeys().size < 3) {
+            throw FileNotFoundException("Not enough keys in the backup: " + Arrays.toString(dataInput.listKeys().toTypedArray()))
+        }
+        progressLogger.logProgress("Starting restoring from data folder:'" + dataFolder.getUri().path
+                + "', created with " + newDescriptor.appVersionNameAndCode())
+        backupAgent.onRestore(dataInput, newDescriptor.getApplicationVersionCode(), newDescriptor)
+        progressLogger.logSuccess()
+    }
+
+    fun getBackupAgent(): MyBackupAgent? {
+        return backupAgent
+    }
+
+    companion object {
+        val DESCRIPTOR_FILE_NAME: String? = "_descriptor.json"
+        fun backupInteractively(backupFolder: DocumentFile?, activity: Activity?, progressListener: ProgressLogger.ProgressListener?) {
+            val backupManager = MyBackupManager(activity, progressListener)
+            try {
+                backupManager.prepareForBackup(backupFolder)
+                backupManager.backup()
+            } catch (e: Throwable) {
+                backupManager.progressLogger.logProgress(e.message)
+                backupManager.progressLogger.logFailure()
+                MyLog.w(backupManager, "Backup failed", e)
+            }
         }
 
-        progressLogger.logProgress("Starting restoring from data folder:'" + dataFolder.getUri().getPath()
-                + "', created with " + newDescriptor.appVersionNameAndCode());
-        backupAgent.onRestore(dataInput, newDescriptor.getApplicationVersionCode(), newDescriptor);
-        progressLogger.logSuccess();
+        fun isDataFolder(dataFolder: DocumentFile?): Boolean {
+            return if (dataFolder != null && dataFolder.exists() && dataFolder.isDirectory) {
+                getExistingDescriptorFile(dataFolder).isSuccess()
+            } else false
+        }
+
+        fun getExistingDescriptorFile(dataFolder: DocumentFile?): Try<DocumentFile?>? {
+            return TryUtils.ofNullableCallable { dataFolder.findFile(DESCRIPTOR_FILE_NAME) }
+        }
+
+        fun restoreInteractively(dataFolder: DocumentFile?, activity: Activity?, progressListener: ProgressLogger.ProgressListener?) {
+            val backupManager = MyBackupManager(activity, progressListener)
+            try {
+                backupManager.prepareForRestore(dataFolder)
+                backupManager.restore()
+                val backupFolder = dataFolder.getParentFile()
+                if (backupFolder != null) {
+                    MyPreferences.setLastBackupUri(backupFolder.uri)
+                }
+            } catch (e: Throwable) {
+                MyLog.ignored(backupManager, e)
+                backupManager.progressLogger.logProgress(e.message)
+                backupManager.progressLogger.logFailure()
+            }
+        }
+
+        fun getDefaultBackupFolder(context: Context?): DocumentFile {
+            val backupFolder = DocumentFile.fromTreeUri(context, MyPreferences.getLastBackupUri())
+            return if (backupFolder == null || !backupFolder.exists()) DocumentFile.fromFile(Environment.getExternalStoragePublicDirectory("")) else backupFolder
+        }
     }
 
-    @NonNull
-    static DocumentFile getDefaultBackupFolder(Context context) {
-        DocumentFile backupFolder = DocumentFile.fromTreeUri(context, MyPreferences.getLastBackupUri());
-        return backupFolder == null || !backupFolder.exists()
-                ? DocumentFile.fromFile(Environment.getExternalStoragePublicDirectory(""))
-                : backupFolder;
-    }
-
-    MyBackupAgent getBackupAgent() {
-        return backupAgent;
+    init {
+        progressLogger = ProgressLogger(progressListener)
     }
 }

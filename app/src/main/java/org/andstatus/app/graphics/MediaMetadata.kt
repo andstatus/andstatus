@@ -13,119 +13,93 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.graphics
 
-package org.andstatus.app.graphics;
+import android.content.ContentValues
+import android.database.Cursor
+import android.graphics.BitmapFactory
+import android.graphics.Point
+import android.media.MediaMetadataRetriever
+import android.net.Uri
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.MyContentType
+import org.andstatus.app.database.table.DownloadTable
+import org.andstatus.app.util.IsEmpty
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.TaggedClass
+import org.apache.commons.lang3.time.DurationFormatUtils
+import java.util.concurrent.TimeUnit
 
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.graphics.BitmapFactory;
-import android.graphics.Point;
-import android.media.MediaMetadataRetriever;
-import android.net.Uri;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.database.table.DownloadTable;
-import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.TaggedClass;
-import org.apache.commons.lang3.time.DurationFormatUtils;
-
-import java.util.concurrent.TimeUnit;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-import static org.andstatus.app.data.DbUtils.closeSilently;
-
-public class MediaMetadata implements IsEmpty, TaggedClass {
-    private final static String TAG = MediaMetadata.class.getSimpleName();
-    public static final MediaMetadata EMPTY = new MediaMetadata(0, 0, 0);
-    public final int width;
-    public final int height;
-    public final long duration;
-
-    @NonNull
-    public static MediaMetadata fromFilePath(String path) {
-        try {
-            if (MyContentType.fromPathOfSavedFile(path) == MyContentType.VIDEO) {
-                MediaMetadataRetriever retriever = null;
-                try {
-                    retriever = new MediaMetadataRetriever();
-                    retriever.setDataSource(myContextHolder.getNow().context(), Uri.parse(path));
-                    return new MediaMetadata(
-                        Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH)),
-                        Integer.parseInt(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT)),
-                        Long.parseLong(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)));
-                } finally {
-                    closeSilently(retriever);
-                }
-            }
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(path, options);
-            return new MediaMetadata(options.outWidth, options.outHeight, 0);
-        } catch (Exception e) {
-            MyLog.d(TAG, "path:'" + path + "'", e);
-        }
-        return EMPTY;
+class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmpty, TaggedClass {
+    fun size(): Point? {
+        return Point(width, height)
     }
 
-    @NonNull
-    public static MediaMetadata fromCursor(Cursor cursor) {
-        return new MediaMetadata(
-                DbUtils.getInt(cursor, DownloadTable.WIDTH),
-                DbUtils.getInt(cursor, DownloadTable.HEIGHT),
-                DbUtils.getLong(cursor, DownloadTable.DURATION)
-        );
+    override fun isEmpty(): Boolean {
+        return width <= 0 || height <= 0
     }
 
-    public MediaMetadata(int width, int height, long duration) {
-        this.width = width;
-        this.height = height;
-        this.duration = duration;
+    fun toContentValues(values: ContentValues?) {
+        values.put(DownloadTable.WIDTH, width)
+        values.put(DownloadTable.HEIGHT, height)
+        values.put(DownloadTable.DURATION, duration)
     }
 
-    public Point size() {
-        return new Point(width, height);
+    override fun toString(): String {
+        val builder = StringBuilder()
+        if (width > 0) builder.append("width:$width,")
+        if (height > 0) builder.append("height:$height,")
+        if (duration > 0) builder.append("duration:$height,")
+        return MyStringBuilder.Companion.formatKeyValue(this, builder.toString())
     }
 
-    @Override
-    public boolean isEmpty() {
-        return width <= 0 || height <= 0;
+    fun toDetails(): String? {
+        return if (nonEmpty()) width.toString() + "x" + height + (if (duration == 0L) "" else " " + formatDuration()) else ""
     }
 
-    public void toContentValues(ContentValues values) {
-        values.put(DownloadTable.WIDTH, width);
-        values.put(DownloadTable.HEIGHT, height);
-        values.put(DownloadTable.DURATION, duration);
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        if (width > 0) builder.append("width:" + width + ",");
-        if (height > 0) builder.append("height:" + height + ",");
-        if (duration > 0) builder.append("duration:" + height + ",");
-        return MyStringBuilder.formatKeyValue(this, builder.toString());
-    }
-
-    public String toDetails() {
-        return nonEmpty()
-                ? width + "x" + height + (duration == 0 ? "" : " " + formatDuration())
-                : "";
-    }
-
-    @NonNull
-    public String formatDuration() {
+    fun formatDuration(): String {
         return DurationFormatUtils.formatDuration(duration,
-                (duration >= TimeUnit.HOURS.toMillis(1) ? "HH:" : "") + "mm:ss"
-        );
+                (if (duration >= TimeUnit.HOURS.toMillis(1)) "HH:" else "") + "mm:ss"
+        )
     }
 
-    @Override
-    public String classTag() {
-        return TAG;
+    override fun classTag(): String? {
+        return TAG
+    }
+
+    companion object {
+        private val TAG: String? = MediaMetadata::class.java.simpleName
+        val EMPTY: MediaMetadata? = MediaMetadata(0, 0, 0)
+        fun fromFilePath(path: String?): MediaMetadata {
+            try {
+                if (MyContentType.Companion.fromPathOfSavedFile(path) == MyContentType.VIDEO) {
+                    var retriever: MediaMetadataRetriever? = null
+                    return try {
+                        retriever = MediaMetadataRetriever()
+                        retriever.setDataSource(MyContextHolder.Companion.myContextHolder.getNow().context(), Uri.parse(path))
+                        MediaMetadata(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH).toInt(), retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT).toInt(), retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong())
+                    } finally {
+                        closeSilently(retriever)
+                    }
+                }
+                val options = BitmapFactory.Options()
+                options.inJustDecodeBounds = true
+                BitmapFactory.decodeFile(path, options)
+                return MediaMetadata(options.outWidth, options.outHeight, 0)
+            } catch (e: Exception) {
+                MyLog.d(TAG, "path:'$path'", e)
+            }
+            return EMPTY
+        }
+
+        fun fromCursor(cursor: Cursor?): MediaMetadata {
+            return MediaMetadata(
+                    DbUtils.getInt(cursor, DownloadTable.WIDTH),
+                    DbUtils.getInt(cursor, DownloadTable.HEIGHT),
+                    DbUtils.getLong(cursor, DownloadTable.DURATION)
+            )
+        }
     }
 }

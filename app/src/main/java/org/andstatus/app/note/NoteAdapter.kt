@@ -13,95 +13,79 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
-
-import android.view.View;
-import android.view.ViewGroup;
-
-import org.andstatus.app.R;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.timeline.TimelineActivity;
-import org.andstatus.app.timeline.TimelineData;
-import org.andstatus.app.util.MyUrlSpan;
+import android.view.View
+import android.view.ViewGroup
+import org.andstatus.app.R
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.timeline.TimelineActivity
+import org.andstatus.app.timeline.TimelineData
+import org.andstatus.app.util.MyUrlSpan
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class NoteAdapter extends BaseNoteAdapter<NoteViewItem> {
-    private int positionPrev = -1;
-    private int itemNumberShownCounter = 0;
-    private final String TOP_TEXT;
-
-    public NoteAdapter(NoteContextMenu contextMenu, TimelineData<NoteViewItem> listData) {
-        super(contextMenu, listData);
-        TOP_TEXT = myContext.context().getText(R.string.top).toString();
-    }
-
-    @Override
-    protected void showAvatarEtc(ViewGroup view, NoteViewItem item) {
+class NoteAdapter(contextMenu: NoteContextMenu?, listData: TimelineData<NoteViewItem?>?) : BaseNoteAdapter<NoteViewItem?>(contextMenu, listData) {
+    private var positionPrev = -1
+    private var itemNumberShownCounter = 0
+    private val TOP_TEXT: String?
+    override fun showAvatarEtc(view: ViewGroup?, item: NoteViewItem?) {
         if (showAvatars) {
-            showAvatar(view, item);
+            showAvatar(view, item)
         } else {
-            View noteView = view.findViewById(R.id.note_indented);
-            if (noteView != null) {
-                noteView.setPadding(dpToPixes(2), 0, dpToPixes(6), dpToPixes(2));
-            }
+            val noteView = view.findViewById<View?>(R.id.note_indented)
+            noteView?.setPadding(dpToPixes(2), 0, dpToPixes(6), dpToPixes(2))
         }
     }
 
-    private void preloadAttachments(int position) {
+    private fun preloadAttachments(position: Int) {
         if (positionPrev < 0 || position == positionPrev) {
-            return;
+            return
         }
-        Integer positionToPreload = position;
-        for (int i = 0; i < 5; i++) {
-            positionToPreload = positionToPreload + (position > positionPrev ? 1 : -1);
-            if (positionToPreload < 0 || positionToPreload >= getCount()) {
-                break;
+        var positionToPreload = position
+        for (i in 0..4) {
+            positionToPreload = positionToPreload + if (position > positionPrev) 1 else -1
+            if (positionToPreload < 0 || positionToPreload >= count) {
+                break
             }
-            NoteViewItem item = getItem(positionToPreload);
+            val item = getItem(positionToPreload)
             if (!preloadedImages.contains(item.getNoteId())) {
-                preloadedImages.add(item.getNoteId());
-                item.attachedImageFiles.preloadImagesAsync();
-                break;
+                preloadedImages.add(item.getNoteId())
+                item.attachedImageFiles.preloadImagesAsync()
+                break
             }
         }
     }
 
-    @Override
-    protected void showNoteNumberEtc(ViewGroup view, NoteViewItem item, int position) {
-        preloadAttachments(position);
-        String text;
-        switch (position) {
-            case 0:
-                text = mayHaveYoungerPage() ? "1" : TOP_TEXT;
-                break;
-            case 1:
-            case 2:
-                text = Integer.toString(position + 1);
-                break;
-            default:
-                text = itemNumberShownCounter < 3 ? Integer.toString(position + 1) : "";
-                break;
+    override fun showNoteNumberEtc(view: ViewGroup?, item: NoteViewItem?, position: Int) {
+        preloadAttachments(position)
+        val text: String?
+        text = when (position) {
+            0 -> if (mayHaveYoungerPage()) "1" else TOP_TEXT
+            1, 2 -> Integer.toString(position + 1)
+            else -> if (itemNumberShownCounter < 3) Integer.toString(position + 1) else ""
         }
-        MyUrlSpan.showText(view, R.id.note_number, text, false, false);
-        itemNumberShownCounter++;
-        positionPrev = position;
+        MyUrlSpan.Companion.showText(view, R.id.note_number, text, false, false)
+        itemNumberShownCounter++
+        positionPrev = position
     }
 
-    @Override
-    public void onClick(View v) {
-        boolean handled = false;
+    override fun onClick(v: View?) {
+        var handled = false
         if (MyPreferences.isLongPressToOpenContextMenu()) {
-            NoteViewItem item = getItem(v);
-            if (TimelineActivity.class.isAssignableFrom(contextMenu.getActivity().getClass())) {
-                ((TimelineActivity) contextMenu.getActivity()).onItemClick(item);
-                handled = true;
+            val item = getItem(v)
+            if (TimelineActivity::class.java.isAssignableFrom(contextMenu.activity.javaClass)) {
+                (contextMenu.activity as TimelineActivity<*>).onItemClick(item)
+                handled = true
             }
         }
         if (!handled) {
-            super.onClick(v);
+            super.onClick(v)
         }
+    }
+
+    init {
+        TOP_TEXT = myContext.context().getText(R.string.top).toString()
     }
 }

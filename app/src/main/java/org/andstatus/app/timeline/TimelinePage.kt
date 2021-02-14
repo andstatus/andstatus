@@ -13,44 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.actor.ActorsLoader;
-import org.andstatus.app.actor.ActorViewItem;
-
-import java.util.Collections;
-import java.util.List;
+import org.andstatus.app.actor.ActorViewItem
+import org.andstatus.app.actor.ActorsLoader
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class TimelinePage<T extends ViewItem<T>> {
-    @NonNull
-    final TimelineParameters params;
-    @NonNull
-    ActorViewItem actorViewItem = ActorViewItem.EMPTY;
-    private final T emptyItem;
-    @NonNull
-    public final List<T> items;
-
-    @NonNull
-    public T getEmptyItem() {
-        return emptyItem;
+class TimelinePage<T : ViewItem<T?>?>(val params: TimelineParameters, items: MutableList<T?>?) {
+    var actorViewItem: ActorViewItem = ActorViewItem.Companion.EMPTY
+    private val emptyItem: T?
+    val items: MutableList<T?>
+    fun getEmptyItem(): T {
+        return emptyItem
     }
 
-    public TimelinePage(@NonNull TimelineParameters params, List<T> items) {
-        this.params = params;
-        emptyItem = ViewItem.getEmpty(params.getTimelineType());
-        this.items = items == null ? Collections.emptyList() : items;
-    }
-
-    public void setLoadedActor(ActorsLoader loader) {
-        if (params.timeline.getTimelineType().hasActorProfile()) {
-            int index = loader.getList().indexOf(ActorViewItem.fromActor(params.timeline.actor));
-            if (index >= 0) actorViewItem = loader.getList().get(index);
+    fun setLoadedActor(loader: ActorsLoader?) {
+        if (params.timeline.timelineType.hasActorProfile()) {
+            val index = loader.getList().indexOf(ActorViewItem.Companion.fromActor(params.timeline.actor))
+            if (index >= 0) actorViewItem = loader.getList()[index]
         }
+    }
+
+    init {
+        emptyItem = ViewItem.Companion.getEmpty(params.timelineType)
+        this.items = items ?: emptyList()
     }
 }

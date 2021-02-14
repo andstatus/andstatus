@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.net.social.Visibility;
-import org.andstatus.app.origin.Origin;
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.net.social.Visibility
+import org.andstatus.app.origin.Origin
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ConversationLoaderFactory {
-
-    public ConversationLoader getLoader(ConversationViewItem emptyItem, MyContext myContext, Origin origin, long noteId, boolean sync) {
-        boolean recursiveLoader = origin.getOriginType().isPrivateNoteAllowsReply() ||
-                Visibility.fromNoteId(noteId).id < Visibility.PRIVATE.id;
-        if (recursiveLoader) {
-            return new RecursiveConversationLoader(emptyItem, myContext, origin, noteId, sync);
-        }  else {
-            return new PrivateNotesConversationLoader(emptyItem, myContext, origin, noteId, sync);
+class ConversationLoaderFactory {
+    fun getLoader(emptyItem: ConversationViewItem?, myContext: MyContext?, origin: Origin?, noteId: Long, sync: Boolean): ConversationLoader? {
+        val recursiveLoader = origin.getOriginType().isPrivateNoteAllowsReply ||
+                Visibility.Companion.fromNoteId(noteId).id < Visibility.PRIVATE.id
+        return if (recursiveLoader) {
+            RecursiveConversationLoader(emptyItem, myContext, origin, noteId, sync)
+        } else {
+            PrivateNotesConversationLoader(emptyItem, myContext, origin, noteId, sync)
         }
     }
 }

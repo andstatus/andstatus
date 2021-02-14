@@ -13,30 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.graphics
 
-package org.andstatus.app.graphics;
-
-import android.content.Context;
-import android.util.AttributeSet;
+import android.content.Context
+import android.util.AttributeSet
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class AvatarView extends IdentifiableImageView {
-    public AvatarView(Context context) {
-        super(context);
-    }
+class AvatarView : IdentifiableImageView {
+    constructor(context: Context?) : super(context) {}
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
+    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {}
 
-    public AvatarView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public AvatarView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-    }
-
-    @Override
-    public CacheName getCacheName() {
-         return CacheName.AVATAR;
+    override fun getCacheName(): CacheName? {
+        return CacheName.AVATAR
     }
 }

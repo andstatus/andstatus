@@ -13,28 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-import java.util.Map;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-/** Avoiding null-s */
-public class NullUtil {
-
-    public static boolean nonEmpty(@Nullable Object object) {
-        if (object instanceof IsEmpty) return ((IsEmpty)object).nonEmpty();
-        if (object instanceof String) return StringUtil.nonEmpty((String)object);
-
-        return (object != null);
+/** Avoiding null-s  */
+object NullUtil {
+    fun nonEmpty(`object`: Any?): Boolean {
+        if (`object` is IsEmpty) return (`object` as IsEmpty?).nonEmpty()
+        return if (`object` is String) StringUtil.nonEmpty(`object` as String?) else `object` != null
     }
 
-    @NonNull
-    public static <K, V> V getOrDefault(Map<K, V> map, K key, @NonNull V defaultValue) {
-        if (map == null || key == null) return defaultValue;
-        V v = map.get(key);
-        return v == null ? defaultValue : v;
+    fun <K, V> getOrDefault(map: MutableMap<K?, V?>?, key: K?, defaultValue: V): V {
+        if (map == null || key == null) return defaultValue
+        val v = map[key]
+        return v ?: defaultValue
     }
 }

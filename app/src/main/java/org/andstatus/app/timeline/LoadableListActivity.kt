@@ -13,610 +13,523 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
-
-import android.net.Uri;
-import android.os.AsyncTask.Status;
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.KeyEvent;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.ListView;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-
-import net.jcip.annotations.GuardedBy;
-
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.R;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.ParsedUri;
-import org.andstatus.app.list.MyBaseListActivity;
-import org.andstatus.app.list.SyncLoader;
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.MyServiceEvent;
-import org.andstatus.app.service.MyServiceEventsListener;
-import org.andstatus.app.service.MyServiceEventsReceiver;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.BundleUtils;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
-import org.andstatus.app.widget.MySearchView;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.net.Uri
+import android.os.AsyncTask
+import android.os.Bundle
+import android.text.TextUtils
+import android.view.KeyEvent
+import android.view.MenuItem
+import android.view.View
+import android.widget.TextView
+import net.jcip.annotations.GuardedBy
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.ParsedUri
+import org.andstatus.app.list.MyBaseListActivity
+import org.andstatus.app.list.SyncLoader
+import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.service.CommandData
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.service.MyServiceEvent
+import org.andstatus.app.service.MyServiceEventsListener
+import org.andstatus.app.service.MyServiceEventsReceiver
+import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.util.BundleUtils
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TriState
+import org.andstatus.app.widget.MySearchView
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * List, loaded asynchronously. Updated by MyService
- * 
+ *
  * @author yvolk@yurivolkov.com
  */
-public abstract class LoadableListActivity<T extends ViewItem<T>> extends MyBaseListActivity implements MyServiceEventsListener {
+abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), MyServiceEventsListener {
+    protected var showSyncIndicatorSetting = true
+    protected var textualSyncIndicator: View? = null
+    protected var syncingText: CharSequence? = ""
+    protected var loadingText: CharSequence? = ""
+    private var onRefreshHandled = false
+    private var parsedUri: ParsedUri? = ParsedUri.Companion.fromUri(Uri.EMPTY)
+    protected var myContext: MyContext? = MyContextHolder.Companion.myContextHolder.getNow()
+    private var configChangeTime: Long = 0
+    var myServiceReceiver: MyServiceEventsReceiver? = null
+    private val loaderLock: Any? = Any()
 
-    protected boolean showSyncIndicatorSetting = true;
-    protected View textualSyncIndicator = null;
-    protected CharSequence syncingText = "";
-    protected CharSequence loadingText = "";
-    private boolean onRefreshHandled = false;
-
-    private ParsedUri parsedUri = ParsedUri.fromUri(Uri.EMPTY);
-
-    protected MyContext myContext = myContextHolder.getNow();
-    private long configChangeTime = 0;
-    MyServiceEventsReceiver myServiceReceiver;
-
-    private final Object loaderLock = new Object();
     @GuardedBy("loaderLock")
-    private AsyncLoader mCompletedLoader = new AsyncLoader();
-    @GuardedBy("loaderLock")
-    private AsyncLoader mWorkingLoader = mCompletedLoader;
-    @GuardedBy("loaderLock")
-    private boolean loaderIsWorking = false;
+    private var mCompletedLoader: AsyncLoader? = AsyncLoader()
 
-    long lastLoadedAt = 0;
-    protected final AtomicLong refreshNeededSince = new AtomicLong(0);
-    protected final AtomicBoolean refreshNeededAfterForegroundCommand = new AtomicBoolean(false);
-    private static final long NO_AUTO_REFRESH_AFTER_LOAD_SECONDS = 5;
+    @GuardedBy("loaderLock")
+    private var mWorkingLoader = mCompletedLoader
 
-    protected CharSequence mSubtitle = "";
+    @GuardedBy("loaderLock")
+    private var loaderIsWorking = false
+    var lastLoadedAt: Long = 0
+    protected val refreshNeededSince: AtomicLong? = AtomicLong(0)
+    protected val refreshNeededAfterForegroundCommand: AtomicBoolean? = AtomicBoolean(false)
+    protected var mSubtitle: CharSequence? = ""
+
     /**
      * Id of current list item, which is sort of a "center" of the list view
      */
-    protected long centralItemId = 0;
-    protected MySearchView searchView = null;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        myContext = myContextHolder.getNow();
-        super.onCreate(savedInstanceState);
-
-        if (restartMeIfNeeded()) return;
-
-        textualSyncIndicator = findViewById(R.id.sync_indicator);
-
-        configChangeTime = myContext.preferencesChangeTime();
+    protected var centralItemId: Long = 0
+    protected var searchView: MySearchView? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
+        myContext = MyContextHolder.Companion.myContextHolder.getNow()
+        super.onCreate(savedInstanceState)
+        if (restartMeIfNeeded()) return
+        textualSyncIndicator = findViewById(R.id.sync_indicator)
+        configChangeTime = myContext.preferencesChangeTime()
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, "onCreate, config changed " + RelativeTime.secondsAgo(configChangeTime) + " seconds ago"
-                    + (myContextHolder.getNow().isReady() ? "" : ", MyContext is not ready")
-            );
+                    + if (MyContextHolder.Companion.myContextHolder.getNow().isReady()) "" else ", MyContext is not ready"
+            )
         }
-
         if (myContext.isReady()) {
-            MyServiceManager.setServiceAvailable();
+            MyServiceManager.Companion.setServiceAvailable()
         }
-        myServiceReceiver = new MyServiceEventsReceiver(myContext, this);
-
-        parsedUri = ParsedUri.fromIntent(getIntent());
-        centralItemId = getParsedUri().getItemId();
+        myServiceReceiver = MyServiceEventsReceiver(myContext, this)
+        parsedUri = ParsedUri.Companion.fromIntent(intent)
+        centralItemId = getParsedUri().getItemId()
     }
 
-    protected ParsedUri getParsedUri() {
-        return parsedUri;
+    protected fun getParsedUri(): ParsedUri? {
+        return parsedUri
     }
 
-    @NonNull
-    public TimelineData<T> getListData() {
-        return getListAdapter().getListData();
+    open fun getListData(): TimelineData<T?> {
+        return listAdapter.listData
     }
 
-    public void showList(WhichPage whichPage) {
-        showList(whichPage.toBundle());
+    open fun showList(whichPage: WhichPage?) {
+        showList(whichPage.toBundle())
     }
 
-    protected void showList(Bundle args) {
-        WhichPage whichPage = WhichPage.load(args);
-        TriState chainedRequest = TriState.fromBundle(args, IntentExtra.CHAINED_REQUEST);
-        StringBuilder msgLog = new StringBuilder("showList" + (chainedRequest == TriState.TRUE ? ", chained" : "")
+    protected fun showList(args: Bundle?) {
+        val whichPage: WhichPage = WhichPage.Companion.load(args)
+        val chainedRequest: TriState = TriState.Companion.fromBundle(args, IntentExtra.CHAINED_REQUEST)
+        val msgLog = StringBuilder("showList" + (if (chainedRequest == TriState.TRUE) ", chained" else "")
                 + ", " + whichPage + " page"
-                + (centralItemId == 0 ? "" : ", center:" + centralItemId));
+                + if (centralItemId == 0L) "" else ", center:$centralItemId")
         if (whichPage == WhichPage.EMPTY) {
-            MyLog.v(this, () -> "Ignored Empty page request: " + msgLog);
+            MyLog.v(this) { "Ignored Empty page request: $msgLog" }
         } else {
-            MyLog.v(this, () -> "Started " + msgLog);
-            synchronized (loaderLock) {
+            MyLog.v(this) { "Started $msgLog" }
+            synchronized(loaderLock) {
                 if (isLoading() && chainedRequest != TriState.TRUE) {
-                    msgLog.append(", Ignored " + mWorkingLoader);
+                    msgLog.append(", Ignored $mWorkingLoader")
                 } else {
-                    AsyncLoader newLoader = new AsyncLoader(instanceTag());
-                    if (new AsyncTaskLauncher<Bundle>().execute(this, newLoader, args).isSuccess()) {
-                        mWorkingLoader = newLoader;
-                        loaderIsWorking = true;
-                        refreshNeededSince.set(0);
-                        refreshNeededAfterForegroundCommand.set(false);
-                        msgLog.append(", Launched");
+                    val newLoader = AsyncLoader(instanceTag())
+                    if (AsyncTaskLauncher<Bundle?>().execute(this, newLoader, args).isSuccess) {
+                        mWorkingLoader = newLoader
+                        loaderIsWorking = true
+                        refreshNeededSince.set(0)
+                        refreshNeededAfterForegroundCommand.set(false)
+                        msgLog.append(", Launched")
                     } else {
-                        msgLog.append(", Couldn't launch");
+                        msgLog.append(", Couldn't launch")
                     }
                 }
             }
-            MyLog.v(this, "Ended " + msgLog);
+            MyLog.v(this, "Ended $msgLog")
         }
     }
 
-    public boolean isLoading() {
-        boolean reset = false;
-        synchronized (loaderLock) {
-            if (loaderIsWorking && mWorkingLoader.getStatus() == Status.FINISHED) {
-                reset = true;
-                loaderIsWorking = false;
+    fun isLoading(): Boolean {
+        var reset = false
+        synchronized(loaderLock) {
+            if (loaderIsWorking && mWorkingLoader.getStatus() == AsyncTask.Status.FINISHED) {
+                reset = true
+                loaderIsWorking = false
             }
         }
         if (reset) {
             MyLog.d(this, "WorkingLoader finished but didn't reset loaderIsWorking flag "
-                    + mWorkingLoader);
+                    + mWorkingLoader)
         }
-        return loaderIsWorking;
+        return loaderIsWorking
     }
 
-    protected boolean isContextNeedsUpdate() {
-        MyContext myContextNew = myContextHolder.getNow();
-        return !this.myContext.isReady() || this.myContext != myContextNew || configChangeTime != myContextNew.preferencesChangeTime();
+    protected fun isContextNeedsUpdate(): Boolean {
+        val myContextNew: MyContext = MyContextHolder.Companion.myContextHolder.getNow()
+        return !myContext.isReady() || myContext !== myContextNew || configChangeTime != myContextNew.preferencesChangeTime()
     }
 
-    /** @return selectedItem or EmptyViewItem */
-    @NonNull
-    public ViewItem saveContextOfSelectedItem(View v) {
-        int position = getListAdapter().getPosition(v);
-        setPositionOfContextMenu(position);
+    /** @return selectedItem or EmptyViewItem
+     */
+    fun saveContextOfSelectedItem(v: View?): ViewItem<*> {
+        val position = listAdapter.getPosition(v)
+        positionOfContextMenu = position
         if (position >= 0) {
-            Object viewItem = getListAdapter().getItem(position);
+            val viewItem: Any? = listAdapter.getItem(position)
             if (viewItem != null) {
-                if (ViewItem.class.isAssignableFrom(viewItem.getClass())) {
-                    return (ViewItem) viewItem;
+                if (ViewItem::class.java.isAssignableFrom(viewItem.javaClass)) {
+                    return viewItem as ViewItem<*>?
                 } else {
-                    MyLog.i(this, "Unexpected type of selected item: " + viewItem.getClass() + ", " + viewItem);
+                    MyLog.i(this, "Unexpected type of selected item: " + viewItem.javaClass + ", " + viewItem)
                 }
             }
         }
-        return EmptyViewItem.EMPTY;
+        return EmptyViewItem.EMPTY
     }
 
-    public MyContext getMyContext() {
-        return myContext;
+    fun getMyContext(): MyContext? {
+        return myContext
     }
 
-    public LoadableListActivity getActivity() {
-        return this;
+    fun getActivity(): LoadableListActivity<*>? {
+        return this
     }
 
-    public interface ProgressPublisher {
-        void publish(String progress);
+    interface ProgressPublisher {
+        open fun publish(progress: String?)
     }
 
-    /** Called not in UI thread */
-    protected abstract SyncLoader<T> newSyncLoader(Bundle args);
-    
-    private class AsyncLoader extends MyAsyncTask<Bundle, String, SyncLoader> implements LoadableListActivity.ProgressPublisher {
-        private SyncLoader mSyncLoader = null;
+    /** Called not in UI thread  */
+    protected abstract fun newSyncLoader(args: Bundle?): SyncLoader<T?>?
+    private inner class AsyncLoader : MyAsyncTask<Bundle?, String?, SyncLoader<*>?>, ProgressPublisher {
+        private var mSyncLoader: SyncLoader<*>? = null
 
-        public AsyncLoader(String taskId) {
-            super(taskId, PoolEnum.LONG_UI);
+        constructor(taskId: String?) : super(taskId, PoolEnum.LONG_UI) {}
+        constructor() : super(PoolEnum.LONG_UI) {}
+
+        fun getSyncLoader(): SyncLoader<*>? {
+            return if (mSyncLoader == null) newSyncLoader(null) else mSyncLoader
         }
 
-        public AsyncLoader() {
-            super(PoolEnum.LONG_UI);
+        override fun doInBackground2(bundle: Bundle?): SyncLoader<*>? {
+            publishProgress("...")
+            val loader: SyncLoader<*>? = newSyncLoader(BundleUtils.toBundle(bundle, IntentExtra.INSTANCE_ID.key, instanceId))
+            loader.allowLoadingFromInternet()
+            loader.load(this)
+            return loader
         }
 
-        SyncLoader getSyncLoader() {
-            return mSyncLoader == null ? newSyncLoader(null) : mSyncLoader;
+        override fun publish(progress: String?) {
+            publishProgress(progress)
         }
 
-        @Override
-        protected SyncLoader doInBackground2(Bundle bundle) {
-            publishProgress("...");
-            SyncLoader loader = newSyncLoader(BundleUtils.toBundle(bundle, IntentExtra.INSTANCE_ID.key, instanceId));
-            loader.allowLoadingFromInternet();
-            loader.load(this);
-            return loader;
+        override fun onProgressUpdate(vararg values: String?) {
+            updateTitle(values[0])
         }
 
-        @Override
-        public void publish(String progress) {
-            publishProgress(progress);
-        }
-        
-        @Override
-        protected void onProgressUpdate(String... values) {
-            updateTitle(values[0]);
+        override fun onCancelled2(syncLoader: SyncLoader<*>?) {
+            resetIsWorkingFlag()
         }
 
-        @Override
-        protected void onCancelled2(SyncLoader syncLoader) {
-            resetIsWorkingFlag();
-        }
-
-        private void resetIsWorkingFlag() {
-            synchronized (loaderLock) {
-                if (mWorkingLoader == this) {
-                    loaderIsWorking = false;
+        private fun resetIsWorkingFlag() {
+            synchronized(loaderLock) {
+                if (mWorkingLoader === this) {
+                    loaderIsWorking = false
                 }
             }
         }
 
-        @Override
-        protected void onPostExecute2(SyncLoader loader) {
-            mSyncLoader = loader;
-            updateCompletedLoader();
+        override fun onPostExecute2(loader: SyncLoader<*>?) {
+            mSyncLoader = loader
+            updateCompletedLoader()
             try {
-                if (isMyResumed()) {
-                    onLoadFinished(getCurrentListPosition());
+                if (isMyResumed) {
+                    onLoadFinished(getCurrentListPosition())
                 }
-            } catch (Exception e) {
-                MyLog.d(this,"onPostExecute", e);
+            } catch (e: Exception) {
+                MyLog.d(this, "onPostExecute", e)
             }
-            long endedAt = System.currentTimeMillis();
-            long timeTotal = endedAt - createdAt;
-            MyLog.v(this, () -> "Load completed, " + (mSyncLoader == null ? "?" : mSyncLoader.size())
-                    + " items, "
-                    + timeTotal + "ms total, "
-                    + (endedAt - backgroundEndedAt) + "ms on UI thread");
-            resetIsWorkingFlag();
+            val endedAt = System.currentTimeMillis()
+            val timeTotal = endedAt - createdAt
+            MyLog.v(this) {
+                ("Load completed, " + (if (mSyncLoader == null) "?" else mSyncLoader.size())
+                        + " items, "
+                        + timeTotal + "ms total, "
+                        + (endedAt - backgroundEndedAt) + "ms on UI thread")
+            }
+            resetIsWorkingFlag()
         }
 
-        @Override
-        public String toString() {
-            return super.toString() + (mSyncLoader == null ? "" : "; " + mSyncLoader);
+        override fun toString(): String {
+            return super.toString() + if (mSyncLoader == null) "" else "; $mSyncLoader"
         }
     }
 
-    @NonNull
-    public LoadableListPosition getCurrentListPosition() {
-        return LoadableListPosition.getCurrent(getListView(), getListAdapter(), centralItemId);
+    fun getCurrentListPosition(): LoadableListPosition<*> {
+        return LoadableListPosition.Companion.getCurrent(listView, listAdapter, centralItemId)
     }
 
-    public void onLoadFinished(LoadableListPosition pos) {
-        updateList(pos);
-        updateTitle("");
+    open fun onLoadFinished(pos: LoadableListPosition<*>?) {
+        updateList(pos)
+        updateTitle("")
         if (onRefreshHandled) {
-            onRefreshHandled = false;
-            hideSyncing("onLoadFinished");
+            onRefreshHandled = false
+            hideSyncing("onLoadFinished")
         }
     }
 
-    public void updateList(LoadableListPosition pos) {
-        updateList(pos, LoadableListViewParameters.EMPTY, true);
+    fun updateList(pos: LoadableListPosition<*>?) {
+        updateList(pos, LoadableListViewParameters.Companion.EMPTY, true)
     }
 
-    public void updateList(LoadableListViewParameters viewParameters) {
-        updateList(getCurrentListPosition(), viewParameters, false);
+    fun updateList(viewParameters: LoadableListViewParameters?) {
+        updateList(getCurrentListPosition(), viewParameters, false)
     }
 
-    private void updateList(LoadableListPosition pos, LoadableListViewParameters viewParameters, boolean newAdapter) {
-        final String method = "updateList";
-        ListView list = getListView();
-        if (list == null) return;
-
-        if (MyLog.isVerboseEnabled()) pos.logV(method + "; Before " + (newAdapter
-                ? "setting new adapter"
-                : "notifying change"));
-
-        final BaseTimelineAdapter<T> adapter = newAdapter ? newListAdapter() : getListAdapter();
+    private fun updateList(pos: LoadableListPosition<*>?, viewParameters: LoadableListViewParameters?, newAdapter: Boolean) {
+        val method = "updateList"
+        val list = listView ?: return
+        if (MyLog.isVerboseEnabled()) pos.logV(method + "; Before " + if (newAdapter) "setting new adapter" else "notifying change")
+        val adapter = if (newAdapter) newListAdapter() else listAdapter
         if (viewParameters.isViewChanging()) {
-            adapter.getListData().updateView(viewParameters);
+            adapter.getListData().updateView(viewParameters)
         }
         if (newAdapter) {
-            setListAdapter(adapter);
+            setListAdapter(adapter)
         } else {
-            adapter.notifyDataSetChanged();
+            adapter.notifyDataSetChanged()
         }
-        adapter.setPositionRestored(LoadableListPosition.restore(list, adapter, pos));
+        adapter.setPositionRestored(LoadableListPosition.Companion.restore(list, adapter, pos))
         if (viewParameters.isViewChanging()) {
-            updateScreen();
+            updateScreen()
         }
     }
 
-    public void updateScreen() {
+    open fun updateScreen() {
         // Empty
     }
 
-    protected abstract BaseTimelineAdapter<T> newListAdapter();
-
-    @NonNull
-    @Override
-    public BaseTimelineAdapter<T> getListAdapter() {
-        return (BaseTimelineAdapter<T>) super.getListAdapter();
+    protected abstract fun newListAdapter(): BaseTimelineAdapter<T?>?
+    override fun getListAdapter(): BaseTimelineAdapter<T?> {
+        return super.getListAdapter() as BaseTimelineAdapter<T?>
     }
 
-    private void updateCompletedLoader() {
-        synchronized(loaderLock) {
-            mCompletedLoader = mWorkingLoader;
-        }
-        lastLoadedAt = System.currentTimeMillis();
+    private fun updateCompletedLoader() {
+        synchronized(loaderLock) { mCompletedLoader = mWorkingLoader }
+        lastLoadedAt = System.currentTimeMillis()
     }
-    
-    protected void updateTitle(String progress) {
-        StringBuilder title = new StringBuilder(getCustomTitle());
+
+    protected open fun updateTitle(progress: String?) {
+        val title = StringBuilder(getCustomTitle())
         if (!StringUtil.isEmpty(progress)) {
-            MyStringBuilder.appendWithSpace(title, progress);
+            MyStringBuilder.Companion.appendWithSpace(title, progress)
         }
-        setTitle(title.toString());
-        setSubtitle(mSubtitle);
+        setTitle(title.toString())
+        setSubtitle(mSubtitle)
     }
 
-    protected CharSequence getCustomTitle() {
-        return getTitle();
+    protected open fun getCustomTitle(): CharSequence? {
+        return title
     }
-    
-    @NonNull
-    protected SyncLoader getLoaded() {
-        synchronized(loaderLock) {
-            return mCompletedLoader.getSyncLoader();
-        }
+
+    protected fun getLoaded(): SyncLoader<*> {
+        synchronized(loaderLock) { return mCompletedLoader.getSyncLoader() }
     }
-    
-    @Override
-    protected void onResume() {
-        String method = "onResume";
-        super.onResume();
-        boolean isFinishing = restartMeIfNeeded();
-        MyLog.v(this, () -> method + (isFinishing ? ", and finishing" : "") );
+
+    override fun onResume() {
+        val method = "onResume"
+        super.onResume()
+        val isFinishing = restartMeIfNeeded()
+        MyLog.v(this) { method + if (isFinishing) ", and finishing" else "" }
         if (!isFinishing) {
-            myServiceReceiver.registerReceiver(this);
-            myContext.setInForeground(true);
+            myServiceReceiver.registerReceiver(this)
+            myContext.setInForeground(true)
             if (!isLoading()) {
-                showList(WhichPage.ANY);
+                showList(WhichPage.ANY)
             }
         }
     }
 
-    @Override
-    public void onContentChanged() {
+    override fun onContentChanged() {
         if (MyLog.isLoggable(this, MyLog.DEBUG)) {
-            MyLog.d(this, "onContentChanged started");
+            MyLog.d(this, "onContentChanged started")
         }
-        super.onContentChanged();
+        super.onContentChanged()
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
+    override fun onPause() {
+        super.onPause()
         if (myServiceReceiver != null) {
-            myServiceReceiver.unregisterReceiver(this);
+            myServiceReceiver.unregisterReceiver(this)
         }
-        myContextHolder.getNow().setInForeground(false);
-        getListAdapter().setPositionRestored(false);
+        MyContextHolder.Companion.myContextHolder.getNow().setInForeground(false)
+        listAdapter.isPositionRestored = false
     }
-    
-    @Override
-    public void onReceive(CommandData commandData, MyServiceEvent event) {
-        switch (event) {
-            case BEFORE_EXECUTING_COMMAND:
-                if (isCommandToShowInSyncIndicator(commandData)) {
-                    showSyncing(commandData);
-                }
-                break;
-            case PROGRESS_EXECUTING_COMMAND:
-                if (isCommandToShowInSyncIndicator(commandData)) {
-                    showSyncing("Show Progress", commandData.toCommandProgress(myContextHolder.getNow()));
-                }
-                break;
-            case AFTER_EXECUTING_COMMAND:
-                onReceiveAfterExecutingCommand(commandData);
-                break;
-            case ON_STOP:
-                hideSyncing("onReceive STOP");
-                break;
-            default:
-                break;
+
+    override fun onReceive(commandData: CommandData?, event: MyServiceEvent?) {
+        when (event) {
+            MyServiceEvent.BEFORE_EXECUTING_COMMAND -> if (isCommandToShowInSyncIndicator(commandData)) {
+                showSyncing(commandData)
+            }
+            MyServiceEvent.PROGRESS_EXECUTING_COMMAND -> if (isCommandToShowInSyncIndicator(commandData)) {
+                showSyncing("Show Progress", commandData.toCommandProgress(MyContextHolder.Companion.myContextHolder.getNow()))
+            }
+            MyServiceEvent.AFTER_EXECUTING_COMMAND -> onReceiveAfterExecutingCommand(commandData)
+            MyServiceEvent.ON_STOP -> hideSyncing("onReceive STOP")
+            else -> {
+            }
         }
         if (isAutoRefreshNow(event == MyServiceEvent.ON_STOP)) {
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "Auto refresh on content change");
+                MyLog.v(this, "Auto refresh on content change")
             }
-            showList(WhichPage.CURRENT);
+            showList(WhichPage.CURRENT)
         }
     }
 
-    private void showSyncing(final CommandData commandData) {
-        new AsyncTaskLauncher<CommandData>().execute(this,
-                new MyAsyncTask<CommandData, Void, String>("ShowSyncing" + getInstanceId(), MyAsyncTask.PoolEnum.QUICK_UI) {
-
-                    @Override
-                    protected String doInBackground2(CommandData commandData) {
-                        return commandData.toCommandSummary(myContext);
+    private fun showSyncing(commandData: CommandData?) {
+        AsyncTaskLauncher<CommandData?>().execute(this,
+                object : MyAsyncTask<CommandData?, Void?, String?>("ShowSyncing" + getInstanceId(), PoolEnum.QUICK_UI) {
+                    override fun doInBackground2(commandData: CommandData?): String? {
+                        return commandData.toCommandSummary(myContext)
                     }
 
-                    @Override
-                    protected void onPostExecute2(String result) {
+                    override fun onPostExecute2(result: String?) {
                         showSyncing("Show " + commandData.getCommand(),
-                                getText(R.string.title_preference_syncing) + ": " + result);
+                                getText(R.string.title_preference_syncing).toString() + ": " + result)
                     }
 
-                    @Override
-                    public String toString() {
-                        return "ShowSyncing " + super.toString();
+                    override fun toString(): String? {
+                        return "ShowSyncing " + super.toString()
                     }
-
-                }
-                , commandData);
+                }, commandData)
     }
 
-    protected boolean isCommandToShowInSyncIndicator(CommandData commandData) {
-        return false;
+    protected open fun isCommandToShowInSyncIndicator(commandData: CommandData?): Boolean {
+        return false
     }
 
-    protected void onReceiveAfterExecutingCommand(CommandData commandData) {
+    protected open fun onReceiveAfterExecutingCommand(commandData: CommandData?) {
         if (isRefreshNeededAfterExecuting(commandData)) {
-            refreshNeededSince.compareAndSet(0, System.currentTimeMillis());
-            refreshNeededAfterForegroundCommand.compareAndSet(false, commandData.isInForeground());
+            refreshNeededSince.compareAndSet(0, System.currentTimeMillis())
+            refreshNeededAfterForegroundCommand.compareAndSet(false, commandData.isInForeground())
         }
     }
 
     /**
      * @return true if needed, false means "don't know"
      */
-    protected boolean isRefreshNeededAfterExecuting(CommandData commandData) {
-        boolean needed = false;
-        switch(commandData.getCommand()) {
-            case GET_NOTE:
-            case GET_CONVERSATION:
-			case GET_FOLLOWERS:
-            case GET_FRIENDS:
-                if (commandData.getResult().getDownloadedCount() > 0) {
-                    needed = true;
-                }
-                break;
-            case GET_ACTOR:
-            case UPDATE_NOTE:
-            case FOLLOW:
-            case UNDO_FOLLOW:
-            case LIKE:
-            case UNDO_LIKE:
-            case ANNOUNCE:
-            case UNDO_ANNOUNCE:
-            case DELETE_NOTE:
-            case GET_ATTACHMENT:
-            case GET_AVATAR:
-                if (!commandData.getResult().hasError()) {
-                    needed = true;
-                }
-                break;
-            default:
-                break;
+    protected open fun isRefreshNeededAfterExecuting(commandData: CommandData?): Boolean {
+        var needed = false
+        when (commandData.getCommand()) {
+            CommandEnum.GET_NOTE, CommandEnum.GET_CONVERSATION, CommandEnum.GET_FOLLOWERS, CommandEnum.GET_FRIENDS -> if (commandData.getResult().downloadedCount > 0) {
+                needed = true
+            }
+            CommandEnum.GET_ACTOR, CommandEnum.UPDATE_NOTE, CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW, CommandEnum.LIKE, CommandEnum.UNDO_LIKE, CommandEnum.ANNOUNCE, CommandEnum.UNDO_ANNOUNCE, CommandEnum.DELETE_NOTE, CommandEnum.GET_ATTACHMENT, CommandEnum.GET_AVATAR -> if (!commandData.getResult().hasError()) {
+                needed = true
+            }
+            else -> {
+            }
         }
-        return needed;
+        return needed
     }
 
-    protected boolean isAutoRefreshNow(boolean onStop) {
-        if (refreshNeededSince.get() == 0) {
-            return false;
+    protected open fun isAutoRefreshNow(onStop: Boolean): Boolean {
+        if (refreshNeededSince.get() == 0L) {
+            return false
         } else if (isLoading()) {
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "Ignoring content change while loading");
+                MyLog.v(this, "Ignoring content change while loading")
             }
-            return false;
+            return false
         } else if (!onStop && !refreshNeededAfterForegroundCommand.get() &&
                 !RelativeTime.wasButMoreSecondsAgoThan(lastLoadedAt, NO_AUTO_REFRESH_AFTER_LOAD_SECONDS)) {
             if (MyLog.isVerboseEnabled()) {
-                MyLog.v(this, "Ignoring background content change - loaded recently");
+                MyLog.v(this, "Ignoring background content change - loaded recently")
             }
-            return false;
+            return false
         }
-        return true;
+        return true
     }
 
-    @Override
-    public void onDestroy() {
-        MyLog.v(this, "onDestroy");
+    public override fun onDestroy() {
+        MyLog.v(this, "onDestroy")
         if (myServiceReceiver != null) {
-            myServiceReceiver.unregisterReceiver(this);
+            myServiceReceiver.unregisterReceiver(this)
         }
-        super.onDestroy();
+        super.onDestroy()
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.sync_menu_item:
-                showList(BundleUtils.toBundle(WhichPage.CURRENT.toBundle(), IntentExtra.SYNC.key, 1L));
-                break;
-            case R.id.refresh_menu_item:
-                showList(WhichPage.CURRENT);
-                break;
-            default:
-                return super.onOptionsItemSelected(item);
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item.getItemId()) {
+            R.id.sync_menu_item -> showList(BundleUtils.toBundle(WhichPage.CURRENT.toBundle(), IntentExtra.SYNC.key, 1L))
+            R.id.refresh_menu_item -> showList(WhichPage.CURRENT)
+            else -> return super.onOptionsItemSelected(item)
         }
-        return false;
+        return false
     }
 
-    public boolean isPositionRestored() {
-        return getListAdapter().isPositionRestored();
+    fun isPositionRestored(): Boolean {
+        return listAdapter.isPositionRestored
     }
 
-    protected void showSyncing(String source, CharSequence text) {
+    protected fun showSyncing(source: String?, text: CharSequence?) {
         if (!showSyncIndicatorSetting || isEditorVisible()) {
-            return;
+            return
         }
-        syncingText = text;
-        updateTextualSyncIndicator(source);
+        syncingText = text
+        updateTextualSyncIndicator(source)
     }
 
-    @Override
-    protected void hideSyncing(String source) {
-        syncingText = "";
-        updateTextualSyncIndicator(source);
-        super.hideSyncing(source);
+    override fun hideSyncing(source: String?) {
+        syncingText = ""
+        updateTextualSyncIndicator(source)
+        super.hideSyncing(source)
     }
 
-    protected void showLoading(String source, String text) {
+    protected fun showLoading(source: String?, text: String?) {
         if (!showSyncIndicatorSetting) {
-            return;
+            return
         }
-        loadingText = text;
-        updateTextualSyncIndicator(source);
+        loadingText = text
+        updateTextualSyncIndicator(source)
     }
 
-    protected void hideLoading(String source) {
-        loadingText = "";
-        updateTextualSyncIndicator(source);
+    protected fun hideLoading(source: String?) {
+        loadingText = ""
+        updateTextualSyncIndicator(source)
     }
 
-    protected void updateTextualSyncIndicator(String source) {
+    protected fun updateTextualSyncIndicator(source: String?) {
         if (textualSyncIndicator == null) {
-            return;
+            return
         }
-        boolean isVisible = (!TextUtils.isEmpty(loadingText) || !TextUtils.isEmpty(syncingText)) && !isEditorVisible();
+        val isVisible = (!TextUtils.isEmpty(loadingText) || !TextUtils.isEmpty(syncingText)) && !isEditorVisible()
         if (isVisible) {
-            ((TextView) findViewById(R.id.sync_text)).setText(TextUtils.isEmpty(loadingText) ? syncingText : loadingText );
+            (findViewById<View?>(R.id.sync_text) as TextView).text = if (TextUtils.isEmpty(loadingText)) syncingText else loadingText
         }
-        if (isVisible
-                ? (textualSyncIndicator.getVisibility() != View.VISIBLE)
-                : ((textualSyncIndicator.getVisibility() == View.VISIBLE))) {
-            MyLog.v(this, () -> source + " set textual Sync indicator to " + isVisible);
-            textualSyncIndicator.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        if (if (isVisible) textualSyncIndicator.getVisibility() != View.VISIBLE else textualSyncIndicator.getVisibility() == View.VISIBLE) {
+            MyLog.v(this) { "$source set textual Sync indicator to $isVisible" }
+            textualSyncIndicator.setVisibility(if (isVisible) View.VISIBLE else View.GONE)
         }
     }
 
-    protected boolean isEditorVisible() {
-        return false;
+    protected open fun isEditorVisible(): Boolean {
+        return false
     }
 
-    @Override
-    public void onRefresh() {
-        onRefreshHandled = true;
-        showList(WhichPage.CURRENT);
+    override fun onRefresh() {
+        onRefreshHandled = true
+        showList(WhichPage.CURRENT)
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
             if (searchView != null && searchView.getVisibility() == View.VISIBLE) {
-                searchView.onActionViewCollapsed();
-                return true;
+                searchView.onActionViewCollapsed()
+                return true
             }
         }
-        return super.onKeyDown(keyCode, event);
+        return super.onKeyDown(keyCode, event)
     }
 
-
+    companion object {
+        private const val NO_AUTO_REFRESH_AFTER_LOAD_SECONDS: Long = 5
+    }
 }

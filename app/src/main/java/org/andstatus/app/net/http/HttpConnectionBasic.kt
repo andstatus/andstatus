@@ -13,121 +13,103 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.http
 
-package org.andstatus.app.net.http;
+import android.util.Base64
+import cz.msebera.android.httpclient.HttpResponse
+import cz.msebera.android.httpclient.client.methods.HttpGet
+import cz.msebera.android.httpclient.client.methods.HttpPost
+import io.vavr.control.CheckedFunction
+import org.andstatus.app.account.AccountDataWriter
+import org.andstatus.app.net.social.Connection
+import org.andstatus.app.util.StringUtil
+import java.io.IOException
+import java.nio.charset.Charset
 
-import android.util.Base64;
-
-import org.andstatus.app.account.AccountDataWriter;
-import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.util.StringUtil;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-
-import cz.msebera.android.httpclient.HttpEntity;
-import cz.msebera.android.httpclient.HttpResponse;
-import cz.msebera.android.httpclient.client.HttpClient;
-import cz.msebera.android.httpclient.client.methods.HttpGet;
-import cz.msebera.android.httpclient.client.methods.HttpPost;
-
-public class HttpConnectionBasic extends HttpConnection implements HttpConnectionApacheSpecific  {
-    protected String mPassword = "";
-
-    @Override
-    public void setHttpConnectionData(HttpConnectionData connectionData) {
-        super.setHttpConnectionData(connectionData);
-        setPassword(connectionData.dataReader.getDataString(Connection.KEY_PASSWORD));
-    }  
-
-    @Override
-    public HttpReadResult postRequest(HttpReadResult result) {
-        return new HttpConnectionApacheCommon(this, data).postRequest(result);
+class HttpConnectionBasic : HttpConnection(), HttpConnectionApacheSpecific {
+    protected var mPassword: String? = ""
+    override fun setHttpConnectionData(connectionData: HttpConnectionData?) {
+        super.setHttpConnectionData(connectionData)
+        password = connectionData.dataReader.getDataString(Connection.Companion.KEY_PASSWORD)
     }
 
-    @Override
-    public HttpReadResult httpApachePostRequest(HttpPost postMethod, HttpReadResult result) {
+    override fun postRequest(result: HttpReadResult?): HttpReadResult? {
+        return HttpConnectionApacheCommon(this, data).postRequest(result)
+    }
+
+    override fun httpApachePostRequest(postMethod: HttpPost?, result: HttpReadResult?): HttpReadResult? {
         try {
-            HttpClient client = ApacheHttpClientUtils.getHttpClient(data.getSslMode());
-            postMethod.setHeader("User-Agent", HttpConnection.USER_AGENT);
-            if (getCredentialsPresent()) {
-                postMethod.addHeader("Authorization", "Basic " + getCredentials());
+            val client = ApacheHttpClientUtils.getHttpClient(data.sslMode)
+            postMethod.setHeader("User-Agent", HttpConnectionInterface.Companion.USER_AGENT)
+            if (credentialsPresent) {
+                postMethod.addHeader("Authorization", "Basic " + getCredentials())
             }
-            HttpResponse httpResponse = client.execute(postMethod);
-            HttpConnectionApacheCommon.setStatusCodeAndHeaders(result, httpResponse);
-            HttpEntity httpEntity = httpResponse.getEntity();
-            result.readStream("", o -> httpEntity == null ? null : httpEntity.getContent());
-        } catch (Exception e) {
-            result.setException(e);
+            val httpResponse = client.execute(postMethod)
+            HttpConnectionApacheCommon.Companion.setStatusCodeAndHeaders(result, httpResponse)
+            val httpEntity = httpResponse.entity
+            result.readStream("", CheckedFunction { o: Void? -> httpEntity?.content })
+        } catch (e: Exception) {
+            result.setException(e)
         } finally {
-            postMethod.abort();
+            postMethod.abort()
         }
-        return result;
+        return result
     }
 
-    @Override
-    public HttpResponse httpApacheGetResponse(HttpGet httpGet) throws IOException {
-        HttpClient client = ApacheHttpClientUtils.getHttpClient(data.getSslMode());
-        return client.execute(httpGet);
+    @Throws(IOException::class)
+    override fun httpApacheGetResponse(httpGet: HttpGet?): HttpResponse? {
+        val client = ApacheHttpClientUtils.getHttpClient(data.sslMode)
+        return client.execute(httpGet)
     }
 
-    @Override
-    public boolean getCredentialsPresent() {
-        return !StringUtil.isEmpty(data.getAccountName().getUniqueName())
-                && !StringUtil.isEmpty(mPassword);
+    override fun getCredentialsPresent(): Boolean {
+        return (!StringUtil.isEmpty(data.accountName.uniqueName)
+                && !StringUtil.isEmpty(mPassword))
     }
 
-    @Override
-    public void clearAuthInformation() {
-        setPassword("");
+    override fun clearAuthInformation() {
+        password = ""
     }
 
-    @Override
-    public boolean isPasswordNeeded() {
-        return true;
+    override fun isPasswordNeeded(): Boolean {
+        return true
     }
-    @Override
-    public void setPassword(String passwordIn) {
-        mPassword = passwordIn == null ? "" : passwordIn;
+
+    override fun setPassword(passwordIn: String?) {
+        mPassword = passwordIn ?: ""
     }
-    @Override
-    public String getPassword() {
-        return mPassword;
+
+    override fun getPassword(): String? {
+        return mPassword
     }
 
     /**
      * Get the HTTP digest authentication. Uses Base64 to encode credentials.
-     * 
+     *
      * @return String
      */
-    private String getCredentials() {
+    private fun getCredentials(): String? {
         return Base64.encodeToString(
-                (data.getAccountName().username + ":" + mPassword).
-                        getBytes(Charset.forName("UTF-8")),
-                Base64.NO_WRAP + Base64.NO_PADDING);
+                (data.accountName.username + ":" + mPassword).toByteArray(Charset.forName("UTF-8")),
+                Base64.NO_WRAP + Base64.NO_PADDING)
     }
 
-    @Override
-    public boolean saveTo(AccountDataWriter dw) {
-        boolean changed = super.saveTo(dw);
-
-        if (mPassword.compareTo(dw.getDataString(Connection.KEY_PASSWORD)) != 0) {
-            dw.setDataString(Connection.KEY_PASSWORD, mPassword);
-            changed = true;
+    override fun saveTo(dw: AccountDataWriter?): Boolean {
+        var changed: Boolean = super.saveTo(dw)
+        if (mPassword.compareTo(dw.getDataString(Connection.Companion.KEY_PASSWORD)) != 0) {
+            dw.setDataString(Connection.Companion.KEY_PASSWORD, mPassword)
+            changed = true
         }
-
-        return changed;
+        return changed
     }
 
-    @Override
-    public void httpApacheSetAuthorization(HttpGet httpGet) {
-        if (getCredentialsPresent()) {
-            httpGet.addHeader("Authorization", "Basic " + getCredentials());
+    override fun httpApacheSetAuthorization(httpGet: HttpGet?) {
+        if (credentialsPresent) {
+            httpGet.addHeader("Authorization", "Basic " + getCredentials())
         }
     }
 
-    @Override
-    public HttpReadResult getRequest(HttpReadResult result) {
-        return new HttpConnectionApacheCommon(this, data).getRequest(result);
+    override fun getRequest(result: HttpReadResult?): HttpReadResult? {
+        return HttpConnectionApacheCommon(this, data).getRequest(result)
     }
 }

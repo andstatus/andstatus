@@ -13,348 +13,321 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data
 
-package org.andstatus.app.data;
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.actor.GroupType
+import org.andstatus.app.context.DemoData
+import org.andstatus.app.data.DataUpdater
+import org.andstatus.app.database.table.ActivityTable
+import org.andstatus.app.database.table.ActorTable
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.net.social.AActivity
+import org.andstatus.app.net.social.ActivityType
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.ActorEndpointType
+import org.andstatus.app.net.social.Audience
+import org.andstatus.app.net.social.Note
+import org.andstatus.app.net.social.Visibility
+import org.andstatus.app.net.social.pumpio.ConnectionPumpio
+import org.andstatus.app.note.NoteEditorData
+import org.andstatus.app.notification.NotificationEventType
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.origin.OriginType
+import org.andstatus.app.service.CommandData
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.service.CommandExecutionContext
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.InstanceId
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TriState
+import org.andstatus.app.util.UrlUtils
+import org.junit.Assert
+import java.util.function.Consumer
 
-import androidx.annotation.NonNull;
+class DemoNoteInserter(val accountActor: Actor?) {
+    private val origin: Origin?
 
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.actor.GroupType;
-import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.social.AActivity;
-import org.andstatus.app.net.social.ActivityType;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.ActorEndpointType;
-import org.andstatus.app.net.social.Audience;
-import org.andstatus.app.net.social.Note;
-import org.andstatus.app.net.social.Visibility;
-import org.andstatus.app.net.social.pumpio.ConnectionPumpio;
-import org.andstatus.app.note.NoteEditorData;
-import org.andstatus.app.notification.NotificationEventType;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.CommandExecutionContext;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UrlUtils;
+    constructor(ma: MyAccount?) : this(ma.getActor()) {}
 
-import java.net.URL;
-import java.util.List;
-
-import static org.andstatus.app.context.DemoData.demoData;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-public class DemoNoteInserter {
-    public final Actor accountActor;
-    private final Origin origin;
-
-    public DemoNoteInserter(MyAccount ma) {
-        this(ma.getActor());
+    fun buildActor(): Actor? {
+        return buildActorFromOid(nextActorUid())
     }
 
-    public DemoNoteInserter(Actor accountActor) {
-        this.accountActor = accountActor;
-        assertTrue(accountActor != null);
-        origin = accountActor.origin;
-        assertTrue("Origin exists for " + accountActor, origin.isValid());
-    }
-
-    public Actor buildActor() {
-        return buildActorFromOid(nextActorUid());
-    }
-
-    final Actor buildActorFromOid(String actorOid) {
-        if (StringUtil.isEmpty(actorOid)) throw  new IllegalArgumentException("Actor oid cannot be empty");
-        Actor actor = Actor.fromOid(origin, actorOid);
-        String username;
-        String profileUrl;
-        if (origin.getOriginType() == OriginType.PUMPIO) {
-            ConnectionPumpio connection = new ConnectionPumpio();
-            username = connection.actorOidToUsername(actorOid);
-            profileUrl = "http://" + connection.actorOidToHost(actorOid) + "/" + username;
-            actor.setCreatedDate(MyLog.uniqueCurrentTimeMS());
+    fun buildActorFromOid(actorOid: String?): Actor? {
+        require(!StringUtil.isEmpty(actorOid)) { "Actor oid cannot be empty" }
+        val actor: Actor = Actor.Companion.fromOid(origin, actorOid)
+        val username: String
+        val profileUrl: String
+        if (origin.getOriginType() === OriginType.PUMPIO) {
+            val connection = ConnectionPumpio()
+            username = connection.actorOidToUsername(actorOid)
+            profileUrl = "http://" + connection.actorOidToHost(actorOid) + "/" + username
+            actor.createdDate = MyLog.uniqueCurrentTimeMS()
         } else {
-            username = "actorOf" + origin.getName() + actorOid;
-            profileUrl = "https://" + demoData.gnusocialTestOriginName
-                    + ".example.com/profiles/" + username;
-            actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS());
+            username = "actorOf" + origin.getName() + actorOid
+            profileUrl = ("https://" + DemoData.Companion.demoData.gnusocialTestOriginName
+                    + ".example.com/profiles/" + username)
+            actor.updatedDate = MyLog.uniqueCurrentTimeMS()
         }
-        actor.setUsername(username);
-        actor.setProfileUrl(profileUrl);
-        actor.setRealName("Real " + username);
-        actor.setSummary("This is about " + username);
-        actor.setHomepage("https://example.com/home/" + username + "/start/");
-        actor.location = "Faraway place #" + demoData.testRunUid;
-        actor.setAvatarUrl(actor.getHomepage() + "avatar.jpg");
-        actor.endpoints.add(ActorEndpointType.BANNER, actor.getHomepage() + "banner.png");
-        long rand = InstanceId.next();
-        actor.notesCount = rand * 2 + 3;
-        actor.favoritesCount = rand + 11;
-        actor.followingCount = rand + 17;
-        actor.followersCount = rand;
-        return actor.build();
+        actor.username = username
+        actor.profileUrl = profileUrl
+        actor.realName = "Real $username"
+        actor.summary = "This is about $username"
+        actor.homepage = "https://example.com/home/$username/start/"
+        actor.location = "Faraway place #" + DemoData.Companion.demoData.testRunUid
+        actor.avatarUrl = actor.homepage + "avatar.jpg"
+        actor.endpoints.add(ActorEndpointType.BANNER, actor.homepage + "banner.png")
+        val rand = InstanceId.next()
+        actor.notesCount = rand * 2 + 3
+        actor.favoritesCount = rand + 11
+        actor.followingCount = rand + 17
+        actor.followersCount = rand
+        return actor.build()
     }
 
-    private String nextActorUid() {
-        if (origin.getOriginType() == OriginType.PUMPIO) {
-            return "acct:actorOf" + origin.getName() + demoData.testRunUid + InstanceId.next();
-        }
-        return String.valueOf(demoData.testRunUid) + InstanceId.next();
+    private fun nextActorUid(): String? {
+        return if (origin.getOriginType() === OriginType.PUMPIO) {
+            "acct:actorOf" + origin.getName() + DemoData.Companion.demoData.testRunUid + InstanceId.next()
+        } else DemoData.Companion.demoData.testRunUid.toString() + InstanceId.next()
     }
 
-    public AActivity buildActivity(Actor author, String name, String content, AActivity inReplyToActivity,
-                                   String noteOidIn, DownloadStatus noteStatus) {
-        final String method = "buildActivity";
-        String noteOid = noteOidIn;
+    fun buildActivity(author: Actor?, name: String?, content: String?, inReplyToActivity: AActivity?,
+                      noteOidIn: String?, noteStatus: DownloadStatus?): AActivity? {
+        val method = "buildActivity"
+        var noteOid = noteOidIn
         if (StringUtil.isEmpty(noteOid) && noteStatus != DownloadStatus.SENDING) {
-            if (origin.getOriginType() == OriginType.PUMPIO) {
-                noteOid = (UrlUtils.hasHost(UrlUtils.fromString(author.getProfileUrl()))
-                          ? author.getProfileUrl()
-                          : "http://pumpiotest" + origin.getId() + ".example.com/actor/" + author.oid)
-                        + "/" + (inReplyToActivity == null ? "note" : "comment")
-                        + "/thisisfakeuri" + System.nanoTime();
+            noteOid = if (origin.getOriginType() === OriginType.PUMPIO) {
+                ((if (UrlUtils.hasHost(UrlUtils.fromString(author.getProfileUrl()))) author.getProfileUrl() else "http://pumpiotest" + origin.getId() + ".example.com/actor/" + author.oid)
+                        + "/" + (if (inReplyToActivity == null) "note" else "comment")
+                        + "/thisisfakeuri" + System.nanoTime())
             } else {
-                noteOid = MyLog.uniqueDateTimeFormatted();
+                MyLog.uniqueDateTimeFormatted()
             }
         }
-        AActivity activity = buildActivity(author, ActivityType.UPDATE, noteOid);
-        Note note = Note.fromOriginAndOid(origin, noteOid, noteStatus);
-        activity.setNote(note);
-        note.setUpdatedDate(activity.getUpdatedDate());
-        note.setName(name);
-        note.setContentPosted(content);
-        note.via = "AndStatus";
-        long rand = InstanceId.next();
-        note.setLikesCount(rand - 15);
-        note.setReblogsCount(rand - 3);
-        note.setRepliesCount(rand + 12);
-        note.setInReplyTo(inReplyToActivity);
-        if (origin.getOriginType() == OriginType.PUMPIO) {
-            note.url = note.oid;
+        val activity = buildActivity(author, ActivityType.UPDATE, noteOid)
+        val note: Note = Note.Companion.fromOriginAndOid(origin, noteOid, noteStatus)
+        activity.setNote(note)
+        note.updatedDate = activity.getUpdatedDate()
+        note.name = name
+        note.setContentPosted(content)
+        note.via = "AndStatus"
+        val rand = InstanceId.next()
+        note.likesCount = rand - 15
+        note.reblogsCount = rand - 3
+        note.repliesCount = rand + 12
+        note.setInReplyTo(inReplyToActivity)
+        if (origin.getOriginType() === OriginType.PUMPIO) {
+            note.url = note.oid
         }
-        activity.initializePublicAndFollowers();
-        DbUtils.waitMs(method, 10);
-        return activity;
+        activity.initializePublicAndFollowers()
+        DbUtils.waitMs(method, 10)
+        return activity
     }
 
-    public AActivity buildActivity(@NonNull Actor actor, @NonNull ActivityType type, String noteOid) {
-        AActivity activity = AActivity.from(accountActor, type);
-        activity.setOid(
-                (StringUtil.isEmpty(noteOid) ?  MyLog.uniqueDateTimeFormatted() : noteOid)
-                + "-" + activity.type.name().toLowerCase());
-        activity.setActor(actor);
-        activity.setUpdatedDate(System.currentTimeMillis());
-        return activity;
+    fun buildActivity(actor: Actor, type: ActivityType, noteOid: String?): AActivity? {
+        val activity: AActivity = AActivity.Companion.from(accountActor, type)
+        activity.oid = ((if (StringUtil.isEmpty(noteOid)) MyLog.uniqueDateTimeFormatted() else noteOid)
+                + "-" + activity.type.name.toLowerCase())
+        activity.setActor(actor)
+        activity.updatedDate = System.currentTimeMillis()
+        return activity
     }
 
-    static void onActivityS(AActivity activity) {
-        new DemoNoteInserter(activity.accountActor).onActivity(activity);
+    fun onActivity(activity: AActivity?) {
+        NoteEditorData.Companion.recreateKnownAudience(activity)
+        val ma = origin.myContext.accounts().fromActorId(accountActor.actorId)
+        Assert.assertTrue("Persistent account exists for $accountActor $activity", ma.isValid)
+        val timelineType = if (activity.getNote().audience().visibility.isPrivate) TimelineType.PRIVATE else TimelineType.HOME
+        val execContext = CommandExecutionContext(origin.myContext,
+                CommandData.Companion.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType))
+        activity.audience().assertContext()
+        DataUpdater(execContext).onActivity(activity)
+        checkActivityRecursively(activity, 1)
     }
 
-    static AActivity increaseUpdateDate(AActivity activity) {
-        // In order for a note not to be ignored
-        activity.setUpdatedDate(activity.getUpdatedDate() + 1);
-        activity.getNote().setUpdatedDate(activity.getNote().getUpdatedDate() + 1);
-        return activity;
-    }
-
-    public void onActivity(final AActivity activity) {
-        NoteEditorData.recreateKnownAudience(activity);
-
-        MyAccount ma = origin.myContext.accounts().fromActorId(accountActor.actorId);
-        assertTrue("Persistent account exists for " + accountActor + " " + activity, ma.isValid());
-        final TimelineType timelineType = activity.getNote().audience().getVisibility().isPrivate() ? TimelineType.PRIVATE : TimelineType.HOME;
-        CommandExecutionContext execContext = new CommandExecutionContext(origin.myContext,
-                CommandData.newTimelineCommand(CommandEnum.EMPTY, ma, timelineType));
-        activity.audience().assertContext();
-        new DataUpdater(execContext).onActivity(activity);
-        checkActivityRecursively(activity, 1);
-    }
-
-    private void checkActivityRecursively(AActivity activity, int level) {
-        Note note = activity.getNote();
+    private fun checkActivityRecursively(activity: AActivity?, level: Int) {
+        val note = activity.getNote()
         if (level == 1 && note.nonEmpty()) {
-            assertNotEquals( "Activity was not added: " + activity, 0, activity.getId());
+            Assert.assertNotEquals("Activity was not added: $activity", 0, activity.getId())
         }
-        if (level > DataUpdater.MAX_RECURSING || activity.getId() == 0) return;
-
-        assertNotEquals( "Account is unknown: " + activity, 0, activity.accountActor.actorId);
-        Actor actor = activity.getActor();
+        if (level > DataUpdater.Companion.MAX_RECURSING || activity.getId() == 0L) return
+        Assert.assertNotEquals("Account is unknown: $activity", 0, activity.accountActor.actorId)
+        val actor = activity.getActor()
         if (actor.nonEmpty()) {
-            assertNotEquals( "Level " + level + ", Actor id not set for " + actor + " in " + activity, 0, actor.actorId);
-            assertNotEquals( "Level " + level + ", User id not set for " + actor + " in " + activity, 0, actor.user.userId);
+            Assert.assertNotEquals("Level $level, Actor id not set for $actor in $activity", 0, actor.actorId)
+            Assert.assertNotEquals("Level $level, User id not set for $actor in $activity", 0, actor.user.userId)
         }
-        checkStoredActor(actor);
-
+        checkStoredActor(actor)
         if (note.nonEmpty()) {
-            assertNotEquals( "Note was not added at level " + level + " " + activity, 0, note.noteId);
-
-            String permalink = origin.getNotePermalink(note.noteId);
-            URL urlPermalink = UrlUtils.fromString(permalink);
-            assertNotNull("Note permalink is a valid URL '" + permalink + "',\n" + note.toString()
-                    + "\n origin: " + origin
-                    + "\n author: " + activity.getAuthor().toString(), urlPermalink);
-            if (origin.getUrl() != null && origin.getOriginType() != OriginType.TWITTER) {
-                assertEquals("Note permalink has the same host as origin, " + note.toString(),
-                        origin.getUrl().getHost(), urlPermalink.getHost());
+            Assert.assertNotEquals("Note was not added at level $level $activity", 0, note.noteId)
+            val permalink = origin.getNotePermalink(note.noteId)
+            val urlPermalink = UrlUtils.fromString(permalink)
+            Assert.assertNotNull("""Note permalink is a valid URL '$permalink',
+$note
+ origin: $origin
+ author: ${activity.getAuthor()}""", urlPermalink)
+            if (origin.getUrl() != null && origin.getOriginType() !== OriginType.TWITTER) {
+                Assert.assertEquals("Note permalink has the same host as origin, $note",
+                        origin.getUrl().host, urlPermalink.host)
             }
-            if (StringUtil.nonEmpty(note.getName())) {
-                assertEquals("Note name " + activity, note.getName(),
-                        MyQuery.noteIdToStringColumnValue(NoteTable.NAME, note.noteId));
+            if (StringUtil.nonEmpty(note.name)) {
+                Assert.assertEquals("Note name $activity", note.name,
+                        MyQuery.noteIdToStringColumnValue(NoteTable.NAME, note.noteId))
             }
-            if (StringUtil.nonEmpty(note.getSummary())) {
-                assertEquals("Note summary " + activity, note.getSummary(),
-                        MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, note.noteId));
+            if (StringUtil.nonEmpty(note.summary)) {
+                Assert.assertEquals("Note summary $activity", note.summary,
+                        MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, note.noteId))
             }
-            if (StringUtil.nonEmpty(note.getContent())) {
-                assertEquals("Note content " + activity, note.getContent(),
-                        MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, note.noteId));
+            if (StringUtil.nonEmpty(note.content)) {
+                Assert.assertEquals("Note content $activity", note.content,
+                        MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, note.noteId))
             }
             if (StringUtil.nonEmpty(note.url)) {
-                assertEquals("Note permalink", note.url, origin.getNotePermalink(note.noteId));
+                Assert.assertEquals("Note permalink", note.url, origin.getNotePermalink(note.noteId))
             }
-
-            Actor author = activity.getAuthor();
+            val author = activity.getAuthor()
             if (author.nonEmpty()) {
-                assertNotEquals( "Author id for " + author + " not set in note " + note + " in " + activity, 0,
-                        MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, note.noteId));
+                Assert.assertNotEquals("Author id for $author not set in note $note in $activity", 0,
+                        MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, note.noteId))
             }
-            checkStoredActor(author);
+            checkStoredActor(author)
         }
-
-        switch (activity.type) {
-            case LIKE:
-                List<Actor> stargazers = MyQuery.getStargazers(origin.myContext.getDatabase(), accountActor.origin, note.noteId);
-                boolean found = stargazers.stream().anyMatch(stargazer -> stargazer.actorId == actor.actorId);
-                assertTrue("Actor, who favorited, is not found among stargazers: " + activity
-                        + "\nstargazers: " + stargazers, found);
-                break;
-            case ANNOUNCE:
-                List<Actor> rebloggers = MyQuery.getRebloggers(origin.myContext.getDatabase(), accountActor.origin, note.noteId);
-                assertTrue("Reblogger is not found among rebloggers: " + activity
-                        + "\nrebloggers: " + rebloggers, rebloggers.stream().anyMatch(a -> a.actorId == actor.actorId));
-                break;
-            case FOLLOW:
-                assertTrue("Friend not found: " + activity,
-                        GroupMembership.isGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId));
-                break;
-            case UNDO_FOLLOW:
-                assertFalse("Friend found: " + activity,
-                        GroupMembership.isGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId));
-                break;
-            default:
-                break;
+        when (activity.type) {
+            ActivityType.LIKE -> {
+                val stargazers = MyQuery.getStargazers(origin.myContext.database, accountActor.origin, note.noteId)
+                val found = stargazers.stream().anyMatch { stargazer: Actor? -> stargazer.actorId == actor.actorId }
+                Assert.assertTrue("""
+    Actor, who favorited, is not found among stargazers: $activity
+    stargazers: $stargazers
+    """.trimIndent(), found)
+            }
+            ActivityType.ANNOUNCE -> {
+                val rebloggers = MyQuery.getRebloggers(origin.myContext.database, accountActor.origin, note.noteId)
+                Assert.assertTrue("""
+    Reblogger is not found among rebloggers: $activity
+    rebloggers: $rebloggers
+    """.trimIndent(), rebloggers.stream().anyMatch { a: Actor? -> a.actorId == actor.actorId })
+            }
+            ActivityType.FOLLOW -> Assert.assertTrue("Friend not found: $activity",
+                    GroupMembership.Companion.isGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId))
+            ActivityType.UNDO_FOLLOW -> Assert.assertFalse("Friend found: $activity",
+                    GroupMembership.Companion.isGroupMember(actor, GroupType.FRIENDS, activity.getObjActor().actorId))
+            else -> {
+            }
         }
-
         if (!note.replies.isEmpty()) {
-            for (AActivity replyActivity : note.replies) {
+            for (replyActivity in note.replies) {
                 if (replyActivity.nonEmpty()) {
-                    assertNotEquals("Reply added at level " + level + " " + replyActivity, 0, replyActivity.getId());
-                    checkActivityRecursively(replyActivity, level + 1);
+                    Assert.assertNotEquals("Reply added at level $level $replyActivity", 0, replyActivity.id)
+                    checkActivityRecursively(replyActivity, level + 1)
                 }
             }
         }
-        note.audience().evaluateAndGetActorsToSave(activity.getAuthor()).forEach(DemoNoteInserter::checkStoredActor);
-
+        note.audience().evaluateAndGetActorsToSave(activity.getAuthor()).forEach(Consumer { actor: Actor? -> checkStoredActor(actor) })
         if (activity.getObjActor().nonEmpty()) {
-            assertNotEquals( "Actor was not added: " + activity.getObjActor(), 0, activity.getObjActor().actorId);
+            Assert.assertNotEquals("Actor was not added: " + activity.getObjActor(), 0, activity.getObjActor().actorId)
         }
         if (activity.getActivity().nonEmpty()) {
-            checkActivityRecursively(activity.getActivity(), level + 1);
+            checkActivityRecursively(activity.getActivity(), level + 1)
         }
     }
 
-    public static void checkStoredActor(Actor actor) {
-        if (actor.dontStore()) return;
-
-        long id = actor.actorId;
-
-        if (StringUtil.nonEmpty(actor.oid)) {
-            assertEquals("oid " + actor, actor.oid,
-                    MyQuery.actorIdToStringColumnValue(ActorTable.ACTOR_OID, id));
+    companion object {
+        fun onActivityS(activity: AActivity?) {
+            DemoNoteInserter(activity.accountActor).onActivity(activity)
         }
 
-        if (!actor.getUsername().isEmpty()) {
-            assertEquals("Username " + actor, actor.getUsername(),
-                    MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, id));
+        fun increaseUpdateDate(activity: AActivity?): AActivity? {
+            // In order for a note not to be ignored
+            activity.setUpdatedDate(activity.getUpdatedDate() + 1)
+            activity.getNote().updatedDate = activity.getNote().updatedDate + 1
+            return activity
         }
 
-        String webFingerIdActual = MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, id);
-        if (actor.getWebFingerId().isEmpty()) {
-            assertTrue("WebFingerID=" + webFingerIdActual + " for " + actor, StringUtil.isEmpty(webFingerIdActual)
-                    || Actor.isWebFingerIdValid(webFingerIdActual));
-        } else {
-            assertEquals("WebFingerID=" + webFingerIdActual + " for " + actor, actor.getWebFingerId(), webFingerIdActual);
-            assertTrue("Invalid WebFingerID " + actor, Actor.isWebFingerIdValid(webFingerIdActual));
+        fun checkStoredActor(actor: Actor?) {
+            if (actor.dontStore()) return
+            val id = actor.actorId
+            if (StringUtil.nonEmpty(actor.oid)) {
+                Assert.assertEquals("oid $actor", actor.oid,
+                        MyQuery.actorIdToStringColumnValue(ActorTable.ACTOR_OID, id))
+            }
+            if (!actor.getUsername().isEmpty()) {
+                Assert.assertEquals("Username $actor", actor.getUsername(),
+                        MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, id))
+            }
+            val webFingerIdActual = MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, id)
+            if (actor.getWebFingerId().isEmpty()) {
+                Assert.assertTrue("WebFingerID=$webFingerIdActual for $actor", StringUtil.isEmpty(webFingerIdActual)
+                        || Actor.Companion.isWebFingerIdValid(webFingerIdActual))
+            } else {
+                Assert.assertEquals("WebFingerID=$webFingerIdActual for $actor", actor.getWebFingerId(), webFingerIdActual)
+                Assert.assertTrue("Invalid WebFingerID $actor", Actor.Companion.isWebFingerIdValid(webFingerIdActual))
+            }
+            if (StringUtil.nonEmpty(actor.getRealName())) {
+                Assert.assertEquals("Display name $actor", actor.getRealName(),
+                        MyQuery.actorIdToStringColumnValue(ActorTable.REAL_NAME, id))
+            }
         }
 
-        if (StringUtil.nonEmpty(actor.getRealName())) {
-            assertEquals("Display name " + actor, actor.getRealName(),
-                    MyQuery.actorIdToStringColumnValue(ActorTable.REAL_NAME, id));
+        fun deleteOldNote(origin: Origin, noteOid: String?) {
+            val noteIdOld = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, noteOid)
+            if (noteIdOld != 0L) {
+                val deleted: Int = MyProvider.Companion.deleteNoteAndItsActivities(origin.myContext, noteIdOld)
+                Assert.assertTrue("Activities of Old note id=$noteIdOld deleted: $deleted", deleted > 0)
+            }
         }
-    }
 
-    static void deleteOldNote(@NonNull Origin origin, String noteOid) {
-        long noteIdOld = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), noteOid);
-        if (noteIdOld != 0) {
-            int deleted = MyProvider.deleteNoteAndItsActivities(origin.myContext, noteIdOld);
-            assertTrue( "Activities of Old note id=" + noteIdOld + " deleted: " + deleted, deleted > 0);
+        fun addNoteForAccount(ma: MyAccount?, body: String?, noteOid: String?, noteStatus: DownloadStatus?): AActivity? {
+            Assert.assertTrue("Is not valid: $ma", ma.isValid())
+            val accountActor = ma.getActor()
+            val mi = DemoNoteInserter(accountActor)
+            val activity = mi.buildActivity(accountActor, "", body, null, noteOid, noteStatus)
+            mi.onActivity(activity)
+            return activity
         }
-    }
+
+        fun assertInteraction(activity: AActivity?, eventType: NotificationEventType?, notified: TriState?) {
+            Assert.assertEquals("Notification event type\n$activity\n",
+                    eventType,
+                    NotificationEventType.Companion.fromId(
+                            MyQuery.activityIdToLongColumnValue(ActivityTable.INTERACTION_EVENT, activity.getId())))
+            Assert.assertEquals("Interacted TriState\n$activity\n",
+                    TriState.Companion.fromBoolean(eventType != NotificationEventType.EMPTY &&
+                            eventType != NotificationEventType.HOME),
+                    MyQuery.activityIdToTriState(ActivityTable.INTERACTED, activity.getId()))
+            val notifiedActorId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTIFIED_ACTOR_ID, activity.getId())
+            val message = "Notified actor ID\n$activity\n"
+            if (eventType == NotificationEventType.EMPTY) {
+                Assert.assertEquals(message, 0, notifiedActorId)
+            } else {
+                Assert.assertNotEquals(message, 0, notifiedActorId)
+            }
+            if (notified.known) {
+                Assert.assertEquals("""
+    Notified TriState
+    $activity
     
-    public static AActivity addNoteForAccount(MyAccount ma, String body, String noteOid, DownloadStatus noteStatus) {
-        assertTrue("Is not valid: " + ma, ma.isValid());
-        Actor accountActor = ma.getActor();
-        DemoNoteInserter mi = new DemoNoteInserter(accountActor);
-        AActivity activity = mi.buildActivity(accountActor, "", body, null, noteOid, noteStatus);
-        mi.onActivity(activity);
-        return activity;
-    }
-
-    public static void assertInteraction(AActivity activity, NotificationEventType eventType, TriState notified) {
-        assertEquals("Notification event type\n" + activity + "\n",
-                eventType,
-                NotificationEventType.fromId(
-                        MyQuery.activityIdToLongColumnValue(ActivityTable.INTERACTION_EVENT, activity.getId())));
-
-        assertEquals("Interacted TriState\n" + activity + "\n",
-                TriState.fromBoolean(eventType != NotificationEventType.EMPTY &&
-                        eventType != NotificationEventType.HOME),
-                MyQuery.activityIdToTriState(ActivityTable.INTERACTED, activity.getId()));
-
-        final long notifiedActorId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTIFIED_ACTOR_ID, activity.getId());
-        final String message = "Notified actor ID\n" + activity + "\n";
-        if (eventType == NotificationEventType.EMPTY) {
-            assertEquals(message, 0, notifiedActorId);
-        } else {
-            assertNotEquals(message, 0, notifiedActorId);
+    """.trimIndent(),
+                        notified,
+                        MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()))
+            }
         }
 
-        if (notified.known) {
-            assertEquals("Notified TriState\n"
-                            + activity + "\n",
-                    notified,
-                    MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()));
+        fun assertStoredVisibility(activity: AActivity?, expected: Visibility?) {
+            Assert.assertEquals("Visibility of\n$activity\n",
+                    expected, Visibility.Companion.fromNoteId(activity.getNote().noteId))
+        }
+
+        fun assertVisibility(audience: Audience?, visibility: Visibility?) {
+            Assert.assertEquals("Visibility check $audience\n", visibility, audience.getVisibility())
         }
     }
 
-    public static void assertStoredVisibility(AActivity activity, Visibility expected) {
-        assertEquals("Visibility of\n" + activity + "\n",
-                expected, Visibility.fromNoteId(activity.getNote().noteId));
-    }
-
-    public static void assertVisibility(Audience audience, Visibility visibility) {
-        assertEquals("Visibility check " + audience + "\n", visibility, audience.getVisibility());
+    init {
+        Assert.assertTrue(accountActor != null)
+        origin = accountActor.origin
+        Assert.assertTrue("Origin exists for $accountActor", origin.isValid())
     }
 }

@@ -13,55 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.http
 
-package org.andstatus.app.net.http;
+import android.net.Uri
+import com.github.scribejava.core.model.OAuthConstants
+import com.github.scribejava.core.oauth.OAuth20Service
+import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.UriUtils
+import java.util.*
 
-import android.net.Uri;
-
-import com.github.scribejava.core.model.OAuthConstants;
-import com.github.scribejava.core.oauth.OAuth20Service;
-
-import org.andstatus.app.net.social.ApiRoutineEnum;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.UriUtils;
-
-import java.util.HashMap;
-import java.util.Map;
-
-public class HttpConnectionOAuthActivityPub extends HttpConnectionOAuth2JavaNet {
-
-    @Override
-    public Uri getApiUri(ApiRoutineEnum routine) {
-        String url;
-
-        switch (routine) {
-            case OAUTH_ACCESS_TOKEN:
-            case OAUTH_REQUEST_TOKEN:
-                url = data.getOauthPath() + "/token";
-                break;
-            case OAUTH_REGISTER_CLIENT:
-                url = data.getBasicPath() + "/v1/apps";
-                break;
-            default:
-                url = super.getApiUri(routine).toString();
-                break;
+class HttpConnectionOAuthActivityPub : HttpConnectionOAuth2JavaNet() {
+    public override fun getApiUri(routine: ApiRoutineEnum?): Uri? {
+        var url: String?
+        url = when (routine) {
+            ApiRoutineEnum.OAUTH_ACCESS_TOKEN, ApiRoutineEnum.OAUTH_REQUEST_TOKEN -> data.oauthPath + "/token"
+            ApiRoutineEnum.OAUTH_REGISTER_CLIENT -> data.basicPath + "/v1/apps"
+            else -> super.getApiUri(routine).toString()
         }
-
         if (!StringUtil.isEmpty(url)) {
-            url = pathToUrlString(url);
+            url = pathToUrlString(url)
         }
-
-        return UriUtils.fromString(url);
+        return UriUtils.fromString(url)
     }
 
     /**
-     * @see OAuth20Service#getAuthorizationUrl(Map)
+     * @see OAuth20Service.getAuthorizationUrl
      */
-    @Override
-    public Map<String, String> getAdditionalAuthorizationParams() {
-        Map<String, String> additionalParams = new HashMap<>();
-        additionalParams.put(OAuthConstants.SCOPE, OAUTH_SCOPES);
-        return additionalParams;
+    override fun getAdditionalAuthorizationParams(): MutableMap<String?, String?>? {
+        val additionalParams: MutableMap<String?, String?> = HashMap()
+        additionalParams[OAuthConstants.SCOPE] = HttpConnectionOAuth2JavaNet.Companion.OAUTH_SCOPES
+        return additionalParams
     }
-
 }

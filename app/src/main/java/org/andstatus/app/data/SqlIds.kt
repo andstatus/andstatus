@@ -13,127 +13,119 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data
 
-package org.andstatus.app.data;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.util.IsEmpty;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import static java.util.stream.Collectors.toList;
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.util.IsEmpty
+import java.util.*
+import java.util.stream.Collectors
 
 /**
  * Helper class to construct sql WHERE clause selecting by Ids
  * @author yvolk@yurivolkov.com
  */
-public class SqlIds implements IsEmpty {
-    public static final SqlIds EMPTY = new SqlIds();
-    private final Set<Long> ids;
+class SqlIds : IsEmpty {
+    private val ids: MutableSet<Long?>?
 
-    /** We may not have our actor in some origin... ?! */
-    public static SqlIds notifiedActorIdsOfTimeline(@NonNull Timeline timeline) {
-        if (timeline.isCombined()) {
-            return SqlIds.EMPTY;
-        } else {
-            return actorIdsOfTimelineActor(timeline);
-        }
+    private constructor(ids: MutableCollection<Long?>) {
+        this.ids = HashSet(ids)
     }
 
-    public static SqlIds actorIdsOfTimelineActor(@NonNull Timeline timeline) {
-        if (timeline.isCombined()) {
-            return myActorsIds();
-        } else if (timeline.getTimelineType().isAtOrigin()) {
-            return SqlIds.EMPTY;
-        } else {
-            return SqlIds.fromIds(timeline.actor.user.actorIds);
-        }
+    private constructor(vararg id: Long?) {
+        ids = HashSet(Arrays.asList(*id))
     }
 
-    public static SqlIds myActorsIds() {
-        return SqlIds.fromIds(myContextHolder.getNow().users().myActors.keySet());
+    fun size(): Int {
+        return ids.size
     }
 
-    public static SqlIds actorIdsOfTimelineAccount(@NonNull Timeline timeline) {
-        if (timeline.isCombined() || timeline.getTimelineType().isAtOrigin()) {
-            return SqlIds.EMPTY;
-        }
-        return SqlIds.fromIds(timeline.actor.user.actorIds);
-    }
-
-    public static SqlIds actorIdsOf(@NonNull Collection<Actor> actors) {
-        return new SqlIds(actors.stream().map(actor -> actor.actorId).collect(toList()));
-    }
-
-    public static SqlIds fromId(long id) {
-        return new SqlIds(Collections.singleton(id));
-    }
-
-    public static SqlIds fromIds(@NonNull Collection<Long> ids) {
-        return new SqlIds(ids);
-    }
-
-    public static SqlIds fromIds(Long ... ids) {
-        return new SqlIds(Arrays.asList(ids));
-    }
-
-    private SqlIds(@NonNull Collection<Long> ids) {
-        this.ids = new HashSet<>(ids);
-    }
-
-    private SqlIds(Long ... id) {
-        this.ids = new HashSet<>(Arrays.asList(id));
-    }
-
-    public int size() {
-        return ids.size();
-    }
-
-    public String getList() {
-        StringBuilder sb = new StringBuilder();
-        for (long id : ids) {
-            if (sb.length() > 0) {
-                sb.append(", ");
+    fun getList(): String? {
+        val sb = StringBuilder()
+        for (id in ids) {
+            if (sb.length > 0) {
+                sb.append(", ")
             }
-            sb.append(Long.toString(id));
+            sb.append(java.lang.Long.toString(id))
         }
-        return sb.toString();
+        return sb.toString()
     }
 
-    public String getSql() {
-        if (size() == 0) {
-            return getInexistentId();
+    fun getSql(): String? {
+        return if (size() == 0) {
+            getInexistentId()
         } else if (size() == 1) {
-            return "=" + ids.iterator().next();
+            "=" + ids.iterator().next()
         } else {
-            return " IN (" + getList() + ")";
+            " IN (" + getList() + ")"
         }
     }
 
-    public static String getInexistentId() {
-        return "=" + Long.MIN_VALUE;
-    }
-
-    public String getNotSql() {
-        if (size() == 0) {
-            return "";
+    fun getNotSql(): String? {
+        return if (size() == 0) {
+            ""
         } else if (size() == 1) {
-            return "!=" + ids.iterator().next();
+            "!=" + ids.iterator().next()
         } else {
-            return " NOT IN (" + getList() + ")";
+            " NOT IN (" + getList() + ")"
         }
     }
 
-    @Override
-    public boolean isEmpty() {
-        return ids.isEmpty();
+    override fun isEmpty(): Boolean {
+        return ids.isEmpty()
+    }
+
+    companion object {
+        val EMPTY: SqlIds? = SqlIds()
+
+        /** We may not have our actor in some origin... ?!  */
+        fun notifiedActorIdsOfTimeline(timeline: Timeline): SqlIds? {
+            return if (timeline.isCombined) {
+                EMPTY
+            } else {
+                actorIdsOfTimelineActor(timeline)
+            }
+        }
+
+        fun actorIdsOfTimelineActor(timeline: Timeline): SqlIds? {
+            return if (timeline.isCombined) {
+                myActorsIds()
+            } else if (timeline.timelineType.isAtOrigin) {
+                EMPTY
+            } else {
+                fromIds(timeline.actor.user.actorIds)
+            }
+        }
+
+        fun myActorsIds(): SqlIds? {
+            return fromIds(MyContextHolder.Companion.myContextHolder.getNow().users().myActors.keys)
+        }
+
+        fun actorIdsOfTimelineAccount(timeline: Timeline): SqlIds? {
+            return if (timeline.isCombined || timeline.timelineType.isAtOrigin) {
+                EMPTY
+            } else fromIds(timeline.actor.user.actorIds)
+        }
+
+        fun actorIdsOf(actors: MutableCollection<Actor?>): SqlIds? {
+            return SqlIds(actors.stream().map { actor: Actor? -> actor.actorId }.collect(Collectors.toList()))
+        }
+
+        fun fromId(id: Long): SqlIds? {
+            return SqlIds(setOf<Long?>(id))
+        }
+
+        fun fromIds(ids: MutableCollection<Long?>): SqlIds? {
+            return SqlIds(ids)
+        }
+
+        fun fromIds(vararg ids: Long?): SqlIds? {
+            return SqlIds(Arrays.asList(*ids))
+        }
+
+        fun getInexistentId(): String? {
+            return "=" + Long.MIN_VALUE
+        }
     }
 }

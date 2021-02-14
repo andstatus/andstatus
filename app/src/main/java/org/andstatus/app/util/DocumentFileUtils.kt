@@ -13,92 +13,82 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
+import android.content.Context
+import android.net.Uri
+import android.util.Log
+import androidx.documentfile.provider.DocumentFile
+import org.andstatus.app.R
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.IOException
+import java.io.InputStreamReader
+import java.nio.charset.StandardCharsets
 
-import android.content.Context;
-import android.net.Uri;
-import android.util.Log;
-
-import androidx.documentfile.provider.DocumentFile;
-
-import org.andstatus.app.R;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-
-public class DocumentFileUtils {
-    private static final String TAG = DocumentFileUtils.class.getSimpleName();
-
-    private DocumentFileUtils() {
-        // Empty
-    }
-
-    public static JSONObject getJSONObject(Context context, DocumentFile fileDescriptor) {
-        JSONObject jso = null;
-        String fileString = uri2String(context, fileDescriptor.getUri());
+object DocumentFileUtils {
+    private val TAG: String? = DocumentFileUtils::class.java.simpleName
+    fun getJSONObject(context: Context?, fileDescriptor: DocumentFile?): JSONObject? {
+        var jso: JSONObject? = null
+        val fileString = uri2String(context, fileDescriptor.getUri())
         if (!StringUtil.isEmpty(fileString)) {
-            try {
-                jso = new JSONObject(fileString);
-            } catch (JSONException e) {
-                MyLog.v(TAG, e);
-                jso = null;
+            jso = try {
+                JSONObject(fileString)
+            } catch (e: JSONException) {
+                MyLog.v(TAG, e)
+                null
             }
         }
         if (jso == null) {
-            jso = new JSONObject();
+            jso = JSONObject()
         }
-        return jso;
+        return jso
     }
 
-    private static String uri2String(Context context, Uri uri) {
-        final int BUFFER_LENGTH = 10000;
-        try (InputStream is = context.getContentResolver().openInputStream(uri);
-             Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8);) {
-            char[] buffer = new char[BUFFER_LENGTH];
-            StringBuilder builder = new StringBuilder();
-            int count;
-            while ((count = reader.read(buffer)) != -1) {
-                builder.append(buffer, 0, count);
+    private fun uri2String(context: Context?, uri: Uri?): String? {
+        val BUFFER_LENGTH = 10000
+        try {
+            context.getContentResolver().openInputStream(uri).use { `is` ->
+                InputStreamReader(`is`, StandardCharsets.UTF_8).use { reader ->
+                    val buffer = CharArray(BUFFER_LENGTH)
+                    val builder = StringBuilder()
+                    var count: Int
+                    while (reader.read(buffer).also { count = it } != -1) {
+                        builder.append(buffer, 0, count)
+                    }
+                    return builder.toString()
+                }
             }
-            return builder.toString();
-        } catch (Exception e) {
-            String msg = "Error while reading " + context.getText(R.string.app_name) +
-                    " settings from " + uri + "\n" + e.getMessage();
-            Log.w(TAG, msg, e);
+        } catch (e: Exception) {
+            val msg = """Error while reading ${context.getText(R.string.app_name)} settings from $uri
+${e.message}"""
+            Log.w(TAG, msg, e)
         }
-        return "";
+        return ""
     }
 
-    public static JSONArray getJSONArray(Context context, DocumentFile fileDescriptor) {
-        JSONArray jso = null;
-        String fileString = uri2String(context, fileDescriptor.getUri());
+    fun getJSONArray(context: Context?, fileDescriptor: DocumentFile?): JSONArray? {
+        var jso: JSONArray? = null
+        val fileString = uri2String(context, fileDescriptor.getUri())
         if (!StringUtil.isEmpty(fileString)) {
-            try {
-                jso = new JSONArray(fileString);
-            } catch (JSONException e) {
-                MyLog.v(TAG, e);
-                jso = null;
+            jso = try {
+                JSONArray(fileString)
+            } catch (e: JSONException) {
+                MyLog.v(TAG, e)
+                null
             }
         }
         if (jso == null) {
-            jso = new JSONArray();
+            jso = JSONArray()
         }
-        return jso;
+        return jso
     }
 
-    /** Reads up to 'size' bytes, starting from 'offset' */
-    public static byte[] getBytes(Context context, DocumentFile file, int offset, int size) throws IOException {
-        if (file == null) return new byte[0];
-
-        try (InputStream is = context.getContentResolver().openInputStream(file.getUri())) {
-            return FileUtils.getBytes(is, file.getUri().getPath(), offset, size);
-        }
+    /** Reads up to 'size' bytes, starting from 'offset'  */
+    @Throws(IOException::class)
+    fun getBytes(context: Context?, file: DocumentFile?, offset: Int, size: Int): ByteArray? {
+        if (file == null) return ByteArray(0)
+        context.getContentResolver().openInputStream(file.uri).use { `is` -> return FileUtils.getBytes(`is`, file.uri.path, offset, size) }
     }
 }

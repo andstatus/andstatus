@@ -1,62 +1,46 @@
-package org.andstatus.app.view;
+package org.andstatus.app.view
 
-import android.content.Context;
-import android.provider.BaseColumns;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.SimpleAdapter;
+import android.content.Context
+import android.provider.BaseColumns
+import android.view.View
+import android.view.ViewGroup
+import android.widget.SimpleAdapter
+import org.andstatus.app.context.MyPreferences
 
-import org.andstatus.app.context.MyPreferences;
-
-import java.util.List;
-import java.util.Map;
-
-public class MySimpleAdapter extends SimpleAdapter implements View.OnClickListener {
-    final boolean hasActionOnClick;
-
-    public MySimpleAdapter(Context context, List<? extends Map<String, ?>> data, int resource,
-            String[] from, int[] to, boolean hasActionOnClick) {
-        super(context, data, resource, from, to);
-        this.hasActionOnClick = hasActionOnClick;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View view = super.getView(position, convertView, parent);
+class MySimpleAdapter(context: Context?, data: MutableList<out MutableMap<String?, *>?>?, resource: Int,
+                      from: Array<String?>?, to: IntArray?, val hasActionOnClick: Boolean) : SimpleAdapter(context, data, resource, from, to), View.OnClickListener {
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
+        val view = super.getView(position, convertView, parent)
         if (!hasActionOnClick) {
-            view.setOnClickListener(this);
+            view.setOnClickListener(this)
         }
-        return view;
+        return view
     }
 
-    @Override
-    public long getItemId(int position) {
-        @SuppressWarnings("unchecked")
-        Map<String, ?> item = (Map<String, ?>) getItem(position);
-        try {
-            String id = (String) item.get(BaseColumns._ID);
-            return id == null ? 0 : Long.parseLong(id);
-        } catch (NumberFormatException e) {
-            throw new NumberFormatException(e.getMessage() +  " caused by wrong item: " + item);
+    override fun getItemId(position: Int): Long {
+        val item = getItem(position) as MutableMap<String?, *>
+        return try {
+            val id = item[BaseColumns._ID] as String?
+            id?.toLong() ?: 0
+        } catch (e: NumberFormatException) {
+            throw NumberFormatException(e.message + " caused by wrong item: " + item)
         }
     }
 
-    public int getPositionById(long itemId) {
-        if (itemId != 0) {
-            for (int position = 0; position < getCount(); position++) {
+    fun getPositionById(itemId: Long): Int {
+        if (itemId != 0L) {
+            for (position in 0 until count) {
                 if (getItemId(position) == itemId) {
-                    return position;
+                    return position
                 }
             }
         }
-        return -1;
+        return -1
     }
 
-    @Override
-    public void onClick(View v) {
+    override fun onClick(v: View?) {
         if (!MyPreferences.isLongPressToOpenContextMenu() && v.getParent() != null) {
-            v.showContextMenu();
+            v.showContextMenu()
         }
     }
-
 }

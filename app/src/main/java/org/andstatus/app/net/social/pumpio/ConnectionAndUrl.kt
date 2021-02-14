@@ -13,90 +13,75 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social.pumpio
 
-package org.andstatus.app.net.social.pumpio;
+import android.net.Uri
+import io.vavr.control.Try
+import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.ConnectionException.StatusCode
+import org.andstatus.app.net.http.HttpConnection
+import org.andstatus.app.net.http.HttpReadResult
+import org.andstatus.app.net.http.HttpRequest
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.ActorEndpointType
+import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.UriUtils
+import org.andstatus.app.util.UrlUtils
 
-import android.net.Uri;
-
-import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.http.HttpConnection;
-import org.andstatus.app.net.http.HttpConnectionData;
-import org.andstatus.app.net.http.HttpReadResult;
-import org.andstatus.app.net.http.HttpRequest;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.ActorEndpointType;
-import org.andstatus.app.net.social.ApiRoutineEnum;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.UriUtils;
-import org.andstatus.app.util.UrlUtils;
-
-import java.util.Optional;
-
-import io.vavr.control.Try;
-
-class ConnectionAndUrl {
-    final ApiRoutineEnum apiRoutine;
-    public final Uri uri;
-    public final HttpConnection httpConnection;
-
-    public ConnectionAndUrl(ApiRoutineEnum apiRoutine, Uri uri, HttpConnection httpConnection) {
-        this.apiRoutine = apiRoutine;
-        this.uri = uri;
-        this.httpConnection = httpConnection;
+internal class ConnectionAndUrl(val apiRoutine: ApiRoutineEnum?, val uri: Uri?, val httpConnection: HttpConnection?) {
+    fun withUri(newUri: Uri?): ConnectionAndUrl? {
+        return ConnectionAndUrl(apiRoutine, newUri, httpConnection)
     }
 
-    ConnectionAndUrl withUri(Uri newUri) {
-        return new ConnectionAndUrl(apiRoutine, newUri, httpConnection);
+    fun newRequest(): HttpRequest? {
+        return HttpRequest.Companion.of(apiRoutine, uri)
     }
 
-    public static Try<ConnectionAndUrl> fromActor(ConnectionPumpio connection, ApiRoutineEnum apiRoutine, Actor actor) {
-        final Optional<Uri> endpoint = actor.getEndpoint(ActorEndpointType.from(apiRoutine));
-        Uri uri;
-        String host;
-        if (endpoint.isPresent()) {
-            uri = endpoint.get();
-            host = uri.getHost();
-        } else {
-            String username = actor.getUsername();
-            if (StringUtil.isEmpty(username)) {
-                return Try.failure(new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST,
-                        apiRoutine + ": username is required"));
+    fun execute(request: HttpRequest?): Try<HttpReadResult?>? {
+        return httpConnection.execute(request)
+    }
+
+    companion object {
+        fun fromActor(connection: ConnectionPumpio?, apiRoutine: ApiRoutineEnum?, actor: Actor?): Try<ConnectionAndUrl?>? {
+            val endpoint = actor.getEndpoint(ActorEndpointType.Companion.from(apiRoutine))
+            val uri: Uri?
+            val host: String?
+            if (endpoint.isPresent) {
+                uri = endpoint.get()
+                host = uri.host
+            } else {
+                val username = actor.getUsername()
+                if (StringUtil.isEmpty(username)) {
+                    return Try.failure(ConnectionException(StatusCode.BAD_REQUEST, apiRoutine.toString() + ": username is required"))
+                }
+                uri = connection.tryApiPath(Actor.Companion.EMPTY, apiRoutine)
+                        .map { u: Uri? -> UriUtils.map(u) { s: String? -> s.replace("%username%", username) } }.getOrElse(Uri.EMPTY)
+                host = actor.getConnectionHost()
             }
-            uri = connection.tryApiPath(Actor.EMPTY, apiRoutine)
-                .map(u -> UriUtils.map(u, s -> s .replace("%username%", username))).getOrElse(Uri.EMPTY);
-            host = actor.getConnectionHost();
-        }
-
-        HttpConnection httpConnection = connection.getHttp();
-        if (StringUtil.isEmpty(host)) {
-            return Try.failure(new ConnectionException(ConnectionException.StatusCode.BAD_REQUEST, apiRoutine +
-                    ": host is empty for " + actor));
-        } else if (connection.getHttp().data.originUrl == null ||
-                host.compareToIgnoreCase(connection.getHttp().data.originUrl.getHost()) != 0) {
-            MyLog.v(connection, () -> "Requesting data from the host: " + host);
-            HttpConnectionData connectionData1 = connection.getHttp().data.copy();
-            connectionData1.oauthClientKeys = null;
-            connectionData1.originUrl = UrlUtils.buildUrl(host, connectionData1.isSsl());
-            httpConnection = connection.getHttp().getNewInstance();
-            httpConnection.setHttpConnectionData(connectionData1);
-        }
-        if (!httpConnection.data.areOAuthClientKeysPresent()) {
-            httpConnection.registerClient();
-            if (!httpConnection.getCredentialsPresent()) {
-                return Try.failure(ConnectionException.fromStatusCodeAndHost(
-                        ConnectionException.StatusCode.NO_CREDENTIALS_FOR_HOST,
-                        "No credentials", httpConnection.data.originUrl));
+            var httpConnection = connection.getHttp()
+            if (StringUtil.isEmpty(host)) {
+                return Try.failure(ConnectionException(StatusCode.BAD_REQUEST, apiRoutine.toString() +
+                        ": host is empty for " + actor))
+            } else if (connection.getHttp().data.originUrl == null ||
+                    host.compareTo(connection.getHttp().data.originUrl.host, ignoreCase = true) != 0) {
+                MyLog.v(connection) { "Requesting data from the host: $host" }
+                val connectionData1 = connection.getHttp().data.copy()
+                connectionData1.oauthClientKeys = null
+                connectionData1.originUrl = UrlUtils.buildUrl(host, connectionData1.isSsl)
+                httpConnection = connection.getHttp().newInstance
+                httpConnection.setHttpConnectionData(connectionData1)
             }
+            if (!httpConnection.data.areOAuthClientKeysPresent()) {
+                httpConnection.registerClient()
+                if (!httpConnection.credentialsPresent) {
+                    return Try.failure(ConnectionException.Companion.fromStatusCodeAndHost(
+                            StatusCode.NO_CREDENTIALS_FOR_HOST,
+                            "No credentials", httpConnection.data.originUrl))
+                }
+            }
+            return Try.success(ConnectionAndUrl(apiRoutine, uri, httpConnection))
         }
-        return Try.success(new ConnectionAndUrl(apiRoutine, uri, httpConnection));
-    }
-
-    HttpRequest newRequest() {
-        return HttpRequest.of(apiRoutine, uri);
-    }
-
-    Try<HttpReadResult> execute(HttpRequest request) {
-        return httpConnection.execute(request);
     }
 }

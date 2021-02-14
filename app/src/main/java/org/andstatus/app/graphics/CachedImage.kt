@@ -13,68 +13,69 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.graphics
 
-package org.andstatus.app.graphics;
-
-import android.graphics.Bitmap;
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
-import androidx.annotation.NonNull;
+import android.graphics.Bitmap
+import android.graphics.Point
+import android.graphics.Rect
+import android.graphics.drawable.Drawable
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class CachedImage {
-    public static final Bitmap.Config BITMAP_CONFIG = Bitmap.Config.ARGB_8888;
-    public static final Rect EMPTY_RECT = new Rect(0, 0, 0, 0);
-    public static final Bitmap EMPTY_BITMAP = newBitmap(1);
-    public static final CachedImage EMPTY = new CachedImage(-1, EMPTY_BITMAP, EMPTY_RECT).makeExpired();
-    public static final CachedImage BROKEN = new CachedImage(-2, EMPTY_BITMAP, EMPTY_RECT).makeExpired();
-    public final long id;
-    private final Bitmap bitmap;
-    protected final Drawable source;
-    private volatile boolean expired = false;
+class CachedImage {
+    val id: Long
+    private val bitmap: Bitmap?
+    protected val source: Drawable?
 
-    public CachedImage(long imageId, @NonNull Bitmap bitmap, @NonNull Rect srcRect) {
-        id = imageId;
-        this.bitmap = bitmap;
-        source = new BitmapSubsetDrawable(bitmap, srcRect);
+    @Volatile
+    private var expired = false
+
+    constructor(imageId: Long, bitmap: Bitmap, srcRect: Rect) {
+        id = imageId
+        this.bitmap = bitmap
+        source = BitmapSubsetDrawable(bitmap, srcRect)
     }
 
-    public CachedImage(long imageId, Drawable drawable) {
-        id = imageId;
-        bitmap = EMPTY_BITMAP;
-        source = drawable;
+    constructor(imageId: Long, drawable: Drawable?) {
+        id = imageId
+        bitmap = EMPTY_BITMAP
+        source = drawable
     }
 
-    private static Bitmap newBitmap(int size) {
-        return Bitmap.createBitmap(size, size, BITMAP_CONFIG);
+    fun isBitmapRecyclable(): Boolean {
+        return !expired && EMPTY_BITMAP != bitmap
     }
 
-    boolean isBitmapRecyclable() {
-        return !expired && !EMPTY_BITMAP.equals(bitmap);
+    fun getBitmap(): Bitmap {
+        return bitmap
     }
 
-    @NonNull
-    Bitmap getBitmap() {
-        return bitmap;
+    fun isExpired(): Boolean {
+        return expired
     }
 
-    public boolean isExpired() {
-        return expired;
+    fun makeExpired(): CachedImage? {
+        expired = true
+        return this
     }
 
-    CachedImage makeExpired() {
-        this.expired = true;
-        return this;
+    fun getDrawable(): Drawable? {
+        return source
     }
 
-    public Drawable getDrawable() {
-        return source;
+    fun getImageSize(): Point? {
+        return Point(source.getIntrinsicWidth(), source.getIntrinsicHeight())
     }
 
-    public Point getImageSize() {
-        return new Point(source.getIntrinsicWidth(), source.getIntrinsicHeight());
+    companion object {
+        val BITMAP_CONFIG: Bitmap.Config? = Bitmap.Config.ARGB_8888
+        val EMPTY_RECT: Rect? = Rect(0, 0, 0, 0)
+        val EMPTY_BITMAP = newBitmap(1)
+        val EMPTY = CachedImage(-1, EMPTY_BITMAP, EMPTY_RECT).makeExpired()
+        val BROKEN = CachedImage(-2, EMPTY_BITMAP, EMPTY_RECT).makeExpired()
+        private fun newBitmap(size: Int): Bitmap? {
+            return Bitmap.createBitmap(size, size, BITMAP_CONFIG)
+        }
     }
 }

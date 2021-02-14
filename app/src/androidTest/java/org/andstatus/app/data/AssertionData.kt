@@ -13,43 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data
 
-package org.andstatus.app.data;
-
-import android.content.ContentValues;
-
-import org.andstatus.app.util.IsEmpty;
+import android.content.ContentValues
+import org.andstatus.app.util.IsEmpty
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class AssertionData implements IsEmpty {
-    private final String key;
-    private final ContentValues values;
-
-    public static AssertionData getEmpty(String keyIn) {
-        return new AssertionData(keyIn, null);
+class AssertionData(private val key: String?, valuesIn: ContentValues?) : IsEmpty {
+    private val values: ContentValues? = null
+    fun getKey(): String? {
+        return key
     }
-    
-    public AssertionData(String keyIn, ContentValues valuesIn) {
-        key = keyIn;
-        if (valuesIn == null) {
-            values = new ContentValues();
-        } else {
-            values = valuesIn;
+
+    fun getValues(): ContentValues? {
+        return values
+    }
+
+    override fun isEmpty(): Boolean {
+        return values.size() == 0
+    }
+
+    companion object {
+        fun getEmpty(keyIn: String?): AssertionData? {
+            return AssertionData(keyIn, null)
         }
     }
-    
-    public String getKey() {
-        return key;
-    }
 
-    public ContentValues getValues() {
-        return values;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return values.size() == 0;
+    init {
+        values = valuesIn ?: ContentValues()
     }
 }

@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.list
 
-package org.andstatus.app.list;
-
-import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.ListFragment;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-
-import org.andstatus.app.R;
+import android.os.Bundle
+import android.view.View
+import android.widget.ListAdapter
+import android.widget.ListView
+import androidx.fragment.app.ListFragment
+import org.andstatus.app.R
 
 /**
  * Support library doesn't have ListActivity, so we recreated it using one of two options:
@@ -31,51 +29,44 @@ import org.andstatus.app.R;
  * And now it looks like we don't need ListFragment at all!
  * @author yvolk@yurivolkov.com
  */
-public class MyListActivity extends MyBaseListActivity {
-    ListFragment listFragment = null;
-    ListView listView = null;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+open class MyListActivity : MyBaseListActivity() {
+    var listFragment: ListFragment? = null
+    var listView: ListView? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
     }
 
-    @Override
-    protected void setListAdapter(@NonNull ListAdapter adapter) {
-        findListView();
+    override fun setListAdapter(adapter: ListAdapter) {
+        findListView()
         if (listFragment != null) {
-            listFragment.setListAdapter(adapter);
+            listFragment.setListAdapter(adapter)
         } else if (listView != null) {
-            listView.setAdapter(adapter);
+            listView.setAdapter(adapter)
         }
     }
 
-    @NonNull
-    @Override
-    public ListAdapter getListAdapter() {
-        findListView();
+    override fun getListAdapter(): ListAdapter {
+        findListView()
         if (listFragment != null) {
-            return listFragment.getListAdapter();
+            return listFragment.getListAdapter()
         } else if (listView != null) {
-            return listView.getAdapter();
+            return listView.getAdapter()
         }
-        return super.getListAdapter();
+        return super.getListAdapter()
     }
 
-    @Override
-    public ListView getListView() {
-        findListView();
-        if (listFragment != null) {
-            return listFragment.getListView();
-        }
-        return listView;
+    override fun getListView(): ListView? {
+        findListView()
+        return if (listFragment != null) {
+            listFragment.getListView()
+        } else listView
     }
 
-    private void findListView() {
+    private fun findListView() {
         if (listFragment == null && listView == null) {
-            listFragment = (ListFragment) getSupportFragmentManager().findFragmentById(R.id.relative_list_parent);
+            listFragment = supportFragmentManager.findFragmentById(R.id.relative_list_parent) as ListFragment?
             if (listFragment == null) {
-                listView = (ListView) findViewById(android.R.id.list);
+                listView = findViewById<View?>(android.R.id.list) as ListView
             }
         }
     }

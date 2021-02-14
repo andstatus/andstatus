@@ -13,149 +13,131 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline
 
-package org.andstatus.app.timeline;
+import android.view.View
+import android.widget.BaseAdapter
+import android.widget.TextView
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.SharedPreferencesUtil
 
-import androidx.annotation.NonNull;
-import android.view.View;
-import android.widget.BaseAdapter;
-import android.widget.TextView;
+abstract class BaseTimelineAdapter<T : ViewItem<T?>?>(protected val myContext: MyContext, private val listData: TimelineData<T?>) : BaseAdapter(), View.OnClickListener {
+    protected val showAvatars = MyPreferences.getShowAvatars()
+    protected val showAttachedImages = MyPreferences.getDownloadAndDisplayAttachedImages()
+    protected val markRepliesToMe = SharedPreferencesUtil.getBoolean(
+            MyPreferences.KEY_MARK_REPLIES_TO_ME_IN_TIMELINE, true)
+    private val displayDensity = 0f
 
-import org.andstatus.app.R;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.SharedPreferencesUtil;
+    @Volatile
+    private var positionRestored = false
 
-import java.util.List;
-
-public abstract class BaseTimelineAdapter<T extends ViewItem<T>> extends BaseAdapter  implements View.OnClickListener {
-    protected final boolean showAvatars = MyPreferences.getShowAvatars();
-    protected final boolean showAttachedImages = MyPreferences.getDownloadAndDisplayAttachedImages();
-    protected final boolean markRepliesToMe = SharedPreferencesUtil.getBoolean(
-            MyPreferences.KEY_MARK_REPLIES_TO_ME_IN_TIMELINE, true);
-    @NonNull
-    protected final MyContext myContext;
-    @NonNull
-    private final TimelineData<T> listData;
-    private final float displayDensity;
-    private volatile boolean positionRestored = false;
-
-    /** Single page data */
-    public BaseTimelineAdapter(@NonNull MyContext myContext, @NonNull Timeline timeline, @NonNull List<T> items) {
-        this(myContext,
-                new TimelineData<T>(
-                        null,
-                        new TimelinePage<T>(new TimelineParameters(myContext, timeline, WhichPage.EMPTY), items)
-                )
-        );
+    /** Single page data  */
+    constructor(myContext: MyContext, timeline: Timeline, items: MutableList<T?>) : this(myContext,
+            TimelineData<T?>(
+                    null,
+                    TimelinePage<T?>(TimelineParameters(myContext, timeline, WhichPage.EMPTY), items)
+            )
+    ) {
     }
 
-    public BaseTimelineAdapter(@NonNull MyContext myContext, @NonNull TimelineData<T> listData) {
-        this.myContext = myContext;
-        this.listData = listData;
-        if (myContext.context() == null) {
-            displayDensity = 1;
-        } else {
-            displayDensity = myContext.context().getResources().getDisplayMetrics().density;
-            MyLog.v(this, () ->"density=" + displayDensity);
-        }
+    fun getListData(): TimelineData<T?> {
+        return listData
     }
 
-    @NonNull
-    protected TimelineData<T> getListData() {
-        return listData;
+    override fun getCount(): Int {
+        return listData.size()
     }
 
-    @Override
-    public int getCount() {
-        return listData.size();
+    override fun getItemId(position: Int): Long {
+        return getItem(position).getId()
     }
 
-    @Override
-    public long getItemId(int position) {
-        return getItem(position).getId();
+    override fun getItem(position: Int): T? {
+        return listData.getItem(position)
     }
 
-    @Override
-    public T getItem(int position) {
-        return listData.getItem(position);
+    fun getItem(view: View?): T? {
+        return getItem(getPosition(view))
     }
 
-    public T getItem(View view) {
-        return getItem(getPosition(view));
+    /** @return -1 if not found
+     */
+    fun getPosition(view: View?): Int {
+        val positionView = getPositionView(view) ?: return -1
+        return positionView.text.toString().toInt()
     }
 
-    /** @return -1 if not found */
-    public int getPosition(View view) {
-        TextView positionView = getPositionView(view);
-        if (positionView == null) {
-            return -1;
-        }
-        return Integer.parseInt(positionView.getText().toString());
-    }
-
-    private TextView getPositionView(View view) {
-        if (view == null) return null;
-        View parentView = view;
-        for (int i = 0; i < 10; i++) {
-            TextView positionView = parentView.findViewById(R.id.position);
+    private fun getPositionView(view: View?): TextView? {
+        if (view == null) return null
+        var parentView = view
+        for (i in 0..9) {
+            val positionView = parentView.findViewById<TextView?>(R.id.position)
             if (positionView != null) {
-                return positionView;
+                return positionView
             }
-            if (parentView.getParent() != null &&
-                    View.class.isAssignableFrom(parentView.getParent().getClass())) {
-                parentView = (View) parentView.getParent();
+            parentView = if (parentView.getParent() != null &&
+                    View::class.java.isAssignableFrom(parentView.getParent().javaClass)) {
+                parentView.getParent() as View
             } else {
-                break;
+                break
             }
         }
-        return null;
+        return null
     }
 
-    protected void setPosition(View view, int position) {
-        TextView positionView = getPositionView(view);
+    protected fun setPosition(view: View?, position: Int) {
+        val positionView = getPositionView(view)
         if (positionView != null) {
-            positionView.setText(Integer.toString(position));
+            positionView.text = Integer.toString(position)
         }
     }
 
-    public int getPositionById(long itemId) {
-        return listData.getPositionById(itemId);
+    fun getPositionById(itemId: Long): Int {
+        return listData.getPositionById(itemId)
     }
 
-    public void setPositionRestored(boolean positionRestored) {
-        this.positionRestored = positionRestored;
+    fun setPositionRestored(positionRestored: Boolean) {
+        this.positionRestored = positionRestored
     }
 
-    public boolean isPositionRestored() {
-        return positionRestored;
+    fun isPositionRestored(): Boolean {
+        return positionRestored
     }
 
-    protected boolean mayHaveYoungerPage() {
-        return listData.mayHaveYoungerPage();
+    protected fun mayHaveYoungerPage(): Boolean {
+        return listData.mayHaveYoungerPage()
     }
 
-    protected boolean isCombined() {
-        return listData.params.isTimelineCombined();
+    protected fun isCombined(): Boolean {
+        return listData.params.isTimelineCombined
     }
 
-    @Override
-    public void onClick(View v) {
+    override fun onClick(v: View?) {
         if (!MyPreferences.isLongPressToOpenContextMenu() && v.getParent() != null) {
-            v.showContextMenu();
+            v.showContextMenu()
         }
     }
 
     // See  http://stackoverflow.com/questions/2238883/what-is-the-correct-way-to-specify-dimensions-in-dip-from-java-code
-    protected int dpToPixes(int dp) {
-        return (int) (dp * displayDensity);
+    fun dpToPixes(dp: Int): Int {
+        return (dp * displayDensity) as Int
     }
 
-    @Override
-    public String toString() {
-        return MyStringBuilder.formatKeyValue(this, listData);
+    override fun toString(): String {
+        return MyStringBuilder.Companion.formatKeyValue(this, listData)
+    }
+
+    init {
+        if (myContext.context() == null) {
+            displayDensity = 1f
+        } else {
+            displayDensity = myContext.context().resources.displayMetrics.density
+            MyLog.v(this) { "density=$displayDensity" }
+        }
     }
 }

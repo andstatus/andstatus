@@ -13,69 +13,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.io.FileDescriptor
+import java.io.FileInputStream
+import java.io.IOException
+import java.io.InputStream
+import java.nio.charset.Charset
 
-import org.andstatus.app.data.DbUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.ByteArrayOutputStream;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-
-public class FileDescriptorUtils {
-    private static final String TAG = FileDescriptorUtils.class.getSimpleName();
-    
-    private FileDescriptorUtils() {
-        // Empty
-    }
-    
-    public static JSONObject getJSONObject(FileDescriptor fileDescriptor) {
-        JSONObject jso = null;
-        String fileString = utf8FileDescriptor2String(fileDescriptor);
+object FileDescriptorUtils {
+    private val TAG: String? = FileDescriptorUtils::class.java.simpleName
+    fun getJSONObject(fileDescriptor: FileDescriptor?): JSONObject? {
+        var jso: JSONObject? = null
+        val fileString = utf8FileDescriptor2String(fileDescriptor)
         if (!StringUtil.isEmpty(fileString)) {
-            try {
-                jso = new JSONObject(fileString);
-            } catch (JSONException e) {
-                MyLog.v(TAG, e);
-                jso = null;
+            jso = try {
+                JSONObject(fileString)
+            } catch (e: JSONException) {
+                MyLog.v(TAG, e)
+                null
             }
         }
         if (jso == null) {
-            jso = new JSONObject();
+            jso = JSONObject()
         }
-        return jso;
+        return jso
     }
 
-    public static String utf8FileDescriptor2String(FileDescriptor fileDescriptor) {
-        return new String(getBytes(fileDescriptor), Charset.forName("UTF-8"));
+    fun utf8FileDescriptor2String(fileDescriptor: FileDescriptor?): String? {
+        return String(getBytes(fileDescriptor), Charset.forName("UTF-8"))
     }
 
-    public static byte[] getBytes(FileDescriptor fileDescriptor) {
-        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+    fun getBytes(fileDescriptor: FileDescriptor?): ByteArray? {
+        val bout = ByteArrayOutputStream()
         if (fileDescriptor != null) {
-            InputStream is = new FileInputStream(fileDescriptor);
-            byte[] readBuffer = new byte[4 * 1024];
+            val `is`: InputStream = FileInputStream(fileDescriptor)
+            val readBuffer = ByteArray(4 * 1024)
             try {
-                int read;
+                var read: Int
                 do {
-                    read = is.read(readBuffer, 0, readBuffer.length);
-                    if(read == -1) {
-                        break;
+                    read = `is`.read(readBuffer, 0, readBuffer.size)
+                    if (read == -1) {
+                        break
                     }
-                    bout.write(readBuffer, 0, read);
-                } while(true);
-                return bout.toByteArray();
-            } catch (IOException e) {
-                MyLog.v(TAG, e);
+                    bout.write(readBuffer, 0, read)
+                } while (true)
+                return bout.toByteArray()
+            } catch (e: IOException) {
+                MyLog.v(TAG, e)
             } finally {
-                DbUtils.closeSilently(is);
+                closeSilently(`is`)
             }
         }
-        return new byte[0];
+        return ByteArray(0)
     }
 }

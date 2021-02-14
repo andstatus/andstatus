@@ -13,168 +13,127 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.account
 
-package org.andstatus.app.account;
-
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.ListFragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-
-import com.woxthebox.draglistview.DragItem;
-import com.woxthebox.draglistview.DragItemAdapter;
-import com.woxthebox.draglistview.DragListView;
-
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyActivity;
-import org.andstatus.app.R;
-import org.andstatus.app.util.MyResources;
-import org.andstatus.app.util.MyUrlSpan;
-
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.ListFragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.woxthebox.draglistview.DragItem
+import com.woxthebox.draglistview.DragItemAdapter
+import com.woxthebox.draglistview.DragListView
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.MyActivity
+import org.andstatus.app.R
+import org.andstatus.app.account.AccountListFragment.ItemAdapter.AccountViewHolder
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.util.MyResources
+import org.andstatus.app.util.MyUrlSpan
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class AccountListFragment extends Fragment {
-
-    private List<MyAccount> mItems;
-    private DragListView mDragListView;
-
-    public static ListFragment newInstance() {
-        return new ListFragment();
+class AccountListFragment : Fragment() {
+    private var mItems: MutableList<MyAccount?>? = null
+    private var mDragListView: DragListView? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val view = inflater.inflate(R.layout.drag_list_layout, container, false)
+        mDragListView = view.findViewById(R.id.drag_list_view)
+        mDragListView.getRecyclerView().isVerticalScrollBarEnabled = true
+        mItems = CopyOnWriteArrayList<MyAccount?>(MyContextHolder.Companion.myContextHolder.getNow().accounts().get())
+        setupListRecyclerView()
+        return view
     }
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.drag_list_layout, container, false);
-        mDragListView = view.findViewById(R.id.drag_list_view);
-        mDragListView.getRecyclerView().setVerticalScrollBarEnabled(true);
-
-        mItems = new CopyOnWriteArrayList<>(myContextHolder.getNow().accounts().get());
-        setupListRecyclerView();
-        return view;
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        MyActivity activity = (MyActivity) getActivity();
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        val activity = activity as MyActivity?
         if (activity != null) {
-            ActionBar actionBar = activity.getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.setTitle(R.string.manage_accounts);
-            }
+            val actionBar = activity.supportActionBar
+            actionBar?.setTitle(R.string.manage_accounts)
         }
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        myContextHolder.getNow().accounts().reorderAccounts(mItems);
+    override fun onPause() {
+        super.onPause()
+        MyContextHolder.Companion.myContextHolder.getNow().accounts().reorderAccounts(mItems)
     }
 
-    private void setupListRecyclerView() {
-        mDragListView.setLayoutManager(new LinearLayoutManager(getContext()));
-        ItemAdapter listAdapter = new ItemAdapter(mItems, R.layout.drag_accountlist_item, R.id.dragHandle);
-        mDragListView.setAdapter(listAdapter, true);
-        mDragListView.setCanDragHorizontally(false);
-        mDragListView.setCustomDragItem(new MyDragItem(getContext(), R.layout.drag_accountlist_item));
+    private fun setupListRecyclerView() {
+        mDragListView.setLayoutManager(LinearLayoutManager(context))
+        val listAdapter = ItemAdapter(mItems, R.layout.drag_accountlist_item, R.id.dragHandle)
+        mDragListView.setAdapter(listAdapter, true)
+        mDragListView.setCanDragHorizontally(false)
+        mDragListView.setCustomDragItem(MyDragItem(context, R.layout.drag_accountlist_item))
     }
 
-    private static class MyDragItem extends DragItem {
-
-        public MyDragItem(Context context, int layoutId) {
-            super(context, layoutId);
-        }
-
-        @Override
-        public void onBindDragView(View clickedView, View dragView) {
-            CharSequence text = ((TextView) clickedView.findViewById(R.id.visible_name)).getText();
-            ((TextView) dragView.findViewById(R.id.visible_name)).setText(text);
+    private class MyDragItem(context: Context?, layoutId: Int) : DragItem(context, layoutId) {
+        override fun onBindDragView(clickedView: View?, dragView: View?) {
+            val text = (clickedView.findViewById<View?>(R.id.visible_name) as TextView).text
+            (dragView.findViewById<View?>(R.id.visible_name) as TextView).text = text
             dragView.setBackgroundColor(
                     MyResources.getColorByAttribute(
-                            R.attr.actionBarColorAccent, android.R.attr.colorAccent, dragView.getContext().getTheme()));
+                            R.attr.actionBarColorAccent, android.R.attr.colorAccent, dragView.getContext().theme))
         }
-
     }
 
-    class ItemAdapter extends DragItemAdapter<MyAccount, ItemAdapter.AccountViewHolder> {
-
-        private int mLayoutId;
-        private int mGrabHandleId;
-
-        ItemAdapter(List<MyAccount> list, int layoutId, int grabHandleId) {
-            super();
-            mLayoutId = layoutId;
-            mGrabHandleId = grabHandleId;
-            setHasStableIds(true);
-            setItemList(list);
+    internal inner class ItemAdapter(list: MutableList<MyAccount?>?, private val mLayoutId: Int, private val mGrabHandleId: Int) : DragItemAdapter<MyAccount?, AccountViewHolder?>() {
+        override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): AccountViewHolder? {
+            val view = LayoutInflater.from(parent.getContext()).inflate(mLayoutId, parent, false)
+            return AccountViewHolder(view, mGrabHandleId)
         }
 
-        @Override
-        public AccountViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(mLayoutId, parent, false);
-            return new AccountViewHolder(view, mGrabHandleId);
-        }
-
-        @Override
-        public void onBindViewHolder(AccountViewHolder holder, int position) {
-            super.onBindViewHolder(holder, position);
-            MyAccount ma = mItemList.get(position);
-            String visibleName = ma.getAccountName();
+        override fun onBindViewHolder(holder: AccountViewHolder?, position: Int) {
+            super.onBindViewHolder(holder, position)
+            val ma = mItemList[position]
+            var visibleName = ma.getAccountName()
             if (!ma.isValidAndSucceeded()) {
-                visibleName = "(" + visibleName + ")";
+                visibleName = "($visibleName)"
             }
-            MyUrlSpan.showText(holder.itemView, R.id.visible_name, visibleName, false, true);
-            MyUrlSpan.showText(holder.itemView, R.id.sync_auto,
-                    ma.isSyncedAutomatically() && ma.isValidAndSucceeded() ?
-                            getText(R.string.synced_abbreviated).toString() : "", false, true);
-            holder.itemView.setTag(visibleName);
+            MyUrlSpan.Companion.showText(holder.itemView, R.id.visible_name, visibleName, false, true)
+            MyUrlSpan.Companion.showText(holder.itemView, R.id.sync_auto,
+                    if (ma.isSyncedAutomatically() && ma.isValidAndSucceeded()) getText(R.string.synced_abbreviated).toString() else "", false, true)
+            holder.itemView.tag = visibleName
         }
 
-        @Override
-        public long getUniqueItemId(int position) {
-            return mItemList.get(position).getActorId();
+        override fun getUniqueItemId(position: Int): Long {
+            return mItemList[position].getActorId()
         }
 
-        class AccountViewHolder extends DragItemAdapter.ViewHolder {
-
-            AccountViewHolder(final View itemView, int grabHandleId) {
-                super(itemView, grabHandleId, false);
-            }
-
-            @Override
-            public void onItemClicked(View view) {
-                Intent intent = new Intent(getActivity(), AccountSettingsActivity.class);
+        internal inner class AccountViewHolder(itemView: View?, grabHandleId: Int) : ViewHolder(itemView, grabHandleId, false) {
+            override fun onItemClicked(view: View?) {
+                val intent = Intent(activity, AccountSettingsActivity::class.java)
                 intent.putExtra(IntentExtra.ACCOUNT_NAME.key,
-                        myContextHolder.getNow().accounts().fromActorId(mItemId).getAccountName());
-                getActivity().startActivity(intent);
+                        MyContextHolder.Companion.myContextHolder.getNow().accounts().fromActorId(mItemId).getAccountName())
+                activity.startActivity(intent)
             }
 
-            @Override
-            public boolean onItemLongClicked(View view) {
-                return true;
+            override fun onItemLongClicked(view: View?): Boolean {
+                return true
             }
+        }
+
+        init {
+            setHasStableIds(true)
+            itemList = list
+        }
+    }
+
+    companion object {
+        fun newInstance(): ListFragment? {
+            return ListFragment()
         }
     }
 }

@@ -13,158 +13,142 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.user
 
-package org.andstatus.app.user;
-
-import android.content.ContentValues;
-import android.database.Cursor;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.ActorSql;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.database.table.UserTable;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.os.MyAsyncTask;
-import org.andstatus.app.util.IsEmpty;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import android.content.ContentValues
+import android.database.Cursor
+import android.provider.BaseColumns
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.data.ActorSql
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.ActorTable
+import org.andstatus.app.database.table.UserTable
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.os.MyAsyncTask
+import org.andstatus.app.util.IsEmpty
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TriState
+import java.util.*
+import java.util.function.Function
+import java.util.stream.Collectors
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class User implements IsEmpty {
-    public static final User EMPTY = new User(0, "(empty)", TriState.UNKNOWN, Collections.emptySet());
-    public long userId = 0L;
-    private String knownAs = "";
-    private TriState isMyUser = TriState.UNKNOWN;
-    public final Set<Long> actorIds;
-
-    @NonNull
-    public static User load(@NonNull MyContext myContext, long actorId) {
-        return myContext.users().userFromActorId(actorId, () -> loadInternal(myContext, actorId));
+class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: MutableSet<Long?>?) : IsEmpty {
+    var userId = 0L
+    private var knownAs: String? = ""
+    private var isMyUser: TriState? = TriState.UNKNOWN
+    val actorIds: MutableSet<Long?>?
+    override fun isEmpty(): Boolean {
+        return this === EMPTY || userId == 0L && StringUtil.isEmpty(knownAs)
     }
 
-    private static User loadInternal(@NonNull MyContext myContext, long actorId) {
-        if (actorId == 0 || MyAsyncTask.isUiThread()) return User.EMPTY;
-        final String sql = "SELECT " + ActorSql.select(false, true)
-                + " FROM " + ActorSql.tables(false, true, false)
-                + " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable._ID + "=" + actorId;
-        final Function<Cursor, User> function = cursor -> fromCursor(myContext, cursor, true);
-        return MyQuery.get(myContext, sql, function).stream().findFirst().orElse(EMPTY);
-    }
-
-    @NonNull
-    public static User fromCursor(MyContext myContext, Cursor cursor, boolean useCache) {
-        final long userId = DbUtils.getLong(cursor, ActorTable.USER_ID);
-        User user1 = useCache
-            ? myContext.users().users.getOrDefault(userId, User.EMPTY)
-            : User.EMPTY ;
-        return user1.nonEmpty() ? user1
-                : new User(userId, DbUtils.getString(cursor, UserTable.KNOWN_AS),
-                    DbUtils.getTriState(cursor, UserTable.IS_MY),
-                    loadActors(myContext, userId));
-    }
-
-    public User(long userId, String knownAs, TriState isMyUser, Set<Long> actorIds) {
-        this.userId = userId;
-        this.knownAs = knownAs;
-        this.isMyUser = isMyUser;
-        this.actorIds = actorIds;
-    }
-
-    @NonNull
-    public static Set<Long> loadActors(MyContext myContext, long userId) {
-        return MyQuery.getLongs(myContext, "SELECT " + ActorTable._ID
-                + " FROM " + ActorTable.TABLE_NAME
-                + " WHERE " + ActorTable.USER_ID + "=" + userId);
-    }
-
-    @NonNull
-    public static User getNew() {
-        return new User(0, "", TriState.UNKNOWN, new HashSet<>());
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return this == EMPTY || (userId == 0 && StringUtil.isEmpty(knownAs));
-    }
-
-    @Override
-    public String toString() {
-        if (this == EMPTY) {
-            return "User:EMPTY";
+    override fun toString(): String {
+        if (this === EMPTY) {
+            return "User:EMPTY"
         }
-        String str = User.class.getSimpleName();
-        String members = "id=" + userId;
+        val str = User::class.java.simpleName
+        var members = "id=$userId"
         if (!StringUtil.isEmpty(knownAs)) {
-            members += "; knownAs=" + knownAs;
+            members += "; knownAs=$knownAs"
         }
         if (isMyUser.known) {
-            members += "; isMine=" + isMyUser.toBoolean(false);
+            members += "; isMine=" + isMyUser.toBoolean(false)
         }
-        return str + "{" + members + "}";
+        return "$str{$members}"
     }
 
-    public String getKnownAs() {
-        return knownAs;
+    fun getKnownAs(): String? {
+        return knownAs
     }
 
-    public void save(MyContext myContext) {
-        final ContentValues values = toContentValues(myContext);
-        if (this == EMPTY || values.size() == 0) return;
-        if (userId == 0) {
+    fun save(myContext: MyContext?) {
+        val values = toContentValues(myContext)
+        if (this === EMPTY || values.size() == 0) return
+        if (userId == 0L) {
             DbUtils.addRowWithRetry(myContext, UserTable.TABLE_NAME, values, 3)
-            .onSuccess( idAdded -> {
-                userId = idAdded;
-                MyLog.v(this, () -> "Added " + this);
-            })
-            .onFailure(e -> MyLog.w(this, "Failed to add " + this, e));
+                    .onSuccess { idAdded: Long? ->
+                        userId = idAdded
+                        MyLog.v(this) { "Added $this" }
+                    }
+                    .onFailure { e: Throwable? -> MyLog.w(this, "Failed to add $this", e) }
         } else {
             DbUtils.updateRowWithRetry(myContext, UserTable.TABLE_NAME, userId, values, 3)
-            .onSuccess( o -> MyLog.v(this, () -> "Updated " + this))
-            .onFailure(e -> MyLog.w(this, "Failed to update " + this, e));
+                    .onSuccess { o: Void? -> MyLog.v(this) { "Updated $this" } }
+                    .onFailure { e: Throwable? -> MyLog.w(this, "Failed to update $this", e) }
         }
     }
 
-    private ContentValues toContentValues(MyContext myContext) {
-        ContentValues values = new ContentValues();
-        if (StringUtil.nonEmpty(knownAs)) values.put(UserTable.KNOWN_AS, knownAs);
-        if (isMyUser.known) values.put(UserTable.IS_MY, isMyUser.id);
-        return values;
+    private fun toContentValues(myContext: MyContext?): ContentValues? {
+        val values = ContentValues()
+        if (StringUtil.nonEmpty(knownAs)) values.put(UserTable.KNOWN_AS, knownAs)
+        if (isMyUser.known) values.put(UserTable.IS_MY, isMyUser.id)
+        return values
     }
 
-    public void setIsMyUser(@NonNull TriState isMyUser) {
-        this.isMyUser = isMyUser;
+    fun setIsMyUser(isMyUser: TriState) {
+        this.isMyUser = isMyUser
     }
 
-    @NonNull
-    public TriState isMyUser() {
-        return isMyUser;
+    fun isMyUser(): TriState {
+        return isMyUser
     }
 
-    public void setKnownAs(String knownAs) {
-        this.knownAs = knownAs;
+    fun setKnownAs(knownAs: String?) {
+        this.knownAs = knownAs
     }
 
-    public List<Origin> knownInOrigins(MyContext myContext) {
-        return actorIds.stream().map(id -> Actor.load(myContext, id))
-                .map(actor -> actor.origin)
-                .filter(Origin::isValid)
+    fun knownInOrigins(myContext: MyContext?): MutableList<Origin?>? {
+        return actorIds.stream().map(Function<Long?, Actor?> { id: Long? -> Actor.Companion.load(myContext, id) })
+                .map { actor: Actor? -> actor.origin }
+                .filter { obj: Origin? -> obj.isValid() }
                 .distinct()
                 .sorted()
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())
+    }
+
+    companion object {
+        val EMPTY: User? = User(0, "(empty)", TriState.UNKNOWN, emptySet<Long?>())
+        fun load(myContext: MyContext, actorId: Long): User {
+            return myContext.users().userFromActorId(actorId) { loadInternal(myContext, actorId) }
+        }
+
+        private fun loadInternal(myContext: MyContext, actorId: Long): User? {
+            if (actorId == 0L || MyAsyncTask.Companion.isUiThread()) return EMPTY
+            val sql = ("SELECT " + ActorSql.select(false, true)
+                    + " FROM " + ActorSql.tables(false, true, false)
+                    + " WHERE " + ActorTable.TABLE_NAME + "." + BaseColumns._ID + "=" + actorId)
+            val function = Function { cursor: Cursor? -> fromCursor(myContext, cursor, true) }
+            return MyQuery.get(myContext, sql, function).stream().findFirst().orElse(EMPTY)
+        }
+
+        fun fromCursor(myContext: MyContext?, cursor: Cursor?, useCache: Boolean): User {
+            val userId = DbUtils.getLong(cursor, ActorTable.USER_ID)
+            val user1 = if (useCache) myContext.users().users.getOrDefault(userId, EMPTY) else EMPTY
+            return if (user1.nonEmpty()) user1 else User(userId, DbUtils.getString(cursor, UserTable.KNOWN_AS),
+                    DbUtils.getTriState(cursor, UserTable.IS_MY),
+                    loadActors(myContext, userId))
+        }
+
+        fun loadActors(myContext: MyContext?, userId: Long): MutableSet<Long?> {
+            return MyQuery.getLongs(myContext, "SELECT " + BaseColumns._ID
+                    + " FROM " + ActorTable.TABLE_NAME
+                    + " WHERE " + ActorTable.USER_ID + "=" + userId)
+        }
+
+        fun getNew(): User {
+            return User(0, "", TriState.UNKNOWN, HashSet())
+        }
+    }
+
+    init {
+        this.userId = userId
+        this.knownAs = knownAs
+        this.isMyUser = isMyUser
+        this.actorIds = actorIds
     }
 }

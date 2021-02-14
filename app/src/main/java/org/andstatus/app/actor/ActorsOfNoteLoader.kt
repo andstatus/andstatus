@@ -13,50 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.actor
 
-package org.andstatus.app.actor;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.social.Audience;
-import org.andstatus.app.origin.Origin;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.ActivityTable
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import java.util.function.Consumer
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ActorsOfNoteLoader extends ActorsLoader {
-    private final long selectedNoteId;
-    private final Origin originOfSelectedNote;
-    final String noteContent;
-
-    public ActorsOfNoteLoader(MyContext myContext, ActorsScreenType actorsScreenType, Origin origin, long noteId,
-                              String searchQuery) {
-        super(myContext, actorsScreenType, origin, 0, searchQuery);
-        selectedNoteId = noteId;
-        noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, selectedNoteId);
-        originOfSelectedNote = myContextHolder.getNow().origins().fromId(
-                MyQuery.noteIdToOriginId(selectedNoteId));
+class ActorsOfNoteLoader(myContext: MyContext?, actorsScreenType: ActorsScreenType?, origin: Origin?, private val selectedNoteId: Long,
+                         searchQuery: String?) : ActorsLoader(myContext, actorsScreenType, origin, 0, searchQuery) {
+    private val originOfSelectedNote: Origin?
+    val noteContent: String?
+    override fun loadInternal() {
+        addFromNoteRow()
+        if (!items.isEmpty()) super.loadInternal()
     }
 
-    @Override
-    protected void loadInternal() {
-        addFromNoteRow();
-        if (!items.isEmpty()) super.loadInternal();
+    private fun addFromNoteRow() {
+        addActorIdToList(originOfSelectedNote, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, selectedNoteId))
+        addActorIdToList(originOfSelectedNote, MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedNoteId))
+        fromNoteId(originOfSelectedNote, selectedNoteId).getNonSpecialActors().forEach(Consumer { actor: Actor? -> addActorToList(actor) })
+        MyQuery.getRebloggers(MyContextHolder.Companion.myContextHolder.getNow().getDatabase(), origin, selectedNoteId).forEach(Consumer { actor: Actor? -> addActorToList(actor) })
     }
 
-    private void addFromNoteRow() {
-        addActorIdToList(originOfSelectedNote, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, selectedNoteId));
-        addActorIdToList(originOfSelectedNote, MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedNoteId));
-        Audience.fromNoteId(originOfSelectedNote, selectedNoteId).getNonSpecialActors().forEach(this::addActorToList);
-        MyQuery.getRebloggers(myContextHolder.getNow().getDatabase(), origin, selectedNoteId).forEach(this::addActorToList);
+    override fun getSubtitle(): String? {
+        return noteContent
     }
 
-    @Override
-    protected String getSubtitle() {
-        return noteContent;
+    init {
+        noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, selectedNoteId)
+        originOfSelectedNote = MyContextHolder.Companion.myContextHolder.getNow().origins().fromId(
+                MyQuery.noteIdToOriginId(selectedNoteId))
     }
 }

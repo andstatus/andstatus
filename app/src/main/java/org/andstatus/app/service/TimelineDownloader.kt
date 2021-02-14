@@ -13,62 +13,56 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
-
-import org.andstatus.app.data.DataPruner;
-import org.andstatus.app.data.DataUpdater;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.util.MyLog;
-
-import io.vavr.control.Try;
+import io.vavr.control.Try
+import org.andstatus.app.data.DataPruner
+import org.andstatus.app.data.DataUpdater
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.util.MyLog
+import java.util.function.Consumer
 
 /**
- * Downloads ("loads") different types of Timelines 
- *  (i.e. Tweets and Messages) from the Internet (e.g. from twitter.com server).
- * Then Store them into local database using {@link DataUpdater}
- * 
+ * Downloads ("loads") different types of Timelines
+ * (i.e. Tweets and Messages) from the Internet (e.g. from twitter.com server).
+ * Then Store them into local database using [DataUpdater]
+ *
  * @author yvolk@yurivolkov.com
  */
-abstract class TimelineDownloader extends CommandExecutorStrategy {
-
-    TimelineDownloader(CommandExecutionContext execContext) {
-        super(execContext);
-    }
-
-    @Override
-    Try<Boolean> execute() {
-        if (!isApiSupported(execContext.getTimeline().getTimelineType().getConnectionApiRoutine())) {
-            MyLog.v(this, () -> execContext.getTimeline() + " is not supported for "
-                    + execContext.getMyAccount().getAccountName());
-            return Try.success(true);
-        }
-        MyLog.d(this, "Getting " + execContext.getCommandData().toCommandSummary(execContext.getMyContext()) +
-                " by " + execContext.getMyAccount().getAccountName() );
-
-        return download()
-        .onSuccess(b -> onSyncEnded())
-        .onFailure(e -> onSyncEnded());
-    }
-
-    public abstract Try<Boolean> download();
-
-    protected Timeline getTimeline() {
-        return execContext.getTimeline();
-    }
-
-    public void onSyncEnded() {
-        getTimeline().onSyncEnded(execContext.getMyContext(), execContext.getCommandData().getResult());
-        if (execContext.getResult().getDownloadedCount() > 0) {
-            if (!execContext.getResult().hasError() && !isStopping()) {
-                new DataPruner(execContext.getMyContext()).prune();
+internal abstract class TimelineDownloader(execContext: CommandExecutionContext?) : CommandExecutorStrategy(execContext) {
+    public override fun execute(): Try<Boolean?>? {
+        if (!isApiSupported(execContext.timeline.timelineType.connectionApiRoutine)) {
+            MyLog.v(this) {
+                (execContext.timeline.toString() + " is not supported for "
+                        + execContext.myAccount.accountName)
             }
-            MyLog.v(this, "Notifying of timeline changes");
-            execContext.getMyContext().getNotifier().update();
+            return Try.success(true)
+        }
+        MyLog.d(this, "Getting " + execContext.commandData.toCommandSummary(execContext.getMyContext()) +
+                " by " + execContext.myAccount.accountName)
+        return download()
+                .onSuccess(Consumer { b: Boolean? -> onSyncEnded() })
+                .onFailure { e: Throwable? -> onSyncEnded() }
+    }
+
+    abstract fun download(): Try<Boolean?>?
+    protected fun getTimeline(): Timeline? {
+        return execContext.timeline
+    }
+
+    fun onSyncEnded() {
+        getTimeline().onSyncEnded(execContext.getMyContext(), execContext.commandData.result)
+        if (execContext.result.downloadedCount > 0) {
+            if (!execContext.result.hasError() && !isStopping) {
+                DataPruner(execContext.getMyContext()).prune()
+            }
+            MyLog.v(this, "Notifying of timeline changes")
+            execContext.getMyContext().notifier.update()
         }
     }
 
-    protected boolean isSyncYounger() {
-        return !execContext.getCommandData().getCommand().equals(CommandEnum.GET_OLDER_TIMELINE);
+    protected fun isSyncYounger(): Boolean {
+        return execContext.commandData.command != CommandEnum.GET_OLDER_TIMELINE
     }
 }

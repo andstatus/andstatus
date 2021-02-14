@@ -13,133 +13,122 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.syncadapter
 
-package org.andstatus.app.syncadapter;
-
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.AsyncTask;
-import android.os.PowerManager;
-import android.os.SystemClock;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.MyAction;
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.service.ConnectionRequired;
-import org.andstatus.app.service.ConnectionState;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.UriUtils;
-
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-
-import static android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP;
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.AsyncTask
+import android.os.PowerManager
+import android.os.SystemClock
+import org.andstatus.app.MyAction
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.service.ConnectionRequired
+import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.UriUtils
+import java.util.*
+import java.util.concurrent.TimeUnit
+import java.util.function.Consumer
 
 /**
  * Periodic syncing doesn't work reliably, when a device is in a Doze mode, so we need
  * additional way(s) to check if syncing is needed.
  */
-public class SyncInitiator extends BroadcastReceiver {
-    private final static SyncInitiator BROADCAST_RECEIVER = new SyncInitiator();
-
-    public static void tryToSync(Context context) {
-        BROADCAST_RECEIVER.initializeApp(context);
-    }
-
+class SyncInitiator : BroadcastReceiver() {
     // Testing Doze: https://developer.android.com/training/monitoring-device-state/doze-standby.html#testing_doze
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        MyLog.v(this, () -> "onReceive "
-                + (pm == null || pm.isDeviceIdleMode() ? " idle" : " " + UriUtils.getConnectionState(context))
-        );
-        if (pm == null || pm.isDeviceIdleMode()) return;
-        initializeApp(context);
+    override fun onReceive(context: Context?, intent: Intent?) {
+        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+        MyLog.v(this
+        ) {
+            ("onReceive "
+                    + if (pm == null || pm.isDeviceIdleMode) " idle" else " " + UriUtils.getConnectionState(context))
+        }
+        if (pm == null || pm.isDeviceIdleMode) return
+        initializeApp(context)
     }
 
-    private void initializeApp(Context context) {
-        myContextHolder
-        .initialize(context, this)
-        .whenSuccessAsync(this::checkConnectionState, AsyncTask.THREAD_POOL_EXECUTOR);
+    private fun initializeApp(context: Context?) {
+        MyContextHolder.Companion.myContextHolder
+                .initialize(context, this)
+                .whenSuccessAsync(Consumer { myContext: MyContext? -> checkConnectionState(myContext) }, AsyncTask.THREAD_POOL_EXECUTOR)
     }
 
-    private void checkConnectionState(MyContext myContext) {
+    private fun checkConnectionState(myContext: MyContext?) {
         if (!syncIfNeeded(myContext)) {
-            new Timer().schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    syncIfNeeded(myContext);
+            Timer().schedule(object : TimerTask() {
+                override fun run() {
+                    syncIfNeeded(myContext)
                 }
-            }, getRandomDelayMillis(5));
+            }, getRandomDelayMillis(5))
         }
     }
 
-    private static long getRandomDelayMillis(int minSeconds) {
-        return TimeUnit.SECONDS.toMillis((long) minSeconds + new Random().nextInt(minSeconds * 4));
-    }
-
-    private boolean syncIfNeeded(MyContext myContext) {
-        if (!MyServiceManager.isServiceAvailable()) {
-            MyLog.v(this, () -> "syncIfNeeded Service is unavailable");
-            return false;
+    private fun syncIfNeeded(myContext: MyContext?): Boolean {
+        if (!MyServiceManager.Companion.isServiceAvailable()) {
+            MyLog.v(this) { "syncIfNeeded Service is unavailable" }
+            return false
         }
-
-        final ConnectionState connectionState = UriUtils.getConnectionState(myContext.context());
-        MyLog.v(this, () -> "syncIfNeeded " + UriUtils.getConnectionState(myContext.context()));
-        if (!ConnectionRequired.SYNC.isConnectionStateOk(connectionState)) return false;
-
-        for (MyAccount myAccount: myContext.accounts().accountsToSync()) {
+        val connectionState = UriUtils.getConnectionState(myContext.context())
+        MyLog.v(this) { "syncIfNeeded " + UriUtils.getConnectionState(myContext.context()) }
+        if (!ConnectionRequired.SYNC.isConnectionStateOk(connectionState)) return false
+        for (myAccount in myContext.accounts().accountsToSync()) {
             if (!myContext.timelines().toAutoSyncForAccount(myAccount).isEmpty()) {
-                myAccount.requestSync();
+                myAccount.requestSync()
             }
         }
-        return true;
+        return true
     }
 
-    public static void register(MyContext myContext) {
-        scheduleRepeatingAlarm(myContext);
-        registerBroadcastReceiver(myContext);
-    }
-
-    private static void scheduleRepeatingAlarm(@NonNull MyContext myContext) {
-        long minSyncIntervalMillis = myContext.accounts().minSyncIntervalMillis();
-        if (minSyncIntervalMillis > 0) {
-            final AlarmManager alarmManager = myContext.context().getSystemService(AlarmManager.class);
-            if (alarmManager == null) {
-                MyLog.w(SyncInitiator.class, "No AlarmManager ???");
-                return;
-            }
-            final long randomDelay = getRandomDelayMillis(30);
-            MyLog.d(SyncInitiator.class, "Scheduling repeating alarm in "
-                    + TimeUnit.MILLISECONDS.toSeconds(randomDelay) + " seconds");
-            alarmManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + randomDelay,
-                    minSyncIntervalMillis,
-                    PendingIntent.getBroadcast(myContext.context(), 0, MyAction.SYNC.getIntent(), 0)
-            );
+    companion object {
+        private val BROADCAST_RECEIVER: SyncInitiator? = SyncInitiator()
+        fun tryToSync(context: Context?) {
+            BROADCAST_RECEIVER.initializeApp(context)
         }
-    }
 
-    private static void registerBroadcastReceiver(MyContext myContext) {
-        if (myContext != null && myContext.accounts().hasSyncedAutomatically()) myContext.context()
-                .registerReceiver(BROADCAST_RECEIVER, new IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED));
-    }
+        private fun getRandomDelayMillis(minSeconds: Int): Long {
+            return TimeUnit.SECONDS.toMillis(minSeconds as Long + Random().nextInt(minSeconds * 4))
+        }
 
-    public static void unregister(MyContext myContext) {
-        try {
-            if (myContext != null) myContext.context().unregisterReceiver(BROADCAST_RECEIVER);
-        } catch (IllegalArgumentException e) {
-            MyLog.ignored(BROADCAST_RECEIVER, e);
+        fun register(myContext: MyContext?) {
+            scheduleRepeatingAlarm(myContext)
+            registerBroadcastReceiver(myContext)
+        }
+
+        private fun scheduleRepeatingAlarm(myContext: MyContext) {
+            val minSyncIntervalMillis = myContext.accounts().minSyncIntervalMillis()
+            if (minSyncIntervalMillis > 0) {
+                val alarmManager = myContext.context().getSystemService(AlarmManager::class.java)
+                if (alarmManager == null) {
+                    MyLog.w(SyncInitiator::class.java, "No AlarmManager ???")
+                    return
+                }
+                val randomDelay = getRandomDelayMillis(30)
+                MyLog.d(SyncInitiator::class.java, "Scheduling repeating alarm in "
+                        + TimeUnit.MILLISECONDS.toSeconds(randomDelay) + " seconds")
+                alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                        SystemClock.elapsedRealtime() + randomDelay,
+                        minSyncIntervalMillis,
+                        PendingIntent.getBroadcast(myContext.context(), 0, MyAction.SYNC.intent, 0)
+                )
+            }
+        }
+
+        private fun registerBroadcastReceiver(myContext: MyContext?) {
+            if (myContext != null && myContext.accounts().hasSyncedAutomatically()) myContext.context()
+                    .registerReceiver(BROADCAST_RECEIVER, IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED))
+        }
+
+        fun unregister(myContext: MyContext?) {
+            try {
+                myContext?.context()?.unregisterReceiver(BROADCAST_RECEIVER)
+            } catch (e: IllegalArgumentException) {
+                MyLog.ignored(BROADCAST_RECEIVER, e)
+            }
         }
     }
 }

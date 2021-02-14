@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.support.java.util.function
 
-package org.andstatus.app.support.java.util.function;
-
-/** @author yvolk@yurivolkov.com */
-@FunctionalInterface
-public interface SupplierWithException<T, E extends Exception> {
-    T get() throws E;
+/** @author yvolk@yurivolkov.com
+ */
+fun interface SupplierWithException<T, E : Exception?> {
+    @Throws(E::class)
+    open fun get(): T?
 }

@@ -13,176 +13,159 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.notification
 
-package org.andstatus.app.notification;
+import android.annotation.TargetApi
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.graphics.Color
+import android.net.Uri
+import android.os.Build
+import org.andstatus.app.R
+import org.andstatus.app.appwidget.AppWidgets
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.MyProvider
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StopWatch
+import org.andstatus.app.util.UriUtils
+import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Consumer
+import java.util.function.Predicate
+import java.util.function.UnaryOperator
+import java.util.stream.Collectors
 
-import android.annotation.TargetApi;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.graphics.Color;
-import android.net.Uri;
-import android.os.Build;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.R;
-import org.andstatus.app.appwidget.AppWidgets;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.MyProvider;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StopWatch;
-import org.andstatus.app.util.UriUtils;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
-import static org.andstatus.app.notification.NotificationEventType.SERVICE_RUNNING;
-
-public class Notifier {
-    private static final long[] VIBRATION_PATTERN = {200, 300, 200, 300};
-    private static final int LIGHT_COLOR = Color.GREEN;
-    final MyContext myContext;
-    private NotificationManager nM = null;
-    private boolean notificationArea;
-    private boolean vibration;
-    private Uri soundUri;
-    private List<NotificationEventType> enabledEvents = Collections.emptyList();
-    private final AtomicReference<NotificationEvents> refEvents = new AtomicReference<>(NotificationEvents.EMPTY);
-
-    public Notifier(MyContext myContext) {
-        this.myContext = myContext;
+class Notifier(val myContext: MyContext?) {
+    private var nM: NotificationManager? = null
+    private var notificationArea = false
+    private var vibration = false
+    private var soundUri: Uri? = null
+    private var enabledEvents: MutableList<NotificationEventType?>? = emptyList()
+    private val refEvents: AtomicReference<NotificationEvents?>? = AtomicReference(NotificationEvents.Companion.EMPTY)
+    fun clearAll() {
+        AppWidgets.Companion.of(refEvents.updateAndGet(UnaryOperator { obj: NotificationEvents? -> obj.clearAll() })).clearCounters().updateViews()
+        clearAndroidNotifications()
     }
 
-    public void clearAll() {
-        AppWidgets.of(refEvents.updateAndGet(NotificationEvents::clearAll)).clearCounters().updateViews();
-        clearAndroidNotifications();
-    }
-
-    public void clear(@NonNull Timeline timeline) {
+    fun clear(timeline: Timeline) {
         if (timeline.nonEmpty()) {
-            AppWidgets.of(refEvents.updateAndGet(events -> events.clear(timeline))).clearCounters().updateViews();
-            clearAndroidNotifications();
+            AppWidgets.Companion.of(refEvents.updateAndGet(UnaryOperator { events: NotificationEvents? -> events.clear(timeline) })).clearCounters().updateViews()
+            clearAndroidNotifications()
         }
     }
 
-    private void clearAndroidNotifications() {
-        NotificationEventType.validValues.forEach(this::clearAndroidNotification);
+    private fun clearAndroidNotifications() {
+        NotificationEventType.Companion.validValues.forEach(Consumer { eventType: NotificationEventType? -> clearAndroidNotification(eventType) })
     }
 
-    public void clearAndroidNotification(NotificationEventType eventType) {
-        if (nM != null) nM.cancel(MyLog.APPTAG, eventType.notificationId());
+    fun clearAndroidNotification(eventType: NotificationEventType?) {
+        if (nM != null) nM.cancel(MyLog.APPTAG, eventType.notificationId())
     }
 
-    public void update() {
-        AppWidgets.of(refEvents.updateAndGet(NotificationEvents::load)).updateData().updateViews();
+    fun update() {
+        AppWidgets.Companion.of(refEvents.updateAndGet(UnaryOperator { obj: NotificationEvents? -> obj.load() })).updateData().updateViews()
         if (notificationArea) {
-            refEvents.get().map.values().stream().filter(data -> data.count > 0).forEach(myContext::notify);
+            refEvents.get().map.values.stream().filter { data: NotificationData? -> data.count > 0 }.forEach { data: NotificationData? -> myContext.notify(data) }
         }
     }
 
-    public Notification getAndroidNotification(@NonNull NotificationData data) {
-        String contentText = (data.myActor.nonEmpty()
-                ? data.myActor.getActorNameInTimeline()
-                : myContext.context().getText(data.event.titleResId)) + ": " + data.count;
-        MyLog.v(this, contentText);
-
-        Notification.Builder builder = new Notification.Builder(myContext.context());
+    fun getAndroidNotification(data: NotificationData): Notification? {
+        val contentText = (if (data.myActor.nonEmpty()) data.myActor.actorNameInTimeline else myContext.context().getText(data.event.titleResId)).toString() + ": " + data.count
+        MyLog.v(this, contentText)
+        val builder = Notification.Builder(myContext.context())
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            builder.setChannelId(data.channelId());
+            builder.setChannelId(data.channelId())
         } else {
-            if (data.event == SERVICE_RUNNING) {
-                builder.setSound(null);
+            if (data.event == NotificationEventType.SERVICE_RUNNING) {
+                builder.setSound(null)
             } else {
                 if (vibration) {
-                    builder.setVibrate(VIBRATION_PATTERN);
+                    builder.setVibrate(VIBRATION_PATTERN)
                 }
-                builder.setSound(UriUtils.isEmpty(soundUri) ? null : soundUri);
-                builder.setLights(LIGHT_COLOR, 500, 1000);
+                builder.setSound(if (UriUtils.isEmpty(soundUri)) null else soundUri)
+                builder.setLights(LIGHT_COLOR, 500, 1000)
             }
         }
-        builder.setSmallIcon(data.event == SERVICE_RUNNING
-                ? R.drawable.ic_sync_white_24dp
-                : SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)
-                    ? R.drawable.notification_icon_circle
-                    : R.drawable.notification_icon)
-            .setContentTitle(myContext.context().getText(data.event.titleResId))
-            .setContentText(contentText)
-            .setWhen(data.updatedDate)
-            .setShowWhen(true);
-        builder.setContentIntent(data.getPendingIntent(myContext));
-        return builder.build();
+        builder.setSmallIcon(if (data.event == NotificationEventType.SERVICE_RUNNING) R.drawable.ic_sync_white_24dp else if (SharedPreferencesUtil.getBoolean(MyPreferences.KEY_NOTIFICATION_ICON_ALTERNATIVE, false)) R.drawable.notification_icon_circle else R.drawable.notification_icon)
+                .setContentTitle(myContext.context().getText(data.event.titleResId))
+                .setContentText(contentText)
+                .setWhen(data.updatedDate)
+                .setShowWhen(true)
+        builder.setContentIntent(data.getPendingIntent(myContext))
+        return builder.build()
     }
 
-    public void notifyAndroid(NotificationData data) {
-        if (nM == null) return;
-        createNotificationChannel(data);
+    fun notifyAndroid(data: NotificationData?) {
+        if (nM == null) return
+        createNotificationChannel(data)
         try {
-            nM.notify(MyLog.APPTAG, data.event.notificationId(), getAndroidNotification(data));
-        } catch (Exception e) {
-            MyLog.w(this, "Notification failed", e);
+            nM.notify(MyLog.APPTAG, data.event.notificationId(), getAndroidNotification(data))
+        } catch (e: Exception) {
+            MyLog.w(this, "Notification failed", e)
         }
     }
 
     @TargetApi(Build.VERSION_CODES.O)
-    public void createNotificationChannel(NotificationData data) {
-        if (nM == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
-
-        String channelId = data.channelId();
-        CharSequence channelName = myContext.context().getText(data.event.titleResId);
-        String description = "AndStatus, " + channelName;
-        boolean isSilent = data.event == SERVICE_RUNNING || UriUtils.isEmpty(soundUri);
-        NotificationChannel channel = new NotificationChannel(channelId, channelName,
-                isSilent ? NotificationManager.IMPORTANCE_MIN : NotificationManager.IMPORTANCE_DEFAULT);
-        channel.setDescription(description);
-        if (data.event == SERVICE_RUNNING) {
-            channel.enableLights(false);
-            channel.enableVibration(false);
+    fun createNotificationChannel(data: NotificationData?) {
+        if (nM == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        val channelId = data.channelId()
+        val channelName = myContext.context().getText(data.event.titleResId)
+        val description = "AndStatus, $channelName"
+        val isSilent = data.event == NotificationEventType.SERVICE_RUNNING || UriUtils.isEmpty(soundUri)
+        val channel = NotificationChannel(channelId, channelName,
+                if (isSilent) NotificationManager.IMPORTANCE_MIN else NotificationManager.IMPORTANCE_DEFAULT)
+        channel.description = description
+        if (data.event == NotificationEventType.SERVICE_RUNNING) {
+            channel.enableLights(false)
+            channel.enableVibration(false)
         } else {
-            channel.enableLights(true);
-            channel.setLightColor(LIGHT_COLOR);
+            channel.enableLights(true)
+            channel.lightColor = LIGHT_COLOR
             if (vibration) {
-                channel.setVibrationPattern(VIBRATION_PATTERN);
+                channel.vibrationPattern = VIBRATION_PATTERN
             }
         }
-        channel.setSound(isSilent ? null : soundUri, Notification.AUDIO_ATTRIBUTES_DEFAULT);
-        nM.createNotificationChannel(channel);
+        channel.setSound(if (isSilent) null else soundUri, Notification.AUDIO_ATTRIBUTES_DEFAULT)
+        nM.createNotificationChannel(channel)
     }
 
-    public void initialize() {
-        StopWatch stopWatch = StopWatch.createStarted();
+    fun initialize() {
+        val stopWatch: StopWatch = StopWatch.Companion.createStarted()
         if (myContext.isReady()) {
-            nM = (NotificationManager) myContext.context().getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+            nM = myContext.context().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             if (nM == null) {
-                MyLog.w(this, "No Notification Service");
+                MyLog.w(this, "No Notification Service")
             }
         }
-        notificationArea = NotificationMethodType.NOTIFICATION_AREA.isEnabled();
-        vibration = NotificationMethodType.VIBRATION.isEnabled();
-        soundUri = NotificationMethodType.SOUND.getUri();
-        enabledEvents = NotificationEventType.validValues.stream().filter(NotificationEventType::isEnabled)
-                .collect(Collectors.toList());
-        refEvents.set(NotificationEvents.of(myContext, enabledEvents).load());
-        MyLog.i(this, "notifierInitializedMs:" + stopWatch.getTime() + "; " + refEvents.get().size() + " events");
+        notificationArea = NotificationMethodType.NOTIFICATION_AREA.isEnabled
+        vibration = NotificationMethodType.VIBRATION.isEnabled
+        soundUri = NotificationMethodType.SOUND.uri
+        enabledEvents = NotificationEventType.Companion.validValues.stream().filter(Predicate { obj: NotificationEventType? -> obj.isEnabled() })
+                .collect(Collectors.toList())
+        refEvents.set(NotificationEvents.Companion.of(myContext, enabledEvents).load())
+        MyLog.i(this, "notifierInitializedMs:" + stopWatch.time + "; " + refEvents.get().size() + " events")
     }
 
-    public boolean isEnabled(NotificationEventType eventType) {
-        return enabledEvents.contains(eventType);
+    fun isEnabled(eventType: NotificationEventType?): Boolean {
+        return enabledEvents.contains(eventType)
     }
 
-    public void onUnsentActivity(long activityId) {
-        if (activityId == 0 || !isEnabled(NotificationEventType.OUTBOX)) return;
-
-        MyProvider.setUnsentActivityNotification(myContext, activityId);
-        update();
+    fun onUnsentActivity(activityId: Long) {
+        if (activityId == 0L || !isEnabled(NotificationEventType.OUTBOX)) return
+        MyProvider.Companion.setUnsentActivityNotification(myContext, activityId)
+        update()
     }
 
-    public NotificationEvents getEvents() {
-        return refEvents.get();
+    fun getEvents(): NotificationEvents? {
+        return refEvents.get()
+    }
+
+    companion object {
+        private val VIBRATION_PATTERN: LongArray? = longArrayOf(200, 300, 200, 300)
+        private const val LIGHT_COLOR = Color.GREEN
     }
 }

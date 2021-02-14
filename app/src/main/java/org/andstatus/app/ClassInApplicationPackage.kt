@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,14 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app
 
-package org.andstatus.app;
-
-public class ClassInApplicationPackage {
-
-    public static final String PACKAGE_NAME = IntentExtra.class.getPackage().getName();
-
-    private ClassInApplicationPackage() {
-        // Empty
-    }
+object ClassInApplicationPackage {
+    val PACKAGE_NAME = IntentExtra::class.java.getPackage().getName()
 }

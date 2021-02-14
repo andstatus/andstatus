@@ -13,16 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.note
 
-package org.andstatus.app.note;
+import android.content.Context
+import android.util.AttributeSet
+import androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView
 
-import android.content.Context;
-import androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView;
-import android.util.AttributeSet;
-
-public class NoteEditorBodyView extends AppCompatMultiAutoCompleteTextView {
-
-    public NoteEditorBodyView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-}
+class NoteEditorBodyView(context: Context?, attrs: AttributeSet?) : AppCompatMultiAutoCompleteTextView(context, attrs)

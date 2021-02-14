@@ -13,329 +13,315 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.account
 
-package org.andstatus.app.account;
+import android.accounts.Account
+import android.accounts.AccountManager
+import android.content.ContentResolver
+import android.os.Bundle
+import android.os.Parcel
+import android.os.Parcelable
+import io.vavr.control.Try
+import org.andstatus.app.account.AccountData
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.MatchedUri
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.InstanceId
+import org.andstatus.app.util.JsonUtils
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StringUtil
+import org.json.JSONObject
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.content.ContentResolver;
-import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
+class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
+    protected val instanceId = InstanceId.next()
+    private val myContext: MyContext?
+    val accountName: AccountName?
 
-import androidx.annotation.NonNull;
+    @Volatile
+    private var data: JSONObject?
 
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.data.MatchedUri;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.util.IdentifiableInstance;
-import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.JsonUtils;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtil;
-import org.json.JSONObject;
+    @Volatile
+    private var persistent = false
 
-import io.vavr.control.Try;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class AccountData implements Parcelable, AccountDataWriter, IdentifiableInstance {
-    private static final String TAG = AccountData.class.getSimpleName();
-    public static final AccountData EMPTY = new AccountData(MyContext.EMPTY, new JSONObject(), false);
-
-    protected final long instanceId = InstanceId.next();
-    private final MyContext myContext;
-    public final AccountName accountName;
-    private volatile JSONObject data;
-    private volatile boolean persistent = false;
-
-    @NonNull
-    public static AccountData fromAndroidAccount(MyContext myContext, Account androidAccount) {
-        if (androidAccount == null) {
-            throw new IllegalArgumentException(TAG + " account is null");
-        }
-        android.accounts.AccountManager am = AccountManager.get(myContext.context());
-        String jsonString = am.getUserData(androidAccount, AccountUtils.KEY_ACCOUNT);
-        AccountData accountData = fromJsonString(myContext, jsonString, true);
-        accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE,
-                ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0);
-        accountData.setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY,
-                ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.AUTHORITY));
-        accountData.logMe("Loaded from account " + androidAccount.name);
-        return accountData;
+    private constructor(myContext: MyContext?, jso: JSONObject, persistent: Boolean) {
+        this.myContext = myContext
+        data = jso
+        this.persistent = persistent
+        val origin = myContext.origins().fromName(getDataString(Origin.Companion.KEY_ORIGIN_NAME))
+        accountName = AccountName.Companion.fromOriginAndUniqueName(origin, getDataString(MyAccount.Companion.KEY_UNIQUE_NAME))
+        logMe("new " + accountName.name + " from jso")
     }
 
-    private static AccountData fromJsonString(MyContext myContext, String userData, boolean persistent) {
-        return JsonUtils.toJsonObject(userData).map(jso -> fromJson(myContext, jso, persistent)).getOrElse(EMPTY);
+    private constructor(accountName: AccountName, jso: JSONObject?) {
+        myContext = accountName.myContext()
+        this.accountName = accountName
+        data = jso
+        updateFromAccountName()
+        logMe("new from " + accountName.name + " and jso")
     }
 
-    public static AccountData fromJson(MyContext myContext,@NonNull JSONObject jso, boolean persistent) {
-        return new AccountData(myContext, jso, persistent);
-    }
-    
-    private AccountData(MyContext myContext, @NonNull JSONObject jso, boolean persistent) {
-        this.myContext = myContext;
-        data = jso;
-        this.persistent = persistent;
-        Origin origin = myContext.origins().fromName(getDataString(Origin.KEY_ORIGIN_NAME));
-        accountName = AccountName.fromOriginAndUniqueName(origin, getDataString(MyAccount.KEY_UNIQUE_NAME));
-        logMe("new " + accountName.getName() + " from jso");
+    fun withAccountName(accountName: AccountName): AccountData? {
+        return AccountData(accountName, data)
     }
 
-    public static AccountData fromAccountName(@NonNull AccountName accountName) {
-        return new AccountData(accountName, new JSONObject());
-    }
-
-    private AccountData(@NonNull AccountName accountName, JSONObject jso) {
-        this.myContext = accountName.myContext();
-        this.accountName = accountName;
-        data = jso;
-        updateFromAccountName();
-        logMe("new from " + accountName.getName() + " and jso");
-    }
-
-    public AccountData withAccountName(@NonNull AccountName accountName) {
-        return new AccountData(accountName, data);
-    }
-
-    AccountData updateFrom(MyAccount myAccount) {
-        setDataString(MyAccount.KEY_ACTOR_OID, myAccount.getActor().oid);
-        myAccount.getCredentialsVerified().put(this);
-        setDataBoolean(MyAccount.KEY_OAUTH, myAccount.isOAuth());
-        setDataLong(MyAccount.KEY_ACTOR_ID, myAccount.getActor().actorId);
+    fun updateFrom(myAccount: MyAccount?): AccountData? {
+        setDataString(MyAccount.Companion.KEY_ACTOR_OID, myAccount.getActor().oid)
+        myAccount.getCredentialsVerified().put(this)
+        setDataBoolean(MyAccount.Companion.KEY_OAUTH, myAccount.isOAuth())
+        setDataLong(MyAccount.Companion.KEY_ACTOR_ID, myAccount.getActor().actorId)
         if (myAccount.getConnection() != null) {
-            myAccount.getConnection().saveTo(this);
+            myAccount.getConnection().saveTo(this)
         }
-        setPersistent(true);
-        setDataBoolean(MyAccount.KEY_IS_SYNCABLE, myAccount.isSyncable);
-        setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, myAccount.isSyncedAutomatically());
-        setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.getSyncFrequencySeconds());
+        setPersistent(true)
+        setDataBoolean(MyAccount.Companion.KEY_IS_SYNCABLE, myAccount.isSyncable)
+        setDataBoolean(MyAccount.Companion.KEY_IS_SYNCED_AUTOMATICALLY, myAccount.isSyncedAutomatically())
+        setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.getSyncFrequencySeconds())
         // We don't create accounts of other versions
-        setDataInt(AccountUtils.KEY_VERSION, AccountUtils.ACCOUNT_VERSION);
-        setDataInt(MyAccount.KEY_ORDER, myAccount.getOrder());
-        logMe("updated from " + myAccount);
-        return this;
+        setDataInt(AccountUtils.KEY_VERSION, AccountUtils.ACCOUNT_VERSION)
+        setDataInt(MyAccount.Companion.KEY_ORDER, myAccount.getOrder())
+        logMe("updated from $myAccount")
+        return this
     }
 
-    private void updateFromAccountName() {
-        setDataString(AccountUtils.KEY_ACCOUNT, accountName.getName());
-        setDataString(MyAccount.KEY_USERNAME, accountName.username);
-        setDataString(MyAccount.KEY_UNIQUE_NAME, accountName.getUniqueName());
-        setDataString(Origin.KEY_ORIGIN_NAME, accountName.getOriginName());
+    private fun updateFromAccountName() {
+        setDataString(AccountUtils.KEY_ACCOUNT, accountName.getName())
+        setDataString(MyAccount.Companion.KEY_USERNAME, accountName.username)
+        setDataString(MyAccount.Companion.KEY_UNIQUE_NAME, accountName.getUniqueName())
+        setDataString(Origin.Companion.KEY_ORIGIN_NAME, accountName.getOriginName())
     }
 
-    public MyContext myContext() {
-        return myContext;
+    fun myContext(): MyContext? {
+        return myContext
     }
 
-    boolean isPersistent() {
-        return persistent;
+    fun isPersistent(): Boolean {
+        return persistent
     }
 
-    void setPersistent(boolean persistent) {
-        this.persistent = persistent;
+    fun setPersistent(persistent: Boolean) {
+        this.persistent = persistent
     }
 
-    /** @return changed (and successfully saved) or not */
-    public Try<Boolean> saveIfChanged(Account androidAccount) {
-        AccountData oldData = fromAndroidAccount(myContext, androidAccount);
-        if (this.equals(oldData)) return Try.success(false);
-
-        long syncFrequencySeconds = getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0);
+    /** @return changed (and successfully saved) or not
+     */
+    fun saveIfChanged(androidAccount: Account?): Try<Boolean?>? {
+        val oldData = fromAndroidAccount(myContext, androidAccount)
+        if (this == oldData) return Try.success(false)
+        var syncFrequencySeconds = getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0)
         if (syncFrequencySeconds <= 0) {
-            syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds();
+            syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds()
         }
-        AccountUtils.setSyncFrequencySeconds(androidAccount, syncFrequencySeconds);
-
-        boolean isSyncable = getDataBoolean(MyAccount.KEY_IS_SYNCABLE, true);
-        if (isSyncable != (ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) > 0)) {
-            ContentResolver.setIsSyncable(androidAccount, MatchedUri.AUTHORITY, isSyncable ? 1 : 0);
+        AccountUtils.setSyncFrequencySeconds(androidAccount, syncFrequencySeconds)
+        val isSyncable = getDataBoolean(MyAccount.Companion.KEY_IS_SYNCABLE, true)
+        if (isSyncable != ContentResolver.getIsSyncable(androidAccount, MatchedUri.Companion.AUTHORITY) > 0) {
+            ContentResolver.setIsSyncable(androidAccount, MatchedUri.Companion.AUTHORITY, if (isSyncable) 1 else 0)
         }
-        boolean syncAutomatically = getDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, true);
-        if (syncAutomatically != ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.AUTHORITY)) {
+        val syncAutomatically = getDataBoolean(MyAccount.Companion.KEY_IS_SYNCED_AUTOMATICALLY, true)
+        if (syncAutomatically != ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.Companion.AUTHORITY)) {
             // We need to preserve sync on/off during backup/restore.
             // don't know about "network tickles"... See:
             // http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
-            ContentResolver.setSyncAutomatically(androidAccount, MatchedUri.AUTHORITY, syncAutomatically);
+            ContentResolver.setSyncAutomatically(androidAccount, MatchedUri.Companion.AUTHORITY, syncAutomatically)
         }
-        android.accounts.AccountManager am = AccountManager.get(myContext.context());
-        String jsonString = toJsonString();
-        logMe("Saving to " + androidAccount.name);
-        am.setUserData(androidAccount, AccountUtils.KEY_ACCOUNT, jsonString);
-        return Try.success(true);
+        val am = AccountManager.get(myContext.context())
+        val jsonString = toJsonString()
+        logMe("Saving to " + androidAccount.name)
+        am.setUserData(androidAccount, AccountUtils.KEY_ACCOUNT, jsonString)
+        return Try.success(true)
     }
 
-    public boolean isVersionCurrent() {
-        return AccountUtils.ACCOUNT_VERSION == getVersion();
+    fun isVersionCurrent(): Boolean {
+        return AccountUtils.ACCOUNT_VERSION == getVersion()
     }
 
-    public int getVersion() {
-        return getDataInt(AccountUtils.KEY_VERSION, 0);
+    fun getVersion(): Int {
+        return getDataInt(AccountUtils.KEY_VERSION, 0)
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == this) return true;
-        if (!(o instanceof AccountData)) return false;
-
-        final AccountData other = (AccountData)o;
-        return isPersistent() == other.isPersistent() && toJsonString().equals(other.toJsonString());
+    override fun equals(o: Any?): Boolean {
+        if (o === this) return true
+        if (o !is AccountData) return false
+        val other = o as AccountData?
+        return isPersistent() == other.isPersistent() && toJsonString() == other.toJsonString()
     }
 
-    @Override
-    public int hashCode() {
-        String text = Boolean.toString(isPersistent());
-        text += toJsonString();
-        return text.hashCode();
+    override fun hashCode(): Int {
+        var text: String? = java.lang.Boolean.toString(isPersistent())
+        text += toJsonString()
+        return text.hashCode()
     }
 
-    @Override
-    public boolean dataContains(String key) {
-        boolean contains = false;
+    override fun dataContains(key: String?): Boolean {
+        var contains = false
         try {
-            String str = getDataString(key, "null");
+            val str = getDataString(key, "null")
             if (str.compareTo("null") != 0) {
-                contains = true;
+                contains = true
             }
-        } catch (Exception e) {
-            MyLog.v(this, e);
+        } catch (e: Exception) {
+            MyLog.v(this, e)
         }
-        return contains;
+        return contains
     }
 
-    boolean getDataBoolean(String key, boolean defValue) {
-        boolean value = defValue;
+    fun getDataBoolean(key: String?, defValue: Boolean): Boolean {
+        var value = defValue
         try {
-            String str = getDataString(key, "null");
+            val str = getDataString(key, "null")
             if (str.compareTo("null") != 0) {
-                value = SharedPreferencesUtil.isTrue(str);
+                value = SharedPreferencesUtil.isTrue(str)
             }
-        } catch (Exception e) {
-            MyLog.v(this, e);
+        } catch (e: Exception) {
+            MyLog.v(this, e)
         }
-        return value;
+        return value
     }
 
-    @Override
-    public String getDataString(String key, String defValue) {
-        return JsonUtils.optString(data, key, defValue);
+    override fun getDataString(key: String?, defValue: String?): String? {
+        return JsonUtils.optString(data, key, defValue)
     }
 
-    @Override
-    public int getDataInt(String key, int defValue) {
-        int value = defValue;
+    override fun getDataInt(key: String?, defValue: Int): Int {
+        var value = defValue
         try {
-            String str = getDataString(key, "null");
+            val str = getDataString(key, "null")
             if (str.compareTo("null") != 0) {
-                value = Integer.parseInt(str);
+                value = str.toInt()
             }
-        } catch (Exception e) {
-            MyLog.v(this, e);
+        } catch (e: Exception) {
+            MyLog.v(this, e)
         }
-        return value;
+        return value
     }
 
-    public long getDataLong(String key, long defValue) {
-        long value = defValue;
+    fun getDataLong(key: String?, defValue: Long): Long {
+        var value = defValue
         try {
-            String str = getDataString(key, "null");
+            val str = getDataString(key, "null")
             if (str.compareTo("null") != 0) {
-                value = Long.parseLong(str);
+                value = str.toLong()
             }
-        } catch (Exception e) {
-            MyLog.v(this, e);
+        } catch (e: Exception) {
+            MyLog.v(this, e)
         }
-        return value;
+        return value
     }
-    
-    public void setDataBoolean(String key, boolean value) {
+
+    fun setDataBoolean(key: String?, value: Boolean) {
         try {
-            setDataString(key, Boolean.toString(value));
-        } catch (Exception e) {
-            MyLog.v(this, e);
-        }
-    }
-    
-    @Override
-    public void setDataLong(String key, long value) {
-        try {
-            setDataString(key, Long.toString(value));
-        } catch (Exception e) {
-            MyLog.v(this, e);
-        }
-    }
-    
-    @Override
-    public void setDataInt(String key, int value) {
-        try {
-            setDataString(key, Integer.toString(value));
-        } catch (Exception e) {
-            MyLog.v(this, e);
+            setDataString(key, java.lang.Boolean.toString(value))
+        } catch (e: Exception) {
+            MyLog.v(this, e)
         }
     }
 
-    @Override
-    public void setDataString(String key, String value) {
-        if (StringUtil.isEmpty(value)) {
-            data = JsonUtils.remove(data, key);
+    override fun setDataLong(key: String?, value: Long) {
+        try {
+            setDataString(key, java.lang.Long.toString(value))
+        } catch (e: Exception) {
+            MyLog.v(this, e)
+        }
+    }
+
+    override fun setDataInt(key: String?, value: Int) {
+        try {
+            setDataString(key, Integer.toString(value))
+        } catch (e: Exception) {
+            MyLog.v(this, e)
+        }
+    }
+
+    override fun setDataString(key: String?, value: String?) {
+        data = if (StringUtil.isEmpty(value)) {
+            JsonUtils.remove(data, key)
         } else {
-            data = JsonUtils.put(data, key, value);
+            JsonUtils.put(data, key, value)
         }
     }
 
-    public static final Creator<AccountData> CREATOR = new Creator<AccountData>() {
+    private fun logMe(msg: String?): AccountData? {
+        MyLog.v(this) {
+            """
+     $msg:
+     ${toJsonString()}
+     """.trimIndent()
+        }
+        return this
+    }
 
-        @Override
-        public AccountData createFromParcel(Parcel source) {
-            return AccountData.fromBundle(myContextHolder.getNow(), source.readBundle());
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    override fun writeToParcel(dest: Parcel?, flags: Int) {
+        dest.writeString(toJsonString())
+    }
+
+    fun toJSon(): JSONObject? {
+        return data
+    }
+
+    fun toJsonString(): String? {
+        return JsonUtils.toString(data, 2)
+    }
+
+    override fun getInstanceId(): Long {
+        return instanceId
+    }
+
+    override fun classTag(): String? {
+        return TAG
+    }
+
+    companion object {
+        private val TAG: String? = AccountData::class.java.simpleName
+        val EMPTY: AccountData? = AccountData(MyContext.Companion.EMPTY, JSONObject(), false)
+        fun fromAndroidAccount(myContext: MyContext?, androidAccount: Account?): AccountData {
+            requireNotNull(androidAccount) { "$TAG account is null" }
+            val am = AccountManager.get(myContext.context())
+            val jsonString = am.getUserData(androidAccount, AccountUtils.KEY_ACCOUNT)
+            val accountData = fromJsonString(myContext, jsonString, true)
+            accountData.setDataBoolean(MyAccount.Companion.KEY_IS_SYNCABLE,
+                    ContentResolver.getIsSyncable(androidAccount, MatchedUri.Companion.AUTHORITY) != 0)
+            accountData.setDataBoolean(MyAccount.Companion.KEY_IS_SYNCED_AUTOMATICALLY,
+                    ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.Companion.AUTHORITY))
+            accountData.logMe("Loaded from account " + androidAccount.name)
+            return accountData
         }
 
-        @Override
-        public AccountData[] newArray(int size) {
-            return new AccountData[size];
+        private fun fromJsonString(myContext: MyContext?, userData: String?, persistent: Boolean): AccountData? {
+            return JsonUtils.toJsonObject(userData).map { jso: JSONObject? -> fromJson(myContext, jso, persistent) }.getOrElse(EMPTY)
         }
-    };
-    
-    static AccountData fromBundle(MyContext myContext, Bundle bundle) {
-        String jsonString = "";
-        if (bundle != null) {
-            jsonString = bundle.getString(AccountUtils.KEY_ACCOUNT);
+
+        fun fromJson(myContext: MyContext?, jso: JSONObject, persistent: Boolean): AccountData? {
+            return AccountData(myContext, jso, persistent)
         }
-        return fromJsonString(myContext, jsonString, false).logMe("Loaded from bundle");
-    }
 
-    private AccountData logMe(String msg) {
-        MyLog.v(this, () -> msg + ":\n" + toJsonString());
-        return this;
-    }
+        fun fromAccountName(accountName: AccountName): AccountData? {
+            return AccountData(accountName, JSONObject())
+        }
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
+        val CREATOR: Parcelable.Creator<AccountData?>? = object : Parcelable.Creator<AccountData?> {
+            override fun createFromParcel(source: Parcel?): AccountData? {
+                return fromBundle(MyContextHolder.Companion.myContextHolder.getNow(), source.readBundle())
+            }
 
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(toJsonString());
-    }
+            override fun newArray(size: Int): Array<AccountData?>? {
+                return arrayOfNulls<AccountData?>(size)
+            }
+        }
 
-    public JSONObject toJSon() {
-        return data;
-    }
-
-    public String toJsonString() {
-        return JsonUtils.toString(data, 2);
-    }
-
-    @Override
-    public long getInstanceId() {
-        return instanceId;
-    }
-
-    @Override
-    public String classTag() {
-        return TAG;
+        fun fromBundle(myContext: MyContext?, bundle: Bundle?): AccountData? {
+            var jsonString: String? = ""
+            if (bundle != null) {
+                jsonString = bundle.getString(AccountUtils.KEY_ACCOUNT)
+            }
+            return fromJsonString(myContext, jsonString, false).logMe("Loaded from bundle")
+        }
     }
 }

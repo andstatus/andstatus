@@ -13,42 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.origin
 
-package org.andstatus.app.origin;
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.net.social.Visibility
+import org.andstatus.app.util.MyLog
+import java.net.MalformedURLException
+import java.net.URL
+import java.util.*
 
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.social.Visibility;
-import org.andstatus.app.util.MyLog;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Optional;
-
-class OriginGnuSocial extends Origin {
-    private static final Optional<Character> GROUP_ACTOR_REFERENCE_CHARACTER = Optional.of('!');
-
-    OriginGnuSocial(MyContext myContext, OriginType originType) {
-        super(myContext, originType);
-    }
-
-    @Override
-    protected String alternativeNotePermalink(long noteId) {
+internal class OriginGnuSocial(myContext: MyContext?, originType: OriginType?) : Origin(myContext, originType) {
+    override fun alternativeNotePermalink(noteId: Long): String? {
         try {
-            return new URL(url,
-                    (Visibility.fromNoteId(noteId).isPrivate()
-                            ? "message"
-                            : "notice") + "/"
-                    + MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId)).toExternalForm();
-        } catch (MalformedURLException e) {
-            MyLog.d(this, "Malformed URL from '" + url.toExternalForm() + "'", e);
+            return URL(url,
+                    (if (Visibility.Companion.fromNoteId(noteId).isPrivate()) "message" else "notice") + "/"
+                            + MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId)).toExternalForm()
+        } catch (e: MalformedURLException) {
+            MyLog.d(this, "Malformed URL from '" + url.toExternalForm() + "'", e)
         }
-        return "";
+        return ""
     }
 
-    @Override
-    public Optional<Character> groupActorReferenceChar() {
-        return GROUP_ACTOR_REFERENCE_CHARACTER;
+    override fun groupActorReferenceChar(): Optional<Char?>? {
+        return GROUP_ACTOR_REFERENCE_CHARACTER
+    }
+
+    companion object {
+        private val GROUP_ACTOR_REFERENCE_CHARACTER: Optional<Char?>? = Optional.of('!')
     }
 }

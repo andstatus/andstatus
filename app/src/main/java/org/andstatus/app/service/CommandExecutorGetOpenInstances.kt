@@ -13,68 +13,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
+import io.vavr.control.CheckedFunction
+import io.vavr.control.Try
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.net.social.Connection
+import org.andstatus.app.net.social.Server
+import org.andstatus.app.origin.DiscoveredOrigins
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.TriState
+import java.net.URL
+import java.util.*
 
-import org.andstatus.app.net.social.Connection;
-import org.andstatus.app.net.social.Server;
-import org.andstatus.app.origin.DiscoveredOrigins;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.TriState;
-
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
-import io.vavr.control.Try;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class CommandExecutorGetOpenInstances extends CommandExecutorStrategy {
-
-    public CommandExecutorGetOpenInstances(CommandExecutionContext execContext) {
-        super(execContext);
+class CommandExecutorGetOpenInstances(execContext: CommandExecutionContext?) : CommandExecutorStrategy(execContext) {
+    public override fun execute(): Try<Boolean?>? {
+        return Connection.Companion.fromMyAccount(execContext.myAccount, TriState.UNKNOWN)
+                .getOpenInstances()
+                .map<Boolean?>(CheckedFunction { result: MutableList<Server?>? -> saveDiscoveredOrigins(result) })
     }
 
-    @Override
-    Try<Boolean> execute() {
-        return Connection.fromMyAccount(execContext.getMyAccount(), TriState.UNKNOWN)
-        .getOpenInstances()
-        .map(this::saveDiscoveredOrigins);
-    }
-
-    private Boolean saveDiscoveredOrigins(List<Server> result) {
-        Origin execOrigin = execContext.getCommandData().getTimeline().getOrigin();
-        List<Origin> newOrigins = new ArrayList<>();
-        for (Server mbOrigin : result) {
-            execContext.getResult().incrementDownloadedCount();
-            Origin origin = new Origin.Builder(execContext.myContext, execOrigin.getOriginType()).setName(mbOrigin.name)
+    private fun saveDiscoveredOrigins(result: MutableList<Server?>?): Boolean? {
+        val execOrigin = execContext.commandData.timeline.origin
+        val newOrigins: MutableList<Origin?> = ArrayList()
+        for (mbOrigin in result) {
+            execContext.result.incrementDownloadedCount()
+            val origin = Origin.Builder(execContext.myContext, execOrigin.originType).setName(mbOrigin.name)
                     .setHostOrUrl(mbOrigin.urlString)
-                    .build();
-            if (origin.isValid()
-                    && !myContextHolder.getNow().origins().fromName(origin.getName())
-                    .isValid()
-                    && !haveOriginsWithThisHostName(origin.getUrl())) {
-                newOrigins.add(origin);
+                    .build()
+            if (origin.isValid
+                    && !MyContextHolder.Companion.myContextHolder.getNow().origins().fromName(origin.name)
+                            .isValid()
+                    && !haveOriginsWithThisHostName(origin.url)) {
+                newOrigins.add(origin)
             } else {
-                MyLog.d(this, "Origin is not valid: " + origin.toString());
+                MyLog.d(this, "Origin is not valid: $origin")
             }
         }
-        DiscoveredOrigins.replaceAll(newOrigins);
-        return true;
+        DiscoveredOrigins.replaceAll(newOrigins)
+        return true
     }
 
-    private boolean haveOriginsWithThisHostName(URL url) {
+    private fun haveOriginsWithThisHostName(url: URL?): Boolean {
         if (url == null) {
-            return true;
+            return true
         }
-        for (Origin origin : myContextHolder.getNow().origins().collection()) {
-            if ( origin.getUrl() != null && origin.getUrl().getHost().equals(url.getHost())) {
-                return true;
+        for (origin in MyContextHolder.Companion.myContextHolder.getNow().origins().collection()) {
+            if (origin.getUrl() != null && origin.getUrl().host == url.host) {
+                return true
             }
         }
-        return false;
+        return false
     }
-
 }

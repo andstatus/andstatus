@@ -13,128 +13,120 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.graphics
 
-package org.andstatus.app.graphics;
-
-import android.content.Context;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.view.View;
-
-import org.andstatus.app.R;
-import org.andstatus.app.util.MyLog;
+import android.content.Context
+import android.util.AttributeSet
+import android.util.Log
+import android.view.View
+import org.andstatus.app.R
+import org.andstatus.app.graphics.AttachedImageView
+import org.andstatus.app.util.MyLog
 
 /**
- * The ImageView auto resizes to the width of the referenced view  
+ * The ImageView auto resizes to the width of the referenced view
  * @author yvolk@yurivolkov.com
  */
-public class AttachedImageView extends IdentifiableImageView {
-    public static final double MAX_ATTACHED_IMAGE_PART = 0.75;
+class AttachedImageView : IdentifiableImageView {
+    private var referencedView: View? = null
+    private var heightLocked = false
+    private var widthMeasureSpecStored = 0
+    private var heightMeasureSpecStored = 0
 
-    private View referencedView = null;
-    private static final int MAX_HEIGHT = 2500;
+    constructor(context: Context?) : super(context) {}
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
+    constructor(context: Context?, attrs: AttributeSet?, defStyle: Int) : super(context, attrs, defStyle) {}
 
-    private boolean heightLocked = false;
-    private int widthMeasureSpecStored = 0;
-    private int heightMeasureSpecStored = 0;
-
-    public AttachedImageView(Context context) {
-        super(context);
+    fun setReferencedView(referencedViewIn: View?) {
+        referencedView = referencedViewIn
     }
 
-    public AttachedImageView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
-
-    public AttachedImageView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-    }
-
-    public void setReferencedView(View referencedViewIn) {
-        referencedView = referencedViewIn;
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        final String method = "onMeasure";
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val method = "onMeasure"
         if (heightLocked && heightMeasureSpecStored != 0) {
-            saveMeasureSpec(widthMeasureSpecStored, heightMeasureSpecStored);
-            setMeasuredDimension(widthMeasureSpecStored, heightMeasureSpecStored);
-            return;
+            saveMeasureSpec(widthMeasureSpecStored, heightMeasureSpecStored)
+            setMeasuredDimension(widthMeasureSpecStored, heightMeasureSpecStored)
+            return
         }
         if (referencedView == null) {
-            referencedView =  ((View)getParent().getParent()).findViewById(R.id.note_body);
+            referencedView = (parent.parent as View).findViewById(R.id.note_body)
         }
         if (referencedView == null) {
-            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-            saveMeasureSpec(getMeasuredWidthAndState(), getMeasuredHeightAndState());
-            return;
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+            saveMeasureSpec(measuredWidthAndState, measuredHeightAndState)
+            return
         }
-        int refWidthPixels = referencedView.getMeasuredWidth();
-        int height = (int) Math.floor(refWidthPixels * getDrawableHeightToWidthRatio());
-        logIt(method, refWidthPixels, widthMeasureSpec, height);
-        int mode = MeasureSpec.EXACTLY;
+        val refWidthPixels = referencedView.getMeasuredWidth()
+        var height = Math.floor((refWidthPixels * getDrawableHeightToWidthRatio()).toDouble()) as Int
+        logIt(method, refWidthPixels, widthMeasureSpec, height.toFloat())
+        var mode = MeasureSpec.EXACTLY
         if (height == 0) {
-            height = MAX_HEIGHT;
-            mode = MeasureSpec.AT_MOST;
+            height = MAX_HEIGHT
+            mode = MeasureSpec.AT_MOST
         }
         if (height > MAX_ATTACHED_IMAGE_PART * getDisplayHeight()) {
-            height = (int) Math.floor(MAX_ATTACHED_IMAGE_PART
-                    * getDisplayHeight());
+            height = Math.floor(MAX_ATTACHED_IMAGE_PART
+                    * getDisplayHeight()) as Int
         }
-        getLayoutParams().height = height;
-        int widthSpec = MeasureSpec.makeMeasureSpec(refWidthPixels,  MeasureSpec.EXACTLY);
-        int heightSpec = MeasureSpec.makeMeasureSpec(height, mode);
-        saveMeasureSpec(widthSpec, heightSpec);
-        setMeasuredDimension(widthSpec, heightSpec);
+        layoutParams.height = height
+        val widthSpec = MeasureSpec.makeMeasureSpec(refWidthPixels, MeasureSpec.EXACTLY)
+        val heightSpec = MeasureSpec.makeMeasureSpec(height, mode)
+        saveMeasureSpec(widthSpec, heightSpec)
+        setMeasuredDimension(widthSpec, heightSpec)
     }
 
-    private void logIt(String method, Integer refWidthPixels, int widthMeasureSpec, float height) {
-        if (isInEditMode() || !MyLog.isVerboseEnabled()) {
-            return;
+    private fun logIt(method: String?, refWidthPixels: Int?, widthMeasureSpec: Int, height: Float) {
+        if (isInEditMode || !MyLog.isVerboseEnabled()) {
+            return
         }
         // We need to catch an error here in order to work in Android Editor preview
         try {
-            MyLog.v(this, () -> method + ";"
-                    + (heightLocked ? "locked" : "      ")
-                    + " height=" + height
-                    + ", widthSpec=" + MeasureSpec.toString(widthMeasureSpec)
-                    + (refWidthPixels == null ? "" : " refWidth=" + refWidthPixels + ",")
-            );
-        } catch (Exception e) {
-            Log.i(AttachedImageView.class.getSimpleName(), method + "; MyLog class was not found", e);
+            MyLog.v(this
+            ) {
+                (method + ";"
+                        + (if (heightLocked) "locked" else "      ")
+                        + " height=" + height
+                        + ", widthSpec=" + MeasureSpec.toString(widthMeasureSpec)
+                        + if (refWidthPixels == null) "" else " refWidth=$refWidthPixels,")
+            }
+        } catch (e: Exception) {
+            Log.i(AttachedImageView::class.java.simpleName, "$method; MyLog class was not found", e)
         }
     }
 
-    private void saveMeasureSpec(int widthMeasureSpec, int heightMeasureSpec) {
-        String method = "onMeasure";
-        logIt(method, null, widthMeasureSpec, heightMeasureSpec);
+    private fun saveMeasureSpec(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val method = "onMeasure"
+        logIt(method, null, widthMeasureSpec, heightMeasureSpec.toFloat())
         if (!heightLocked) {
             widthMeasureSpecStored = MeasureSpec.makeMeasureSpec(
-                    MeasureSpec.getSize(widthMeasureSpec),  MeasureSpec.AT_MOST);
+                    MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.AT_MOST)
             heightMeasureSpecStored = MeasureSpec.makeMeasureSpec(
-                    MeasureSpec.getSize(heightMeasureSpec),  MeasureSpec.EXACTLY);
+                    MeasureSpec.getSize(heightMeasureSpec), MeasureSpec.EXACTLY)
         }
     }
 
-    public int getDisplayHeight() {
-        return ImageCaches.getDisplaySize(getContext()).y;
+    fun getDisplayHeight(): Int {
+        return ImageCaches.getDisplaySize(context).y
     }
 
-    private float getDrawableHeightToWidthRatio() {
-        float ratio = 9f / 19f;
-        if (getDrawable() != null) {
-            int width = getDrawable().getIntrinsicWidth();
-            int height = getDrawable().getIntrinsicHeight();
+    private fun getDrawableHeightToWidthRatio(): Float {
+        var ratio = 9f / 19f
+        if (drawable != null) {
+            val width = drawable.intrinsicWidth
+            val height = drawable.intrinsicHeight
             if (width > 0 && height > 0) {
-                ratio = 1f * height / width;
+                ratio = 1f * height / width
             }
         }
-        return ratio;
+        return ratio
     }
 
-    public void setMeasuresLocked(boolean locked) {
-        heightLocked = locked;
+    fun setMeasuresLocked(locked: Boolean) {
+        heightLocked = locked
     }
 
+    companion object {
+        const val MAX_ATTACHED_IMAGE_PART = 0.75
+        private const val MAX_HEIGHT = 2500
+    }
 }

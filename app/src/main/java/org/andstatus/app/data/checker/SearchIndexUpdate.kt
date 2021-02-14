@@ -13,83 +13,76 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data.checker
 
-package org.andstatus.app.data.checker;
-
-import android.database.Cursor;
-
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.social.Note;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyLog;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.andstatus.app.data.MyQuery.quoteIfNotQuoted;
+import android.provider.BaseColumns
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.net.social.Note
+import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.util.I18n
+import org.andstatus.app.util.MyLog
+import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.Consumer
 
 /**
  * @author yvolk@yurivolkov.com
  */
-class SearchIndexUpdate extends DataChecker {
-
-    @Override
-    long fixInternal() {
-        String sql = Note.getSqlToLoadContent(0) +
-                " ORDER BY " + NoteTable._ID + " DESC" +
-                (includeLong ? "" : " LIMIT 0, 10000");
-        List<Note> notesToFix = new ArrayList<>();
-        AtomicInteger counter = new AtomicInteger();
-        try (Cursor cursor = myContext.getDatabase().rawQuery(sql, null)) {
-            while (cursor.moveToNext()) {
-                if (logger.isCancelled()) break;
-
-                counter.incrementAndGet();
-                Note note = Note.contentFromCursor(myContext, cursor);
-                String contentToSearchStored = DbUtils.getString(cursor, NoteTable.CONTENT_TO_SEARCH);
-                if (!contentToSearchStored.equals(note.getContentToSearch())) {
-                    notesToFix.add(note);
-                    logger.logProgressIfLongProcess(() -> "Need to fix " + notesToFix.size() + " of " + counter.get() + " notes, "
-                            + ", id=" + note.noteId + "; "
-                            + I18n.trimTextAt(note.getContentToSearch(), 120));
+internal class SearchIndexUpdate : DataChecker() {
+    public override fun fixInternal(): Long {
+        val sql: String = Note.Companion.getSqlToLoadContent(0) +
+                " ORDER BY " + BaseColumns._ID + " DESC" +
+                if (includeLong) "" else " LIMIT 0, 10000"
+        val notesToFix: MutableList<Note?> = ArrayList()
+        val counter = AtomicInteger()
+        try {
+            myContext.database.rawQuery(sql, null).use { cursor ->
+                while (cursor.moveToNext()) {
+                    if (logger.isCancelled) break
+                    counter.incrementAndGet()
+                    val note: Note = Note.Companion.contentFromCursor(myContext, cursor)
+                    val contentToSearchStored = DbUtils.getString(cursor, NoteTable.CONTENT_TO_SEARCH)
+                    if (contentToSearchStored != note.contentToSearch) {
+                        notesToFix.add(note)
+                        logger.logProgressIfLongProcess {
+                            ("Need to fix " + notesToFix.size + " of " + counter.get() + " notes, "
+                                    + ", id=" + note.noteId + "; "
+                                    + I18n.trimTextAt(note.contentToSearch, 120))
+                        }
+                    }
                 }
             }
-        } catch (Exception e) {
-            String logMsg = "Error: " + e.getMessage() + ", SQL:" + sql;
-            logger.logProgress(logMsg);
-            MyLog.e(this, logMsg, e);
+        } catch (e: Exception) {
+            val logMsg = "Error: " + e.message + ", SQL:" + sql
+            logger.logProgress(logMsg)
+            MyLog.e(this, logMsg, e)
         }
-
-        if (!countOnly) notesToFix.forEach(this::fixOneNote);
-
-        logger.logProgress(notesToFix.isEmpty()
-                ? "No changes to search index were needed. " + counter + " notes"
-                : "Updated search index for " + notesToFix.size() + " of " + counter + " notes");
-        return notesToFix.size();
+        if (!countOnly) notesToFix.forEach(Consumer { note: Note? -> fixOneNote(note) })
+        logger.logProgress(if (notesToFix.isEmpty()) "No changes to search index were needed. $counter notes" else "Updated search index for " + notesToFix.size + " of " + counter + " notes")
+        return notesToFix.size
     }
 
-    private void fixOneNote(Note note) {
-        if (logger.isCancelled()) return;
-
-        String sql = "";
+    private fun fixOneNote(note: Note?) {
+        if (logger.isCancelled) return
+        var sql = ""
         try {
-            sql = "UPDATE " + NoteTable.TABLE_NAME
+            sql = ("UPDATE " + NoteTable.TABLE_NAME
                     + " SET "
-                    + NoteTable.CONTENT_TO_SEARCH + "=" + quoteIfNotQuoted(note.getContentToSearch())
-                    + " WHERE " + NoteTable._ID + "=" + note.noteId;
-            myContext.getDatabase().execSQL(sql);
-            logger.logProgressIfLongProcess(() -> "Updating search index for " +
-                    I18n.trimTextAt(note.getContentToSearch(), 120) +
-                    " id=" + note.noteId
-            );
-            MyServiceManager.setServiceUnavailable();
-        } catch (Exception e) {
-            String logMsg = "Error: " + e.getMessage() + ", SQL:" + sql;
-            logger.logProgress(logMsg);
-            MyLog.e(this, logMsg, e);
+                    + NoteTable.CONTENT_TO_SEARCH + "=" + MyQuery.quoteIfNotQuoted(note.getContentToSearch())
+                    + " WHERE " + BaseColumns._ID + "=" + note.noteId)
+            myContext.database.execSQL(sql)
+            logger.logProgressIfLongProcess {
+                "Updating search index for " +
+                        I18n.trimTextAt(note.getContentToSearch(), 120) +
+                        " id=" + note.noteId
+            }
+            MyServiceManager.Companion.setServiceUnavailable()
+        } catch (e: Exception) {
+            val logMsg = "Error: " + e.message + ", SQL:" + sql
+            logger.logProgress(logMsg)
+            MyLog.e(this, logMsg, e)
         }
     }
 }

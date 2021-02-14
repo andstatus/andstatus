@@ -1,19 +1,17 @@
-package org.andstatus.app.data;
+package org.andstatus.app.data
 
-import org.junit.Test;
+import org.junit.Assert
+import org.junit.Test
 
-import static org.junit.Assert.assertEquals;
-
-public class MyProviderTest {
-
+class MyProviderTest {
     @Test
-    public void testQuoteIfNotQuoted() {
-        assertEquals("Empty string", String.valueOf('\'') + String.valueOf('\''), MyQuery.quoteIfNotQuoted(""));
-        assertEquals("Null", String.valueOf('\'') + String.valueOf('\''), MyQuery.quoteIfNotQuoted(null));
-        assertEquals("string", "'toQuote'", MyQuery.quoteIfNotQuoted("toQuote"));
-        assertEquals("quoted", "'toQuote'", MyQuery.quoteIfNotQuoted("'toQuote'"));
-        assertEquals("quoted", "'to''Quote'", MyQuery.quoteIfNotQuoted("'to'Quote'"));
-        assertEquals("quoted", "'''toQuote'", MyQuery.quoteIfNotQuoted("'toQuote"));
-        assertEquals("quoted", "'''toQuo''te'", MyQuery.quoteIfNotQuoted("'toQuo'te"));
+    fun testQuoteIfNotQuoted() {
+        Assert.assertEquals("Empty string", '\''.toString() + '\''.toString(), MyQuery.quoteIfNotQuoted(""))
+        Assert.assertEquals("Null", '\''.toString() + '\''.toString(), MyQuery.quoteIfNotQuoted(null))
+        Assert.assertEquals("string", "'toQuote'", MyQuery.quoteIfNotQuoted("toQuote"))
+        Assert.assertEquals("quoted", "'toQuote'", MyQuery.quoteIfNotQuoted("'toQuote'"))
+        Assert.assertEquals("quoted", "'to''Quote'", MyQuery.quoteIfNotQuoted("'to'Quote'"))
+        Assert.assertEquals("quoted", "'''toQuote'", MyQuery.quoteIfNotQuoted("'toQuote"))
+        Assert.assertEquals("quoted", "'''toQuo''te'", MyQuery.quoteIfNotQuoted("'toQuo'te"))
     }
 }

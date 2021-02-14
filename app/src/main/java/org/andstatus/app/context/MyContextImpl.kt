@@ -13,45 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.context
 
-package org.andstatus.app.context;
-
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
-import android.os.Environment;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import net.jcip.annotations.ThreadSafe;
-
-import org.andstatus.app.ClassInApplicationPackage;
-import org.andstatus.app.FirstActivity;
-import org.andstatus.app.account.MyAccounts;
-import org.andstatus.app.data.converter.DatabaseConverterController;
-import org.andstatus.app.database.DatabaseHolder;
-import org.andstatus.app.graphics.ImageCaches;
-import org.andstatus.app.notification.NotificationData;
-import org.andstatus.app.notification.Notifier;
-import org.andstatus.app.origin.PersistentOrigins;
-import org.andstatus.app.service.CommandQueue;
-import org.andstatus.app.service.ConnectionState;
-import org.andstatus.app.timeline.meta.PersistentTimelines;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.user.CachedUsersAndActors;
-import org.andstatus.app.util.InstanceId;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.Permissions;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StopWatch;
-import org.andstatus.app.util.UriUtils;
-
-import java.util.function.Supplier;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.content.Context
+import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteException
+import android.os.Environment
+import net.jcip.annotations.ThreadSafe
+import org.andstatus.app.ClassInApplicationPackage
+import org.andstatus.app.FirstActivity
+import org.andstatus.app.account.MyAccounts
+import org.andstatus.app.data.converter.DatabaseConverterController
+import org.andstatus.app.database.DatabaseHolder
+import org.andstatus.app.graphics.ImageCaches
+import org.andstatus.app.notification.NotificationData
+import org.andstatus.app.notification.Notifier
+import org.andstatus.app.origin.PersistentOrigins
+import org.andstatus.app.service.CommandQueue
+import org.andstatus.app.service.ConnectionState
+import org.andstatus.app.timeline.meta.PersistentTimelines
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.user.CachedUsersAndActors
+import org.andstatus.app.util.InstanceId
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.Permissions
+import org.andstatus.app.util.Permissions.PermissionType
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StopWatch
+import org.andstatus.app.util.UriUtils
+import java.util.function.Supplier
 
 /**
  * Contains global state of the application
@@ -59,227 +51,201 @@ import static org.andstatus.app.context.MyContextHolder.myContextHolder;
  * @author yvolk@yurivolkov.com
  */
 @ThreadSafe
-public class MyContextImpl implements MyContext {
-    private static final String TAG = MyContextImpl.class.getSimpleName();
-    private static volatile boolean inForeground = false;
-    private static volatile long inForegroundChangedAt = 0;
-    private static final long CONSIDER_IN_BACKGROUND_AFTER_SECONDS = 20;
+open class MyContextImpl internal constructor(parent: MyContextImpl?, context: Context?, initializer: Any?) : MyContext {
+    val instanceId = InstanceId.next()
 
-    final long instanceId = InstanceId.next();
+    @Volatile
+    private var state: MyContextState? = MyContextState.EMPTY
+    private val baseContext: Context?
+    private val context: Context?
+    private val initializedBy: String?
 
-    private volatile MyContextState state = MyContextState.EMPTY;
-    private final Context baseContext;
-    private final Context context;
-    private final String initializedBy;
     /**
      * When preferences, loaded into this class, were changed
      */
-    private volatile long preferencesChangeTime = 0;
+    @Volatile
+    private var preferencesChangeTime: Long = 0
 
-    private volatile DatabaseHolder db = null;
-    private volatile String lastDatabaseError = "";
+    @Volatile
+    private var db: DatabaseHolder? = null
 
-    private final CachedUsersAndActors users = CachedUsersAndActors.newEmpty(this);
-    private final MyAccounts accounts = MyAccounts.newEmpty(this);
-    private final PersistentOrigins origins = PersistentOrigins.newEmpty(this);
-    private final PersistentTimelines timelines = PersistentTimelines.newEmpty(this);
-    private final CommandQueue commandQueue = new CommandQueue(this);
+    @Volatile
+    private var lastDatabaseError: String? = ""
+    private val users: CachedUsersAndActors? = CachedUsersAndActors.Companion.newEmpty(this)
+    private val accounts: MyAccounts? = MyAccounts.Companion.newEmpty(this)
+    private val origins: PersistentOrigins? = PersistentOrigins.Companion.newEmpty(this)
+    private val timelines: PersistentTimelines? = PersistentTimelines.Companion.newEmpty(this)
+    private val commandQueue: CommandQueue? = CommandQueue(this)
 
-    private volatile boolean expired = false;
-    private final Notifier notifier = new Notifier(this);
-
-    MyContextImpl(MyContextImpl parent, Context context, Object initializer) {
-        initializedBy = MyStringBuilder.objToTag(initializer);
-        baseContext = calcContextToUse(parent, context);
-        this.context = MyLocale.onAttachBaseContext(baseContext);
-        if (parent != null) {
-            lastDatabaseError = parent.getLastDatabaseError();
-        }
-    }
-
-    @Nullable
-    private Context calcContextToUse(MyContextImpl parent, Context contextIn) {
-        Context context = contextIn == null ? (parent == null ? null : parent.context()) : contextIn;
-        if (context == null) return null;
-
-        Context contextToUse = context.getApplicationContext();
-        if ( contextToUse == null) {
+    @Volatile
+    private var expired = false
+    private val notifier: Notifier? = Notifier(this)
+    private fun calcContextToUse(parent: MyContextImpl?, contextIn: Context?): Context? {
+        val context = contextIn ?: parent?.context() ?: return null
+        var contextToUse = context.applicationContext
+        if (contextToUse == null) {
             MyLog.w(parent, "getApplicationContext is null, trying the context itself: "
-                    + context.getClass().getName());
-            contextToUse = context;
+                    + context.javaClass.name)
+            contextToUse = context
         }
         // TODO: Maybe we need to determine if the context is compatible, using some Interface...
         // ...but we don't have any yet.
-        if (!contextToUse.getClass().getName().contains(ClassInApplicationPackage.PACKAGE_NAME)) {
-            MyLog.w(parent, "Incompatible context: " + contextToUse.getClass().getName());
-            contextToUse = null;
+        if (!contextToUse.javaClass.name.contains(ClassInApplicationPackage.PACKAGE_NAME)) {
+            MyLog.w(parent, "Incompatible context: " + contextToUse.javaClass.name)
+            contextToUse = null
         }
-        return contextToUse;
+        return contextToUse
     }
 
-
-    @Override
-    public MyContext newInitialized(Object initializer) {
-        return new MyContextImpl(this, context(), initializer).initialize();
+    override fun newInitialized(initializer: Any?): MyContext? {
+        return MyContextImpl(this, context(), initializer).initialize()
     }
 
-    MyContext initialize() {
-        StopWatch stopWatch = StopWatch.createStarted();
-        MyLog.i(this, "Starting initialization by " + initializedBy);
-        MyContext myContext = initializeInternal(initializedBy);
-        MyLog.i(this, "myContextInitializedMs:" + stopWatch.getTime() + "; "
-                + state + " by " + initializedBy);
-        return myContext;
+    fun initialize(): MyContext? {
+        val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+        MyLog.i(this, "Starting initialization by $initializedBy")
+        val myContext: MyContext? = initializeInternal(initializedBy)
+        MyLog.i(this, "myContextInitializedMs:" + stopWatch.time + "; "
+                + state + " by " + initializedBy)
+        return myContext
     }
 
-    private MyContextImpl initializeInternal(Object initializer) {
-        final String method = "initialize";
-        if ( context == null) return this;
-
-        if (!Permissions.checkPermission(context, Permissions.PermissionType.GET_ACCOUNTS)) {
-            state = MyContextState.NO_PERMISSIONS;
-            return this;
+    private fun initializeInternal(initializer: Any?): MyContextImpl? {
+        val method = "initialize"
+        if (context == null) return this
+        if (!Permissions.checkPermission(context, PermissionType.GET_ACCOUNTS)) {
+            state = MyContextState.NO_PERMISSIONS
+            return this
         }
-
-        boolean createApplicationData = MyStorage.isApplicationDataCreated().untrue;
+        val createApplicationData = MyStorage.isApplicationDataCreated().untrue
         if (createApplicationData) {
-            Context context2 = initializer instanceof Context ? (Context) initializer : context;
-            if (!FirstActivity.setDefaultValues(context2)) {
-                setExpired(() -> "No default values yet");
-                return this;
+            val context2 = if (initializer is Context) initializer as Context? else context
+            if (!FirstActivity.Companion.setDefaultValues(context2)) {
+                setExpired { "No default values yet" }
+                return this
             }
-            MyLog.i(this, method + "; Creating application data");
-            tryToSetExternalStorageOnDataCreation();
+            MyLog.i(this, "$method; Creating application data")
+            tryToSetExternalStorageOnDataCreation()
         }
-        preferencesChangeTime = MyPreferences.getPreferencesChangeTime();
-        initializeDatabase(createApplicationData);
-
-        switch (state) {
-            case DATABASE_READY:
-                if (!origins.initialize()) {
-                    state = MyContextState.DATABASE_UNAVAILABLE;
-                } else if (myContextHolder.isOnRestore()) {
-                    state = MyContextState.RESTORING;
-                } else {
-                    users.initialize();
-                    accounts.initialize();
-                    timelines.initialize();
-                    ImageCaches.initialize(context());
-                    commandQueue.load();
-                    state = MyContextState.READY;
-                }
-                break;
-            default:
-                break;
+        preferencesChangeTime = MyPreferences.getPreferencesChangeTime()
+        initializeDatabase(createApplicationData)
+        when (state) {
+            MyContextState.DATABASE_READY -> state = if (!origins.initialize()) {
+                MyContextState.DATABASE_UNAVAILABLE
+            } else if (MyContextHolder.Companion.myContextHolder.isOnRestore()) {
+                MyContextState.RESTORING
+            } else {
+                users.initialize()
+                accounts.initialize()
+                timelines.initialize()
+                ImageCaches.initialize(context())
+                commandQueue.load()
+                MyContextState.READY
+            }
+            else -> {
+            }
         }
         if (state == MyContextState.READY) {
-            notifier.initialize();
+            notifier.initialize()
         }
-        return this;
+        return this
     }
 
-    private void initializeDatabase(boolean createApplicationData) {
-        StopWatch stopWatch = StopWatch.createStarted();
-        final String method = "initializeDatabase";
-        DatabaseHolder newDb = new DatabaseHolder(baseContext, createApplicationData);
+    private fun initializeDatabase(createApplicationData: Boolean) {
+        val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+        val method = "initializeDatabase"
+        val newDb = DatabaseHolder(baseContext, createApplicationData)
         try {
-            state = newDb.checkState();
+            state = newDb.checkState()
             if (state() == MyContextState.DATABASE_READY && MyStorage.isApplicationDataCreated().untrue) {
-                state = MyContextState.ERROR;
+                state = MyContextState.ERROR
             }
-        } catch (SQLiteException | IllegalStateException e) {
-            logDatabaseError(method, e);
-            state = MyContextState.ERROR;
-            newDb.close();
-            db = null;
+        } catch (e: SQLiteException) {
+            logDatabaseError(method, e)
+            state = MyContextState.ERROR
+            newDb.close()
+            db = null
+        } catch (e: IllegalStateException) {
+            logDatabaseError(method, e)
+            state = MyContextState.ERROR
+            newDb.close()
+            db = null
         }
         if (state() == MyContextState.DATABASE_READY) {
-            db = newDb;
+            db = newDb
         }
-        MyLog.i(this, "databaseInitializedMs: " + stopWatch.getTime() + "; " + state);
+        MyLog.i(this, "databaseInitializedMs: " + stopWatch.time + "; " + state)
     }
 
-    private void logDatabaseError(String method, Exception e) {
-        MyLog.w(this, method + "; Error", e);
-        lastDatabaseError = e.getMessage();
+    private fun logDatabaseError(method: String?, e: Exception?) {
+        MyLog.w(this, "$method; Error", e)
+        lastDatabaseError = e.message
     }
 
-    @Override
-    public String getLastDatabaseError() {
-        return lastDatabaseError;
+    override fun getLastDatabaseError(): String? {
+        return lastDatabaseError
     }
 
-    private void tryToSetExternalStorageOnDataCreation() {
-        boolean useExternalStorage = !Environment.isExternalStorageEmulated()
-                && MyStorage.isWritableExternalStorageAvailable(null);
-        MyLog.i(this, "External storage is " + (useExternalStorage ? "" : "not") + " used");
-        SharedPreferencesUtil.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, useExternalStorage);
+    private fun tryToSetExternalStorageOnDataCreation() {
+        val useExternalStorage = (!Environment.isExternalStorageEmulated()
+                && MyStorage.isWritableExternalStorageAvailable(null))
+        MyLog.i(this, "External storage is " + (if (useExternalStorage) "" else "not") + " used")
+        SharedPreferencesUtil.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, useExternalStorage)
     }
 
-    @Override
-    public String toString() {
-        return  instanceTag() + " by " + initializedBy + "; state=" + state +
-                (isExpired() ? "; expired" : "") +
+    override fun toString(): String {
+        return instanceTag() + " by " + initializedBy + "; state=" + state +
+                (if (isExpired) "; expired" else "") +
                 "; " + accounts().size() + " accounts, " +
-                (context == null ? "no context" : "context=" + context.getClass().getName());
+                if (context == null) "no context" else "context=" + context.javaClass.name
     }
 
-    @Override
-    public MyContext newCreator(Context context, Object initializer) {
-        return new MyContextImpl(null, context, initializer);
+    override fun newCreator(context: Context?, initializer: Any?): MyContext? {
+        return MyContextImpl(null, context, initializer)
     }
 
-    @Override
-    public boolean initialized() {
-        return state != MyContextState.EMPTY;
+    override fun initialized(): Boolean {
+        return state != MyContextState.EMPTY
     }
 
-    @Override
-    public boolean isReady() {
-        return state == MyContextState.READY && !DatabaseConverterController.isUpgrading();
+    override fun isReady(): Boolean {
+        return state == MyContextState.READY && !DatabaseConverterController.Companion.isUpgrading()
     }
 
-    @Override
-    public MyContextState state() {
-        return state;
-    }
-    
-    @Override
-    public Context context() {
-        return context;
+    override fun state(): MyContextState? {
+        return state
     }
 
-    @Override
-    public Context baseContext() {
-        return baseContext;
+    override fun context(): Context? {
+        return context
     }
 
-    @Override
-    public long preferencesChangeTime() {
-        return preferencesChangeTime;
-    }
-    
-    @Override
-    public DatabaseHolder getMyDatabase() {
-        return db;
+    override fun baseContext(): Context? {
+        return baseContext
     }
 
-    @Override
-    public SQLiteDatabase getDatabase() {
-        if (db == null || isExpired()) {
-            return null;
+    override fun preferencesChangeTime(): Long {
+        return preferencesChangeTime
+    }
+
+    override fun getMyDatabase(): DatabaseHolder? {
+        return db
+    }
+
+    override fun getDatabase(): SQLiteDatabase? {
+        if (db == null || isExpired) {
+            return null
         }
         try {
-            return this.db.getWritableDatabase();
-        } catch (Exception e) {
-            MyLog.e(this, "getDatabase", e);
+            return db.getWritableDatabase()
+        } catch (e: Exception) {
+            MyLog.e(this, "getDatabase", e)
         }
-        return null;
+        return null
     }
 
-    @Override
-    public void save(Supplier<String> reason) {
-        commandQueue.save();
+    override fun save(reason: Supplier<String?>?) {
+        commandQueue.save()
     }
 
     /**
@@ -287,111 +253,109 @@ public class MyContextImpl implements MyContext {
      * but also "SQLiteException: no such table" and "Failed to open database" in Android 9
      * and reading https://stackoverflow.com/questions/50476782/android-p-sqlite-no-such-table-error-after-copying-database-from-assets
      * and https://stackoverflow.com/questions/4557154/android-sqlite-db-when-to-close?noredirect=1&lq=1
-     * I decided to db.close on every context release in order to have new instance for each MyContext */
-    @Override
-    public void release(Supplier<String> reason) {
-        setExpired(() -> "Release " + reason.get());
+     * I decided to db.close on every context release in order to have new instance for each MyContext  */
+    override fun release(reason: Supplier<String?>?) {
+        setExpired { "Release " + reason.get() }
         try {
-            if (db != null) db.close();
-        } catch (Exception e) {
-            MyLog.d(this, "db.close()", e);
+            if (db != null) db.close()
+        } catch (e: Exception) {
+            MyLog.d(this, "db.close()", e)
         }
     }
 
-    @Override
-    @NonNull
-    public CachedUsersAndActors users() {
-        return users;
+    override fun users(): CachedUsersAndActors {
+        return users
     }
 
-    @Override
-    @NonNull
-    public MyAccounts accounts() {
-        return accounts;
+    override fun accounts(): MyAccounts {
+        return accounts
     }
 
-    @Override
-    public boolean isExpired() {
-        return expired;
+    override fun isExpired(): Boolean {
+        return expired
     }
 
-    @Override
-    public void setExpired(Supplier<String> reason) {
-        MyLog.v(this, () -> "setExpired " + reason.get());
-        expired = true;
-        state = MyContextState.EXPIRED;
+    override fun setExpired(reason: Supplier<String?>?) {
+        MyLog.v(this) { "setExpired " + reason.get() }
+        expired = true
+        state = MyContextState.EXPIRED
     }
 
-    @NonNull
-    @Override
-    public PersistentOrigins origins() {
-        return origins;
+    override fun origins(): PersistentOrigins {
+        return origins
     }
 
-    @NonNull
-    @Override
-    public PersistentTimelines timelines() {
-        return timelines;
+    override fun timelines(): PersistentTimelines {
+        return timelines
     }
 
-    @NonNull
-    @Override
-    public CommandQueue queues() {
-        return commandQueue;
+    override fun queues(): CommandQueue {
+        return commandQueue
     }
 
-    @Override
-    public ConnectionState getConnectionState() {
-        return UriUtils.getConnectionState(context);
+    override fun getConnectionState(): ConnectionState? {
+        return UriUtils.getConnectionState(context)
     }
 
-    @Override
-    public boolean isInForeground() {
-        if (!inForeground
+    override fun isInForeground(): Boolean {
+        return if (!inForeground
                 && !RelativeTime.moreSecondsAgoThan(inForegroundChangedAt,
                         CONSIDER_IN_BACKGROUND_AFTER_SECONDS)) {
-            return true;
+            true
+        } else inForeground
+    }
+
+    override fun setInForeground(inForeground: Boolean) {
+        setInForegroundStatic(inForeground)
+    }
+
+    override fun getNotifier(): Notifier? {
+        return notifier
+    }
+
+    override fun notify(data: NotificationData?) {
+        notifier.notifyAndroid(data)
+    }
+
+    override fun clearNotifications(timeline: Timeline) {
+        notifier.clear(timeline)
+    }
+
+    override fun getInstanceId(): Long {
+        return instanceId
+    }
+
+    override fun classTag(): String? {
+        return TAG
+    }
+
+    companion object {
+        private val TAG: String? = MyContextImpl::class.java.simpleName
+
+        @Volatile
+        private var inForeground = false
+
+        @Volatile
+        private var inForegroundChangedAt: Long = 0
+        private const val CONSIDER_IN_BACKGROUND_AFTER_SECONDS: Long = 20
+
+        /** To avoid "Write to static field" warning
+         * On static members in interfaces: http://stackoverflow.com/questions/512877/why-cant-i-define-a-static-method-in-a-java-interface
+         */
+        private fun setInForegroundStatic(inForeground: Boolean) {
+            if (Companion.inForeground != inForeground) {
+                inForegroundChangedAt = System.currentTimeMillis()
+            }
+            Companion.inForeground = inForeground
         }
-        return inForeground;
     }
 
-    @Override
-    public void setInForeground(boolean inForeground) {
-        setInForegroundStatic(inForeground);
-    }
-    
-    /** To avoid "Write to static field" warning  
-     *  On static members in interfaces: http://stackoverflow.com/questions/512877/why-cant-i-define-a-static-method-in-a-java-interface
-     * */
-    private static void setInForegroundStatic(boolean inForeground) {
-        if (MyContextImpl.inForeground != inForeground) {
-            inForegroundChangedAt = System.currentTimeMillis();
+    init {
+        initializedBy = MyStringBuilder.Companion.objToTag(initializer)
+        baseContext = calcContextToUse(parent, context)
+        this.context = MyLocale.onAttachBaseContext(baseContext)
+        if (parent != null) {
+            lastDatabaseError = parent.getLastDatabaseError()
         }
-        MyContextImpl.inForeground = inForeground;
-    }
-
-    @Override
-    public Notifier getNotifier() {
-        return notifier;
-    }
-
-    @Override
-	public void notify(NotificationData data) {
-        notifier.notifyAndroid(data);
-	}
-
-	@Override
-	public void clearNotifications(@NonNull Timeline timeline) {
-        notifier.clear(timeline);
-	}
-
-    @Override
-    public long getInstanceId() {
-        return instanceId;
-    }
-
-    @Override
-    public String classTag() {
-        return TAG;
     }
 }

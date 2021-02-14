@@ -13,48 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import org.andstatus.app.R
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.timeline.BaseTimelineAdapter
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.MyUrlSpan
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
-import org.andstatus.app.R;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.timeline.BaseTimelineAdapter;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.MyUrlSpan;
-
-import java.util.List;
-
-class QueueViewerAdapter extends BaseTimelineAdapter<QueueData> {
-    private final QueueViewer container;
-
-    QueueViewerAdapter(QueueViewer container, List<QueueData> items) {
-        super(container.getMyContext(),
-                container.getMyContext().timelines().get(TimelineType.COMMANDS_QUEUE, Actor.EMPTY, Origin.EMPTY),
-                items);
-        this.container = container;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View view = convertView == null ? newView() : convertView;
-        view.setOnCreateContextMenuListener(container);
-        view.setOnClickListener(this);
-        setPosition(view, position);
-        QueueData item = getItem(position);
-        MyUrlSpan.showText(view, R.id.queue_type, item.queueType.getAcronym(), false, false);
-        MyUrlSpan.showText(view, R.id.command_summary, item.commandData.toCommandSummary(myContext)
+internal class QueueViewerAdapter(private val container: QueueViewer?, items: MutableList<QueueData?>?) : BaseTimelineAdapter<QueueData?>(container.getMyContext(),
+        container.getMyContext().timelines()[TimelineType.COMMANDS_QUEUE, Actor.Companion.EMPTY, Origin.Companion.EMPTY],
+        items) {
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
+        val view = convertView ?: newView()
+        view.setOnCreateContextMenuListener(container)
+        view.setOnClickListener(this)
+        setPosition(view, position)
+        val item = getItem(position)
+        MyUrlSpan.Companion.showText(view, R.id.queue_type, item.queueType.acronym, false, false)
+        MyUrlSpan.Companion.showText(view, R.id.command_summary, item.commandData.toCommandSummary(myContext)
                 + "\t "
-                + item.commandData.createdDateWithLabel(myContext.context()), false, false);
-        MyUrlSpan.showText(view, R.id.result_summary, item.commandData.getResult().toSummary(), false, false);
-        return view;
+                + item.commandData.createdDateWithLabel(myContext.context()), false, false)
+        MyUrlSpan.Companion.showText(view, R.id.result_summary, item.commandData.result.toSummary(), false, false)
+        return view
     }
 
-    private View newView() {
-        return LayoutInflater.from(container).inflate(R.layout.queue_item, null);
+    private fun newView(): View? {
+        return LayoutInflater.from(container).inflate(R.layout.queue_item, null)
     }
 }

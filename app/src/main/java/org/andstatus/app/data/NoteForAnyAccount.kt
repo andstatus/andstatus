@@ -13,99 +13,94 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data
 
-package org.andstatus.app.data;
-
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.database.table.ActivityTable;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.Audience;
-import org.andstatus.app.net.social.Visibility;
-import org.andstatus.app.note.NoteDownloads;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.util.I18n;
-import org.andstatus.app.util.MyHtml;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
+import android.provider.BaseColumns
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.database.table.ActivityTable
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.Audience
+import org.andstatus.app.net.social.Visibility
+import org.andstatus.app.note.NoteDownloads
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.util.I18n
+import org.andstatus.app.util.MyHtml
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
 
 /**
- * Helper class to find out a relation of a Note with {@link #noteId} to MyAccount-s
+ * Helper class to find out a relation of a Note with [.noteId] to MyAccount-s
  * @author yvolk@yurivolkov.com
  */
-public class NoteForAnyAccount {
-    private final static String TAG = NoteForAnyAccount.class.getSimpleName();
-    public static final NoteForAnyAccount EMPTY = new NoteForAnyAccount(MyContext.EMPTY, 0, 0);
-    public final MyContext myContext;
-    @NonNull
-    public final Origin origin;
-    public final long noteId;
-    private String noteOid = "";
-    public final DownloadStatus status;
-    public final Actor author;
-    public final Actor actor;
-    public final NoteDownloads downloads;
-    public final Visibility visibility;
-    Audience audience;
-    private String content = "";
+class NoteForAnyAccount(val myContext: MyContext?, activityId: Long, noteId: Long) {
+    val origin: Origin
+    val noteId: Long
+    private val noteOid: String? = ""
+    val status: DownloadStatus?
+    val author: Actor?
+    val actor: Actor?
+    val downloads: NoteDownloads?
+    val visibility: Visibility?
+    var audience: Audience?
+    private val content: String? = ""
+    fun isLoaded(): Boolean {
+        return status == DownloadStatus.LOADED
+    }
 
-    public NoteForAnyAccount(MyContext myContext, long activityId, long noteId) {
-        this.myContext = myContext;
-        this.origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId));
-        this.noteId = noteId;
-        SQLiteDatabase db = myContext.getDatabase();
-        long authorId = 0;
-        DownloadStatus statusLoc = DownloadStatus.UNKNOWN;
-        Visibility visibilityLoc = Visibility.UNKNOWN;
-        if (noteId != 0 && this.origin.isValid() && db != null) {
-            String sql = "SELECT " + NoteTable.NOTE_STATUS + ", "
+    fun getBodyTrimmed(): String? {
+        return I18n.trimTextAt(MyHtml.htmlToCompactPlainText(content), 80).toString()
+    }
+
+    fun isPresentAtServer(): Boolean {
+        return status.isPresentAtServer() || StringUtil.nonEmptyNonTemp(noteOid)
+    }
+
+    companion object {
+        private val TAG: String? = NoteForAnyAccount::class.java.simpleName
+        val EMPTY: NoteForAnyAccount? = NoteForAnyAccount(MyContext.Companion.EMPTY, 0, 0)
+    }
+
+    init {
+        origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId))
+        this.noteId = noteId
+        val db = myContext.getDatabase()
+        var authorId: Long = 0
+        var statusLoc = DownloadStatus.UNKNOWN
+        var visibilityLoc = Visibility.UNKNOWN
+        if (noteId != 0L && origin.isValid && db != null) {
+            val sql = ("SELECT " + NoteTable.NOTE_STATUS + ", "
                     + NoteTable.CONTENT + ", "
                     + NoteTable.AUTHOR_ID + ","
                     + NoteTable.NOTE_OID + ", "
                     + NoteTable.VISIBILITY
                     + " FROM " + NoteTable.TABLE_NAME
-                    + " WHERE " + NoteTable._ID + "=" + noteId;
-            try (Cursor cursor = db.rawQuery(sql, null)) {
-                if (cursor.moveToNext()) {
-                    statusLoc = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS));
-                    content = DbUtils.getString(cursor, NoteTable.CONTENT);
-                    authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID);
-                    noteOid = DbUtils.getString(cursor, NoteTable.NOTE_OID);
-                    visibilityLoc = Visibility.fromCursor(cursor);
+                    + " WHERE " + BaseColumns._ID + "=" + noteId)
+            try {
+                db.rawQuery(sql, null).use { cursor ->
+                    if (cursor.moveToNext()) {
+                        statusLoc = DownloadStatus.Companion.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS))
+                        content = DbUtils.getString(cursor, NoteTable.CONTENT)
+                        authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID)
+                        noteOid = DbUtils.getString(cursor, NoteTable.NOTE_OID)
+                        visibilityLoc = Visibility.Companion.fromCursor(cursor)
+                    }
                 }
-            } catch (Exception e) {
-                MyLog.i(TAG, "SQL:'" + sql + "'", e);
+            } catch (e: Exception) {
+                MyLog.i(TAG, "SQL:'$sql'", e)
             }
         }
-        status = statusLoc;
-        visibility = visibilityLoc;
-        audience = Audience.fromNoteId(origin, noteId); // Now all users, mentioned in a body, are members of Audience
-        author = Actor.load(myContext, authorId);
-
-        downloads = NoteDownloads.fromNoteId(myContext, noteId);
-        long actorId;
-        if (activityId == 0) {
-            actorId = authorId;
+        status = statusLoc
+        visibility = visibilityLoc
+        audience = fromNoteId(origin, noteId) // Now all users, mentioned in a body, are members of Audience
+        author = Actor.Companion.load(myContext, authorId)
+        downloads = NoteDownloads.Companion.fromNoteId(myContext, noteId)
+        val actorId: Long
+        actorId = if (activityId == 0L) {
+            authorId
         } else {
-            actorId = MyQuery.activityIdToLongColumnValue(ActivityTable.ACTOR_ID, activityId);
+            MyQuery.activityIdToLongColumnValue(ActivityTable.ACTOR_ID, activityId)
         }
-        actor = Actor.load(myContext, actorId);
-    }
-
-    public boolean isLoaded() {
-        return status == DownloadStatus.LOADED;
-    }
-
-    public String getBodyTrimmed() {
-        return I18n.trimTextAt(MyHtml.htmlToCompactPlainText(content), 80).toString();
-    }
-
-    public boolean isPresentAtServer() {
-        return status.isPresentAtServer() || StringUtil.nonEmptyNonTemp(noteOid);
+        actor = Actor.Companion.load(myContext, actorId)
     }
 }

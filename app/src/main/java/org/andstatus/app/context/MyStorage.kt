@@ -13,193 +13,176 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.context
 
-package org.andstatus.app.context;
-
-import android.os.Environment;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.SharedPreferencesUtil;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.stream.Stream;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.os.Environment
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.SharedPreferencesUtil
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TriState
+import java.io.File
+import java.util.*
+import java.util.function.ToLongFunction
+import java.util.stream.Stream
 
 /**
  * Utility class grouping references to Storage
  * @author yvolk@yurivolkov.com
  */
-public class MyStorage {
-    public static final String TEMP_FILENAME_PREFIX = "temp_";
-    public static final int FILE_CHUNK_SIZE = 250000;
-    private static final String TAG = MyStorage.class.getSimpleName();
+object MyStorage {
+    val TEMP_FILENAME_PREFIX: String? = "temp_"
+    const val FILE_CHUNK_SIZE = 250000
+    private val TAG: String? = MyStorage::class.java.simpleName
 
-    /** Standard directory in which to place databases */
-    public static final String DIRECTORY_DATABASES = "databases";
-    public static final String DIRECTORY_DOWNLOADS = "downloads";
-    public static final String DIRECTORY_LOGS = "logs";
-
-    private MyStorage() {
-        // Non instantiable
+    /** Standard directory in which to place databases  */
+    val DIRECTORY_DATABASES: String? = "databases"
+    val DIRECTORY_DOWNLOADS: String? = "downloads"
+    val DIRECTORY_LOGS: String? = "logs"
+    fun isApplicationDataCreated(): TriState? {
+        return SharedPreferencesUtil.areDefaultPreferenceValuesSet()
     }
 
-    public static TriState isApplicationDataCreated() {
-        return SharedPreferencesUtil.areDefaultPreferenceValuesSet();
-    }
-
-    public static File getDataFilesDir(String type) {
-        return getDataFilesDir(type, TriState.UNKNOWN);
+    fun getDataFilesDir(type: String?): File? {
+        return getDataFilesDir(type, TriState.UNKNOWN)
     }
 
     /**
-     * This function works just like {@link android.content.Context#getExternalFilesDir
-     * Context.getExternalFilesDir},
-     * but it takes {@link MyPreferences#KEY_USE_EXTERNAL_STORAGE} into account,
+     * This function works just like [ Context.getExternalFilesDir][android.content.Context.getExternalFilesDir],
+     * but it takes [MyPreferences.KEY_USE_EXTERNAL_STORAGE] into account,
      * so it returns directory either on internal or external storage.
      *
      * @param type The type of files directory to return.  May be null for
      * the root of the files directory or one of
      * the following Environment constants for a subdirectory:
-     * {@link android.os.Environment#DIRECTORY_PICTURES Environment.DIRECTORY_...} (since API 8),
-     * {@link MyStorage#DIRECTORY_DATABASES}
+     * [Environment.DIRECTORY_...][android.os.Environment.DIRECTORY_PICTURES] (since API 8),
+     * [MyStorage.DIRECTORY_DATABASES]
      * @param useExternalStorage if not UNKNOWN, use this value instead of stored in preferences
-     *                           as {@link MyPreferences#KEY_USE_EXTERNAL_STORAGE}
+     * as [MyPreferences.KEY_USE_EXTERNAL_STORAGE]
      *
      * @return directory, already created for you OR null in a case of an error
-     * @see <a href="http://developer.android.com/guide/topics/data/data-storage.html#filesExternal">filesExternal</a>
+     * @see [filesExternal](http://developer.android.com/guide/topics/data/data-storage.html.filesExternal)
      */
-    public static File getDataFilesDir(String type, @NonNull TriState useExternalStorage) {
-        return getDataFilesDir(type, useExternalStorage, !DIRECTORY_LOGS.equals(type));
+    fun getDataFilesDir(type: String?, useExternalStorage: TriState): File? {
+        return getDataFilesDir(type, useExternalStorage, DIRECTORY_LOGS != type)
     }
 
-    public static File getDataFilesDir(String type, @NonNull TriState useExternalStorage, boolean logged) {
-        final String method = "getDataFilesDir";
-        File dir = null;
-        StringBuilder textToLog = new StringBuilder();
-        MyContext myContext = myContextHolder.getNow();
+    fun getDataFilesDir(type: String?, useExternalStorage: TriState, logged: Boolean): File? {
+        val method = "getDataFilesDir"
+        var dir: File? = null
+        val textToLog = StringBuilder()
+        val myContext: MyContext = MyContextHolder.Companion.myContextHolder.getNow()
         if (myContext.context() == null) {
-            textToLog.append("No android.content.Context yet");
+            textToLog.append("No android.content.Context yet")
         } else {
             if (isStorageExternal(useExternalStorage)) {
                 if (isWritableExternalStorageAvailable(textToLog)) {
                     try {
-                        dir = myContext.baseContext().getExternalFilesDir(type);
-                    } catch (NullPointerException e) {
+                        dir = myContext.baseContext().getExternalFilesDir(type)
+                    } catch (e: NullPointerException) {
                         // I noticed this exception once, but that time it was related to SD card malfunction...
                         if (logged) {
-                            MyLog.e(TAG, method + " getExternalFilesDir for " + type, e);
+                            MyLog.e(TAG, "$method getExternalFilesDir for $type", e)
                         }
                     }
                 }
             } else {
-                dir = myContext.baseContext().getFilesDir();
+                dir = myContext.baseContext().filesDir
                 if (!StringUtil.isEmpty(type)) {
-                    dir = new File(dir, type);
+                    dir = File(dir, type)
                 }
             }
             if (dir != null && !dir.exists()) {
                 try {
-                    //noinspection ResultOfMethodCallIgnored
-                    dir.mkdirs();
-                } catch (Exception e) {
+                    dir.mkdirs()
+                } catch (e: Exception) {
                     if (logged) {
-                        MyLog.w(TAG, method + "; Error creating directory", e);
+                        MyLog.w(TAG, "$method; Error creating directory", e)
                     }
                 } finally {
                     if (!dir.exists()) {
-                        textToLog.append("Could not create '" + dir.getPath() + "'");
-                        dir = null;
+                        textToLog.append("Could not create '" + dir.path + "'")
+                        dir = null
                     }
                 }
             }
         }
-        if (logged && textToLog.length() > 0) {
-            MyLog.i(TAG, method + "; " + textToLog);
+        if (logged && textToLog.length > 0) {
+            MyLog.i(TAG, "$method; $textToLog")
         }
-        return dir;
+        return dir
     }
 
-    public static boolean isWritableExternalStorageAvailable(StringBuilder textToLog) {
-        String state = Environment.getExternalStorageState();
-        boolean available = false;
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            available = true;
-        } else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-            if (textToLog != null) {
-                textToLog.append("We can only read External storage");
-            }
+    fun isWritableExternalStorageAvailable(textToLog: StringBuilder?): Boolean {
+        val state = Environment.getExternalStorageState()
+        var available = false
+        if (Environment.MEDIA_MOUNTED == state) {
+            available = true
+        } else if (Environment.MEDIA_MOUNTED_READ_ONLY == state) {
+            textToLog?.append("We can only read External storage")
         } else {
-            if (textToLog != null) {
-                textToLog.append("Error accessing External storage, state='" + state + "'");
-            }
+            textToLog?.append("Error accessing External storage, state='$state'")
         }
-        return available;
+        return available
     }
 
-    public static boolean isStorageExternal() {
-        return isStorageExternal(TriState.UNKNOWN);
+    fun isStorageExternal(): Boolean {
+        return isStorageExternal(TriState.UNKNOWN)
     }
 
-    public static boolean isStorageExternal(@NonNull TriState useExternalStorage) {
+    fun isStorageExternal(useExternalStorage: TriState): Boolean {
         return useExternalStorage.toBoolean(
-                SharedPreferencesUtil.getBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false));
+                SharedPreferencesUtil.getBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false))
     }
 
-    public static File getDatabasePath(String name) {
-        return getDatabasePath(name, TriState.UNKNOWN);
+    fun getDatabasePath(name: String?): File? {
+        return getDatabasePath(name, TriState.UNKNOWN)
     }
 
     /**
-     * Extends {@link android.content.ContextWrapper#getDatabasePath(String)}
+     * Extends [android.content.ContextWrapper.getDatabasePath]
      * @param name The name of the database for which you would like to get its path.
      * @param useExternalStorage if not UNKNOWN, use this value instead of stored in preferences
-     *                           as {@link MyPreferences#KEY_USE_EXTERNAL_STORAGE}
+     * as [MyPreferences.KEY_USE_EXTERNAL_STORAGE]
      */
-    public static File getDatabasePath(String name, @NonNull TriState useExternalStorage) {
-        File dbDir = getDataFilesDir(DIRECTORY_DATABASES, useExternalStorage);
-        File dbAbsolutePath = null;
+    fun getDatabasePath(name: String?, useExternalStorage: TriState): File? {
+        val dbDir = getDataFilesDir(DIRECTORY_DATABASES, useExternalStorage)
+        var dbAbsolutePath: File? = null
         if (dbDir != null) {
-            dbAbsolutePath = new File(dbDir.getPath() + "/" + name);
+            dbAbsolutePath = File(dbDir.path + "/" + name)
         }
-        return dbAbsolutePath;
+        return dbAbsolutePath
     }
 
     /**
      * Simple check that allows to prevent data access errors
      */
-    public static boolean isDataAvailable() {
-        return getDataFilesDir(null) != null;
+    fun isDataAvailable(): Boolean {
+        return getDataFilesDir(null) != null
     }
 
-    public static boolean isTempFile(File file) {
-        return file.getName().startsWith(TEMP_FILENAME_PREFIX);
+    fun isTempFile(file: File?): Boolean {
+        return file.getName().startsWith(TEMP_FILENAME_PREFIX)
     }
 
-    public static Stream<File> getMediaFiles() {
-        return Arrays.stream(getDataFilesDir(DIRECTORY_DOWNLOADS).listFiles()).filter(File::isFile);
+    fun getMediaFiles(): Stream<File?>? {
+        return Arrays.stream(getDataFilesDir(DIRECTORY_DOWNLOADS).listFiles()).filter { obj: File? -> obj.isFile() }
     }
 
-    public static File newTempFile(String filename) {
-        return newMediaFile(TEMP_FILENAME_PREFIX + filename);
+    fun newTempFile(filename: String?): File? {
+        return newMediaFile(TEMP_FILENAME_PREFIX + filename)
     }
 
-    public static File newMediaFile(String filename) {
-        File folder = getDataFilesDir(DIRECTORY_DOWNLOADS);
-        if (!folder.exists()) folder.mkdir();
-        return new File(folder, filename);
+    fun newMediaFile(filename: String?): File? {
+        val folder = getDataFilesDir(DIRECTORY_DOWNLOADS)
+        if (!folder.exists()) folder.mkdir()
+        return File(folder, filename)
     }
 
-    public static long getMediaFilesSize() {
-        return getMediaFiles().mapToLong(File::length).sum();
+    fun getMediaFilesSize(): Long {
+        return getMediaFiles().mapToLong(ToLongFunction { obj: File? -> obj.length() }).sum()
     }
 
-    public static File getLogsDir(boolean logged) {
-        return getDataFilesDir(DIRECTORY_LOGS, TriState.UNKNOWN, logged);
+    fun getLogsDir(logged: Boolean): File? {
+        return getDataFilesDir(DIRECTORY_LOGS, TriState.UNKNOWN, logged)
     }
 }

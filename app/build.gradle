@@ -3,6 +3,7 @@ plugins {
     id 'org.sonarqube'
     id 'com.github.triplet.play' version '2.7.5'
 }
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion rootProject.compileSdkVersion
@@ -106,4 +107,6 @@ dependencies {
     androidTestImplementation "androidx.test:rules:$testRulesVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoCoreVersion"
     androidTestImplementation "eu.bolt:screenshotty:$screenshottyVersion"
+    implementation "androidx.core:core-ktx:+"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }

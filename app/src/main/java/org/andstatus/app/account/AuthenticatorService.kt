@@ -13,155 +13,138 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.account
 
-package org.andstatus.app.account;
-
-import android.accounts.AbstractAccountAuthenticator;
-import android.accounts.Account;
-import android.accounts.AccountAuthenticatorResponse;
-import android.accounts.AccountManager;
-import android.accounts.NetworkErrorException;
-import android.app.Service;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
-import android.os.IBinder;
-
-import org.andstatus.app.context.MyPreferences;
-import org.andstatus.app.util.MyLog;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.accounts.AbstractAccountAuthenticator
+import android.accounts.Account
+import android.accounts.AccountAuthenticatorResponse
+import android.accounts.AccountManager
+import android.accounts.NetworkErrorException
+import android.app.Service
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import android.os.IBinder
+import io.vavr.control.CheckedFunction
+import io.vavr.control.CheckedPredicate
+import org.andstatus.app.account.AuthenticatorService
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.util.MyLog
 
 /**
  * Based on a very basic authenticator service for POP/IMAP...
  */
-public class AuthenticatorService extends Service {
-
-    public static final String OPTIONS_USERNAME = "username";
-    public static final String OPTIONS_PASSWORD = "password";
-    public static final String ANDROID_ACCOUNT_TYPE = "org.andstatus.app";
-    
-    class Authenticator extends AbstractAccountAuthenticator {
-        private final Context context;
-
-        public Authenticator(Context context) {
-            super(context);
-            this.context = context;
-        }
-
-        /** 
-         * We add account launching {@link AccountSettingsActivity} activity
+class AuthenticatorService : Service() {
+    internal inner class Authenticator(private val context: Context?) : AbstractAccountAuthenticator(context) {
+        /**
+         * We add account launching [AccountSettingsActivity] activity
          */
-        @Override
-        public Bundle addAccount(AccountAuthenticatorResponse response, String accountType,
-                String authTokenType, String[] requiredFeatures, Bundle options)
-                throws NetworkErrorException {
+        @Throws(NetworkErrorException::class)
+        override fun addAccount(response: AccountAuthenticatorResponse?, accountType: String?,
+                                authTokenType: String?, requiredFeatures: Array<String?>?, options: Bundle?): Bundle? {
             // There are two cases here:
             // 1) We are called with a username/password; this comes from the traditional email
             //    app UI; we simply create the account and return the proper bundle
-            if (options != null && options.containsKey(OPTIONS_PASSWORD)
+            return if (options != null && options.containsKey(OPTIONS_PASSWORD)
                     && options.containsKey(OPTIONS_USERNAME)) {
-                final Account account = new Account(options.getString(OPTIONS_USERNAME), ANDROID_ACCOUNT_TYPE);
-                AccountManager.get(AuthenticatorService.this).addAccountExplicitly(
-                            account, options.getString(OPTIONS_PASSWORD), null);
-
-                Bundle b = new Bundle();
-                b.putString(AccountManager.KEY_ACCOUNT_NAME, options.getString(OPTIONS_USERNAME));
-                b.putString(AccountManager.KEY_ACCOUNT_TYPE, ANDROID_ACCOUNT_TYPE);
-                return b;
-            // 2) The other case is that we're creating a new account from an Account manager
-            //    activity.  In this case, we add an intent that will be used to gather the
-            //    account information...
+                val account = Account(options.getString(OPTIONS_USERNAME), ANDROID_ACCOUNT_TYPE)
+                AccountManager.get(this@AuthenticatorService).addAccountExplicitly(
+                        account, options.getString(OPTIONS_PASSWORD), null)
+                val b = Bundle()
+                b.putString(AccountManager.KEY_ACCOUNT_NAME, options.getString(OPTIONS_USERNAME))
+                b.putString(AccountManager.KEY_ACCOUNT_TYPE, ANDROID_ACCOUNT_TYPE)
+                b
+                // 2) The other case is that we're creating a new account from an Account manager
+                //    activity.  In this case, we add an intent that will be used to gather the
+                //    account information...
             } else {
-                Bundle b = new Bundle();
-                Intent intent = new Intent(AuthenticatorService.this, AccountSettingsActivity.class);
+                val b = Bundle()
+                val intent = Intent(this@AuthenticatorService, AccountSettingsActivity::class.java)
                 //  This is how we define what to do in {@link AccountSettingsActivity} activity
-                intent.setAction(Intent.ACTION_INSERT);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); 
-                intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response);
-                b.putParcelable(AccountManager.KEY_INTENT, intent);
-                return b;
+                intent.action = Intent.ACTION_INSERT
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                intent.putExtra(AccountManager.KEY_ACCOUNT_AUTHENTICATOR_RESPONSE, response)
+                b.putParcelable(AccountManager.KEY_INTENT, intent)
+                b
             }
         }
 
-        @Override
-        public Bundle confirmCredentials(AccountAuthenticatorResponse response, Account account,
-                Bundle options) {
-            return null;
+        override fun confirmCredentials(response: AccountAuthenticatorResponse?, account: Account?,
+                                        options: Bundle?): Bundle? {
+            return null
         }
 
-        @Override
-        public Bundle editProperties(AccountAuthenticatorResponse response, String accountType) {
-            return null;
+        override fun editProperties(response: AccountAuthenticatorResponse?, accountType: String?): Bundle? {
+            return null
         }
 
-        @Override
-        public Bundle getAuthToken(AccountAuthenticatorResponse response, Account account,
-                String authTokenType, Bundle loginOptions) throws NetworkErrorException {
-            return null;
+        @Throws(NetworkErrorException::class)
+        override fun getAuthToken(response: AccountAuthenticatorResponse?, account: Account?,
+                                  authTokenType: String?, loginOptions: Bundle?): Bundle? {
+            return null
         }
 
-        @Override
-        public String getAuthTokenLabel(String authTokenType) {
+        override fun getAuthTokenLabel(authTokenType: String?): String? {
             // null means we don't have compartmentalized authtoken types
-            return null;
+            return null
         }
 
-        @Override
-        public Bundle hasFeatures(AccountAuthenticatorResponse response, Account account, String[] features) {
-            return null;
+        override fun hasFeatures(response: AccountAuthenticatorResponse?, account: Account?, features: Array<String?>?): Bundle? {
+            return null
         }
 
-        @Override
-        public Bundle updateCredentials(AccountAuthenticatorResponse response, Account account,
-                String authTokenType, Bundle loginOptions) {
-            return null;
+        override fun updateCredentials(response: AccountAuthenticatorResponse?, account: Account?,
+                                       authTokenType: String?, loginOptions: Bundle?): Bundle? {
+            return null
         }
 
-        @Override
-        public Bundle getAccountRemovalAllowed(AccountAuthenticatorResponse response, Account account) {
-            boolean deleted = true;
+        override fun getAccountRemovalAllowed(response: AccountAuthenticatorResponse?, account: Account?): Bundle? {
+            var deleted = true
             if (AccountUtils.isVersionCurrent(context, account)) {
-                deleted = myContextHolder
-                    .initialize(context, this)
-                    .getFuture()
-                    .tryBlocking()
-                    .map(myContext -> myContext.accounts().fromAccountName(account.name))
-                    .filter(MyAccount::isValid)
-                    .map(ma -> {
-                        MyLog.i(this, "Removing " + ma);
-                        myContextHolder.getNow().timelines().onAccountDelete(ma);
-                        MyPreferences.onPreferencesChanged();
-                        return true;
-                    })
-                    .getOrElse(false);
+                deleted = MyContextHolder.Companion.myContextHolder
+                        .initialize(context, this)
+                        .getFuture()
+                        .tryBlocking()
+                        .map<MyAccount?>(CheckedFunction { myContext: MyContext? -> myContext.accounts().fromAccountName(account.name) })
+                        .filter(CheckedPredicate { obj: MyAccount? -> obj.isValid() })
+                        .map<Boolean?>(CheckedFunction { ma: MyAccount? ->
+                            MyLog.i(this, "Removing $ma")
+                            MyContextHolder.Companion.myContextHolder.getNow().timelines().onAccountDelete(ma)
+                            MyPreferences.onPreferencesChanged()
+                            true
+                        })
+                        .getOrElse(false)
             }
-            final Bundle result = new Bundle();
-            result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, deleted);
-            return result;
+            val result = Bundle()
+            result.putBoolean(AccountManager.KEY_BOOLEAN_RESULT, deleted)
+            return result
         }
-
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        if (AccountManager.ACTION_AUTHENTICATOR_INTENT.equals(intent.getAction())) {
-            return new Authenticator(this).getIBinder();
+    override fun onBind(intent: Intent?): IBinder? {
+        return if (AccountManager.ACTION_AUTHENTICATOR_INTENT == intent.getAction()) {
+            Authenticator(this).getIBinder()
         } else {
-            return null;
+            null
         }
     }
-    
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        MyLog.v(this, "onCreate");
-        myContextHolder.initialize(this).getBlocking();
+
+    override fun onCreate() {
+        super.onCreate()
+        MyLog.v(this, "onCreate")
+        MyContextHolder.Companion.myContextHolder.initialize(this).getBlocking()
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        MyLog.v(this, "onDestroy");
+    override fun onDestroy() {
+        super.onDestroy()
+        MyLog.v(this, "onDestroy")
+    }
+
+    companion object {
+        val OPTIONS_USERNAME: String? = "username"
+        val OPTIONS_PASSWORD: String? = "password"
+        val ANDROID_ACCOUNT_TYPE: String? = "org.andstatus.app"
     }
 }

@@ -13,488 +13,452 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social
 
-package org.andstatus.app.net.social;
-
-import android.database.Cursor;
-
-import androidx.annotation.NonNull;
-import androidx.core.util.Pair;
-
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.TextMediaType;
-import org.andstatus.app.database.table.NoteTable;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.LazyVal;
-import org.andstatus.app.util.MyHtml;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UriUtils;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-import static org.andstatus.app.util.UriUtils.isEmptyOid;
-import static org.andstatus.app.util.UriUtils.isRealOid;
-import static org.andstatus.app.util.UriUtils.nonRealOid;
+import android.database.Cursor
+import android.provider.BaseColumns
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.DownloadStatus
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.data.TextMediaType
+import org.andstatus.app.database.table.NoteTable
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.origin.OriginType
+import org.andstatus.app.service.CommandData
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.util.LazyVal
+import org.andstatus.app.util.MyHtml
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TriState
+import org.andstatus.app.util.UriUtils
+import java.util.*
+import java.util.function.Function
+import java.util.function.Supplier
 
 /**
  * Note ("Tweet", "toot" etc.) of a Social Network
  * @author yvolk@yurivolkov.com
  */
-public class Note extends AObject {
-    private static final String TAG = Note.class.getSimpleName();
-    public static final Note EMPTY = new Note(Origin.EMPTY, getTempOid());
+class Note : AObject {
+    private var status: DownloadStatus? = DownloadStatus.UNKNOWN
+    val oid: String?
+    private var updatedDate: Long = 0
 
-    private DownloadStatus status = DownloadStatus.UNKNOWN;
-    
-    public final String oid;
-    private long updatedDate = 0;
-    private volatile Audience audience;
-    private String name = "";
-    private String summary = "";
-    private boolean isSensitive = false;
-    private String content = "";
-    private final LazyVal<String> contentToSearch = LazyVal.of(this::evalContentToSearch);
+    @Volatile
+    private var audience: Audience?
+    private var name: String? = ""
+    private var summary: String? = ""
+    private var isSensitive = false
+    private var content: String? = ""
+    private val contentToSearch: LazyVal<String?>? = LazyVal.Companion.of<String?>(Supplier { evalContentToSearch() })
+    private var inReplyTo: AActivity? = AActivity.Companion.EMPTY
+    val replies: MutableList<AActivity?>?
+    var conversationOid: String? = ""
+    var via: String? = ""
+    var url: String? = ""
+    private var likesCount: Long = 0
+    private var reblogsCount: Long = 0
+    private var repliesCount: Long = 0
+    val attachments: Attachments?
 
-    private AActivity inReplyTo = AActivity.EMPTY;
-    public final List<AActivity> replies;
-    public String conversationOid="";
-    public String via = "";
-    public String url="";
-
-    private long likesCount = 0;
-    private long reblogsCount = 0;
-    private long repliesCount = 0;
-
-    public final Attachments attachments;
-
-    /** Some additional attributes may appear from "My account's" (authenticated Account's) point of view */
-
-    // In our system
-    public final Origin origin;
-    public long noteId = 0L;
-    private long conversationId = 0L;
-
-    @NonNull
-    public static Note fromOriginAndOid(@NonNull Origin origin, String oid, DownloadStatus status) {
-        Note note = new Note(origin, fixedOid(oid));
-        note.status = fixedStatus(note.oid, status);
-        return note;
+    /** Some additional attributes may appear from "My account's" (authenticated Account's) point of view  */ // In our system
+    val origin: Origin?
+    var noteId = 0L
+    private var conversationId = 0L
+    private fun loadAudience(): Note? {
+        audience = Audience.Companion.load(origin, noteId, Optional.empty())
+        return this
     }
 
-    private static String fixedOid(String oid) {
-        return isEmptyOid(oid) ? getTempOid() : oid;
+    private constructor(origin: Origin?, oid: String?) {
+        this.origin = origin
+        this.oid = oid
+        audience = if (origin.isEmpty()) Audience.Companion.EMPTY else Audience(origin)
+        replies = if (origin.isEmpty()) emptyList() else ArrayList()
+        attachments = if (origin.isEmpty()) Attachments.Companion.EMPTY else Attachments()
     }
 
-    private static DownloadStatus fixedStatus(String oid, DownloadStatus status) {
-        if (StringUtil.isEmpty(oid) && status == DownloadStatus.LOADED) {
-            return DownloadStatus.UNKNOWN;
-        }
-        return status;
+    fun update(accountActor: Actor?): AActivity {
+        return act(accountActor, Actor.Companion.EMPTY, ActivityType.UPDATE)
     }
 
-    @NonNull
-    public static String getSqlToLoadContent(long id) {
-        String sql = "SELECT " + NoteTable._ID
-                + ", " + NoteTable.CONTENT
-                + ", " + NoteTable.CONTENT_TO_SEARCH
-                + ", " + NoteTable.NOTE_OID
-                + ", " + NoteTable.ORIGIN_ID
-                + ", " + NoteTable.NAME
-                + ", " + NoteTable.SUMMARY
-                + ", " + NoteTable.SENSITIVE
-                + ", " + NoteTable.NOTE_STATUS
-                + " FROM " + NoteTable.TABLE_NAME;
-        return sql + (id == 0 ? "" : " WHERE " + NoteTable._ID + "=" + id);
+    fun act(accountActor: Actor?, actor: Actor, activityType: ActivityType): AActivity {
+        val mbActivity: AActivity = AActivity.Companion.from(accountActor, activityType)
+        mbActivity.setActor(actor)
+        mbActivity.setNote(this)
+        return mbActivity
     }
 
-    @NonNull
-    public static Note contentFromCursor(MyContext myContext, Cursor cursor) {
-        Note note = fromOriginAndOid(myContext.origins().fromId(DbUtils.getLong(cursor, NoteTable.ORIGIN_ID)),
-                DbUtils.getString(cursor, NoteTable.NOTE_OID),
-                DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS)));
-        note.noteId = DbUtils.getLong(cursor, NoteTable._ID);
-        note.setName(DbUtils.getString(cursor, NoteTable.NAME));
-        note.setSummary(DbUtils.getString(cursor, NoteTable.SUMMARY));
-        note.setSensitive(DbUtils.getBoolean(cursor, NoteTable.SENSITIVE));
-        note.setContentStored(DbUtils.getString(cursor, NoteTable.CONTENT));
-        return note;
+    fun getName(): String? {
+        return name
     }
 
-    @NonNull
-    public static Note loadContentById(MyContext myContext, long noteId) {
-        return MyQuery.get(myContext, getSqlToLoadContent(noteId), cursor -> Note.contentFromCursor(myContext, cursor))
-                .stream().findAny().map(Note::loadAudience).orElse(Note.EMPTY);
+    fun getSummary(): String? {
+        return summary
     }
 
-    private Note loadAudience() {
-        audience = Audience.load(origin, noteId, Optional.empty());
-        return this;
+    fun getContent(): String? {
+        return content
     }
 
-    private static String getTempOid() {
-        return StringUtil.toTempOid("note:" + MyLog.uniqueCurrentTimeMS());
+    fun getContentToPost(): String? {
+        return MyHtml.fromContentStored(content, origin.getOriginType().textMediaTypeToPost)
     }
 
-    private Note(Origin origin, String oid) {
-        this.origin = origin;
-        this.oid = oid;
-        audience = origin.isEmpty() ? Audience.EMPTY : new Audience(origin);
-        replies = origin.isEmpty() ? Collections.emptyList() : new ArrayList<>();
-        attachments = origin.isEmpty() ? Attachments.EMPTY : new Attachments();
+    fun getContentToSearch(): String? {
+        return contentToSearch.get()
     }
 
-    @NonNull
-    public AActivity update(Actor accountActor) {
-        return act(accountActor, Actor.EMPTY, ActivityType.UPDATE);
+    private fun isHtmlContentAllowed(): Boolean {
+        return origin.isHtmlContentAllowed()
     }
 
-    @NonNull
-    public AActivity act(Actor accountActor, @NonNull Actor actor, @NonNull ActivityType activityType) {
-        AActivity mbActivity = AActivity.from(accountActor, activityType);
-        mbActivity.setActor(actor);
-        mbActivity.setNote(this);
-        return mbActivity;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getSummary() {
-        return summary;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public String getContentToPost() {
-        return MyHtml.fromContentStored(content, origin.getOriginType().textMediaTypeToPost);
-    }
-
-    public String getContentToSearch() {
-        return contentToSearch.get();
-    }
-
-    private boolean isHtmlContentAllowed() {
-        return origin.isHtmlContentAllowed();
-    }
-
-    public static boolean mayBeEdited(OriginType originType, DownloadStatus downloadStatus) {
-        if (originType == null || downloadStatus == null) return false;
-        return downloadStatus == DownloadStatus.DRAFT || downloadStatus.mayBeSent() ||
-                (downloadStatus.isPresentAtServer() && originType.allowEditing());
-    }
-
-    private String evalContentToSearch() {
+    private fun evalContentToSearch(): String? {
         return MyHtml.getContentToSearch(
-                (StringUtil.nonEmpty(name) ? name + " " : "") +
-                        (StringUtil.nonEmpty(summary) ? summary + " " : "") +
-                        content);
+                (if (StringUtil.nonEmpty(name)) "$name " else "") +
+                        (if (StringUtil.nonEmpty(summary)) "$summary " else "") +
+                        content)
     }
 
-    public Note setName(String name) {
-        this.name = MyHtml.htmlToCompactPlainText(name);
-        contentToSearch.reset();
-        return this;
+    fun setName(name: String?): Note? {
+        this.name = MyHtml.htmlToCompactPlainText(name)
+        contentToSearch.reset()
+        return this
     }
 
-    public void setSummary(String summary) {
-        this.summary = MyHtml.htmlToCompactPlainText(summary);
-        contentToSearch.reset();
+    fun setSummary(summary: String?) {
+        this.summary = MyHtml.htmlToCompactPlainText(summary)
+        contentToSearch.reset()
     }
 
-    public void setContentStored(String content) {
-        this.content = content;
-        contentToSearch.reset();
+    fun setContentStored(content: String?) {
+        this.content = content
+        contentToSearch.reset()
     }
 
-    public Note setContentPosted(String content) {
-        setContent(content, origin.getOriginType().textMediaTypePosted);
-        return this;
+    fun setContentPosted(content: String?): Note? {
+        setContent(content, origin.getOriginType().textMediaTypePosted)
+        return this
     }
 
-    public void setContent(String content, TextMediaType mediaType) {
-        this.content = MyHtml.toContentStored(content, mediaType, isHtmlContentAllowed());
-        contentToSearch.reset();
+    fun setContent(content: String?, mediaType: TextMediaType?) {
+        this.content = MyHtml.toContentStored(content, mediaType, isHtmlContentAllowed())
+        contentToSearch.reset()
     }
 
-    public Note setConversationOid(String conversationOid) {
+    fun setConversationOid(conversationOid: String?): Note? {
         if (StringUtil.isEmpty(conversationOid)) {
-            this.conversationOid = "";
+            this.conversationOid = ""
         } else {
-            this.conversationOid = conversationOid;
+            this.conversationOid = conversationOid
         }
-        return this;
+        return this
     }
 
-    public long lookupConversationId() {
-        if (conversationId == 0  && !StringUtil.isEmpty(conversationOid)) {
-            conversationId = MyQuery.conversationOidToId(origin.getId(), conversationOid);
+    fun lookupConversationId(): Long {
+        if (conversationId == 0L && !StringUtil.isEmpty(conversationOid)) {
+            conversationId = MyQuery.conversationOidToId(origin.getId(), conversationOid)
         }
-        if (conversationId == 0 && noteId != 0) {
-            conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, noteId);
+        if (conversationId == 0L && noteId != 0L) {
+            conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, noteId)
         }
-        if (conversationId == 0 && getInReplyTo().nonEmpty()) {
-            if (getInReplyTo().getNote().noteId != 0) {
+        if (conversationId == 0L && getInReplyTo().nonEmpty()) {
+            if (getInReplyTo().note.noteId != 0L) {
                 conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID,
-                        getInReplyTo().getNote().noteId);
+                        getInReplyTo().note.noteId)
             }
         }
-        return setConversationIdFromMsgId();
+        return setConversationIdFromMsgId()
     }
 
-    public long setConversationIdFromMsgId() {
-        if (conversationId == 0 && noteId != 0) {
-            conversationId = noteId;
+    fun setConversationIdFromMsgId(): Long {
+        if (conversationId == 0L && noteId != 0L) {
+            conversationId = noteId
         }
-        return conversationId;
+        return conversationId
     }
 
-    public long getConversationId() {
-        return conversationId;
+    fun getConversationId(): Long {
+        return conversationId
     }
 
-    public DownloadStatus getStatus() {
-        return status;
+    fun getStatus(): DownloadStatus? {
+        return status
     }
 
-    public boolean isEmpty() {
-        return !origin.isValid()
-                || (nonRealOid(oid) && status != DownloadStatus.DELETED && (
-                        (status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT) || !hasSomeContent()
-                    ));
+    override fun isEmpty(): Boolean {
+        return (!origin.isValid()
+                || UriUtils.nonRealOid(oid) && status != DownloadStatus.DELETED && (status != DownloadStatus.SENDING && status != DownloadStatus.DRAFT || !hasSomeContent()))
     }
 
-    public boolean hasSomeContent() {
+    fun hasSomeContent(): Boolean {
         return StringUtil.nonEmpty(name) || StringUtil.nonEmpty(summary) || StringUtil.nonEmpty(content) ||
-                attachments.nonEmpty();
+                attachments.nonEmpty()
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    override fun equals(o: Any?): Boolean {
+        if (this === o) {
+            return true
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (o == null || javaClass != o.javaClass) {
+            return false
         }
-        Note other = (Note) o;
-        return hashCode() == other.hashCode();
+        val other = o as Note?
+        return hashCode() == other.hashCode()
     }
 
-    @Override
-    public int hashCode() {
-        return toString().hashCode();
+    override fun hashCode(): Int {
+        return toString().hashCode()
     }
 
-    @Override
-    public String toString() {
-        if (this == EMPTY) {
-            return MyStringBuilder.formatKeyValue(this, "EMPTY");
+    override fun toString(): String {
+        if (this === EMPTY) {
+            return MyStringBuilder.Companion.formatKeyValue(this, "EMPTY")
         }
-        MyStringBuilder builder = new MyStringBuilder();
-        builder.withComma("","empty", this::isEmpty);
-        builder.withCommaNonEmpty("id", noteId);
-        builder.withComma("conversation_id", conversationId, () -> conversationId != noteId);
-        builder.withComma("status", status);
-        builder.withCommaNonEmpty("name", name);
-        builder.withCommaNonEmpty("summary", summary);
-        builder.withCommaNonEmpty("content", content);
-        builder.atNewLine("audience", audience.toAudienceString(Actor.EMPTY));
-        builder.withComma("oid", oid, () -> isRealOid(oid));
-        builder.withComma("conversation_oid",conversationOid, () -> isRealOid(conversationOid));
-        builder.withCommaNonEmpty("url", url);
-        builder.withCommaNonEmpty("via", via);
-        builder.withComma("updated", MyLog.debugFormatOfDate(updatedDate));
-        builder.withComma("origin", origin.getName());
+        val builder = MyStringBuilder()
+        builder.withComma("", "empty") { this.isEmpty }
+        builder.withCommaNonEmpty("id", noteId)
+        builder.withComma("conversation_id", conversationId) { conversationId != noteId }
+        builder.withComma("status", status)
+        builder.withCommaNonEmpty("name", name)
+        builder.withCommaNonEmpty("summary", summary)
+        builder.withCommaNonEmpty("content", content)
+        builder.atNewLine("audience", audience.toAudienceString(Actor.Companion.EMPTY))
+        builder.withComma("oid", oid) { UriUtils.isRealOid(oid) }
+        builder.withComma("conversation_oid", conversationOid) { UriUtils.isRealOid(conversationOid) }
+        builder.withCommaNonEmpty("url", url)
+        builder.withCommaNonEmpty("via", via)
+        builder.withComma("updated", MyLog.debugFormatOfDate(updatedDate))
+        builder.withComma("origin", origin.getName())
         if (attachments.nonEmpty()) {
-            builder.atNewLine(attachments.toString());
+            builder.atNewLine(attachments.toString())
         }
-        if(getInReplyTo().nonEmpty()) {
-            builder.atNewLine("inReplyTo", getInReplyTo().toString());
+        if (getInReplyTo().nonEmpty()) {
+            builder.atNewLine("inReplyTo", getInReplyTo().toString())
         }
-        if(replies.size() > 0) {
-            builder.atNewLine("Replies", replies.toString());
+        if (replies.size > 0) {
+            builder.atNewLine("Replies", replies.toString())
         }
-        return MyStringBuilder.formatKeyValue(this, builder.toString());
+        return MyStringBuilder.Companion.formatKeyValue(this, builder.toString())
     }
 
-    @NonNull
-    public AActivity getInReplyTo() {
-        return inReplyTo == null ? AActivity.EMPTY : inReplyTo;
+    fun getInReplyTo(): AActivity {
+        return if (inReplyTo == null) AActivity.Companion.EMPTY else inReplyTo
     }
 
-    public Note setInReplyTo(AActivity activity) {
+    fun setInReplyTo(activity: AActivity?): Note? {
         if (activity != null && activity.nonEmpty()) {
-            inReplyTo = activity;
+            inReplyTo = activity
         }
-        return this;
+        return this
     }
 
-    public boolean isSensitive() {
-        return isSensitive;
+    fun isSensitive(): Boolean {
+        return isSensitive
     }
 
-    public Note setSensitive(boolean sensitive) {
-        isSensitive = sensitive;
-        return this;
+    fun setSensitive(sensitive: Boolean): Note? {
+        isSensitive = sensitive
+        return this
     }
 
-    public long getUpdatedDate() {
-        return updatedDate;
+    fun getUpdatedDate(): Long {
+        return updatedDate
     }
 
-    public void setUpdatedDate(long updatedDate) {
-        this.updatedDate = updatedDate;
+    fun setUpdatedDate(updatedDate: Long) {
+        this.updatedDate = updatedDate
     }
 
-    @NonNull
-    public Audience audience() {
-        return audience;
+    fun audience(): Audience {
+        return audience
     }
 
-    public Note shallowCopy() {
-        Note note = fromOriginAndOid(origin, oid, status);
-        note.noteId = noteId;
-        note.setUpdatedDate(updatedDate);
-        return note;
+    fun shallowCopy(): Note? {
+        val note = fromOriginAndOid(origin, oid, status)
+        note.noteId = noteId
+        note.setUpdatedDate(updatedDate)
+        return note
     }
 
-    public Note withAttachments(Attachments attachments) {
-        return new Note(this, Optional.empty(), Optional.of(attachments));
+    fun withAttachments(attachments: Attachments?): Note? {
+        return Note(this, Optional.empty(), Optional.of(attachments))
     }
 
-    public Note withNewOid(String oid) {
-        return new Note(this, Optional.of(oid), Optional.empty());
+    fun withNewOid(oid: String?): Note? {
+        return Note(this, Optional.of(oid), Optional.empty())
     }
 
-    private Note(Note note, Optional<String> oidNew, Optional<Attachments> attachments) {
-        origin = note.origin;
-        oid = fixedOid(oidNew.orElse(note.oid));
-        status = fixedStatus(oid, note.status);
-        audience = note.audience.copy();
-        noteId = note.noteId;
-        updatedDate = note.updatedDate;
-        name = note.name;
-        summary = note.summary;
-        isSensitive = note.isSensitive;
-        setContentStored(note.content);
-        inReplyTo = note.inReplyTo;
-        replies = note.replies;
-        conversationOid = note.conversationOid;
-        via = note.via;
-        url = note.url;
-        likesCount = note.likesCount;
-        reblogsCount = note.reblogsCount;
-        repliesCount = note.repliesCount;
-        this.attachments = attachments.orElseGet(note.attachments::copy);
-        conversationId = note.conversationId;
+    private constructor(note: Note?, oidNew: Optional<String?>?, attachments: Optional<Attachments?>?) {
+        origin = note.origin
+        oid = fixedOid(oidNew.orElse(note.oid))
+        status = fixedStatus(oid, note.status)
+        audience = note.audience.copy()
+        noteId = note.noteId
+        updatedDate = note.updatedDate
+        name = note.name
+        summary = note.summary
+        isSensitive = note.isSensitive
+        setContentStored(note.content)
+        inReplyTo = note.inReplyTo
+        replies = note.replies
+        conversationOid = note.conversationOid
+        via = note.via
+        url = note.url
+        likesCount = note.likesCount
+        reblogsCount = note.reblogsCount
+        repliesCount = note.repliesCount
+        this.attachments = attachments.orElseGet(Supplier { note.attachments.copy() })
+        conversationId = note.conversationId
     }
 
-    public void addFavoriteBy(@NonNull Actor accountActor, @NonNull TriState favoritedByMe) {
+    fun addFavoriteBy(accountActor: Actor, favoritedByMe: TriState) {
         if (favoritedByMe != TriState.TRUE) {
-            return;
+            return
         }
-        AActivity favorite = AActivity.from(accountActor, ActivityType.LIKE);
-        favorite.setActor(accountActor);
-        favorite.setUpdatedDate(getUpdatedDate());
-        favorite.setNote(shallowCopy());
-        replies.add(favorite);
+        val favorite: AActivity = AActivity.Companion.from(accountActor, ActivityType.LIKE)
+        favorite.setActor(accountActor)
+        favorite.updatedDate = getUpdatedDate()
+        favorite.setNote(shallowCopy())
+        replies.add(favorite)
     }
 
-    @NonNull
-    public TriState getFavoritedBy(Actor accountActor) {
-        if (noteId == 0) {
-            for (AActivity reply : replies) {
-                if (reply.type == ActivityType.LIKE && reply.getActor().equals(accountActor)
-                        && reply.getNote().oid.equals(oid) ) {
-                    return TriState.TRUE;
+    fun getFavoritedBy(accountActor: Actor?): TriState {
+        return if (noteId == 0L) {
+            for (reply in replies) {
+                if (reply.type == ActivityType.LIKE && reply.getActor() == accountActor && reply.getNote().oid == oid) {
+                    return TriState.TRUE
                 }
             }
-            return TriState.UNKNOWN;
+            TriState.UNKNOWN
         } else {
-            final Pair<Long, ActivityType> favAndType = MyQuery.noteIdToLastFavoriting(myContextHolder.getNow().getDatabase(),
-                    noteId, accountActor.actorId);
-            switch (favAndType.second) {
-                case LIKE:
-                    return TriState.TRUE;
-                case UNDO_LIKE:
-                    return TriState.FALSE;
-                default:
-                    return TriState.UNKNOWN;
+            val favAndType = MyQuery.noteIdToLastFavoriting(MyContextHolder.Companion.myContextHolder.getNow().getDatabase(),
+                    noteId, accountActor.actorId)
+            when (favAndType.second) {
+                ActivityType.LIKE -> TriState.TRUE
+                ActivityType.UNDO_LIKE -> TriState.FALSE
+                else -> TriState.UNKNOWN
             }
         }
     }
 
-    public void setDiscarded() {
-        status = UriUtils.isRealOid(oid) ? DownloadStatus.LOADED : DownloadStatus.DELETED;
+    fun setDiscarded() {
+        status = if (UriUtils.isRealOid(oid)) DownloadStatus.LOADED else DownloadStatus.DELETED
     }
 
-    public void setStatus(DownloadStatus status) {
-        this.status = status;
+    fun setStatus(status: DownloadStatus?) {
+        this.status = status
     }
 
-    public static void requestDownload(MyAccount ma, long noteId, boolean isManuallyLaunched) {
-        MyLog.v(TAG, () -> "Note id:" + noteId + " will be loaded from the Internet");
-        CommandData command = CommandData.newItemCommand(CommandEnum.GET_NOTE, ma, noteId)
-                .setManuallyLaunched(isManuallyLaunched)
-                .setInForeground(isManuallyLaunched);
-        MyServiceManager.sendCommand(command);
+    fun setAudience(audience: Audience?) {
+        this.audience = audience
     }
 
-    public void setAudience(Audience audience) {
-        this.audience = audience;
+    fun setUpdatedNow(level: Int) {
+        if (isEmpty || level > 10) return
+        setUpdatedDate(MyLog.uniqueCurrentTimeMS())
+        inReplyTo.setUpdatedNow(level + 1)
     }
 
-    public void setUpdatedNow(int level) {
-        if (isEmpty() || level > 10) return;
-
-        setUpdatedDate(MyLog.uniqueCurrentTimeMS());
-        inReplyTo.setUpdatedNow(level + 1);
+    fun setLikesCount(likesCount: Long) {
+        this.likesCount = likesCount
     }
 
-    public void setLikesCount(long likesCount) {
-        this.likesCount = likesCount;
+    fun getLikesCount(): Long {
+        return likesCount
     }
 
-    public long getLikesCount() {
-        return likesCount;
+    fun setReblogsCount(reblogsCount: Long) {
+        this.reblogsCount = reblogsCount
     }
 
-    public void setReblogsCount(long reblogsCount) {
-        this.reblogsCount = reblogsCount;
+    fun getReblogsCount(): Long {
+        return reblogsCount
     }
 
-    public long getReblogsCount() {
-        return reblogsCount;
+    fun setRepliesCount(repliesCount: Long) {
+        this.repliesCount = repliesCount
     }
 
-    public void setRepliesCount(long repliesCount) {
-        this.repliesCount = repliesCount;
+    fun getRepliesCount(): Long {
+        return repliesCount
     }
 
-    public long getRepliesCount() {
-        return repliesCount;
+    override fun classTag(): String? {
+        return TAG
     }
 
-    @Override
-    public String classTag() {
-        return TAG;
+    companion object {
+        private val TAG: String? = Note::class.java.simpleName
+        val EMPTY: Note? = Note(Origin.Companion.EMPTY, getTempOid())
+        fun fromOriginAndOid(origin: Origin, oid: String?, status: DownloadStatus?): Note {
+            val note = Note(origin, fixedOid(oid))
+            note.status = fixedStatus(note.oid, status)
+            return note
+        }
+
+        private fun fixedOid(oid: String?): String? {
+            return if (UriUtils.isEmptyOid(oid)) getTempOid() else oid
+        }
+
+        private fun fixedStatus(oid: String?, status: DownloadStatus?): DownloadStatus? {
+            return if (StringUtil.isEmpty(oid) && status == DownloadStatus.LOADED) {
+                DownloadStatus.UNKNOWN
+            } else status
+        }
+
+        fun getSqlToLoadContent(id: Long): String {
+            val sql = ("SELECT " + BaseColumns._ID
+                    + ", " + NoteTable.CONTENT
+                    + ", " + NoteTable.CONTENT_TO_SEARCH
+                    + ", " + NoteTable.NOTE_OID
+                    + ", " + NoteTable.ORIGIN_ID
+                    + ", " + NoteTable.NAME
+                    + ", " + NoteTable.SUMMARY
+                    + ", " + NoteTable.SENSITIVE
+                    + ", " + NoteTable.NOTE_STATUS
+                    + " FROM " + NoteTable.TABLE_NAME)
+            return sql + if (id == 0L) "" else " WHERE " + BaseColumns._ID + "=" + id
+        }
+
+        fun contentFromCursor(myContext: MyContext?, cursor: Cursor?): Note {
+            val note = fromOriginAndOid(myContext.origins().fromId(DbUtils.getLong(cursor, NoteTable.ORIGIN_ID)),
+                    DbUtils.getString(cursor, NoteTable.NOTE_OID),
+                    DownloadStatus.Companion.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS)))
+            note.noteId = DbUtils.getLong(cursor, BaseColumns._ID)
+            note.setName(DbUtils.getString(cursor, NoteTable.NAME))
+            note.setSummary(DbUtils.getString(cursor, NoteTable.SUMMARY))
+            note.setSensitive(DbUtils.getBoolean(cursor, NoteTable.SENSITIVE))
+            note.setContentStored(DbUtils.getString(cursor, NoteTable.CONTENT))
+            return note
+        }
+
+        fun loadContentById(myContext: MyContext?, noteId: Long): Note {
+            return MyQuery.get(myContext, getSqlToLoadContent(noteId), Function { cursor: Cursor? -> contentFromCursor(myContext, cursor) })
+                    .stream().findAny().map { obj: Note? -> obj.loadAudience() }.orElse(EMPTY)
+        }
+
+        private fun getTempOid(): String? {
+            return StringUtil.toTempOid("note:" + MyLog.uniqueCurrentTimeMS())
+        }
+
+        fun mayBeEdited(originType: OriginType?, downloadStatus: DownloadStatus?): Boolean {
+            return if (originType == null || downloadStatus == null) false else downloadStatus == DownloadStatus.DRAFT || downloadStatus.mayBeSent() ||
+                    downloadStatus.isPresentAtServer && originType.allowEditing()
+        }
+
+        fun requestDownload(ma: MyAccount?, noteId: Long, isManuallyLaunched: Boolean) {
+            MyLog.v(TAG) { "Note id:$noteId will be loaded from the Internet" }
+            val command: CommandData = CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, noteId)
+                    .setManuallyLaunched(isManuallyLaunched)
+                    .setInForeground(isManuallyLaunched)
+            MyServiceManager.Companion.sendCommand(command)
+        }
     }
 }

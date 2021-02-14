@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,84 +13,71 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data
 
-package org.andstatus.app.data;
+import android.content.ContentProvider
+import android.content.ContentValues
+import android.database.Cursor
+import android.net.Uri
+import android.os.ParcelFileDescriptor
+import org.andstatus.app.ClassInApplicationPackage
+import org.andstatus.app.util.StringUtil
+import java.io.FileNotFoundException
 
-import android.content.ContentProvider;
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.ParcelFileDescriptor;
-
-import org.andstatus.app.ClassInApplicationPackage;
-import org.andstatus.app.util.StringUtil;
-
-import java.io.FileNotFoundException;
-
-public class FileProvider extends ContentProvider {
-
-    public static final String AUTHORITY = ClassInApplicationPackage.PACKAGE_NAME + ".data.FileProvider";
-    public static final String DOWNLOAD_FILE_PATH = "downloadfile";
-    public static final Uri DOWNLOAD_FILE_URI = Uri.parse("content://" + AUTHORITY + "/" + DOWNLOAD_FILE_PATH);
-
-    @Override
-    public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
-        DownloadFile downloadFile = new DownloadFile(uriToFilename(uri));
-        if(!downloadFile.existed) {
-            throw new FileNotFoundException(downloadFile.getFilename());
+class FileProvider : ContentProvider() {
+    @Throws(FileNotFoundException::class)
+    override fun openFile(uri: Uri?, mode: String?): ParcelFileDescriptor? {
+        val downloadFile = DownloadFile(uriToFilename(uri))
+        if (!downloadFile.existed) {
+            throw FileNotFoundException(downloadFile.filename)
         }
-        return ParcelFileDescriptor.open(downloadFile.getFile(), ParcelFileDescriptor.MODE_READ_ONLY);        
+        return ParcelFileDescriptor.open(downloadFile.file, ParcelFileDescriptor.MODE_READ_ONLY)
     }
 
-    private String uriToFilename(Uri uri) {
-        String filename = null;
-        switch(uri.getPathSegments().get(0)) {
-            case DOWNLOAD_FILE_PATH:
-                filename = uri.getPathSegments().get(1);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown URI " + uri);
+    private fun uriToFilename(uri: Uri?): String? {
+        var filename: String? = null
+        filename = when (uri.getPathSegments()[0]) {
+            DOWNLOAD_FILE_PATH -> uri.getPathSegments()[1]
+            else -> throw IllegalArgumentException("Unknown URI $uri")
         }
-        return filename;
+        return filename
     }
 
-    public static Uri downloadFilenameToUri(String filename) {
-        if (StringUtil.isEmpty(filename)) {
-            return Uri.EMPTY;
-        } else {
-            return Uri.withAppendedPath(DOWNLOAD_FILE_URI, filename);
+    override fun onCreate(): Boolean {
+        return false
+    }
+
+    override fun query(uri: Uri?, projection: Array<String?>?, selection: String?, selectionArgs: Array<String?>?,
+                       sortOrder: String?): Cursor? {
+        return null
+    }
+
+    override fun getType(uri: Uri?): String? {
+        return null
+    }
+
+    override fun insert(uri: Uri?, values: ContentValues?): Uri? {
+        return null
+    }
+
+    override fun delete(uri: Uri?, selection: String?, selectionArgs: Array<String?>?): Int {
+        return 0
+    }
+
+    override fun update(uri: Uri?, values: ContentValues?, selection: String?, selectionArgs: Array<String?>?): Int {
+        return 0
+    }
+
+    companion object {
+        val AUTHORITY: String? = ClassInApplicationPackage.PACKAGE_NAME + ".data.FileProvider"
+        val DOWNLOAD_FILE_PATH: String? = "downloadfile"
+        val DOWNLOAD_FILE_URI = Uri.parse("content://" + AUTHORITY + "/" + DOWNLOAD_FILE_PATH)
+        fun downloadFilenameToUri(filename: String?): Uri? {
+            return if (StringUtil.isEmpty(filename)) {
+                Uri.EMPTY
+            } else {
+                Uri.withAppendedPath(DOWNLOAD_FILE_URI, filename)
+            }
         }
     }
-
-    @Override
-    public boolean onCreate() {
-        return false;
-    }
-
-    @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
-            String sortOrder) {
-        return null;
-    }
-
-    @Override
-    public String getType(Uri uri) {
-        return null;
-    }
-
-    @Override
-    public Uri insert(Uri uri, ContentValues values) {
-        return null;
-    }
-
-    @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
-    }
-
-    @Override
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        return 0;
-    }
-
 }

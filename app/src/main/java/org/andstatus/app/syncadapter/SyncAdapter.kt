@@ -15,42 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.syncadapter
 
-package org.andstatus.app.syncadapter;
+import android.accounts.Account
+import android.content.AbstractThreadedSyncAdapter
+import android.content.ContentProviderClient
+import android.content.Context
+import android.content.SyncResult
+import android.os.Bundle
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.service.MyServiceCommandsRunner
+import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.util.MyLog
 
-import android.accounts.Account;
-import android.content.AbstractThreadedSyncAdapter;
-import android.content.ContentProviderClient;
-import android.content.Context;
-import android.content.SyncResult;
-import android.os.Bundle;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.service.MyServiceCommandsRunner;
-import org.andstatus.app.service.MyServiceManager;
-import org.andstatus.app.util.MyLog;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class SyncAdapter extends AbstractThreadedSyncAdapter {
-    private final Context mContext;
-
-    public SyncAdapter(Context context, boolean autoInitialize) {
-        super(context, autoInitialize);
-        this.mContext = context;
-        MyLog.v(this, () -> "created, context:" + context.getClass().getCanonicalName());
+class SyncAdapter(private val mContext: Context?, autoInitialize: Boolean) : AbstractThreadedSyncAdapter(mContext, autoInitialize) {
+    override fun onPerformSync(account: Account?, extras: Bundle?, authority: String?,
+                               provider: ContentProviderClient?, syncResult: SyncResult?) {
+        if (!MyServiceManager.Companion.isServiceAvailable()) {
+            MyLog.d(this, account.name + " Service unavailable")
+            return
+        }
+        val myContext: MyContext = MyContextHolder.Companion.myContextHolder.initialize(mContext, this).getBlocking()
+        MyServiceCommandsRunner(myContext).autoSyncAccount(
+                myContext.accounts().fromAccountName(account.name), syncResult)
     }
 
-    @Override
-    public void onPerformSync(Account account, Bundle extras, String authority,
-            ContentProviderClient provider, SyncResult syncResult) {
-
-        if (!MyServiceManager.isServiceAvailable()) {
-            MyLog.d(this, account.name + " Service unavailable");
-            return;
-        }
-        final MyContext myContext = myContextHolder.initialize(mContext, this).getBlocking();
-        new MyServiceCommandsRunner(myContext).autoSyncAccount(
-                myContext.accounts().fromAccountName(account.name), syncResult);
+    init {
+        MyLog.v(this) { "created, context:" + mContext.javaClass.canonicalName }
     }
 }

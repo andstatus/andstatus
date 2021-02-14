@@ -13,79 +13,71 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.util
 
-package org.andstatus.app.util;
-
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
-import android.util.Base64;
-
-import org.acra.ACRA;
-
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import android.content.Context
+import android.content.pm.PackageManager
+import android.util.Base64
+import org.acra.ACRA
+import java.security.MessageDigest
+import java.security.NoSuchAlgorithmException
+import java.util.*
 
 /**
  * @author yvolk@yurivolkov.com
  * Based on https://www.airpair.com/android/posts/adding-tampering-detection-to-your-android-app
  */
-public class TamperingDetector {
+object TamperingDetector {
+    private val knownSignatures: MutableMap<String?, String?>? = HashMap()
 
-    private static final Map<String, String> knownSignatures = new HashMap<>();
-    private static volatile String knownAppSignature = "";
-
-    static {
-        knownSignatures.put("Q2LVj1MPgZdoNckr4g0WbOmi7nE=", "release-keys");
-        knownSignatures.put("U+TELzORnTCJ/2OZKoIbcNhVMPg=", "debug-keys");
-        knownSignatures.put("qhfrV6COj1j+fUrohD3xVZpfhYg=", "f-droid-keys");
-    }
-
-    public static void initialize(Context context) {
-        StringBuilder builder = new StringBuilder();
-        for (String signature : getAppSignatures(context)) {
+    @Volatile
+    private var knownAppSignature: String? = ""
+    fun initialize(context: Context?) {
+        val builder = StringBuilder()
+        for (signature in getAppSignatures(context)) {
             if (knownSignatures.containsKey(signature)) {
-                knownAppSignature = knownSignatures.get(signature);
-                MyStringBuilder.appendWithSpace(builder, "(" + knownAppSignature + ")");
+                knownAppSignature = knownSignatures.get(signature)
+                MyStringBuilder.Companion.appendWithSpace(builder, "(" + knownAppSignature + ")")
             } else {
-                MyLog.i(TamperingDetector.class, "Unknown APK signature:'" + signature + "'");
-                MyStringBuilder.appendWithSpace(builder, signature);
+                MyLog.i(TamperingDetector::class.java, "Unknown APK signature:'$signature'")
+                MyStringBuilder.Companion.appendWithSpace(builder, signature)
             }
         }
-        ACRA.getErrorReporter().putCustomData("apkSignatures", builder.toString());
+        ACRA.getErrorReporter().putCustomData("apkSignatures", builder.toString())
     }
 
-    private static List<String> getAppSignatures(Context context) {
-        List<String> signatures = new ArrayList<>();
+    private fun getAppSignatures(context: Context?): MutableList<String?>? {
+        val signatures: MutableList<String?> = ArrayList()
         try {
-            PackageInfo packageInfo = context.getPackageManager().
-                    getPackageInfo(context.getPackageName(), PackageManager.GET_SIGNATURES);
-            for (Signature signature : packageInfo.signatures) {
-                MessageDigest md = MessageDigest.getInstance("SHA");
-                md.update(signature.toByteArray());
-                String signatureString = Base64.encodeToString(md.digest(), Base64.DEFAULT);
-                signatureString = signatureString.substring(0, signatureString.length() - 1);
-                signatures.add(signatureString);
+            val packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_SIGNATURES)
+            for (signature in packageInfo.signatures) {
+                val md = MessageDigest.getInstance("SHA")
+                md.update(signature.toByteArray())
+                var signatureString = Base64.encodeToString(md.digest(), Base64.DEFAULT)
+                signatureString = signatureString.substring(0, signatureString.length - 1)
+                signatures.add(signatureString)
             }
-        } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException e) {
-            MyLog.e(TamperingDetector.class, "Failed to get app signature", e);
+        } catch (e: PackageManager.NameNotFoundException) {
+            MyLog.e(TamperingDetector::class.java, "Failed to get app signature", e)
+        } catch (e: NoSuchAlgorithmException) {
+            MyLog.e(TamperingDetector::class.java, "Failed to get app signature", e)
         }
-        return signatures;
+        return signatures
     }
 
-    public static boolean hasKnownAppSignature() {
-        return !StringUtil.isEmpty(knownAppSignature);
+    fun hasKnownAppSignature(): Boolean {
+        return !StringUtil.isEmpty(knownAppSignature)
     }
 
-    public static String getAppSignatureInfo() {
-        if (hasKnownAppSignature()) {
-            return knownAppSignature;
-        }
-        return "unknown-keys";
+    fun getAppSignatureInfo(): String? {
+        return if (hasKnownAppSignature()) {
+            knownAppSignature
+        } else "unknown-keys"
+    }
+
+    init {
+        knownSignatures["Q2LVj1MPgZdoNckr4g0WbOmi7nE="] = "release-keys"
+        knownSignatures["U+TELzORnTCJ/2OZKoIbcNhVMPg="] = "debug-keys"
+        knownSignatures["qhfrV6COj1j+fUrohD3xVZpfhYg="] = "f-droid-keys"
     }
 }

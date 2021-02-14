@@ -13,38 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.andstatus.app.context;
-
-import androidx.annotation.NonNull;
+package org.andstatus.app.context
 
 /**
  * We can change application's behaviour based on this
  * @author yvolk@yurivolkov.com
  */
-public enum ExecutionMode {
-    UNKNOWN("unknown", "Unknown"),
-    DEVICE("device", "Normal operation"),
-    TEST("test", "General testing, app may contain real data"),
-    FIREBASE_TEST("firebaseTest", "Firebase Test Lab testing"),
-    ROBO_TEST("roboTest", "Robo Test"),
-    TRAVIS_TEST("travisTest", "Travis CI testing. Screen is unavailable");
+enum class ExecutionMode(val code: String?, val description: String?) {
+    UNKNOWN("unknown", "Unknown"), DEVICE("device", "Normal operation"), TEST("test", "General testing, app may contain real data"), FIREBASE_TEST("firebaseTest", "Firebase Test Lab testing"), ROBO_TEST("roboTest", "Robo Test"), TRAVIS_TEST("travisTest", "Travis CI testing. Screen is unavailable");
 
-    final public String code;
-    final String description;
-
-    ExecutionMode(String code, String description) {
-        this.code = code;
-        this.description = description;
-    }
-
-    @NonNull
-    public static ExecutionMode load(String code) {
-        for(ExecutionMode val : values()) {
-            if (val.code.equals(code)) {
-                return val;
+    companion object {
+        fun load(code: String?): ExecutionMode {
+            for (`val` in values()) {
+                if (`val`.code == code) {
+                    return `val`
+                }
             }
+            return UNKNOWN
         }
-        return UNKNOWN;
     }
 }

@@ -13,127 +13,111 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
+import android.content.Intent
+import android.os.Bundle
+import android.view.ContextMenu
+import android.view.ContextMenu.ContextMenuInfo
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import io.vavr.control.Try
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.list.SyncLoader
+import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.timeline.BaseTimelineAdapter
+import org.andstatus.app.timeline.LoadableListActivity
+import org.andstatus.app.timeline.WhichPage
+import org.andstatus.app.util.MyLog
+import java.util.*
+import java.util.function.Consumer
+import java.util.function.Function
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.ContextMenu;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-
-import org.andstatus.app.R;
-import org.andstatus.app.list.SyncLoader;
-import org.andstatus.app.os.AsyncTaskLauncher;
-import org.andstatus.app.timeline.BaseTimelineAdapter;
-import org.andstatus.app.timeline.LoadableListActivity;
-import org.andstatus.app.timeline.WhichPage;
-import org.andstatus.app.util.MyLog;
-
-import java.util.Collections;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class QueueViewer extends LoadableListActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.my_list;
-        super.onCreate(savedInstanceState);
+class QueueViewer : LoadableListActivity<Any?>() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        mLayoutId = R.layout.my_list
+        super.onCreate(savedInstanceState)
     }
 
-    @Override
-    protected SyncLoader<QueueData> newSyncLoader(Bundle args) {
-        return new SyncLoader<QueueData>() {
-            @Override
-            public void load(ProgressPublisher publisher) {
-                QueueType[] queueTypes = {QueueType.CURRENT, QueueType.SKIPPED, QueueType.RETRY, QueueType.ERROR};
-                for (QueueType queueType : queueTypes) {
-                    CommandQueue.OneQueue oneQueue = myContext.queues().get(queueType);
-                    for (CommandData commandData : oneQueue.queue) {
-                        items.add(QueueData.getNew(queueType, commandData));
+    override fun newSyncLoader(args: Bundle?): SyncLoader<QueueData?>? {
+        return object : SyncLoader<QueueData?>() {
+            override fun load(publisher: ProgressPublisher?) {
+                val queueTypes = arrayOf<QueueType?>(QueueType.CURRENT, QueueType.SKIPPED, QueueType.RETRY, QueueType.ERROR)
+                for (queueType in queueTypes) {
+                    val oneQueue = myContext.queues()[queueType]
+                    for (commandData in oneQueue.queue) {
+                        items.add(QueueData.Companion.getNew(queueType, commandData))
                     }
                 }
-                Collections.sort(items);
+                Collections.sort(items)
             }
-        };
-    }
-
-    @Override
-    protected BaseTimelineAdapter newListAdapter() {
-        return new QueueViewerAdapter(this, getLoaded().getList());
-    }
-
-    private QueueData queueData = null;
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.commands_queue, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.clear_the_queue:
-                AsyncTaskLauncher.execute(this,
-                    activity -> myContextHolder.getBlocking().queues().clear(),
-                    activity -> r -> activity.showList(WhichPage.CURRENT));
-                break;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-        return false;
-    }
-
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        queueData = (QueueData) getListAdapter().getItem(v);
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.queue_context_menu, menu);
-    }
-
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        if (queueData == null) {
-            return super.onContextItemSelected(item);
-        }
-        switch (item.getItemId()) {
-            case R.id.menuItemShare:
-                share(queueData);
-                return true;
-            case R.id.menuItemResend:
-                queueData.commandData.resetRetries();
-                MyServiceManager.sendManualForegroundCommand(queueData.commandData);
-                return true;
-            case R.id.menuItemDelete:
-                AsyncTaskLauncher.execute(this,
-                    activity -> myContextHolder.getBlocking().queues().deleteCommand(queueData.commandData),
-                    activity -> r -> activity.showList(WhichPage.CURRENT));
-                return true;
-            default:
-                return super.onContextItemSelected(item);
         }
     }
 
-    private void share(QueueData queueData) {
-        Intent intent = new Intent(android.content.Intent.ACTION_SEND);
-        intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_SUBJECT, queueData.toSharedSubject());
-        intent.putExtra(Intent.EXTRA_TEXT, queueData.toSharedText());
-        startActivity(Intent.createChooser(intent, getText(R.string.menu_item_share)));        
+    override fun newListAdapter(): BaseTimelineAdapter<*>? {
+        return QueueViewerAdapter(this, loaded.getList())
     }
 
-    @Override
-    public void onReceive(CommandData commandData, MyServiceEvent myServiceEvent) {
+    private var queueData: QueueData? = null
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.commands_queue, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        when (item.getItemId()) {
+            R.id.clear_the_queue -> AsyncTaskLauncher.Companion.execute<QueueViewer?, Void?>(this,
+                    Function<QueueViewer?, Try<Void?>?> { activity: QueueViewer? -> MyContextHolder.Companion.myContextHolder.getBlocking().queues().clear() },
+                    Function { activity: QueueViewer? -> Consumer { r: Try<Void?>? -> activity.showList(WhichPage.CURRENT) } })
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return false
+    }
+
+    override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        queueData = listAdapter.getItem(v) as QueueData?
+        val inflater = menuInflater
+        inflater.inflate(R.menu.queue_context_menu, menu)
+    }
+
+    override fun onContextItemSelected(item: MenuItem?): Boolean {
+        return if (queueData == null) {
+            super.onContextItemSelected(item)
+        } else when (item.getItemId()) {
+            R.id.menuItemShare -> {
+                share(queueData)
+                true
+            }
+            R.id.menuItemResend -> {
+                queueData.commandData.resetRetries()
+                MyServiceManager.Companion.sendManualForegroundCommand(queueData.commandData)
+                true
+            }
+            R.id.menuItemDelete -> {
+                AsyncTaskLauncher.Companion.execute<QueueViewer?, Void?>(this,
+                        Function<QueueViewer?, Try<Void?>?> { activity: QueueViewer? -> MyContextHolder.Companion.myContextHolder.getBlocking().queues().deleteCommand(queueData.commandData) },
+                        Function { activity: QueueViewer? -> Consumer { r: Try<Void?>? -> activity.showList(WhichPage.CURRENT) } })
+                true
+            }
+            else -> super.onContextItemSelected(item)
+        }
+    }
+
+    private fun share(queueData: QueueData?) {
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "text/plain"
+        intent.putExtra(Intent.EXTRA_SUBJECT, queueData.toSharedSubject())
+        intent.putExtra(Intent.EXTRA_TEXT, queueData.toSharedText())
+        startActivity(Intent.createChooser(intent, getText(R.string.menu_item_share)))
+    }
+
+    override fun onReceive(commandData: CommandData?, myServiceEvent: MyServiceEvent?) {
         if (MyServiceEvent.ON_STOP == myServiceEvent) {
-            MyLog.v(this, "On service stop");
-            showList(WhichPage.CURRENT);
+            MyLog.v(this, "On service stop")
+            showList(WhichPage.CURRENT)
         }
     }
-    
 }

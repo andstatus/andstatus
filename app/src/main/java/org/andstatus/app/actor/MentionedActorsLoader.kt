@@ -13,33 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.actor
 
-package org.andstatus.app.actor;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.net.social.Audience;
-import org.andstatus.app.origin.Origin;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import java.util.function.Consumer
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class MentionedActorsLoader extends ActorsLoader {
-    private final long selectedNoteId;
-    private final Origin originOfSelectedNote;
-
-    public MentionedActorsLoader(MyContext myContext, Origin origin, long noteId) {
-        super(myContext, ActorsScreenType.ACTORS_OF_NOTE, origin, 0, "");
-        selectedNoteId = noteId;
-        originOfSelectedNote = myContextHolder.getNow().origins().fromId(
-                MyQuery.noteIdToOriginId(selectedNoteId));
+class MentionedActorsLoader(myContext: MyContext?, origin: Origin?, private val selectedNoteId: Long) : ActorsLoader(myContext, ActorsScreenType.ACTORS_OF_NOTE, origin, 0, "") {
+    private val originOfSelectedNote: Origin?
+    override fun loadInternal() {
+        fromNoteId(originOfSelectedNote, selectedNoteId).getNonSpecialActors().forEach(Consumer { actor: Actor? -> addActorToList(actor) })
+        if (!items.isEmpty()) super.loadInternal()
     }
 
-    @Override
-    protected void loadInternal() {
-        Audience.fromNoteId(originOfSelectedNote, selectedNoteId).getNonSpecialActors().forEach(this::addActorToList);
-        if (!items.isEmpty()) super.loadInternal();
+    init {
+        originOfSelectedNote = MyContextHolder.Companion.myContextHolder.getNow().origins().fromId(
+                MyQuery.noteIdToOriginId(selectedNoteId))
     }
 }

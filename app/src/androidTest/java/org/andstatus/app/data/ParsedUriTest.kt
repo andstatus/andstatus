@@ -13,82 +13,84 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data
 
-package org.andstatus.app.data;
+import android.content.UriMatcher
+import android.net.Uri
+import org.andstatus.app.actor.ActorsScreenType
+import org.andstatus.app.context.DemoData
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.TestSuite
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.OriginType
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.timeline.meta.TimelineType
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
 
-import android.content.UriMatcher;
-import android.net.Uri;
-
-import org.andstatus.app.actor.ActorsScreenType;
-import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.junit.Before;
-import org.junit.Test;
-
-import static org.andstatus.app.context.DemoData.demoData;
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-import static org.junit.Assert.assertEquals;
-
-public class ParsedUriTest {
-
+class ParsedUriTest {
     @Before
-    public void setUp() throws Exception {
-        TestSuite.initializeWithAccounts(this);
+    @Throws(Exception::class)
+    fun setUp() {
+        TestSuite.initializeWithAccounts(this)
     }
 
     @Test
-    public void testActorsScreen() {
-        assertOneActorsScreen(demoData.getPumpioConversationOrigin().getId());
-        assertOneActorsScreen(0);
+    fun testActorsScreen() {
+        assertOneActorsScreen(DemoData.Companion.demoData.getPumpioConversationOrigin().getId())
+        assertOneActorsScreen(0)
     }
 
-    private void assertOneActorsScreen(long originId) {
-        long noteId = 2;
-        Uri uri = MatchedUri.getActorsScreenUri(ActorsScreenType.ACTORS_OF_NOTE, originId, noteId, "");
-        ParsedUri parsedUri = ParsedUri.fromUri(uri);
-        String msgLog = parsedUri.toString();
-        assertEquals(TimelineType.UNKNOWN, parsedUri.getTimelineType());
-        assertEquals(msgLog, ActorsScreenType.ACTORS_OF_NOTE, parsedUri.getActorsScreenType());
-        assertEquals(msgLog, originId, parsedUri.getOriginId());
-        assertEquals(msgLog, noteId, parsedUri.getNoteId());
-        assertEquals(msgLog, noteId, parsedUri.getItemId());
-        assertEquals(msgLog, 0, parsedUri.getActorId());
-    }
-
-    @Test
-    public void testUriMatcher() {
-        oneUriMatcherSearchQuery("topic");
-        oneUriMatcherSearchQuery("%23topic");
-    }
-
-    private void oneUriMatcherSearchQuery(String searchQuery) {
-        int code1 = 3;
-        UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
-        final String authority = "timeline.app.andstatus.org";
-        matcher.addURI(authority, "note/#/lt/*/origin/#/actor/#/search/*", code1);
-        String uriString = "content://" + authority + "/note/0/lt/search/origin/6/actor/0/search/" + searchQuery;
-        final Uri uri = Uri.parse(uriString);
-        int codeOut = matcher.match(uri);
-        assertEquals("String:" + uriString + "\n Uri:" + uri, code1, codeOut);
+    private fun assertOneActorsScreen(originId: Long) {
+        val noteId: Long = 2
+        val uri: Uri = MatchedUri.Companion.getActorsScreenUri(ActorsScreenType.ACTORS_OF_NOTE, originId, noteId, "")
+        val parsedUri: ParsedUri = ParsedUri.Companion.fromUri(uri)
+        val msgLog = parsedUri.toString()
+        Assert.assertEquals(TimelineType.UNKNOWN, parsedUri.timelineType)
+        Assert.assertEquals(msgLog, ActorsScreenType.ACTORS_OF_NOTE, parsedUri.actorsScreenType)
+        Assert.assertEquals(msgLog, originId, parsedUri.originId)
+        Assert.assertEquals(msgLog, noteId, parsedUri.noteId)
+        Assert.assertEquals(msgLog, noteId, parsedUri.itemId)
+        Assert.assertEquals(msgLog, 0, parsedUri.actorId)
     }
 
     @Test
-    public void testSearchHashTag() {
-        oneSearchQuery("topic");
-        oneSearchQuery("#topic");
-        oneSearchQuery("%23topic");
+    fun testUriMatcher() {
+        oneUriMatcherSearchQuery("topic")
+        oneUriMatcherSearchQuery("%23topic")
     }
 
-    private void oneSearchQuery(String searchQuery) {
-        final Timeline timeline = myContextHolder.getNow().timelines().get(TimelineType.SEARCH, Actor.EMPTY,
-                myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL), searchQuery);
-        final Uri clickUri = timeline.getClickUri();
-        ParsedUri parsedUri = ParsedUri.fromUri(clickUri);
-        assertEquals(parsedUri.toString() + "\n" + timeline.toString(), TimelineType.SEARCH, parsedUri.getTimelineType());
-        assertEquals(parsedUri.toString() + "\n" + timeline.toString(), searchQuery, parsedUri.getSearchQuery());
+    private fun oneUriMatcherSearchQuery(searchQuery: String?) {
+        val code1 = 3
+        val matcher = UriMatcher(UriMatcher.NO_MATCH)
+        val authority = "timeline.app.andstatus.org"
+        matcher.addURI(authority, "note/#/lt/*/origin/#/actor/#/search/*", code1)
+        val uriString = "content://$authority/note/0/lt/search/origin/6/actor/0/search/$searchQuery"
+        val uri = Uri.parse(uriString)
+        val codeOut = matcher.match(uri)
+        Assert.assertEquals("String:$uriString\n Uri:$uri", code1.toLong(), codeOut.toLong())
     }
 
+    @Test
+    fun testSearchHashTag() {
+        oneSearchQuery("topic")
+        oneSearchQuery("#topic")
+        oneSearchQuery("%23topic")
+    }
+
+    private fun oneSearchQuery(searchQuery: String?) {
+        val timeline: Timeline = MyContextHolder.Companion.myContextHolder.getNow().timelines().get(TimelineType.SEARCH, Actor.Companion.EMPTY,
+                MyContextHolder.Companion.myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL), searchQuery)
+        val clickUri = timeline.clickUri
+        val parsedUri: ParsedUri = ParsedUri.Companion.fromUri(clickUri)
+        Assert.assertEquals("""
+    $parsedUri
+    $timeline
+    """.trimIndent(), TimelineType.SEARCH, parsedUri.timelineType)
+        Assert.assertEquals("""
+    $parsedUri
+    $timeline
+    """.trimIndent(), searchQuery, parsedUri.searchQuery)
+    }
 }

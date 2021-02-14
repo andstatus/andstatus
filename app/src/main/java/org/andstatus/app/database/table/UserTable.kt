@@ -13,37 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.database.table
 
-package org.andstatus.app.database.table;
+import android.database.sqlite.SQLiteDatabase
+import android.provider.BaseColumns
+import org.andstatus.app.data.DbUtils
 
-import android.database.sqlite.SQLiteDatabase;
-import android.provider.BaseColumns;
-
-import org.andstatus.app.data.DbUtils;
-
-public final class UserTable implements BaseColumns {
-    public static final String TABLE_NAME = "user";
-
-    private UserTable() {}
-
-    public static final String KNOWN_AS = "user_known_as";
-    public static final String IS_MY = "is_my_user";
-
+object UserTable : BaseColumns {
+    val TABLE_NAME: String? = "user"
+    val KNOWN_AS: String? = "user_known_as"
+    val IS_MY: String? = "is_my_user"
     /*
      * Derived columns (they are not stored in this table but are result of joins)
      */
-    /** Alias for the primary key */
-    public static final String USER_ID = "user_id";
-
-    public static void create(SQLiteDatabase db) {
+    /** Alias for the primary key  */
+    val USER_ID: String? = "user_id"
+    fun create(db: SQLiteDatabase?) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + KNOWN_AS + " TEXT NOT NULL DEFAULT '',"
                 + IS_MY + " INTEGER NOT NULL DEFAULT 0"
-                + ")");
-
+                + ")")
         DbUtils.execSQL(db, "CREATE INDEX idx_my_user ON " + TABLE_NAME + " ("
                 + IS_MY
-                + ")");
+                + ")")
     }
 }

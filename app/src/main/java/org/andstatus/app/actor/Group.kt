@@ -1,144 +1,115 @@
-package org.andstatus.app.actor;
+package org.andstatus.app.actor
 
-import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
+import android.net.Uri
+import android.provider.BaseColumns
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.data.DataUpdater
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.ActorTable
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.ActorEndpointType
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.UriUtils
+import java.util.*
+import java.util.function.Function
 
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.DataUpdater;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.net.social.AActivity;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.ActorEndpointType;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.UriUtils;
-
-import java.util.Optional;
-
-import static org.andstatus.app.util.StringUtil.nonEmptyNonTemp;
-import static org.andstatus.app.util.StringUtil.toTempOid;
-
-public final class Group {
-    private static final String TAG = Group.class.getSimpleName();
-
-    private Group() { /* Empty */ }
-
-    @NonNull
-    public static Actor getActorsGroup(Actor actor, GroupType groupType, String oid) {
-        if (actor.actorId == 0 || actor.groupType.isGroupLike || !groupType.isGroupLike) {
-            return Actor.EMPTY;
+object Group {
+    private val TAG: String? = Group::class.java.simpleName
+    fun getActorsGroup(actor: Actor?, groupType: GroupType?, oid: String?): Actor {
+        if (actor.actorId == 0L || actor.groupType.isGroupLike || !groupType.isGroupLike) {
+            return Actor.Companion.EMPTY
         }
-
-        long groupId = getActorsGroupId(actor, groupType);
-        if (groupId == 0) {
-            groupId = addActorsGroup(actor.origin.myContext, actor, groupType, oid);
+        var groupId = getActorsGroupId(actor, groupType)
+        if (groupId == 0L) {
+            groupId = addActorsGroup(actor.origin.myContext, actor, groupType, oid)
         }
-        Actor group = actor.origin.myContext.users().load(groupId);
-        return groupTypeNeedsCorrection(group.groupType, groupType)
-            ? correctGroupType(actor, group, groupType)
-            : group;
+        val group = actor.origin.myContext.users().load(groupId)
+        return if (groupTypeNeedsCorrection(group.groupType, groupType)) correctGroupType(actor, group, groupType) else group
     }
 
-    private static Actor correctGroupType(Actor actor, Actor group, GroupType newType) {
-        MyStringBuilder msg = MyStringBuilder.of("Correct group type from " + group.groupType +
-                " to " + newType + " for " + group);
-        if (group.actorId == 0){
-            MyLog.w(TAG, msg.prependWithSeparator("Failed, actorId==0", ". ").toString());
-            return group;
+    private fun correctGroupType(actor: Actor?, group: Actor?, newType: GroupType?): Actor? {
+        val msg: MyStringBuilder = MyStringBuilder.Companion.of("Correct group type from " + group.groupType +
+                " to " + newType + " for " + group)
+        if (group.actorId == 0L) {
+            MyLog.w(TAG, msg.prependWithSeparator("Failed, actorId==0", ". ").toString())
+            return group
         }
-        SQLiteDatabase db = actor.origin.myContext.getDatabase();
-        if (db == null){
-            MyLog.databaseIsNull(() -> msg);
-            return group;
+        val db = actor.origin.myContext.database
+        if (db == null) {
+            MyLog.databaseIsNull { msg }
+            return group
         }
-
-        long parentActorId = newType.parentActorRequired ? actor.actorId : 0;
-
-        Optional<String> optOid = optOidFromEndpoint(actor, newType);
-        optOid.map(oid -> msg.withComma("uri", oid));
-        MyLog.i(TAG, msg.toString());
-
+        val parentActorId = if (newType.parentActorRequired) actor.actorId else 0
+        val optOid = optOidFromEndpoint(actor, newType)
+        optOid.map(Function { oid: String? -> msg.withComma("uri", oid) })
+        MyLog.i(TAG, msg.toString())
         db.execSQL("UPDATE " + ActorTable.TABLE_NAME +
                 " SET " + ActorTable.GROUP_TYPE + "=" + newType.id +
-                (newType.parentActorRequired == (parentActorId != 0)
-                    ? ", " + ActorTable.PARENT_ACTOR_ID + "=" + parentActorId
-                    : "") +
-                optOid.map(oid -> ", " + ActorTable.ACTOR_OID + "='" + oid + "'").orElse("") +
-                " WHERE " + ActorTable._ID + "=" + group.actorId
-        );
-
-        return actor.origin.myContext.users().reload(group);
+                (if (newType.parentActorRequired == (parentActorId != 0L)) ", " + ActorTable.PARENT_ACTOR_ID + "=" + parentActorId else "") +
+                optOid.map(Function { oid: String? -> ", " + ActorTable.ACTOR_OID + "='" + oid + "'" }).orElse("") +
+                " WHERE " + BaseColumns._ID + "=" + group.actorId
+        )
+        return actor.origin.myContext.users().reload(group)
     }
 
-    private static Optional<String> optOidFromEndpoint(Actor actor, GroupType groupType) {
-        return (groupType == GroupType.FOLLOWERS
-                ? actor.getEndpoint(ActorEndpointType.API_FOLLOWERS)
-                : groupType == GroupType.FRIENDS
-                    ? actor.getEndpoint(ActorEndpointType.API_FOLLOWING)
-                    : Optional.<Uri>empty())
-            .filter(UriUtils::isDownloadable)
-            .map(Uri::toString);
+    private fun optOidFromEndpoint(actor: Actor?, groupType: GroupType?): Optional<String?>? {
+        return (if (groupType == GroupType.FOLLOWERS) actor.getEndpoint(ActorEndpointType.API_FOLLOWERS) else if (groupType == GroupType.FRIENDS) actor.getEndpoint(ActorEndpointType.API_FOLLOWING) else Optional.empty())
+                .filter { obj: Uri? -> UriUtils.isDownloadable() }
+                .map { obj: Uri? -> obj.toString() }
     }
 
-    @NonNull
-    public static Actor getGroupById(Origin origin, long groupId) {
-        return Actor.fromId(origin, groupId);
+    fun getGroupById(origin: Origin?, groupId: Long): Actor {
+        return Actor.Companion.fromId(origin, groupId)
     }
 
-    private static long getActorsGroupId(Actor parentActor, GroupType groupType) {
-        return MyQuery.getLongs(parentActor.origin.myContext, "SELECT " + ActorTable._ID +
-            " FROM " + ActorTable.TABLE_NAME +
-            " WHERE " + ActorTable.PARENT_ACTOR_ID + "=" + parentActor.actorId +
-            " AND " + ActorTable.GROUP_TYPE + "=" + groupType.id)
-            .stream().findAny()
-        .orElseGet( () -> getGroupIdFromParentEndpoint(parentActor, groupType));
-    }
-
-    private static long getGroupIdFromParentEndpoint(Actor parentActor, GroupType groupType) {
-        return optOidFromEndpoint(parentActor, groupType)
-        .map(oid -> MyQuery.getLongs(parentActor.origin.myContext, "SELECT " + ActorTable._ID +
+    private fun getActorsGroupId(parentActor: Actor?, groupType: GroupType?): Long {
+        return MyQuery.getLongs(parentActor.origin.myContext, "SELECT " + BaseColumns._ID +
                 " FROM " + ActorTable.TABLE_NAME +
-                " WHERE " + ActorTable.ACTOR_OID + "='" + oid + "'" +
-                " AND " + ActorTable.ORIGIN_ID + "=" + parentActor.origin.getId()
-            )
-            .stream().findAny()
-            .orElse(0L))
-        .orElse(0L);
+                " WHERE " + ActorTable.PARENT_ACTOR_ID + "=" + parentActor.actorId +
+                " AND " + ActorTable.GROUP_TYPE + "=" + groupType.id)
+                .stream().findAny()
+                .orElseGet { getGroupIdFromParentEndpoint(parentActor, groupType) }
     }
 
-    public static boolean groupTypeNeedsCorrection(GroupType oldType, GroupType newType) {
-        if (newType.precision < oldType.precision || oldType == newType) return false;
-
-        return (newType.isGroupLike && !oldType.isGroupLike) ||
-                newType.precision > oldType.precision;
+    private fun getGroupIdFromParentEndpoint(parentActor: Actor?, groupType: GroupType?): Long {
+        return optOidFromEndpoint(parentActor, groupType)
+                .map(Function { oid: String? ->
+                    MyQuery.getLongs(parentActor.origin.myContext, "SELECT " + BaseColumns._ID +
+                            " FROM " + ActorTable.TABLE_NAME +
+                            " WHERE " + ActorTable.ACTOR_OID + "='" + oid + "'" +
+                            " AND " + ActorTable.ORIGIN_ID + "=" + parentActor.origin.id
+                    )
+                            .stream().findAny()
+                            .orElse(0L)
+                })
+                .orElse(0L)
     }
 
-    private static long addActorsGroup(MyContext myContext, Actor parentActor, GroupType newType, String oidIn) {
-        long originId = MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID, parentActor.actorId);
-        Origin origin = myContext.origins().fromId(originId);
-        String parentUsername = MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, parentActor.actorId);
-        String groupUsername = newType.name + ".of." + parentUsername + "." + parentActor.actorId;
-        String oid = nonEmptyNonTemp(oidIn)
-                ? oidIn
-                : parentActor.getEndpoint(ActorEndpointType.from(newType))
-                    .map(Uri::toString)
-                    .orElse(toTempOid(groupUsername));
+    fun groupTypeNeedsCorrection(oldType: GroupType?, newType: GroupType?): Boolean {
+        return if (newType.precision < oldType.precision || oldType == newType) false else newType.isGroupLike && !oldType.isGroupLike ||
+                newType.precision > oldType.precision
+    }
 
-        Actor group = Actor.fromTwoIds(origin, newType, 0, oid);
-        group.setUsername(groupUsername);
-        group.setParentActorId(myContext, parentActor.actorId);
-
-        MyAccount myAccount = myContext.accounts().getFirstPreferablySucceededForOrigin(origin);
-        AActivity activity = myAccount.getActor().update(group);
-        new DataUpdater(myAccount).updateObjActor(activity, 0);
-        if (group.actorId == 0) {
-            MyLog.w(TAG, "Failed to add new Actor's " + newType + " group " + groupUsername + "; " + activity);
+    private fun addActorsGroup(myContext: MyContext?, parentActor: Actor?, newType: GroupType?, oidIn: String?): Long {
+        val originId = MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID, parentActor.actorId)
+        val origin = myContext.origins().fromId(originId)
+        val parentUsername = MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, parentActor.actorId)
+        val groupUsername = newType.name + ".of." + parentUsername + "." + parentActor.actorId
+        val oid = if (StringUtil.nonEmptyNonTemp(oidIn)) oidIn else parentActor.getEndpoint(ActorEndpointType.Companion.from(newType))
+                .map { obj: Uri? -> obj.toString() }
+                .orElse(StringUtil.toTempOid(groupUsername))
+        val group: Actor = Actor.Companion.fromTwoIds(origin, newType, 0, oid)
+        group.username = groupUsername
+        group.setParentActorId(myContext, parentActor.actorId)
+        val myAccount = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
+        val activity = myAccount.actor.update(group)
+        DataUpdater(myAccount).updateObjActor(activity, 0)
+        if (group.actorId == 0L) {
+            MyLog.w(TAG, "Failed to add new Actor's $newType group $groupUsername; $activity")
         }
-        return group.actorId;
+        return group.actorId
     }
 }

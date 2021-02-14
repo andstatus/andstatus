@@ -13,65 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
+import org.andstatus.app.IntentExtra
+import org.andstatus.app.MyAction
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StringUtil
 
-import android.content.Intent;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.IntentExtra;
-import org.andstatus.app.MyAction;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StringUtil;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-
-public class MyServiceEventsBroadcaster {
-    private final MyContext mMyContext;
-    private final MyServiceState mState;
-    private CommandData mCommandData = CommandData.EMPTY;
-    private MyServiceEvent mEvent = MyServiceEvent.UNKNOWN;
-    private String progress = null;
-    
-    private MyServiceEventsBroadcaster(MyContext myContext, MyServiceState state) {
-        this.mMyContext = myContext;
-        this.mState = state;
-    }
-    
-    public static MyServiceEventsBroadcaster newInstance(MyContext myContext, MyServiceState state) {
-        return new MyServiceEventsBroadcaster(myContext, state);
+class MyServiceEventsBroadcaster private constructor(private val mMyContext: MyContext?, private val mState: MyServiceState?) {
+    private var mCommandData: CommandData? = CommandData.Companion.EMPTY
+    private var mEvent: MyServiceEvent? = MyServiceEvent.UNKNOWN
+    private var progress: String? = null
+    fun setCommandData(commandData: CommandData): MyServiceEventsBroadcaster? {
+        mCommandData = commandData
+        return this
     }
 
-    public MyServiceEventsBroadcaster setCommandData(@NonNull CommandData commandData) {
-        this.mCommandData = commandData;
-        return this;
+    fun setEvent(serviceEvent: MyServiceEvent?): MyServiceEventsBroadcaster? {
+        mEvent = serviceEvent
+        return this
     }
 
-    public MyServiceEventsBroadcaster setEvent(MyServiceEvent serviceEvent) {
-        this.mEvent = serviceEvent;
-        return this;
+    fun setProgress(text: String?): MyServiceEventsBroadcaster? {
+        progress = text
+        return this
     }
 
-    public MyServiceEventsBroadcaster setProgress(String text) {
-        progress = text;
-        return this;
-    }
-
-    public void broadcast() {
-        Intent intent = MyAction.SERVICE_STATE.getIntent();
-        if (mCommandData != CommandData.EMPTY) {
-            mCommandData.getResult().setProgress(progress);
+    fun broadcast() {
+        val intent = MyAction.SERVICE_STATE.intent
+        if (mCommandData !== CommandData.Companion.EMPTY) {
+            mCommandData.getResult().progress = progress
         }
-        mCommandData.toIntent(intent);
-        intent.putExtra(IntentExtra.SERVICE_STATE.key, mState.save());
-        intent.putExtra(IntentExtra.SERVICE_EVENT.key, mEvent.save());
+        mCommandData.toIntent(intent)
+        intent.putExtra(IntentExtra.SERVICE_STATE.key, mState.save())
+        intent.putExtra(IntentExtra.SERVICE_EVENT.key, mEvent.save())
         if (MyLog.isVerboseEnabled()) {
-            MyLog.v(this, () -> "state:" + mState + ", event:" + mEvent
-            + ", " + mCommandData.toCommandSummary(myContextHolder.getNow())
-            + (StringUtil.isEmpty(progress) ? "" : ", progress:" + progress) );
+            MyLog.v(this) {
+                ("state:" + mState + ", event:" + mEvent
+                        + ", " + mCommandData.toCommandSummary(MyContextHolder.Companion.myContextHolder.getNow())
+                        + if (StringUtil.isEmpty(progress)) "" else ", progress:$progress")
+            }
         }
-        mMyContext.context().sendBroadcast(intent);
+        mMyContext.context().sendBroadcast(intent)
+    }
+
+    companion object {
+        fun newInstance(myContext: MyContext?, state: MyServiceState?): MyServiceEventsBroadcaster? {
+            return MyServiceEventsBroadcaster(myContext, state)
+        }
     }
 }

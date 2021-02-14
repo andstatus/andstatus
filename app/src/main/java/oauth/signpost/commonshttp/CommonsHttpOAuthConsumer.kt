@@ -12,33 +12,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package oauth.signpost.commonshttp;
+package oauth.signpost.commonshttp
 
-import oauth.signpost.AbstractOAuthConsumer;
-import oauth.signpost.http.HttpRequest;
+import cz.msebera.android.httpclient.HttpRequest
+import cz.msebera.android.httpclient.client.methods.HttpUriRequest
+import oauth.signpost.AbstractOAuthConsumer
 
 /**
- * Supports signing HTTP requests of type {@link cz.msebera.android.httpclient.HttpRequest}.
- * 
+ * Supports signing HTTP requests of type [cz.msebera.android.httpclient.HttpRequest].
+ *
  * @author Matthias Kaeppler
  */
-public class CommonsHttpOAuthConsumer extends AbstractOAuthConsumer {
-
-    private static final long serialVersionUID = 1L;
-
-    public CommonsHttpOAuthConsumer(String consumerKey, String consumerSecret) {
-        super(consumerKey, consumerSecret);
-    }
-
-    @Override
-    protected HttpRequest wrap(Object request) {
-        if (!(request instanceof cz.msebera.android.httpclient.HttpRequest)) {
-            throw new IllegalArgumentException(
-                    "This consumer expects requests of type "
-                            + cz.msebera.android.httpclient.HttpRequest.class.getCanonicalName());
+class CommonsHttpOAuthConsumer(consumerKey: String?, consumerSecret: String?) : AbstractOAuthConsumer(consumerKey, consumerSecret) {
+    override fun wrap(request: Any?): oauth.signpost.http.HttpRequest? {
+        require(request is HttpRequest) {
+            ("This consumer expects requests of type "
+                    + HttpRequest::class.java.canonicalName)
         }
-
-        return new HttpRequestAdapter((cz.msebera.android.httpclient.client.methods.HttpUriRequest) request);
+        return HttpRequestAdapter(request as HttpUriRequest?)
     }
 
+    companion object {
+        private const val serialVersionUID = 1L
+    }
 }

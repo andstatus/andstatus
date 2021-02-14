@@ -13,177 +13,155 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.account
 
-package org.andstatus.app.account;
-
-import android.content.Context;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.util.StringUtil;
+import android.content.Context
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.util.StringUtil
 
 /**
- * Account name, unique for this application and suitable for {@link android.accounts.AccountManager}
+ * Account name, unique for this application and suitable for [android.accounts.AccountManager]
  * The name is permanent and cannot be changed. This is why it may be used as Key to retrieve the account.
- * Immutable class.  
+ * Immutable class.
  * @author yvolk@yurivolkov.com
  */
-public class AccountName {
-    public static final String ORIGIN_SEPARATOR = "/";
-    
-    /** The system in which the Account is defined, see {@link Origin} */
-    public final Origin origin;
-    public final String username;
-    public final String host;
-    /** The name is a username@originHost to be unique for the {@link OriginType} */
-    private final String uniqueName;
-    private final String name;
-    public final boolean isValid;
+class AccountName private constructor(uniqueName: String?,
+                                      /** The system in which the Account is defined, see [Origin]  */
+                                      val origin: Origin?) {
+    val username: String?
+    val host: String?
 
-    public static AccountName getEmpty() {
-        return new AccountName("", Origin.EMPTY);
+    /** The name is a username@originHost to be unique for the [OriginType]  */
+    private val uniqueName: String?
+    private val name: String?
+    val isValid: Boolean
+    fun getName(): String? {
+        return name
     }
 
-    @NonNull
-    public static AccountName fromOriginAndUniqueName(@NonNull Origin origin, String uniqueName) {
-        return new AccountName(fixUniqueName(uniqueName, origin), origin);
+    override fun toString(): String {
+        return (if (isValid) "" else "(invalid) ") + getName()
     }
 
-    @NonNull
-    public static AccountName fromAccountName(MyContext myContext, String accountNameString) {
-        Origin origin = accountNameToOrigin(myContext, accountNameString);
-        return new AccountName(accountNameToUniqueName(accountNameString, origin), origin);
+    fun getContext(): Context? {
+        return myContext().context()
     }
 
-    private static String fixOriginName(String originNameIn) {
-        String originName = "";
-        if (originNameIn != null) {
-            originName = originNameIn.trim();
-        }
-        return originName;
+    fun myContext(): MyContext? {
+        return getOrigin().myContext
     }
 
-    private static Origin accountNameToOrigin(MyContext myContext, String accountName) {
-        String accountNameFixed = fixAccountName(accountName);
-        String host = accountNameToHost(accountNameFixed);
-        int indSeparator = accountNameFixed.lastIndexOf(ORIGIN_SEPARATOR);
-        String originInAccountName = indSeparator >= 0 && indSeparator < accountNameFixed.length()-1
-                ? accountNameFixed.substring(indSeparator + 1).trim()
-                : "";
-
-        return myContext.origins().fromOriginInAccountNameAndHost(fixOriginName(originInAccountName), host);
+    fun getOrigin(): Origin? {
+        return origin
     }
 
-
-    public static String accountNameToHost(String accountName) {
-        String nameWithoutOrigin = accountNameWithoutOrigin(accountName);
-        int indAt = nameWithoutOrigin.indexOf("@");
-        return indAt >= 0
-                ? nameWithoutOrigin.substring(indAt + 1).trim()
-                : "";
+    fun isValid(): Boolean {
+        return isValid
     }
 
-    private static String accountNameToUniqueName(String accountName, Origin origin) {
-        return fixUniqueName(accountNameWithoutOrigin(accountName), origin);
+    fun getUniqueName(): String? {
+        return uniqueName
     }
 
-    private static String accountNameWithoutOrigin(String accountName) {
-        String accountNameFixed = fixAccountName(accountName);
-        int indSeparator = accountNameFixed.indexOf(ORIGIN_SEPARATOR);
-        return indSeparator > 0
-                ? accountNameFixed.substring(0, indSeparator)
-                : accountNameFixed;
+    fun getOriginName(): String? {
+        return origin.getName()
     }
 
-    private static String fixUniqueName(String uniqueNameIn, Origin origin) {
-        String nonNullName = StringUtil.notNull(uniqueNameIn).trim();
-        String uniqueName = nonNullName +
-                (!nonNullName.contains("@") && origin.shouldHaveUrl() ? "@" + origin.getAccountNameHost() : "");
-        if (Actor.uniqueNameToUsername(origin, uniqueName).isPresent()) {
-            return uniqueName;
-        } else {
-            return "";
-        }
-    }
-
-    private static String fixAccountName(String accountNameIn) {
-        String accountName = "";
-        if (accountNameIn != null) {
-            accountName = accountNameIn.trim();
-        }
-        return accountName;
-    }
-
-    private AccountName(String uniqueName, Origin origin) {
-        this.origin = origin;
-        username = Actor.uniqueNameToUsername(origin, uniqueName).orElse("");
-        host = accountNameToHost(uniqueName);
-        this.uniqueName = uniqueName;
-        String originInAccountName = origin.getOriginInAccountName(host);
-        name = uniqueName + ORIGIN_SEPARATOR + originInAccountName;
-        isValid = origin.isPersistent() && origin.isUsernameValid(username) && StringUtil.nonEmpty(originInAccountName);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @NonNull
-    @Override
-    public String toString() {
-        return (isValid ? "" : "(invalid) ") + getName();
-    }
-
-    public Context getContext() {
-        return myContext().context();
-    }
-
-    public MyContext myContext() {
-        return getOrigin().myContext;
-    }
-
-    public Origin getOrigin() {
-        return origin;
-    }
-
-    public boolean isValid() {
-        return isValid;
-    }
-    
-    public String getUniqueName() {
-        return uniqueName;
-    }
-
-    String getOriginName() {
-        return origin.getName();
-    }
-
-    public String getLogName() {
+    fun getLogName(): String? {
         return getUniqueName().replace("@", "-")
-                .replace(ORIGIN_SEPARATOR, "-");
+                .replace(ORIGIN_SEPARATOR, "-")
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AccountName)) return false;
-
-        AccountName that = (AccountName) o;
-
-        if (!origin.equals(that.origin)) return false;
-        return StringUtil.equalsNotEmpty(uniqueName, that.uniqueName);
+    override fun equals(o: Any?): Boolean {
+        if (this === o) return true
+        if (o !is AccountName) return false
+        val that = o as AccountName?
+        return if (origin != that.origin) false else StringUtil.equalsNotEmpty(uniqueName, that.uniqueName)
     }
 
-    @Override
-    public int hashCode() {
-        int result = origin.hashCode();
+    override fun hashCode(): Int {
+        var result = origin.hashCode()
         if (!StringUtil.isEmpty(uniqueName)) {
-            result = 31 * result + uniqueName.hashCode();
+            result = 31 * result + uniqueName.hashCode()
         }
-        return result;
+        return result
+    }
+
+    companion object {
+        val ORIGIN_SEPARATOR: String? = "/"
+        fun getEmpty(): AccountName? {
+            return AccountName("", Origin.Companion.EMPTY)
+        }
+
+        fun fromOriginAndUniqueName(origin: Origin, uniqueName: String?): AccountName {
+            return AccountName(fixUniqueName(uniqueName, origin), origin)
+        }
+
+        fun fromAccountName(myContext: MyContext?, accountNameString: String?): AccountName {
+            val origin = accountNameToOrigin(myContext, accountNameString)
+            return AccountName(accountNameToUniqueName(accountNameString, origin), origin)
+        }
+
+        private fun fixOriginName(originNameIn: String?): String? {
+            var originName = ""
+            if (originNameIn != null) {
+                originName = originNameIn.trim { it <= ' ' }
+            }
+            return originName
+        }
+
+        private fun accountNameToOrigin(myContext: MyContext?, accountName: String?): Origin? {
+            val accountNameFixed = fixAccountName(accountName)
+            val host = accountNameToHost(accountNameFixed)
+            val indSeparator = accountNameFixed.lastIndexOf(ORIGIN_SEPARATOR)
+            val originInAccountName = if (indSeparator >= 0 && indSeparator < accountNameFixed.length - 1) accountNameFixed.substring(indSeparator + 1).trim { it <= ' ' } else ""
+            return myContext.origins().fromOriginInAccountNameAndHost(fixOriginName(originInAccountName), host)
+        }
+
+        fun accountNameToHost(accountName: String?): String? {
+            val nameWithoutOrigin = accountNameWithoutOrigin(accountName)
+            val indAt = nameWithoutOrigin.indexOf("@")
+            return if (indAt >= 0) nameWithoutOrigin.substring(indAt + 1).trim { it <= ' ' } else ""
+        }
+
+        private fun accountNameToUniqueName(accountName: String?, origin: Origin?): String? {
+            return fixUniqueName(accountNameWithoutOrigin(accountName), origin)
+        }
+
+        private fun accountNameWithoutOrigin(accountName: String?): String? {
+            val accountNameFixed = fixAccountName(accountName)
+            val indSeparator = accountNameFixed.indexOf(ORIGIN_SEPARATOR)
+            return if (indSeparator > 0) accountNameFixed.substring(0, indSeparator) else accountNameFixed
+        }
+
+        private fun fixUniqueName(uniqueNameIn: String?, origin: Origin?): String? {
+            val nonNullName = StringUtil.notNull(uniqueNameIn).trim { it <= ' ' }
+            val uniqueName = nonNullName +
+                    if (!nonNullName.contains("@") && origin.shouldHaveUrl()) "@" + origin.getAccountNameHost() else ""
+            return if (Actor.Companion.uniqueNameToUsername(origin, uniqueName).isPresent()) {
+                uniqueName
+            } else {
+                ""
+            }
+        }
+
+        private fun fixAccountName(accountNameIn: String?): String? {
+            var accountName = ""
+            if (accountNameIn != null) {
+                accountName = accountNameIn.trim { it <= ' ' }
+            }
+            return accountName
+        }
+    }
+
+    init {
+        username = Actor.Companion.uniqueNameToUsername(origin, uniqueName).orElse("")
+        host = accountNameToHost(uniqueName)
+        this.uniqueName = uniqueName
+        val originInAccountName = origin.getOriginInAccountName(host)
+        name = uniqueName + ORIGIN_SEPARATOR + originInAccountName
+        isValid = origin.isPersistent() && origin.isUsernameValid(username) && StringUtil.nonEmpty(originInAccountName)
     }
 }

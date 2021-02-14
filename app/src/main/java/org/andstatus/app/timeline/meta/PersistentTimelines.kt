@@ -13,204 +13,186 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.timeline.meta
 
-package org.andstatus.app.timeline.meta;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.account.MyAccount;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.database.table.TimelineTable;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.StopWatch;
-import org.andstatus.app.util.TriState;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Stream;
+import android.database.Cursor
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.database.table.TimelineTable
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.StopWatch
+import org.andstatus.app.util.TriState
+import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentMap
+import java.util.function.Consumer
+import java.util.function.Function
+import java.util.function.Predicate
+import java.util.stream.Stream
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class PersistentTimelines {
-    private final ConcurrentMap<Long, Timeline> timelines = new ConcurrentHashMap<>();
-    private final MyContext myContext;
-
-    public static PersistentTimelines newEmpty(MyContext myContext) {
-        return new PersistentTimelines(myContext);
-    }
-
-    private PersistentTimelines(MyContext myContext) {
-        this.myContext = myContext;
-    }
-
-    public PersistentTimelines initialize() {
-        StopWatch stopWatch = StopWatch.createStarted();
-        final String method = "initialize";
-        timelines.clear();
+class PersistentTimelines private constructor(private val myContext: MyContext?) {
+    private val timelines: ConcurrentMap<Long?, Timeline?>? = ConcurrentHashMap()
+    fun initialize(): PersistentTimelines? {
+        val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+        val method = "initialize"
+        timelines.clear()
         MyQuery.get(myContext, "SELECT * FROM " + TimelineTable.TABLE_NAME,
-                cursor -> Timeline.fromCursor(myContext, cursor)
-        ).forEach(timeline -> {
+                Function<Cursor?, Timeline?> { cursor: Cursor? -> Timeline.Companion.fromCursor(myContext, cursor) }
+        ).forEach(Consumer { timeline: Timeline? ->
             if (timeline.isValid()) {
-                timelines.put(timeline.getId(), timeline);
-                if (MyLog.isVerboseEnabled() && timelines.size() < 5) {
-                    MyLog.v(PersistentTimelines.class, method + "; " + timeline);
+                timelines[timeline.getId()] = timeline
+                if (MyLog.isVerboseEnabled() && timelines.size < 5) {
+                    MyLog.v(PersistentTimelines::class.java, "$method; $timeline")
                 }
-            } else MyLog.w(PersistentTimelines.class, method + "; invalid skipped " + timeline);
-        });
-        MyLog.i(this, "timelinesInitializedMs:" + stopWatch.getTime() + "; " + timelines.size() + " timelines");
-        return this;
+            } else MyLog.w(PersistentTimelines::class.java, "$method; invalid skipped $timeline")
+        })
+        MyLog.i(this, "timelinesInitializedMs:" + stopWatch.time + "; " + timelines.size + " timelines")
+        return this
     }
 
-    @NonNull
-    public Timeline fromId(long id) {
-        return Optional.ofNullable(timelines.get(id)).orElseGet(() -> addNew(Timeline.fromId(myContext, id)));
+    fun fromId(id: Long): Timeline {
+        return Optional.ofNullable(timelines.get(id)).orElseGet { addNew(Timeline.Companion.fromId(myContext, id)) }
     }
 
-    @NonNull
-    public Timeline getDefault() {
-        Timeline defaultTimeline = Timeline.EMPTY;
-        for (Timeline timeline : values()) {
+    fun getDefault(): Timeline {
+        var defaultTimeline: Timeline? = Timeline.Companion.EMPTY
+        for (timeline in values()) {
             if (defaultTimeline.compareTo(timeline) > 0 || !defaultTimeline.isValid()) {
-                defaultTimeline = timeline;
+                defaultTimeline = timeline
             }
         }
-        return defaultTimeline;
+        return defaultTimeline
     }
 
-    public void setDefault(@NonNull Timeline timelineIn) {
-        Timeline prevDefault = getDefault();
-        if (!timelineIn.equals(prevDefault) && timelineIn.getSelectorOrder() >= prevDefault.getSelectorOrder()) {
-            timelineIn.setSelectorOrder(Math.min(prevDefault.getSelectorOrder() - 1, -1));
+    fun setDefault(timelineIn: Timeline) {
+        val prevDefault = getDefault()
+        if (timelineIn != prevDefault && timelineIn.selectorOrder >= prevDefault.selectorOrder) {
+            timelineIn.selectorOrder = Math.min(prevDefault.selectorOrder - 1, -1)
         }
     }
 
-    @NonNull
-    public Timeline forUserAtHomeOrigin(@NonNull TimelineType timelineType, Actor actor) {
-        return forUser(timelineType, actor.toHomeOrigin());
+    fun forUserAtHomeOrigin(timelineType: TimelineType, actor: Actor?): Timeline {
+        return forUser(timelineType, actor.toHomeOrigin())
     }
 
-    @NonNull
-    public Timeline forUser(@NonNull TimelineType timelineType, @NonNull Actor actor) {
-        return get(0, timelineType, actor, Origin.EMPTY, "");
+    fun forUser(timelineType: TimelineType, actor: Actor): Timeline {
+        return get(0, timelineType, actor, Origin.Companion.EMPTY, "")
     }
 
-    @NonNull
-    public Timeline get(@NonNull TimelineType timelineType, @NonNull Actor actor, @NonNull Origin origin) {
-        return get(0, timelineType, actor, origin, "");
+    operator fun get(timelineType: TimelineType, actor: Actor, origin: Origin): Timeline {
+        return get(0, timelineType, actor, origin, "")
     }
 
-    @NonNull
-    public Timeline get(@NonNull TimelineType timelineType, @NonNull Actor actor, @NonNull Origin origin, String searchQuery) {
-        return get(0, timelineType, actor, origin, searchQuery);
+    operator fun get(timelineType: TimelineType, actor: Actor, origin: Origin, searchQuery: String?): Timeline {
+        return get(0, timelineType, actor, origin, searchQuery)
     }
 
-    @NonNull
-    public Timeline get(long id, @NonNull TimelineType timelineType,
-                        @NonNull Actor actor, @NonNull Origin origin, String searchQuery) {
-        if (id != 0) return fromId(id);
-        if (timelineType == TimelineType.UNKNOWN) return Timeline.EMPTY;
-
-        Timeline newTimeline = new Timeline(myContext, id, timelineType, actor, origin, searchQuery, 0);
-        return stream().filter(newTimeline::duplicates).findAny().orElse(newTimeline);
+    operator fun get(id: Long, timelineType: TimelineType,
+                     actor: Actor, origin: Origin, searchQuery: String?): Timeline {
+        if (id != 0L) return fromId(id)
+        if (timelineType == TimelineType.UNKNOWN) return Timeline.Companion.EMPTY
+        val newTimeline = Timeline(myContext, id, timelineType, actor, origin, searchQuery, 0)
+        return stream().filter(Predicate { that: Timeline? -> newTimeline.duplicates(that) }).findAny().orElse(newTimeline)
     }
 
-    public Stream<Timeline> stream() {
-        return values().stream();
+    fun stream(): Stream<Timeline?>? {
+        return values().stream()
     }
 
-    public Collection<Timeline> values() {
-        return timelines.values();
+    fun values(): MutableCollection<Timeline?>? {
+        return timelines.values
     }
 
-    @NonNull
-    public List<Timeline> toAutoSyncForAccount(MyAccount ma) {
-        List<Timeline> timelines = new ArrayList<>();
+    fun toAutoSyncForAccount(ma: MyAccount?): MutableList<Timeline?> {
+        val timelines: MutableList<Timeline?> = ArrayList()
         if (ma.isValidAndSucceeded()) {
-            for (Timeline timeline : values()) {
+            for (timeline in values()) {
                 if (timeline.isSyncedAutomatically() &&
-                        ((!timeline.getTimelineType().isAtOrigin() && timeline.myAccountToSync.equals(ma)) ||
-                                timeline.getTimelineType().isAtOrigin() && timeline.getOrigin().equals(ma.getOrigin())) &&
+                        (!timeline.getTimelineType().isAtOrigin && timeline.myAccountToSync == ma ||
+                                timeline.getTimelineType().isAtOrigin && timeline.getOrigin() == ma.getOrigin()) &&
                         timeline.isTimeToAutoSync()) {
-                    timelines.add(timeline);
+                    timelines.add(timeline)
                 }
             }
         }
-        return timelines;
+        return timelines
     }
 
-    @NonNull
-    public Stream<Timeline> toTimelinesToSync(Timeline timelineToSync) {
-        if (timelineToSync.isSyncableForOrigins()) {
-            return myContext.origins().originsToSync(
-                    timelineToSync.myAccountToSync.getOrigin(), true, timelineToSync.hasSearchQuery())
-                    .stream().map(origin -> timelineToSync.cloneForOrigin(myContext, origin));
+    fun toTimelinesToSync(timelineToSync: Timeline?): Stream<Timeline?> {
+        return if (timelineToSync.isSyncableForOrigins()) {
+            myContext.origins().originsToSync(
+                    timelineToSync.myAccountToSync.origin, true, timelineToSync.hasSearchQuery())
+                    .stream().map { origin: Origin? -> timelineToSync.cloneForOrigin(myContext, origin) }
         } else if (timelineToSync.isSyncableForAccounts()) {
-            return myContext.accounts().accountsToSync()
-                    .stream().map(account -> timelineToSync.cloneForAccount(myContext, account));
+            myContext.accounts().accountsToSync()
+                    .stream().map { account: MyAccount? -> timelineToSync.cloneForAccount(myContext, account) }
         } else if (timelineToSync.isSyncable()) {
-            return Stream.of(timelineToSync);
+            Stream.of(timelineToSync)
         } else {
-            return Stream.empty();
+            Stream.empty()
         }
     }
 
-    @NonNull
-    public Stream<Timeline> filter(boolean isForSelector,
-                                   TriState isTimelineCombined,
-                                   @NonNull TimelineType timelineType,
-                                   @NonNull Actor actor,
-                                   @NonNull Origin origin) {
+    fun filter(isForSelector: Boolean,
+               isTimelineCombined: TriState?,
+               timelineType: TimelineType,
+               actor: Actor,
+               origin: Origin): Stream<Timeline?> {
         return stream().filter(
-                timeline -> timeline.match(isForSelector, isTimelineCombined, timelineType, actor, origin));
+                Predicate { timeline: Timeline? -> timeline.match(isForSelector, isTimelineCombined, timelineType, actor, origin) })
     }
 
-    public void onAccountDelete(MyAccount ma) {
-        List<Timeline> toRemove = new ArrayList<>();
-        for (Timeline timeline : values()) {
-            if (timeline.myAccountToSync.equals(ma)) {
-                timeline.delete(myContext);
-                toRemove.add(timeline);
+    fun onAccountDelete(ma: MyAccount?) {
+        val toRemove: MutableList<Timeline?> = ArrayList()
+        for (timeline in values()) {
+            if (timeline.myAccountToSync == ma) {
+                timeline.delete(myContext)
+                toRemove.add(timeline)
             }
         }
-        for (Timeline timeline : toRemove) {
-            timelines.remove(timeline.getId());
+        for (timeline in toRemove) {
+            timelines.remove(timeline.getId())
         }
     }
 
-    public void delete(Timeline timeline) {
+    fun delete(timeline: Timeline?) {
         if (myContext.isReady()) {
-            timeline.delete(myContext);
-            timelines.remove(timeline.getId());
+            timeline.delete(myContext)
+            timelines.remove(timeline.getId())
         }
     }
 
-    public CompletableFuture<MyContext> saveChanged() {
-        return new TimelineSaver().execute(myContext);
+    fun saveChanged(): CompletableFuture<MyContext?>? {
+        return TimelineSaver().execute(myContext)
     }
 
-    public Timeline addNew(Timeline timeline) {
-        if (timeline.isValid() && timeline.getId() != 0) timelines.putIfAbsent(timeline.getId(), timeline);
-        return timelines.getOrDefault(timeline.getId(), timeline);
+    fun addNew(timeline: Timeline?): Timeline? {
+        if (timeline.isValid() && timeline.getId() != 0L) timelines.putIfAbsent(timeline.getId(), timeline)
+        return timelines.getOrDefault(timeline.getId(), timeline)
     }
 
-    public void resetCounters(boolean all) {
-        for (Timeline timeline : values()) {
-            timeline.resetCounters(all);
+    fun resetCounters(all: Boolean) {
+        for (timeline in values()) {
+            timeline.resetCounters(all)
         }
     }
 
-    public void resetDefaultSelectorOrder() {
-        for (Timeline timeline : values()) {
-            timeline.setSelectorOrder(timeline.getDefaultSelectorOrder());
+    fun resetDefaultSelectorOrder() {
+        for (timeline in values()) {
+            timeline.setSelectorOrder(timeline.getDefaultSelectorOrder())
+        }
+    }
+
+    companion object {
+        fun newEmpty(myContext: MyContext?): PersistentTimelines? {
+            return PersistentTimelines(myContext)
         }
     }
 }

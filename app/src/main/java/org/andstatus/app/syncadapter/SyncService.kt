@@ -14,48 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.syncadapter
 
-package org.andstatus.app.syncadapter;
-
-import android.app.Service;
-import android.content.Intent;
-import android.os.IBinder;
-
-import org.andstatus.app.util.MyLog;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.app.Service
+import android.content.Intent
+import android.os.IBinder
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.util.MyLog
 
 /**
  * Service to handle Account sync. This is invoked with an intent with action
  * ACTION_AUTHENTICATOR_INTENT. It instantiates the syncadapter and returns its
  * IBinder.
  */
-public class SyncService extends Service {
-
-    @Override
-    public void onCreate() {
-        MyLog.d(this, "onCreate");
+class SyncService : Service() {
+    override fun onCreate() {
+        MyLog.d(this, "onCreate")
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        MyLog.d(this, "onStartCommand");
-        return super.onStartCommand(intent, flags, startId);
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        MyLog.d(this, "onStartCommand")
+        return super.onStartCommand(intent, flags, startId)
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        MyLog.d(this, "onBind");
-        return ResourceHolder.syncAdapter.getSyncAdapterBinder();
+    override fun onBind(intent: Intent?): IBinder? {
+        MyLog.d(this, "onBind")
+        return ResourceHolder.syncAdapter.getSyncAdapterBinder()
     }
 
-    private static class ResourceHolder {          
-        static SyncAdapter syncAdapter = new SyncAdapter(myContextHolder.getNow().context(), true);
-    } 
+    private object ResourceHolder {
+        var syncAdapter: SyncAdapter? = SyncAdapter(MyContextHolder.Companion.myContextHolder.getNow().context(), true)
+    }
 
-    @Override
-    public void onDestroy() {
-        MyLog.d(this, "onDestroy");
-        super.onDestroy();
+    override fun onDestroy() {
+        MyLog.d(this, "onDestroy")
+        super.onDestroy()
     }
 }

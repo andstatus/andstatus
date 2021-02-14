@@ -13,236 +13,211 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.account
 
-package org.andstatus.app.account;
+import android.accounts.Account
+import io.vavr.control.CheckedFunction
+import org.andstatus.app.account.MyAccount
+import org.andstatus.app.context.DemoData
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.MyQuery
+import org.andstatus.app.data.OidEnum
+import org.andstatus.app.net.http.HttpConnectionData
+import org.andstatus.app.net.http.OAuthClientKeys
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.ActorEndpointType
+import org.andstatus.app.origin.Origin
+import org.andstatus.app.origin.OriginType
+import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TriState
+import org.andstatus.app.util.UrlUtils
+import org.junit.Assert
 
-import android.accounts.Account;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.data.MyQuery;
-import org.andstatus.app.data.OidEnum;
-import org.andstatus.app.net.http.HttpConnectionData;
-import org.andstatus.app.net.http.OAuthClientKeys;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.ActorEndpointType;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.origin.OriginType;
-import org.andstatus.app.timeline.meta.Timeline;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UrlUtils;
-
-import java.util.List;
-
-import io.vavr.control.Try;
-
-import static org.andstatus.app.account.AccountName.ORIGIN_SEPARATOR;
-import static org.andstatus.app.context.DemoData.demoData;
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-public class DemoAccountInserter {
-    private MyContext myContext;
-    private String firstAccountActorOid = null;
-
-    public DemoAccountInserter(MyContext myContext) {
-        this.myContext = myContext;
+class DemoAccountInserter(private val myContext: MyContext?) {
+    private var firstAccountActorOid: String? = null
+    fun insert() {
+        addAccount(DemoData.Companion.demoData.pumpioTestAccountActorOid, DemoData.Companion.demoData.pumpioTestAccountName,
+                "", OriginType.PUMPIO)
+        addAccount(DemoData.Companion.demoData.twitterTestAccountActorOid, DemoData.Companion.demoData.twitterTestAccountName,
+                "", OriginType.TWITTER)
+        addAccount(DemoData.Companion.demoData.gnusocialTestAccountActorOid, DemoData.Companion.demoData.gnusocialTestAccountName,
+                DemoData.Companion.demoData.gnusocialTestAccountAvatarUrl, OriginType.GNUSOCIAL)
+        addAccount(DemoData.Companion.demoData.gnusocialTestAccount2ActorOid, DemoData.Companion.demoData.gnusocialTestAccount2Name,
+                "", OriginType.GNUSOCIAL)
+        addAccount(DemoData.Companion.demoData.mastodonTestAccountActorOid, DemoData.Companion.demoData.mastodonTestAccountName,
+                DemoData.Companion.demoData.gnusocialTestAccountAvatarUrl, OriginType.MASTODON)
+        addAccount(DemoData.Companion.demoData.conversationAccountActorOid, DemoData.Companion.demoData.conversationAccountName,
+                DemoData.Companion.demoData.conversationAccountAvatarUrl, DemoData.Companion.demoData.conversationOriginType)
+        addAccount(DemoData.Companion.demoData.conversationAccountSecondActorOid, DemoData.Companion.demoData.conversationAccountSecondName,
+                "", DemoData.Companion.demoData.conversationOriginType)
+        addAccount(DemoData.Companion.demoData.activityPubTestAccountActorOid, DemoData.Companion.demoData.activityPubTestAccountName,
+                "", OriginType.ACTIVITYPUB)
     }
 
-    public void insert() {
-        addAccount(demoData.pumpioTestAccountActorOid, demoData.pumpioTestAccountName,
-                "", OriginType.PUMPIO);
-        addAccount(demoData.twitterTestAccountActorOid, demoData.twitterTestAccountName,
-                "", OriginType.TWITTER);
-        addAccount(demoData.gnusocialTestAccountActorOid, demoData.gnusocialTestAccountName,
-                demoData.gnusocialTestAccountAvatarUrl, OriginType.GNUSOCIAL);
-        addAccount(demoData.gnusocialTestAccount2ActorOid, demoData.gnusocialTestAccount2Name,
-                "", OriginType.GNUSOCIAL);
-        addAccount(demoData.mastodonTestAccountActorOid, demoData.mastodonTestAccountName,
-                demoData.gnusocialTestAccountAvatarUrl, OriginType.MASTODON);
-        addAccount(demoData.conversationAccountActorOid, demoData.conversationAccountName,
-                demoData.conversationAccountAvatarUrl, demoData.conversationOriginType);
-        addAccount(demoData.conversationAccountSecondActorOid, demoData.conversationAccountSecondName,
-                "", demoData.conversationOriginType);
-        addAccount(demoData.activityPubTestAccountActorOid, demoData.activityPubTestAccountName,
-                "", OriginType.ACTIVITYPUB);
-    }
-
-    private MyAccount addAccount(String actorOid, String accountNameString, String avatarUrl, OriginType originType) {
+    private fun addAccount(actorOid: String?, accountNameString: String?, avatarUrl: String?, originType: OriginType?): MyAccount? {
         if (firstAccountActorOid == null) {
-            firstAccountActorOid = actorOid;
+            firstAccountActorOid = actorOid
         }
-        demoData.checkDataPath();
-        AccountName accountName = AccountName.fromAccountName(myContext, accountNameString);
-        assertEquals("Account name created " + accountName, accountNameString, accountName.getName());
-        MyLog.v(this, "Adding account " + accountName);
-        assertTrue("Name '" + accountNameString + "' is valid for " + originType, accountName.isValid);
-        assertEquals("Origin for '" + accountNameString + "' account created",
-                accountName.getOrigin().getOriginType(), originType);
-        long accountActorId_existing = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID,
-                accountName.getOrigin().getId(), actorOid);
-        Actor actor = Actor.fromOid(accountName.getOrigin(), actorOid);
-        actor.withUniqueName(accountName.getUniqueName());
-        actor.setAvatarUrl(avatarUrl);
-        if (!actor.isWebFingerIdValid() && UrlUtils.hostIsValid(actor.getIdHost())) {
-            actor.setWebFingerId(actor.getUsername() + "@" + actor.getIdHost());
+        DemoData.Companion.demoData.checkDataPath()
+        val accountName: AccountName = AccountName.Companion.fromAccountName(myContext, accountNameString)
+        Assert.assertEquals("Account name created $accountName", accountNameString, accountName.name)
+        MyLog.v(this, "Adding account $accountName")
+        Assert.assertTrue("Name '$accountNameString' is valid for $originType", accountName.isValid)
+        Assert.assertEquals("Origin for '$accountNameString' account created",
+                accountName.getOrigin().originType, originType)
+        val accountActorId_existing = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID,
+                accountName.getOrigin().id, actorOid)
+        val actor: Actor = Actor.Companion.fromOid(accountName.getOrigin(), actorOid)
+        actor.withUniqueName(accountName.uniqueName)
+        actor.avatarUrl = avatarUrl
+        if (!actor.isWebFingerIdValid && UrlUtils.hostIsValid(actor.idHost)) {
+            actor.webFingerId = actor.username + "@" + actor.idHost
         }
-        assertTrue("No WebfingerId " + actor, actor.isWebFingerIdValid());
-        if (actor.origin.getOriginType() == OriginType.ACTIVITYPUB) {
-            String basePath = "https://" + actor.getConnectionHost() + "/users/" + actor.getUsername();
-            actor.endpoints.add(ActorEndpointType.API_INBOX, basePath + "/inbox");
-            actor.endpoints.add(ActorEndpointType.API_OUTBOX, basePath + "/outbox");
-            actor.endpoints.add(ActorEndpointType.API_FOLLOWING, basePath + "/following");
-            actor.endpoints.add(ActorEndpointType.API_FOLLOWERS, basePath + "/followers");
+        Assert.assertTrue("No WebfingerId $actor", actor.isWebFingerIdValid)
+        if (actor.origin.originType === OriginType.ACTIVITYPUB) {
+            val basePath = "https://" + actor.connectionHost + "/users/" + actor.username
+            actor.endpoints.add(ActorEndpointType.API_INBOX, "$basePath/inbox")
+            actor.endpoints.add(ActorEndpointType.API_OUTBOX, "$basePath/outbox")
+            actor.endpoints.add(ActorEndpointType.API_FOLLOWING, "$basePath/following")
+            actor.endpoints.add(ActorEndpointType.API_FOLLOWERS, "$basePath/followers")
         }
-        actor.setCreatedDate(MyLog.uniqueCurrentTimeMS());
-        MyAccount ma = addAccountFromActor(actor, accountName);
-
-        long accountActorId = ma.getActorId();
-        String msg = "AccountUserId for '" + accountNameString + ", (first: '" + firstAccountActorOid + "')";
-        if (accountActorId_existing == 0 && !actorOid.contains(firstAccountActorOid)) {
-            assertTrue(msg + " != 1", accountActorId != 1);
+        actor.createdDate = MyLog.uniqueCurrentTimeMS()
+        val ma = addAccountFromActor(actor, accountName)
+        val accountActorId = ma.getActorId()
+        val msg = "AccountUserId for '$accountNameString, (first: '$firstAccountActorOid')"
+        if (accountActorId_existing == 0L && !actorOid.contains(firstAccountActorOid)) {
+            Assert.assertTrue("$msg != 1", accountActorId != 1L)
         } else {
-            assertTrue(msg + " != 0", accountActorId != 0);
+            Assert.assertTrue("$msg != 0", accountActorId != 0L)
         }
-        assertTrue("Account " + actorOid + " is persistent", ma.isValid());
-        assertTrue("Account actorOid", ma.getActorOid().equalsIgnoreCase(actorOid));
-        assertEquals("No WebFingerId stored " + actor,
-                actor.getWebFingerId(), MyQuery.actorIdToWebfingerId(myContext, actor.actorId));
-        assertEquals("Account is not successfully verified",
-                CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
-        assertAccountIsAddedToAccountManager(ma);
-
-        assertEquals("Oid: " + ma.getActor(), actor.oid, ma.getActor().oid);
-        assertTrue("Should be fully defined: " + ma.getActor(), ma.getActor().isFullyDefined());
-
-        assertNotEquals(Timeline.EMPTY, getAutomaticallySyncableTimeline(myContext, ma));
-        return ma;
+        Assert.assertTrue("Account $actorOid is persistent", ma.isValid())
+        Assert.assertTrue("Account actorOid", ma.getActorOid().equals(actorOid, ignoreCase = true))
+        Assert.assertEquals("No WebFingerId stored $actor",
+                actor.webFingerId, MyQuery.actorIdToWebfingerId(myContext, actor.actorId))
+        Assert.assertEquals("Account is not successfully verified",
+                CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified())
+        assertAccountIsAddedToAccountManager(ma)
+        Assert.assertEquals("Oid: " + ma.getActor(), actor.oid, ma.getActor().oid)
+        Assert.assertTrue("Should be fully defined: " + ma.getActor(), ma.getActor().isFullyDefined)
+        Assert.assertNotEquals(Timeline.Companion.EMPTY, getAutomaticallySyncableTimeline(myContext, ma))
+        return ma
     }
 
-    @NonNull
-    public static Timeline getAutomaticallySyncableTimeline(MyContext myContext, MyAccount myAccount) {
-        Timeline timelineToSync = myContext.timelines()
-                .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.getActor(), Origin.EMPTY)
-                .filter(Timeline::isSyncedAutomatically).findFirst().orElse(Timeline.EMPTY);
-        assertTrue("No syncable automatically timeline for " + myAccount + "\n"
-                + myContext.timelines().values(), timelineToSync.isSyncableAutomatically());
-        return timelineToSync;
-    }
-
-    private void assertAccountIsAddedToAccountManager(MyAccount maExpected) {
-        List<Account> aa = AccountUtils.getCurrentAccounts(myContext.context());
-        MyAccount ma = null;
-        for (android.accounts.Account account : aa) {
-            ma = MyAccount.Builder.loadFromAndroidAccount(myContext, account).getAccount();
-            if (maExpected.getAccountName().equals(ma.getAccountName())) {
-                break;
+    private fun assertAccountIsAddedToAccountManager(maExpected: MyAccount?) {
+        val aa = AccountUtils.getCurrentAccounts(myContext.context())
+        var ma: MyAccount? = null
+        for (account in aa) {
+            ma = MyAccount.Builder.Companion.loadFromAndroidAccount(myContext, account).getAccount()
+            if (maExpected.getAccountName() == ma.accountName) {
+                break
             }
         }
-        assertEquals("MyAccount was not found in AccountManager among " + aa.size() + " accounts.",
-                maExpected, ma);
+        Assert.assertEquals("MyAccount was not found in AccountManager among " + aa.size + " accounts.",
+                maExpected, ma)
     }
 
-    private MyAccount addAccountFromActor(@NonNull Actor actor, AccountName accountName) {
-        MyAccount.Builder builder1 = MyAccount.Builder.fromAccountName(accountName).setOAuth(true);
-        if (actor.origin.isOAuthDefault() || actor.origin.canChangeOAuth()) {
-            insertTestClientKeys(builder1.getAccount());
+    private fun addAccountFromActor(actor: Actor, accountName: AccountName?): MyAccount? {
+        val builder1: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(accountName).setOAuth(true)
+        if (actor.origin.isOAuthDefault || actor.origin.canChangeOAuth()) {
+            insertTestClientKeys(builder1.account)
         }
-
-        MyAccount.Builder builder = MyAccount.Builder.fromAccountName(accountName).setOAuth(true);
-        if (builder.getAccount().isOAuth()) {
-            builder.setUserTokenWithSecret("sampleUserTokenFor" + actor.getUniqueName(),
-                    "sampleUserSecretFor" + actor.getUniqueName());
+        val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(accountName).setOAuth(true)
+        if (builder.account.isOAuth) {
+            builder.setUserTokenWithSecret("sampleUserTokenFor" + actor.uniqueName,
+                    "sampleUserSecretFor" + actor.uniqueName)
         } else {
-            builder.setPassword("samplePasswordFor" + actor.getUniqueName());
+            builder.password = "samplePasswordFor" + actor.uniqueName
         }
-        assertTrue("Credentials of " + actor + " are present, account: " + builder.getAccount(),
-        builder.getAccount().getCredentialsPresent());
-        Try<MyAccount> tryMyAccount =  builder.onCredentialsVerified(actor).map(MyAccount.Builder::getAccount);
-        assertTrue("Success " + tryMyAccount, tryMyAccount.isSuccess());
-
-        MyAccount ma = tryMyAccount.get();
-        assertTrue("Account is persistent " + ma, builder.isPersistent());
-        assertEquals("Credentials of " + actor.getUniqueNameWithOrigin() + " successfully verified",
-                CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified());
-        long actorId = ma.getActorId();
-        assertTrue("Account " + actor.getUniqueNameWithOrigin() + " has ActorId", actorId != 0);
-        assertEquals("Account actorOid", ma.getActorOid(), actor.oid);
-        String oid = MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0);
+        Assert.assertTrue("Credentials of " + actor + " are present, account: " + builder.account,
+                builder.account.credentialsPresent)
+        val tryMyAccount = builder.onCredentialsVerified(actor).map(CheckedFunction<MyAccount.Builder?, MyAccount?> { getAccount() })
+        Assert.assertTrue("Success $tryMyAccount", tryMyAccount.isSuccess)
+        val ma = tryMyAccount.get()
+        Assert.assertTrue("Account is persistent $ma", builder.isPersistent)
+        Assert.assertEquals("Credentials of " + actor.uniqueNameWithOrigin + " successfully verified",
+                CredentialsVerificationStatus.SUCCEEDED, ma.credentialsVerified)
+        val actorId = ma.actorId
+        Assert.assertTrue("Account " + actor.uniqueNameWithOrigin + " has ActorId", actorId != 0L)
+        Assert.assertEquals("Account actorOid", ma.actorOid, actor.oid)
+        val oid = MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0)
         if (StringUtil.isEmpty(oid)) {
-            String message = "Couldn't find an Actor in the database for id=" + actorId + " oid=" + actor.oid;
-            MyLog.v(this, message);
-            fail(message);
+            val message = "Couldn't find an Actor in the database for id=" + actorId + " oid=" + actor.oid
+            MyLog.v(this, message)
+            Assert.fail(message)
         }
-        assertEquals("Actor in the database for id=" + actorId,
+        Assert.assertEquals("Actor in the database for id=$actorId",
                 actor.oid,
-                MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0));
-        assertEquals("Account name calculated",
-                (actor.origin.shouldHaveUrl()
-                        ? actor.getUsername() + "@" + actor.origin.getAccountNameHost()
-                        : actor.getUniqueName()) +
-                ORIGIN_SEPARATOR +
-                actor.origin.getOriginInAccountName(accountName.host), ma.getAccountName());
-        assertEquals("Account name provided", accountName.getName(), ma.getAccountName());
-        Try<Account> existingAndroidAccount = AccountUtils.getExistingAndroidAccount(accountName);
-        assertEquals("Android account name", accountName.getName(),
-                existingAndroidAccount.map(a -> a.name).getOrElse("(not found)"));
-
-        assertEquals("User should be known as this actor " + actor, actor.getUniqueName(), actor.user.getKnownAs());
-        assertEquals("User is not mine " + actor, TriState.TRUE, actor.user.isMyUser());
-        assertNotEquals("User is not added " + actor, 0, actor.user.userId);
-
-        MyLog.v(this, ma.getAccountName() + " added, id=" + ma.getActorId());
-        return ma;
+                MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0))
+        Assert.assertEquals("Account name calculated",
+                (if (actor.origin.shouldHaveUrl()) actor.username + "@" + actor.origin.accountNameHost else actor.uniqueName) +
+                        AccountName.Companion.ORIGIN_SEPARATOR +
+                        actor.origin.getOriginInAccountName(accountName.host), ma.accountName)
+        Assert.assertEquals("Account name provided", accountName.getName(), ma.accountName)
+        val existingAndroidAccount = AccountUtils.getExistingAndroidAccount(accountName)
+        Assert.assertEquals("Android account name", accountName.getName(),
+                existingAndroidAccount.map { a: Account? -> a.name }.getOrElse("(not found)"))
+        Assert.assertEquals("User should be known as this actor $actor", actor.uniqueName, actor.user.knownAs)
+        Assert.assertEquals("User is not mine $actor", TriState.TRUE, actor.user.isMyUser)
+        Assert.assertNotEquals("User is not added $actor", 0, actor.user.userId)
+        MyLog.v(this, ma.accountName + " added, id=" + ma.actorId)
+        return ma
     }
 
-    private void insertTestClientKeys(MyAccount myAccount) {
-        HttpConnectionData connectionData = HttpConnectionData.fromAccountConnectionData(
-            AccountConnectionData.fromMyAccount(myAccount, TriState.UNKNOWN)
-        );
+    private fun insertTestClientKeys(myAccount: MyAccount?) {
+        val connectionData: HttpConnectionData = HttpConnectionData.Companion.fromAccountConnectionData(
+                AccountConnectionData.Companion.fromMyAccount(myAccount, TriState.UNKNOWN)
+        )
         if (!UrlUtils.hasHost(connectionData.originUrl)) {
-            connectionData.originUrl = UrlUtils.fromString("https://" + myAccount.getActor().getConnectionHost());
+            connectionData.originUrl = UrlUtils.fromString("https://" + myAccount.getActor().connectionHost)
         }
-        OAuthClientKeys keys1 = OAuthClientKeys.fromConnectionData(connectionData);
+        val keys1: OAuthClientKeys = OAuthClientKeys.Companion.fromConnectionData(connectionData)
         if (!keys1.areKeysPresent()) {
-            final String consumerKey = "testConsumerKey" + Long.toString(System.nanoTime());
-            final String consumerSecret = "testConsumerSecret" + Long.toString(System.nanoTime());
-            keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret);
-
-            OAuthClientKeys keys2 = OAuthClientKeys.fromConnectionData(connectionData);
-            assertEquals("Keys are loaded for " + myAccount, true, keys2.areKeysPresent());
-            assertEquals(consumerKey, keys2.getConsumerKey());
-            assertEquals(consumerSecret, keys2.getConsumerSecret());
+            val consumerKey = "testConsumerKey" + java.lang.Long.toString(System.nanoTime())
+            val consumerSecret = "testConsumerSecret" + java.lang.Long.toString(System.nanoTime())
+            keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret)
+            val keys2: OAuthClientKeys = OAuthClientKeys.Companion.fromConnectionData(connectionData)
+            Assert.assertEquals("Keys are loaded for $myAccount", true, keys2.areKeysPresent())
+            Assert.assertEquals(consumerKey, keys2.consumerKey)
+            Assert.assertEquals(consumerSecret, keys2.consumerSecret)
         }
     }
 
-    public static void assertDefaultTimelinesForAccounts() {
-        for (MyAccount myAccount : myContextHolder.getNow().accounts().get()) {
-            for (TimelineType timelineType : myAccount.getActor().getDefaultMyAccountTimelineTypes()) {
-                if (!myAccount.getConnection().hasApiEndpoint(timelineType.getConnectionApiRoutine())) continue;
+    companion object {
+        fun getAutomaticallySyncableTimeline(myContext: MyContext?, myAccount: MyAccount?): Timeline {
+            val timelineToSync = myContext.timelines()
+                    .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.getActor(), Origin.Companion.EMPTY)
+                    .filter { obj: Timeline? -> obj.isSyncedAutomatically() }.findFirst().orElse(Timeline.Companion.EMPTY)
+            Assert.assertTrue("""
+    No syncable automatically timeline for $myAccount
+    ${myContext.timelines().values()}
+    """.trimIndent(), timelineToSync.isSyncableAutomatically)
+            return timelineToSync
+        }
 
-                long count = 0;
-                StringBuilder logMsg =new StringBuilder(myAccount.toString());
-                MyStringBuilder.appendWithSpace(logMsg, timelineType.toString());
-                for (Timeline timeline : myContextHolder.getNow().timelines().values()) {
-                    if (timeline.getActorId() == myAccount.getActorId()
-                            && timeline.getTimelineType().equals(timelineType)
-                            && !timeline.hasSearchQuery()) {
-                        count++;
-                        MyStringBuilder.appendWithSpace(logMsg, timeline.toString());
+        fun assertDefaultTimelinesForAccounts() {
+            for (myAccount in MyContextHolder.Companion.myContextHolder.getNow().accounts().get()) {
+                for (timelineType in myAccount.getActor().defaultMyAccountTimelineTypes) {
+                    if (!myAccount.getConnection().hasApiEndpoint(timelineType.getConnectionApiRoutine())) continue
+                    var count: Long = 0
+                    val logMsg: StringBuilder = StringBuilder(myAccount.toString())
+                    MyStringBuilder.Companion.appendWithSpace(logMsg, timelineType.toString())
+                    for (timeline in MyContextHolder.Companion.myContextHolder.getNow().timelines().values()) {
+                        if (timeline.getActorId() == myAccount.getActorId() && timeline.getTimelineType() == timelineType && !timeline.hasSearchQuery()) {
+                            count++
+                            MyStringBuilder.Companion.appendWithSpace(logMsg, timeline.toString())
+                        }
                     }
+                    Assert.assertEquals("""
+    $logMsg
+    ${MyContextHolder.Companion.myContextHolder.getNow().timelines().values()}
+    """.trimIndent(), 1, count)
                 }
-                assertEquals(logMsg.toString() + "\n" + myContextHolder.getNow().timelines().values(), 1, count);
             }
         }
     }
-
 }

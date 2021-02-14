@@ -13,79 +13,75 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.lang
 
-package org.andstatus.app.lang;
-
-import android.content.Context;
-import android.widget.ArrayAdapter;
-
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
+import android.content.Context
+import android.widget.ArrayAdapter
+import java.util.*
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class SelectableEnumList<E extends Enum<E> & SelectableEnum > {
-    private List<E> list = new ArrayList<>();
-
-    private SelectableEnumList(Class<E> clazz) {
-        if (!SelectableEnum.class.isAssignableFrom(clazz)) {
-            throw new IllegalArgumentException("Class '" + clazz.getName() +
-                    "' doesn't implement SelectableEnum");
-        }
-        for(E value : EnumSet.allOf(clazz)){
-            if (value.isSelectable()) {
-                list.add(value);
-            }
-        }
-    }
-
-    public static <E extends Enum<E> & SelectableEnum> SelectableEnumList<E> newInstance(Class<E> clazz) {
-        return new SelectableEnumList<>(clazz);
-    }
-
-    public List<E> getList() {
-        return list;
+class SelectableEnumList<E> private constructor(clazz: Class<E?>?) where E : Enum<E?>?, E : SelectableEnum? {
+    private val list: MutableList<E?>? = ArrayList()
+    fun getList(): MutableList<E?>? {
+        return list
     }
 
     /**
      * @return -1 if the item is not found in the list
      */
-    public int getIndex(SelectableEnum other) {
-        for (int index = 0; index < list.size(); index++ ) {
-            SelectableEnum selectableEnum =  list.get(index);
-            if ( selectableEnum.equals(other)) {
-                return index;
+    fun getIndex(other: SelectableEnum?): Int {
+        for (index in list.indices) {
+            val selectableEnum: SelectableEnum? = list.get(index)
+            if (selectableEnum == other) {
+                return index
             }
         }
-        return  -1;
+        return -1
     }
 
     /**
      * @return the first element if not found
      */
-    public E get(int index) {
-        return list.get(index >= 0 && index < list.size() ? index : 0);
+    operator fun get(index: Int): E? {
+        return list.get(if (index >= 0 && index < list.size) index else 0)
     }
 
-    public int getDialogTitleResId() {
-        return list.get(0).getDialogTitleResId();
+    fun getDialogTitleResId(): Int {
+        return list.get(0).getDialogTitleResId()
     }
 
-    public ArrayAdapter<CharSequence> getSpinnerArrayAdapter(Context context) {
-        ArrayAdapter<CharSequence> spinnerArrayAdapter = new ArrayAdapter<>(
-                context, android.R.layout.simple_spinner_item, getTitles(context));
-        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        return spinnerArrayAdapter;
+    fun getSpinnerArrayAdapter(context: Context?): ArrayAdapter<CharSequence?>? {
+        val spinnerArrayAdapter = ArrayAdapter(
+                context, android.R.layout.simple_spinner_item, getTitles(context))
+        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        return spinnerArrayAdapter
     }
 
-    private List<CharSequence> getTitles(Context context) {
-        List<CharSequence> titles = new ArrayList<>();
-        for (SelectableEnum selectableEnum : list) {
-            titles.add(selectableEnum.title(context));
+    private fun getTitles(context: Context?): MutableList<CharSequence?>? {
+        val titles: MutableList<CharSequence?> = ArrayList()
+        for (selectableEnum in list) {
+            titles.add(selectableEnum.title(context))
         }
-        return titles;
+        return titles
     }
 
+    companion object {
+        fun <E> newInstance(clazz: Class<E?>?): SelectableEnumList<E?>? where E : Enum<E?>?, E : SelectableEnum? {
+            return SelectableEnumList(clazz)
+        }
+    }
+
+    init {
+        require(SelectableEnum::class.java.isAssignableFrom(clazz)) {
+            "Class '" + clazz.getName() +
+                    "' doesn't implement SelectableEnum"
+        }
+        for (value in EnumSet.allOf(clazz)) {
+            if (value.isSelectable()) {
+                list.add(value)
+            }
+        }
+    }
 }

@@ -13,344 +13,317 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.service
 
-package org.andstatus.app.service;
-
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.data.DbUtils;
-import org.andstatus.app.database.table.CommandTable;
-import org.andstatus.app.notification.NotificationEventType;
-import org.andstatus.app.util.MyStringBuilder;
-import org.andstatus.app.util.RelativeTime;
-import org.andstatus.app.util.StringUtil;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.content.ContentValues
+import android.database.Cursor
+import android.os.Parcel
+import android.os.Parcelable
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.DbUtils
+import org.andstatus.app.database.table.CommandTable
+import org.andstatus.app.notification.NotificationEventType
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.util.MyStringBuilder
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.StringUtil
+import java.util.*
+import java.util.concurrent.atomic.AtomicLong
+import java.util.function.BiConsumer
+import java.util.function.Consumer
 
 /**
  * Result of the command execution
- * See also {@link android.content.SyncStats}
+ * See also [android.content.SyncStats]
  * @author yvolk@yurivolkov.com
  */
-public final class CommandResult implements Parcelable {
-    static final int INITIAL_NUMBER_OF_RETRIES = 10;
-    
-    private long lastExecutedDate = 0;
-    private int executionCount = 0;
-    private int retriesLeft = 0;
-    
-    private boolean executed = false;
-    private long numAuthExceptions = 0;
-    private long numIoExceptions = 0;
-    private long numParseExceptions = 0;
-    private String mMessage = "";
-    private String progress = "";
+class CommandResult : Parcelable {
+    private var lastExecutedDate: Long = 0
+    private var executionCount = 0
+    private var retriesLeft = 0
+    private var executed = false
+    private var numAuthExceptions: Long = 0
+    private var numIoExceptions: Long = 0
+    private var numParseExceptions: Long = 0
+    private var mMessage: String? = ""
+    private var progress: String? = ""
+    private var itemId: Long = 0
 
-    private long itemId = 0;
-    
     // 0 means these values were not set
-    private int hourlyLimit = 0;
-    private int remainingHits = 0;
-    
+    private var hourlyLimit = 0
+    private var remainingHits = 0
+
     // Counters for user notifications
-    private long downloadedCount = 0;
-    private long newCount = 0;
-    public final Map<NotificationEventType, AtomicLong> notificationEventCounts = new HashMap<>();
+    private var downloadedCount: Long = 0
+    private var newCount: Long = 0
+    val notificationEventCounts: MutableMap<NotificationEventType?, AtomicLong?>? = HashMap()
 
-    public CommandResult() {
-    }
+    constructor() {}
 
-    public static final Creator<CommandResult> CREATOR = new Creator<CommandResult>() {
-        @Override
-        public CommandResult createFromParcel(Parcel in) {
-            return new CommandResult(in);
-        }
-
-        @Override
-        public CommandResult[] newArray(int size) {
-            return new CommandResult[size];
-        }
-    };
-    
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeLong(lastExecutedDate);
-        dest.writeInt(executionCount);
-        dest.writeInt(retriesLeft);
-        dest.writeLong(numAuthExceptions);
-        dest.writeLong(numIoExceptions);
-        dest.writeLong(numParseExceptions);
-        dest.writeString(mMessage);
-        dest.writeLong(itemId);
-        dest.writeInt(hourlyLimit);
-        dest.writeInt(remainingHits);
-        dest.writeLong(downloadedCount);
-        dest.writeString(progress);
-    }
-    
-    public CommandResult(Parcel parcel) {
-        lastExecutedDate = parcel.readLong();
-        executionCount = parcel.readInt();
-        retriesLeft = parcel.readInt();
-        numAuthExceptions = parcel.readLong();
-        numIoExceptions = parcel.readLong();
-        numParseExceptions = parcel.readLong();
-        mMessage = parcel.readString();
-        itemId = parcel.readLong();
-        hourlyLimit = parcel.readInt();
-        remainingHits = parcel.readInt();
-        downloadedCount = parcel.readLong();
-        progress = parcel.readString();
+    override fun writeToParcel(dest: Parcel?, flags: Int) {
+        dest.writeLong(lastExecutedDate)
+        dest.writeInt(executionCount)
+        dest.writeInt(retriesLeft)
+        dest.writeLong(numAuthExceptions)
+        dest.writeLong(numIoExceptions)
+        dest.writeLong(numParseExceptions)
+        dest.writeString(mMessage)
+        dest.writeLong(itemId)
+        dest.writeInt(hourlyLimit)
+        dest.writeInt(remainingHits)
+        dest.writeLong(downloadedCount)
+        dest.writeString(progress)
     }
 
-    public void toContentValues(ContentValues values) {
-        values.put(CommandTable.LAST_EXECUTED_DATE, lastExecutedDate);
-        values.put(CommandTable.EXECUTION_COUNT, executionCount);
-        values.put(CommandTable.RETRIES_LEFT, retriesLeft);
-        values.put(CommandTable.NUM_AUTH_EXCEPTIONS, numAuthExceptions);
-        values.put(CommandTable.NUM_IO_EXCEPTIONS, numIoExceptions);
-        values.put(CommandTable.NUM_PARSE_EXCEPTIONS, numParseExceptions);
-        values.put(CommandTable.ERROR_MESSAGE, mMessage);
-        values.put(CommandTable.DOWNLOADED_COUNT, downloadedCount);
-        values.put(CommandTable.PROGRESS_TEXT, progress);
+    constructor(parcel: Parcel?) {
+        lastExecutedDate = parcel.readLong()
+        executionCount = parcel.readInt()
+        retriesLeft = parcel.readInt()
+        numAuthExceptions = parcel.readLong()
+        numIoExceptions = parcel.readLong()
+        numParseExceptions = parcel.readLong()
+        mMessage = parcel.readString()
+        itemId = parcel.readLong()
+        hourlyLimit = parcel.readInt()
+        remainingHits = parcel.readInt()
+        downloadedCount = parcel.readLong()
+        progress = parcel.readString()
     }
 
-    public static CommandResult fromCursor(Cursor cursor) {
-        CommandResult result = new CommandResult();
-        result.lastExecutedDate = DbUtils.getLong(cursor, CommandTable.LAST_EXECUTED_DATE);
-        result.executionCount = DbUtils.getInt(cursor, CommandTable.EXECUTION_COUNT);
-        result.retriesLeft = DbUtils.getInt(cursor, CommandTable.RETRIES_LEFT);
-        result.numAuthExceptions = DbUtils.getLong(cursor, CommandTable.NUM_AUTH_EXCEPTIONS);
-        result.numIoExceptions = DbUtils.getLong(cursor, CommandTable.NUM_IO_EXCEPTIONS);
-        result.numParseExceptions = DbUtils.getLong(cursor, CommandTable.NUM_PARSE_EXCEPTIONS);
-        result.mMessage = DbUtils.getString(cursor, CommandTable.ERROR_MESSAGE);
-        result.downloadedCount = DbUtils.getInt(cursor, CommandTable.DOWNLOADED_COUNT);
-        result.progress = DbUtils.getString(cursor, CommandTable.PROGRESS_TEXT);
-        return result;
+    fun toContentValues(values: ContentValues?) {
+        values.put(CommandTable.LAST_EXECUTED_DATE, lastExecutedDate)
+        values.put(CommandTable.EXECUTION_COUNT, executionCount)
+        values.put(CommandTable.RETRIES_LEFT, retriesLeft)
+        values.put(CommandTable.NUM_AUTH_EXCEPTIONS, numAuthExceptions)
+        values.put(CommandTable.NUM_IO_EXCEPTIONS, numIoExceptions)
+        values.put(CommandTable.NUM_PARSE_EXCEPTIONS, numParseExceptions)
+        values.put(CommandTable.ERROR_MESSAGE, mMessage)
+        values.put(CommandTable.DOWNLOADED_COUNT, downloadedCount)
+        values.put(CommandTable.PROGRESS_TEXT, progress)
     }
 
-    public int getExecutionCount() {
-        return executionCount;
+    fun getExecutionCount(): Int {
+        return executionCount
     }
 
-    public boolean hasError() {
-        return hasSoftError() || hasHardError();
-    }
-    
-    public boolean hasHardError() {
-        return numAuthExceptions > 0 || numParseExceptions > 0;
+    fun hasError(): Boolean {
+        return hasSoftError() || hasHardError()
     }
 
-    public boolean hasSoftError() {
-        return numIoExceptions > 0;
+    fun hasHardError(): Boolean {
+        return numAuthExceptions > 0 || numParseExceptions > 0
     }
-    
-    @Override
-    public int describeContents() {
-        return 0;
+
+    fun hasSoftError(): Boolean {
+        return numIoExceptions > 0
     }
-    
-    public void setSoftErrorIfNotOk(boolean ok) {
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    fun setSoftErrorIfNotOk(ok: Boolean) {
         if (!ok) {
-            incrementNumIoExceptions();
+            incrementNumIoExceptions()
         }
     }
-    
-    public static String toString(CommandResult commandResult) {
-        return commandResult == null ? "(result is null)" : commandResult.toString();
-    }
-    
-    @Override
-    public String toString() {
-        return MyStringBuilder.formatKeyValue(this, toSummaryBuilder());
+
+    override fun toString(): String {
+        return MyStringBuilder.Companion.formatKeyValue(this, toSummaryBuilder())
     }
 
-    public String toSummary() {
-        return toSummaryBuilder().toString();
+    fun toSummary(): String? {
+        return toSummaryBuilder().toString()
     }
-    
-    private StringBuilder toSummaryBuilder() {
-        StringBuilder message = new StringBuilder();
+
+    private fun toSummaryBuilder(): StringBuilder? {
+        val message = StringBuilder()
         if (executionCount > 0) {
-            message.append("executed:" + executionCount + ", ");
-            message.append("last:" + RelativeTime.getDifference(myContextHolder.getNow().context(), lastExecutedDate) + ", ");
+            message.append("executed:$executionCount, ")
+            message.append("last:" + RelativeTime.getDifference(MyContextHolder.Companion.myContextHolder.getNow().context(), lastExecutedDate) + ", ")
             if (retriesLeft > 0) {
-                message.append("retriesLeft:" + retriesLeft + ", ");
+                message.append("retriesLeft:$retriesLeft, ")
             }
             if (!hasError()) {
-                message.append("error:None, ");
+                message.append("error:None, ")
             }
         }
         if (hasError()) {
-            message.append("error:" + (hasHardError() ? "Hard" : "Soft") + ", ");
+            message.append("error:" + (if (hasHardError()) "Hard" else "Soft") + ", ")
         }
         if (downloadedCount > 0) {
-            message.append("downloaded:" + downloadedCount + ", ");
+            message.append("downloaded:$downloadedCount, ")
         }
         if (newCount > 0) {
-            message.append("new:" + newCount + ", ");
+            message.append("new:$newCount, ")
         }
-        notificationEventCounts.forEach( (event, count) -> {
-            if (count.get() > 0) message.append(event.name() + ":" + count.get() + ", ");
-        });
+        notificationEventCounts.forEach(BiConsumer { event: NotificationEventType?, count: AtomicLong? -> if (count.get() > 0) message.append(event.name + ":" + count.get() + ", ") })
         if (StringUtil.nonEmpty(mMessage)) {
-            message.append(" \n" + mMessage);
+            message.append(" \n$mMessage")
         }
-        return message;
-    }
-    
-    public long getNumAuthExceptions() {
-        return numAuthExceptions;
+        return message
     }
 
-    protected void incrementNumAuthExceptions() {
-        numAuthExceptions++;
+    fun getNumAuthExceptions(): Long {
+        return numAuthExceptions
     }
 
-    public long getNumIoExceptions() {
-        return numIoExceptions;
+    protected fun incrementNumAuthExceptions() {
+        numAuthExceptions++
     }
 
-    public void incrementNumIoExceptions() {
-        numIoExceptions++;
+    fun getNumIoExceptions(): Long {
+        return numIoExceptions
     }
 
-    public long getNumParseExceptions() {
-        return numParseExceptions;
+    fun incrementNumIoExceptions() {
+        numIoExceptions++
     }
 
-    void incrementParseExceptions() {
-        numParseExceptions++;
+    fun getNumParseExceptions(): Long {
+        return numParseExceptions
     }
 
-    public int getHourlyLimit() {
-        return hourlyLimit;
+    fun incrementParseExceptions() {
+        numParseExceptions++
     }
 
-    protected void setHourlyLimit(int hourlyLimit) {
-        this.hourlyLimit = hourlyLimit;
+    fun getHourlyLimit(): Int {
+        return hourlyLimit
     }
 
-    public int getRemainingHits() {
-        return remainingHits;
+    fun setHourlyLimit(hourlyLimit: Int) {
+        this.hourlyLimit = hourlyLimit
     }
 
-    protected void setRemainingHits(int remainingHits) {
-        this.remainingHits = remainingHits;
+    fun getRemainingHits(): Int {
+        return remainingHits
     }
 
-    public void incrementNewCount() {
-        newCount++;
+    fun setRemainingHits(remainingHits: Int) {
+        this.remainingHits = remainingHits
     }
 
-    public void onNotificationEvent(@NonNull NotificationEventType event) {
-        if (event == NotificationEventType.EMPTY) return;
+    fun incrementNewCount() {
+        newCount++
+    }
 
-        AtomicLong count = notificationEventCounts.get(event);
-        if (count == null) {
-            notificationEventCounts.put(event, new AtomicLong(1));
-        } else {
-            count.incrementAndGet();
+    fun onNotificationEvent(event: NotificationEventType) {
+        if (event == NotificationEventType.EMPTY) return
+        val count = notificationEventCounts.get(event)
+        count?.incrementAndGet() ?: (notificationEventCounts[event] = AtomicLong(1))
+    }
+
+    fun incrementDownloadedCount() {
+        downloadedCount++
+    }
+
+    fun getDownloadedCount(): Long {
+        return downloadedCount
+    }
+
+    fun getNewCount(): Long {
+        return newCount
+    }
+
+    fun getRetriesLeft(): Int {
+        return retriesLeft
+    }
+
+    fun resetRetries(command: CommandEnum?) {
+        retriesLeft = INITIAL_NUMBER_OF_RETRIES
+        when (command) {
+            CommandEnum.GET_TIMELINE, CommandEnum.GET_OLDER_TIMELINE, CommandEnum.RATE_LIMIT_STATUS -> retriesLeft = 0
+            else -> {
+            }
         }
+        prepareForLaunch()
     }
 
-    public void incrementDownloadedCount() {
-        downloadedCount++;
+    fun prepareForLaunch() {
+        executed = false
+        numAuthExceptions = 0
+        numIoExceptions = 0
+        numParseExceptions = 0
+        mMessage = ""
+        itemId = 0
+        hourlyLimit = 0
+        remainingHits = 0
+        newCount = 0
+        notificationEventCounts.values.forEach(Consumer { c: AtomicLong? -> c.set(0) })
+        downloadedCount = 0
+        progress = ""
     }
 
-    public long getDownloadedCount() {
-        return downloadedCount;
-    }
-    
-    public long getNewCount() {
-        return newCount;
-    }
-
-    protected int getRetriesLeft() {
-        return retriesLeft;
-    }
-    
-    void resetRetries(CommandEnum command) {
-        retriesLeft = INITIAL_NUMBER_OF_RETRIES;
-        switch (command) {
-            case GET_TIMELINE:
-            case GET_OLDER_TIMELINE:
-            case RATE_LIMIT_STATUS:
-                retriesLeft = 0;
-                break;
-            default:
-                break;
-        }
-        prepareForLaunch();
-    }
-
-    void prepareForLaunch() {
-        executed = false;
-        
-        numAuthExceptions = 0;
-        numIoExceptions = 0;
-        numParseExceptions = 0;
-        mMessage = "";
-        
-        itemId = 0;
-        
-        hourlyLimit = 0;
-        remainingHits = 0;
-
-        newCount = 0;
-        notificationEventCounts.values().forEach(c -> c.set(0));
-        downloadedCount = 0;
-
-        progress = "";
-    }
-    
-    void afterExecutionEnded() {
-        executed = true;
-        executionCount++;
+    fun afterExecutionEnded() {
+        executed = true
+        executionCount++
         if (retriesLeft > 0) {
-            retriesLeft -= 1;
+            retriesLeft -= 1
         }
-        lastExecutedDate = System.currentTimeMillis();
-    }
-    
-    boolean shouldWeRetry() {
-        return (!executed || hasError()) && !hasHardError() && (retriesLeft > 0);
+        lastExecutedDate = System.currentTimeMillis()
     }
 
-    long getItemId() {
-        return itemId;
+    fun shouldWeRetry(): Boolean {
+        return (!executed || hasError()) && !hasHardError() && retriesLeft > 0
     }
 
-    void setItemId(long itemId) {
-        this.itemId = itemId;
+    fun getItemId(): Long {
+        return itemId
     }
 
-    public long getLastExecutedDate() {
-        return lastExecutedDate;
+    fun setItemId(itemId: Long) {
+        this.itemId = itemId
     }
 
-    public String getMessage() {
-        return mMessage;
+    fun getLastExecutedDate(): Long {
+        return lastExecutedDate
     }
 
-    public void setMessage(String message) {
-        this.mMessage = message;
+    fun getMessage(): String? {
+        return mMessage
     }
 
-    public String getProgress() {
-        return progress;
+    fun setMessage(message: String?) {
+        mMessage = message
     }
 
-    public void setProgress(String progress) {
-        this.progress = progress;
+    fun getProgress(): String? {
+        return progress
+    }
+
+    fun setProgress(progress: String?) {
+        this.progress = progress
+    }
+
+    companion object {
+        const val INITIAL_NUMBER_OF_RETRIES = 10
+        val CREATOR: Parcelable.Creator<CommandResult?>? = object : Parcelable.Creator<CommandResult?> {
+            override fun createFromParcel(`in`: Parcel?): CommandResult? {
+                return CommandResult(`in`)
+            }
+
+            override fun newArray(size: Int): Array<CommandResult?>? {
+                return arrayOfNulls<CommandResult?>(size)
+            }
+        }
+
+        fun fromCursor(cursor: Cursor?): CommandResult? {
+            val result = CommandResult()
+            result.lastExecutedDate = DbUtils.getLong(cursor, CommandTable.LAST_EXECUTED_DATE)
+            result.executionCount = DbUtils.getInt(cursor, CommandTable.EXECUTION_COUNT)
+            result.retriesLeft = DbUtils.getInt(cursor, CommandTable.RETRIES_LEFT)
+            result.numAuthExceptions = DbUtils.getLong(cursor, CommandTable.NUM_AUTH_EXCEPTIONS)
+            result.numIoExceptions = DbUtils.getLong(cursor, CommandTable.NUM_IO_EXCEPTIONS)
+            result.numParseExceptions = DbUtils.getLong(cursor, CommandTable.NUM_PARSE_EXCEPTIONS)
+            result.mMessage = DbUtils.getString(cursor, CommandTable.ERROR_MESSAGE)
+            result.downloadedCount = DbUtils.getInt(cursor, CommandTable.DOWNLOADED_COUNT).toLong()
+            result.progress = DbUtils.getString(cursor, CommandTable.PROGRESS_TEXT)
+            return result
+        }
+
+        fun toString(commandResult: CommandResult?): String? {
+            return commandResult?.toString() ?: "(result is null)"
+        }
     }
 }

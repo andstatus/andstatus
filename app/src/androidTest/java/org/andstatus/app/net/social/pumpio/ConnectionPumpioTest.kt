@@ -13,113 +13,88 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.net.social.pumpio
 
-package org.andstatus.app.net.social.pumpio;
+import android.net.Uri
+import org.andstatus.app.context.DemoData
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.TestSuite
+import org.andstatus.app.data.DataUpdater
+import org.andstatus.app.data.DownloadStatus
+import org.andstatus.app.data.MyContentType
+import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.http.OAuthClientKeys
+import org.andstatus.app.net.social.AActivity
+import org.andstatus.app.net.social.AObjectType
+import org.andstatus.app.net.social.ActivityType
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.ActorEndpointType
+import org.andstatus.app.net.social.ApiRoutineEnum
+import org.andstatus.app.net.social.Attachment
+import org.andstatus.app.net.social.Attachments
+import org.andstatus.app.net.social.ConnectionMock
+import org.andstatus.app.net.social.Note
+import org.andstatus.app.net.social.TimelinePosition
+import org.andstatus.app.net.social.Visibility
+import org.andstatus.app.service.CommandData
+import org.andstatus.app.service.CommandEnum
+import org.andstatus.app.service.CommandExecutionContext
+import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.JsonUtils
+import org.andstatus.app.util.MyHtml
+import org.andstatus.app.util.RelativeTime
+import org.andstatus.app.util.StringUtil
+import org.andstatus.app.util.TriState
+import org.andstatus.app.util.UriUtilsTest
+import org.andstatus.app.util.UrlUtils
+import org.hamcrest.MatcherAssert
+import org.hamcrest.Matchers
+import org.hamcrest.core.StringStartsWith
+import org.json.JSONException
+import org.json.JSONObject
+import org.junit.After
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Test
+import java.io.IOException
+import java.net.URL
+import java.util.*
+import java.util.function.Supplier
+import java.util.stream.Collectors
 
-import android.net.Uri;
-
-import org.andstatus.app.context.TestSuite;
-import org.andstatus.app.data.DataUpdater;
-import org.andstatus.app.data.DownloadStatus;
-import org.andstatus.app.data.MyContentType;
-import org.andstatus.app.net.http.ConnectionException;
-import org.andstatus.app.net.http.HttpConnectionData;
-import org.andstatus.app.net.http.HttpReadResult;
-import org.andstatus.app.net.http.OAuthClientKeys;
-import org.andstatus.app.net.social.AActivity;
-import org.andstatus.app.net.social.AObjectType;
-import org.andstatus.app.net.social.ActivityType;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.net.social.ActorEndpointType;
-import org.andstatus.app.net.social.ApiRoutineEnum;
-import org.andstatus.app.net.social.Attachment;
-import org.andstatus.app.net.social.Attachments;
-import org.andstatus.app.net.social.Audience;
-import org.andstatus.app.net.social.ConnectionMock;
-import org.andstatus.app.net.social.InputTimelinePage;
-import org.andstatus.app.net.social.Note;
-import org.andstatus.app.net.social.TimelinePosition;
-import org.andstatus.app.net.social.Visibility;
-import org.andstatus.app.origin.Origin;
-import org.andstatus.app.service.CommandData;
-import org.andstatus.app.service.CommandEnum;
-import org.andstatus.app.service.CommandExecutionContext;
-import org.andstatus.app.timeline.meta.TimelineType;
-import org.andstatus.app.util.JsonUtils;
-import org.andstatus.app.util.MyHtml;
-import org.andstatus.app.util.StringUtil;
-import org.andstatus.app.util.TriState;
-import org.andstatus.app.util.UrlUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.Calendar;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import io.vavr.control.Try;
-
-import static org.andstatus.app.context.DemoData.demoData;
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
-import static org.andstatus.app.data.DownloadStatus.UNKNOWN;
-import static org.andstatus.app.util.RelativeTime.DATETIME_MILLIS_NEVER;
-import static org.andstatus.app.util.RelativeTime.SOME_TIME_AGO;
-import static org.andstatus.app.util.UriUtilsTest.assertEndpoint;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isA;
-import static org.hamcrest.core.StringStartsWith.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-public class ConnectionPumpioTest {
-    private ConnectionPumpio connection;
-    private URL originUrl;
-    private ConnectionMock mock;
-
-    private String keyStored;
-    private String secretStored;
-    
+class ConnectionPumpioTest {
+    private var connection: ConnectionPumpio? = null
+    private var originUrl: URL? = null
+    private var mock: ConnectionMock? = null
+    private var keyStored: String? = null
+    private var secretStored: String? = null
     @Before
-    public void setUp() throws Exception {
-        TestSuite.initializeWithAccounts(this);
-        originUrl = UrlUtils.fromString("https://" + demoData.pumpioMainHost);
-
-        mock = ConnectionMock.newFor(demoData.conversationAccountName);
-        connection = (ConnectionPumpio) mock.connection;
-
-        HttpConnectionData data = mock.getHttp().data;
-        data.originUrl = originUrl;
-        data.oauthClientKeys = OAuthClientKeys.fromConnectionData(data);
-        keyStored = data.oauthClientKeys.getConsumerKey();
-        secretStored = data.oauthClientKeys.getConsumerSecret();
-
+    @Throws(Exception::class)
+    fun setUp() {
+        TestSuite.initializeWithAccounts(this)
+        originUrl = UrlUtils.fromString("https://" + DemoData.Companion.demoData.pumpioMainHost)
+        mock = ConnectionMock.Companion.newFor(DemoData.Companion.demoData.conversationAccountName)
+        connection = mock.connection as ConnectionPumpio
+        val data = mock.getHttp().data
+        data.originUrl = originUrl
+        data.oauthClientKeys = OAuthClientKeys.Companion.fromConnectionData(data)
+        keyStored = data.oauthClientKeys.consumerKey
+        secretStored = data.oauthClientKeys.consumerSecret
         if (!data.oauthClientKeys.areKeysPresent()) {
-            data.oauthClientKeys.setConsumerKeyAndSecret("keyForThetestGetTimeline", "thisIsASecret02341");
+            data.oauthClientKeys.setConsumerKeyAndSecret("keyForThetestGetTimeline", "thisIsASecret02341")
         }
     }
-    
+
     @After
-    public void tearDown() {
+    fun tearDown() {
         if (!StringUtil.isEmpty(keyStored)) {
-            mock.getHttp().data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored);
+            mock.getHttp().data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored)
         }
     }
 
     @Test
-    public void testOidToObjectType() {
-        String oids[] = {"https://identi.ca/api/activity/L4v5OL93RrabouQc9_QGfg",
+    fun testOidToObjectType() {
+        val oids = arrayOf<String?>("https://identi.ca/api/activity/L4v5OL93RrabouQc9_QGfg",
                 "https://identi.ca/api/comment/ibpUqhU1TGCE2yHNbUv54g",
                 "https://identi.ca/api/note/nlF5jl1HQciIs_zP85EeYg",
                 "https://identi.ca/obj/ibpcomment",
@@ -127,8 +102,8 @@ public class ConnectionPumpioTest {
                 "acct:t131t@identi.ca",
                 "http://identi.ca/user/46155",
                 "https://identi.ca/api/user/andstatus/followers",
-                ConnectionPumpio.PUBLIC_COLLECTION_ID};
-        String objectTypes[] = {"activity",
+                ConnectionPumpio.Companion.PUBLIC_COLLECTION_ID)
+        val objectTypes = arrayOf<String?>("activity",
                 "comment",
                 "note",
                 "unknown object type: https://identi.ca/obj/ibpcomment",
@@ -136,367 +111,360 @@ public class ConnectionPumpioTest {
                 "person",
                 "person",
                 "collection",
-                "collection"};
-        for (int ind=0; ind < oids.length; ind++) {
-            String oid = oids[ind];
-            String objectType = objectTypes[ind];
-            assertEquals("Expecting'" + oid + "' to be '" + objectType + "'", objectType, connection.oidToObjectType(oid));
+                "collection")
+        for (ind in oids.indices) {
+            val oid = oids[ind]
+            val objectType = objectTypes[ind]
+            Assert.assertEquals("Expecting'$oid' to be '$objectType'", objectType, connection.oidToObjectType(oid))
         }
     }
 
     @Test
-    public void actorOidToHost() {
-        String oids[] = {"t131t@identi.ca",
+    fun actorOidToHost() {
+        val oids = arrayOf<String?>("t131t@identi.ca",
                 "acct:somebody@example.com",
                 "https://identi.ca/api/note/nlF5jl1HQciIs_zP85EeYg",
                 "example.com",
-                "@somewhere.com"};
-        String hosts[] = {"identi.ca", 
-                "example.com", 
+                "@somewhere.com")
+        val hosts = arrayOf<String?>("identi.ca",
+                "example.com",
                 "",
                 "",
-                "somewhere.com"};
-        for (int ind=0; ind < oids.length; ind++) {
-            assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], connection.actorOidToHost(oids[ind]));
+                "somewhere.com")
+        for (ind in oids.indices) {
+            Assert.assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], connection.actorOidToHost(oids[ind]))
         }
     }
 
     @Test
-    public void testGetConnectionAndUrl() throws ConnectionException {
-        Origin origin = connection.getData().getOrigin();
-        Actor actors[] = {
-                Actor.fromOid(origin,"acct:t131t@" + demoData.pumpioMainHost)
-                    .setWebFingerId("t131t@" + demoData.pumpioMainHost),
-                Actor.fromOid(origin,"somebody@" + demoData.pumpioMainHost)
-                    .setWebFingerId("somebody@" + demoData.pumpioMainHost)
-        };
-        String urls[] = {originUrl + "/api/user/t131t/profile", originUrl + "/api/user/somebody/profile"};
-        String hosts[] = {demoData.pumpioMainHost, demoData.pumpioMainHost};
-        for (int ind=0; ind < actors.length; ind++) {
-            ConnectionAndUrl conu = ConnectionAndUrl.fromActor(connection, ApiRoutineEnum.GET_ACTOR, actors[ind]).get();
-            assertEquals("Expecting '" + urls[ind] + "'", Uri.parse(urls[ind]), conu.uri);
-            assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], conu.httpConnection.data.originUrl.getHost());
+    @Throws(ConnectionException::class)
+    fun testGetConnectionAndUrl() {
+        val origin = connection.getData().origin
+        val actors = arrayOf<Actor?>(
+                Actor.Companion.fromOid(origin, "acct:t131t@" + DemoData.Companion.demoData.pumpioMainHost)
+                        .setWebFingerId("t131t@" + DemoData.Companion.demoData.pumpioMainHost),
+                Actor.Companion.fromOid(origin, "somebody@" + DemoData.Companion.demoData.pumpioMainHost)
+                        .setWebFingerId("somebody@" + DemoData.Companion.demoData.pumpioMainHost)
+        )
+        val urls = arrayOf<String?>(originUrl.toString() + "/api/user/t131t/profile", originUrl.toString() + "/api/user/somebody/profile")
+        val hosts = arrayOf<String?>(DemoData.Companion.demoData.pumpioMainHost, DemoData.Companion.demoData.pumpioMainHost)
+        for (ind in actors.indices) {
+            val conu: ConnectionAndUrl = ConnectionAndUrl.Companion.fromActor(connection, ApiRoutineEnum.GET_ACTOR, actors[ind]).get()
+            Assert.assertEquals("Expecting '" + urls[ind] + "'", Uri.parse(urls[ind]), conu.uri)
+            Assert.assertEquals("Expecting '" + hosts[ind] + "'", hosts[ind], conu.httpConnection.data.originUrl.host)
         }
     }
 
     @Test
-    public void testGetTimeline() throws IOException {
-        String sinceId = "https%3A%2F%2F" + originUrl.getHost() + "%2Fapi%2Factivity%2Ffrefq3232sf";
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_actor_t131t_inbox);
-        final String webFingerId = "t131t@" + originUrl.getHost();
-        Actor actor1 = Actor.fromOid(connection.getData().getOrigin(),"acct:" + webFingerId)
-                .setWebFingerId(webFingerId);
-        InputTimelinePage timeline = connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
-                TimelinePosition.of(sinceId), TimelinePosition.EMPTY, 20, actor1).get();
-        assertNotNull("timeline returned", timeline);
-        int size = 6;
-        assertEquals("Number of items in the Timeline", size, timeline.size());
-
-        int ind = 0;
-        assertEquals("Posting image", AObjectType.NOTE, timeline.get(ind).getObjectType());
-        assertActivity0FromTimeline(timeline.get(ind));
-
-        ind++;
-        AActivity activity = timeline.get(ind);
-        assertEquals("Is not FOLLOW " + activity, ActivityType.FOLLOW, activity.type);
-        assertEquals("Actor", "acct:jpope@io.jpope.org", activity.getActor().oid);
-        assertEquals("Actor is not my friend", TriState.TRUE, activity.getActor().isMyFriend);
-        assertEquals("Activity Object", AObjectType.ACTOR, activity.getObjectType());
-        Actor objActor = activity.getObjActor();
-        assertEquals("objActor followed", "acct:atalsta@microca.st", objActor.oid);
-        assertEquals("WebFinger ID", "atalsta@microca.st", objActor.getWebFingerId());
-        assertEquals("Actor is my friend", TriState.FALSE, objActor.isMyFriend);
-
-        ind++;
-        activity = timeline.get(ind);
-        assertEquals("Is not FOLLOW " + activity, ActivityType.FOLLOW, activity.type);
-        assertEquals("Actor", AObjectType.ACTOR, activity.getObjectType());
-        objActor = activity.getObjActor();
-        assertEquals("Url of the actor", "https://identi.ca/t131t", activity.getActor().getProfileUrl());
-        assertEquals("WebFinger ID", "t131t@identi.ca", activity.getActor().getWebFingerId());
-        assertEquals("Actor is not my friend", TriState.TRUE, objActor.isMyFriend);
-        assertEquals("Url of objActor", "https://fmrl.me/grdryn", objActor.getProfileUrl());
-
-        ind++;
-        activity = timeline.get(ind);
-        assertEquals("Is not LIKE " + activity, ActivityType.LIKE, activity.type);
-        assertEquals("Actor " + activity, "acct:jpope@io.jpope.org", activity.getActor().oid);
-        assertEquals("Activity updated " + activity,
+    @Throws(IOException::class)
+    fun testGetTimeline() {
+        val sinceId = "https%3A%2F%2F" + originUrl.getHost() + "%2Fapi%2Factivity%2Ffrefq3232sf"
+        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_actor_t131t_inbox)
+        val webFingerId = "t131t@" + originUrl.getHost()
+        val actor1: Actor = Actor.Companion.fromOid(connection.getData().origin, "acct:$webFingerId")
+                .setWebFingerId(webFingerId)
+        val timeline = connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
+                TimelinePosition.Companion.of(sinceId), TimelinePosition.Companion.EMPTY, 20, actor1).get()
+        Assert.assertNotNull("timeline returned", timeline)
+        val size = 6
+        Assert.assertEquals("Number of items in the Timeline", size.toLong(), timeline.size().toLong())
+        var ind = 0
+        Assert.assertEquals("Posting image", AObjectType.NOTE, timeline[ind].objectType)
+        assertActivity0FromTimeline(timeline[ind])
+        ind++
+        var activity = timeline[ind]
+        Assert.assertEquals("Is not FOLLOW $activity", ActivityType.FOLLOW, activity.type)
+        Assert.assertEquals("Actor", "acct:jpope@io.jpope.org", activity.actor.oid)
+        Assert.assertEquals("Actor is not my friend", TriState.TRUE, activity.actor.isMyFriend)
+        Assert.assertEquals("Activity Object", AObjectType.ACTOR, activity.objectType)
+        var objActor = activity.objActor
+        Assert.assertEquals("objActor followed", "acct:atalsta@microca.st", objActor.oid)
+        Assert.assertEquals("WebFinger ID", "atalsta@microca.st", objActor.webFingerId)
+        Assert.assertEquals("Actor is my friend", TriState.FALSE, objActor.isMyFriend)
+        ind++
+        activity = timeline[ind]
+        Assert.assertEquals("Is not FOLLOW $activity", ActivityType.FOLLOW, activity.type)
+        Assert.assertEquals("Actor", AObjectType.ACTOR, activity.objectType)
+        objActor = activity.objActor
+        Assert.assertEquals("Url of the actor", "https://identi.ca/t131t", activity.actor.profileUrl)
+        Assert.assertEquals("WebFinger ID", "t131t@identi.ca", activity.actor.webFingerId)
+        Assert.assertEquals("Actor is not my friend", TriState.TRUE, objActor.isMyFriend)
+        Assert.assertEquals("Url of objActor", "https://fmrl.me/grdryn", objActor.profileUrl)
+        ind++
+        activity = timeline[ind]
+        Assert.assertEquals("Is not LIKE $activity", ActivityType.LIKE, activity.type)
+        Assert.assertEquals("Actor $activity", "acct:jpope@io.jpope.org", activity.actor.oid)
+        Assert.assertEquals("Activity updated $activity",
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 20, 22, 20, 25),
-                TestSuite.utcTime(activity.getUpdatedDate()));
-        Note note = activity.getNote();
-        assertEquals("Author " + activity, "acct:lostson@fmrl.me", activity.getAuthor().oid);
-        assertTrue("Has a non special recipient " + note.audience().getRecipients(),
-                note.audience().getNonSpecialActors().isEmpty());
-        assertEquals("Note oid " + note, "https://fmrl.me/api/note/Dp-njbPQSiOfdclSOuAuFw", note.oid);
-        assertEquals("Url of the note " + note, "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", note.url);
-        assertThat("Note body " + note, note.getContent(), startsWith("My new <b>Firefox</b> OS phone arrived today"));
-        assertEquals("Note updated " + note,
+                TestSuite.utcTime(activity.updatedDate))
+        var note = activity.note
+        Assert.assertEquals("Author $activity", "acct:lostson@fmrl.me", activity.author.oid)
+        Assert.assertTrue("Has a non special recipient " + note.audience().recipients,
+                note.audience().nonSpecialActors.isEmpty())
+        Assert.assertEquals("Note oid $note", "https://fmrl.me/api/note/Dp-njbPQSiOfdclSOuAuFw", note.oid)
+        Assert.assertEquals("Url of the note $note", "https://fmrl.me/lostson/note/Dp-njbPQSiOfdclSOuAuFw", note.url)
+        MatcherAssert.assertThat("Note body $note", note.content, StringStartsWith.startsWith("My new <b>Firefox</b> OS phone arrived today"))
+        Assert.assertEquals("Note updated $note",
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 20, 20, 4, 22),
-                TestSuite.utcTime(note.getUpdatedDate()));
-
-        ind++;
-        note = timeline.get(ind).getNote();
-        assertTrue("Have a recipient", note.audience().hasNonSpecial());
-        assertEquals("Directed to yvolk", "acct:yvolk@identi.ca" , note.audience().getFirstNonSpecial().oid);
-
-        ind++;
-        activity = timeline.get(ind);
-        note = activity.getNote();
-        assertEquals(TriState.UNKNOWN, activity.isSubscribedByMe());
-        assertTrue("Is a reply", note.getInReplyTo().nonEmpty());
-        assertEquals("Is not a reply to this actor " + activity, "jankusanagi@identi.ca",
-                note.getInReplyTo().getAuthor().getUniqueName());
-        assertEquals(TriState.UNKNOWN, note.getInReplyTo().isSubscribedByMe());
+                TestSuite.utcTime(note.updatedDate))
+        ind++
+        note = timeline[ind].note
+        Assert.assertTrue("Have a recipient", note.audience().hasNonSpecial())
+        Assert.assertEquals("Directed to yvolk", "acct:yvolk@identi.ca", note.audience().firstNonSpecial.oid)
+        ind++
+        activity = timeline[ind]
+        note = activity.note
+        Assert.assertEquals(TriState.UNKNOWN, activity.isSubscribedByMe)
+        Assert.assertTrue("Is a reply", note.inReplyTo.nonEmpty())
+        Assert.assertEquals("Is not a reply to this actor $activity", "jankusanagi@identi.ca",
+                note.inReplyTo.author.uniqueName)
+        Assert.assertEquals(TriState.UNKNOWN, note.inReplyTo.isSubscribedByMe)
     }
 
-    private void assertActivity0FromTimeline(AActivity activity) {
-        Note note = activity.getNote();
-        assertEquals("Note name " + note, "Wheel Stand", note.getName());
-        assertThat("Note body " + note, note.getContent(), startsWith("Wow! Fantastic wheel stand at #DragWeek2013 today."));
-        assertEquals("Note updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
+    private fun assertActivity0FromTimeline(activity: AActivity?) {
+        val note = activity.getNote()
+        Assert.assertEquals("Note name $note", "Wheel Stand", note.name)
+        MatcherAssert.assertThat("Note body $note", note.content, StringStartsWith.startsWith("Wow! Fantastic wheel stand at #DragWeek2013 today."))
+        Assert.assertEquals("Note updated at " + TestSuite.utcTime(activity.getUpdatedDate()),
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 13, 1, 8, 38),
-                TestSuite.utcTime(activity.getUpdatedDate()));
-        Actor actor = activity.getActor();
-        assertJpopeActor(actor, false);
-
-        assertEquals("Actor is an Author", actor, activity.getAuthor());
-        assertNotEquals("Is a Reblog " + activity, ActivityType.ANNOUNCE, activity.type);
-        assertEquals("Favorited by me " + activity, TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor));
-
-        Audience audience = note.audience();
-        assertEquals("Should be Public for now. Followers in cc aren't recognized yet as a Followers collection... " +
-                activity + "\n", Visibility.PUBLIC, audience.getVisibility());
-        assertFalse("Is to Followers. We shouldn't know this yet?! " + audience, audience.isFollowers());
-        assertThat(audience.getRecipients().toString(),
-                audience.getNonSpecialActors().stream().map(Actor::getUsername).collect(Collectors.toList()),
-                containsInAnyOrder("user/jpope/followers"));
-
-        CommandExecutionContext executionContext = new CommandExecutionContext(
-                myContextHolder.getNow(),
-                CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, mock.getData().getMyAccount(), TimelineType.HOME));
-        new DataUpdater(executionContext).onActivity(activity);
-
-        Actor actorStored = Actor.loadFromDatabase(mock.getData().getOrigin().myContext, actor.actorId,
-                () -> Actor.EMPTY, false);
-        assertJpopeActor(actorStored, true);
-
-        Note noteStored = Note.loadContentById(mock.getData().getOrigin().myContext, note.noteId);
-
-        Audience audienceStored = noteStored.audience();
-        assertEquals("Should be Public with Followers " + audienceStored,
-                Visibility.PUBLIC_AND_TO_FOLLOWERS, audienceStored.getVisibility());
-        assertTrue("Is not to Followers " + audienceStored, audienceStored.isFollowers());
-        assertThat(audienceStored.getRecipients().toString(), audienceStored.getNonSpecialActors(), is(empty()));
+                TestSuite.utcTime(activity.getUpdatedDate()))
+        val actor = activity.getActor()
+        assertJpopeActor(actor, false)
+        Assert.assertEquals("Actor is an Author", actor, activity.getAuthor())
+        Assert.assertNotEquals("Is a Reblog $activity", ActivityType.ANNOUNCE, activity.type)
+        Assert.assertEquals("Favorited by me $activity", TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor))
+        val audience = note.audience()
+        Assert.assertEquals("""
+    Should be Public for now. Followers in cc aren't recognized yet as a Followers collection... $activity
+    
+    """.trimIndent(), Visibility.PUBLIC, audience.visibility)
+        Assert.assertFalse("Is to Followers. We shouldn't know this yet?! $audience", audience.isFollowers)
+        MatcherAssert.assertThat(audience.recipients.toString(),
+                audience.nonSpecialActors.stream().map { obj: Actor? -> obj.getUsername() }.collect(Collectors.toList()),
+                Matchers.containsInAnyOrder("user/jpope/followers"))
+        val executionContext = CommandExecutionContext(
+                MyContextHolder.Companion.myContextHolder.getNow(),
+                CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, mock.getData().myAccount, TimelineType.HOME))
+        DataUpdater(executionContext).onActivity(activity)
+        val actorStored: Actor = Actor.Companion.loadFromDatabase(mock.getData().origin.myContext, actor.actorId,
+                Supplier<Actor?> { Actor.Companion.EMPTY }, false)
+        assertJpopeActor(actorStored, true)
+        val noteStored: Note = Note.Companion.loadContentById(mock.getData().origin.myContext, note.noteId)
+        val audienceStored = noteStored.audience()
+        Assert.assertEquals("Should be Public with Followers $audienceStored",
+                Visibility.PUBLIC_AND_TO_FOLLOWERS, audienceStored.visibility)
+        Assert.assertTrue("Is not to Followers $audienceStored", audienceStored.isFollowers)
+        MatcherAssert.assertThat(audienceStored.recipients.toString(), audienceStored.nonSpecialActors, Matchers.`is`(Matchers.empty()))
     }
 
-    private void assertJpopeActor(Actor actor, boolean stored) {
-        assertEquals("Sender's oid", "acct:jpope@io.jpope.org", actor.oid);
-        assertEquals("Sender's username", "jpope", actor.getUsername());
-        assertEquals("Sender's unique name in Origin", "jpope@io.jpope.org", actor.getUniqueName());
-        assertEquals("Sender's Display name", "jpope", actor.getRealName());
-        assertEquals("Sender's profile image URL", "https://io.jpope.org/uploads/jpope/2013/7/8/LPyLPw_thumb.png",
-                actor.getAvatarUrl());
-        assertEquals("Sender's profile URL", "https://io.jpope.org/jpope", actor.getProfileUrl());
-        assertEquals("Sender's Homepage", "https://io.jpope.org/jpope", actor.getHomepage());
-        assertEquals("Sender's WebFinger ID", "jpope@io.jpope.org", actor.getWebFingerId());
-        assertEquals("Description", "Does the Pope shit in the woods?", actor.getSummary());
-        assertEquals("Notes count", 0, actor.notesCount);
-        assertEquals("Favorites count", 0, actor.favoritesCount);
-        assertEquals("Following (friends) count", 0, actor.followingCount);
-        assertEquals("Followers count", 0, actor.followersCount);
-        assertEquals("Location", "/dev/null", actor.location);
-        assertEquals("Created at", stored ? SOME_TIME_AGO : DATETIME_MILLIS_NEVER, actor.getCreatedDate());
-        assertEquals("Updated at", TestSuite.utcTime(2013, Calendar.SEPTEMBER, 12, 17, 10, 44),
-                TestSuite.utcTime(actor.getUpdatedDate()));
-
-        assertEndpoint(ActorEndpointType.API_INBOX, "https://io.jpope.org/api/user/jpope/inbox", actor);
-        assertEndpoint(ActorEndpointType.API_PROFILE, "https://io.jpope.org/api/user/jpope/profile", actor);
-        assertEndpoint(ActorEndpointType.API_FOLLOWING, "https://io.jpope.org/api/user/jpope/following", actor);
-        assertEndpoint(ActorEndpointType.API_FOLLOWERS, "https://io.jpope.org/api/user/jpope/followers", actor);
-        assertEndpoint(ActorEndpointType.API_LIKED, "https://io.jpope.org/api/user/jpope/favorites", actor);
+    private fun assertJpopeActor(actor: Actor?, stored: Boolean) {
+        Assert.assertEquals("Sender's oid", "acct:jpope@io.jpope.org", actor.oid)
+        Assert.assertEquals("Sender's username", "jpope", actor.getUsername())
+        Assert.assertEquals("Sender's unique name in Origin", "jpope@io.jpope.org", actor.getUniqueName())
+        Assert.assertEquals("Sender's Display name", "jpope", actor.getRealName())
+        Assert.assertEquals("Sender's profile image URL", "https://io.jpope.org/uploads/jpope/2013/7/8/LPyLPw_thumb.png",
+                actor.getAvatarUrl())
+        Assert.assertEquals("Sender's profile URL", "https://io.jpope.org/jpope", actor.getProfileUrl())
+        Assert.assertEquals("Sender's Homepage", "https://io.jpope.org/jpope", actor.getHomepage())
+        Assert.assertEquals("Sender's WebFinger ID", "jpope@io.jpope.org", actor.getWebFingerId())
+        Assert.assertEquals("Description", "Does the Pope shit in the woods?", actor.getSummary())
+        Assert.assertEquals("Notes count", 0, actor.notesCount)
+        Assert.assertEquals("Favorites count", 0, actor.favoritesCount)
+        Assert.assertEquals("Following (friends) count", 0, actor.followingCount)
+        Assert.assertEquals("Followers count", 0, actor.followersCount)
+        Assert.assertEquals("Location", "/dev/null", actor.location)
+        Assert.assertEquals("Created at", if (stored) RelativeTime.SOME_TIME_AGO else RelativeTime.DATETIME_MILLIS_NEVER, actor.getCreatedDate())
+        Assert.assertEquals("Updated at", TestSuite.utcTime(2013, Calendar.SEPTEMBER, 12, 17, 10, 44),
+                TestSuite.utcTime(actor.getUpdatedDate()))
+        UriUtilsTest.Companion.assertEndpoint(ActorEndpointType.API_INBOX, "https://io.jpope.org/api/user/jpope/inbox", actor)
+        UriUtilsTest.Companion.assertEndpoint(ActorEndpointType.API_PROFILE, "https://io.jpope.org/api/user/jpope/profile", actor)
+        UriUtilsTest.Companion.assertEndpoint(ActorEndpointType.API_FOLLOWING, "https://io.jpope.org/api/user/jpope/following", actor)
+        UriUtilsTest.Companion.assertEndpoint(ActorEndpointType.API_FOLLOWERS, "https://io.jpope.org/api/user/jpope/followers", actor)
+        UriUtilsTest.Companion.assertEndpoint(ActorEndpointType.API_LIKED, "https://io.jpope.org/api/user/jpope/favorites", actor)
     }
 
     @Test
-    public void testGetFriends() throws IOException {
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_actor_t131t_following);
-        
-        assertTrue(connection.hasApiEndpoint(ApiRoutineEnum.GET_FRIENDS));
-        assertTrue(connection.hasApiEndpoint(ApiRoutineEnum.GET_FRIENDS_IDS));
-
-        final String webFingerId = "t131t@" + originUrl.getHost();
-        Actor actor = Actor.fromOid(connection.getData().getOrigin(),"acct:" + webFingerId)
-                .setWebFingerId(webFingerId);
-        List<Actor> actors = connection.getFriends(actor).get();
-        assertNotNull("List of actors, who " + actor.getUniqueNameWithOrigin() + " is following", actors);
-        int size = 5;
-        assertEquals("Response for t131t", size, actors.size());
-
-        assertEquals("Does the Pope shit in the woods?", actors.get(1).getSummary());
-        assertEquals("gitorious", actors.get(2).getUsername());
-        assertEquals("gitorious@identi.ca", actors.get(2).getUniqueName());
-        assertEquals("acct:ken@coding.example", actors.get(3).oid);
-        assertEquals("Yuri Volkov", actors.get(4).getRealName());
+    @Throws(IOException::class)
+    fun testGetFriends() {
+        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_actor_t131t_following)
+        Assert.assertTrue(connection.hasApiEndpoint(ApiRoutineEnum.GET_FRIENDS))
+        Assert.assertTrue(connection.hasApiEndpoint(ApiRoutineEnum.GET_FRIENDS_IDS))
+        val webFingerId = "t131t@" + originUrl.getHost()
+        val actor: Actor = Actor.Companion.fromOid(connection.getData().origin, "acct:$webFingerId")
+                .setWebFingerId(webFingerId)
+        val actors = connection.getFriends(actor).get()
+        Assert.assertNotNull("List of actors, who " + actor.uniqueNameWithOrigin + " is following", actors)
+        val size = 5
+        Assert.assertEquals("Response for t131t", size.toLong(), actors.size.toLong())
+        Assert.assertEquals("Does the Pope shit in the woods?", actors[1].summary)
+        Assert.assertEquals("gitorious", actors[2].username)
+        Assert.assertEquals("gitorious@identi.ca", actors[2].uniqueName)
+        Assert.assertEquals("acct:ken@coding.example", actors[3].oid)
+        Assert.assertEquals("Yuri Volkov", actors[4].realName)
     }
 
     @Test
-    public void testReply() throws JSONException {
-        String name = "To Peter";
-        String contentPartToLookup = "Do you think it's true?";
-        String content = "@peter " + contentPartToLookup;
-        String inReplyToOid = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
-        Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
+    @Throws(JSONException::class)
+    fun testReply() {
+        val name = "To Peter"
+        val contentPartToLookup = "Do you think it's true?"
+        val content = "@peter $contentPartToLookup"
+        val inReplyToOid = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv"
+        val note: Note = Note.Companion.fromOriginAndOid(mock.getData().origin, "", DownloadStatus.SENDING)
                 .setName(name)
                 .setContentPosted(content)
-                .setInReplyTo(AActivity.newPartialNote(mock.getData().getMyAccount().getActor(),
-                        Actor.EMPTY, inReplyToOid, DATETIME_MILLIS_NEVER, UNKNOWN)
-                    .setOid(inReplyToOid));
-
-        connection.updateNote(note);
-        HttpReadResult result = mock.getHttpMock().waitForPostContaining(contentPartToLookup);
-        JSONObject jso = result.request.postParams.get().getJSONObject("object");
-        assertEquals("Note name", name, MyHtml.htmlToPlainText(jso.getString("displayName")));
-        assertEquals("Note content", content, MyHtml.htmlToPlainText(jso.getString("content")));
-        assertEquals("Reply is comment", PObjectType.COMMENT.id, jso.getString("objectType"));
-        assertTrue("InReplyTo is present", jso.has("inReplyTo"));
-        JSONObject inReplyToObject = jso.getJSONObject("inReplyTo");
-        assertEquals("Id of the in reply to object", inReplyToOid, inReplyToObject.getString("id"));
+                .setInReplyTo(AActivity.Companion.newPartialNote(mock.getData().myAccount.actor,
+                        Actor.Companion.EMPTY, inReplyToOid, RelativeTime.DATETIME_MILLIS_NEVER, DownloadStatus.UNKNOWN)
+                        .setOid(inReplyToOid))
+        connection.updateNote(note)
+        val result = mock.getHttpMock().waitForPostContaining(contentPartToLookup)
+        val jso = result.request.postParams.get().getJSONObject("object")
+        Assert.assertEquals("Note name", name, MyHtml.htmlToPlainText(jso.getString("displayName")))
+        Assert.assertEquals("Note content", content, MyHtml.htmlToPlainText(jso.getString("content")))
+        Assert.assertEquals("Reply is comment", PObjectType.COMMENT.id, jso.getString("objectType"))
+        Assert.assertTrue("InReplyTo is present", jso.has("inReplyTo"))
+        val inReplyToObject = jso.getJSONObject("inReplyTo")
+        Assert.assertEquals("Id of the in reply to object", inReplyToOid, inReplyToObject.getString("id"))
     }
 
     @Test
-    public void testUpdateStatus() throws JSONException {
-        String name = "";
-        String content = "Testing the application...";
-        Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
-                .setName(name).setContentPosted(content);
-
-        Try<AActivity> tryActivity = connection.updateNote(note);
-        JSONObject jsoActivity = mock.getHttpMock().getLatestPostedJSONObject();
-        assertTrue("Object present " + jsoActivity +
-                "\nResults: " + mock.getHttpMock().getResults(), jsoActivity.has("object"));
-        JSONObject jso = jsoActivity.getJSONObject("object");
-        assertEquals("Note name", name, MyHtml.htmlToPlainText(JsonUtils.optString(jso, "displayName")));
-        assertEquals("Note content", content, MyHtml.htmlToPlainText(jso.getString("content")));
-        assertEquals("Note without reply is a note", PObjectType.NOTE.id, jso.getString("objectType"));
-        JSONArray toArray = jsoActivity.optJSONArray("to");
-        assertEquals("Only public recipient expected " + jsoActivity, 1, toArray == null ? 0 : toArray.length());
-        JSONObject recipient = (JSONObject) toArray.get(0);
-        assertEquals("Only public recipient expected " + jsoActivity, ConnectionPumpio.PUBLIC_COLLECTION_ID,
-                recipient.getString("id"));
-        assertFalse("InReplyTo is not present " + jsoActivity, jso.has("inReplyTo"));
-    }
-
-    @Test
-    public void testReblog() throws JSONException {
-        String rebloggedId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv";
-        connection.announce(rebloggedId);
-        JSONObject activity = mock.getHttpMock().getLatestPostedJSONObject();
-        assertTrue("Object present", activity.has("object"));
-        JSONObject obj = activity.getJSONObject("object");
-        assertEquals("Sharing a note", PObjectType.NOTE.id, obj.getString("objectType"));
-        assertFalse("Nothing in 'to'", activity.has("to"));
-        assertFalse("No followers in CC", activity.has("cc"));
-    }
-
-    @Test
-    public void testUndoFollowActor() throws IOException {
-        mock.addResponse(org.andstatus.app.tests.R.raw.unfollow_pumpio);
-        String actorOid = "acct:evan@e14n.com";
-        AActivity activity = connection.follow(actorOid, false).get();
-        assertEquals("Not unfollow action", ActivityType.UNDO_FOLLOW, activity.type);
-        Actor objActor = activity.getObjActor();
-        assertTrue("objActor is present", objActor.nonEmpty());
-        assertEquals("Actor", "acct:t131t@pump1.example.com", activity.getActor().oid);
-        assertEquals("Object of action", actorOid, objActor.oid);
-    }
-
-    @Test
-    public void testParseDate() {
-        String stringDate = "Wed Nov 27 09:27:01 -0300 2013";
-        assertEquals("Bad date shouldn't throw (" + stringDate + ")", 0, connection.parseDate(stringDate) );
-    }
-
-    @Test
-    public void testDestroyStatus() throws IOException {
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_delete_comment_response);
-        assertTrue("Success", connection.deleteNote("https://" + demoData.pumpioMainHost
-                + "/api/comment/xf0WjLeEQSlyi8jwHJ0ttre").get());
-
-        Try<Boolean> tried = connection.deleteNote("");
-        assertTrue(tried.isFailure());
-        assertThat(tried.getCause(), isA(IllegalArgumentException.class));
-    }
-
-    @Test
-    public void testPostWithImage() throws IOException {
-        // TODO: There should be 3 responses, just like for Video
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
-
-        Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
-                .setContentPosted("Test post note with media")
-                .withAttachments(new Attachments().add(Attachment.fromUriAndMimeType(demoData.localImageTestUri,
-                        MyContentType.IMAGE.generalMimeType)));
-        Try<AActivity> activity = connection.updateNote(note);
-    }
-
-    @Test
-    public void testPostWithVideo() throws IOException {
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_video_response1);
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_video_response2);
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_video_response3);
-
-        String name = "Note - Testing Video attachments in #AndStatus";
-        String content = "<p dir=\"ltr\">Video attachment is here</p>";
-
-        Note note = Note.fromOriginAndOid(mock.getData().getOrigin(), "", DownloadStatus.SENDING)
+    @Throws(JSONException::class)
+    fun testUpdateStatus() {
+        val name = ""
+        val content = "Testing the application..."
+        val note: Note = Note.Companion.fromOriginAndOid(mock.getData().origin, "", DownloadStatus.SENDING)
                 .setName(name).setContentPosted(content)
-                .withAttachments(new Attachments().add(Attachment.fromUriAndMimeType(demoData.localVideoTestUri,
-                        MyContentType.VIDEO.generalMimeType)));
-        AActivity activity = connection.updateNote(note).get();
-        assertEquals("Responses counter " + mock.getHttpMock(), 3, mock.getHttpMock().responsesCounter);
-        Note note2 = activity.getNote();
-        assertEquals("Note name " + activity, name, note2.getName());
-        assertEquals("Note content " + activity, content, note2.getContent());
-        assertEquals("Should have an attachment " + activity, false, note2.attachments.isEmpty());
-        Attachment attachment = note2.attachments.list.get(0);
-        assertEquals("Video attachment " + activity, MyContentType.VIDEO, attachment.contentType);
-        assertEquals("Video content type " + activity, "video/mp4", attachment.mimeType);
-        assertEquals("Video uri " + activity,
-                "https://identi.ca/uploads/andstatus/2018/4/11/7CmQmw.mp4", attachment.uri.toString());
+        val tryActivity = connection.updateNote(note)
+        val jsoActivity = mock.getHttpMock().latestPostedJSONObject
+        Assert.assertTrue("""
+    Object present $jsoActivity
+    Results: ${mock.getHttpMock().results}
+    """.trimIndent(), jsoActivity.has("object"))
+        val jso = jsoActivity.getJSONObject("object")
+        Assert.assertEquals("Note name", name, MyHtml.htmlToPlainText(JsonUtils.optString(jso, "displayName")))
+        Assert.assertEquals("Note content", content, MyHtml.htmlToPlainText(jso.getString("content")))
+        Assert.assertEquals("Note without reply is a note", PObjectType.NOTE.id, jso.getString("objectType"))
+        val toArray = jsoActivity.optJSONArray("to")
+        Assert.assertEquals("Only public recipient expected $jsoActivity", 1, toArray?.length()?.toLong() ?: 0)
+        val recipient = toArray[0] as JSONObject
+        Assert.assertEquals("Only public recipient expected $jsoActivity", ConnectionPumpio.Companion.PUBLIC_COLLECTION_ID,
+                recipient.getString("id"))
+        Assert.assertFalse("InReplyTo is not present $jsoActivity", jso.has("inReplyTo"))
     }
 
-    private Note privateGetNoteWithAttachment(boolean uniqueUid) throws IOException {
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image);
+    @Test
+    @Throws(JSONException::class)
+    fun testReblog() {
+        val rebloggedId = "https://identi.ca/api/note/94893FsdsdfFdgtjuk38ErKv"
+        connection.announce(rebloggedId)
+        val activity = mock.getHttpMock().latestPostedJSONObject
+        Assert.assertTrue("Object present", activity.has("object"))
+        val obj = activity.getJSONObject("object")
+        Assert.assertEquals("Sharing a note", PObjectType.NOTE.id, obj.getString("objectType"))
+        Assert.assertFalse("Nothing in 'to'", activity.has("to"))
+        Assert.assertFalse("No followers in CC", activity.has("cc"))
+    }
 
-        Note note = connection.getNote("https://io.jpope.org/api/activity/w9wME-JVQw2GQe6POK7FSQ").get().getNote();
+    @Test
+    @Throws(IOException::class)
+    fun testUndoFollowActor() {
+        mock.addResponse(org.andstatus.app.tests.R.raw.unfollow_pumpio)
+        val actorOid = "acct:evan@e14n.com"
+        val activity = connection.follow(actorOid, false).get()
+        Assert.assertEquals("Not unfollow action", ActivityType.UNDO_FOLLOW, activity.type)
+        val objActor = activity.objActor
+        Assert.assertTrue("objActor is present", objActor.nonEmpty())
+        Assert.assertEquals("Actor", "acct:t131t@pump1.example.com", activity.actor.oid)
+        Assert.assertEquals("Object of action", actorOid, objActor.oid)
+    }
+
+    @Test
+    fun testParseDate() {
+        val stringDate = "Wed Nov 27 09:27:01 -0300 2013"
+        Assert.assertEquals("Bad date shouldn't throw ($stringDate)", 0, connection.parseDate(stringDate))
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun testDestroyStatus() {
+        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_delete_comment_response)
+        Assert.assertTrue("Success", connection.deleteNote("https://" + DemoData.Companion.demoData.pumpioMainHost
+                + "/api/comment/xf0WjLeEQSlyi8jwHJ0ttre").get())
+        val tried = connection.deleteNote("")
+        Assert.assertTrue(tried.isFailure)
+        MatcherAssert.assertThat(tried.cause, Matchers.isA(IllegalArgumentException::class.java))
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun testPostWithImage() {
+        // TODO: There should be 3 responses, just like for Video
+        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image)
+        val note: Note = Note.Companion.fromOriginAndOid(mock.getData().origin, "", DownloadStatus.SENDING)
+                .setContentPosted("Test post note with media")
+                .withAttachments(Attachments().add(Attachment.Companion.fromUriAndMimeType(DemoData.Companion.demoData.localImageTestUri,
+                        MyContentType.IMAGE.generalMimeType)))
+        val activity = connection.updateNote(note)
+    }
+
+    @Test
+    @Throws(IOException::class)
+    fun testPostWithVideo() {
+        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_video_response1)
+        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_video_response2)
+        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_video_response3)
+        val name = "Note - Testing Video attachments in #AndStatus"
+        val content = "<p dir=\"ltr\">Video attachment is here</p>"
+        val note: Note = Note.Companion.fromOriginAndOid(mock.getData().origin, "", DownloadStatus.SENDING)
+                .setName(name).setContentPosted(content)
+                .withAttachments(Attachments().add(Attachment.Companion.fromUriAndMimeType(DemoData.Companion.demoData.localVideoTestUri,
+                        MyContentType.VIDEO.generalMimeType)))
+        val activity = connection.updateNote(note).get()
+        Assert.assertEquals("Responses counter " + mock.getHttpMock(), 3, mock.getHttpMock().responsesCounter.toLong())
+        val note2 = activity.note
+        Assert.assertEquals("Note name $activity", name, note2.name)
+        Assert.assertEquals("Note content $activity", content, note2.content)
+        Assert.assertEquals("Should have an attachment $activity", false, note2.attachments.isEmpty)
+        val attachment = note2.attachments.list[0]
+        Assert.assertEquals("Video attachment $activity", MyContentType.VIDEO, attachment.contentType)
+        Assert.assertEquals("Video content type $activity", "video/mp4", attachment.mimeType)
+        Assert.assertEquals("Video uri $activity",
+                "https://identi.ca/uploads/andstatus/2018/4/11/7CmQmw.mp4", attachment.uri.toString())
+    }
+
+    @Throws(IOException::class)
+    private fun privateGetNoteWithAttachment(uniqueUid: Boolean): Note? {
+        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image)
+        var note: Note? = connection.getNote("https://io.jpope.org/api/activity/w9wME-JVQw2GQe6POK7FSQ").get().note
         if (uniqueUid) {
-            note = note.withNewOid(note.oid + "_" + demoData.testRunUid);
+            note = note.withNewOid(note.oid + "_" + DemoData.Companion.demoData.testRunUid)
         }
-        assertNotNull("note returned", note);
-        assertEquals("has attachment", 1, note.attachments.size());
-        Attachment attachment = Attachment.fromUri("https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg");
-        assertEquals("attachment", attachment, note.attachments.list.get(0));
-        assertEquals("Body text", "<p>Hanging out up in the mountains.</p>\n", note.getContent());
-        return note;
+        Assert.assertNotNull("note returned", note)
+        Assert.assertEquals("has attachment", 1, note.attachments.size().toLong())
+        val attachment: Attachment = Attachment.Companion.fromUri("https://io.jpope.org/uploads/jpope/2014/8/18/m1o1bw.jpg")
+        Assert.assertEquals("attachment", attachment, note.attachments.list[0])
+        Assert.assertEquals("Body text", "<p>Hanging out up in the mountains.</p>\n", note.getContent())
+        return note
     }
 
     @Test
-    public void getNoteWithAttachment() throws IOException {
-        privateGetNoteWithAttachment(true);
+    @Throws(IOException::class)
+    fun getNoteWithAttachment() {
+        privateGetNoteWithAttachment(true)
     }
 
     @Test
-    public void getNoteWithReplies() throws IOException {
-        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_note_self);
-
-        final String noteOid = "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA";
-        final AActivity activity = connection.getNote(noteOid).get();
-        Note note = activity.getNote();
-        assertNotNull("note returned", note);
-        assertEquals("Note oid", noteOid, note.oid);
-        assertEquals("Number of replies", 2, note.replies.size());
-        Note reply = note.replies.get(0).getNote();
-        assertEquals("Reply oid", "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw", reply.oid);
-        assertEquals("Is not a Reply " + activity, noteOid, reply.getInReplyTo().getNote().oid);
+    @Throws(IOException::class)
+    fun getNoteWithReplies() {
+        mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_note_self)
+        val noteOid = "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA"
+        val activity = connection.getNote(noteOid).get()
+        val note = activity.note
+        Assert.assertNotNull("note returned", note)
+        Assert.assertEquals("Note oid", noteOid, note.oid)
+        Assert.assertEquals("Number of replies", 2, note.replies.size.toLong())
+        val reply = note.replies[0].note
+        Assert.assertEquals("Reply oid", "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw", reply.oid)
+        Assert.assertEquals("Is not a Reply $activity", noteOid, reply.inReplyTo.note.oid)
     }
 }

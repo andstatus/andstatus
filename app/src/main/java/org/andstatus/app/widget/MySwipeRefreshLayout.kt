@@ -13,44 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.widget
 
-package org.andstatus.app.widget;
-
-import android.content.Context;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import android.util.AttributeSet;
-
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.MyStringBuilder;
+import android.content.Context
+import android.util.AttributeSet
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyStringBuilder
 
 /**
  * See http://stackoverflow.com/questions/24658428/swiperefreshlayout-webview-when-scroll-position-is-at-top
-  */
-public class MySwipeRefreshLayout extends SwipeRefreshLayout {
-    private CanSwipeRefreshScrollUpCallback mCanSwipeRefreshScrollUpCallback;
+ */
+class MySwipeRefreshLayout @JvmOverloads constructor(context: Context?, attrs: AttributeSet? = null) : SwipeRefreshLayout(context, attrs) {
+    private val mCanSwipeRefreshScrollUpCallback: CanSwipeRefreshScrollUpCallback? = null
 
-    public MySwipeRefreshLayout(Context context) {
-        this(context, null);
+    interface CanSwipeRefreshScrollUpCallback {
+        open fun canSwipeRefreshChildScrollUp(): Boolean
     }
-    
-    public MySwipeRefreshLayout(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        if (CanSwipeRefreshScrollUpCallback.class.isAssignableFrom(context.getClass())) {
-            mCanSwipeRefreshScrollUpCallback = (CanSwipeRefreshScrollUpCallback) context;
-            MyLog.v(this, () -> "Created for " + MyStringBuilder.objToTag(mCanSwipeRefreshScrollUpCallback));
+
+    override fun canChildScrollUp(): Boolean {
+        return mCanSwipeRefreshScrollUpCallback?.canSwipeRefreshChildScrollUp() ?: super.canChildScrollUp()
+    }
+
+    init {
+        if (CanSwipeRefreshScrollUpCallback::class.java.isAssignableFrom(context.javaClass)) {
+            mCanSwipeRefreshScrollUpCallback = context as CanSwipeRefreshScrollUpCallback?
+            MyLog.v(this) { "Created for " + MyStringBuilder.Companion.objToTag(mCanSwipeRefreshScrollUpCallback) }
         }
     }
-
-    public interface CanSwipeRefreshScrollUpCallback {
-        boolean canSwipeRefreshChildScrollUp();
-    }
-
-    @Override
-    public boolean canChildScrollUp() {
-        if (mCanSwipeRefreshScrollUpCallback != null) {
-            return mCanSwipeRefreshScrollUpCallback.canSwipeRefreshChildScrollUp();
-        }
-        return super.canChildScrollUp();
-    }    
-
 }

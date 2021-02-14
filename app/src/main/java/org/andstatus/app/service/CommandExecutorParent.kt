@@ -1,8 +1,8 @@
-package org.andstatus.app.service;
+package org.andstatus.app.service
 
 /**
- * Allows polling state of the parent object 
+ * Allows polling state of the parent object
  */
-public interface CommandExecutorParent {
-    boolean isStopping();
+interface CommandExecutorParent {
+    open fun isStopping(): Boolean
 }

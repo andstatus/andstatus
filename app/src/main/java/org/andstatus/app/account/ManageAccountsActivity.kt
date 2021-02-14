@@ -13,62 +13,52 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.account
 
-package org.andstatus.app.account;
-
-import android.os.Bundle;
-import android.view.KeyEvent;
-import android.view.MenuItem;
-
-import org.andstatus.app.FirstActivity;
-import org.andstatus.app.MyActivity;
-import org.andstatus.app.R;
-import org.andstatus.app.context.MySettingsActivity;
-
-import static org.andstatus.app.context.MyContextHolder.myContextHolder;
+import android.os.Bundle
+import android.view.KeyEvent
+import android.view.MenuItem
+import org.andstatus.app.FirstActivity
+import org.andstatus.app.MyActivity
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.MySettingsActivity
 
 /**
  * @author yvolk@yurivolkov.com
  */
-public class ManageAccountsActivity extends MyActivity {
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        mLayoutId = R.layout.account_settings_main;
-        super.onCreate(savedInstanceState);
-
+class ManageAccountsActivity : MyActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        mLayoutId = R.layout.account_settings_main
+        super.onCreate(savedInstanceState)
         if (savedInstanceState == null) {
-            showFragment(AccountListFragment.class, new Bundle());
+            showFragment(AccountListFragment::class.java, Bundle())
         }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (myContextHolder.needToRestartActivity()) {
-            FirstActivity.closeAllActivities(this);
-            myContextHolder.initialize(this).thenStartActivity(getIntent());
+    override fun onResume() {
+        super.onResume()
+        if (MyContextHolder.Companion.myContextHolder.needToRestartActivity()) {
+            FirstActivity.Companion.closeAllActivities(this)
+            MyContextHolder.Companion.myContextHolder.initialize(this).thenStartActivity(intent)
         }
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                MySettingsActivity.goToMySettingsAccounts(this);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when (item.getItemId()) {
+            android.R.id.home -> {
+                MySettingsActivity.Companion.goToMySettingsAccounts(this)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            MySettingsActivity.goToMySettingsAccounts(this);
-            return true;
+            MySettingsActivity.Companion.goToMySettingsAccounts(this)
+            return true
         }
-        return super.onKeyDown(keyCode, event);
+        return super.onKeyDown(keyCode, event)
     }
-
 }

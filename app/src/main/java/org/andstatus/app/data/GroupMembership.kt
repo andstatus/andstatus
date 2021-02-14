@@ -13,159 +13,128 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.data
 
-package org.andstatus.app.data;
-
-import android.content.ContentValues;
-import android.database.sqlite.SQLiteConstraintException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabaseLockedException;
-
-import androidx.annotation.NonNull;
-
-import org.andstatus.app.actor.GroupType;
-import org.andstatus.app.context.MyContext;
-import org.andstatus.app.database.table.ActorTable;
-import org.andstatus.app.database.table.GroupMembersTable;
-import org.andstatus.app.net.social.Actor;
-import org.andstatus.app.util.MyLog;
-import org.andstatus.app.util.TriState;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
-
-import static org.andstatus.app.actor.Group.getActorsGroup;
+import android.content.ContentValues
+import android.database.sqlite.SQLiteConstraintException
+import android.database.sqlite.SQLiteDatabaseLockedException
+import android.provider.BaseColumns
+import org.andstatus.app.actor.Group
+import org.andstatus.app.actor.GroupType
+import org.andstatus.app.context.MyContext
+import org.andstatus.app.database.table.ActorTable
+import org.andstatus.app.database.table.GroupMembersTable
+import org.andstatus.app.net.social.Actor
+import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.TriState
 
 /**
- * Helper class to update Group membership information (see {@link org.andstatus.app.database.table.GroupMembersTable})
+ * Helper class to update Group membership information (see [org.andstatus.app.database.table.GroupMembersTable])
  * @author yvolk@yurivolkov.com
  */
-public class GroupMembership {
-    private static final String TAG = GroupMembership.class.getSimpleName();
-    private final Actor parentActor;
-    private final Actor group;
-    private final long memberId;
-    private final TriState isMember;
-
-    public static void setAndReload(MyContext myContext, Actor follower, TriState follows, Actor friend) {
-        if (!follower.isOidReal() || !friend.isOidReal() || follows.unknown || follower.isSame(friend)) return;
-
-        MyLog.v(TAG, () ->
-            "Actor " + follower.getUniqueNameWithOrigin() + " "
-                    + (follows.isTrue ? "follows " : "stopped following ")
-                    + friend.getUniqueNameWithOrigin()
-        );
-        setMember(myContext, follower, GroupType.FRIENDS, follows, friend);
-        myContext.users().reload(follower);
-
-        MyLog.v(TAG, () ->
-            "Actor " + friend.getUniqueNameWithOrigin() + " "
-                    + (follows.isTrue ? "get a follower " : "lost a follower ")
-                    + follower.getUniqueNameWithOrigin() + " (indirect info)"
-        );
-        setMember(myContext, friend, GroupType.FOLLOWERS, follows, follower);
-        myContext.users().reload(friend);
-    }
-
-    public static void setMember(MyContext myContext, Actor parentActor, GroupType groupType, TriState isMember, Actor member) {
-        if (parentActor.actorId == 0 || member.actorId == 0 || isMember.unknown) return;
-
-        TriState isMember2 = isMember.isTrue && parentActor.isSameUser(member)
-                ? TriState.FALSE
-                : isMember;
-
-        Actor group = getActorsGroup(parentActor, groupType, "");
-
-        GroupMembership membership = new GroupMembership(parentActor, group, member.actorId, isMember2);
-        membership.save(myContext);
-    }
-
-    static String selectMemberIds(SqlIds parentActorSqlIds, GroupType groupType, boolean includeParentId) {
-        return "SELECT members." + GroupMembersTable.MEMBER_ID +
-            (includeParentId ? ", grp." + ActorTable.PARENT_ACTOR_ID : "") +
-            " FROM " + ActorTable.TABLE_NAME + " AS grp" +
-            " INNER JOIN " + GroupMembersTable.TABLE_NAME + " AS members" +
-            " ON grp." + ActorTable._ID + "= members." + GroupMembersTable.GROUP_ID +
-            " AND grp." + ActorTable.GROUP_TYPE + "=" + groupType.id +
-            " AND grp." + ActorTable.PARENT_ACTOR_ID + parentActorSqlIds.getSql();
-    }
-
-    private GroupMembership(Actor parentActor, Actor group, long memberId, TriState isMember) {
-        this.parentActor = parentActor;
-        this.group = group;
-        this.memberId = memberId;
-        this.isMember =  isMember;
-    }
-
-    static boolean isGroupMember(Actor parentActor, GroupType groupType, long memberId) {
-        Actor group = getActorsGroup(parentActor, groupType, "");
-        return group.nonEmpty() && isGroupMember(parentActor.origin.myContext, group.actorId, memberId);
-    }
-
-    private static boolean isGroupMember(MyContext myContext, long groupId, long memberId) {
-        return MyQuery.dExists(myContext.getDatabase(), selectMembership(groupId, memberId));
-    }
-
-    private static String selectMembership(long groupId, long memberId) {
-        return "SELECT * " +
-                " FROM " + GroupMembersTable.TABLE_NAME +
-                " WHERE " + GroupMembersTable.GROUP_ID + "=" + groupId +
-                " AND " +  GroupMembersTable.MEMBER_ID + "=" + memberId;
-    }
-
-    @NonNull
-    public static Set<Long> getGroupMemberIds(MyContext myContext, long parentActorId, GroupType groupType) {
-        return MyQuery.getLongs(myContext, selectMemberIds(Collections.singletonList(parentActorId), groupType, false));
-    }
-
-    public static String selectMemberIds(Collection<Long> parentActorIds, GroupType groupType, boolean includeParentId) {
-        return selectMemberIds(SqlIds.fromIds(parentActorIds), groupType, includeParentId);
-    }
-
+class GroupMembership private constructor(private val parentActor: Actor?, private val group: Actor?, private val memberId: Long, private val isMember: TriState?) {
     /**
-     * Update information in the database 
+     * Update information in the database
      */
-    private void save(MyContext myContext) {
-        if (isMember.unknown || group.actorId == 0 || memberId == 0 || myContext == null ||
-                myContext.getDatabase() == null) return;
-
-        for (int pass=0; pass<5; pass++) {
+    private fun save(myContext: MyContext?) {
+        if (isMember.unknown || group.actorId == 0L || memberId == 0L || myContext == null || myContext.database == null) return
+        for (pass in 0..4) {
             try {
-                tryToUpdate(myContext, isMember.toBoolean(false));
-                break;
-            } catch (SQLiteDatabaseLockedException e) {
-                MyLog.i(this, "update, Database is locked, pass=" + pass, e);
+                tryToUpdate(myContext, isMember.toBoolean(false))
+                break
+            } catch (e: SQLiteDatabaseLockedException) {
+                MyLog.i(this, "update, Database is locked, pass=$pass", e)
                 if (DbUtils.waitBetweenRetries("update")) {
-                    break;
+                    break
                 }
             }
         }
     }
 
-    private void tryToUpdate(MyContext myContext, boolean isMember) {
-        SQLiteDatabase db = myContext.getDatabase();
-        if (db == null) return;
-
-        boolean isMemberOld = isGroupMember(myContext, group.actorId, memberId);
-        if (isMemberOld == isMember) return;
-
+    private fun tryToUpdate(myContext: MyContext?, isMember: Boolean) {
+        val db = myContext.getDatabase() ?: return
+        val isMemberOld = isGroupMember(myContext, group.actorId, memberId)
+        if (isMemberOld == isMember) return
         if (isMemberOld) {
             db.delete(GroupMembersTable.TABLE_NAME,
-                GroupMembersTable.GROUP_ID + "=" + group.actorId + " AND " +
-                GroupMembersTable.MEMBER_ID + "=" + memberId, null);
+                    GroupMembersTable.GROUP_ID + "=" + group.actorId + " AND " +
+                            GroupMembersTable.MEMBER_ID + "=" + memberId, null)
         } else {
-            if (!group.groupType.isGroupLike) return;
-
-            ContentValues cv = new ContentValues();
-            cv.put(GroupMembersTable.GROUP_ID, group.actorId);
-            cv.put(GroupMembersTable.MEMBER_ID, memberId);
+            if (!group.groupType.isGroupLike) return
+            val cv = ContentValues()
+            cv.put(GroupMembersTable.GROUP_ID, group.actorId)
+            cv.put(GroupMembersTable.MEMBER_ID, memberId)
             try {
-                db.insert(GroupMembersTable.TABLE_NAME, null, cv);
-            } catch (SQLiteConstraintException e) {
+                db.insert(GroupMembersTable.TABLE_NAME, null, cv)
+            } catch (e: SQLiteConstraintException) {
                 MyLog.w(TAG, "Error adding a member to group " + group + ", parentActor:" + parentActor +
-                        "; " + cv);
+                        "; " + cv)
             }
+        }
+    }
+
+    companion object {
+        private val TAG: String? = GroupMembership::class.java.simpleName
+        fun setAndReload(myContext: MyContext?, follower: Actor?, follows: TriState?, friend: Actor?) {
+            if (!follower.isOidReal() || !friend.isOidReal() || follows.unknown || follower.isSame(friend)) return
+            MyLog.v(TAG
+            ) {
+                ("Actor " + follower.getUniqueNameWithOrigin() + " "
+                        + (if (follows.isTrue) "follows " else "stopped following ")
+                        + friend.getUniqueNameWithOrigin())
+            }
+            setMember(myContext, follower, GroupType.FRIENDS, follows, friend)
+            myContext.users().reload(follower)
+            MyLog.v(TAG
+            ) {
+                ("Actor " + friend.getUniqueNameWithOrigin() + " "
+                        + (if (follows.isTrue) "get a follower " else "lost a follower ")
+                        + follower.getUniqueNameWithOrigin() + " (indirect info)")
+            }
+            setMember(myContext, friend, GroupType.FOLLOWERS, follows, follower)
+            myContext.users().reload(friend)
+        }
+
+        fun setMember(myContext: MyContext?, parentActor: Actor?, groupType: GroupType?, isMember: TriState?, member: Actor?) {
+            if (parentActor.actorId == 0L || member.actorId == 0L || isMember.unknown) return
+            val isMember2 = if (isMember.isTrue && parentActor.isSameUser(member)) TriState.FALSE else isMember
+            val group = Group.getActorsGroup(parentActor, groupType, "")
+            val membership = GroupMembership(parentActor, group, member.actorId, isMember2)
+            membership.save(myContext)
+        }
+
+        fun selectMemberIds(parentActorSqlIds: SqlIds?, groupType: GroupType?, includeParentId: Boolean): String? {
+            return "SELECT members." + GroupMembersTable.MEMBER_ID +
+                    (if (includeParentId) ", grp." + ActorTable.PARENT_ACTOR_ID else "") +
+                    " FROM " + ActorTable.TABLE_NAME + " AS grp" +
+                    " INNER JOIN " + GroupMembersTable.TABLE_NAME + " AS members" +
+                    " ON grp." + BaseColumns._ID + "= members." + GroupMembersTable.GROUP_ID +
+                    " AND grp." + ActorTable.GROUP_TYPE + "=" + groupType.id +
+                    " AND grp." + ActorTable.PARENT_ACTOR_ID + parentActorSqlIds.getSql()
+        }
+
+        fun isGroupMember(parentActor: Actor?, groupType: GroupType?, memberId: Long): Boolean {
+            val group = Group.getActorsGroup(parentActor, groupType, "")
+            return group.nonEmpty() && isGroupMember(parentActor.origin.myContext, group.actorId, memberId)
+        }
+
+        private fun isGroupMember(myContext: MyContext?, groupId: Long, memberId: Long): Boolean {
+            return MyQuery.dExists(myContext.getDatabase(), selectMembership(groupId, memberId))
+        }
+
+        private fun selectMembership(groupId: Long, memberId: Long): String? {
+            return "SELECT * " +
+                    " FROM " + GroupMembersTable.TABLE_NAME +
+                    " WHERE " + GroupMembersTable.GROUP_ID + "=" + groupId +
+                    " AND " + GroupMembersTable.MEMBER_ID + "=" + memberId
+        }
+
+        fun getGroupMemberIds(myContext: MyContext?, parentActorId: Long, groupType: GroupType?): MutableSet<Long?> {
+            return MyQuery.getLongs(myContext, selectMemberIds(listOf<Long?>(parentActorId), groupType, false))
+        }
+
+        fun selectMemberIds(parentActorIds: MutableCollection<Long?>?, groupType: GroupType?, includeParentId: Boolean): String? {
+            return selectMemberIds(SqlIds.Companion.fromIds(parentActorIds), groupType, includeParentId)
         }
     }
 }

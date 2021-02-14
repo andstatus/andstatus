@@ -13,34 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.andstatus.app.origin
 
-package org.andstatus.app.origin;
+import androidx.annotation.StringRes
+import org.andstatus.app.R
+import org.andstatus.app.context.MyContext
 
-import androidx.annotation.StringRes;
-
-import org.andstatus.app.R;
-import org.andstatus.app.context.MyContext;
-
-public class OriginMastodon extends Origin {
-
-    OriginMastodon(MyContext myContext, OriginType originType) {
-        super(myContext, originType);
-    }
-
-    @Override
-    public int alternativeTermForResourceId(@StringRes int resId) {
-        int resIdOut;
-        switch (resId) {
-            case R.string.label_host:
-                resIdOut = R.string.label_host_mastodon;
-                break;
-            case R.string.host_hint:
-                resIdOut = R.string.host_hint_mastodon;
-                break;
-            default:
-                resIdOut = resId;
-                break;
+class OriginMastodon internal constructor(myContext: MyContext?, originType: OriginType?) : Origin(myContext, originType) {
+    override fun alternativeTermForResourceId(@StringRes resId: Int): Int {
+        val resIdOut: Int
+        resIdOut = when (resId) {
+            R.string.label_host -> R.string.label_host_mastodon
+            R.string.host_hint -> R.string.host_hint_mastodon
+            else -> resId
         }
-        return resIdOut;
+        return resIdOut
     }
 }
