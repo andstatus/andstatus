@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.1'
+        classpath 'com.android.tools.build:gradle:4.1.2'
         // See https://sonarcloud.io/documentation/analysis/scan/sonarscanner-for-gradle/
         classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8"
 
