@@ -26,7 +26,7 @@ import java.util.stream.Collectors
  * See also http://www.javacreed.com/sorting-a-copyonwritearraylist/
  */
 object CollectionsUtil {
-    fun <T : Comparable<in T?>?> sort(list: MutableList<T?>?) {
+    fun <T : Comparable<T?>?> sort(list: MutableList<T?>) {
         val sortableList: MutableList<T?> = ArrayList(list)
         Collections.sort(sortableList)
         list.clear()
@@ -40,21 +40,29 @@ object CollectionsUtil {
 
     /** Helper for [java.util.Map.compute] where the map value is an immutable [Set].  */
     fun <T> addValue(toAdd: T?): BiFunction<T?, MutableSet<T?>?, MutableSet<T?>?> {
-        return label@ BiFunction { key: T?, valuesNullable: MutableSet<T?>? ->
-            if (valuesNullable != null && valuesNullable.contains(toAdd)) return@label valuesNullable
-            val values: MutableSet<T?> = HashSet()
-            if (valuesNullable != null) values.addAll(valuesNullable)
-            values.add(toAdd)
-            values
+        return BiFunction { key: T?, valuesNullable: MutableSet<T?>? ->
+            if (valuesNullable != null && valuesNullable.contains(toAdd)) {
+                valuesNullable
+            } else {
+                val values: MutableSet<T?> = HashSet()
+                if (valuesNullable != null) values.addAll(valuesNullable)
+                values.add(toAdd)
+                values
+            }
         }
     }
 
     /** Helper for [java.util.Map.compute] where the map value is an immutable [Set].  */
     fun <T> removeValue(toRemove: T?): BiFunction<T?, MutableSet<T?>?, MutableSet<T?>?> {
-        return BiFunction { key: T?, valuesNullable: MutableSet<T?>? -> if (valuesNullable != null && valuesNullable.contains(toRemove)) valuesNullable.stream().filter { key2: T? -> key2 !== toRemove }.collect(Collectors.toSet()) else valuesNullable }
+        return BiFunction { key: T?, valuesNullable: MutableSet<T?>? ->
+            if (valuesNullable != null && valuesNullable.contains(toRemove))
+                valuesNullable.stream()
+                        .filter { key2: T? -> key2 !== toRemove }
+                        .collect(Collectors.toSet()) else valuesNullable
+        }
     }
 
-    fun <T> findAny(collection: MutableCollection<T?>?, predicate: Predicate<T?>?): Try<T?>? {
+    fun <T> findAny(collection: MutableCollection<T?>, predicate: Predicate<T?>): Try<T?> {
         for (item in collection) {
             if (predicate.test(item)) {
                 return Try.success(item)

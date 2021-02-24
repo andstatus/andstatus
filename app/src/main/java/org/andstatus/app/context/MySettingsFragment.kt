@@ -53,6 +53,7 @@ import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.service.QueueViewer
 import org.andstatus.app.timeline.meta.ManageTimelines
 import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.timeline.meta.TimelineTitle
 import org.andstatus.app.util.DialogFactory
 import org.andstatus.app.util.I18n
 import org.andstatus.app.util.MyLog
@@ -63,13 +64,13 @@ import org.andstatus.app.util.UriUtils
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
-import java.util.function.Function
 
 class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
     private var storageSwitch: StorageSwitch? = null
     private var onSharedPreferenceChangedIsBusy = false
     private var mIgnorePreferenceChange = false
     private var checkDataIncludeLong = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         storageSwitch = StorageSwitch(this)
@@ -77,7 +78,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(
-                MySettingsGroup.Companion.from(rootKey).getPreferencesXmlResId(),
+                MySettingsGroup.from(rootKey).getPreferencesXmlResId(),
                 rootKey ?: KEY_ROOT
         )
     }
@@ -86,14 +87,14 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         super.onResume()
         val activity = getMyActivity()
         if (activity == null || activity.restartMeIfNeeded()) return
-        activity.setTitle(MySettingsGroup.Companion.from(this).getTitleResId())
+        activity.setTitle(MySettingsGroup.from(this).getTitleResId())
         showAllPreferences()
-        SharedPreferencesUtil.getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(this)
+        SharedPreferencesUtil.getDefaultSharedPreferences()?.registerOnSharedPreferenceChangeListener(this)
     }
 
     override fun onPause() {
         super.onPause()
-        SharedPreferencesUtil.getDefaultSharedPreferences().unregisterOnSharedPreferenceChangeListener(this)
+        SharedPreferencesUtil.getDefaultSharedPreferences()?.unregisterOnSharedPreferenceChangeListener(this)
     }
 
     /**
@@ -131,14 +132,14 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
     }
 
     private fun showManageAccounts() {
-        val preference = findPreference<Preference?>(KEY_MANAGE_ACCOUNTS)
+        val preference = findPreference<Preference>(KEY_MANAGE_ACCOUNTS)
         if (preference != null) {
             val summary: CharSequence
-            summary = if (MyContextHolder.Companion.myContextHolder.getNow().accounts().isEmpty()) {
+            summary = if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty()) {
                 getText(R.string.summary_preference_accounts_absent)
             } else {
                 (getText(R.string.summary_preference_accounts_present).toString() + ": "
-                        + MyContextHolder.Companion.myContextHolder.getNow().accounts().size())
+                        +  MyContextHolder.myContextHolder.getNow().accounts().size())
             }
             preference.summary = summary
         }
@@ -187,7 +188,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
     protected fun showRingtone() {
         val preference = findPreference<Preference?>(KEY_NOTIFICATION_SELECT_RINGTONE)
         if (preference != null) {
-            val uri = NotificationMethodType.SOUND.uri
+            val uri = NotificationMethodType.SOUND.getUri()
             MyLog.v(this) { "Ringtone URI: $uri" }
             val ringtone = if (UriUtils.nonEmpty(uri)) RingtoneManager.getRingtone(activity, uri) else null
             if (ringtone != null) {
@@ -226,7 +227,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         val preference = findPreference<Preference?>(MyPreferences.KEY_APP_INSTANCE_NAME)
         if (preference != null) {
             var title: CharSequence? = MyPreferences.getAppInstanceName()
-            if (StringUtil.isEmpty(title)) {
+            if (title.isNullOrEmpty()) {
                 title = getText(R.string.empty_in_parenthesis)
             }
             preference.summary = title
@@ -237,7 +238,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         val preference = findPreference<Preference?>(KEY_BACKUP_RESTORE)
         if (preference != null) {
             val title: CharSequence
-            title = if (MyContextHolder.Companion.myContextHolder.getNow().accounts().isEmpty()) {
+            title = if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty()) {
                 getText(R.string.label_restore)
             } else {
                 getText(R.string.label_backup)
@@ -250,7 +251,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         val preference = findPreference<Preference?>(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS) as EditTextPreference?
         if (preference != null) {
             val filter = KeywordsFilter(preference.text)
-            if (filter.isEmpty) {
+            if (filter.isEmpty()) {
                 preference.setSummary(R.string.this_option_is_turned_off)
             } else {
                 preference.summary = filter.toString()
@@ -293,11 +294,11 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
     }
 
     private fun showManageTimelines() {
-        val timeline: Timeline = MyContextHolder.Companion.myContextHolder.getNow().timelines().getDefault()
+        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().getDefault()
         val preference = findPreference<Preference?>(KEY_MANAGE_TIMELINES)
         if (preference != null) {
             preference.summary = StringUtil.format(context, R.string.default_timeline_summary,
-                    from(MyContextHolder.Companion.myContextHolder.getNow(), timeline).toString())
+                    TimelineTitle.from( MyContextHolder.myContextHolder.getNow(), timeline).toString())
         }
     }
 
@@ -319,17 +320,26 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
 
     private fun showMaximumSizeOfCachedMedia() {
         showMaximumSizeOfCachedMedia(Optional.empty())
-        AsyncTaskLauncher.Companion.execute<MySettingsFragment?, Optional<Long?>?>(this,
-                Function { fragment: MySettingsFragment? -> Try.success<Optional<Long?>?>(Optional.of(MyStorage.getMediaFilesSize())) },
-                Function { fragment: MySettingsFragment? -> Consumer { size: Try<Optional<Long?>?>? -> size.onSuccess(Consumer { size: Optional<Long?>? -> fragment.showMaximumSizeOfCachedMedia(size) }) } })
+        val backgroundFunc: (MySettingsFragment?) -> Try<Optional<Long>>? = { fragment: MySettingsFragment? ->
+            Try.success(Optional.of(MyStorage.getMediaFilesSize()))
+        }
+        val uiConsumer: (MySettingsFragment?) -> Consumer<Try<Optional<Long>>?> = { fragment: MySettingsFragment? ->
+            { size: Try<Optional<Long>>? ->
+                size?.onSuccess { optSize ->
+                    fragment?.showMaximumSizeOfCachedMedia(optSize)
+                }
+            } as Consumer<Try<Optional<Long>>?>
+        }
+
+        AsyncTaskLauncher.execute<MySettingsFragment, Optional<Long>>(this, backgroundFunc, uiConsumer)
     }
 
-    private fun showMaximumSizeOfCachedMedia(size: Optional<Long?>?) {
+    private fun showMaximumSizeOfCachedMedia(size: Optional<Long>) {
         TryUtils.ofNullable(findPreference<Preference?>(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB))
-                .map { preference: Preference? ->
+                .map { preference: Preference ->
                     preference.setSummary(Formatter.formatShortFileSize(activity,
                             MyPreferences.getMaximumSizeOfCachedMediaBytes()) +
-                            size.map(Function { s: Long? -> " (" + getText(R.string.reltime_just_now) + ": " + I18n.formatBytes(s) + ")" })
+                            size.map { s: Long -> " (" + getText(R.string.reltime_just_now) + ": " + I18n.formatBytes(s) + ")" }
                                     .orElse(""))
                     true
                 }
@@ -345,22 +355,23 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         }
     }
 
-    private fun showListPreference(key: String?) {
+    private fun showListPreference(key: String) {
         val preference = findPreference<Preference?>(key) as ListPreference?
         if (preference != null) {
             preference.summary = preference.entry
         }
     }
 
-    override fun onPreferenceTreeClick(preference: Preference?): Boolean {
+    override fun onPreferenceTreeClick(preference: Preference): Boolean {
         val activity = activity
         if (activity != null) when (preference.getKey()) {
-            MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW -> if (CheckBoxPreference::class.java.isInstance(preference)) {
-                storageSwitch.showSwitchStorageDialog(ActivityRequestCode.MOVE_DATA_BETWEEN_STORAGES,
-                        (preference as CheckBoxPreference?).isChecked())
+            MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW -> if (preference is CheckBoxPreference) {
+                storageSwitch?.showSwitchStorageDialog(ActivityRequestCode.MOVE_DATA_BETWEEN_STORAGES,
+                        preference.isChecked())
             }
-            KEY_ADD_NEW_ACCOUNT -> AccountSettingsActivity.Companion.startAddNewAccount(activity, null, false)
-            KEY_DELETE_OLD_DATA -> DialogFactory.showOkCancelDialog(activity, getText(R.string.delete_old_data), "") { doLaunch: Boolean? -> launchDataPruner(doLaunch) }
+            KEY_ADD_NEW_ACCOUNT -> AccountSettingsActivity.startAddNewAccount(activity, null, false)
+            KEY_DELETE_OLD_DATA -> DialogFactory.showOkCancelDialog(activity, getText(R.string.delete_old_data), "")
+                                    { doLaunch: Boolean -> launchDataPruner(doLaunch) }
             KEY_MANAGE_ACCOUNTS -> startActivity(Intent(activity, ManageAccountsActivity::class.java))
             KEY_MANAGE_ACCOUNTS_ANDROID -> {
                 /**
@@ -369,10 +380,10 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
  * Android - How to Create Intent to open the activity that displays the “Accounts & Sync settings” screen](http://stackoverflow.com/questions/3010103/android-how-to-create-intent-to-open-the-activity-that-displays-the-accounts)
                  */
                 val intent = Intent(Settings.ACTION_SYNC_SETTINGS)
-                intent.putExtra(Settings.EXTRA_AUTHORITIES, arrayOf<String?>(MatchedUri.Companion.AUTHORITY))
+                intent.putExtra(Settings.EXTRA_AUTHORITIES, arrayOf<String?>(MatchedUri.AUTHORITY))
                 startActivity(intent)
             }
-            KEY_BACKUP_RESTORE -> if (MyContextHolder.Companion.myContextHolder.getNow().accounts().isEmpty()) {
+            KEY_BACKUP_RESTORE -> if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty()) {
                 startActivity(Intent(activity, RestoreActivity::class.java))
             } else {
                 startActivity(Intent(activity, BackupActivity::class.java))
@@ -384,9 +395,9 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
             }
             KEY_MANAGE_ORIGIN_SYSTEMS -> startActivity(Intent(activity, PersistentOriginList::class.java))
             KEY_MANAGE_TIMELINES -> startActivity(Intent(activity, ManageTimelines::class.java))
-            KEY_ABOUT_APPLICATION -> HelpActivity.Companion.startMe(activity, false, HelpActivity.Companion.PAGE_LOGO)
-            KEY_CHANGE_LOG -> HelpActivity.Companion.startMe(activity, false, HelpActivity.Companion.PAGE_CHANGELOG)
-            KEY_USER_GUIDE -> HelpActivity.Companion.startMe(activity, false, HelpActivity.Companion.PAGE_USER_GUIDE)
+            KEY_ABOUT_APPLICATION -> HelpActivity.startMe(activity, false, HelpActivity.PAGE_LOGO)
+            KEY_CHANGE_LOG -> HelpActivity.startMe(activity, false, HelpActivity.PAGE_CHANGELOG)
+            KEY_USER_GUIDE -> HelpActivity.startMe(activity, false, HelpActivity.PAGE_USER_GUIDE)
             MyPreferences.KEY_COMMANDS_QUEUE -> startActivity(Intent(activity, QueueViewer::class.java))
             KEY_NOTIFICATION_SELECT_RINGTONE -> pickRingtone()
             else -> {
@@ -400,10 +411,10 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         val progressListener = DefaultProgressListener(
                 activity as MyActivity?, R.string.delete_old_data, "DataPruner")
         progressListener.setCancelable(true)
-        val pruner = DataPruner(MyContextHolder.Companion.myContextHolder.getNow())
+        val pruner = DataPruner( MyContextHolder.myContextHolder.getNow())
                 .setLogger(ProgressLogger(progressListener))
                 .setPruneNow()
-        AsyncTaskLauncher.Companion.execute(Runnable { pruner.prune() })
+        AsyncTaskLauncher.execute { pruner.prune() }
     }
 
     private fun pickRingtone() {
@@ -412,7 +423,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, activity.getText(R.string.notification_sound))
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
-        val currentRingtone = NotificationMethodType.SOUND.uri
+        val currentRingtone = NotificationMethodType.SOUND.getUri()
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, currentRingtone)
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Settings.System.DEFAULT_NOTIFICATION_URI)
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
@@ -420,8 +431,9 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        if (mIgnorePreferenceChange || onSharedPreferenceChangedIsBusy
-                || !MyContextHolder.Companion.myContextHolder.getNow().initialized() || storageSwitch.isDataBeingMoved()) {
+        if (mIgnorePreferenceChange || onSharedPreferenceChangedIsBusy ||
+                !MyContextHolder.myContextHolder.getNow().initialized() ||
+                storageSwitch?.isDataBeingMoved() != false) {
             return
         }
         onSharedPreferenceChangedIsBusy = true
@@ -430,7 +442,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
             MyPreferences.onPreferencesChanged()
             when (key) {
                 MyPreferences.KEY_CUSTOM_LOCALE -> {
-                    MyLocale.setLocale(activity)
+                    activity?.let { MyLocale.setLocale(it)}
                     initializeThenRestartActivity()
                 }
                 MyPreferences.KEY_THEME_COLOR -> {
@@ -449,7 +461,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
                 }
                 MyPreferences.KEY_DONT_SYNCHRONIZE_OLD_NOTES -> showDontSynchronizeOldNotes()
                 MyPreferences.KEY_SYNC_FREQUENCY_SECONDS -> {
-                    MyContextHolder.Companion.myContextHolder.getNow().accounts().onDefaultSyncFrequencyChanged()
+                     MyContextHolder.myContextHolder.getNow().accounts().onDefaultSyncFrequencyChanged()
                     showFrequency()
                 }
                 MyPreferences.KEY_CONNECTION_TIMEOUT_SECONDS -> showConnectionTimeout()
@@ -475,11 +487,11 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (ActivityRequestCode.Companion.fromId(requestCode)) {
+        when (ActivityRequestCode.fromId(requestCode)) {
             ActivityRequestCode.MOVE_DATA_BETWEEN_STORAGES -> {
                 showUseExternalStorage()
                 if (resultCode == Activity.RESULT_OK) {
-                    storageSwitch.move()
+                    storageSwitch?.move()
                 }
             }
             ActivityRequestCode.CHECK_DATA_INCLUDE_LONG -> {
@@ -489,7 +501,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
             }
             ActivityRequestCode.CHECK_DATA_COUNT_ONLY -> launchDataChecker(resultCode)
             ActivityRequestCode.PICK_RINGTONE -> if (resultCode == Activity.RESULT_OK) {
-                val value = data.getParcelableExtra<Uri?>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+                val value = data?.getParcelableExtra<Uri?>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
                 val uri = UriUtils.notNull(value)
                 MyLog.v(this, "Ringtone set to uri:$uri")
                 SharedPreferencesUtil.putString(MyPreferences.KEY_NOTIFICATION_METHOD_SOUND,
@@ -504,7 +516,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         val progressListener: ProgressLogger.ProgressListener = DefaultProgressListener(
                 activity as MyActivity?, R.string.app_name, "DataChecker")
         progressListener.setCancelable(true)
-        DataChecker.Companion.fixDataAsync(ProgressLogger(progressListener),
+        DataChecker.fixDataAsync(ProgressLogger(progressListener),
                 checkDataIncludeLong,
                 resultCode == Activity.RESULT_OK)
     }
@@ -521,19 +533,19 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
     }
 
     companion object {
-        val FRAGMENT_TAG: String? = "settings_fragment"
-        private val KEY_ROOT: String? = "key_root"
-        private val KEY_ABOUT_APPLICATION: String? = "about_application"
-        private val KEY_ADD_NEW_ACCOUNT: String? = "add_new_account"
-        private val KEY_BACKUP_RESTORE: String? = "backup_restore"
-        private val KEY_CHANGE_LOG: String? = "change_log"
-        private val KEY_CHECK_DATA: String? = "check_data"
-        private val KEY_DELETE_OLD_DATA: String? = "delete_old_data"
-        val KEY_MANAGE_ACCOUNTS: String? = "manage_accounts_internally"
-        private val KEY_MANAGE_ACCOUNTS_ANDROID: String? = "manage_accounts_android"
-        private val KEY_MANAGE_ORIGIN_SYSTEMS: String? = "manage_origin_systems"
-        private val KEY_MANAGE_TIMELINES: String? = "manage_timelines"
-        private val KEY_NOTIFICATION_SELECT_RINGTONE: String? = "select_ringtone"
-        private val KEY_USER_GUIDE: String? = "user_guide"
+        val FRAGMENT_TAG: String = "settings_fragment"
+        private val KEY_ROOT: String = "key_root"
+        private val KEY_ABOUT_APPLICATION: String = "about_application"
+        private val KEY_ADD_NEW_ACCOUNT: String = "add_new_account"
+        private val KEY_BACKUP_RESTORE: String = "backup_restore"
+        private val KEY_CHANGE_LOG: String = "change_log"
+        private val KEY_CHECK_DATA: String = "check_data"
+        private val KEY_DELETE_OLD_DATA: String = "delete_old_data"
+        val KEY_MANAGE_ACCOUNTS: String = "manage_accounts_internally"
+        private val KEY_MANAGE_ACCOUNTS_ANDROID: String = "manage_accounts_android"
+        private val KEY_MANAGE_ORIGIN_SYSTEMS: String = "manage_origin_systems"
+        private val KEY_MANAGE_TIMELINES: String = "manage_timelines"
+        private val KEY_NOTIFICATION_SELECT_RINGTONE: String = "select_ringtone"
+        private val KEY_USER_GUIDE: String = "user_guide"
     }
 }

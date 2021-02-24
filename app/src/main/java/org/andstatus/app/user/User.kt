@@ -29,7 +29,6 @@ import org.andstatus.app.origin.Origin
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import java.util.*
 import java.util.function.Function
@@ -38,13 +37,14 @@ import java.util.stream.Collectors
 /**
  * @author yvolk@yurivolkov.com
  */
-class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: MutableSet<Long?>?) : IsEmpty {
+class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Set<Long>?) : IsEmpty {
     var userId = 0L
     private var knownAs: String? = ""
-    private var isMyUser: TriState? = TriState.UNKNOWN
-    val actorIds: MutableSet<Long?>?
+    private var isMyUser: TriState = TriState.UNKNOWN
+    val actorIds: MutableSet<Long>
+
     override fun isEmpty(): Boolean {
-        return this === EMPTY || userId == 0L && StringUtil.isEmpty(knownAs)
+        return this === EMPTY || userId == 0L && knownAs.isNullOrEmpty()
     }
 
     override fun toString(): String {
@@ -53,7 +53,7 @@ class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Mutabl
         }
         val str = User::class.java.simpleName
         var members = "id=$userId"
-        if (!StringUtil.isEmpty(knownAs)) {
+        if (!knownAs.isNullOrEmpty()) {
             members += "; knownAs=$knownAs"
         }
         if (isMyUser.known) {
@@ -85,7 +85,7 @@ class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Mutabl
 
     private fun toContentValues(myContext: MyContext?): ContentValues? {
         val values = ContentValues()
-        if (StringUtil.nonEmpty(knownAs)) values.put(UserTable.KNOWN_AS, knownAs)
+        if (!knownAs.isNullOrEmpty()) values.put(UserTable.KNOWN_AS, knownAs)
         if (isMyUser.known) values.put(UserTable.IS_MY, isMyUser.id)
         return values
     }
@@ -112,7 +112,7 @@ class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Mutabl
     }
 
     companion object {
-        val EMPTY: User? = User(0, "(empty)", TriState.UNKNOWN, emptySet<Long?>())
+        val EMPTY: User = User(0, "(empty)", TriState.UNKNOWN, emptySet<Long>())
         fun load(myContext: MyContext, actorId: Long): User {
             return myContext.users().userFromActorId(actorId) { loadInternal(myContext, actorId) }
         }

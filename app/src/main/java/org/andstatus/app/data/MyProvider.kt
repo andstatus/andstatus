@@ -60,7 +60,7 @@ class MyProvider : ContentProvider() {
      * @see android.content.ContentProvider.onCreate
      */
     override fun onCreate(): Boolean {
-        MyContextHolder.Companion.myContextHolder.initialize(context, this)
+         MyContextHolder.myContextHolder.initialize(context, this)
         return true
     }
 
@@ -88,7 +88,7 @@ class MyProvider : ContentProvider() {
         val rowId: Long
         var newUri: Uri? = null
         try {
-            val db: SQLiteDatabase = MyContextHolder.Companion.myContextHolder.getNow().getDatabase()
+            val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().getDatabase()
             if (db == null) {
                 MyLog.databaseIsNull { "insert" }
                 return null
@@ -169,10 +169,10 @@ class MyProvider : ContentProvider() {
                 tables = TimelineSql.tablesForTimeline(uri, projection)
                 qb.setProjectionMap(ProjectionMap.TIMELINE)
                 val rawQuery = uriParser.searchQuery
-                if (StringUtil.nonEmpty(rawQuery)) {
+                if (!rawQuery.isNullOrEmpty()) {
                     val searchQuery = KeywordsFilter(rawQuery)
                     selection = "(" + searchQuery.getSqlSelection(NoteTable.CONTENT_TO_SEARCH) + ")" +
-                            if (StringUtil.nonEmpty(selectionIn)) " AND ($selectionIn)" else ""
+                            if (!selectionIn.isNullOrEmpty()) " AND ($selectionIn)" else ""
                     selectionArgs = searchQuery.prependSqlSelectionArgs(selectionArgs)
                 } else {
                     selection = selectionIn
@@ -194,7 +194,7 @@ class MyProvider : ContentProvider() {
                     actorWhere.append(ActorTable.GROUP_TYPE +
                             SqlIds.Companion.fromIds(GroupType.GENERIC.id, GroupType.ACTOR_OWNED.id).getSql())
                 }
-                if (StringUtil.nonEmpty(rawQuery)) {
+                if (!rawQuery.isNullOrEmpty()) {
                     actorWhere.append(ActorTable.WEBFINGER_ID + " LIKE ?" +
                             " OR " + ActorTable.REAL_NAME + " LIKE ?" +
                             " OR " + ActorTable.USERNAME + " LIKE ?")
@@ -223,7 +223,7 @@ class MyProvider : ContentProvider() {
 
         // If no sort order is specified use the default
         val sortOrder: String?
-        sortOrder = if (StringUtil.isEmpty(sortOrderIn)) {
+        sortOrder = if (sortOrderIn.isNullOrEmpty()) {
             when (uriParser.matched()) {
                 MatchedUri.TIMELINE, MatchedUri.TIMELINE_ITEM, MatchedUri.TIMELINE_SEARCH -> ActivityTable.getTimelineSortOrder(uriParser.timelineType, false)
                 MatchedUri.ACTOR, MatchedUri.ACTORS, MatchedUri.ACTORS_ITEM, MatchedUri.ACTORS_SEARCH, MatchedUri.ACTOR_ITEM -> ActorTable.DEFAULT_SORT_ORDER
@@ -233,11 +233,11 @@ class MyProvider : ContentProvider() {
             sortOrderIn
         }
         var c: Cursor? = null
-        if (MyContextHolder.Companion.myContextHolder.getNow().isReady()) {
+        if ( MyContextHolder.myContextHolder.getNow().isReady()) {
             // Get the database and run the query
-            val db: SQLiteDatabase = MyContextHolder.Companion.myContextHolder.getNow().getDatabase()
+            val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().getDatabase()
             try {
-                if (StringUtil.nonEmpty(where)) {
+                if (!where.isNullOrEmpty()) {
                     qb.appendWhere(where)
                 }
                 if (sql.length == 0) {
@@ -295,7 +295,7 @@ class MyProvider : ContentProvider() {
      * Update objects (one or several records) in the database
      */
     override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<String?>?): Int {
-        val db: SQLiteDatabase = MyContextHolder.Companion.myContextHolder.getNow().getDatabase()
+        val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().getDatabase()
         if (db == null) {
             MyLog.databaseIsNull { "update" }
             return 0
@@ -308,7 +308,7 @@ class MyProvider : ContentProvider() {
                 val rowId = uriParser.noteId
                 if (values.size() > 0) {
                     count = db.update(NoteTable.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
-                            + if (StringUtil.nonEmpty(selection)) " AND ($selection)" else "",
+                            + if (!selection.isNullOrEmpty()) " AND ($selection)" else "",
                             selectionArgs)
                 }
             }
@@ -317,7 +317,7 @@ class MyProvider : ContentProvider() {
                 val selectedActorId = uriParser.actorId
                 if (values.size() > 0) {
                     count = db.update(ActorTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedActorId
-                            + if (StringUtil.nonEmpty(selection)) " AND ($selection)" else "",
+                            + if (!selection.isNullOrEmpty()) " AND ($selection)" else "",
                             selectionArgs)
                 }
             }
@@ -514,7 +514,7 @@ class MyProvider : ContentProvider() {
                 MyLog.databaseIsNull { method }
                 return
             }
-            val sql = "UPDATE " + tableName + " SET " + set + if (StringUtil.isEmpty(where)) "" else " WHERE $where"
+            val sql = "UPDATE " + tableName + " SET " + set + if (where.isNullOrEmpty()) "" else " WHERE $where"
             try {
                 db.execSQL(sql)
             } catch (e: Exception) {

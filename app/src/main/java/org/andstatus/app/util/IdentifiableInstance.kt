@@ -20,12 +20,13 @@ package org.andstatus.app.util
  * @author yvolk@yurivolkov.com
  */
 interface IdentifiableInstance : TaggedClass {
-    open fun getInstanceId(): Long
-    fun instanceIdString(): String? {
-        return getInstanceId().toString()
+    val instanceId: Long
+
+    fun instanceIdString(): String {
+        return instanceId.toString()
     }
 
-    fun instanceTag(): String? {
+    fun instanceTag(): String {
         val className = classTag()
         val idString = instanceIdString()
         val maxClassNameLength = MyLog.MAX_TAG_LENGTH - idString.length

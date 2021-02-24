@@ -21,10 +21,11 @@ import org.andstatus.app.data.DbUtils
 /** Actors-members of the group
  * The Group is an Actor also, so [GroupMembersTable.GROUP_ID] refers to the same [ActorTable]  */
 object GroupMembersTable {
-    val TABLE_NAME: String? = "group_members"
-    val GROUP_ID: String? = "group_id"
-    val MEMBER_ID: String? = "member_id"
-    fun create(db: SQLiteDatabase?) {
+    val TABLE_NAME: String = "group_members"
+    val GROUP_ID: String = "group_id"
+    val MEMBER_ID: String = "member_id"
+
+    fun create(db: SQLiteDatabase) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + GROUP_ID + " INTEGER NOT NULL,"
                 + MEMBER_ID + " INTEGER NOT NULL,"

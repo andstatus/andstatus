@@ -43,10 +43,15 @@ import java.util.*
 import java.util.function.Function
 import java.util.regex.Pattern
 
-enum class OriginType(private val id: Long, private val title: String?, api: ApiEnum?, noteName: NoteName?, noteSummary: NoteSummary?,
-                      publicChangeAllowed: PublicChangeAllowed?, followersChangeAllowed: FollowersChangeAllowed?,
-                      sensitiveChangeAllowed: SensitiveChangeAllowed?,
-                      shortUrlLength: ShortUrlLength?) : SelectableEnum {
+const val SIMPLE_USERNAME_EXAMPLES: String = "AndStatus user357 peter"
+private const val BASIC_PATH_DEFAULT: String = "api"
+private const val OAUTH_PATH_DEFAULT: String = "oauth"
+const val TEXT_LIMIT_MAXIMUM = 100000
+
+enum class OriginType(private val id: Long, val title: String, api: ApiEnum, noteName: NoteName, noteSummary: NoteSummary,
+                      publicChangeAllowed: PublicChangeAllowed, followersChangeAllowed: FollowersChangeAllowed,
+                      sensitiveChangeAllowed: SensitiveChangeAllowed,
+                      shortUrlLength: ShortUrlLength) : SelectableEnum {
     /** [Mastodon at GitHub](https://github.com/Gargron/mastodon)  */
     MASTODON(4, "Mastodon", ApiEnum.MASTODON, NoteName.NO, NoteSummary.YES,
             PublicChangeAllowed.YES, FollowersChangeAllowed.YES, SensitiveChangeAllowed.YES, ShortUrlLength.of(0)),
@@ -59,7 +64,7 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
             PublicChangeAllowed.NO, FollowersChangeAllowed.NO, SensitiveChangeAllowed.NO, ShortUrlLength.of(23)),
     ACTIVITYPUB(5, "ActivityPub", ApiEnum.ACTIVITYPUB, NoteName.YES, NoteSummary.YES,
             PublicChangeAllowed.YES, FollowersChangeAllowed.YES, SensitiveChangeAllowed.YES, ShortUrlLength.of(0)) {
-        override fun getContentType(): Optional<String?>? {
+        override fun getContentType(): Optional<String> {
             return Optional.of("application/ld+json; profile=\"https://www.w3.org/ns/activitystreams\"")
         }
     },
@@ -103,7 +108,7 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
 
     internal class ShortUrlLength private constructor(val value: Int) {
         companion object {
-            fun of(length: Int): ShortUrlLength? {
+            fun of(length: Int): ShortUrlLength {
                 return ShortUrlLength(length)
             }
         }
@@ -134,12 +139,44 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
         ACTIVITYPUB
     }
 
-    val originHasUrl = false
-    val originFactory: Function<MyContext?, Origin?>? = null
-    private val connectionClass: Class<out Connection?>? = null
-    private val httpConnectionClassOauth: Class<out HttpConnection?>? = null
-    private val httpConnectionClassBasic: Class<out HttpConnection?>? = null
-    private val allowEditing = false
+    companion object {
+        val ORIGIN_TYPE_DEFAULT: OriginType = TWITTER
+
+        fun fromId(id: Long): OriginType {
+            for (`val` in values()) {
+                if (`val`.id == id) {
+                    return `val`
+                }
+            }
+            return UNKNOWN
+        }
+
+        fun fromCode(code: String?): OriginType {
+            for (value in values()) {
+                if (value.getCode().equals(code, ignoreCase = true)) {
+                    return value
+                }
+            }
+            return UNKNOWN
+        }
+
+        fun fromTitle(titleIn: String?): OriginType {
+            return StringUtil.optNotEmpty(titleIn)
+                    .flatMap { title: String? ->
+                        Arrays.stream(values())
+                                .filter { value: OriginType -> value.title.equals(title, ignoreCase = true) }
+                                .findAny()
+                    }
+                    .orElse(UNKNOWN)
+        }
+    }
+
+    val originHasUrl: Boolean
+    var originFactory: Function<MyContext, Origin>
+    private val connectionClass: Class<out Connection>
+    private val httpConnectionClassOauth: Class<out HttpConnection?>
+    private val httpConnectionClassBasic: Class<out HttpConnection?>
+    private val allowEditing: Boolean
 
     /** Default OAuth setting  */
     var isOAuthDefault = true
@@ -151,31 +188,31 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
     /** May a User set username for the new Account/Actor manually?
      * This is only for no OAuth  */
     protected var shouldSetNewUsernameManuallyNoOAuth = false
-    val usernameRegExPattern: Pattern? = null
-    val uniqueNameExamples: String? = null
+    val usernameRegExPattern: Pattern
+    val uniqueNameExamples: String
 
     /**
      * Length of the link after changing to the shortened link
      * 0 means that length doesn't change
      * For Twitter.com see [GET help/configuration](https://dev.twitter.com/docs/api/1.1/get/help/configuration)
      */
-    val shortUrlLengthDefault: ShortUrlLength?
+    internal val shortUrlLengthDefault: ShortUrlLength
     var sslDefault = true
     var canChangeSsl = false
     var allowHtmlDefault = true
-    val textMediaTypePosted: TextMediaType? = null
-    val textMediaTypeToPost: TextMediaType? = null
+    val textMediaTypePosted: TextMediaType
+    val textMediaTypeToPost: TextMediaType
 
     /** Maximum number of characters in a note  */
     var textLimitDefault = 0
-    private val urlDefault: URL? = null
-    private val basicPath = BASIC_PATH_DEFAULT
-    private val oauthPath = OAUTH_PATH_DEFAULT
-    private val isPublicTimeLineSyncable = false
-    private val isSearchTimelineSyncable = true
-    private val isPrivateTimelineSyncable = true
-    private val isInteractionsTimelineSyncable = true
-    private val isPrivateNoteAllowsReply = false
+    val urlDefault: URL?
+    private val basicPath: String
+    private val oauthPath: String
+    private val isPublicTimeLineSyncable: Boolean
+    private val isSearchTimelineSyncable: Boolean
+    private val isPrivateTimelineSyncable: Boolean
+    private val isInteractionsTimelineSyncable: Boolean
+    private val isPrivateNoteAllowsReply: Boolean
     val hasNoteName: Boolean
     val hasNoteSummary: Boolean
     val visibilityChangeAllowed: Boolean
@@ -185,11 +222,11 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
         return this !== TWITTER
     }
 
-    fun getConnectionClass(): Class<out Connection?>? {
+    fun getConnectionClass(): Class<out Connection?> {
         return connectionClass
     }
 
-    fun getHttpConnectionClass(isOAuth: Boolean): Class<out HttpConnection?>? {
+    fun getHttpConnectionClass(isOAuth: Boolean): Class<out HttpConnection?> {
         return if (fixIsOAuth(isOAuth)) {
             httpConnectionClassOauth
         } else {
@@ -206,7 +243,7 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
     }
 
     override fun title(context: Context?): CharSequence? {
-        return getTitle()
+        return title
     }
 
     override fun getDialogTitleResId(): Int {
@@ -217,15 +254,11 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
         return id
     }
 
-    fun getTitle(): String? {
-        return title
-    }
-
     override fun toString(): String {
         return "OriginType: {id:$id, title:'$title'}"
     }
 
-    fun fixIsOAuth(triStateOAuth: TriState?): Boolean {
+    fun fixIsOAuth(triStateOAuth: TriState): Boolean {
         return fixIsOAuth(triStateOAuth.toBoolean(isOAuthDefault))
     }
 
@@ -242,7 +275,7 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
     }
 
     fun isTimelineTypeSyncable(timelineType: TimelineType?): Boolean {
-        return if (timelineType == null || !timelineType.isSyncable) {
+        return if (timelineType == null || !timelineType.isSyncable()) {
             false
         } else when (timelineType) {
             TimelineType.PUBLIC -> isPublicTimeLineSyncable
@@ -262,18 +295,18 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
     }
 
     fun partialPathToApiPath(partialPath: String?): String? {
-        var partialPath = partialPath
-        if (!StringUtil.isEmpty(partialPath) && !partialPath.contains("://")) {
-            partialPath = getBasicPath() + "/" + partialPath
+        var apiPath = partialPath
+        if (!apiPath.isNullOrEmpty() && !apiPath.contains("://")) {
+            apiPath = getBasicPath() + "/" + apiPath
         }
-        return partialPath
+        return apiPath
     }
 
-    fun getBasicPath(): String? {
+    fun getBasicPath(): String {
         return basicPath
     }
 
-    fun getOauthPath(): String? {
+    fun getOauthPath(): String {
         return oauthPath
     }
 
@@ -289,55 +322,16 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
         return if (isOAuth) shouldSetNewUsernameManuallyIfOAuth else shouldSetNewUsernameManuallyNoOAuth
     }
 
-    fun getUrlDefault(): URL? {
-        return urlDefault
-    }
-
-    open fun getContentType(): Optional<String?>? {
+    open fun getContentType(): Optional<String> {
         return Optional.empty()
     }
 
     fun getMaxAttachmentsToSend(): Int {
-        return OriginConfig.Companion.getMaxAttachmentsToSend(this)
+        return OriginConfig.getMaxAttachmentsToSend(this)
     }
 
     fun isPrivatePostsSupported(): Boolean {
         return this !== TWITTER
-    }
-
-    companion object {
-        val SIMPLE_USERNAME_EXAMPLES: String? = "AndStatus user357 peter"
-        private val BASIC_PATH_DEFAULT: String? = "api"
-        private val OAUTH_PATH_DEFAULT: String? = "oauth"
-        val ORIGIN_TYPE_DEFAULT: OriginType? = TWITTER
-        const val TEXT_LIMIT_MAXIMUM = 100000
-        fun fromId(id: Long): OriginType? {
-            for (`val` in values()) {
-                if (`val`.id == id) {
-                    return `val`
-                }
-            }
-            return UNKNOWN
-        }
-
-        fun fromCode(code: String?): OriginType? {
-            for (`val` in values()) {
-                if (`val`.code.equals(code, ignoreCase = true)) {
-                    return `val`
-                }
-            }
-            return UNKNOWN
-        }
-
-        fun fromTitle(titleIn: String?): OriginType? {
-            return StringUtil.optNotEmpty(titleIn)
-                    .flatMap { title: String? ->
-                        Arrays.stream(values())
-                                .filter { value: OriginType? -> value.getTitle().equals(title, ignoreCase = true) }
-                                .findAny()
-                    }
-                    .orElse(UNKNOWN)
-        }
     }
 
     init {
@@ -365,7 +359,10 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
                 connectionClass = ConnectionTheTwitter::class.java
                 httpConnectionClassOauth = HttpConnectionOAuthApache::class.java
                 httpConnectionClassBasic = HttpConnectionBasic::class.java
+                isPublicTimeLineSyncable = false
+                isSearchTimelineSyncable = true
                 isPrivateTimelineSyncable = false
+                isInteractionsTimelineSyncable = true
                 allowEditing = false
                 isPrivateNoteAllowsReply = false
                 textMediaTypePosted = TextMediaType.PLAIN_ESCAPED
@@ -381,12 +378,14 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
                 uniqueNameExamples = "andstatus@identi.ca AndStatus@datamost.com test425@1realtime.net"
                 // This is not a hard limit, just for convenience
                 textLimitDefault = TEXT_LIMIT_MAXIMUM
+                urlDefault = null
                 basicPath = BASIC_PATH_DEFAULT
                 oauthPath = OAUTH_PATH_DEFAULT
                 originFactory = Function { myContext: MyContext? -> OriginPumpio(myContext, this) }
                 connectionClass = ConnectionPumpio::class.java
                 httpConnectionClassOauth = HttpConnectionOAuthJavaNet::class.java
                 httpConnectionClassBasic = HttpConnectionEmpty::class.java
+                isPublicTimeLineSyncable = false
                 isSearchTimelineSyncable = false
                 isPrivateTimelineSyncable = false
                 isInteractionsTimelineSyncable = false
@@ -405,15 +404,16 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
                 uniqueNameExamples = "AndStatus@pleroma.site kaniini@pleroma.site"
                 // This is not a hard limit, just for convenience
                 textLimitDefault = TEXT_LIMIT_MAXIMUM
+                urlDefault = null
                 basicPath = BASIC_PATH_DEFAULT
                 oauthPath = OAUTH_PATH_DEFAULT
                 originFactory = Function { myContext: MyContext? -> OriginActivityPub(myContext, this) }
                 connectionClass = ConnectionActivityPub::class.java
                 httpConnectionClassOauth = HttpConnectionOAuthMastodon::class.java
                 httpConnectionClassBasic = HttpConnectionEmpty::class.java
+                isPublicTimeLineSyncable = true
                 isSearchTimelineSyncable = false
                 isPrivateTimelineSyncable = false
-                isPublicTimeLineSyncable = true
                 isInteractionsTimelineSyncable = false
                 allowEditing = true
                 isPrivateNoteAllowsReply = true
@@ -428,6 +428,7 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
                 shouldSetNewUsernameManuallyNoOAuth = true
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN
                 uniqueNameExamples = "AndStatus@loadaverage.org somebody@gnusocial.no"
+                urlDefault = null
                 canChangeSsl = true
                 basicPath = BASIC_PATH_DEFAULT
                 oauthPath = BASIC_PATH_DEFAULT
@@ -436,6 +437,9 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
                 httpConnectionClassOauth = HttpConnectionOAuthApache::class.java
                 httpConnectionClassBasic = HttpConnectionBasic::class.java
                 isPublicTimeLineSyncable = true
+                isSearchTimelineSyncable = true
+                isPrivateTimelineSyncable = false
+                isInteractionsTimelineSyncable = true
                 allowEditing = false
                 isPrivateNoteAllowsReply = true
                 textMediaTypePosted = TextMediaType.PLAIN
@@ -449,15 +453,18 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
                 shouldSetNewUsernameManuallyNoOAuth = true
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN
                 uniqueNameExamples = "AndStatus@mastodon.social somebody@mstdn.io"
-                textLimitDefault = OriginConfig.Companion.MASTODON_TEXT_LIMIT_DEFAULT
+                textLimitDefault = OriginConfig.MASTODON_TEXT_LIMIT_DEFAULT
+                urlDefault = null
                 basicPath = BASIC_PATH_DEFAULT
                 oauthPath = OAUTH_PATH_DEFAULT
                 originFactory = Function { myContext: MyContext? -> OriginMastodon(myContext, this) }
                 connectionClass = ConnectionMastodon::class.java
                 httpConnectionClassOauth = HttpConnectionOAuthMastodon::class.java
                 httpConnectionClassBasic = HttpConnectionEmpty::class.java
-                isSearchTimelineSyncable = true
                 isPublicTimeLineSyncable = true
+                isSearchTimelineSyncable = true
+                isPrivateTimelineSyncable = true
+                isInteractionsTimelineSyncable = true
                 allowEditing = false
                 isPrivateNoteAllowsReply = true
                 textMediaTypePosted = TextMediaType.HTML
@@ -466,10 +473,17 @@ enum class OriginType(private val id: Long, private val title: String?, api: Api
             else -> {
                 originHasUrl = false
                 usernameRegExPattern = Patterns.USERNAME_REGEX_SIMPLE_PATTERN
+                urlDefault = null
+                basicPath = BASIC_PATH_DEFAULT
+                oauthPath = OAUTH_PATH_DEFAULT
                 originFactory = Function { myContext: MyContext? -> Origin(myContext, this) }
                 connectionClass = ConnectionEmpty::class.java
                 httpConnectionClassOauth = HttpConnectionEmpty::class.java
                 httpConnectionClassBasic = HttpConnectionEmpty::class.java
+                isPublicTimeLineSyncable = false
+                isSearchTimelineSyncable = false
+                isPrivateTimelineSyncable = false
+                isInteractionsTimelineSyncable = true
                 allowEditing = false
                 isPrivateNoteAllowsReply = true
                 uniqueNameExamples = "userName@hostName.org"

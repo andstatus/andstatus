@@ -57,10 +57,10 @@ class DatabaseConverterController {
                 synchronized(UPGRADE_LOCK) { mProgressLogger = progressLogger }
                 MyLog.i(TAG, "Upgrade triggered by " + MyStringBuilder.Companion.objToTag(upgradeRequestor))
                 MyServiceManager.Companion.setServiceUnavailable()
-                MyContextHolder.Companion.myContextHolder.release(Supplier { "doUpgrade" })
+                 MyContextHolder.myContextHolder.release(Supplier { "doUpgrade" })
                 // Upgrade will occur inside this call synchronously
                 // TODO: Add completion stage instead of blocking...
-                MyContextHolder.Companion.myContextHolder.initializeDuringUpgrade(upgradeRequestor).getBlocking()
+                 MyContextHolder.myContextHolder.initializeDuringUpgrade(upgradeRequestor).getBlocking()
                 synchronized(UPGRADE_LOCK) { shouldTriggerDatabaseUpgrade = false }
             } catch (e: Exception) {
                 MyLog.i(TAG, "Failed to trigger database upgrade, will try later", e)
@@ -77,7 +77,7 @@ class DatabaseConverterController {
                 MyLog.v(TAG, "Upgrade didn't start")
             }
             if (success) {
-                MyLog.i(TAG, "success " + MyContextHolder.Companion.myContextHolder.getNow().state())
+                MyLog.i(TAG, "success " +  MyContextHolder.myContextHolder.getNow().state())
                 onUpgradeSucceeded()
             }
             return success
@@ -85,16 +85,16 @@ class DatabaseConverterController {
 
         private fun onUpgradeSucceeded() {
             MyServiceManager.Companion.setServiceUnavailable()
-            if (!MyContextHolder.Companion.myContextHolder.getNow().isReady()) {
-                MyContextHolder.Companion.myContextHolder.release(Supplier { "onUpgradeSucceeded1" })
-                MyContextHolder.Companion.myContextHolder.initialize(upgradeRequestor).getBlocking()
+            if (! MyContextHolder.myContextHolder.getNow().isReady()) {
+                 MyContextHolder.myContextHolder.release(Supplier { "onUpgradeSucceeded1" })
+                 MyContextHolder.myContextHolder.initialize(upgradeRequestor).getBlocking()
             }
             MyServiceManager.Companion.setServiceUnavailable()
             MyServiceManager.Companion.stopService()
             if (isRestoring) return
             DataChecker.Companion.fixData(progressLogger, false, false)
-            MyContextHolder.Companion.myContextHolder.release(Supplier { "onUpgradeSucceeded2" })
-            MyContextHolder.Companion.myContextHolder.initialize(upgradeRequestor).getBlocking()
+             MyContextHolder.myContextHolder.release(Supplier { "onUpgradeSucceeded2" })
+             MyContextHolder.myContextHolder.initialize(upgradeRequestor).getBlocking()
             MyServiceManager.Companion.setServiceAvailable()
         }
 
@@ -117,7 +117,7 @@ class DatabaseConverterController {
             shouldTriggerDatabaseUpgrade = false
             stillUpgrading()
         }
-        MyContextHolder.Companion.myContextHolder.getNow().setInForeground(true)
+         MyContextHolder.myContextHolder.getNow().setInForeground(true)
         val databaseConverter = DatabaseConverter()
         val success = databaseConverter.execute(UpgradeParams(mProgressLogger, db, oldVersion, newVersion))
         synchronized(UPGRADE_LOCK) {
@@ -165,14 +165,14 @@ class DatabaseConverterController {
                         + ": already upgrading")
                 skip = true
             }
-            if (!skip && !MyContextHolder.Companion.myContextHolder.getNow().initialized()) {
+            if (!skip && ! MyContextHolder.myContextHolder.getNow().initialized()) {
                 MyLog.v(TAG, "Attempt to trigger database upgrade by " + requestorName
                         + ": not initialized yet")
                 skip = true
             }
             if (!skip && acquireUpgradeLock(requestorName)) {
-                val asyncUpgrade = AsyncUpgrade(upgradeRequestorIn, MyContextHolder.Companion.myContextHolder.isOnRestore())
-                if (MyContextHolder.Companion.myContextHolder.isOnRestore()) {
+                val asyncUpgrade = AsyncUpgrade(upgradeRequestorIn,  MyContextHolder.myContextHolder.isOnRestore())
+                if ( MyContextHolder.myContextHolder.isOnRestore()) {
                     asyncUpgrade.syncUpgrade()
                 } else {
                     AsyncTaskLauncher.Companion.execute(TAG, asyncUpgrade)

@@ -54,12 +54,12 @@ import java.util.function.Consumer
 import java.util.function.Function
 
 abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
-    var myContext: MyContext? = MyContextHolder.Companion.myContextHolder.getNow()
+    var myContext: MyContext? =  MyContextHolder.myContextHolder.getNow()
     var activityUpdatedDate: Long = 0
     var noteStatus: DownloadStatus? = DownloadStatus.UNKNOWN
     private var activityId: Long = 0
     private var noteId: Long = 0
-    private var origin: Origin? = Origin.Companion.EMPTY
+    private var origin: Origin? =  Origin.EMPTY
     var author: ActorViewItem? = ActorViewItem.Companion.EMPTY
     var visibility: Visibility? = Visibility.UNKNOWN
     var isSensitive = false
@@ -120,10 +120,10 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
         favorited = DbUtils.getTriState(cursor, NoteTable.FAVORITED) == TriState.TRUE
         reblogged = DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE
         val via = DbUtils.getString(cursor, NoteTable.VIA)
-        if (!StringUtil.isEmpty(via)) {
+        if (!via.isNullOrEmpty()) {
             noteSource = Html.fromHtml(via).toString().trim { it <= ' ' }
         }
-        for (actor in MyQuery.getRebloggers(MyContextHolder.Companion.myContextHolder.getNow().getDatabase(), getOrigin(), getNoteId())) {
+        for (actor in MyQuery.getRebloggers( MyContextHolder.myContextHolder.getNow().getDatabase(), getOrigin(), getNoteId())) {
             rebloggers[actor.actorId] = actor.webFingerId
         }
     }
@@ -306,7 +306,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
         }
         return (!filter.hideRepliesNotToMeOrFriends
                 || inReplyToActor.isEmpty()
-                || MyContextHolder.Companion.myContextHolder.getNow().users().isMeOrMyFriend(inReplyToActor.getActor()))
+                ||  MyContextHolder.myContextHolder.getNow().users().isMeOrMyFriend(inReplyToActor.getActor()))
     }
 
     override fun toString(): String {

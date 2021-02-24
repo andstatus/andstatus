@@ -24,77 +24,78 @@ import org.andstatus.app.data.DbUtils
  * @author yvolk@yurivolkov.com
  */
 object TimelineTable : BaseColumns {
-    val TABLE_NAME: String? = "timeline"
+    val TABLE_NAME: String = "timeline"
 
     /** Alias for #_ID  */
-    val TIMELINE_ID: String? = "timeline_id"
-    val TIMELINE_TYPE: String? = "timeline_type"
-    val ACTOR_ID: String? = ActorTable.ACTOR_ID
-    val ACTOR_IN_TIMELINE: String? = "actor_in_timeline"
-    val ORIGIN_ID: String? = OriginTable.ORIGIN_ID
-    val SEARCH_QUERY: String? = "search_query"
+    val TIMELINE_ID: String = "timeline_id"
+    val TIMELINE_TYPE: String = "timeline_type"
+    val ACTOR_ID: String = ActorTable.ACTOR_ID
+    val ACTOR_IN_TIMELINE: String = "actor_in_timeline"
+    val ORIGIN_ID: String = OriginTable.ORIGIN_ID
+    val SEARCH_QUERY: String = "search_query"
 
     /** If the timeline is synced automatically  */
-    val IS_SYNCED_AUTOMATICALLY: String? = "is_synced_automatically"
+    val IS_SYNCED_AUTOMATICALLY: String = "is_synced_automatically"
 
     /** If the timeline should be shown in a Timeline selector  */
-    val DISPLAYED_IN_SELECTOR: String? = "displayed_in_selector"
+    val DISPLAYED_IN_SELECTOR: String = "displayed_in_selector"
 
     /** Used for sorting timelines in a selector  */
-    val SELECTOR_ORDER: String? = "selector_order"
+    val SELECTOR_ORDER: String = "selector_order"
 
     /** When this timeline was last time successfully synced  */
-    val SYNC_SUCCEEDED_DATE: String? = "sync_succeeded_date"
+    val SYNC_SUCCEEDED_DATE: String = "sync_succeeded_date"
 
     /** When last sync error occurred  */
-    val SYNC_FAILED_DATE: String? = "sync_failed_date"
+    val SYNC_FAILED_DATE: String = "sync_failed_date"
 
     /** Error message at [.SYNC_FAILED_DATE]  */
-    val ERROR_MESSAGE: String? = "error_message"
+    val ERROR_MESSAGE: String = "error_message"
 
     /** Number of successful sync operations: "Synced [.SYNCED_TIMES_COUNT] times"  */
-    val SYNCED_TIMES_COUNT: String? = "synced_times_count"
+    val SYNCED_TIMES_COUNT: String = "synced_times_count"
 
     /** Number of failed sync operations  */
-    val SYNC_FAILED_TIMES_COUNT: String? = "sync_failed_times_count"
-    val DOWNLOADED_ITEMS_COUNT: String? = "downloaded_items_count"
-    val NEW_ITEMS_COUNT: String? = "new_items_count"
-    val COUNT_SINCE: String? = "count_since"
+    val SYNC_FAILED_TIMES_COUNT: String = "sync_failed_times_count"
+    val DOWNLOADED_ITEMS_COUNT: String = "downloaded_items_count"
+    val NEW_ITEMS_COUNT: String = "new_items_count"
+    val COUNT_SINCE: String = "count_since"
 
     /** Accumulated numbers for statistics. They are reset by a user's request  */
-    val SYNCED_TIMES_COUNT_TOTAL: String? = "synced_times_count_total"
-    val SYNC_FAILED_TIMES_COUNT_TOTAL: String? = "sync_failed_times_count_total"
-    val DOWNLOADED_ITEMS_COUNT_TOTAL: String? = "downloaded_items_count_total"
-    val NEW_ITEMS_COUNT_TOTAL: String? = "new_items_count_total"
+    val SYNCED_TIMES_COUNT_TOTAL: String = "synced_times_count_total"
+    val SYNC_FAILED_TIMES_COUNT_TOTAL: String = "sync_failed_times_count_total"
+    val DOWNLOADED_ITEMS_COUNT_TOTAL: String = "downloaded_items_count_total"
+    val NEW_ITEMS_COUNT_TOTAL: String = "new_items_count_total"
 
     /** Timeline position of the youngest ever downloaded message  */
-    val YOUNGEST_POSITION: String? = "youngest_position"
+    val YOUNGEST_POSITION: String = "youngest_position"
 
     /** Date of the item corresponding to the [.YOUNGEST_POSITION]  */
-    val YOUNGEST_ITEM_DATE: String? = "youngest_item_date"
+    val YOUNGEST_ITEM_DATE: String = "youngest_item_date"
 
     /** Last date when youngest items of this timeline were successfully synced
      * (even if there were no new item at that time).
      * It may be used to calculate when it will be time for the next automatic update  */
-    val YOUNGEST_SYNCED_DATE: String? = "youngest_synced_date"
+    val YOUNGEST_SYNCED_DATE: String = "youngest_synced_date"
 
     /** Timeline position of the oldest ever downloaded message  */
-    val OLDEST_POSITION: String? = "oldest_position"
+    val OLDEST_POSITION: String = "oldest_position"
 
     /** Date of the item corresponding to the [.OLDEST_POSITION]  */
-    val OLDEST_ITEM_DATE: String? = "oldest_item_date"
+    val OLDEST_ITEM_DATE: String = "oldest_item_date"
 
     /** Last date when oldest items of this timeline were successfully synced
      * (even if there were no new item at that time).
      * It may be used to calculate when it will be time for the next automatic update  */
-    val OLDEST_SYNCED_DATE: String? = "oldest_synced_date"
+    val OLDEST_SYNCED_DATE: String = "oldest_synced_date"
 
     /** Position of the timeline, which a User viewed   */
-    val VISIBLE_ITEM_ID: String? = "visible_item_id"
-    val VISIBLE_Y: String? = "visible_y"
-    val VISIBLE_OLDEST_DATE: String? = "visible_oldest_date"
-    val LAST_CHANGED_DATE: String? = "last_changed_date"
-    fun create(db: SQLiteDatabase?) {
+    val VISIBLE_ITEM_ID: String = "visible_item_id"
+    val VISIBLE_Y: String = "visible_y"
+    val VISIBLE_OLDEST_DATE: String = "visible_oldest_date"
+    val LAST_CHANGED_DATE: String = "last_changed_date"
+
+    fun create(db: SQLiteDatabase) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + TIMELINE_TYPE + " TEXT NOT NULL,"

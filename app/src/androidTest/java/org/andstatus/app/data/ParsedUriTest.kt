@@ -80,8 +80,8 @@ class ParsedUriTest {
     }
 
     private fun oneSearchQuery(searchQuery: String?) {
-        val timeline: Timeline = MyContextHolder.Companion.myContextHolder.getNow().timelines().get(TimelineType.SEARCH, Actor.Companion.EMPTY,
-                MyContextHolder.Companion.myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL), searchQuery)
+        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.SEARCH, Actor.Companion.EMPTY,
+                 MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL), searchQuery)
         val clickUri = timeline.clickUri
         val parsedUri: ParsedUri = ParsedUri.Companion.fromUri(clickUri)
         Assert.assertEquals("""

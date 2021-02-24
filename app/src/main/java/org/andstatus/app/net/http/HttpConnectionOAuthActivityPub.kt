@@ -19,7 +19,6 @@ import android.net.Uri
 import com.github.scribejava.core.model.OAuthConstants
 import com.github.scribejava.core.oauth.OAuth20Service
 import org.andstatus.app.net.social.ApiRoutineEnum
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.UriUtils
 import java.util.*
 
@@ -31,7 +30,7 @@ class HttpConnectionOAuthActivityPub : HttpConnectionOAuth2JavaNet() {
             ApiRoutineEnum.OAUTH_REGISTER_CLIENT -> data.basicPath + "/v1/apps"
             else -> super.getApiUri(routine).toString()
         }
-        if (!StringUtil.isEmpty(url)) {
+        if (!url.isNullOrEmpty()) {
             url = pathToUrlString(url)
         }
         return UriUtils.fromString(url)

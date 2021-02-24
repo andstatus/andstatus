@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.noteimport
+package org.andstatus.app.note
 
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.note.NoteViewItem
@@ -27,11 +27,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -767,10 +762,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -850,7 +841,7 @@ class NoteViewItemTest {
     }
 
     private fun assertDuplicates(item1: NoteViewItem?, duplicates: DuplicationLink?, item2: NoteViewItem?) {
-        Assert.assertEquals(item1.toString() + " vs " + item2, duplicates, item1.duplicates(Timeline.Companion.EMPTY, Origin.Companion.EMPTY, item2))
+        Assert.assertEquals(item1.toString() + " vs " + item2, duplicates, item1.duplicates(Timeline.Companion.EMPTY,  Origin.EMPTY, item2))
     }
 
     companion object {

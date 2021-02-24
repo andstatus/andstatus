@@ -31,13 +31,13 @@ import java.nio.charset.Charset
 import java.util.*
 
 object FileUtils {
-    val ROOT_FOLDER: String? = "/"
+    val ROOT_FOLDER: String = "/"
     private const val BUFFER_LENGTH = 4 * 1024
     @Throws(IOException::class)
-    fun getJSONArray(file: File?): JSONArray? {
+    fun getJSONArray(file: File?): JSONArray {
         var jso: JSONArray? = null
         val fileString = utf8File2String(file)
-        if (!StringUtil.isEmpty(fileString)) {
+        if (fileString.isNotEmpty()) {
             jso = try {
                 JSONArray(fileString)
             } catch (e: JSONException) {
@@ -52,10 +52,10 @@ object FileUtils {
     }
 
     @Throws(IOException::class)
-    fun getJSONObject(file: File?): JSONObject? {
+    fun getJSONObject(file: File?): JSONObject {
         var jso: JSONObject? = null
         val fileString = utf8File2String(file)
-        if (!StringUtil.isEmpty(fileString)) {
+        if (fileString.isNotEmpty()) {
             jso = try {
                 JSONObject(fileString)
             } catch (e: JSONException) {
@@ -70,28 +70,28 @@ object FileUtils {
     }
 
     @Throws(IOException::class)
-    private fun utf8File2String(file: File?): String? {
+    private fun utf8File2String(file: File?): String {
         return String(getBytes(file), Charset.forName("UTF-8"))
     }
 
     /** Reads the whole file  */
     @Throws(IOException::class)
-    fun getBytes(file: File?): ByteArray? {
+    fun getBytes(file: File?): ByteArray {
         if (file != null) {
-            FileInputStream(file).use { `is` -> return getBytes(`is`) }
+            FileInputStream(file).use { ins -> return getBytes(ins) }
         }
         return ByteArray(0)
     }
 
     /** Read the stream into an array; the stream is not closed  */
     @Throws(IOException::class)
-    fun getBytes(`is`: InputStream?): ByteArray? {
-        if (`is` != null) {
+    fun getBytes(ins: InputStream?): ByteArray {
+        if (ins != null) {
             val readBuffer = ByteArray(BUFFER_LENGTH)
             ByteArrayOutputStream().use { bout ->
                 var read: Int
                 do {
-                    read = `is`.read(readBuffer, 0, readBuffer.size)
+                    read = ins.read(readBuffer, 0, readBuffer.size)
                     if (read == -1) {
                         break
                     }
@@ -105,21 +105,20 @@ object FileUtils {
 
     /** Reads up to 'size' bytes, starting from 'offset'  */
     @Throws(IOException::class)
-    fun getBytes(file: File?, offset: Int, size: Int): ByteArray? {
+    fun getBytes(file: File?, offset: Int, size: Int): ByteArray {
         if (file == null) return ByteArray(0)
-        FileInputStream(file).use { `is` -> return getBytes(`is`, file.absolutePath, offset, size) }
+        FileInputStream(file).use { ins -> return getBytes(ins, file.absolutePath, offset, size) }
     }
 
     /** Reads up to 'size' bytes, starting from 'offset'  */
     @Throws(IOException::class)
-    fun getBytes(`is`: InputStream?, path: String?, offset: Int, size: Int): ByteArray? {
+    fun getBytes(ins: InputStream, path: String?, offset: Int, size: Int): ByteArray {
         val readBuffer = ByteArray(size)
-        val bytesSkipped = `is`.skip(offset.toLong())
+        val bytesSkipped = ins.skip(offset.toLong())
         if (bytesSkipped < offset) {
-            throw FileNotFoundException("Skipped only " + bytesSkipped
-                    + " of " + offset + " bytes in path='" + path + "'")
+            throw FileNotFoundException("Skipped only $bytesSkipped of $offset bytes in path='$path'")
         }
-        val bytesRead = `is`.read(readBuffer, 0, size)
+        val bytesRead = ins.read(readBuffer, 0, size)
         if (bytesRead == readBuffer.size) {
             return readBuffer
         } else if (bytesRead > 0) {
@@ -159,7 +158,7 @@ object FileUtils {
         return nDeleted
     }
 
-    private fun deleteAndCountFile(file: File?): Long {
+    private fun deleteAndCountFile(file: File): Long {
         var nDeleted: Long = 0
         if (file.delete()) {
             nDeleted++
@@ -186,7 +185,7 @@ object FileUtils {
      * @throws IOException
      */
     @Throws(IOException::class)
-    fun copyFile(objTag: Any?, src: File?, dst: File?): Boolean {
+    fun copyFile(objTag: Any?, src: File?, dst: File): Boolean {
         var sizeIn: Long = -1
         var sizeCopied: Long = 0
         var ok = false
@@ -199,7 +198,7 @@ object FileUtils {
             } else {
                 FileInputStream(src).use { fileInputStream ->
                     fileInputStream.channel.use { inChannel ->
-                        newFileOutputStreamWithRetry(dst).use { fileOutputStream ->
+                        newFileOutputStreamWithRetry(dst)?.use { fileOutputStream ->
                             fileOutputStream.getChannel().use { outChannel ->
                                 sizeCopied = inChannel.transferTo(0, inChannel.size(), outChannel)
                                 ok = sizeIn == sizeCopied
@@ -216,7 +215,7 @@ object FileUtils {
 
     @JvmOverloads
     @Throws(FileNotFoundException::class)
-    fun newFileOutputStreamWithRetry(file: File?, append: Boolean = false): FileOutputStream? {
+    fun newFileOutputStreamWithRetry(file: File, append: Boolean = false): FileOutputStream {
         return try {
             FileOutputStream(file, append)
         } catch (e: FileNotFoundException) {
@@ -227,7 +226,7 @@ object FileUtils {
         }
     }
 
-    fun isFileInsideFolder(file: File?, folder: File?): Boolean {
+    fun isFileInsideFolder(file: File, folder: File): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             return file.toPath().normalize().startsWith(folder.toPath())
         } else {

@@ -17,7 +17,6 @@ package org.andstatus.app.os
 
 import android.os.AsyncTask
 import io.vavr.control.Try
-import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TryUtils
@@ -34,7 +33,7 @@ import java.util.function.Function
  * @author yvolk@yurivolkov.com
  */
 class AsyncTaskLauncher<Params> {
-    fun execute(objTag: Any?, asyncTask: MyAsyncTask<Params?, *, *>?, params: Params?): Try<Void?>? {
+    fun execute(objTag: Any?, asyncTask: MyAsyncTask<Params?, *, *>, params: Params?): Try<Void> {
         MyLog.v(objTag) { asyncTask.toString() + " Launching task" }
         return try {
             cancelStalledTasks()
@@ -50,13 +49,9 @@ class AsyncTaskLauncher<Params> {
             removeFinishedTasks()
             TryUtils.SUCCESS
         } catch (e: Exception) {
-            val msgLog = """${asyncTask.toString()} Launching task
-${threadPoolInfo()}"""
+            val msgLog = """${asyncTask.toString()} Launching task ${threadPoolInfo()}"""
             MyLog.w(objTag, msgLog, e)
-            Try.failure(Exception("""
-    ${e.message}
-    $msgLog
-    """.trimIndent(), e))
+            Try.failure(Exception(""" ${e.message} $msgLog """.trimIndent(), e))
         }
     }
 
@@ -77,10 +72,10 @@ ${threadPoolInfo()}"""
     }
 
     companion object {
-        private val TAG: String? = AsyncTaskLauncher::class.java.simpleName
-        private val launchedCount: AtomicLong? = AtomicLong()
-        private val skippedCount: AtomicLong? = AtomicLong()
-        private val launchedTasks: Queue<MyAsyncTask<*, *, *>?>? = ConcurrentLinkedQueue()
+        private val TAG: String = AsyncTaskLauncher::class.java.simpleName
+        private val launchedCount: AtomicLong = AtomicLong()
+        private val skippedCount: AtomicLong = AtomicLong()
+        private val launchedTasks: Queue<MyAsyncTask<*, *, *>> = ConcurrentLinkedQueue()
 
         @Volatile
         private var SYNC_POOL_EXECUTOR: ThreadPoolExecutor? = null
@@ -90,7 +85,8 @@ ${threadPoolInfo()}"""
 
         @Volatile
         private var FILE_DOWNLOAD_EXECUTOR: ThreadPoolExecutor? = null
-        fun getExecutor(pool: PoolEnum?): ThreadPoolExecutor? {
+
+        fun getExecutor(pool: PoolEnum): ThreadPoolExecutor {
             var executor: ThreadPoolExecutor?
             executor = when (pool) {
                 PoolEnum.LONG_UI -> LONG_UI_POOL_EXECUTOR
@@ -116,7 +112,7 @@ ${threadPoolInfo()}"""
             return executor
         }
 
-        private fun setExecutor(pool: PoolEnum?, executor: ThreadPoolExecutor?) {
+        private fun setExecutor(pool: PoolEnum, executor: ThreadPoolExecutor?) {
             onExecutorRemoval(pool)
             when (pool) {
                 PoolEnum.LONG_UI -> LONG_UI_POOL_EXECUTOR = executor
@@ -127,27 +123,27 @@ ${threadPoolInfo()}"""
             }
         }
 
-        fun execute(backgroundFunc: Runnable?): Try<Void?>? {
+        fun execute(backgroundFunc: Runnable): Try<Void> {
             return execute<Any?, Any?>(null, { p: Any? ->
                 backgroundFunc.run()
-                null
+                Try.success(null)
             }, { p: Any? -> Consumer { r: Try<Any?>? -> } })
         }
 
         fun <Params, Result> execute(params: Params?,
-                                     backgroundFunc: Function<Params?, Try<Result?>?>?,
-                                     uiConsumer: Function<Params?, Consumer<Try<Result?>?>?>?): Try<Void?>? {
-            val asyncTask: MyAsyncTask<Params?, Void?, Try<Result?>?> = MyAsyncTask.Companion.fromFunc(params, backgroundFunc, uiConsumer)
+                                     backgroundFunc: Function<Params?, Try<Result>?>,
+                                     uiConsumer: Function<Params?, Consumer<Try<Result>?>>): Try<Void> {
+            val asyncTask: MyAsyncTask<Params?, Void?, Try<Result>?> = MyAsyncTask.fromFunc(params, backgroundFunc, uiConsumer)
             return AsyncTaskLauncher<Params?>().execute(params, asyncTask, params)
         }
 
-        fun execute(objTag: Any?, asyncTask: MyAsyncTask<Void?, *, *>?): Try<Void?>? {
+        fun execute(objTag: Any?, asyncTask: MyAsyncTask<Void?, *, *>): Try<Void> {
             val launcher = AsyncTaskLauncher<Void?>()
             return launcher.execute(objTag, asyncTask, null)
         }
 
         private fun cancelStalledTasks() {
-            val poolsToShutDown: MutableSet<PoolEnum?> = HashSet()
+            val poolsToShutDown: MutableSet<PoolEnum> = HashSet()
             for (launched in launchedTasks) {
                 if (launched.needsBackgroundWork() && !launched.isReallyWorking()) {
                     MyLog.v(TAG) { "Found stalled task at " + launched.pool + ": " + launched }
@@ -173,14 +169,14 @@ ${threadPoolInfo()}"""
             }
         }
 
-        private fun onExecutorRemoval(pool: PoolEnum?) {
+        private fun onExecutorRemoval(pool: PoolEnum) {
             MyLog.v(TAG) { "On removing executor for pool " + pool.name }
             for (launched in launchedTasks) {
                 if (launched.pool == pool) launched.hasExecutor = false
             }
         }
 
-        fun threadPoolInfo(): String? {
+        fun threadPoolInfo(): String {
             val builder = getLaunchedTasksInfo()
             builder.append("\nThread pools:")
             for (pool in PoolEnum.values()) {
@@ -192,7 +188,7 @@ ${threadPoolInfo()}"""
             return builder.toString()
         }
 
-        private fun getLaunchedTasksInfo(): StringBuilder? {
+        private fun getLaunchedTasksInfo(): StringBuilder {
             val builder = StringBuilder("\n")
             var pendingCount: Long = 0
             var queuedCount: Long = 0
@@ -200,34 +196,25 @@ ${threadPoolInfo()}"""
             var finishingCount: Long = 0
             var finishedCount: Long = 0
             for (launched in launchedTasks) {
-                when (launched.getStatus()) {
+                when (val s = launched.getStatus()) {
                     AsyncTask.Status.PENDING -> {
                         pendingCount++
-                        builder.append("""
-    P $pendingCount. ${launched.toString()}
-    
-    """.trimIndent())
+                        builder.append("P $pendingCount. $launched\n")
                     }
                     AsyncTask.Status.RUNNING -> if (launched.backgroundStartedAt == 0L) {
-                        queuedCount++
-                        builder.append("""
-    Q $queuedCount. ${launched.toString()}
-    
-    """.trimIndent())
-                    } else if (launched.backgroundEndedAt == 0L) {
-                        runningCount++
-                        builder.append("""
-    R $runningCount. ${launched.toString()}
-    
-    """.trimIndent())
-                    } else {
-                        finishingCount++
-                        builder.append("""
-    F $finishingCount. ${launched.toString()}
-    
-    """.trimIndent())
+                            queuedCount++
+                            builder.append("Q $queuedCount. $launched\n")
+                        } else if (launched.backgroundEndedAt == 0L) {
+                            runningCount++
+                            builder.append("R $runningCount. $launched\n")
+                        } else {
+                            finishingCount++
+                            builder.append("F $finishingCount. $launched\n")
                     }
                     AsyncTask.Status.FINISHED -> finishedCount++
+                    else -> {
+                        builder.append("$s ??. $launched\n")
+                    }
                 }
             }
             val builder2 = StringBuilder("Tasks:\n")
@@ -250,9 +237,9 @@ ${threadPoolInfo()}"""
             return builder2
         }
 
-        private fun shutdownExecutors(pools: MutableCollection<PoolEnum?>) {
+        private fun shutdownExecutors(pools: MutableCollection<PoolEnum>) {
             for (pool in pools) {
-                val executor = getExecutor(pool) ?: continue
+                val executor = getExecutor(pool)
                 MyLog.v(TAG) { "Shutting down executor $pool:$executor" }
                 executor.shutdownNow()
                 setExecutor(pool, null)
@@ -260,12 +247,12 @@ ${threadPoolInfo()}"""
         }
 
         fun forget() {
-            Arrays.asList(*PoolEnum.values()).forEach(Consumer { pool: PoolEnum? -> cancelPoolTasks(pool) })
+            Arrays.asList(*PoolEnum.values()).forEach(Consumer { pool: PoolEnum -> cancelPoolTasks(pool) })
             cancelStalledTasks()
             removeFinishedTasks()
         }
 
-        fun cancelPoolTasks(pool: PoolEnum?) {
+        fun cancelPoolTasks(pool: PoolEnum) {
             MyLog.v(TAG) { "Cancelling tasks for pool " + pool.name }
             for (launched in launchedTasks) {
                 if (!launched.cancelable) continue

@@ -24,15 +24,16 @@ import org.andstatus.app.data.converter.DatabaseConverterController
 import org.andstatus.app.util.MyLog
 import java.util.concurrent.atomic.AtomicBoolean
 
-class DatabaseHolder(context: Context?, private val creationEnabled: Boolean) : SQLiteOpenHelper(context, DATABASE_NAME, null, DatabaseCreator.Companion.DATABASE_VERSION) {
+class DatabaseHolder(context: Context, private val creationEnabled: Boolean) :
+        SQLiteOpenHelper(context, DATABASE_NAME, null, DatabaseCreator.DATABASE_VERSION) {
     @Volatile
     private var databaseWasNotCreated = false
-    private val onUpgradeTriggered: AtomicBoolean? = AtomicBoolean(false)
-    fun checkState(): MyContextState? {
+    private val onUpgradeTriggered: AtomicBoolean = AtomicBoolean(false)
+    fun checkState(): MyContextState {
         if (databaseWasNotCreated) {
             return MyContextState.DATABASE_UNAVAILABLE
         }
-        if (DatabaseConverterController.Companion.isUpgradeError()) {
+        if (DatabaseConverterController.isUpgradeError()) {
             return MyContextState.ERROR
         }
         var state = MyContextState.ERROR
@@ -40,7 +41,7 @@ class DatabaseHolder(context: Context?, private val creationEnabled: Boolean) : 
             onUpgradeTriggered.set(false)
             if (MyStorage.isDataAvailable()) {
                 val db = writableDatabase
-                if (onUpgradeTriggered.get() || DatabaseConverterController.Companion.isUpgrading()) {
+                if (onUpgradeTriggered.get() || DatabaseConverterController.isUpgrading()) {
                     state = MyContextState.UPGRADING
                 } else {
                     if (db != null && db.isOpen) {
@@ -57,7 +58,7 @@ class DatabaseHolder(context: Context?, private val creationEnabled: Boolean) : 
         return state
     }
 
-    override fun onCreate(db: SQLiteDatabase?) {
+    override fun onCreate(db: SQLiteDatabase) {
         if (!creationEnabled) {
             databaseWasNotCreated = true
             MyLog.e(this, "Database creation disabled")
@@ -79,7 +80,7 @@ class DatabaseHolder(context: Context?, private val creationEnabled: Boolean) : 
     }
 
     companion object {
-        val DATABASE_NAME: String? = "andstatus.sqlite"
+        val DATABASE_NAME: String = "andstatus.sqlite"
     }
 
     init {

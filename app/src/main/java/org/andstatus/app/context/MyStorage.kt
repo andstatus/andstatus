@@ -18,11 +18,9 @@ package org.andstatus.app.context
 import android.os.Environment
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import java.io.File
 import java.util.*
-import java.util.function.ToLongFunction
 import java.util.stream.Stream
 
 /**
@@ -30,15 +28,15 @@ import java.util.stream.Stream
  * @author yvolk@yurivolkov.com
  */
 object MyStorage {
-    val TEMP_FILENAME_PREFIX: String? = "temp_"
+    val TEMP_FILENAME_PREFIX: String = "temp_"
     const val FILE_CHUNK_SIZE = 250000
-    private val TAG: String? = MyStorage::class.java.simpleName
+    private val TAG: String = MyStorage::class.java.simpleName
 
     /** Standard directory in which to place databases  */
-    val DIRECTORY_DATABASES: String? = "databases"
-    val DIRECTORY_DOWNLOADS: String? = "downloads"
-    val DIRECTORY_LOGS: String? = "logs"
-    fun isApplicationDataCreated(): TriState? {
+    val DIRECTORY_DATABASES: String = "databases"
+    val DIRECTORY_DOWNLOADS: String = "downloads"
+    val DIRECTORY_LOGS: String = "logs"
+    fun isApplicationDataCreated(): TriState {
         return SharedPreferencesUtil.areDefaultPreferenceValuesSet()
     }
 
@@ -70,14 +68,14 @@ object MyStorage {
         val method = "getDataFilesDir"
         var dir: File? = null
         val textToLog = StringBuilder()
-        val myContext: MyContext = MyContextHolder.Companion.myContextHolder.getNow()
+        val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
         if (myContext.context() == null) {
             textToLog.append("No android.content.Context yet")
         } else {
             if (isStorageExternal(useExternalStorage)) {
                 if (isWritableExternalStorageAvailable(textToLog)) {
                     try {
-                        dir = myContext.baseContext().getExternalFilesDir(type)
+                        dir = myContext.baseContext()?.getExternalFilesDir(type)
                     } catch (e: NullPointerException) {
                         // I noticed this exception once, but that time it was related to SD card malfunction...
                         if (logged) {
@@ -86,8 +84,8 @@ object MyStorage {
                     }
                 }
             } else {
-                dir = myContext.baseContext().filesDir
-                if (!StringUtil.isEmpty(type)) {
+                dir = myContext.baseContext()?.filesDir
+                if (!type.isNullOrEmpty()) {
                     dir = File(dir, type)
                 }
             }
@@ -160,26 +158,29 @@ object MyStorage {
         return getDataFilesDir(null) != null
     }
 
-    fun isTempFile(file: File?): Boolean {
+    fun isTempFile(file: File): Boolean {
         return file.getName().startsWith(TEMP_FILENAME_PREFIX)
     }
 
-    fun getMediaFiles(): Stream<File?>? {
-        return Arrays.stream(getDataFilesDir(DIRECTORY_DOWNLOADS).listFiles()).filter { obj: File? -> obj.isFile() }
+    fun getMediaFiles(): Stream<File>? = getDataFilesDir(DIRECTORY_DOWNLOADS)?.let {
+        Arrays.stream(it.listFiles()).filter { obj: File -> obj.isFile() }
     }
 
     fun newTempFile(filename: String?): File? {
         return newMediaFile(TEMP_FILENAME_PREFIX + filename)
     }
 
-    fun newMediaFile(filename: String?): File? {
+    fun newMediaFile(filename: String): File? {
         val folder = getDataFilesDir(DIRECTORY_DOWNLOADS)
-        if (!folder.exists()) folder.mkdir()
-        return File(folder, filename)
+        folder?.let {
+            if (!it.exists()) it.mkdir()
+            return File(it, filename)
+        }
+        return null
     }
 
     fun getMediaFilesSize(): Long {
-        return getMediaFiles().mapToLong(ToLongFunction { obj: File? -> obj.length() }).sum()
+        return getMediaFiles()?.mapToLong { obj: File -> obj.length() }?.sum() ?: 0
     }
 
     fun getLogsDir(logged: Boolean): File? {

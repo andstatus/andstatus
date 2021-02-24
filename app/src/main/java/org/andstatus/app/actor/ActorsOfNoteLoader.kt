@@ -40,7 +40,7 @@ class ActorsOfNoteLoader(myContext: MyContext?, actorsScreenType: ActorsScreenTy
         addActorIdToList(originOfSelectedNote, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, selectedNoteId))
         addActorIdToList(originOfSelectedNote, MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedNoteId))
         fromNoteId(originOfSelectedNote, selectedNoteId).getNonSpecialActors().forEach(Consumer { actor: Actor? -> addActorToList(actor) })
-        MyQuery.getRebloggers(MyContextHolder.Companion.myContextHolder.getNow().getDatabase(), origin, selectedNoteId).forEach(Consumer { actor: Actor? -> addActorToList(actor) })
+        MyQuery.getRebloggers( MyContextHolder.myContextHolder.getNow().getDatabase(), origin, selectedNoteId).forEach(Consumer { actor: Actor? -> addActorToList(actor) })
     }
 
     override fun getSubtitle(): String? {
@@ -49,7 +49,7 @@ class ActorsOfNoteLoader(myContext: MyContext?, actorsScreenType: ActorsScreenTy
 
     init {
         noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, selectedNoteId)
-        originOfSelectedNote = MyContextHolder.Companion.myContextHolder.getNow().origins().fromId(
+        originOfSelectedNote =  MyContextHolder.myContextHolder.getNow().origins().fromId(
                 MyQuery.noteIdToOriginId(selectedNoteId))
     }
 }

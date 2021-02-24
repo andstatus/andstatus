@@ -28,7 +28,6 @@ import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.timeline.LoadableListActivity
 import org.andstatus.app.util.CollectionsUtil
 import org.andstatus.app.util.MyUrlSpan
-import org.andstatus.app.util.StringUtil
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -88,7 +87,7 @@ class SuggestionsAdapter(activity: LoadableListActivity<*>, searchObjects: Searc
         }
 
         private fun loadFiltered(prefixString: String?): MutableList<String?>? {
-            if (StringUtil.isEmpty(prefixString)) {
+            if (prefixString.isNullOrEmpty()) {
                 return emptyList<String?>()
             }
             val filteredValues: MutableList<String?> = ArrayList()
@@ -124,7 +123,7 @@ class SuggestionsAdapter(activity: LoadableListActivity<*>, searchObjects: Searc
         private val notesSuggestions: MutableList<String?>? = CopyOnWriteArrayList()
         private val actorsSuggestions: MutableList<String?>? = CopyOnWriteArrayList()
         fun addSuggestion(searchObjects: SearchObjects?, suggestion: String?) {
-            if (StringUtil.isEmpty(suggestion)) {
+            if (suggestion.isNullOrEmpty()) {
                 return
             }
             val suggestions = getAllSuggestions(searchObjects)

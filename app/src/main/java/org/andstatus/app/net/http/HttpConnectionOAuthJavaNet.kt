@@ -149,7 +149,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
     /** This method is not legacy HTTP  */
     @Throws(IOException::class)
     private fun writeMedia(conn: HttpURLConnection?, request: HttpRequest?) {
-        val contentResolver: ContentResolver = MyContextHolder.Companion.myContextHolder.getNow().context().getContentResolver()
+        val contentResolver: ContentResolver =  MyContextHolder.myContextHolder.getNow().context().getContentResolver()
         val mediaUri = request.mediaUri.get()
         conn.setChunkedStreamingMode(0)
         conn.setRequestProperty("Content-Type", uri2MimeType(contentResolver, mediaUri))

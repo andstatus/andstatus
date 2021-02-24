@@ -46,7 +46,7 @@ class NotificationData(event: NotificationEventType, myActor: Actor, updatedDate
         val timelineType: TimelineType = TimelineType.Companion.from(event)
         // When clicking on notifications, always open Combine timeline for Unread notifications
         val timeline = myContext.timelines().get(timelineType,
-                if (timelineType == TimelineType.UNREAD_NOTIFICATIONS) Actor.Companion.EMPTY else myActor, Origin.Companion.EMPTY)
+                if (timelineType == TimelineType.UNREAD_NOTIFICATIONS) Actor.Companion.EMPTY else myActor,  Origin.EMPTY)
                 .orElse(myContext.timelines().default)
         val intent = Intent(myContext.context(), FirstActivity::class.java)
         // "rnd" is necessary to actually bring Extra to the target intent

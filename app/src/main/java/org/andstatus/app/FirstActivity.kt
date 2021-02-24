@@ -37,28 +37,21 @@ import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.SharedPreferencesUtil
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.BiConsumer
-import java.util.function.Consumer
-import java.util.function.UnaryOperator
 
 /** Activity to be started, when Application is not initialised yet (or needs re-initialization).
  * It allows to avoid "Application not responding" errors.
  * It is transparent and shows progress indicator only, launches next activity after application initialization.
  */
 class FirstActivity : AppCompatActivity(), IdentifiableInstance {
-    private val instanceId = InstanceId.next()
+    override val instanceId = InstanceId.next()
 
     enum class NeedToStart {
         HELP, CHANGELOG, OTHER
-    }
-
-    override fun getInstanceId(): Long {
-        return instanceId
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,27 +73,29 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
     }
 
     private fun parseNewIntent(intent: Intent?) {
-        when (MyAction.Companion.fromIntent(intent)) {
-            MyAction.INITIALIZE_APP -> MyContextHolder.Companion.myContextHolder.initialize(this)
-                    .whenSuccessAsync(Consumer { myContext: MyContext? -> finish() }, UiThreadExecutor.Companion.INSTANCE)
+        when (MyAction.fromIntent(intent)) {
+            MyAction.INITIALIZE_APP ->  MyContextHolder.myContextHolder.initialize(this)
+                    .whenSuccessAsync({ myContext: MyContext? -> finish() }, UiThreadExecutor.INSTANCE)
             MyAction.SET_DEFAULT_VALUES -> {
                 setDefaultValuesOnUiThread(this)
                 finish()
             }
             MyAction.CLOSE_ALL_ACTIVITIES -> finish()
-            else -> if (MyContextHolder.Companion.myContextHolder.getFuture().isReady() || MyContextHolder.Companion.myContextHolder.getNow().state() == MyContextState.UPGRADING) {
-                startNextActivitySync(MyContextHolder.Companion.myContextHolder.getNow(), intent)
+            else -> if ( MyContextHolder.myContextHolder.getFuture().isReady() ||  MyContextHolder.myContextHolder.getNow().state() == MyContextState.UPGRADING) {
+                startNextActivitySync( MyContextHolder.myContextHolder.getNow(), intent)
                 finish()
             } else {
-                MyContextHolder.Companion.myContextHolder.initialize(this)
-                        .with(UnaryOperator { future: CompletableFuture<MyContext?>? -> future.whenCompleteAsync(startNextActivity, UiThreadExecutor.Companion.INSTANCE) })
+                 MyContextHolder.myContextHolder.initialize(this)
+                        .with { future: CompletableFuture<MyContext> ->
+                            future.whenCompleteAsync(startNextActivity, UiThreadExecutor.INSTANCE)
+                        }
             }
         }
     }
 
-    private val startNextActivity: BiConsumer<MyContext?, Throwable?>? = BiConsumer { myContext: MyContext?, throwable: Throwable? ->
+    private val startNextActivity: BiConsumer<MyContext?, Throwable?> = BiConsumer { myContext: MyContext?, throwable: Throwable? ->
         var launched = false
-        if (myContext != null && myContext.isReady && !myContext.isExpired) {
+        if (myContext != null && myContext.isReady() && !myContext.isExpired()) {
             try {
                 startNextActivitySync(myContext, intent)
                 launched = true
@@ -111,22 +106,22 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
             }
         }
         if (!launched) {
-            HelpActivity.Companion.startMe(
-                    if (myContext == null) MyContextHolder.Companion.myContextHolder.getNow().context() else myContext.context(),
-                    true, HelpActivity.Companion.PAGE_LOGO)
+            HelpActivity.startMe(
+                    if (myContext == null)  MyContextHolder.myContextHolder.getNow().context() else myContext.context(),
+                    true, HelpActivity.PAGE_LOGO)
         }
         finish()
     }
 
-    private fun startNextActivitySync(myContext: MyContext?, myIntent: Intent?) {
+    private fun startNextActivitySync(myContext: MyContext, myIntent: Intent?) {
         when (needToStartNext(this, myContext)) {
-            NeedToStart.HELP -> HelpActivity.Companion.startMe(this, true, HelpActivity.Companion.PAGE_LOGO)
-            NeedToStart.CHANGELOG -> HelpActivity.Companion.startMe(this, true, HelpActivity.Companion.PAGE_CHANGELOG)
+            NeedToStart.HELP -> HelpActivity.startMe(this, true, HelpActivity.PAGE_LOGO)
+            NeedToStart.CHANGELOG -> HelpActivity.startMe(this, true, HelpActivity.PAGE_CHANGELOG)
             else -> {
                 val intent = Intent(this, TimelineActivity::class.java)
                 if (myIntent != null) {
                     val action = myIntent.action
-                    if (!StringUtil.isEmpty(action)) {
+                    if (!action.isNullOrEmpty()) {
                         intent.action = action
                     }
                     val data = myIntent.data
@@ -144,48 +139,47 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
     }
 
     companion object {
-        private val TAG: String? = FirstActivity::class.java.simpleName
-        private val SET_DEFAULT_VALUES: String? = "setDefaultValues"
-        private val resultOfSettingDefaults: AtomicReference<TriState?>? = AtomicReference(TriState.UNKNOWN)
-        var isFirstrun: AtomicBoolean? = AtomicBoolean(true)
+        private val TAG: String = FirstActivity::class.java.simpleName
+        private val SET_DEFAULT_VALUES: String = "setDefaultValues"
+        private val resultOfSettingDefaults: AtomicReference<TriState> = AtomicReference(TriState.UNKNOWN)
+        var isFirstrun: AtomicBoolean = AtomicBoolean(true)
 
         /**
          * Based on http://stackoverflow.com/questions/14001963/finish-all-activities-at-a-time
          */
-        fun closeAllActivities(context: Context?) {
-            context.startActivity(MyAction.CLOSE_ALL_ACTIVITIES.intent
+        fun closeAllActivities(context: Context) {
+            context.startActivity(MyAction.CLOSE_ALL_ACTIVITIES.getIntent()
                     .setClass(context, FirstActivity::class.java)
                     .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK + Intent.FLAG_ACTIVITY_NEW_TASK)
             )
         }
 
-        fun goHome(activity: Activity?) {
+        fun goHome(activity: Activity) {
             try {
-                MyLog.v(TAG) { "goHome from " + MyStringBuilder.Companion.objToTag(activity) }
+                MyLog.v(TAG) { "goHome from " + MyStringBuilder.objToTag(activity) }
                 startApp(activity)
             } catch (e: Exception) {
                 MyLog.v(TAG, "goHome", e)
-                MyContextHolder.Companion.myContextHolder.thenStartApp()
+                 MyContextHolder.myContextHolder.thenStartApp()
             }
         }
 
-        fun startApp(myContext: MyContext?) {
-            val context = myContext.context()
-            startApp(context)
+        fun startApp(myContext: MyContext) {
+            myContext.context()?.let { startApp(it) }
         }
 
-        private fun startApp(context: Context?) {
+        private fun startApp(context: Context) {
             MyLog.i(context, "startApp")
             val intent = Intent(context, FirstActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
             context.startActivity(intent)
         }
 
-        fun needToStartNext(context: Context?, myContext: MyContext?): NeedToStart? {
+        fun needToStartNext(context: Context, myContext: MyContext): NeedToStart {
             if (!myContext.isReady()) {
                 MyLog.i(context, "Context is not ready: " + myContext.toString())
                 return NeedToStart.HELP
-            } else if (myContext.accounts().isEmpty) {
+            } else if (myContext.accounts().isEmpty()) {
                 MyLog.i(context, "No AndStatus Accounts yet")
                 return NeedToStart.HELP
             }
@@ -197,7 +191,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
         /**
          * @return true if we opened previous version
          */
-        fun checkAndUpdateLastOpenedAppVersion(context: Context?, update: Boolean): Boolean {
+        fun checkAndUpdateLastOpenedAppVersion(context: Context, update: Boolean): Boolean {
             var changed = false
             val versionCodeLast = SharedPreferencesUtil.getLong(MyPreferences.KEY_VERSION_CODE_LAST)
             val pm = context.getPackageManager()
@@ -215,7 +209,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
                                 + if (update) ", updating" else "")
                     }
                     changed = true
-                    if (update && MyContextHolder.Companion.myContextHolder.getNow().isReady()) {
+                    if (update &&  MyContextHolder.myContextHolder.getNow().isReady()) {
                         SharedPreferencesUtil.putLong(MyPreferences.KEY_VERSION_CODE_LAST, versionCode.toLong())
                     }
                 }
@@ -225,7 +219,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
             return changed
         }
 
-        fun startMeAsync(context: Context?, myAction: MyAction?) {
+        fun startMeAsync(context: Context, myAction: MyAction) {
             val intent = Intent(context, FirstActivity::class.java)
             intent.action = myAction.getAction()
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -243,8 +237,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
                 resultOfSettingDefaults.set(TriState.UNKNOWN)
                 try {
                     if (context is Activity) {
-                        val activity = context as Activity?
-                        activity.runOnUiThread(Runnable { setDefaultValuesOnUiThread(activity) })
+                        context.runOnUiThread(Runnable { setDefaultValuesOnUiThread(context) })
                     } else {
                         startMeAsync(context, MyAction.SET_DEFAULT_VALUES)
                     }
@@ -260,10 +253,10 @@ ${MyLog.getStackTrace(e)}""")
             return resultOfSettingDefaults.get().toBoolean(false)
         }
 
-        private fun setDefaultValuesOnUiThread(activity: Activity?) {
+        private fun setDefaultValuesOnUiThread(activity: Activity) {
             try {
                 MyLog.i(activity, SET_DEFAULT_VALUES + " started")
-                MySettingsGroup.Companion.setDefaultValues(activity)
+                MySettingsGroup.setDefaultValues(activity)
                 resultOfSettingDefaults.set(TriState.TRUE)
                 MyLog.i(activity, SET_DEFAULT_VALUES + " completed")
                 return

@@ -24,11 +24,12 @@ import org.andstatus.app.util.MyStringBuilder
 /**
  * See http://stackoverflow.com/questions/24658428/swiperefreshlayout-webview-when-scroll-position-is-at-top
  */
-class MySwipeRefreshLayout @JvmOverloads constructor(context: Context?, attrs: AttributeSet? = null) : SwipeRefreshLayout(context, attrs) {
-    private val mCanSwipeRefreshScrollUpCallback: CanSwipeRefreshScrollUpCallback? = null
+class MySwipeRefreshLayout @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
+        SwipeRefreshLayout(context, attrs) {
+    private var mCanSwipeRefreshScrollUpCallback: CanSwipeRefreshScrollUpCallback? = null
 
     interface CanSwipeRefreshScrollUpCallback {
-        open fun canSwipeRefreshChildScrollUp(): Boolean
+        fun canSwipeRefreshChildScrollUp(): Boolean
     }
 
     override fun canChildScrollUp(): Boolean {
@@ -36,9 +37,9 @@ class MySwipeRefreshLayout @JvmOverloads constructor(context: Context?, attrs: A
     }
 
     init {
-        if (CanSwipeRefreshScrollUpCallback::class.java.isAssignableFrom(context.javaClass)) {
-            mCanSwipeRefreshScrollUpCallback = context as CanSwipeRefreshScrollUpCallback?
-            MyLog.v(this) { "Created for " + MyStringBuilder.Companion.objToTag(mCanSwipeRefreshScrollUpCallback) }
+        if (context is CanSwipeRefreshScrollUpCallback) {
+            mCanSwipeRefreshScrollUpCallback = context
+            MyLog.v(this) { "Created for " + MyStringBuilder.objToTag(mCanSwipeRefreshScrollUpCallback) }
         }
     }
 }

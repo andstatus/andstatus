@@ -30,7 +30,7 @@ import java.util.*
 /**
  * @author yvolk@yurivolkov.com
  */
-open class TimelineData<T : ViewItem<T?>?>(oldData: TimelineData<T?>?, thisPage: TimelinePage<T?>) {
+open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: TimelinePage<T>) {
     val pages // Contains at least one Page
             : MutableList<TimelinePage<T?>?>?
     val updatedAt = MyLog.uniqueCurrentTimeMS()

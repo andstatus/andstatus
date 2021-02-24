@@ -104,7 +104,7 @@ class ConnectionPumpio : Connection() {
         val oid = JsonUtils.optString(jso, "id")
         val actor: Actor = Actor.Companion.fromTwoIds(data.origin, groupType, 0, oid)
         val username = JsonUtils.optString(jso, "preferredUsername")
-        actor.username = if (StringUtil.isEmpty(username)) actorOidToUsername(oid) else username
+        actor.username = if (username.isNullOrEmpty()) actorOidToUsername(oid) else username
         actor.realName = JsonUtils.optString(jso, NAME_PROPERTY)
         actor.avatarUrl = JsonUtils.optStringInside(jso, "image", "url")
         actor.location = JsonUtils.optStringInside(jso, "location", NAME_PROPERTY)
@@ -230,7 +230,7 @@ class ConnectionPumpio : Connection() {
                 }
             }
         }
-        if (StringUtil.isEmpty(objectType)) {
+        if (objectType.isNullOrEmpty()) {
             objectType = "unknown object type: $oid"
             MyLog.w(this, objectType)
         }
@@ -304,7 +304,7 @@ class ConnectionPumpio : Connection() {
     @Throws(JSONException::class, ConnectionException::class)
     private fun parseActivity(activity: AActivity?, jsoActivity: JSONObject?): AActivity? {
         val oid = JsonUtils.optString(jsoActivity, "id")
-        if (StringUtil.isEmpty(oid)) {
+        if (oid.isNullOrEmpty()) {
             MyLog.d(this, "Pumpio activity has no id:" + jsoActivity.toString(2))
             return AActivity.Companion.EMPTY
         }
@@ -363,7 +363,7 @@ class ConnectionPumpio : Connection() {
 
     @Throws(JSONException::class)
     private fun setVia(note: Note?, activity: JSONObject?) {
-        if (StringUtil.isEmpty(note.via) && activity.has(Properties.GENERATOR.code)) {
+        if (note.via.isNullOrEmpty() && activity.has(Properties.GENERATOR.code)) {
             val generator = activity.getJSONObject(Properties.GENERATOR.code)
             if (generator.has(NAME_PROPERTY)) {
                 note.via = generator.getString(NAME_PROPERTY)
@@ -375,7 +375,7 @@ class ConnectionPumpio : Connection() {
     private fun noteFromJsonComment(parentActivity: AActivity?, jso: JSONObject?) {
         try {
             val oid = JsonUtils.optString(jso, "id")
-            if (StringUtil.isEmpty(oid)) {
+            if (oid.isNullOrEmpty()) {
                 MyLog.d(TAG, "Pumpio object has no id:" + jso.toString(2))
                 return
             }
@@ -454,7 +454,7 @@ class ConnectionPumpio : Connection() {
      * 2014-01-22 According to the crash reports, actorId may not have "acct:" prefix
      */
     fun actorOidToUsername(actorId: String?): String? {
-        return if (StringUtil.isEmpty(actorId)) "" else UriUtils.toOptional(actorId)
+        return if (actorId.isNullOrEmpty()) "" else UriUtils.toOptional(actorId)
                 .map { obj: Uri? -> obj.getPath() }
                 .map(stripBefore("/api"))
                 .map(stripBefore("/"))
@@ -466,7 +466,7 @@ class ConnectionPumpio : Connection() {
     }
 
     fun actorOidToHost(actorId: String?): String? {
-        if (StringUtil.isEmpty(actorId)) return ""
+        if (actorId.isNullOrEmpty()) return ""
         val indexOfAt = actorId.indexOf('@')
         return if (indexOfAt < 0) "" else actorId.substring(indexOfAt + 1)
     }
@@ -497,7 +497,7 @@ class ConnectionPumpio : Connection() {
         val FULL_IMAGE_OBJECT: String? = "fullImage"
         fun stripBefore(prefixEnd: String?): UnaryOperator<String?> {
             return label@ UnaryOperator { value: String? ->
-                if (StringUtil.isEmpty(value)) return@label ""
+                if (value.isNullOrEmpty()) return@label ""
                 val index = value.indexOf(prefixEnd)
                 if (index >= 0) value.substring(index + prefixEnd.length) else value
             }
@@ -505,7 +505,7 @@ class ConnectionPumpio : Connection() {
 
         fun stripAfter(suffixStart: String?): UnaryOperator<String?> {
             return label@ UnaryOperator { value: String? ->
-                if (StringUtil.isEmpty(value)) return@label ""
+                if (value.isNullOrEmpty()) return@label ""
                 val index = value.indexOf(suffixStart)
                 if (index >= 0) value.substring(0, index) else value
             }

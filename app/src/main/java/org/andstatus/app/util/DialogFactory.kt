@@ -31,24 +31,24 @@ import org.andstatus.app.ActivityRequestCode
 import java.util.function.Consumer
 
 object DialogFactory {
-    private val YES_CANCEL_DIALOG_TAG: String? = "yes_cancel"
-    private val DIALOG_TITLE_KEY: String? = "title"
-    private val DIALOG_MESSAGE_KEY: String? = "message"
-    fun showOkAlertDialog(method: Any?, context: Context?, @StringRes titleId: Int, @StringRes summaryId: Int): Dialog? {
+    private val YES_CANCEL_DIALOG_TAG: String = "yes_cancel"
+    private val DIALOG_TITLE_KEY: String = "title"
+    private val DIALOG_MESSAGE_KEY: String = "message"
+    fun showOkAlertDialog(method: Any, context: Context, @StringRes titleId: Int, @StringRes summaryId: Int): Dialog {
         return showOkAlertDialog(method, context, titleId, context.getText(summaryId))
     }
 
-    fun showOkAlertDialog(method: Any?, context: Context?, @StringRes titleId: Int, summary: CharSequence?): Dialog? {
+    fun showOkAlertDialog(method: Any, context: Context, @StringRes titleId: Int, summary: CharSequence?): Dialog {
         val dialog = AlertDialog.Builder(context)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle(titleId)
                 .setMessage(I18n.trimTextAt(summary, 1000))
-                .setPositiveButton(android.R.string.ok) { dialog1: DialogInterface?, whichButton: Int -> dialog1.dismiss() }
+                .setPositiveButton(android.R.string.ok) { dialog1: DialogInterface, whichButton: Int -> dialog1.dismiss() }
                 .create()
         if (!Activity::class.java.isAssignableFrom(context.javaClass)) {
             // See http://stackoverflow.com/questions/32224452/android-unable-to-add-window-permission-denied-for-this-window-type
             // and maybe http://stackoverflow.com/questions/17059545/show-dialog-alert-from-a-non-activity-class-in-android
-            dialog.window.setType(WindowManager.LayoutParams.TYPE_TOAST)
+            dialog.window?.setType(WindowManager.LayoutParams.TYPE_TOAST)
         }
         try {
             dialog.show()
@@ -73,18 +73,18 @@ object DialogFactory {
         }
     }
 
-    fun showOkCancelDialog(fragment: Fragment?, titleId: Int, messageId: Int, requestCode: ActivityRequestCode?) {
+    fun showOkCancelDialog(fragment: Fragment, titleId: Int, messageId: Int, requestCode: ActivityRequestCode) {
         val dialog: DialogFragment = OkCancelDialogFragment()
         val args = Bundle()
         args.putCharSequence(DIALOG_TITLE_KEY, fragment.getText(titleId))
         args.putCharSequence(DIALOG_MESSAGE_KEY, fragment.getText(messageId))
         dialog.arguments = args
         dialog.setTargetFragment(fragment, requestCode.id)
-        dialog.show(fragment.getFragmentManager(), YES_CANCEL_DIALOG_TAG)
+        dialog.show(fragment.parentFragmentManager, YES_CANCEL_DIALOG_TAG)
     }
 
-    fun showOkCancelDialog(context: Context?, title: CharSequence?, message: CharSequence?,
-                           okCancelConsumer: Consumer<Boolean?>?) {
+    fun showOkCancelDialog(context: Context, title: CharSequence, message: CharSequence,
+                           okCancelConsumer: Consumer<Boolean>) {
         val theBox = AlertDialog.Builder(context)
                 .setTitle(title)
                 .setMessage(message)
@@ -100,10 +100,10 @@ object DialogFactory {
         theBox.show()
     }
 
-    fun showTextInputBox(context: Context?, title: String?, message: String?, textConsumer: Consumer<String?>?,
+    fun showTextInputBox(context: Context, title: String, message: String, textConsumer: Consumer<String?>,
                          initialValue: String?) {
         val input = EditText(context)
-        if (StringUtil.nonEmpty(initialValue)) {
+        if (!initialValue.isNullOrEmpty()) {
             input.setText(initialValue)
         }
         val theBox = AlertDialog.Builder(context)
@@ -120,19 +120,19 @@ object DialogFactory {
     }
 
     class OkCancelDialogFragment : DialogFragment() {
-        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog? {
-            val args = arguments
+        override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+            val args = arguments ?: Bundle()
             val title = args.getString(DIALOG_TITLE_KEY, "")
             val message = args.getString(DIALOG_MESSAGE_KEY, "")
             val builder = AlertDialog.Builder(activity)
             builder.setTitle(title)
                     .setMessage(message)
                     .setPositiveButton(getText(android.R.string.ok)) { dialog: DialogInterface?, id: Int ->
-                        targetFragment.onActivityResult(
+                        targetFragment?.onActivityResult(
                                 targetRequestCode, Activity.RESULT_OK, null)
                     }
                     .setNegativeButton(android.R.string.cancel) { dialog: DialogInterface?, id: Int ->
-                        targetFragment.onActivityResult(
+                        targetFragment?.onActivityResult(
                                 targetRequestCode, Activity.RESULT_CANCELED, null)
                     }
             return builder.create()

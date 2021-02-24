@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.noteimport
+package org.andstatus.app.note
 
 import android.content.Intent
 import android.view.View
@@ -41,11 +41,6 @@ import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicInteger
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -781,10 +776,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -827,11 +818,11 @@ class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem?>() {
         val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.twitterTestAccountName)
         Assert.assertTrue(ma.isValid)
         Assert.assertEquals("Account should be in Twitter: $ma", OriginType.TWITTER, ma.origin.originType)
-        MyContextHolder.Companion.myContextHolder.getNow().accounts().setCurrentAccount(ma)
+         MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
         data = getStaticData(ma)
         MyLog.i(this, "setUp ended")
         return Intent(Intent.ACTION_VIEW,
-                MyContextHolder.Companion.myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.actor, Origin.Companion.EMPTY).getUri())
+                 MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.actor,  Origin.EMPTY).getUri())
     }
 
     private fun getStaticData(ma: MyAccount?): NoteEditorData? {

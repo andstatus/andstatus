@@ -27,7 +27,7 @@ import org.andstatus.app.service.MyServiceEventsReceiver
 import org.andstatus.app.service.MyServiceManager
 
 class DiscoveredOriginList : OriginList(), MyServiceEventsListener {
-    var mServiceConnector: MyServiceEventsReceiver? = MyServiceEventsReceiver(MyContextHolder.Companion.myContextHolder.getNow(), this)
+    var mServiceConnector: MyServiceEventsReceiver? = MyServiceEventsReceiver( MyContextHolder.myContextHolder.getNow(), this)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (DiscoveredOrigins.get().isEmpty()) {
@@ -48,7 +48,7 @@ class DiscoveredOriginList : OriginList(), MyServiceEventsListener {
         MyServiceManager.Companion.setServiceAvailable()
         MyServiceManager.Companion.sendForegroundCommand(
                 CommandData.Companion.newOriginCommand(CommandEnum.GET_OPEN_INSTANCES,
-                        MyContextHolder.Companion.myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL)
+                         MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL)
                 ))
     }
 

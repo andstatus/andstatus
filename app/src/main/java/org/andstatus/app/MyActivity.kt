@@ -35,7 +35,6 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.TriState
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Supplier
 
 /**
  * @author yvolk@yurivolkov.com
@@ -46,8 +45,8 @@ open class MyActivity : AppCompatActivity(), IdentifiableInstance {
     }
 
     // introduce this in order to avoid duplicated restarts: we have one place, where we restart anything
-    protected var onFinishAction: AtomicReference<OnFinishAction?>? = AtomicReference(OnFinishAction.NONE)
-    protected val instanceId = InstanceId.next()
+    protected var onFinishAction: AtomicReference<OnFinishAction> = AtomicReference(OnFinishAction.NONE)
+    override val instanceId = InstanceId.next()
     protected var mLayoutId = 0
     protected var myResumed = false
 
@@ -57,7 +56,7 @@ open class MyActivity : AppCompatActivity(), IdentifiableInstance {
     @Volatile
     private var mFinishing = false
     private var mOptionsMenu: Menu? = null
-    override fun attachBaseContext(newBase: Context?) {
+    override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(MyLocale.onAttachBaseContext(newBase))
     }
 
@@ -85,8 +84,8 @@ open class MyActivity : AppCompatActivity(), IdentifiableInstance {
                 if (previousErrorInflatingTime == 0L) {
                     previousErrorInflatingTime = System.currentTimeMillis()
                     finish()
-                    MyContextHolder.Companion.myContextHolder.getNow().setExpired(Supplier { logMsg })
-                    FirstActivity.Companion.goHome(this)
+                     MyContextHolder.myContextHolder.getNow().setExpired { logMsg }
+                    FirstActivity.goHome(this)
                 } else {
                     throw IllegalStateException(logMsg, e)
                 }
@@ -154,7 +153,7 @@ open class MyActivity : AppCompatActivity(), IdentifiableInstance {
      * Based on http://stackoverflow.com/a/30224178/297710
      * On Immersive mode: https://developer.android.com/training/system-ui/immersive.html
      */
-    fun toggleFullscreen(fullScreenIn: TriState?) {
+    fun toggleFullscreen(fullScreenIn: TriState) {
         var uiOptionsNew = window.decorView.systemUiVisibility
         val fullscreenNew = if (fullScreenIn.known) fullScreenIn.toBoolean(false) else !isFullScreen()
         hideActionBar(fullscreenNew)
@@ -204,7 +203,7 @@ open class MyActivity : AppCompatActivity(), IdentifiableInstance {
     /** @return true if the Activity is finishing
      */
     fun restartMeIfNeeded(): Boolean {
-        return (MyContextHolder.Companion.myContextHolder.needToRestartActivity() && initializeThenRestartActivity()
+        return ( MyContextHolder.myContextHolder.needToRestartActivity() && initializeThenRestartActivity()
                 || isFinishing)
     }
 
@@ -230,8 +229,8 @@ open class MyActivity : AppCompatActivity(), IdentifiableInstance {
             super.finish()
         }
         when (actionToDo) {
-            OnFinishAction.RESTART_ME -> MyContextHolder.Companion.myContextHolder.initialize(this).thenStartActivity(this.intent)
-            OnFinishAction.RESTART_APP -> MyContextHolder.Companion.myContextHolder.initialize(this).thenStartApp()
+            OnFinishAction.RESTART_ME ->  MyContextHolder.myContextHolder.initialize(this).thenStartActivity(this.intent)
+            OnFinishAction.RESTART_APP ->  MyContextHolder.myContextHolder.initialize(this).thenStartApp()
             else -> {
             }
         }
@@ -239,10 +238,6 @@ open class MyActivity : AppCompatActivity(), IdentifiableInstance {
 
     override fun isFinishing(): Boolean {
         return mFinishing || super.isFinishing()
-    }
-
-    override fun getInstanceId(): Long {
-        return instanceId
     }
 
     companion object {

@@ -18,7 +18,6 @@ import org.andstatus.app.origin.Origin
 import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StopWatch
-import org.andstatus.app.util.StringUtil
 import java.util.stream.Collectors
 
 open class ActorsLoader(val myContext: MyContext?, protected val actorsScreenType: ActorsScreenType?, origin: Origin?, centralActorId: Long,
@@ -84,7 +83,7 @@ open class ActorsLoader(val myContext: MyContext?, protected val actorsScreenTyp
     protected open fun getSelection(): String {
         val where = SqlWhere()
         val sqlActorIds = getSqlActorIds()
-        if (StringUtil.nonEmpty(sqlActorIds)) {
+        if (!sqlActorIds.isNullOrEmpty()) {
             where.append(ActorTable.TABLE_NAME + "." + BaseColumns._ID + sqlActorIds)
         } else if (origin.isValid()) {
             where.append(ActorTable.TABLE_NAME + "." + ActorTable.ORIGIN_ID + "=" + origin.getId())

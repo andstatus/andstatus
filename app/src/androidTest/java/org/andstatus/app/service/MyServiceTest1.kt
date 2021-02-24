@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.serviceimport
+package org.andstatus.app.service
 
 import android.content.SyncResult
 import android.database.sqlite.SQLiteDiskIOException
@@ -38,11 +38,6 @@ import org.andstatus.app.util.TriState
 import org.junit.Assert
 import org.junit.Test
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -778,10 +773,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -814,11 +805,11 @@ class MyServiceTest1 : MyServiceTest() {
     fun testAccountSync() {
         val method = "testAccountSync"
         MyLog.i(this, "$method started")
-        val myAccount: MyAccount = MyContextHolder.Companion.myContextHolder.getNow().accounts().getFirstSucceeded()
+        val myAccount: MyAccount =  MyContextHolder.myContextHolder.getNow().accounts().getFirstSucceeded()
         Assert.assertTrue("No successful account", myAccount.isValidAndSucceeded)
-        val myContext: MyContext = MyContextHolder.Companion.myContextHolder.getNow()
+        val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
         myContext.timelines().filter(false, TriState.FALSE,
-                TimelineType.UNKNOWN, Actor.Companion.EMPTY, Origin.Companion.EMPTY)
+                TimelineType.UNKNOWN, Actor.Companion.EMPTY,  Origin.EMPTY)
                 .filter { obj: Timeline? -> obj.isSyncedAutomatically() }
                 .forEach { timeline: Timeline? -> timeline.onSyncEnded(myContext, CommandResult()) }
         var syncResult = SyncResult()
@@ -829,7 +820,7 @@ class MyServiceTest1 : MyServiceTest() {
         Assert.assertEquals("Requests were sent while all timelines just synced " +
                 runner.toString() + "; " + mService.http.toString(),
                 0, mService.http.requestsCounter.toLong())
-        val myContext2: MyContext = MyContextHolder.Companion.myContextHolder.getNow()
+        val myContext2: MyContext =  MyContextHolder.myContextHolder.getNow()
         val timelineToSync: Timeline = DemoAccountInserter.Companion.getAutomaticallySyncableTimeline(myContext2, myAccount)
         timelineToSync.syncSucceededDate = 0
         runner = MyServiceCommandsRunner(myContext2)

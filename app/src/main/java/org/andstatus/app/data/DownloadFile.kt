@@ -19,7 +19,6 @@ import org.andstatus.app.context.MyStorage
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
-import org.andstatus.app.util.StringUtil
 import java.io.File
 import java.util.*
 
@@ -102,7 +101,7 @@ class DownloadFile(filename: String?) : IsEmpty {
     init {
         Objects.requireNonNull(filename)
         this.filename = filename
-        if (StringUtil.isEmpty(filename)) {
+        if (filename.isNullOrEmpty()) {
             file = null
             existed = false
         } else {

@@ -21,7 +21,6 @@ import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
-import org.andstatus.app.util.StringUtil
 
 /**
  * Data to show on UI. May be created on UI thread
@@ -34,8 +33,8 @@ class TimelineTitle private constructor(val title: String?, val subTitle: String
     }
 
     fun updateActivityTitle(activity: MyActivity?, additionalTitleText: String?) {
-        activity.setTitle(if (StringUtil.nonEmpty(additionalTitleText) && StringUtil.isEmpty(subTitle)) MyStringBuilder.Companion.of(title).withSpace(additionalTitleText) else title)
-        activity.setSubtitle(if (StringUtil.isEmpty(subTitle)) "" else MyStringBuilder.Companion.of(subTitle).withSpace(additionalTitleText))
+        activity.setTitle(if (!additionalTitleText.isNullOrEmpty() && subTitle.isNullOrEmpty()) MyStringBuilder.Companion.of(title).withSpace(additionalTitleText) else title)
+        activity.setSubtitle(if (subTitle.isNullOrEmpty()) "" else MyStringBuilder.Companion.of(subTitle).withSpace(additionalTitleText))
         MyLog.v(activity) { "Title: " + toString() }
     }
 

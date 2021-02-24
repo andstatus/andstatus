@@ -40,7 +40,7 @@ class VerifyCredentialsActivityPubTest {
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.activityPubTestOriginName)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.activityPubTestOriginName)
         val accountName: AccountName = AccountName.Companion.fromOriginAndUniqueName(origin, UNIQUE_NAME_IN_ORIGIN)
         mock = ConnectionMock.Companion.newFor(MyAccount.Builder.Companion.fromAccountName(accountName).getAccount())
     }
@@ -59,7 +59,7 @@ class VerifyCredentialsActivityPubTest {
         Assert.assertEquals("Account actorOid", "https://pleroma.site/users/AndStatus", actor.oid)
         Assert.assertEquals("Actor in the database for id=$actorId",
                 actor.oid,
-                MyQuery.idToOid(MyContextHolder.Companion.myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0))
+                MyQuery.idToOid( MyContextHolder.myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0))
         assertActor(actor)
         val stored: Actor = Actor.Companion.loadFromDatabase(mock.getData().origin.myContext, actorId, Supplier<Actor?> { Actor.Companion.EMPTY }, false)
         assertActor(stored)

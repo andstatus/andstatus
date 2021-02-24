@@ -22,7 +22,6 @@ import org.andstatus.app.data.DbUtils
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RawResourceUtils
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.UrlUtils
 import org.json.JSONObject
 import org.junit.Assert
@@ -163,7 +162,7 @@ class HttpConnectionMock : HttpConnection() {
     }
 
     override fun getCredentialsPresent(): Boolean {
-        return !StringUtil.isEmpty(password) || !TextUtils.isDigitsOnly(userToken) && !StringUtil.isEmpty(userSecret)
+        return !password.isNullOrEmpty() || !TextUtils.isDigitsOnly(userToken) && !userSecret.isNullOrEmpty()
     }
 
     fun getLatestPostedJSONObject(): JSONObject? {

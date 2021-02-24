@@ -215,7 +215,7 @@ class DuplicatesCollapser<T : ViewItem<T?>?>(val data: TimelineData<T?>?, oldDup
             when (timeline.timelineType) {
                 TimelineType.UNKNOWN, TimelineType.UNREAD_NOTIFICATIONS -> {
                     collapseDuplicates = false
-                    preferredOrigin = Origin.Companion.EMPTY
+                    preferredOrigin =  Origin.EMPTY
                 }
                 else -> {
                     collapseDuplicates = MyPreferences.isCollapseDuplicates()

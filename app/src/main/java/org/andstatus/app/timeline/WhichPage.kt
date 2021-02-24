@@ -25,22 +25,28 @@ import org.andstatus.app.util.MyLog
  * @author yvolk@yurivolkov.com
  */
 enum class WhichPage(private val code: Long, private val titleResId: Int) {
-    ANY(8, R.string.page_current), CURRENT(1, R.string.page_current), YOUNGER(2, R.string.page_younger), YOUNGEST(3, R.string.page_youngest), TOP(4, R.string.page_top_of), OLDER(6, R.string.page_older), EMPTY(7, R.string.page_empty);
+    ANY(8, R.string.page_current),
+    CURRENT(1, R.string.page_current),
+    YOUNGER(2, R.string.page_younger),
+    YOUNGEST(3, R.string.page_youngest),
+    TOP(4, R.string.page_top_of),
+    OLDER(6, R.string.page_older),
+    EMPTY(7, R.string.page_empty);
 
-    fun toBundle(): Bundle? {
+    fun toBundle(): Bundle {
         return save(Bundle())
     }
 
-    fun save(bundle: Bundle?): Bundle? {
+    fun save(bundle: Bundle): Bundle {
         bundle.putString(IntentExtra.WHICH_PAGE.key, save())
         return bundle
     }
 
-    fun save(): String? {
-        return java.lang.Long.toString(code)
+    fun save(): String {
+        return code.toString()
     }
 
-    fun getTitle(context: Context?): CharSequence? {
+    fun getTitle(context: Context?): CharSequence {
         return if (titleResId == 0 || context == null) {
             name
         } else {
@@ -56,8 +62,8 @@ enum class WhichPage(private val code: Long, private val titleResId: Int) {
     }
 
     companion object {
-        private val TAG: String? = WhichPage::class.java.simpleName
-        fun load(strCode: String?, defaultPage: WhichPage?): WhichPage? {
+        private val TAG: String = WhichPage::class.java.simpleName
+        fun load(strCode: String?, defaultPage: WhichPage): WhichPage {
             if (strCode != null) {
                 try {
                     return load(strCode.toLong())
@@ -68,7 +74,7 @@ enum class WhichPage(private val code: Long, private val titleResId: Int) {
             return defaultPage
         }
 
-        fun load(code: Long): WhichPage? {
+        fun load(code: Long): WhichPage {
             for (`val` in values()) {
                 if (`val`.code == code) {
                     return `val`
@@ -77,7 +83,7 @@ enum class WhichPage(private val code: Long, private val titleResId: Int) {
             return EMPTY
         }
 
-        fun load(args: Bundle?): WhichPage? {
+        fun load(args: Bundle?): WhichPage {
             return if (args != null) {
                 load(args.getString(IntentExtra.WHICH_PAGE.key), EMPTY)
             } else EMPTY

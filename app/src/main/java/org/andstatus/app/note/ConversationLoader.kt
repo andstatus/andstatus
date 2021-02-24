@@ -35,7 +35,6 @@ import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.timeline.LoadableListActivity.ProgressPublisher
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import java.io.Serializable
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -187,7 +186,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem?, 
         }
         var noteId = selectedNoteId
         var conversationOid = MyQuery.noteIdToConversationOid(myContext, noteId)
-        if (StringUtil.isEmpty(conversationOid) && noteId_in != noteId) {
+        if (conversationOid.isNullOrEmpty() && noteId_in != noteId) {
             noteId = noteId_in
             conversationOid = MyQuery.noteIdToConversationOid(myContext, noteId)
         }

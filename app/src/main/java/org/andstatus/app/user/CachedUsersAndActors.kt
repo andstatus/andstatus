@@ -25,22 +25,22 @@ import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
 
-class CachedUsersAndActors private constructor(private val myContext: MyContext?) {
-    val users: MutableMap<Long?, User?>? = ConcurrentHashMap()
-    val actors: MutableMap<Long?, Actor?>? = ConcurrentHashMap()
-    val actorGroupTypes: MutableMap<Long?, GroupType?>? = ConcurrentHashMap()
-    val originIdAndUsernameToActorId: MutableMap<String?, Long?>? = ConcurrentHashMap()
-    val myUsers: MutableMap<Long?, User?>? = ConcurrentHashMap()
-    val myActors: MutableMap<Long?, Actor?>? = ConcurrentHashMap()
+class CachedUsersAndActors private constructor(private val myContext: MyContext) {
+    val users: MutableMap<Long, User> = ConcurrentHashMap()
+    val actors: MutableMap<Long, Actor> = ConcurrentHashMap()
+    val actorGroupTypes: MutableMap<Long, GroupType> = ConcurrentHashMap()
+    val originIdAndUsernameToActorId: MutableMap<String, Long> = ConcurrentHashMap()
+    val myUsers: MutableMap<Long, User> = ConcurrentHashMap()
+    val myActors: MutableMap<Long, Actor> = ConcurrentHashMap()
 
     /** key - friendId, set of values - IDs of my actors   */
-    val friendsOfMyActors: MutableMap<Long?, MutableSet<Long?>?>? = ConcurrentHashMap()
-    val followersOfMyActors: MutableMap<Long?, MutableSet<Long?>?>? = ConcurrentHashMap()
+    val friendsOfMyActors: MutableMap<Long, MutableSet<Long>> = ConcurrentHashMap()
+    val followersOfMyActors: MutableMap<Long, MutableSet<Long>> = ConcurrentHashMap()
     fun size(): Int {
         return myUsers.size
     }
 
-    fun initialize(): CachedUsersAndActors? {
+    fun initialize(): CachedUsersAndActors {
         val stopWatch: StopWatch = StopWatch.Companion.createStarted()
         initializeMyUsers()
         initializeMyFriendsOrFollowers(GroupType.FRIENDS, friendsOfMyActors)
@@ -66,7 +66,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext?
         MyQuery.get(myContext, sql, function).forEach(Consumer { actor: Actor? -> updateCache(actor) })
     }
 
-    private fun initializeMyFriendsOrFollowers(groupType: GroupType?, groupMembers: MutableMap<Long?, MutableSet<Long?>?>?) {
+    private fun initializeMyFriendsOrFollowers(groupType: GroupType, groupMembers: MutableMap<Long, MutableSet<Long>>) {
         val MY_ACTOR_ID = "myActorId"
         groupMembers.clear()
         val sql = ("SELECT DISTINCT " + ActorSql.selectFullProjection()
@@ -228,7 +228,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext?
     }
 
     companion object {
-        fun newEmpty(myContext: MyContext?): CachedUsersAndActors? {
+        fun newEmpty(myContext: MyContext): CachedUsersAndActors {
             return CachedUsersAndActors(myContext)
         }
     }

@@ -16,5 +16,5 @@
 package org.andstatus.app.util
 
 interface HasEmpty<T> : IsEmpty {
-    open fun empty(): T?
+    fun empty(): T
 }

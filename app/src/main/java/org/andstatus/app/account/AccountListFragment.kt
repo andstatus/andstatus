@@ -52,7 +52,7 @@ class AccountListFragment : Fragment() {
         val view = inflater.inflate(R.layout.drag_list_layout, container, false)
         mDragListView = view.findViewById(R.id.drag_list_view)
         mDragListView.getRecyclerView().isVerticalScrollBarEnabled = true
-        mItems = CopyOnWriteArrayList<MyAccount?>(MyContextHolder.Companion.myContextHolder.getNow().accounts().get())
+        mItems = CopyOnWriteArrayList<MyAccount?>( MyContextHolder.myContextHolder.getNow().accounts().get())
         setupListRecyclerView()
         return view
     }
@@ -68,7 +68,7 @@ class AccountListFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-        MyContextHolder.Companion.myContextHolder.getNow().accounts().reorderAccounts(mItems)
+         MyContextHolder.myContextHolder.getNow().accounts().reorderAccounts(mItems)
     }
 
     private fun setupListRecyclerView() {
@@ -116,7 +116,7 @@ class AccountListFragment : Fragment() {
             override fun onItemClicked(view: View?) {
                 val intent = Intent(activity, AccountSettingsActivity::class.java)
                 intent.putExtra(IntentExtra.ACCOUNT_NAME.key,
-                        MyContextHolder.Companion.myContextHolder.getNow().accounts().fromActorId(mItemId).getAccountName())
+                         MyContextHolder.myContextHolder.getNow().accounts().fromActorId(mItemId).getAccountName())
                 activity.startActivity(intent)
             }
 

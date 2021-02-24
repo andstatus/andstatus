@@ -47,7 +47,7 @@ object Permissions {
             "The activity " + activity.javaClass.name +
                     " should implement OnRequestPermissionsResultCallback"
         }
-        if (MyContextHolder.Companion.myContextHolder.getNow().isTestRun()) {
+        if (MyContextHolder.myContextHolder.getNow().isTestRun()) {
             MyLog.i(activity, "Skipped requesting permission during a Test run: $permissionType")
         } else {
             MyLog.i(activity, "Requesting permission: $permissionType")
@@ -60,12 +60,14 @@ object Permissions {
      * Always returns true for "GET_ACCOUNTS", because we actually don't need this permission
      * to read accounts of this application
      */
-    fun checkPermission(context: Context, permissionType: PermissionType?): Boolean {
+    fun checkPermission(context: Context, permissionType: PermissionType): Boolean {
         return allGranted || permissionType == PermissionType.GET_ACCOUNTS || ContextCompat.checkSelfPermission(context,
                 permissionType.manifestPermission) == PackageManager.PERMISSION_GRANTED
     }
 
-    enum class PermissionType(val manifestPermission: String?) {
-        READ_EXTERNAL_STORAGE(Manifest.permission.READ_EXTERNAL_STORAGE), WRITE_EXTERNAL_STORAGE(Manifest.permission.WRITE_EXTERNAL_STORAGE), GET_ACCOUNTS(Manifest.permission.GET_ACCOUNTS);
+    enum class PermissionType(val manifestPermission: String) {
+        READ_EXTERNAL_STORAGE(Manifest.permission.READ_EXTERNAL_STORAGE),
+        WRITE_EXTERNAL_STORAGE(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+        GET_ACCOUNTS(Manifest.permission.GET_ACCOUNTS);
     }
 }

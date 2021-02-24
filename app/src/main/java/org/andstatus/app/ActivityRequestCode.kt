@@ -19,12 +19,30 @@ import android.app.Activity
 
 // Request codes for called activities
 enum class ActivityRequestCode(id: Int) {
-    ATTACH(6), CHECK_DATA_COUNT_ONLY(13), CHECK_DATA_INCLUDE_LONG(14), CHECK_DATA_SCOPE(17), EDIT_ORIGIN(4), MOVE_DATA_BETWEEN_STORAGES(7), PICK_RINGTONE(15), REMOVE_ACCOUNT(8), SELECT_ACCOUNT(1), SELECT_ACCOUNT_TO_ACT_AS(2), SELECT_ACCOUNT_TO_SHARE_VIA(5), SELECT_BACKUP_FOLDER(18), SELECT_ORIGIN(3), SELECT_ORIGIN_TYPE(12), SELECT_OPEN_INSTANCE(9), SELECT_TIMELINE(10), SELECT_DISPLAYED_IN_SELECTOR(11), SELECT_FOLDER(16), UNKNOWN(100);
+    ATTACH(6),
+    CHECK_DATA_COUNT_ONLY(13),
+    CHECK_DATA_INCLUDE_LONG(14),
+    CHECK_DATA_SCOPE(17),
+    EDIT_ORIGIN(4),
+    MOVE_DATA_BETWEEN_STORAGES(7),
+    PICK_RINGTONE(15),
+    REMOVE_ACCOUNT(8),
+    SELECT_ACCOUNT(1),
+    SELECT_ACCOUNT_TO_ACT_AS(2),
+    SELECT_ACCOUNT_TO_SHARE_VIA(5),
+    SELECT_BACKUP_FOLDER(18),
+    SELECT_ORIGIN(3),
+    SELECT_ORIGIN_TYPE(12),
+    SELECT_OPEN_INSTANCE(9),
+    SELECT_TIMELINE(10),
+    SELECT_DISPLAYED_IN_SELECTOR(11),
+    SELECT_FOLDER(16),
+    UNKNOWN(100);
 
-    val id: Int
+    val id: Int = Activity.RESULT_FIRST_USER + id
 
     companion object {
-        fun fromId(id: Int): ActivityRequestCode? {
+        fun fromId(id: Int): ActivityRequestCode {
             for (item in values()) {
                 if (item.id == id) {
                     return item
@@ -32,9 +50,5 @@ enum class ActivityRequestCode(id: Int) {
             }
             return UNKNOWN
         }
-    }
-
-    init {
-        this.id = Activity.RESULT_FIRST_USER + id
     }
 }

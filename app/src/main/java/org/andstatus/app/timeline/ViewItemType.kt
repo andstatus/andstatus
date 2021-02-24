@@ -22,11 +22,16 @@ import org.andstatus.app.note.NoteViewItem
 import org.andstatus.app.service.QueueData
 import org.andstatus.app.timeline.meta.TimelineType
 
-enum class ViewItemType(val emptyViewItem: ViewItem<*>?) {
-    ACTIVITY(ActivityViewItem.Companion.EMPTY), NOTE(NoteViewItem.Companion.EMPTY), ACTOR(ActorViewItem.Companion.EMPTY), CONVERSATION(ConversationViewItem.Companion.EMPTY), COMMANDS_QUEUE(QueueData.Companion.EMPTY), UNKNOWN(EmptyViewItem.EMPTY);
+enum class ViewItemType(val emptyViewItem: ViewItem<*>) {
+    ACTIVITY(ActivityViewItem.EMPTY),
+    NOTE(NoteViewItem.EMPTY),
+    ACTOR(ActorViewItem.EMPTY),
+    CONVERSATION(ConversationViewItem.EMPTY),
+    COMMANDS_QUEUE(QueueData.EMPTY),
+    UNKNOWN(EmptyViewItem.EMPTY);
 
     companion object {
-        fun fromTimelineType(timelineType: TimelineType): ViewItemType? {
+        fun fromTimelineType(timelineType: TimelineType): ViewItemType {
             return if (timelineType.showsActivities()) {
                 ACTIVITY
             } else when (timelineType) {

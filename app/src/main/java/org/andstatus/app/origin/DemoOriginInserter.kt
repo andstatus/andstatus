@@ -78,7 +78,7 @@ class DemoOriginInserter(private val myContext: MyContext?) {
 
     companion object {
         fun assertDefaultTimelinesForOrigins() {
-            val myContext: MyContext = MyContextHolder.Companion.myContextHolder.getNow()
+            val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
             for (origin in myContext.origins().collection()) {
                 val myAccount = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
                 for (timelineType in TimelineType.Companion.getDefaultOriginTimelineTypes()) {

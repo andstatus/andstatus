@@ -57,14 +57,14 @@ class NoteShare(private val origin: Origin?, private val noteId: Long, private v
         val noteSummary = MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, noteId)
         val noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId)
         var subjectString: CharSequence = noteName
-        if (StringUtil.nonEmpty(noteSummary)) {
-            subjectString = subjectString.toString() + (if (StringUtil.nonEmpty(subjectString)) ". " else "") + noteSummary
+        if (!noteSummary.isNullOrEmpty()) {
+            subjectString = subjectString.toString() + (if (!subjectString.isNullOrEmpty()) ". " else "") + noteSummary
         }
-        if (StringUtil.isEmpty(subjectString)) {
+        if (subjectString.isNullOrEmpty()) {
             subjectString = I18n.trimTextAt(MyHtml.htmlToCompactPlainText(noteContent), 80)
         }
-        subjectString = (if (MyQuery.isSensitive(noteId)) "(" + MyContextHolder.Companion.myContextHolder.getNow().context().getText(R.string.sensitive) + ") " else "") +
-                MyContextHolder.Companion.myContextHolder.getNow().context().getText(origin.alternativeTermForResourceId(R.string.message)) +
+        subjectString = (if (MyQuery.isSensitive(noteId)) "(" +  MyContextHolder.myContextHolder.getNow().context().getText(R.string.sensitive) + ") " else "") +
+                 MyContextHolder.myContextHolder.getNow().context().getText(origin.alternativeTermForResourceId(R.string.message)) +
                 " - " + subjectString
         val intent = Intent(if (share) Intent.ACTION_SEND else Intent.ACTION_VIEW)
         val downloadData = downloads.getFirstToShare()
@@ -109,7 +109,7 @@ class NoteShare(private val origin: Origin?, private val noteId: Long, private v
         private val SIGNATURE_FORMAT_HTML: String? = "<p>-- <br />\n%s<br />\nURL: %s</p>"
         private val SIGNATURE_PLAIN_TEXT: String? = "\n-- \n%s\n URL: %s"
         fun openLink(context: Context?, urlString: String?): Boolean {
-            return if (StringUtil.isEmpty(urlString)) {
+            return if (urlString.isNullOrEmpty()) {
                 false
             } else {
                 val intent = Intent(Intent.ACTION_VIEW)

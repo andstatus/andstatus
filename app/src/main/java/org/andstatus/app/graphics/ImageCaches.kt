@@ -146,7 +146,7 @@ object ImageCaches {
             builder.append(attachedImagesCache.getInfo() + "; ")
             builder.append("Styled images: " + styledImages.size + "; ")
         }
-        val context: Context = MyContextHolder.Companion.myContextHolder.getNow().context()
+        val context: Context =  MyContextHolder.myContextHolder.getNow().context()
         if (context != null) {
             builder.append("Memory. App total: " + I18n.formatBytes(getTotalAppMemory(context)))
             val memInfo = getMemoryInfo(context)
@@ -182,7 +182,7 @@ object ImageCaches {
     fun getStyledImage(resourceIdLight: Int, resourceId: Int): CachedImage? {
         var styledImage = styledImages.get(resourceId)
         if (styledImage == null) {
-            val context: Context = MyContextHolder.Companion.myContextHolder.getNow().context()
+            val context: Context =  MyContextHolder.myContextHolder.getNow().context()
             if (context != null) {
                 val image = getImageCompat(context, resourceId)
                 val imageLight = getImageCompat(context, resourceIdLight)

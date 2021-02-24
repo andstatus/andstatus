@@ -57,7 +57,7 @@ class DataUpdater(private val execContext: CommandExecutionContext?) {
             SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS, ""))
 
     constructor(ma: MyAccount?) : this(CommandExecutionContext(
-            if (ma.getOrigin().myContext.isEmptyOrExpired) MyContextHolder.Companion.myContextHolder.getNow() else ma.getOrigin().myContext,
+            if (ma.getOrigin().myContext.isEmptyOrExpired)  MyContextHolder.myContextHolder.getNow() else ma.getOrigin().myContext,
             CommandData.Companion.newAccountCommand(CommandEnum.EMPTY, ma)
     )) {
     }
@@ -200,10 +200,10 @@ class DataUpdater(private val execContext: CommandExecutionContext?) {
             for (actor in note.audience().evaluateAndGetActorsToSave(activity.author)) {
                 updateObjActor(activity.actor.update(me.actor, actor), recursing + 1)
             }
-            if (!StringUtil.isEmpty(note.via)) {
+            if (!note.via.isNullOrEmpty()) {
                 values.put(NoteTable.VIA, note.via)
             }
-            if (!StringUtil.isEmpty(note.url)) {
+            if (!note.url.isNullOrEmpty()) {
                 values.put(NoteTable.URL, note.url)
             }
             if (note.audience().visibility.isKnown) {
@@ -234,8 +234,8 @@ class DataUpdater(private val execContext: CommandExecutionContext?) {
                             + if (isNewerThanInDatabase) " newer, updated at " + Date(note.updatedDate) + ";" else "")
                 }
             }
-            if (MyContextHolder.Companion.myContextHolder.getNow().isTestRun()) {
-                MyContextHolder.Companion.myContextHolder.getNow().putAssertionData(MSG_ASSERTION_KEY, values)
+            if ( MyContextHolder.myContextHolder.getNow().isTestRun()) {
+                 MyContextHolder.myContextHolder.getNow().putAssertionData(MSG_ASSERTION_KEY, values)
             }
             if (note.noteId == 0L) {
                 val msgUri = execContext.getContext().contentResolver.insert(
@@ -280,7 +280,7 @@ class DataUpdater(private val execContext: CommandExecutionContext?) {
 
     private fun updateInReplyTo(activity: AActivity?, values: ContentValues?) {
         val inReply = activity.getNote().inReplyTo
-        if (StringUtil.nonEmpty(inReply.note.oid)) {
+        if (!inReply.note.oid.isNullOrEmpty()) {
             if (UriUtils.nonRealOid(inReply.note.conversationOid)) {
                 inReply.note.setConversationOid(activity.getNote().conversationOid)
             }

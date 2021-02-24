@@ -17,7 +17,6 @@ package org.andstatus.app.account
 
 import android.accounts.Account
 import io.vavr.control.CheckedFunction
-import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
@@ -33,7 +32,6 @@ import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UrlUtils
 import org.junit.Assert
@@ -145,7 +143,7 @@ class DemoAccountInserter(private val myContext: MyContext?) {
         Assert.assertTrue("Account " + actor.uniqueNameWithOrigin + " has ActorId", actorId != 0L)
         Assert.assertEquals("Account actorOid", ma.actorOid, actor.oid)
         val oid = MyQuery.idToOid(myContext.getDatabase(), OidEnum.ACTOR_OID, actorId, 0)
-        if (StringUtil.isEmpty(oid)) {
+        if (oid.isNullOrEmpty()) {
             val message = "Couldn't find an Actor in the database for id=" + actorId + " oid=" + actor.oid
             MyLog.v(this, message)
             Assert.fail(message)
@@ -190,7 +188,7 @@ class DemoAccountInserter(private val myContext: MyContext?) {
     companion object {
         fun getAutomaticallySyncableTimeline(myContext: MyContext?, myAccount: MyAccount?): Timeline {
             val timelineToSync = myContext.timelines()
-                    .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.getActor(), Origin.Companion.EMPTY)
+                    .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.getActor(),  Origin.EMPTY)
                     .filter { obj: Timeline? -> obj.isSyncedAutomatically() }.findFirst().orElse(Timeline.Companion.EMPTY)
             Assert.assertTrue("""
     No syncable automatically timeline for $myAccount
@@ -200,13 +198,13 @@ class DemoAccountInserter(private val myContext: MyContext?) {
         }
 
         fun assertDefaultTimelinesForAccounts() {
-            for (myAccount in MyContextHolder.Companion.myContextHolder.getNow().accounts().get()) {
+            for (myAccount in  MyContextHolder.myContextHolder.getNow().accounts().get()) {
                 for (timelineType in myAccount.getActor().defaultMyAccountTimelineTypes) {
                     if (!myAccount.getConnection().hasApiEndpoint(timelineType.getConnectionApiRoutine())) continue
                     var count: Long = 0
                     val logMsg: StringBuilder = StringBuilder(myAccount.toString())
                     MyStringBuilder.Companion.appendWithSpace(logMsg, timelineType.toString())
-                    for (timeline in MyContextHolder.Companion.myContextHolder.getNow().timelines().values()) {
+                    for (timeline in  MyContextHolder.myContextHolder.getNow().timelines().values()) {
                         if (timeline.getActorId() == myAccount.getActorId() && timeline.getTimelineType() == timelineType && !timeline.hasSearchQuery()) {
                             count++
                             MyStringBuilder.Companion.appendWithSpace(logMsg, timeline.toString())
@@ -214,7 +212,7 @@ class DemoAccountInserter(private val myContext: MyContext?) {
                     }
                     Assert.assertEquals("""
     $logMsg
-    ${MyContextHolder.Companion.myContextHolder.getNow().timelines().values()}
+    ${ MyContextHolder.myContextHolder.getNow().timelines().values()}
     """.trimIndent(), 1, count)
                 }
             }

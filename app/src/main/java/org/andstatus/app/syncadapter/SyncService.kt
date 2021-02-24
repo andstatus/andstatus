@@ -43,7 +43,7 @@ class SyncService : Service() {
     }
 
     private object ResourceHolder {
-        var syncAdapter: SyncAdapter? = SyncAdapter(MyContextHolder.Companion.myContextHolder.getNow().context(), true)
+        var syncAdapter: SyncAdapter? = SyncAdapter( MyContextHolder.myContextHolder.getNow().context(), true)
     }
 
     override fun onDestroy() {

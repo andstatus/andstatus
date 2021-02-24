@@ -26,7 +26,6 @@ import android.widget.AdapterView
 import android.widget.AdapterView.OnItemSelectedListener
 import android.widget.AutoCompleteTextView
 import android.widget.CheckBox
-import android.widget.CompoundButton
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView.OnEditorActionListener
@@ -41,20 +40,20 @@ import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.timeline.LoadableListActivity
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.view.SuggestionsAdapter
 
 /**
  * @author yvolk@yurivolkov.com
  */
 class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(context, attrs), CollapsibleActionView {
-    var parentActivity: LoadableListActivity<*>? = null
-    var timeline: Timeline? = if (isInEditMode) null else Timeline.Companion.EMPTY
+    private var parentActivity: LoadableListActivity<*>? = null
+    var timeline: Timeline? = if (isInEditMode) null else Timeline.EMPTY
     var searchText: AutoCompleteTextView? = null
     var searchObjects: Spinner? = null
     var internetSearch: CheckBox? = null
     var combined: CheckBox? = null
     private var isInternetSearchEnabled = false
+
     fun initialize(loadableListActivity: LoadableListActivity<*>) {
         parentActivity = loadableListActivity
         searchText = findViewById<View?>(R.id.search_text) as AutoCompleteTextView
@@ -62,12 +61,12 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
             MyLog.w(this, "searchView is null")
             return
         }
-        searchText.setOnEditorActionListener(OnEditorActionListener { v, actionId, event ->
+        searchText?.setOnEditorActionListener(OnEditorActionListener { v, actionId, event ->
 
             // See https://stackoverflow.com/questions/3205339/android-how-to-make-keyboard-enter-button-say-search-and-handle-its-click
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 val query = v.text.toString()
-                if (StringUtil.nonEmpty(query)) {
+                if (!query.isNullOrEmpty()) {
                     onQueryTextSubmit(query)
                     return@OnEditorActionListener true
                 }
@@ -79,7 +78,7 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
             MyLog.w(this, "searchObjects is null")
             return
         }
-        searchObjects.setOnItemSelectedListener(object : OnItemSelectedListener {
+        searchObjects?.setOnItemSelectedListener(object : OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 onSearchObjectsChange()
             }
@@ -97,26 +96,28 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
             MyLog.w(this, "internetSearch is null")
             return
         }
-        combined = findViewById<View?>(R.id.combined) as CheckBox
+        combined = findViewById(R.id.combined) as CheckBox
         if (combined == null) {
             MyLog.w(this, "combined is null")
             return
         }
-        combined.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked -> onSearchContextChanged() })
+        combined?.setOnCheckedChangeListener({ buttonView, isChecked -> onSearchContextChanged() })
         val submitButton = findViewById<View?>(R.id.submit_button)
         if (submitButton == null) {
             MyLog.w(this, "submitButton is null")
             return
         }
-        submitButton.setOnClickListener { onQueryTextSubmit(searchText.getText().toString()) }
-        onActionViewCollapsed()
-        onSearchObjectsChange()
+        searchText?.let { st ->
+            submitButton.setOnClickListener { onQueryTextSubmit(st.getText().toString()) }
+            onActionViewCollapsed()
+            onSearchObjectsChange()
+        }
     }
 
     fun showSearchView(timeline: Timeline) {
         this.timeline = timeline
-        if (isCombined() != timeline.isCombined) {
-            combined.setChecked(timeline.isCombined)
+        if (isCombined() != timeline.isCombined()) {
+            combined?.setChecked(timeline.isCombined())
         }
         onActionViewExpanded()
     }
@@ -124,13 +125,13 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
     override fun onActionViewExpanded() {
         onSearchObjectsChange()
         visibility = VISIBLE
-        parentActivity.hideActionBar(true)
+        parentActivity?.hideActionBar(true)
     }
 
     override fun onActionViewCollapsed() {
         visibility = GONE
-        parentActivity.hideActionBar(false)
-        searchText.setText("")
+        parentActivity?.hideActionBar(false)
+        searchText?.setText("")
     }
 
     fun onQueryTextSubmit(query: String?) {
@@ -143,32 +144,38 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
         }
         launchActivity(query)
         onActionViewCollapsed()
-        searchText.setAdapter(null)
-        SuggestionsAdapter.Companion.addSuggestion(getSearchObjects(), query)
+        searchText?.setAdapter(null)
+        SuggestionsAdapter.addSuggestion(getSearchObjects(), query)
     }
 
     private fun launchInternetSearch(query: String?) {
-        for (origin in parentActivity.getMyContext().origins().originsForInternetSearch(
+        val myContext = parentActivity?.getMyContext()
+        if (myContext == null) return
+
+        for (origin in myContext.origins().originsForInternetSearch(
                 getSearchObjects(), getOrigin(), isCombined())) {
-            MyServiceManager.Companion.sendManualForegroundCommand(
-                    CommandData.Companion.newSearch(getSearchObjects(), parentActivity.getMyContext(), origin, query))
+            MyServiceManager.sendManualForegroundCommand(
+                    CommandData.newSearch(getSearchObjects(), myContext, origin, query))
         }
     }
 
     private fun onSearchObjectsChange() {
-        searchText.setAdapter(SuggestionsAdapter(parentActivity, getSearchObjects()))
-        searchText.setHint(if (getSearchObjects() == SearchObjects.NOTES) R.string.search_timeline_hint else R.string.search_userlist_hint)
-        onSearchContextChanged()
+        parentActivity?.let { activity ->
+            searchText?.setAdapter(SuggestionsAdapter(activity, getSearchObjects()))
+            searchText?.setHint(if (getSearchObjects() == SearchObjects.NOTES) R.string.search_timeline_hint else R.string.search_userlist_hint)
+            onSearchContextChanged()
+        }
     }
 
     private fun launchActivity(query: String?) {
-        if (StringUtil.isEmpty(query)) {
+        if (query.isNullOrEmpty()) {
             return
         }
         val intent = Intent(Intent.ACTION_SEARCH, getUri(), context, getSearchObjects().getActivityClass())
         intent.putExtra(IntentExtra.SEARCH_QUERY.key, query)
-        if (timeline.hasSearchQuery()
-                && getSearchObjects() == SearchObjects.NOTES && parentActivity.getMyContext().timelines().default != timeline) {
+        if (timeline?.hasSearchQuery() == true
+                && getSearchObjects() == SearchObjects.NOTES &&
+                parentActivity?.getMyContext()?.timelines()?.getDefault() != timeline) {
             // Send intent to existing activity
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -176,40 +183,40 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
     }
 
     private fun onSearchContextChanged() {
-        isInternetSearchEnabled = parentActivity.getMyContext()
-                .origins().isSearchSupported(
-                        getSearchObjects(), getOrigin(), isCombined())
-        internetSearch.setEnabled(isInternetSearchEnabled)
-        if (!isInternetSearchEnabled && internetSearch.isChecked()) {
-            internetSearch.setChecked(false)
+        isInternetSearchEnabled = parentActivity?.getMyContext()
+                ?.origins()?.isSearchSupported(
+                        getSearchObjects(), getOrigin(), isCombined()) ?: false
+        internetSearch?.setEnabled(isInternetSearchEnabled)
+        if (!isInternetSearchEnabled && internetSearch?.isChecked() == true) {
+            internetSearch?.setChecked(false)
         }
     }
 
     private fun getUri(): Uri? {
         return when (getSearchObjects()) {
-            SearchObjects.NOTES -> timeline.fromSearch(parentActivity.getMyContext(), isInternetSearch())
-                    .fromIsCombined(parentActivity.getMyContext(), isCombined()).uri
-            SearchObjects.ACTORS -> MatchedUri.Companion.getActorsScreenUri(ActorsScreenType.ACTORS_AT_ORIGIN,
-                    if (isCombined()) 0 else getOrigin().getId(), 0, "")
-            SearchObjects.GROUPS -> MatchedUri.Companion.getActorsScreenUri(ActorsScreenType.GROUPS_AT_ORIGIN,
-                    if (isCombined()) 0 else getOrigin().getId(), 0, "")
-            else -> Uri.EMPTY
+            SearchObjects.NOTES -> timeline?.fromSearch(parentActivity?.getMyContext(), isInternetSearch())
+                    ?.fromIsCombined(parentActivity?.getMyContext(), isCombined())?.getUri()
+            SearchObjects.ACTORS -> MatchedUri.getActorsScreenUri(ActorsScreenType.ACTORS_AT_ORIGIN,
+                    if (isCombined()) 0 else getOrigin().id, 0, "")
+            SearchObjects.GROUPS -> MatchedUri.getActorsScreenUri(ActorsScreenType.GROUPS_AT_ORIGIN,
+                    if (isCombined()) 0 else getOrigin().id, 0, "")
         }
     }
 
-    fun getSearchObjects(): SearchObjects? {
-        return SearchObjects.Companion.fromSpinner(searchObjects)
+    fun getSearchObjects(): SearchObjects {
+        return SearchObjects.fromSpinner(searchObjects)
     }
 
-    private fun getOrigin(): Origin? {
-        return if (timeline.getOrigin().isValid) timeline.getOrigin() else parentActivity.getMyContext().accounts().currentAccount.origin
+    private fun getOrigin(): Origin {
+        return if (timeline?.getOrigin()?.isValid() == true) timeline?.getOrigin() ?: Origin.EMPTY
+            else parentActivity?.getMyContext()?.accounts()?.getCurrentAccount()?.origin ?: Origin.EMPTY
     }
 
     private fun isInternetSearch(): Boolean {
-        return isInternetSearchEnabled && internetSearch != null && internetSearch.isChecked()
+        return isInternetSearchEnabled && internetSearch?.isChecked() == true
     }
 
     private fun isCombined(): Boolean {
-        return combined != null && combined.isChecked()
+        return combined?.isChecked() == true
     }
 }

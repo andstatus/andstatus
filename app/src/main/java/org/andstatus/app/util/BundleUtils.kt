@@ -27,7 +27,7 @@ object BundleUtils {
         return bundle?.getLong(intentExtra.key, defaultValue) ?: defaultValue
     }
 
-    fun toBundle(key: String?, value: Long?): Bundle? {
+    fun toBundle(key: String?, value: Long?): Bundle {
         return toBundle(null, key, value)
     }
 
@@ -36,7 +36,7 @@ object BundleUtils {
      */
     fun toBundle(bundleIn: Bundle?, key: String?, value: Long?): Bundle {
         val bundle = bundleIn ?: Bundle()
-        if (!StringUtil.isEmpty(key)) {
+        if (!key.isNullOrEmpty()) {
             if (value == null) {
                 bundle.remove(key)
             } else {
@@ -46,23 +46,23 @@ object BundleUtils {
         return bundle
     }
 
-    fun putNotEmpty(bundle: Bundle?, intentExtra: IntentExtra?, value: String?) {
-        if (!StringUtil.isEmpty(value)) {
+    fun putNotEmpty(bundle: Bundle, intentExtra: IntentExtra, value: String?) {
+        if (!value.isNullOrEmpty()) {
             bundle.putString(intentExtra.key, value)
         }
     }
 
-    fun putNotZero(bundle: Bundle?, intentExtra: IntentExtra?, value: Long?) {
+    fun putNotZero(bundle: Bundle, intentExtra: IntentExtra, value: Long?) {
         if (value != null && value != 0L) {
             bundle.putLong(intentExtra.key, value)
         }
     }
 
     fun getString(bundle: Bundle?, intentExtra: IntentExtra?): String {
-        var out: String? = ""
+        var out = ""
         if (bundle != null && intentExtra != null) {
             val value = bundle.getString(intentExtra.key)
-            if (!StringUtil.isEmpty(value)) {
+            if (!value.isNullOrEmpty()) {
                 out = value
             }
         }

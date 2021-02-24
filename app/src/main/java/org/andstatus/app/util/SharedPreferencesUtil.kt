@@ -30,14 +30,14 @@ import java.text.MessageFormat
 import java.util.concurrent.ConcurrentHashMap
 
 object SharedPreferencesUtil {
-    private val TAG: String? = SharedPreferencesUtil::class.java.simpleName
-    val FILE_EXTENSION: String? = ".xml"
-    private val cachedValues: MutableMap<String?, Any?>? = ConcurrentHashMap()
+    private val TAG: String = SharedPreferencesUtil::class.java.simpleName
+    val FILE_EXTENSION: String = ".xml"
+    private val cachedValues: MutableMap<String, Any?> = ConcurrentHashMap()
     fun forget() {
         cachedValues.clear()
     }
 
-    fun defaultSharedPreferencesPath(context: Context?): File? {
+    fun defaultSharedPreferencesPath(context: Context): File {
         return File(prefsDirectory(context),
                 context.getPackageName() + "_preferences" + FILE_EXTENSION)
     }
@@ -45,7 +45,7 @@ object SharedPreferencesUtil {
     /**
      * @return Directory for files of SharedPreferences
      */
-    fun prefsDirectory(context: Context?): File? {
+    fun prefsDirectory(context: Context): File {
         val dataDir = context.getApplicationInfo().dataDir
         return File(dataDir, "shared_prefs")
     }
@@ -57,7 +57,7 @@ object SharedPreferencesUtil {
      */
     fun delete(context: Context?, prefsFileName: String?): Boolean {
         val isDeleted: Boolean
-        if (context == null || StringUtil.isEmpty(prefsFileName)) {
+        if (context == null || prefsFileName.isNullOrEmpty()) {
             MyLog.v(TAG) { "delete '$prefsFileName' - nothing to do" }
             return false
         }
@@ -86,17 +86,18 @@ object SharedPreferencesUtil {
      * @param entriesR Almost like android:entries but to show in the summary (may be the same as android:entries)
      * @param summaryR If 0 then the selected entry will be put into the summary as is.
      */
-    fun showListPreference(fragment: PreferenceFragmentCompat?, preferenceKey: String?,
+    fun showListPreference(fragment: PreferenceFragmentCompat, preferenceKey: String,
                            valuesR: Int, entriesR: Int, summaryR: Int) {
         val listPref = fragment.findPreference<Preference?>(preferenceKey) as ListPreference?
-        if (listPref != null) {
-            listPref.summary = getSummaryForListPreference(fragment.getActivity(),
+        val context = fragment.getActivity()
+        if (listPref != null && context != null) {
+            listPref.summary = getSummaryForListPreference(context,
                     listPref.value, valuesR, entriesR, summaryR)
         }
     }
 
-    fun getSummaryForListPreference(context: Context?, listValue: String?,
-                                    valuesR: Int, entriesR: Int, summaryR: Int): String? {
+    fun getSummaryForListPreference(context: Context, listValue: String?,
+                                    valuesR: Int, entriesR: Int, summaryR: Int): String {
         val values = context.getResources().getStringArray(valuesR)
         val entries = context.getResources().getStringArray(entriesR)
         var summary = entries[0]
@@ -107,8 +108,7 @@ object SharedPreferencesUtil {
             }
         }
         if (summaryR != 0) {
-            val messageFormat = MessageFormat(context.getText(summaryR)
-                    .toString())
+            val messageFormat = MessageFormat(context.getText(summaryR).toString())
             summary = messageFormat.format(arrayOf<Any?>(summary))
         }
         return summary
@@ -129,17 +129,17 @@ object SharedPreferencesUtil {
      * Returns true not only for boolean true or String "true", but for "1" also
      */
     fun isTrue(o: Any?): Boolean {
-        var `is` = false
+        var outValue = false
         try {
             if (o != null) {
                 if (o is Boolean) {
-                    `is` = o as Boolean?
+                    outValue = o
                 } else {
                     val string = o.toString()
                     if (!isEmpty(string)) {
-                        `is` = java.lang.Boolean.parseBoolean(string)
-                        if (!`is` && string.compareTo("1") == 0) {
-                            `is` = true
+                        outValue = java.lang.Boolean.parseBoolean(string)
+                        if (!outValue && string.compareTo("1") == 0) {
+                            outValue = true
                         }
                     }
                 }
@@ -147,27 +147,27 @@ object SharedPreferencesUtil {
         } catch (e: Exception) {
             MyLog.v(TAG, o.toString(), e)
         }
-        return `is`
+        return outValue
     }
 
-    fun copyAll(from: SharedPreferences?, to: SharedPreferences?): Long {
-        if (from == null || to == null) return 0
+    fun copyAll(source: SharedPreferences?, destination: SharedPreferences?): Long {
+        if (source == null || destination == null) return 0
         var entryCounter: Long = 0
-        val editor = to.edit()
-        for ((key, value) in from.all) {
+        val editor = destination.edit()
+        for ((key, value) in source.all) {
             if (Boolean::class.java.isInstance(value)) {
-                editor.putBoolean(key, value as Boolean?)
+                editor.putBoolean(key, value as Boolean)
             } else if (Int::class.java.isInstance(value)) {
-                editor.putInt(key, value as Int?)
+                editor.putInt(key, value as Int)
             } else if (Long::class.java.isInstance(value)) {
-                editor.putLong(key, value as Long?)
+                editor.putLong(key, value as Long)
             } else if (Float::class.java.isInstance(value)) {
-                editor.putFloat(key, value as Float?)
+                editor.putFloat(key, value as Float)
             } else if (String::class.java.isInstance(value)) {
                 editor.putString(key, value.toString())
             } else {
                 MyLog.e(TAG, "Unknown type of shared preference: "
-                        + value.javaClass + ", value: " + value.toString())
+                        + value?.javaClass + ", value: " + value.toString())
                 entryCounter--
             }
             entryCounter++
@@ -177,13 +177,12 @@ object SharedPreferencesUtil {
         return entryCounter
     }
 
-    fun areDefaultPreferenceValuesSet(): TriState? {
+    fun areDefaultPreferenceValuesSet(): TriState {
         val sp = getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES)
         return if (sp == null) {
             TriState.UNKNOWN
         } else {
-            TriState.Companion.fromBoolean(
-                    sp.getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false))
+            TriState.fromBoolean(sp.getBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, false))
         }
     }
 
@@ -194,7 +193,7 @@ object SharedPreferencesUtil {
     }
 
     fun getDefaultSharedPreferences(): SharedPreferences? {
-        val context: Context = MyContextHolder.Companion.myContextHolder.getNow().context()
+        val context: Context? = MyContextHolder.myContextHolder.getNow().context()
         return if (context == null) {
             null
         } else {
@@ -203,7 +202,7 @@ object SharedPreferencesUtil {
     }
 
     fun getSharedPreferences(name: String?): SharedPreferences? {
-        val context: Context = MyContextHolder.Companion.myContextHolder.getNow().context()
+        val context: Context? = MyContextHolder.myContextHolder.getNow().context()
         return if (context == null) {
             MyLog.e(TAG, "getSharedPreferences for $name - were not initialized yet")
             for (element in Thread.currentThread().stackTrace) {
@@ -217,13 +216,13 @@ object SharedPreferencesUtil {
 
     fun getIntStoredAsString(key: String, defaultValue: Int): Int {
         val longValue = getLongStoredAsString(key, defaultValue.toLong())
-        return if (longValue >= Int.MIN_VALUE && longValue <= Int.MAX_VALUE) longValue as Int else defaultValue
+        return if (longValue >= Int.MIN_VALUE && longValue <= Int.MAX_VALUE) longValue.toInt() else defaultValue
     }
 
     fun getLongStoredAsString(key: String, defaultValue: Long): Long {
         var value = defaultValue
         try {
-            val longValueStored = getString(key, java.lang.Long.toString(Long.MIN_VALUE)).toLong()
+            val longValueStored = getString(key, java.lang.Long.toString(Long.MIN_VALUE))?.toLong() ?: 0
             if (longValueStored > Long.MIN_VALUE) {
                 value = longValueStored
             }
@@ -270,7 +269,7 @@ object SharedPreferencesUtil {
                 sp.getString(key, defaultValue)
             } catch (e: ClassCastException) {
                 MyLog.ignored("getString, key=$key", e)
-                java.lang.Long.toString(sp.getLong(key, defaultValue.toLong()))
+                sp.getLong(key, defaultValue?.toLong() ?: 0).toString()
             }
             putToCache(key, value)
         }
@@ -289,7 +288,7 @@ object SharedPreferencesUtil {
 
     fun putBoolean(key: String, checkBox: View?) {
         if (checkBox != null && CheckBox::class.java.isAssignableFrom(checkBox.javaClass)) {
-            val value = (checkBox as CheckBox?).isChecked()
+            val value = (checkBox as CheckBox).isChecked()
             putBoolean(key, value)
         }
     }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.noteimport
+package org.andstatus.app.note
 
 import android.content.Intent
 import org.andstatus.app.account.MyAccount
@@ -47,11 +47,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -787,10 +782,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -845,9 +836,9 @@ class AllowHtmlContentTest {
         val origin: Origin = DemoData.Companion.demoData.getPumpioConversationOrigin()
         Assert.assertNotNull(DemoData.Companion.demoData.conversationOriginName + " exists", origin)
         val noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, DemoData.Companion.demoData.htmlNoteOid)
-        val note: Note = Note.Companion.loadContentById(MyContextHolder.Companion.myContextHolder.getNow(), noteId)
+        val note: Note = Note.Companion.loadContentById( MyContextHolder.myContextHolder.getNow(), noteId)
         Assert.assertTrue("origin=" + origin.id + "; oid=" + DemoData.Companion.demoData.htmlNoteOid, noteId != 0L)
-        val noteShare = NoteShare(origin, noteId, NoteDownloads.Companion.fromNoteId(MyContextHolder.Companion.myContextHolder.getNow(), noteId))
+        val noteShare = NoteShare(origin, noteId, NoteDownloads.Companion.fromNoteId( MyContextHolder.myContextHolder.getNow(), noteId))
         val intent = noteShare.intentToViewAndShare(true)
         Assert.assertTrue(intent.hasExtra(Intent.EXTRA_TEXT))
         Assert.assertTrue(
@@ -869,7 +860,7 @@ class AllowHtmlContentTest {
         val activity: AActivity = DemoNoteInserter.Companion.addNoteForAccount(myAccount, body,
                 DemoData.Companion.demoData.plainTextNoteOid, DownloadStatus.LOADED)
         val noteShare = NoteShare(myAccount.origin, activity.note.noteId,
-                NoteDownloads.Companion.fromNoteId(MyContextHolder.Companion.myContextHolder.getNow(), activity.note.noteId))
+                NoteDownloads.Companion.fromNoteId( MyContextHolder.myContextHolder.getNow(), activity.note.noteId))
         val intent = noteShare.intentToViewAndShare(true)
         Assert.assertTrue(intent.extras.containsKey(Intent.EXTRA_TEXT))
         Assert.assertTrue(intent.getStringExtra(Intent.EXTRA_TEXT), intent.getStringExtra(Intent.EXTRA_TEXT).contains(body))
@@ -908,7 +899,7 @@ class AllowHtmlContentTest {
         activity.setUpdatedNow(0)
         val ma: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
         val executionContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
+                 MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
         DataUpdater(executionContext).onActivity(activity)
     }
 }

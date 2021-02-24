@@ -18,7 +18,6 @@ package org.andstatus.app.data.converter
 import android.database.Cursor
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.MyQuery
-import org.andstatus.app.util.StringUtil
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
@@ -28,7 +27,7 @@ internal class Convert44 : ConvertOneStep() {
         companion object {
             fun fromCursor(cursor: Cursor?): Optional<Data?>? {
                 val username = DbUtils.getString(cursor, "username")
-                val index = if (StringUtil.isEmpty(username)) -1 else username.indexOf("@")
+                val index = if (username.isNullOrEmpty()) -1 else username.indexOf("@")
                 return if (index > 0) Optional.of(Data(DbUtils.getLong(cursor, "_id"), username.substring(0, index))) else Optional.empty()
             }
         }

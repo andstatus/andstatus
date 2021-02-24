@@ -42,7 +42,6 @@ import org.andstatus.app.util.DialogFactory
 import org.andstatus.app.util.MyCheckBox
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyUrlSpan
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UrlUtils
 import org.andstatus.app.util.ViewUtils
@@ -66,7 +65,7 @@ class OriginEditor : MyActivity() {
     private var spinnerUseLegacyHttpProtocol: Spinner? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         MyServiceManager.Companion.setServiceUnavailable()
-        builder = Origin.Builder(MyContextHolder.Companion.myContextHolder.getNow(), OriginType.GNUSOCIAL)
+        builder = Origin.Builder( MyContextHolder.myContextHolder.getNow(), OriginType.GNUSOCIAL)
         mLayoutId = R.layout.origin_editor
         super.onCreate(savedInstanceState)
         buttonSave = findViewById<View?>(R.id.button_save) as Button
@@ -113,7 +112,7 @@ class OriginEditor : MyActivity() {
                 builder = Origin.Builder(origin)
             } else {
                 val originType: OriginType = OriginType.Companion.fromCode(intentNew.getStringExtra(IntentExtra.ORIGIN_TYPE.key))
-                builder = Origin.Builder(MyContextHolder.Companion.myContextHolder.getNow(), if (OriginType.UNKNOWN == originType) OriginType.GNUSOCIAL else originType)
+                builder = Origin.Builder( MyContextHolder.myContextHolder.getNow(), if (OriginType.UNKNOWN == originType) OriginType.GNUSOCIAL else originType)
                 if (OriginType.UNKNOWN != originType) {
                     spinnerOriginType.setEnabled(false)
                 }
@@ -122,7 +121,7 @@ class OriginEditor : MyActivity() {
             buttonSave.setOnClickListener(SaveOrigin())
             spinnerOriginType.setEnabled(false)
             editTextOriginName.setEnabled(false)
-            val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromName(
+            val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(
                     intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key))
             builder = Origin.Builder(origin)
         }
@@ -155,7 +154,7 @@ class OriginEditor : MyActivity() {
             }
             editTextHost.setText(strHostOrUrl)
             editTextHost.setHint(origin.alternativeTermForResourceId(R.string.host_hint))
-            if (Intent.ACTION_INSERT == editorAction && StringUtil.isEmpty(origin.getName())) {
+            if (Intent.ACTION_INSERT == editorAction && origin.getName().isNullOrEmpty()) {
                 editTextHost.setOnFocusChangeListener(OnFocusChangeListener { v: View?, hasFocus: Boolean ->
                     if (!hasFocus) {
                         originNameFromHost()

@@ -1,10 +1,5 @@
-package org.andstatus.app.net.social.pumpioimport
+package org.andstatus.app.net.social.pumpio
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -740,10 +735,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule

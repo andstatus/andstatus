@@ -31,7 +31,6 @@ import org.andstatus.app.util.CollectionsUtil
 import org.andstatus.app.util.I18n
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyUrlSpan
-import org.andstatus.app.util.StringUtil
 
 class ActorAutoCompleteAdapter(myActivity: LoadableListActivity<*>, origin: Origin) : BaseAdapter(), Filterable {
     private val origin: Origin?
@@ -102,7 +101,7 @@ class ActorAutoCompleteAdapter(myActivity: LoadableListActivity<*>, origin: Orig
      */
     private inner class ArrayFilter : Filter() {
         override fun performFiltering(prefixWithReferenceChar: CharSequence?): FilterResults? {
-            if (!origin.isValid() || StringUtil.isEmpty(prefixWithReferenceChar) || prefixWithReferenceChar.length < NoteBodyTokenizer.Companion.MIN_LENGHT_TO_SEARCH + 1) {
+            if (!origin.isValid() || prefixWithReferenceChar.isNullOrEmpty() || prefixWithReferenceChar.length < NoteBodyTokenizer.Companion.MIN_LENGHT_TO_SEARCH + 1) {
                 val results = FilterResults()
                 results.values = FilteredValues.EMPTY
                 results.count = 0

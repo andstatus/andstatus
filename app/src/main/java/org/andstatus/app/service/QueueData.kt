@@ -32,12 +32,12 @@ class QueueData protected constructor(val queueType: QueueType, val commandData:
 
     fun toSharedSubject(): String? {
         return (queueType.acronym + "; "
-                + commandData.toCommandSummary(MyContextHolder.Companion.myContextHolder.getNow()))
+                + commandData.toCommandSummary( MyContextHolder.myContextHolder.getNow()))
     }
 
     fun toSharedText(): String? {
         return (queueType.acronym + "; "
-                + commandData.share(MyContextHolder.Companion.myContextHolder.getNow()))
+                + commandData.share( MyContextHolder.myContextHolder.getNow()))
     }
 
     override operator fun compareTo(another: QueueData): Int {
@@ -58,7 +58,7 @@ class QueueData protected constructor(val queueType: QueueType, val commandData:
     }
 
     companion object {
-        val EMPTY: QueueData? = QueueData(QueueType.UNKNOWN, CommandData.Companion.EMPTY)
+        val EMPTY: QueueData = QueueData(QueueType.UNKNOWN, CommandData.Companion.EMPTY)
         fun getNew(queueType: QueueType, commandData: CommandData): QueueData? {
             return QueueData(queueType, commandData)
         }

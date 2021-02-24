@@ -23,11 +23,10 @@ import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 
 class PersistentOriginList : OriginList() {
     override fun getOrigins(): Iterable<Origin?>? {
-        return MyContextHolder.Companion.myContextHolder.getNow().origins().collection()
+        return  MyContextHolder.myContextHolder.getNow().origins().collection()
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
@@ -73,7 +72,7 @@ class PersistentOriginList : OriginList() {
             ActivityRequestCode.EDIT_ORIGIN -> fillList()
             ActivityRequestCode.SELECT_OPEN_INSTANCE -> if (resultCode == RESULT_OK) {
                 val originName = data.getStringExtra(IntentExtra.ORIGIN_NAME.key)
-                if (!StringUtil.isEmpty(originName)) {
+                if (!originName.isNullOrEmpty()) {
                     onAddOriginSelected(originName)
                 }
             }

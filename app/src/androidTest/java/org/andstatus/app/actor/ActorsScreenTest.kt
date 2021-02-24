@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.actorimport
+package org.andstatus.app.actor
 
 import android.content.Intent
 import io.vavr.control.Try
@@ -43,11 +43,6 @@ import org.junit.Assert
 import org.junit.Test
 import java.util.function.Predicate
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -783,10 +778,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -822,8 +813,8 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem?>() {
         noteId = MyQuery.oidToId(OidEnum.NOTE_OID, DemoData.Companion.demoData.getPumpioConversationOrigin().getId(),
                 DemoData.Companion.demoData.conversationMentionsNoteOid)
         Assert.assertNotEquals("No note with oid " + DemoData.Companion.demoData.conversationMentionsNoteOid, 0, noteId)
-        val timeline: Timeline = MyContextHolder.Companion.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING,
-                Actor.Companion.EMPTY, Origin.Companion.EMPTY)
+        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING,
+                Actor.Companion.EMPTY,  Origin.EMPTY)
         val updatedDate = MyQuery.noteIdToLongColumnValue(NoteTable.UPDATED_DATE, noteId)
         timeline.visibleItemId = noteId
         timeline.visibleOldestDate = updatedDate
@@ -851,11 +842,11 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem?>() {
                 .getOrElseThrow { detailMessage: Throwable? -> AssertionError(detailMessage) }
         val listItems = actorsScreen.getListLoader().list
         Assert.assertEquals(listItems.toString(), 5, listItems.size.toLong())
-        val actorE: Actor = MyContextHolder.Companion.myContextHolder.getNow().users().actors.values.stream()
+        val actorE: Actor =  MyContextHolder.myContextHolder.getNow().users().actors.values.stream()
                 .filter(Predicate { actor: Actor? -> actor.oid == DemoData.Companion.demoData.conversationAuthorThirdActorOid })
                 .findAny().orElse(Actor.Companion.EMPTY)
         Assert.assertTrue("Found " + DemoData.Companion.demoData.conversationAuthorThirdActorOid
-                + " cached " + MyContextHolder.Companion.myContextHolder.getNow().users().actors, actorE.nonEmpty())
+                + " cached " +  MyContextHolder.myContextHolder.getNow().users().actors, actorE.nonEmpty())
         val actorA: Actor = ActorsScreenTest.Companion.getByActorOid(listItems, DemoData.Companion.demoData.conversationAuthorThirdActorOid)
         Assert.assertTrue("Not found " + DemoData.Companion.demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA.nonEmpty())
         compareAttributes(actorE, actorA, false)

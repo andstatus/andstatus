@@ -32,32 +32,33 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.function.BiConsumer
 import java.util.function.Function
 
-class ActorEndpoints private constructor(private val myContext: MyContext?, private val actorId: Long) {
+class ActorEndpoints private constructor(private val myContext: MyContext, private val actorId: Long) {
     enum class State {
         EMPTY, ADDING, LAZYLOAD, LOADED
     }
 
-    private val initialized: AtomicBoolean? = AtomicBoolean()
-    private val state: AtomicReference<State?>?
+    private val initialized: AtomicBoolean = AtomicBoolean()
+    private val state: AtomicReference<State> = AtomicReference(if (actorId == 0L) State.EMPTY else State.LAZYLOAD)
 
     @Volatile
-    private var map: MutableMap<ActorEndpointType?, MutableList<Uri?>?>? = emptyMap()
-    fun add(type: ActorEndpointType?, value: String?): ActorEndpoints? {
+    private var map: Map<ActorEndpointType, MutableList<Uri>> = emptyMap()
+    fun add(type: ActorEndpointType, value: String?): ActorEndpoints {
         return add(type, UriUtils.fromString(value))
     }
 
-    fun add(type: ActorEndpointType?, uri: Uri?): ActorEndpoints? {
+    fun add(type: ActorEndpointType, uri: Uri?): ActorEndpoints {
         if (initialize().state.get() == State.ADDING) {
             add(map, type, uri)
         }
         return this
     }
 
-    fun findFirst(type: ActorEndpointType?): Optional<Uri?>? {
-        return if (type == ActorEndpointType.EMPTY) Optional.empty() else initialize().map.getOrDefault(type, emptyList<Uri?>()).stream().findFirst()
+    fun findFirst(type: ActorEndpointType?): Optional<Uri> {
+        return if (type == ActorEndpointType.EMPTY) Optional.empty()
+            else initialize().map.getOrDefault(type, emptyList<Uri>()).stream().findFirst()
     }
 
-    fun initialize(): ActorEndpoints? {
+    fun initialize(): ActorEndpoints {
         while (state.get() == State.EMPTY) {
             if (initialized.compareAndSet(false, true)) {
                 map = ConcurrentHashMap()
@@ -76,8 +77,8 @@ class ActorEndpoints private constructor(private val myContext: MyContext?, priv
         return map.toString()
     }
 
-    private fun load(): ActorEndpoints? {
-        val map: MutableMap<ActorEndpointType?, MutableList<Uri?>?> = ConcurrentHashMap()
+    private fun load(): ActorEndpoints {
+        val map: MutableMap<ActorEndpointType, MutableList<Uri>> = ConcurrentHashMap()
         val sql = "SELECT " + ActorEndpointTable.ENDPOINT_TYPE +
                 "," + ActorEndpointTable.ENDPOINT_INDEX +
                 "," + ActorEndpointTable.ENDPOINT_URI +
@@ -85,9 +86,9 @@ class ActorEndpoints private constructor(private val myContext: MyContext?, priv
                 " WHERE " + ActorEndpointTable.ACTOR_ID + "=" + actorId +
                 " ORDER BY " + ActorEndpointTable.ENDPOINT_TYPE +
                 "," + ActorEndpointTable.ENDPOINT_INDEX
-        MyQuery.foldLeft(myContext, sql, map, Function { m: MutableMap<ActorEndpointType?, MutableList<Uri?>?>? ->
+        MyQuery.foldLeft(myContext, sql, map, Function { m: MutableMap<ActorEndpointType, MutableList<Uri>> ->
             Function { cursor: Cursor? ->
-                add(m, ActorEndpointType.Companion.fromId(DbUtils.getLong(cursor, ActorEndpointTable.ENDPOINT_TYPE)),
+                add(m, ActorEndpointType.fromId(DbUtils.getLong(cursor, ActorEndpointTable.ENDPOINT_TYPE)),
                         UriUtils.fromString(DbUtils.getString(cursor, ActorEndpointTable.ENDPOINT_URI)))
             }
         })
@@ -100,8 +101,8 @@ class ActorEndpoints private constructor(private val myContext: MyContext?, priv
         if (actorId == 0L || !state.compareAndSet(State.ADDING, State.LOADED)) return
         val old = from(myContext, actorId).initialize()
         if (this == old) return
-        MyProvider.Companion.delete(myContext, ActorEndpointTable.TABLE_NAME, ActorEndpointTable.ACTOR_ID, actorId)
-        map.forEach(BiConsumer { key: ActorEndpointType?, value: MutableList<Uri?>? ->
+        MyProvider.delete(myContext, ActorEndpointTable.TABLE_NAME, ActorEndpointTable.ACTOR_ID, actorId)
+        map.forEach { (key: ActorEndpointType, value: MutableList<Uri>) ->
             var index: Long = 0
             for (uri in value) {
                 val contentValues = ContentValues()
@@ -112,7 +113,7 @@ class ActorEndpoints private constructor(private val myContext: MyContext?, priv
                 MyProvider.Companion.insert(myContext, ActorEndpointTable.TABLE_NAME, contentValues)
                 index++
             }
-        })
+        }
     }
 
     override fun equals(o: Any?): Boolean {
@@ -127,12 +128,12 @@ class ActorEndpoints private constructor(private val myContext: MyContext?, priv
     }
 
     companion object {
-        fun from(myContext: MyContext?, actorId: Long): ActorEndpoints? {
+        fun from(myContext: MyContext, actorId: Long): ActorEndpoints {
             return ActorEndpoints(myContext, actorId)
         }
 
-        private fun add(map: MutableMap<ActorEndpointType?, MutableList<Uri?>?>?, type: ActorEndpointType?,
-                        uri: Uri?): MutableMap<ActorEndpointType?, MutableList<Uri?>?>? {
+        private fun add(map: MutableMap<ActorEndpointType, MutableList<Uri>>, type: ActorEndpointType,
+                        uri: Uri?): MutableMap<ActorEndpointType, List<Uri>> {
             if (UriUtils.isEmpty(uri) || type == ActorEndpointType.EMPTY) return map
             val urisOld = map.get(type)
             if (urisOld == null) {
@@ -146,9 +147,5 @@ class ActorEndpoints private constructor(private val myContext: MyContext?, priv
             }
             return map
         }
-    }
-
-    init {
-        state = AtomicReference(if (actorId == 0L) State.EMPTY else State.LAZYLOAD)
     }
 }

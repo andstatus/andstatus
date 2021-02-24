@@ -34,12 +34,12 @@ import org.andstatus.app.util.MyLog
 /**
  * @author yvolk@yurivolkov.com
  */
-class DatabaseCreator(private val db: SQLiteDatabase?) {
+class DatabaseCreator(private val db: SQLiteDatabase) {
     /**
      * On data types in SQLite see [Datatypes In SQLite Version 3](http://www.sqlite.org/datatype3.html).
      * See also [SQLite Autoincrement](http://sqlite.org/autoinc.html).
      */
-    fun create(): DatabaseCreator? {
+    fun create(): DatabaseCreator {
         MyLog.i(this, "Creating tables")
         OriginTable.create(db)
         NoteTable.create(db)
@@ -68,7 +68,7 @@ class DatabaseCreator(private val db: SQLiteDatabase?) {
                 + ") VALUES ("
                 + "%s"
                 + ")")
-        val values = arrayOf<String?>(
+        val values = arrayOf<String>(
                 java.lang.Long.toString(ORIGIN_ID_TWITTER) +
                         ",   1,'Twitter',        'https://api.twitter.com',  1, 1, 0,  280",
                 " 2, 2,'Pump.io',        '',                         1, 1, 1,    0",  // turned off " 3, 3,'Quitter.se',     'https://quitter.se',       1, 1, 1,    0",

@@ -31,7 +31,6 @@ import android.text.style.URLSpan
 import android.text.util.Linkify
 import android.view.MotionEvent
 import android.view.View
-import android.view.View.OnTouchListener
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.IdRes
@@ -43,9 +42,7 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineType
-import org.andstatus.app.util.MyUrlSpan
 import java.util.*
-import java.util.function.Function
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
@@ -53,36 +50,41 @@ import java.util.stream.Stream
  * see https://github.com/andstatus/andstatus/issues/300
  * Based on http://commonsware.com/blog/2013/10/23/linkify-autolink-need-custom-urlspan.html   */
 class MyUrlSpan : URLSpan {
-    class Data(val actor: Optional<Actor?>?, val searchQuery: Optional<String?>?, private val url: Optional<String?>?) {
+    class Data(val actor: Optional<Actor>, val searchQuery: Optional<String>, private val url: Optional<String>) {
         fun getURL(): String? {
             return url.orElse(getTimeline().getClickUri().toString())
         }
 
-        fun getTimeline(): Timeline? {
-            return searchQuery.map(Function<String?, Timeline?> { s: String? -> MyContextHolder.Companion.myContextHolder.getNow().timelines().get(TimelineType.SEARCH, Actor.Companion.EMPTY, Origin.Companion.EMPTY, s) })
-                    .orElse(actor.map(Function<Actor?, Timeline?> { a: Actor? -> MyContextHolder.Companion.myContextHolder.getNow().timelines().forUserAtHomeOrigin(TimelineType.SENT, a) })
-                            .orElse(Timeline.Companion.EMPTY))
+        fun getTimeline(): Timeline {
+            return searchQuery.map({ s: String? ->
+                MyContextHolder.myContextHolder.getNow().timelines()
+                        .get(TimelineType.SEARCH, Actor.EMPTY, Origin.EMPTY, s)
+            })
+                    .orElse(actor.map({ a: Actor? ->
+                        MyContextHolder.myContextHolder.getNow().timelines().forUserAtHomeOrigin(TimelineType.SENT, a)
+                    })
+                            .orElse(Timeline.EMPTY))
         }
 
-        override fun toString(): String {
-            return "MyUrlSpan{" +
-                    Stream.of(
-                            actor.map(Function { obj: Actor? -> obj.toString() }),
-                            searchQuery.map(Function { obj: String? -> obj.toString() }),
-                            url.map(Function { obj: String? -> obj.toString() }))
-                            .filter { obj: Optional<String?>? -> obj.isPresent() }.map { obj: Optional<String?>? -> obj.get() }
-                            .collect(Collectors.joining(", ")) +
-                    '}'
-        }
+        override fun toString(): String = "MyUrlSpan{" +
+            Stream.of(
+                    actor.map { obj: Actor? -> obj.toString() },
+                    searchQuery.map { obj: String? -> obj.toString() },
+                    url.map { obj: String? -> obj.toString() }
+            )
+                    .filter { obj: Optional<String> -> obj.isPresent }
+                    .map { obj: Optional<String> -> obj.get() }
+                    .collect(Collectors.joining(", ")) +
+            '}'
     }
 
-    val data: Data?
+    val data: Data
 
-    constructor(data: Data?) : super(EMPTY_URL) {
+    constructor(data: Data) : super(EMPTY_URL) {
         this.data = data
     }
 
-    constructor(url: String?) : super(url) {
+    constructor(url: String) : super(url) {
         data = Data(Optional.empty(), Optional.empty(), Optional.of(url))
     }
 
@@ -93,7 +95,7 @@ class MyUrlSpan : URLSpan {
             MyLog.v(this, e)
             try {
                 MyLog.i(this, "Malformed link:'$url', $data")
-                val context: Context = MyContextHolder.Companion.myContextHolder.getNow().context()
+                val context: Context? = MyContextHolder.myContextHolder.getNow().context()
                 if (context != null) {
                     Toast.makeText(context, context.getText(R.string.malformed_link)
                             .toString() + "\n URL:'" + url + "'", Toast.LENGTH_SHORT).show()
@@ -105,7 +107,7 @@ class MyUrlSpan : URLSpan {
             MyLog.v(this, e)
             try {
                 MyLog.i(this, "Malformed link:'$url', $data")
-                val context: Context = MyContextHolder.Companion.myContextHolder.getNow().context()
+                val context: Context? =  MyContextHolder.myContextHolder.getNow().context()
                 if (context != null) {
                     Toast.makeText(context, context.getText(R.string.malformed_link)
                             .toString() + "\n URL:'" + url + "'", Toast.LENGTH_SHORT).show()
@@ -125,33 +127,33 @@ class MyUrlSpan : URLSpan {
     }
 
     companion object {
-        val EMPTY: MyUrlSpan? = MyUrlSpan("")
-        val SOFT_HYPHEN: String? = "\u00AD"
-        val EMPTY_SPANNABLE: Spannable? = SpannableString("")
-        val EMPTY_URL: String? = "content://"
-        val CREATOR: Parcelable.Creator<MyUrlSpan?>? = object : Parcelable.Creator<MyUrlSpan?> {
-            override fun createFromParcel(`in`: Parcel?): MyUrlSpan? {
-                return MyUrlSpan(`in`.readString())
+        val EMPTY: MyUrlSpan = MyUrlSpan("")
+        val SOFT_HYPHEN: String = "\u00AD"
+        val EMPTY_SPANNABLE: Spannable = SpannableString("")
+        val EMPTY_URL: String = "content://"
+        val CREATOR: Parcelable.Creator<MyUrlSpan> = object : Parcelable.Creator<MyUrlSpan> {
+            override fun createFromParcel(parcel: Parcel): MyUrlSpan {
+                return MyUrlSpan(parcel.readString() ?: "")
             }
 
-            override fun newArray(size: Int): Array<MyUrlSpan?>? {
+            override fun newArray(size: Int): Array<MyUrlSpan?> {
                 return arrayOfNulls<MyUrlSpan?>(size)
             }
         }
 
-        fun showLabel(activity: Activity?, @IdRes viewId: Int, @StringRes stringResId: Int) {
+        fun showLabel(activity: Activity, @IdRes viewId: Int, @StringRes stringResId: Int) {
             showText(activity.findViewById(viewId), activity.getText(stringResId).toString(), TextMediaType.UNKNOWN, false, false)
         }
 
-        fun showAsPlainText(parentView: View?, @IdRes viewId: Int, text: String?, showIfEmpty: Boolean) {
+        fun showAsPlainText(parentView: View, @IdRes viewId: Int, text: String?, showIfEmpty: Boolean) {
             showText(parentView, viewId, MyHtml.htmlToCompactPlainText(text), TextMediaType.PLAIN, false, showIfEmpty)
         }
 
-        fun showText(parentView: View?, @IdRes viewId: Int, text: String?, linkify: Boolean, showIfEmpty: Boolean) {
+        fun showText(parentView: View, @IdRes viewId: Int, text: String?, linkify: Boolean, showIfEmpty: Boolean) {
             showText(parentView, viewId, text, TextMediaType.UNKNOWN, linkify, showIfEmpty)
         }
 
-        fun showText(parentView: View?, @IdRes viewId: Int, text: String?, mediaType: TextMediaType?, linkify: Boolean, showIfEmpty: Boolean) {
+        fun showText(parentView: View, @IdRes viewId: Int, text: String?, mediaType: TextMediaType?, linkify: Boolean, showIfEmpty: Boolean) {
             showText(parentView.findViewById(viewId), text, mediaType, linkify, showIfEmpty)
         }
 
@@ -176,9 +178,9 @@ class MyUrlSpan : URLSpan {
             }
         }
 
-        fun toSpannable(text: String?, mediaType: TextMediaType?, linkify: Boolean): Spannable? {
+        fun toSpannable(text: String?, mediaType: TextMediaType?, linkify: Boolean): Spannable {
             var text = text
-            if (StringUtil.isEmpty(text)) return EMPTY_SPANNABLE
+            if (text.isNullOrEmpty()) return EMPTY_SPANNABLE
 
             // Android 6 bug, see https://github.com/andstatus/andstatus/issues/334
             // Setting setMovementMethod to not null causes a crash if text is SOFT_HYPHEN only:
@@ -194,14 +196,16 @@ class MyUrlSpan : URLSpan {
             return spannable
         }
 
-        private fun htmlToSpannable(text: String?): Spannable? {
+        private fun htmlToSpannable(text: String?): Spannable {
             val spanned = Html.fromHtml(text, Html.FROM_HTML_MODE_COMPACT)
-            return if (Spannable::class.java.isAssignableFrom(spanned.javaClass)) spanned as Spannable else SpannableString.valueOf(spanned)
+            return if (Spannable::class.java.isAssignableFrom(spanned.javaClass)) spanned as Spannable
+                else SpannableString.valueOf(spanned)
         }
 
-        fun getText(parentView: View?, @IdRes viewId: Int): String? {
+        fun getText(parentView: View, @IdRes viewId: Int): String {
             val view = parentView.findViewById<View?>(viewId)
-            return if (view == null || !TextView::class.java.isAssignableFrom(view.javaClass)) "" else (view as TextView).text.toString()
+            return if (view == null || !TextView::class.java.isAssignableFrom(view.javaClass)) ""
+              else (view as TextView).text.toString()
         }
 
         /**
@@ -213,26 +217,26 @@ class MyUrlSpan : URLSpan {
          * following an advice from here:
          * http://stackoverflow.com/questions/7515710/listview-onclick-event-doesnt-fire-with-linkified-email-address?rq=1
          */
-        fun setOnTouchListener(textView: TextView?) {
+        fun setOnTouchListener(textView: TextView) {
             textView.setMovementMethod(null)
-            textView.setOnTouchListener(OnTouchListener { v: View?, event: MotionEvent? -> onTouchEvent(v, event) })
+            textView.setOnTouchListener({ v: View, event: MotionEvent -> onTouchEvent(v, event) })
         }
 
-        private fun onTouchEvent(view: View?, event: MotionEvent?): Boolean {
-            val widget = view as TextView?
+        private fun onTouchEvent(view: View, event: MotionEvent): Boolean {
+            val widget = view as TextView
             val text: Any? = widget.getText()
             if (text is Spanned) {
-                val buffer = text as Spanned?
+                val buffer = text
                 val action = event.getAction()
                 if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_DOWN) {
-                    var x = event.getX() as Int
-                    var y = event.getY() as Int
+                    var x = event.getX()
+                    var y = event.getY()
                     x -= widget.getTotalPaddingLeft()
                     y -= widget.getTotalPaddingTop()
                     x += widget.getScrollX()
                     y += widget.getScrollY()
                     val layout = widget.getLayout()
-                    val line = layout.getLineForVertical(y)
+                    val line = layout.getLineForVertical(y.toInt())
                     val off = layout.getOffsetForHorizontal(line, x.toFloat())
                     val link = buffer.getSpans(off, off,
                             ClickableSpan::class.java)
@@ -263,7 +267,7 @@ class MyUrlSpan : URLSpan {
             return spans != null && spans.size > 0
         }
 
-        private fun fixUrlSpans(spannable: Spannable?) {
+        private fun fixUrlSpans(spannable: Spannable) {
             val spans = spannable.getSpans(0, spannable.length, URLSpan::class.java)
             for (span in spans) {
                 if (!MyUrlSpan::class.java.isAssignableFrom(span.javaClass)) {
@@ -276,10 +280,10 @@ class MyUrlSpan : URLSpan {
         }
 
         fun getUrlSpans(view: View?): Array<URLSpan?>? {
-            if (view != null && TextView::class.java.isAssignableFrom(view.javaClass)) {
-                val text = (view as TextView?).getText()
-                if (Spanned::class.java.isAssignableFrom(text.javaClass)) {
-                    return (text as Spanned).getSpans(0, text.length, URLSpan::class.java)
+            if (view is TextView) {
+                val text = view.getText()
+                if (text is Spanned) {
+                    return text.getSpans(0, text.length, URLSpan::class.java)
                 }
             }
             return arrayOf()

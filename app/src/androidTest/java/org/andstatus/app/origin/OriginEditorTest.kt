@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.originimport
+package org.andstatus.app.origin
 
 import android.content.Intent
 import android.view.View
@@ -38,11 +38,6 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Test
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -778,10 +773,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -854,7 +845,7 @@ class OriginEditorTest : ActivityTest<OriginEditor?>() {
                              useLegacyHttpProtocol: TriState?,
                              inCombinedGlobalSearch: Boolean, inCombinedPublicReload: Boolean) {
         val method = "OriginEditorTest"
-        val originOld: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromName(originName)
+        val originOld: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(originName)
         val intent = Intent()
         if (originOld.isPersistent) {
             intent.action = Intent.ACTION_EDIT
@@ -901,7 +892,7 @@ class OriginEditorTest : ActivityTest<OriginEditor?>() {
         activity.runOnUiThread(clicker)
         instrumentation.waitForIdleSync()
         DbUtils.waitMs(method, 200)
-        val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromName(originName)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(originName)
         Assert.assertEquals("Origin '$originName' added", originName, origin.name)
         Assert.assertEquals(originType, origin.originType)
         if (hostOrUrl.contains("bad")) {
@@ -927,6 +918,6 @@ class OriginEditorTest : ActivityTest<OriginEditor?>() {
 
     @After
     fun tearDown() {
-        MyContextHolder.Companion.myContextHolder.initialize(null, this)
+         MyContextHolder.myContextHolder.initialize(null, this)
     }
 }

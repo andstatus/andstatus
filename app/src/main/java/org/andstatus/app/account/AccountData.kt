@@ -22,8 +22,6 @@ import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
 import io.vavr.control.Try
-import org.andstatus.app.account.AccountData
-import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
@@ -34,13 +32,12 @@ import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
-import org.andstatus.app.util.StringUtil
 import org.json.JSONObject
 
 class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
-    protected val instanceId = InstanceId.next()
-    private val myContext: MyContext?
-    val accountName: AccountName?
+    override val instanceId = InstanceId.next()
+    private val myContext: MyContext
+    val accountName: AccountName
 
     @Volatile
     private var data: JSONObject?
@@ -48,7 +45,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
     @Volatile
     private var persistent = false
 
-    private constructor(myContext: MyContext?, jso: JSONObject, persistent: Boolean) {
+    private constructor(myContext: MyContext, jso: JSONObject, persistent: Boolean) {
         this.myContext = myContext
         data = jso
         this.persistent = persistent
@@ -237,7 +234,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
     }
 
     override fun setDataString(key: String?, value: String?) {
-        data = if (StringUtil.isEmpty(value)) {
+        data = if (value.isNullOrEmpty()) {
             JsonUtils.remove(data, key)
         } else {
             JsonUtils.put(data, key, value)
@@ -270,17 +267,13 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         return JsonUtils.toString(data, 2)
     }
 
-    override fun getInstanceId(): Long {
-        return instanceId
-    }
-
-    override fun classTag(): String? {
+    override fun classTag(): String {
         return TAG
     }
 
     companion object {
-        private val TAG: String? = AccountData::class.java.simpleName
-        val EMPTY: AccountData? = AccountData(MyContext.Companion.EMPTY, JSONObject(), false)
+        private val TAG: String = AccountData::class.java.simpleName
+        val EMPTY: AccountData = AccountData(MyContext.Companion.EMPTY, JSONObject(), false)
         fun fromAndroidAccount(myContext: MyContext?, androidAccount: Account?): AccountData {
             requireNotNull(androidAccount) { "$TAG account is null" }
             val am = AccountManager.get(myContext.context())
@@ -308,7 +301,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
 
         val CREATOR: Parcelable.Creator<AccountData?>? = object : Parcelable.Creator<AccountData?> {
             override fun createFromParcel(source: Parcel?): AccountData? {
-                return fromBundle(MyContextHolder.Companion.myContextHolder.getNow(), source.readBundle())
+                return fromBundle( MyContextHolder.myContextHolder.getNow(), source.readBundle())
             }
 
             override fun newArray(size: Int): Array<AccountData?>? {

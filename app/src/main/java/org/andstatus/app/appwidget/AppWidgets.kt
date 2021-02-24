@@ -9,7 +9,6 @@ import org.andstatus.app.R
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.notification.NotificationEvents
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
@@ -70,17 +69,17 @@ class AppWidgets private constructor(val events: NotificationEvents?) {
     private fun constructRemoteViews(context: Context?, viewData: MyRemoteViewData?): RemoteViews? {
         val views = RemoteViews(context.getPackageName(),
                 R.layout.appwidget)
-        if (StringUtil.isEmpty(viewData.widgetText)) {
+        if (viewData.widgetText.isNullOrEmpty()) {
             views.setViewVisibility(R.id.appwidget_text, View.GONE)
         }
-        if (StringUtil.isEmpty(viewData.widgetComment)) {
+        if (viewData.widgetComment.isNullOrEmpty()) {
             views.setViewVisibility(R.id.appwidget_comment, View.GONE)
         }
-        if (!StringUtil.isEmpty(viewData.widgetText)) {
+        if (!viewData.widgetText.isNullOrEmpty()) {
             views.setViewVisibility(R.id.appwidget_text, View.VISIBLE)
             views.setTextViewText(R.id.appwidget_text, viewData.widgetText)
         }
-        if (!StringUtil.isEmpty(viewData.widgetComment)) {
+        if (!viewData.widgetComment.isNullOrEmpty()) {
             views.setViewVisibility(R.id.appwidget_comment,
                     View.VISIBLE)
             views.setTextViewText(R.id.appwidget_comment, viewData.widgetComment)

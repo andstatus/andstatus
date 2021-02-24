@@ -21,7 +21,6 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import org.andstatus.app.ClassInApplicationPackage
-import org.andstatus.app.util.StringUtil
 import java.io.FileNotFoundException
 
 class FileProvider : ContentProvider() {
@@ -73,7 +72,7 @@ class FileProvider : ContentProvider() {
         val DOWNLOAD_FILE_PATH: String? = "downloadfile"
         val DOWNLOAD_FILE_URI = Uri.parse("content://" + AUTHORITY + "/" + DOWNLOAD_FILE_PATH)
         fun downloadFilenameToUri(filename: String?): Uri? {
-            return if (StringUtil.isEmpty(filename)) {
+            return if (filename.isNullOrEmpty()) {
                 Uri.EMPTY
             } else {
                 Uri.withAppendedPath(DOWNLOAD_FILE_URI, filename)

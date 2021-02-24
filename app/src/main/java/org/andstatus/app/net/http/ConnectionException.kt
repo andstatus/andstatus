@@ -16,13 +16,12 @@
 package org.andstatus.app.net.http
 
 import android.content.res.Resources.NotFoundException
-import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.UrlUtils
+import java.io.IOException
+import java.net.URL
 
-java.io.IOExceptionimport java.lang.Exceptionimport java.net.URL
 /**
  * @author yvolk@yurivolkov.com
  */
@@ -31,7 +30,7 @@ class ConnectionException : IOException {
         UNKNOWN, OK, UNSUPPORTED_API, NOT_FOUND, BAD_REQUEST, AUTHENTICATION_ERROR, CREDENTIALS_OF_OTHER_ACCOUNT, NO_CREDENTIALS_FOR_HOST, UNAUTHORIZED, FORBIDDEN, INTERNAL_SERVER_ERROR, BAD_GATEWAY, SERVICE_UNAVAILABLE, MOVED, REQUEST_ENTITY_TOO_LARGE, LENGTH_REQUIRED, CLIENT_ERROR, SERVER_ERROR;
 
         companion object {
-            fun fromResponseCode(responseCode: Int): StatusCode? {
+            fun fromResponseCode(responseCode: Int): StatusCode {
                 return when (responseCode) {
                     200, 201, 304 -> OK
                     301, 302, 303, 307 -> MOVED
@@ -61,7 +60,7 @@ class ConnectionException : IOException {
     private val isHardError: Boolean
     private val url: URL?
 
-    private constructor(result: HttpReadResult?) : super(result.logMsg(), result.getException()) {
+    private constructor(result: HttpReadResult) : super(result.logMsg(), result.getException()) {
         statusCode = result.getStatusCode()
         url = UrlUtils.fromString(result.getUrl())
         isHardError = isHardFromStatusCode(result.getException() is ConnectionException &&
@@ -76,9 +75,9 @@ class ConnectionException : IOException {
     constructor(statusCode: StatusCode?, detailMessage: String?, url: URL? = null) : this(statusCode, detailMessage, null, url, false) {
     }
 
-    fun append(toAppend: String?): ConnectionException? {
+    fun append(toAppend: String?): ConnectionException {
         return ConnectionException(statusCode,
-                message + (if (StringUtil.nonEmpty(message)) ". " else "") + toAppend,
+                message + (if (!message.isNullOrEmpty()) ". " else "") + toAppend,
                 cause, url, isHardError)
     }
 
@@ -111,27 +110,27 @@ class ConnectionException : IOException {
 
     companion object {
         private const val serialVersionUID = 1L
-        fun of(e: Throwable?): ConnectionException? {
-            if (e is ConnectionException) return e as ConnectionException?
+        fun of(e: Throwable?): ConnectionException {
+            if (e is ConnectionException) return e
             return if (e is NotFoundException) {
                 fromStatusCode(StatusCode.NOT_FOUND, e.message)
             } else ConnectionException("Unexpected exception", e)
         }
 
-        fun from(result: HttpReadResult?): ConnectionException? {
+        fun from(result: HttpReadResult): ConnectionException {
             return ConnectionException(result)
         }
 
-        fun loggedHardJsonException(objTag: Any?, detailMessage: String?, e: Exception?, jso: Any?): ConnectionException? {
+        fun loggedHardJsonException(objTag: Any?, detailMessage: String?, e: Exception?, jso: Any?): ConnectionException {
             return loggedJsonException(objTag, detailMessage, e, jso, true)
         }
 
-        fun loggedJsonException(objTag: Any?, detailMessage: String?, e: Exception?, jso: Any?): ConnectionException? {
+        fun loggedJsonException(objTag: Any?, detailMessage: String?, e: Exception?, jso: Any?): ConnectionException {
             return loggedJsonException(objTag, detailMessage, e, jso, false)
         }
 
         private fun loggedJsonException(objTag: Any?, detailMessage: String?, e: Exception?, jso: Any?,
-                                        isHard: Boolean): ConnectionException? {
+                                        isHard: Boolean): ConnectionException {
             MyLog.d(objTag, detailMessage + if (e != null) ": " + e.message else "")
             if (jso != null) {
                 val fileName = MyLog.uniqueDateTimeFormatted()
@@ -142,22 +141,22 @@ class ConnectionException : IOException {
                 }
                 MyLog.logJson(objTag, "json_exception", jso, fileName)
             }
-            return ConnectionException(StatusCode.OK, MyStringBuilder.Companion.objToTag(objTag) + ": " + detailMessage, e, null, isHard)
+            return ConnectionException(StatusCode.OK, MyStringBuilder.objToTag(objTag) + ": " + detailMessage, e, null, isHard)
         }
 
-        fun fromStatusCode(statusCode: StatusCode?, detailMessage: String?): ConnectionException? {
+        fun fromStatusCode(statusCode: StatusCode?, detailMessage: String?): ConnectionException {
             return fromStatusCodeAndThrowable(statusCode, detailMessage, null)
         }
 
-        fun fromStatusCodeAndThrowable(statusCode: StatusCode?, detailMessage: String?, throwable: Throwable?): ConnectionException? {
+        fun fromStatusCodeAndThrowable(statusCode: StatusCode?, detailMessage: String?, throwable: Throwable?): ConnectionException {
             return ConnectionException(statusCode, detailMessage, throwable, null, false)
         }
 
-        fun fromStatusCodeAndHost(statusCode: StatusCode?, detailMessage: String?, host2: URL?): ConnectionException? {
+        fun fromStatusCodeAndHost(statusCode: StatusCode?, detailMessage: String?, host2: URL?): ConnectionException {
             return ConnectionException(statusCode, detailMessage, host2)
         }
 
-        fun hardConnectionException(detailMessage: String?, throwable: Throwable?): ConnectionException? {
+        fun hardConnectionException(detailMessage: String?, throwable: Throwable?): ConnectionException {
             return ConnectionException(StatusCode.OK, detailMessage, throwable, null, true)
         }
 

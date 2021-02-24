@@ -48,7 +48,7 @@ class ActivityViewItem : ViewItem<ActivityViewItem?>, Comparable<ActivityViewIte
     private var objActorItem: ActorViewItem? = ActorViewItem.Companion.EMPTY
 
     protected constructor(isEmpty: Boolean) : super(isEmpty, RelativeTime.DATETIME_MILLIS_NEVER) {
-        origin = Origin.Companion.EMPTY
+        origin =  Origin.EMPTY
         activityType = ActivityType.EMPTY
         objActorId = 0
         noteViewItem = NoteViewItem.Companion.EMPTY
@@ -175,6 +175,6 @@ class ActivityViewItem : ViewItem<ActivityViewItem?>, Comparable<ActivityViewIte
     }
 
     companion object {
-        val EMPTY: ActivityViewItem? = ActivityViewItem(true)
+        val EMPTY: ActivityViewItem = ActivityViewItem(true)
     }
 }

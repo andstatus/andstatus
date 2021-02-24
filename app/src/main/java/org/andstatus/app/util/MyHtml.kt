@@ -22,6 +22,7 @@ import org.apache.commons.lang3.text.translate.CharSequenceTranslator
 import org.apache.commons.lang3.text.translate.EntityArrays
 import org.apache.commons.lang3.text.translate.LookupTranslator
 import org.apache.commons.lang3.text.translate.NumericEntityUnescaper
+import java.util.*
 import java.util.regex.Pattern
 
 object MyHtml {
@@ -29,29 +30,29 @@ object MyHtml {
     private val SPACES_FOR_SEARCH_PATTERN = Pattern.compile("[\\[\\](){}\n\'\"<>,:;\\s]+")
     private val PUNCTUATION_BEFORE_COMMA_PATTERN = Pattern.compile("[,.!?]+,")
     private val MENTION_HASH_PREFIX_PATTERN = Pattern.compile("(,[@#!]([^@#!,]+))")
-    val LINEBREAK_HTML: String? = "<br />"
+    val LINEBREAK_HTML: String = "<br />"
     private val HTML_LINEBREAK_PATTERN = Pattern.compile(LINEBREAK_HTML)
-    private val LINEBREAK_PLAIN: String? = "\n"
+    private val LINEBREAK_PLAIN: String = "\n"
     private val LINEBREAK_PATTERN = Pattern.compile(LINEBREAK_PLAIN)
     private val LINEBREAK_ESCAPED_PATTERN = Pattern.compile("&#10;")
     private val SPACE_ESCAPED_PATTERN = Pattern.compile("&nbsp;")
-    private val THREE_LINEBREAKS_REGEX: String? = "\n\\s*\n\\s*\n"
+    private val THREE_LINEBREAKS_REGEX: String = "\n\\s*\n\\s*\n"
     private val THREE_LINEBREAKS_PATTERN = Pattern.compile(THREE_LINEBREAKS_REGEX)
-    private val DOUBLE_LINEBREAK_REPLACE: String? = "\n\n"
+    private val DOUBLE_LINEBREAK_REPLACE: String = "\n\n"
     private val PLAIN_LINEBREAK_AFTER_HTML_LINEBREAK = Pattern.compile(
             "(</p>|<br[ /]*>)(\n\\s*)")
 
-    fun prepareForView(html: String?): String? {
-        if (StringUtil.isEmpty(html)) return ""
+    fun prepareForView(html: String?): String {
+        if (html.isNullOrEmpty()) return ""
         val endWith = if (html.endsWith("</p>")) "</p>" else if (html.endsWith("</p>\n")) "</p>\n" else ""
-        return if (StringUtil.nonEmpty(endWith) && StringUtil.countOfOccurrences(html, "<p") == 1) {
+        return if (!endWith.isNullOrEmpty() && StringUtil.countOfOccurrences(html, "<p") == 1) {
             html.replace("<p[^>]*>".toRegex(), "").replace(endWith.toRegex(), "")
         } else html
     }
 
     /** Following ActivityStreams convention, default mediaType for content is "text/html"  */
     fun toContentStored(text: String?, inputMediaType: TextMediaType?, isHtmlContentAllowed: Boolean): String {
-        if (StringUtil.isEmpty(text)) return ""
+        if (text.isNullOrEmpty()) return ""
         val mediaType = if (inputMediaType == TextMediaType.UNKNOWN) calcTextMediaType(text) else inputMediaType
         val escaped: String?
         escaped = when (mediaType) {
@@ -68,13 +69,13 @@ object MyHtml {
         return LINEBREAK_PATTERN.matcher(stripExcessiveLineBreaks(escaped)).replaceAll(LINEBREAK_HTML)
     }
 
-    private fun calcTextMediaType(text: String?): TextMediaType? {
-        if (StringUtil.isEmpty(text)) return TextMediaType.PLAIN
+    private fun calcTextMediaType(text: String?): TextMediaType {
+        if (text.isNullOrEmpty()) return TextMediaType.PLAIN
         return if (hasHtmlMarkup(text)) TextMediaType.HTML else TextMediaType.PLAIN
     }
 
     fun fromContentStored(html: String?, outputMediaType: TextMediaType?): String {
-        return if (StringUtil.isEmpty(html)) "" else when (outputMediaType) {
+        return if (html.isNullOrEmpty()) "" else when (outputMediaType) {
             TextMediaType.HTML -> html
             TextMediaType.PLAIN -> htmlToPlainText(html)
             TextMediaType.PLAIN_ESCAPED -> escapeHtmlExceptLineBreaksAndSpace(htmlToPlainText(html))
@@ -83,7 +84,7 @@ object MyHtml {
     }
 
     fun getContentToSearch(html: String?): String {
-        return normalizeWordsForSearch(htmlToCompactPlainText(html)).toLowerCase()
+        return normalizeWordsForSearch(htmlToCompactPlainText(html)).toLowerCase(Locale.ENGLISH)
     }
 
     /** Strips ALL markup from the String, including line breaks. And remove all whiteSpace  */
@@ -93,20 +94,21 @@ object MyHtml {
 
     /** Strips ALL markup from the String, excluding line breaks  */
     fun htmlToPlainText(html: String?): String {
-        if (StringUtil.isEmpty(html)) return ""
+        if (html.isNullOrEmpty()) return ""
         val str0 = HTML_LINEBREAK_PATTERN.matcher(html).replaceAll("\n")
         val str1 = if (hasHtmlMarkup(str0)) Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT).toString() else str0
         val str2 = unescapeHtml(str1)
         return stripExcessiveLineBreaks(str2)
     }
 
-    private fun unescapeHtml(textEscaped: String?): String? {
-        return if (StringUtil.isEmpty(textEscaped)) "" else UNESCAPE_HTML.translate(textEscaped) // This is needed to avoid visible text truncation,
+    private fun unescapeHtml(textEscaped: String?): String {
+        return if (textEscaped.isNullOrEmpty()) ""
+        else UNESCAPE_HTML.translate(textEscaped) // This is needed to avoid visible text truncation,
                 // see https://github.com/andstatus/andstatus/issues/441
                 .replace("<>".toRegex(), "< >")
     }
 
-    private val UNESCAPE_HTML: CharSequenceTranslator? = AggregateTranslator(
+    private val UNESCAPE_HTML: CharSequenceTranslator = AggregateTranslator(
             LookupTranslator(*EntityArrays.BASIC_UNESCAPE()),
             LookupTranslator(*EntityArrays.ISO8859_1_UNESCAPE()),
             LookupTranslator(*EntityArrays.HTML40_EXTENDED_UNESCAPE()),
@@ -114,14 +116,14 @@ object MyHtml {
             NumericEntityUnescaper()
     )
 
-    private fun escapeHtmlExceptLineBreaksAndSpace(plainText: String?): String? {
-        return if (StringUtil.isEmpty(plainText)) "" else SPACE_ESCAPED_PATTERN.matcher(
+    private fun escapeHtmlExceptLineBreaksAndSpace(plainText: String?): String {
+        return if (plainText.isNullOrEmpty()) "" else SPACE_ESCAPED_PATTERN.matcher(
                 LINEBREAK_ESCAPED_PATTERN.matcher(Html.escapeHtml(plainText)).replaceAll(LINEBREAK_PLAIN)
         ).replaceAll(" ")
     }
 
     fun stripExcessiveLineBreaks(plainText: String?): String {
-        return if (StringUtil.isEmpty(plainText)) {
+        return if (plainText.isNullOrEmpty()) {
             ""
         } else {
             var text2 = THREE_LINEBREAKS_PATTERN.matcher(plainText.trim { it <= ' ' }).replaceAll(DOUBLE_LINEBREAK_REPLACE).trim { it <= ' ' }
@@ -132,8 +134,8 @@ object MyHtml {
         }
     }
 
-    fun normalizeWordsForSearch(text: String?): String? {
-        return if (StringUtil.isEmpty(text)) {
+    fun normalizeWordsForSearch(text: String?): String {
+        return if (text.isNullOrEmpty()) {
             ""
         } else {
             MENTION_HASH_PREFIX_PATTERN.matcher(
@@ -148,6 +150,6 @@ object MyHtml {
 
     /** Very simple method  */
     fun hasHtmlMarkup(text: String?): Boolean {
-        return if (StringUtil.isEmpty(text)) false else text.contains("<") && text.contains(">")
+        return if (text.isNullOrEmpty()) false else text.contains("<") && text.contains(">")
     }
 }

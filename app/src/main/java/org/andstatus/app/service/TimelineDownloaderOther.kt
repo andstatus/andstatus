@@ -26,7 +26,6 @@ import org.andstatus.app.net.social.TimelinePosition
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -125,7 +124,7 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext?) : 
             }
         } else {
             val actor: Actor = Actor.Companion.load(execContext.myContext, actor.actorId)
-            return if (StringUtil.isEmpty(actor.oid)) {
+            return if (actor.oid.isNullOrEmpty()) {
                 Try.failure(ConnectionException("No ActorOid for $actor, timeline:$timeline"))
             } else Try.success(actor)
         }

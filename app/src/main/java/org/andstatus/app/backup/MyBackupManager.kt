@@ -25,7 +25,6 @@ import io.vavr.control.Try
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TryUtils
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -58,7 +57,7 @@ internal class MyBackupManager(private val activity: Activity?, progressListener
         }
         val appInstanceName = MyPreferences.getAppInstanceName()
         val dataFolderName = MyLog.currentDateTimeFormatted() + "-AndStatusBackup-" +
-                (if (StringUtil.isEmpty(appInstanceName)) "" else "$appInstanceName-") +
+                (if (appInstanceName.isNullOrEmpty()) "" else "$appInstanceName-") +
                 MyPreferences.getDeviceBrandModelString()
         val dataFolderToBe = backupFolder.createDirectory(dataFolderName)
                 ?: throw IOException("Couldn't create subfolder '" + dataFolderName + "'" +
@@ -107,7 +106,7 @@ internal class MyBackupManager(private val activity: Activity?, progressListener
         this.dataFolder = dataFolder
         newDescriptor = descriptorFile.map(CheckedFunction { df: DocumentFile? ->
             val descriptor: MyBackupDescriptor = MyBackupDescriptor.Companion.fromOldDocFileDescriptor(
-                    MyContextHolder.Companion.myContextHolder.getNow().baseContext(), df, progressLogger)
+                     MyContextHolder.myContextHolder.getNow().baseContext(), df, progressLogger)
             if (descriptor.backupSchemaVersion != MyBackupDescriptor.Companion.BACKUP_SCHEMA_VERSION) {
                 throw FileNotFoundException(
                         """

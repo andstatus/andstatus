@@ -1,8 +1,6 @@
 package org.andstatus.app.account
 
 import android.accounts.Account
-import org.andstatus.app.account.AccountData
-import org.andstatus.app.account.MyAccount
 import org.andstatus.app.backup.MyBackupAgent
 import org.andstatus.app.backup.MyBackupDataInput
 import org.andstatus.app.backup.MyBackupDataOutput
@@ -18,7 +16,6 @@ import org.andstatus.app.util.I18n
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StopWatch
-import org.andstatus.app.util.StringUtil
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -37,10 +34,10 @@ import java.util.stream.Stream
 
 class MyAccounts private constructor(private val myContext: MyContext?) : IsEmpty {
     /** Current account is the first in this list  */
-    val recentAccounts: MutableList<MyAccount?>? = CopyOnWriteArrayList()
-    private val myAccounts: SortedSet<MyAccount?>? = ConcurrentSkipListSet()
+    val recentAccounts: MutableList<MyAccount> = CopyOnWriteArrayList()
+    private val myAccounts: SortedSet<MyAccount> = ConcurrentSkipListSet()
     private var distinctOriginsCount = 0
-    fun get(): MutableSet<MyAccount?> {
+    fun get(): MutableSet<MyAccount> {
         return myAccounts
     }
 
@@ -52,7 +49,7 @@ class MyAccounts private constructor(private val myContext: MyContext?) : IsEmpt
         return myAccounts.size
     }
 
-    fun initialize(): MyAccounts? {
+    fun initialize(): MyAccounts {
         val stopWatch: StopWatch = StopWatch.Companion.createStarted()
         myAccounts.clear()
         recentAccounts.clear()
@@ -198,7 +195,7 @@ class MyAccounts private constructor(private val myContext: MyContext?) : IsEmpt
 
     /** Doesn't take origin into account  */
     fun fromWebFingerId(webFingerId: String?): MyAccount {
-        return if (StringUtil.isEmpty(webFingerId)) MyAccount.Companion.EMPTY else myAccounts.stream().filter { myAccount: MyAccount? -> myAccount.getWebFingerId() == webFingerId }
+        return if (webFingerId.isNullOrEmpty()) MyAccount.Companion.EMPTY else myAccounts.stream().filter { myAccount: MyAccount? -> myAccount.getWebFingerId() == webFingerId }
                 .findFirst()
                 .orElse(MyAccount.Companion.EMPTY)
     }
@@ -218,7 +215,7 @@ class MyAccounts private constructor(private val myContext: MyContext?) : IsEmpt
     }
 
     fun getFirstSucceeded(): MyAccount {
-        return getFirstPreferablySucceededForOrigin(Origin.Companion.EMPTY)
+        return getFirstPreferablySucceededForOrigin( Origin.EMPTY)
     }
 
     /**
@@ -508,15 +505,15 @@ class MyAccounts private constructor(private val myContext: MyContext?) : IsEmpt
     }
 
     companion object {
-        fun newEmpty(myContext: MyContext?): MyAccounts? {
+        fun newEmpty(myContext: MyContext?): MyAccounts {
             return MyAccounts(myContext)
         }
 
         fun myAccountIds(): SqlIds {
             return SqlIds.Companion.fromIds(
-                    AccountUtils.getCurrentAccounts(MyContextHolder.Companion.myContextHolder.getNow().context()).stream()
+                    AccountUtils.getCurrentAccounts( MyContextHolder.myContextHolder.getNow().context()).stream()
                             .map(Function<Account?, Long?> { account: Account? ->
-                                AccountData.Companion.fromAndroidAccount(MyContextHolder.Companion.myContextHolder.getNow(), account)
+                                AccountData.Companion.fromAndroidAccount( MyContextHolder.myContextHolder.getNow(), account)
                                         .getDataLong(MyAccount.Companion.KEY_ACTOR_ID, 0)
                             })
                             .filter { id: Long? -> id > 0 }

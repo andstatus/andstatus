@@ -19,7 +19,6 @@ import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
-import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.I18n
@@ -46,11 +45,11 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 
 class HttpReadResult(val request: HttpRequest?) {
-    private var urlString: String? = ""
+    private var urlString: String = ""
     private var url: URL? = null
     private var headers: MutableMap<String?, MutableList<String?>?>? = emptyMap<String?, MutableList<String?>?>()
     var redirected = false
-    private var location: Optional<String?>? = Optional.empty()
+    private var location: Optional<String> = Optional.empty()
     var retriedWithoutAuthentication = false
     private val logBuilder: StringBuilder? = StringBuilder()
     private var exception: Exception? = null
@@ -79,12 +78,12 @@ class HttpReadResult(val request: HttpRequest?) {
         return this
     }
 
-    fun getLocation(): Optional<String?>? {
+    fun getLocation(): Optional<String> {
         return location
     }
 
-    fun setUrl(urlIn: String?): HttpReadResult? {
-        if (!StringUtil.isEmpty(urlIn) && !urlString.contentEquals(urlIn)) {
+    fun setUrl(urlIn: String?): HttpReadResult {
+        if (!urlIn.isNullOrEmpty() && !urlString.contentEquals(urlIn)) {
             urlString = urlIn
             url = try {
                 URL(urlIn)
@@ -128,12 +127,12 @@ class HttpReadResult(val request: HttpRequest?) {
 
     override fun toString(): String {
         return (logMsg()
-                + (if (statusCode == StatusCode.OK || StringUtil.isEmpty(statusLine)) "" else "; statusLine:'$statusLine'")
+                + (if (statusCode == StatusCode.OK || statusLine.isNullOrEmpty()) "" else "; statusLine:'$statusLine'")
                 + (if (intStatusCode == 0) "" else "; statusCode:$statusCode ($intStatusCode)")
                 + (if (redirected) "; redirected" else "")
                 + "; url:'" + urlString + "'"
                 + (if (retriedWithoutAuthentication) "; retried without auth" else "")
-                + (if (StringUtil.isEmpty(strResponse)) "" else "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
+                + (if (strResponse.isNullOrEmpty()) "" else "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
                 + location.map(Function { str: String? -> "; location:'$str'" }).orElse("")
                 + (if (exception == null) "" else """
      ; 
@@ -170,7 +169,7 @@ class HttpReadResult(val request: HttpRequest?) {
         val method = "getJsonObject; "
         var jso: JSONObject? = null
         try {
-            if (StringUtil.isEmpty(strJson)) {
+            if (strJson.isNullOrEmpty()) {
                 jso = JSONObject()
             } else {
                 jso = JSONObject(strJson)
@@ -192,7 +191,7 @@ class HttpReadResult(val request: HttpRequest?) {
 
     fun getJsonArray(arrayKey: String?): Try<JSONArray?>? {
         val method = "getJsonArray; "
-        if (StringUtil.isEmpty(strResponse)) {
+        if (strResponse.isNullOrEmpty()) {
             MyLog.v(this) { "$method; response is empty" }
             return Try.success(JSONArray())
         }
@@ -268,13 +267,13 @@ class HttpReadResult(val request: HttpRequest?) {
             if (request.isFileTooLarge()) {
                 setException(ConnectionException.Companion.hardConnectionException(
                         "File, downloaded from \"" + urlString + "\", is too large: "
-                                + Formatter.formatShortFileSize(MyContextHolder.Companion.myContextHolder.getNow().context(), request.fileResult.length()),
+                                + Formatter.formatShortFileSize( MyContextHolder.myContextHolder.getNow().context(), request.fileResult.length()),
                         null))
                 return Try.failure(exception)
             }
             MyLog.v(this) { this.toString() }
         } else {
-            if (!StringUtil.isEmpty(strResponse)) {
+            if (!strResponse.isNullOrEmpty()) {
                 setException(getExceptionFromJsonErrorResponse())
             } else {
                 setException(ConnectionException.Companion.fromStatusCodeAndThrowable(statusCode, toString(), exception))

@@ -182,7 +182,7 @@ class Audience(val origin: Origin?) {
     }
 
     fun containsOid(oid: String?): Boolean {
-        return if (StringUtil.isEmpty(oid)) false else oid == followers.oid || actors.stream().anyMatch { actor: Actor? -> actor.oid == oid }
+        return if (oid.isNullOrEmpty()) false else oid == followers.oid || actors.stream().anyMatch { actor: Actor? -> actor.oid == oid }
     }
 
     /** TODO: Audience should belong to an Activity, not to a Note.
@@ -291,7 +291,7 @@ class Audience(val origin: Origin?) {
 
     companion object {
         private val TAG: String? = Audience::class.java.simpleName
-        val EMPTY: Audience? = Audience(Origin.Companion.EMPTY)
+        val EMPTY: Audience? = Audience( Origin.EMPTY)
         private val LOAD_SQL: String? = ("SELECT " + ActorSql.selectFullProjection()
                 + " FROM (" + ActorSql.allTables()
                 + ") INNER JOIN " + AudienceTable.TABLE_NAME + " ON "

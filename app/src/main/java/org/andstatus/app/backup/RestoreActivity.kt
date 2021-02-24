@@ -138,13 +138,13 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     override fun onResume() {
-        MyContextHolder.Companion.myContextHolder.getNow().setInForeground(true)
+         MyContextHolder.myContextHolder.getNow().setInForeground(true)
         super.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        MyContextHolder.Companion.myContextHolder.getNow().setInForeground(false)
+         MyContextHolder.myContextHolder.getNow().setInForeground(false)
     }
 
     override fun onProgressMessage(message: CharSequence?) {

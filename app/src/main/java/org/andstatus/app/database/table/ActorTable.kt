@@ -26,57 +26,57 @@ import org.andstatus.app.data.DbUtils
  * see [MyAccount.getActorId]
  */
 object ActorTable : BaseColumns {
-    val TABLE_NAME: String? = "actor"
+    val TABLE_NAME: String = "actor"
 
     // Table columns
     /* {@link BaseColumns#_ID} is primary key in this database  */
-    val USER_ID: String? = UserTable.USER_ID
+    val USER_ID: String = UserTable.USER_ID
 
     /**
      * ID of the originating (source) system (twitter.com, identi.ca, ... ) where the row was created
      */
-    val ORIGIN_ID: String? = OriginTable.ORIGIN_ID
+    val ORIGIN_ID: String = OriginTable.ORIGIN_ID
 
     /**
      * ID in the originating system
      * The id is not unique for this table, because we have IDs from different systems in one column.
      */
-    val ACTOR_OID: String? = "actor_oid"
+    val ACTOR_OID: String = "actor_oid"
 
     /** [org.andstatus.app.actor.GroupType]  */
-    val GROUP_TYPE: String? = "group_type"
+    val GROUP_TYPE: String = "group_type"
 
     /** [org.andstatus.app.actor.GroupType.parentActorRequired]
      * denotes the Actor, whose the Group is  */
-    val PARENT_ACTOR_ID: String? = "parent_actor_id"
+    val PARENT_ACTOR_ID: String = "parent_actor_id"
 
     /** This is called "screen_name" in Twitter API, "login" or "username" in others, "preferredUsername" in ActivityPub  */
-    val USERNAME: String? = "username"
+    val USERNAME: String = "username"
 
     /** It looks like an email address with your nickname then "@" then your server  */
-    val WEBFINGER_ID: String? = "webfinger_id"
+    val WEBFINGER_ID: String = "webfinger_id"
 
     /** This is called "name" in Twitter API and in ActivityPub  */
-    val REAL_NAME: String? = "real_name"
+    val REAL_NAME: String = "real_name"
 
     /** Actor's description / "About myself" "bio" "summary"  */
-    val SUMMARY: String? = "actor_description" // TODO: Rename
+    val SUMMARY: String = "actor_description" // TODO: Rename
 
     /** Location string  */
-    val LOCATION: String? = "location"
+    val LOCATION: String = "location"
 
     /** URL of Actor's Profile web page  */
-    val PROFILE_PAGE: String? = "profile_url" // TODO: Rename
+    val PROFILE_PAGE: String = "profile_url" // TODO: Rename
 
     /** URL of Actor's Home web page  */
-    val HOMEPAGE: String? = "homepage"
+    val HOMEPAGE: String = "homepage"
 
     /** The latest url of the avatar  */
-    val AVATAR_URL: String? = "avatar_url"
-    val NOTES_COUNT: String? = "notes_count"
-    val FAVORITES_COUNT: String? = "favorited_count"
-    val FOLLOWING_COUNT: String? = "following_count"
-    val FOLLOWERS_COUNT: String? = "followers_count"
+    val AVATAR_URL: String = "avatar_url"
+    val NOTES_COUNT: String = "notes_count"
+    val FAVORITES_COUNT: String = "favorited_count"
+    val FOLLOWING_COUNT: String = "following_count"
+    val FOLLOWERS_COUNT: String = "followers_count"
 
     /**
      * Date and time when the row was created in the originating system.
@@ -84,41 +84,41 @@ object ActorTable : BaseColumns {
      * NULL means the row was not retrieved from the Internet yet
      * (And maybe there is no such an Actor in the originating system...)
      */
-    val CREATED_DATE: String? = "actor_created_date"
-    val UPDATED_DATE: String? = "actor_updated_date"
+    val CREATED_DATE: String = "actor_created_date"
+    val UPDATED_DATE: String = "actor_updated_date"
 
     /** Date and time the row was inserted into this database  */
-    val INS_DATE: String? = "actor_ins_date"
+    val INS_DATE: String = "actor_ins_date"
 
     /**
      * Id of the latest activity where this actor was an Actor or an Author
      */
-    val ACTOR_ACTIVITY_ID: String? = "actor_activity_id"
+    val ACTOR_ACTIVITY_ID: String = "actor_activity_id"
 
     /**
      * Date of the latest activity of this Actor (were he was an Actor)
      */
-    val ACTOR_ACTIVITY_DATE: String? = "actor_activity_date"
+    val ACTOR_ACTIVITY_DATE: String = "actor_activity_date"
     /*
      * Derived columns (they are not stored in this table but are result of joins)
      */
     /** Alias for the primary key  */
-    val ACTOR_ID: String? = "actor_id"
+    val ACTOR_ID: String = "actor_id"
 
     /** Alias for the primary key used for accounts  */
-    val ACCOUNT_ID: String? = "account_id"
+    val ACCOUNT_ID: String = "account_id"
 
     /**
      * Derived from [ActivityTable.ACTOR_ID]
      * Whether this (and other similar...) is [.USERNAME] or [.REAL_NAME], depends on settings
      *
      * Derived from [ActivityTable.ACTOR_ID]  */
-    val ACTIVITY_ACTOR_NAME: String? = "activity_actor_name"
+    val ACTIVITY_ACTOR_NAME: String = "activity_actor_name"
 
     /** Derived from [NoteTable.AUTHOR_ID]  */
-    val AUTHOR_NAME: String? = "author_name"
-    val DEFAULT_SORT_ORDER: String? = USERNAME + " ASC"
-    fun create(db: SQLiteDatabase?) {
+    val AUTHOR_NAME: String = "author_name"
+    val DEFAULT_SORT_ORDER: String = USERNAME + " ASC"
+    fun create(db: SQLiteDatabase) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + USER_ID + " INTEGER NOT NULL,"

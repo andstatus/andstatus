@@ -35,7 +35,6 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Attachments
 import org.andstatus.app.net.social.Note
 import org.andstatus.app.net.social.RateLimitStatus
-import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.StringUtil
@@ -73,7 +72,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext?) : Com
     private fun searchActors(searchQuery: String?): Try<Boolean?>? {
         val method = "searchActors"
         val msgLog = "$method; query='$searchQuery'"
-        return if (StringUtil.isEmpty(searchQuery)) {
+        return if (searchQuery.isNullOrEmpty()) {
             logExecutionError(true, "$msgLog, empty query")
         } else connection
                 .searchActors(ACTORS_LIMIT, searchQuery)
@@ -91,7 +90,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext?) : Com
     private fun getConversation(noteId: Long): Try<Boolean?>? {
         val method = "getConversation"
         val conversationOid = MyQuery.noteIdToConversationOid(execContext.myContext, noteId)
-        return if (StringUtil.isEmpty(conversationOid)) {
+        return if (conversationOid.isNullOrEmpty()) {
             logExecutionError(true, method + " empty conversationId " +
                     MyQuery.noteInfoForLog(execContext.myContext, noteId))
         } else connection
@@ -185,7 +184,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext?) : Com
 
     private fun getNoteOid(method: String?, noteId: Long, required: Boolean): Try<String?> {
         val oid = MyQuery.idToOid(execContext.myContext, OidEnum.NOTE_OID, noteId, 0)
-        return if (required && StringUtil.isEmpty(oid)) {
+        return if (required && oid.isNullOrEmpty()) {
             logExecutionError(true, method + "; no note ID in the Social Network "
                     + MyQuery.noteInfoForLog(execContext.myContext, noteId))
         } else Try.success(oid)
@@ -313,9 +312,9 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext?) : Com
                 .onSuccess { activity: AActivity? -> note.setInReplyTo(activity) }
         DemoData.Companion.crashTest(BooleanSupplier { note.content.startsWith("Crash me on sending 2015-04-10") })
         if (MyLog.isVerboseEnabled()) {
-            val msgLog = ((if (StringUtil.nonEmpty(note.name)) "name:'" + note.name + "'; " else "")
-                    + (if (StringUtil.nonEmpty(note.summary)) "summary:'" + note.summary + "'; " else "")
-                    + (if (StringUtil.nonEmpty(note.content)) "content:'" + MyLog.trimmedString(note.contentToPost, 80) + "'" else "")
+            val msgLog = ((if (!note.name.isNullOrEmpty()) "name:'" + note.name + "'; " else "")
+                    + (if (!note.summary.isNullOrEmpty()) "summary:'" + note.summary + "'; " else "")
+                    + (if (!note.content.isNullOrEmpty()) "content:'" + MyLog.trimmedString(note.contentToPost, 80) + "'" else "")
                     + if (note.attachments.isEmpty) "" else "; " + note.attachments)
             MyLog.v(this) { "$method;$msgLog" }
         }

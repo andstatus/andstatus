@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.serviceimport
+package org.andstatus.app.service
 
 import android.content.ContentValues
 import android.provider.BaseColumns
@@ -43,11 +43,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -783,10 +778,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -868,7 +859,7 @@ class AvatarDownloaderTest {
         changeMaAvatarUrl(ma, "http://example.com/inexistent.jpg")
         loadAndAssertStatusForMa(ma, "Inexistent avatar",
                 DownloadStatus.HARD_ERROR, DownloadStatus.LOADED, false)
-        val aLoader = ActorsLoader(MyContextHolder.Companion.myContextHolder.getNow(), ActorsScreenType.ACTORS_AT_ORIGIN,
+        val aLoader = ActorsLoader( MyContextHolder.myContextHolder.getNow(), ActorsScreenType.ACTORS_AT_ORIGIN,
                 ma.getOrigin(), 0, "")
         aLoader.addActorToList(ma.getActor())
         aLoader.load { progress: String? -> }
@@ -914,10 +905,10 @@ class AvatarDownloaderTest {
         val values = ContentValues()
         values.put(DownloadTable.DOWNLOAD_STATUS, status.save())
         values.put(DownloadTable.DOWNLOADED_DATE, MyLog.uniqueCurrentTimeMS())
-        MyContextHolder.Companion.myContextHolder.getNow().getDatabase()
+         MyContextHolder.myContextHolder.getNow().getDatabase()
                 .update(DownloadTable.TABLE_NAME, values, DownloadTable.ACTOR_ID + "=" + actor.actorId
                         + " AND " + DownloadTable.URL + "=" + MyQuery.quoteIfNotQuoted(actor.getAvatarUrl()), null)
-        val actor2: Actor = MyContextHolder.Companion.myContextHolder.getNow().users().reload(actor)
+        val actor2: Actor =  MyContextHolder.myContextHolder.getNow().users().reload(actor)
         val avatarData: AvatarData = AvatarData.Companion.getCurrentForActor(actor)
         Assert.assertEquals("Download status for $actor2", status, avatarData.status)
     }
@@ -925,7 +916,7 @@ class AvatarDownloaderTest {
     private fun loadAndAssertStatusForMa(ma: MyAccount?, description: String?, loadStatus: DownloadStatus?,
                                          displayedStatus: DownloadStatus?, mockNetworkError: Boolean): Long {
         TestSuite.clearHttpMocks()
-        val actor: Actor = Actor.Companion.load(MyContextHolder.Companion.myContextHolder.getBlocking(), ma.getActor().actorId)
+        val actor: Actor = Actor.Companion.load( MyContextHolder.myContextHolder.getBlocking(), ma.getActor().actorId)
         val loader: FileDownloader = AvatarDownloader(actor)
         if (mockNetworkError) {
             loader.setConnectionMock(ConnectionMock.Companion.newFor(ma)
@@ -962,11 +953,11 @@ class AvatarDownloaderTest {
             actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
             values.put(ActorTable.AVATAR_URL, urlString)
             values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate())
-            MyContextHolder.Companion.myContextHolder.getNow().getDatabase()
+             MyContextHolder.myContextHolder.getNow().getDatabase()
                     .update(ActorTable.TABLE_NAME, values, BaseColumns._ID + "=" + actor.actorId, null)
-            MyContextHolder.Companion.myContextHolder.getNow().users().reload(actor)
+             MyContextHolder.myContextHolder.getNow().users().reload(actor)
             Assert.assertEquals("""URL should change for $actor
- reloaded: ${Actor.Companion.load(MyContextHolder.Companion.myContextHolder.getNow(), actor.actorId)}""",
+ reloaded: ${Actor.Companion.load( MyContextHolder.myContextHolder.getNow(), actor.actorId)}""",
                     urlString, MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, actor.actorId))
         }
     }

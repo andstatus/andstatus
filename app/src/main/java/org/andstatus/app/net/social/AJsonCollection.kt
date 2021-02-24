@@ -19,7 +19,6 @@ import io.vavr.control.CheckedFunction
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.ObjectOrId
-import org.andstatus.app.util.StringUtil
 import org.json.JSONException
 import org.json.JSONObject
 import java.util.*
@@ -100,7 +99,7 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject?, propertyN
         fun of(strRoot: String?): AJsonCollection? {
             val parentObject: JSONObject
             parentObject = try {
-                if (StringUtil.isEmpty(strRoot)) {
+                if (strRoot.isNullOrEmpty()) {
                     JSONObject()
                 } else {
                     JSONObject(strRoot)
@@ -136,8 +135,8 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject?, propertyN
     }
 
     init {
-        objectOrId = if (StringUtil.isEmpty(propertyName)) ObjectOrId.Companion.of(parentObjectIn) else ObjectOrId.Companion.of(parentObjectIn, propertyName)
-        val parent = objectOrId.`object`
+        objectOrId = if (propertyName.isNullOrEmpty()) ObjectOrId.Companion.of(parentObjectIn) else ObjectOrId.Companion.of(parentObjectIn, propertyName)
+        val parent = objectOrId.optObj
         id = if (objectOrId.id.isPresent) objectOrId.id else parent.flatMap { p: JSONObject? -> ObjectOrId.Companion.of(p, "id").id }
         type = parent.map { jso: JSONObject? -> calcType(jso) }.orElse(Type.EMPTY)
         items = parent.map { p: JSONObject? -> calcItems(p, type) }.orElse(ObjectOrId.Companion.empty())

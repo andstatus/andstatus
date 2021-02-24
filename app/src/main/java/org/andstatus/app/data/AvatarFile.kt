@@ -64,7 +64,7 @@ class AvatarFile private constructor(private val actor: Actor?, filename: String
         return true
     }
 
-    fun resetAvatarErrors(myContext: MyContext?) {
+    fun resetAvatarErrors(myContext: MyContext) {
         val db = myContext.getDatabase()
         if (getActor().actorId == 0L || db == null) return
         db.execSQL("UPDATE " + DownloadTable.TABLE_NAME +
@@ -75,7 +75,7 @@ class AvatarFile private constructor(private val actor: Actor?, filename: String
     }
 
     companion object {
-        val EMPTY: AvatarFile? = AvatarFile(Actor.Companion.EMPTY, "", MediaMetadata.Companion.EMPTY,
+        val EMPTY: AvatarFile = AvatarFile(Actor.Companion.EMPTY, "", MediaMetadata.Companion.EMPTY,
                 DownloadStatus.ABSENT, RelativeTime.DATETIME_MILLIS_NEVER)
         const val AVATAR_SIZE_DIP = 48
         fun fromCursor(actor: Actor?, cursor: Cursor?): AvatarFile {
@@ -85,7 +85,7 @@ class AvatarFile private constructor(private val actor: Actor?, filename: String
                     DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE))
         }
 
-        fun fromActorOnly(actor: Actor?): AvatarFile? {
+        fun fromActorOnly(actor: Actor): AvatarFile {
             return if (actor.isEmpty()) EMPTY else AvatarFile(actor, "", MediaMetadata.Companion.EMPTY, DownloadStatus.UNKNOWN, RelativeTime.DATETIME_MILLIS_NEVER)
         }
     }

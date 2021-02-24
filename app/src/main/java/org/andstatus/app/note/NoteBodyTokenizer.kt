@@ -25,7 +25,7 @@ import java.util.regex.Pattern
 
 class NoteBodyTokenizer : Tokenizer {
     @Volatile
-    private var origin: Origin? = Origin.Companion.EMPTY
+    private var origin: Origin? =  Origin.EMPTY
     fun setOrigin(origin: Origin?) {
         this.origin = origin
     }

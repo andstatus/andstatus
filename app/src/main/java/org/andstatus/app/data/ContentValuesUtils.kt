@@ -17,7 +17,6 @@ package org.andstatus.app.data
 
 import android.content.ContentValues
 import org.andstatus.app.util.SharedPreferencesUtil
-import org.andstatus.app.util.StringUtil
 
 /**
  * @author yvolk@yurivolkov.com
@@ -73,7 +72,7 @@ object ContentValuesUtils {
     }
 
     fun putNotEmpty(values: ContentValues?, key: String?, value: String?) {
-        if (!StringUtil.isEmpty(value)) {
+        if (!value.isNullOrEmpty()) {
             values.put(key, value)
         }
     }

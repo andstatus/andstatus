@@ -50,8 +50,6 @@ import org.andstatus.app.FirstActivity
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
-import org.andstatus.app.account.AccountSettingsActivity
-import org.andstatus.app.account.AccountSettingsActivity.FragmentAction
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
@@ -243,7 +241,7 @@ class AccountSettingsActivity : MyActivity() {
     private fun onAccountSelected(resultCode: Int, data: Intent?) {
         val toFinish: Boolean
         toFinish = if (resultCode == RESULT_OK) {
-            val accountName: AccountName = AccountName.Companion.fromAccountName(MyContextHolder.Companion.myContextHolder.getNow(),
+            val accountName: AccountName = AccountName.Companion.fromAccountName( MyContextHolder.myContextHolder.getNow(),
                     data.getStringExtra(IntentExtra.ACCOUNT_NAME.key))
             state.builder.rebuildMyAccount(accountName)
             !state.builder.isPersistent
@@ -266,7 +264,7 @@ class AccountSettingsActivity : MyActivity() {
         if (resultCode == RESULT_OK) {
             originType = OriginType.Companion.fromCode(data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key))
             if (originType.isSelectable) {
-                val origins: MutableList<Origin?> = MyContextHolder.Companion.myContextHolder.getNow().origins().originsOfType(originType)
+                val origins: MutableList<Origin?> =  MyContextHolder.myContextHolder.getNow().origins().originsOfType(originType)
                 when (origins.size) {
                     0 -> originType = OriginType.UNKNOWN
                     1 -> onOriginSelected(origins[0])
@@ -293,9 +291,9 @@ class AccountSettingsActivity : MyActivity() {
     }
 
     private fun onOriginSelected(resultCode: Int, data: Intent?) {
-        var origin: Origin = Origin.Companion.EMPTY
+        var origin: Origin =  Origin.EMPTY
         if (resultCode == RESULT_OK) {
-            origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key))
+            origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key))
             if (origin.isPersistent) {
                 onOriginSelected(origin)
             }
@@ -455,7 +453,7 @@ class AccountSettingsActivity : MyActivity() {
         val labelBuilder = StringBuilder()
         if (isNeeded) {
             labelBuilder.append(getText(R.string.summary_preference_password))
-            if (StringUtil.isEmpty(ma.password)) {
+            if (ma.password.isNullOrEmpty()) {
                 labelBuilder.append(": (" + getText(R.string.not_set) + ")")
             }
         }
@@ -513,7 +511,7 @@ class AccountSettingsActivity : MyActivity() {
         var addAccountEnabled = !state.isUsernameNeededToStartAddingNewAccount() ||
                 state.getAccount().isUsernameValid
         if (addAccountEnabled) {
-            if (!state.builder.isOAuth && StringUtil.isEmpty(state.builder.password)) {
+            if (!state.builder.isOAuth && state.builder.password.isNullOrEmpty()) {
                 addAccountEnabled = false
                 error = getText(R.string.title_preference_password)
             }
@@ -626,7 +624,7 @@ class AccountSettingsActivity : MyActivity() {
 
     override fun onResume() {
         super.onResume()
-        MyContextHolder.Companion.myContextHolder.getNow().setInForeground(true)
+         MyContextHolder.myContextHolder.getNow().setInForeground(true)
         if (restartMeIfNeeded()) return
         MyServiceManager.Companion.setServiceUnavailable()
         MyServiceManager.Companion.stopService()
@@ -719,13 +717,13 @@ class AccountSettingsActivity : MyActivity() {
     override fun onPause() {
         super.onPause()
         if (state != null) state.save()
-        MyContextHolder.Companion.myContextHolder.getNow().setInForeground(false)
+         MyContextHolder.myContextHolder.getNow().setInForeground(false)
     }
 
     override fun finish() {
         if (resumedOnce || !isMyResumed) {
             if (activityOnFinish == ActivityOnFinish.NONE) {
-                MyContextHolder.Companion.myContextHolder.initialize(this)
+                 MyContextHolder.myContextHolder.initialize(this)
             } else {
                 returnToOurActivity()
             }
@@ -734,7 +732,7 @@ class AccountSettingsActivity : MyActivity() {
     }
 
     private fun returnToOurActivity() {
-        MyContextHolder.Companion.myContextHolder
+         MyContextHolder.myContextHolder
                 .initialize(this)
                 .whenSuccessAsync(Consumer { myContext: MyContext? ->
                     MyLog.v(this, "Returning to $activityOnFinish")
@@ -743,7 +741,7 @@ class AccountSettingsActivity : MyActivity() {
                         myContext.accounts().setCurrentAccount(myAccount)
                     }
                     if (activityOnFinish == ActivityOnFinish.HOME) {
-                        val home = myContext.timelines()[TimelineType.HOME, myAccount.actor, Origin.Companion.EMPTY]
+                        val home = myContext.timelines()[TimelineType.HOME, myAccount.actor,  Origin.EMPTY]
                         TimelineActivity.Companion.startForTimeline(myContext, this@AccountSettingsActivity, home, true,
                                 initialSyncNeeded)
                         state.forget()
@@ -854,7 +852,7 @@ class AccountSettingsActivity : MyActivity() {
             if (!succeeded) {
                 stepErrorMessage = this@AccountSettingsActivity
                         .getString(R.string.client_registration_failed)
-                if (!StringUtil.isEmpty(connectionErrorMessage)) {
+                if (!connectionErrorMessage.isNullOrEmpty()) {
                     stepErrorMessage += ": $connectionErrorMessage"
                 }
                 MyLog.d(this, stepErrorMessage)
@@ -868,7 +866,7 @@ class AccountSettingsActivity : MyActivity() {
             if (result != null && !this@AccountSettingsActivity.isFinishing) {
                 if (result.isSuccess()) {
                     state.builder.myContext().setExpired { "Client registered" }
-                    MyContextHolder.Companion.myContextHolder
+                     MyContextHolder.myContextHolder
                             .initialize(this@AccountSettingsActivity, this)
                             .whenSuccessAsync(Consumer { myContext: MyContext? ->
                                 state.builder.rebuildMyAccount(myContext)
@@ -978,7 +976,7 @@ class AccountSettingsActivity : MyActivity() {
             val resultStatus = if (UriUtils.isDownloadable(authUri)) ResultStatus.SUCCESS else ResultStatus.CONNECTION_EXCEPTION
             if (resultStatus != ResultStatus.SUCCESS) {
                 stepErrorMessage = activity.getString(R.string.acquiring_a_request_token_failed)
-                if (StringUtil.nonEmpty(connectionErrorMessage)) {
+                if (!connectionErrorMessage.isNullOrEmpty()) {
                     stepErrorMessage += ": $connectionErrorMessage"
                 }
                 MyLog.d(this, stepErrorMessage)
@@ -1094,7 +1092,7 @@ class AccountSettingsActivity : MyActivity() {
                 }
             }
             return TaskResult.withWhoAmI(
-                    if (StringUtil.nonEmpty(accessToken) && StringUtil.nonEmpty(accessSecret)) ResultStatus.SUCCESS else ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT,
+                    if (!accessToken.isNullOrEmpty() && !accessSecret.isNullOrEmpty()) ResultStatus.SUCCESS else ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT,
                     message,
                     whoAmI
             )
@@ -1112,7 +1110,7 @@ class AccountSettingsActivity : MyActivity() {
                 } else {
                     val stepErrorMessage = this@AccountSettingsActivity
                             .getString(R.string.acquiring_an_access_token_failed) +
-                            if (StringUtil.nonEmpty(result.message)) ": " + result.message else ""
+                            if (!result.message.isNullOrEmpty()) ": " + result.message else ""
                     appendError(stepErrorMessage)
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
                     updateScreen()
@@ -1157,7 +1155,7 @@ class AccountSettingsActivity : MyActivity() {
                     .filter { obj: MyAccount? -> obj.isValidAndSucceeded() }
                     .onSuccess { myAccount: MyAccount? ->
                         state.forget()
-                        val myContext: MyContext = MyContextHolder.Companion.myContextHolder.initialize(this@AccountSettingsActivity, this).getBlocking()
+                        val myContext: MyContext =  MyContextHolder.myContextHolder.initialize(this@AccountSettingsActivity, this).getBlocking()
                         FirstActivity.Companion.checkAndUpdateLastOpenedAppVersion(this@AccountSettingsActivity, true)
                         val timeline = myContext.timelines().forUser(TimelineType.HOME, myAccount.getActor())
                         if (timeline.isTimeToAutoSync) {
@@ -1242,7 +1240,7 @@ ${result.message}"""
                     if (clearTask) Intent.FLAG_ACTIVITY_CLEAR_TASK else 0
             )
             intent.action = Intent.ACTION_INSERT
-            if (StringUtil.nonEmpty(originName)) {
+            if (!originName.isNullOrEmpty()) {
                 intent.putExtra(IntentExtra.ORIGIN_NAME.key, originName)
             }
             MyLog.i(TAG, "startAddNewAccount with $intent")

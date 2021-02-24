@@ -15,7 +15,6 @@
  */
 package org.andstatus.app.backup
 
-import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
@@ -23,8 +22,6 @@ import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.StringUtil
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
-import java.util.function.Consumer
-import java.util.function.Function
 import java.util.function.Supplier
 
 class ProgressLogger {
@@ -33,11 +30,11 @@ class ProgressLogger {
 
     @Volatile
     private var makeServiceUnavalable = false
-    val progressListener: Optional<ProgressListener?>?
-    val logTag: String?
+    val progressListener: Optional<ProgressListener>
+    val logTag: String
 
     fun interface ProgressListener {
-        open fun onProgressMessage(message: CharSequence?)
+        fun onProgressMessage(message: CharSequence?)
         fun onComplete(success: Boolean) {}
         fun onActivityFinish() {}
         fun setCancelable(isCancelable: Boolean) {}
@@ -46,7 +43,7 @@ class ProgressLogger {
             return false
         }
 
-        fun getLogTag(): String? {
+        fun getLogTag(): String {
             return TAG
         }
     }
@@ -59,7 +56,7 @@ class ProgressLogger {
 
     constructor(progressListener: ProgressListener?) {
         this.progressListener = Optional.ofNullable(progressListener)
-        logTag = this.progressListener.map(Function { obj: ProgressListener? -> obj.getLogTag() }).orElse(TAG)
+        logTag = this.progressListener.map { obj: ProgressListener -> obj.getLogTag() }.orElse(TAG)
     }
 
     private constructor(logTag: String?) {
@@ -68,7 +65,7 @@ class ProgressLogger {
     }
 
     fun isCancelled(): Boolean {
-        return progressListener.map(Function { obj: ProgressListener? -> obj.isCancelled() }).orElse(false)
+        return progressListener.map { obj: ProgressListener -> obj.isCancelled() }.orElse(false)
     }
 
     fun logSuccess() {
@@ -81,19 +78,19 @@ class ProgressLogger {
 
     fun onComplete(success: Boolean) {
         logProgressAndPause(if (success) "Completed successfully" else "Failed", 1)
-        progressListener.ifPresent(Consumer { c: ProgressListener? -> c.onComplete(success) })
+        progressListener.ifPresent { c: ProgressListener -> c.onComplete(success) }
     }
 
     fun loggedMoreSecondsAgoThan(secondsAgo: Long): Boolean {
         return RelativeTime.moreSecondsAgoThan(lastLoggedAt, secondsAgo)
     }
 
-    fun makeServiceUnavalable(): ProgressLogger? {
+    fun makeServiceUnavalable(): ProgressLogger {
         makeServiceUnavalable = true
         return this
     }
 
-    fun logProgressIfLongProcess(supplier: Supplier<CharSequence?>?) {
+    fun logProgressIfLongProcess(supplier: Supplier<CharSequence>) {
         if (loggedMoreSecondsAgoThan(PROGRESS_REPORT_PERIOD_SECONDS.toLong())) {
             logProgress(supplier.get())
         }
@@ -109,8 +106,8 @@ class ProgressLogger {
     fun logProgress(message: CharSequence?) {
         updateLastLoggedTime()
         MyLog.i(logTag, message.toString())
-        if (makeServiceUnavalable) MyServiceManager.Companion.setServiceUnavailable()
-        progressListener.ifPresent(Consumer { c: ProgressListener? -> c.onProgressMessage(message) })
+        if (makeServiceUnavalable) MyServiceManager.setServiceUnavailable()
+        progressListener.ifPresent { c: ProgressListener -> c.onProgressMessage(message) }
     }
 
     fun updateLastLoggedTime() {
@@ -119,16 +116,16 @@ class ProgressLogger {
 
     companion object {
         const val PROGRESS_REPORT_PERIOD_SECONDS = 20
-        private val TAG: String? = ProgressLogger::class.java.simpleName
-        val startedAt: AtomicLong? = AtomicLong(0)
+        private val TAG: String = ProgressLogger::class.java.simpleName
+        val startedAt: AtomicLong = AtomicLong(0)
         fun newStartingTime(): Long {
             val iStartedAt = MyLog.uniqueCurrentTimeMS()
             startedAt.set(iStartedAt)
             return iStartedAt
         }
 
-        val EMPTY_LISTENER: ProgressListener? = EmptyListener()
-        fun getEmpty(logTag: String?): ProgressLogger? {
+        val EMPTY_LISTENER: ProgressListener = EmptyListener()
+        fun getEmpty(logTag: String?): ProgressLogger {
             return ProgressLogger(logTag)
         }
     }

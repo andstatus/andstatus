@@ -39,7 +39,7 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
         }
 
         init {
-            nonEmpty = StringUtil.nonEmpty(value)
+            nonEmpty = !value.isNullOrEmpty()
         }
     }
 
@@ -47,7 +47,7 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
     private val keywordsRaw: MutableList<String?>?
     private fun parseFilterString(text: String?): MutableList<String?> {
         val keywords: MutableList<String?> = ArrayList()
-        if (StringUtil.isEmpty(text)) {
+        if (text.isNullOrEmpty()) {
             return keywords
         }
         var inQuote = false
@@ -58,7 +58,7 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
                 break
             }
             val item = text.substring(atPos, separatorInd)
-            if (!StringUtil.isEmpty(item) && !keywords.contains(item)) {
+            if (!item.isNullOrEmpty() && !keywords.contains(item)) {
                 keywords.add(item)
             }
             if (separatorInd < text.length && text.get(separatorInd) == '"') {
@@ -103,7 +103,7 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
     }
 
     fun matchedAny(s: String?): Boolean {
-        if (keywordsToFilter.isEmpty() || StringUtil.isEmpty(s)) {
+        if (keywordsToFilter.isEmpty() || s.isNullOrEmpty()) {
             return false
         }
         for (keyword in keywordsToFilter) {
@@ -115,7 +115,7 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
     }
 
     fun matchedAll(s: String?): Boolean {
-        if (keywordsToFilter.isEmpty() || StringUtil.isEmpty(s)) {
+        if (keywordsToFilter.isEmpty() || s.isNullOrEmpty()) {
             return false
         }
         for (keyword in keywordsToFilter) {

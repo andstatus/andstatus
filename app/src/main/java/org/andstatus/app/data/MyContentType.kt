@@ -20,7 +20,6 @@ import android.net.Uri
 import android.webkit.MimeTypeMap
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.UriUtils
 
 enum class MyContentType(// See https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
@@ -47,7 +46,7 @@ enum class MyContentType(// See https://developer.mozilla.org/en-US/docs/Web/HTT
         private val TAG: String? = MyContentType::class.java.simpleName
         val APPLICATION_JSON: String? = "application/json"
         fun fromPathOfSavedFile(mediaFilePath: String?): MyContentType {
-            return if (StringUtil.isEmpty(mediaFilePath)) UNKNOWN else fromUri(DownloadType.UNKNOWN, null, Uri.parse(mediaFilePath), UNKNOWN.generalMimeType)
+            return if (mediaFilePath.isNullOrEmpty()) UNKNOWN else fromUri(DownloadType.UNKNOWN, null, Uri.parse(mediaFilePath), UNKNOWN.generalMimeType)
         }
 
         fun fromUri(downloadType: DownloadType?, contentResolver: ContentResolver?, uri: Uri?,
@@ -102,11 +101,11 @@ enum class MyContentType(// See https://developer.mozilla.org/en-US/docs/Web/HTT
         }
 
         private fun getDefaultValue(defaultValue: String?): String? {
-            return if (StringUtil.isEmpty(defaultValue)) UNKNOWN.generalMimeType else defaultValue
+            return if (defaultValue.isNullOrEmpty()) UNKNOWN.generalMimeType else defaultValue
         }
 
         fun isEmptyMime(mimeType: String?): Boolean {
-            return StringUtil.isEmpty(mimeType) || mimeType.startsWith("*")
+            return mimeType.isNullOrEmpty() || mimeType.startsWith("*")
         }
 
         /** @return empty string if no extension found
@@ -114,14 +113,14 @@ enum class MyContentType(// See https://developer.mozilla.org/en-US/docs/Web/HTT
         fun mimeToFileExtension(mimeType: String?): String {
             if (isEmptyMime(mimeType)) return ""
             val extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType)
-            return if (StringUtil.isEmpty(extension)) "" else extension
+            return if (extension.isNullOrEmpty()) "" else extension
         }
 
         fun path2MimeType(path: String?, defaultValue: String): String {
-            if (StringUtil.isEmpty(path)) return defaultValue
+            if (path.isNullOrEmpty()) return defaultValue
             var fileExtension = MimeTypeMap.getFileExtensionFromUrl(path)
             var clarifyType = false
-            if (StringUtil.isEmpty(fileExtension) && defaultValue.endsWith("/*") && StringUtil.nonEmpty(path)) {
+            if (fileExtension.isNullOrEmpty() && defaultValue.endsWith("/*") && !path.isNullOrEmpty()) {
                 // Hack allowing to set actual extension after underscore
                 fileExtension = MimeTypeMap.getFileExtensionFromUrl(path.replace("_".toRegex(), "."))
                 clarifyType = true

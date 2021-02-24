@@ -58,18 +58,18 @@ class MyBackupAgent : BackupAgent() {
     var foldersRestored: Long = 0
     fun setActivity(activity: Activity?) {
         this.activity = activity
-        MyContextHolder.Companion.myContextHolder.initialize(activity)
-        attachBaseContext(MyContextHolder.Companion.myContextHolder.getNow().baseContext())
+         MyContextHolder.myContextHolder.initialize(activity)
+        attachBaseContext( MyContextHolder.myContextHolder.getNow().baseContext())
     }
 
     override fun onCreate() {
-        MyContextHolder.Companion.myContextHolder.initialize(this)
+         MyContextHolder.myContextHolder.initialize(this)
     }
 
     @Throws(IOException::class)
     override fun onBackup(oldState: ParcelFileDescriptor?, data: BackupDataOutput?,
                           newState: ParcelFileDescriptor?) {
-        if (MyContextHolder.Companion.myContextHolder.getNow().isTestRun()) {
+        if ( MyContextHolder.myContextHolder.getNow().isTestRun()) {
             val logmsg = "onBackup; skipped due to test run"
             MyLog.i(this, logmsg)
             throw IOException(logmsg)
@@ -92,14 +92,14 @@ class MyBackupAgent : BackupAgent() {
         // Ignore oldDescriptor for now...
         MyLog.i(this, method + " started" + (if (data != null) ", folder='" + data.dataFolderName + "'" else "") +
                 ", " + if (oldDescriptor.saved()) "oldState:" + oldDescriptor.toString() else "no old state")
-        MyContextHolder.Companion.myContextHolder.initialize(this).getBlocking()
+         MyContextHolder.myContextHolder.initialize(this).getBlocking()
         backupDescriptor = newDescriptor
         try {
             if (data == null) {
                 throw FileNotFoundException("No BackupDataOutput")
-            } else if (!MyContextHolder.Companion.myContextHolder.getNow().isReady()) {
+            } else if (! MyContextHolder.myContextHolder.getNow().isReady()) {
                 throw FileNotFoundException("Application context is not initialized")
-            } else if (MyContextHolder.Companion.myContextHolder.getNow().accounts().isEmpty()) {
+            } else if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty()) {
                 throw FileNotFoundException("Nothing to backup - No accounts yet")
             } else {
                 val isServiceAvailableStored = checkAndSetServiceUnavailable()
@@ -136,7 +136,7 @@ class MyBackupAgent : BackupAgent() {
 
     @Throws(IOException::class)
     private fun doBackup(data: MyBackupDataOutput?) {
-        MyContextHolder.Companion.myContextHolder.release(Supplier { "doBackup" })
+         MyContextHolder.myContextHolder.release(Supplier { "doBackup" })
         sharedPreferencesBackedUp = backupFile(data,
                 SHARED_PREFERENCES_KEY,
                 SharedPreferencesUtil.defaultSharedPreferencesPath(getContext()))
@@ -151,7 +151,7 @@ class MyBackupAgent : BackupAgent() {
             foldersBackedUp += backupFolder(data, LOG_FILES_KEY,
                     MyStorage.getDataFilesDir(MyStorage.DIRECTORY_LOGS))
         }
-        accountsBackedUp = MyContextHolder.Companion.myContextHolder.getNow().accounts().onBackup(data, backupDescriptor)
+        accountsBackedUp =  MyContextHolder.myContextHolder.getNow().accounts().onBackup(data, backupDescriptor)
     }
 
     private fun backupFolder(data: MyBackupDataOutput?, key: String?, sourceFolder: File?): Long {
@@ -257,15 +257,15 @@ class MyBackupAgent : BackupAgent() {
         if (MyStorage.isApplicationDataCreated().isFalse) {
             return
         }
-        MyContextHolder.Companion.myContextHolder.initialize(this).getBlocking()
-        if (!MyContextHolder.Companion.myContextHolder.getNow().isReady()) {
+         MyContextHolder.myContextHolder.initialize(this).getBlocking()
+        if (! MyContextHolder.myContextHolder.getNow().isReady()) {
             throw FileNotFoundException("Application context is not initialized")
-        } else if (MyContextHolder.Companion.myContextHolder.getNow().accounts().nonEmpty()) {
+        } else if ( MyContextHolder.myContextHolder.getNow().accounts().nonEmpty()) {
             throw FileNotFoundException("Cannot restore: AndStatus accounts are present. Please reinstall application before restore")
         }
         MyServiceManager.Companion.setServiceUnavailable()
         MyServiceManager.Companion.stopService()
-        MyContextHolder.Companion.myContextHolder.release(Supplier { "ensureNoDataIsPresent" })
+         MyContextHolder.myContextHolder.release(Supplier { "ensureNoDataIsPresent" })
     }
 
     @Throws(IOException::class)
@@ -276,23 +276,23 @@ class MyBackupAgent : BackupAgent() {
         }
         assertNextHeader(data, DATABASE_KEY + "_" + DatabaseHolder.Companion.DATABASE_NAME)
         databasesRestored += restoreFile(data, MyStorage.getDatabasePath(DatabaseHolder.Companion.DATABASE_NAME))
-        MyContextHolder.Companion.myContextHolder.release(Supplier { "doRestore, database restored" })
-        MyContextHolder.Companion.myContextHolder
+         MyContextHolder.myContextHolder.release(Supplier { "doRestore, database restored" })
+         MyContextHolder.myContextHolder
                 .setOnRestore(true)
                 .initialize(this).getBlocking()
-        if (MyContextHolder.Companion.myContextHolder.getNow().state() == MyContextState.UPGRADING && activity != null) {
-            MyContextHolder.Companion.myContextHolder.upgradeIfNeeded(activity)
+        if ( MyContextHolder.myContextHolder.getNow().state() == MyContextState.UPGRADING && activity != null) {
+             MyContextHolder.myContextHolder.upgradeIfNeeded(activity)
         }
         if (optionalNextHeader(data, LOG_FILES_KEY)) {
             foldersRestored += restoreFolder(data, MyStorage.getDataFilesDir(MyStorage.DIRECTORY_LOGS))
         }
         DataPruner.Companion.setDataPrunedNow()
-        data.setMyContext(MyContextHolder.Companion.myContextHolder.getNow())
+        data.setMyContext( MyContextHolder.myContextHolder.getNow())
         assertNextHeader(data, KEY_ACCOUNT)
         accountsRestored += data.getMyContext().accounts().onRestore(data, backupDescriptor)
-        MyContextHolder.Companion.myContextHolder.release(Supplier { "doRestore, accounts restored" })
-        MyContextHolder.Companion.myContextHolder.setOnRestore(false)
-        MyContextHolder.Companion.myContextHolder.initialize(this).getBlocking()
+         MyContextHolder.myContextHolder.release(Supplier { "doRestore, accounts restored" })
+         MyContextHolder.myContextHolder.setOnRestore(false)
+         MyContextHolder.myContextHolder.initialize(this).getBlocking()
     }
 
     @Throws(IOException::class)
@@ -309,8 +309,8 @@ class MyBackupAgent : BackupAgent() {
             MyLog.v(this) { "Couldn't delete " + tempFile.absolutePath }
         }
         fixExternalStorage()
-        MyContextHolder.Companion.myContextHolder.release(Supplier { "restoreSharedPreferences" })
-        MyContextHolder.Companion.myContextHolder.initialize(this).getBlocking()
+         MyContextHolder.myContextHolder.release(Supplier { "restoreSharedPreferences" })
+         MyContextHolder.myContextHolder.initialize(this).getBlocking()
     }
 
     private fun getContext(): Context? {

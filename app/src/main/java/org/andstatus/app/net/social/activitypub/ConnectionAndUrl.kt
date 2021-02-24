@@ -28,7 +28,6 @@ import org.andstatus.app.net.social.ActorEndpointType
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.TimelinePosition
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.UrlUtils
 
 internal class ConnectionAndUrl private constructor(val apiRoutine: ApiRoutineEnum?, val uri: Uri?, val httpConnection: HttpConnection?) {
@@ -70,7 +69,7 @@ internal class ConnectionAndUrl private constructor(val apiRoutine: ApiRoutineEn
                                   actor: Actor?): Try<HttpConnection?>? {
             var httpConnection = connection.getHttp()
             val host = actor.getConnectionHost()
-            if (StringUtil.isEmpty(host)) {
+            if (host.isNullOrEmpty()) {
                 return Try.failure(ConnectionException(StatusCode.BAD_REQUEST, apiRoutine.toString() +
                         ": host is empty for " + actor))
             } else if (connection.getHttp().data.originUrl == null || host.compareTo(

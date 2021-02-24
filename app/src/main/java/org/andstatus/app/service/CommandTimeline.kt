@@ -26,7 +26,6 @@ import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.LazyVal
 import org.andstatus.app.util.MyStringBuilder
-import org.andstatus.app.util.StringUtil
 import java.util.*
 import java.util.function.Supplier
 
@@ -92,7 +91,7 @@ internal class CommandTimeline {
         if (actorId != 0L) {
             builder.withComma("actorId", actorId)
         }
-        if (StringUtil.nonEmpty(searchQuery)) {
+        if (!searchQuery.isNullOrEmpty()) {
             builder.withCommaQuoted("search", searchQuery, true)
         }
         if (id != 0L) {

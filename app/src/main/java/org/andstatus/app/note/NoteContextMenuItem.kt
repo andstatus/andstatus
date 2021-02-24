@@ -38,8 +38,6 @@ import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.list.ContextMenuItem
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Note
-import org.andstatus.app.note.NoteContextMenuItem
-import org.andstatus.app.note.NoteEditorData
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.service.CommandData
@@ -50,7 +48,6 @@ import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.I18n
 import org.andstatus.app.util.MyHtml
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.view.MyContextMenu
 
 enum class NoteContextMenuItem @JvmOverloads constructor(private val mIsAsync: Boolean = false, val appliedToUnsentNotesAlso: Boolean = false) : ContextMenuItem {
@@ -312,7 +309,7 @@ enum class NoteContextMenuItem @JvmOverloads constructor(private val mIsAsync: B
 
     protected fun copyNoteText(editorData: NoteEditorData?) {
         MyLog.v(this) { "text='" + editorData.getContent() + "'" }
-        if (!StringUtil.isEmpty(editorData.getContent())) {
+        if (!editorData.getContent().isNullOrEmpty()) {
             // http://developer.android.com/guide/topics/text/copy-paste.html
             val clipboard = editorData.myContext.context().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText(

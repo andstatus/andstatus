@@ -20,25 +20,22 @@ import android.database.sqlite.SQLiteDiskIOException
 import android.os.AsyncTask
 import android.os.Looper
 import io.vavr.control.Try
-import org.andstatus.app.os.MyAsyncTask
-import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import org.andstatus.app.util.IdentifiableInstance
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.StringUtil
 import java.util.function.Consumer
 import java.util.function.Function
 
 /**
  * @author yvolk@yurivolkov.com
  */
-abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any, pool: PoolEnum?) : AsyncTask<Params?, Progress?, Result?>(), IdentifiableInstance {
+abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnum) : AsyncTask<Params?, Progress?, Result?>(), IdentifiableInstance {
     private var maxCommandExecutionSeconds = MAX_COMMAND_EXECUTION_SECONDS
     private val taskId: String?
     protected val createdAt = MyLog.uniqueCurrentTimeMS()
-    protected val instanceId = InstanceId.next()
+    override val instanceId = InstanceId.next()
     private var singleInstance = true
 
     @Volatile
@@ -66,10 +63,13 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any, pool: PoolEnum
     var hasExecutor = true
 
     enum class PoolEnum(val corePoolSize: Int, val maxCommandExecutionSeconds: Long, val mayBeShutDown: Boolean) {
-        SYNC(3, MAX_COMMAND_EXECUTION_SECONDS, true), FILE_DOWNLOAD(1, MAX_COMMAND_EXECUTION_SECONDS, true), QUICK_UI(0, 20, false), LONG_UI(1, MAX_COMMAND_EXECUTION_SECONDS, true);
+        SYNC(3, MAX_COMMAND_EXECUTION_SECONDS, true),
+        FILE_DOWNLOAD(1, MAX_COMMAND_EXECUTION_SECONDS, true),
+        QUICK_UI(0, 20, false),
+        LONG_UI(1, MAX_COMMAND_EXECUTION_SECONDS, true);
 
         companion object {
-            fun thatCannotBeShutDown(): PoolEnum? {
+            fun thatCannotBeShutDown(): PoolEnum {
                 for (pool in values()) {
                     if (!pool.mayBeShutDown) return pool
                 }
@@ -78,7 +78,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any, pool: PoolEnum
         }
     }
 
-    val pool: PoolEnum?
+    val pool: PoolEnum
     fun isSingleInstance(): Boolean {
         return singleInstance
     }
@@ -87,17 +87,17 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any, pool: PoolEnum
         this.singleInstance = singleInstance
     }
 
-    fun setMaxCommandExecutionSeconds(seconds: Long): MyAsyncTask<*, *, *>? {
+    fun setMaxCommandExecutionSeconds(seconds: Long): MyAsyncTask<*, *, *> {
         maxCommandExecutionSeconds = seconds
         return this
     }
 
-    fun setCancelable(cancelable: Boolean): MyAsyncTask<*, *, *>? {
+    fun setCancelable(cancelable: Boolean): MyAsyncTask<*, *, *> {
         this.cancelable = cancelable
         return this
     }
 
-    constructor(pool: PoolEnum?) : this(MyAsyncTask::class.java, pool) {}
+    constructor(pool: PoolEnum) : this(MyAsyncTask::class.java, pool) {}
 
     override fun onCancelled() {
         rememberWhenCancelled()
@@ -110,7 +110,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any, pool: PoolEnum
         currentlyExecutingSince = backgroundStartedAt
         try {
             if (!isCancelled) {
-                return doInBackground2(if (params != null && params.size > 0) params[0] else null)
+                return doInBackground2(if (params.size > 0) params[0] else null)
             }
         } catch (e: SQLiteDiskIOException) {
             ExceptionsCounter.onDiskIoException(e)
@@ -126,6 +126,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any, pool: PoolEnum
     }
 
     protected abstract fun doInBackground2(params: Params?): Result?
+
     override fun onPostExecute(result: Result?) {
         backgroundEndedAt = System.currentTimeMillis()
         ExceptionsCounter.showErrorDialogIfErrorsPresent()
@@ -146,19 +147,16 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any, pool: PoolEnum
 
     /** Is called in both cases: Cancelled or not, before changing status to FINISH   */
     protected open fun onFinish(result: Result?, success: Boolean) {}
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
-        val that = o as MyAsyncTask<*, *, *>?
-        return taskId == that.taskId
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || other !is MyAsyncTask<*, *, *>) return false
+
+        return taskId == other.taskId
     }
 
     override fun hashCode(): Int {
         return taskId.hashCode()
-    }
-
-    override fun getInstanceId(): Long {
-        return instanceId
     }
 
     fun isBackgroundStarted(): Boolean {
@@ -176,9 +174,8 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any, pool: PoolEnum
                 + "; instanceId=" + instanceId + "; " + super.toString())
     }
 
-    private fun stateSummary(): String? {
-        var summary = ""
-        summary = when (status) {
+    private fun stateSummary(): String {
+        var summary = when (status) {
             Status.PENDING -> "PENDING " + RelativeTime.secondsAgo(createdAt) + " sec ago"
             Status.FINISHED -> if (backgroundEndedAt == 0L) {
                 "FINISHED, but didn't complete"
@@ -247,7 +244,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any, pool: PoolEnum
 
     private fun logError(msgLog: String?, tr: Throwable?) {
         MyLog.w(this, msgLog, tr)
-        if (!StringUtil.isEmpty(firstError) || tr == null) {
+        if (!firstError.isNullOrEmpty() || tr == null) {
             return
         }
         firstError = MyLog.getStackTrace(tr)
@@ -268,16 +265,20 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any, pool: PoolEnum
         }
 
         fun <Params, Progress, Result> fromFunc(params: Params?,
-                                                backgroundFunc: Function<Params?, Try<Result?>?>?,
-                                                uiConsumer: Function<Params?, Consumer<Try<Result?>?>?>?): MyAsyncTask<Params?, Progress?, Try<Result?>?>? {
-            return object : MyAsyncTask<Params?, Progress?, Try<Result?>?>(params, PoolEnum.LONG_UI) {
-                override fun doInBackground2(params: Params?): Try<Result?>? {
+                                                backgroundFunc: Function<Params?, Try<Result>?>,
+                                                uiConsumer: Function<Params?, Consumer<Try<Result>?>>):
+                MyAsyncTask<Params?, Progress?, Try<Result>?> {
+            return object : MyAsyncTask<Params?, Progress?, Try<Result>?>(params, PoolEnum.LONG_UI) {
+                override fun doInBackground2(params: Params?): Try<Result>? {
                     return backgroundFunc.apply(params)
                 }
 
-                override fun onFinish(results: Try<Result?>?, success: Boolean) {
-                    val results2 = if (results == null) Try.failure(Exception("No results of the Async task")) else if (success) results else if (results.isFailure) results else Try.failure(Exception("Failed to execute Async task"))
-                    uiConsumer.apply(params).accept(results2)
+                override fun onFinish(results: Try<Result>?, success: Boolean) {
+                    val results2 = if (results == null) Try.failure(Exception("No results of the Async task"))
+                        else if (success) results
+                        else if (results.isFailure) results
+                        else Try.failure(Exception("Failed to execute Async task"))
+                    uiConsumer?.apply(params)?.accept(results2)
                 }
             }
         }

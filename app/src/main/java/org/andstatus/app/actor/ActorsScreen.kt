@@ -36,7 +36,6 @@ import org.andstatus.app.util.I18n
 import org.andstatus.app.util.MyHtml
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.view.MyContextMenu
 
 /**
@@ -129,7 +128,7 @@ open class ActorsScreen : NoteEditorListActivity<Any?>() {
                 title.withSpace(actorsScreenType.title(this, actor.actorNameInTimeline))
             }
         }
-        if (StringUtil.nonEmpty(parsedUri.searchQuery)) {
+        if (!parsedUri.searchQuery.isNullOrEmpty()) {
             title.withSpace("'" + parsedUri.searchQuery + "'")
         }
         return title.toString()

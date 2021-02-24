@@ -16,7 +16,6 @@
 package org.andstatus.app.util
 
 import android.content.Context
-import android.text.TextUtils
 import java.text.MessageFormat
 import java.util.regex.Pattern
 
@@ -24,7 +23,7 @@ import java.util.regex.Pattern
  * i18n - Internationalization utilities
  */
 object I18n {
-    private val TAG: String? = I18n::class.java.simpleName
+    private val TAG: String = I18n::class.java.simpleName
 
     /**
      * The function enables to have different localized message formats
@@ -41,12 +40,12 @@ object I18n {
      *
      * @author yvolk@yurivolkov.com
      */
-    fun formatQuantityMessage(context: Context?, messageFormatResourceId: Int,
-                              quantityOfSomething: Long, arrayPatterns: Int, arrayFormats: Int): String? {
+    fun formatQuantityMessage(context: Context, messageFormatResourceId: Int,
+                              quantityOfSomething: Long, arrayPatterns: Int, arrayFormats: Int): String {
         val toMatch = java.lang.Long.toString(quantityOfSomething)
         val p = context.getResources().getStringArray(arrayPatterns)
         val f = context.getResources().getStringArray(arrayFormats)
-        var subformat: String? = "{0} ???"
+        var subformat = "{0} ???"
         for (i in p.indices) {
             val pattern = Pattern.compile(p[i])
             val m = pattern.matcher(toMatch)
@@ -66,7 +65,7 @@ object I18n {
     }
 
     fun trimTextAt(text: CharSequence?, maxLength: Int): CharSequence {
-        if (TextUtils.isEmpty(text) || maxLength < 1) {
+        if (text.isNullOrEmpty() || maxLength < 1) {
             return ""
         }
         if (text.length <= maxLength) {
@@ -93,8 +92,8 @@ object I18n {
         return " ,.;:()[]{}-_=+\"'".indexOf(charAt) >= 0
     }
 
-    fun localeToLanguage(locale: String?): String? {
-        if (StringUtil.isEmpty(locale)) {
+    fun localeToLanguage(locale: String?): String {
+        if (locale.isNullOrEmpty()) {
             return ""
         }
         val indHyphen = locale.indexOf('-')
@@ -103,8 +102,8 @@ object I18n {
         } else locale.substring(0, indHyphen)
     }
 
-    fun localeToCountry(locale: String?): String? {
-        if (StringUtil.isEmpty(locale)) {
+    fun localeToCountry(locale: String?): String {
+        if (locale.isNullOrEmpty()) {
             return ""
         }
         val indHyphen = locale.indexOf("-r")
@@ -113,7 +112,7 @@ object I18n {
         } else locale.substring(indHyphen + 2)
     }
 
-    fun formatBytes(bytes: Long): String? {
+    fun formatBytes(bytes: Long): String {
         if (bytes == 0L) {
             return "0"
         }
@@ -132,7 +131,7 @@ object I18n {
         return java.lang.Long.toString(gB) + "GB"
     }
 
-    fun notZero(value: Long): String? {
+    fun notZero(value: Long): String {
         return if (value == 0L) {
             ""
         } else {

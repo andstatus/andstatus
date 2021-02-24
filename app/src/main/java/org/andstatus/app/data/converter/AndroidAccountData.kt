@@ -21,7 +21,6 @@ import org.andstatus.app.account.AccountDataReader
 import org.andstatus.app.account.AccountDataWriter
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
-import org.andstatus.app.util.StringUtil
 
 internal class AndroidAccountData(private val am: AccountManager?, private val androidAccount: Account?) : AccountDataReader {
     override fun getDataInt(key: String?, defValue: Int): Int {
@@ -82,7 +81,7 @@ internal class AndroidAccountData(private val am: AccountManager?, private val a
     override fun getDataString(key: String?, defValue: String?): String? {
         var value = defValue
         val str = am.getUserData(androidAccount, key)
-        if (!StringUtil.isEmpty(str)) {
+        if (!str.isNullOrEmpty()) {
             value = str
         }
         return value

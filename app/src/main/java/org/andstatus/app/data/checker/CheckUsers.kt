@@ -127,7 +127,7 @@ internal class CheckUsers : DataChecker() {
                     results.actorsWithoutOrigin.add(actor)
                     results.problems.add("Fix no Origin: $actor")
                 }
-                if (StringUtil.isEmpty(key) || actor.webFingerId != key) {
+                if (key.isNullOrEmpty() || actor.webFingerId != key) {
                     if (shouldMerge(actors)) {
                         results.actorsToMergeUsers[key] = actors
                         results.problems.add("Fix merge users 1 \"$key\": $actors")

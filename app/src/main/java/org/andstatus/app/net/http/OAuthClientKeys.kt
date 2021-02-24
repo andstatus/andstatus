@@ -16,7 +16,6 @@
 package org.andstatus.app.net.http
 
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 
 /**
  * These are the keys for the AndStatus application (a "Client" of the Microblogging system)
@@ -41,7 +40,7 @@ class OAuthClientKeys private constructor() {
     // Strategy pattern, see http://en.wikipedia.org/wiki/Strategy_pattern
     private var strategy: OAuthClientKeysStrategy? = null
     fun areKeysPresent(): Boolean {
-        return !StringUtil.isEmpty(getConsumerKey()) && !StringUtil.isEmpty(getConsumerSecret())
+        return !getConsumerKey().isNullOrEmpty() && !getConsumerSecret().isNullOrEmpty()
     }
 
     fun getConsumerKey(): String? {

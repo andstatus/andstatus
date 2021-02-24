@@ -22,11 +22,9 @@ import cz.msebera.android.httpclient.entity.ContentType
 import cz.msebera.android.httpclient.entity.mime.MultipartEntityBuilder
 import cz.msebera.android.httpclient.message.BasicNameValuePair
 import cz.msebera.android.httpclient.protocol.HTTP
-import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.util.FileUtils
 import org.andstatus.app.util.JsonUtils
-import org.andstatus.app.util.StringUtil
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -93,7 +91,7 @@ internal object ApacheHttpClientUtils {
         while (iterator.hasNext()) {
             val name = iterator.next()
             val value = JsonUtils.optString(jso, name)
-            if (!StringUtil.isEmpty(value)) {
+            if (!value.isNullOrEmpty()) {
                 formParams.add(BasicNameValuePair(name, value))
             }
         }

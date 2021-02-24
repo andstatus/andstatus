@@ -28,7 +28,8 @@ buildscript {
         jcipAnnotationsVersion = '1.0-1'  // http://stephenc.github.io/jcip-annotations/dependency-info.html
         junitVersion = '4.13'
         kotlin_version = '1.4.30'
-        materialVersion = '1.2.0'         // https://mvnrepository.com/artifact/com.google.android.material/material
+        ktxVersion='1.3.2'
+        materialVersion = '1.3.0'         // https://mvnrepository.com/artifact/com.google.android.material/material
         preferenceVersion = '1.1.1'
         recyclerViewVersion = '1.1.0'
         screenshottyVersion = '1.0.2'     // https://github.com/bolteu/screenshotty

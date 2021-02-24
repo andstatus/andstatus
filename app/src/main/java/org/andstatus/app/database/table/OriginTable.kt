@@ -26,32 +26,32 @@ import org.andstatus.app.util.TriState
  * [org.andstatus.app.origin.Origin]
  */
 object OriginTable : BaseColumns {
-    val TABLE_NAME: String? = "origin"
+    val TABLE_NAME: String = "origin"
 
     /** Alias for [._ID]  */
-    val ORIGIN_ID: String? = "origin_id"
+    val ORIGIN_ID: String = "origin_id"
 
     /** Reference to [OriginType.getId]  */
-    val ORIGIN_TYPE_ID: String? = "origin_type_id"
-    val ORIGIN_NAME: String? = "origin_name"
-    val ORIGIN_URL: String? = "origin_url"
-    val SSL: String? = "ssl"
-    val SSL_MODE: String? = "ssl_mode"
-    val ALLOW_HTML: String? = "allow_html"
-    val TEXT_LIMIT: String? = "text_limit"
-    val MENTION_AS_WEBFINGER_ID: String? = "mention_as_webfinger_id"
-    val USE_LEGACY_HTTP: String? = "use_legacy_http"
+    val ORIGIN_TYPE_ID: String = "origin_type_id"
+    val ORIGIN_NAME: String = "origin_name"
+    val ORIGIN_URL: String = "origin_url"
+    val SSL: String = "ssl"
+    val SSL_MODE: String = "ssl_mode"
+    val ALLOW_HTML: String = "allow_html"
+    val TEXT_LIMIT: String = "text_limit"
+    val MENTION_AS_WEBFINGER_ID: String = "mention_as_webfinger_id"
+    val USE_LEGACY_HTTP: String = "use_legacy_http"
 
     /**
      * Include this system in Global Search while in Combined Timeline
      */
-    val IN_COMBINED_GLOBAL_SEARCH: String? = "in_combined_global_search"
+    val IN_COMBINED_GLOBAL_SEARCH: String = "in_combined_global_search"
 
     /**
      * Include this system in Reload while in Combined Public Timeline
      */
-    val IN_COMBINED_PUBLIC_RELOAD: String? = "in_combined_public_reload"
-    fun create(db: SQLiteDatabase?) {
+    val IN_COMBINED_PUBLIC_RELOAD: String = "in_combined_public_reload"
+    fun create(db: SQLiteDatabase) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + ORIGIN_TYPE_ID + " INTEGER NOT NULL,"

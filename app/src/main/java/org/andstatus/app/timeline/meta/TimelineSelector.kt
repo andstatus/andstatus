@@ -49,7 +49,7 @@ class TimelineSelector : SelectorDialog() {
         val timelines = myContext.timelines().filter(
                 true,
                 TriState.Companion.fromBoolean(currentTimeline.isCombined),
-                TimelineType.UNKNOWN, currentMyAccount.actor, Origin.Companion.EMPTY).collect(Collectors.toSet())
+                TimelineType.UNKNOWN, currentMyAccount.actor,  Origin.EMPTY).collect(Collectors.toSet())
         if (!currentTimeline.isCombined && currentMyAccount.isValid) {
             timelines.addAll(myContext.timelines().filter(
                     true,

@@ -67,7 +67,7 @@ class ConnectionMastodonTest {
         val note = activity.note
         Assert.assertEquals("Activity oid", "22", activity.oid)
         Assert.assertEquals("Note Oid", "22", note.oid)
-        Assert.assertEquals("Account unknown $activity", true, MyContextHolder.Companion.myContextHolder.getNow().accounts()
+        Assert.assertEquals("Account unknown $activity", true,  MyContextHolder.myContextHolder.getNow().accounts()
                 .fromActorOfSameOrigin(activity.accountActor).isValid())
         Assert.assertEquals("Is not a note $activity", AObjectType.NOTE, activity.objectType)
         Assert.assertEquals("Favorited $activity", TriState.UNKNOWN, note.getFavoritedBy(activity.accountActor))
@@ -97,7 +97,7 @@ class ConnectionMastodonTest {
         timeline.items.forEach(Consumer { act: AActivity? -> act.setUpdatedNow(0) })
         val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(), CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME))
+                 MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME))
         DataUpdater(executionContext).onActivity(activity)
     }
 
@@ -113,7 +113,7 @@ class ConnectionMastodonTest {
         val activity3 = timeline[3]
         val note3 = activity3.note
         Assert.assertEquals("Activity oid", "104114771989428879", activity3.oid)
-        Assert.assertEquals("Account unknown $activity3", true, MyContextHolder.Companion.myContextHolder.getNow().accounts()
+        Assert.assertEquals("Account unknown $activity3", true,  MyContextHolder.myContextHolder.getNow().accounts()
                 .fromActorOfSameOrigin(activity3.accountActor).isValid())
         Assert.assertEquals("Is not a note $activity3", AObjectType.NOTE, activity3.objectType)
         Assert.assertEquals("Favorited $activity3", TriState.UNKNOWN, note3.getFavoritedBy(activity3.accountActor))
@@ -142,7 +142,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Media attachments", 0, note3.attachments.size().toLong())
         val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(), CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE))
+                 MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE))
         timeline.items.forEach(Consumer { act: AActivity? ->
             act.setUpdatedNow(0)
             DataUpdater(executionContext).onActivity(act)
@@ -269,7 +269,7 @@ class ConnectionMastodonTest {
         activity.setUpdatedNow(0)
         val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
+                 MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
         DataUpdater(executionContext).onActivity(activity)
         assertOneRecipient(activity, "AndStatus", "https://mastodon.example.com/@AndStatus",
                 "andstatus@" + accountActor.origin.host)
@@ -308,7 +308,7 @@ class ConnectionMastodonTest {
         activity.setUpdatedNow(0)
         val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
+                 MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
         DataUpdater(executionContext).onActivity(activity)
         Assert.assertNotEquals("Activity wasn't saved $activity", 0, activity.id)
         Assert.assertNotEquals("Reblogged note wasn't saved $activity", 0, activity.note.noteId)
@@ -352,9 +352,9 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Preview of", preview.previewOf, video)
         val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_CONVERSATION, ma, 123))
+                 MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_CONVERSATION, ma, 123))
         DataUpdater(executionContext).onActivity(activity)
-        val downloads: MutableList<DownloadData?> = DownloadData.Companion.fromNoteId(MyContextHolder.Companion.myContextHolder.getNow(), note.noteId)
+        val downloads: MutableList<DownloadData?> = DownloadData.Companion.fromNoteId( MyContextHolder.myContextHolder.getNow(), note.noteId)
         Assert.assertEquals("Saved downloads $downloads", 2, downloads.size.toLong())
         val dPreview = downloads.stream().filter { d: DownloadData? -> d.getContentType().isImage }.findAny().orElse(DownloadData.Companion.EMPTY)
         Assert.assertEquals("Preview URL $downloads", preview.uri, dPreview.getUri())
@@ -364,7 +364,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Preview $downloads", dVideo.getDownloadId(), dPreview.getPreviewOfDownloadId())
         Assert.assertEquals("Video URL $downloads", video.uri, dVideo.getUri())
         Assert.assertEquals("Video $downloads", 1, dVideo.getDownloadNumber())
-        val nfa = NoteForAnyAccount(MyContextHolder.Companion.myContextHolder.getNow(),
+        val nfa = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
                 activity.id, activity.note.noteId)
         Assert.assertEquals(preview.uri, nfa.downloads.firstForTimeline.uri)
         Assert.assertEquals(MyContentType.IMAGE, nfa.downloads.firstForTimeline.contentType)

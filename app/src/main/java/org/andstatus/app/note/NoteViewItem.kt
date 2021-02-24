@@ -43,6 +43,6 @@ class NoteViewItem : BaseNoteViewItem<NoteViewItem?> {
     }
 
     companion object {
-        val EMPTY: NoteViewItem? = NoteViewItem(true, RelativeTime.DATETIME_MILLIS_NEVER)
+        val EMPTY: NoteViewItem = NoteViewItem(true, RelativeTime.DATETIME_MILLIS_NEVER)
     }
 }

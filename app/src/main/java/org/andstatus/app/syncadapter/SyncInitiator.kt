@@ -53,7 +53,7 @@ class SyncInitiator : BroadcastReceiver() {
     }
 
     private fun initializeApp(context: Context?) {
-        MyContextHolder.Companion.myContextHolder
+         MyContextHolder.myContextHolder
                 .initialize(context, this)
                 .whenSuccessAsync(Consumer { myContext: MyContext? -> checkConnectionState(myContext) }, AsyncTask.THREAD_POOL_EXECUTOR)
     }

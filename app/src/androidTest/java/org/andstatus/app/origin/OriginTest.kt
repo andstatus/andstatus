@@ -1,4 +1,4 @@
-package org.andstatus.app.originimport
+package org.andstatus.app.origin
 
 import org.andstatus.app.context.ActorInTimeline
 import org.andstatus.app.context.DemoData
@@ -19,11 +19,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -759,10 +754,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -802,9 +793,9 @@ class OriginTest {
         val urlString = "https://github.com/andstatus/andstatus/issues/41"
         val body = ("I set \"Shorten URL with: QTTR_AT\" URL longer than 25 Text longer than 140. Will this be shortened: "
                 + urlString)
-        var origin: Origin? = MyContextHolder.Companion.myContextHolder.getNow().origins().firstOfType(OriginType.Companion.ORIGIN_TYPE_DEFAULT)
+        var origin: Origin? =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.Companion.ORIGIN_TYPE_DEFAULT)
         Assert.assertEquals(OriginType.TWITTER, origin.getOriginType())
-        origin = MyContextHolder.Companion.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
+        origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
         Assert.assertEquals(OriginType.TWITTER, origin.originType)
         var textLimit = 280
         Assert.assertEquals("Textlimit", textLimit.toLong(), origin.getTextLimit().toLong())
@@ -814,7 +805,7 @@ class OriginTest {
         Assert.assertTrue("Characters left $charactersLeft", charactersLeft == 158
                 || charactersLeft == 142)
         Assert.assertFalse(origin.isMentionAsWebFingerId)
-        origin = MyContextHolder.Companion.myContextHolder.getNow().origins().firstOfType(OriginType.PUMPIO)
+        origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.PUMPIO)
         textLimit = OriginType.Companion.TEXT_LIMIT_MAXIMUM
         Assert.assertEquals("Textlimit", textLimit.toLong(), origin.getTextLimit().toLong())
         Assert.assertEquals("Short URL length", 0, origin.shortUrlLength.toLong())
@@ -822,7 +813,7 @@ class OriginTest {
                 origin.getTextLimit() - body.length).toLong(),
                 origin.charactersLeftForNote(body).toLong())
         Assert.assertTrue(origin.isMentionAsWebFingerId)
-        origin = MyContextHolder.Companion.myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL)
+        origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL)
         textLimit = Origin.Companion.TEXT_LIMIT_FOR_WEBFINGER_ID
         val uploadLimit = 0
         var config: OriginConfig = OriginConfig.Companion.fromTextLimit(textLimit, uploadLimit.toLong())
@@ -859,7 +850,7 @@ class OriginTest {
         val allowHtml = true
         val inCombinedGlobalSearch = true
         val inCombinedPublicReload = true
-        val originInserter = DemoOriginInserter(MyContextHolder.Companion.myContextHolder.getNow())
+        val originInserter = DemoOriginInserter( MyContextHolder.myContextHolder.getNow())
         originInserter.createOneOrigin(originType, originName, hostOrUrl, isSsl, SslModeEnum.SECURE, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload)
         originInserter.createOneOrigin(originType, originName, "https://" + hostOrUrl
@@ -878,7 +869,7 @@ class OriginTest {
 
     @Test
     fun testPermalink() {
-        val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
         Assert.assertEquals(OriginType.TWITTER, origin.originType)
         val body = "Posting to Twitter " + DemoData.Companion.demoData.testRunUid
         val noteOid = "2578909845023" + DemoData.Companion.demoData.testRunUid
@@ -907,7 +898,7 @@ class OriginTest {
     }
 
     private fun checkOneName(out: String?, `in`: String?) {
-        Assert.assertEquals(out, Origin.Builder(MyContextHolder.Companion.myContextHolder.getNow(), OriginType.GNUSOCIAL).setName(`in`).build().name)
+        Assert.assertEquals(out, Origin.Builder( MyContextHolder.myContextHolder.getNow(), OriginType.GNUSOCIAL).setName(`in`).build().name)
     }
 
     @Test
@@ -917,12 +908,12 @@ class OriginTest {
     }
 
     private fun checkOneHost(out: String?, `in`: String?, ssl: Boolean) {
-        Assert.assertEquals(out, Origin.Builder(MyContextHolder.Companion.myContextHolder.getNow(), OriginType.GNUSOCIAL).setHostOrUrl(`in`).setSsl(ssl).build().url.toExternalForm())
+        Assert.assertEquals(out, Origin.Builder( MyContextHolder.myContextHolder.getNow(), OriginType.GNUSOCIAL).setHostOrUrl(`in`).setSsl(ssl).build().url.toExternalForm())
     }
 
     @Test
     fun testUsernameIsValid() {
-        var origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.gnusocialTestOriginName)
+        var origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.gnusocialTestOriginName)
         checkUsernameIsValid(origin, "", false)
         checkUsernameIsValid(origin, "someUser.", false)
         checkUsernameIsValid(origin, "someUser ", false)
@@ -930,7 +921,7 @@ class OriginTest {
         checkUsernameIsValid(origin, "some.user", true)
         checkUsernameIsValid(origin, "some.user/GnuSocial", false)
         checkUsernameIsValid(origin, "some@user", false)
-        origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.pumpioOriginName)
+        origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.pumpioOriginName)
         checkUsernameIsValid(origin, "", false)
         checkUsernameIsValid(origin, "someUser.", false)
         checkUsernameIsValid(origin, "someUser ", false)
@@ -951,6 +942,6 @@ class OriginTest {
 
     @After
     fun tearDown() {
-        MyContextHolder.Companion.myContextHolder.initialize(null, this)
+         MyContextHolder.myContextHolder.initialize(null, this)
     }
 }

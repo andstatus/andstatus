@@ -24,12 +24,12 @@ import oauth.signpost.AbstractOAuthConsumer
  * @author Matthias Kaeppler
  */
 class CommonsHttpOAuthConsumer(consumerKey: String?, consumerSecret: String?) : AbstractOAuthConsumer(consumerKey, consumerSecret) {
-    override fun wrap(request: Any?): oauth.signpost.http.HttpRequest? {
+    override fun wrap(request: Any): oauth.signpost.http.HttpRequest {
         require(request is HttpRequest) {
             ("This consumer expects requests of type "
                     + HttpRequest::class.java.canonicalName)
         }
-        return HttpRequestAdapter(request as HttpUriRequest?)
+        return HttpRequestAdapter(request as HttpUriRequest)
     }
 
     companion object {

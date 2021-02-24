@@ -27,8 +27,8 @@ enum class SearchObjects(private val aClass: Class<*>?) {
     }
 
     companion object {
-        fun fromSpinner(spinner: Spinner?): SearchObjects? {
-            var obj: SearchObjects? = NOTES
+        fun fromSpinner(spinner: Spinner?): SearchObjects {
+            var obj: SearchObjects = NOTES
             if (spinner != null) {
                 for (`val` in values()) {
                     if (`val`.ordinal == spinner.selectedItemPosition) {

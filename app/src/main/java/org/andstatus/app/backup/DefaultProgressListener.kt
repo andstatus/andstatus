@@ -87,7 +87,7 @@ class DefaultProgressListener(activity: MyActivity?, defaultTitleId: Int, logTag
                         if (progressDialog == null) {
                             progressDialog = ProgressDialog(activity, ProgressDialog.STYLE_SPINNER)
                             progressDialog.setOnDismissListener(this@DefaultProgressListener)
-                            progressDialog.setTitle(if (MyContextHolder.Companion.myContextHolder.getNow().state() == MyContextState.UPGRADING) upgradingText else defaultTitle)
+                            progressDialog.setTitle(if ( MyContextHolder.myContextHolder.getNow().state() == MyContextState.UPGRADING) upgradingText else defaultTitle)
                             progressDialog.setMessage(message)
                             if (isCancelable && !isCancelled()) {
                                 progressDialog.setCancelable(false)
@@ -119,12 +119,12 @@ class DefaultProgressListener(activity: MyActivity?, defaultTitleId: Int, logTag
 
     private fun showToast(message: CharSequence?) {
         try {
-            Toast.makeText(MyContextHolder.Companion.myContextHolder.getNow().context(),
+            Toast.makeText( MyContextHolder.myContextHolder.getNow().context(),
                     """
                         ${defaultTitle.toString()}
                         $versionText
                         """.trimIndent() +
-                            (if (MyContextHolder.Companion.myContextHolder.getNow().state() == MyContextState.UPGRADING) """
+                            (if ( MyContextHolder.myContextHolder.getNow().state() == MyContextState.UPGRADING) """
      
      $upgradingText
      """.trimIndent() else "") +
@@ -193,6 +193,6 @@ class DefaultProgressListener(activity: MyActivity?, defaultTitleId: Int, logTag
         defaultTitle = activity.getText(defaultTitleId)
         upgradingText = activity.getText(R.string.label_upgrading)
         cancelText = activity.getText(android.R.string.cancel)
-        versionText = MyContextHolder.Companion.myContextHolder.getVersionText(activity.getBaseContext())
+        versionText =  MyContextHolder.myContextHolder.getVersionText(activity.getBaseContext())
     }
 }

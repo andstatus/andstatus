@@ -22,7 +22,7 @@ object InstanceId {
     /**
      * IDs used for testing purposes to identify instances of reference types.
      */
-    private val PREV_INSTANCE_ID: AtomicLong? = AtomicLong(0)
+    private val PREV_INSTANCE_ID: AtomicLong = AtomicLong(0)
 
     /**
      * @return Unique for this process integer, numbers are given in the order starting from 1
@@ -32,7 +32,7 @@ object InstanceId {
     }
 
     // TODO: To be replaced with View.generateViewId() for API >= 17
-    private val sNextViewId: AtomicInteger? = AtomicInteger(1)
+    private val sNextViewId: AtomicInteger = AtomicInteger(1)
 
     /**
      * http://stackoverflow.com/questions/1714297/android-view-setidint-id-programmatically-how-to-avoid-id-conflicts

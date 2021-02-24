@@ -33,35 +33,35 @@ import org.andstatus.app.util.IdentifiableInstance
 import java.util.function.Supplier
 
 interface MyContext : IdentifiableInstance {
-    open fun newInitialized(initializer: Any?): MyContext?
-    open fun newCreator(context: Context?, initializer: Any?): MyContext?
-    open fun initialized(): Boolean
-    open fun isReady(): Boolean
-    open fun state(): MyContextState?
-    open fun context(): Context?
-    open fun baseContext(): Context?
-    open fun preferencesChangeTime(): Long
-    open fun getMyDatabase(): DatabaseHolder?
-    open fun getLastDatabaseError(): String?
-    open fun getDatabase(): SQLiteDatabase?
-    open fun users(): CachedUsersAndActors
-    open fun accounts(): MyAccounts
-    open fun origins(): PersistentOrigins
-    open fun timelines(): PersistentTimelines
-    open fun queues(): CommandQueue
+    fun newInitialized(initializer: Any?): MyContext
+    fun newCreator(context: Context?, initializer: Any?): MyContext
+    fun initialized(): Boolean
+    fun isReady(): Boolean
+    fun state(): MyContextState
+    fun context(): Context?
+    fun baseContext(): Context?
+    fun preferencesChangeTime(): Long
+    fun getMyDatabase(): DatabaseHolder?
+    fun getLastDatabaseError(): String?
+    fun getDatabase(): SQLiteDatabase?
+    fun users(): CachedUsersAndActors
+    fun accounts(): MyAccounts
+    fun origins(): PersistentOrigins
+    fun timelines(): PersistentTimelines
+    fun queues(): CommandQueue
     fun putAssertionData(key: String, contentValues: ContentValues) {}
-    open fun save(reason: Supplier<String?>?)
-    open fun release(reason: Supplier<String?>?)
-    open fun isExpired(): Boolean
-    open fun setExpired(reason: Supplier<String?>?)
-    open fun getConnectionState(): ConnectionState?
+    fun save(reason: Supplier<String>)
+    fun release(reason: Supplier<String>)
+    fun isExpired(): Boolean
+    fun setExpired(reason: Supplier<String>)
+    fun getConnectionState(): ConnectionState?
 
     /** Is our application in Foreground now?  */
-    open fun isInForeground(): Boolean
-    open fun setInForeground(inForeground: Boolean)
-    open fun getNotifier(): Notifier?
-    open fun notify(data: NotificationData?)
-    open fun clearNotifications(timeline: Timeline)
+    fun isInForeground(): Boolean
+    fun setInForeground(inForeground: Boolean)
+    fun getNotifier(): Notifier?
+    fun notify(data: NotificationData?)
+    fun clearNotifications(timeline: Timeline)
     fun isTestRun(): Boolean {
         return false
     }
@@ -83,6 +83,6 @@ interface MyContext : IdentifiableInstance {
     }
 
     companion object {
-        val EMPTY: MyContext? = MyContextImpl(null, null, "static")
+        val EMPTY: MyContext = MyContextImpl(null, null, "static")
     }
 }

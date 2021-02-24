@@ -1,4 +1,4 @@
-package org.andstatus.app.dataimport
+package org.andstatus.app.data
 
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.DemoData
@@ -16,11 +16,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -756,10 +751,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -803,7 +794,7 @@ class NoteForAnyAccountTest {
         val activity1 = mi.buildActivity(accountActor, "", "My testing note", null,
                 null, DownloadStatus.LOADED)
         mi.onActivity(activity1)
-        val nfaActivity1 = NoteForAnyAccount(MyContextHolder.Companion.myContextHolder.getNow(),
+        val nfaActivity1 = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
                 activity1.id, activity1.note.noteId)
         val dataActivity1 = NoteContextMenuData(nfaActivity1, ma)
         Assert.assertTrue(dataActivity1.isAuthor)
@@ -817,7 +808,7 @@ class NoteForAnyAccountTest {
                 + " Replying to you privately", activity1, null, DownloadStatus.LOADED)
         replyTo1.note.audience().visibility = Visibility.PRIVATE
         mi.onActivity(replyTo1)
-        val nfaReplyTo1 = NoteForAnyAccount(MyContextHolder.Companion.myContextHolder.getNow(),
+        val nfaReplyTo1 = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
                 replyTo1.id, replyTo1.note.noteId)
         val dataReplyTo1 = NoteContextMenuData(nfaReplyTo1, ma)
         Assert.assertFalse(dataReplyTo1.isAuthor)
@@ -830,7 +821,7 @@ class NoteForAnyAccountTest {
                 + " Replying publicly to the second author", replyTo1, null, DownloadStatus.LOADED)
         reply2.note.audience().visibility = Visibility.PUBLIC_AND_TO_FOLLOWERS
         mi.onActivity(reply2)
-        val nfaReply2 = NoteForAnyAccount(MyContextHolder.Companion.myContextHolder.getNow(),
+        val nfaReply2 = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
                 0, reply2.note.noteId)
         val dataReply2 = NoteContextMenuData(nfaReply2, ma)
         Assert.assertFalse(dataReply2.isAuthor)
@@ -849,7 +840,7 @@ class NoteForAnyAccountTest {
         reblog1.oid = MyLog.uniqueDateTimeFormatted()
         reblog1.setUpdatedNow(0)
         mi.onActivity(reblog1)
-        val nfaReblogged1 = NoteForAnyAccount(MyContextHolder.Companion.myContextHolder.getNow(),
+        val nfaReblogged1 = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
                 0, reblogged1.note.noteId)
         val dataReblogged1 = NoteContextMenuData(nfaReblogged1, ma)
         Assert.assertFalse(dataReblogged1.isAuthor)

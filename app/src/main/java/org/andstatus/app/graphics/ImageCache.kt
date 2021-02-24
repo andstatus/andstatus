@@ -37,9 +37,7 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.MediaFile
 import org.andstatus.app.data.MyContentType
-import org.andstatus.app.graphics.CachedImage
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import java.io.File
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -98,7 +96,7 @@ class ImageCache(context: Context?, name: CacheName?, maxBitmapHeightWidthIn: In
     }
 
     private fun getImage(mediaFile: MediaFile?, fromCacheOnly: Boolean): CachedImage? {
-        if (StringUtil.isEmpty(mediaFile.getPath())) {
+        if (mediaFile.getPath().isNullOrEmpty()) {
             return null
         }
         var image = get(mediaFile.getPath())
@@ -218,7 +216,7 @@ class ImageCache(context: Context?, name: CacheName?, maxBitmapHeightWidthIn: In
         var retriever: MediaMetadataRetriever? = null
         return try {
             retriever = MediaMetadataRetriever()
-            retriever.setDataSource(MyContextHolder.Companion.myContextHolder.getNow().context(), Uri.parse(mediaFile.getPath()))
+            retriever.setDataSource( MyContextHolder.myContextHolder.getNow().context(), Uri.parse(mediaFile.getPath()))
             val source = retriever.frameAtTime ?: return null
             val options = calculateScaling(mediaFile, mediaFile.getSize())
             val bitmap = ThumbnailUtils.extractThumbnail(source, mediaFile.getSize().x / options.inSampleSize,

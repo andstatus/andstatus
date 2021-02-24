@@ -16,7 +16,6 @@
 package org.andstatus.app.timeline
 
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 
 enum class TapOnATimelineTitleBehaviour(private val code: Long) {
     SWITCH_TO_DEFAULT_TIMELINE(1), GO_TO_THE_TOP(2), SELECT_TIMELINE(3), DISABLED(4);
@@ -34,7 +33,7 @@ enum class TapOnATimelineTitleBehaviour(private val code: Long) {
          */
         fun load(strCode: String?): TapOnATimelineTitleBehaviour? {
             try {
-                if (!StringUtil.isEmpty(strCode)) {
+                if (!strCode.isNullOrEmpty()) {
                     return load(strCode.toLong())
                 }
             } catch (e: NumberFormatException) {

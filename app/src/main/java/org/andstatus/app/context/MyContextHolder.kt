@@ -50,11 +50,11 @@ class MyContextHolder private constructor() : TaggedClass {
 
     @Volatile
     private var isShuttingDown = false
-    private val CONTEXT_LOCK: Any? = Any()
+    private val CONTEXT_LOCK: Any = Any()
 
     @GuardedBy("CONTEXT_LOCK")
     @Volatile
-    private var myFutureContext: MyFutureContext = MyFutureContext.Companion.completed(MyContext.Companion.EMPTY)
+    private var myFutureContext: MyFutureContext = MyFutureContext.completed(MyContext.EMPTY)
 
     @Volatile
     private var onRestore = false
@@ -69,15 +69,15 @@ class MyContextHolder private constructor() : TaggedClass {
 
     /** Immediately get completed context or previous if not completed,
      * or failure if future failed  */
-    fun tryNow(): Try<MyContext?> {
+    fun tryNow(): Try<MyContext> {
         return getFuture().tryNow()
     }
 
-    fun getBlocking(): MyContext? {
-        return myFutureContext.tryBlocking().getOrElse(myFutureContext.now)
+    fun getBlocking(): MyContext {
+        return myFutureContext.tryBlocking().getOrElse(myFutureContext.getNow())
     }
 
-    fun getFuture(): MyFutureContext? {
+    fun getFuture(): MyFutureContext {
         return myFutureContext
     }
 
@@ -87,8 +87,8 @@ class MyContextHolder private constructor() : TaggedClass {
     fun trySetCreator(contextCreatorNew: MyContext): Boolean {
         synchronized(CONTEXT_LOCK) {
             if (!myFutureContext.future.isDone) return false
-            myFutureContext.now.release { "trySetCreator" }
-            myFutureContext = MyFutureContext.Companion.completed(contextCreatorNew)
+            myFutureContext.getNow().release { "trySetCreator" }
+            myFutureContext = MyFutureContext.completed(contextCreatorNew)
         }
         return true
     }
@@ -97,50 +97,51 @@ class MyContextHolder private constructor() : TaggedClass {
         return !getFuture().isReady()
     }
 
-    fun initialize(context: Context?): MyContextHolder? {
+    fun initialize(context: Context?): MyContextHolder {
         return initializeInner(context, context, false)
     }
 
     /** Reinitialize in a case preferences have been changed  */
-    fun initialize(context: Context?, calledBy: Any?): MyContextHolder? {
+    fun initialize(context: Context?, calledBy: Any?): MyContextHolder {
         return initializeInner(context, calledBy, false)
     }
 
-    fun initializeDuringUpgrade(upgradeRequestor: Context?): MyContextHolder? {
+    fun initializeDuringUpgrade(upgradeRequestor: Context?): MyContextHolder {
         return initializeInner(upgradeRequestor, upgradeRequestor, true)
     }
 
-    private fun initializeInner(context: Context?, calledBy: Any?, duringUpgrade: Boolean): MyContextHolder? {
+    private fun initializeInner(context: Context?, calledBy: Any?, duringUpgrade: Boolean): MyContextHolder {
         storeContextIfNotPresent(context, calledBy)
         if (isShuttingDown) {
             MyLog.d(this, "Skipping initialization: device is shutting down (called by: $calledBy)")
-        } else if (!duringUpgrade && DatabaseConverterController.Companion.isUpgrading()) {
+        } else if (!duringUpgrade && DatabaseConverterController.isUpgrading()) {
             MyLog.d(this, "Skipping initialization: upgrade in progress (called by: $calledBy)")
         } else {
-            synchronized(CONTEXT_LOCK) { myFutureContext = MyFutureContext.Companion.fromPrevious(myFutureContext, calledBy) }
+            synchronized(CONTEXT_LOCK) { myFutureContext = MyFutureContext.fromPrevious(myFutureContext, calledBy) }
         }
         return this
     }
 
-    fun thenStartActivity(intent: Intent?): MyContextHolder? {
-        return whenSuccessAsync({ myContext: MyContext? -> MyFutureContext.Companion.startActivity(myContext, intent) }, UiThreadExecutor.Companion.INSTANCE)
+    fun thenStartActivity(intent: Intent?): MyContextHolder {
+        return whenSuccessAsync({ myContext: MyContext -> MyFutureContext.startActivity(myContext, intent) },
+                UiThreadExecutor.INSTANCE)
     }
 
-    fun thenStartApp(): MyContextHolder? {
-        return whenSuccessAsync({ myContext: MyContext? -> FirstActivity.Companion.startApp(myContext) }, UiThreadExecutor.Companion.INSTANCE)
+    fun thenStartApp(): MyContextHolder {
+        return whenSuccessAsync({ myContext: MyContext? -> FirstActivity.startApp(myContext) }, UiThreadExecutor.INSTANCE)
     }
 
-    fun whenSuccessAsync(consumer: Consumer<MyContext?>?, executor: Executor?): MyContextHolder? {
+    fun whenSuccessAsync(consumer: Consumer<MyContext>, executor: Executor): MyContextHolder {
         synchronized(CONTEXT_LOCK) { myFutureContext = myFutureContext.whenSuccessAsync(consumer, executor) }
         return this
     }
 
-    fun whenSuccessOrPreviousAsync(consumer: Consumer<MyContext?>?, executor: Executor?): MyContextHolder? {
+    fun whenSuccessOrPreviousAsync(consumer: Consumer<MyContext>, executor: Executor): MyContextHolder {
         synchronized(CONTEXT_LOCK) { myFutureContext = myFutureContext.whenSuccessOrPreviousAsync(consumer, executor) }
         return this
     }
 
-    fun with(future: UnaryOperator<CompletableFuture<MyContext?>?>?): MyContextHolder? {
+    fun with(future: UnaryOperator<CompletableFuture<MyContext>>): MyContextHolder {
         synchronized(CONTEXT_LOCK) { myFutureContext = myFutureContext.with(future) }
         return this
     }
@@ -149,13 +150,13 @@ class MyContextHolder private constructor() : TaggedClass {
      * This allows to refer to the context even before myInitializedContext is initialized.
      * Quickly returns, providing context for the deferred initialization
      */
-    fun storeContextIfNotPresent(context: Context?, calledBy: Any?): MyContextHolder? {
+    fun storeContextIfNotPresent(context: Context?, calledBy: Any?): MyContextHolder {
         if (context == null || getNow().context() != null) return this
         synchronized(CONTEXT_LOCK) {
-            if (myFutureContext.now.context() == null) {
-                val contextCreator = myFutureContext.now.newCreator(context, calledBy)
+            if (myFutureContext.getNow().context() == null) {
+                val contextCreator = myFutureContext.getNow().newCreator(context, calledBy)
                 requireNonNullContext(contextCreator.context(), calledBy, "no compatible context")
-                myFutureContext = MyFutureContext.Companion.completed(contextCreator)
+                myFutureContext = MyFutureContext.completed(contextCreator)
             }
         }
         return this
@@ -163,25 +164,25 @@ class MyContextHolder private constructor() : TaggedClass {
 
     fun upgradeIfNeeded(upgradeRequestor: Activity?) {
         if (getNow().state() == MyContextState.UPGRADING && upgradeRequestor != null) {
-            DatabaseConverterController.Companion.attemptToTriggerDatabaseUpgrade(upgradeRequestor)
+            DatabaseConverterController.attemptToTriggerDatabaseUpgrade(upgradeRequestor)
         }
     }
 
-    fun getSystemInfo(context: Context?, showVersion: Boolean): String? {
+    fun getSystemInfo(context: Context, showVersion: Boolean): String {
         val builder = StringBuilder()
         if (showVersion) builder.append(getVersionText(context))
-        MyStringBuilder.Companion.appendWithSpace(builder, MyLog.currentDateTimeForLogLine())
-        MyStringBuilder.Companion.appendWithSpace(builder, ", started")
-        MyStringBuilder.Companion.appendWithSpace(builder, RelativeTime.getDifference(context, appStartedAt,
+        MyStringBuilder.appendWithSpace(builder, MyLog.currentDateTimeForLogLine())
+        MyStringBuilder.appendWithSpace(builder, ", started")
+        MyStringBuilder.appendWithSpace(builder, RelativeTime.getDifference(context, appStartedAt,
                 SystemClock.elapsedRealtime()))
         builder.append("\n")
         builder.append(ImageCaches.getCacheInfo())
         builder.append("\n")
-        builder.append(AsyncTaskLauncher.Companion.threadPoolInfo())
+        builder.append(AsyncTaskLauncher.threadPoolInfo())
         return builder.toString()
     }
 
-    fun getVersionText(context: Context?): String? {
+    fun getVersionText(context: Context?): String {
         val builder = StringBuilder()
         if (context != null) {
             try {
@@ -192,15 +193,15 @@ class MyContextHolder private constructor() : TaggedClass {
                 MyLog.w(this, "Unable to obtain package information", e)
             }
         }
-        if (builder.length == 0) {
+        if (builder.isEmpty()) {
             builder.append("AndStatus v.?")
         }
-        MyStringBuilder.Companion.appendWithSpace(builder, if (getExecutionMode() == ExecutionMode.DEVICE) "" else getExecutionMode().code)
-        MyStringBuilder.Companion.appendWithSpace(builder, TamperingDetector.getAppSignatureInfo())
+        MyStringBuilder.appendWithSpace(builder, if (getExecutionMode() == ExecutionMode.DEVICE) "" else getExecutionMode().code)
+        MyStringBuilder.appendWithSpace(builder, TamperingDetector.getAppSignatureInfo())
         return builder.toString()
     }
 
-    fun setOnRestore(onRestore: Boolean): MyContextHolder? {
+    fun setOnRestore(onRestore: Boolean): MyContextHolder {
         this.onRestore = onRestore
         return this
     }
@@ -229,9 +230,9 @@ class MyContextHolder private constructor() : TaggedClass {
         val context = getNow().context() ?: return ExecutionMode.UNKNOWN
         if ("true" == Settings.System.getString(context.contentResolver, "firebase.test.lab")) {
             // See https://firebase.google.com/docs/test-lab/android-studio
-            return if (getNow().isTestRun) ExecutionMode.FIREBASE_TEST else ExecutionMode.ROBO_TEST
+            return if (getNow().isTestRun()) ExecutionMode.FIREBASE_TEST else ExecutionMode.ROBO_TEST
         }
-        return if (getNow().isTestRun) {
+        return if (getNow().isTestRun()) {
             ExecutionMode.TEST
         } else ExecutionMode.DEVICE
     }
@@ -249,19 +250,19 @@ class MyContextHolder private constructor() : TaggedClass {
         return isShuttingDown
     }
 
-    fun release(reason: Supplier<String?>?) {
+    fun release(reason: Supplier<String>) {
         synchronized(CONTEXT_LOCK) { myFutureContext = myFutureContext.releaseNow(reason) }
     }
 
-    override fun classTag(): String? {
+    override fun classTag(): String {
         return TAG
     }
 
     companion object {
-        private val TAG: String? = MyContextHolder::class.java.simpleName
-        val myContextHolder: MyContextHolder? = MyContextHolder()
+        private val TAG: String = MyContextHolder::class.java.simpleName
+        val myContextHolder: MyContextHolder = MyContextHolder()
         private fun requireNonNullContext(context: Context?, calledBy: Any?, message: String?) {
-            checkNotNull(context) { TAG + ": " + message + ", called by " + MyStringBuilder.Companion.objToTag(calledBy) }
+            checkNotNull(context) { TAG + ": " + message + ", called by " + MyStringBuilder.objToTag(calledBy) }
         }
     }
 }

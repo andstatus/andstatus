@@ -1,4 +1,4 @@
-package org.andstatus.app.backupimport
+package org.andstatus.app.backup
 
 import android.Manifest
 import android.accounts.AccountManager
@@ -36,11 +36,6 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -776,10 +771,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -823,22 +814,22 @@ class MyBackupAgentTest {
     @Test
     @Throws(Throwable::class)
     fun testBackupRestore() {
-        val accountsBefore: MyAccounts = MyAccounts.Companion.newEmpty(MyContextHolder.Companion.myContextHolder.getNow())
+        val accountsBefore: MyAccounts = MyAccounts.Companion.newEmpty( MyContextHolder.myContextHolder.getNow())
         accountsBefore.initialize()
         TestSuite.forget()
         TestSuite.initialize(this)
         DemoData.Companion.demoData.assertConversations()
-        Assert.assertEquals("Compare Persistent accounts with copy", MyContextHolder.Companion.myContextHolder.getNow().accounts(), accountsBefore)
-        compareOneAccount(MyContextHolder.Companion.myContextHolder.getNow().accounts(), accountsBefore, DemoData.Companion.demoData.gnusocialTestAccountName)
-        val outputFolder = DocumentFile.fromFile(MyContextHolder.Companion.myContextHolder.getNow().context().getCacheDir())
+        Assert.assertEquals("Compare Persistent accounts with copy",  MyContextHolder.myContextHolder.getNow().accounts(), accountsBefore)
+        compareOneAccount( MyContextHolder.myContextHolder.getNow().accounts(), accountsBefore, DemoData.Companion.demoData.gnusocialTestAccountName)
+        val outputFolder = DocumentFile.fromFile( MyContextHolder.myContextHolder.getNow().context().getCacheDir())
         val dataFolder = testBackup(outputFolder)
         deleteApplicationData()
         testRestore(dataFolder)
         TestSuite.forget()
         TestSuite.initialize(this)
-        Assert.assertEquals("Number of persistent accounts", accountsBefore.size().toLong(), MyContextHolder.Companion.myContextHolder.getNow().accounts().size().toLong())
-        Assert.assertEquals("Persistent accounts", accountsBefore, MyContextHolder.Companion.myContextHolder.getNow().accounts())
-        compareOneAccount(accountsBefore, MyContextHolder.Companion.myContextHolder.getNow().accounts(), DemoData.Companion.demoData.gnusocialTestAccountName)
+        Assert.assertEquals("Number of persistent accounts", accountsBefore.size().toLong(),  MyContextHolder.myContextHolder.getNow().accounts().size().toLong())
+        Assert.assertEquals("Persistent accounts", accountsBefore,  MyContextHolder.myContextHolder.getNow().accounts())
+        compareOneAccount(accountsBefore,  MyContextHolder.myContextHolder.getNow().accounts(), DemoData.Companion.demoData.gnusocialTestAccountName)
         DemoData.Companion.demoData.assertConversations()
         TestSuite.initializeWithData(this)
         deleteBackup(dataFolder)
@@ -867,22 +858,22 @@ class MyBackupAgentTest {
         Assert.assertEquals("Shared preferences backed up", 1, backupManager.getBackupAgent().getSharedPreferencesBackedUp())
         Assert.assertEquals("Media files and logs backed up", 2, backupManager.getBackupAgent().foldersBackedUp)
         Assert.assertEquals("Databases backed up", 1, backupManager.getBackupAgent().getDatabasesBackedUp())
-        Assert.assertEquals("Accounts backed up", backupManager.getBackupAgent().getAccountsBackedUp(), MyContextHolder.Companion.myContextHolder.getNow()
+        Assert.assertEquals("Accounts backed up", backupManager.getBackupAgent().getAccountsBackedUp(),  MyContextHolder.myContextHolder.getNow()
                 .accounts().size().toLong())
         val descriptorFile2: Try<DocumentFile?> = MyBackupManager.Companion.getExistingDescriptorFile(dataFolder)
-        var jso = DocumentFileUtils.getJSONObject(MyContextHolder.Companion.myContextHolder.getNow().context(), descriptorFile2.get())
+        var jso = DocumentFileUtils.getJSONObject( MyContextHolder.myContextHolder.getNow().context(), descriptorFile2.get())
         Assert.assertEquals(MyBackupDescriptor.Companion.BACKUP_SCHEMA_VERSION.toLong(), jso.getInt(MyBackupDescriptor.Companion.KEY_BACKUP_SCHEMA_VERSION).toLong())
         Assert.assertTrue(jso.getLong(MyBackupDescriptor.Companion.KEY_CREATED_DATE) > System.currentTimeMillis() - 1000000)
         val backupDescriptor = backupManager.getBackupAgent().getBackupDescriptor()
         Assert.assertEquals(MyBackupDescriptor.Companion.BACKUP_SCHEMA_VERSION.toLong(), backupDescriptor.getBackupSchemaVersion().toLong())
         val accountHeader = dataFolder.createFile("", "account_header.json")
         Assert.assertTrue(accountHeader.exists())
-        jso = DocumentFileUtils.getJSONObject(MyContextHolder.Companion.myContextHolder.getNow().context(), accountHeader)
+        jso = DocumentFileUtils.getJSONObject( MyContextHolder.myContextHolder.getNow().context(), accountHeader)
         Assert.assertTrue(jso.getInt(MyBackupDataOutput.Companion.KEY_DATA_SIZE) > 10)
         Assert.assertEquals(".json", jso.getString(MyBackupDataOutput.Companion.KEY_FILE_EXTENSION))
         val accountData = dataFolder.createFile("", "account_data.json")
         Assert.assertTrue(accountData.exists())
-        val jsa = DocumentFileUtils.getJSONArray(MyContextHolder.Companion.myContextHolder.getNow().context(), accountData)
+        val jsa = DocumentFileUtils.getJSONArray( MyContextHolder.myContextHolder.getNow().context(), accountData)
         Assert.assertTrue(jsa.length() > 2)
         return dataFolder
     }
@@ -891,8 +882,8 @@ class MyBackupAgentTest {
     private fun deleteApplicationData() {
         MyServiceManager.Companion.setServiceUnavailable()
         deleteAccounts()
-        val context: Context = MyContextHolder.Companion.myContextHolder.getNow().context()
-        MyContextHolder.Companion.myContextHolder.release(Supplier { "deleteApplicationData" })
+        val context: Context =  MyContextHolder.myContextHolder.getNow().context()
+         MyContextHolder.myContextHolder.release(Supplier { "deleteApplicationData" })
         deleteFiles(context, false)
         deleteFiles(context, true)
         SharedPreferencesUtil.resetHasSetDefaultValues()
@@ -902,8 +893,8 @@ class MyBackupAgentTest {
 
     @Throws(IOException::class)
     private fun deleteAccounts() {
-        val am = AccountManager.get(MyContextHolder.Companion.myContextHolder.getNow().context())
-        val aa = AccountUtils.getCurrentAccounts(MyContextHolder.Companion.myContextHolder.getNow().context())
+        val am = AccountManager.get( MyContextHolder.myContextHolder.getNow().context())
+        val aa = AccountUtils.getCurrentAccounts( MyContextHolder.myContextHolder.getNow().context())
         for (androidAccount in aa) {
             val logMsg = "Removing old account: " + androidAccount.name
             MyLog.i(this, logMsg)

@@ -69,7 +69,7 @@ class QueueViewer : LoadableListActivity<Any?>() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item.getItemId()) {
             R.id.clear_the_queue -> AsyncTaskLauncher.Companion.execute<QueueViewer?, Void?>(this,
-                    Function<QueueViewer?, Try<Void?>?> { activity: QueueViewer? -> MyContextHolder.Companion.myContextHolder.getBlocking().queues().clear() },
+                    Function<QueueViewer?, Try<Void?>?> { activity: QueueViewer? ->  MyContextHolder.myContextHolder.getBlocking().queues().clear() },
                     Function { activity: QueueViewer? -> Consumer { r: Try<Void?>? -> activity.showList(WhichPage.CURRENT) } })
             else -> return super.onOptionsItemSelected(item)
         }
@@ -98,7 +98,7 @@ class QueueViewer : LoadableListActivity<Any?>() {
             }
             R.id.menuItemDelete -> {
                 AsyncTaskLauncher.Companion.execute<QueueViewer?, Void?>(this,
-                        Function<QueueViewer?, Try<Void?>?> { activity: QueueViewer? -> MyContextHolder.Companion.myContextHolder.getBlocking().queues().deleteCommand(queueData.commandData) },
+                        Function<QueueViewer?, Try<Void?>?> { activity: QueueViewer? ->  MyContextHolder.myContextHolder.getBlocking().queues().deleteCommand(queueData.commandData) },
                         Function { activity: QueueViewer? -> Consumer { r: Try<Void?>? -> activity.showList(WhichPage.CURRENT) } })
                 true
             }

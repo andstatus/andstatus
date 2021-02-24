@@ -23,7 +23,6 @@ import org.andstatus.app.MyActivity
 import org.andstatus.app.R
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
-import org.andstatus.app.util.StringUtil
 
 /**
  * Theme and style-relates utility class
@@ -53,7 +52,7 @@ object MyTheme {
     }
 
     fun getThemeName(context: Context?): String {
-        return if (context is MyActivity && (context as MyActivity?).isFinishing()) {
+        return if (context is MyActivity && context.isFinishing()) {
             "Theme.Transparent"
         } else "Theme.AndStatus." + SharedPreferencesUtil.getString(MyPreferences.KEY_THEME_COLOR, "DeviceDefault")
     }
@@ -62,13 +61,13 @@ object MyTheme {
         return isLightTheme
     }
 
-    fun getThemeId(context: Context?, themeName: String?): Int {
+    fun getThemeId(context: Context, themeName: String?): Int {
         return getStyleId(context, themeName, R.style.Theme_AndStatus_Light)
     }
 
-    private fun getStyleId(context: Context?, styleName: String?, defaultId: Int): Int {
+    private fun getStyleId(context: Context, styleName: String?, defaultId: Int): Int {
         var styleId = 0
-        if (!StringUtil.isEmpty(styleName)) {
+        if (!styleName.isNullOrEmpty()) {
             styleId = context.getResources().getIdentifier(styleName, "style", "org.andstatus.app")
             if (styleId == 0 || MyLog.isVerboseEnabled()) {
                 val text = ("getStyleId; name:\"" + styleName + "\"; id:" + Integer.toHexString(styleId)
@@ -86,7 +85,7 @@ object MyTheme {
         return styleId
     }
 
-    fun applyStyles(context: Context?, isDialog: Boolean) {
+    fun applyStyles(context: Context, isDialog: Boolean) {
         val theme = context.getTheme()
         var actionBarTextStyleId = R.style.ActionBarTextWhite
         if (!isDeviceDefaultTheme) {
@@ -109,14 +108,14 @@ object MyTheme {
         }
     }
 
-    fun setContentView(activity: Activity?, layoutId: Int) {
+    fun setContentView(activity: Activity, layoutId: Int) {
         activity.setContentView(layoutId)
     }
 
     /** See http://stackoverflow.com/questions/7896615/android-how-to-get-value-of-an-attribute-in-code
      * See also [android.app.AlertDialog] #resolveDialogTheme for resource resolution
      */
-    private fun setBackgroundColor(activity: Activity?) {
+    private fun setBackgroundColor(activity: Activity) {
         val typedValue = TypedValue()
         activity.getTheme().resolveAttribute(R.attr.myBackgroundColor, typedValue, true)
         val color = typedValue.data

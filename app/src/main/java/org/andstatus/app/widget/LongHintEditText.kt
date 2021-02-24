@@ -26,9 +26,9 @@ import androidx.appcompat.widget.AppCompatEditText
  * Inspired by http://stackoverflow.com/questions/31832665/android-how-to-create-edit-text-with-single-line-input-and-multiline-hint
  */
 class LongHintEditText : AppCompatEditText {
-    var singleLine = false
+    var mySingleLine = false
 
-    constructor(context: Context?) : super(context) {
+    constructor(context: Context) : super(context) {
         setTextChangedListener()
     }
 
@@ -36,12 +36,12 @@ class LongHintEditText : AppCompatEditText {
         addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                val singleLineNew = s.length > 0
-                if (singleLine != singleLineNew) {
-                    singleLine = singleLineNew
-                    this@LongHintEditText.isSingleLine = s.length > 0
-                    if (singleLine) {
+            override fun afterTextChanged(s: Editable) {
+                val singleLineNew = s.isNotEmpty()
+                if (mySingleLine != singleLineNew) {
+                    mySingleLine = singleLineNew
+                    this@LongHintEditText.isSingleLine = s.isNotEmpty()
+                    if (mySingleLine) {
                         this@LongHintEditText.setSelection(s.length)
                     }
                 }
@@ -49,11 +49,11 @@ class LongHintEditText : AppCompatEditText {
         })
     }
 
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
         setTextChangedListener()
     }
 
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         setTextChangedListener()
     }
 }

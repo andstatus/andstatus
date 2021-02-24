@@ -30,11 +30,11 @@ object RelativeTime {
     /**
      * Difference to Now
      */
-    fun getDifference(context: Context?, fromMs: Long): String? {
+    fun getDifference(context: Context, fromMs: Long): String {
         return getDifference(context, fromMs, System.currentTimeMillis())
     }
 
-    fun getDifference(context: Context?, fromMs: Long, toMs: Long): String? {
+    fun getDifference(context: Context, fromMs: Long, toMs: Long): String {
         if (fromMs <= DATETIME_MILLIS_NEVER || toMs <= DATETIME_MILLIS_NEVER) return ""
         if (fromMs == SOME_TIME_AGO) return context.getString(R.string.reltime_some_time_ago)
         val numSeconds = TimeUnit.MILLISECONDS.toSeconds(toMs - fromMs)

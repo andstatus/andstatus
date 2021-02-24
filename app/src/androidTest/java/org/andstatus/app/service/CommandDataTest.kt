@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.serviceimport
+package org.andstatus.app.service
 
 import org.andstatus.app.SearchObjects
 import org.andstatus.app.account.MyAccount
@@ -40,11 +40,6 @@ import org.junit.Test
 import java.util.*
 import java.util.concurrent.PriorityBlockingQueue
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -780,10 +775,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -823,7 +814,7 @@ class CommandDataTest {
         val time0 = System.currentTimeMillis()
         var commandData: CommandData = CommandData.Companion.newUpdateStatus(DemoData.Companion.demoData.getPumpioConversationAccount(), 1, 4)
         testQueueOneCommandData(commandData, time0)
-        val noteId = MyQuery.oidToId(OidEnum.NOTE_OID, MyContextHolder.Companion.myContextHolder.getNow().origins()
+        val noteId = MyQuery.oidToId(OidEnum.NOTE_OID,  MyContextHolder.myContextHolder.getNow().origins()
                 .fromName(DemoData.Companion.demoData.conversationOriginName).getId(),
                 DemoData.Companion.demoData.conversationEntryNoteOid)
         val downloadDataRowId: Long = 23
@@ -849,7 +840,7 @@ class CommandDataTest {
         Assert.assertEquals((CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 1).toLong(), commandData.getResult().getRetriesLeft().toLong())
         Assert.assertEquals(hasSoftError, commandData.getResult().hasSoftError())
         Assert.assertFalse(commandData.getResult().hasHardError())
-        val queues: CommandQueue = MyContextHolder.Companion.myContextHolder.getNow().queues()
+        val queues: CommandQueue =  MyContextHolder.myContextHolder.getNow().queues()
         queues.clear()
         queues[QueueType.ERROR].addToQueue(commandData)
         queues.save()
@@ -872,15 +863,15 @@ class CommandDataTest {
 
     @Test
     fun testEquals() {
-        val data1: CommandData = CommandData.Companion.newSearch(SearchObjects.NOTES, MyContextHolder.Companion.myContextHolder.getNow(), Origin.Companion.EMPTY, "andstatus")
-        val data2: CommandData = CommandData.Companion.newSearch(SearchObjects.NOTES, MyContextHolder.Companion.myContextHolder.getNow(), Origin.Companion.EMPTY, "mustard")
+        val data1: CommandData = CommandData.Companion.newSearch(SearchObjects.NOTES,  MyContextHolder.myContextHolder.getNow(),  Origin.EMPTY, "andstatus")
+        val data2: CommandData = CommandData.Companion.newSearch(SearchObjects.NOTES,  MyContextHolder.myContextHolder.getNow(),  Origin.EMPTY, "mustard")
         Assert.assertTrue("Hashcodes: " + data1.hashCode() + " and " + data2.hashCode(), data1.hashCode() != data2.hashCode())
         Assert.assertFalse(data1 == data2)
         data1.result.prepareForLaunch()
         data1.result.incrementNumIoExceptions()
         data1.result.afterExecutionEnded()
         Assert.assertFalse(data1.result.shouldWeRetry())
-        val data3: CommandData = CommandData.Companion.newSearch(SearchObjects.NOTES, MyContextHolder.Companion.myContextHolder.getNow(), Origin.Companion.EMPTY, "andstatus")
+        val data3: CommandData = CommandData.Companion.newSearch(SearchObjects.NOTES,  MyContextHolder.myContextHolder.getNow(),  Origin.EMPTY, "andstatus")
         Assert.assertTrue(data1 == data3)
         Assert.assertTrue(data1.hashCode() == data3.hashCode())
         Assert.assertEquals(data1, data3)
@@ -892,7 +883,7 @@ class CommandDataTest {
         val ma: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
         queue.add(CommandData.Companion.newActorCommand(CommandEnum.GET_FRIENDS, Actor.Companion.fromId(ma.origin, 123), ""))
         queue.add(CommandData.Companion.newActorCommand(CommandEnum.GET_TIMELINE, ma.actor, ma.username))
-        queue.add(CommandData.Companion.newSearch(SearchObjects.NOTES, MyContextHolder.Companion.myContextHolder.getNow(), ma.origin, "q1"))
+        queue.add(CommandData.Companion.newSearch(SearchObjects.NOTES,  MyContextHolder.myContextHolder.getNow(), ma.origin, "q1"))
         queue.add(CommandData.Companion.newUpdateStatus(MyAccount.Companion.EMPTY, 2, 5))
         queue.add(CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.INTERACTIONS))
         queue.add(CommandData.Companion.newUpdateStatus(MyAccount.Companion.EMPTY, 3, 6))
@@ -930,10 +921,10 @@ class CommandDataTest {
         val actor: Actor = Actor.Companion.load(ma.origin.myContext, actorId)
         val data: CommandData = CommandData.Companion.actOnActorCommand(
                 command, DemoData.Companion.demoData.getPumpioConversationAccount(), actor, "")
-        val summary = data.toCommandSummary(MyContextHolder.Companion.myContextHolder.getNow())
+        val summary = data.toCommandSummary( MyContextHolder.myContextHolder.getNow())
         val msgLog = command.name + "; Summary:'" + summary + "'"
         MyLog.v(this, msgLog)
-        MatcherAssert.assertThat(msgLog, summary, CoreMatchers.containsString(command.getTitle(MyContextHolder.Companion.myContextHolder.getNow(),
-                ma.accountName).toString() + " " + MyQuery.actorIdToWebfingerId(MyContextHolder.Companion.myContextHolder.getNow(), actorId)))
+        MatcherAssert.assertThat(msgLog, summary, CoreMatchers.containsString(command.getTitle( MyContextHolder.myContextHolder.getNow(),
+                ma.accountName).toString() + " " + MyQuery.actorIdToWebfingerId( MyContextHolder.myContextHolder.getNow(), actorId)))
     }
 }

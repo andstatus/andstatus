@@ -25,12 +25,12 @@ import androidx.preference.PreferenceViewHolder
  * @author yvolk@yurivolkov.com
  */
 class MultilinePreference : Preference {
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {}
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
+    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
-    override fun onBindViewHolder(viewHolder: PreferenceViewHolder?) {
+    override fun onBindViewHolder(viewHolder: PreferenceViewHolder) {
         super.onBindViewHolder(viewHolder)
-        val textView = viewHolder.findViewById(android.R.id.title) as TextView
+        val textView = viewHolder.findViewById(android.R.id.title) as TextView ?
         if (textView != null) {
             textView.isSingleLine = false
         }

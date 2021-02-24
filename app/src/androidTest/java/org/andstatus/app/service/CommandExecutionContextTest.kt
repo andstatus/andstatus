@@ -1,4 +1,4 @@
-package org.andstatus.app.serviceimport
+package org.andstatus.app.service
 
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContextHolder
@@ -13,11 +13,6 @@ import org.junit.Before
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicLong
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -753,10 +748,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -790,13 +781,13 @@ class CommandExecutionContextTest {
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithData(this)
-        ma = MyContextHolder.Companion.myContextHolder.getNow().accounts().getFirstSucceeded()
+        ma =  MyContextHolder.myContextHolder.getNow().accounts().getFirstSucceeded()
     }
 
     @Test
     fun testMentionsAccumulation() {
         val execContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(), CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.INTERACTIONS))
+                 MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.INTERACTIONS))
         Assert.assertEquals(TimelineType.INTERACTIONS, execContext.timeline.timelineType)
         val noteCount = 4
         val mentionCount = 2
@@ -815,7 +806,7 @@ class CommandExecutionContextTest {
     @Test
     fun testPrivateAccumulation() {
         val execContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(), CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE))
+                 MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE))
         val privateCount = 4
         for (ind in 0 until privateCount) {
             execContext.result.onNotificationEvent(NotificationEventType.PRIVATE)

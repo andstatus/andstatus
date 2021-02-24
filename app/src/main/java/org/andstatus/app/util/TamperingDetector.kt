@@ -28,26 +28,26 @@ import java.util.*
  * Based on https://www.airpair.com/android/posts/adding-tampering-detection-to-your-android-app
  */
 object TamperingDetector {
-    private val knownSignatures: MutableMap<String?, String?>? = HashMap()
+    private val knownSignatures: MutableMap<String, String> = HashMap()
 
     @Volatile
     private var knownAppSignature: String? = ""
-    fun initialize(context: Context?) {
+    fun initialize(context: Context) {
         val builder = StringBuilder()
         for (signature in getAppSignatures(context)) {
             if (knownSignatures.containsKey(signature)) {
                 knownAppSignature = knownSignatures.get(signature)
-                MyStringBuilder.Companion.appendWithSpace(builder, "(" + knownAppSignature + ")")
+                MyStringBuilder.appendWithSpace(builder, "(" + knownAppSignature + ")")
             } else {
                 MyLog.i(TamperingDetector::class.java, "Unknown APK signature:'$signature'")
-                MyStringBuilder.Companion.appendWithSpace(builder, signature)
+                MyStringBuilder.appendWithSpace(builder, signature)
             }
         }
         ACRA.getErrorReporter().putCustomData("apkSignatures", builder.toString())
     }
 
-    private fun getAppSignatures(context: Context?): MutableList<String?>? {
-        val signatures: MutableList<String?> = ArrayList()
+    private fun getAppSignatures(context: Context): MutableList<String> {
+        val signatures: MutableList<String> = ArrayList()
         try {
             val packageInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_SIGNATURES)
             for (signature in packageInfo.signatures) {
@@ -66,13 +66,13 @@ object TamperingDetector {
     }
 
     fun hasKnownAppSignature(): Boolean {
-        return !StringUtil.isEmpty(knownAppSignature)
+        return !knownAppSignature.isNullOrEmpty()
     }
 
-    fun getAppSignatureInfo(): String? {
-        return if (hasKnownAppSignature()) {
-            knownAppSignature
-        } else "unknown-keys"
+    fun getAppSignatureInfo(): String {
+        return knownAppSignature?.takeIf {
+             it.isNotEmpty()
+        } ?: "unknown-keys"
     }
 
     init {

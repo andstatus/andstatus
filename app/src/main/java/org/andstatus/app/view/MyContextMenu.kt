@@ -40,7 +40,7 @@ open class MyContextMenu(protected val listActivity: LoadableListActivity<*>, va
      * oh whose behalf we are going to execute an action on this line in the list (on a note / other actor...)
      */
     @Volatile
-    private var selectedActingAccount: MyAccount = MyAccount.Companion.EMPTY
+    private var selectedActingAccount: MyAccount = MyAccount.EMPTY
     override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?) {
         saveContextOfSelectedItem(v)
     }
@@ -54,7 +54,7 @@ open class MyContextMenu(protected val listActivity: LoadableListActivity<*>, va
         mViewItem = viewItem
     }
 
-    fun getActivity(): LoadableListActivity<*>? {
+    fun getActivity(): LoadableListActivity<*> {
         return listActivity
     }
 

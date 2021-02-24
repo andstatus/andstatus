@@ -278,8 +278,8 @@ class ConnectionActivityPub : Connection() {
         return if (objectOrId.id.isPresent) {
             newPartialNote(data.accountActor, Actor.Companion.EMPTY, objectOrId.id.get())
                     .setOid(objectOrId.id.get())
-        } else if (objectOrId.`object`.isPresent) {
-            activityFromJson(objectOrId.`object`.get())
+        } else if (objectOrId.optObj.isPresent) {
+            activityFromJson(objectOrId.optObj.get())
         } else {
             AActivity.Companion.EMPTY
         }
@@ -288,7 +288,7 @@ class ConnectionActivityPub : Connection() {
     @Throws(JSONException::class, ConnectionException::class)
     private fun parseActivity(activity: AActivity?, jsoActivity: JSONObject?): AActivity? {
         val oid = JsonUtils.optString(jsoActivity, "id")
-        if (StringUtil.isEmpty(oid)) {
+        if (oid.isNullOrEmpty()) {
             MyLog.d(this, "Activity has no id:" + jsoActivity.toString(2))
             return AActivity.Companion.EMPTY
         }
@@ -373,7 +373,7 @@ class ConnectionActivityPub : Connection() {
     private fun noteFromJson(parentActivity: AActivity?, jso: JSONObject?) {
         try {
             val oid = JsonUtils.optString(jso, "id")
-            if (StringUtil.isEmpty(oid)) {
+            if (oid.isNullOrEmpty()) {
                 MyLog.d(TAG, "ActivityPub object has no id:" + jso.toString(2))
                 return
             }

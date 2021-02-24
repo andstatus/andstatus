@@ -23,14 +23,14 @@ import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.timeline.ListScope
 import org.andstatus.app.util.StringUtil
-import java.util.stream.Collectors
-import java.util.stream.Stream
 
-enum class TimelineType(val scope: ListScope?,
+enum class TimelineType(val scope: ListScope,
                         /** Code - identifier of the type  */
-                        private val code: String?, @field:StringRes @param:StringRes private val titleResId: Int, @field:StringRes @param:StringRes val titleResWithParamsId: Int,
+                        private val code: String, @field:StringRes @param:StringRes private val titleResId: Int,
+                        @field:StringRes @param:StringRes val titleResWithParamsId: Int,
                         /** Api routine to download this timeline  */
-                        private val connectionApiRoutine: ApiRoutineEnum?) : SelectableEnum {
+                        private val connectionApiRoutine: ApiRoutineEnum) : SelectableEnum {
+
     UNKNOWN(ListScope.ORIGIN, "unknown", R.string.timeline_title_unknown, 0, ApiRoutineEnum.DUMMY_API),
 
     /** The Home timeline and other information (replies...).  */
@@ -49,7 +49,7 @@ enum class TimelineType(val scope: ListScope?,
     FRIENDS(ListScope.USER, "friends", R.string.friends, R.string.friends_of, ApiRoutineEnum.GET_FRIENDS), FOLLOWERS(ListScope.USER, "followers", R.string.followers, R.string.followers_of, ApiRoutineEnum.GET_FOLLOWERS), GROUP(ListScope.USER, "group", R.string.group, R.string.group_notes, ApiRoutineEnum.DUMMY_API), PUBLIC(ListScope.ORIGIN, "public", R.string.timeline_title_public, 0, ApiRoutineEnum.PUBLIC_TIMELINE), EVERYTHING(ListScope.ORIGIN, "everything", R.string.timeline_title_everything, 0, ApiRoutineEnum.DUMMY_API), SEARCH(ListScope.ORIGIN, "search", R.string.options_menu_search, 0, ApiRoutineEnum.SEARCH_NOTES), PRIVATE(ListScope.USER, "private", R.string.timeline_title_private, 0, ApiRoutineEnum.PRIVATE_NOTES), NOTIFICATIONS(ListScope.USER, "notifications", R.string.notifications_title, 0, ApiRoutineEnum.NOTIFICATIONS_TIMELINE), DRAFTS(ListScope.USER, "drafts", R.string.timeline_title_drafts, 0, ApiRoutineEnum.DUMMY_API), OUTBOX(ListScope.USER, "outbox", R.string.timeline_title_outbox, 0, ApiRoutineEnum.DUMMY_API), ACTORS(ListScope.ORIGIN, "users", R.string.user_list, 0, ApiRoutineEnum.DUMMY_API), CONVERSATION(ListScope.ORIGIN, "conversation", R.string.label_conversation, 0, ApiRoutineEnum.DUMMY_API), COMMANDS_QUEUE(ListScope.ORIGIN, "commands_queue", R.string.commands_in_a_queue, 0, ApiRoutineEnum.DUMMY_API), MANAGE_TIMELINES(ListScope.ORIGIN, "manages_timelines", R.string.manage_timelines, 0, ApiRoutineEnum.DUMMY_API);
 
     /** String to be used for persistence  */
-    fun save(): String? {
+    fun save(): String {
         return code
     }
 
@@ -57,12 +57,12 @@ enum class TimelineType(val scope: ListScope?,
         return "timelineType:$code"
     }
 
-    override fun getCode(): String? {
+    override fun getCode(): String {
         return code
     }
 
     /** Localized title for UI  */
-    override fun title(context: Context?): CharSequence? {
+    override fun title(context: Context?): CharSequence {
         return if (titleResId == 0 || context == null) {
             this.code
         } else {
@@ -70,7 +70,7 @@ enum class TimelineType(val scope: ListScope?,
         }
     }
 
-    fun title(context: Context?, vararg params: Any?): CharSequence? {
+    fun title(context: Context?, vararg params: Any?): CharSequence {
         return StringUtil.format(context, titleResWithParamsId, *params)
     }
 
@@ -86,7 +86,7 @@ enum class TimelineType(val scope: ListScope?,
     }
 
     fun isCombinedRequired(): Boolean {
-        return this != SEARCH && isSelectable
+        return this != SEARCH && isSelectable()
     }
 
     override fun isSelectable(): Boolean {
@@ -151,7 +151,7 @@ enum class TimelineType(val scope: ListScope?,
         return R.string.dialog_title_select_timeline
     }
 
-    fun getConnectionApiRoutine(): ApiRoutineEnum? {
+    fun getConnectionApiRoutine(): ApiRoutineEnum {
         return connectionApiRoutine
     }
 
@@ -166,11 +166,11 @@ enum class TimelineType(val scope: ListScope?,
             return UNKNOWN
         }
 
-        fun getDefaultMyAccountTimelineTypes(): MutableList<TimelineType?>? {
+        fun getDefaultMyAccountTimelineTypes(): List<TimelineType> {
             return defaultMyAccountTimelineTypes
         }
 
-        fun getDefaultOriginTimelineTypes(): MutableSet<TimelineType?>? {
+        fun getDefaultOriginTimelineTypes(): Set<TimelineType> {
             return defaultOriginTimelineTypes
         }
 
@@ -181,7 +181,16 @@ enum class TimelineType(val scope: ListScope?,
             }
         }
 
-        private val defaultMyAccountTimelineTypes = Stream.of(DRAFTS, FAVORITES, HOME, INTERACTIONS, NOTIFICATIONS, OUTBOX, PRIVATE, SENT, UNREAD_NOTIFICATIONS).collect(Collectors.toList())
-        private val defaultOriginTimelineTypes = Stream.of(EVERYTHING, PUBLIC).collect(Collectors.toSet())
+        private val defaultMyAccountTimelineTypes = listOf(
+                DRAFTS,
+                FAVORITES,
+                HOME,
+                INTERACTIONS,
+                NOTIFICATIONS,
+                OUTBOX,
+                PRIVATE,
+                SENT,
+                UNREAD_NOTIFICATIONS)
+        private val defaultOriginTimelineTypes = setOf(EVERYTHING, PUBLIC)
     }
 }

@@ -45,7 +45,7 @@ internal class Convert47 : ConvertOneStep() {
         val versionFrom = 16
         val accountsConverted = AtomicInteger()
         progressLogger.logProgress("$stepTitle: Converting accounts")
-        val myContext: MyContext = MyContextHolder.Companion.myContextHolder.getNow()
+        val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
         myContext.origins().initialize(db)
         val am = AccountManager.get(myContext.context())
         val accountsToRemove: MutableCollection<Account?> = ArrayList()

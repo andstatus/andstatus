@@ -18,7 +18,6 @@ package org.andstatus.app.data
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.data.DataUpdater
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.ActorTable
 import org.andstatus.app.database.table.NoteTable
@@ -40,7 +39,6 @@ import org.andstatus.app.service.CommandExecutionContext
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UrlUtils
 import org.junit.Assert
@@ -56,7 +54,7 @@ class DemoNoteInserter(val accountActor: Actor?) {
     }
 
     fun buildActorFromOid(actorOid: String?): Actor? {
-        require(!StringUtil.isEmpty(actorOid)) { "Actor oid cannot be empty" }
+        require(!actorOid.isNullOrEmpty()) { "Actor oid cannot be empty" }
         val actor: Actor = Actor.Companion.fromOid(origin, actorOid)
         val username: String
         val profileUrl: String
@@ -97,7 +95,7 @@ class DemoNoteInserter(val accountActor: Actor?) {
                       noteOidIn: String?, noteStatus: DownloadStatus?): AActivity? {
         val method = "buildActivity"
         var noteOid = noteOidIn
-        if (StringUtil.isEmpty(noteOid) && noteStatus != DownloadStatus.SENDING) {
+        if (noteOid.isNullOrEmpty() && noteStatus != DownloadStatus.SENDING) {
             noteOid = if (origin.getOriginType() === OriginType.PUMPIO) {
                 ((if (UrlUtils.hasHost(UrlUtils.fromString(author.getProfileUrl()))) author.getProfileUrl() else "http://pumpiotest" + origin.getId() + ".example.com/actor/" + author.oid)
                         + "/" + (if (inReplyToActivity == null) "note" else "comment")
@@ -128,7 +126,7 @@ class DemoNoteInserter(val accountActor: Actor?) {
 
     fun buildActivity(actor: Actor, type: ActivityType, noteOid: String?): AActivity? {
         val activity: AActivity = AActivity.Companion.from(accountActor, type)
-        activity.oid = ((if (StringUtil.isEmpty(noteOid)) MyLog.uniqueDateTimeFormatted() else noteOid)
+        activity.oid = ((if (noteOid.isNullOrEmpty()) MyLog.uniqueDateTimeFormatted() else noteOid)
                 + "-" + activity.type.name.toLowerCase())
         activity.setActor(actor)
         activity.updatedDate = System.currentTimeMillis()
@@ -172,19 +170,19 @@ $note
                 Assert.assertEquals("Note permalink has the same host as origin, $note",
                         origin.getUrl().host, urlPermalink.host)
             }
-            if (StringUtil.nonEmpty(note.name)) {
+            if (!note.name.isNullOrEmpty()) {
                 Assert.assertEquals("Note name $activity", note.name,
                         MyQuery.noteIdToStringColumnValue(NoteTable.NAME, note.noteId))
             }
-            if (StringUtil.nonEmpty(note.summary)) {
+            if (!note.summary.isNullOrEmpty()) {
                 Assert.assertEquals("Note summary $activity", note.summary,
                         MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, note.noteId))
             }
-            if (StringUtil.nonEmpty(note.content)) {
+            if (!note.content.isNullOrEmpty()) {
                 Assert.assertEquals("Note content $activity", note.content,
                         MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, note.noteId))
             }
-            if (StringUtil.nonEmpty(note.url)) {
+            if (!note.url.isNullOrEmpty()) {
                 Assert.assertEquals("Note permalink", note.url, origin.getNotePermalink(note.noteId))
             }
             val author = activity.getAuthor()
@@ -249,7 +247,7 @@ $note
         fun checkStoredActor(actor: Actor?) {
             if (actor.dontStore()) return
             val id = actor.actorId
-            if (StringUtil.nonEmpty(actor.oid)) {
+            if (!actor.oid.isNullOrEmpty()) {
                 Assert.assertEquals("oid $actor", actor.oid,
                         MyQuery.actorIdToStringColumnValue(ActorTable.ACTOR_OID, id))
             }
@@ -259,13 +257,13 @@ $note
             }
             val webFingerIdActual = MyQuery.actorIdToStringColumnValue(ActorTable.WEBFINGER_ID, id)
             if (actor.getWebFingerId().isEmpty()) {
-                Assert.assertTrue("WebFingerID=$webFingerIdActual for $actor", StringUtil.isEmpty(webFingerIdActual)
+                Assert.assertTrue("WebFingerID=$webFingerIdActual for $actor", webFingerIdActual.isNullOrEmpty()
                         || Actor.Companion.isWebFingerIdValid(webFingerIdActual))
             } else {
                 Assert.assertEquals("WebFingerID=$webFingerIdActual for $actor", actor.getWebFingerId(), webFingerIdActual)
                 Assert.assertTrue("Invalid WebFingerID $actor", Actor.Companion.isWebFingerIdValid(webFingerIdActual))
             }
-            if (StringUtil.nonEmpty(actor.getRealName())) {
+            if (!actor.getRealName().isNullOrEmpty()) {
                 Assert.assertEquals("Display name $actor", actor.getRealName(),
                         MyQuery.actorIdToStringColumnValue(ActorTable.REAL_NAME, id))
             }

@@ -99,7 +99,7 @@ class MyService : Service(), IdentifiableInstance {
 
     override fun onCreate() {
         MyLog.v(TAG) { "MyService $instanceId created" }
-        myContext = MyContextHolder.Companion.myContextHolder.initialize(this).getNow()
+        myContext =  MyContextHolder.myContextHolder.initialize(this).getNow()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -155,7 +155,7 @@ class MyService : Service(), IdentifiableInstance {
     }
 
     private fun isForcedToStop(): Boolean {
-        return mForcedToStop || MyContextHolder.Companion.myContextHolder.isShuttingDown()
+        return mForcedToStop ||  MyContextHolder.myContextHolder.isShuttingDown()
     }
 
     fun broadcastBeforeExecutingCommand(commandData: CommandData?) {
@@ -171,7 +171,7 @@ class MyService : Service(), IdentifiableInstance {
     fun ensureInitialized() {
         if (initialized.get() || isStopping.get()) return
         if (!myContext.isReady()) {
-            myContext = MyContextHolder.Companion.myContextHolder.initialize(this).getBlocking()
+            myContext =  MyContextHolder.myContextHolder.initialize(this).getBlocking()
             if (!myContext.isReady()) return
         }
         if (initialized.compareAndSet(false, true)) {

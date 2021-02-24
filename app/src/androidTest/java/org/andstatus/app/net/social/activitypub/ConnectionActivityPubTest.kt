@@ -261,7 +261,7 @@ class ConnectionActivityPubTest {
                 "https://pleroma.site/users/AndStatus/followers")
         oids.forEach(Consumer { oid: String? -> Assert.assertTrue("Audience should contain $oid\n $activity\n $audience", audience.containsOid(oid)) })
         val executionContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(),
+                 MyContextHolder.myContextHolder.getNow(),
                 CommandData.Companion.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().myAccount, TimelineType.SENT))
         DataUpdater(executionContext).onActivity(activity)
         val noteStored: Note = Note.Companion.loadContentById(mock.getData().origin.myContext, note.noteId)
@@ -299,10 +299,10 @@ class ConnectionActivityPubTest {
         val attachments = activity.note.attachments
         Assert.assertTrue("Attachments of $activity", attachments.nonEmpty())
         val executionContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(),
+                 MyContextHolder.myContextHolder.getNow(),
                 CommandData.Companion.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().myAccount, TimelineType.SENT))
         DataUpdater(executionContext).onActivity(activity)
-        val attachmentsStored: Attachments = Attachments.Companion.load(MyContextHolder.Companion.myContextHolder.getNow(), activity.note.noteId)
+        val attachmentsStored: Attachments = Attachments.Companion.load( MyContextHolder.myContextHolder.getNow(), activity.note.noteId)
         Assert.assertTrue("Attachments should be stored of $activity\n $attachmentsStored\n",
                 attachmentsStored.nonEmpty())
         Assert.assertEquals("Attachment stored of $activity\n $attachmentsStored\n",
@@ -324,7 +324,7 @@ class ConnectionActivityPubTest {
         Assert.assertEquals("Actor's oid $received", actorOid, received.oid)
         MatcherAssert.assertThat("Note name $received", received.username, CoreMatchers.`is`("ActivityPubTester"))
         val executionContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(),
+                 MyContextHolder.myContextHolder.getNow(),
                 CommandData.Companion.newActorCommandAtOrigin(
                         CommandEnum.GET_ACTOR, partial, "", mock.getData().origin))
         val activity = executionContext.myAccount.actor.update(received)

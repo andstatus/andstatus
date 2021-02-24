@@ -30,7 +30,6 @@ import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.NullUtil
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.StringUtil
 import java.util.stream.Stream
 
 class ActorViewItem private constructor(val actor: Actor, isEmpty: Boolean) : ViewItem<ActorViewItem?>(isEmpty, RelativeTime.DATETIME_MILLIS_NEVER), Comparable<ActorViewItem?> {
@@ -138,9 +137,9 @@ class ActorViewItem private constructor(val actor: Actor, isEmpty: Boolean) : Vi
     }
 
     companion object {
-        val EMPTY: ActorViewItem? = ActorViewItem(Actor.Companion.EMPTY, true)
+        val EMPTY: ActorViewItem = ActorViewItem(Actor.Companion.EMPTY, true)
         fun newEmpty(description: String?): ActorViewItem? {
-            val actor: Actor = if (StringUtil.isEmpty(description)) Actor.Companion.EMPTY else Actor.Companion.newUnknown(Origin.Companion.EMPTY, GroupType.UNKNOWN).setSummary(description)
+            val actor: Actor = if (description.isNullOrEmpty()) Actor.Companion.EMPTY else Actor.Companion.newUnknown( Origin.EMPTY, GroupType.UNKNOWN).setSummary(description)
             return fromActor(actor)
         }
 

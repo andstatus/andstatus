@@ -34,7 +34,7 @@ enum class TriState(val id: Long, val isTrue: Boolean, isFalse: Boolean) {
     }
 
     override fun toString(): String {
-        return "TriState:" + name
+        return "TriState:$name"
     }
 
     fun toBoolean(defaultValue: Boolean): Boolean {
@@ -45,7 +45,7 @@ enum class TriState(val id: Long, val isTrue: Boolean, isFalse: Boolean) {
         }
     }
 
-    fun toBundle(bundle: Bundle?, key: String?): Bundle? {
+    fun toBundle(bundle: Bundle, key: String): Bundle {
         bundle.putLong(key, id)
         return bundle
     }
@@ -59,7 +59,7 @@ enum class TriState(val id: Long, val isTrue: Boolean, isFalse: Boolean) {
     }
 
     companion object {
-        fun fromId(id: Long): TriState? {
+        fun fromId(id: Long): TriState {
             for (tt in values()) {
                 if (tt.id == id) {
                     return tt
@@ -68,7 +68,7 @@ enum class TriState(val id: Long, val isTrue: Boolean, isFalse: Boolean) {
             return UNKNOWN
         }
 
-        fun fromBundle(bundle: Bundle?, intentExtra: IntentExtra?): TriState? {
+        fun fromBundle(bundle: Bundle?, intentExtra: IntentExtra): TriState {
             return fromId(BundleUtils.fromBundle(bundle, intentExtra, UNKNOWN.id))
         }
 
@@ -83,7 +83,7 @@ enum class TriState(val id: Long, val isTrue: Boolean, isFalse: Boolean) {
             return obj
         }
 
-        fun fromBoolean(booleanToConvert: Boolean): TriState? {
+        fun fromBoolean(booleanToConvert: Boolean): TriState {
             return if (booleanToConvert) {
                 TRUE
             } else {

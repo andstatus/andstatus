@@ -119,7 +119,7 @@ class DataUpdaterTest {
         Assert.assertEquals("Url of the author " + somebody.username, somebody.profileUrl, url)
         Assert.assertEquals("Latest activity of $somebody", activity.id,
                 MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, somebody.actorId))
-        val contentUri = myContext.timelines()[TimelineType.FRIENDS, ma.actor, Origin.Companion.EMPTY].uri
+        val contentUri = myContext.timelines()[TimelineType.FRIENDS, ma.actor,  Origin.EMPTY].uri
         val sa = SelectionAndArgs()
         val sortOrder = ActivityTable.getTimelineSortOrder(TimelineType.FRIENDS, false)
         sa.addSelection(ActivityTable.ACTOR_ID + "=?", java.lang.Long.toString(somebody.actorId))
@@ -568,7 +568,7 @@ $activity""",
         Assert.assertTrue("Group should be in audience: $audience", group.isPresent)
         Assert.assertEquals("Group type: $group", GroupType.GENERIC, group.get().groupType)
         Assert.assertNotEquals("Group id: $group", 0, group.get().actorId)
-        val savedGroup: Actor = Actor.Companion.loadFromDatabase(MyContextHolder.Companion.myContextHolder.getNow(), group.get().actorId, Supplier<Actor?> { Actor.Companion.EMPTY }, false)
+        val savedGroup: Actor = Actor.Companion.loadFromDatabase( MyContextHolder.myContextHolder.getNow(), group.get().actorId, Supplier<Actor?> { Actor.Companion.EMPTY }, false)
         Assert.assertEquals("Saved group: $savedGroup", groupname, savedGroup.username)
         Assert.assertEquals("Saved group type: $savedGroup", GroupType.GENERIC, savedGroup.groupType)
     }

@@ -6,27 +6,29 @@ import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.os.ExceptionsCounter
 import java.util.*
 import java.util.concurrent.Callable
-import java.util.function.Function
-import java.util.function.Supplier
 
 /**
  * @author yvolk@yurivolkov.com
  */
 object TryUtils {
-    private val NOT_FOUND_EXCEPTION: NoSuchElementException? = NoSuchElementException("Not found")
-    private val NOT_FOUND: Try<*>? = Try.failure<Any?>(NOT_FOUND_EXCEPTION)
-    private val OPTIONAL_IS_EMPTY: NoSuchElementException? = NoSuchElementException("Optional is empty")
-    private val CALLABLE_IS_NULL: NoSuchElementException? = NoSuchElementException("Callable is null")
-    private val VALUE_IS_NULL: NoSuchElementException? = NoSuchElementException("Value is null")
-    val TRUE = Try.success(true)
-    val SUCCESS = Try.success<Void?>(null)
-    fun <T> failure(exception: Throwable?): Try<T?>? {
+    private val NOT_FOUND_EXCEPTION: NoSuchElementException = NoSuchElementException("Not found")
+    private val NOT_FOUND: Try<*> = Try.failure<Any>(NOT_FOUND_EXCEPTION)
+    private val OPTIONAL_IS_EMPTY: NoSuchElementException = NoSuchElementException("Optional is empty")
+    private val CALLABLE_IS_NULL: NoSuchElementException = NoSuchElementException("Callable is null")
+    private val VALUE_IS_NULL: NoSuchElementException = NoSuchElementException("Value is null")
+    val TRUE: Try<Boolean> = Try.success(true)
+    val SUCCESS: Try<Void> = Try.success(null)
+
+    fun <T> failure(exception: Throwable?): Try<T> {
         return failure("", exception)
     }
 
-    fun <T> failure(message: String?, exception: Throwable?): Try<T?>? {
+    fun <T> failure(message: String?, exception: Throwable?): Try<T> {
         checkException<Throwable?>(exception)
-        return Try.failure(if (StringUtil.nonEmpty(message)) ConnectionException.Companion.of(exception).append(message) else exception)
+        return Try.failure(
+                if (!message.isNullOrEmpty()) ConnectionException.of(exception).append(message)
+                else exception
+        )
     }
 
     fun <T : Throwable?> checkException(exception: T?): T? {
@@ -44,12 +46,15 @@ object TryUtils {
      * @return `Success(value` if the value is not null,
      * otherwise returns `Failure` holding [NoSuchElementException]
     </T> */
-    fun <T> ofNullable(value: T?): Try<T?>? {
+    fun <T> ofNullable(value: T?): Try<T> {
         return if (value == null) Try.failure(VALUE_IS_NULL) else Try.success(value)
     }
 
-    fun <T> ofNullableCallable(callable: Callable<out T?>?): Try<T?>? {
-        return if (callable == null) Try.failure(CALLABLE_IS_NULL) else Try.of(callable).flatMap { value: T? -> if (value == null) Try.failure(VALUE_IS_NULL) else Try.success(value) }
+    fun <T> ofNullableCallable(callable: Callable<out T?>?): Try<T> {
+        return if (callable == null) Try.failure(CALLABLE_IS_NULL)
+          else Try.of(callable).flatMap {
+            value: T? -> if (value == null) Try.failure(VALUE_IS_NULL) else Try.success(value)
+          }
     }
 
     /**
@@ -59,9 +64,8 @@ object TryUtils {
      * @param <T>      Component type
      * @return `Success(optional.get)` if optional is not empty,
      * otherwise returns `Failure` holding [NoSuchElementException]
-     * @throws NullPointerException if `optional` is null
-    </T> */
-    fun <T> fromOptional(optional: Optional<T?>?): Try<T?>? {
+     * @throws NullPointerException if `optional` is null */
+    fun <T> fromOptional(optional: Optional<T>): Try<T> {
         return fromOptional(optional) { OPTIONAL_IS_EMPTY }
     }
 
@@ -74,20 +78,21 @@ object TryUtils {
      * @return `Success(optional.get)` if optional is not empty,
      * otherwise returns `Failure` holding exception, supplied by `ifEmpty` argument
      * @throws NullPointerException if `optional` is null
-    </T> */
-    fun <T> fromOptional(optional: Optional<T?>?, ifEmpty: Supplier<Throwable?>?): Try<T?>? {
-        return optional.map(Function { value: T? -> Try.success(value) }).orElseGet { Try.failure(ifEmpty.get()) }
+     * </T> */
+    fun <T> fromOptional(optional: Optional<T>, ifEmpty: () -> Throwable): Try<T> {
+        return optional.map { value -> Try.success(value) }.orElseGet { Try.failure(ifEmpty()) }
     }
 
-    fun <T> notFound(): Try<T?>? {
-        return NOT_FOUND
+    @Suppress("UNCHECKED_CAST")
+    fun <T> notFound(): Try<T> {
+        return NOT_FOUND as Try<T>
     }
 
-    fun <T> failure(message: String?): Try<T?>? {
+    fun <T> failure(message: String?): Try<T> {
         return Try.failure(Exception(message))
     }
 
-    fun <T> emptyList(): Try<MutableList<T?>?>? {
-        return Try.success(emptyList())
+    fun <T> emptyList(): Try<List<T>> {
+        return Try.success(kotlin.collections.emptyList<T>())
     }
 }

@@ -35,7 +35,7 @@ class MyAppWidgetConfigure : Activity() {
     var appWidgetData: MyAppWidgetData? = null
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        MyContextHolder.Companion.myContextHolder.initialize(this)
+         MyContextHolder.myContextHolder.initialize(this)
 
         // Set the result to CANCELED. This will cause the widget host to cancel
         // out of the widget placement if they press the back button.

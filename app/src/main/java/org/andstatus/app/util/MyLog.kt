@@ -39,7 +39,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
-import java.util.function.Consumer
 import java.util.function.Supplier
 
 /**
@@ -65,14 +64,14 @@ import java.util.function.Supplier
  * @author yvolk@yurivolkov.com
  */
 object MyLog {
-    private val TAG: String? = MyLog::class.java.simpleName
+    private val TAG: String = MyLog::class.java.simpleName
     const val MAX_TAG_LENGTH = 23
 
     /**
      * Use this tag to change logging level of the whole application
      * Is used in isLoggable(APPTAG, ... ) calls
      */
-    val APPTAG: String? = "AndStatus"
+    val APPTAG: String = "AndStatus"
     const val DEBUG = Log.DEBUG
     const val ERROR = Log.ERROR
     const val VERBOSE = Log.VERBOSE
@@ -88,7 +87,7 @@ object MyLog {
      */
     @Volatile
     private var minLogLevel = VERBOSE
-    private val logToFileEnabled: AtomicBoolean? = AtomicBoolean(false)
+    private val logToFileEnabled: AtomicBoolean = AtomicBoolean(false)
 
     @GuardedBy("logToFileEnabled")
     private var logFileName: String? = null
@@ -211,7 +210,7 @@ object MyLog {
         return i
     }
 
-    fun v(objTag: Any?, supplier: Supplier<String?>?): Int {
+    fun v(objTag: Any?, supplier: Supplier<String?>): Int {
         val tag = objToTruncatedTag(objTag)
         if (!isLoggable(tag, Log.VERBOSE)) return 0
         val msg = supplier.get()
@@ -242,13 +241,13 @@ object MyLog {
     }
 
     /** For now let's not add any prefix  */
-    private fun withOptionalPrefix(msg: String?): String? {
-        return msg
+    private fun withOptionalPrefix(msg: String?): String {
+        return msg ?: ""
     }
 
     /** Truncated to [.MAX_TAG_LENGTH]  */
     fun objToTruncatedTag(objTag: Any?): String {
-        val tag: String = MyStringBuilder.Companion.objToTag(objTag)
+        val tag: String = MyStringBuilder.objToTag(objTag)
         return if (tag.length > MAX_TAG_LENGTH) tag.substring(0, MAX_TAG_LENGTH) else tag
     }
 
@@ -278,7 +277,7 @@ object MyLog {
             true
         } else {
             var tag: String? = objToTruncatedTag(objTag)
-            if (StringUtil.isEmpty(tag)) {
+            if (tag.isNullOrEmpty()) {
                 tag = APPTAG
             }
             Log.isLoggable(tag, level)
@@ -292,25 +291,25 @@ object MyLog {
         if (initialized) {
             return
         }
-        getMinLogLevel().onSuccess(Consumer { i: Int? ->
+        getMinLogLevel().onSuccess { i: Int ->
             minLogLevel = i
             setLogToFile(MyPreferences.isLogEverythingToFile())
             initialized = true
-        })
+        }
         if (initialized && Log.INFO >= minLogLevel) {
             Log.i(TAG, MyPreferences.KEY_MIN_LOG_LEVEL + "='" + minLogLevel + "'")
         }
     }
 
-    fun getMinLogLevel(): Try<Int?>? {
+    fun getMinLogLevel(): Try<Int> {
         if (initialized) {
             return Try.success(minLogLevel)
         }
         val sp = SharedPreferencesUtil.getDefaultSharedPreferences()
                 ?: return Try.failure(Exception("SharedPreferences are null"))
         val defaultLevel = Log.INFO
-        return Try.of { sp.getString(MyPreferences.KEY_MIN_LOG_LEVEL, defaultLevel.toString()) }
-                .map { s: String? -> s.toInt() }
+        return Try.of { sp.getString(MyPreferences.KEY_MIN_LOG_LEVEL, null) }
+                .map { s -> s?.toInt() ?: defaultLevel }
                 .recover(Exception::class.java) { e: Exception? -> sp.getInt(MyPreferences.KEY_MIN_LOG_LEVEL, defaultLevel) }
                 .recover(Exception::class.java) { e: Exception? -> defaultLevel }
     }
@@ -330,20 +329,20 @@ object MyLog {
     /**
      * from org.apache.commons.lang3.exception.ExceptionUtils
      */
-    fun getStackTrace(throwable: Throwable?): String? {
+    fun getStackTrace(throwable: Throwable): String {
         val sw = StringWriter()
         val pw = PrintWriter(sw, true)
         throwable.printStackTrace(pw) // NOSONAR
         return sw.buffer.toString()
     }
 
-    fun writeStringToFile(string: String?, filename: String?): Boolean {
+    fun writeStringToFile(string: String, filename: String?): Boolean {
         return writeStringToFile(string, filename, false, true)
     }
 
-    private fun writeStringToFile(string: String?, filename: String?, append: Boolean, logged: Boolean): Boolean {
+    private fun writeStringToFile(string: String, filename: String?, append: Boolean, logged: Boolean): Boolean {
         var ok = false
-        if (StringUtil.isEmpty(filename)) {
+        if (filename.isNullOrEmpty()) {
             if (logged) {
                 v("writeStringToFile", "Empty filename")
             }
@@ -410,7 +409,7 @@ object MyLog {
         builder.append("/")
         builder.append(tag)
         builder.append(":")
-        if (!StringUtil.isEmpty(msg)) {
+        if (!msg.isNullOrEmpty()) {
             builder.append(" ")
             builder.append(msg)
         }
@@ -424,12 +423,12 @@ object MyLog {
         writeRawStringToLogFile(builder)
     }
 
-    private val logFileWriterLock: Any? = Any()
+    private val logFileWriterLock: Any = Any()
     private fun writeRawStringToLogFile(builder: StringBuilder?) {
         synchronized(logFileWriterLock) { writeStringToFile(builder.toString(), getMostRecentLogFileName(), true, false) }
     }
 
-    private fun getMostRecentLogFileName(): String? {
+    private fun getMostRecentLogFileName(): String {
         var filename = getLogFilename()
         if (!FileUtils.exists(getFileInLogDir(filename, false))) {
             setNextLogFileName(true)
@@ -438,11 +437,11 @@ object MyLog {
         return filename
     }
 
-    fun getLogFilename(): String? {
-        synchronized(logToFileEnabled) { return logFileName }
+    fun getLogFilename(): String {
+        synchronized(logToFileEnabled) { return logFileName ?: "noname" }
     }
 
-    fun logLevelToString(logLevel: Int): String? {
+    fun logLevelToString(logLevel: Int): String {
         return when (logLevel) {
             DEBUG -> "D"
             ERROR -> "E"
@@ -452,16 +451,16 @@ object MyLog {
         }
     }
 
-    fun currentDateTimeForLogLine(): String? {
+    fun currentDateTimeForLogLine(): String {
         val logDateFormat = SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US)
         return logDateFormat.format(Date(System.currentTimeMillis()))
     }
 
-    fun currentDateTimeFormatted(): String? {
+    fun currentDateTimeFormatted(): String {
         return DateFormat.format("yyyy-MM-dd-HH-mm-ss", Date(System.currentTimeMillis())).toString()
     }
 
-    fun trimmedString(input: String?, maxLength: Int): String? {
+    fun trimmedString(input: String?, maxLength: Int): String {
         val out: String
         out = if (input != null) {
             val trimmed = input.trim { it <= ' ' }
@@ -480,7 +479,7 @@ object MyLog {
         if (jsonMessage != null && MyPreferences.isLogNetworkLevelMessages()) {
             val fileName = getSeparateLogFileName(namePrefix, objTag)
             logJson(objTag, namePrefix, jsonMessage, fileName)
-            StringUtil.optNotEmpty(textData).ifPresent { txt: String? -> writeStringToFile(txt, "$fileName.txt") }
+            StringUtil.optNotEmpty(textData).ifPresent { txt: String -> writeStringToFile(txt, "$fileName.txt") }
         }
     }
 
@@ -490,20 +489,18 @@ object MyLog {
             var isEmpty = false
             var jso2: Any? = jso
             if (jso is String) {
-                if (StringUtil.isEmpty(jso as String)) {
+                if (jso.isEmpty()) {
                     return
                 }
-                jso2 = JSONTokener(jso as String).nextValue()
+                jso2 = JSONTokener(jso).nextValue()
             }
             val strJso: String
             if (jso2 is JSONObject) {
-                val jso3 = jso2 as JSONObject?
-                isEmpty = jso3.length() == 0
-                strJso = jso3.toString(2)
+                isEmpty = jso2.length() == 0
+                strJso = jso2.toString(2)
             } else if (jso2 is JSONArray) {
-                val jsa = jso2 as JSONArray?
-                isEmpty = jsa.length() == 0
-                strJso = jsa.toString(2)
+                isEmpty = jso2.length() == 0
+                strJso = jso2.toString(2)
             } else {
                 strJso = jso.toString()
             }
@@ -523,15 +520,15 @@ object MyLog {
         }
     }
 
-    private fun getSeparateLogFileName(namePrefix: String?, objTag: Any?): String? {
-        return uniqueDateTimeFormatted() + "_" + namePrefix + "_" + MyStringBuilder.Companion.objToTag(objTag)
+    private fun getSeparateLogFileName(namePrefix: String?, objTag: Any?): String {
+        return uniqueDateTimeFormatted() + "_" + namePrefix + "_" + MyStringBuilder.objToTag(objTag)
     }
 
-    fun uniqueDateTimeFormatted(): String? {
+    fun uniqueDateTimeFormatted(): String {
         return formatDateTime(uniqueCurrentTimeMS())
     }
 
-    fun formatDateTime(time: Long): String? {
+    fun formatDateTime(time: Long): String {
         for (ind in 0..1) {
             // see http://stackoverflow.com/questions/16763968/android-text-format-dateformat-hh-is-not-recognized-like-with-java-text-simple
             val formatString = if (ind == 0) "yyyy-MM-dd-HH-mm-ss-SSS" else "yyyy-MM-dd-kk-mm-ss-SSS"
@@ -547,7 +544,7 @@ object MyLog {
     }
 
     // see http://stackoverflow.com/a/9191383/297710
-    private val LAST_TIME_MS: AtomicLong? = AtomicLong()
+    private val LAST_TIME_MS: AtomicLong = AtomicLong()
     fun uniqueCurrentTimeMS(): Long {
         var now = System.currentTimeMillis()
         while (true) {
@@ -562,10 +559,12 @@ object MyLog {
     }
 
     fun debugFormatOfDate(date: Long): String {
-        return if (date == RelativeTime.DATETIME_MILLIS_NEVER) "NEVER" else if (date == RelativeTime.SOME_TIME_AGO) "SOME_TIME_AGO" else formatDateTime(date)
+        return if (date == RelativeTime.DATETIME_MILLIS_NEVER) "NEVER"
+        else if (date == RelativeTime.SOME_TIME_AGO) "SOME_TIME_AGO"
+        else formatDateTime(date)
     }
 
-    fun databaseIsNull(message: Supplier<Any?>?): String? {
+    fun databaseIsNull(message: Supplier<Any?>): String {
         if (!isVerboseEnabled()) return "Database is null"
         val msgLog = """
                Database is null. ${message.get()}

@@ -16,7 +16,6 @@
 package org.andstatus.app.net.social
 
 import android.net.Uri
-import eu.bolt.screenshotty.ScreenshotManagerBuilder.build
 import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.context.MyPreferences
@@ -105,7 +104,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
     override fun searchNotes(syncYounger: Boolean, youngestPosition: TimelinePosition?,
                              oldestPosition: TimelinePosition?, limit: Int, searchQuery: String?): Try<InputTimelinePage?> {
         val tag = KeywordsFilter(searchQuery).firstTagOrFirstKeyword
-        if (StringUtil.isEmpty(tag)) {
+        if (tag.isNullOrEmpty()) {
             return InputTimelinePage.Companion.TRY_EMPTY
         }
         val apiRoutine = ApiRoutineEnum.TAG_TIMELINE
@@ -125,7 +124,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
 
     override fun searchActors(limit: Int, searchQuery: String?): Try<MutableList<Actor?>?> {
         val tag = KeywordsFilter(searchQuery).firstTagOrFirstKeyword
-        if (StringUtil.isEmpty(tag)) {
+        if (tag.isNullOrEmpty()) {
             return TryUtils.emptyList()
         }
         val apiRoutine = ApiRoutineEnum.SEARCH_ACTORS
@@ -247,7 +246,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         }
         val oid = JsonUtils.optString(jso, "id")
         val username = JsonUtils.optString(jso, "username")
-        if (StringUtil.isEmpty(oid) || StringUtil.isEmpty(username)) {
+        if (oid.isNullOrEmpty() || username.isNullOrEmpty()) {
             throw ConnectionException.Companion.loggedJsonException(this, "Id or username is empty", null, jso)
         }
         val actor: Actor = Actor.Companion.fromOid(data.origin, oid)

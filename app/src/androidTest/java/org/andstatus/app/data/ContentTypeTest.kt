@@ -22,7 +22,7 @@ class ContentTypeTest {
 
     @Test
     fun testMyContentType() {
-        val contentResolver: ContentResolver = MyContextHolder.Companion.myContextHolder.getNow().context().getContentResolver()
+        val contentResolver: ContentResolver =  MyContextHolder.myContextHolder.getNow().context().getContentResolver()
         Assert.assertEquals("image/png", uri2MimeType(contentResolver, DemoData.Companion.demoData.image1Url))
         Assert.assertEquals("image/jpeg", uri2MimeType(null,
                 UriUtils.fromString("http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg")))

@@ -20,7 +20,6 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.ParcelFileDescriptor
 import androidx.documentfile.provider.DocumentFile
-import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.database.DatabaseCreator
@@ -28,7 +27,6 @@ import org.andstatus.app.util.DocumentFileUtils
 import org.andstatus.app.util.FileDescriptorUtils
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedWriter
@@ -170,7 +168,7 @@ class MyBackupDescriptor private constructor(private val progressLogger: Progres
 
     fun appVersionNameAndCode(): String? {
         return "app version name:'" +
-                (if (StringUtil.isEmpty(getApplicationVersionName())) "???" else getApplicationVersionName()) + "'" +
+                (if (getApplicationVersionName().isNullOrEmpty()) "???" else getApplicationVersionName()) + "'" +
                 ", version code:'" + getApplicationVersionCode() + "'"
     }
 
@@ -222,7 +220,7 @@ class MyBackupDescriptor private constructor(private val progressLogger: Progres
                                           progressLoggerIn: ProgressLogger?): MyBackupDescriptor? {
             val myBackupDescriptor = MyBackupDescriptor(progressLoggerIn)
             myBackupDescriptor.fileDescriptor = parcelFileDescriptor.getFileDescriptor()
-            myBackupDescriptor.setEmptyFields(MyContextHolder.Companion.myContextHolder.getNow().baseContext())
+            myBackupDescriptor.setEmptyFields( MyContextHolder.myContextHolder.getNow().baseContext())
             myBackupDescriptor.backupSchemaVersion = BACKUP_SCHEMA_VERSION
             return myBackupDescriptor
         }

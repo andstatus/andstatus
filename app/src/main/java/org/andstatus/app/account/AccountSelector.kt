@@ -55,23 +55,23 @@ class AccountSelector : SelectorDialog() {
         listAdapter = newListAdapter(listData)
         listView.onItemClickListener = OnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
             val actorId = (view.findViewById<View?>(R.id.id) as TextView).text.toString().toLong()
-            returnSelectedAccount(MyContextHolder.Companion.myContextHolder.getNow().accounts().fromActorId(actorId))
+            returnSelectedAccount( MyContextHolder.myContextHolder.getNow().accounts().fromActorId(actorId))
         }
     }
 
     private fun newListData(): MutableList<MyAccount?>? {
         val originId = Optional.ofNullable(arguments)
                 .map { bundle: Bundle? -> bundle.getLong(IntentExtra.ORIGIN_ID.key) }.orElse(0L)
-        val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromId(originId)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromId(originId)
         val origins: MutableList<Origin?>? = if (origin.isValid) listOf(origin) else getOriginsForActor()
         val predicate = if (origins.isEmpty()) Predicate { ma: MyAccount? -> true } else Predicate { ma: MyAccount? -> origins.contains(ma.getOrigin()) }
-        return MyContextHolder.Companion.myContextHolder.getNow().accounts().get().stream().filter(predicate).collect(Collectors.toList())
+        return  MyContextHolder.myContextHolder.getNow().accounts().get().stream().filter(predicate).collect(Collectors.toList())
     }
 
     private fun getOriginsForActor(): MutableList<Origin?>? {
         val actorId = Optional.ofNullable(arguments)
                 .map { bundle: Bundle? -> bundle.getLong(IntentExtra.ACTOR_ID.key) }.orElse(0L)
-        return Actor.Companion.load(MyContextHolder.Companion.myContextHolder.getNow(), actorId).user.knownInOrigins(MyContextHolder.Companion.myContextHolder.getNow())
+        return Actor.Companion.load( MyContextHolder.myContextHolder.getNow(), actorId).user.knownInOrigins( MyContextHolder.myContextHolder.getNow())
     }
 
     private fun newListAdapter(listData: MutableList<MyAccount?>?): MySimpleAdapter? {

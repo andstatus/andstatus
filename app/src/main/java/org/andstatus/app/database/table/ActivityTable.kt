@@ -25,58 +25,58 @@ import org.andstatus.app.timeline.meta.TimelineType
 
 /** The table holds [AActivity]  */
 object ActivityTable : BaseColumns {
-    val TABLE_NAME: String? = "activity"
-    val ORIGIN_ID: String? = "activity_" + OriginTable.ORIGIN_ID
+    val TABLE_NAME: String = "activity"
+    val ORIGIN_ID: String = "activity_" + OriginTable.ORIGIN_ID
 
     /** id in a Social Network [OriginTable]  */
-    val ACTIVITY_OID: String? = "activity_oid"
-    val ACCOUNT_ID: String? = "account_id"
+    val ACTIVITY_OID: String = "activity_oid"
+    val ACCOUNT_ID: String = "account_id"
 
     /** ID of [ActivityType]  */
-    val ACTIVITY_TYPE: String? = "activity_type"
-    val ACTOR_ID: String? = "activity_" + ActorTable.ACTOR_ID
+    val ACTIVITY_TYPE: String = "activity_type"
+    val ACTOR_ID: String = "activity_" + ActorTable.ACTOR_ID
 
     /** Note as Object  */
-    val NOTE_ID: String? = "activity_" + NoteTable.NOTE_ID
+    val NOTE_ID: String = "activity_" + NoteTable.NOTE_ID
 
     /** Actor as Object  */
-    val OBJ_ACTOR_ID: String? = "obj_" + ActorTable.ACTOR_ID
+    val OBJ_ACTOR_ID: String = "obj_" + ActorTable.ACTOR_ID
 
     /** Inner Activity as Object  */
-    val OBJ_ACTIVITY_ID: String? = "obj_activity_id"
+    val OBJ_ACTIVITY_ID: String = "obj_activity_id"
 
     /** [.ACCOUNT_ID] is subscribed to this action or was a "Secondary target audience"  */
-    val SUBSCRIBED: String? = "subscribed"
+    val SUBSCRIBED: String = "subscribed"
 
     /** [.NOTIFIED_ACTOR_ID] is interacted  */
-    val INTERACTED: String? = "interacted"
-    val INTERACTION_EVENT: String? = "interaction_event"
+    val INTERACTED: String = "interacted"
+    val INTERACTION_EVENT: String = "interaction_event"
 
     /** [.NOTIFIED_ACTOR_ID] should be notified of this action  */
-    val NOTIFIED: String? = "notified"
-    val NOTIFIED_ACTOR_ID: String? = "notified_actor_id"
+    val NOTIFIED: String = "notified"
+    val NOTIFIED_ACTOR_ID: String = "notified_actor_id"
 
     /** [NotificationEventType], it is not 0 if the notification is active  */
-    val NEW_NOTIFICATION_EVENT: String? = "new_notification_event"
-    val UPDATED_DATE: String? = "activity_updated_date"
+    val NEW_NOTIFICATION_EVENT: String = "new_notification_event"
+    val UPDATED_DATE: String = "activity_updated_date"
 
     /** Date and time when this Activity was first loaded into this database
      * or if it was not loaded yet, when the row was inserted into this database  */
-    val INS_DATE: String? = "activity_ins_date"
+    val INS_DATE: String = "activity_ins_date"
 
     // Aliases
-    val ACTIVITY_ID: String? = "activity_id"
-    val AUTHOR_ID: String? = "author_id"
-    val LAST_UPDATE_ID: String? = "last_update_id"
-    fun getTimelineSortOrder(timelineType: TimelineType?, ascending: Boolean): String? {
+    val ACTIVITY_ID: String = "activity_id"
+    val AUTHOR_ID: String = "author_id"
+    val LAST_UPDATE_ID: String = "last_update_id"
+    fun getTimelineSortOrder(timelineType: TimelineType, ascending: Boolean): String {
         return getTimeSortField(timelineType) + if (ascending) " ASC" else " DESC"
     }
 
-    fun getTimeSortField(timelineType: TimelineType): String? {
+    fun getTimeSortField(timelineType: TimelineType): String {
         return if (timelineType == TimelineType.UNREAD_NOTIFICATIONS) INS_DATE else UPDATED_DATE
     }
 
-    fun create(db: SQLiteDatabase?) {
+    fun create(db: SQLiteDatabase) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + ORIGIN_ID + " INTEGER NOT NULL,"

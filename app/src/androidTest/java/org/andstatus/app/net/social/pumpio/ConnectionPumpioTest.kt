@@ -43,7 +43,6 @@ import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyHtml
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UriUtilsTest
 import org.andstatus.app.util.UrlUtils
@@ -87,7 +86,7 @@ class ConnectionPumpioTest {
 
     @After
     fun tearDown() {
-        if (!StringUtil.isEmpty(keyStored)) {
+        if (!keyStored.isNullOrEmpty()) {
             mock.getHttp().data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored)
         }
     }
@@ -243,7 +242,7 @@ class ConnectionPumpioTest {
                 audience.nonSpecialActors.stream().map { obj: Actor? -> obj.getUsername() }.collect(Collectors.toList()),
                 Matchers.containsInAnyOrder("user/jpope/followers"))
         val executionContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(),
+                 MyContextHolder.myContextHolder.getNow(),
                 CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, mock.getData().myAccount, TimelineType.HOME))
         DataUpdater(executionContext).onActivity(activity)
         val actorStored: Actor = Actor.Companion.loadFromDatabase(mock.getData().origin.myContext, actor.actorId,

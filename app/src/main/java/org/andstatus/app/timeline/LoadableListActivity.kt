@@ -43,7 +43,6 @@ import org.andstatus.app.util.BundleUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.widget.MySearchView
 import java.util.concurrent.atomic.AtomicBoolean
@@ -60,14 +59,14 @@ abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), M
     protected var syncingText: CharSequence? = ""
     protected var loadingText: CharSequence? = ""
     private var onRefreshHandled = false
-    private var parsedUri: ParsedUri? = ParsedUri.Companion.fromUri(Uri.EMPTY)
-    protected var myContext: MyContext? = MyContextHolder.Companion.myContextHolder.getNow()
+    private var parsedUri: ParsedUri = ParsedUri.fromUri(Uri.EMPTY)
+    protected var myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
     private var configChangeTime: Long = 0
     var myServiceReceiver: MyServiceEventsReceiver? = null
-    private val loaderLock: Any? = Any()
+    private val loaderLock: Any = Any()
 
     @GuardedBy("loaderLock")
-    private var mCompletedLoader: AsyncLoader? = AsyncLoader()
+    private var mCompletedLoader: AsyncLoader = AsyncLoader()
 
     @GuardedBy("loaderLock")
     private var mWorkingLoader = mCompletedLoader
@@ -75,8 +74,8 @@ abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), M
     @GuardedBy("loaderLock")
     private var loaderIsWorking = false
     var lastLoadedAt: Long = 0
-    protected val refreshNeededSince: AtomicLong? = AtomicLong(0)
-    protected val refreshNeededAfterForegroundCommand: AtomicBoolean? = AtomicBoolean(false)
+    protected val refreshNeededSince: AtomicLong = AtomicLong(0)
+    protected val refreshNeededAfterForegroundCommand: AtomicBoolean = AtomicBoolean(false)
     protected var mSubtitle: CharSequence? = ""
 
     /**
@@ -85,14 +84,14 @@ abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), M
     protected var centralItemId: Long = 0
     protected var searchView: MySearchView? = null
     override fun onCreate(savedInstanceState: Bundle?) {
-        myContext = MyContextHolder.Companion.myContextHolder.getNow()
+        myContext =  MyContextHolder.myContextHolder.getNow()
         super.onCreate(savedInstanceState)
         if (restartMeIfNeeded()) return
         textualSyncIndicator = findViewById(R.id.sync_indicator)
         configChangeTime = myContext.preferencesChangeTime()
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, "onCreate, config changed " + RelativeTime.secondsAgo(configChangeTime) + " seconds ago"
-                    + if (MyContextHolder.Companion.myContextHolder.getNow().isReady()) "" else ", MyContext is not ready"
+                    + if ( MyContextHolder.myContextHolder.getNow().isReady()) "" else ", MyContext is not ready"
             )
         }
         if (myContext.isReady()) {
@@ -103,20 +102,20 @@ abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), M
         centralItemId = getParsedUri().getItemId()
     }
 
-    protected fun getParsedUri(): ParsedUri? {
+    protected fun getParsedUri(): ParsedUri {
         return parsedUri
     }
 
     open fun getListData(): TimelineData<T?> {
-        return listAdapter.listData
+        return getListAdapter().getListData()
     }
 
-    open fun showList(whichPage: WhichPage?) {
+    open fun showList(whichPage: WhichPage) {
         showList(whichPage.toBundle())
     }
 
     protected fun showList(args: Bundle?) {
-        val whichPage: WhichPage = WhichPage.Companion.load(args)
+        val whichPage: WhichPage = WhichPage.load(args)
         val chainedRequest: TriState = TriState.Companion.fromBundle(args, IntentExtra.CHAINED_REQUEST)
         val msgLog = StringBuilder("showList" + (if (chainedRequest == TriState.TRUE) ", chained" else "")
                 + ", " + whichPage + " page"
@@ -161,38 +160,32 @@ abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), M
     }
 
     protected fun isContextNeedsUpdate(): Boolean {
-        val myContextNew: MyContext = MyContextHolder.Companion.myContextHolder.getNow()
+        val myContextNew: MyContext =  MyContextHolder.myContextHolder.getNow()
         return !myContext.isReady() || myContext !== myContextNew || configChangeTime != myContextNew.preferencesChangeTime()
     }
 
     /** @return selectedItem or EmptyViewItem
      */
     fun saveContextOfSelectedItem(v: View?): ViewItem<*> {
-        val position = listAdapter.getPosition(v)
-        positionOfContextMenu = position
+        val position = getListAdapter().getPosition(v)
+        setPositionOfContextMenu(position)
         if (position >= 0) {
-            val viewItem: Any? = listAdapter.getItem(position)
-            if (viewItem != null) {
-                if (ViewItem::class.java.isAssignableFrom(viewItem.javaClass)) {
-                    return viewItem as ViewItem<*>?
-                } else {
-                    MyLog.i(this, "Unexpected type of selected item: " + viewItem.javaClass + ", " + viewItem)
-                }
+            val viewItem: Any? = getListAdapter().getItem(position)
+            if (viewItem is ViewItem<*>) {
+                return viewItem
+            } else if (viewItem != null) {
+                MyLog.i(this, "Unexpected type of selected item: " + viewItem.javaClass + ", " + viewItem)
             }
         }
         return EmptyViewItem.EMPTY
     }
 
-    fun getMyContext(): MyContext? {
-        return myContext
-    }
-
-    fun getActivity(): LoadableListActivity<*>? {
+    fun getActivity(): LoadableListActivity<*> {
         return this
     }
 
     interface ProgressPublisher {
-        open fun publish(progress: String?)
+        fun publish(progress: String?)
     }
 
     /** Called not in UI thread  */
@@ -239,7 +232,7 @@ abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), M
             mSyncLoader = loader
             updateCompletedLoader()
             try {
-                if (isMyResumed) {
+                if (isMyResumed()) {
                     onLoadFinished(getCurrentListPosition())
                 }
             } catch (e: Exception) {
@@ -248,10 +241,10 @@ abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), M
             val endedAt = System.currentTimeMillis()
             val timeTotal = endedAt - createdAt
             MyLog.v(this) {
-                ("Load completed, " + (if (mSyncLoader == null) "?" else mSyncLoader.size())
-                        + " items, "
-                        + timeTotal + "ms total, "
-                        + (endedAt - backgroundEndedAt) + "ms on UI thread")
+                ("Load completed, " +
+                        ( mSyncLoader?.size()?.toString() ?: "?") + " items, " +
+                        timeTotal + "ms total, " +
+                        (endedAt - backgroundEndedAt) + "ms on UI thread")
             }
             resetIsWorkingFlag()
         }
@@ -262,7 +255,7 @@ abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), M
     }
 
     fun getCurrentListPosition(): LoadableListPosition<*> {
-        return LoadableListPosition.Companion.getCurrent(listView, listAdapter, centralItemId)
+        return LoadableListPosition.getCurrent(getListView(), getListAdapter(), centralItemId)
     }
 
     open fun onLoadFinished(pos: LoadableListPosition<*>?) {
@@ -317,7 +310,7 @@ abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), M
 
     protected open fun updateTitle(progress: String?) {
         val title = StringBuilder(getCustomTitle())
-        if (!StringUtil.isEmpty(progress)) {
+        if (!progress.isNullOrEmpty()) {
             MyStringBuilder.Companion.appendWithSpace(title, progress)
         }
         setTitle(title.toString())
@@ -358,7 +351,7 @@ abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), M
         if (myServiceReceiver != null) {
             myServiceReceiver.unregisterReceiver(this)
         }
-        MyContextHolder.Companion.myContextHolder.getNow().setInForeground(false)
+         MyContextHolder.myContextHolder.getNow().setInForeground(false)
         listAdapter.isPositionRestored = false
     }
 
@@ -368,7 +361,7 @@ abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), M
                 showSyncing(commandData)
             }
             MyServiceEvent.PROGRESS_EXECUTING_COMMAND -> if (isCommandToShowInSyncIndicator(commandData)) {
-                showSyncing("Show Progress", commandData.toCommandProgress(MyContextHolder.Companion.myContextHolder.getNow()))
+                showSyncing("Show Progress", commandData.toCommandProgress( MyContextHolder.myContextHolder.getNow()))
             }
             MyServiceEvent.AFTER_EXECUTING_COMMAND -> onReceiveAfterExecutingCommand(commandData)
             MyServiceEvent.ON_STOP -> hideSyncing("onReceive STOP")

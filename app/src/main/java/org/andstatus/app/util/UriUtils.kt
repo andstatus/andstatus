@@ -45,31 +45,32 @@ object UriUtils {
     }
 
     fun fromJson(jsoIn: JSONObject?, pathIn: String?): Uri {
-        if (jsoIn == null || StringUtil.isEmpty(pathIn)) return Uri.EMPTY
+        if (jsoIn == null || pathIn.isNullOrEmpty()) return Uri.EMPTY
         val path: Array<String?> = pathIn.split("/".toRegex()).toTypedArray()
         val jso = if (path.size == 2) jsoIn.optJSONObject(path[0]) else jsoIn
         val urlTag = if (path.size == 2) path[1] else pathIn
-        return if (jso != null && !StringUtil.isEmpty(urlTag) && jso.has(urlTag)) {
+        return if (jso != null && !urlTag.isNullOrEmpty() && jso.has(urlTag)) {
             fromString(JsonUtils.optString(jso, urlTag))
         } else Uri.EMPTY
     }
 
-    fun map(uri: Uri?, mapper: Function<String?, String?>?): Uri {
+    fun map(uri: Uri?, mapper: Function<String?, String?>): Uri {
         return fromString(mapper.apply(uri.toString()))
     }
 
-    fun toDownloadableOptional(uriString: String?): Optional<Uri?> {
-        return toOptional(uriString).filter { obj: Uri? -> isDownloadable() }
+    fun toDownloadableOptional(uriString: String?): Optional<Uri> {
+        return toOptional(uriString).filter { obj: Uri -> isDownloadable(obj) }
     }
 
-    fun toOptional(uriString: String?): Optional<Uri?> {
-        if (StringUtil.isEmpty(uriString)) return Optional.empty()
+    fun toOptional(uriString: String?): Optional<Uri> {
+        if (uriString.isNullOrEmpty()) return Optional.empty()
         val uri = fromString(uriString)
         return if (uri === Uri.EMPTY) Optional.empty() else Optional.of(uri)
     }
 
     fun fromString(strUri: String?): Uri {
-        return if (SharedPreferencesUtil.isEmpty(strUri)) Uri.EMPTY else Uri.parse(strUri.trim { it <= ' ' })
+        return if (strUri == null || SharedPreferencesUtil.isEmpty(strUri)) Uri.EMPTY
+            else Uri.parse(strUri.trim { it <= ' ' })
     }
 
     fun notNull(uri: Uri?): Uri {
@@ -92,7 +93,7 @@ object UriUtils {
     }
 
     /** See http://stackoverflow.com/questions/25999886/android-content-provider-uri-doesnt-work-after-reboot  */
-    fun takePersistableUriPermission(context: Context?, uri: Uri?, takeFlagsIn: Int) {
+    fun takePersistableUriPermission(context: Context, uri: Uri, takeFlagsIn: Int) {
         if (takeFlagsIn and Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION != 0) {
             val takeFlags = takeFlagsIn and (Intent.FLAG_GRANT_READ_URI_PERMISSION
                     or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
@@ -139,8 +140,8 @@ object UriUtils {
     /**
      * Based on http://stackoverflow.com/questions/1560788/how-to-check-internet-access-on-android-inetaddress-never-timeouts
      */
-    fun getConnectionState(context: Context?): ConnectionState? {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    fun getConnectionState(context: Context): ConnectionState {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
                 ?: return ConnectionState.UNKNOWN
         var state = ConnectionState.OFFLINE
         val networkInfoOnline = connectivityManager.activeNetworkInfo ?: return state

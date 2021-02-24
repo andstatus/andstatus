@@ -17,7 +17,6 @@ package org.andstatus.app.net.social
 
 import android.net.Uri
 import android.os.Build
-import eu.bolt.screenshotty.ScreenshotManagerBuilder.build
 import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.context.MyPreferences
@@ -26,7 +25,6 @@ import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.http.HttpRequest
 import org.andstatus.app.origin.OriginConfig
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.UriUtils
 import org.json.JSONArray
 import org.json.JSONException
@@ -73,7 +71,7 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
             ApiRoutineEnum.ACTOR_TIMELINE -> "statuses/user_timeline.json?tweet_mode=extended"
             else -> ""
         }
-        return if (StringUtil.isEmpty(url)) {
+        return if (url.isNullOrEmpty()) {
             super.getApiPathFromOrigin(routine)
         } else partialPathToApiPath(url)
     }
@@ -169,7 +167,7 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
         val apiRoutine = ApiRoutineEnum.SEARCH_NOTES
         return getApiPath(apiRoutine)
                 .map { obj: Uri? -> obj.buildUpon() }
-                .map { b: Uri.Builder? -> if (StringUtil.isEmpty(searchQuery)) b else b.appendQueryParameter("q", searchQuery) }
+                .map { b: Uri.Builder? -> if (searchQuery.isNullOrEmpty()) b else b.appendQueryParameter("q", searchQuery) }
                 .map { builder: Uri.Builder? -> appendPositionParameters(builder, youngestPosition, oldestPosition) }
                 .map { builder: Uri.Builder? -> builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
                 .map(CheckedFunction<Uri.Builder?, Uri?> { Uri.Builder.build() })
@@ -186,7 +184,7 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
         val apiRoutine = ApiRoutineEnum.SEARCH_ACTORS
         return getApiPath(apiRoutine)
                 .map { obj: Uri? -> obj.buildUpon() }
-                .map { b: Uri.Builder? -> if (StringUtil.isEmpty(searchQuery)) b else b.appendQueryParameter("q", searchQuery) }
+                .map { b: Uri.Builder? -> if (searchQuery.isNullOrEmpty()) b else b.appendQueryParameter("q", searchQuery) }
                 .map { b: Uri.Builder? -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
                 .map(CheckedFunction<Uri.Builder?, Uri?> { Uri.Builder.build() })
                 .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })
@@ -264,7 +262,7 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
         val limit = 200
         return getApiPathWithActorId(apiRoutine, actor.oid)
                 .map { obj: Uri? -> obj.buildUpon() }
-                .map { b: Uri.Builder? -> if (StringUtil.isEmpty(actor.oid)) b else b.appendQueryParameter("user_id", actor.oid) }
+                .map { b: Uri.Builder? -> if (actor.oid.isNullOrEmpty()) b else b.appendQueryParameter("user_id", actor.oid) }
                 .map { b: Uri.Builder? -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
                 .map(CheckedFunction<Uri.Builder?, Uri?> { Uri.Builder.build() })
                 .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })

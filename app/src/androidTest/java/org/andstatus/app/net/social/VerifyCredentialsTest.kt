@@ -25,7 +25,6 @@ import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.net.http.OAuthClientKeys
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginType
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UrlUtils
 import org.junit.After
@@ -58,7 +57,7 @@ class VerifyCredentialsTest {
 
     @After
     fun tearDown() {
-        if (!StringUtil.isEmpty(keyStored)) {
+        if (!keyStored.isNullOrEmpty()) {
             mock.getHttp().data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored)
         }
     }
@@ -69,7 +68,7 @@ class VerifyCredentialsTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.verify_credentials_twitter)
         val actor = connection.verifyCredentials(Optional.empty()).get()
         Assert.assertEquals("Actor's oid is actorOid of this account", DemoData.Companion.demoData.twitterTestAccountActorOid, actor.oid)
-        val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
         val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(mock.getData().accountName)
         builder.onCredentialsVerified(actor)
         Assert.assertTrue("Account is persistent", builder.isPersistent)
@@ -78,7 +77,7 @@ class VerifyCredentialsTest {
         Assert.assertEquals("Account actorOid", builder.account.actorOid, actor.oid)
         Assert.assertEquals("Actor in the database for id=$actorId",
                 actor.oid,
-                MyQuery.idToOid(MyContextHolder.Companion.myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0))
+                MyQuery.idToOid( MyContextHolder.myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0))
         val noteOid = "383296535213002752"
         val noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, noteOid)
         Assert.assertTrue("Note not found", noteId != 0L)

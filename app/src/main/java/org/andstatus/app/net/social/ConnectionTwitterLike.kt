@@ -16,7 +16,6 @@
 package org.andstatus.app.net.social
 
 import android.net.Uri
-import eu.bolt.screenshotty.ScreenshotManagerBuilder.build
 import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.data.DownloadStatus
@@ -168,7 +167,7 @@ abstract class ConnectionTwitterLike : Connection() {
         return getApiPath(apiRoutine)
                 .map { obj: Uri? -> obj.buildUpon() }
                 .map { b: Uri.Builder? -> b.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
-                .map { b: Uri.Builder? -> if (StringUtil.isEmpty(actor.oid)) b else b.appendQueryParameter("user_id", actor.oid) }
+                .map { b: Uri.Builder? -> if (actor.oid.isNullOrEmpty()) b else b.appendQueryParameter("user_id", actor.oid) }
     }
 
     @Throws(ConnectionException::class)
@@ -218,7 +217,7 @@ abstract class ConnectionTwitterLike : Connection() {
         val activity: AActivity
         try {
             var oid = JsonUtils.optString(jso, "id_str")
-            if (StringUtil.isEmpty(oid)) {
+            if (oid.isNullOrEmpty()) {
                 // This is for the Status.net
                 oid = JsonUtils.optString(jso, "id")
             }
@@ -374,7 +373,7 @@ abstract class ConnectionTwitterLike : Connection() {
         val apiRoutine = ApiRoutineEnum.SEARCH_NOTES
         return getApiPath(apiRoutine)
                 .map { obj: Uri? -> obj.buildUpon() }
-                .map { b: Uri.Builder? -> if (StringUtil.isEmpty(searchQuery)) b else b.appendQueryParameter("q", searchQuery) }
+                .map { b: Uri.Builder? -> if (searchQuery.isNullOrEmpty()) b else b.appendQueryParameter("q", searchQuery) }
                 .map { builder: Uri.Builder? -> appendPositionParameters(builder, youngestPosition, oldestPosition) }
                 .map { builder: Uri.Builder? -> builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine)) }
                 .map(CheckedFunction<Uri.Builder?, Uri?> { Uri.Builder.build() })
@@ -518,7 +517,7 @@ abstract class ConnectionTwitterLike : Connection() {
     abstract fun updateNote2(note: Note?): Try<AActivity?>?
     @Throws(JSONException::class)
     fun updateNoteSetFields(note: Note?, formParams: JSONObject?) {
-        if (StringUtil.nonEmpty(note.getContentToPost())) {
+        if (!note.getContentToPost().isNullOrEmpty()) {
             formParams.put("status", note.getContentToPost())
         }
         if (StringUtil.nonEmptyNonTemp(note.getInReplyTo().oid)) {
@@ -530,7 +529,7 @@ abstract class ConnectionTwitterLike : Connection() {
         val formParams = JSONObject()
         try {
             formParams.put("text", note.getContentToPost())
-            if (!StringUtil.isEmpty(recipientOid)) {
+            if (!recipientOid.isNullOrEmpty()) {
                 formParams.put("user_id", recipientOid)
             }
         } catch (e: JSONException) {

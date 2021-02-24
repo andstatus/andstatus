@@ -28,7 +28,6 @@ import org.andstatus.app.net.http.HttpRequest
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.Connection
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import java.io.File
 
 abstract class FileDownloader protected constructor(val myContext: MyContext?, val data: DownloadData?) {
@@ -40,7 +39,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext?, v
             }
             else -> loadUrl()
         }
-        if (data.isError() && StringUtil.nonEmpty(data.getMessage())) {
+        if (data.isError() && !data.getMessage().isNullOrEmpty()) {
             commandData.getResult().message = data.getMessage()
         }
         if (data.isHardError()) {

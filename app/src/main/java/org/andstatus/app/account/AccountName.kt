@@ -27,9 +27,9 @@ import org.andstatus.app.util.StringUtil
  * Immutable class.
  * @author yvolk@yurivolkov.com
  */
-class AccountName private constructor(uniqueName: String?,
+class AccountName private constructor(uniqueName: String,
                                       /** The system in which the Account is defined, see [Origin]  */
-                                      val origin: Origin?) {
+                                      val origin: Origin) {
     val username: String?
     val host: String?
 
@@ -49,12 +49,8 @@ class AccountName private constructor(uniqueName: String?,
         return myContext().context()
     }
 
-    fun myContext(): MyContext? {
-        return getOrigin().myContext
-    }
-
-    fun getOrigin(): Origin? {
-        return origin
+    fun myContext(): MyContext {
+        return origin.myContext
     }
 
     fun isValid(): Boolean {
@@ -83,7 +79,7 @@ class AccountName private constructor(uniqueName: String?,
 
     override fun hashCode(): Int {
         var result = origin.hashCode()
-        if (!StringUtil.isEmpty(uniqueName)) {
+        if (!uniqueName.isNullOrEmpty()) {
             result = 31 * result + uniqueName.hashCode()
         }
         return result
@@ -92,7 +88,7 @@ class AccountName private constructor(uniqueName: String?,
     companion object {
         val ORIGIN_SEPARATOR: String? = "/"
         fun getEmpty(): AccountName? {
-            return AccountName("", Origin.Companion.EMPTY)
+            return AccountName("",  Origin.EMPTY)
         }
 
         fun fromOriginAndUniqueName(origin: Origin, uniqueName: String?): AccountName {
@@ -162,6 +158,6 @@ class AccountName private constructor(uniqueName: String?,
         this.uniqueName = uniqueName
         val originInAccountName = origin.getOriginInAccountName(host)
         name = uniqueName + ORIGIN_SEPARATOR + originInAccountName
-        isValid = origin.isPersistent() && origin.isUsernameValid(username) && StringUtil.nonEmpty(originInAccountName)
+        isValid = origin.isPersistent() && origin.isUsernameValid(username) && !originInAccountName.isNullOrEmpty()
     }
 }

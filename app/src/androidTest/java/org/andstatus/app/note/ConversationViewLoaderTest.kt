@@ -1,4 +1,4 @@
-package org.andstatus.app.noteimport
+package org.andstatus.app.note
 
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContextHolder
@@ -14,11 +14,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -754,10 +749,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -786,7 +777,7 @@ import org.andstatus.app.ActivityTestHelper.MenuItemClicker
 import org.andstatus.app.MenuItemMock
 
 class ConversationViewLoaderTest : ProgressPublisher {
-    private var origin: Origin? = Origin.Companion.EMPTY
+    private var origin: Origin? =  Origin.EMPTY
     private var selectedNoteId: Long = 0
     private var progressCounter: Long = 0
     @Before
@@ -804,7 +795,7 @@ class ConversationViewLoaderTest : ProgressPublisher {
     @Test
     fun testLoad() {
         val loader = ConversationLoaderFactory().getLoader(
-                ConversationViewItem.Companion.EMPTY, MyContextHolder.Companion.myContextHolder.getNow(), origin, selectedNoteId, false)
+                ConversationViewItem.Companion.EMPTY,  MyContextHolder.myContextHolder.getNow(), origin, selectedNoteId, false)
         progressCounter = 0
         loader.load(this)
         val list = loader.list

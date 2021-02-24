@@ -61,11 +61,11 @@ object MyQuery {
      * [NoteTable._ID] ). Or 0 if nothing was found.
      */
     fun oidToId(oidEnum: OidEnum?, originId: Long, oid: String?): Long {
-        return oidToId(MyContextHolder.Companion.myContextHolder.getNow(), oidEnum, originId, oid)
+        return oidToId( MyContextHolder.myContextHolder.getNow(), oidEnum, originId, oid)
     }
 
     fun oidToId(myContext: MyContext, oidEnum: OidEnum?, originId: Long, oid: String?): Long {
-        if (StringUtil.isEmpty(oid)) {
+        if (oid.isNullOrEmpty()) {
             return 0
         }
         val msgLog = "oidToId; $oidEnum, origin=$originId, oid=$oid"
@@ -87,12 +87,12 @@ object MyQuery {
 
     fun sqlToLong(databaseIn: SQLiteDatabase?, msgLogIn: String?, sql: String?): Long {
         val msgLog = StringUtil.notNull(msgLogIn)
-        val db = databaseIn ?: MyContextHolder.Companion.myContextHolder.getNow().getDatabase()
+        val db = databaseIn ?:  MyContextHolder.myContextHolder.getNow().getDatabase()
         if (db == null) {
             MyLog.databaseIsNull { msgLog }
             return 0
         }
-        if (StringUtil.isEmpty(sql)) {
+        if (sql.isNullOrEmpty()) {
             MyLog.v(TAG) { "$msgLog; sql is empty" }
             return 0
         }
@@ -121,7 +121,7 @@ object MyQuery {
      * @return two single quotes for empty/null strings (Use single quotes!)
      */
     fun quoteIfNotQuoted(original: String?): String? {
-        if (StringUtil.isEmpty(original)) {
+        if (original.isNullOrEmpty()) {
             return "\'\'"
         }
         var quoted = original.trim { it <= ' ' }
@@ -195,7 +195,7 @@ object MyQuery {
                 }
                 prog = db.compileStatement(sql)
                 oid = prog.simpleQueryForString()
-                if (StringUtil.isEmpty(oid) && oe == OidEnum.REBLOG_OID) {
+                if (oid.isNullOrEmpty() && oe == OidEnum.REBLOG_OID) {
                     // This not reblogged note
                     oid = idToOid(db, OidEnum.NOTE_OID, entityId, 0)
                 }
@@ -362,7 +362,7 @@ object MyQuery {
                 } else {
                     throw IllegalArgumentException("$method; Unknown name \"$actorIdColumnName\"")
                 }
-                val db: SQLiteDatabase = MyContextHolder.Companion.myContextHolder.getNow().getDatabase()
+                val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().getDatabase()
                 if (db == null) {
                     MyLog.databaseIsNull { method }
                     return ""
@@ -428,11 +428,11 @@ object MyQuery {
                                    tableName: String?, columnName: String?, condition: String?): Long {
         val sql = "SELECT t." + columnName +
                 " FROM " + tableName + " AS t" +
-                if (StringUtil.isEmpty(condition)) "" else " WHERE $condition"
+                if (condition.isNullOrEmpty()) "" else " WHERE $condition"
         var columnValue: Long = 0
-        columnValue = if (StringUtil.isEmpty(tableName)) {
+        columnValue = if (tableName.isNullOrEmpty()) {
             throw IllegalArgumentException("tableName is empty: $sql")
-        } else if (StringUtil.isEmpty(columnName)) {
+        } else if (columnName.isNullOrEmpty()) {
             throw IllegalArgumentException("columnName is empty: $sql")
         } else {
             sqlToLong(databaseIn, msgLog, sql)
@@ -463,15 +463,15 @@ object MyQuery {
 
     fun conditionToStringColumnValue(dbIn: SQLiteDatabase?, tableName: String?, columnName: String?, condition: String?): String {
         val method = "cond2str"
-        val db = dbIn ?: MyContextHolder.Companion.myContextHolder.getNow().getDatabase()
+        val db = dbIn ?:  MyContextHolder.myContextHolder.getNow().getDatabase()
         if (db == null) {
             MyLog.databaseIsNull { method }
             return ""
         }
         val sql = "SELECT $columnName FROM $tableName WHERE $condition"
         val columnValue = ""
-        require(!(StringUtil.isEmpty(tableName) || StringUtil.isEmpty(columnName))) { "$method tableName or columnName are empty" }
-        require(!StringUtil.isEmpty(columnName)) { "columnName is empty: $sql" }return if (StringUtil.isEmpty(columnValue)) "" else columnValue
+        require(!(tableName.isNullOrEmpty() || columnName.isNullOrEmpty())) { "$method tableName or columnName are empty" }
+        require(!columnName.isNullOrEmpty()) { "columnName is empty: $sql" }return if (columnValue.isNullOrEmpty()) "" else columnValue
     }
 
     fun noteIdToActorId(noteActorIdColumnName: String?, systemId: Long): Long {
@@ -631,13 +631,13 @@ object MyQuery {
 
     fun getCountOfActivities(condition: String): Long {
         val sql = ("SELECT COUNT(*) FROM " + ActivityTable.TABLE_NAME
-                + if (StringUtil.isEmpty(condition)) "" else " WHERE $condition")
+                + if (condition.isNullOrEmpty()) "" else " WHERE $condition")
         val numbers = getLongs(sql)
         return if (numbers.isEmpty()) 0 else numbers.iterator().next()
     }
 
     fun getLongs(sql: String?): MutableSet<Long?> {
-        return getLongs(MyContextHolder.Companion.myContextHolder.getNow(), sql)
+        return getLongs( MyContextHolder.myContextHolder.getNow(), sql)
     }
 
     fun getLongs(myContext: MyContext?, sql: String?): MutableSet<Long?> {
@@ -718,7 +718,7 @@ object MyQuery {
         val builder = MyStringBuilder()
         builder.withComma("noteId", noteId)
         val oid = idToOid(myContext, OidEnum.NOTE_OID, noteId, 0)
-        builder.withCommaQuoted("oid", if (StringUtil.isEmpty(oid)) "empty" else oid, StringUtil.nonEmpty(oid))
+        builder.withCommaQuoted("oid", if (oid.isNullOrEmpty()) "empty" else oid, !oid.isNullOrEmpty())
         val content = MyHtml.htmlToCompactPlainText(noteIdToStringColumnValue(NoteTable.CONTENT, noteId))
         builder.withCommaQuoted("content", content, true)
         val origin = myContext.origins().fromId(noteIdToLongColumnValue(NoteTable.ORIGIN_ID, noteId))
@@ -737,7 +737,7 @@ object MyQuery {
             return ""
         }
         var oid = noteIdToStringColumnValue(NoteTable.CONVERSATION_OID, noteId)
-        if (!StringUtil.isEmpty(oid)) {
+        if (!oid.isNullOrEmpty()) {
             return oid
         }
         val conversationId = noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, noteId)
@@ -745,7 +745,7 @@ object MyQuery {
             return idToOid(myContext, OidEnum.NOTE_OID, noteId, 0)
         }
         oid = noteIdToStringColumnValue(NoteTable.CONVERSATION_OID, conversationId)
-        return if (!StringUtil.isEmpty(oid)) {
+        return if (!oid.isNullOrEmpty()) {
             oid
         } else idToOid(myContext, OidEnum.NOTE_OID, conversationId, 0)
     }

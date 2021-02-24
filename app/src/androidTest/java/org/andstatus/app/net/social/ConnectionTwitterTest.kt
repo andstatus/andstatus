@@ -205,7 +205,7 @@ class ConnectionTwitterTest {
     private fun addAsGetNote(activity: AActivity?) {
         val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(connection.getData().accountName.toString())
         val executionContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(), CommandData.Companion.newAccountCommand(CommandEnum.GET_NOTE, ma))
+                 MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newAccountCommand(CommandEnum.GET_NOTE, ma))
         DataUpdater(executionContext).onActivity(activity)
         Assert.assertNotEquals("Note was not added $activity", 0, activity.getNote().noteId)
         Assert.assertNotEquals("Activity was not added $activity", 0, activity.getId())
@@ -247,9 +247,9 @@ class ConnectionTwitterTest {
         val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(connection.getData().accountName.toString())
         val friend2: Actor = Actor.Companion.fromId(ma.origin, 123)
         val executionContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(), CommandData.Companion.actOnActorCommand(CommandEnum.FOLLOW, ma, friend2, ""))
+                 MyContextHolder.myContextHolder.getNow(), CommandData.Companion.actOnActorCommand(CommandEnum.FOLLOW, ma, friend2, ""))
         DataUpdater(executionContext).onActivity(activity)
-        val friendId = MyQuery.oidToId(MyContextHolder.Companion.myContextHolder.getNow(), OidEnum.ACTOR_OID, ma.originId, actorOid)
+        val friendId = MyQuery.oidToId( MyContextHolder.myContextHolder.getNow(), OidEnum.ACTOR_OID, ma.originId, actorOid)
         Assert.assertNotEquals("Followed Actor was not added $activity", 0, friendId)
         Assert.assertNotEquals("Activity was not added $activity", 0, activity.id)
     }

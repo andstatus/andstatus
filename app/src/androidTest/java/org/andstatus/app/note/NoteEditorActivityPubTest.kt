@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.noteimport
+package org.andstatus.app.note
 
 import android.content.Intent
 import androidx.test.espresso.Espresso
@@ -41,11 +41,6 @@ import org.andstatus.app.util.MyLog
 import org.junit.Assert
 import org.junit.Test
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -781,10 +776,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -819,11 +810,11 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem?>() {
         TestSuite.initializeWithAccounts(this)
         mock = ConnectionMock.Companion.newFor(DemoData.Companion.demoData.activityPubTestAccountName)
         val ma = mock.getData().myAccount
-        MyContextHolder.Companion.myContextHolder.getBlocking().accounts().setCurrentAccount(ma)
+         MyContextHolder.myContextHolder.getBlocking().accounts().setCurrentAccount(ma)
         Assert.assertTrue("isValidAndSucceeded $ma", ma.isValidAndSucceeded)
         MyLog.i(this, "setUp ended")
         return Intent(Intent.ACTION_VIEW,
-                MyContextHolder.Companion.myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.actor, Origin.Companion.EMPTY).getUri())
+                 MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.actor,  Origin.EMPTY).getUri())
     }
 
     @Test

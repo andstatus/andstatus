@@ -22,9 +22,9 @@ import java.util.*
 /**
  * @author yvolk@yurivolkov.com
  */
-class SelectableEnumList<E> private constructor(clazz: Class<E?>?) where E : Enum<E?>?, E : SelectableEnum? {
-    private val list: MutableList<E?>? = ArrayList()
-    fun getList(): MutableList<E?>? {
+class SelectableEnumList<E> private constructor(clazz: Class<E?>?) where E : Enum<E>, E : SelectableEnum? {
+    private val list: MutableList<E> = ArrayList()
+    fun getList(): MutableList<E> {
         return list
     }
 
@@ -33,7 +33,7 @@ class SelectableEnumList<E> private constructor(clazz: Class<E?>?) where E : Enu
      */
     fun getIndex(other: SelectableEnum?): Int {
         for (index in list.indices) {
-            val selectableEnum: SelectableEnum? = list.get(index)
+            val selectableEnum: SelectableEnum? = list[index]
             if (selectableEnum == other) {
                 return index
             }
@@ -45,21 +45,21 @@ class SelectableEnumList<E> private constructor(clazz: Class<E?>?) where E : Enu
      * @return the first element if not found
      */
     operator fun get(index: Int): E? {
-        return list.get(if (index >= 0 && index < list.size) index else 0)
+        return list[if (index >= 0 && index < list.size) index else 0]
     }
 
     fun getDialogTitleResId(): Int {
-        return list.get(0).getDialogTitleResId()
+        return list[0].getDialogTitleResId()
     }
 
-    fun getSpinnerArrayAdapter(context: Context?): ArrayAdapter<CharSequence?>? {
+    fun getSpinnerArrayAdapter(context: Context): ArrayAdapter<CharSequence?> {
         val spinnerArrayAdapter = ArrayAdapter(
                 context, android.R.layout.simple_spinner_item, getTitles(context))
         spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         return spinnerArrayAdapter
     }
 
-    private fun getTitles(context: Context?): MutableList<CharSequence?>? {
+    private fun getTitles(context: Context?): MutableList<CharSequence?> {
         val titles: MutableList<CharSequence?> = ArrayList()
         for (selectableEnum in list) {
             titles.add(selectableEnum.title(context))
@@ -68,18 +68,18 @@ class SelectableEnumList<E> private constructor(clazz: Class<E?>?) where E : Enu
     }
 
     companion object {
-        fun <E> newInstance(clazz: Class<E?>?): SelectableEnumList<E?>? where E : Enum<E?>?, E : SelectableEnum? {
+        fun <E> newInstance(clazz: Class<E?>?): SelectableEnumList<E> where E : Enum<E>, E : SelectableEnum? {
             return SelectableEnumList(clazz)
         }
     }
 
     init {
-        require(SelectableEnum::class.java.isAssignableFrom(clazz)) {
-            "Class '" + clazz.getName() +
+        require(clazz is SelectableEnum) {
+            "Class '" + clazz?.name +
                     "' doesn't implement SelectableEnum"
         }
         for (value in EnumSet.allOf(clazz)) {
-            if (value.isSelectable()) {
+            if (value?.isSelectable() == true) {
                 list.add(value)
             }
         }

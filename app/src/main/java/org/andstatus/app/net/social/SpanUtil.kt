@@ -21,7 +21,6 @@ import android.text.Spanned
 import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.util.MyHtml
 import org.andstatus.app.util.MyUrlSpan
-import org.andstatus.app.util.StringUtil
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
@@ -52,7 +51,7 @@ object SpanUtil {
     }
 
     fun textToSpannable(text: String?, mediaType: TextMediaType?, audience: Audience?): Spannable? {
-        return if (StringUtil.isEmpty(text)) EMPTY else spansModifier(audience).apply(MyUrlSpan.Companion.toSpannable(
+        return if (text.isNullOrEmpty()) EMPTY else spansModifier(audience).apply(MyUrlSpan.Companion.toSpannable(
                 if (mediaType == TextMediaType.PLAIN) text else MyHtml.prepareForView(text),
                 mediaType, true))
     }

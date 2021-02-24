@@ -35,10 +35,8 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.InputActorPage
 import org.andstatus.app.net.social.TimelinePosition
-import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
@@ -52,7 +50,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
     var commandSummary: String? = ""
     public override fun execute(): Try<Boolean?>? {
         commandSummary = execContext.commandSummary
-        if (StringUtil.isEmpty(actor.oid)) {
+        if (actor.oid.isNullOrEmpty()) {
             return onParseException("No actorOid not for: $actor")
         }
         val command = execContext.commandData.command
@@ -232,7 +230,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
                     lum.save()
                     MyLog.v(this, "Server didn't return Actor's activity for "
                             + actor.getUniqueNameWithOrigin()
-                            + " found activity " + RelativeTime.getDifference(MyContextHolder.Companion.myContextHolder.getNow().context(), updatedDate),
+                            + " found activity " + RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context(), updatedDate),
                             exception)
                 }
             }

@@ -105,9 +105,9 @@ abstract class OriginList : MyListActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (MyContextHolder.Companion.myContextHolder.needToRestartActivity()) {
+        if ( MyContextHolder.myContextHolder.needToRestartActivity()) {
             FirstActivity.Companion.closeAllActivities(this)
-            MyContextHolder.Companion.myContextHolder.initialize(this).thenStartActivity(intent)
+             MyContextHolder.myContextHolder.initialize(this).thenStartActivity(intent)
         }
     }
 
@@ -122,7 +122,7 @@ abstract class OriginList : MyListActivity() {
 
     fun onEditOrigin(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         val name = (view.findViewById<View?>(R.id.name) as TextView).text.toString()
-        val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromName(name)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(name)
         if (origin.isPersistent) {
             val intent = Intent(this@OriginList, OriginEditor::class.java)
             intent.action = Intent.ACTION_EDIT

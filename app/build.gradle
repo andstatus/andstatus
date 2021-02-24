@@ -36,6 +36,10 @@ android {
         }
     }
 
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -107,6 +111,6 @@ dependencies {
     androidTestImplementation "androidx.test:rules:$testRulesVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoCoreVersion"
     androidTestImplementation "eu.bolt:screenshotty:$screenshottyVersion"
-    implementation "androidx.core:core-ktx:+"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "androidx.core:core-ktx:$ktxVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }

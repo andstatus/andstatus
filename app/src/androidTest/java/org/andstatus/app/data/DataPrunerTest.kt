@@ -38,13 +38,13 @@ class DataPrunerTest {
         MyLog.setLogToFile(false)
         Assert.assertTrue(logFile1.exists())
         clearPrunedDate()
-        val dp = DataPruner(MyContextHolder.Companion.myContextHolder.getNow())
+        val dp = DataPruner( MyContextHolder.myContextHolder.getNow())
         Assert.assertTrue("Pruned", dp.prune())
         Assert.assertTrue("File is fresh", logFile1.exists())
         val pruneDate1 = SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE)
         Assert.assertTrue(
                 "Pruning date updated $pruneDate1 - "
-                        + RelativeTime.getDifference(MyContextHolder.Companion.myContextHolder.getNow().context(),
+                        + RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context(),
                         pruneDate1),
                 !RelativeTime.moreSecondsAgoThan(pruneDate1, 300))
         Assert.assertFalse("Second prune skipped", dp.prune())
@@ -80,7 +80,7 @@ class DataPrunerTest {
 
     @Test
     fun testPruneParentlessAttachments() {
-        val dp = DataPruner(MyContextHolder.Companion.myContextHolder.getNow())
+        val dp = DataPruner( MyContextHolder.myContextHolder.getNow())
         dp.pruneParentlessAttachments()
         val dd: DownloadData = DownloadData.Companion.fromAttachment(-555L,
                 Attachment.Companion.fromUriAndMimeType(Uri.parse("http://example.com/image.png"), ""))
@@ -105,7 +105,7 @@ class DataPrunerTest {
         SharedPreferencesUtil.forget()
         SharedPreferencesUtil.putLong(MyPreferences.KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB, newSizeOfAttachmentMb)
         SharedPreferencesUtil.putLong(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, maximumSizeOfStoredMediaMb)
-        val dp = DataPruner(MyContextHolder.Companion.myContextHolder.getNow())
+        val dp = DataPruner( MyContextHolder.myContextHolder.getNow())
         val prunedCount1 = dp.pruneMedia()
         val dirSize2 = MyStorage.getMediaFilesSize()
         val prunedCount2 = dp.pruneMedia()

@@ -20,16 +20,16 @@ import org.andstatus.app.data.DbUtils
 
 /** Collections of URIs for Actors  */
 object ActorEndpointTable {
-    val TABLE_NAME: String? = "actorendpoints"
-    val ACTOR_ID: String? = ActorTable.ACTOR_ID
+    val TABLE_NAME: String = "actorendpoints"
+    val ACTOR_ID: String = ActorTable.ACTOR_ID
 
     /** [org.andstatus.app.net.social.ActorEndpointType]  */
-    val ENDPOINT_TYPE: String? = "endpoint_type"
+    val ENDPOINT_TYPE: String = "endpoint_type"
 
     /** Index of an endpoint of a particular [.ENDPOINT_TYPE], starting from 0  */
-    val ENDPOINT_INDEX: String? = "endpoint_index"
-    val ENDPOINT_URI: String? = "endpoint_uri"
-    fun create(db: SQLiteDatabase?) {
+    val ENDPOINT_INDEX: String = "endpoint_index"
+    val ENDPOINT_URI: String = "endpoint_uri"
+    fun create(db: SQLiteDatabase) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + ACTOR_ID + " INTEGER NOT NULL,"
                 + ENDPOINT_TYPE + " INTEGER NOT NULL,"

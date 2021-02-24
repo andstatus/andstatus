@@ -31,7 +31,7 @@ import java.io.IOException
  */
 class CommonsHttpOAuthProvider : AbstractOAuthProvider {
     @Transient
-    private var httpClient: HttpClient?
+    private var httpClient: HttpClient
 
     constructor(requestTokenEndpointUrl: String?, accessTokenEndpointUrl: String?,
                 authorizationWebsiteUrl: String?) : super(requestTokenEndpointUrl, accessTokenEndpointUrl, authorizationWebsiteUrl) {
@@ -39,22 +39,22 @@ class CommonsHttpOAuthProvider : AbstractOAuthProvider {
     }
 
     constructor(requestTokenEndpointUrl: String?, accessTokenEndpointUrl: String?,
-                authorizationWebsiteUrl: String?, httpClient: HttpClient?) : super(requestTokenEndpointUrl, accessTokenEndpointUrl, authorizationWebsiteUrl) {
+                authorizationWebsiteUrl: String?, httpClient: HttpClient) : super(requestTokenEndpointUrl, accessTokenEndpointUrl, authorizationWebsiteUrl) {
         this.httpClient = httpClient
     }
 
-    fun setHttpClient(httpClient: HttpClient?) {
+    fun setHttpClient(httpClient: HttpClient) {
         this.httpClient = httpClient
     }
 
     @Throws(Exception::class)
-    override fun createRequest(endpointUrl: String?): HttpRequest? {
+    override fun createRequest(endpointUrl: String?): HttpRequest {
         val request = HttpPost(endpointUrl)
         return HttpRequestAdapter(request)
     }
 
     @Throws(Exception::class)
-    override fun sendRequest(request: HttpRequest?): HttpResponse? {
+    override fun sendRequest(request: HttpRequest): HttpResponse {
         val response = httpClient.execute(request.unwrap() as HttpUriRequest)
         return HttpResponseAdapter(response)
     }

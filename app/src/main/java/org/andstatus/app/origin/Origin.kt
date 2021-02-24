@@ -58,9 +58,11 @@ import java.util.regex.Pattern
  *
  * @author yvolk@yurivolkov.com
  */
-open class Origin internal constructor(val myContext: MyContext?, private val originType: OriginType?) : Comparable<Origin?>, IsEmpty {
+open class Origin internal constructor(val myContext: MyContext, private val originType: OriginType) : Comparable<Origin>, IsEmpty {
     val shortUrlLength: Int
+    /** the Origin name, unique in the application */
     var name = ""
+    /** the OriginId in MyDatabase. 0 means that this system doesn't exist */
     var id: Long = 0
     protected var url: URL? = null
     protected var ssl = true
@@ -71,37 +73,22 @@ open class Origin internal constructor(val myContext: MyContext?, private val or
     /**
      * Maximum number of characters in a note
      */
-    private var textLimit: Int = OriginType.Companion.TEXT_LIMIT_MAXIMUM
+    private var textLimit: Int = TEXT_LIMIT_MAXIMUM
 
     /** Include this system in Global Search while in Combined Timeline  */
     private var inCombinedGlobalSearch = false
     private var inCombinedPublicReload = false
     private var mMentionAsWebFingerId: TriState? = TriState.UNKNOWN
     private var isValid = false
-    fun getOriginType(): OriginType? {
+    fun getOriginType(): OriginType {
         return originType
-    }
-
-    /**
-     * @return the Origin name, unique in the application
-     */
-    fun getName(): String? {
-        return name
-    }
-
-    /**
-     * @return the OriginId in MyDatabase. 0 means that this system doesn't
-     * exist
-     */
-    fun getId(): Long {
-        return id
     }
 
     /**
      * Was this Origin stored for future reuse?
      */
     fun isPersistent(): Boolean {
-        return getId() != 0L
+        return id != 0L
     }
 
     override fun isEmpty(): Boolean {
@@ -132,15 +119,15 @@ open class Origin internal constructor(val myContext: MyContext?, private val or
     }
 
     fun isUsernameValid(username: String?): Boolean {
-        return StringUtil.nonEmpty(username) && originType.usernameRegExPattern.matcher(username).matches()
+        return !username.isNullOrEmpty() && originType.usernameRegExPattern.matcher(username).matches()
     }
 
     fun usernameToId(username: String?): Long {
-        if (StringUtil.isEmpty(username)) return 0
-        val key = getId().toString() + ";" + username
+        if (username.isNullOrEmpty()) return 0
+        val key = id.toString() + ";" + username
         val cachedId = myContext.users().originIdAndUsernameToActorId[key]
         if (cachedId != null) return cachedId
-        val storedId = MyQuery.usernameToId(myContext, getId(), username, true)
+        val storedId = MyQuery.usernameToId(myContext, id, username, true)
         if (storedId != 0L) {
             myContext.users().originIdAndUsernameToActorId[key] = storedId
         }
@@ -155,7 +142,7 @@ open class Origin internal constructor(val myContext: MyContext?, private val or
      */
     fun charactersLeftForNote(html: String?): Int {
         var textLength = 0
-        if (!StringUtil.isEmpty(html)) {
+        if (!html.isNullOrEmpty()) {
             val textToPost = MyHtml.fromContentStored(html, originType.textMediaTypeToPost)
             textLength = textToPost.length
             if (shortUrlLength > 0) {
@@ -180,7 +167,7 @@ open class Origin internal constructor(val myContext: MyContext?, private val or
 
     open fun getNotePermalink(noteId: Long): String? {
         val msgUrl = MyQuery.noteIdToStringColumnValue(NoteTable.URL, noteId)
-        if (!StringUtil.isEmpty(msgUrl)) {
+        if (!msgUrl.isNullOrEmpty()) {
             try {
                 return URL(msgUrl).toExternalForm()
             } catch (e: MalformedURLException) {
@@ -203,11 +190,7 @@ open class Origin internal constructor(val myContext: MyContext?, private val or
     }
 
     fun isNameValid(originNameToCheck: String?): Boolean {
-        return StringUtil.nonEmpty(originNameToCheck) && VALID_NAME_PATTERN.matcher(originNameToCheck).matches()
-    }
-
-    fun getUrl(): URL? {
-        return url
+        return !originNameToCheck.isNullOrEmpty() && VALID_NAME_PATTERN.matcher(originNameToCheck).matches()
     }
 
     open fun fixUriForPermalink(uri1: Uri?): Uri? {
@@ -379,7 +362,7 @@ open class Origin internal constructor(val myContext: MyContext?, private val or
      * @return index of the first position, where the username/webfingerId may start, -1 if not found
      */
     fun getActorReference(text: String?, textStart: Int): ActorReference? {
-        if (StringUtil.isEmpty(text) || textStart >= text.length) return ActorReference.Companion.EMPTY
+        if (text.isNullOrEmpty() || textStart >= text.length) return ActorReference.Companion.EMPTY
         var indexOfReference = text.indexOf(actorReferenceChar(), textStart)
         var groupType = GroupType.UNKNOWN
         if (groupActorReferenceChar().isPresent()) {
@@ -422,12 +405,12 @@ open class Origin internal constructor(val myContext: MyContext?, private val or
         return '@'
     }
 
-    open fun groupActorReferenceChar(): Optional<Char?>? {
+    open fun groupActorReferenceChar(): Optional<Char> {
         return Optional.empty()
     }
 
     class Builder {
-        private val origin: Origin?
+        private val origin: Origin
 
         /*
          * Result of the last "save" action
@@ -488,11 +471,11 @@ open class Origin internal constructor(val myContext: MyContext?, private val or
             origin.isValid = origin.calcIsValid()
         }
 
-        fun build(): Origin? {
+        fun build(): Origin {
             return Builder(origin).origin
         }
 
-        fun setName(nameIn: String?): Builder? {
+        fun setName(nameIn: String?): Builder {
             val name = correctedName(nameIn)
             if (!origin.isPersistent() && origin.isNameValid(name)) {
                 origin.name = name
@@ -504,7 +487,7 @@ open class Origin internal constructor(val myContext: MyContext?, private val or
             if (origin.isNameValid(nameIn)) {
                 return nameIn
             }
-            return if (StringUtil.isEmpty(nameIn)) {
+            return if (nameIn.isNullOrEmpty()) {
                 ""
             } else DOTS_PATTERN.matcher(
                     INVALID_NAME_PART_PATTERN.matcher(
@@ -656,13 +639,14 @@ open class Origin internal constructor(val myContext: MyContext?, private val or
 
     companion object {
         const val TEXT_LIMIT_FOR_WEBFINGER_ID = 200
-        val EMPTY = fromType(MyContext.Companion.EMPTY, OriginType.UNKNOWN)
-        private val VALID_NAME_CHARS: String? = "a-zA-Z_0-9/.-"
+        val EMPTY: Origin = fromType(MyContext.Companion.EMPTY, OriginType.UNKNOWN)
+        private val VALID_NAME_CHARS: String = "a-zA-Z_0-9/.-"
         private val VALID_NAME_PATTERN = Pattern.compile("[" + VALID_NAME_CHARS + "]+")
         private val INVALID_NAME_PART_PATTERN = Pattern.compile("[^" + VALID_NAME_CHARS + "]+")
         private val DOTS_PATTERN = Pattern.compile("[.]+")
-        val KEY_ORIGIN_NAME: String? = "origin_name"
-        private fun fromType(myContext: MyContext?, originType: OriginType?): Origin? {
+        val KEY_ORIGIN_NAME: String = "origin_name"
+
+        private fun fromType(myContext: MyContext, originType: OriginType): Origin {
             val origin = originType.originFactory.apply(myContext)
             origin.url = origin.originType.urlDefault
             origin.ssl = origin.originType.sslDefault

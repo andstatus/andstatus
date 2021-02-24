@@ -64,13 +64,13 @@ class WebViewFragment : Fragment() {
         }
     }
 
-    private fun getTransformedContent(context: Context?): String? {
+    private fun getTransformedContent(context: Context): String? {
         return try {
-            var output = Xslt.toHtmlString(context, arguments.getInt(SOURCE_XML),
-                    arguments.getInt(SOURCE_XSL))
+            var output: String = Xslt.toHtmlString(context, arguments?.getInt(SOURCE_XML) ?: 0,
+                    arguments?.getInt(SOURCE_XSL) ?: 0)
             if (!MyLocale.isEnLocale()) {
                 output = output.replace("Translator credits",
-                        context.getText(R.string.translator_credits))
+                        context.getText(R.string.translator_credits) as String)
             }
             output
         } catch (e: Exception) {
@@ -79,9 +79,9 @@ class WebViewFragment : Fragment() {
     }
 
     companion object {
-        private val SOURCE_XML: String? = "sourceXml"
-        private val SOURCE_XSL: String? = "sourceXsl"
-        fun from(@RawRes resXml: Int, @RawRes resXsl: Int): WebViewFragment? {
+        private val SOURCE_XML: String = "sourceXml"
+        private val SOURCE_XSL: String = "sourceXsl"
+        fun from(@RawRes resXml: Int, @RawRes resXsl: Int): WebViewFragment {
             val fragment = WebViewFragment()
             val bundle = Bundle()
             bundle.putInt(SOURCE_XML, resXml)

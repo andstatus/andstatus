@@ -63,7 +63,7 @@ internal open class CommandExecutorStrategy(protected val execContext: CommandEx
         }
         MyLog.v(this) { "Progress: $progress" }
         lastProgressBroadcastAt = System.currentTimeMillis()
-        MyServiceEventsBroadcaster.Companion.newInstance(MyContextHolder.Companion.myContextHolder.getNow(), MyServiceState.RUNNING)
+        MyServiceEventsBroadcaster.Companion.newInstance( MyContextHolder.myContextHolder.getNow(), MyServiceState.RUNNING)
                 .setCommandData(execContext.getCommandData())
                 .setProgress(progress)
                 .setEvent(MyServiceEvent.PROGRESS_EXECUTING_COMMAND).broadcast()

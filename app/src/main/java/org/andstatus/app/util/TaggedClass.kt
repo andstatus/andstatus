@@ -8,7 +8,7 @@ package org.andstatus.app.util
  */
 interface TaggedClass {
     /** We override this method in order to solve Java's problem of getSimpleName() performance  */
-    fun classTag(): String? {
+    fun classTag(): String {
         return javaClass.simpleName
     }
 }

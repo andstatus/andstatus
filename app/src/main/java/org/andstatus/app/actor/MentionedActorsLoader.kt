@@ -33,7 +33,7 @@ class MentionedActorsLoader(myContext: MyContext?, origin: Origin?, private val 
     }
 
     init {
-        originOfSelectedNote = MyContextHolder.Companion.myContextHolder.getNow().origins().fromId(
+        originOfSelectedNote =  MyContextHolder.myContextHolder.getNow().origins().fromId(
                 MyQuery.noteIdToOriginId(selectedNoteId))
     }
 }

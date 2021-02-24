@@ -95,7 +95,7 @@ abstract class Connection protected constructor() : IsEmpty {
         return getApiUri(data.getAccountActor(), routine).isPresent()
     }
 
-    private fun getApiUri(endpointActor: Actor?, routine: ApiRoutineEnum?): Optional<Uri?>? {
+    private fun getApiUri(endpointActor: Actor?, routine: ApiRoutineEnum?): Optional<Uri> {
         if (routine == null || routine == ApiRoutineEnum.DUMMY_API) {
             return Optional.empty()
         }
@@ -351,13 +351,13 @@ abstract class Connection protected constructor() : IsEmpty {
      * @return Unix time. Returns 0 in a case of an error
      */
     open fun parseDate(stringDate: String?): Long {
-        if (StringUtil.isEmpty(stringDate)) {
+        if (stringDate.isNullOrEmpty()) {
             return 0
         }
         var unixDate: Long = 0
         val formats = arrayOf<String?>("", "E MMM d HH:mm:ss Z yyyy", "E, d MMM yyyy HH:mm:ss Z")
         for (format in formats) {
-            if (StringUtil.isEmpty(format)) {
+            if (format.isNullOrEmpty()) {
                 try {
                     unixDate = Date.parse(stringDate)
                 } catch (e: IllegalArgumentException) {

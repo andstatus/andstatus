@@ -46,8 +46,6 @@ import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.graphics.IdentifiableImageView
 import org.andstatus.app.net.social.ApiRoutineEnum
-import org.andstatus.app.note.NoteEditor
-import org.andstatus.app.note.NoteEditorData
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.service.CommandData
@@ -388,10 +386,10 @@ class NoteEditor(private val editorContainer: NoteEditorContainer?) {
                 editorData.ma.origin.originType.hasNoteSummary)
         var body = MyHtml.fromContentStored(editorData.getContent(), editorContentMediaType)
         if (body != bodyView.getText().toString().trim { it <= ' ' }) {
-            if (!StringUtil.isEmpty(body)) {
+            if (!body.isNullOrEmpty()) {
                 body += " "
             }
-            if (!TextUtils.isEmpty(bodyView.getText()) && !StringUtil.isEmpty(body)) {
+            if (!TextUtils.isEmpty(bodyView.getText()) && !body.isNullOrEmpty()) {
                 MyLog.v(NoteEditorData.Companion.TAG, """
      Body updated
      '${bodyView.getText()}' to 
@@ -666,7 +664,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer?) {
          * Strips e.g. "Note - " or "Note:"
          */
         fun stripBeginning(textIn: String?): String? {
-            if (StringUtil.isEmpty(textIn)) {
+            if (textIn.isNullOrEmpty()) {
                 return ""
             }
             var ind = textIn.indexOf("-")
@@ -686,7 +684,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer?) {
         }
 
         fun stripEllipsis(textIn: String?): String? {
-            if (StringUtil.isEmpty(textIn)) {
+            if (textIn.isNullOrEmpty()) {
                 return ""
             }
             var ind = textIn.length - 1

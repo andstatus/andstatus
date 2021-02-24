@@ -16,17 +16,17 @@
 package org.andstatus.app.util
 
 import android.database.Cursor
-import org.andstatus.app.util.TypedCursorValue.CursorFieldType
 import org.json.JSONException
 import org.json.JSONObject
 
 class TypedCursorValue {
-    val type: CursorFieldType?
+    private val type: CursorFieldType
     val value: Any?
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
-        val that = o as TypedCursorValue?
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val that = other as TypedCursorValue
         if (type !== CursorFieldType.UNKNOWN && that.type !== CursorFieldType.UNKNOWN) {
             if (type !== that.type) return false
         }
@@ -41,33 +41,33 @@ class TypedCursorValue {
 
     private enum class CursorFieldType(val code: Int) {
         UNKNOWN(-1), STRING(Cursor.FIELD_TYPE_STRING) {
-            override fun columnToObject(cursor: Cursor?, columnIndex: Int): Any? {
+            override fun columnToObject(cursor: Cursor, columnIndex: Int): Any? {
                 return cursor.getString(columnIndex)
             }
         },
         INTEGER(Cursor.FIELD_TYPE_INTEGER) {
-            override fun columnToObject(cursor: Cursor?, columnIndex: Int): Any? {
+            override fun columnToObject(cursor: Cursor, columnIndex: Int): Any {
                 return cursor.getLong(columnIndex)
             }
         },
         BLOB(Cursor.FIELD_TYPE_BLOB) {
-            override fun columnToObject(cursor: Cursor?, columnIndex: Int): Any? {
+            override fun columnToObject(cursor: Cursor, columnIndex: Int): Any? {
                 return cursor.getBlob(columnIndex)
             }
         },
         FLOAT(Cursor.FIELD_TYPE_FLOAT) {
-            override fun columnToObject(cursor: Cursor?, columnIndex: Int): Any? {
+            override fun columnToObject(cursor: Cursor, columnIndex: Int): Any {
                 return cursor.getDouble(columnIndex)
             }
         },
         NULL(Cursor.FIELD_TYPE_NULL);
 
-        open fun columnToObject(cursor: Cursor?, columnIndex: Int): Any? {
+        open fun columnToObject(cursor: Cursor, columnIndex: Int): Any? {
             return null
         }
 
         companion object {
-            fun fromColumnType(cursorColumnType: Int): CursorFieldType? {
+            fun fromColumnType(cursorColumnType: Int): CursorFieldType {
                 for (`val` in values()) {
                     if (`val`.code == cursorColumnType) {
                         return `val`
@@ -78,19 +78,19 @@ class TypedCursorValue {
         }
     }
 
-    constructor(cursor: Cursor?, columnIndex: Int) {
+    constructor(cursor: Cursor, columnIndex: Int) {
         type = CursorFieldType.fromColumnType(cursor.getType(columnIndex))
         value = type.columnToObject(cursor, columnIndex)
     }
 
-    constructor(`object`: Any?) : this(CursorFieldType.UNKNOWN, `object`) {}
-    constructor(type: CursorFieldType?, `object`: Any?) {
+    constructor(any: Any?) : this(CursorFieldType.UNKNOWN, any) {}
+    private constructor(type: CursorFieldType, any: Any?) {
         this.type = type
-        value = `object`
+        value = any
     }
 
     @Throws(JSONException::class)
-    fun toJson(): JSONObject? {
+    fun toJson(): JSONObject {
         val json = JSONObject()
         json.put(KEY_TYPE, type.code)
         json.put(KEY_VALUE, value)
@@ -98,10 +98,10 @@ class TypedCursorValue {
     }
 
     companion object {
-        private val KEY_TYPE: String? = "type"
-        private val KEY_VALUE: String? = "value"
-        fun fromJson(json: JSONObject?): TypedCursorValue? {
-            var type: CursorFieldType? = CursorFieldType.UNKNOWN
+        private val KEY_TYPE: String = "type"
+        private val KEY_VALUE: String = "value"
+        fun fromJson(json: JSONObject): TypedCursorValue {
+            var type: CursorFieldType = CursorFieldType.UNKNOWN
             if (json.has(KEY_TYPE)) {
                 type = CursorFieldType.fromColumnType(json.optInt(KEY_TYPE))
             }

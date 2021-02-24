@@ -24,8 +24,6 @@ import io.vavr.control.Try
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.SearchObjects
-import org.andstatus.app.account.AccountData
-import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
@@ -65,7 +63,7 @@ import java.util.function.Supplier
  * @author yvolk@yurivolkov.com
  */
 class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccount?>, IsEmpty, TaggedClass {
-    private var actor: Actor?
+    private var actor: Actor
 
     @Volatile
     private var connection: Connection? = null
@@ -93,8 +91,8 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         return data.accountName
     }
 
-    fun getActor(): Actor? {
-        return Actor.Companion.load(data.myContext(), actor.actorId, false, Supplier { actor })
+    fun getActor(): Actor {
+        return Actor.load(data.myContext(), actor.actorId, false, Supplier { actor })
     }
 
     fun getWebFingerId(): String? {
@@ -196,7 +194,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     fun isValid(): Boolean {
         return (!deleted
                 && actor.actorId != 0L && connection != null && data.accountName.isValid
-                && !StringUtil.isEmpty(actor.oid))
+                && !actor.oid.isNullOrEmpty())
     }
 
     private fun setOAuth(isOAuthTriState: TriState?) {
@@ -225,19 +223,17 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         return actor.actorId
     }
 
-    fun getActorOid(): String? {
+    fun getActorOid(): String {
         return actor.oid
     }
 
     /**
      * @return The system in which the Account is defined, see [OriginTable]
      */
-    fun getOrigin(): Origin? {
-        return data.accountName.origin
-    }
+    val origin: Origin get() = data.accountName.origin
 
     fun getOriginId(): Long {
-        return getOrigin().getId()
+        return getOrigin().id
     }
 
     fun getConnection(): Connection? {
@@ -378,7 +374,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
 
     override fun hashCode(): Int {
         var result = data.accountName.hashCode()
-        if (!StringUtil.isEmpty(actor.oid)) {
+        if (!actor.oid.isNullOrEmpty()) {
             result = 31 * result + actor.oid.hashCode()
         }
         return result
@@ -394,7 +390,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
 
     fun getLastSyncSucceededDate(): Long {
         return if (isValid() && isPersistent()) data.myContext().timelines()
-                .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, actor, Origin.Companion.EMPTY)
+                .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, actor,  Origin.EMPTY)
                 .map { obj: Timeline? -> obj.getSyncSucceededDate() }.max { obj: Long?, anotherLong: Long? -> obj.compareTo(anotherLong) }.orElse(0L) else 0L
     }
 
@@ -569,12 +565,12 @@ ${MyLog.getStackTrace(Exception())}""")
         }
 
         fun onCredentialsVerified(actor: Actor): Try<Builder?>? {
-            var ok = actor.nonEmpty() && StringUtil.nonEmpty(actor.oid) && actor.isUsernameValid
+            var ok = actor.nonEmpty() && !actor.oid.isNullOrEmpty() && actor.isUsernameValid
             val errorSettingUsername = !ok
             var credentialsOfOtherAccount = false
             // We are comparing usernames ignoring case, but we fix correct case
             // as the Originating system tells us.
-            if (ok && !StringUtil.isEmpty(myAccount.getUsername())
+            if (ok && !myAccount.getUsername().isNullOrEmpty()
                     && myAccount.data.accountName.username.compareTo(actor.username, ignoreCase = true) != 0) {
                 // Credentials belong to other Account ??
                 ok = false
@@ -721,7 +717,7 @@ ${MyLog.getStackTrace(Exception())}""")
             fun loadFromAccountData(accountData: AccountData, method: String?): Builder? {
                 val myAccount = MyAccount(accountData)
                 val builder = fromMyAccount(myAccount)
-                if (!MyContextHolder.Companion.myContextHolder.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently()
+                if (! MyContextHolder.myContextHolder.isOnRestore()) builder.fixInconsistenciesWithChangedEnvironmentSilently()
                 builder.logLoadResult(method)
                 return builder
             }
@@ -743,38 +739,38 @@ ${MyLog.getStackTrace(Exception())}""")
     }
 
     companion object {
-        private val TAG: String? = MyAccount::class.java.simpleName
-        val EMPTY: MyAccount? = MyAccount(AccountName.Companion.getEmpty())
-        val KEY_ACCOUNT_NAME: String? = "account_name"
+        private val TAG: String = MyAccount::class.java.simpleName
+        val EMPTY: MyAccount = MyAccount(AccountName.Companion.getEmpty())
+        val KEY_ACCOUNT_NAME: String = "account_name"
 
         /** Username for the account  */
-        val KEY_USERNAME: String? = "username"
+        val KEY_USERNAME: String = "username"
 
         /** A name that is unique for an origin  */
-        val KEY_UNIQUE_NAME: String? = "unique_name"
+        val KEY_UNIQUE_NAME: String = "unique_name"
 
         /** [ActorTable._ID] in our System.  */
-        val KEY_ACTOR_ID: String? = "user_id"
+        val KEY_ACTOR_ID: String = "user_id"
 
         /** [ActorTable.ACTOR_OID] in Microblogging System.  */
-        val KEY_ACTOR_OID: String? = "user_oid"
+        val KEY_ACTOR_OID: String = "user_oid"
 
         /** Is OAuth on for this MyAccount?  */
-        val KEY_OAUTH: String? = "oauth"
+        val KEY_OAUTH: String = "oauth"
 
         /** This account is in the process of deletion and should be ignored...  */
-        val KEY_DELETED: String? = "deleted"
+        val KEY_DELETED: String = "deleted"
 
         /** @see android.content.ContentResolver.getIsSyncable
          */
-        val KEY_IS_SYNCABLE: String? = "is_syncable"
+        val KEY_IS_SYNCABLE: String = "is_syncable"
 
         /** This corresponds to turning syncing on/off in Android Accounts
          * @see android.content.ContentResolver.getSyncAutomatically
          */
-        val KEY_IS_SYNCED_AUTOMATICALLY: String? = "sync_automatically"
-        val KEY_ORDER: String? = "order"
-        fun fromBundle(myContext: MyContext?, bundle: Bundle?): MyAccount? {
+        val KEY_IS_SYNCED_AUTOMATICALLY: String = "sync_automatically"
+        val KEY_ORDER: String = "order"
+        fun fromBundle(myContext: MyContext?, bundle: Bundle?): MyAccount {
             return if (bundle == null) EMPTY else myContext.accounts().fromAccountName(bundle.getString(IntentExtra.ACCOUNT_NAME.key))
         }
     }

@@ -20,7 +20,6 @@ import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 
 /**
  * The command to the MyService or to MyAppWidgetProvider as a
@@ -109,7 +108,7 @@ enum class CommandEnum @JvmOverloads constructor(
          * Returns the enum for a String action code or UNKNOWN
          */
         fun load(strCode: String?): CommandEnum? {
-            if (!StringUtil.isEmpty(strCode)) {
+            if (!strCode.isNullOrEmpty()) {
                 for (serviceCommand in values()) {
                     if (serviceCommand.code == strCode) {
                         return serviceCommand

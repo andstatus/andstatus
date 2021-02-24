@@ -26,7 +26,18 @@ import org.andstatus.app.R
 enum class MySettingsGroup(
         /** key used in preference headers  */
         val key: String?, private val titleResId: Int, private val preferencesXmlResId: Int) {
-    UNKNOWN("unknown", R.string.settings_activity_title, R.xml.preference_headers), ACCOUNTS("accounts", R.string.header_accounts, R.xml.preferences_accounts), APPEARANCE("appearance", R.string.title_preference_appearance, R.xml.preferences_appearance), GESTURES("gestures", R.string.gestures, R.xml.preferences_gestures), TIMELINE("timeline", R.string.title_timeline, R.xml.preferences_timeline), ATTACHMENTS("attachments", R.string.attachments, R.xml.preferences_attachments), SYNCING("syncing", R.string.title_preference_syncing, R.xml.preferences_syncing), FILTERS("filters", R.string.filters_title, R.xml.preferences_filters), NOTIFICATIONS("notifications", R.string.notifications_title, R.xml.preferences_notifications), STORAGE("storage", R.string.title_preference_storage, R.xml.preferences_storage), INFORMATION("information", R.string.category_title_preference_information, R.xml.preferences_information), DEBUGGING("debugging", R.string.title_preference_debugging, R.xml.preferences_debugging);
+    UNKNOWN("unknown", R.string.settings_activity_title, R.xml.preference_headers),
+    ACCOUNTS("accounts", R.string.header_accounts, R.xml.preferences_accounts),
+    APPEARANCE("appearance", R.string.title_preference_appearance, R.xml.preferences_appearance),
+    GESTURES("gestures", R.string.gestures, R.xml.preferences_gestures),
+    TIMELINE("timeline", R.string.title_timeline, R.xml.preferences_timeline),
+    ATTACHMENTS("attachments", R.string.attachments, R.xml.preferences_attachments),
+    SYNCING("syncing", R.string.title_preference_syncing, R.xml.preferences_syncing),
+    FILTERS("filters", R.string.filters_title, R.xml.preferences_filters),
+    NOTIFICATIONS("notifications", R.string.notifications_title, R.xml.preferences_notifications),
+    STORAGE("storage", R.string.title_preference_storage, R.xml.preferences_storage),
+    INFORMATION("information", R.string.category_title_preference_information, R.xml.preferences_information),
+    DEBUGGING("debugging", R.string.title_preference_debugging, R.xml.preferences_debugging);
 
     override fun toString(): String {
         return "SettingsFragment:$key"
@@ -36,7 +47,7 @@ enum class MySettingsGroup(
         return preferencesXmlResId
     }
 
-    fun add(intent: Intent?): Intent? {
+    fun add(intent: Intent): Intent {
         return intent.putExtra(IntentExtra.SETTINGS_GROUP.key, key)
     }
 
@@ -48,7 +59,7 @@ enum class MySettingsGroup(
         /**
          * Returns the enum or UNKNOWN
          */
-        fun from(fragment: Fragment?): MySettingsGroup? {
+        fun from(fragment: Fragment?): MySettingsGroup {
             if (fragment == null) return UNKNOWN
             val args = fragment.arguments
             return if (args == null) UNKNOWN else from(args.getString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT))
@@ -56,7 +67,7 @@ enum class MySettingsGroup(
 
         /** @return  the enum or UNKNOWN
          */
-        fun from(key: String?): MySettingsGroup? {
+        fun from(key: String?): MySettingsGroup {
             for (value in values()) {
                 if (value.key == key) {
                     return value
@@ -67,7 +78,7 @@ enum class MySettingsGroup(
 
         /** @return  the enum or UNKNOWN
          */
-        fun fromIntent(intent: Intent?): MySettingsGroup? {
+        fun fromIntent(intent: Intent): MySettingsGroup {
             return from(intent.getStringExtra(IntentExtra.SETTINGS_GROUP.key))
         }
 

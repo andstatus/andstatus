@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.util
 
+import org.andstatus.app.data.DbUtils.closeSilently
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
@@ -25,11 +26,12 @@ import java.io.InputStream
 import java.nio.charset.Charset
 
 object FileDescriptorUtils {
-    private val TAG: String? = FileDescriptorUtils::class.java.simpleName
-    fun getJSONObject(fileDescriptor: FileDescriptor?): JSONObject? {
+    private val TAG: String = FileDescriptorUtils::class.java.simpleName
+
+    fun getJSONObject(fileDescriptor: FileDescriptor?): JSONObject {
         var jso: JSONObject? = null
         val fileString = utf8FileDescriptor2String(fileDescriptor)
-        if (!StringUtil.isEmpty(fileString)) {
+        if (fileString.isNotEmpty()) {
             jso = try {
                 JSONObject(fileString)
             } catch (e: JSONException) {
@@ -43,11 +45,11 @@ object FileDescriptorUtils {
         return jso
     }
 
-    fun utf8FileDescriptor2String(fileDescriptor: FileDescriptor?): String? {
+    fun utf8FileDescriptor2String(fileDescriptor: FileDescriptor?): String {
         return String(getBytes(fileDescriptor), Charset.forName("UTF-8"))
     }
 
-    fun getBytes(fileDescriptor: FileDescriptor?): ByteArray? {
+    fun getBytes(fileDescriptor: FileDescriptor?): ByteArray {
         val bout = ByteArrayOutputStream()
         if (fileDescriptor != null) {
             val `is`: InputStream = FileInputStream(fileDescriptor)

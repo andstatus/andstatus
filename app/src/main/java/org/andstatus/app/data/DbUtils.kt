@@ -25,7 +25,6 @@ import io.vavr.control.Try
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StopWatch
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
 import java.io.Closeable
@@ -42,12 +41,12 @@ import java.util.function.Supplier
 
 object DbUtils {
     private const val MS_BETWEEN_RETRIES = 500
-    private val TAG: String? = DbUtils::class.java.simpleName
+    private val TAG: String = DbUtils::class.java.simpleName
 
     /**
      * @return rowId
      */
-    fun addRowWithRetry(myContext: MyContext?, tableName: String?, values: ContentValues?, nRetries: Int): Try<Long?>? {
+    fun addRowWithRetry(myContext: MyContext, tableName: String?, values: ContentValues?, nRetries: Int): Try<Long?>? {
         val method = "addRowWithRetry"
         var rowId: Long = -1
         val db = myContext.getDatabase()
@@ -78,7 +77,7 @@ object DbUtils {
     /**
      * @return Number of rows updated
      */
-    fun updateRowWithRetry(myContext: MyContext?, tableName: String?, rowId: Long, values: ContentValues?, nRetries: Int): Try<Void?>? {
+    fun updateRowWithRetry(myContext: MyContext, tableName: String?, rowId: Long, values: ContentValues?, nRetries: Int): Try<Void> {
         val method = "updateRowWithRetry"
         var rowsUpdated = 0
         val db = myContext.getDatabase()
@@ -116,7 +115,7 @@ object DbUtils {
         var wasInterrupted = false
         if (delayMs > 1) {
             val delay = delayMs / 2 + Random().nextInt(delayMs)
-            val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+            val stopWatch: StopWatch = StopWatch.createStarted()
             while (stopWatch.time < delay) {
                 val remainingDelay = delay - stopWatch.time
                 if (remainingDelay < 2) break
@@ -148,38 +147,38 @@ object DbUtils {
     @Throws(IOException::class)
     private fun closeLegacy(toClose: Any?, message: String?) {
         if (toClose is Closeable) {
-            (toClose as Closeable?).close()
+            toClose.close()
         } else if (toClose is Cursor) {
-            if (!(toClose as Cursor?).isClosed()) {
-                (toClose as Cursor?).close()
+            if (!toClose.isClosed()) {
+                toClose.close()
             }
         } else if (toClose is FileChannel) {
-            (toClose as FileChannel?).close()
+            toClose.close()
         } else if (toClose is InputStream) {
-            (toClose as InputStream?).close()
+            toClose.close()
         } else if (toClose is Reader) {
-            (toClose as Reader?).close()
+            toClose.close()
         } else if (toClose is SQLiteStatement) {
-            (toClose as SQLiteStatement?).close()
+            toClose.close()
         } else if (toClose is OutputStream) {
-            (toClose as OutputStream?).close()
+            toClose.close()
         } else if (toClose is OutputStreamWriter) {
-            (toClose as OutputStreamWriter?).close()
+            toClose.close()
         } else if (toClose is Writer) {
-            (toClose as Writer?).close()
+            toClose.close()
         } else if (toClose is HttpURLConnection) {
-            (toClose as HttpURLConnection?).disconnect()
+            toClose.disconnect()
         } else {
             val detailMessage = ("Couldn't close silently an object of the class: "
-                    + toClose.javaClass.canonicalName
-                    + if (StringUtil.isEmpty(message)) "" else "; $message")
+                    + toClose?.javaClass?.canonicalName
+                    + if (message.isNullOrEmpty()) "" else "; $message")
             MyLog.w(TAG, MyLog.getStackTrace(IllegalArgumentException(detailMessage)))
         }
     }
 
-    fun getString(cursor: Cursor?, columnName: String?, ifEmpty: Supplier<String?>?): String {
+    fun getString(cursor: Cursor?, columnName: String?, ifEmpty: Supplier<String>): String {
         val value = getString(cursor, columnName)
-        return if (StringUtil.isEmpty(value)) ifEmpty.get() else value
+        return if (value.isEmpty()) ifEmpty.get() else value
     }
 
     fun getString(cursor: Cursor?, columnName: String?): String {
@@ -187,18 +186,18 @@ object DbUtils {
     }
 
     fun getString(cursor: Cursor?, columnIndex: Int): String {
-        var value: String? = ""
+        var value = ""
         if (cursor != null && columnIndex >= 0) {
             val value2 = cursor.getString(columnIndex)
-            if (!StringUtil.isEmpty(value2)) {
+            if (!value2.isNullOrEmpty()) {
                 value = value2
             }
         }
         return value
     }
 
-    fun getTriState(cursor: Cursor?, columnName: String?): TriState? {
-        return TriState.Companion.fromId(getInt(cursor, columnName).toLong())
+    fun getTriState(cursor: Cursor?, columnName: String?): TriState {
+        return TriState.fromId(getInt(cursor, columnName).toLong())
     }
 
     fun getBoolean(cursor: Cursor?, columnName: String?): Boolean {
@@ -237,9 +236,13 @@ object DbUtils {
         return value
     }
 
-    fun execSQL(db: SQLiteDatabase?, sql: String?) {
-        MyLog.v("execSQL") { "sql = \"$sql\";" }
-        db.execSQL(sql)
+    fun execSQL(db: SQLiteDatabase?, sql: String) {
+        if (db == null) {
+            MyLog.databaseIsNull { "execSQL, sql = \"$sql\";" }
+        } else {
+            MyLog.v("execSQL") { "sql = \"$sql\";" }
+            db.execSQL(sql)
+        }
     }
 
     fun sqlZeroToNull(value: Long): String? {
@@ -247,6 +250,6 @@ object DbUtils {
     }
 
     fun sqlEmptyToNull(value: String?): String? {
-        return if (StringUtil.isEmpty(value)) null else "'$value'"
+        return if (value.isNullOrEmpty()) null else "'$value'"
     }
 }

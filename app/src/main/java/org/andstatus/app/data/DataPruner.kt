@@ -56,12 +56,12 @@ class DataPruner(private val myContext: MyContext) {
     private var logger: ProgressLogger? = ProgressLogger.Companion.getEmpty(TAG)
     private var mDeleted: Long = 0
     private var latestTimestamp: Long = 0
-    fun setPruneNow(): DataPruner? {
+    fun setPruneNow(): DataPruner {
         pruneNow = true
         return this
     }
 
-    fun setLogger(logger: ProgressLogger?): DataPruner? {
+    fun setLogger(logger: ProgressLogger?): DataPruner {
         this.logger = logger
         return this
     }

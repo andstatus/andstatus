@@ -68,7 +68,7 @@ class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, 
     }
 
     fun loadCurrent() {
-        currentData = NoteEditorData.Companion.load(MyContextHolder.Companion.myContextHolder.getNow(), getCurrentNoteId())
+        currentData = NoteEditorData.Companion.load( MyContextHolder.myContextHolder.getNow(), getCurrentNoteId())
     }
 
     override fun isEmpty(): Boolean {

@@ -35,7 +35,7 @@ import java.util.*
 
 object TimelineSql {
     private fun tablesForTimeline(uri: Uri?, projection: Array<String?>?, subQueryIndex: Int): String? {
-        val timeline: Timeline = Timeline.Companion.fromParsedUri(MyContextHolder.Companion.myContextHolder.getNow(), ParsedUri.Companion.fromUri(uri), "")
+        val timeline: Timeline = Timeline.Companion.fromParsedUri( MyContextHolder.myContextHolder.getNow(), ParsedUri.Companion.fromUri(uri), "")
         val actWhere = SqlWhere().append(ActivityTable.UPDATED_DATE, ">0")
         val noteWhere = SqlWhere()
         val audienceWhere = SqlWhere()
@@ -115,7 +115,7 @@ object TimelineSql {
      * @return Strings for [SQLiteQueryBuilder.setTables], more than one for a union query
      */
     fun tablesForTimeline(uri: Uri?, projection: Array<String?>?): MutableList<String?>? {
-        val timeline: Timeline = Timeline.Companion.fromParsedUri(MyContextHolder.Companion.myContextHolder.getNow(), ParsedUri.Companion.fromUri(uri), "")
+        val timeline: Timeline = Timeline.Companion.fromParsedUri( MyContextHolder.myContextHolder.getNow(), ParsedUri.Companion.fromUri(uri), "")
         return when (timeline.timelineType) {
             TimelineType.SENT -> Arrays.asList(
                     tablesForTimeline(uri, projection, 0),

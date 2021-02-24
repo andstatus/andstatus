@@ -20,7 +20,7 @@ import android.net.Uri
 import org.andstatus.app.service.MyService
 import org.andstatus.app.service.MyServiceManager
 
-enum class MyAction(actionOrSuffix: String?) {
+enum class MyAction(actionOrSuffix: String) {
     /**
      * This action is used in intent sent to [MyService].
      * This intent will be received by MyService only if it's initialized
@@ -32,23 +32,35 @@ enum class MyAction(actionOrSuffix: String?) {
      * Broadcast with this action is being sent by [MyService] to notify of its state.
      * Actually [MyServiceManager] receives it.
      */
-    SERVICE_STATE("SERVICE_STATE"), VIEW_CONVERSATION("VIEW_CONVERSATION"), VIEW_FOLLOWERS("VIEW_FOLLOWERS"), VIEW_ACTORS("VIEW_ACTORS"), BOOT_COMPLETED("android.intent.action.BOOT_COMPLETED"), ACTION_SHUTDOWN("android.intent.action.ACTION_SHUTDOWN"), SYNC("SYNC"), INITIALIZE_APP("INITIALIZE_APP"), SET_DEFAULT_VALUES("SET_DEFAULT_VALUES"), CLOSE_ALL_ACTIVITIES("CLOSE_ALL_ACTIVITIES"), UNKNOWN("UNKNOWN");
+    SERVICE_STATE("SERVICE_STATE"),
+    VIEW_CONVERSATION("VIEW_CONVERSATION"),
+    VIEW_FOLLOWERS("VIEW_FOLLOWERS"),
+    VIEW_ACTORS("VIEW_ACTORS"),
+    BOOT_COMPLETED("android.intent.action.BOOT_COMPLETED"),
+    ACTION_SHUTDOWN("android.intent.action.ACTION_SHUTDOWN"),
+    SYNC("SYNC"),
+    INITIALIZE_APP("INITIALIZE_APP"),
+    SET_DEFAULT_VALUES("SET_DEFAULT_VALUES"),
+    CLOSE_ALL_ACTIVITIES("CLOSE_ALL_ACTIVITIES"),
+    UNKNOWN("UNKNOWN");
 
-    private val action: String?
-    fun getIntent(): Intent? {
+    private val action: String = if (actionOrSuffix.contains(".")) actionOrSuffix
+        else ClassInApplicationPackage.PACKAGE_NAME + ".action." + actionOrSuffix
+
+    fun getIntent(): Intent {
         return Intent(getAction())
     }
 
-    fun getIntent(uri: Uri?): Intent? {
+    fun getIntent(uri: Uri?): Intent {
         return Intent(getAction(), uri)
     }
 
-    fun getAction(): String? {
+    fun getAction(): String {
         return action
     }
 
     companion object {
-        fun fromIntent(intent: Intent?): MyAction? {
+        fun fromIntent(intent: Intent?): MyAction {
             val action = if (intent == null) "(null)" else intent.action
             for (value in values()) {
                 if (value.action == action) {
@@ -59,7 +71,4 @@ enum class MyAction(actionOrSuffix: String?) {
         }
     }
 
-    init {
-        action = if (actionOrSuffix.contains(".")) actionOrSuffix else ClassInApplicationPackage.PACKAGE_NAME + ".action." + actionOrSuffix
-    }
 }

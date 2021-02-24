@@ -49,7 +49,7 @@ internal class Convert15 : ConvertOneStep() {
             var ok = false
             try {
                 MyLog.i(TAG, "Accounts upgrading step from version $oldVersion to version $versionTo")
-                val myContext: MyContext = MyContextHolder.Companion.myContextHolder.getNow()
+                val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
                 myContext.origins().initialize(db)
                 val am = AccountManager.get(myContext.context())
                 val accountsToRemove: MutableCollection<Account?> = ArrayList()

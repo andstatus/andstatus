@@ -1024,7 +1024,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
             MyLog.v(this) { "switchTimelineActivity; $timeline" }
             if (isFinishing) {
                 val intent = getIntentForTimeline(myContext, timeline, false)
-                MyContextHolder.Companion.myContextHolder.initialize(this).thenStartActivity(intent)
+                 MyContextHolder.myContextHolder.initialize(this).thenStartActivity(intent)
             } else {
                 startForTimeline(myContext, this, timeline)
             }

@@ -17,12 +17,12 @@ package org.andstatus.app.util
 
 /** Avoiding null-s  */
 object NullUtil {
-    fun nonEmpty(`object`: Any?): Boolean {
-        if (`object` is IsEmpty) return (`object` as IsEmpty?).nonEmpty()
-        return if (`object` is String) StringUtil.nonEmpty(`object` as String?) else `object` != null
+    fun nonEmpty(any: Any?): Boolean {
+        if (any is IsEmpty) return any.nonEmpty()
+        return if (any is String) !(any as String?).isNullOrEmpty() else any != null
     }
 
-    fun <K, V> getOrDefault(map: MutableMap<K?, V?>?, key: K?, defaultValue: V): V {
+    fun <K, V> getOrDefault(map: Map<K, V>?, key: K?, defaultValue: V): V {
         if (map == null || key == null) return defaultValue
         val v = map[key]
         return v ?: defaultValue

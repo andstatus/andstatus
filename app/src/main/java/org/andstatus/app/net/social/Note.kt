@@ -121,8 +121,8 @@ class Note : AObject {
 
     private fun evalContentToSearch(): String? {
         return MyHtml.getContentToSearch(
-                (if (StringUtil.nonEmpty(name)) "$name " else "") +
-                        (if (StringUtil.nonEmpty(summary)) "$summary " else "") +
+                (if (!name.isNullOrEmpty()) "$name " else "") +
+                        (if (!summary.isNullOrEmpty()) "$summary " else "") +
                         content)
     }
 
@@ -153,7 +153,7 @@ class Note : AObject {
     }
 
     fun setConversationOid(conversationOid: String?): Note? {
-        if (StringUtil.isEmpty(conversationOid)) {
+        if (conversationOid.isNullOrEmpty()) {
             this.conversationOid = ""
         } else {
             this.conversationOid = conversationOid
@@ -162,7 +162,7 @@ class Note : AObject {
     }
 
     fun lookupConversationId(): Long {
-        if (conversationId == 0L && !StringUtil.isEmpty(conversationOid)) {
+        if (conversationId == 0L && !conversationOid.isNullOrEmpty()) {
             conversationId = MyQuery.conversationOidToId(origin.getId(), conversationOid)
         }
         if (conversationId == 0L && noteId != 0L) {
@@ -198,7 +198,7 @@ class Note : AObject {
     }
 
     fun hasSomeContent(): Boolean {
-        return StringUtil.nonEmpty(name) || StringUtil.nonEmpty(summary) || StringUtil.nonEmpty(content) ||
+        return !name.isNullOrEmpty() || !summary.isNullOrEmpty() || !content.isNullOrEmpty() ||
                 attachments.nonEmpty()
     }
 
@@ -338,7 +338,7 @@ class Note : AObject {
             }
             TriState.UNKNOWN
         } else {
-            val favAndType = MyQuery.noteIdToLastFavoriting(MyContextHolder.Companion.myContextHolder.getNow().getDatabase(),
+            val favAndType = MyQuery.noteIdToLastFavoriting( MyContextHolder.myContextHolder.getNow().getDatabase(),
                     noteId, accountActor.actorId)
             when (favAndType.second) {
                 ActivityType.LIKE -> TriState.TRUE
@@ -396,19 +396,19 @@ class Note : AObject {
 
     companion object {
         private val TAG: String? = Note::class.java.simpleName
-        val EMPTY: Note? = Note(Origin.Companion.EMPTY, getTempOid())
+        val EMPTY: Note? = Note( Origin.EMPTY, getTempOid())
         fun fromOriginAndOid(origin: Origin, oid: String?, status: DownloadStatus?): Note {
             val note = Note(origin, fixedOid(oid))
             note.status = fixedStatus(note.oid, status)
             return note
         }
 
-        private fun fixedOid(oid: String?): String? {
+        private fun fixedOid(oid: String?): String {
             return if (UriUtils.isEmptyOid(oid)) getTempOid() else oid
         }
 
         private fun fixedStatus(oid: String?, status: DownloadStatus?): DownloadStatus? {
-            return if (StringUtil.isEmpty(oid) && status == DownloadStatus.LOADED) {
+            return if (oid.isNullOrEmpty() && status == DownloadStatus.LOADED) {
                 DownloadStatus.UNKNOWN
             } else status
         }
@@ -444,7 +444,7 @@ class Note : AObject {
                     .stream().findAny().map { obj: Note? -> obj.loadAudience() }.orElse(EMPTY)
         }
 
-        private fun getTempOid(): String? {
+        private fun getTempOid(): String {
             return StringUtil.toTempOid("note:" + MyLog.uniqueCurrentTimeMS())
         }
 

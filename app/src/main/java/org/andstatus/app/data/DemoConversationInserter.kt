@@ -18,7 +18,6 @@ package org.andstatus.app.data
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.DemoData
-import org.andstatus.app.data.DemoNoteInserter
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.ActivityType
@@ -28,7 +27,6 @@ import org.andstatus.app.net.social.Visibility
 import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.origin.OriginType
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
@@ -41,7 +39,7 @@ class DemoConversationInserter {
     private var accountActor: Actor? = Actor.Companion.EMPTY
     private var bodySuffix: String? = ""
     fun insertConversation(bodySuffixIn: String?) {
-        bodySuffix = if (StringUtil.isEmpty(bodySuffixIn)) "" else " $bodySuffixIn"
+        bodySuffix = if (bodySuffixIn.isNullOrEmpty()) "" else " $bodySuffixIn"
         iteration = DemoData.Companion.demoData.conversationIterationCounter.incrementAndGet()
         ma = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
         Assert.assertTrue(DemoData.Companion.demoData.conversationAccountName + " exists", ma.isValid())
@@ -240,7 +238,7 @@ class DemoConversationInserter {
     private fun buildActivity(accountActor: Actor?, author: Actor?, name: String?, content: String?, inReplyTo: AActivity?,
                               noteOidIn: String?, status: DownloadStatus?): AActivity? {
         return DemoNoteInserter(accountActor).buildActivity(author, name,
-                if (StringUtil.isEmpty(content)) "" else content + (if (inReplyTo != null) " it$iteration" else "") + bodySuffix,
+                if (content.isNullOrEmpty()) "" else content + (if (inReplyTo != null) " it$iteration" else "") + bodySuffix,
                 inReplyTo, noteOidIn, status)
     }
 

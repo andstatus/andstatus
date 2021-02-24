@@ -33,7 +33,6 @@ import org.andstatus.app.net.social.Note
 import org.andstatus.app.net.social.TimelinePosition
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.UriUtils
 import org.json.JSONArray
 import org.json.JSONException
@@ -97,19 +96,19 @@ internal class ActivitySender(val connection: ConnectionActivityPub?, val note: 
         val activity = newActivityOfThisAccount(activityType)
         val obj = buildObject(activity)
         addAttachments(obj)
-        if (StringUtil.nonEmpty(note.getName())) {
+        if (!note.getName().isNullOrEmpty()) {
             obj.put(ConnectionActivityPub.Companion.NAME_PROPERTY, note.getName())
         }
-        if (StringUtil.nonEmpty(note.getSummary())) {
+        if (!note.getSummary().isNullOrEmpty()) {
             obj.put(ConnectionActivityPub.Companion.SUMMARY_PROPERTY, note.getSummary())
         }
         if (note.isSensitive()) {
             obj.put(ConnectionActivityPub.Companion.SENSITIVE_PROPERTY, note.isSensitive())
         }
-        if (StringUtil.nonEmpty(note.getContent())) {
+        if (!note.getContent().isNullOrEmpty()) {
             obj.put(ConnectionActivityPub.Companion.CONTENT_PROPERTY, note.getContentToPost())
         }
-        if (!StringUtil.isEmpty(note.getInReplyTo().oid)) {
+        if (!note.getInReplyTo().oid.isNullOrEmpty()) {
             obj.put("inReplyTo", note.getInReplyTo().oid)
         }
         activity.put("object", obj)
@@ -135,7 +134,7 @@ internal class ActivitySender(val connection: ConnectionActivityPub?, val note: 
     private fun contentNotPosted(activityType: ActivityType?, jsActivity: JSONObject?): Boolean {
         val objPosted = jsActivity.optJSONObject("object")
         return ActivityType.CREATE == activityType && objPosted != null &&
-                (StringUtil.nonEmpty(note.getContent()) && StringUtil.isEmpty(JsonUtils.optString(objPosted, ConnectionActivityPub.Companion.CONTENT_PROPERTY)) || StringUtil.nonEmpty(note.getName()) && StringUtil.isEmpty(JsonUtils.optString(objPosted, ConnectionActivityPub.Companion.NAME_PROPERTY)) || StringUtil.nonEmpty(note.getSummary()) && StringUtil.isEmpty(JsonUtils.optString(objPosted, ConnectionActivityPub.Companion.SUMMARY_PROPERTY)))
+                (!note.getContent().isNullOrEmpty() && JsonUtils.optString(objPosted, ConnectionActivityPub.Companion.CONTENT_PROPERTY).isNullOrEmpty() || !note.getName().isNullOrEmpty() && JsonUtils.optString(objPosted, ConnectionActivityPub.Companion.NAME_PROPERTY).isNullOrEmpty() || !note.getSummary().isNullOrEmpty() && JsonUtils.optString(objPosted, ConnectionActivityPub.Companion.SUMMARY_PROPERTY).isNullOrEmpty())
     }
 
     @Throws(JSONException::class)
@@ -166,7 +165,7 @@ internal class ActivitySender(val connection: ConnectionActivityPub?, val note: 
         } else {
             recipient.getBestUri()
         }
-        if (StringUtil.isEmpty(recipientId)) return
+        if (recipientId.isNullOrEmpty()) return
         try {
             val field = if (activity.has(recipientField)) activity.getJSONArray(recipientField) else JSONArray()
             field.put(recipientId)

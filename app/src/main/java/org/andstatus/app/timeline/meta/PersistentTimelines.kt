@@ -37,9 +37,9 @@ import java.util.stream.Stream
 /**
  * @author yvolk@yurivolkov.com
  */
-class PersistentTimelines private constructor(private val myContext: MyContext?) {
-    private val timelines: ConcurrentMap<Long?, Timeline?>? = ConcurrentHashMap()
-    fun initialize(): PersistentTimelines? {
+class PersistentTimelines private constructor(private val myContext: MyContext) {
+    private val timelines: ConcurrentMap<Long, Timeline> = ConcurrentHashMap()
+    fun initialize(): PersistentTimelines {
         val stopWatch: StopWatch = StopWatch.Companion.createStarted()
         val method = "initialize"
         timelines.clear()
@@ -83,7 +83,7 @@ class PersistentTimelines private constructor(private val myContext: MyContext?)
     }
 
     fun forUser(timelineType: TimelineType, actor: Actor): Timeline {
-        return get(0, timelineType, actor, Origin.Companion.EMPTY, "")
+        return get(0, timelineType, actor,  Origin.EMPTY, "")
     }
 
     operator fun get(timelineType: TimelineType, actor: Actor, origin: Origin): Timeline {
@@ -102,11 +102,11 @@ class PersistentTimelines private constructor(private val myContext: MyContext?)
         return stream().filter(Predicate { that: Timeline? -> newTimeline.duplicates(that) }).findAny().orElse(newTimeline)
     }
 
-    fun stream(): Stream<Timeline?>? {
+    fun stream(): Stream<Timeline> {
         return values().stream()
     }
 
-    fun values(): MutableCollection<Timeline?>? {
+    fun values(): MutableCollection<Timeline> {
         return timelines.values
     }
 
@@ -144,7 +144,7 @@ class PersistentTimelines private constructor(private val myContext: MyContext?)
                isTimelineCombined: TriState?,
                timelineType: TimelineType,
                actor: Actor,
-               origin: Origin): Stream<Timeline?> {
+               origin: Origin): Stream<Timeline> {
         return stream().filter(
                 Predicate { timeline: Timeline? -> timeline.match(isForSelector, isTimelineCombined, timelineType, actor, origin) })
     }
@@ -191,7 +191,7 @@ class PersistentTimelines private constructor(private val myContext: MyContext?)
     }
 
     companion object {
-        fun newEmpty(myContext: MyContext?): PersistentTimelines? {
+        fun newEmpty(myContext: MyContext): PersistentTimelines {
             return PersistentTimelines(myContext)
         }
     }

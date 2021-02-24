@@ -10,10 +10,10 @@ import org.andstatus.app.data.DbUtils
  * Targeting to Public is flagged by [NoteTable.VISIBILITY]
  */
 object AudienceTable {
-    val TABLE_NAME: String? = "audience"
-    val ACTOR_ID: String? = ActorTable.ACTOR_ID
-    val NOTE_ID: String? = NoteTable.NOTE_ID
-    fun create(db: SQLiteDatabase?) {
+    val TABLE_NAME: String = "audience"
+    val ACTOR_ID: String = ActorTable.ACTOR_ID
+    val NOTE_ID: String = NoteTable.NOTE_ID
+    fun create(db: SQLiteDatabase) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + ACTOR_ID + " INTEGER NOT NULL,"
                 + NOTE_ID + " INTEGER NOT NULL,"

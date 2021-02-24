@@ -21,7 +21,6 @@ import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.notification.NotificationEvents
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
-import org.andstatus.app.util.StringUtil
 
 /**
  * Maintains the appWidget instance (defined by [.appWidgetId]): - state
@@ -102,7 +101,7 @@ class MyAppWidgetData private constructor(val events: NotificationEvents?, priva
                 (if (events.isEmpty()) "" else ", notifications:$events") +
                 (if (dateLastChecked > 0) ", checked:$dateLastChecked" else "") +
                 (if (dateSince > 0) ", since:$dateSince" else "") +
-                (if (StringUtil.isEmpty(nothingPref)) "" else ", nothing:$nothingPref") +
+                (if (nothingPref.isNullOrEmpty()) "" else ", nothing:$nothingPref") +
                 "}"
     }
 
@@ -128,7 +127,7 @@ class MyAppWidgetData private constructor(val events: NotificationEvents?, priva
         private val PREF_DATECHECKED_KEY: String? = "datechecked"
         fun newInstance(events: NotificationEvents?, appWidgetId: Int): MyAppWidgetData? {
             val data = MyAppWidgetData(events, appWidgetId)
-            if (MyContextHolder.Companion.myContextHolder.getNow().isReady()) {
+            if ( MyContextHolder.myContextHolder.getNow().isReady()) {
                 data.load()
             }
             return data

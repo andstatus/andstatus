@@ -20,7 +20,6 @@ import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TaggedClass
 import org.andstatus.app.util.UriUtils
 import java.util.*
@@ -51,7 +50,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
     private fun loadOtherFields() {
         if (checkHardErrorBeforeLoad()) return
         val sql = "SELECT * FROM " + DownloadTable.TABLE_NAME + getWhere().getWhere()
-        val db: SQLiteDatabase = MyContextHolder.Companion.myContextHolder.getNow().getDatabase()
+        val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().getDatabase()
         if (db == null) {
             MyLog.databaseIsNull { this }
             softError = true
@@ -80,7 +79,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         if (contentType == MyContentType.UNKNOWN) {
             contentType = MyContentType.Companion.load(DbUtils.getLong(cursor, DownloadTable.CONTENT_TYPE))
         }
-        if (StringUtil.isEmpty(mimeType)) {
+        if (mimeType.isNullOrEmpty()) {
             mimeType = DbUtils.getString(cursor, DownloadTable.MEDIA_TYPE,
                     Supplier { uri2MimeType(null, Uri.parse(fileStored.filename)) })
         }
@@ -155,7 +154,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         }
         if (contentType == MyContentType.UNKNOWN) {
             contentType = MyContentType.Companion.fromUri(DownloadType.ATTACHMENT,
-                    MyContextHolder.Companion.myContextHolder.getNow().context().getContentResolver(), uri, mimeType)
+                     MyContextHolder.myContextHolder.getNow().context().getContentResolver(), uri, mimeType)
         }
     }
 
@@ -188,11 +187,11 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
 
     private fun getExtension(): String? {
         val fileExtension: String = MyContentType.Companion.mimeToFileExtension(mimeType)
-        if (StringUtil.nonEmpty(fileExtension)) return fileExtension
+        if (!fileExtension.isNullOrEmpty()) return fileExtension
         val fileExtension2 = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
-        if (StringUtil.nonEmpty(fileExtension2)) return fileExtension2
+        if (!fileExtension2.isNullOrEmpty()) return fileExtension2
         val fileExtension3 = MimeTypeMap.getFileExtensionFromUrl(fileStored.filename)
-        if (StringUtil.nonEmpty(fileExtension3)) return fileExtension3
+        if (!fileExtension3.isNullOrEmpty()) return fileExtension3
         MyLog.d(this, "Failed to find file extension $this")
         return "png"
     }
@@ -239,7 +238,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
 
     private fun addNew() {
         val values = toContentValues()
-        DbUtils.addRowWithRetry(MyContextHolder.Companion.myContextHolder.getNow(), DownloadTable.TABLE_NAME, values, 3)
+        DbUtils.addRowWithRetry( MyContextHolder.myContextHolder.getNow(), DownloadTable.TABLE_NAME, values, 3)
                 .onSuccess { idAdded: Long? ->
                     downloadId = idAdded
                     MyLog.v(this) { "Added " + actorNoteUriToString() }
@@ -252,7 +251,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
 
     private fun update() {
         val values = toContentValues()
-        DbUtils.updateRowWithRetry(MyContextHolder.Companion.myContextHolder.getNow(), DownloadTable.TABLE_NAME, downloadId, values, 3)
+        DbUtils.updateRowWithRetry( MyContextHolder.myContextHolder.getNow(), DownloadTable.TABLE_NAME, downloadId, values, 3)
                 .onSuccess { o: Void? -> MyLog.v(this) { "Updated " + actorNoteUriToString() } }
                 .onFailure { e: Throwable? -> softError = true }
         val filenameChanged = (!isError() && fileNew.existsNow()

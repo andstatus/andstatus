@@ -130,10 +130,10 @@ internal class ActivitySender(val connection: ConnectionPumpio?, val note: Note?
                 obj = mediaObject
             }
         }
-        if (StringUtil.nonEmpty(note.getName())) {
+        if (!note.getName().isNullOrEmpty()) {
             obj.put(ConnectionPumpio.Companion.NAME_PROPERTY, note.getName())
         }
-        if (StringUtil.nonEmpty(note.getContent())) {
+        if (!note.getContent().isNullOrEmpty()) {
             obj.put(ConnectionPumpio.Companion.CONTENT_PROPERTY, note.getContentToPost())
         }
         if (StringUtil.nonEmptyNonTemp(note.getInReplyTo().oid)) {
@@ -148,10 +148,10 @@ internal class ActivitySender(val connection: ConnectionPumpio?, val note: Note?
 
     private fun contentNotPosted(activityType: PActivityType?, jsActivity: JSONObject?): Boolean {
         val objPosted = jsActivity.optJSONObject("object")
-        return PActivityType.POST == activityType && objPosted != null && (StringUtil.nonEmpty(note.getContent())
-                && StringUtil.isEmpty(JsonUtils.optString(objPosted, ConnectionPumpio.Companion.CONTENT_PROPERTY))
-                || StringUtil.nonEmpty(note.getName())
-                && StringUtil.isEmpty(JsonUtils.optString(objPosted, ConnectionPumpio.Companion.NAME_PROPERTY)))
+        return PActivityType.POST == activityType && objPosted != null && (!note.getContent().isNullOrEmpty()
+                && JsonUtils.optString(objPosted, ConnectionPumpio.Companion.CONTENT_PROPERTY).isNullOrEmpty()
+                || !note.getName().isNullOrEmpty()
+                && JsonUtils.optString(objPosted, ConnectionPumpio.Companion.NAME_PROPERTY).isNullOrEmpty())
     }
 
     @Throws(JSONException::class, ConnectionException::class)
@@ -175,7 +175,7 @@ internal class ActivitySender(val connection: ConnectionPumpio?, val note: Note?
     @Throws(JSONException::class)
     private fun setAudience(activity: JSONObject?, activityType: PActivityType?) {
         note.audience().recipients.forEach(Consumer { actor: Actor? -> addToAudience(activity, "to", actor) })
-        if (note.audience().noRecipients() && StringUtil.isEmpty(note.getInReplyTo().oid)
+        if (note.audience().noRecipients() && note.getInReplyTo().oid.isNullOrEmpty()
                 && (activityType == PActivityType.POST || activityType == PActivityType.UPDATE)) {
             addToAudience(activity, "to", Actor.Companion.PUBLIC)
         }
@@ -190,7 +190,7 @@ internal class ActivitySender(val connection: ConnectionPumpio?, val note: Note?
         } else {
             recipient.getBestUri()
         }
-        if (StringUtil.isEmpty(recipientId)) return
+        if (recipientId.isNullOrEmpty()) return
         val jsonRecipient = JSONObject()
         try {
             jsonRecipient.put("id", recipientId)
@@ -231,7 +231,7 @@ internal class ActivitySender(val connection: ConnectionPumpio?, val note: Note?
         } else {
             require(note.hasSomeContent()) { "Nothing to send" }
             obj.put("author", activity.getJSONObject("actor"))
-            val objectType = if (StringUtil.isEmpty(note.getInReplyTo().oid)) PObjectType.NOTE else PObjectType.COMMENT
+            val objectType = if (note.getInReplyTo().oid.isNullOrEmpty()) PObjectType.NOTE else PObjectType.COMMENT
             obj.put("objectType", objectType.id)
         }
         return obj

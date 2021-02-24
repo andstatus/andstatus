@@ -134,6 +134,6 @@ class ConversationViewItem : BaseNoteViewItem<ConversationViewItem?>, Comparable
     }
 
     companion object {
-        val EMPTY: ConversationViewItem? = ConversationViewItem(true, RelativeTime.DATETIME_MILLIS_NEVER)
+        val EMPTY: ConversationViewItem = ConversationViewItem(true, RelativeTime.DATETIME_MILLIS_NEVER)
     }
 }

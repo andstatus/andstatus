@@ -16,5 +16,5 @@
 package org.andstatus.app
 
 object ClassInApplicationPackage {
-    val PACKAGE_NAME = IntentExtra::class.java.getPackage().getName()
+    val PACKAGE_NAME: String = IntentExtra::class.java.getPackage()?.getName() ?: "unknown_package"
 }

@@ -24,40 +24,40 @@ import org.andstatus.app.data.DbUtils
  * @author yvolk@yurivolkov.com
  */
 object CommandTable : BaseColumns {
-    val TABLE_NAME: String? = "command"
-    val QUEUE_TYPE: String? = "queue_type"
-    val COMMAND_CODE: String? = "command_code"
-    val CREATED_DATE: String? = "command_created_date"
-    val IN_FOREGROUND: String? = "in_foreground"
-    val MANUALLY_LAUNCHED: String? = "manually_launched"
-    val DESCRIPTION: String? = "command_description"
+    val TABLE_NAME: String = "command"
+    val QUEUE_TYPE: String = "queue_type"
+    val COMMAND_CODE: String = "command_code"
+    val CREATED_DATE: String = "command_created_date"
+    val IN_FOREGROUND: String = "in_foreground"
+    val MANUALLY_LAUNCHED: String = "manually_launched"
+    val DESCRIPTION: String = "command_description"
 
     /** Timeline attributes
      * Timeline here may have ID=0 for non-persistent timelines  */
-    val TIMELINE_ID: String? = TimelineTable.TIMELINE_ID
-    val TIMELINE_TYPE: String? = TimelineTable.TIMELINE_TYPE
-    val ACCOUNT_ID: String? = ActorTable.ACCOUNT_ID
-    val ACTOR_ID: String? = TimelineTable.ACTOR_ID
+    val TIMELINE_ID: String = TimelineTable.TIMELINE_ID
+    val TIMELINE_TYPE: String = TimelineTable.TIMELINE_TYPE
+    val ACCOUNT_ID: String = ActorTable.ACCOUNT_ID
+    val ACTOR_ID: String = TimelineTable.ACTOR_ID
 
     /** This is used e.g. when a [.ACTOR_ID] is not known  */
-    val USERNAME: String? = ActorTable.USERNAME
-    val ORIGIN_ID: String? = TimelineTable.ORIGIN_ID
-    val SEARCH_QUERY: String? = TimelineTable.SEARCH_QUERY
+    val USERNAME: String = ActorTable.USERNAME
+    val ORIGIN_ID: String = TimelineTable.ORIGIN_ID
+    val SEARCH_QUERY: String = TimelineTable.SEARCH_QUERY
 
     /** This is MessageId mostly, but not only...  */
-    val ITEM_ID: String? = "item_id"
+    val ITEM_ID: String = "item_id"
 
     // Command execution result is below
-    val LAST_EXECUTED_DATE: String? = "last_executed_date"
-    val EXECUTION_COUNT: String? = "execution_count"
-    val RETRIES_LEFT: String? = "retries_left"
-    val NUM_AUTH_EXCEPTIONS: String? = "num_auth_exceptions"
-    val NUM_IO_EXCEPTIONS: String? = "num_io_exceptions"
-    val NUM_PARSE_EXCEPTIONS: String? = "num_parse_exceptions"
-    val ERROR_MESSAGE: String? = "error_message"
-    val DOWNLOADED_COUNT: String? = "downloaded_count"
-    val PROGRESS_TEXT: String? = "progress_text"
-    fun create(db: SQLiteDatabase?) {
+    val LAST_EXECUTED_DATE: String = "last_executed_date"
+    val EXECUTION_COUNT: String = "execution_count"
+    val RETRIES_LEFT: String = "retries_left"
+    val NUM_AUTH_EXCEPTIONS: String = "num_auth_exceptions"
+    val NUM_IO_EXCEPTIONS: String = "num_io_exceptions"
+    val NUM_PARSE_EXCEPTIONS: String = "num_parse_exceptions"
+    val ERROR_MESSAGE: String = "error_message"
+    val DOWNLOADED_COUNT: String = "downloaded_count"
+    val PROGRESS_TEXT: String = "progress_text"
+    fun create(db: SQLiteDatabase) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY NOT NULL,"
                 + QUEUE_TYPE + " TEXT NOT NULL,"

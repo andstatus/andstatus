@@ -19,8 +19,8 @@ import android.database.Cursor
 import android.database.SQLException
 import android.database.sqlite.SQLiteDatabase
 import org.andstatus.app.SearchObjects
-import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextImpl
+import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.database.table.OriginTable
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StringUtil
@@ -28,11 +28,13 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.stream.Collectors
 
-class PersistentOrigins private constructor(myContext: MyContextImpl?) {
-    private val myContext: MyContext?
-    private val mOrigins: MutableMap<String?, Origin?>? = ConcurrentHashMap()
+class PersistentOrigins private constructor(val myContext: MyContextImpl) {
+    private val mOrigins: MutableMap<String, Origin> = ConcurrentHashMap()
+
     @JvmOverloads
     fun initialize(db: SQLiteDatabase? = myContext.getDatabase()): Boolean {
+        if (db == null) return true
+
         val sql = "SELECT * FROM " + OriginTable.TABLE_NAME
         var cursor: Cursor? = null
         try {
@@ -43,10 +45,7 @@ class PersistentOrigins private constructor(myContext: MyContextImpl?) {
                 mOrigins[origin.name] = origin
             }
         } catch (e: SQLException) {
-            MyLog.e(TAG, """
-     Failed to initialize origins
-     ${MyLog.getStackTrace(e)}
-     """.trimIndent())
+            MyLog.e(TAG, """Failed to initialize origins ${MyLog.getStackTrace(e)}""".trimIndent())
             return false
         } finally {
             closeSilently(cursor)
@@ -59,42 +58,43 @@ class PersistentOrigins private constructor(myContext: MyContextImpl?) {
      * @return EMPTY Origin if not found
      */
     fun fromId(originId: Long): Origin {
-        if (originId == 0L) return Origin.Companion.EMPTY
+        if (originId == 0L) return  Origin.EMPTY
         for (origin in mOrigins.values) {
             if (origin.id == originId) {
                 return origin
             }
         }
-        return Origin.Companion.EMPTY
+        return  Origin.EMPTY
     }
 
     /**
      * @return Origin of UNKNOWN type if not found
      */
-    fun fromName(originName: String?): Origin? {
+    fun fromName(originName: String?): Origin {
         var origin: Origin? = null
-        if (!StringUtil.isEmpty(originName)) {
-            origin = mOrigins.get(originName)
+        if (!originName.isNullOrEmpty()) {
+            origin = mOrigins[originName]
         }
-        return origin ?: Origin.Companion.EMPTY
+        return origin ?:  Origin.EMPTY
     }
 
     fun fromOriginInAccountNameAndHost(originInAccountName: String?, host: String?): Origin? {
         val origins = allFromOriginInAccountNameAndHost(originInAccountName, host)
         return when (origins.size) {
-            0 -> Origin.Companion.EMPTY
-            1 -> origins.get(0)
+            0 ->  Origin.EMPTY
+            1 -> origins[0]
             else ->                 // Select Origin that was added earlier
-                origins.stream().min { o1: Origin?, o2: Origin? -> java.lang.Long.signum(o1.id - o2.id) }.orElse(Origin.Companion.EMPTY)
+                origins.stream().min { o1: Origin, o2: Origin -> java.lang.Long.signum(o1.id - o2.id) }
+                        .orElse(Origin.EMPTY)
         }
     }
 
-    fun allFromOriginInAccountNameAndHost(originInAccountName: String?, host: String?): MutableList<Origin?>? {
+    fun allFromOriginInAccountNameAndHost(originInAccountName: String?, host: String?): List<Origin> {
         val origins = fromOriginInAccountName(originInAccountName)
         return when (origins.size) {
             0, 1 -> origins
             else -> origins.stream()
-                    .filter { origin: Origin? ->
+                    .filter { origin: Origin ->
                         origin.getAccountNameHost().isEmpty() ||
                                 origin.getAccountNameHost().equals(host, ignoreCase = true)
                     }
@@ -102,17 +102,18 @@ class PersistentOrigins private constructor(myContext: MyContextImpl?) {
         }
     }
 
-    fun fromOriginInAccountName(originInAccountName: String?): MutableList<Origin?>? {
-        return StringUtil.optNotEmpty(originInAccountName).map { name: String? ->
-            val originType: OriginType = OriginType.Companion.fromTitle(name)
-            val originsOfType: MutableList<Origin?>? = if (originType === OriginType.UNKNOWN) emptyList() else mOrigins.values.stream().filter { origin: Origin? -> origin.getOriginType() === originType }
+    fun fromOriginInAccountName(originInAccountName: String?): List<Origin> {
+        return StringUtil.optNotEmpty(originInAccountName).map { name: String ->
+            val originType: OriginType = OriginType.fromTitle(name)
+            val originsOfType: List<Origin> = if (originType === OriginType.UNKNOWN) emptyList<Origin>()
+            else mOrigins.values.stream().filter { origin: Origin -> origin.getOriginType() === originType }
                     .collect(Collectors.toList())
             if (originsOfType.size == 1) {
                 return@map originsOfType
             }
             val originsWithName = mOrigins.values.stream()
-                    .filter { origin: Origin? ->
-                        (origin.getName().equals(name, ignoreCase = true)
+                    .filter { origin: Origin ->
+                        (origin.name.equals(name, ignoreCase = true)
                                 && (originType === OriginType.UNKNOWN || origin.getOriginType() === originType))
                     }
                     .collect(Collectors.toList())
@@ -124,27 +125,27 @@ class PersistentOrigins private constructor(myContext: MyContextImpl?) {
     /**
      * @return Origin of this type or empty Origin of UNKNOWN type if not found
      */
-    fun firstOfType(originType: OriginType?): Origin? {
+    fun firstOfType(originType: OriginType?): Origin {
         for (origin in mOrigins.values) {
             if (origin.getOriginType() === originType) {
                 return origin
             }
         }
-        return Origin.Companion.EMPTY
+        return  Origin.EMPTY
     }
 
-    fun collection(): MutableCollection<Origin?>? {
+    fun collection(): MutableCollection<Origin> {
         return mOrigins.values
     }
 
-    fun originsToSync(originIn: Origin?, forAllOrigins: Boolean, isSearch: Boolean): MutableList<Origin?>? {
+    fun originsToSync(originIn: Origin?, forAllOrigins: Boolean, isSearch: Boolean): MutableList<Origin> {
         val hasSynced = hasSyncedForAllOrigins(isSearch)
-        val origins: MutableList<Origin?> = ArrayList()
+        val origins: MutableList<Origin> = ArrayList()
         if (forAllOrigins) {
             for (origin in collection()) {
                 addMyOriginToSync(origins, origin, isSearch, hasSynced)
             }
-        } else {
+        } else if (originIn != null) {
             addMyOriginToSync(origins, originIn, isSearch, false)
         }
         return origins
@@ -159,7 +160,7 @@ class PersistentOrigins private constructor(myContext: MyContextImpl?) {
         return false
     }
 
-    private fun addMyOriginToSync(origins: MutableList<Origin?>?, origin: Origin?, isSearch: Boolean, hasSynced: Boolean) {
+    private fun addMyOriginToSync(origins: MutableList<Origin>, origin: Origin, isSearch: Boolean, hasSynced: Boolean) {
         if (!origin.isValid()) {
             return
         }
@@ -173,19 +174,19 @@ class PersistentOrigins private constructor(myContext: MyContextImpl?) {
         return originsForInternetSearch(searchObjects, origin, forAllOrigins).size > 0
     }
 
-    fun originsForInternetSearch(searchObjects: SearchObjects?, originIn: Origin?, forAllOrigins: Boolean): MutableList<Origin?> {
-        val origins: MutableList<Origin?> = ArrayList()
+    fun originsForInternetSearch(searchObjects: SearchObjects?, originIn: Origin?, forAllOrigins: Boolean): MutableList<Origin> {
+        val origins: MutableList<Origin> = ArrayList()
         if (forAllOrigins) {
             for (account in myContext.accounts().get()) {
-                if (account.origin.isInCombinedGlobalSearch &&
-                        account.isValidAndSucceeded && account.isSearchSupported(searchObjects)
+                if (account.origin.isInCombinedGlobalSearch() &&
+                        account.isValidAndSucceeded() && account.isSearchSupported(searchObjects)
                         && !origins.contains(account.origin)) {
                     origins.add(account.origin)
                 }
             }
-        } else if (originIn != null && originIn.isValid) {
+        } else if (originIn != null && originIn.isValid()) {
             val account = myContext.accounts().getFirstPreferablySucceededForOrigin(originIn)
-            if (account.isValidAndSucceeded && account.isSearchSupported(searchObjects)) {
+            if (account.isValidAndSucceeded() && account.isSearchSupported(searchObjects)) {
                 origins.add(originIn)
             }
         }
@@ -203,13 +204,9 @@ class PersistentOrigins private constructor(myContext: MyContextImpl?) {
     }
 
     companion object {
-        private val TAG: String? = PersistentOrigins::class.java.simpleName
-        fun newEmpty(myContext: MyContextImpl?): PersistentOrigins? {
+        private val TAG: String = PersistentOrigins::class.java.simpleName
+        fun newEmpty(myContext: MyContextImpl): PersistentOrigins {
             return PersistentOrigins(myContext)
         }
-    }
-
-    init {
-        this.myContext = myContext
     }
 }

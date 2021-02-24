@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.userimport
+package org.andstatus.app.user
 
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContextHolder
@@ -25,11 +25,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -765,10 +760,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -804,9 +795,9 @@ class CachedUsersAndActorsTest {
 
     @Test
     fun test() {
-        val users: CachedUsersAndActors = MyContextHolder.Companion.myContextHolder.getNow().users()
+        val users: CachedUsersAndActors =  MyContextHolder.myContextHolder.getNow().users()
         Assert.assertTrue(users.toString(), users.size() > 4)
-        val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.conversationOriginName)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.conversationOriginName)
         Assert.assertEquals(DemoData.Companion.demoData.conversationOriginName, origin.name)
         val actor: Actor = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountSecondName).getActor()
         Assert.assertEquals(users.toString(), true, users.isMeOrMyFriend(actor))

@@ -17,7 +17,6 @@ package org.andstatus.app.timeline
 
 import android.widget.ListView
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 
 /**
  * Determines where to save / retrieve position in the list
@@ -55,7 +54,7 @@ internal class TimelineViewPositionStorage<T : ViewItem<T?>?>(private val activi
                     + ", y:" + pos.y
                     + " at pos=" + firstVisibleAdapterPosition
                     + (if (pos.position != firstVisibleAdapterPosition) " found pos=" + pos.position else "")
-                    + (if (StringUtil.nonEmpty(pos.description)) ", description=" + pos.description else "")
+                    + (if (!pos.description.isNullOrEmpty()) ", description=" + pos.description else "")
                     + ", minDate=" + MyLog.formatDateTime(minDate)
                     + " at pos=" + lastPosition + " of " + itemCount
                     + ", listViews=" + listView.getCount()

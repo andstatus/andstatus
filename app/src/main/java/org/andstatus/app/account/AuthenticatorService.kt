@@ -103,7 +103,7 @@ class AuthenticatorService : Service() {
         override fun getAccountRemovalAllowed(response: AccountAuthenticatorResponse?, account: Account?): Bundle? {
             var deleted = true
             if (AccountUtils.isVersionCurrent(context, account)) {
-                deleted = MyContextHolder.Companion.myContextHolder
+                deleted =  MyContextHolder.myContextHolder
                         .initialize(context, this)
                         .getFuture()
                         .tryBlocking()
@@ -111,7 +111,7 @@ class AuthenticatorService : Service() {
                         .filter(CheckedPredicate { obj: MyAccount? -> obj.isValid() })
                         .map<Boolean?>(CheckedFunction { ma: MyAccount? ->
                             MyLog.i(this, "Removing $ma")
-                            MyContextHolder.Companion.myContextHolder.getNow().timelines().onAccountDelete(ma)
+                             MyContextHolder.myContextHolder.getNow().timelines().onAccountDelete(ma)
                             MyPreferences.onPreferencesChanged()
                             true
                         })
@@ -134,7 +134,7 @@ class AuthenticatorService : Service() {
     override fun onCreate() {
         super.onCreate()
         MyLog.v(this, "onCreate")
-        MyContextHolder.Companion.myContextHolder.initialize(this).getBlocking()
+         MyContextHolder.myContextHolder.initialize(this).getBlocking()
     }
 
     override fun onDestroy() {

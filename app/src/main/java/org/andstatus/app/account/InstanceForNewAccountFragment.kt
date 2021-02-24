@@ -37,7 +37,7 @@ import java.util.function.Consumer
 
 class InstanceForNewAccountFragment : Fragment() {
     private var originType: OriginType? = OriginType.UNKNOWN
-    private var origin: Origin? = Origin.Companion.EMPTY
+    private var origin: Origin? =  Origin.EMPTY
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
     }
@@ -98,12 +98,12 @@ class InstanceForNewAccountFragment : Fragment() {
         val url1 = UrlUtils.buildUrl(hostOrUrl, true)
                 ?: return TryUtils.failure(getText(R.string.error_invalid_value).toString() + ": '" + hostOrUrl + "'")
         val host = url1.host
-        for (existing in MyContextHolder.Companion.myContextHolder.getBlocking().origins().originsOfType(originType)) {
+        for (existing in  MyContextHolder.myContextHolder.getBlocking().origins().originsOfType(originType)) {
             if (host == existing.getHost()) {
                 return Try.success(existing)
             }
         }
-        val origin = Origin.Builder(MyContextHolder.Companion.myContextHolder.getBlocking(), originType)
+        val origin = Origin.Builder( MyContextHolder.myContextHolder.getBlocking(), originType)
                 .setHostOrUrl(hostOrUrl)
                 .setName(host)
                 .save()
@@ -112,15 +112,15 @@ class InstanceForNewAccountFragment : Fragment() {
     }
 
     private fun onNewOrigin(activity: AccountSettingsActivity?, originNew: Origin?) {
-        if (originNew == origin || MyContextHolder.Companion.myContextHolder.getNow().isReady()) {
+        if (originNew == origin ||  MyContextHolder.myContextHolder.getNow().isReady()) {
             if (activity.getState().account.origin != originNew) {
                 activity.getState().builder.origin = originNew
             }
             activity.verifyCredentials(true)
         } else {
-            val future1: CompletableFuture<MyContext?> = MyContextHolder.Companion.myContextHolder.initialize(activity).getFuture().future
+            val future1: CompletableFuture<MyContext?> =  MyContextHolder.myContextHolder.initialize(activity).getFuture().future
             MyLog.d(this, "onNewOrigin After 'initialize' $future1")
-            val future2: CompletableFuture<MyContext?> = MyContextHolder.Companion.myContextHolder.whenSuccessAsync(Consumer { myContext: MyContext? ->
+            val future2: CompletableFuture<MyContext?> =  MyContextHolder.myContextHolder.whenSuccessAsync(Consumer { myContext: MyContext? ->
                 activity.finish()
                 AccountSettingsActivity.Companion.startAddNewAccount(myContext.context(), originNew.getName(), true)
             }, UiThreadExecutor.Companion.INSTANCE).getFuture().future

@@ -22,7 +22,6 @@ import cz.msebera.android.httpclient.client.methods.HttpPost
 import io.vavr.control.CheckedFunction
 import org.andstatus.app.account.AccountDataWriter
 import org.andstatus.app.net.social.Connection
-import org.andstatus.app.util.StringUtil
 import java.io.IOException
 import java.nio.charset.Charset
 
@@ -63,8 +62,8 @@ class HttpConnectionBasic : HttpConnection(), HttpConnectionApacheSpecific {
     }
 
     override fun getCredentialsPresent(): Boolean {
-        return (!StringUtil.isEmpty(data.accountName.uniqueName)
-                && !StringUtil.isEmpty(mPassword))
+        return (!data.accountName.uniqueName.isNullOrEmpty()
+                && !mPassword.isNullOrEmpty())
     }
 
     override fun clearAuthInformation() {

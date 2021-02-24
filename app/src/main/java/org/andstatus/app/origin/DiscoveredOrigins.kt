@@ -1,7 +1,6 @@
 package org.andstatus.app.origin
 
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import java.util.concurrent.ConcurrentHashMap
 
 object DiscoveredOrigins {
@@ -37,10 +36,10 @@ object DiscoveredOrigins {
     }
 
     fun fromName(originName: String?): Origin? {
-        return if (!StringUtil.isEmpty(originName) && mOrigins.containsKey(originName)) {
+        return if (!originName.isNullOrEmpty() && mOrigins.containsKey(originName)) {
             mOrigins.get(originName)
         } else {
-            Origin.Companion.EMPTY
+             Origin.EMPTY
         }
     }
 }

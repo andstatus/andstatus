@@ -16,24 +16,23 @@
 package org.andstatus.app.util
 
 import java.util.*
-import java.util.function.Function
 import java.util.function.Predicate
 import java.util.function.Supplier
 import java.util.function.UnaryOperator
 
 /** Adds convenience methods to [StringBuilder]  */
-class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder? = StringBuilder()) : CharSequence, IsEmpty {
-    private constructor(text: CharSequence?) : this(StringBuilder(text)) {}
+class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder = StringBuilder()) : CharSequence, IsEmpty {
+    private constructor(text: CharSequence) : this(StringBuilder(text)) {}
 
     fun <T> withCommaNonEmpty(label: CharSequence?, obj: T?): MyStringBuilder {
-        return withComma(label, obj, { obj: T? -> nonEmptyObj(obj) })
+        return withComma(label, obj, { it -> nonEmptyObj(it) })
     }
 
-    fun <T> withComma(label: CharSequence?, obj: T?, predicate: Predicate<T?>?): MyStringBuilder {
+    fun <T> withComma(label: CharSequence?, obj: T?, predicate: Predicate<T>): MyStringBuilder {
         return if (obj == null || !predicate.test(obj)) this else withComma(label, obj)
     }
 
-    fun withComma(label: CharSequence?, obj: Any?, filter: Supplier<Boolean?>?): MyStringBuilder {
+    fun withComma(label: CharSequence?, obj: Any?, filter: Supplier<Boolean>): MyStringBuilder {
         return if (obj == null || !filter.get()) this else withComma(label, obj)
     }
 
@@ -57,20 +56,20 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder? = St
         return append("", text, " ", false)
     }
 
-    fun atNewLine(label: CharSequence?, text: CharSequence?): MyStringBuilder? {
+    fun atNewLine(label: CharSequence?, text: CharSequence?): MyStringBuilder {
         return append(label, text, ", \n", false)
     }
 
-    fun atNewLine(text: CharSequence?): MyStringBuilder? {
+    fun atNewLine(text: CharSequence?): MyStringBuilder {
         return append("", text, ", \n", false)
     }
 
     fun append(label: CharSequence?, obj: Any?, separator: String, quoted: Boolean): MyStringBuilder {
         if (obj == null) return this
         val text = obj.toString()
-        if (StringUtil.isEmpty(text)) return this
+        if (text.isEmpty()) return this
         if (builder.length > 0) builder.append(separator)
-        if (StringUtil.nonEmpty(label)) builder.append(label).append(": ")
+        if (!label.isNullOrEmpty()) builder.append(label).append(": ")
         if (quoted) builder.append("\"")
         builder.append(text)
         if (quoted) builder.append("\"")
@@ -78,29 +77,26 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder? = St
     }
 
     fun append(text: CharSequence?): MyStringBuilder {
-        if (StringUtil.nonEmpty(text)) {
+        if (!text.isNullOrEmpty()) {
             builder.append(text)
         }
         return this
     }
 
-    override fun length(): Int {
-        return builder.length
-    }
+    override val length: Int
+        get() = builder.length
 
-    override fun charAt(index: Int): Char {
-        return builder.get(index)
-    }
+    override fun get(index: Int): Char = builder[index]
 
-    override fun subSequence(start: Int, end: Int): CharSequence? {
-        return builder.subSequence(start, end)
+    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence {
+        return builder.subSequence(startIndex, endIndex)
     }
 
     override fun toString(): String {
         return builder.toString()
     }
 
-    fun prependWithSeparator(text: CharSequence?, separator: String): MyStringBuilder {
+    fun prependWithSeparator(text: CharSequence, separator: String): MyStringBuilder {
         if (text.length > 0) {
             builder.insert(0, separator)
             builder.insert(0, text)
@@ -108,7 +104,7 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder? = St
         return this
     }
 
-    fun apply(unaryOperator: UnaryOperator<MyStringBuilder?>?): MyStringBuilder {
+    fun apply(unaryOperator: UnaryOperator<MyStringBuilder>): MyStringBuilder {
         return unaryOperator.apply(this)
     }
 
@@ -116,18 +112,18 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder? = St
         return length == 0
     }
 
-    fun toKeyValue(key: Any?): String? {
+    fun toKeyValue(key: Any): String {
         return formatKeyValue(key, toString())
     }
 
     companion object {
-        val COMMA: String? = ","
-        fun of(text: CharSequence?): MyStringBuilder? {
+        val COMMA: String = ","
+        fun of(text: CharSequence): MyStringBuilder {
             return MyStringBuilder(text)
         }
 
-        fun of(content: Optional<String?>?): MyStringBuilder? {
-            return content.map(Function { text: String? -> of(text) }).orElse(MyStringBuilder())
+        fun of(content: Optional<String>): MyStringBuilder? {
+            return content.map { text: String -> of(text) }.orElse(MyStringBuilder())
         }
 
         fun formatKeyValue(keyIn: Any?, valueIn: Any?): String {
@@ -145,7 +141,7 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder? = St
         /** Strips value from leading and trailing commas  */
         fun formatKeyValue(key: Any?, value: String?): String {
             var out = ""
-            if (!StringUtil.isEmpty(value)) {
+            if (!value.isNullOrEmpty()) {
                 out = value.trim { it <= ' ' }
                 if (out.substring(0, 1) == COMMA) {
                     out = out.substring(1)
@@ -159,21 +155,15 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder? = St
         }
 
         fun objToTag(objTag: Any?): String {
-            val tag: String?
-            tag = if (objTag == null) {
-                "(null)"
-            } else if (objTag is IdentifiableInstance) {
-                (objTag as IdentifiableInstance?).instanceTag()
-            } else if (objTag is TaggedClass) {
-                (objTag as TaggedClass?).classTag()
-            } else if (objTag is String) {
-                objTag as String?
-            } else (objTag as? Enum<*>)?.toString()
-                    ?: if (objTag is Class<*>) {
-                        (objTag as Class<*>?).getSimpleName()
-                    } else {
-                        objTag.javaClass.simpleName
-                    }
+            val tag: String = when (objTag) {
+                null -> "(null)"
+                is IdentifiableInstance -> objTag.instanceTag()
+                is TaggedClass -> objTag.classTag()
+                is String -> objTag
+                is Enum<*> -> objTag.toString()
+                is Class<*> -> objTag.simpleName
+                else -> objTag.javaClass.simpleName
+            }
             return if (tag.trim { it <= ' ' }.isEmpty()) {
                 "(empty)"
             } else tag
@@ -184,12 +174,12 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder? = St
         }
 
         fun <T> isEmptyObj(obj: T?): Boolean {
-            if (obj is IsEmpty) return (obj as IsEmpty?).isEmpty()
-            if (obj is Number) return (obj as Number?).toLong() == 0L
-            return if (obj is String) StringUtil.isEmpty(obj as String?) else obj == null
+            if (obj is IsEmpty) return (obj as IsEmpty).isEmpty()
+            if (obj is Number) return (obj as Number).toLong() == 0L
+            return if (obj is String) (obj as String).isEmpty() else obj == null
         }
 
-        fun appendWithSpace(builder: StringBuilder?, text: CharSequence?): StringBuilder {
+        fun appendWithSpace(builder: StringBuilder, text: CharSequence?): StringBuilder {
             return MyStringBuilder(builder).withSpace(text).builder
         }
     }

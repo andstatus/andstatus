@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.serviceimport
+package org.andstatus.app.service
 
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContextHolder
@@ -35,11 +35,6 @@ import org.junit.Assert
 import org.junit.Test
 import java.util.*
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -775,10 +770,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -839,7 +830,7 @@ class MyServiceTest2 : MyServiceTest() {
         MyLog.i(this, "$method; Service stopped after the second command")
         Assert.assertEquals("No new data should be posted while in foreground",
                 1, mService.http.requestsCounter.toLong())
-        val queues: CommandQueue = MyContextHolder.Companion.myContextHolder.getBlocking().queues()
+        val queues: CommandQueue =  MyContextHolder.myContextHolder.getBlocking().queues()
         MyLog.i(this, "$method; Queues1:$queues")
         Assert.assertEquals("First command shouldn't be in any queue $queues",
                 Optional.empty<Any?>(), queues.inWhichQueue(cd1Home).map { q: OneQueue? -> q.queueType })
@@ -868,6 +859,6 @@ class MyServiceTest2 : MyServiceTest() {
         Assert.assertEquals("command id $cd2FromQueue", cd2Interactions.commandId, cd2FromQueue.commandId)
         Assert.assertTrue("command id $cd2FromQueue", cd2FromQueue.commandId >= 0)
         MyLog.i(this, "$method ended")
-        MyContextHolder.Companion.myContextHolder.getNow().queues().clear()
+         MyContextHolder.myContextHolder.getNow().queues().clear()
     }
 }

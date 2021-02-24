@@ -22,13 +22,14 @@ import java.util.*
  * @author yvolk@yurivolkov.com
  */
 object StringUtil {
-    private val TEMP_OID_PREFIX: String? = "andstatustemp:"
+    private val TEMP_OID_PREFIX: String = "andstatustemp:"
+
     fun stripTempPrefix(oid: String?): String? {
-        return if (isTemp(oid)) oid.substring(TEMP_OID_PREFIX.length) else oid
+        return if (isTemp(oid)) oid?.substring(TEMP_OID_PREFIX.length) else oid
     }
 
-    fun toTempOid(oid: String?): String? {
-        return toTempOidIf(true, oid)
+    fun toTempOid(oid: String?): String {
+        return toTempOidIf(true, oid) ?: throw IllegalArgumentException("oid was $oid")
     }
 
     fun toTempOidIf(transformToTempOid: Boolean, oid: String?): String? {
@@ -40,11 +41,11 @@ object StringUtil {
     }
 
     fun isEmptyOrTemp(string: String?): Boolean {
-        return isEmpty(string) || string.startsWith(TEMP_OID_PREFIX)
+        return string.isNullOrEmpty() || string.startsWith(TEMP_OID_PREFIX)
     }
 
     fun isTemp(string: String?): Boolean {
-        return nonEmpty(string) && string.startsWith(TEMP_OID_PREFIX)
+        return !string.isNullOrEmpty() && string.startsWith(TEMP_OID_PREFIX) ?: false
     }
 
     /** empty and null strings are treated as the same  */
@@ -52,30 +53,25 @@ object StringUtil {
         return notEmpty(first, "") == notEmpty(second, "")
     }
 
-    fun nonEmpty(value: CharSequence?): Boolean {
-        return !isEmpty(value)
+    fun notEmpty(value: String?, valueIfEmpty: String): String {
+        return if (value.isNullOrEmpty()) valueIfEmpty else value
     }
 
-    fun isEmpty(value: CharSequence?): Boolean {
-        return value == null || value.length == 0
+    fun optNotEmpty(value: Any?): Optional<String> {
+        return Optional.ofNullable(value)
+            .map { obj: Any? -> obj?.toString() ?: "" }
+            .map { obj: String -> obj.trim() }
+            .filter { s: String -> s.isNotEmpty() }
     }
 
-    fun notEmpty(value: String?, valueIfEmpty: String?): String? {
-        return if (isEmpty(value)) valueIfEmpty else value
-    }
-
-    fun optNotEmpty(value: Any?): Optional<String?>? {
-        return Optional.ofNullable(value).map { obj: Any? -> obj.toString() }.map { obj: String? -> obj.trim { it <= ' ' } }.filter { s: String? -> s.length > 0 }
-    }
-
-    fun notNull(value: String?): String? {
+    fun notNull(value: String?): String {
         return value ?: ""
     }
 
     fun toLong(s: String?): Long {
         var value: Long = 0
         try {
-            value = s.toLong()
+            value = s?.toLong() ?: 0
         } catch (e: NumberFormatException) {
             MyLog.ignored(s, e)
         }
@@ -85,7 +81,7 @@ object StringUtil {
     /**
      * From http://stackoverflow.com/questions/767759/occurrences-of-substring-in-a-string
      */
-    fun countOfOccurrences(str: String?, findStr: String?): Int {
+    fun countOfOccurrences(str: String, findStr: String): Int {
         var lastIndex = 0
         var count = 0
         while (lastIndex != -1) {
@@ -98,10 +94,10 @@ object StringUtil {
         return count
     }
 
-    fun addBeforeArray(array: Array<String?>?, s: String?): Array<String?>? {
+    fun addBeforeArray(array: Array<String?>?, s: String?): Array<String?> {
         val length = array?.size ?: 0
         val ans = arrayOfNulls<String?>(length + 1)
-        if (length > 0) {
+        array?.let {
             System.arraycopy(array, 0, ans, 1, length)
         }
         ans[0] = s
@@ -109,7 +105,7 @@ object StringUtil {
     }
 
     fun isFilled(value: String?): Boolean {
-        return !isEmpty(value)
+        return !value.isNullOrEmpty()
     }
 
     fun isNewFilledValue(oldValue: String?, newValue: String?): Boolean {
@@ -117,7 +113,7 @@ object StringUtil {
     }
 
     /** Doesn't throw exceptions  */
-    fun format(context: Context?, resourceId: Int, vararg args: Any?): String? {
+    fun format(context: Context?, resourceId: Int, vararg args: Any?): String {
         if (resourceId == 0) return ""
         return if (context == null) "Error no context resourceId=" + resourceId + argsToString(args) else try {
             format(context.getText(resourceId).toString(), *args)
@@ -129,11 +125,11 @@ object StringUtil {
     }
 
     /** Doesn't throw exceptions  */
-    fun format(format: String?, vararg args: Any?): String? {
-        if (args == null || args.size == 0) {
-            return format
+    fun format(format: String?, vararg args: Any?): String {
+        if (args.isEmpty() || format == null) {
+            return format?: ""
         }
-        if (nonEmpty(format)) {
+        if (!format.isNullOrEmpty()) {
             try {
                 return String.format(format, *args)
             } catch (e: Exception) {
@@ -143,7 +139,7 @@ object StringUtil {
         return notEmpty(format, "(no format)") + argsToString(args)
     }
 
-    private fun argsToString(args: Array<Any?>?): String? {
-        return if (args == null) "" else " " + if (args.size == 1) args[0].toString() else Arrays.toString(args)
+    private fun argsToString(args: Array<out Any?>): String {
+        return " " + if (args.size == 1) args[0].toString() else args.contentToString()
     }
 }

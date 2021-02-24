@@ -20,7 +20,6 @@ import org.andstatus.app.MyAction
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 
 class MyServiceEventsBroadcaster private constructor(private val mMyContext: MyContext?, private val mState: MyServiceState?) {
     private var mCommandData: CommandData? = CommandData.Companion.EMPTY
@@ -52,8 +51,8 @@ class MyServiceEventsBroadcaster private constructor(private val mMyContext: MyC
         if (MyLog.isVerboseEnabled()) {
             MyLog.v(this) {
                 ("state:" + mState + ", event:" + mEvent
-                        + ", " + mCommandData.toCommandSummary(MyContextHolder.Companion.myContextHolder.getNow())
-                        + if (StringUtil.isEmpty(progress)) "" else ", progress:$progress")
+                        + ", " + mCommandData.toCommandSummary( MyContextHolder.myContextHolder.getNow())
+                        + if (progress.isNullOrEmpty()) "" else ", progress:$progress")
             }
         }
         mMyContext.context().sendBroadcast(intent)

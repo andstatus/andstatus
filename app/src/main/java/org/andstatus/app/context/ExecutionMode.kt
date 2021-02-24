@@ -20,7 +20,12 @@ package org.andstatus.app.context
  * @author yvolk@yurivolkov.com
  */
 enum class ExecutionMode(val code: String?, val description: String?) {
-    UNKNOWN("unknown", "Unknown"), DEVICE("device", "Normal operation"), TEST("test", "General testing, app may contain real data"), FIREBASE_TEST("firebaseTest", "Firebase Test Lab testing"), ROBO_TEST("roboTest", "Robo Test"), TRAVIS_TEST("travisTest", "Travis CI testing. Screen is unavailable");
+    UNKNOWN("unknown", "Unknown"),
+    DEVICE("device", "Normal operation"),
+    TEST("test", "General testing, app may contain real data"),
+    FIREBASE_TEST("firebaseTest", "Firebase Test Lab testing"),
+    ROBO_TEST("roboTest", "Robo Test"),
+    TRAVIS_TEST("travisTest", "Travis CI testing. Screen is unavailable");
 
     companion object {
         fun load(code: String?): ExecutionMode {

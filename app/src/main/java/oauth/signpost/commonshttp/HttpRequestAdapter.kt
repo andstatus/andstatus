@@ -8,14 +8,17 @@ import java.io.IOException
 import java.io.InputStream
 import java.util.*
 
-class HttpRequestAdapter(private val request: HttpUriRequest?) : HttpRequest {
-    private val entity: HttpEntity? = null
+class HttpRequestAdapter(private val request: HttpUriRequest) : HttpRequest {
+    private val entity: HttpEntity? = if (request is HttpEntityEnclosingRequest) {
+        (request as HttpEntityEnclosingRequest).entity
+    } else null
+
     override fun getMethod(): String? {
-        return request.getRequestLine().method
+        return request.requestLine.method
     }
 
-    override fun getRequestUrl(): String? {
-        return request.getURI().toString()
+    override fun getRequestUrl(): String {
+        return request.uri.toString()
     }
 
     override fun setRequestUrl(url: String?) {
@@ -31,9 +34,9 @@ class HttpRequestAdapter(private val request: HttpUriRequest?) : HttpRequest {
         request.setHeader(name, value)
     }
 
-    override fun getAllHeaders(): MutableMap<String?, String?>? {
-        val origHeaders = request.getAllHeaders()
-        val headers = HashMap<String?, String?>()
+    override fun getAllHeaders(): MutableMap<String, String?> {
+        val origHeaders = request.allHeaders
+        val headers = HashMap<String, String?>()
         for (h in origHeaders) {
             headers[h.name] = h.value
         }
@@ -53,13 +56,8 @@ class HttpRequestAdapter(private val request: HttpUriRequest?) : HttpRequest {
         return entity?.content
     }
 
-    override fun unwrap(): Any? {
+    override fun unwrap(): Any {
         return request
     }
 
-    init {
-        if (request is HttpEntityEnclosingRequest) {
-            entity = (request as HttpEntityEnclosingRequest?).getEntity()
-        }
-    }
 }

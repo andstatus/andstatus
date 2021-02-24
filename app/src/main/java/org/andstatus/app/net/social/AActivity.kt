@@ -135,7 +135,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
     }
 
     fun setOid(oidIn: String?): AActivity? {
-        oid = if (StringUtil.isEmpty(oidIn)) "" else oidIn
+        oid = if (oidIn.isNullOrEmpty()) "" else oidIn
         return this
     }
 
@@ -148,8 +148,8 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
     }
 
     fun setTimelinePositions(prevPosition: String?, nextPosition: String?): AActivity? {
-        prevTimelinePosition = TimelinePosition.Companion.of(if (StringUtil.isEmpty(prevPosition)) "" else prevPosition)
-        nextTimelinePosition = TimelinePosition.Companion.of(if (StringUtil.isEmpty(nextPosition)) "" else nextPosition)
+        prevTimelinePosition = TimelinePosition.Companion.of(if (prevPosition.isNullOrEmpty()) "" else prevPosition)
+        nextTimelinePosition = TimelinePosition.Companion.of(if (nextPosition.isNullOrEmpty()) "" else nextPosition)
         return this
     }
 
@@ -157,12 +157,12 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         return StringUtil.toTempOid(
                 getActorPrefix() +
                         type.name.toLowerCase() + "-" +
-                        (if (StringUtil.nonEmpty(getNote().oid)) getNote().oid + "-" else "") +
+                        (if (!getNote().oid.isNullOrEmpty()) getNote().oid + "-" else "") +
                         MyLog.uniqueDateTimeFormatted())
     }
 
     private fun getActorPrefix(): String {
-        return if (StringUtil.nonEmpty(actor.oid)) actor.oid + "-" else if (StringUtil.nonEmpty(accountActor.oid)) accountActor.oid + "-" else ""
+        return if (!actor.oid.isNullOrEmpty()) actor.oid + "-" else if (!accountActor.oid.isNullOrEmpty()) accountActor.oid + "-" else ""
     }
 
     fun getUpdatedDate(): Long {
@@ -300,7 +300,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
 
     private fun wontSave(myContext: MyContext?): Boolean {
         if (isEmpty || type == ActivityType.UPDATE && getObjectType() == AObjectType.ACTOR
-                || StringUtil.isEmpty(oid) && getId() != 0L) {
+                || oid.isNullOrEmpty() && getId() != 0L) {
             MyLog.v(this) { "Won't save $this" }
             return true
         }
@@ -347,7 +347,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
     }
 
     private fun findExisting(myContext: MyContext?) {
-        if (StringUtil.nonEmpty(oid)) {
+        if (!oid.isNullOrEmpty()) {
             id = MyQuery.oidToId(myContext, OidEnum.ACTIVITY_OID, accountActor.origin.id, oid)
         }
         if (id != 0L) {
@@ -445,7 +445,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         values.put(ActivityTable.UPDATED_DATE, updatedDate)
         if (id == 0L) {
             values.put(ActivityTable.ACTIVITY_TYPE, type.id)
-            if (StringUtil.isEmpty(oid)) {
+            if (oid.isNullOrEmpty()) {
                 setOid(buildTempOid())
             }
         }
@@ -453,7 +453,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
             insDate = MyLog.uniqueCurrentTimeMS()
             values.put(ActivityTable.INS_DATE, insDate)
         }
-        if (StringUtil.nonEmpty(oid)) {
+        if (!oid.isNullOrEmpty()) {
             values.put(ActivityTable.ACTIVITY_OID, oid)
         }
         return values
@@ -484,13 +484,13 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         this.id = id
     }
 
-    fun withVisibility(visibility: Visibility?): AActivity? {
+    fun withVisibility(visibility: Visibility?): AActivity {
         getNote().audience().withVisibility(visibility)
         return this
     }
 
     companion object {
-        val EMPTY: AActivity? = from(Actor.Companion.EMPTY, ActivityType.EMPTY)
+        val EMPTY: AActivity = from(Actor.Companion.EMPTY, ActivityType.EMPTY)
         val TRY_EMPTY = Try.success(EMPTY)
         fun fromInner(actor: Actor, type: ActivityType,
                       innerActivity: AActivity): AActivity {

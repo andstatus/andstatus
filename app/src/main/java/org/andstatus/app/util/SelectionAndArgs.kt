@@ -15,17 +15,15 @@
  */
 package org.andstatus.app.util
 
-import java.util.*
-
 /**
  * Add selection and it's argument (for query...)
  */
-class SelectionAndArgs @JvmOverloads constructor(selection_in: String? = "") : TaggedClass {
+class SelectionAndArgs @JvmOverloads constructor(selection_in: String = "") : TaggedClass {
     @Volatile
-    var selection: String?
+    var selection: String
 
     @Volatile
-    var selectionArgs: Array<String?>?
+    var selectionArgs: Array<String?> = arrayOf()
 
     @Volatile
     private var nArgs = 0
@@ -45,16 +43,16 @@ class SelectionAndArgs @JvmOverloads constructor(selection_in: String? = "") : T
 
     fun addSelection(selectionAdd: String?, selectionArgsAdd: Array<String?>?): Int {
         val nArgsAdd = selectionArgsAdd?.size ?: 0
-        if (!StringUtil.isEmpty(selectionAdd)) {
-            selection = if (selection.length == 0) {
+        if (!selectionAdd.isNullOrEmpty()) {
+            selection = if (selection.isEmpty()) {
                 selectionAdd
             } else {
                 "($selection) AND ($selectionAdd)"
             }
         }
-        if (nArgsAdd > 0) {
+        if (nArgsAdd > 0 && selectionArgsAdd != null) {
             val nArgs2 = nArgs + nArgsAdd
-            val selectionArgs2 = arrayOfNulls<String?>(nArgs2)
+            val selectionArgs2 = arrayOfNulls<String>(nArgs2)
             System.arraycopy(selectionArgs, 0, selectionArgs2, 0, nArgs)
             System.arraycopy(selectionArgsAdd, 0, selectionArgs2, nArgs, nArgsAdd)
             selectionArgs = selectionArgs2
@@ -68,15 +66,15 @@ class SelectionAndArgs @JvmOverloads constructor(selection_in: String? = "") : T
     }
 
     override fun toString(): String {
-        return MyStringBuilder.Companion.formatKeyValue(this, selection + ", args:" + Arrays.toString(selectionArgs))
+        return MyStringBuilder.formatKeyValue(this, selection + ", args:" + selectionArgs.contentToString())
     }
 
-    override fun classTag(): String? {
+    override fun classTag(): String {
         return TAG
     }
 
     companion object {
-        private val TAG: String? = SelectionAndArgs::class.java.simpleName
+        private val TAG: String = SelectionAndArgs::class.java.simpleName
     }
 
     init {

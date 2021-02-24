@@ -21,15 +21,16 @@ import org.andstatus.app.actor.ActorsLoader
 /**
  * @author yvolk@yurivolkov.com
  */
-class TimelinePage<T : ViewItem<T?>?>(val params: TimelineParameters, items: MutableList<T?>?) {
-    var actorViewItem: ActorViewItem = ActorViewItem.Companion.EMPTY
-    private val emptyItem: T?
-    val items: MutableList<T?>
+class TimelinePage<T : ViewItem<T>>(val params: TimelineParameters, items: MutableList<T>?) {
+    var actorViewItem: ActorViewItem = ActorViewItem.EMPTY
+    private val emptyItem: T = ViewItem.getEmpty(params.getTimelineType())
+    val items: MutableList<T>
+
     fun getEmptyItem(): T {
         return emptyItem
     }
 
-    fun setLoadedActor(loader: ActorsLoader?) {
+    fun setLoadedActor(loader: ActorsLoader) {
         if (params.timeline.timelineType.hasActorProfile()) {
             val index = loader.getList().indexOf(ActorViewItem.Companion.fromActor(params.timeline.actor))
             if (index >= 0) actorViewItem = loader.getList()[index]
@@ -37,7 +38,6 @@ class TimelinePage<T : ViewItem<T?>?>(val params: TimelineParameters, items: Mut
     }
 
     init {
-        emptyItem = ViewItem.Companion.getEmpty(params.timelineType)
         this.items = items ?: emptyList()
     }
 }

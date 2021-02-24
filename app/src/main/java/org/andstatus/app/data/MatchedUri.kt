@@ -27,7 +27,6 @@ import org.andstatus.app.database.table.ActorTable
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.database.table.OriginTable
 import org.andstatus.app.timeline.meta.Timeline
-import org.andstatus.app.util.StringUtil
 
 /**
  * Classifier of Uri-s, passed to our content provider
@@ -118,7 +117,7 @@ enum class MatchedUri(private val code: Int) {
             uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + timeline.getOrigin().id)
             uri = Uri.withAppendedPath(uri, ACTOR_SEGMENT)
             uri = ContentUris.withAppendedId(uri, timeline.getActorId())
-            if (!StringUtil.isEmpty(timeline.getSearchQuery())) {
+            if (!timeline.getSearchQuery().isNullOrEmpty()) {
                 uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT)
                 uri = Uri.withAppendedPath(uri, Uri.encode(timeline.getSearchQuery()))
             }
@@ -140,7 +139,7 @@ enum class MatchedUri(private val code: Int) {
             uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + originId)
             uri = Uri.withAppendedPath(uri, CENTRAL_ITEM_SEGMENT)
             uri = ContentUris.withAppendedId(uri, centralItemId)
-            if (!StringUtil.isEmpty(searchQuery)) {
+            if (!searchQuery.isNullOrEmpty()) {
                 uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT)
                 uri = Uri.withAppendedPath(uri, Uri.encode(searchQuery))
             }

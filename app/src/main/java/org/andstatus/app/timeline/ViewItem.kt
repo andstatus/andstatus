@@ -29,8 +29,8 @@ import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.StringUtil
 import java.util.*
 
-open class ViewItem<T : ViewItem<T?>?> protected constructor(private val isEmpty: Boolean, val updatedDate: Long) : IsEmpty {
-    private val children: MutableList<T?>? = ArrayList()
+open class ViewItem<T : ViewItem<T>> protected constructor(private val isEmpty: Boolean, val updatedDate: Long) : IsEmpty {
+    private val children: MutableList<T> = ArrayList()
     private var parent: ViewItem<*>? = EmptyViewItem.EMPTY
     protected var insertedDate: Long = 0
     open fun getId(): Long {
@@ -41,7 +41,7 @@ open class ViewItem<T : ViewItem<T?>?> protected constructor(private val isEmpty
         return 0
     }
 
-    fun getChildren(): MutableCollection<T?> {
+    fun getChildren(): MutableCollection<T> {
         return children
     }
 
@@ -53,7 +53,7 @@ open class ViewItem<T : ViewItem<T?>?> protected constructor(private val isEmpty
         return getChildrenCount() > 0
     }
 
-    fun collapse(child: T?) {
+    fun collapse(child: T) {
         getChildren().addAll(child.getChildren())
         child.getChildren().clear()
         getChildren().add(child)
@@ -80,16 +80,16 @@ open class ViewItem<T : ViewItem<T?>?> protected constructor(private val isEmpty
     }
 
     fun getParent(): ViewItem<*> {
-        return if (parent == null) EmptyViewItem.EMPTY else parent
+        return parent ?: EmptyViewItem.EMPTY
     }
 
     fun getTopmostId(): Long {
         return if (getParent().isEmpty()) getId() else getParent().getId()
     }
 
-    protected fun getMyStringBuilderWithTime(context: Context?, showReceivedTime: Boolean): MyStringBuilder {
+    protected fun getMyStringBuilderWithTime(context: Context, showReceivedTime: Boolean): MyStringBuilder {
         val difference = RelativeTime.getDifference(context, updatedDate)
-        val builder: MyStringBuilder = MyStringBuilder.Companion.of(difference)
+        val builder: MyStringBuilder = MyStringBuilder.of(difference)
         if (showReceivedTime && updatedDate > RelativeTime.SOME_TIME_AGO && insertedDate > updatedDate) {
             val receivedDifference = RelativeTime.getDifference(context, insertedDate)
             if (receivedDifference != difference) {
@@ -113,16 +113,16 @@ open class ViewItem<T : ViewItem<T?>?> protected constructor(private val isEmpty
         return 31 * result + java.lang.Long.hashCode(getDate())
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
-        val that = o as T?
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val that = other as T
         return getId() == that.getId() && getDate() == that.getDate()
     }
 
     companion object {
-        fun <T : ViewItem<T?>?> getEmpty(timelineType: TimelineType): T {
-            return ViewItemType.Companion.fromTimelineType(timelineType).emptyViewItem as T
+        fun <T : ViewItem<T>> getEmpty(timelineType: TimelineType): T {
+            return ViewItemType.fromTimelineType(timelineType).emptyViewItem as T
         }
     }
 }

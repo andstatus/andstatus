@@ -26,7 +26,6 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StopWatch
 import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.function.Supplier
 import java.util.stream.Collectors
 
 /**
@@ -34,30 +33,30 @@ import java.util.stream.Collectors
  */
 abstract class DataChecker {
     var myContext: MyContext? = null
-    var logger: ProgressLogger? = ProgressLogger.Companion.getEmpty("DataChecker")
+    var logger: ProgressLogger = ProgressLogger.getEmpty("DataChecker")
     var includeLong = false
     var countOnly = false
-    fun setMyContext(myContext: MyContext?): DataChecker? {
+    fun setMyContext(myContext: MyContext?): DataChecker {
         this.myContext = myContext
         return this
     }
 
-    fun setLogger(logger: ProgressLogger?): DataChecker? {
+    fun setLogger(logger: ProgressLogger): DataChecker {
         this.logger = logger.makeServiceUnavalable()
         return this
     }
 
-    private fun setIncludeLong(includeLong: Boolean): DataChecker? {
+    private fun setIncludeLong(includeLong: Boolean): DataChecker {
         this.includeLong = includeLong
         return this
     }
 
-    fun setCountOnly(countOnly: Boolean): DataChecker? {
+    fun setCountOnly(countOnly: Boolean): DataChecker {
         this.countOnly = countOnly
         return this
     }
 
-    private fun checkerName(): String? {
+    private fun checkerName(): String {
         return this.javaClass.simpleName
     }
 
@@ -65,7 +64,7 @@ abstract class DataChecker {
      * @return number of changed items (or needed to change)
      */
     fun fix(): Long {
-        val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+        val stopWatch: StopWatch = StopWatch.createStarted()
         logger.logProgress(checkerName() + " checker started")
         val changedCount = fixInternal()
         logger.logProgress(checkerName() + " checker ended in " + stopWatch.getTime(TimeUnit.SECONDS) + " sec, " +
@@ -77,21 +76,21 @@ abstract class DataChecker {
     abstract fun fixInternal(): Long
 
     companion object {
-        private val TAG: String? = DataChecker::class.java.simpleName
-        fun getSomeOfTotal(some: Long, total: Long): String? {
+        private val TAG: String = DataChecker::class.java.simpleName
+        fun getSomeOfTotal(some: Long, total: Long): String {
             return ((if (some == 0L) "none" else if (some == total) "all" else some.toString())
                     + " of " + total)
         }
 
-        fun fixDataAsync(logger: ProgressLogger?, includeLong: Boolean, countOnly: Boolean) {
-            AsyncTaskLauncher.Companion.execute(
+        fun fixDataAsync(logger: ProgressLogger, includeLong: Boolean, countOnly: Boolean) {
+            AsyncTaskLauncher.execute(
                     logger.logTag,
-                    object : MyAsyncTask<Void?, Void?, Void?>(logger.logTag, PoolEnum.Companion.thatCannotBeShutDown()) {
+                    object : MyAsyncTask<Void?, Void?, Void?>(logger.logTag, PoolEnum.thatCannotBeShutDown()) {
                         override fun doInBackground2(aVoid: Void?): Void? {
                             fixData(logger, includeLong, countOnly)
                             DbUtils.waitMs(TAG, 3000)
-                            MyContextHolder.Companion.myContextHolder.release(Supplier { "fixDataAsync" })
-                            MyContextHolder.Companion.myContextHolder.initialize(null, TAG).getBlocking()
+                            MyContextHolder.myContextHolder.release { "fixDataAsync" }
+                             MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
                             return null
                         }
 
@@ -105,14 +104,14 @@ abstract class DataChecker {
                     })
         }
 
-        fun fixData(logger: ProgressLogger?, includeLong: Boolean, countOnly: Boolean): Long {
+        fun fixData(logger: ProgressLogger, includeLong: Boolean, countOnly: Boolean): Long {
             var counter: Long = 0
-            val myContext: MyContext = MyContextHolder.Companion.myContextHolder.getNow()
-            if (!myContext.isReady) {
+            val myContext: MyContext = MyContextHolder.myContextHolder.getNow()
+            if (!myContext.isReady()) {
                 MyLog.w(TAG, "fixData skipped: context is not ready $myContext")
                 return counter
             }
-            val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+            val stopWatch: StopWatch = StopWatch.createStarted()
             try {
                 MyLog.i(TAG, "fixData started" + if (includeLong) ", including long tasks" else "")
                 val allCheckers = Arrays.asList(
@@ -127,17 +126,17 @@ abstract class DataChecker {
                 // TODO: define scope in parameters
                 val scope = "All"
                 val selectedCheckers = allCheckers.stream()
-                        .filter { c: DataChecker? -> scope.contains("All") || scope.contains(c.javaClass.simpleName) }
+                        .filter { c: DataChecker -> scope.contains("All") || scope.contains(c.javaClass.simpleName) }
                         .collect(Collectors.toList())
                 for (checker in selectedCheckers) {
                     if (logger.isCancelled()) break
-                    MyServiceManager.Companion.setServiceUnavailable()
+                    MyServiceManager.setServiceUnavailable()
                     counter += checker.setMyContext(myContext).setIncludeLong(includeLong).setLogger(logger)
                             .setCountOnly(countOnly)
                             .fix()
                 }
             } finally {
-                MyServiceManager.Companion.setServiceAvailable()
+                MyServiceManager.setServiceAvailable()
             }
             MyLog.i(TAG, "fixData ended in " + stopWatch.getTime(TimeUnit.MINUTES) + " min, counted: " + counter)
             return counter

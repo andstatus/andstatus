@@ -56,7 +56,7 @@ class ConversationActivity : NoteEditorListActivity<Any?>(), NoteContextMenuCont
     var mDrawerToggle: ActionBarDrawerToggle? = null
     private var showThreadsOfConversation = false
     private var oldNotesFirstInConversation = false
-    private var origin: Origin? = Origin.Companion.EMPTY
+    private var origin: Origin? =  Origin.EMPTY
     override fun onCreate(savedInstanceState: Bundle?) {
         mLayoutId = R.layout.conversation
         super.onCreate(savedInstanceState)
@@ -92,7 +92,7 @@ class ConversationActivity : NoteEditorListActivity<Any?>(), NoteContextMenuCont
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (ActivityRequestCode.Companion.fromId(requestCode)) {
             ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS -> if (resultCode == RESULT_OK) {
-                val myAccount: MyAccount = MyContextHolder.Companion.myContextHolder.getNow().accounts().fromAccountName(
+                val myAccount: MyAccount =  MyContextHolder.myContextHolder.getNow().accounts().fromAccountName(
                         data.getStringExtra(IntentExtra.ACCOUNT_NAME.key))
                 if (myAccount.isValid) {
                     mContextMenu.setSelectedActingAccount(myAccount)

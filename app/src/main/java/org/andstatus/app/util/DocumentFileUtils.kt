@@ -28,11 +28,11 @@ import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 
 object DocumentFileUtils {
-    private val TAG: String? = DocumentFileUtils::class.java.simpleName
-    fun getJSONObject(context: Context?, fileDescriptor: DocumentFile?): JSONObject? {
+    private val TAG: String = DocumentFileUtils::class.java.simpleName
+    fun getJSONObject(context: Context, fileDescriptor: DocumentFile): JSONObject {
         var jso: JSONObject? = null
         val fileString = uri2String(context, fileDescriptor.getUri())
-        if (!StringUtil.isEmpty(fileString)) {
+        if (fileString.isNotEmpty()) {
             jso = try {
                 JSONObject(fileString)
             } catch (e: JSONException) {
@@ -46,12 +46,12 @@ object DocumentFileUtils {
         return jso
     }
 
-    private fun uri2String(context: Context?, uri: Uri?): String? {
-        val BUFFER_LENGTH = 10000
+    private fun uri2String(context: Context, uri: Uri): String {
+        val bufferLength = 10000
         try {
-            context.getContentResolver().openInputStream(uri).use { `is` ->
-                InputStreamReader(`is`, StandardCharsets.UTF_8).use { reader ->
-                    val buffer = CharArray(BUFFER_LENGTH)
+            context.getContentResolver().openInputStream(uri)?.use { ins ->
+                InputStreamReader(ins, StandardCharsets.UTF_8).use { reader ->
+                    val buffer = CharArray(bufferLength)
                     val builder = StringBuilder()
                     var count: Int
                     while (reader.read(buffer).also { count = it } != -1) {
@@ -61,17 +61,16 @@ object DocumentFileUtils {
                 }
             }
         } catch (e: Exception) {
-            val msg = """Error while reading ${context.getText(R.string.app_name)} settings from $uri
-${e.message}"""
+            val msg = """Error while reading ${context.getText(R.string.app_name)} settings from $uri ${e.message}"""
             Log.w(TAG, msg, e)
         }
         return ""
     }
 
-    fun getJSONArray(context: Context?, fileDescriptor: DocumentFile?): JSONArray? {
+    fun getJSONArray(context: Context, fileDescriptor: DocumentFile): JSONArray {
         var jso: JSONArray? = null
-        val fileString = uri2String(context, fileDescriptor.getUri())
-        if (!StringUtil.isEmpty(fileString)) {
+        val fileString = uri2String(context, fileDescriptor.uri)
+        if (fileString.isNotEmpty()) {
             jso = try {
                 JSONArray(fileString)
             } catch (e: JSONException) {
@@ -87,8 +86,8 @@ ${e.message}"""
 
     /** Reads up to 'size' bytes, starting from 'offset'  */
     @Throws(IOException::class)
-    fun getBytes(context: Context?, file: DocumentFile?, offset: Int, size: Int): ByteArray? {
+    fun getBytes(context: Context, file: DocumentFile?, offset: Int, size: Int): ByteArray {
         if (file == null) return ByteArray(0)
-        context.getContentResolver().openInputStream(file.uri).use { `is` -> return FileUtils.getBytes(`is`, file.uri.path, offset, size) }
+        context.getContentResolver().openInputStream(file.uri).use { ins -> return FileUtils.getBytes(ins, file.uri.path, offset, size) }
     }
 }

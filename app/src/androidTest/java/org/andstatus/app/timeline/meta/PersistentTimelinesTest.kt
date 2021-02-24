@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.timeline.metaimport
+package org.andstatus.app.timeline.meta
 
 import org.andstatus.app.account.DemoAccountInserter
 import org.andstatus.app.account.MyAccount
@@ -39,11 +39,6 @@ import org.junit.Before
 import org.junit.Test
 import java.util.stream.Collectors
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -779,10 +774,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -816,7 +807,7 @@ class PersistentTimelinesTest {
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithData(this)
-        myContext = MyContextHolder.Companion.myContextHolder.getNow()
+        myContext =  MyContextHolder.myContextHolder.getNow()
     }
 
     @Test
@@ -831,23 +822,23 @@ class PersistentTimelinesTest {
     fun testFilteredList() {
         val timelines = myContext.timelines().values()
         var count = myContext.timelines().filter(
-                false, TriState.UNKNOWN, TimelineType.UNKNOWN, Actor.Companion.EMPTY, Origin.Companion.EMPTY).count()
+                false, TriState.UNKNOWN, TimelineType.UNKNOWN, Actor.Companion.EMPTY,  Origin.EMPTY).count()
         Assert.assertEquals(timelines.size.toLong(), count)
         count = myContext.timelines().filter(
-                true, TriState.FALSE, TimelineType.UNKNOWN, Actor.Companion.EMPTY, Origin.Companion.EMPTY).count()
+                true, TriState.FALSE, TimelineType.UNKNOWN, Actor.Companion.EMPTY,  Origin.EMPTY).count()
         Assert.assertTrue(timelines.size > count)
         count = myContext.timelines().filter(
-                true, TriState.TRUE, TimelineType.UNKNOWN, Actor.Companion.EMPTY, Origin.Companion.EMPTY).count()
+                true, TriState.TRUE, TimelineType.UNKNOWN, Actor.Companion.EMPTY,  Origin.EMPTY).count()
         Assert.assertTrue(count > 0)
         Assert.assertTrue(timelines.size > count)
         ensureAtLeastOneNotDisplayedTimeline()
         val count2 = myContext.timelines().filter(
-                true, TriState.UNKNOWN, TimelineType.UNKNOWN, Actor.Companion.EMPTY, Origin.Companion.EMPTY).count()
+                true, TriState.UNKNOWN, TimelineType.UNKNOWN, Actor.Companion.EMPTY,  Origin.EMPTY).count()
         Assert.assertTrue("count2:$count2; $timelines", timelines.size > count2)
         Assert.assertTrue(count2 > count)
         val myAccount: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
         count = myContext.timelines().filter(
-                true, TriState.FALSE, TimelineType.UNKNOWN, myAccount.actor, Origin.Companion.EMPTY).count()
+                true, TriState.FALSE, TimelineType.UNKNOWN, myAccount.actor,  Origin.EMPTY).count()
         Assert.assertTrue(count > 0)
         count = myContext.timelines().filter(
                 true, TriState.FALSE, TimelineType.UNKNOWN, Actor.Companion.EMPTY, myAccount.origin).count()
@@ -900,7 +891,7 @@ class PersistentTimelinesTest {
         val myAccount = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
         Assert.assertTrue(myAccount.isValid)
         val timeline2 = myContext.timelines()
-                .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.actor, Origin.Companion.EMPTY)
+                .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.actor,  Origin.EMPTY)
                 .filter { timeline: Timeline? -> timeline !== timeline1 }.findFirst().orElse(Timeline.Companion.EMPTY)
         myContext.timelines().default = timeline2
         Assert.assertNotEquals(timeline1, myContext.timelines().default)
@@ -918,7 +909,7 @@ class PersistentTimelinesTest {
 
     private fun oneFromIsCombined(myAccount: MyAccount?, timelineType: TimelineType?) {
         val combined = myContext.timelines()
-                .filter(true, TriState.TRUE, timelineType, myAccount.getActor(), Origin.Companion.EMPTY)
+                .filter(true, TriState.TRUE, timelineType, myAccount.getActor(),  Origin.EMPTY)
                 .findFirst().orElse(Timeline.Companion.EMPTY)
         val notCombined = combined.fromIsCombined(myContext, false)
         Assert.assertEquals("Should be not combined $notCombined", false, notCombined.isCombined)

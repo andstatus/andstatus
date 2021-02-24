@@ -111,7 +111,7 @@ class ActorActivity {
         MyLog.v(this
         ) {
             ("actorId " + actorId + ": " +
-                    MyQuery.actorIdToWebfingerId(MyContextHolder.Companion.myContextHolder.getNow(), actorId)
+                    MyQuery.actorIdToWebfingerId( MyContextHolder.myContextHolder.getNow(), actorId)
                     + " Latest activity update at " + Date(getLastActivityDate()).toString()
                     + if (changed) "" else " not changed")
         }
@@ -126,7 +126,7 @@ class ActorActivity {
             lastActivityId = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actorId)
             MyLog.v(this) {
                 ("There is newer information in the database. Actor " + actorId + ": "
-                        + MyQuery.actorIdToWebfingerId(MyContextHolder.Companion.myContextHolder.getNow(), actorId)
+                        + MyQuery.actorIdToWebfingerId( MyContextHolder.myContextHolder.getNow(), actorId)
                         + " Latest activity at " + Date(getLastActivityDate()).toString())
             }
             changed = false
@@ -138,7 +138,7 @@ class ActorActivity {
             sql += ", " + ActorTable.ACTOR_ACTIVITY_DATE + "=" + lastActivityDate
             sql = ("UPDATE " + ActorTable.TABLE_NAME + " SET " + sql
                     + " WHERE " + BaseColumns._ID + "=" + actorId)
-            val db: SQLiteDatabase = MyContextHolder.Companion.myContextHolder.getNow().getDatabase()
+            val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().getDatabase()
             if (db == null) {
                 MyLog.databaseIsNull { "Save $this" }
                 return false

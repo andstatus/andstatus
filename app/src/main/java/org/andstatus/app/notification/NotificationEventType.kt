@@ -18,7 +18,6 @@ package org.andstatus.app.notification
 import org.andstatus.app.R
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.SharedPreferencesUtil
-import org.andstatus.app.util.StringUtil
 import java.util.*
 
 /**
@@ -36,11 +35,11 @@ enum class NotificationEventType(id: Int, preferenceKey: String?, defaultValue: 
     }
 
     fun isEnabled(): Boolean {
-        return if (StringUtil.nonEmpty(preferenceKey)) SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue) else defaultValue
+        return if (!preferenceKey.isNullOrEmpty()) SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue) else defaultValue
     }
 
     fun setEnabled(enabled: Boolean) {
-        if (StringUtil.nonEmpty(preferenceKey)) SharedPreferencesUtil.putBoolean(preferenceKey, enabled)
+        if (!preferenceKey.isNullOrEmpty()) SharedPreferencesUtil.putBoolean(preferenceKey, enabled)
     }
 
     fun isInteracted(): Boolean {

@@ -46,7 +46,7 @@ class NoteSaver(private val editor: NoteEditor?) : MyAsyncTask<NoteEditorCommand
             command.loadCurrent()
         }
         saveCurrentData()
-        return if (command.showAfterSave) NoteEditorData.Companion.load(MyContextHolder.Companion.myContextHolder.getNow(), command.currentData.noteId) else NoteEditorData.Companion.EMPTY
+        return if (command.showAfterSave) NoteEditorData.Companion.load( MyContextHolder.myContextHolder.getNow(), command.currentData.noteId) else NoteEditorData.Companion.EMPTY
     }
 
     private fun savePreviousData() {
@@ -60,7 +60,7 @@ class NoteSaver(private val editor: NoteEditor?) : MyAsyncTask<NoteEditorCommand
     private fun saveCurrentData() {
         MyLog.v(NoteEditorData.Companion.TAG) { "Saving current data:" + command.currentData }
         if (command.currentData.activity.note.status == DownloadStatus.DELETED) {
-            MyProvider.Companion.deleteNoteAndItsActivities(MyContextHolder.Companion.myContextHolder.getNow(), command.currentData.noteId)
+            MyProvider.Companion.deleteNoteAndItsActivities( MyContextHolder.myContextHolder.getNow(), command.currentData.noteId)
         } else {
             if (command.hasMedia()) {
                 command.currentData.addAttachment(command.getMediaUri(), command.getMediaType())
@@ -84,7 +84,7 @@ class NoteSaver(private val editor: NoteEditor?) : MyAsyncTask<NoteEditorCommand
             return
         }
         val commandData: CommandData = if (data.activity.note.status == DownloadStatus.DELETED) CommandData.Companion.newItemCommand(CommandEnum.DELETE_NOTE, data.getMyAccount(), data.getNoteId()) else CommandData.Companion.newUpdateStatus(data.getMyAccount(), data.activity.id, data.getNoteId())
-        MyServiceEventsBroadcaster.Companion.newInstance(MyContextHolder.Companion.myContextHolder.getNow(), MyServiceState.UNKNOWN)
+        MyServiceEventsBroadcaster.Companion.newInstance( MyContextHolder.myContextHolder.getNow(), MyServiceState.UNKNOWN)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
     }
 

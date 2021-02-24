@@ -36,10 +36,12 @@ import org.andstatus.app.util.TriState
 import java.io.File
 import java.util.function.Supplier
 
-class StorageSwitch(private val parentFragment: MySettingsFragment?) {
-    private val mContext: Context?
+class StorageSwitch(private val parentFragment: MySettingsFragment) {
+    private val mContext: Context = parentFragment.getActivity()
+            ?: throw IllegalStateException("No Activity in the parent fragment")
     private var mUseExternalStorageNew = false
-    fun showSwitchStorageDialog(requestCode: ActivityRequestCode?, useExternalStorageNew: Boolean) {
+
+    fun showSwitchStorageDialog(requestCode: ActivityRequestCode, useExternalStorageNew: Boolean) {
         mUseExternalStorageNew = useExternalStorageNew
         DialogFactory.showOkCancelDialog(parentFragment, R.string.dialog_title_external_storage,
                 if (useExternalStorageNew) R.string.summary_preference_storage_external_on else R.string.summary_preference_storage_external_off,
@@ -47,8 +49,8 @@ class StorageSwitch(private val parentFragment: MySettingsFragment?) {
     }
 
     fun move() {
-        MyServiceManager.Companion.setServiceUnavailable()
-        AsyncTaskLauncher.Companion.execute(this, MoveDataBetweenStoragesTask())
+        MyServiceManager.setServiceUnavailable()
+        AsyncTaskLauncher.execute(this, MoveDataBetweenStoragesTask())
     }
 
     private fun checkAndSetDataBeingMoved(): Boolean {
@@ -68,8 +70,8 @@ class StorageSwitch(private val parentFragment: MySettingsFragment?) {
     private class TaskResult {
         var success = false
         var moved = false
-        var messageBuilder: StringBuilder? = StringBuilder()
-        fun getMessage(): String? {
+        var messageBuilder: StringBuilder = StringBuilder()
+        fun getMessage(): String {
             return messageBuilder.toString()
         }
     }
@@ -92,7 +94,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment?) {
 
         override fun doInBackground2(aVoid: Void?): TaskResult? {
             val result = TaskResult()
-            MyContextHolder.Companion.myContextHolder.getBlocking()
+             MyContextHolder.myContextHolder.getBlocking()
             MyServiceManager.Companion.stopService()
             for (i in 0..3) {
                 if (MyServiceManager.Companion.getServiceState() == MyServiceState.STOPPED) break
@@ -115,7 +117,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment?) {
             return result
         }
 
-        private fun moveAll(result: TaskResult?) {
+        private fun moveAll(result: TaskResult) {
             val useExternalStorageOld = MyStorage.isStorageExternal()
             if (mUseExternalStorageNew
                     && !MyStorage.isWritableExternalStorageAvailable(result.messageBuilder)) {
@@ -142,7 +144,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment?) {
             }
         }
 
-        private fun moveDatabase(useExternalStorageNew: Boolean, messageToAppend: StringBuilder?, databaseName: String?): Boolean {
+        private fun moveDatabase(useExternalStorageNew: Boolean, messageToAppend: StringBuilder, databaseName: String): Boolean {
             val method = "moveDatabase"
             var succeeded = false
             var done = false
@@ -154,15 +156,15 @@ class StorageSwitch(private val parentFragment: MySettingsFragment?) {
             var dbFileOld: File? = null
             var dbFileNew: File? = null
             try {
-                dbFileOld = MyContextHolder.Companion.myContextHolder.getNow().baseContext().getDatabasePath(
+                dbFileOld = MyContextHolder.myContextHolder.getNow().baseContext()?.getDatabasePath(
                         databaseName)
                 dbFileNew = MyStorage.getDatabasePath(
-                        databaseName, TriState.Companion.fromBoolean(useExternalStorageNew))
+                        databaseName, TriState.fromBoolean(useExternalStorageNew))
                 if (dbFileOld == null) {
                     messageToAppend.append(" No old database $databaseName")
                     done = true
                 }
-                if (!done) {
+                if (!done && dbFileOld != null) {
                     if (dbFileNew == null) {
                         messageToAppend.append(" No new database $databaseName")
                         done = true
@@ -181,13 +183,13 @@ class StorageSwitch(private val parentFragment: MySettingsFragment?) {
                         }
                     }
                 }
-                if (!done) {
+                if (!done && dbFileNew != null && dbFileOld != null) {
                     if (MyLog.isVerboseEnabled()) {
                         MyLog.v(this, method + " from: " + dbFileOld.path)
                         MyLog.v(this, method + " to: " + dbFileNew.path)
                     }
                     try {
-                        MyContextHolder.Companion.myContextHolder.release(Supplier { "moveDatabase" })
+                         MyContextHolder.myContextHolder.release(Supplier { "moveDatabase" })
                         if (FileUtils.copyFile(this, dbFileOld, dbFileNew)) {
                             copied = true
                             succeeded = true
@@ -226,7 +228,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment?) {
             return succeeded
         }
 
-        private fun moveFolder(useExternalStorageNew: Boolean, messageToAppend: StringBuilder?, folderType: String?) {
+        private fun moveFolder(useExternalStorageNew: Boolean, messageToAppend: StringBuilder, folderType: String) {
             val method = "moveFolder $folderType"
             var succeeded = false
             var done = false
@@ -248,7 +250,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment?) {
                         done = true
                     }
                 }
-                if (!done) {
+                if (!done && dirOld != null && dirNew != null) {
                     if (MyLog.isVerboseEnabled()) {
                         MyLog.v(this, method + " from: " + dirOld.getPath())
                         MyLog.v(this, method + " to: " + dirNew.getPath())
@@ -280,7 +282,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment?) {
                 // Delete unnecessary files
                 try {
                     if (succeeded) {
-                        if (didWeCopyAnything) {
+                        if (didWeCopyAnything && dirOld != null) {
                             for (fileOld in dirOld.listFiles()) {
                                 if (fileOld.isFile && !fileOld.delete()) {
                                     messageToAppend.append(method + " couldn't delete old file "
@@ -307,7 +309,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment?) {
             MyLog.d(this, method + " " + strSucceeded(succeeded))
         }
 
-        private fun saveNewSettings(useExternalStorageNew: Boolean, messageToAppend: StringBuilder?) {
+        private fun saveNewSettings(useExternalStorageNew: Boolean, messageToAppend: StringBuilder) {
             try {
                 SharedPreferencesUtil.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, useExternalStorageNew)
                 MyPreferences.onPreferencesChanged()
@@ -340,7 +342,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment?) {
     }
 
     companion object {
-        val MOVE_LOCK: Any? = Any()
+        val MOVE_LOCK: Any = Any()
 
         /**
          * This semaphore helps to avoid ripple effect: changes in MyAccount cause
@@ -349,7 +351,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment?) {
         @GuardedBy("moveLock")
         @Volatile
         private var mDataBeingMoved = false
-        fun getErrorInfo(e: Throwable?): String? {
+        fun getErrorInfo(e: Throwable): String {
             return (StringUtil.notEmpty(e.message, "(no error message)")
                     + " (" + e.javaClass.canonicalName + ")")
         }
@@ -357,9 +359,5 @@ class StorageSwitch(private val parentFragment: MySettingsFragment?) {
         private fun strSucceeded(succeeded: Boolean): String {
             return if (succeeded) "succeeded" else "failed"
         }
-    }
-
-    init {
-        mContext = parentFragment.getActivity()
     }
 }

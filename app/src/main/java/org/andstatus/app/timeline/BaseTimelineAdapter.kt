@@ -26,7 +26,9 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.SharedPreferencesUtil
 
-abstract class BaseTimelineAdapter<T : ViewItem<T?>?>(protected val myContext: MyContext, private val listData: TimelineData<T?>) : BaseAdapter(), View.OnClickListener {
+abstract class BaseTimelineAdapter<T : ViewItem<T>>(
+        protected val myContext: MyContext,
+        private val listData: TimelineData<T>) : BaseAdapter(), View.OnClickListener {
     protected val showAvatars = MyPreferences.getShowAvatars()
     protected val showAttachedImages = MyPreferences.getDownloadAndDisplayAttachedImages()
     protected val markRepliesToMe = SharedPreferencesUtil.getBoolean(
@@ -38,14 +40,14 @@ abstract class BaseTimelineAdapter<T : ViewItem<T?>?>(protected val myContext: M
 
     /** Single page data  */
     constructor(myContext: MyContext, timeline: Timeline, items: MutableList<T?>) : this(myContext,
-            TimelineData<T?>(
+            TimelineData<T>(
                     null,
-                    TimelinePage<T?>(TimelineParameters(myContext, timeline, WhichPage.EMPTY), items)
+                    TimelinePage<T>(TimelineParameters(myContext, timeline, WhichPage.EMPTY), items)
             )
     ) {
     }
 
-    fun getListData(): TimelineData<T?> {
+    fun getListData(): TimelineData<T> {
         return listData
     }
 

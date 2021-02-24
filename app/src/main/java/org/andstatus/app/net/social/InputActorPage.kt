@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.net.socialimport
+package org.andstatus.app.net.social
 
 import io.vavr.control.Try
 import org.andstatus.app.net.social.AJsonCollection
@@ -21,11 +21,6 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.InputActorPage
 import org.andstatus.app.net.social.InputPage
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -761,10 +756,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -793,7 +784,7 @@ import org.andstatus.app.ActivityTestHelper.MenuItemClicker
 import org.andstatus.app.MenuItemMock
 
 class InputActorPage(jsonCollection: AJsonCollection?, actors: MutableList<Actor?>?) : InputPage<Actor?>(jsonCollection, actors) {
-    override fun empty(): Actor? {
+    override fun empty(): Actor {
         return Actor.Companion.EMPTY
     }
 

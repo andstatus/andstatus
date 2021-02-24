@@ -22,9 +22,10 @@ package org.andstatus.app.util
  * see http://stackoverflow.com/questions/75175/create-instance-of-generic-type-in-java
  * and http://stackoverflow.com/questions/1901164/get-type-of-a-generic-parameter-in-java-with-reflection
 </T> */
-class TFactory<T>(tClass: Class<T?>?) {
-    private val mTClass: Class<T?>?
-    fun newT(): T? {
+class TFactory<T>(tClass: Class<T>) {
+    private val mTClass: Class<T>
+
+    fun newT(): T {
         return try {
             mTClass.newInstance()
         } catch (e: Exception) {

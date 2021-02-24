@@ -29,12 +29,14 @@ import org.acra.annotation.AcraDialog
 import org.acra.annotation.AcraMailSender
 import org.andstatus.app.R
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TamperingDetector
 import java.io.File
 
 @AcraMailSender(mailTo = "andstatus@gmail.com")
-@AcraDialog(resIcon = R.drawable.icon, resText = R.string.crash_dialog_text, resCommentPrompt = R.string.crash_dialog_comment_prompt)
+@AcraDialog(
+        resIcon = R.drawable.icon,
+        resText = R.string.crash_dialog_text,
+        resCommentPrompt = R.string.crash_dialog_comment_prompt)
 @AcraCore(alsoReportToAndroidFramework = true)
 class MyApplication : Application() {
     @Volatile
@@ -46,14 +48,15 @@ class MyApplication : Application() {
         MyLog.i(this, "onCreate "
                 + (if (isAcraProcess) "ACRA" else "'$processName'") + " process")
         if (!isAcraProcess) {
-            MyContextHolder.Companion.myContextHolder.storeContextIfNotPresent(this, this)
+             MyContextHolder.myContextHolder.storeContextIfNotPresent(this, this)
             MyLocale.setLocale(this)
         }
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration?) {
-        super.onConfigurationChanged(if (isAcraProcess) newConfig else MyLocale.onConfigurationChanged(this, newConfig))
-    }
+    override fun onConfigurationChanged(newConfig: Configuration) = super.onConfigurationChanged(
+            if (isAcraProcess) newConfig
+            else MyLocale.onConfigurationChanged(this, newConfig)
+    )
 
     override fun getDatabasePath(name: String?): File? {
         return if (isAcraProcess) super.getDatabasePath(name) else MyStorage.getDatabasePath(name)
@@ -115,7 +118,7 @@ class MyApplication : Application() {
                     }
                 }
             }
-            return if (StringUtil.isEmpty(processName)) "?" else processName
+            return if (processName.isNullOrEmpty()) "?" else processName
         }
     }
 }

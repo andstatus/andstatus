@@ -20,12 +20,10 @@ import android.accounts.AccountManager
 import android.content.Intent
 import android.os.Bundle
 import org.andstatus.app.IntentExtra
-import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginType
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.UnaryOperator
 
@@ -69,18 +67,18 @@ internal class StateOfAccountChangeProcess private constructor(bundle: Bundle?) 
 
     /** null means to clear the old values  */
     fun setRequestTokenWithSecret(token: String?, secret: String?) {
-        requestToken = if (StringUtil.isEmpty(token)) {
+        requestToken = if (token.isNullOrEmpty()) {
             null
         } else {
             token
         }
-        MyLog.d(TAG, if (StringUtil.isEmpty(token)) "Clearing Request Token" else "Saving Request Token: $token")
-        requestSecret = if (StringUtil.isEmpty(secret)) {
+        MyLog.d(TAG, if (token.isNullOrEmpty()) "Clearing Request Token" else "Saving Request Token: $token")
+        requestSecret = if (secret.isNullOrEmpty()) {
             null
         } else {
             secret
         }
-        MyLog.d(TAG, if (StringUtil.isEmpty(secret)) "Clearing Request Secret" else "Saving Request Secret: $secret")
+        MyLog.d(TAG, if (secret.isNullOrEmpty()) "Clearing Request Secret" else "Saving Request Secret: $secret")
     }
 
     /**
@@ -124,7 +122,7 @@ internal class StateOfAccountChangeProcess private constructor(bundle: Bundle?) 
     }
 
     fun setAccountAction(accountAction: String?) {
-        if (StringUtil.isEmpty(accountAction)) {
+        if (accountAction.isNullOrEmpty()) {
             this.accountAction = Intent.ACTION_DEFAULT
         } else {
             this.accountAction = accountAction
@@ -165,16 +163,16 @@ internal class StateOfAccountChangeProcess private constructor(bundle: Bundle?) 
                 if (!state.useThisState) {
                     // Maybe we received MyAccount name as a parameter?!
                     val accountName = extras.getString(IntentExtra.ACCOUNT_NAME.key)
-                    if (StringUtil.nonEmpty(accountName)) {
+                    if (!accountName.isNullOrEmpty()) {
                         state.builder.rebuildMyAccount(
-                                AccountName.Companion.fromAccountName(MyContextHolder.Companion.myContextHolder.getNow(), accountName))
+                                AccountName.Companion.fromAccountName( MyContextHolder.myContextHolder.getNow(), accountName))
                         state.useThisState = state.builder.isPersistent()
                     }
                 }
                 if (!state.useThisState) {
                     val originName = extras.getString(IntentExtra.ORIGIN_NAME.key)
-                    if (StringUtil.nonEmpty(originName)) {
-                        val origin: Origin = MyContextHolder.Companion.myContextHolder.getBlocking().origins().fromName(originName)
+                    if (!originName.isNullOrEmpty()) {
+                        val origin: Origin =  MyContextHolder.myContextHolder.getBlocking().origins().fromName(originName)
                         if (origin.isPersistent) {
                             state.builder.setOrigin(origin)
                             state.useThisState = true
@@ -183,23 +181,23 @@ internal class StateOfAccountChangeProcess private constructor(bundle: Bundle?) 
                 }
             }
             if (state.getAccount().isEmpty() && state.getAccountAction() != Intent.ACTION_INSERT) {
-                when (MyContextHolder.Companion.myContextHolder.getNow().accounts().size()) {
+                when ( MyContextHolder.myContextHolder.getNow().accounts().size()) {
                     0 -> state.setAccountAction(Intent.ACTION_INSERT)
                     1 -> state.builder.rebuildMyAccount(
-                            MyContextHolder.Companion.myContextHolder.getNow().accounts().getCurrentAccount().getOAccountName())
+                             MyContextHolder.myContextHolder.getNow().accounts().getCurrentAccount().getOAccountName())
                     else -> state.accountShouldBeSelected = true
                 }
             }
             if (state.getAccount().isEmpty()) {
                 if (state.getAccountAction() == Intent.ACTION_INSERT) {
-                    val origin: Origin = MyContextHolder.Companion.myContextHolder.getNow()
+                    val origin: Origin =  MyContextHolder.myContextHolder.getNow()
                             .origins()
                             .firstOfType(OriginType.UNKNOWN)
                     state.builder.rebuildMyAccount(AccountName.Companion.fromOriginAndUniqueName(origin, ""))
                     state.originShouldBeSelected = true
                 } else {
                     state.builder.rebuildMyAccount(
-                            MyContextHolder.Companion.myContextHolder.getNow().accounts().getCurrentAccount().getOAccountName())
+                             MyContextHolder.myContextHolder.getNow().accounts().getCurrentAccount().getOAccountName())
                 }
                 if (!state.builder.isPersistent()) {
                     state.setAccountAction(Intent.ACTION_INSERT)

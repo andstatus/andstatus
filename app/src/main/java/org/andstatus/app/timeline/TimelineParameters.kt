@@ -29,11 +29,10 @@ import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.SelectionAndArgs
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TaggedClass
 
-class TimelineParameters(private val myContext: MyContext?, val timeline: Timeline?, val whichPage: WhichPage?) : TaggedClass {
-    var mLoaderCallbacks: LoaderManager.LoaderCallbacks<Cursor?>? = null
+class TimelineParameters(private val myContext: MyContext, val timeline: Timeline, val whichPage: WhichPage) : TaggedClass {
+    var mLoaderCallbacks: LoaderManager.LoaderCallbacks<Cursor>? = null
     private var mProjection: MutableSet<String?>? = null
     var maxDate: Long = 0
 
@@ -49,7 +48,7 @@ class TimelineParameters(private val myContext: MyContext?, val timeline: Timeli
 
     // Execution state / loaded data:
     @Volatile
-    var isLoaded = false
+    private var isLoaded = false
 
     @Volatile
     var rowsLoaded = 0
@@ -59,6 +58,7 @@ class TimelineParameters(private val myContext: MyContext?, val timeline: Timeli
 
     @Volatile
     var maxDateLoaded: Long = 0
+
     fun isLoaded(): Boolean {
         return isLoaded
     }
@@ -81,29 +81,25 @@ class TimelineParameters(private val myContext: MyContext?, val timeline: Timeli
     }
 
     fun isAtHome(): Boolean {
-        return timeline == myContext.timelines().default
+        return timeline == myContext.timelines().getDefault()
     }
 
     override fun toString(): String {
         return MyStringBuilder.Companion.formatKeyValue(this,
                 toSummary()
-                        + ", account=" + timeline.myAccountToSync.accountName
+                        + ", account=" + timeline.myAccountToSync.getAccountName()
                         + (if (timeline.getActorId() == 0L) "" else ", selectedActorId=" + timeline.getActorId()) //    + ", projection=" + Arrays.toString(mProjection)
                         + (if (minDate > 0) ", minDate=" + MyLog.formatDateTime(minDate) else "")
                         + (if (maxDate > 0) ", maxDate=" + MyLog.formatDateTime(maxDate) else "")
                         + (if (selectionAndArgs.isEmpty()) "" else ", sa=$selectionAndArgs")
-                        + (if (StringUtil.isEmpty(sortOrderAndLimit)) "" else ", sortOrder=$sortOrderAndLimit")
+                        + (if (sortOrderAndLimit.isNullOrEmpty()) "" else ", sortOrder=$sortOrderAndLimit")
                         + (if (isLoaded) ", loaded" else "")
                         + if (mLoaderCallbacks == null) "" else ", loaderCallbacks=$mLoaderCallbacks"
         )
     }
 
-    fun getTimeline(): Timeline? {
-        return timeline
-    }
-
-    fun getTimelineType(): TimelineType? {
-        return timeline.getTimelineType()
+    fun getTimelineType(): TimelineType {
+        return timeline.timelineType
     }
 
     fun getSelectedActorId(): Long {

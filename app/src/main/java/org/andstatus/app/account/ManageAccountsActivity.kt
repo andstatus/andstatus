@@ -38,9 +38,9 @@ class ManageAccountsActivity : MyActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (MyContextHolder.Companion.myContextHolder.needToRestartActivity()) {
+        if ( MyContextHolder.myContextHolder.needToRestartActivity()) {
             FirstActivity.Companion.closeAllActivities(this)
-            MyContextHolder.Companion.myContextHolder.initialize(this).thenStartActivity(intent)
+             MyContextHolder.myContextHolder.initialize(this).thenStartActivity(intent)
         }
     }
 

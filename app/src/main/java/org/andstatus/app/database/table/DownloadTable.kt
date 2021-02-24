@@ -24,47 +24,47 @@ import org.andstatus.app.data.MyContentType
 
 /** Avatar, Note's attachment...  */
 object DownloadTable : BaseColumns {
-    val TABLE_NAME: String? = "download"
+    val TABLE_NAME: String = "download"
 
     /** See [DownloadType]  */
-    val DOWNLOAD_TYPE: String? = "download_type"
+    val DOWNLOAD_TYPE: String = "download_type"
 
     /** Index (e.g. of an attachment for a particular note) Starting from 0  */
-    val DOWNLOAD_NUMBER: String? = "download_number"
+    val DOWNLOAD_NUMBER: String = "download_number"
 
     /** Avatar is connected to exactly one actor  */
-    val ACTOR_ID: String? = ActorTable.ACTOR_ID
+    val ACTOR_ID: String = ActorTable.ACTOR_ID
 
     /** Attachment is connected to a note  */
-    val NOTE_ID: String? = NoteTable.NOTE_ID
+    val NOTE_ID: String = NoteTable.NOTE_ID
 
     /** See [MyContentType]  */
-    val CONTENT_TYPE: String? = "content_type"
-    val MEDIA_TYPE: String? = "media_type"
-    val URL: String? = "url"
-    val PREVIEW_OF_DOWNLOAD_ID: String? = "preview_of_download_id"
+    val CONTENT_TYPE: String = "content_type"
+    val MEDIA_TYPE: String = "media_type"
+    val URL: String = "url"
+    val PREVIEW_OF_DOWNLOAD_ID: String = "preview_of_download_id"
 
     /**
      * See [DownloadStatus]. Defaults to [DownloadStatus.UNKNOWN]
      */
-    val DOWNLOAD_STATUS: String? = "download_status"
-    val WIDTH: String? = "width"
-    val HEIGHT: String? = "height"
-    val DURATION: String? = "duration"
-    val FILE_NAME: String? = "file_name"
-    val FILE_SIZE: String? = "file_size"
-    val DOWNLOADED_DATE: String? = "downloaded_date"
+    val DOWNLOAD_STATUS: String = "download_status"
+    val WIDTH: String = "width"
+    val HEIGHT: String = "height"
+    val DURATION: String = "duration"
+    val FILE_NAME: String = "file_name"
+    val FILE_SIZE: String = "file_size"
+    val DOWNLOADED_DATE: String = "downloaded_date"
     /*
      * Derived columns (they are not stored in this table but are result of joins)
      */
     /** Alias for the primary key  */
-    val IMAGE_ID: String? = "image_id"
-    val AVATAR_FILE_NAME: String? = "avatar_file_name"
+    val IMAGE_ID: String = "image_id"
+    val AVATAR_FILE_NAME: String = "avatar_file_name"
 
     /** Alias helping to show first attached image  */
-    val IMAGE_FILE_NAME: String? = "image_file_name"
-    val IMAGE_URI: String? = "image_uri"
-    fun create(db: SQLiteDatabase?) {
+    val IMAGE_FILE_NAME: String = "image_file_name"
+    val IMAGE_URI: String = "image_uri"
+    fun create(db: SQLiteDatabase) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + DOWNLOAD_TYPE + " INTEGER NOT NULL,"

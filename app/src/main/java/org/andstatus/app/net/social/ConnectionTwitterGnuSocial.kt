@@ -15,7 +15,6 @@
  */
 package org.andstatus.app.net.social
 
-import eu.bolt.screenshotty.ScreenshotManagerBuilder.build
 import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.data.DownloadStatus
@@ -28,7 +27,6 @@ import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 import org.json.JSONArray
@@ -36,23 +34,6 @@ import org.json.JSONException
 import org.json.JSONObject
 
 android.net.Uri
-import org.andstatus.app.context.NoScreenSupport
-import androidx.test.rule.ActivityTestRule
-import org.andstatus.app.context.CompletableFutureTest.TestData
-import org.andstatus.app.service.MyServiceTest
-import org.andstatus.app.service.AvatarDownloaderTest
-import org.andstatus.app.service.RepeatingFailingCommandTest
-import org.hamcrest.core.Is
-import org.hamcrest.core.IsNot
-import org.andstatus.app.timeline.meta.TimelineSyncTrackerTest
-import org.andstatus.app.timeline.TimelinePositionTest
-import org.andstatus.app.util.EspressoUtils
-import org.andstatus.app.timeline.TimeLineActivityLayoutToggleTest
-import org.andstatus.app.appwidget.MyAppWidgetProviderTest.DateTest
-import org.andstatus.app.appwidget.MyAppWidgetProviderTest
-import org.andstatus.app.notification.NotifierTest
-import org.andstatus.app.ActivityTestHelper.MenuItemClicker
-import org.andstatus.app.MenuItemMockimport
 
 org.andstatus.app.net.http.HttpRequestimport java.lang.StringBuilderimport java.util.ArrayListimport java.util.regex.Pattern
 /**
@@ -70,7 +51,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
             ApiRoutineEnum.SEARCH_NOTES -> "search.json"
             else -> ""
         }
-        return if (StringUtil.isEmpty(url)) {
+        return if (url.isNullOrEmpty()) {
             super.getApiPathFromOrigin(routine)
         } else partialPathToApiPath(url)
     }

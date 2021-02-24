@@ -41,8 +41,6 @@ import org.andstatus.app.net.social.Attachments
 import org.andstatus.app.net.social.Audience
 import org.andstatus.app.net.social.Note
 import org.andstatus.app.net.social.Visibility
-import org.andstatus.app.note.ConversationViewItem
-import org.andstatus.app.note.NoteEditorData
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
@@ -150,8 +148,8 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
         if (inReplyTo.nonEmpty()) {
             val name = inReplyTo.note.name
             val summary = inReplyTo.note.summary
-            values.put("InReplyTo", (if (StringUtil.nonEmpty(name)) name + MyStringBuilder.Companion.COMMA else "") +
-                    (if (StringUtil.nonEmpty(summary)) summary + MyStringBuilder.Companion.COMMA else "") +
+            values.put("InReplyTo", (if (!name.isNullOrEmpty()) name + MyStringBuilder.Companion.COMMA else "") +
+                    (if (!summary.isNullOrEmpty()) summary + MyStringBuilder.Companion.COMMA else "") +
                     inReplyTo.note.content)
         }
         values.put("audience", activity.getNote().audience().toAudienceString(inReplyTo.author))
@@ -246,7 +244,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
 
     private fun addConversationParticipantsBeforeText() {
         val loader = ConversationLoaderFactory().getLoader(
-                ConversationViewItem.Companion.EMPTY, MyContextHolder.Companion.myContextHolder.getNow(), ma.getOrigin(), getInReplyToNoteId(), false)
+                ConversationViewItem.Companion.EMPTY,  MyContextHolder.myContextHolder.getNow(), ma.getOrigin(), getInReplyToNoteId(), false)
         loader.load { progress: String? -> }
         addActorsBeforeText(loader.list.stream()
                 .filter { obj: ConversationViewItem? -> obj.isActorAConversationParticipant() }
@@ -270,10 +268,10 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
         for (actor in toMention) {
             if (actor.isEmpty()) continue
             val name = actor.getUniqueName()
-            if (!StringUtil.isEmpty(name) && !mentionedNames.contains(name)) {
+            if (!name.isNullOrEmpty() && !mentionedNames.contains(name)) {
                 mentionedNames.add(name)
                 val mentionText = "@$name"
-                if (StringUtil.isEmpty(getContent()) || !(getContent() + " ").contains("$mentionText ")) {
+                if (getContent().isNullOrEmpty() || !(getContent() + " ").contains("$mentionText ")) {
                     mentions.withSpace(mentionText)
                 }
             }
@@ -290,9 +288,9 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
 
     fun appendMentionedActorToText(mentionedActor: Actor?): NoteEditorData? {
         val name = mentionedActor.getUniqueName()
-        if (!StringUtil.isEmpty(name)) {
+        if (!name.isNullOrEmpty()) {
             var bodyText2 = "@$name "
-            if (!StringUtil.isEmpty(getContent()) && !(getContent() + " ").contains(bodyText2)) {
+            if (!getContent().isNullOrEmpty() && !(getContent() + " ").contains(bodyText2)) {
                 bodyText2 = getContent().trim { it <= ' ' } + " " + bodyText2
             }
             setContent(bodyText2, TextMediaType.HTML)
@@ -301,7 +299,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
     }
 
     fun addToAudience(actorId: Long): NoteEditorData? {
-        return addToAudience(Actor.Companion.load(MyContextHolder.Companion.myContextHolder.getNow(), actorId))
+        return addToAudience(Actor.Companion.load( MyContextHolder.myContextHolder.getNow(), actorId))
     }
 
     fun addToAudience(actor: Actor?): NoteEditorData? {
@@ -399,7 +397,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
         }
 
         fun newReplyTo(inReplyToNoteId: Long, myAccount: MyAccount?): NoteEditorData? {
-            return NoteEditorData(myAccount.getValidOrCurrent(MyContextHolder.Companion.myContextHolder.getNow()), 0, true,
+            return NoteEditorData(myAccount.getValidOrCurrent( MyContextHolder.myContextHolder.getNow()), 0, true,
                     inReplyToNoteId, inReplyToNoteId != 0L)
         }
 

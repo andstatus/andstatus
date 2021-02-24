@@ -178,7 +178,7 @@ interface HttpConnectionInterface {
     }
 
     open fun getNewInstance(): HttpConnectionInterface?
-    fun onMoved(result: HttpReadResult?): Boolean {
+    fun onMoved(result: HttpReadResult): Boolean {
         val stop: Boolean
         result.appendToLog("statusLine:'" + result.statusLine + "'")
         result.redirected = true
@@ -196,7 +196,7 @@ interface HttpConnectionInterface {
 
     fun logFollowingRedirects(result: HttpReadResult?) {
         if (MyLog.isVerboseEnabled()) {
-            val builder: MyStringBuilder = MyStringBuilder.Companion.of("Following redirect to '" + result.getUrl())
+            val builder: MyStringBuilder = MyStringBuilder.of("Following redirect to '" + result.getUrl())
             result.appendHeaders(builder)
             MyLog.v(this, builder.toString())
         }

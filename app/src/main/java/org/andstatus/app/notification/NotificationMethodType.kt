@@ -19,7 +19,6 @@ import android.net.Uri
 import android.provider.Settings
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.util.SharedPreferencesUtil
-import org.andstatus.app.util.StringUtil
 
 /**
  * How to notify a User
@@ -28,8 +27,8 @@ enum class NotificationMethodType(val id: Long, val preferenceKey: String?, val 
     NOTIFICATION_AREA(1, "notification_in_notification_area", true), VIBRATION(2, "vibration", true), SOUND(3, MyPreferences.KEY_NOTIFICATION_METHOD_SOUND, false), EMPTY(0, "", false);
 
     fun isEnabled(): Boolean {
-        return if (StringUtil.isEmpty(preferenceKey)) false else when (this) {
-            SOUND -> StringUtil.nonEmpty(SharedPreferencesUtil.getString(preferenceKey, ""))
+        return if (preferenceKey.isNullOrEmpty()) false else when (this) {
+            SOUND -> !SharedPreferencesUtil.getString(preferenceKey, "").isNullOrEmpty()
             else -> SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue)
         }
     }
@@ -39,14 +38,14 @@ enum class NotificationMethodType(val id: Long, val preferenceKey: String?, val 
             SOUND -> {
                 val uriString = SharedPreferencesUtil.getString(preferenceKey,
                         Settings.System.DEFAULT_NOTIFICATION_URI.toString())
-                if (StringUtil.isEmpty(uriString)) Uri.EMPTY else Uri.parse(uriString)
+                if (uriString.isNullOrEmpty()) Uri.EMPTY else Uri.parse(uriString)
             }
             else -> Uri.EMPTY
         }
     }
 
     fun setEnabled(enabled: Boolean) {
-        if (StringUtil.nonEmpty(preferenceKey)) SharedPreferencesUtil.putBoolean(preferenceKey, enabled)
+        if (!preferenceKey.isNullOrEmpty()) SharedPreferencesUtil.putBoolean(preferenceKey, enabled)
     }
 
     fun isEmpty(): Boolean {

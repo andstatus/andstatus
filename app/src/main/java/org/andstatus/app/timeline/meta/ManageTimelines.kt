@@ -37,7 +37,6 @@ import org.andstatus.app.timeline.BaseTimelineAdapter
 import org.andstatus.app.timeline.LoadableListActivity
 import org.andstatus.app.timeline.LoadableListPosition
 import org.andstatus.app.timeline.WhichPage
-import org.andstatus.app.timeline.meta.ManageTimelines
 import org.andstatus.app.util.I18n
 import org.andstatus.app.util.MyCheckBox
 import org.andstatus.app.util.MyLog
@@ -108,7 +107,7 @@ class ManageTimelines : LoadableListActivity<Any?>() {
             }
             val textView = view as TextView
             var text = textView.text.toString()
-            if (!StringUtil.isEmpty(text) && "▲▼↑↓".indexOf(text[0]) >= 0) {
+            if (!text.isNullOrEmpty() && "▲▼↑↓".indexOf(text[0]) >= 0) {
                 text = text.substring(1)
                 textView.text = text
             }
@@ -143,7 +142,7 @@ class ManageTimelines : LoadableListActivity<Any?>() {
 
     override fun newListAdapter(): BaseTimelineAdapter<*>? {
         return object : BaseTimelineAdapter<ManageTimelinesViewItem?>(myContext,
-                myContext.timelines()[TimelineType.MANAGE_TIMELINES, Actor.Companion.EMPTY, Origin.Companion.EMPTY],
+                myContext.timelines()[TimelineType.MANAGE_TIMELINES, Actor.Companion.EMPTY,  Origin.EMPTY],
                 loaded.getList()) {
             var defaultTimeline: Timeline? = myContext.timelines().default
             override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {

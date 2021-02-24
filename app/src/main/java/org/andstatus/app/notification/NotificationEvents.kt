@@ -114,7 +114,7 @@ class NotificationEvents private constructor(val myContext: MyContext?, private 
     companion object {
         val EMPTY = of(MyContext.Companion.EMPTY, emptyList())
         fun newInstance(): NotificationEvents? {
-            return of(MyContextHolder.Companion.myContextHolder.getNow(), emptyList())
+            return of( MyContextHolder.myContextHolder.getNow(), emptyList())
         }
 
         fun of(myContext: MyContext?, enabledEvents: MutableList<NotificationEventType?>?): NotificationEvents? {

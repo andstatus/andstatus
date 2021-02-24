@@ -21,7 +21,6 @@ import com.github.scribejava.core.oauth.OAuth20Service
 import org.andstatus.app.account.AccountDataWriter
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.UriUtils
 
 internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
@@ -49,12 +48,12 @@ internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
 
     override fun getCredentialsPresent(): Boolean {
         val yes = (data.oauthClientKeys.areKeysPresent()
-                && StringUtil.nonEmpty(userToken)
-                && StringUtil.nonEmpty(userSecret))
+                && !userToken.isNullOrEmpty()
+                && !userSecret.isNullOrEmpty())
         if (!yes && logMe) {
             MyLog.v(this) {
                 ("Credentials presence: clientKeys:" + data.oauthClientKeys.areKeysPresent()
-                        + "; userKeys:" + !StringUtil.isEmpty(userToken) + "," + !StringUtil.isEmpty(userSecret))
+                        + "; userKeys:" + !userToken.isNullOrEmpty() + "," + !userSecret.isNullOrEmpty())
             }
         }
         return yes
@@ -69,7 +68,7 @@ internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
             ApiRoutineEnum.OAUTH_REGISTER_CLIENT -> data.basicPath + "/client/register"
             else -> ""
         }
-        if (!StringUtil.isEmpty(url)) {
+        if (!url.isNullOrEmpty()) {
             url = pathToUrlString(url)
         }
         return UriUtils.fromString(url)
@@ -98,8 +97,8 @@ internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
         }
         if (logMe) {
             MyLog.v(this) {
-                ("Credentials set?: " + !StringUtil.isEmpty(token)
-                        + ", " + !StringUtil.isEmpty(secret))
+                ("Credentials set?: " + !token.isNullOrEmpty()
+                        + ", " + !secret.isNullOrEmpty())
             }
         }
     }
@@ -117,7 +116,7 @@ internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
         if (!TextUtils.equals(userToken, dw.getDataString(userTokenKey())) ||
                 !TextUtils.equals(userSecret, dw.getDataString(userSecretKey()))) {
             changed = true
-            if (StringUtil.isEmpty(userToken)) {
+            if (userToken.isNullOrEmpty()) {
                 dw.setDataString(userTokenKey(), "")
                 if (logMe) {
                     MyLog.d(TAG, "Clearing OAuth Token")
@@ -128,7 +127,7 @@ internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
                     MyLog.d(TAG, "Saving OAuth Token: $userToken")
                 }
             }
-            if (StringUtil.isEmpty(userSecret)) {
+            if (userSecret.isNullOrEmpty()) {
                 dw.setDataString(userSecretKey(), "")
                 if (logMe) {
                     MyLog.d(TAG, "Clearing OAuth Secret")

@@ -1,5 +1,9 @@
 package org.andstatus.app.timeline
 
-object EmptyViewItem : ViewItem<EmptyViewItem?>() {
-    val EMPTY: EmptyViewItem? = EmptyViewItem()
+class EmptyViewItem private constructor() : ViewItem<EmptyViewItem> (isEmpty = true, updatedDate = 0) {
+
+    companion object {
+        val EMPTY: EmptyViewItem = EmptyViewItem()
+    }
 }
+

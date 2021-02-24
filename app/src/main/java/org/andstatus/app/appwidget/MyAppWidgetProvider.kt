@@ -35,7 +35,7 @@ import java.util.function.Predicate
 class MyAppWidgetProvider : AppWidgetProvider() {
     override fun onReceive(context: Context?, intent: Intent?) {
         MyLog.i(TAG, "onReceive; action=" + intent.getAction())
-        MyContextHolder.Companion.myContextHolder.initialize(context, TAG).getBlocking()
+         MyContextHolder.myContextHolder.initialize(context, TAG).getBlocking()
         super.onReceive(context, intent)
     }
 

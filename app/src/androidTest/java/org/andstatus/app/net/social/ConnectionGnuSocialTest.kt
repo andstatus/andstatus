@@ -297,7 +297,7 @@ class ConnectionGnuSocialTest {
         activity.note.updatedDate = MyLog.uniqueCurrentTimeMS()
         activity.setUpdatedNow(0)
         val executionContext = CommandExecutionContext(
-                MyContextHolder.Companion.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, mock.getData().myAccount, 123))
+                 MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, mock.getData().myAccount, 123))
         DataUpdater(executionContext).onActivity(activity)
         assertAudience(activity, activity.audience(), numberOfMembers)
         val storedAudience: Audience = Audience.Companion.load(activity.note.origin, activity.note.noteId, Optional.empty())

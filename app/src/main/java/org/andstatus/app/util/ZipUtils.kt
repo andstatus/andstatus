@@ -17,6 +17,7 @@ package org.andstatus.app.util
 
 import io.vavr.control.Try
 import org.andstatus.app.context.MyStorage
+import org.andstatus.app.util.FileUtils.newFileOutputStreamWithRetry
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -26,27 +27,27 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
 object ZipUtils {
-    fun zipFiles(sourceFolder: File?, zipped: File?): Try<File?>? {
+    fun zipFiles(sourceFolder: File, zipped: File): Try<File> {
         try {
             newFileOutputStreamWithRetry(zipped).use { fos ->
                 ZipOutputStream(fos).use { zos ->
-                    for (file in sourceFolder.listFiles()) {
+                    for (file in sourceFolder.listFiles() ?: emptyArray()) {
                         if (!file.isDirectory && !MyStorage.isTempFile(file)) addToZip(file, zos)
                     }
                 }
             }
         } catch (e: IOException) {
-            return Try.failure(IOException("Error zipping " + sourceFolder.getAbsolutePath() + " folder to " +
-                    zipped.getAbsolutePath() + ", " + e.message))
+            return Try.failure(IOException("Error zipping " + sourceFolder.absolutePath + " folder to " +
+                    zipped.absolutePath + ", " + e.message))
         }
         return Try.success(zipped)
     }
 
     @Throws(IOException::class)
-    private fun addToZip(file: File?, zos: ZipOutputStream?) {
+    private fun addToZip(file: File, zos: ZipOutputStream) {
         try {
             FileInputStream(file).use { fis ->
-                val zipEntry = ZipEntry(file.getName())
+                val zipEntry = ZipEntry(file.name)
                 zipEntry.time = file.lastModified()
                 zos.putNextEntry(zipEntry)
                 val bytes = ByteArray(MyStorage.FILE_CHUNK_SIZE)
@@ -60,15 +61,15 @@ object ZipUtils {
         }
     }
 
-    fun unzipFiles(zipped: File?, targetFolder: File?): Try<String?>? {
+    fun unzipFiles(zipped: File, targetFolder: File): Try<String?>? {
         if (!targetFolder.exists() && !targetFolder.mkdir()) {
-            return Try.failure(IOException("Couldn't create folder: '" + targetFolder.getAbsolutePath() + "'"))
+            return Try.failure(IOException("Couldn't create folder: '" + targetFolder.absolutePath + "'"))
         }
         val unzipped: MutableList<String?> = ArrayList()
         val skipped: MutableList<String?> = ArrayList()
         try {
             ZipFile(zipped).use { zipFile ->
-                val enu: Enumeration<*>? = zipFile.entries()
+                val enu: Enumeration<*> = zipFile.entries()
                 while (enu.hasMoreElements()) {
                     val zipEntry = enu.nextElement() as ZipEntry
                     val file = File(targetFolder, zipEntry.name)
@@ -92,10 +93,10 @@ object ZipUtils {
                 }
             }
         } catch (e: Exception) {
-            return Try.failure(Exception("Failed to unzip " + zipped.getName() + ", error message: " + e.message))
+            return Try.failure(Exception("Failed to unzip " + zipped.name + ", error message: " + e.message))
         }
-        return Try.success("Unzipped " + unzipped.size + " files from '" + zipped.getName() + "' file" +
-                " to '" + targetFolder.getName() + "' folder." +
+        return Try.success("Unzipped " + unzipped.size + " files from '" + zipped.name + "' file" +
+                " to '" + targetFolder.name + "' folder." +
                 if (skipped.isEmpty()) "" else ", skipped " + skipped.size + " files: " + skipped)
     }
 }

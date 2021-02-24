@@ -1,4 +1,4 @@
-package org.andstatus.app.timelineimport
+package org.andstatus.app.timeline
 
 import android.content.Intent
 import android.net.Uri
@@ -29,11 +29,6 @@ import org.junit.Assert
 import org.junit.Test
 import java.util.*
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -769,10 +764,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -810,7 +801,7 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem?>() {
         mService.setUp(DemoData.Companion.demoData.gnusocialTestAccountName)
         ma = DemoData.Companion.demoData.getGnuSocialAccount()
         Assert.assertTrue(ma.isValid())
-        MyContextHolder.Companion.myContextHolder.getBlocking().accounts().setCurrentAccount(ma)
+         MyContextHolder.myContextHolder.getBlocking().accounts().setCurrentAccount(ma)
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "image/png"
         val mediaUri: Uri = DemoData.Companion.demoData.localImageTestUri2
@@ -835,7 +826,7 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem?>() {
         val editorView = activity.findViewById<View?>(R.id.note_editor)
         ActivityTestHelper.Companion.waitViewVisible(method, editorView)
         val details = editorView.findViewById<TextView?>(R.id.noteEditDetails)
-        val textToFind: String = MyContextHolder.Companion.myContextHolder.getNow().context().getText(R.string.label_with_media).toString()
+        val textToFind: String =  MyContextHolder.myContextHolder.getNow().context().getText(R.string.label_with_media).toString()
         ActivityTestHelper.Companion.waitTextInAView(method, details, textToFind)
         TestSuite.waitForIdleSync()
         val content = "Test note with a shared image " + DemoData.Companion.demoData.testRunUid

@@ -18,11 +18,9 @@ package org.andstatus.app.net.http
 import android.text.format.Formatter
 import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
-import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.service.ConnectionRequired
 import org.andstatus.app.util.StopWatch
-import org.andstatus.app.util.StringUtil
 import java.io.BufferedOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -63,7 +61,7 @@ object HttpConnectionUtils {
                 return if (result.request.fileResult == null || !result.isStatusOk()) readStreamToString(result, `in`) else readStreamToFile(result, `in`)
             }
         } catch (e: Exception) {
-            return result.setException(if (StringUtil.isEmpty(msgLog)) e else ConnectionException(msgLog, e))
+            return result.setException(if (msgLog.isNullOrEmpty()) e else ConnectionException(msgLog, e))
                     .toFailure()
         }
     }

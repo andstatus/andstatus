@@ -26,7 +26,7 @@ import org.andstatus.app.data.DownloadStatus
  * and also for "direct messages", "direct dents" etc.
  */
 object NoteTable : BaseColumns {
-    val TABLE_NAME: String? = "note"
+    val TABLE_NAME: String = "note"
     // Table columns are below:
     /*
      * {@link BaseColumns#_ID} is primary key in this database
@@ -36,101 +36,101 @@ object NoteTable : BaseColumns {
     /**
      * ID of the originating (source) system ("Social Network": twitter.com, identi.ca, ... ) where the row was created
      */
-    val ORIGIN_ID: String? = OriginTable.ORIGIN_ID
+    val ORIGIN_ID: String = OriginTable.ORIGIN_ID
 
     /**
      * ID in the originating system
      * The id is not unique for this table, because we have IDs from different systems in one column
      * and IDs from different systems may overlap.
      */
-    val NOTE_OID: String? = "note_oid"
+    val NOTE_OID: String = "note_oid"
 
     /**
      * See [DownloadStatus]. Defaults to [DownloadStatus.UNKNOWN]
      */
-    val NOTE_STATUS: String? = "note_status"
+    val NOTE_STATUS: String = "note_status"
 
     /** Conversation ID, internal to AndStatus  */
-    val CONVERSATION_ID: String? = "conversation_id"
+    val CONVERSATION_ID: String = "conversation_id"
 
     /** ID of the conversation in the originating system (if the system supports this)  */
-    val CONVERSATION_OID: String? = "conversation_oid"
+    val CONVERSATION_OID: String = "conversation_oid"
 
     /**
      * A link to the representation of the resource. Currently this is simply URL to the HTML
      * representation of the resource (its "permalink")
      */
-    val URL: String? = "url"
+    val URL: String = "url"
 
     /** A simple, human-readable, plain-text name for the Note  */
-    val NAME: String? = "note_name"
+    val NAME: String = "note_name"
 
     /** A natural language summarization of the object.
      * Used as a Content Warning (CW) if [.SENSITIVE] flag is set.
      */
-    val SUMMARY: String? = "summary"
+    val SUMMARY: String = "summary"
 
     /** Content of the note  */
-    val CONTENT: String? = "content"
+    val CONTENT: String = "content"
 
     /** Name and Content text, prepared for easy searching in a database  */
-    val CONTENT_TO_SEARCH: String? = "content_to_search"
+    val CONTENT_TO_SEARCH: String = "content_to_search"
 
     /**
      * String generally describing Client's software used to post this note
      * It's like "User Agent" string in the browsers?!: "via ..."
      * (This is "source" field in tweets)
      */
-    val VIA: String? = "via"
+    val VIA: String = "via"
 
     /**
      * If not null: Link to the #_ID in this table
      */
-    val IN_REPLY_TO_NOTE_ID: String? = "in_reply_to_note_id"
+    val IN_REPLY_TO_NOTE_ID: String = "in_reply_to_note_id"
 
     /**
      * Date and time when the note was created or updated in the originating system.
      * We store it as long milliseconds.
      */
-    val UPDATED_DATE: String? = "note_updated_date"
+    val UPDATED_DATE: String = "note_updated_date"
 
     /** Date and time when the Note was first LOADED into this database
      * or if it was not LOADED yet, when the row was inserted into this database  */
-    val INS_DATE: String? = "note_ins_date"
+    val INS_DATE: String = "note_ins_date"
 
     /** [org.andstatus.app.net.social.Visibility]  */
-    val VISIBILITY: String? = "public" // TODO: rename
+    val VISIBILITY: String = "public" // TODO: rename
 
     /** Indicates that some users may wish to apply discretion about viewing its content, whether due to nudity,
      * violence, or any other likely aspects that viewers may be sensitive to.
      * See [Activity Streams extensions](https://www.w3.org/wiki/Activity_Streams_extensions#as:sensitive_property)  */
-    val SENSITIVE: String? = "sensitive"
+    val SENSITIVE: String = "sensitive"
 
     /** Some of my accounts favorited this note  */
-    val FAVORITED: String? = "favorited"
+    val FAVORITED: String = "favorited"
 
     /** The Note is reblogged by some of my actors
      * In some sense REBLOGGED is like FAVORITED.
      * Main difference: visibility. REBLOGGED are shown for all followers in their Home timelines.
      */
-    val REBLOGGED: String? = "reblogged"
-    val LIKES_COUNT: String? = "favorite_count" // TODO: rename
-    val REBLOGS_COUNT: String? = "reblog_count" // TODO: rename
-    val REPLIES_COUNT: String? = "reply_count" // TODO: rename. To be calculated locally?!
-    val ATTACHMENTS_COUNT: String? = "attachments_count"
+    val REBLOGGED: String = "reblogged"
+    val LIKES_COUNT: String = "favorite_count" // TODO: rename
+    val REBLOGS_COUNT: String = "reblog_count" // TODO: rename
+    val REPLIES_COUNT: String = "reply_count" // TODO: rename. To be calculated locally?!
+    val ATTACHMENTS_COUNT: String = "attachments_count"
 
     // Columns, which duplicate other existing info. Here to speed up data retrieval
-    val AUTHOR_ID: String? = "note_author_id"
+    val AUTHOR_ID: String = "note_author_id"
 
     /**
      * If not null: to which Sender this note is a reply = Actor._ID
      * This field is not necessary but speeds up IN_REPLY_TO_NAME calculation
      */
-    val IN_REPLY_TO_ACTOR_ID: String? = "in_reply_to_actor_id"
+    val IN_REPLY_TO_ACTOR_ID: String = "in_reply_to_actor_id"
     // Derived columns (they are not stored in this table but are result of joins and aliasing)
     /** Alias for the primary key  */
-    val NOTE_ID: String? = "note_id"
-    fun create(db: SQLiteDatabase?) {
+    val NOTE_ID: String = "note_id"
+    fun create(db: SQLiteDatabase) {
         DbUtils.execSQL(db, "CREATE TABLE " + TABLE_NAME + " ("
                 + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + ORIGIN_ID + " INTEGER NOT NULL,"

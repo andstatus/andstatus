@@ -22,12 +22,15 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.TaggedClass
 
-class LoadableListPosition<T : ViewItem<T?>?> private constructor(val itemId: Long, val y: Int, val position: Int, val minSentDate: Long, val description: String?) : IsEmpty, TaggedClass {
+class LoadableListPosition<T : ViewItem<T>> private constructor(
+        val itemId: Long, val y: Int, val position: Int,
+        val minSentDate: Long, val description: String?) : IsEmpty, TaggedClass {
+
     override fun isEmpty(): Boolean {
         return itemId == 0L
     }
 
-    fun logV(description: String?): LoadableListPosition<T?>? {
+    fun logV(description: String?): LoadableListPosition<T> {
         MyLog.v(TAG) { description + "; " + this.description }
         return this
     }
@@ -36,22 +39,23 @@ class LoadableListPosition<T : ViewItem<T?>?> private constructor(val itemId: Lo
         return MyStringBuilder.Companion.formatKeyValue(this, description)
     }
 
-    override fun classTag(): String? {
+    override fun classTag(): String {
         return TAG
     }
 
     companion object {
-        private val TAG: String? = LoadableListPosition::class.java.simpleName
+        private val TAG: String = LoadableListPosition::class.java.simpleName
         val EMPTY = saved(0, 0, 0, "(empty position)")
-        private fun current(itemId: Long, y: Int, position: Int, minSentDate: Long, description: String?): LoadableListPosition<*>? {
-            return LoadableListPosition<Any?>(itemId, y, position, minSentDate, description)
+
+        private fun current(itemId: Long, y: Int, position: Int, minSentDate: Long, description: String?): LoadableListPosition<*> {
+            return LoadableListPosition<EmptyViewItem>(itemId, y, position, minSentDate, description)
         }
 
-        fun saved(itemId: Long, y: Int, minSentDate: Long, description: String?): LoadableListPosition<*>? {
-            return LoadableListPosition<Any?>(itemId, y, 0, minSentDate, description)
+        fun saved(itemId: Long, y: Int, minSentDate: Long, description: String?): LoadableListPosition<*> {
+            return LoadableListPosition<EmptyViewItem>(itemId, y, 0, minSentDate, description)
         }
 
-        fun getCurrent(list: ListView?, adapter: BaseTimelineAdapter<*>?, itemIdDefault: Long): LoadableListPosition<*>? {
+        fun getCurrent(list: ListView, adapter: BaseTimelineAdapter<*>, itemIdDefault: Long): LoadableListPosition<*> {
             val firstVisiblePosition = Integer.min(
                     Integer.max(list.getFirstVisiblePosition(), 0),
                     Integer.max(adapter.getCount() - 1, 0)
@@ -71,9 +75,9 @@ class LoadableListPosition<T : ViewItem<T?>?> private constructor(val itemId: Lo
             }
             val itemIdFound = if (viewOfPosition == null) 0 else adapter.getItemId(position)
             var itemId = if (itemIdFound == 0L) itemIdDefault else itemIdFound
-            val y = if (itemIdFound == 0L) 0 else viewOfPosition.getTop() - list.getPaddingTop()
+            val y = if (itemIdFound == 0L || viewOfPosition == null) 0 else viewOfPosition.getTop() - list.getPaddingTop()
             val lastPosition = Integer.min(list.getLastVisiblePosition() + 10, adapter.getCount() - 1)
-            val minDate = adapter.getItem(lastPosition).date
+            val minDate = adapter.getItem(lastPosition)?.getDate() ?: 0
             var description = ""
             if (itemId <= 0 && minDate > 0) {
                 description = "from lastPosition, "
@@ -90,7 +94,7 @@ class LoadableListPosition<T : ViewItem<T?>?> private constructor(val itemId: Lo
             return current(itemId, y, position, minDate, description)
         }
 
-        fun getViewOfPosition(list: ListView?, position: Int): View? {
+        fun getViewOfPosition(list: ListView, position: Int): View? {
             var viewOfPosition: View? = null
             for (ind in 0 until list.getChildCount()) {
                 val view = list.getChildAt(ind)
@@ -106,8 +110,8 @@ class LoadableListPosition<T : ViewItem<T?>?> private constructor(val itemId: Lo
             return viewOfPosition
         }
 
-        fun <T : ViewItem<T?>?> restore(list: ListView?, adapter: BaseTimelineAdapter<T?>?,
-                                        pos: LoadableListPosition<*>?): Boolean {
+        fun <T : ViewItem<T>> restore(list: ListView, adapter: BaseTimelineAdapter<T>,
+                                        pos: LoadableListPosition<*>): Boolean {
             var position = -1
             try {
                 if (pos.itemId > 0) {

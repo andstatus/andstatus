@@ -18,7 +18,7 @@ class StopWatch : org.apache.commons.lang3.time.StopWatch() {
     }
 
     companion object {
-        fun createStarted(): StopWatch? {
+        fun createStarted(): StopWatch {
             val sw = StopWatch()
             sw.start()
             return sw

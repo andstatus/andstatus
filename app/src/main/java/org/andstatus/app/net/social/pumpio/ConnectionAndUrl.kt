@@ -26,7 +26,6 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UrlUtils
 
@@ -53,7 +52,7 @@ internal class ConnectionAndUrl(val apiRoutine: ApiRoutineEnum?, val uri: Uri?, 
                 host = uri.host
             } else {
                 val username = actor.getUsername()
-                if (StringUtil.isEmpty(username)) {
+                if (username.isNullOrEmpty()) {
                     return Try.failure(ConnectionException(StatusCode.BAD_REQUEST, apiRoutine.toString() + ": username is required"))
                 }
                 uri = connection.tryApiPath(Actor.Companion.EMPTY, apiRoutine)
@@ -61,7 +60,7 @@ internal class ConnectionAndUrl(val apiRoutine: ApiRoutineEnum?, val uri: Uri?, 
                 host = actor.getConnectionHost()
             }
             var httpConnection = connection.getHttp()
-            if (StringUtil.isEmpty(host)) {
+            if (host.isNullOrEmpty()) {
                 return Try.failure(ConnectionException(StatusCode.BAD_REQUEST, apiRoutine.toString() +
                         ": host is empty for " + actor))
             } else if (connection.getHttp().data.originUrl == null ||

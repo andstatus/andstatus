@@ -65,8 +65,7 @@ object ViewUtils {
      * @return true if succeeded
      */
     fun showView(view: View?, show: Boolean): Boolean {
-        val success = view != null
-        if (success) {
+        if (view != null) {
             if (show) {
                 if (view.getVisibility() != View.VISIBLE) {
                     view.setVisibility(View.VISIBLE)
@@ -77,7 +76,7 @@ object ViewUtils {
                 }
             }
         }
-        return success
+        return view != null
     }
 
     fun isVisible(activity: Activity, viewId: Int): Boolean {

@@ -28,20 +28,23 @@ import java.util.*
 /**
  * @author yvolk@yurivolkov.com
  */
-class EnumSelector<E> : SelectorDialog() where E : Enum<E?>?, E : SelectableEnum? {
-    private var enumList: SelectableEnumList<E?>? = null
+class EnumSelector<E>(private val enumList: SelectableEnumList<E>) : SelectorDialog() where E : Enum<E>, E : SelectableEnum {
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        if (enumList == null || enumList.getDialogTitleResId() == 0) {  // We don't save a state of the dialog
+        val enums: SelectableEnumList<E> = enumList
+
+        if (enums.getDialogTitleResId() == 0) {  // We don't save a state of the dialog
             dismiss()
             return
         }
-        setTitle(enumList.getDialogTitleResId())
-        listAdapter = newListAdapter()
-        getListView().onItemClickListener = OnItemClickListener { parent, view, position, id -> returnSelected(Intent().putExtra(IntentExtra.SELECTABLE_ENUM.key, enumList.get(position).getCode())) }
+        setTitle(enums.getDialogTitleResId())
+        setListAdapter(newListAdapter())
+        listView?.onItemClickListener = OnItemClickListener { parent, view, position, id ->
+            returnSelected(Intent().putExtra(IntentExtra.SELECTABLE_ENUM.key, enums[position]?.getCode() ?: 0)) }
     }
 
-    private fun newListAdapter(): MySimpleAdapter? {
+    private fun newListAdapter(): MySimpleAdapter {
         val list: MutableList<MutableMap<String?, String?>?> = ArrayList()
         for (value in enumList.getList()) {
             val map: MutableMap<String?, String?> = HashMap()
@@ -54,12 +57,11 @@ class EnumSelector<E> : SelectorDialog() where E : Enum<E?>?, E : SelectableEnum
     }
 
     companion object {
-        private val KEY_VISIBLE_NAME: String? = "visible_name"
+        private val KEY_VISIBLE_NAME: String = "visible_name"
         fun <E> newInstance(
-                requestCode: ActivityRequestCode?, clazz: Class<E?>?): SelectorDialog? where E : Enum<E?>?, E : SelectableEnum? {
-            val selector: EnumSelector<*> = EnumSelector<Any?>()
+                requestCode: ActivityRequestCode, clazz: Class<E?>?): SelectorDialog where E : Enum<E>, E : SelectableEnum? {
+            val selector: EnumSelector<*> = EnumSelector<E>(SelectableEnumList.newInstance(clazz))
             selector.setRequestCode(requestCode)
-            selector.enumList = SelectableEnumList.Companion.newInstance(clazz)
             return selector
         }
     }

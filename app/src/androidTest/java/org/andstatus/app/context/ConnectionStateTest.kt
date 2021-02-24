@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.contextimport
+package org.andstatus.app.context
 
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
@@ -24,11 +24,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -764,10 +759,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -808,13 +799,13 @@ class ConnectionStateTest {
     @Test
     fun testIsConnectionStateOkFor() {
         TestSuite.getMyContextForTest().connectionState = ConnectionState.OFFLINE
-        Assert.assertEquals(ConnectionState.OFFLINE, MyContextHolder.Companion.myContextHolder.getNow().getConnectionState())
+        Assert.assertEquals(ConnectionState.OFFLINE,  MyContextHolder.myContextHolder.getNow().getConnectionState())
         assertTrueFor(ConnectionRequired.OFFLINE)
         assertTrueFor(ConnectionRequired.ANY)
         assertFalseFor(ConnectionRequired.SYNC)
         assertFalseFor(ConnectionRequired.DOWNLOAD_ATTACHMENT)
         TestSuite.getMyContextForTest().connectionState = ConnectionState.ONLINE
-        Assert.assertEquals(ConnectionState.ONLINE, MyContextHolder.Companion.myContextHolder.getNow().getConnectionState())
+        Assert.assertEquals(ConnectionState.ONLINE,  MyContextHolder.myContextHolder.getNow().getConnectionState())
         assertFalseFor(ConnectionRequired.OFFLINE)
         assertTrueFor(ConnectionRequired.ANY)
         MyPreferences.setDownloadAttachmentsOverWiFiOnly(false)
@@ -843,6 +834,6 @@ class ConnectionStateTest {
     }
 
     private fun isConnectionStateOkFor(connectionRequired: ConnectionRequired?): Boolean {
-        return connectionRequired.isConnectionStateOk(MyContextHolder.Companion.myContextHolder.getNow().getConnectionState())
+        return connectionRequired.isConnectionStateOk( MyContextHolder.myContextHolder.getNow().getConnectionState())
     }
 }

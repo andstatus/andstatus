@@ -31,7 +31,8 @@ import org.andstatus.app.util.MyLog
 
 /** See [Settings](http://developer.android.com/guide/topics/ui/settings.html)
  */
-class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceStartScreenCallback, PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
+class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceStartScreenCallback,
+        PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
     private val mPreferencesChangedAt = MyPreferences.getPreferencesChangeTime()
     private var resumedOnce = false
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,12 +42,12 @@ class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceSt
         if (savedInstanceState == null) {
             // Create the fragment only when the activity is created for the first time.
             // ie. not after orientation changes
-            var fragment = supportFragmentManager.findFragmentByTag(MySettingsFragment.Companion.FRAGMENT_TAG)
+            var fragment = supportFragmentManager.findFragmentByTag(MySettingsFragment.FRAGMENT_TAG)
             if (fragment == null) {
                 fragment = MySettingsFragment()
             }
             val ft = supportFragmentManager.beginTransaction()
-            ft.replace(R.id.settings_container, fragment, MySettingsFragment.Companion.FRAGMENT_TAG)
+            ft.replace(R.id.settings_container, fragment, MySettingsFragment.FRAGMENT_TAG)
             ft.commit()
         }
         parseNewIntent(intent)
@@ -54,7 +55,7 @@ class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceSt
 
     // TODO: Not fully implemented, but it is unused yet...
     override fun onPreferenceStartScreen(preferenceFragmentCompat: PreferenceFragmentCompat?,
-                                         preferenceScreen: PreferenceScreen?): Boolean {
+                                         preferenceScreen: PreferenceScreen): Boolean {
         val ft = supportFragmentManager.beginTransaction()
         val fragment = MySettingsFragment()
         val args = Bundle()
@@ -66,7 +67,7 @@ class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceSt
         return true
     }
 
-    override fun onPreferenceStartFragment(caller: PreferenceFragmentCompat?, pref: Preference?): Boolean {
+    override fun onPreferenceStartFragment(caller: PreferenceFragmentCompat?, pref: Preference): Boolean {
         val args = pref.getExtras()
         args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, pref.getKey())
         val fragment = MySettingsFragment()
@@ -83,25 +84,25 @@ class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceSt
         return getSettingsGroup() == MySettingsGroup.UNKNOWN
     }
 
-    private fun getSettingsGroup(): MySettingsGroup? {
+    private fun getSettingsGroup(): MySettingsGroup {
         val fragment = supportFragmentManager.findFragmentById(R.id.settings_container)
-        return MySettingsGroup.Companion.from(fragment)
+        return MySettingsGroup.from(fragment)
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         logEvent("onNewIntent", "")
         super.onNewIntent(intent)
         parseNewIntent(intent)
     }
 
-    private fun parseNewIntent(intent: Intent?) {
+    private fun parseNewIntent(intent: Intent) {
         if (intent.getBooleanExtra(IntentExtra.FINISH.key, false)) {
             logEvent("parseNewIntent", "finish requested")
             finish()
         } else {
-            val settingsGroup: MySettingsGroup = MySettingsGroup.Companion.fromIntent(intent)
+            val settingsGroup: MySettingsGroup = MySettingsGroup.fromIntent(intent)
             if (settingsGroup != MySettingsGroup.UNKNOWN) {
-                if (!MyContextHolder.Companion.myContextHolder.needToRestartActivity()) {
+                if (! MyContextHolder.myContextHolder.needToRestartActivity()) {
                     intent.removeExtra(IntentExtra.SETTINGS_GROUP.key)
                     setIntent(intent)
                 }
@@ -114,16 +115,16 @@ class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceSt
 
     override fun onResume() {
         super.onResume()
-        if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime() || MyContextHolder.Companion.myContextHolder.needToRestartActivity()) {
+        if (mPreferencesChangedAt < MyPreferences.getPreferencesChangeTime() ||  MyContextHolder.myContextHolder.needToRestartActivity()) {
             if (initializeThenRestartActivity()) {
                 logEvent("onResume", "Recreating")
                 return
             }
         }
         if (isRootScreen()) {
-            MyContextHolder.Companion.myContextHolder.getNow().setInForeground(true)
-            MyServiceManager.Companion.setServiceUnavailable()
-            MyServiceManager.Companion.stopService()
+             MyContextHolder.myContextHolder.getNow().setInForeground(true)
+            MyServiceManager.setServiceUnavailable()
+            MyServiceManager.stopService()
         }
         resumedOnce = true
     }
@@ -132,19 +133,17 @@ class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceSt
         super.onPause()
         logEvent("onPause", "")
         if (isRootScreen()) {
-            MyContextHolder.Companion.myContextHolder.getNow().setInForeground(false)
+             MyContextHolder.myContextHolder.getNow().setInForeground(false)
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.getItemId()) {
             android.R.id.home -> {
-                if (isRootScreen()) {
-                    closeAndRestartApp()
-                } else if (supportFragmentManager.backStackEntryCount > 0) {
-                    supportFragmentManager.popBackStack()
-                } else {
-                    finish()
+                when {
+                    isRootScreen() -> closeAndRestartApp()
+                    supportFragmentManager.backStackEntryCount > 0 -> supportFragmentManager.popBackStack()
+                    else -> finish()
                 }
                 true
             }
@@ -160,9 +159,8 @@ class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceSt
         }
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (isRootScreen()
-                && keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (isRootScreen() && keyCode == KeyEvent.KEYCODE_BACK && event.repeatCount == 0) {
             closeAndRestartApp()
             return true
         }
@@ -176,7 +174,7 @@ class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceSt
     }
 
     companion object {
-        fun goToMySettingsAccounts(activity: Activity?) {
+        fun goToMySettingsAccounts(activity: Activity) {
             activity.startActivity(MySettingsGroup.ACCOUNTS.add(Intent(activity.getApplicationContext(), MySettingsActivity::class.java)))
             activity.finish()
         }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.serviceimport
+package org.andstatus.app.service
 
 import org.andstatus.app.SearchObjects
 import org.andstatus.app.account.MyAccount
@@ -43,11 +43,6 @@ import org.junit.Test
 import java.io.IOException
 import java.util.function.Predicate
 
-eu.bolt.screenshotty.ScreenshotManagerBuilder.build
-import eu.bolt.screenshotty.ScreenshotManager.makeScreenshot
-import eu.bolt.screenshotty.ScreenshotResult.observe
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.Companion.create
-import eu.bolt.screenshotty.util.ScreenshotFileSaver.saveToFile
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
 import android.os.AsyncTask
@@ -783,10 +778,6 @@ import androidx.test.espresso.ViewAction
 import android.widget.Checkable
 import org.andstatus.app.context.ActivityTest
 import android.text.SpannedString
-import eu.bolt.screenshotty.ScreenshotManager
-import eu.bolt.screenshotty.ScreenshotManagerBuilder
-import eu.bolt.screenshotty.ScreenshotResult
-import eu.bolt.screenshotty.util.ScreenshotFileSaver
 import org.andstatus.app.actor.ActorsScreenTest
 import org.andstatus.app.actor.FollowersScreen
 import androidx.test.rule.GrantPermissionRule
@@ -822,7 +813,7 @@ class CommandExecutorStrategyTest {
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        ma = MyContextHolder.Companion.myContextHolder.getNow().accounts().getFirstPreferablySucceededForOrigin(DemoData.Companion.demoData.getGnuSocialOrigin())
+        ma =  MyContextHolder.myContextHolder.getNow().accounts().getFirstPreferablySucceededForOrigin(DemoData.Companion.demoData.getGnuSocialOrigin())
         mock = ConnectionMock.Companion.newFor(ma)
         httpConnectionMock = mock.getHttpMock()
         Assert.assertTrue(ma.toString(), ma.isValidAndSucceeded())
@@ -841,11 +832,11 @@ class CommandExecutorStrategyTest {
     @Test
     fun testSearch() {
         val commandData1: CommandData = CommandData.Companion.newSearch(SearchObjects.NOTES,
-                MyContextHolder.Companion.myContextHolder.getNow(), Origin.Companion.EMPTY, DemoData.Companion.demoData.globalPublicNoteText)
+                 MyContextHolder.myContextHolder.getNow(),  Origin.EMPTY, DemoData.Companion.demoData.globalPublicNoteText)
         var strategy: CommandExecutorStrategy = CommandExecutorStrategy.Companion.getStrategy(commandData1, null)
         Assert.assertEquals(CommandExecutorStrategy::class.java, strategy.javaClass)
         val commandData2: CommandData = CommandData.Companion.newSearch(SearchObjects.NOTES,
-                MyContextHolder.Companion.myContextHolder.getNow(), ma.getOrigin(), DemoData.Companion.demoData.globalPublicNoteText)
+                 MyContextHolder.myContextHolder.getNow(), ma.getOrigin(), DemoData.Companion.demoData.globalPublicNoteText)
         strategy = CommandExecutorStrategy.Companion.getStrategy(commandData2, null)
         Assert.assertEquals(TimelineDownloaderOther::class.java, strategy.javaClass)
         strategy.execute()
@@ -941,6 +932,6 @@ class CommandExecutorStrategyTest {
     @After
     fun tearDown() {
         TestSuite.clearHttpMocks()
-        MyContextHolder.Companion.myContextHolder.getBlocking().accounts().initialize()
+         MyContextHolder.myContextHolder.getBlocking().accounts().initialize()
     }
 }

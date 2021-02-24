@@ -34,7 +34,6 @@ import org.andstatus.app.database.table.CommandTable
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
-import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.CommandQueue.OneQueue
 import org.andstatus.app.timeline.ListScope
 import org.andstatus.app.timeline.WhichPage
@@ -46,7 +45,6 @@ import org.andstatus.app.util.MyHtml
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TaggedClass
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -148,14 +146,14 @@ class CommandData private constructor(commandId: Long, command: CommandEnum?, my
         }
         builder.withComma("account", myAccount.getAccountName()) { myAccount.nonEmpty() }
         builder.withComma("username", username)
-        if (StringUtil.nonEmpty(description) && description != username) {
+        if (!description.isNullOrEmpty() && description != username) {
             builder.withSpaceQuoted(description)
         }
         if (commandTimeline.isValid()) {
             builder.withComma(commandTimeline.toString())
         }
         builder.withComma("itemId", itemId) { itemId != 0L }
-        builder.withComma("created:" + RelativeTime.getDifference(MyContextHolder.Companion.myContextHolder.getNow().context(), getCreatedDate()))
+        builder.withComma("created:" + RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context(), getCreatedDate()))
         builder.withComma(CommandResult.Companion.toString(commandResult))
         return MyStringBuilder.Companion.formatKeyValue(this, builder)
     }
@@ -246,7 +244,7 @@ class CommandData private constructor(commandId: Long, command: CommandEnum?, my
                 builder.withSpace(from(myContext, getTimeline()).toString())
             }
             CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW, CommandEnum.GET_FOLLOWERS, CommandEnum.GET_FRIENDS -> builder.withSpace(getTimeline().actor.actorNameInTimeline)
-            CommandEnum.GET_ACTOR, CommandEnum.SEARCH_ACTORS -> if (StringUtil.nonEmpty(getUsername())) builder.withSpaceQuoted(getUsername())
+            CommandEnum.GET_ACTOR, CommandEnum.SEARCH_ACTORS -> if (!getUsername().isNullOrEmpty()) builder.withSpaceQuoted(getUsername())
             else -> appendScopeName(myContext, builder)
         }
         if (!summaryOnly) {
@@ -346,17 +344,17 @@ class CommandData private constructor(commandId: Long, command: CommandEnum?, my
     }
 
     fun setUsername(username: String?) {
-        if (StringUtil.isEmpty(this.username) && !StringUtil.isEmpty(username)) {
+        if (this.username.isNullOrEmpty() && !username.isNullOrEmpty()) {
             this.username = username
         }
     }
 
-    override fun classTag(): String? {
+    override fun classTag(): String {
         return TAG
     }
 
     companion object {
-        private val TAG: String? = CommandData::class.java.simpleName
+        private val TAG: String = CommandData::class.java.simpleName
         val EMPTY = newCommand(CommandEnum.EMPTY)
         fun newSearch(searchObjects: SearchObjects?,
                       myContext: MyContext?, origin: Origin?, queryString: String?): CommandData? {
@@ -377,27 +375,27 @@ class CommandData private constructor(commandId: Long, command: CommandEnum?, my
         }
 
         fun newFetchAttachment(noteId: Long, downloadDataRowId: Long): CommandData? {
-            val commandData = newOriginCommand(CommandEnum.GET_ATTACHMENT, Origin.Companion.EMPTY)
+            val commandData = newOriginCommand(CommandEnum.GET_ATTACHMENT,  Origin.EMPTY)
             commandData.itemId = downloadDataRowId
             commandData.setTrimmedNoteContentAsDescription(noteId)
             return commandData
         }
 
         fun newActorCommand(command: CommandEnum?, actor: Actor?, username: String?): CommandData {
-            return newActorCommandAtOrigin(command, actor, username, Origin.Companion.EMPTY)
+            return newActorCommandAtOrigin(command, actor, username,  Origin.EMPTY)
         }
 
         fun newActorCommandAtOrigin(command: CommandEnum?, actor: Actor?, username: String?, origin: Origin?): CommandData {
             val commandData = newTimelineCommand(command,
-                    MyContextHolder.Companion.myContextHolder.getNow().timelines().get(
+                     MyContextHolder.myContextHolder.getNow().timelines().get(
                             if (origin.isEmpty()) TimelineType.SENT else TimelineType.SENT_AT_ORIGIN, actor, origin))
             commandData.setUsername(username)
             commandData.description = commandData.getUsername()
             return commandData
         }
 
-        fun newCommand(command: CommandEnum?): CommandData? {
-            return newOriginCommand(command, Origin.Companion.EMPTY)
+        fun newCommand(command: CommandEnum?): CommandData {
+            return newOriginCommand(command,  Origin.EMPTY)
         }
 
         fun newItemCommand(command: CommandEnum?, myAccount: MyAccount, itemId: Long): CommandData? {
@@ -407,26 +405,26 @@ class CommandData private constructor(commandId: Long, command: CommandEnum?, my
         }
 
         fun actOnActorCommand(command: CommandEnum?, myAccount: MyAccount?, actor: Actor?, username: String?): CommandData? {
-            if (myAccount.nonValid() || actor.isEmpty() && StringUtil.isEmpty(username)) return EMPTY
-            val timeline: Timeline = MyContextHolder.Companion.myContextHolder.getNow().timelines().get(TimelineType.SENT, actor, Origin.Companion.EMPTY)
+            if (myAccount.nonValid() || actor.isEmpty() && username.isNullOrEmpty()) return EMPTY
+            val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.SENT, actor,  Origin.EMPTY)
             val commandData = if (actor.isEmpty()) newAccountCommand(command, myAccount) else CommandData(0, command, myAccount, CommandTimeline.Companion.of(timeline), 0)
             commandData.setUsername(username)
             commandData.description = commandData.getUsername()
             return commandData
         }
 
-        fun newAccountCommand(command: CommandEnum?, myAccount: MyAccount): CommandData? {
+        fun newAccountCommand(command: CommandEnum?, myAccount: MyAccount): CommandData {
             return CommandData(0, command, myAccount, CommandTimeline.Companion.of(Timeline.Companion.EMPTY), 0)
         }
 
-        fun newOriginCommand(command: CommandEnum?, origin: Origin): CommandData? {
-            return newTimelineCommand(command, if (origin.isEmpty) Timeline.Companion.EMPTY else MyContextHolder.Companion.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.Companion.EMPTY, origin))
+        fun newOriginCommand(command: CommandEnum?, origin: Origin): CommandData {
+            return newTimelineCommand(command, if (origin.isEmpty) Timeline.Companion.EMPTY else  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.Companion.EMPTY, origin))
         }
 
         fun newTimelineCommand(command: CommandEnum?, myAccount: MyAccount,
                                timelineType: TimelineType?): CommandData? {
-            return newTimelineCommand(command, MyContextHolder.Companion.myContextHolder.getNow().timelines()
-                    .get(timelineType, myAccount.actor, Origin.Companion.EMPTY))
+            return newTimelineCommand(command,  MyContextHolder.myContextHolder.getNow().timelines()
+                    .get(timelineType, myAccount.actor,  Origin.EMPTY))
         }
 
         fun newTimelineCommand(command: CommandEnum?, timeline: Timeline?): CommandData? {
@@ -482,7 +480,7 @@ class CommandData private constructor(commandId: Long, command: CommandEnum?, my
         }
 
         private fun trimConditionally(text: String?, trim: Boolean): CharSequence {
-            return if (StringUtil.isEmpty(text)) {
+            return if (text.isNullOrEmpty()) {
                 ""
             } else if (trim) {
                 I18n.trimTextAt(MyHtml.htmlToCompactPlainText(text), 40)

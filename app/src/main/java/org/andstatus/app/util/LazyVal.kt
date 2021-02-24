@@ -21,7 +21,7 @@ import java.util.function.Supplier
  * Blocks on parallel evaluation
  * Inspired by https://www.sitepoint.com/lazy-computations-in-java-with-a-lazy-type/
  * and https://dzone.com/articles/be-lazy-with-java-8  */
-class LazyVal<T> private constructor(private val supplier: Supplier<T?>?, val isNullable: Boolean) : Supplier<T?> {
+class LazyVal<T> private constructor(private val supplier: Supplier<T>?, private val isNullable: Boolean) : Supplier<T?> {
     @Volatile
     private var value: T? = null
 
@@ -38,8 +38,8 @@ class LazyVal<T> private constructor(private val supplier: Supplier<T?>?, val is
 
     @Synchronized
     private fun evaluate(): T? {
-        if (value != null) return value
-        val evaluatedValue = supplier.get()
+        value?.let { return it }
+        val evaluatedValue = supplier?.get()
         value = evaluatedValue
         isEvaluated = isNullable || value != null
         return evaluatedValue
@@ -50,18 +50,18 @@ class LazyVal<T> private constructor(private val supplier: Supplier<T?>?, val is
     }
 
     companion object {
-        fun <T> of(supplier: Supplier<T?>?): LazyVal<T?>? {
+        fun <T> of(supplier: Supplier<T?>): LazyVal<T?> {
             return LazyVal(supplier, false)
         }
 
-        fun <T> of(value: T?): LazyVal<T?>? {
+        fun <T> of(value: T?): LazyVal<T?> {
             val lazyVal = LazyVal<T?>(null, value == null)
             lazyVal.value = value
             lazyVal.isEvaluated = true
             return lazyVal
         }
 
-        fun <T> ofNullable(supplier: Supplier<T?>?): LazyVal<T?>? {
+        fun <T> ofNullable(supplier: Supplier<T?>?): LazyVal<T?> {
             return LazyVal(supplier, true)
         }
     }

@@ -23,10 +23,8 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.database.table.CommandTable
 import org.andstatus.app.notification.NotificationEventType
-import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.StringUtil
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.BiConsumer
@@ -140,7 +138,7 @@ class CommandResult : Parcelable {
         val message = StringBuilder()
         if (executionCount > 0) {
             message.append("executed:$executionCount, ")
-            message.append("last:" + RelativeTime.getDifference(MyContextHolder.Companion.myContextHolder.getNow().context(), lastExecutedDate) + ", ")
+            message.append("last:" + RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context(), lastExecutedDate) + ", ")
             if (retriesLeft > 0) {
                 message.append("retriesLeft:$retriesLeft, ")
             }
@@ -158,7 +156,7 @@ class CommandResult : Parcelable {
             message.append("new:$newCount, ")
         }
         notificationEventCounts.forEach(BiConsumer { event: NotificationEventType?, count: AtomicLong? -> if (count.get() > 0) message.append(event.name + ":" + count.get() + ", ") })
-        if (StringUtil.nonEmpty(mMessage)) {
+        if (!mMessage.isNullOrEmpty()) {
             message.append(" \n$mMessage")
         }
         return message

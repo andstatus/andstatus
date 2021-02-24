@@ -22,7 +22,6 @@ import org.andstatus.app.data.MyQuery
 import org.andstatus.app.data.SqlIds
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
@@ -167,7 +166,7 @@ class CheckConversations : DataChecker() {
         val counter = AtomicInteger()
         val origins: MutableMap<Long?, MutableMap<String?, NoteItem?>?> = ConcurrentHashMap()
         for (item in items.values) {
-            if (!StringUtil.isEmpty(item.conversationOid)) {
+            if (!item.conversationOid.isNullOrEmpty()) {
                 var firstConversationMembers = origins[item.originId]
                 if (firstConversationMembers == null) {
                     firstConversationMembers = ConcurrentHashMap()

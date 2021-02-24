@@ -21,6 +21,6 @@ android {
 
 dependencies {
     implementation "androidx.recyclerview:recyclerview:$recyclerViewVersion"
-    implementation "androidx.core:core-ktx:+"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "androidx.core:core-ktx:$ktxVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }

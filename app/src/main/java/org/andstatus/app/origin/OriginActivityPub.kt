@@ -19,14 +19,13 @@ import org.andstatus.app.context.MyContext
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.util.MyLog
-import org.andstatus.app.util.StringUtil
 import java.net.MalformedURLException
 import java.net.URL
 
 internal class OriginActivityPub(myContext: MyContext?, originType: OriginType?) : Origin(myContext, originType) {
     override fun getNotePermalink(noteId: Long): String? {
         val noteUrl = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId)
-        if (!StringUtil.isEmpty(noteUrl)) {
+        if (!noteUrl.isNullOrEmpty()) {
             try {
                 return URL(noteUrl).toExternalForm()
             } catch (e: MalformedURLException) {
