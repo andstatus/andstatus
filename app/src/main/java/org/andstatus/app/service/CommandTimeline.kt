@@ -35,8 +35,8 @@ import java.util.function.Supplier
  */
 class CommandTimeline(private val myContext: MyContext,
                       val origin: Origin,
-                      val timelineIn: LazyVal<Timeline?>?) {
-    val timeline: LazyVal<Timeline?> = timelineIn ?: LazyVal.of<Timeline?> { evaluateTimeline() }
+                      val timelineIn: LazyVal<Timeline>?) {
+    val timeline: LazyVal<Timeline> = timelineIn ?: LazyVal.of { evaluateTimeline() }
     private var id: Long = 0
     var timelineType: TimelineType = TimelineType.UNKNOWN
     private var actorId: Long = 0

@@ -56,8 +56,8 @@ class Note : AObject {
     private var summary: String = ""
     private var isSensitive = false
     private var content: String = ""
-    private val contentToSearch: LazyVal<String?> = LazyVal.Companion.of<String?>(Supplier { evalContentToSearch() })
-    private var inReplyTo: AActivity? = AActivity.Companion.EMPTY
+    private val contentToSearch: LazyVal<String> = LazyVal.of { evalContentToSearch() }
+    private var inReplyTo: AActivity? = AActivity.EMPTY
     val replies: List<AActivity>
     var conversationOid: String = ""
     var via: String = ""
@@ -120,7 +120,7 @@ class Note : AObject {
         return origin.isHtmlContentAllowed()
     }
 
-    private fun evalContentToSearch(): String? {
+    private fun evalContentToSearch(): String {
         return MyHtml.getContentToSearch(
                 (if (!name.isNullOrEmpty()) "$name " else "") +
                         (if (!summary.isNullOrEmpty()) "$summary " else "") +

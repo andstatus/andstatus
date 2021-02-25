@@ -67,7 +67,7 @@ class Actor private constructor(// In our system
         val origin: Origin, val groupType: GroupType, actorId: Long, actorOid: String?) : Comparable<Actor>, IsEmpty {
     val oid: String
     private var parentActorId: Long = 0
-    private var parentActor: LazyVal<Actor?> = LazyVal.of<Actor?> { EMPTY }
+    private var parentActor: LazyVal<Actor> = LazyVal.of(EMPTY)
     private var username: String = ""
     private var webFingerId: String = ""
     private var isWebFingerIdValid = false
@@ -78,8 +78,8 @@ class Actor private constructor(// In our system
     private var homepage: String = ""
     private var avatarUri = Uri.EMPTY
     val endpoints: ActorEndpoints
-    private val connectionHost: LazyVal<String?> = LazyVal.of<String?> { evalConnectionHost() }
-    private val idHost: LazyVal<String?> = LazyVal.of<String?> { evalIdHost() }
+    private val connectionHost: LazyVal<String> = LazyVal.of { evalConnectionHost() }
+    private val idHost: LazyVal<String> = LazyVal.of { evalIdHost() }
     var notesCount: Long = 0
     var favoritesCount: Long = 0
     var followingCount: Long = 0
@@ -511,16 +511,16 @@ class Actor private constructor(// In our system
         actors.add(actor)
     }
 
-    fun getConnectionHost(): String? {
+    fun getConnectionHost(): String {
         return connectionHost.get()
     }
 
-    private fun evalConnectionHost(): String? {
+    private fun evalConnectionHost(): String {
         if (origin.shouldHaveUrl()) {
             return origin.getHost()
         }
         return if (!profileUri.host.isNullOrEmpty()) {
-            profileUri.host
+            profileUri.host ?: ""
         } else UrlUtils.getHost(oid).orElseGet {
             if (isWebFingerIdValid) {
                 val pos = getWebFingerId().indexOf('@')
@@ -532,11 +532,11 @@ class Actor private constructor(// In our system
         }
     }
 
-    fun getIdHost(): String? {
+    fun getIdHost(): String {
         return idHost.get()
     }
 
-    private fun evalIdHost(): String? {
+    private fun evalIdHost(): String {
         return UrlUtils.getHost(oid).orElseGet {
             if (isWebFingerIdValid) {
                 val pos = getWebFingerId().indexOf('@')
@@ -757,8 +757,8 @@ class Actor private constructor(// In our system
     fun setParentActorId(myContext: MyContext, parentActorId: Long): Actor {
         if (this.parentActorId != parentActorId) {
             this.parentActorId = parentActorId
-            parentActor = if (parentActorId == 0L) LazyVal.of(Supplier { EMPTY })
-                else LazyVal.of(Supplier { load(myContext, parentActorId) })
+            parentActor = if (parentActorId == 0L) LazyVal.of(EMPTY)
+                else LazyVal.of { load(myContext, parentActorId) }
         }
         return this
     }
@@ -768,7 +768,7 @@ class Actor private constructor(// In our system
     }
 
     fun getParent(): Actor {
-        return parentActor.get() ?: EMPTY // TODO: Create non nullable LazyVal
+        return parentActor.get()
     }
 
     fun toTempOid(): String {

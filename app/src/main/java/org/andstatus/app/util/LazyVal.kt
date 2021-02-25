@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2018-2021 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,25 @@
  */
 package org.andstatus.app.util
 
-import java.util.function.Supplier
-
 /** Lazy holder of a non Null / or Nullable value
  * Blocks on parallel evaluation
  * Inspired by https://www.sitepoint.com/lazy-computations-in-java-with-a-lazy-type/
  * and https://dzone.com/articles/be-lazy-with-java-8  */
-class LazyVal<T> private constructor(private val supplier: Supplier<T>?, private val isNullable: Boolean) : Supplier<T?> {
+class LazyVal<T> private constructor(private val supplier: () -> T?, private val isNullable: Boolean) {
     @Volatile
     private var value: T? = null
 
     @Volatile
     private var isEvaluated = false
-    override fun get(): T? {
+
+    fun getNullable(): T? {
         val storedValue = value
         return if (isEvaluated) storedValue else evaluate()
+    }
+
+    fun get(): T {
+        val storedValue = value
+        return (if (isEvaluated) storedValue else evaluate()) ?: throw IllegalArgumentException("Evaluated to null")
     }
 
     fun isEvaluated(): Boolean {
@@ -39,7 +43,7 @@ class LazyVal<T> private constructor(private val supplier: Supplier<T>?, private
     @Synchronized
     private fun evaluate(): T? {
         value?.let { return it }
-        val evaluatedValue = supplier?.get()
+        val evaluatedValue: T? = supplier()
         value = evaluatedValue
         isEvaluated = isNullable || value != null
         return evaluatedValue
@@ -50,18 +54,18 @@ class LazyVal<T> private constructor(private val supplier: Supplier<T>?, private
     }
 
     companion object {
-        fun <T> of(supplier: Supplier<T?>): LazyVal<T?> {
+        fun <T> of(supplier: () -> T): LazyVal<T> {
             return LazyVal(supplier, false)
         }
 
-        fun <T> of(value: T?): LazyVal<T?> {
-            val lazyVal = LazyVal<T?>(null, value == null)
+        fun <T> of(value: T): LazyVal<T> {
+            val lazyVal = LazyVal<T>( { -> value}, value == null)
             lazyVal.value = value
             lazyVal.isEvaluated = true
             return lazyVal
         }
 
-        fun <T> ofNullable(supplier: Supplier<T?>?): LazyVal<T?> {
+        fun <T> ofNullable(supplier: () -> T?): LazyVal<T?> {
             return LazyVal(supplier, true)
         }
     }
