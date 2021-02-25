@@ -117,8 +117,8 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
         MyQuery.get(myContext, sql, function)
     }
 
-    fun containsMe(actors: MutableCollection<Actor?>): Boolean {
-        return actors.stream().anyMatch { actor: Actor? -> this.isMe(actor) }
+    fun containsMe(actors: Collection<Actor>): Boolean {
+        return actors.stream().anyMatch { actor: Actor -> this.isMe(actor) }
     }
 
     override fun toString(): String {

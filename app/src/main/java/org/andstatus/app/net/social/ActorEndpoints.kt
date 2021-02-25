@@ -29,7 +29,6 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.BiConsumer
 import java.util.function.Function
 
 class ActorEndpoints private constructor(private val myContext: MyContext, private val actorId: Long) {
@@ -41,21 +40,22 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
     private val state: AtomicReference<State> = AtomicReference(if (actorId == 0L) State.EMPTY else State.LAZYLOAD)
 
     @Volatile
-    private var map: Map<ActorEndpointType, MutableList<Uri>> = emptyMap()
+    private var map: Map<ActorEndpointType, List<Uri>> = emptyMap()
+
     fun add(type: ActorEndpointType, value: String?): ActorEndpoints {
         return add(type, UriUtils.fromString(value))
     }
 
-    fun add(type: ActorEndpointType, uri: Uri?): ActorEndpoints {
+    fun add(type: ActorEndpointType, uri: Uri): ActorEndpoints {
         if (initialize().state.get() == State.ADDING) {
-            add(map, type, uri)
+            map = add(map.toMutableMap(), type, uri)
         }
         return this
     }
 
     fun findFirst(type: ActorEndpointType?): Optional<Uri> {
         return if (type == ActorEndpointType.EMPTY) Optional.empty()
-            else initialize().map.getOrDefault(type, emptyList<Uri>()).stream().findFirst()
+            else initialize().map.getOrDefault(type, emptyList()).stream().findFirst()
     }
 
     fun initialize(): ActorEndpoints {
@@ -65,7 +65,7 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
                 state.set(State.ADDING)
             }
         }
-        while (state.get() == State.LAZYLOAD && myContext.isReady() && MyAsyncTask.Companion.nonUiThread()) {
+        while (state.get() == State.LAZYLOAD && myContext.isReady() && MyAsyncTask.nonUiThread()) {
             if (initialized.compareAndSet(false, true)) {
                 return load()
             }
@@ -78,7 +78,7 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
     }
 
     private fun load(): ActorEndpoints {
-        val map: MutableMap<ActorEndpointType, MutableList<Uri>> = ConcurrentHashMap()
+        val map: MutableMap<ActorEndpointType, List<Uri>> = ConcurrentHashMap()
         val sql = "SELECT " + ActorEndpointTable.ENDPOINT_TYPE +
                 "," + ActorEndpointTable.ENDPOINT_INDEX +
                 "," + ActorEndpointTable.ENDPOINT_URI +
@@ -86,13 +86,13 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
                 " WHERE " + ActorEndpointTable.ACTOR_ID + "=" + actorId +
                 " ORDER BY " + ActorEndpointTable.ENDPOINT_TYPE +
                 "," + ActorEndpointTable.ENDPOINT_INDEX
-        MyQuery.foldLeft(myContext, sql, map, Function { m: MutableMap<ActorEndpointType, MutableList<Uri>> ->
-            Function { cursor: Cursor? ->
+        MyQuery.foldLeft(myContext, sql, map, { m: MutableMap<ActorEndpointType, List<Uri>> ->
+            Function { cursor: Cursor ->
                 add(m, ActorEndpointType.fromId(DbUtils.getLong(cursor, ActorEndpointTable.ENDPOINT_TYPE)),
                         UriUtils.fromString(DbUtils.getString(cursor, ActorEndpointTable.ENDPOINT_URI)))
             }
         })
-        this.map = Collections.unmodifiableMap(map)
+        this.map = map
         state.set(State.LOADED)
         return this
     }
@@ -102,24 +102,22 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
         val old = from(myContext, actorId).initialize()
         if (this == old) return
         MyProvider.delete(myContext, ActorEndpointTable.TABLE_NAME, ActorEndpointTable.ACTOR_ID, actorId)
-        map.forEach { (key: ActorEndpointType, value: MutableList<Uri>) ->
-            var index: Long = 0
-            for (uri in value) {
+        map.forEach { (key: ActorEndpointType, list: List<Uri>) ->
+            for ((index, uri) in list.withIndex()) {
                 val contentValues = ContentValues()
                 contentValues.put(ActorEndpointTable.ACTOR_ID, actorId)
                 contentValues.put(ActorEndpointTable.ENDPOINT_TYPE, key.id)
                 contentValues.put(ActorEndpointTable.ENDPOINT_INDEX, index)
                 contentValues.put(ActorEndpointTable.ENDPOINT_URI, uri.toString())
-                MyProvider.Companion.insert(myContext, ActorEndpointTable.TABLE_NAME, contentValues)
-                index++
+                MyProvider.insert(myContext, ActorEndpointTable.TABLE_NAME, contentValues)
             }
         }
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
-        val endpoints = o as ActorEndpoints?
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val endpoints = other as ActorEndpoints
         return map == endpoints.map
     }
 
@@ -132,14 +130,14 @@ class ActorEndpoints private constructor(private val myContext: MyContext, priva
             return ActorEndpoints(myContext, actorId)
         }
 
-        private fun add(map: MutableMap<ActorEndpointType, MutableList<Uri>>, type: ActorEndpointType,
-                        uri: Uri?): MutableMap<ActorEndpointType, List<Uri>> {
+        private fun add(map: MutableMap<ActorEndpointType, List<Uri>>, type: ActorEndpointType,
+                        uri: Uri): MutableMap<ActorEndpointType, List<Uri>> {
             if (UriUtils.isEmpty(uri) || type == ActorEndpointType.EMPTY) return map
-            val urisOld = map.get(type)
+            val urisOld = map[type]
             if (urisOld == null) {
                 map[type] = listOf(uri)
             } else {
-                val uris: MutableList<Uri?> = ArrayList(urisOld)
+                val uris: MutableList<Uri> = ArrayList(urisOld)
                 if (!uris.contains(uri)) {
                     uris.add(uri)
                     map[type] = uris

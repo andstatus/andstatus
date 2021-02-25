@@ -22,18 +22,19 @@ import org.andstatus.app.util.MyStringBuilder
 import java.io.File
 import java.util.*
 
-class DownloadFile(filename: String?) : IsEmpty {
-    private val filename: String?
-    private val file: File? = null
+class DownloadFile(filename: String) : IsEmpty {
+    private val filename: String
+    private val file: File?
 
     /** Existence is checked at the moment of the object creation  */
-    val existed = false
+    val existed: Boolean
+
     override fun isEmpty(): Boolean {
         return file == null
     }
 
     fun existsNow(): Boolean {
-        return nonEmpty() && file.exists() && file.isFile()
+        return file != null && nonEmpty() && file.exists() && file.isFile()
     }
 
     fun getFile(): File? {
@@ -45,10 +46,10 @@ class DownloadFile(filename: String?) : IsEmpty {
     }
 
     fun getSize(): Long {
-        return if (existsNow()) file.length() else 0
+        return if (file != null && existsNow()) file.length() else 0
     }
 
-    fun getFilename(): String? {
+    fun getFilename(): String {
         return filename
     }
 
@@ -59,7 +60,7 @@ class DownloadFile(filename: String?) : IsEmpty {
 
     private fun deleteFileLogged(file: File?): Boolean {
         var deleted = false
-        if (existsNow()) {
+        if (file != null && existsNow()) {
             deleted = file.delete()
             if (deleted) {
                 MyLog.v(this) { "Deleted file $file" }
@@ -71,7 +72,7 @@ class DownloadFile(filename: String?) : IsEmpty {
     }
 
     override fun toString(): String {
-        return (MyStringBuilder.Companion.objToTag(this)
+        return (MyStringBuilder.objToTag(this)
                 + " filename:" + filename
                 + if (existed) ", existed" else "")
     }
@@ -83,25 +84,24 @@ class DownloadFile(filename: String?) : IsEmpty {
         return result
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
             return true
         }
-        if (o == null || javaClass != o.javaClass) {
+        if (other !is DownloadFile) {
             return false
         }
-        val other = o as DownloadFile?
         return filename == other.filename
     }
 
     companion object {
-        val EMPTY: DownloadFile? = DownloadFile("")
+        val EMPTY: DownloadFile = DownloadFile("")
     }
 
     init {
         Objects.requireNonNull(filename)
         this.filename = filename
-        if (filename.isNullOrEmpty()) {
+        if (filename.isEmpty()) {
             file = null
             existed = false
         } else {

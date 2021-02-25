@@ -62,7 +62,7 @@ object CollectionsUtil {
         }
     }
 
-    fun <T> findAny(collection: MutableCollection<T?>, predicate: Predicate<T?>): Try<T?> {
+    fun <T> findAny(collection: Collection<T>, predicate: Predicate<T>): Try<T> {
         for (item in collection) {
             if (predicate.test(item)) {
                 return Try.success(item)

@@ -21,4 +21,4 @@ import org.andstatus.app.util.TaggedClass
 /** Object of ActivityStreams as defined in https://www.w3.org/TR/activitystreams-vocabulary/#dfn-object
  * @author yvolk@yurivolkov.com
  */
-internal abstract class AObject : IsEmpty, TaggedClass
+abstract class AObject : IsEmpty, TaggedClass

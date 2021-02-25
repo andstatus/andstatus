@@ -40,35 +40,35 @@ import org.andstatus.app.util.TryUtils
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.function.Supplier
 import java.util.stream.Collectors
 
-class Audience(val origin: Origin?) {
-    private val actors: MutableList<Actor?>? = ArrayList()
-    private var visibility: Visibility? = Visibility.UNKNOWN
-    private var followers: Actor? = Actor.Companion.EMPTY
-    fun getFirstNonSpecial(): Actor? {
-        return actors.stream().findFirst().orElse(Actor.Companion.EMPTY)
+class Audience(val origin: Origin) {
+    private val actors: MutableList<Actor> = ArrayList()
+    private var visibility: Visibility = Visibility.UNKNOWN
+    private var followers: Actor = Actor.EMPTY
+
+    fun getFirstNonSpecial(): Actor {
+        return actors.stream().findFirst().orElse(Actor.EMPTY)
     }
 
-    fun toAudienceString(inReplyToActor: Actor?): String? {
+    fun toAudienceString(inReplyToActor: Actor): String {
         if (this === EMPTY) return "(empty)"
         val context = origin.myContext.context()
         val builder = MyStringBuilder()
         val toBuilder = MyStringBuilder()
         if (getVisibility().isPublic()) {
-            builder.withSpace(context.getText(R.string.timeline_title_public))
+            builder.withSpace(context?.getText(R.string.timeline_title_public) ?: "Public")
         } else if (getVisibility().isFollowers()) {
-            toBuilder.withSpace(context.getText(R.string.followers))
+            toBuilder.withSpace(context?.getText(R.string.followers) ?: "Followers")
         } else if (getVisibility().isPrivate()) {
-            builder.withSpace(context.getText(R.string.notification_events_private))
+            builder.withSpace(context?.getText(R.string.notification_events_private) ?: "Private")
             actors.stream()
-                    .filter { actor: Actor? -> !actor.isSame(inReplyToActor) }
-                    .map { obj: Actor? -> obj.getRecipientName() }
+                    .filter { actor: Actor -> !actor.isSame(inReplyToActor) }
+                    .map { obj: Actor -> obj.getRecipientName() }
                     .sorted()
                     .forEach { text: String? -> toBuilder.withComma(text) }
         } else {
-            builder.withSpace(context.getText(R.string.privacy_unknown))
+            builder.withSpace(context?.getText(R.string.privacy_unknown) ?: "Public?")
         }
         if (toBuilder.nonEmpty()) {
             builder.withSpace(StringUtil.format(context, R.string.message_source_to, toBuilder.toString()))
@@ -80,14 +80,14 @@ class Audience(val origin: Origin?) {
         return builder.toString()
     }
 
-    fun evaluateAndGetActorsToSave(actorOfAudience: Actor?): MutableList<Actor?>? {
+    fun evaluateAndGetActorsToSave(actorOfAudience: Actor): List<Actor> {
         if (this === EMPTY) return emptyList()
         val toSave = actors.stream()
-                .map { actor: Actor? -> lookupInActorOfAudience(actorOfAudience, actor) }
+                .map { actor: Actor -> lookupInActorOfAudience(actorOfAudience, actor) }
                 .collect(Collectors.toList())
         actors.clear()
-        toSave.forEach(Consumer { actor: Actor? -> add(actor) })
-        if (followers === Actor.Companion.FOLLOWERS) {
+        toSave.forEach { actor: Actor -> add(actor) }
+        if (followers === Actor.FOLLOWERS) {
             followers = Group.getActorsGroup(actorOfAudience, GroupType.FOLLOWERS, "")
         }
         if (!followers.isConstant()) {
@@ -101,13 +101,13 @@ class Audience(val origin: Origin?) {
         return getRecipients().isEmpty()
     }
 
-    fun getRecipients(): MutableList<Actor?>? {
-        val recipients: MutableList<Actor?> = ArrayList(actors)
+    fun getRecipients(): MutableList<Actor> {
+        val recipients: MutableList<Actor> = ArrayList(actors)
         if (isFollowers()) {
             recipients.add(0, followers)
         }
         if (visibility.isPublic()) {
-            recipients.add(0, Actor.Companion.PUBLIC)
+            recipients.add(0, Actor.PUBLIC)
         }
         return recipients
     }
@@ -116,49 +116,49 @@ class Audience(val origin: Origin?) {
         return actors.size > 0
     }
 
-    fun getNonSpecialActors(): MutableList<Actor?>? {
+    fun getNonSpecialActors(): List<Actor> {
         return actors
     }
 
-    fun copy(): Audience? {
+    fun copy(): Audience {
         val audience = Audience(origin).withVisibility(getVisibility())
-        actors.forEach(Consumer { actor: Actor? -> audience.add(actor) })
+        actors.forEach { actor: Actor -> audience.add(actor) }
         return audience
     }
 
-    fun withVisibility(visibility: Visibility?): Audience? {
+    fun withVisibility(visibility: Visibility): Audience {
         setVisibility(visibility.getKnown())
         return this
     }
 
     fun addActorsFromContent(content: String, author: Actor, inReplyToActor: Actor) {
-        author.extractActorsFromContent(content, inReplyToActor).forEach(Consumer { actor: Actor? -> add(actor) })
+        author.extractActorsFromContent(content, inReplyToActor).forEach { actor: Actor -> add(actor) }
     }
 
     fun lookupUsers() {
-        actors.forEach(Consumer { obj: Actor? -> obj.lookupActorId() })
+        actors.forEach { obj: Actor -> obj.lookupActorId() }
         deduplicate()
     }
 
     private fun deduplicate() {
-        val prevActors: MutableList<Actor?> = ArrayList(actors)
+        val prevActors: MutableList<Actor> = ArrayList(actors)
         actors.clear()
-        prevActors.forEach(Consumer { actor: Actor? -> add(actor) })
+        prevActors.forEach { actor: Actor -> add(actor) }
     }
 
     fun add(actor: Actor) {
-        if (actor.isEmpty) return
-        if (actor.isPublic) {
+        if (actor.isEmpty()) return
+        if (actor.isPublic()) {
             addVisibility(Visibility.PUBLIC)
             return
         }
-        if (actor.isFollowers) {
+        if (actor.isFollowers()) {
             followers = actor
             addVisibility(Visibility.TO_FOLLOWERS)
             return
         }
-        val same = actors.stream().filter { that: Actor? -> actor.isSame(that) }.collect(Collectors.toList())
-        var toStore: Actor? = actor
+        val same = actors.stream().filter { that: Actor -> actor.isSame(that) }.collect(Collectors.toList())
+        var toStore: Actor = actor
         for (other in same) {
             if (other.isBetterToCacheThan(actor)) toStore = other
             actors.remove(other)
@@ -166,46 +166,48 @@ class Audience(val origin: Origin?) {
         actors.add(toStore)
     }
 
-    fun containsMe(myContext: MyContext?): Boolean {
+    fun containsMe(myContext: MyContext): Boolean {
         return myContext.users().containsMe(actors)
     }
 
-    fun findSame(other: Actor?): Try<Actor?>? {
+    fun findSame(other: Actor): Try<Actor> {
         if (other.isEmpty()) return TryUtils.notFound()
         if (other.isSame(followers)) return Try.success(followers)
-        if (other.isPublic()) return if (getVisibility().isPublic()) Try.success(Actor.Companion.PUBLIC) else TryUtils.notFound()
+        if (other.isPublic()) return if (getVisibility().isPublic()) Try.success(Actor.PUBLIC) else TryUtils.notFound()
         val nonSpecialActors = getNonSpecialActors()
         return if (other.groupType.parentActorRequired) {
             TryUtils.fromOptional(nonSpecialActors.stream()
-                    .filter { a: Actor? -> a.groupType == other.groupType }.findAny())
-        } else CollectionsUtil.findAny(nonSpecialActors) { that: Actor? -> other.isSame(that) }
+                    .filter { a: Actor -> a.groupType == other.groupType }.findAny())
+        } else CollectionsUtil.findAny(nonSpecialActors) { that: Actor -> other.isSame(that) }
     }
 
     fun containsOid(oid: String?): Boolean {
-        return if (oid.isNullOrEmpty()) false else oid == followers.oid || actors.stream().anyMatch { actor: Actor? -> actor.oid == oid }
+        return if (oid.isNullOrEmpty()) false else oid == followers.oid || actors.stream()
+                .anyMatch { actor: Actor -> actor.oid == oid }
     }
 
     /** TODO: Audience should belong to an Activity, not to a Note.
      * As audience currently belongs to a Note, we actually use noteAuthor instead of activityActor here.
      * @return true if data changed
      */
-    fun save(actorOfAudience: Actor?, noteId: Long, visibility: Visibility?, countOnly: Boolean): Boolean {
-        if (this === EMPTY || !actorOfAudience.origin.isValid || noteId == 0L || actorOfAudience.actorId == 0L || !origin.myContext.isReady) {
+    fun save(actorOfAudience: Actor, noteId: Long, visibility: Visibility, countOnly: Boolean): Boolean {
+        if (this === EMPTY || !actorOfAudience.origin.isValid() || noteId == 0L || actorOfAudience.actorId == 0L ||
+                !origin.myContext.isReady()) {
             return false
         }
         val prevAudience = loadIds(actorOfAudience.origin, noteId, Optional.of(visibility))
         val actorsToSave = evaluateAndGetActorsToSave(actorOfAudience)
-        val toDelete: MutableSet<Actor?> = HashSet()
-        val toAdd: MutableSet<Actor?> = HashSet()
+        val toDelete: MutableSet<Actor> = HashSet()
+        val toAdd: MutableSet<Actor> = HashSet()
         for (actor in prevAudience.evaluateAndGetActorsToSave(actorOfAudience)) {
-            findSame(actor).onFailure(Consumer { e: Throwable? -> toDelete.add(actor) })
+            findSame(actor).onFailure { e: Throwable? -> toDelete.add(actor) }
         }
         for (actor in actorsToSave) {
             if (actor.actorId == 0L) {
                 MyLog.w(TAG, "No actorId for $actor")
                 continue
             }
-            prevAudience.findSame(actor).onFailure(Consumer { e: Throwable? -> toAdd.add(actor) })
+            prevAudience.findSame(actor).onFailure { e: Throwable? -> toAdd.add(actor) }
         }
         if (!toDelete.isEmpty() || !toAdd.isEmpty()) {
             MyLog.d(TAG, """
@@ -217,17 +219,19 @@ class Audience(val origin: Origin?) {
         }
         if (!countOnly) try {
             if (!toDelete.isEmpty()) {
-                MyProvider.Companion.delete(origin.myContext, AudienceTable.TABLE_NAME, AudienceTable.NOTE_ID + "=" + noteId
-                        + " AND " + AudienceTable.ACTOR_ID + SqlIds.Companion.actorIdsOf(toDelete).getSql())
+                MyProvider.delete(origin.myContext, AudienceTable.TABLE_NAME, AudienceTable.NOTE_ID + "=" + noteId
+                        + " AND " + AudienceTable.ACTOR_ID + SqlIds.actorIdsOf(toDelete).getSql())
             }
-            toAdd.forEach(Consumer { actor: Actor? -> MyProvider.Companion.insert(origin.myContext, AudienceTable.TABLE_NAME, toContentValues(noteId, actor)) })
+            toAdd.forEach { actor: Actor ->
+                MyProvider.insert(origin.myContext, AudienceTable.TABLE_NAME, toContentValues(noteId, actor))
+            }
         } catch (e: Exception) {
             MyLog.w(this, "save, noteId:$noteId; $actors", e)
         }
         return !toDelete.isEmpty() || !toAdd.isEmpty()
     }
 
-    private fun toContentValues(noteId: Long, actor: Actor?): ContentValues {
+    private fun toContentValues(noteId: Long, actor: Actor): ContentValues {
         val values = ContentValues()
         values.put(AudienceTable.NOTE_ID, noteId)
         values.put(AudienceTable.ACTOR_ID, actor.actorId)
@@ -235,14 +239,14 @@ class Audience(val origin: Origin?) {
     }
 
     override fun toString(): String {
-        return toAudienceString(Actor.Companion.EMPTY) + "; " + getRecipients()
+        return toAudienceString(Actor.EMPTY) + "; " + getRecipients()
     }
 
-    fun addVisibility(visibility: Visibility?) {
+    fun addVisibility(visibility: Visibility) {
         setVisibility(this.visibility.add(visibility))
     }
 
-    fun setVisibility(visibility: Visibility?) {
+    fun setVisibility(visibility: Visibility) {
         if (this === EMPTY || this.visibility == visibility) return
         if (origin.getOriginType().isFollowersChangeAllowed) {
             setFollowers(visibility.isFollowers())
@@ -250,13 +254,13 @@ class Audience(val origin: Origin?) {
         this.visibility = visibility
     }
 
-    fun getVisibility(): Visibility? {
+    fun getVisibility(): Visibility {
         return visibility
     }
 
     private fun setFollowers(isFollowers: Boolean) {
         if (this === EMPTY || isFollowers == isFollowers()) return
-        followers = if (isFollowers) if (followers.isConstant()) Actor.Companion.FOLLOWERS else followers else Actor.Companion.EMPTY
+        followers = if (isFollowers) if (followers.isConstant()) Actor.FOLLOWERS else followers else Actor.EMPTY
     }
 
     fun isFollowers(): Boolean {
@@ -266,10 +270,10 @@ class Audience(val origin: Origin?) {
     fun assertContext() {
         if (this === EMPTY) return
         origin.assertContext()
-        actors.forEach(Consumer { obj: Actor? -> obj.assertContext() })
+        actors.forEach(Consumer { obj: Actor -> obj.assertContext() })
     }
 
-    fun addActorsToLoad(addActorToList: Consumer<Actor?>?) {
+    fun addActorsToLoad(addActorToList: Consumer<Actor>) {
         if (this === EMPTY) return
         actors.forEach(addActorToList)
         if (isFollowers() && !followers.isConstant()) {
@@ -277,12 +281,12 @@ class Audience(val origin: Origin?) {
         }
     }
 
-    fun setLoadedActors(getLoaded: Function<Actor?, Actor?>?) {
+    fun setLoadedActors(getLoaded: Function<Actor, Actor>) {
         if (this === EMPTY) return
         if (isFollowers()) {
             add(getLoaded.apply(followers))
         }
-        ArrayList(actors).forEach(Consumer { actor: Actor? -> add(getLoaded.apply(actor)) })
+        ArrayList(actors).forEach(Consumer { actor: Actor -> add(getLoaded.apply(actor)) })
     }
 
     fun isMeInAudience(): Boolean {
@@ -290,9 +294,9 @@ class Audience(val origin: Origin?) {
     }
 
     companion object {
-        private val TAG: String? = Audience::class.java.simpleName
-        val EMPTY: Audience? = Audience( Origin.EMPTY)
-        private val LOAD_SQL: String? = ("SELECT " + ActorSql.selectFullProjection()
+        private val TAG: String = Audience::class.java.simpleName
+        val EMPTY: Audience = Audience( Origin.EMPTY)
+        private val LOAD_SQL: String = ("SELECT " + ActorSql.selectFullProjection()
                 + " FROM (" + ActorSql.allTables()
                 + ") INNER JOIN " + AudienceTable.TABLE_NAME + " ON "
                 + AudienceTable.TABLE_NAME + "." + AudienceTable.ACTOR_ID + "="
@@ -300,7 +304,7 @@ class Audience(val origin: Origin?) {
                 + " AND " + AudienceTable.NOTE_ID + "=")
 
         @JvmOverloads
-        fun fromNoteId(origin: Origin, noteId: Long, visibility: Visibility? = Visibility.Companion.fromNoteId(noteId)): Audience? {
+        fun fromNoteId(origin: Origin, noteId: Long, visibility: Visibility = Visibility.fromNoteId(noteId)): Audience {
             if (noteId == 0L) return EMPTY
             val where = AudienceTable.NOTE_ID + "=" + noteId
             val sql = "SELECT " + ActorTable.GROUP_TYPE + "," +
@@ -311,27 +315,27 @@ class Audience(val origin: Origin?) {
                     ActorTable.TABLE_NAME + "." + BaseColumns._ID +
                     " WHERE " + where
             val audience = Audience(origin).withVisibility(visibility)
-            val function = Function<Cursor?, Actor?> { cursor: Cursor? ->
-                Actor.Companion.fromTwoIds(origin,
-                        GroupType.Companion.fromId(DbUtils.getLong(cursor, ActorTable.GROUP_TYPE)),
+            val function = Function<Cursor, Actor> { cursor: Cursor ->
+                Actor.fromTwoIds(origin,
+                        GroupType.fromId(DbUtils.getLong(cursor, ActorTable.GROUP_TYPE)),
                         DbUtils.getLong(cursor, AudienceTable.ACTOR_ID),
                         DbUtils.getString(cursor, ActorTable.ACTOR_OID))
             }
-            MyQuery.get(origin.myContext, sql, function).forEach(Consumer { actor: Actor? -> audience.add(actor) })
+            MyQuery.get(origin.myContext, sql, function).forEach(Consumer { actor: Actor -> audience.add(actor) })
             return audience
         }
 
-        fun load(origin: Origin, noteId: Long, optVisibility: Optional<Visibility?>?): Audience? {
+        fun load(origin: Origin, noteId: Long, optVisibility: Optional<Visibility>): Audience {
             val audience = Audience(origin)
-            audience.setVisibility(optVisibility.orElseGet(Supplier<Visibility?> { Visibility.Companion.fromNoteId(noteId) }))
+            audience.setVisibility(optVisibility.orElseGet { Visibility.fromNoteId(noteId) })
             val sql = LOAD_SQL + noteId
-            val function = Function<Cursor?, Actor?> { cursor: Cursor? -> Actor.Companion.fromCursor(origin.myContext, cursor, true) }
-            MyQuery.get(origin.myContext, sql, function).forEach(Consumer { actor: Actor? -> audience.add(actor) })
+            val function = Function<Cursor, Actor> { cursor: Cursor -> Actor.fromCursor(origin.myContext, cursor, true) }
+            MyQuery.get(origin.myContext, sql, function).forEach(Consumer { actor: Actor -> audience.add(actor) })
             return audience
         }
 
-        private fun lookupInActorOfAudience(actorOfAudience: Actor?, actor: Actor?): Actor? {
-            if (actor.isEmpty()) return Actor.Companion.EMPTY
+        private fun lookupInActorOfAudience(actorOfAudience: Actor, actor: Actor): Actor {
+            if (actor.isEmpty()) return Actor.EMPTY
             if (actorOfAudience.isSame(actor)) return actorOfAudience
             val optFollowers = actorOfAudience.getEndpoint(ActorEndpointType.API_FOLLOWERS)
                     .flatMap { uri: Uri? -> if (actor.oid == uri.toString()) Optional.of(Group.getActorsGroup(actorOfAudience, GroupType.FOLLOWERS, actor.oid)) else Optional.empty() }
@@ -341,14 +345,14 @@ class Audience(val origin: Origin?) {
             return if (optFriends.isPresent) optFriends.get() else actor
         }
 
-        private fun loadIds(origin: Origin, noteId: Long, optVisibility: Optional<Visibility?>?): Audience? {
+        private fun loadIds(origin: Origin, noteId: Long, optVisibility: Optional<Visibility>): Audience {
             val audience = Audience(origin)
             val sql = "SELECT " + AudienceTable.ACTOR_ID +
                     " FROM " + AudienceTable.TABLE_NAME +
                     " WHERE " + AudienceTable.NOTE_ID + "=" + noteId
-            val function = Function<Cursor?, Actor?> { cursor: Cursor? -> Actor.Companion.fromId(origin, cursor.getLong(0)) }
-            MyQuery.get(origin.myContext, sql, function).forEach(Consumer { actor: Actor? -> audience.add(actor) })
-            audience.setVisibility(optVisibility.orElseGet(Supplier<Visibility?> { Visibility.Companion.fromNoteId(noteId) }))
+            val function = Function<Cursor, Actor> { cursor: Cursor -> Actor.fromId(origin, cursor.getLong(0)) }
+            MyQuery.get(origin.myContext, sql, function).forEach(Consumer { actor: Actor -> audience.add(actor) })
+            audience.setVisibility(optVisibility.orElseGet { Visibility.fromNoteId(noteId) })
             return audience
         }
     }

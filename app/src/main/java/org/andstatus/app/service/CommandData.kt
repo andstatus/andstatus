@@ -54,24 +54,26 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * @author yvolk@yurivolkov.com
  */
-class CommandData private constructor(commandId: Long, command: CommandEnum?, myAccount: MyAccount?, commandTimeline: CommandTimeline?, createdDate: Long) : Comparable<CommandData?>, TaggedClass {
-    private val commandId: Long
-    private val command: CommandEnum?
-    val myAccount: MyAccount?
+class CommandData private constructor(
+        commandId: Long,
+        val command: CommandEnum,
+        val myAccount: MyAccount,
+        /** [MyAccount] for this command. Invalid account if command is not Account
+         * specific ( do we have such? )
+         * It holds actorId for command, which need such parameter (not only for a timeline)
+         */
+        val commandTimeline: CommandTimeline,
+        createdDate: Long) : Comparable<CommandData>, TaggedClass {
+
+    private val commandId: Long = if (commandId == 0L) MyLog.uniqueCurrentTimeMS() else commandId
     private val createdDate: Long
-    private var description: String? = ""
+    private var description: String = ""
 
     @Volatile
     private var mInForeground = false
 
     @Volatile
     private var mManuallyLaunched = false
-
-    /** [MyAccount] for this command. Invalid account if command is not Account
-     * specific ( do we have such? )
-     * It holds actorId for command, which need such parameter (not only for a timeline)
-     */
-    private val commandTimeline: CommandTimeline?
 
     /** This is: 1. Generally: Note ID ([NoteTable.NOTE_ID] of the [NoteTable])...
      */
@@ -92,13 +94,13 @@ class CommandData private constructor(commandId: Long, command: CommandEnum?, my
     /**
      * @return Intent to be sent to MyService
      */
-    fun toIntent(intent: Intent?): Intent? {
+    fun toIntent(intent: Intent): Intent {
         Objects.requireNonNull(intent)
         intent.putExtras(toBundle())
         return intent
     }
 
-    private fun toBundle(): Bundle? {
+    private fun toBundle(): Bundle {
         val bundle = Bundle()
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND, command.save())
         if (command == CommandEnum.EMPTY) return bundle
@@ -192,10 +194,6 @@ class CommandData private constructor(commandId: Long, command: CommandEnum?, my
         return greater
     }
 
-    fun getCommand(): CommandEnum? {
-        return command
-    }
-
     fun getTimelineType(): TimelineType? {
         return commandTimeline.timelineType
     }
@@ -204,7 +202,7 @@ class CommandData private constructor(commandId: Long, command: CommandEnum?, my
         return mManuallyLaunched
     }
 
-    fun setManuallyLaunched(manuallyLaunched: Boolean): CommandData? {
+    fun setManuallyLaunched(manuallyLaunched: Boolean): CommandData {
         mManuallyLaunched = manuallyLaunched
         return this
     }
@@ -335,7 +333,7 @@ class CommandData private constructor(commandId: Long, command: CommandEnum?, my
         return createdDate
     }
 
-    fun getTimeline(): Timeline? {
+    fun getTimeline(): Timeline {
         return commandTimeline.timeline.get()
     }
 
@@ -491,9 +489,6 @@ class CommandData private constructor(commandId: Long, command: CommandEnum?, my
     }
 
     init {
-        this.commandId = if (commandId == 0L) MyLog.uniqueCurrentTimeMS() else commandId
-        this.command = command
-        this.myAccount = myAccount
         this.commandTimeline = commandTimeline
         this.createdDate = if (createdDate > 0) createdDate else this.commandId
         resetRetries()

@@ -476,7 +476,7 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
                 urlDefault = null
                 basicPath = BASIC_PATH_DEFAULT
                 oauthPath = OAUTH_PATH_DEFAULT
-                originFactory = Function { myContext: MyContext? -> Origin(myContext, this) }
+                originFactory = Function { myContext: MyContext -> Origin(myContext, this) }
                 connectionClass = ConnectionEmpty::class.java
                 httpConnectionClassOauth = HttpConnectionEmpty::class.java
                 httpConnectionClassBasic = HttpConnectionEmpty::class.java

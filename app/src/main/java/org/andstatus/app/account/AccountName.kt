@@ -30,11 +30,11 @@ import org.andstatus.app.util.StringUtil
 class AccountName private constructor(uniqueName: String,
                                       /** The system in which the Account is defined, see [Origin]  */
                                       val origin: Origin) {
-    val username: String?
+    val username: String
     val host: String?
 
     /** The name is a username@originHost to be unique for the [OriginType]  */
-    private val uniqueName: String?
+    private val uniqueName: String
     private val name: String?
     val isValid: Boolean
     fun getName(): String? {
@@ -53,41 +53,36 @@ class AccountName private constructor(uniqueName: String,
         return origin.myContext
     }
 
-    fun isValid(): Boolean {
-        return isValid
-    }
-
-    fun getUniqueName(): String? {
+    fun getUniqueName(): String {
         return uniqueName
     }
 
-    fun getOriginName(): String? {
-        return origin.getName()
+    fun getOriginName(): String {
+        return origin.name
     }
 
-    fun getLogName(): String? {
+    fun getLogName(): String {
         return getUniqueName().replace("@", "-")
                 .replace(ORIGIN_SEPARATOR, "-")
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o !is AccountName) return false
-        val that = o as AccountName?
-        return if (origin != that.origin) false else StringUtil.equalsNotEmpty(uniqueName, that.uniqueName)
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is AccountName) return false
+        return if (origin != other.origin) false else StringUtil.equalsNotEmpty(uniqueName, other.uniqueName)
     }
 
     override fun hashCode(): Int {
         var result = origin.hashCode()
-        if (!uniqueName.isNullOrEmpty()) {
+        if (uniqueName.isNotEmpty()) {
             result = 31 * result + uniqueName.hashCode()
         }
         return result
     }
 
     companion object {
-        val ORIGIN_SEPARATOR: String? = "/"
-        fun getEmpty(): AccountName? {
+        val ORIGIN_SEPARATOR: String = "/"
+        fun getEmpty(): AccountName {
             return AccountName("",  Origin.EMPTY)
         }
 
@@ -95,12 +90,12 @@ class AccountName private constructor(uniqueName: String,
             return AccountName(fixUniqueName(uniqueName, origin), origin)
         }
 
-        fun fromAccountName(myContext: MyContext?, accountNameString: String?): AccountName {
+        fun fromAccountName(myContext: MyContext, accountNameString: String?): AccountName {
             val origin = accountNameToOrigin(myContext, accountNameString)
             return AccountName(accountNameToUniqueName(accountNameString, origin), origin)
         }
 
-        private fun fixOriginName(originNameIn: String?): String? {
+        private fun fixOriginName(originNameIn: String?): String {
             var originName = ""
             if (originNameIn != null) {
                 originName = originNameIn.trim { it <= ' ' }
@@ -108,42 +103,44 @@ class AccountName private constructor(uniqueName: String,
             return originName
         }
 
-        private fun accountNameToOrigin(myContext: MyContext?, accountName: String?): Origin? {
+        private fun accountNameToOrigin(myContext: MyContext, accountName: String?): Origin {
             val accountNameFixed = fixAccountName(accountName)
             val host = accountNameToHost(accountNameFixed)
             val indSeparator = accountNameFixed.lastIndexOf(ORIGIN_SEPARATOR)
-            val originInAccountName = if (indSeparator >= 0 && indSeparator < accountNameFixed.length - 1) accountNameFixed.substring(indSeparator + 1).trim { it <= ' ' } else ""
+            val originInAccountName = if (indSeparator >= 0 && indSeparator < accountNameFixed.length - 1)
+                    accountNameFixed.substring(indSeparator + 1).trim { it <= ' ' }
+                else ""
             return myContext.origins().fromOriginInAccountNameAndHost(fixOriginName(originInAccountName), host)
         }
 
-        fun accountNameToHost(accountName: String?): String? {
+        fun accountNameToHost(accountName: String?): String {
             val nameWithoutOrigin = accountNameWithoutOrigin(accountName)
             val indAt = nameWithoutOrigin.indexOf("@")
             return if (indAt >= 0) nameWithoutOrigin.substring(indAt + 1).trim { it <= ' ' } else ""
         }
 
-        private fun accountNameToUniqueName(accountName: String?, origin: Origin?): String? {
+        private fun accountNameToUniqueName(accountName: String?, origin: Origin): String {
             return fixUniqueName(accountNameWithoutOrigin(accountName), origin)
         }
 
-        private fun accountNameWithoutOrigin(accountName: String?): String? {
+        private fun accountNameWithoutOrigin(accountName: String?): String {
             val accountNameFixed = fixAccountName(accountName)
             val indSeparator = accountNameFixed.indexOf(ORIGIN_SEPARATOR)
             return if (indSeparator > 0) accountNameFixed.substring(0, indSeparator) else accountNameFixed
         }
 
-        private fun fixUniqueName(uniqueNameIn: String?, origin: Origin?): String? {
+        private fun fixUniqueName(uniqueNameIn: String?, origin: Origin): String {
             val nonNullName = StringUtil.notNull(uniqueNameIn).trim { it <= ' ' }
             val uniqueName = nonNullName +
                     if (!nonNullName.contains("@") && origin.shouldHaveUrl()) "@" + origin.getAccountNameHost() else ""
-            return if (Actor.Companion.uniqueNameToUsername(origin, uniqueName).isPresent()) {
+            return if (Actor.uniqueNameToUsername(origin, uniqueName).isPresent()) {
                 uniqueName
             } else {
                 ""
             }
         }
 
-        private fun fixAccountName(accountNameIn: String?): String? {
+        private fun fixAccountName(accountNameIn: String?): String {
             var accountName = ""
             if (accountNameIn != null) {
                 accountName = accountNameIn.trim { it <= ' ' }
@@ -153,11 +150,11 @@ class AccountName private constructor(uniqueName: String,
     }
 
     init {
-        username = Actor.Companion.uniqueNameToUsername(origin, uniqueName).orElse("")
+        username = Actor.uniqueNameToUsername(origin, uniqueName).orElse("")
         host = accountNameToHost(uniqueName)
         this.uniqueName = uniqueName
         val originInAccountName = origin.getOriginInAccountName(host)
         name = uniqueName + ORIGIN_SEPARATOR + originInAccountName
-        isValid = origin.isPersistent() && origin.isUsernameValid(username) && !originInAccountName.isNullOrEmpty()
+        isValid = origin.isPersistent() && origin.isUsernameValid(username) && originInAccountName.isNotEmpty()
     }
 }

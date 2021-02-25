@@ -46,7 +46,7 @@ object DbUtils {
     /**
      * @return rowId
      */
-    fun addRowWithRetry(myContext: MyContext, tableName: String?, values: ContentValues?, nRetries: Int): Try<Long?>? {
+    fun addRowWithRetry(myContext: MyContext, tableName: String?, values: ContentValues?, nRetries: Int): Try<Long> {
         val method = "addRowWithRetry"
         var rowId: Long = -1
         val db = myContext.getDatabase()
@@ -133,7 +133,6 @@ object DbUtils {
     }
 
     // Couldn't use "Closeable" as a Type due to incompatibility with API <= 10
-    @JvmOverloads
     fun closeSilently(closeable: Any?, message: String? = "") {
         if (closeable != null) {
             try {

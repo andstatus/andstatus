@@ -9,6 +9,7 @@ import android.provider.BaseColumns
 import android.webkit.MimeTypeMap
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.MyContentType.Companion.uri2MimeType
 import org.andstatus.app.database.table.DownloadTable
 import org.andstatus.app.graphics.MediaMetadata
 import org.andstatus.app.net.social.Actor
@@ -25,32 +26,31 @@ import org.andstatus.app.util.UriUtils
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.function.Supplier
 
-open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long, actorId: Long, noteId: Long, contentType: MyContentType?,
-                                              mimeType: String?, downloadType: DownloadType?, uri: Uri?) : IsEmpty, TaggedClass {
-    private var downloadType: DownloadType? = DownloadType.UNKNOWN
+open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long, actorId: Long, noteId: Long, contentType: MyContentType,
+                                              mimeType: String, downloadType: DownloadType, uri: Uri?) : IsEmpty, TaggedClass {
+    private var downloadType: DownloadType = DownloadType.UNKNOWN
     var actorId: Long = 0
     var noteId: Long = 0
-    private var contentType: MyContentType? = MyContentType.UNKNOWN
-    private var mimeType: String? = ""
-    private var status: DownloadStatus? = DownloadStatus.UNKNOWN
+    private var contentType: MyContentType = MyContentType.UNKNOWN
+    private var mimeType: String = ""
+    private var status: DownloadStatus = DownloadStatus.UNKNOWN
     private var downloadId: Long = 0
     private var downloadNumber: Long = 0
-    private var fileStored: DownloadFile = DownloadFile.Companion.EMPTY
+    private var fileStored: DownloadFile = DownloadFile.EMPTY
     private var fileSize: Long = 0
-    protected var uri = Uri.EMPTY
-    var mediaMetadata: MediaMetadata? = MediaMetadata.Companion.EMPTY
+    private var uri = Uri.EMPTY
+    var mediaMetadata: MediaMetadata = MediaMetadata.EMPTY
     private var previewOfDownloadId: Long = 0
     private var hardError = false
     private var softError = false
-    private var errorMessage: String? = ""
+    private var errorMessage: String = ""
     private var downloadedDate = RelativeTime.DATETIME_MILLIS_NEVER
-    private var fileNew: DownloadFile = DownloadFile.Companion.EMPTY
+    private var fileNew: DownloadFile = DownloadFile.EMPTY
     private fun loadOtherFields() {
         if (checkHardErrorBeforeLoad()) return
         val sql = "SELECT * FROM " + DownloadTable.TABLE_NAME + getWhere().getWhere()
-        val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().getDatabase()
+        val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().getDatabase()
         if (db == null) {
             MyLog.databaseIsNull { this }
             softError = true
@@ -71,17 +71,17 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
     }
 
     private fun loadFromCursor(cursor: Cursor) {
-        status = DownloadStatus.Companion.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS))
+        status = DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS))
         fileStored = DownloadFile(DbUtils.getString(cursor, DownloadTable.FILE_NAME))
         if (downloadType == DownloadType.UNKNOWN) {
-            downloadType = DownloadType.Companion.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_TYPE))
+            downloadType = DownloadType.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_TYPE))
         }
         if (contentType == MyContentType.UNKNOWN) {
-            contentType = MyContentType.Companion.load(DbUtils.getLong(cursor, DownloadTable.CONTENT_TYPE))
+            contentType = MyContentType.load(DbUtils.getLong(cursor, DownloadTable.CONTENT_TYPE))
         }
-        if (mimeType.isNullOrEmpty()) {
-            mimeType = DbUtils.getString(cursor, DownloadTable.MEDIA_TYPE,
-                    Supplier { uri2MimeType(null, Uri.parse(fileStored.filename)) })
+        if (mimeType.isEmpty()) {
+            mimeType = DbUtils.getString(cursor, DownloadTable.MEDIA_TYPE)
+                { uri2MimeType(null, Uri.parse(fileStored.getFilename())) }
         }
         if (actorId == 0L) {
             actorId = DbUtils.getLong(cursor, DownloadTable.ACTOR_ID)
@@ -101,7 +101,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         if (uri == Uri.EMPTY) {
             uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URL))
         }
-        mediaMetadata = MediaMetadata.Companion.fromCursor(cursor)
+        mediaMetadata = MediaMetadata.fromCursor(cursor)
         fileSize = DbUtils.getLong(cursor, DownloadTable.FILE_SIZE)
         downloadedDate = DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE)
     }
@@ -118,7 +118,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         return hardError
     }
 
-    private fun getWhere(): SqlWhere? {
+    private fun getWhere(): SqlWhere {
         val where = SqlWhere()
         if (downloadId != 0L) {
             where.append(BaseColumns._ID + "=" + downloadId)
@@ -153,8 +153,8 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
             hardError = true
         }
         if (contentType == MyContentType.UNKNOWN) {
-            contentType = MyContentType.Companion.fromUri(DownloadType.ATTACHMENT,
-                     MyContextHolder.myContextHolder.getNow().context().getContentResolver(), uri, mimeType)
+            contentType = MyContentType.fromUri(DownloadType.ATTACHMENT,
+                     MyContextHolder.myContextHolder.getNow().context()?.getContentResolver(), uri, mimeType)
         }
     }
 
@@ -168,29 +168,29 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
     }
 
     fun onDownloaded() {
-        fileNew = DownloadFile(fileNew.filename)
+        fileNew = DownloadFile(fileNew.getFilename())
         if (isError() || !fileNew.existed) {
             if (!fileNew.existed) onNoFile()
             return
         }
-        fileSize = fileNew.size
-        mediaMetadata = MediaMetadata.Companion.fromFilePath(fileNew.filePath)
+        fileSize = fileNew.getSize()
+        mediaMetadata = MediaMetadata.fromFilePath(fileNew.getFilePath())
         downloadedDate = System.currentTimeMillis()
     }
 
     private fun onNoFile() {
         if (DownloadStatus.LOADED == status) status = DownloadStatus.ABSENT
         fileSize = 0
-        mediaMetadata = MediaMetadata.Companion.EMPTY
+        mediaMetadata = MediaMetadata.EMPTY
         downloadedDate = RelativeTime.DATETIME_MILLIS_NEVER
     }
 
-    private fun getExtension(): String? {
-        val fileExtension: String = MyContentType.Companion.mimeToFileExtension(mimeType)
-        if (!fileExtension.isNullOrEmpty()) return fileExtension
+    private fun getExtension(): String {
+        val fileExtension: String = MyContentType.mimeToFileExtension(mimeType)
+        if (fileExtension.isNotEmpty()) return fileExtension
         val fileExtension2 = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
         if (!fileExtension2.isNullOrEmpty()) return fileExtension2
-        val fileExtension3 = MimeTypeMap.getFileExtensionFromUrl(fileStored.filename)
+        val fileExtension3 = MimeTypeMap.getFileExtensionFromUrl(fileStored.getFilename())
         if (!fileExtension3.isNullOrEmpty()) return fileExtension3
         MyLog.d(this, "Failed to find file extension $this")
         return "png"
@@ -239,7 +239,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
     private fun addNew() {
         val values = toContentValues()
         DbUtils.addRowWithRetry( MyContextHolder.myContextHolder.getNow(), DownloadTable.TABLE_NAME, values, 3)
-                .onSuccess { idAdded: Long? ->
+                .onSuccess { idAdded: Long ->
                     downloadId = idAdded
                     MyLog.v(this) { "Added " + actorNoteUriToString() }
                 }
@@ -255,13 +255,13 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
                 .onSuccess { o: Void? -> MyLog.v(this) { "Updated " + actorNoteUriToString() } }
                 .onFailure { e: Throwable? -> softError = true }
         val filenameChanged = (!isError() && fileNew.existsNow()
-                && fileStored.filename != fileNew.filename)
+                && fileStored.getFilename() != fileNew.getFilename())
         if (filenameChanged) {
             fileStored.delete()
         }
     }
 
-    private fun toContentValues(): ContentValues? {
+    private fun toContentValues(): ContentValues {
         val values = ContentValues()
         if (downloadId == 0L) {
             values.put(DownloadTable.DOWNLOAD_TYPE, downloadType.save())
@@ -274,7 +274,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         values.put(DownloadTable.CONTENT_TYPE, contentType.save())
         values.put(DownloadTable.MEDIA_TYPE, mimeType)
         values.put(DownloadTable.DOWNLOAD_STATUS, status.save())
-        values.put(DownloadTable.FILE_NAME, fileNew.filename)
+        values.put(DownloadTable.FILE_NAME, fileNew.getFilename())
         values.put(DownloadTable.FILE_SIZE, fileSize)
         mediaMetadata.toContentValues(values)
         values.put(DownloadTable.DOWNLOADED_DATE, downloadedDate)
@@ -293,7 +293,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         return softError || hardError
     }
 
-    fun actorNoteUriToString(): String? {
+    fun actorNoteUriToString(): String {
         val builder = StringBuilder()
         if (actorId != 0L) {
             builder.append("actorId=$actorId; ")
@@ -320,7 +320,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         MyLog.v(this, message + "; " + actorNoteUriToString(), e)
     }
 
-    fun deleteOtherOfThisActor(myContext: MyContext?) {
+    fun deleteOtherOfThisActor(myContext: MyContext) {
         deleteOtherOfThisActor(myContext, actorId, downloadId)
     }
 
@@ -335,12 +335,12 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         }
     }
 
-    fun getFile(): DownloadFile? {
+    fun getFile(): DownloadFile {
         return fileStored
     }
 
-    fun getFilename(): String? {
-        return fileStored.filename
+    fun getFilename(): String {
+        return fileStored.getFilename()
     }
 
     fun getDownloadId(): Long {
@@ -351,35 +351,37 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         return downloadNumber
     }
 
-    fun getStatus(): DownloadStatus? {
+    fun getStatus(): DownloadStatus {
         return status
     }
 
-    fun getFilenameNew(): String? {
-        return fileNew.filename
+    fun getFilenameNew(): String {
+        return fileNew.getFilename()
     }
 
-    fun getUri(): Uri? {
+    fun getUri(): Uri {
         return uri
     }
 
-    fun requestDownload(myContext: MyContext?) {
+    fun requestDownload(myContext: MyContext) {
         if (!hardError && downloadId == 0L) {
             saveToDatabase()
         }
         if ((DownloadStatus.LOADED != status || !fileStored.existed) && !hardError && uri !== Uri.EMPTY) {
-            MyServiceManager.Companion.sendCommand(if (actorId != 0L) CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR, Actor.Companion.load(myContext, actorId), "") else CommandData.Companion.newFetchAttachment(noteId, downloadId))
+            MyServiceManager.sendCommand(if (actorId != 0L)
+                CommandData.newActorCommand(CommandEnum.GET_AVATAR, Actor.load(myContext, actorId), "")
+            else CommandData.newFetchAttachment(noteId, downloadId))
         }
     }
 
-    fun getMessage(): String? {
+    fun getMessage(): String {
         return errorMessage
     }
 
     override fun toString(): String {
         val builder = MyStringBuilder()
         builder.withComma("id", downloadId, { i: Long? -> i != 0L })
-        builder.withComma("num", downloadNumber, { i: Long? -> i > 0 })
+        builder.withComma("num", downloadNumber, { i: Long -> i > 0 })
         builder.withCommaQuoted("uri", getUri(), true)
         builder.withComma("mime", mimeType)
         builder.withComma("actorId", actorId, { i: Long? -> i != 0L })
@@ -392,7 +394,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
             builder.withComma("size", fileSize)
             if (mediaMetadata.nonEmpty()) builder.withComma(mediaMetadata.toString())
         }
-        return MyStringBuilder.Companion.formatKeyValue(this, builder.toString())
+        return MyStringBuilder.formatKeyValue(this, builder.toString())
     }
 
     override fun isEmpty(): Boolean {
@@ -403,11 +405,11 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         return downloadedDate
     }
 
-    fun getContentType(): MyContentType? {
+    fun getContentType(): MyContentType {
         return contentType
     }
 
-    fun getMimeType(): String? {
+    fun getMimeType(): String {
         return mimeType
     }
 
@@ -417,21 +419,21 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         var consumedSize: Long = 0
     }
 
-    override fun classTag(): String? {
+    override fun classTag(): String {
         return TAG
     }
 
     companion object {
-        private val TAG: String? = DownloadData::class.java.simpleName
-        val EMPTY: DownloadData? = DownloadData(null, 0, 0, 0, MyContentType.UNKNOWN, "",
+        private val TAG: String = DownloadData::class.java.simpleName
+        val EMPTY: DownloadData = DownloadData(null, 0, 0, 0, MyContentType.UNKNOWN, "",
                 DownloadType.UNKNOWN, Uri.EMPTY)
 
-        fun fromCursor(cursor: Cursor): DownloadData? {
+        fun fromCursor(cursor: Cursor): DownloadData {
             return DownloadData(cursor, 0, 0, 0, MyContentType.UNKNOWN, "",
                     DownloadType.UNKNOWN, Uri.EMPTY)
         }
 
-        fun fromId(downloadId: Long): DownloadData? {
+        fun fromId(downloadId: Long): DownloadData {
             return DownloadData(null, downloadId, 0, 0, MyContentType.UNKNOWN, "",
                     DownloadType.UNKNOWN, Uri.EMPTY)
         }
@@ -439,35 +441,35 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         /**
          * Currently we assume that there is no more than one attachment of a message
          */
-        fun getSingleAttachment(noteId: Long): DownloadData? {
+        fun getSingleAttachment(noteId: Long): DownloadData {
             return DownloadData(null, 0, 0, noteId, MyContentType.UNKNOWN, "",
                     DownloadType.ATTACHMENT, Uri.EMPTY)
         }
 
-        fun fromAttachment(noteId: Long, attachment: Attachment?): DownloadData? {
+        fun fromAttachment(noteId: Long, attachment: Attachment): DownloadData {
             return DownloadData(null, attachment.getDownloadId(), 0, noteId,
                     attachment.contentType, attachment.mimeType, DownloadType.ATTACHMENT, attachment.uri)
         }
 
-        fun fromNoteId(myContext: MyContext?, noteId: Long): MutableList<DownloadData?>? {
+        fun fromNoteId(myContext: MyContext, noteId: Long): List<DownloadData> {
             if (myContext.isEmptyOrExpired() || noteId == 0L) return emptyList()
             val sql = ("SELECT *"
                     + " FROM " + DownloadTable.TABLE_NAME
                     + " WHERE " + DownloadTable.NOTE_ID + "=" + noteId
                     + " ORDER BY " + DownloadTable.DOWNLOAD_NUMBER)
-            return MyQuery.foldLeft(myContext, sql, ArrayList(), Function { list: ArrayList<DownloadData?>? ->
-                Function { cursor: Cursor? ->
+            return MyQuery.foldLeft(myContext, sql, ArrayList(), { list: ArrayList<DownloadData> ->
+                Function { cursor: Cursor ->
                     list.add(fromCursor(cursor))
                     list
                 }
             })
         }
 
-        fun deleteAllOfThisActor(myContext: MyContext?, actorId: Long) {
+        fun deleteAllOfThisActor(myContext: MyContext, actorId: Long) {
             deleteOtherOfThisActor(myContext, actorId, 0)
         }
 
-        private fun deleteOtherOfThisActor(myContext: MyContext?, actorId: Long, rowId: Long) {
+        private fun deleteOtherOfThisActor(myContext: MyContext, actorId: Long, rowId: Long) {
             if (actorId == 0L) return
             val method = "deleteOtherOfThisActor actorId=" + actorId + if (rowId != 0L) ", downloadId=$rowId" else ""
             val where = (DownloadTable.ACTOR_ID + "=" + actorId
@@ -514,7 +516,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
             deleteSelected(method, db, DownloadTable.NOTE_ID + "=" + noteId)
         }
 
-        fun deleteOtherOfThisNote(myContext: MyContext?, noteId: Long, downloadIds: MutableList<Long?>) {
+        fun deleteOtherOfThisNote(myContext: MyContext, noteId: Long, downloadIds: MutableList<Long>) {
             if (noteId == 0L || downloadIds.isEmpty()) return
             val method = "deleteOtherOfThisNote noteId=" + noteId + ", rowIds:" + toSqlList(downloadIds)
             val where = (DownloadTable.NOTE_ID + "=" + noteId
@@ -522,7 +524,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
             deleteSelected(method, myContext.getDatabase(), where)
         }
 
-        fun toSqlList(longs: MutableList<Long?>?): String? {
+        fun toSqlList(longs: MutableList<Long>?): String {
             if (longs == null || longs.isEmpty()) {
                 return "0"
             }
@@ -536,12 +538,12 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
             return list
         }
 
-        fun pruneFiles(myContext: MyContext?, downloadType: DownloadType?, bytesToKeep: Long): ConsumedSummary? {
-            return consumeOldest(myContext, downloadType, bytesToKeep) { obj: DownloadData? -> obj.deleteFile() }
+        fun pruneFiles(myContext: MyContext, downloadType: DownloadType, bytesToKeep: Long): ConsumedSummary {
+            return consumeOldest(myContext, downloadType, bytesToKeep) { obj: DownloadData -> obj.deleteFile() }
         }
 
-        private fun consumeOldest(myContext: MyContext?, downloadType: DownloadType?, totalSizeToSkip: Long,
-                                  consumer: Consumer<DownloadData?>?): ConsumedSummary? {
+        private fun consumeOldest(myContext: MyContext, downloadType: DownloadType, totalSizeToSkip: Long,
+                                  consumer: Consumer<DownloadData>): ConsumedSummary {
             val sql = ("SELECT *"
                     + " FROM " + DownloadTable.TABLE_NAME
                     + " WHERE " + DownloadTable.DOWNLOAD_TYPE + "='" + downloadType.save() + "'"
@@ -549,8 +551,8 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
                     + " ORDER BY " + DownloadTable.DOWNLOADED_DATE + " DESC")
             return MyQuery.foldLeft(myContext, sql,
                     ConsumedSummary(),
-                    Function { summary: ConsumedSummary? ->
-                        Function { cursor: Cursor? ->
+                    { summary: ConsumedSummary ->
+                        Function { cursor: Cursor ->
                             val data = fromCursor(cursor)
                             if (data.fileStored.existed) {
                                 if (summary.skippedSize < totalSizeToSkip) {

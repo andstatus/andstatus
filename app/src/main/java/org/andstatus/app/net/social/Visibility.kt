@@ -15,28 +15,10 @@
  */
 package org.andstatus.app.net.social
 
+import android.database.Cursor
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.NoteTable
-
-android.database.Cursor
-import org.andstatus.app.context.NoScreenSupport
-import androidx.test.rule.ActivityTestRule
-import org.andstatus.app.context.CompletableFutureTest.TestData
-import org.andstatus.app.service.MyServiceTest
-import org.andstatus.app.service.AvatarDownloaderTest
-import org.andstatus.app.service.RepeatingFailingCommandTest
-import org.hamcrest.core.Is
-import org.hamcrest.core.IsNot
-import org.andstatus.app.timeline.meta.TimelineSyncTrackerTest
-import org.andstatus.app.timeline.TimelinePositionTest
-import org.andstatus.app.util.EspressoUtils
-import org.andstatus.app.timeline.TimeLineActivityLayoutToggleTest
-import org.andstatus.app.appwidget.MyAppWidgetProviderTest.DateTest
-import org.andstatus.app.appwidget.MyAppWidgetProviderTest
-import org.andstatus.app.notification.NotifierTest
-import org.andstatus.app.ActivityTestHelper.MenuItemClicker
-import org.andstatus.app.MenuItemMock
 
 /** @author yvolk@yurivolkov.com
  */
@@ -65,12 +47,12 @@ enum class Visibility(val id: Long) {
         }
     }
 
-    fun getKnown(): Visibility? {
+    fun getKnown(): Visibility {
         val v1 = if (isPublic()) PUBLIC else PRIVATE
         return if (isFollowers()) v1.add(TO_FOLLOWERS) else v1
     }
 
-    fun add(other: Visibility?): Visibility? {
+    fun add(other: Visibility): Visibility {
         if (this == other) return this
         if (this == UNKNOWN) return other
         if (other == UNKNOWN) return this
@@ -88,7 +70,7 @@ enum class Visibility(val id: Long) {
     }
 
     companion object {
-        fun fromId(id: Long): Visibility? {
+        fun fromId(id: Long): Visibility {
             // Special handling of values, created before v.55
             if (id == 2L) return PUBLIC
             if (id == 1L) return NOT_PUBLIC_NEEDS_CLARIFICATION
@@ -100,15 +82,15 @@ enum class Visibility(val id: Long) {
             return UNKNOWN
         }
 
-        fun fromNoteId(noteId: Long): Visibility? {
+        fun fromNoteId(noteId: Long): Visibility {
             return fromId(MyQuery.noteIdToLongColumnValue(NoteTable.VISIBILITY, noteId))
         }
 
-        fun fromCursor(cursor: Cursor?): Visibility? {
+        fun fromCursor(cursor: Cursor?): Visibility {
             return fromId(DbUtils.getLong(cursor, NoteTable.VISIBILITY))
         }
 
-        fun fromCheckboxes(isPublic: Boolean, isFollowers: Boolean): Visibility? {
+        fun fromCheckboxes(isPublic: Boolean, isFollowers: Boolean): Visibility {
             return if (isPublic) {
                 if (isFollowers) PUBLIC_AND_TO_FOLLOWERS else PUBLIC
             } else {

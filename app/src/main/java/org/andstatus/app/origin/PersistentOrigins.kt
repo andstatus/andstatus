@@ -78,7 +78,7 @@ class PersistentOrigins private constructor(val myContext: MyContextImpl) {
         return origin ?:  Origin.EMPTY
     }
 
-    fun fromOriginInAccountNameAndHost(originInAccountName: String?, host: String?): Origin? {
+    fun fromOriginInAccountNameAndHost(originInAccountName: String?, host: String?): Origin {
         val origins = allFromOriginInAccountNameAndHost(originInAccountName, host)
         return when (origins.size) {
             0 ->  Origin.EMPTY

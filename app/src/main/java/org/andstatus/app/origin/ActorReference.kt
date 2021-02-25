@@ -20,8 +20,8 @@ import org.andstatus.app.actor.GroupType
 /**
  * @author yvolk@yurivolkov.com
  */
-class ActorReference internal constructor(val index: Int, val groupType: GroupType?) {
+class ActorReference internal constructor(val index: Int, val groupType: GroupType) {
     companion object {
-        val EMPTY: ActorReference? = ActorReference(-1, GroupType.UNKNOWN)
+        val EMPTY: ActorReference = ActorReference(-1, GroupType.UNKNOWN)
     }
 }

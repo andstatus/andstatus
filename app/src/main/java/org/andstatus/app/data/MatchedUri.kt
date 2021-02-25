@@ -36,7 +36,8 @@ enum class MatchedUri(private val code: Int) {
     /**
      * This Uri is for some Timeline
      */
-    TIMELINE(1), TIMELINE_SEARCH(3),
+    TIMELINE(1),
+    TIMELINE_SEARCH(3),
 
     /**
      * The Timeline URI contains Note (item) id
@@ -46,17 +47,24 @@ enum class MatchedUri(private val code: Int) {
     /**
      * Operations on [org.andstatus.app.database.table.ActivityTable] and dependent tables
      */
-    ACTIVITY(7), NOTE_ITEM(10), ORIGIN(8), ORIGIN_ITEM(11),
+    ACTIVITY(7),
+    NOTE_ITEM(10),
+    ORIGIN(8),
+    ORIGIN_ITEM(11),
 
     /**
      * Actors screens
      */
-    ACTORS(5), ACTORS_SEARCH(12), ACTORS_ITEM(13),
+    ACTORS(5),
+    ACTORS_SEARCH(12),
+    ACTORS_ITEM(13),
 
     /**
      * Operations on [ActorTable] itself
      */
-    ACTOR(6), ACTOR_ITEM(9), UNKNOWN(0);
+    ACTOR(6),
+    ACTOR_ITEM(9),
+    UNKNOWN(0);
 
     companion object {
         /**
@@ -65,18 +73,19 @@ enum class MatchedUri(private val code: Int) {
          *
          * Note: This is historical constant, remained to preserve compatibility without reinstallation
          */
-        val AUTHORITY: String? = ClassInApplicationPackage.PACKAGE_NAME + ".data.MyProvider"
-        private val ORIGIN_SEGMENT: String? = "origin"
-        private val SEARCH_SEGMENT: String? = "search"
-        private val LISTTYPE_SEGMENT: String? = "lt"
-        private val CONTENT_SEGMENT: String? = "content"
-        private val CONTENT_ITEM_SEGMENT: String? = "item"
-        private val ACTOR_SEGMENT: String? = "actor"
-        private val CENTRAL_ITEM_SEGMENT: String? = "cnt"
-        private val CONTENT_URI_SCHEME_AND_HOST: String? = "content://" + AUTHORITY
-        private val CONTENT_URI_PREFIX: String? = CONTENT_URI_SCHEME_AND_HOST + "/"
-        val ACTIVITY_CONTENT_URI = Uri.parse(CONTENT_URI_PREFIX + ActivityTable.TABLE_NAME + "/" + CONTENT_SEGMENT)
-        fun fromUri(uri: Uri?): MatchedUri? {
+        val AUTHORITY: String = ClassInApplicationPackage.PACKAGE_NAME + ".data.MyProvider"
+        private val ORIGIN_SEGMENT: String = "origin"
+        private val SEARCH_SEGMENT: String = "search"
+        private val LISTTYPE_SEGMENT: String = "lt"
+        private val CONTENT_SEGMENT: String = "content"
+        private val CONTENT_ITEM_SEGMENT: String = "item"
+        private val ACTOR_SEGMENT: String = "actor"
+        private val CENTRAL_ITEM_SEGMENT: String = "cnt"
+        private val CONTENT_URI_SCHEME_AND_HOST: String = "content://$AUTHORITY"
+        private val CONTENT_URI_PREFIX: String = "$CONTENT_URI_SCHEME_AND_HOST/"
+        val ACTIVITY_CONTENT_URI: Uri = Uri.parse(CONTENT_URI_PREFIX + ActivityTable.TABLE_NAME + "/" + CONTENT_SEGMENT)
+
+        fun fromUri(uri: Uri?): MatchedUri {
             if (uri == null || uri == Uri.EMPTY) {
                 return UNKNOWN
             }
@@ -89,42 +98,42 @@ enum class MatchedUri(private val code: Int) {
             return UNKNOWN
         }
 
-        private fun replaceClickHost(uri: Uri): Uri? {
-            return if (uri.host == Timeline.Companion.TIMELINE_CLICK_HOST) Uri.parse(CONTENT_URI_SCHEME_AND_HOST + uri.encodedPath) else uri
+        private fun replaceClickHost(uri: Uri): Uri {
+            return if (uri.host == Timeline.TIMELINE_CLICK_HOST) Uri.parse(CONTENT_URI_SCHEME_AND_HOST + uri.encodedPath) else uri
         }
 
-        private val URI_MATCHER: UriMatcher? = UriMatcher(UriMatcher.NO_MATCH)
+        private val URI_MATCHER: UriMatcher = UriMatcher(UriMatcher.NO_MATCH)
 
         /**
          * MIME types should be like in android:mimeType in AndroidManifest.xml
          */
-        private val CONTENT_TYPE_PREFIX: String? = ("vnd.android.cursor.dir/"
+        private val CONTENT_TYPE_PREFIX: String = ("vnd.android.cursor.dir/"
                 + ClassInApplicationPackage.PACKAGE_NAME + ".provider.")
-        private val CONTENT_ITEM_TYPE_PREFIX: String? = ("vnd.android.cursor.item/"
+        private val CONTENT_ITEM_TYPE_PREFIX: String = ("vnd.android.cursor.item/"
                 + ClassInApplicationPackage.PACKAGE_NAME + ".provider.")
 
         /** Uri for the note in the account's timeline  */
-        fun getTimelineItemUri(timeline: Timeline?, noteId: Long): Uri? {
+        fun getTimelineItemUri(timeline: Timeline, noteId: Long): Uri {
             var uri = timeline.getUri()
             uri = Uri.withAppendedPath(uri, CONTENT_ITEM_SEGMENT)
             uri = ContentUris.withAppendedId(uri, noteId)
             return uri
         }
 
-        fun getTimelineUri(timeline: Timeline?): Uri? {
-            var uri = getBaseAccountUri(timeline.myAccountToSync.actorId, NoteTable.TABLE_NAME)
-            uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + timeline.getTimelineType().save())
+        fun getTimelineUri(timeline: Timeline): Uri {
+            var uri = getBaseAccountUri(timeline.myAccountToSync.getActorId(), NoteTable.TABLE_NAME)
+            uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + timeline.timelineType.save())
             uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + timeline.getOrigin().id)
             uri = Uri.withAppendedPath(uri, ACTOR_SEGMENT)
             uri = ContentUris.withAppendedId(uri, timeline.getActorId())
-            if (!timeline.getSearchQuery().isNullOrEmpty()) {
+            if (timeline.getSearchQuery().isNotEmpty()) {
                 uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT)
                 uri = Uri.withAppendedPath(uri, Uri.encode(timeline.getSearchQuery()))
             }
             return uri
         }
 
-        fun getMsgUri(accountActorId: Long, noteId: Long): Uri? {
+        fun getMsgUri(accountActorId: Long, noteId: Long): Uri {
             return getContentItemUri(accountActorId, NoteTable.TABLE_NAME, noteId)
         }
 
@@ -132,11 +141,11 @@ enum class MatchedUri(private val code: Int) {
          * Build Uri for this Actor on an ActorsScreen / [MyAccount]
          * @param searchQuery
          */
-        fun getActorsScreenUri(actorsScreenType: ActorsScreenType?, originId: Long, centralItemId: Long,
-                               searchQuery: String?): Uri? {
+        fun getActorsScreenUri(actorsScreenType: ActorsScreenType, originId: Long, centralItemId: Long,
+                               searchQuery: String?): Uri {
             var uri = getBaseAccountUri(0, ActorTable.TABLE_NAME)
             uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + actorsScreenType.save())
-            uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + originId)
+            uri = Uri.withAppendedPath(uri, "$ORIGIN_SEGMENT/$originId")
             uri = Uri.withAppendedPath(uri, CENTRAL_ITEM_SEGMENT)
             uri = ContentUris.withAppendedId(uri, centralItemId)
             if (!searchQuery.isNullOrEmpty()) {
@@ -146,11 +155,11 @@ enum class MatchedUri(private val code: Int) {
             return uri
         }
 
-        fun getActorUri(accountActorId: Long, actorId: Long): Uri? {
+        fun getActorUri(accountActorId: Long, actorId: Long): Uri {
             return getContentItemUri(accountActorId, ActorTable.TABLE_NAME, actorId)
         }
 
-        fun getOriginUri(originId: Long): Uri? {
+        fun getOriginUri(originId: Long): Uri {
             return getContentItemUri(0, OriginTable.TABLE_NAME, originId)
         }
 
@@ -159,14 +168,14 @@ enum class MatchedUri(private val code: Int) {
          * @param tableName name in the [DatabaseHolder]
          * @param itemId ID or 0 - if the Item doesn't exist
          */
-        private fun getContentItemUri(accountActorId: Long, tableName: String?, itemId: Long): Uri? {
+        private fun getContentItemUri(accountActorId: Long, tableName: String?, itemId: Long): Uri {
             var uri = getBaseAccountUri(accountActorId, tableName)
             uri = Uri.withAppendedPath(uri, CONTENT_ITEM_SEGMENT)
             uri = ContentUris.withAppendedId(uri, itemId)
             return uri
         }
 
-        private fun getBaseAccountUri(accountActorId: Long, tableName: String?): Uri? {
+        private fun getBaseAccountUri(accountActorId: Long, tableName: String?): Uri {
             return ContentUris.withAppendedId(Uri.parse(CONTENT_URI_PREFIX + tableName),
                     accountActorId)
         }
@@ -199,17 +208,17 @@ enum class MatchedUri(private val code: Int) {
      * Implements [android.content.ContentProvider.getType]
      */
     fun getMimeType(): String? {
-        var type: String? = null
-        when (this) {
-            ACTIVITY -> type = CONTENT_TYPE_PREFIX + ActivityTable.TABLE_NAME
-            TIMELINE, TIMELINE_SEARCH -> type = CONTENT_TYPE_PREFIX + NoteTable.TABLE_NAME
-            TIMELINE_ITEM, NOTE_ITEM -> type = CONTENT_ITEM_TYPE_PREFIX + NoteTable.TABLE_NAME
-            ORIGIN_ITEM -> type = CONTENT_ITEM_TYPE_PREFIX + OriginTable.TABLE_NAME
-            ACTOR, ACTORS -> type = CONTENT_TYPE_PREFIX + ActorTable.TABLE_NAME
-            ACTOR_ITEM -> type = CONTENT_ITEM_TYPE_PREFIX + ActorTable.TABLE_NAME
-            else -> {
-            }
+        return when (this) {
+            ACTIVITY -> CONTENT_TYPE_PREFIX + ActivityTable.TABLE_NAME
+            TIMELINE,
+            TIMELINE_SEARCH -> CONTENT_TYPE_PREFIX + NoteTable.TABLE_NAME
+            TIMELINE_ITEM,
+            NOTE_ITEM -> CONTENT_ITEM_TYPE_PREFIX + NoteTable.TABLE_NAME
+            ORIGIN_ITEM -> CONTENT_ITEM_TYPE_PREFIX + OriginTable.TABLE_NAME
+            ACTOR,
+            ACTORS -> CONTENT_TYPE_PREFIX + ActorTable.TABLE_NAME
+            ACTOR_ITEM -> CONTENT_ITEM_TYPE_PREFIX + ActorTable.TABLE_NAME
+            else -> null
         }
-        return type
     }
 }

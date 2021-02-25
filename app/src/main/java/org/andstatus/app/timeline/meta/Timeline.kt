@@ -54,7 +54,7 @@ import java.util.function.Function
  * @author yvolk@yurivolkov.com
  */
 class Timeline : Comparable<Timeline?>, IsEmpty {
-    val myContext: MyContext?
+    val myContext: MyContext
 
     @Volatile
     private var id: Long = 0
@@ -82,7 +82,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
 
     /** The timeline combines messages from all accounts
      * or from Social Networks, e.g. Search in all Social Networks  */
-    private val isCombined: Boolean
+    val isCombined: Boolean
 
     /** If this timeline can be synced  */
     private val isSyncable: Boolean
@@ -343,10 +343,6 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
 
     fun getId(): Long {
         return id
-    }
-
-    fun isCombined(): Boolean {
-        return isCombined
     }
 
     fun getOrigin(): Origin {
@@ -907,11 +903,11 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         return countSince.get()
     }
 
-    fun getUri(): Uri? {
+    fun getUri(): Uri {
         return MatchedUri.Companion.getTimelineUri(this)
     }
 
-    fun getClickUri(): Uri? {
+    fun getClickUri(): Uri {
         return Uri.parse("content://" + TIMELINE_CLICK_HOST + getUri().getEncodedPath())
     }
 

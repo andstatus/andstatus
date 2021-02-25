@@ -344,7 +344,7 @@ class ConnectionActivityPub : Connection() {
                 if (PUBLIC_COLLECTION_ID == recipient.oid) Actor.Companion.PUBLIC else recipient)
     }
 
-    private fun actorFromOid(id: String?): Actor? {
+    private fun actorFromOid(id: String?): Actor {
         return Actor.Companion.fromOid(data.origin, id)
     }
 

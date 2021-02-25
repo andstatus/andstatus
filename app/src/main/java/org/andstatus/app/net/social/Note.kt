@@ -47,48 +47,49 @@ import java.util.function.Supplier
  */
 class Note : AObject {
     private var status: DownloadStatus? = DownloadStatus.UNKNOWN
-    val oid: String?
+    val oid: String
     private var updatedDate: Long = 0
 
     @Volatile
-    private var audience: Audience?
-    private var name: String? = ""
-    private var summary: String? = ""
+    private var audience: Audience
+    private var name: String = ""
+    private var summary: String = ""
     private var isSensitive = false
-    private var content: String? = ""
-    private val contentToSearch: LazyVal<String?>? = LazyVal.Companion.of<String?>(Supplier { evalContentToSearch() })
+    private var content: String = ""
+    private val contentToSearch: LazyVal<String?> = LazyVal.Companion.of<String?>(Supplier { evalContentToSearch() })
     private var inReplyTo: AActivity? = AActivity.Companion.EMPTY
-    val replies: MutableList<AActivity?>?
-    var conversationOid: String? = ""
-    var via: String? = ""
-    var url: String? = ""
+    val replies: List<AActivity>
+    var conversationOid: String = ""
+    var via: String = ""
+    var url: String = ""
     private var likesCount: Long = 0
     private var reblogsCount: Long = 0
     private var repliesCount: Long = 0
-    val attachments: Attachments?
+    val attachments: Attachments
 
     /** Some additional attributes may appear from "My account's" (authenticated Account's) point of view  */ // In our system
-    val origin: Origin?
+    val origin: Origin
     var noteId = 0L
     private var conversationId = 0L
-    private fun loadAudience(): Note? {
-        audience = Audience.Companion.load(origin, noteId, Optional.empty())
+
+    private fun loadAudience(): Note {
+        audience = Audience.load(origin, noteId, Optional.empty())
         return this
     }
 
-    private constructor(origin: Origin?, oid: String?) {
+    private constructor(origin: Origin, oid: String) {
         this.origin = origin
         this.oid = oid
         audience = if (origin.isEmpty()) Audience.Companion.EMPTY else Audience(origin)
         replies = if (origin.isEmpty()) emptyList() else ArrayList()
-        attachments = if (origin.isEmpty()) Attachments.Companion.EMPTY else Attachments()
+        attachments = if (origin.isEmpty()) Attachments.EMPTY else Attachments()
     }
 
-    fun update(accountActor: Actor?): AActivity {
+    fun update(accountActor: Actor): AActivity {
         return act(accountActor, Actor.Companion.EMPTY, ActivityType.UPDATE)
     }
 
-    fun act(accountActor: Actor?, actor: Actor, activityType: ActivityType): AActivity {
+    fun act(accountActor: Actor, actor: Actor, activityType: ActivityType): AActivity {
         val mbActivity: AActivity = AActivity.Companion.from(accountActor, activityType)
         mbActivity.setActor(actor)
         mbActivity.setNote(this)
@@ -163,15 +164,15 @@ class Note : AObject {
 
     fun lookupConversationId(): Long {
         if (conversationId == 0L && !conversationOid.isNullOrEmpty()) {
-            conversationId = MyQuery.conversationOidToId(origin.getId(), conversationOid)
+            conversationId = MyQuery.conversationOidToId(origin.id, conversationOid)
         }
         if (conversationId == 0L && noteId != 0L) {
             conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID, noteId)
         }
         if (conversationId == 0L && getInReplyTo().nonEmpty()) {
-            if (getInReplyTo().note.noteId != 0L) {
+            if (getInReplyTo().getNote().noteId != 0L) {
                 conversationId = MyQuery.noteIdToLongColumnValue(NoteTable.CONVERSATION_ID,
-                        getInReplyTo().note.noteId)
+                        getInReplyTo().getNote().noteId)
             }
         }
         return setConversationIdFromMsgId()

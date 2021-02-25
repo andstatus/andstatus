@@ -48,8 +48,6 @@ import org.junit.Assert
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
-import java.util.function.Function
-import java.util.function.Supplier
 import java.util.regex.Pattern
 
 /**
@@ -64,10 +62,10 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
     var name = ""
     /** the OriginId in MyDatabase. 0 means that this system doesn't exist */
     var id: Long = 0
-    protected var url: URL? = null
+    var url: URL? = null
     protected var ssl = true
-    private var sslMode: SslModeEnum? = SslModeEnum.SECURE
-    private var mUseLegacyHttpProtocol: TriState? = TriState.UNKNOWN
+    private var sslMode: SslModeEnum = SslModeEnum.SECURE
+    private var mUseLegacyHttpProtocol: TriState = TriState.UNKNOWN
     private var allowHtml = false
 
     /**
@@ -78,7 +76,7 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
     /** Include this system in Global Search while in Combined Timeline  */
     private var inCombinedGlobalSearch = false
     private var inCombinedPublicReload = false
-    private var mMentionAsWebFingerId: TriState? = TriState.UNKNOWN
+    private var mMentionAsWebFingerId: TriState = TriState.UNKNOWN
     private var isValid = false
     fun getOriginType(): OriginType {
         return originType
@@ -124,7 +122,7 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
 
     fun usernameToId(username: String?): Long {
         if (username.isNullOrEmpty()) return 0
-        val key = id.toString() + ";" + username
+        val key = "$id;$username"
         val cachedId = myContext.users().originIdAndUsernameToActorId[key]
         if (cachedId != null) return cachedId
         val storedId = MyQuery.usernameToId(myContext, id, username, true)
@@ -150,10 +148,9 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
                 val ss = SpannableString.valueOf(textToPost)
                 Linkify.addLinks(ss, Linkify.WEB_URLS)
                 val spans = ss.getSpans(0, textLength, URLSpan::class.java)
-                val nLinks = spans.size.toLong()
-                for (ind1 in 0 until nLinks) {
-                    val start = ss.getSpanStart(spans.get(ind1))
-                    val end = ss.getSpanEnd(spans.get(ind1))
+                for (ind1 in spans.indices) {
+                    val start = ss.getSpanStart(spans[ind1])
+                    val end = ss.getSpanEnd(spans[ind1])
                     textLength += shortUrlLength - (end - start)
                 }
             }
@@ -167,7 +164,7 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
 
     open fun getNotePermalink(noteId: Long): String? {
         val msgUrl = MyQuery.noteIdToStringColumnValue(NoteTable.URL, noteId)
-        if (!msgUrl.isNullOrEmpty()) {
+        if (msgUrl.isNotEmpty()) {
             try {
                 return URL(msgUrl).toExternalForm()
             } catch (e: MalformedURLException) {
@@ -193,7 +190,7 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
         return !originNameToCheck.isNullOrEmpty() && VALID_NAME_PATTERN.matcher(originNameToCheck).matches()
     }
 
-    open fun fixUriForPermalink(uri1: Uri?): Uri? {
+    open fun fixUriForPermalink(uri1: Uri): Uri {
         return uri1
     }
 
@@ -211,11 +208,11 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
 
     /** OriginName to be used in [AccountName.getName]  */
     fun getOriginInAccountName(host: String?): String {
-        val origins = myContext.origins().allFromOriginInAccountNameAndHost(originType.getTitle(), host)
+        val origins = myContext.origins().allFromOriginInAccountNameAndHost(originType.title, host)
         return when (origins.size) {
             0 -> ""
-            1 -> originType.getTitle() // No ambiguity, so we can use OriginType here
-            else -> getName()
+            1 -> originType.title // No ambiguity, so we can use OriginType here
+            else -> name
         }
     }
 
@@ -225,18 +222,18 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
     }
 
     fun getHost(): String {
-        return if (UrlUtils.hasHost(url)) url.getHost() else ""
+        return if (UrlUtils.hasHost(url)) url?.getHost() ?: "" else ""
     }
 
     fun isSsl(): Boolean {
         return ssl
     }
 
-    fun getSslMode(): SslModeEnum? {
+    fun getSslMode(): SslModeEnum {
         return sslMode
     }
 
-    fun useLegacyHttpProtocol(): TriState? {
+    fun useLegacyHttpProtocol(): TriState {
         return mUseLegacyHttpProtocol
     }
 
@@ -281,7 +278,7 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
         return getTextLimit() == 0 || getTextLimit() >= TEXT_LIMIT_FOR_WEBFINGER_ID
     }
 
-    fun getMentionAsWebFingerId(): TriState? {
+    fun getMentionAsWebFingerId(): TriState {
         return mMentionAsWebFingerId
     }
 
@@ -290,11 +287,11 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
     }
 
     fun hasAccounts(): Boolean {
-        return myContext.accounts().getFirstPreferablySucceededForOrigin(this).isValid
+        return myContext.accounts().getFirstPreferablySucceededForOrigin(this).isValid()
     }
 
     fun hasNotes(): Boolean {
-        if (isEmpty) return false
+        if (isEmpty()) return false
         val db = myContext.getDatabase()
         if (db == null) {
             MyLog.databaseIsNull { "Origin hasChildren" }
@@ -307,28 +304,27 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
     override fun toString(): String {
         return if (this === EMPTY) {
             "Origin:EMPTY"
-        } else "Origin:{" + (if (isValid()) "" else "(invalid) ") + "name:" + getName()
-        +", type:" + originType
-        +(if (getUrl() != null) ", url:" + getUrl() else "")
-        +(if (isSsl()) ", " + getSslMode() else "")
-        +(if (getMentionAsWebFingerId() != TriState.UNKNOWN) ", mentionAsWf:" + getMentionAsWebFingerId() else "")
-        +"}"
+        } else "Origin:{" + (if (isValid()) "" else "(invalid) ") + "name:" + name +
+        ", type:" + originType +
+        (if (url != null) ", url:" + url else "") +
+        (if (isSsl()) ", " + getSslMode() else "") +
+        (if (getMentionAsWebFingerId() != TriState.UNKNOWN) ", mentionAsWf:" + getMentionAsWebFingerId() else "") +
+        "}"
     }
 
     fun getTextLimit(): Int {
         return textLimit
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || o !is Origin) return false
-        val origin = o as Origin?
-        return if (id != origin.id) false else StringUtil.equalsNotEmpty(name, origin.name)
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || other !is Origin) return false
+        return if (id != other.id) false else StringUtil.equalsNotEmpty(name, other.name)
     }
 
     override fun hashCode(): Int {
         var result = name.hashCode()
-        result = 31 * result + (id xor (id ushr 32)) as Int
+        result = 31 * result + (id xor (id ushr 32)).toInt()
         return result
     }
 
@@ -338,8 +334,8 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
         }
     }
 
-    override operator fun compareTo(o: Origin): Int {
-        return getName().compareTo(o.getName(), ignoreCase = true)
+    override operator fun compareTo(other: Origin): Int {
+        return name.compareTo(other.name, ignoreCase = true)
     }
 
     fun assertContext() {
@@ -361,8 +357,8 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
      * The reference may be in the form of @username, @webfingerId, or wibfingerId, without "@" before it
      * @return index of the first position, where the username/webfingerId may start, -1 if not found
      */
-    fun getActorReference(text: String?, textStart: Int): ActorReference? {
-        if (text.isNullOrEmpty() || textStart >= text.length) return ActorReference.Companion.EMPTY
+    fun getActorReference(text: String?, textStart: Int): ActorReference {
+        if (text.isNullOrEmpty() || textStart >= text.length) return ActorReference.EMPTY
         var indexOfReference = text.indexOf(actorReferenceChar(), textStart)
         var groupType = GroupType.UNKNOWN
         if (groupActorReferenceChar().isPresent()) {
@@ -373,7 +369,7 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
                 groupType = GroupType.GENERIC
             }
         }
-        if (indexOfReference < textStart) return ActorReference.Companion.EMPTY
+        if (indexOfReference < textStart) return ActorReference.EMPTY
         if (indexOfReference == textStart) return ActorReference(textStart + 1, groupType)
         if (Patterns.USERNAME_CHARS.indexOf(text.get(indexOfReference - 1)) < 0) {
             return ActorReference(indexOfReference + 1, groupType)
@@ -398,7 +394,10 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
     }
 
     fun isReferenceChar(c: Char): Boolean {
-        return if (c == actorReferenceChar()) true else groupActorReferenceChar().map(Function { rc: Char? -> rc == c }).orElse(false)
+        return if (c == actorReferenceChar()) true
+        else groupActorReferenceChar()
+                .map { rc: Char? -> rc == c }
+                .orElse(false)
     }
 
     fun actorReferenceChar(): Char {
@@ -420,25 +419,26 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
             return saved
         }
 
-        constructor(myContext: MyContext?, originType: OriginType?) {
+        constructor(myContext: MyContext, originType: OriginType) {
             origin = fromType(myContext, originType)
         }
 
         /**
          * Loading persistent Origin
          */
-        constructor(myContext: MyContext?, cursor: Cursor?) {
-            val originType1: OriginType = OriginType.Companion.fromId(
+        constructor(myContext: MyContext, cursor: Cursor) {
+            val originType1: OriginType = OriginType.fromId(
                     DbUtils.getLong(cursor, OriginTable.ORIGIN_TYPE_ID))
             origin = fromType(myContext, originType1)
             origin.id = DbUtils.getLong(cursor, BaseColumns._ID)
             origin.name = DbUtils.getString(cursor, OriginTable.ORIGIN_NAME)
             setHostOrUrl(DbUtils.getString(cursor, OriginTable.ORIGIN_URL))
             setSsl(DbUtils.getBoolean(cursor, OriginTable.SSL))
-            setSslMode(SslModeEnum.Companion.fromId(DbUtils.getLong(cursor, OriginTable.SSL_MODE)))
+            setSslMode(SslModeEnum.fromId(DbUtils.getLong(cursor, OriginTable.SSL_MODE)))
             origin.allowHtml = DbUtils.getBoolean(cursor, OriginTable.ALLOW_HTML)
             val textLimit = DbUtils.getInt(cursor, OriginTable.TEXT_LIMIT)
-            setTextLimit(if (textLimit > 0) textLimit else if (originType1.textLimitDefault > 0) originType1.textLimitDefault else OriginType.Companion.TEXT_LIMIT_MAXIMUM)
+            setTextLimit(if (textLimit > 0) textLimit else
+                if (originType1.textLimitDefault > 0) originType1.textLimitDefault else TEXT_LIMIT_MAXIMUM)
             origin.setInCombinedGlobalSearch(DbUtils.getBoolean(cursor,
                     OriginTable.IN_COMBINED_GLOBAL_SEARCH))
             origin.setInCombinedPublicReload(DbUtils.getBoolean(cursor,
@@ -449,13 +449,13 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
 
         protected fun setTextLimit(textLimit: Int) {
             if (textLimit <= 0) {
-                origin.textLimit = OriginType.Companion.TEXT_LIMIT_MAXIMUM
+                origin.textLimit = TEXT_LIMIT_MAXIMUM
             } else {
                 origin.textLimit = textLimit
             }
         }
 
-        constructor(original: Origin?) {
+        constructor(original: Origin) {
             origin = fromType(original.myContext, original.originType)
             origin.id = original.id
             origin.name = original.name
@@ -484,12 +484,12 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
         }
 
         private fun correctedName(nameIn: String?): String {
+            if (nameIn.isNullOrEmpty()) return ""
+
             if (origin.isNameValid(nameIn)) {
                 return nameIn
             }
-            return if (nameIn.isNullOrEmpty()) {
-                ""
-            } else DOTS_PATTERN.matcher(
+            return DOTS_PATTERN.matcher(
                     INVALID_NAME_PART_PATTERN.matcher(
                             StringUtils.stripAccents(nameIn.trim { it <= ' ' })
                     ).replaceAll(".")
@@ -497,11 +497,11 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
             // Test with: http://www.regexplanet.com/advanced/java/index.html
         }
 
-        fun setUrl(urlIn: URL?): Builder? {
+        fun setUrl(urlIn: URL?): Builder {
             return if (urlIn == null) this else setHostOrUrl(urlIn.toExternalForm())
         }
 
-        fun setHostOrUrl(hostOrUrl: String?): Builder? {
+        fun setHostOrUrl(hostOrUrl: String?): Builder {
             if (origin.originType.originHasUrl) {
                 var url1 = UrlUtils.buildUrl(hostOrUrl, origin.isSsl())
                 if (url1 != null) {
@@ -514,51 +514,51 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
             return this
         }
 
-        fun setSsl(ssl: Boolean): Builder? {
+        fun setSsl(ssl: Boolean): Builder {
             if (origin.originType.canChangeSsl) {
                 origin.ssl = ssl
-                setUrl(origin.getUrl())
+                setUrl(origin.url)
             }
             return this
         }
 
-        fun setSslMode(mode: SslModeEnum?): Builder? {
+        fun setSslMode(mode: SslModeEnum): Builder {
             origin.sslMode = mode
             return this
         }
 
-        fun setHtmlContentAllowed(allowHtml: Boolean): Builder? {
+        fun setHtmlContentAllowed(allowHtml: Boolean): Builder {
             origin.allowHtml = allowHtml
             return this
         }
 
-        fun setInCombinedGlobalSearch(inCombinedGlobalSearch: Boolean): Builder? {
+        fun setInCombinedGlobalSearch(inCombinedGlobalSearch: Boolean): Builder {
             origin.setInCombinedGlobalSearch(inCombinedGlobalSearch)
             return this
         }
 
-        fun setInCombinedPublicReload(inCombinedPublicReload: Boolean): Builder? {
+        fun setInCombinedPublicReload(inCombinedPublicReload: Boolean): Builder {
             origin.setInCombinedPublicReload(inCombinedPublicReload)
             return this
         }
 
-        fun setMentionAsWebFingerId(mentionAsWebFingerId: TriState?): Builder? {
+        fun setMentionAsWebFingerId(mentionAsWebFingerId: TriState): Builder {
             origin.mMentionAsWebFingerId = mentionAsWebFingerId
             return this
         }
 
-        fun setUseLegacyHttpProtocol(useLegacyHttpProtocol: TriState?): Builder? {
+        fun setUseLegacyHttpProtocol(useLegacyHttpProtocol: TriState): Builder {
             origin.mUseLegacyHttpProtocol = useLegacyHttpProtocol
             return this
         }
 
-        fun save(config: OriginConfig?): Builder? {
+        fun save(config: OriginConfig): Builder {
             setTextLimit(config.textLimit)
             save()
             return this
         }
 
-        fun save(): Builder? {
+        fun save(): Builder {
             saved = false
             origin.isValid = origin.calcIsValid() // TODO: refactor...
             if (!origin.isValid()) {
@@ -567,17 +567,17 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
             }
             if (origin.id == 0L) {
                 val existing = origin.myContext.origins()
-                        .fromName(origin.getName())
-                if (existing.isPersistent) {
+                        .fromName(origin.name)
+                if (existing.isPersistent()) {
                     if (origin.originType !== existing.originType) {
                         MyLog.w(this, "Origin with this name and other type already exists $existing")
                         return this
                     }
-                    origin.id = existing.getId()
+                    origin.id = existing.id
                 }
             }
             val values = ContentValues()
-            values.put(OriginTable.ORIGIN_URL, if (origin.url != null) origin.url.toExternalForm() else "")
+            values.put(OriginTable.ORIGIN_URL, origin.url?.toExternalForm() ?: "")
             values.put(OriginTable.SSL, origin.ssl)
             values.put(OriginTable.SSL_MODE, origin.getSslMode().id)
             values.put(OriginTable.ALLOW_HTML, origin.allowHtml)
@@ -586,12 +586,12 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
             values.put(OriginTable.IN_COMBINED_PUBLIC_RELOAD, origin.inCombinedPublicReload)
             values.put(OriginTable.MENTION_AS_WEBFINGER_ID, origin.mMentionAsWebFingerId.id)
             values.put(OriginTable.USE_LEGACY_HTTP, origin.useLegacyHttpProtocol().id)
-            var changed = false
+            val changed: Boolean
             if (origin.id == 0L) {
                 values.put(OriginTable.ORIGIN_NAME, origin.name)
                 values.put(OriginTable.ORIGIN_TYPE_ID, origin.originType.getId())
                 DbUtils.addRowWithRetry(getMyContext(), OriginTable.TABLE_NAME, values, 3)
-                        .onSuccess { idAdded: Long? -> origin.id = idAdded }
+                        .onSuccess { idAdded: Long -> origin.id = idAdded }
                 changed = origin.isPersistent()
             } else {
                 changed = DbUtils.updateRowWithRetry(getMyContext(), OriginTable.TABLE_NAME, origin.id,
@@ -607,28 +607,27 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
         }
 
         fun delete(): Boolean {
-            var deleted = false
             val sa = SelectionAndArgs()
             sa.addSelection(ActivityTable.TABLE_NAME + "." + ActivityTable.ORIGIN_ID + "=" + origin.id)
-            val deletedActivities: Long = MyProvider.Companion.deleteActivities(getMyContext(),
+            val deletedActivities: Long = MyProvider.deleteActivities(getMyContext(),
                     sa.selection, sa.selectionArgs, false).toLong()
             val deletedActors = MyQuery.getLongs(getMyContext(), "SELECT " + BaseColumns._ID
                     + " FROM " + ActorTable.TABLE_NAME
                     + " WHERE " + ActorTable.ORIGIN_ID + "=" + origin.id).stream()
-                    .mapToLong { actorId: Long? -> MyProvider.Companion.deleteActor(getMyContext(), actorId) }
+                    .mapToLong { actorId: Long -> MyProvider.deleteActor(getMyContext(), actorId) }
                     .sum()
-            deleted = (!origin.hasNotes()
-                    && MyProvider.Companion.delete(getMyContext(), OriginTable.TABLE_NAME, BaseColumns._ID, origin.id) > 0)
+            val deleted = (!origin.hasNotes()
+                    && MyProvider.delete(getMyContext(), OriginTable.TABLE_NAME, BaseColumns._ID, origin.id) > 0)
             if (deleted) {
                 MyLog.i(this, "Deleted Origin " + origin
                         + ", its activities: " + deletedActivities
                         + ", actors: " + deletedActors)
-                getMyContext().setExpired(Supplier { "Origin $origin deleted" })
+                getMyContext().setExpired { "Origin $origin deleted" }
             }
             return deleted
         }
 
-        fun getMyContext(): MyContext? {
+        fun getMyContext(): MyContext {
             return origin.myContext
         }
 
@@ -639,7 +638,7 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
 
     companion object {
         const val TEXT_LIMIT_FOR_WEBFINGER_ID = 200
-        val EMPTY: Origin = fromType(MyContext.Companion.EMPTY, OriginType.UNKNOWN)
+        val EMPTY: Origin = fromType(MyContext.EMPTY, OriginType.UNKNOWN)
         private val VALID_NAME_CHARS: String = "a-zA-Z_0-9/.-"
         private val VALID_NAME_PATTERN = Pattern.compile("[" + VALID_NAME_CHARS + "]+")
         private val INVALID_NAME_PART_PATTERN = Pattern.compile("[^" + VALID_NAME_CHARS + "]+")
@@ -652,8 +651,8 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
             origin.ssl = origin.originType.sslDefault
             origin.allowHtml = origin.originType.allowHtmlDefault
             origin.textLimit = origin.originType.textLimitDefault
-            origin.isInCombinedGlobalSearch = true
-            origin.isInCombinedPublicReload = true
+            origin.setInCombinedGlobalSearch(true)
+            origin.setInCombinedPublicReload(true)
             return origin
         }
     }

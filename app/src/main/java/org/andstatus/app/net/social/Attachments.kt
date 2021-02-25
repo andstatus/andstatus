@@ -28,11 +28,11 @@ import java.util.*
 import java.util.stream.Collectors
 
 class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
-    val list: MutableList<Attachment?>?
+    val list: MutableList<Attachment>
 
     constructor() : this(false) {}
 
-    fun add(attachment: Attachment?): Attachments? {
+    fun add(attachment: Attachment): Attachments {
         if (!attachment.isValid() || list.contains(attachment)) return this
         val attachments = Attachments(false)
         attachments.list.addAll(list)
@@ -42,21 +42,21 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
 
     fun save(execContext: CommandExecutionContext?, noteId: Long) {
         renumber()
-        val downloads: MutableList<DownloadData?> = ArrayList()
+        val downloads: MutableList<DownloadData> = ArrayList()
         for (attachment in list) {
             val dd: DownloadData = DownloadData.Companion.fromAttachment(noteId, attachment)
-            dd.downloadNumber = attachment.getDownloadNumber()
+            dd.setDownloadNumber(attachment.getDownloadNumber())
             if (attachment.previewOf.nonEmpty()) {
-                dd.previewOfDownloadId = downloads.stream().filter { d: DownloadData? -> d.getUri() == attachment.previewOf.uri }.findAny()
-                        .map { obj: DownloadData? -> obj.getDownloadId() }.orElse(0L)
+                dd.setPreviewOfDownloadId( downloads.stream().filter { d: DownloadData -> d.getUri() == attachment.previewOf.uri }.findAny()
+                        .map { obj: DownloadData -> obj.getDownloadId() }.orElse(0L))
             }
             dd.saveToDatabase()
             downloads.add(dd)
-            when (dd.status) {
+            when (dd.getStatus()) {
                 DownloadStatus.LOADED, DownloadStatus.HARD_ERROR -> {
                 }
-                else -> if (UriUtils.isDownloadable(dd.uri)) {
-                    if (attachment.contentType.downloadMediaOfThisType) {
+                else -> if (UriUtils.isDownloadable(dd.getUri())) {
+                    if (attachment.contentType.getDownloadMediaOfThisType()) {
                         dd.requestDownload(execContext.myContext)
                     }
                 } else {
@@ -109,27 +109,29 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
     }
 
     companion object {
-        val EMPTY: Attachments? = Attachments(true)
-        fun load(myContext: MyContext?, noteId: Long): Attachments? {
+        val EMPTY: Attachments = Attachments(true)
+
+        fun load(myContext: MyContext, noteId: Long): Attachments {
             if (myContext.isEmptyOrExpired() || noteId == 0L) return EMPTY
-            val downloads: NoteDownloads = NoteDownloads.Companion.fromNoteId(myContext, noteId)
-            if (downloads.isEmpty) return EMPTY
-            val map: MutableMap<Long?, Attachment?> = HashMap()
+            val downloads: NoteDownloads = NoteDownloads.fromNoteId(myContext, noteId)
+            if (downloads.isEmpty()) return EMPTY
+            val map: MutableMap<Long, Attachment> = HashMap()
             for (downloadData in downloads.list) {
-                map[downloadData.downloadId] = Attachment(downloadData)
+                map[downloadData.getDownloadId()] = Attachment(downloadData)
             }
-            var attachments: Attachments? = Attachments()
+            var attachments: Attachments = Attachments()
             for (downloadData in downloads.list) {
-                val attachment = map[downloadData.downloadId]
-                if (downloadData.previewOfDownloadId != 0L) {
-                    val target = map[downloadData.previewOfDownloadId]
-                    if (target == null) {
-                        MyLog.i(downloadData, "Couldn't find target of preview $downloadData")
-                    } else {
-                        attachment.setPreviewOf(target)
+                map[downloadData.getDownloadId()]?.let { attachment ->
+                    if (downloadData.getPreviewOfDownloadId() != 0L) {
+                        val target = map[downloadData.getPreviewOfDownloadId()]
+                        if (target == null) {
+                            MyLog.i(downloadData, "Couldn't find target of preview $downloadData")
+                        } else {
+                            attachment.setPreviewOf(target)
+                        }
                     }
+                    attachments = attachments.add(attachment)
                 }
-                attachments = attachments.add(attachment)
             }
             return attachments
         }

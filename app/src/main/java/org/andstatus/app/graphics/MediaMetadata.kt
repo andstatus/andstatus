@@ -23,6 +23,7 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.data.MyContentType
 import org.andstatus.app.database.table.DownloadTable
 import org.andstatus.app.util.IsEmpty
@@ -33,7 +34,7 @@ import org.apache.commons.lang3.time.DurationFormatUtils
 import java.util.concurrent.TimeUnit
 
 class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmpty, TaggedClass {
-    fun size(): Point? {
+    fun size(): Point {
         return Point(width, height)
     }
 
@@ -41,7 +42,7 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
         return width <= 0 || height <= 0
     }
 
-    fun toContentValues(values: ContentValues?) {
+    fun toContentValues(values: ContentValues) {
         values.put(DownloadTable.WIDTH, width)
         values.put(DownloadTable.HEIGHT, height)
         values.put(DownloadTable.DURATION, duration)
@@ -52,11 +53,13 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
         if (width > 0) builder.append("width:$width,")
         if (height > 0) builder.append("height:$height,")
         if (duration > 0) builder.append("duration:$height,")
-        return MyStringBuilder.Companion.formatKeyValue(this, builder.toString())
+        return MyStringBuilder.formatKeyValue(this, builder.toString())
     }
 
-    fun toDetails(): String? {
-        return if (nonEmpty()) width.toString() + "x" + height + (if (duration == 0L) "" else " " + formatDuration()) else ""
+    fun toDetails(): String {
+        return if (nonEmpty()) width.toString() + "x" + height +
+                (if (duration == 0L) "" else " " + formatDuration())
+        else ""
     }
 
     fun formatDuration(): String {
@@ -65,21 +68,23 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
         )
     }
 
-    override fun classTag(): String? {
+    override fun classTag(): String {
         return TAG
     }
 
     companion object {
-        private val TAG: String? = MediaMetadata::class.java.simpleName
-        val EMPTY: MediaMetadata? = MediaMetadata(0, 0, 0)
+        private val TAG: String = MediaMetadata::class.java.simpleName
+        val EMPTY: MediaMetadata = MediaMetadata(0, 0, 0)
         fun fromFilePath(path: String?): MediaMetadata {
             try {
-                if (MyContentType.Companion.fromPathOfSavedFile(path) == MyContentType.VIDEO) {
+                if (MyContentType.fromPathOfSavedFile(path) == MyContentType.VIDEO) {
                     var retriever: MediaMetadataRetriever? = null
                     return try {
                         retriever = MediaMetadataRetriever()
                         retriever.setDataSource( MyContextHolder.myContextHolder.getNow().context(), Uri.parse(path))
-                        MediaMetadata(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH).toInt(), retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT).toInt(), retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong())
+                        MediaMetadata(retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH).toInt(),
+                                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT).toInt(),
+                                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong())
                     } finally {
                         closeSilently(retriever)
                     }

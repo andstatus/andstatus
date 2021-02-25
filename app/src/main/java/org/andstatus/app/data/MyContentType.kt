@@ -23,14 +23,14 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.UriUtils
 
 enum class MyContentType(// See https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types
-        val generalMimeType: String?, private val code: Long, val attachmentsSortOrder: Int) {
+        val generalMimeType: String, private val code: Long, val attachmentsSortOrder: Int) {
     IMAGE("image/*", 2, 1), ANIMATED_IMAGE("image/*", 6, 2), VIDEO("video/*", 4, 3), TEXT("text/*", 3, 4), APPLICATION("application/*", 5, 5), UNKNOWN("*/*", 0, 6);
 
     fun isImage(): Boolean {
         return this == IMAGE || this == ANIMATED_IMAGE
     }
 
-    fun save(): String? {
+    fun save(): String {
         return java.lang.Long.toString(code)
     }
 
@@ -43,19 +43,19 @@ enum class MyContentType(// See https://developer.mozilla.org/en-US/docs/Web/HTT
     }
 
     companion object {
-        private val TAG: String? = MyContentType::class.java.simpleName
-        val APPLICATION_JSON: String? = "application/json"
+        private val TAG: String = MyContentType::class.java.simpleName
+        val APPLICATION_JSON: String = "application/json"
         fun fromPathOfSavedFile(mediaFilePath: String?): MyContentType {
             return if (mediaFilePath.isNullOrEmpty()) UNKNOWN else fromUri(DownloadType.UNKNOWN, null, Uri.parse(mediaFilePath), UNKNOWN.generalMimeType)
         }
 
-        fun fromUri(downloadType: DownloadType?, contentResolver: ContentResolver?, uri: Uri?,
-                    defaultMimeType: String?): MyContentType? {
+        fun fromUri(downloadType: DownloadType?, contentResolver: ContentResolver?, uri: Uri,
+                    defaultMimeType: String): MyContentType {
             val myContentType = fromMimeType(uri2MimeType(contentResolver, uri, defaultMimeType))
             return if (myContentType == ANIMATED_IMAGE || downloadType != DownloadType.AVATAR) myContentType else IMAGE
         }
 
-        private fun fromMimeType(mimeType: String?): MyContentType? {
+        private fun fromMimeType(mimeType: String): MyContentType {
             return if (mimeType.startsWith("image")) {
                 if (mimeType.endsWith("/gif") || mimeType.endsWith("/apng")) {
                     ANIMATED_IMAGE
@@ -74,14 +74,14 @@ enum class MyContentType(// See https://developer.mozilla.org/en-US/docs/Web/HTT
         /** Returns the enum or UNKNOWN  */
         fun load(strCode: String?): MyContentType {
             try {
-                return load(strCode.toLong())
+                return load(strCode?.toLong() ?: 0)
             } catch (e: NumberFormatException) {
                 MyLog.v(TAG, "Error converting '$strCode'", e)
             }
             return UNKNOWN
         }
 
-        fun load(code: Long): MyContentType? {
+        fun load(code: Long): MyContentType {
             for (`val` in values()) {
                 if (`val`.code == code) {
                     return `val`
@@ -91,16 +91,16 @@ enum class MyContentType(// See https://developer.mozilla.org/en-US/docs/Web/HTT
         }
 
         @JvmOverloads
-        fun uri2MimeType(contentResolver: ContentResolver?, uri: Uri?, defaultValue: String? = ""): String {
+        fun uri2MimeType(contentResolver: ContentResolver?, uri: Uri, defaultValue: String = ""): String {
             if (UriUtils.isEmpty(uri)) return getDefaultValue(defaultValue)
             if (contentResolver != null) {
                 val mimeType = contentResolver.getType(uri)
-                if (!isEmptyMime(mimeType)) return mimeType
+                if (mimeType != null && !isEmptyMime(mimeType)) return mimeType
             }
             return path2MimeType(uri.getPath(), getDefaultValue(defaultValue))
         }
 
-        private fun getDefaultValue(defaultValue: String?): String? {
+        private fun getDefaultValue(defaultValue: String?): String {
             return if (defaultValue.isNullOrEmpty()) UNKNOWN.generalMimeType else defaultValue
         }
 
@@ -126,13 +126,13 @@ enum class MyContentType(// See https://developer.mozilla.org/en-US/docs/Web/HTT
                 clarifyType = true
             }
             var mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(fileExtension)
-            if (clarifyType && !isEmptyMime(mimeType) && !isEmptyMime(defaultValue)) {
+            if (clarifyType && mimeType != null && !isEmptyMime(mimeType) && !isEmptyMime(defaultValue)) {
                 val indSlash = defaultValue.indexOf("/")
                 if (indSlash >= 0 && !mimeType.startsWith(defaultValue.substring(0, indSlash + 1))) {
                     mimeType = ""
                 }
             }
-            return if (isEmptyMime(mimeType)) defaultValue else mimeType
+            return if (mimeType == null || isEmptyMime(mimeType)) defaultValue else mimeType
         }
     }
 }
