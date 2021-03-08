@@ -139,16 +139,16 @@ class ActorViewItem private constructor(val actor: Actor, isEmpty: Boolean) : Vi
 
     companion object {
         val EMPTY: ActorViewItem = ActorViewItem(Actor.Companion.EMPTY, true)
-        fun newEmpty(description: String?): ActorViewItem? {
+        fun newEmpty(description: String?): ActorViewItem {
             val actor: Actor = if (description.isNullOrEmpty()) Actor.Companion.EMPTY else Actor.Companion.newUnknown( Origin.EMPTY, GroupType.UNKNOWN).setSummary(description)
             return fromActor(actor)
         }
 
-        fun fromActorId(origin: Origin?, actorId: Long): ActorViewItem? {
+        fun fromActorId(origin: Origin, actorId: Long): ActorViewItem {
             return if (actorId == 0L) EMPTY else fromActor(Actor.Companion.fromId(origin, actorId))
         }
 
-        fun fromActor(actor: Actor): ActorViewItem? {
+        fun fromActor(actor: Actor): ActorViewItem {
             return if (actor.isEmpty) EMPTY else ActorViewItem(actor, false)
         }
     }

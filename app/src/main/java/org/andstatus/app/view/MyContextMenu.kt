@@ -85,7 +85,7 @@ open class MyContextMenu(protected val listActivity: LoadableListActivity<*>, va
         selectedActingAccount = myAccount
     }
 
-    fun getMyContext(): MyContext? {
+    fun getMyContext(): MyContext {
         return getActivity().getMyContext()
     }
 

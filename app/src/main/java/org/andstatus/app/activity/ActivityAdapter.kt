@@ -31,7 +31,8 @@ import org.andstatus.app.util.MyUrlSpan
 /**
  * @author yvolk@yurivolkov.com
  */
-class ActivityAdapter(private val contextMenu: ActivityContextMenu?, listData: TimelineData<ActivityViewItem?>?) : BaseTimelineAdapter<ActivityViewItem?>(contextMenu.note.myContext, listData) {
+class ActivityAdapter(private val contextMenu: ActivityContextMenu, listData: TimelineData<ActivityViewItem?>?) :
+        BaseTimelineAdapter<ActivityViewItem?>(contextMenu.note.getMyContext(), listData) {
     private val actorAdapter: ActorAdapter?
     private val noteAdapter: NoteAdapter?
     private val objActorAdapter: ActorAdapter?

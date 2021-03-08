@@ -39,24 +39,24 @@ class ManageAccountsActivity : MyActivity() {
     override fun onResume() {
         super.onResume()
         if ( MyContextHolder.myContextHolder.needToRestartActivity()) {
-            FirstActivity.Companion.closeAllActivities(this)
+            FirstActivity.closeAllActivities(this)
              MyContextHolder.myContextHolder.initialize(this).thenStartActivity(intent)
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        return when (item.getItemId()) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
             android.R.id.home -> {
-                MySettingsActivity.Companion.goToMySettingsAccounts(this)
+                MySettingsActivity.goToMySettingsAccounts(this)
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            MySettingsActivity.Companion.goToMySettingsAccounts(this)
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.repeatCount == 0) {
+            MySettingsActivity.goToMySettingsAccounts(this)
             return true
         }
         return super.onKeyDown(keyCode, event)

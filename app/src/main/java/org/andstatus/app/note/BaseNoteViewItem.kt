@@ -83,7 +83,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
     val attachmentsCount: Long
     val attachedImageFiles: AttachedImageFiles?
     private var linkedMyAccount: MyAccount? = MyAccount.EMPTY
-    val detailsSuffix: StringBuilder? = StringBuilder()
+    val detailsSuffix: StringBuilder = StringBuilder()
 
     protected constructor(isEmpty: Boolean, updatedDate: Long) : super(isEmpty, updatedDate) {
         attachmentsCount = 0
@@ -174,7 +174,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
         }
     }
 
-    override fun duplicates(timeline: Timeline?, preferredOrigin: Origin?, other: T): DuplicationLink {
+    override fun duplicates(timeline: Timeline, preferredOrigin: Origin, other: T): DuplicationLink {
         if (isEmpty || other.isEmpty) return DuplicationLink.NONE
         return if (getNoteId() == other.getNoteId()) duplicatesByFavoritedAndReblogged(preferredOrigin, other) else duplicatesByOther(preferredOrigin, other)
     }

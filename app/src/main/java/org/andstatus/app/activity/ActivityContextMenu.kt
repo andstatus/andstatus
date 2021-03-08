@@ -23,14 +23,15 @@ import org.andstatus.app.note.NoteContextMenuContainer
 import org.andstatus.app.view.MyContextMenu
 
 class ActivityContextMenu(container: NoteContextMenuContainer?) {
-    val actor: ActorOfActivityContextMenu?
-    val note: NoteContextMenu?
-    val objActor: ActorContextMenu?
-    fun onContextItemSelected(item: MenuItem?) {
+    val actor: ActorOfActivityContextMenu = ActorOfActivityContextMenu(container)
+    val note: NoteContextMenu = NoteContextMenu(container)
+    val objActor: ActorContextMenu = ActorContextMenu(container, MyContextMenu.MENU_GROUP_OBJACTOR)
+
+    fun onContextItemSelected(item: MenuItem) {
         when (item.getGroupId()) {
-            MyContextMenu.Companion.MENU_GROUP_ACTOR -> actor.onContextItemSelected(item)
-            MyContextMenu.Companion.MENU_GROUP_NOTE -> note.onContextItemSelected(item)
-            MyContextMenu.Companion.MENU_GROUP_OBJACTOR -> objActor.onContextItemSelected(item)
+            MyContextMenu.MENU_GROUP_ACTOR -> actor.onContextItemSelected(item)
+            MyContextMenu.MENU_GROUP_NOTE -> note.onContextItemSelected(item)
+            MyContextMenu.MENU_GROUP_OBJACTOR -> objActor.onContextItemSelected(item)
             else -> {
             }
         }
@@ -40,9 +41,4 @@ class ActivityContextMenu(container: NoteContextMenuContainer?) {
         note.saveState(outState)
     }
 
-    init {
-        actor = ActorOfActivityContextMenu(container)
-        note = NoteContextMenu(container)
-        objActor = ActorContextMenu(container, MyContextMenu.Companion.MENU_GROUP_OBJACTOR)
-    }
 }

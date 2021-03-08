@@ -423,7 +423,7 @@ abstract class Connection protected constructor() : IsEmpty {
     }
 
     fun partialPathToApiPath(partialPath: String?): String {
-        return http.data.accountName.getOrigin().originType.partialPathToApiPath(partialPath)
+        return http.data.accountName.origin.originType.partialPathToApiPath(partialPath)
     }
 
     override fun toString(): String {

@@ -37,15 +37,15 @@ import org.andstatus.app.util.RelativeTime
 /** View on ActivityStream
  * @author yvolk@yurivolkov.com
  */
-class ActivityViewItem : ViewItem<ActivityViewItem?>, Comparable<ActivityViewItem?> {
+class ActivityViewItem : ViewItem<ActivityViewItem>, Comparable<ActivityViewItem> {
     private var id: Long = 0
     val origin: Origin?
     val activityType: ActivityType?
     private var noteId: Long = 0
     val objActorId: Long
-    var actor: ActorViewItem? = ActorViewItem.Companion.EMPTY
-    val noteViewItem: NoteViewItem?
-    private var objActorItem: ActorViewItem? = ActorViewItem.Companion.EMPTY
+    private var actor: ActorViewItem = ActorViewItem.EMPTY
+    val noteViewItem: NoteViewItem
+    private var objActorItem: ActorViewItem = ActorViewItem.EMPTY
 
     protected constructor(isEmpty: Boolean) : super(isEmpty, RelativeTime.DATETIME_MILLIS_NEVER) {
         origin =  Origin.EMPTY
@@ -54,7 +54,8 @@ class ActivityViewItem : ViewItem<ActivityViewItem?>, Comparable<ActivityViewIte
         noteViewItem = NoteViewItem.Companion.EMPTY
     }
 
-    protected constructor(myContext: MyContext?, cursor: Cursor?) : super(false, DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE)) {
+    protected constructor(myContext: MyContext, cursor: Cursor?) :
+            super(false, DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE)) {
         id = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID)
         origin = myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID))
         activityType = ActivityType.Companion.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE))
@@ -84,15 +85,15 @@ class ActivityViewItem : ViewItem<ActivityViewItem?>, Comparable<ActivityViewIte
         return updatedDate
     }
 
-    override operator fun compareTo(o: ActivityViewItem): Int {
-        return java.lang.Long.compare(updatedDate, o.updatedDate)
+    override operator fun compareTo(other: ActivityViewItem): Int {
+        return java.lang.Long.compare(updatedDate, other.updatedDate ?: 0)
     }
 
-    override fun fromCursor(myContext: MyContext?, cursor: Cursor?): ActivityViewItem {
+    override fun fromCursor(myContext: MyContext, cursor: Cursor?): ActivityViewItem {
         return ActivityViewItem(myContext, cursor)
     }
 
-    override fun matches(filter: TimelineFilter?): Boolean {
+    override fun matches(filter: TimelineFilter): Boolean {
         if (noteId != 0L) {
             return noteViewItem.matches(filter)
         } else if (objActorId != 0L) {
@@ -111,7 +112,7 @@ class ActivityViewItem : ViewItem<ActivityViewItem?>, Comparable<ActivityViewIte
         return if (updatedDate > other.updatedDate) DuplicationLink.IS_DUPLICATED else if (updatedDate < other.updatedDate) DuplicationLink.DUPLICATES else link
     }
 
-    protected fun duplicatesByChildren(timeline: Timeline?, preferredOrigin: Origin?, other: ActivityViewItem): DuplicationLink {
+    protected fun duplicatesByChildren(timeline: Timeline, preferredOrigin: Origin, other: ActivityViewItem): DuplicationLink {
         if (noteId != 0L) {
             return noteViewItem.duplicates(timeline, preferredOrigin, other.noteViewItem)
         } else if (objActorId != 0L) {

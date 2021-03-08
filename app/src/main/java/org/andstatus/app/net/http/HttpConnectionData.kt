@@ -46,7 +46,7 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
     }
 
     fun areOAuthClientKeysPresent(): Boolean {
-        return oauthClientKeys != null && oauthClientKeys.areKeysPresent()
+        return oauthClientKeys?.areKeysPresent() == true
     }
 
     override fun toString(): String {
@@ -59,32 +59,34 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
                 + dataReader + ", oauthClientKeys:" + oauthClientKeys + "}")
     }
 
-    fun getOriginType(): OriginType? {
-        return accountName.getOrigin().originType
+    fun getOriginType(): OriginType {
+        return accountName.origin.originType
     }
 
-    fun getBasicPath(): String? {
+    fun getBasicPath(): String {
         return getOriginType().getBasicPath()
     }
 
-    fun getOauthPath(): String? {
+    fun getOauthPath(): String {
         return getOriginType().getOauthPath()
     }
 
     fun isSsl(): Boolean {
-        return accountName.getOrigin().isSsl
+        return accountName.origin.isSsl()
     }
 
-    fun getUseLegacyHttpProtocol(): TriState? {
-        return accountName.getOrigin().useLegacyHttpProtocol()
+    fun getUseLegacyHttpProtocol(): TriState {
+        return accountName.origin.useLegacyHttpProtocol()
     }
 
-    fun getSslMode(): SslModeEnum? {
-        return accountName.getOrigin().sslMode
+    fun getSslMode(): SslModeEnum {
+        return accountName.origin.getSslMode()
     }
 
-    fun jsonContentType(apiRoutine: ApiRoutineEnum?): String? {
-        return if (apiRoutine.isOriginApi()) getOriginType().getContentType().orElse(MyContentType.Companion.APPLICATION_JSON) else MyContentType.Companion.APPLICATION_JSON
+    fun jsonContentType(apiRoutine: ApiRoutineEnum): String {
+        return if (apiRoutine.isOriginApi()) getOriginType().getContentType()
+                .orElse(MyContentType.APPLICATION_JSON)
+        else MyContentType.APPLICATION_JSON
     }
 
     fun optOriginContentType(): Optional<String> {
@@ -96,8 +98,8 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
     }
 
     companion object {
-        val EMPTY: HttpConnectionData = HttpConnectionData(AccountName.Companion.getEmpty())
-        fun fromAccountConnectionData(accountnData: AccountConnectionData?): HttpConnectionData {
+        val EMPTY: HttpConnectionData = HttpConnectionData(AccountName.getEmpty())
+        fun fromAccountConnectionData(accountnData: AccountConnectionData): HttpConnectionData {
             val data = HttpConnectionData(accountnData.getAccountName())
             data.originUrl = accountnData.getOriginUrl()
             data.urlForUserToken = accountnData.getOriginUrl()

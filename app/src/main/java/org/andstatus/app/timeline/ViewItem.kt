@@ -29,7 +29,7 @@ import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.StringUtil
 import java.util.*
 
-open class ViewItem<T : ViewItem<T>> protected constructor(private val isEmpty: Boolean, val updatedDate: Long) : IsEmpty {
+open class ViewItem<T : ViewItem<T>> protected constructor(private val isEmptyIn: Boolean, val updatedDate: Long) : IsEmpty {
     private val children: MutableList<T> = ArrayList()
     private var parent: ViewItem<*>? = EmptyViewItem.EMPTY
     protected var insertedDate: Long = 0
@@ -45,7 +45,7 @@ open class ViewItem<T : ViewItem<T>> protected constructor(private val isEmpty: 
         return children
     }
 
-    open fun duplicates(timeline: Timeline?, preferredOrigin: Origin?, other: T): DuplicationLink {
+    open fun duplicates(timeline: Timeline, preferredOrigin: Origin, other: T): DuplicationLink {
         return DuplicationLink.NONE
     }
 
@@ -59,17 +59,17 @@ open class ViewItem<T : ViewItem<T>> protected constructor(private val isEmpty: 
         getChildren().add(child)
     }
 
-    open fun fromCursor(myContext: MyContext?, cursor: Cursor?): T {
+    open fun fromCursor(myContext: MyContext, cursor: Cursor?): T {
         return getEmpty(TimelineType.UNKNOWN)
     }
 
-    open fun matches(filter: TimelineFilter?): Boolean {
+    open fun matches(filter: TimelineFilter): Boolean {
         return true
     }
 
     override val isEmpty: Boolean
         get() {
-            return isEmpty
+            return isEmptyIn
         }
 
     protected fun getChildrenCount(): Int {
