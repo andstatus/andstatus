@@ -412,11 +412,11 @@ class CommandData private constructor(
         }
 
         fun newAccountCommand(command: CommandEnum?, myAccount: MyAccount): CommandData {
-            return CommandData(0, command, myAccount, CommandTimeline.Companion.of(Timeline.Companion.EMPTY), 0)
+            return CommandData(0, command, myAccount, CommandTimeline.Companion.of(Timeline.EMPTY), 0)
         }
 
         fun newOriginCommand(command: CommandEnum?, origin: Origin): CommandData {
-            return newTimelineCommand(command, if (origin.isEmpty) Timeline.Companion.EMPTY else  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.Companion.EMPTY, origin))
+            return newTimelineCommand(command, if (origin.isEmpty) Timeline.EMPTY else  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.Companion.EMPTY, origin))
         }
 
         fun newTimelineCommand(command: CommandEnum?, myAccount: MyAccount,

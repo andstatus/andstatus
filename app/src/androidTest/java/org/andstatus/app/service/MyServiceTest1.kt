@@ -859,7 +859,7 @@ class MyServiceTest1 : MyServiceTest() {
         MyLog.i(this, "$method started")
         mService.setListenedCommand(CommandData.Companion.newAccountCommand(
                 CommandEnum.RATE_LIMIT_STATUS,
-                DemoData.Companion.demoData.getGnuSocialAccount()))
+                DemoData.demoData.getGnuSocialAccount()))
         val startCount = mService.executionStartCount
         val endCount = mService.executionEndCount
         mService.sendListenedCommand()
@@ -878,7 +878,7 @@ class MyServiceTest1 : MyServiceTest() {
         MyLog.i(this, "$method started")
         mService.setListenedCommand(CommandData.Companion.newAccountCommand(
                 CommandEnum.RATE_LIMIT_STATUS,
-                DemoData.Companion.demoData.getGnuSocialAccount()))
+                DemoData.demoData.getGnuSocialAccount()))
         mService.http.setRuntimeException(SQLiteDiskIOException(method))
         val startCount = mService.executionStartCount
         mService.sendListenedCommand()

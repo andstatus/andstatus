@@ -35,8 +35,8 @@ class AccountNameTest {
     @Test
     fun preserveInputValues() {
         assertForOneOrigin( Origin.EMPTY)
-        assertForOneOrigin(DemoData.Companion.demoData.getPumpioConversationOrigin())
-        assertForOneOrigin(DemoData.Companion.demoData.getGnuSocialOrigin())
+        assertForOneOrigin(DemoData.demoData.getPumpioConversationOrigin())
+        assertForOneOrigin(DemoData.demoData.getGnuSocialOrigin())
     }
 
     fun assertForOneOrigin(origin: Origin?) {

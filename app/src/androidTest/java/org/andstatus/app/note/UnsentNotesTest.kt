@@ -799,7 +799,7 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem?>() {
     override fun getActivityIntent(): Intent? {
         TestSuite.initializeWithAccounts(this)
         mService.setUp(null)
-        val ma: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
+        val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         Assert.assertTrue(ma.isValid)
          MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
         return Intent(Intent.ACTION_VIEW,
@@ -818,7 +818,7 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem?>() {
         var step = "Start editing a note"
         MyLog.v(this, "$method started")
         val editorView: View = ActivityTestHelper.Companion.openEditor<ActivityViewItem?>("$method; $step", activity)
-        val suffix = "unsent" + DemoData.Companion.demoData.testRunUid
+        val suffix = "unsent" + DemoData.demoData.testRunUid
         val body = "Test unsent note, which we will try to edit $suffix"
         TestSuite.waitForIdleSync()
         Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(body))

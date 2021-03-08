@@ -41,7 +41,7 @@ class SpanUtilTest {
 
     @Test
     fun linkifyPlainText() {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         val audience = Audience(ma.origin)
         audience.add(ma.actor)
         val uniqueName2 = "second@identi.ca"
@@ -59,7 +59,7 @@ class SpanUtilTest {
 
     @Test
     fun linkifyHtml() {
-        val ma: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
+        val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         val audience = Audience(ma.origin)
         addRecipient(ma, audience, "johnsmith", "232380")
         val username2 = ma.username
@@ -116,7 +116,7 @@ class SpanUtilTest {
         val urlSpan = region.urlSpan
         Assert.assertEquals("Region $index should be a hashtag $region\n$message", hashTag,
                 urlSpan.flatMap { u: MyUrlSpan? -> u.data.searchQuery }.orElse(""))
-        val timeline = urlSpan.map { u: MyUrlSpan? -> u.data.timeline }.orElse(Timeline.Companion.EMPTY)
+        val timeline = urlSpan.map { u: MyUrlSpan? -> u.data.timeline }.orElse(Timeline.EMPTY)
         Assert.assertEquals(message, hashTag, timeline.searchQuery)
         val onClickUrl = urlSpan.map { obj: MyUrlSpan? -> obj.getURL() }.orElse("")
         Assert.assertEquals(message, url, onClickUrl)
@@ -176,7 +176,7 @@ class SpanUtilTest {
 
     @Test
     fun urlWithFragment() {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.mastodonTestAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val audience = Audience(ma.origin)
         addRecipient(ma, audience, "niPos", "526703")
         addRecipient(ma, audience, "er1n", "181388")
@@ -237,7 +237,7 @@ class SpanUtilTest {
 
     @Test
     fun startingWithMention() {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.mastodonTestAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val audience = Audience(ma.origin)
         addRecipient(ma, audience, "AndStatus", "5962")
         addRecipient(ma, audience, "qwertystop", "329431")
@@ -265,7 +265,7 @@ class SpanUtilTest {
     }
 
     private fun addRecipient(ma: MyAccount?, audience: Audience?, uniqueName: String?, actorOid: String?) {
-        val actor1: Actor = Actor.Companion.fromOid(ma.getOrigin(), actorOid)
+        val actor1: Actor = Actor.Companion.fromOid(ma.origin, actorOid)
         actor1.withUniqueName(uniqueName)
         audience.add(actor1)
     }

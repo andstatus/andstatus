@@ -812,7 +812,7 @@ import org.andstatus.app.MenuItemMock
 
     private fun insertNote(): DownloadData? {
         val body = "Large image attachment"
-        val ma: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
+        val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         val inserter = DemoNoteInserter(ma)
         val activity = inserter.buildActivity(inserter.buildActor(), "", body, null, null,
                 DownloadStatus.LOADED)
@@ -824,7 +824,7 @@ import org.andstatus.app.MenuItemMock
         val commandData: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR,
                 Actor.Companion.fromId(ma.origin, 34234), "")
         val loader = AttachmentDownloader(ma.origin.myContext, dd)
-        val connMock: ConnectionMock = ConnectionMock.Companion.newFor(DemoData.Companion.demoData.gnusocialTestAccountName)
+        val connMock: ConnectionMock = ConnectionMock.Companion.newFor(DemoData.demoData.gnusocialTestAccountName)
         connMock.httpMock.setResponseStreamSupplier { o: Void? ->
             InstrumentationRegistry.getInstrumentation().context.resources
                     .openRawResource(org.andstatus.app.tests.R.raw.large_image)
@@ -835,7 +835,7 @@ import org.andstatus.app.MenuItemMock
         val data: DownloadData = DownloadData.Companion.fromId(dd.downloadId)
         Assert.assertFalse("Loaded " + data.uri, commandData.result.hasError())
         Assert.assertTrue("File exists " + data.uri, data.file.existed)
-        DemoData.Companion.demoData.assertConversations()
+        DemoData.demoData.assertConversations()
         return data
     }
 

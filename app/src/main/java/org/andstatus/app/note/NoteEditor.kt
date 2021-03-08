@@ -326,11 +326,11 @@ class NoteEditor(private val editorContainer: NoteEditorContainer?) {
         MyLog.v(NoteEditorData.Companion.TAG) { "startEditingSharedData " + shared.toString() }
         updateDataFromScreen()
         val contentWithName: MyStringBuilder = MyStringBuilder.Companion.of(shared.content)
-        if (!ma.getOrigin().originType.hasNoteName && subjectHasAdditionalContent(shared.name, shared.content)) {
+        if (!ma.origin.originType.hasNoteName && subjectHasAdditionalContent(shared.name, shared.content)) {
             shared.name.ifPresent { name: String? -> contentWithName.prependWithSeparator(name, if (shared.textMediaType == TextMediaType.HTML) "<br/>" else "\n") }
         }
         val currentData: NoteEditorData = NoteEditorData.Companion.newEmpty(ma).setContent(contentWithName.toString(), shared.textMediaType)
-        if (ma.getOrigin().originType.hasNoteName) {
+        if (ma.origin.originType.hasNoteName) {
             shared.name.ifPresent { name: String? -> currentData.setName(name) }
         }
         val command = NoteEditorCommand(currentData, editorData)

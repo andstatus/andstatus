@@ -38,7 +38,7 @@ class ParsedUriTest {
 
     @Test
     fun testActorsScreen() {
-        assertOneActorsScreen(DemoData.Companion.demoData.getPumpioConversationOrigin().getId())
+        assertOneActorsScreen(DemoData.demoData.getPumpioConversationOrigin().getId())
         assertOneActorsScreen(0)
     }
 

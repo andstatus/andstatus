@@ -487,7 +487,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     override fun toString(): String {
         val builder = MyStringBuilder()
         if (timelineType.isAtOrigin()) {
-            builder.withComma(if (origin.isValid()) origin.getName() else "(all origins)")
+            builder.withComma(if (origin.isValid()) origin.name else "(all origins)")
         }
         if (timelineType.isForUser()) {
             if (actor.isEmpty) {
@@ -495,7 +495,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
             } else if (myAccountToSync.isValid) {
                 builder.withComma(myAccountToSync.getAccountName())
                 if (myAccountToSync.getOrigin() != origin && origin.isValid()) {
-                    builder.withComma("origin", origin.getName())
+                    builder.withComma("origin", origin.name)
                 }
             } else {
                 builder.withComma(actor.user.toString())
@@ -744,7 +744,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     }
 
     fun cloneForAccount(myContext: MyContext?, ma: MyAccount?): Timeline? {
-        return myContext.timelines().get(0, getTimelineType(), ma.getActor(),  Origin.EMPTY, getSearchQuery())
+        return myContext.timelines().get(0, getTimelineType(), ma.actor,  Origin.EMPTY, getSearchQuery())
     }
 
     fun cloneForOrigin(myContext: MyContext?, origin: Origin?): Timeline? {
@@ -782,7 +782,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     private fun isSyncedSimultaneously(timeline: Timeline?): Boolean {
         return (this != timeline
                 && !timeline.isCombined
-                && getTimelineType().getConnectionApiRoutine() == timeline.getTimelineType().getConnectionApiRoutine() && searchQuery == timeline.searchQuery && myAccountToSync == timeline.myAccountToSync && actor == timeline.actor && origin == timeline.origin)
+                && getTimelineType().getConnectionApiRoutine() == timeline.timelineType.getConnectionApiRoutine() && searchQuery == timeline.searchQuery && myAccountToSync == timeline.myAccountToSync && actor == timeline.actor && origin == timeline.origin)
     }
 
     private fun onSyncEnded(result: CommandResult?): Timeline? {

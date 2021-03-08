@@ -66,8 +66,8 @@ class ManageTimelinesContextMenu(listActivity: LoadableListActivity<*>?) : MyCon
 
     fun getViewItem(): ManageTimelinesViewItem? {
         return if (mViewItem.isEmpty) {
-            ManageTimelinesViewItem(listActivity.myContext, Timeline.Companion.EMPTY,
-                    MyAccount.Companion.EMPTY, false)
+            ManageTimelinesViewItem(listActivity.myContext, Timeline.EMPTY,
+                    MyAccount.EMPTY, false)
         } else mViewItem as ManageTimelinesViewItem
     }
 }

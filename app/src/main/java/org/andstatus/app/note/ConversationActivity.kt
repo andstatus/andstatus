@@ -185,7 +185,7 @@ class ConversationActivity : NoteEditorListActivity<Any?>(), NoteContextMenuCont
         mSubtitle = ""
         val title = StringBuilder(getText(R.string.label_conversation))
         MyStringBuilder.Companion.appendWithSpace(title, ListScope.ORIGIN.timelinePreposition(myContext))
-        MyStringBuilder.Companion.appendWithSpace(title, origin.getName())
+        MyStringBuilder.Companion.appendWithSpace(title, origin.name)
         return title
     }
 }

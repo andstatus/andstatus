@@ -45,7 +45,7 @@ class ConnectionTwitterTest {
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        mock = ConnectionMock.Companion.newFor(DemoData.Companion.demoData.twitterTestAccountName)
+        mock = ConnectionMock.Companion.newFor(DemoData.demoData.twitterTestAccountName)
         connection = mock.connection
         val data = mock.getHttp().data
         data.oauthClientKeys = OAuthClientKeys.Companion.fromConnectionData(data)
@@ -67,7 +67,7 @@ class ConnectionTwitterTest {
         var ind = 0
         var activity = timeline[ind]
         var note = activity.note
-        val hostName: String = DemoData.Companion.demoData.twitterTestHostWithoutApiDot
+        val hostName: String = DemoData.demoData.twitterTestHostWithoutApiDot
         Assert.assertEquals("Posting note", AObjectType.NOTE, activity.objectType)
         Assert.assertEquals("Activity oid", "381172771428257792", activity.oid)
         Assert.assertEquals("Note Oid", "381172771428257792", note.oid)
@@ -102,7 +102,7 @@ class ConnectionTwitterTest {
         Assert.assertNotEquals("Is a Reblog $activity", ActivityType.ANNOUNCE, activity.type)
         Assert.assertTrue("Is a reply", note.inReplyTo.nonEmpty)
         Assert.assertEquals("Reply to the note id", "17176774678", note.inReplyTo.note.oid)
-        Assert.assertEquals("Reply to the note by actorOid", DemoData.Companion.demoData.twitterTestAccountActorOid, note.inReplyTo.author.oid)
+        Assert.assertEquals("Reply to the note by actorOid", DemoData.demoData.twitterTestAccountActorOid, note.inReplyTo.author.oid)
         Assert.assertTrue("Reply status is unknown", note.inReplyTo.note.status == DownloadStatus.UNKNOWN)
         Assert.assertEquals("Favorited by me $activity", TriState.UNKNOWN, activity.note.getFavoritedBy(activity.accountActor))
         var startsWith = "@t131t"
@@ -203,7 +203,7 @@ class ConnectionTwitterTest {
     }
 
     private fun addAsGetNote(activity: AActivity?) {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(connection.getData().accountName.toString())
+        val ma: MyAccount = DemoData.demoData.getMyAccount(connection.getData().accountName.toString())
         val executionContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newAccountCommand(CommandEnum.GET_NOTE, ma))
         DataUpdater(executionContext).onActivity(activity)
@@ -244,7 +244,7 @@ class ConnectionTwitterTest {
         Assert.assertEquals("No actor returned $activity", AObjectType.ACTOR, activity.objectType)
         val friend = activity.objActor
         Assert.assertEquals("Wrong username returned $activity", "LPirro93", friend.username)
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(connection.getData().accountName.toString())
+        val ma: MyAccount = DemoData.demoData.getMyAccount(connection.getData().accountName.toString())
         val friend2: Actor = Actor.Companion.fromId(ma.origin, 123)
         val executionContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(), CommandData.Companion.actOnActorCommand(CommandEnum.FOLLOW, ma, friend2, ""))

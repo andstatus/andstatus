@@ -67,7 +67,7 @@ internal class CheckAudience : DataChecker() {
                 if (includeLong) "" else " LIMIT 0, 500"
         val summary = MyQuery.foldLeft(myContext, sql, FixSummary(),
                 { fixSummary: FixSummary? -> Function { cursor: Cursor? -> foldOneNote(ma, dataUpdater, countOnly, fixSummary, cursor) } })
-        logger.logProgress(origin.getName() + ": " +
+        logger.logProgress(origin.name + ": " +
                 if (summary.toFixCount == 0) "No changes to Audience were needed. " + summary.rowsCount + " notes" else (if (countOnly) "Need to update " else "Updated") + " Audience for " + summary.toFixCount +
                         " of " + summary.rowsCount + " notes")
         DbUtils.waitMs(this, 1000)
@@ -76,7 +76,7 @@ internal class CheckAudience : DataChecker() {
 
     private fun foldOneNote(ma: MyAccount?, dataUpdater: DataUpdater?, countOnly: Boolean, fixSummary: FixSummary?, cursor: Cursor?): FixSummary? {
         if (logger.isCancelled) return fixSummary
-        val origin = ma.getOrigin()
+        val origin = ma.origin
         fixSummary.rowsCount++
         val noteId = DbUtils.getLong(cursor, BaseColumns._ID)
         val insDate = DbUtils.getLong(cursor, NoteTable.INS_DATE)
@@ -93,7 +93,7 @@ internal class CheckAudience : DataChecker() {
             audience.lookupUsers()
             val actorsToSave = audience.evaluateAndGetActorsToSave(author)
             if (!countOnly) {
-                actorsToSave.stream().filter { a: Actor? -> a.actorId == 0L }.forEach { actor: Actor? -> dataUpdater.updateObjActor(ma.getActor().update(actor), 0) }
+                actorsToSave.stream().filter { a: Actor? -> a.actorId == 0L }.forEach { actor: Actor? -> dataUpdater.updateObjActor(ma.actor.update(actor), 0) }
             }
             compareVisibility(fixSummary, countOnly, noteId, audience, storedVisibility)
             if (audience.save(author, noteId, audience.visibility, countOnly)) {

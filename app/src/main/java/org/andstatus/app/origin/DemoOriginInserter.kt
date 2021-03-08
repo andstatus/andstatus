@@ -10,24 +10,24 @@ import org.junit.Assert
 
 class DemoOriginInserter(private val myContext: MyContext?) {
     fun insert() {
-        DemoData.Companion.demoData.checkDataPath()
-        createOneOrigin(OriginType.TWITTER, DemoData.Companion.demoData.twitterTestOriginName,
-                DemoData.Companion.demoData.twitterTestHost,
+        DemoData.demoData.checkDataPath()
+        createOneOrigin(OriginType.TWITTER, DemoData.demoData.twitterTestOriginName,
+                DemoData.demoData.twitterTestHost,
                 true, SslModeEnum.SECURE, false, true, true)
-        createOneOrigin(OriginType.PUMPIO, DemoData.Companion.demoData.pumpioOriginName,
+        createOneOrigin(OriginType.PUMPIO, DemoData.demoData.pumpioOriginName,
                 "",
                 true, SslModeEnum.SECURE, true, true, true)
-        createOneOrigin(OriginType.GNUSOCIAL, DemoData.Companion.demoData.gnusocialTestOriginName,
-                DemoData.Companion.demoData.gnusocialTestHost,
+        createOneOrigin(OriginType.GNUSOCIAL, DemoData.demoData.gnusocialTestOriginName,
+                DemoData.demoData.gnusocialTestHost,
                 true, SslModeEnum.SECURE, true, true, true)
-        val additionalOriginName: String = DemoData.Companion.demoData.gnusocialTestOriginName + "Two"
+        val additionalOriginName: String = DemoData.demoData.gnusocialTestOriginName + "Two"
         createOneOrigin(OriginType.GNUSOCIAL, additionalOriginName,
-                "two." + DemoData.Companion.demoData.gnusocialTestHost,
+                "two." + DemoData.demoData.gnusocialTestHost,
                 true, SslModeEnum.INSECURE, true, false, true)
-        createOneOrigin(OriginType.MASTODON, DemoData.Companion.demoData.mastodonTestOriginName,
-                DemoData.Companion.demoData.mastodonTestHost,
+        createOneOrigin(OriginType.MASTODON, DemoData.demoData.mastodonTestOriginName,
+                DemoData.demoData.mastodonTestHost,
                 true, SslModeEnum.SECURE, true, true, true)
-        createOneOrigin(OriginType.ACTIVITYPUB, DemoData.Companion.demoData.activityPubTestOriginName,
+        createOneOrigin(OriginType.ACTIVITYPUB, DemoData.demoData.activityPubTestOriginName,
                 "",
                 true, SslModeEnum.SECURE, true, true, true)
         myContext.origins().initialize()
@@ -57,7 +57,7 @@ class DemoOriginInserter(private val myContext: MyContext?) {
     private fun checkAttributes(origin: Origin?, originName: String?, hostOrUrl: String?,
                                 isSsl: Boolean, sslMode: SslModeEnum?, allowHtml: Boolean, inCombinedGlobalSearch: Boolean, inCombinedPublicReload: Boolean) {
         Assert.assertTrue("Origin $originName added", origin.isPersistent())
-        Assert.assertEquals(originName, origin.getName())
+        Assert.assertEquals(originName, origin.name)
         if (origin.shouldHaveUrl()) {
             if (UrlUtils.isHostOnly(UrlUtils.buildUrl(hostOrUrl, isSsl))) {
                 Assert.assertEquals((if (isSsl) "https" else "http") + "://" + hostOrUrl,

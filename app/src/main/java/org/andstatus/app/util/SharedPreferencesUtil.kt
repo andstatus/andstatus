@@ -193,24 +193,21 @@ object SharedPreferencesUtil {
     }
 
     fun getDefaultSharedPreferences(): SharedPreferences? {
-        val context: Context? = MyContextHolder.myContextHolder.getNow().context()
-        return if (context == null) {
-            null
-        } else {
-            PreferenceManager.getDefaultSharedPreferences(context)
+        MyContextHolder.myContextHolder.getNow().let {
+            return if (it.isEmpty) null else PreferenceManager.getDefaultSharedPreferences(it.context())
         }
     }
 
     fun getSharedPreferences(name: String?): SharedPreferences? {
-        val context: Context? = MyContextHolder.myContextHolder.getNow().context()
-        return if (context == null) {
+        val myContext = MyContextHolder.myContextHolder.getNow()
+        return if (myContext.isEmpty) {
             MyLog.e(TAG, "getSharedPreferences for $name - were not initialized yet")
             for (element in Thread.currentThread().stackTrace) {
                 MyLog.v(TAG) { element.toString() }
             }
             null
         } else {
-            context.getSharedPreferences(name, Context.MODE_PRIVATE)
+            myContext.context().getSharedPreferences(name, Context.MODE_PRIVATE)
         }
     }
 
@@ -222,7 +219,7 @@ object SharedPreferencesUtil {
     fun getLongStoredAsString(key: String, defaultValue: Long): Long {
         var value = defaultValue
         try {
-            val longValueStored = getString(key, java.lang.Long.toString(Long.MIN_VALUE))?.toLong() ?: 0
+            val longValueStored = getString(key, java.lang.Long.toString(Long.MIN_VALUE)).toLong()
             if (longValueStored > Long.MIN_VALUE) {
                 value = longValueStored
             }
@@ -252,11 +249,11 @@ object SharedPreferencesUtil {
         }
     }
 
-    fun getString(key: String, defaultValue: String?): String? {
+    fun getString(key: String, defaultValue: String): String {
         val cachedValue = cachedValues.get(key)
         if (cachedValue != null) {
             try {
-                return cachedValue as String?
+                return cachedValue as String
             } catch (e: ClassCastException) {
                 MyLog.ignored("getString, key=$key", e)
                 cachedValues.remove(key)
@@ -266,10 +263,10 @@ object SharedPreferencesUtil {
         val sp = getDefaultSharedPreferences()
         if (sp != null) {
             value = try {
-                sp.getString(key, defaultValue)
+                sp.getString(key, defaultValue) ?: ""
             } catch (e: ClassCastException) {
                 MyLog.ignored("getString, key=$key", e)
-                sp.getLong(key, defaultValue?.toLong() ?: 0).toString()
+                sp.getLong(key, defaultValue.toLong()).toString()
             }
             putToCache(key, value)
         }

@@ -804,7 +804,7 @@ class MyServiceTest2 : MyServiceTest() {
         MyLog.i(this, "$method started")
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, false)
         val cd1Home: CommandData = CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE,
-                DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.twitterTestAccountName),
+                DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName),
                 TimelineType.HOME)
         mService.setListenedCommand(cd1Home)
         var startCount = mService.executionStartCount
@@ -818,7 +818,7 @@ class MyServiceTest2 : MyServiceTest() {
         Assert.assertTrue(TestSuite.setAndWaitForIsInForeground(true))
         MyLog.i(this, "$method; we are in a foreground")
         val cd2Interactions: CommandData = CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE,
-                DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.twitterTestAccountName),
+                DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName),
                 TimelineType.INTERACTIONS)
         mService.setListenedCommand(cd2Interactions)
         startCount = mService.executionStartCount
@@ -838,7 +838,7 @@ class MyServiceTest2 : MyServiceTest() {
                 queues.inWhichQueue(cd2Interactions).map { q: OneQueue? -> q.queueType },
                 Matchers.`is`(Matchers.`in`<Optional<QueueType>>(Arrays.asList(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)))))
         val cd3PublicForeground: CommandData = CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE,
-                DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.twitterTestAccountName),
+                DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName),
                 TimelineType.PUBLIC)
                 .setInForeground(true)
         mService.setListenedCommand(cd3PublicForeground)

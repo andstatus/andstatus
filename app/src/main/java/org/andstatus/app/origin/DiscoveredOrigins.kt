@@ -13,12 +13,12 @@ object DiscoveredOrigins {
         val type = newOrigins.get(0).getOriginType()
         for (origin in mOrigins.values) {
             if (origin.originType === type) {
-                mOrigins.remove(origin.getName())
+                mOrigins.remove(origin.name)
                 oldCount++
             }
         }
         for (origin in newOrigins) {
-            mOrigins[origin.getName()] = origin
+            mOrigins[origin.name] = origin
         }
         val removed = oldCount
         MyLog.v(DiscoveredOrigins::class.java) {

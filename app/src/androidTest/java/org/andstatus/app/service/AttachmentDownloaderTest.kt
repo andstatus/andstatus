@@ -813,9 +813,9 @@ class AttachmentDownloaderTest {
     @Throws(IOException::class)
     fun testImageAttachmentLoad() {
         val method = "testImageAttachmentLoad"
-        val ma: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
+        val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         ma.setConnection()
-        Assert.assertTrue(DemoData.Companion.demoData.gnusocialTestAccountName + " exists", ma.isValid)
+        Assert.assertTrue(DemoData.demoData.gnusocialTestAccountName + " exists", ma.isValid)
         val body = "A note with an image attachment"
         val inserter = DemoNoteInserter(ma)
         val activity = inserter.buildActivity(inserter.buildActor(), "", body,
@@ -847,7 +847,7 @@ class AttachmentDownloaderTest {
             TestSuite.clearHttpMocks()
             MyLog.i(method, methodExt + ": " + status + ", mockError:" + mockNetworkError
                     + ", uri:" + dataIn.getUri())
-            val ma: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
+            val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
             val loader: FileDownloader = FileDownloader.Companion.newForDownloadData(ma.origin.myContext, dataIn)
             if (mockNetworkError) {
                 loader.setConnectionMock(ConnectionMock.Companion.newFor(ma)

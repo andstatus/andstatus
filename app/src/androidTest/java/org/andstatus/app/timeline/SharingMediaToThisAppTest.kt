@@ -798,13 +798,13 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem?>() {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithAccounts(this)
         mService = MyServiceTestHelper()
-        mService.setUp(DemoData.Companion.demoData.gnusocialTestAccountName)
-        ma = DemoData.Companion.demoData.getGnuSocialAccount()
+        mService.setUp(DemoData.demoData.gnusocialTestAccountName)
+        ma = DemoData.demoData.getGnuSocialAccount()
         Assert.assertTrue(ma.isValid)
          MyContextHolder.myContextHolder.getBlocking().accounts().setCurrentAccount(ma)
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "image/png"
-        val mediaUri: Uri = DemoData.Companion.demoData.localImageTestUri2
+        val mediaUri: Uri = DemoData.demoData.localImageTestUri2
         Assert.assertNotNull(mediaUri)
         intent.putExtra(Intent.EXTRA_STREAM, mediaUri)
         MyLog.i(this, "setUp ended")
@@ -829,7 +829,7 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem?>() {
         val textToFind: String =  MyContextHolder.myContextHolder.getNow().context().getText(R.string.label_with_media).toString()
         ActivityTestHelper.Companion.waitTextInAView(method, details, textToFind)
         TestSuite.waitForIdleSync()
-        val content = "Test note with a shared image " + DemoData.Companion.demoData.testRunUid
+        val content = "Test note with a shared image " + DemoData.demoData.testRunUid
         Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
         TestSuite.waitForIdleSync()
         mService.serviceStopped = false
@@ -847,7 +847,7 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem?>() {
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)))
         val dd: DownloadData = DownloadData.Companion.getSingleAttachment(unsentMsgId)
         MyLog.v(this, "$method; $dd")
-        Assert.assertEquals("Image URI stored", DemoData.Companion.demoData.localImageTestUri2, dd.uri)
+        Assert.assertEquals("Image URI stored", DemoData.demoData.localImageTestUri2, dd.uri)
         Assert.assertEquals("Loaded '" + dd.uri + "'; " + dd, DownloadStatus.LOADED, dd.status)
     }
 }

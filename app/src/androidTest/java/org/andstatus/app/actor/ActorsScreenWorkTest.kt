@@ -805,12 +805,12 @@ class ActorsScreenWorkTest : ActivityTest<ActorsScreen?>() {
     override fun getActivityIntent(): Intent? {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
-        val noteId = MyQuery.oidToId(OidEnum.NOTE_OID, DemoData.Companion.demoData.getPumpioConversationOrigin().getId(),
-                DemoData.Companion.demoData.conversationMentionsNoteOid)
+        val noteId = MyQuery.oidToId(OidEnum.NOTE_OID, DemoData.demoData.getPumpioConversationOrigin().getId(),
+                DemoData.demoData.conversationMentionsNoteOid)
         Assert.assertTrue(noteId > 0)
         MyLog.i(this, "setUp ended")
         return Intent(MyAction.VIEW_ACTORS.action,
-                MatchedUri.Companion.getActorsScreenUri(ActorsScreenType.ACTORS_OF_NOTE, DemoData.Companion.demoData.getPumpioConversationOrigin().getId(),
+                MatchedUri.Companion.getActorsScreenUri(ActorsScreenType.ACTORS_OF_NOTE, DemoData.demoData.getPumpioConversationOrigin().getId(),
                         noteId, ""))
     }
 
@@ -822,8 +822,8 @@ class ActorsScreenWorkTest : ActivityTest<ActorsScreen?>() {
         val helper = ListScreenTestHelper(activity, FollowersScreen::class.java)
         val listItems = activity.getListLoader().list
         Assert.assertEquals(listItems.toString(), 5, listItems.size.toLong())
-        val actor: Actor = ActorsScreenTest.Companion.getByActorOid(listItems, DemoData.Companion.demoData.conversationAuthorThirdActorOid)
-        Assert.assertTrue("Not found " + DemoData.Companion.demoData.conversationAuthorThirdActorOid, actor.nonEmpty)
+        val actor: Actor = ActorsScreenTest.Companion.getByActorOid(listItems, DemoData.demoData.conversationAuthorThirdActorOid)
+        Assert.assertTrue("Not found " + DemoData.demoData.conversationAuthorThirdActorOid, actor.nonEmpty)
         Assert.assertTrue("Invoked Context menu for $actor", helper.invokeContextMenuAction4ListItemId(
                 method, actor.actorId, ActorContextMenuItem.FRIENDS, 0))
         val followersScreen = helper.waitForNextActivity(method, 15000) as FollowersScreen

@@ -29,7 +29,7 @@ class TimelineFilter internal constructor(timeline: Timeline?) {
     init {
         keywordsFilter = KeywordsFilter(
                 SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS, ""))
-        hideRepliesNotToMeOrFriends = (timeline.getTimelineType() == TimelineType.HOME
+        hideRepliesNotToMeOrFriends = (timeline.timelineType == TimelineType.HOME
                 && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false))
         searchQuery = KeywordsFilter(timeline.getSearchQuery())
     }

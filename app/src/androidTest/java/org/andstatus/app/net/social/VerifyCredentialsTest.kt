@@ -43,7 +43,7 @@ class VerifyCredentialsTest {
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        mock = ConnectionMock.Companion.newFor(DemoData.Companion.demoData.twitterTestAccountName)
+        mock = ConnectionMock.Companion.newFor(DemoData.demoData.twitterTestAccountName)
         connection = mock.connection
         val data = mock.getHttp().data
         data.originUrl = UrlUtils.fromString("https://twitter.com")
@@ -67,7 +67,7 @@ class VerifyCredentialsTest {
     fun testVerifyCredentials() {
         mock.addResponse(org.andstatus.app.tests.R.raw.verify_credentials_twitter)
         val actor = connection.verifyCredentials(Optional.empty()).get()
-        Assert.assertEquals("Actor's oid is actorOid of this account", DemoData.Companion.demoData.twitterTestAccountActorOid, actor.oid)
+        Assert.assertEquals("Actor's oid is actorOid of this account", DemoData.demoData.twitterTestAccountActorOid, actor.oid)
         val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
         val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(mock.getData().accountName)
         builder.onCredentialsVerified(actor)

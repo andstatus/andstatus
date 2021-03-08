@@ -811,7 +811,7 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem?>() {
     override fun getActivityIntent(): Intent? {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.gnusocialTestOriginName)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.gnusocialTestOriginName)
         Assert.assertTrue(origin.toString(), origin.isValid)
         MyLog.i(this, "setUp ended")
         return Intent(Intent.ACTION_VIEW,  MyContextHolder.myContextHolder.getNow().timelines()
@@ -821,13 +821,13 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem?>() {
     @Test
     @Throws(InterruptedException::class)
     fun testGlobalSearchInOptionsMenu() {
-        oneSearchTest("testGlobalSearchInOptionsMenu", DemoData.Companion.demoData.globalPublicNoteText, true)
+        oneSearchTest("testGlobalSearchInOptionsMenu", DemoData.demoData.globalPublicNoteText, true)
     }
 
     @Test
     @Throws(InterruptedException::class)
     fun testSearch() {
-        oneSearchTest("testSearch", DemoData.Companion.demoData.publicNoteText, false)
+        oneSearchTest("testSearch", DemoData.demoData.publicNoteText, false)
     }
 
     @Throws(InterruptedException::class)

@@ -73,7 +73,9 @@ object DialogFactory {
         }
     }
 
-    fun showOkCancelDialog(fragment: Fragment, titleId: Int, messageId: Int, requestCode: ActivityRequestCode) {
+    fun showOkCancelDialog(fragment: Fragment?, titleId: Int, messageId: Int, requestCode: ActivityRequestCode) {
+        if (fragment == null) return
+
         val dialog: DialogFragment = OkCancelDialogFragment()
         val args = Bundle()
         args.putCharSequence(DIALOG_TITLE_KEY, fragment.getText(titleId))

@@ -36,17 +36,17 @@ class SqlIdsTest {
 
     @Test
     fun fromTimeline() {
-        val myAccount: MyAccount =  MyContextHolder.myContextHolder.getNow().accounts().fromAccountName(DemoData.Companion.demoData.conversationAccountName)
-        Assert.assertTrue("account is not valid: " + DemoData.Companion.demoData.conversationAccountName, myAccount.isValid)
+        val myAccount: MyAccount =  MyContextHolder.myContextHolder.getNow().accounts().fromAccountName(DemoData.demoData.conversationAccountName)
+        Assert.assertTrue("account is not valid: " + DemoData.demoData.conversationAccountName, myAccount.isValid)
         val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().filter(false, TriState.FALSE,
-                TimelineType.SENT, myAccount.actor, myAccount.origin).findFirst().orElse(Timeline.Companion.EMPTY)
+                TimelineType.SENT, myAccount.actor, myAccount.origin).findFirst().orElse(Timeline.EMPTY)
         Assert.assertNotEquals(0, SqlIds.Companion.actorIdsOfTimelineActor(timeline).size().toLong())
         val timelineCombined: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().filter(false, TriState.TRUE,
-                TimelineType.SENT, Actor.Companion.EMPTY,  Origin.EMPTY).findFirst().orElse(Timeline.Companion.EMPTY)
+                TimelineType.SENT, Actor.Companion.EMPTY,  Origin.EMPTY).findFirst().orElse(Timeline.EMPTY)
         Assert.assertNotEquals("No actors for $timelineCombined", 0, SqlIds.Companion.actorIdsOfTimelineActor(timelineCombined).size().toLong())
-        val actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, myAccount.originId, DemoData.Companion.demoData.conversationAuthorSecondActorOid)
+        val actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, myAccount.originId, DemoData.demoData.conversationAuthorSecondActorOid)
         val actor: Actor = Actor.Companion.load( MyContextHolder.myContextHolder.getNow(), actorId)
-        Assert.assertNotEquals("No actor for " + DemoData.Companion.demoData.conversationAuthorSecondActorOid, 0, actorId)
+        Assert.assertNotEquals("No actor for " + DemoData.demoData.conversationAuthorSecondActorOid, 0, actorId)
         val timelineUser: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.SENT, actor, myAccount.origin)
         Assert.assertNotEquals("No actors for $timelineUser", 0, SqlIds.Companion.actorIdsOfTimelineActor(timelineCombined).size().toLong())
     }

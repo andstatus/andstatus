@@ -206,7 +206,7 @@ class TimelineParameters(private val myContext: MyContext, val timeline: Timelin
         const val PAGE_SIZE = 200
         fun clone(prev: TimelineParameters, whichPage: WhichPage?): TimelineParameters? {
             val params = TimelineParameters(prev.myContext,
-                    if (whichPage == WhichPage.EMPTY) Timeline.Companion.EMPTY else prev.timeline,
+                    if (whichPage == WhichPage.EMPTY) Timeline.EMPTY else prev.timeline,
                     if (whichPage == WhichPage.ANY) prev.whichPage else whichPage)
             if (whichPage != WhichPage.EMPTY) {
                 enrichNonEmptyParameters(params, prev)
@@ -231,7 +231,7 @@ class TimelineParameters(private val myContext: MyContext, val timeline: Timelin
                 }
             }
             MyLog.v(TimelineParameters::class.java) { "Constructing " + params.toSummary() }
-            params.mProjection = if (ViewItemType.Companion.fromTimelineType(params.timeline.getTimelineType())
+            params.mProjection = if (ViewItemType.Companion.fromTimelineType(params.timeline.timelineType)
                     == ViewItemType.ACTIVITY) TimelineSql.getActivityProjection() else TimelineSql.getTimelineProjection()
         }
     }

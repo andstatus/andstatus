@@ -141,7 +141,7 @@ class OriginEditor : MyActivity() {
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
             })
         }
-        editTextOriginName.setText(origin.getName())
+        editTextOriginName.setText(origin.name)
         val showHostOrUrl = origin.shouldHaveUrl()
         if (showHostOrUrl) {
             val strHostOrUrl: String?
@@ -154,7 +154,7 @@ class OriginEditor : MyActivity() {
             }
             editTextHost.setText(strHostOrUrl)
             editTextHost.setHint(origin.alternativeTermForResourceId(R.string.host_hint))
-            if (Intent.ACTION_INSERT == editorAction && origin.getName().isNullOrEmpty()) {
+            if (Intent.ACTION_INSERT == editorAction && origin.name.isNullOrEmpty()) {
                 editTextHost.setOnFocusChangeListener(OnFocusChangeListener { v: View?, hasFocus: Boolean ->
                     if (!hasFocus) {
                         originNameFromHost()
@@ -189,7 +189,7 @@ class OriginEditor : MyActivity() {
                 origin.originType.isPublicTimeLineSyncable)
         var title = getText(R.string.label_origin_system).toString()
         if (origin.isPersistent) {
-            title = origin.getName() + " - " + title
+            title = origin.name + " - " + title
         }
         setTitle(title)
     }

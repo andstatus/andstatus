@@ -53,7 +53,7 @@ class DragItemRecyclerView : RecyclerView, AutoScrollListener {
     private var mListener: DragItemListener? = null
     private var mDragCallback: DragItemCallback? = null
     private var mDragState = DragState.DRAG_ENDED
-    private var mAdapter: DragItemAdapter<*, *>? = null
+    private var mAdapter: DragItemAdapter<Any, DragItemAdapter.ViewHolder>? = null
     private var mDragItem: DragItem? = null
     private var mDropTargetBackgroundDrawable: Drawable? = null
     private var mDropTargetForegroundDrawable: Drawable? = null
@@ -97,13 +97,13 @@ class DragItemRecyclerView : RecyclerView, AutoScrollListener {
             }
 
             private fun drawDecoration(c: Canvas, parent: RecyclerView, drawable: Drawable?) {
-                if (mAdapter == null || mAdapter.getDropTargetId() == NO_ID || drawable == null) {
+                if (mAdapter == null || mAdapter?.dropTargetId == NO_ID || drawable == null) {
                     return
                 }
                 for (i in 0 until parent.childCount) {
                     val item = parent.getChildAt(i)
                     val pos = getChildAdapterPosition(item)
-                    if (pos != NO_POSITION && mAdapter!!.getItemId(pos) == mAdapter.getDropTargetId()) {
+                    if (pos != NO_POSITION && mAdapter!!.getItemId(pos) == mAdapter?.dropTargetId) {
                         drawable.setBounds(item.left, item.top, item.right, item.bottom)
                         drawable.draw(c)
                     }
@@ -170,7 +170,7 @@ class DragItemRecyclerView : RecyclerView, AutoScrollListener {
         mClipToPadding = clipToPadding
     }
 
-    override fun setAdapter(adapter: Adapter<*>) {
+    override fun setAdapter(adapter: Adapter<*>?) {
         if (!isInEditMode) {
             if (adapter !is DragItemAdapter<*, *>) {
                 throw RuntimeException("Adapter must extend DragItemAdapter")
@@ -180,10 +180,10 @@ class DragItemRecyclerView : RecyclerView, AutoScrollListener {
             }
         }
         super.setAdapter(adapter)
-        mAdapter = adapter as DragItemAdapter<*, *>
+        mAdapter = adapter as DragItemAdapter<Any, DragItemAdapter.ViewHolder>
     }
 
-    override fun swapAdapter(adapter: Adapter<*>, r: Boolean) {
+    override fun swapAdapter(adapter: Adapter<*>?, r: Boolean) {
         if (!isInEditMode) {
             if (adapter !is DragItemAdapter<*, *>) {
                 throw RuntimeException("Adapter must extend DragItemAdapter")
@@ -193,7 +193,7 @@ class DragItemRecyclerView : RecyclerView, AutoScrollListener {
             }
         }
         super.swapAdapter(adapter, r)
-        mAdapter = adapter as DragItemAdapter<*, *>
+        mAdapter = adapter as DragItemAdapter<Any, DragItemAdapter.ViewHolder>
     }
 
     override fun setLayoutManager(layout: LayoutManager?) {
@@ -249,7 +249,7 @@ class DragItemRecyclerView : RecyclerView, AutoScrollListener {
     }
 
     private fun updateDragPositionAndScroll() {
-        val view = findChildView(mDragItem.getX(), mDragItem.getY())
+        val view = findChildView(mDragItem?.x ?: 0f, mDragItem?.y ?: 0f)
         var newPos = getChildLayoutPosition(view!!)
         if (newPos == NO_POSITION || view == null) {
             return
@@ -263,17 +263,17 @@ class DragItemRecyclerView : RecyclerView, AutoScrollListener {
             val viewHeight = view.measuredHeight + params.topMargin + params.bottomMargin
             val viewCenterY = view.top - params.topMargin + viewHeight / 2
             val dragDown = mDragItemPosition < getChildLayoutPosition(view)
-            val movedPassedCenterY = if (dragDown) mDragItem.getY() > viewCenterY else mDragItem.getY() < viewCenterY
+            val movedPassedCenterY = if (dragDown) mDragItem?.y ?: 0f > viewCenterY else mDragItem?.y ?: 0f < viewCenterY
 
             // If new height is bigger then current and not passed centerY then reset back to current position
-            if (viewHeight > mDragItem.getDragItemView().measuredHeight && !movedPassedCenterY) {
+            if (viewHeight > mDragItem?.dragItemView?.measuredHeight ?: 0 && !movedPassedCenterY) {
                 newPos = mDragItemPosition
             }
         }
         val layoutManager = layoutManager as LinearLayoutManager?
         if (shouldChangeItemPosition(newPos)) {
             if (mDisableReorderWhenDragging) {
-                mAdapter.setDropTargetId(mAdapter!!.getItemId(newPos))
+                mAdapter?.dropTargetId = mAdapter!!.getItemId(newPos)
                 mAdapter!!.notifyDataSetChanged()
             } else {
                 val pos = layoutManager!!.findFirstVisibleItemPosition()
@@ -319,17 +319,17 @@ class DragItemRecyclerView : RecyclerView, AutoScrollListener {
 
         // Start auto scroll if at the edge
         if (layoutManager.orientation == LinearLayoutManager.VERTICAL) {
-            if (mDragItem.getY() > height - view.height / 2 && !lastItemReached) {
+            if (mDragItem?.y ?: 0f > height - view.height / 2 && !lastItemReached) {
                 mAutoScroller!!.startAutoScroll(ScrollDirection.UP)
-            } else if (mDragItem.getY() < view.height / 2 && !firstItemReached) {
+            } else if (mDragItem?.y ?: 0f < view.height / 2 && !firstItemReached) {
                 mAutoScroller!!.startAutoScroll(ScrollDirection.DOWN)
             } else {
                 mAutoScroller!!.stopAutoScroll()
             }
         } else {
-            if (mDragItem.getX() > width - view.width / 2 && !lastItemReached) {
+            if (mDragItem?.x ?: 0f > width - view.width / 2 && !lastItemReached) {
                 mAutoScroller!!.startAutoScroll(ScrollDirection.LEFT)
-            } else if (mDragItem.getX() < view.width / 2 && !firstItemReached) {
+            } else if (mDragItem?.x ?: 0f < view.width / 2 && !firstItemReached) {
                 mAutoScroller!!.startAutoScroll(ScrollDirection.RIGHT)
             } else {
                 mAutoScroller!!.stopAutoScroll()
@@ -357,7 +357,7 @@ class DragItemRecyclerView : RecyclerView, AutoScrollListener {
         mAdapter!!.setDragItemId(dragItemId)
         mAdapter!!.notifyDataSetChanged()
         if (mListener != null) {
-            mListener!!.onDragStarted(mDragItemPosition, mDragItem.getX(), mDragItem.getY())
+            mListener!!.onDragStarted(mDragItemPosition, mDragItem?.x ?: 0f, mDragItem?.y ?: 0f)
         }
         invalidate()
         return true
@@ -387,12 +387,12 @@ class DragItemRecyclerView : RecyclerView, AutoScrollListener {
         mAutoScroller!!.stopAutoScroll()
         isEnabled = false
         if (mDisableReorderWhenDragging) {
-            val newPos = mAdapter!!.getPositionForItemId(mAdapter.getDropTargetId())
+            val newPos = mAdapter!!.getPositionForItemId(mAdapter?.dropTargetId ?: 0)
             if (newPos != NO_POSITION) {
                 mAdapter!!.swapItems(mDragItemPosition, newPos)
                 mDragItemPosition = newPos
             }
-            mAdapter.setDropTargetId(NO_ID)
+            mAdapter!!.dropTargetId = NO_ID
         }
 
         // Post so layout is done before we start end animation
@@ -416,7 +416,7 @@ class DragItemRecyclerView : RecyclerView, AutoScrollListener {
 
     private fun onDragItemAnimationEnd() {
         mAdapter!!.setDragItemId(NO_ID)
-        mAdapter.setDropTargetId(NO_ID)
+        mAdapter!!.dropTargetId = NO_ID
         mAdapter!!.notifyDataSetChanged()
         mDragState = DragState.DRAG_ENDED
         if (mListener != null) {

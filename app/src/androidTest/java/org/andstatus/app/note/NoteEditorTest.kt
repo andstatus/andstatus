@@ -79,7 +79,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem?>() {
         if (NoteEditorTest.Companion.editingStep.get() != 1) {
             MyPreferences.setBeingEditedNoteId(0)
         }
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
          MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
         data = getStaticData(ma)
@@ -89,12 +89,12 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem?>() {
     }
 
     private fun getStaticData(ma: MyAccount?): NoteEditorData? {
-        return NoteEditorData.Companion.newReplyTo(MyQuery.oidToId(OidEnum.NOTE_OID, ma.getOrigin().id,
-                DemoData.Companion.demoData.conversationEntryNoteOid), ma)
-                .addToAudience(MyQuery.oidToId(OidEnum.ACTOR_OID, ma.getOrigin().id,
-                        DemoData.Companion.demoData.conversationEntryAuthorOid))
+        return NoteEditorData.Companion.newReplyTo(MyQuery.oidToId(OidEnum.NOTE_OID, ma.origin.id,
+                DemoData.demoData.conversationEntryNoteOid), ma)
+                .addToAudience(MyQuery.oidToId(OidEnum.ACTOR_OID, ma.origin.id,
+                        DemoData.demoData.conversationEntryAuthorOid))
                 .addMentionsToText()
-                .setContent(MyHtmlTest.Companion.twitterBodyTypedPlain + " " + DemoData.Companion.demoData.testRunUid, TextMediaType.PLAIN)
+                .setContent(MyHtmlTest.Companion.twitterBodyTypedPlain + " " + DemoData.demoData.testRunUid, TextMediaType.PLAIN)
     }
 
     @Test
@@ -319,7 +319,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem?>() {
         ActivityTestHelper.Companion.waitViewVisible("$method $logMsg", editorView)
         Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).check(ViewAssertions.matches(ViewMatchers.withText(CoreMatchers.startsWith("@"))))
         TestSuite.waitForIdleSync()
-        val content = "Replying to you during " + DemoData.Companion.demoData.testRunUid
+        val content = "Replying to you during " + DemoData.demoData.testRunUid
         val bodyText = editorView.findViewById<EditText?>(R.id.noteBodyEditText)
         // Espresso types in the centre, unfortunately, so we need to retype text
         Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(bodyText.text.toString().trim { it <= ' ' }
@@ -353,14 +353,14 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem?>() {
             val noteName = "A note " + toAdd + " " + test.javaClass.simpleName + " can have a title (name)"
             val content = "Note with " + toExpect + " attachment" +
                     (if (toExpect == 1) "" else "s") + " " +
-                    DemoData.Companion.demoData.testRunUid
+                    DemoData.demoData.testRunUid
             Espresso.onView(ViewMatchers.withId(R.id.note_name_edit)).perform(ReplaceTextAction(noteName))
             Espresso.onView(ViewMatchers.withId(R.id.note_name_edit)).check(ViewAssertions.matches(ViewMatchers.withText(noteName)))
             Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
             Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).check(ViewAssertions.matches(ViewMatchers.withText(content)))
-            NoteEditorTest.Companion.attachImage(test, editorView, DemoData.Companion.demoData.localImageTestUri2)
+            NoteEditorTest.Companion.attachImage(test, editorView, DemoData.demoData.localImageTestUri2)
             if (toAdd > 1) {
-                NoteEditorTest.Companion.attachImage(test, editorView, DemoData.Companion.demoData.localGifTestUri)
+                NoteEditorTest.Companion.attachImage(test, editorView, DemoData.demoData.localGifTestUri)
             }
             val editor = test.getActivity().noteEditor
             Assert.assertEquals("All image attached " + editor.data.attachedImageFiles, toExpect.toLong(),

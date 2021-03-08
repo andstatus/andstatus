@@ -76,7 +76,7 @@ class DragListView : FrameLayout {
         mRecyclerView = createRecyclerView()
         mRecyclerView!!.setDragItem(mDragItem)
         addView(mRecyclerView)
-        addView(mDragItem.getDragItemView())
+        addView(mDragItem?.dragItemView)
     }
 
     override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
@@ -214,7 +214,7 @@ class DragListView : FrameLayout {
     var isDragEnabled: Boolean
         get() = mRecyclerView!!.isDragEnabled
         set(enabled) {
-            mRecyclerView.setDragEnabled(enabled)
+            mRecyclerView?.isDragEnabled = enabled
         }
 
     fun setCustomDragItem(dragItem: DragItem?) {
@@ -225,7 +225,7 @@ class DragListView : FrameLayout {
         newDragItem.isSnapToTouch = mDragItem!!.isSnapToTouch
         mDragItem = newDragItem
         mRecyclerView!!.setDragItem(mDragItem)
-        addView(mDragItem.getDragItemView())
+        addView(mDragItem?.dragItemView)
     }
 
     val isDragging: Boolean
@@ -236,7 +236,7 @@ class DragListView : FrameLayout {
     }
 
     fun setSnapDragItemToTouch(snapToTouch: Boolean) {
-        mDragItem.setSnapToTouch(snapToTouch)
+        mDragItem?.isSnapToTouch = snapToTouch
     }
 
     fun setCanNotDragAboveTopItem(canNotDragAboveTop: Boolean) {

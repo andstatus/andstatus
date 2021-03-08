@@ -30,13 +30,13 @@ class NoteEditorDataTest {
 
     @Test
     fun noteEditorDataConversation() {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.conversationOriginName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.conversationOriginName)
         Assert.assertEquals(origin, ma.origin)
-        val entryMsgId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, DemoData.Companion.demoData.conversationEntryNoteOid)
-        val entryActorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.id, DemoData.Companion.demoData.conversationEntryAuthorOid)
+        val entryMsgId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, DemoData.demoData.conversationEntryNoteOid)
+        val entryActorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.id, DemoData.demoData.conversationEntryAuthorOid)
         val memberActorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.id,
-                DemoData.Companion.demoData.conversationAuthorThirdActorOid)
+                DemoData.demoData.conversationAuthorThirdActorOid)
         assertData(ma, entryMsgId, entryActorId, 0, memberActorId, false)
         assertData(ma, entryMsgId, entryActorId, 0, memberActorId, true)
         assertData(ma, 0, 0, memberActorId, 0, false)
@@ -45,11 +45,11 @@ class NoteEditorDataTest {
 
     private fun assertData(ma: MyAccount?, inReplyToMsgId: Long, inReplyToActorId: Long, recipientId: Long,
                            memberActorId: Long, replyAll: Boolean) {
-        val uri = Uri.parse("http://example.com/" + DemoData.Companion.demoData.testRunUid + "/some.png")
+        val uri = Uri.parse("http://example.com/" + DemoData.demoData.testRunUid + "/some.png")
         val data: NoteEditorData = NoteEditorData.Companion.newReplyTo(inReplyToMsgId, ma)
                 .addToAudience(recipientId)
                 .setReplyToConversationParticipants(replyAll)
-                .setContent("Some text here " + DemoData.Companion.demoData.testRunUid, TextMediaType.UNKNOWN)
+                .setContent("Some text here " + DemoData.demoData.testRunUid, TextMediaType.UNKNOWN)
         Assert.assertFalse(data.toString(), data.content.contains("@"))
         data.addMentionsToText()
         Assert.assertEquals(recipientId, data.activity.note.audience().firstNonSpecial.actorId)
@@ -71,7 +71,7 @@ class NoteEditorDataTest {
 
     @Test
     fun testAddMentionsWhenNobodyIsMentioned() {
-        val myAccount: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
+        val myAccount: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         val noteId = MyQuery.getLongs(myAccount.origin.myContext, "SELECT " + BaseColumns._ID
                 + " FROM " + NoteTable.TABLE_NAME
                 + " WHERE " + NoteTable.ORIGIN_ID + "=" + myAccount.origin.id

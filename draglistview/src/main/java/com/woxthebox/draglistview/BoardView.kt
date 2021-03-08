@@ -123,8 +123,9 @@ class BoardView : HorizontalScrollView, AutoScrollListener {
         mAutoScroller = AutoScroller(context, this)
         mAutoScroller!!.setAutoScrollMode(if (snapToColumnWhenDragging()) AutoScrollMode.COLUMN else AutoScrollMode.POSITION)
         mDragItem = DragItem(context)
-        mDragColumn = DragItem(context)
-        mDragColumn.setSnapToTouch(false)
+        val dragColumn = DragItem(context)
+        mDragColumn = dragColumn
+        dragColumn.isSnapToTouch = false
         mRootLayout = FrameLayout(context)
         mRootLayout!!.layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT)
         mColumnLayout = LinearLayout(context)
@@ -132,7 +133,7 @@ class BoardView : HorizontalScrollView, AutoScrollListener {
         mColumnLayout!!.layoutParams = LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.MATCH_PARENT)
         mColumnLayout!!.isMotionEventSplittingEnabled = false
         mRootLayout!!.addView(mColumnLayout)
-        mRootLayout!!.addView(mDragItem.getDragItemView())
+        mRootLayout!!.addView(dragColumn.dragItemView)
         addView(mRootLayout)
     }
 
@@ -271,7 +272,7 @@ class BoardView : HorizontalScrollView, AutoScrollListener {
             if (mCurrentRecyclerView !== currentList) {
                 val oldColumn = getColumnOfList(mCurrentRecyclerView)
                 val newColumn = getColumnOfList(currentList)
-                val itemId = mCurrentRecyclerView.getDragItemId()
+                val itemId = mCurrentRecyclerView!!.dragItemId
 
                 // Check if it is ok to drop the item in the new column first
                 val newPosition = currentList!!.getDragPositionForY(getRelativeViewTouchY(currentList))
@@ -440,10 +441,10 @@ class BoardView : HorizontalScrollView, AutoScrollListener {
         }
     }
 
-    fun addItem(column: Int, row: Int, item: Any?, scrollToItem: Boolean) {
+    fun addItem(column: Int, row: Int, item: Any, scrollToItem: Boolean) {
         if (!isDragging && mLists.size > column && mLists[column].adapter!!.itemCount >= row) {
-            val adapter = mLists[column].adapter as DragItemAdapter<*, *>?
-            adapter!!.addItem(row, item)
+            val adapter = mLists[column].adapter as DragItemAdapter<Any, DragItemAdapter.ViewHolder>
+            adapter.addItem(row, item)
             if (scrollToItem) {
                 scrollToItem(column, row, false)
             }
@@ -452,10 +453,10 @@ class BoardView : HorizontalScrollView, AutoScrollListener {
 
     fun moveItem(fromColumn: Int, fromRow: Int, toColumn: Int, toRow: Int, scrollToItem: Boolean) {
         if (!isDragging && mLists.size > fromColumn && mLists[fromColumn].adapter!!.itemCount > fromRow && mLists.size > toColumn && mLists[toColumn].adapter!!.itemCount >= toRow) {
-            var adapter = mLists[fromColumn].adapter as DragItemAdapter<*, *>?
-            val item = adapter!!.removeItem(fromRow)
-            adapter = mLists[toColumn].adapter as DragItemAdapter<*, *>?
-            adapter!!.addItem(toRow, item)
+            var adapter = mLists[fromColumn].adapter as DragItemAdapter<Any, DragItemAdapter.ViewHolder>
+            val item = adapter.removeItem(fromRow)
+            adapter = mLists[toColumn].adapter as DragItemAdapter<Any, DragItemAdapter.ViewHolder>
+            adapter.addItem(toRow, item)
             if (scrollToItem) {
                 scrollToItem(toColumn, toRow, false)
             }
@@ -478,8 +479,8 @@ class BoardView : HorizontalScrollView, AutoScrollListener {
 
     fun replaceItem(column: Int, row: Int, item: Any?, scrollToItem: Boolean) {
         if (!isDragging && mLists.size > column && mLists[column].adapter!!.itemCount > row) {
-            val adapter = mLists[column].adapter as DragItemAdapter<*, *>?
-            adapter!!.removeItem(row)
+            val adapter = mLists[column].adapter as DragItemAdapter<Any, DragItemAdapter.ViewHolder>
+            adapter.removeItem(row)
             adapter.addItem(row, item)
             if (scrollToItem) {
                 scrollToItem(column, row, false)
@@ -607,7 +608,7 @@ class BoardView : HorizontalScrollView, AutoScrollListener {
      * @param snapToTouch true if the drag item should snap to touch position when a drag is started.
      */
     fun setSnapDragItemToTouch(snapToTouch: Boolean) {
-        mDragItem.setSnapToTouch(snapToTouch)
+        mDragItem?.isSnapToTouch = snapToTouch
     }
 
     fun setBoardListener(listener: BoardListener?) {
@@ -628,7 +629,7 @@ class BoardView : HorizontalScrollView, AutoScrollListener {
         }
         mDragItem = newDragItem
         mRootLayout!!.removeViewAt(1)
-        mRootLayout!!.addView(mDragItem.getDragItemView())
+        mRootLayout!!.addView(newDragItem.dragItemView)
     }
 
     /**
@@ -647,7 +648,7 @@ class BoardView : HorizontalScrollView, AutoScrollListener {
         mCurrentRecyclerView = recyclerView
         val columnView = mColumnLayout!!.getChildAt(getColumnOfList(recyclerView))
         mDragColumn!!.startDrag(columnView, posX, posY)
-        mRootLayout!!.addView(mDragColumn.getDragItemView())
+        mRootLayout!!.addView(mDragColumn!!.dragItemView)
         columnView.alpha = 0f
         if (mBoardListener != null) {
             mBoardListener!!.onColumnDragStarted(getColumnOfList(mCurrentRecyclerView))
@@ -655,11 +656,11 @@ class BoardView : HorizontalScrollView, AutoScrollListener {
     }
 
     private fun endDragColumn() {
-        mDragColumn!!.endDrag(mDragColumn.getRealDragView(), object : AnimatorListenerAdapter() {
+        mDragColumn!!.endDrag(mDragColumn!!.realDragView, object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
-                mDragColumn.getRealDragView().alpha = 1f
+                mDragColumn!!.realDragView!!.alpha = 1f
                 mDragColumn!!.hide()
-                mRootLayout!!.removeView(mDragColumn.getDragItemView())
+                mRootLayout!!.removeView(mDragColumn!!.dragItemView)
                 if (mBoardListener != null) {
                     mBoardListener!!.onColumnDragEnded(getColumnOfList(mCurrentRecyclerView))
                 }
@@ -866,8 +867,8 @@ class BoardView : HorizontalScrollView, AutoScrollListener {
         }
 
         companion object {
-            val CREATOR: Parcelable.Creator<SavedState> = object : Parcelable.Creator<SavedState?> {
-                override fun createFromParcel(`in`: Parcel): SavedState? {
+            @JvmField val CREATOR: Parcelable.Creator<SavedState> = object : Parcelable.Creator<SavedState> {
+                override fun createFromParcel(`in`: Parcel): SavedState {
                     return SavedState(`in`)
                 }
 

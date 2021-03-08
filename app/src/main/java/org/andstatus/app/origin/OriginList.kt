@@ -94,9 +94,9 @@ abstract class OriginList : MyListActivity() {
         for (origin in getOrigins()) {
             if (originType == OriginType.UNKNOWN || originType == origin.originType) {
                 val map: MutableMap<String?, String?> = HashMap()
-                val visibleName = origin.getName()
+                val visibleName = origin.name
                 map[KEY_VISIBLE_NAME] = visibleName
-                map[KEY_NAME] = origin.getName()
+                map[KEY_NAME] = origin.name
                 map[BaseColumns._ID] = java.lang.Long.toString(origin.getId())
                 data.add(map)
             }
@@ -126,7 +126,7 @@ abstract class OriginList : MyListActivity() {
         if (origin.isPersistent) {
             val intent = Intent(this@OriginList, OriginEditor::class.java)
             intent.action = Intent.ACTION_EDIT
-            intent.putExtra(IntentExtra.ORIGIN_NAME.key, origin.getName())
+            intent.putExtra(IntentExtra.ORIGIN_NAME.key, origin.name)
             startActivityForResult(intent, ActivityRequestCode.EDIT_ORIGIN.id)
         }
     }

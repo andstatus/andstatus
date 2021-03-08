@@ -159,7 +159,7 @@ enum class NoteContextMenuItem @JvmOverloads constructor(private val mIsAsync: B
     },
     NOTES_BY_ACTOR(true, true) {
         override fun executeAsync(menu: NoteContextMenu?): NoteEditorData? {
-            return NoteEditorData.Companion.newEmpty(MyAccount.Companion.EMPTY)
+            return NoteEditorData.Companion.newEmpty(MyAccount.EMPTY)
                     .setTimeline(menu.getMyContext().timelines()
                             .forUserAtHomeOrigin(TimelineType.SENT, menu.getActor()))
         }
@@ -170,7 +170,7 @@ enum class NoteContextMenuItem @JvmOverloads constructor(private val mIsAsync: B
     },
     NOTES_BY_AUTHOR(true, true) {
         override fun executeAsync(menu: NoteContextMenu?): NoteEditorData? {
-            return NoteEditorData.Companion.newEmpty(MyAccount.Companion.EMPTY)
+            return NoteEditorData.Companion.newEmpty(MyAccount.EMPTY)
                     .setTimeline(menu.getMyContext().timelines()
                             .forUserAtHomeOrigin(TimelineType.SENT, menu.getAuthor()))
         }

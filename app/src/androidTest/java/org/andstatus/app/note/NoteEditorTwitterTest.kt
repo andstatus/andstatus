@@ -815,7 +815,7 @@ class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem?>() {
         if (NoteEditorTwitterTest.Companion.editingStep.get() != 1) {
             MyPreferences.setBeingEditedNoteId(0)
         }
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.twitterTestAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName)
         Assert.assertTrue(ma.isValid)
         Assert.assertEquals("Account should be in Twitter: $ma", OriginType.TWITTER, ma.origin.originType)
          MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
@@ -827,7 +827,7 @@ class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem?>() {
 
     private fun getStaticData(ma: MyAccount?): NoteEditorData? {
         return NoteEditorData.Companion.newEmpty(ma)
-                .setContent(MyHtmlTest.Companion.twitterBodyTypedPlain + " " + DemoData.Companion.demoData.testRunUid, TextMediaType.PLAIN)
+                .setContent(MyHtmlTest.Companion.twitterBodyTypedPlain + " " + DemoData.demoData.testRunUid, TextMediaType.PLAIN)
     }
 
     @Test

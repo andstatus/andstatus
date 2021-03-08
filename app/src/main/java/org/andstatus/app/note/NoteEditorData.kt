@@ -57,7 +57,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
     private var replyToConversationParticipants = false
     private var replyToMentionedActors = false
     val myContext: MyContext?
-    var timeline: Timeline? = Timeline.Companion.EMPTY
+    var timeline: Timeline? = Timeline.EMPTY
 
     constructor(myAccount: MyAccount, noteId: Long, initialize: Boolean,
                 inReplyToNoteId: Long, andLoad: Boolean) : this(myAccount, toActivity(myAccount, noteId, andLoad)) {
@@ -171,7 +171,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
     fun addAttachment(uri: Uri?, mediaType: Optional<String>) {
         activity.addAttachment(
                 Attachment.Companion.fromUriAndMimeType(uri, mediaType.orElse("")),
-                ma.getOrigin().originType.maxAttachmentsToSend
+                ma.origin.originType.maxAttachmentsToSend
         )
     }
 
@@ -195,7 +195,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
     }
 
     fun mayBeEdited(): Boolean {
-        return Note.Companion.mayBeEdited(ma.getOrigin().originType, activity.getNote().status)
+        return Note.Companion.mayBeEdited(ma.origin.originType, activity.getNote().status)
     }
 
     fun setContent(content: String?, mediaType: TextMediaType?): NoteEditorData? {
@@ -245,7 +245,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
 
     private fun addConversationParticipantsBeforeText() {
         val loader = ConversationLoaderFactory().getLoader(
-                ConversationViewItem.Companion.EMPTY,  MyContextHolder.myContextHolder.getNow(), ma.getOrigin(), getInReplyToNoteId(), false)
+                ConversationViewItem.Companion.EMPTY,  MyContextHolder.myContextHolder.getNow(), ma.origin, getInReplyToNoteId(), false)
         loader.load { progress: String? -> }
         addActorsBeforeText(loader.list.stream()
                 .filter { obj: ConversationViewItem? -> obj.isActorAConversationParticipant() }
@@ -253,7 +253,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
     }
 
     private fun addMentionedActorsBeforeText() {
-        val loader = MentionedActorsLoader(myContext, ma.getOrigin(),
+        val loader = MentionedActorsLoader(myContext, ma.origin,
                 getInReplyToNoteId())
         loader.load(null)
         addActorsBeforeText(loader.list.stream().map { obj: ActorViewItem? -> obj.getActor() }.collect(Collectors.toList()))
@@ -264,7 +264,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
             toMention.add(0, Actor.Companion.load(myContext, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, getInReplyToNoteId())))
         }
         val mentionedNames: MutableList<String?> = ArrayList()
-        mentionedNames.add(ma.getActor().uniqueName) // Don't mention the author of this note
+        mentionedNames.add(ma.actor.uniqueName) // Don't mention the author of this note
         val mentions = MyStringBuilder()
         for (actor in toMention) {
             if (actor.isEmpty()) continue
@@ -335,13 +335,13 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
     }
 
     fun canChangeVisibility(): Boolean {
-        return (ma.getOrigin().originType.visibilityChangeAllowed
-                && (getInReplyToNoteId() == 0L || ma.getOrigin().originType.isPrivateNoteAllowsReply))
+        return (ma.origin.originType.visibilityChangeAllowed
+                && (getInReplyToNoteId() == 0L || ma.origin.originType.isPrivateNoteAllowsReply))
     }
 
     fun canChangeIsFollowers(): Boolean {
-        return (ma.getOrigin().originType.isFollowersChangeAllowed
-                && (getInReplyToNoteId() == 0L || ma.getOrigin().originType.isPrivateNoteAllowsReply))
+        return (ma.origin.originType.isFollowersChangeAllowed
+                && (getInReplyToNoteId() == 0L || ma.origin.originType.isPrivateNoteAllowsReply))
     }
 
     fun getSensitive(): Boolean {
@@ -356,7 +356,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
     }
 
     fun canChangeIsSensitive(): Boolean {
-        return ma.getOrigin().originType.isSensitiveChangeAllowed
+        return ma.origin.originType.isSensitiveChangeAllowed
     }
 
     fun copySensitiveProperty(): NoteEditorData? {
@@ -370,7 +370,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
 
     companion object {
         val TAG: String? = NoteEditorData::class.java.simpleName
-        val EMPTY = newEmpty(MyAccount.Companion.EMPTY)
+        val EMPTY = newEmpty(MyAccount.EMPTY)
         private fun toActivity(ma: MyAccount, noteId: Long, andLoad: Boolean): AActivity {
             val activity: AActivity
             if (noteId == 0L || !andLoad) {
@@ -419,7 +419,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
     }
 
     init {
-        myContext = ma.getOrigin().myContext
+        myContext = ma.origin.myContext
         this.activity = activity
     }
 }

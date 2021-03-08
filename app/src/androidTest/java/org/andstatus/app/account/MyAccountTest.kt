@@ -37,10 +37,10 @@ class MyAccountTest {
     @Test
     fun testNewAccountCreation() {
         createAccountOfOriginType("", "", OriginType.TWITTER)
-        createAccountOfOriginType("testUser1", DemoData.Companion.demoData.twitterTestHostWithoutApiDot, OriginType.TWITTER)
+        createAccountOfOriginType("testUser1", DemoData.demoData.twitterTestHostWithoutApiDot, OriginType.TWITTER)
         createAccountOfOriginType("", "", OriginType.PUMPIO)
         createAccountOfOriginType("test2User", "somepipe.example.com", OriginType.PUMPIO)
-        createAccountOfOriginType("PeterPom", DemoData.Companion.demoData.gnusocialTestHost, OriginType.GNUSOCIAL)
+        createAccountOfOriginType("PeterPom", DemoData.demoData.gnusocialTestHost, OriginType.GNUSOCIAL)
         createAccountOfOriginType("", "", OriginType.ACTIVITYPUB)
         createAccountOfOriginType("AndStatus", "pleroma.site", OriginType.ACTIVITYPUB)
     }
@@ -70,8 +70,8 @@ class MyAccountTest {
 
     @Test
     fun testUser() {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
-        Assert.assertTrue(DemoData.Companion.demoData.conversationAccountName + " exists", ma.isValid)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
+        Assert.assertTrue(DemoData.demoData.conversationAccountName + " exists", ma.isValid)
         val accountActor = ma.actor
         Assert.assertTrue("Should be fully defined $accountActor", accountActor.isFullyDefined)
     }

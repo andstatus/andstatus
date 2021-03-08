@@ -15,7 +15,6 @@
  */
 package org.andstatus.app.account
 
-import org.andstatus.app.account.MyAccount
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpConnectionEmpty
 import org.andstatus.app.net.social.Actor
@@ -69,10 +68,10 @@ class AccountConnectionData private constructor(private val myAccount: MyAccount
     }
 
     fun newHttpConnection(): HttpConnection? {
-        val http = origin.myContext.httpConnectionMock
+        val http = origin.myContext.getHttpConnectionMock()
         return http
                 ?: try {
-                    httpConnectionClass.newInstance()
+                    httpConnectionClass?.newInstance()
                 } catch (e: InstantiationException) {
                     HttpConnectionEmpty.Companion.EMPTY
                 } catch (e: IllegalAccessException) {
@@ -85,11 +84,11 @@ class AccountConnectionData private constructor(private val myAccount: MyAccount
     }
 
     companion object {
-        fun fromOrigin(origin: Origin?, triStateOAuth: TriState?): AccountConnectionData {
-            return AccountConnectionData(MyAccount.Companion.EMPTY, origin, triStateOAuth)
+        fun fromOrigin(origin: Origin, triStateOAuth: TriState): AccountConnectionData {
+            return AccountConnectionData(MyAccount.EMPTY, origin, triStateOAuth)
         }
 
-        fun fromMyAccount(myAccount: MyAccount?, triStateOAuth: TriState?): AccountConnectionData {
+        fun fromMyAccount(myAccount: MyAccount, triStateOAuth: TriState): AccountConnectionData {
             return AccountConnectionData(myAccount, myAccount.origin, triStateOAuth)
         }
     }

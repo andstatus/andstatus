@@ -57,7 +57,7 @@ class DataUpdater(private val execContext: CommandExecutionContext?) {
             SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS, ""))
 
     constructor(ma: MyAccount?) : this(CommandExecutionContext(
-            if (ma.getOrigin().myContext.isEmptyOrExpired)  MyContextHolder.myContextHolder.getNow() else ma.getOrigin().myContext,
+            if (ma.origin.myContext.isEmptyOrExpired)  MyContextHolder.myContextHolder.getNow() else ma.origin.myContext,
             CommandData.Companion.newAccountCommand(CommandEnum.EMPTY, ma)
     )) {
     }

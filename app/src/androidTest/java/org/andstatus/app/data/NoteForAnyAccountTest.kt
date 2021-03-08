@@ -787,7 +787,7 @@ class NoteForAnyAccountTest {
 
     @Test
     fun testAReply() {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
         val mi = DemoNoteInserter(ma)
         val accountActor = ma.actor
@@ -803,7 +803,7 @@ class NoteForAnyAccountTest {
         Assert.assertEquals(Visibility.PUBLIC, nfaActivity1.visibility)
         Assert.assertTrue(dataActivity1.isTiedToThisAccount)
         Assert.assertTrue(dataActivity1.hasPrivateAccess())
-        val author2 = mi.buildActorFromOid("acct:a2." + DemoData.Companion.demoData.testRunUid + "@pump.example.com")
+        val author2 = mi.buildActorFromOid("acct:a2." + DemoData.demoData.testRunUid + "@pump.example.com")
         val replyTo1 = mi.buildActivity(author2, "", "@" + accountActor.username
                 + " Replying to you privately", activity1, null, DownloadStatus.LOADED)
         replyTo1.note.audience().visibility = Visibility.PRIVATE
@@ -816,7 +816,7 @@ class NoteForAnyAccountTest {
         Assert.assertEquals(Visibility.PRIVATE, nfaReplyTo1.visibility)
         Assert.assertTrue(dataReplyTo1.isTiedToThisAccount)
         Assert.assertTrue(dataReplyTo1.hasPrivateAccess())
-        val author3 = mi.buildActorFromOid("acct:b3." + DemoData.Companion.demoData.testRunUid + "@pumpity.example.com")
+        val author3 = mi.buildActorFromOid("acct:b3." + DemoData.demoData.testRunUid + "@pumpity.example.com")
         val reply2 = mi.buildActivity(author3, "", "@" + author2.username
                 + " Replying publicly to the second author", replyTo1, null, DownloadStatus.LOADED)
         reply2.note.audience().visibility = Visibility.PUBLIC_AND_TO_FOLLOWERS
@@ -832,8 +832,8 @@ class NoteForAnyAccountTest {
         Assert.assertFalse(dataReply2.reblogged)
         val reblogged1 = mi.buildActivity(author3, "", "@" + author2.username
                 + " This reply is reblogged by anotherMan", replyTo1, null, DownloadStatus.LOADED)
-        val anotherMan = mi.buildActorFromOid("acct:c4." + DemoData.Companion.demoData.testRunUid + "@pump.example.com")
-                .setUsername("anotherMan" + DemoData.Companion.demoData.testRunUid).build()
+        val anotherMan = mi.buildActorFromOid("acct:c4." + DemoData.demoData.testRunUid + "@pump.example.com")
+                .setUsername("anotherMan" + DemoData.demoData.testRunUid).build()
         val reblog1: AActivity = AActivity.Companion.from(accountActor, ActivityType.ANNOUNCE)
         reblog1.setActor(anotherMan)
         reblog1.setActivity(reblogged1)

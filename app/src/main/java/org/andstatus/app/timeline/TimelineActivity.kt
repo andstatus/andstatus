@@ -367,7 +367,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
         }
         prepareDrawer()
         if (contextMenu != null) {
-            contextMenu.note.selectedActingAccount = MyAccount.Companion.EMPTY
+            contextMenu.note.selectedActingAccount = MyAccount.EMPTY
         }
         return super.onPrepareOptionsMenu(menu)
     }
@@ -476,7 +476,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
 
     private fun timelineTypeButtonText(): String? {
         return TimelineTitle.Companion.from(myContext, getParamsLoaded().getTimeline(),
-                MyAccount.Companion.EMPTY, false, TimelineTitle.Destination.DEFAULT).toString()
+                MyAccount.EMPTY, false, TimelineTitle.Destination.DEFAULT).toString()
     }
 
     private fun updateAccountButtonText(drawerView: View?) {
@@ -576,7 +576,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
     private fun showRecentAccounts() {
         val recentAccounts: MutableList<MyAccount?> = ArrayList(myContext.accounts().recentAccounts)
         for (ind in 0..2) {
-            val ma = if (recentAccounts.size > ind) recentAccounts[ind] else MyAccount.Companion.EMPTY
+            val ma = if (recentAccounts.size > ind) recentAccounts[ind] else MyAccount.EMPTY
             val avatarView = findViewById<AvatarView?>(if (ind == 0) R.id.current_account_avatar_image else if (ind == 1) R.id.account_avatar_image_1 else R.id.account_avatar_image_2)
                     ?: break
             ViewUtils.showView(avatarView, ma.isValid)
@@ -585,7 +585,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
                 avatarView.visibility = View.VISIBLE
                 continue
             }
-            ma.getActor().avatarFile.showImage(this, avatarView)
+            ma.actor.avatarFile.showImage(this, avatarView)
             avatarView.contentDescription = ma.getAccountName()
             if (Build.VERSION.SDK_INT >= 26) {
                 avatarView.tooltipText = ma.getAccountName()
@@ -604,7 +604,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
     }
 
     override fun updateTitle(additionalTitleText: String?) {
-        TimelineTitle.Companion.from(myContext, getParamsLoaded().getTimeline(), MyAccount.Companion.EMPTY, true,
+        TimelineTitle.Companion.from(myContext, getParamsLoaded().getTimeline(), MyAccount.EMPTY, true,
                 TimelineTitle.Destination.TIMELINE_ACTIVITY).updateActivityTitle(this, additionalTitleText)
     }
 
@@ -650,7 +650,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
                     getListData().pages[0].params
                 } else getParamsLoaded()
             }
-            WhichPage.EMPTY -> TimelineParameters(myContext, Timeline.Companion.EMPTY, WhichPage.EMPTY)
+            WhichPage.EMPTY -> TimelineParameters(myContext, Timeline.EMPTY, WhichPage.EMPTY)
             else -> getParamsNew()
         }
     }
@@ -696,7 +696,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
     override fun newSyncLoader(args: Bundle?): SyncLoader<T?>? {
         val method = "newSyncLoader"
         val whichPage: WhichPage = WhichPage.Companion.load(args)
-        val params = if (paramsToLoad == null || whichPage == WhichPage.EMPTY) TimelineParameters(myContext, Timeline.Companion.EMPTY, whichPage) else paramsToLoad
+        val params = if (paramsToLoad == null || whichPage == WhichPage.EMPTY) TimelineParameters(myContext, Timeline.EMPTY, whichPage) else paramsToLoad
         if (params.whichPage != WhichPage.EMPTY) {
             MyLog.v(this) { "$method: $params" }
             val intent = intent
@@ -1040,7 +1040,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
 
     fun getParamsNew(): TimelineParameters {
         if (paramsNew == null) {
-            paramsNew = TimelineParameters(myContext, Timeline.Companion.EMPTY, WhichPage.EMPTY)
+            paramsNew = TimelineParameters(myContext, Timeline.EMPTY, WhichPage.EMPTY)
         }
         return paramsNew
     }

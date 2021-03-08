@@ -836,7 +836,7 @@ class PersistentTimelinesTest {
                 true, TriState.UNKNOWN, TimelineType.UNKNOWN, Actor.Companion.EMPTY,  Origin.EMPTY).count()
         Assert.assertTrue("count2:$count2; $timelines", timelines.size > count2)
         Assert.assertTrue(count2 > count)
-        val myAccount: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
+        val myAccount: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         count = myContext.timelines().filter(
                 true, TriState.FALSE, TimelineType.UNKNOWN, myAccount.actor,  Origin.EMPTY).count()
         Assert.assertTrue(count > 0)
@@ -847,19 +847,19 @@ class PersistentTimelinesTest {
                 TimelineType.EVERYTHING, Actor.Companion.EMPTY, myAccount.origin).collect(Collectors.toList())
         Assert.assertTrue(filtered.size > 0)
         Assert.assertTrue(filtered.stream()
-                .filter { timeline: Timeline? -> timeline.getTimelineType() == TimelineType.EVERYTHING }.count() > 0)
+                .filter { timeline: Timeline? -> timeline.timelineType == TimelineType.EVERYTHING }.count() > 0)
     }
 
     private fun ensureAtLeastOneNotDisplayedTimeline() {
         val timelines = myContext.timelines().values()
         var found = false
-        var timeline1: Timeline? = Timeline.Companion.EMPTY
+        var timeline1: Timeline? = Timeline.EMPTY
         for (timeline in timelines) {
             if (timeline.isDisplayedInSelector == DisplayedInSelector.NEVER) {
                 found = true
                 break
             }
-            if (timeline1 === Timeline.Companion.EMPTY && timeline.timelineType == TimelineType.INTERACTIONS) {
+            if (timeline1 === Timeline.EMPTY && timeline.timelineType == TimelineType.INTERACTIONS) {
                 timeline1 = timeline
             }
         }
@@ -887,12 +887,12 @@ class PersistentTimelinesTest {
         Assert.assertTrue(timeline1.toString(), timeline1.isValid)
         Assert.assertEquals(timeline1.toString(), TimelineType.HOME, timeline1.timelineType)
         Assert.assertFalse(timeline1.toString(), timeline1.isCombined)
-        val origin = myContext.origins().fromName(DemoData.Companion.demoData.gnusocialTestOriginName)
+        val origin = myContext.origins().fromName(DemoData.demoData.gnusocialTestOriginName)
         val myAccount = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
         Assert.assertTrue(myAccount.isValid)
         val timeline2 = myContext.timelines()
                 .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.actor,  Origin.EMPTY)
-                .filter { timeline: Timeline? -> timeline !== timeline1 }.findFirst().orElse(Timeline.Companion.EMPTY)
+                .filter { timeline: Timeline? -> timeline !== timeline1 }.findFirst().orElse(Timeline.EMPTY)
         myContext.timelines().default = timeline2
         Assert.assertNotEquals(timeline1, myContext.timelines().default)
         myContext.timelines().default = defaultStored
@@ -900,7 +900,7 @@ class PersistentTimelinesTest {
 
     @Test
     fun testFromIsCombined() {
-        val myAccount: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
+        val myAccount: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         oneFromIsCombined(myAccount, TimelineType.PUBLIC)
         oneFromIsCombined(myAccount, TimelineType.EVERYTHING)
         oneFromIsCombined(myAccount, TimelineType.HOME)
@@ -910,7 +910,7 @@ class PersistentTimelinesTest {
     private fun oneFromIsCombined(myAccount: MyAccount?, timelineType: TimelineType?) {
         val combined = myContext.timelines()
                 .filter(true, TriState.TRUE, timelineType, myAccount.actor,  Origin.EMPTY)
-                .findFirst().orElse(Timeline.Companion.EMPTY)
+                .findFirst().orElse(Timeline.EMPTY)
         val notCombined = combined.fromIsCombined(myContext, false)
         Assert.assertEquals("Should be not combined $notCombined", false, notCombined.isCombined)
         val combined2 = notCombined.fromIsCombined(myContext, true)
@@ -920,8 +920,8 @@ class PersistentTimelinesTest {
 
     @Test
     fun testFromMyAccount() {
-        val myAccount1: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.pumpioTestAccountName)
-        val myAccount2: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
+        val myAccount1: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.pumpioTestAccountName)
+        val myAccount2: MyAccount = DemoData.demoData.getGnuSocialAccount()
         oneFromMyAccount(myAccount1, myAccount2, TimelineType.PUBLIC)
         oneFromMyAccount(myAccount1, myAccount2, TimelineType.EVERYTHING)
         oneFromMyAccount(myAccount1, myAccount2, TimelineType.HOME)
@@ -951,10 +951,10 @@ class PersistentTimelinesTest {
 
     @Test
     fun testUserTimelines() {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
         myContext.accounts().setCurrentAccount(ma)
-        val actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.originId, DemoData.Companion.demoData.conversationAuthorSecondActorOid)
+        val actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.originId, DemoData.demoData.conversationAuthorSecondActorOid)
         val actor: Actor = Actor.Companion.fromId(ma.origin, actorId)
         val timeline = myContext.timelines()[TimelineType.SENT, actor, ma.origin]
         Assert.assertEquals("Should not be combined: $timeline", false, timeline.isCombined)
@@ -968,7 +968,7 @@ class PersistentTimelinesTest {
         val combined = myContext.timelines().forUser(TimelineType.NOTIFICATIONS, Actor.Companion.EMPTY)
         Assert.assertEquals("Should be combined: $combined", true, combined.isCombined)
         Assert.assertNotEquals("Should exist: $combined", 0, combined.id)
-        Assert.assertEquals("Should not have account: $combined", MyAccount.Companion.EMPTY, combined.myAccountToSync)
+        Assert.assertEquals("Should not have account: $combined", MyAccount.EMPTY, combined.myAccountToSync)
         val accountsToSync = myContext.accounts().accountsToSync()
         MatcherAssert.assertThat(accountsToSync, Is.`is`(IsNot.not(Matchers.empty())))
         var syncableFound = false

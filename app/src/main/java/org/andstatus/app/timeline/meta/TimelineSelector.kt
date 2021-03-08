@@ -57,7 +57,7 @@ class TimelineSelector : SelectorDialog() {
                     TimelineType.UNKNOWN, Actor.Companion.EMPTY, currentMyAccount.origin).collect(Collectors.toSet()))
         }
         if (timelines.isEmpty()) {
-            returnSelectedTimeline(Timeline.Companion.EMPTY)
+            returnSelectedTimeline(Timeline.EMPTY)
             return
         } else if (timelines.size == 1) {
             returnSelectedTimeline(timelines.iterator().next())

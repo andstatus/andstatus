@@ -20,7 +20,6 @@ import android.accounts.AccountManager
 import android.content.ContentResolver
 import android.content.Context
 import android.os.Bundle
-import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.data.MatchedUri
 import org.andstatus.app.util.JsonUtils
@@ -62,9 +61,9 @@ object AccountUtils {
     }
 
     /** Add this account to the Account Manager Without userdata yet  */
-    fun addEmptyAccount(am: AccountManager?, accountName: String?, password: String?): Try<Account> {
+    fun addEmptyAccount(am: AccountManager, accountName: String?, password: String?): Try<Account> {
         return Try.of {
-            val androidAccount = Account(accountName, AuthenticatorService.Companion.ANDROID_ACCOUNT_TYPE)
+            val androidAccount = Account(accountName, AuthenticatorService.ANDROID_ACCOUNT_TYPE)
             if (am.addAccountExplicitly(androidAccount, password, null)) {
                 // Without SyncAdapter we got the error:
                 // SyncManager(865): can't find a sync adapter for SyncAdapterType Key
@@ -91,7 +90,7 @@ object AccountUtils {
 
     private fun getSyncFrequencySeconds(account: Account?): Long {
         var syncFrequencySeconds: Long = 0
-        val syncs = ContentResolver.getPeriodicSyncs(account, MatchedUri.Companion.AUTHORITY)
+        val syncs = ContentResolver.getPeriodicSyncs(account, MatchedUri.AUTHORITY)
         if (!syncs.isEmpty()) {
             syncFrequencySeconds = syncs[0].period
         }
@@ -104,9 +103,9 @@ object AccountUtils {
         // and
         // http://stackoverflow.com/questions/11090604/android-syncadapter-automatically-initialize-syncing
         if (syncFrequencySeconds != getSyncFrequencySeconds(androidAccount)) {
-            ContentResolver.removePeriodicSync(androidAccount, MatchedUri.Companion.AUTHORITY, Bundle.EMPTY)
+            ContentResolver.removePeriodicSync(androidAccount, MatchedUri.AUTHORITY, Bundle.EMPTY)
             if (syncFrequencySeconds > 0) {
-                ContentResolver.addPeriodicSync(androidAccount, MatchedUri.Companion.AUTHORITY, Bundle.EMPTY, syncFrequencySeconds)
+                ContentResolver.addPeriodicSync(androidAccount, MatchedUri.AUTHORITY, Bundle.EMPTY, syncFrequencySeconds)
             }
         }
     }
@@ -118,7 +117,7 @@ object AccountUtils {
     fun getAllAccounts(context: Context): List<Account> {
         if (Permissions.checkPermission(context, PermissionType.GET_ACCOUNTS)) {
             val am = AccountManager.get(context)
-            return Arrays.stream(am.getAccountsByType(AuthenticatorService.Companion.ANDROID_ACCOUNT_TYPE))
+            return Arrays.stream(am.getAccountsByType(AuthenticatorService.ANDROID_ACCOUNT_TYPE))
                     .collect(Collectors.toList())
         }
         return emptyList()

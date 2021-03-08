@@ -62,7 +62,7 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
     }
 
     fun getDefault(): Timeline {
-        var defaultTimeline: Timeline? = Timeline.Companion.EMPTY
+        var defaultTimeline: Timeline? = Timeline.EMPTY
         for (timeline in values()) {
             if (defaultTimeline.compareTo(timeline) > 0 || !defaultTimeline.isValid()) {
                 defaultTimeline = timeline
@@ -97,7 +97,7 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
     operator fun get(id: Long, timelineType: TimelineType,
                      actor: Actor, origin: Origin, searchQuery: String?): Timeline {
         if (id != 0L) return fromId(id)
-        if (timelineType == TimelineType.UNKNOWN) return Timeline.Companion.EMPTY
+        if (timelineType == TimelineType.UNKNOWN) return Timeline.EMPTY
         val newTimeline = Timeline(myContext, id, timelineType, actor, origin, searchQuery, 0)
         return stream().filter(Predicate { that: Timeline? -> newTimeline.duplicates(that) }).findAny().orElse(newTimeline)
     }
@@ -115,8 +115,8 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
         if (ma.isValidAndSucceeded()) {
             for (timeline in values()) {
                 if (timeline.isSyncedAutomatically() &&
-                        (!timeline.getTimelineType().isAtOrigin && timeline.myAccountToSync == ma ||
-                                timeline.getTimelineType().isAtOrigin && timeline.getOrigin() == ma.getOrigin()) &&
+                        (!timeline.timelineType.isAtOrigin && timeline.myAccountToSync == ma ||
+                                timeline.timelineType.isAtOrigin && timeline.getOrigin() == ma.origin) &&
                         timeline.isTimeToAutoSync()) {
                     timelines.add(timeline)
                 }

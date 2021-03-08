@@ -193,8 +193,8 @@ class PersistentOrigins private constructor(val myContext: MyContextImpl) {
         return origins
     }
 
-    fun originsOfType(originType: OriginType): MutableList<Origin?> {
-        val origins: MutableList<Origin?> = ArrayList()
+    fun originsOfType(originType: OriginType): MutableList<Origin> {
+        val origins: MutableList<Origin> = ArrayList()
         for (origin in collection()) {
             if (origin.originType == originType) {
                 origins.add(origin)

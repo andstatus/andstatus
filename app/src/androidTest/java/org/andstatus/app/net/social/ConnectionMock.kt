@@ -51,7 +51,7 @@ class ConnectionMock private constructor(val connection: Connection?) {
 
     companion object {
         fun newFor(accountName: String?): ConnectionMock? {
-            return newFor(DemoData.Companion.demoData.getMyAccount(accountName))
+            return newFor(DemoData.demoData.getMyAccount(accountName))
         }
 
         fun newFor(myAccount: MyAccount?): ConnectionMock? {

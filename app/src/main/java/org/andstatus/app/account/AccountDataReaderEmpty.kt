@@ -16,15 +16,15 @@
 package org.andstatus.app.account
 
 class AccountDataReaderEmpty : AccountDataReader {
-    override fun dataContains(key: String?): Boolean {
+    override fun dataContains(key: String): Boolean {
         return false
     }
 
-    override fun getDataString(key: String?, defValue: String?): String? {
+    override fun getDataString(key: String, defValue: String): String {
         return defValue
     }
 
-    override fun getDataInt(key: String?, defValue: Int): Int {
+    override fun getDataInt(key: String, defValue: Int): Int {
         return defValue
     }
 }

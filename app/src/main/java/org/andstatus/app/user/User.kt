@@ -103,10 +103,10 @@ class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Set<Lo
         this.knownAs = knownAs
     }
 
-    fun knownInOrigins(myContext: MyContext?): MutableList<Origin?>? {
-        return actorIds.stream().map(Function<Long?, Actor?> { id: Long? -> Actor.Companion.load(myContext, id) })
-                .map { actor: Actor? -> actor.origin }
-                .filter { obj: Origin? -> obj.isValid() }
+    fun knownInOrigins(myContext: MyContext): MutableList<Origin> {
+        return actorIds.stream().map(Function<Long, Actor> { id: Long -> Actor.Companion.load(myContext, id) })
+                .map { actor: Actor -> actor.origin }
+                .filter { obj: Origin -> obj.isValid() }
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList())
@@ -118,7 +118,7 @@ class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Set<Lo
             return myContext.users().userFromActorId(actorId) { loadInternal(myContext, actorId) }
         }
 
-        private fun loadInternal(myContext: MyContext, actorId: Long): User? {
+        private fun loadInternal(myContext: MyContext, actorId: Long): User {
             if (actorId == 0L || MyAsyncTask.Companion.isUiThread()) return EMPTY
             val sql = ("SELECT " + ActorSql.select(false, true)
                     + " FROM " + ActorSql.tables(false, true, false)

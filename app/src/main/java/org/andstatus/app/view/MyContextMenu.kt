@@ -49,7 +49,7 @@ open class MyContextMenu(protected val listActivity: LoadableListActivity<*>, va
         viewOfTheContext = v
         val viewItem = if (menuGroup == MENU_GROUP_ACTOR_PROFILE) listActivity.listData.actorViewItem else listActivity.saveContextOfSelectedItem(v)
         if (viewItem.isEmpty || mViewItem.isEmpty || mViewItem.getId() != viewItem.id) {
-            selectedActingAccount = MyAccount.Companion.EMPTY
+            selectedActingAccount = MyAccount.EMPTY
         }
         mViewItem = viewItem
     }

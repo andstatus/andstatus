@@ -64,8 +64,8 @@ class DemoNoteInserter(val accountActor: Actor?) {
             profileUrl = "http://" + connection.actorOidToHost(actorOid) + "/" + username
             actor.createdDate = MyLog.uniqueCurrentTimeMS()
         } else {
-            username = "actorOf" + origin.getName() + actorOid
-            profileUrl = ("https://" + DemoData.Companion.demoData.gnusocialTestOriginName
+            username = "actorOf" + origin.name + actorOid
+            profileUrl = ("https://" + DemoData.demoData.gnusocialTestOriginName
                     + ".example.com/profiles/" + username)
             actor.updatedDate = MyLog.uniqueCurrentTimeMS()
         }
@@ -74,7 +74,7 @@ class DemoNoteInserter(val accountActor: Actor?) {
         actor.realName = "Real $username"
         actor.summary = "This is about $username"
         actor.homepage = "https://example.com/home/$username/start/"
-        actor.location = "Faraway place #" + DemoData.Companion.demoData.testRunUid
+        actor.location = "Faraway place #" + DemoData.demoData.testRunUid
         actor.avatarUrl = actor.homepage + "avatar.jpg"
         actor.endpoints.add(ActorEndpointType.BANNER, actor.homepage + "banner.png")
         val rand = InstanceId.next()
@@ -87,8 +87,8 @@ class DemoNoteInserter(val accountActor: Actor?) {
 
     private fun nextActorUid(): String? {
         return if (origin.originType === OriginType.PUMPIO) {
-            "acct:actorOf" + origin.getName() + DemoData.Companion.demoData.testRunUid + InstanceId.next()
-        } else DemoData.Companion.demoData.testRunUid.toString() + InstanceId.next()
+            "acct:actorOf" + origin.name + DemoData.demoData.testRunUid + InstanceId.next()
+        } else DemoData.demoData.testRunUid.toString() + InstanceId.next()
     }
 
     fun buildActivity(author: Actor?, name: String?, content: String?, inReplyToActivity: AActivity?,
@@ -279,7 +279,7 @@ $note
 
         fun addNoteForAccount(ma: MyAccount?, body: String?, noteOid: String?, noteStatus: DownloadStatus?): AActivity? {
             Assert.assertTrue("Is not valid: $ma", ma.isValid)
-            val accountActor = ma.getActor()
+            val accountActor = ma.actor
             val mi = DemoNoteInserter(accountActor)
             val activity = mi.buildActivity(accountActor, "", body, null, noteOid, noteStatus)
             mi.onActivity(activity)

@@ -822,7 +822,7 @@ class TimeLineActivityLayoutToggleTest : TimelineActivityTest<ActivityViewItem?>
         }
         setPreferences()
         logStartStop("setUp started")
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
          MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
         logStartStop("setUp ended")

@@ -43,14 +43,14 @@ class ConnectionGnuSocialTest {
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        mock = ConnectionMock.Companion.newFor(DemoData.Companion.demoData.gnusocialTestAccountName)
+        mock = ConnectionMock.Companion.newFor(DemoData.demoData.gnusocialTestAccountName)
     }
 
     @Test
     @Throws(IOException::class)
     fun testGetPublicTimeline() {
         mock.addResponse(org.andstatus.app.tests.R.raw.quitter_home)
-        val accountActor: Actor = DemoData.Companion.demoData.getAccountActorByOid(DemoData.Companion.demoData.gnusocialTestAccountActorOid)
+        val accountActor: Actor = DemoData.demoData.getAccountActorByOid(DemoData.demoData.gnusocialTestAccountActorOid)
         val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.PUBLIC_TIMELINE,
                 TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor).get()
         Assert.assertNotNull("timeline returned", timeline)
@@ -132,7 +132,7 @@ class ConnectionGnuSocialTest {
     fun testSearch() {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_home_timeline)
         val timeline = mock.connection.searchNotes(true,
-                TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, DemoData.Companion.demoData.globalPublicNoteText).get()
+                TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, DemoData.demoData.globalPublicNoteText).get()
         Assert.assertNotNull("timeline returned", timeline)
         val size = 4
         Assert.assertEquals("Number of items in the Timeline", size.toLong(), timeline.size().toLong())
@@ -144,7 +144,7 @@ class ConnectionGnuSocialTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment)
         val note: Note = Note.Companion.fromOriginAndOid(mock.getData().origin, "", DownloadStatus.SENDING)
                 .setContentPosted("Test post note with media")
-                .withAttachments(Attachments().add(Attachment.Companion.fromUri(DemoData.Companion.demoData.localImageTestUri)))
+                .withAttachments(Attachments().add(Attachment.Companion.fromUri(DemoData.demoData.localImageTestUri)))
         val activity = mock.connection.updateNote(note).get()
         Assert.assertEquals("Note returned",
                 privateGetNoteWithAttachment(false).getNote(), activity.note)
@@ -163,7 +163,7 @@ class ConnectionGnuSocialTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.quitter_note_with_attachment)
         val activity = mock.connection.getNote(NOTE_OID).get()
         if (uniqueUid) {
-            activity.setNote(activity.note.withNewOid(activity.note.oid + "_" + DemoData.Companion.demoData.testRunUid))
+            activity.setNote(activity.note.withNewOid(activity.note.oid + "_" + DemoData.demoData.testRunUid))
         }
         Assert.assertNotNull("note returned", activity)
         Assert.assertEquals("conversationOid", "1956322", activity.note.conversationOid)
@@ -208,7 +208,7 @@ class ConnectionGnuSocialTest {
     }
 
     private fun getFavoritingActivity(favoritingOid: String?, favoritingContent: String?, likedContent: String?): AActivity {
-        val accountActor: Actor = DemoData.Companion.demoData.getAccountActorByOid(DemoData.Companion.demoData.gnusocialTestAccountActorOid)
+        val accountActor: Actor = DemoData.demoData.getAccountActorByOid(DemoData.demoData.gnusocialTestAccountActorOid)
         val actorOid = favoritingOid + "1"
         val actor: Actor = Actor.Companion.fromOid(accountActor.origin, actorOid)
         val favoritingUpdateDate = System.currentTimeMillis() - 1000000
@@ -227,7 +227,7 @@ class ConnectionGnuSocialTest {
     @Throws(IOException::class)
     fun testFavoritingActivityInTimeline() {
         mock.addResponse(org.andstatus.app.tests.R.raw.loadaverage_favoriting_activity)
-        val accountActor: Actor = DemoData.Companion.demoData.getAccountActorByOid(DemoData.Companion.demoData.gnusocialTestAccountActorOid)
+        val accountActor: Actor = DemoData.demoData.getAccountActorByOid(DemoData.demoData.gnusocialTestAccountActorOid)
         val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.SEARCH_NOTES,
                 TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor).get()
         Assert.assertNotNull("timeline returned", timeline)

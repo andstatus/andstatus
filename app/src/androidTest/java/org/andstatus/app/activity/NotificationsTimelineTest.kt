@@ -793,7 +793,7 @@ class NotificationsTimelineTest : TimelineActivityTest<ActivityViewItem?>() {
     override fun getActivityIntent(): Intent? {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
          MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
         MyLog.i(this, "setUp ended")

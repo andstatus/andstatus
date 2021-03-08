@@ -785,9 +785,9 @@ class ConversationViewLoaderTest : ProgressPublisher {
     fun setUp() {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
-        origin = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName).getOrigin()
+        origin = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName).getOrigin()
         Assert.assertTrue(origin.isValid())
-        selectedNoteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), DemoData.Companion.demoData.conversationEntryNoteOid)
+        selectedNoteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), DemoData.demoData.conversationEntryNoteOid)
         Assert.assertTrue("Selected note exists", selectedNoteId != 0L)
         MyLog.i(this, "setUp ended")
     }

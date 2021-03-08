@@ -49,7 +49,7 @@ class ConnectionMastodonTest {
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        mock = ConnectionMock.Companion.newFor(DemoData.Companion.demoData.mastodonTestAccountName)
+        mock = ConnectionMock.Companion.newFor(DemoData.demoData.mastodonTestAccountName)
         accountActor = mock.getData().accountActor
     }
 
@@ -95,7 +95,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Media URI", UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
                 attachment.getUri())
         timeline.items.forEach(Consumer { act: AActivity? -> act.setUpdatedNow(0) })
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.mastodonTestAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME))
         DataUpdater(executionContext).onActivity(activity)
@@ -140,7 +140,7 @@ class ConnectionMastodonTest {
         MatcherAssert.assertThat("Body", note3.content, CoreMatchers.containsString("Will monitor there"))
         Assert.assertEquals("Note application", "Web", note3.via)
         Assert.assertEquals("Media attachments", 0, note3.attachments.size().toLong())
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.mastodonTestAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE))
         timeline.items.forEach(Consumer { act: AActivity? ->
@@ -267,7 +267,7 @@ class ConnectionMastodonTest {
         val note = activity.note
         MatcherAssert.assertThat(note.content, CoreMatchers.containsString("CW should properly"))
         activity.setUpdatedNow(0)
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.mastodonTestAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
         DataUpdater(executionContext).onActivity(activity)
@@ -306,7 +306,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Username", "bjoern", author.username)
         Assert.assertEquals("WebfingerId", "bjoern@mastodon.social", author.webFingerId)
         activity.setUpdatedNow(0)
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.mastodonTestAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
         DataUpdater(executionContext).onActivity(activity)
@@ -350,7 +350,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Media URI", UriUtils.fromString(previewUri),
                 preview.getUri())
         Assert.assertEquals("Preview of", preview.previewOf, video)
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.mastodonTestAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_CONVERSATION, ma, 123))
         DataUpdater(executionContext).onActivity(activity)

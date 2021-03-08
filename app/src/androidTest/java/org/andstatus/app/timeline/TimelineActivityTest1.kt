@@ -819,16 +819,16 @@ import org.andstatus.app.MenuItemMock
  * @author yvolk@yurivolkov.com
  */
 class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem?>() {
-    private var ma: MyAccount? = MyAccount.Companion.EMPTY
+    private var ma: MyAccount? = MyAccount.EMPTY
     override fun getActivityIntent(): Intent? {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
-        ma = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
+        ma = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
          MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
         MyLog.i(this, "setUp ended")
         return Intent(Intent.ACTION_VIEW,  MyContextHolder.myContextHolder.getNow().timelines()
-                .get(TimelineType.HOME, ma.getActor(),  Origin.EMPTY).getUri())
+                .get(TimelineType.HOME, ma.actor,  Origin.EMPTY).getUri())
     }
 
     @Test
@@ -875,7 +875,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem?>() {
         val timelineData = activity.listData
         for (ind in 0 until timelineData.size()) {
             val item = timelineData.getItem(ind)
-            Assert.assertEquals("Origin of the Item $ind $item", ma.getOrigin(), item.origin)
+            Assert.assertEquals("Origin of the Item $ind $item", ma.origin, item.origin)
         }
         val collapseDuplicates = MyPreferences.isCollapseDuplicates()
         Assert.assertEquals(collapseDuplicates, (activity.findViewById<View?>(R.id.collapseDuplicatesToggle) as CheckBox).isChecked)
@@ -894,7 +894,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem?>() {
         getCurrentListPosition().logV("$method; after selecting position $position0 itemId=$itemIdOfSelected")
         val pos1 = getCurrentListPosition().logV("$method; stored pos1 before adding new content")
         val updatedAt1 = activity.listData.updatedAt
-        DemoData.Companion.demoData.insertPumpIoConversation("p$iterationId")
+        DemoData.demoData.insertPumpIoConversation("p$iterationId")
         broadcastCommandExecuted()
         var pos2 = getCurrentListPosition().logV("$method; just after adding new content")
         var updatedAt2: Long = 0
@@ -943,7 +943,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem?>() {
 
     private fun broadcastCommandExecuted() {
         val commandData: CommandData = CommandData.Companion.newAccountCommand(CommandEnum.LIKE,
-                DemoData.Companion.demoData.getPumpioConversationAccount())
+                DemoData.demoData.getPumpioConversationAccount())
         MyServiceEventsBroadcaster.Companion.newInstance( MyContextHolder.myContextHolder.getNow(), MyServiceState.RUNNING)
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND)
                 .broadcast()

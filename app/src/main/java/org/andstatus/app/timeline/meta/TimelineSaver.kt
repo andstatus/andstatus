@@ -69,7 +69,7 @@ class TimelineSaver {
     private fun executeSequentially(myContext: MyContext?) {
         try {
             if (addDefaults) {
-                if (myAccount === MyAccount.Companion.EMPTY) {
+                if (myAccount === MyAccount.EMPTY) {
                     addDefaultTimelinesIfNoneFound(myContext)
                 } else {
                     addDefaultMyAccountTimelinesIfNoneFound(myContext, myAccount)
@@ -89,9 +89,9 @@ class TimelineSaver {
 
     private fun addDefaultMyAccountTimelinesIfNoneFound(myContext: MyContext?, ma: MyAccount?) {
         if (ma.isValid && myContext.timelines().filter(false, TriState.FALSE,
-                        TimelineType.UNKNOWN, ma.getActor(),  Origin.EMPTY).count() == 0L) {
+                        TimelineType.UNKNOWN, ma.actor,  Origin.EMPTY).count() == 0L) {
             addDefaultCombinedTimelinesIfNoneFound(myContext)
-            addDefaultOriginTimelinesIfNoneFound(myContext, ma.getOrigin())
+            addDefaultOriginTimelinesIfNoneFound(myContext, ma.origin)
             val timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
                     BaseColumns._ID, TimelineTable.ACTOR_ID + "=" + ma.actorId)
             if (timelineId == 0L) addDefaultForMyAccount(myContext, ma)
@@ -110,7 +110,7 @@ class TimelineSaver {
     private fun addDefaultOriginTimelinesIfNoneFound(myContext: MyContext?, origin: Origin?) {
         if (!origin.isValid()) return
         val timelineId = MyQuery.conditionToLongColumnValue(myContext.getDatabase(),
-                "Any timeline for " + origin.getName(),
+                "Any timeline for " + origin.name,
                 TimelineTable.TABLE_NAME, BaseColumns._ID,
                 TimelineTable.ORIGIN_ID + "=" + origin.getId())
         if (timelineId == 0L) addDefaultForOrigin(myContext, origin)

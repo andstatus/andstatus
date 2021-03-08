@@ -787,12 +787,12 @@ class TimelineSyncTrackerTest {
 
     @Test
     fun testGnuSocialTimeline() {
-        testTimelineForAccount(DemoData.Companion.demoData.gnusocialTestAccountName)
+        testTimelineForAccount(DemoData.demoData.gnusocialTestAccountName)
     }
 
     @Test
     fun testTwitterTimeline() {
-        testTimelineForAccount(DemoData.Companion.demoData.twitterTestAccountName)
+        testTimelineForAccount(DemoData.demoData.twitterTestAccountName)
     }
 
     private fun testTimelineForAccount(accountName: String?) {
@@ -803,12 +803,12 @@ class TimelineSyncTrackerTest {
 
     private fun oneTimelineType(timelineType: TimelineType?, accountName: String?) {
         val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(accountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(accountName)
         val message = timelineType.save() + " " + ma
         Assert.assertTrue(ma.isValid)
         Assert.assertEquals("Account was found", accountName, ma.accountName)
         val timeline = findTimeline(myContext, timelineType, ma)
-        if (timeline === Timeline.Companion.EMPTY) return
+        if (timeline === Timeline.EMPTY) return
         if (timelineType.isAtOrigin()) {
             if (timeline.origin.originType.isTimelineTypeSyncable(timelineType)) {
                 assertDefaultTimelinePersistence(
@@ -851,8 +851,8 @@ class TimelineSyncTrackerTest {
     }
 
     private fun findTimeline(myContext: MyContext?, timelineType: TimelineType?, ma: MyAccount?): Timeline {
-        return myContext.timelines().filter(false, TriState.UNKNOWN, timelineType, ma.getActor(),
-                ma.getOrigin()).findFirst().orElse(Timeline.Companion.EMPTY)
+        return myContext.timelines().filter(false, TriState.UNKNOWN, timelineType, ma.actor,
+                ma.origin).findFirst().orElse(Timeline.EMPTY)
     }
 
     companion object {

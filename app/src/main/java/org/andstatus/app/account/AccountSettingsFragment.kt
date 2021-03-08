@@ -33,12 +33,9 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 class AccountSettingsFragment : Fragment() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (ActivityRequestCode.Companion.fromId(requestCode)) {
+        when (ActivityRequestCode.fromId(requestCode)) {
             ActivityRequestCode.REMOVE_ACCOUNT -> if (Activity.RESULT_OK == resultCode) {
                 onRemoveAccount()
             }
@@ -47,10 +44,11 @@ class AccountSettingsFragment : Fragment() {
     }
 
     private fun onRemoveAccount() {
-        val state = (activity as AccountSettingsActivity?).getState()
-        if (state.builder != null && state.builder.isPersistent) {
-            for (account in AccountUtils.getCurrentAccounts(activity)) {
-                if (state.account.accountName == account.name) {
+        val accountSettingsActivity = activity as AccountSettingsActivity?
+        val state = accountSettingsActivity?.getState()
+        if (state?.builder != null && state.builder.isPersistent()) {
+            for (account in AccountUtils.getCurrentAccounts(accountSettingsActivity)) {
+                if (state.getAccount().getAccountName() == account.name) {
                     MyLog.i(this, "Removing account: " + account.name)
                     val am = AccountManager.get(activity)
                     CompletableFuture.supplyAsync({
@@ -62,12 +60,12 @@ class AccountSettingsFragment : Fragment() {
                             MyLog.w(this, "Failed to remove account " + account.name, e)
                             return@supplyAsync false
                         }
-                    }, NonUiThreadExecutor.Companion.INSTANCE)
-                            .thenAcceptAsync({ ok: Boolean? ->
+                    }, NonUiThreadExecutor.INSTANCE)
+                            .thenAcceptAsync({ ok: Boolean ->
                                 if (ok) {
-                                    activity.finish()
+                                    activity?.finish()
                                 }
-                            }, UiThreadExecutor.Companion.INSTANCE)
+                            }, UiThreadExecutor.INSTANCE)
                     break
                 }
             }
@@ -82,7 +80,7 @@ class AccountSettingsFragment : Fragment() {
         val activity = activity as AccountSettingsActivity?
         if (activity != null) {
             activity.updateScreen()
-            when (FragmentAction.Companion.fromBundle(arguments)) {
+            when (FragmentAction.fromBundle(arguments)) {
                 FragmentAction.ON_ORIGIN_SELECTED -> activity.goToAddAccount()
                 else -> {
                 }

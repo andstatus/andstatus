@@ -79,8 +79,8 @@ class ListSwipeHelper(applicationContext: Context?, private var mSwipeListener: 
                 }
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                if (mSwipeView != null) {
-                    val endingSwipeView: ListSwipeItem = mSwipeView
+                mSwipeView?.let {
+                    val endingSwipeView: ListSwipeItem = it
                     endingSwipeView.handleSwipeUp(object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator) {
                             if (endingSwipeView.isSwipeStarted) {
@@ -91,7 +91,8 @@ class ListSwipeHelper(applicationContext: Context?, private var mSwipeListener: 
                             }
                         }
                     })
-                } else {
+                }
+                if (mSwipeView == null) {
                     resetSwipedViews(null)
                 }
                 mSwipeView = null
@@ -158,7 +159,10 @@ class ListSwipeHelper(applicationContext: Context?, private var mSwipeListener: 
         }
 
         private fun canStartSwipe(e1: MotionEvent?, e2: MotionEvent?): Boolean {
-            return !(e1 == null || e2 == null || mSwipeView == null || mRecyclerView!!.scrollState != RecyclerView.SCROLL_STATE_IDLE || mSwipeView.getSupportedSwipeDirection() == SwipeDirection.NONE)
+            val swipeView = mSwipeView
+            return !(e1 == null || e2 == null || swipeView == null ||
+                    mRecyclerView!!.scrollState != RecyclerView.SCROLL_STATE_IDLE ||
+                    swipeView.supportedSwipeDirection == SwipeDirection.NONE)
         }
     }
 

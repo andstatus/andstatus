@@ -799,12 +799,12 @@ class ActorTimelineTest : TimelineActivityTest<ActivityViewItem?>() {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
         val myContext: MyContext =  MyContextHolder.myContextHolder.getBlocking()
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
         myContext.accounts().setCurrentAccount(ma)
-        val actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.originId, DemoData.Companion.demoData.conversationAuthorSecondActorOid)
+        val actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.originId, DemoData.demoData.conversationAuthorSecondActorOid)
         val actor: Actor = Actor.Companion.fromId(ma.origin, actorId)
-        Assert.assertNotEquals("Actor " + DemoData.Companion.demoData.conversationAuthorSecondActorOid + " id=" + actorId + " -> "
+        Assert.assertNotEquals("Actor " + DemoData.demoData.conversationAuthorSecondActorOid + " id=" + actorId + " -> "
                 + actor, 0, actor.actorId)
         val timeline = myContext.timelines()[TimelineType.SENT, actor, ma.origin]
         Assert.assertFalse("Timeline $timeline", timeline.isCombined)
@@ -830,7 +830,7 @@ class ActorTimelineTest : TimelineActivityTest<ActivityViewItem?>() {
                 followItem = item
             }
         }
-        Assert.assertNotEquals("No follow action by " + DemoData.Companion.demoData.conversationAuthorSecondActorOid
+        Assert.assertNotEquals("No follow action by " + DemoData.demoData.conversationAuthorSecondActorOid
                 + " in " + timelineData,
                 ActivityViewItem.Companion.EMPTY, followItem)
     }

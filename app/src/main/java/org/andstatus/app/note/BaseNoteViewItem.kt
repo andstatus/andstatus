@@ -82,7 +82,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
     var reblogged = false
     val attachmentsCount: Long
     val attachedImageFiles: AttachedImageFiles?
-    private var linkedMyAccount: MyAccount? = MyAccount.Companion.EMPTY
+    private var linkedMyAccount: MyAccount? = MyAccount.EMPTY
     val detailsSuffix: StringBuilder? = StringBuilder()
 
     protected constructor(isEmpty: Boolean, updatedDate: Long) : super(isEmpty, updatedDate) {

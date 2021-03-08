@@ -812,11 +812,11 @@ class CommandDataTest {
     @Test
     fun testQueue() {
         val time0 = System.currentTimeMillis()
-        var commandData: CommandData = CommandData.Companion.newUpdateStatus(DemoData.Companion.demoData.getPumpioConversationAccount(), 1, 4)
+        var commandData: CommandData = CommandData.Companion.newUpdateStatus(DemoData.demoData.getPumpioConversationAccount(), 1, 4)
         testQueueOneCommandData(commandData, time0)
         val noteId = MyQuery.oidToId(OidEnum.NOTE_OID,  MyContextHolder.myContextHolder.getNow().origins()
-                .fromName(DemoData.Companion.demoData.conversationOriginName).getId(),
-                DemoData.Companion.demoData.conversationEntryNoteOid)
+                .fromName(DemoData.demoData.conversationOriginName).getId(),
+                DemoData.demoData.conversationEntryNoteOid)
         val downloadDataRowId: Long = 23
         commandData = CommandData.Companion.newFetchAttachment(noteId, downloadDataRowId)
         testQueueOneCommandData(commandData, time0)
@@ -880,13 +880,13 @@ class CommandDataTest {
     @Test
     fun testPriority() {
         val queue: Queue<CommandData?> = PriorityBlockingQueue(100)
-        val ma: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
+        val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         queue.add(CommandData.Companion.newActorCommand(CommandEnum.GET_FRIENDS, Actor.Companion.fromId(ma.origin, 123), ""))
         queue.add(CommandData.Companion.newActorCommand(CommandEnum.GET_TIMELINE, ma.actor, ma.username))
         queue.add(CommandData.Companion.newSearch(SearchObjects.NOTES,  MyContextHolder.myContextHolder.getNow(), ma.origin, "q1"))
-        queue.add(CommandData.Companion.newUpdateStatus(MyAccount.Companion.EMPTY, 2, 5))
+        queue.add(CommandData.Companion.newUpdateStatus(MyAccount.EMPTY, 2, 5))
         queue.add(CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.INTERACTIONS))
-        queue.add(CommandData.Companion.newUpdateStatus(MyAccount.Companion.EMPTY, 3, 6))
+        queue.add(CommandData.Companion.newUpdateStatus(MyAccount.EMPTY, 3, 6))
         queue.add(CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME).setInForeground(true))
         queue.add(CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 7823))
         assertCommand(queue, CommandEnum.GET_TIMELINE, TimelineType.HOME)
@@ -914,13 +914,13 @@ class CommandDataTest {
     }
 
     private fun followUnfollowSummary(command: CommandEnum?) {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
         val actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.origin.id,
-                DemoData.Companion.demoData.conversationAuthorThirdActorOid)
+                DemoData.demoData.conversationAuthorThirdActorOid)
         val actor: Actor = Actor.Companion.load(ma.origin.myContext, actorId)
         val data: CommandData = CommandData.Companion.actOnActorCommand(
-                command, DemoData.Companion.demoData.getPumpioConversationAccount(), actor, "")
+                command, DemoData.demoData.getPumpioConversationAccount(), actor, "")
         val summary = data.toCommandSummary( MyContextHolder.myContextHolder.getNow())
         val msgLog = command.name + "; Summary:'" + summary + "'"
         MyLog.v(this, msgLog)

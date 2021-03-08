@@ -23,6 +23,7 @@ import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.lang.SelectableEnum
 import org.andstatus.app.lang.SelectableEnumList
+import org.andstatus.app.origin.OriginType
 import java.util.*
 
 /**
@@ -59,7 +60,7 @@ class EnumSelector<E>(private val enumList: SelectableEnumList<E>) : SelectorDia
     companion object {
         private val KEY_VISIBLE_NAME: String = "visible_name"
         fun <E> newInstance(
-                requestCode: ActivityRequestCode, clazz: Class<E?>?): SelectorDialog where E : Enum<E>, E : SelectableEnum? {
+                requestCode: ActivityRequestCode, clazz: Class<OriginType>): SelectorDialog where E : Enum<E>, E : SelectableEnum? {
             val selector: EnumSelector<*> = EnumSelector<E>(SelectableEnumList.newInstance(clazz))
             selector.setRequestCode(requestCode)
             return selector

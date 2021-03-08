@@ -44,13 +44,13 @@ class TimelineTitle private constructor(val title: String?, val subTitle: String
 
     companion object {
         @JvmOverloads
-        fun from(myContext: MyContext?, timeline: Timeline?, accountToHide: MyAccount? = MyAccount.Companion.EMPTY,
+        fun from(myContext: MyContext?, timeline: Timeline?, accountToHide: MyAccount? = MyAccount.EMPTY,
                  namesAreHidden: Boolean = true, destination: Destination? = Destination.DEFAULT): TimelineTitle? {
             return TimelineTitle(
                     calcTitle(myContext, timeline, accountToHide, namesAreHidden, destination),
                     calcSubtitle(myContext, timeline, accountToHide, namesAreHidden, destination),
-                    if (timeline.getTimelineType().isForUser && timeline.myAccountToSync.isValid) timeline.myAccountToSync.toAccountButtonText() else "",
-                    if (timeline.getTimelineType().isAtOrigin && timeline.getOrigin().isValid) timeline.getOrigin().name else ""
+                    if (timeline.timelineType.isForUser && timeline.myAccountToSync.isValid) timeline.myAccountToSync.toAccountButtonText() else "",
+                    if (timeline.timelineType.isAtOrigin && timeline.getOrigin().isValid) timeline.getOrigin().name else ""
             )
         }
 
@@ -62,13 +62,13 @@ class TimelineTitle private constructor(val title: String?, val subTitle: String
             val title = MyStringBuilder()
             if (showActor(timeline, accountToHide, namesAreHidden)) {
                 if (isActorMayBeShownInSubtitle(timeline)) {
-                    title.withSpace(timeline.getTimelineType().title(myContext.context()))
+                    title.withSpace(timeline.timelineType.title(myContext.context()))
                 } else {
                     title.withSpace(
-                            timeline.getTimelineType().title(myContext.context(), getActorName(timeline)))
+                            timeline.timelineType.title(myContext.context(), getActorName(timeline)))
                 }
             } else {
-                title.withSpace(timeline.getTimelineType().title(myContext.context()))
+                title.withSpace(timeline.timelineType.title(myContext.context()))
                 if (showOrigin(timeline, namesAreHidden)) {
                     title.withSpaceQuoted(timeline.getSearchQuery())
                 }
@@ -77,7 +77,7 @@ class TimelineTitle private constructor(val title: String?, val subTitle: String
         }
 
         private fun isActorMayBeShownInSubtitle(timeline: Timeline?): Boolean {
-            return !timeline.hasSearchQuery() && timeline.getTimelineType().titleResWithParamsId == 0
+            return !timeline.hasSearchQuery() && timeline.timelineType.titleResWithParamsId == 0
         }
 
         private fun calcSubtitle(myContext: MyContext?, timeline: Timeline?, accountToHide: MyAccount?,
@@ -91,7 +91,7 @@ class TimelineTitle private constructor(val title: String?, val subTitle: String
                     title.withSpace(getActorName(timeline))
                 }
             } else if (showOrigin(timeline, namesAreHidden)) {
-                title.withSpace(timeline.getTimelineType().scope.timelinePreposition(myContext))
+                title.withSpace(timeline.timelineType.scope.timelinePreposition(myContext))
                 title.withSpace(timeline.getOrigin().name)
             }
             if (!showOrigin(timeline, namesAreHidden)) {
@@ -108,14 +108,14 @@ class TimelineTitle private constructor(val title: String?, val subTitle: String
         }
 
         private fun showActor(timeline: Timeline?, accountToHide: MyAccount?, namesAreHidden: Boolean): Boolean {
-            return (timeline.getTimelineType().isForUser
+            return (timeline.timelineType.isForUser
                     && !timeline.isCombined() && timeline.actor.nonEmpty
                     && timeline.actor.notSameUser(accountToHide.getActor())
                     && (timeline.actor.user.isMyUser.untrue || namesAreHidden))
         }
 
         private fun showOrigin(timeline: Timeline?, namesAreHidden: Boolean): Boolean {
-            return timeline.getTimelineType().isAtOrigin && !timeline.isCombined() && namesAreHidden
+            return timeline.timelineType.isAtOrigin && !timeline.isCombined() && namesAreHidden
         }
     }
 }

@@ -23,13 +23,16 @@ import org.andstatus.app.data.MyContentType
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.TriState
 
-org.andstatus.app.origin.OriginTypeimport java.net.URLimport java.util.*
-class HttpConnectionData private constructor(private val accountName: AccountName?) {
+import org.andstatus.app.origin.OriginType
+import java.net.URL
+import java.util.*
+
+class HttpConnectionData private constructor(private val accountName: AccountName) {
     var originUrl: URL? = null
     var urlForUserToken: URL? = null
     var dataReader: AccountDataReader? = null
     var oauthClientKeys: OAuthClientKeys? = null
-    fun copy(): HttpConnectionData? {
+    fun copy(): HttpConnectionData {
         val data = HttpConnectionData(accountName)
         data.originUrl = originUrl
         data.urlForUserToken = urlForUserToken
@@ -38,7 +41,7 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
         return data
     }
 
-    fun getAccountName(): AccountName? {
+    fun getAccountName(): AccountName {
         return accountName
     }
 
@@ -88,13 +91,13 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
         return getOriginType().getContentType()
     }
 
-    fun myContext(): MyContext? {
-        return accountName.getOrigin().myContext
+    fun myContext(): MyContext {
+        return accountName.origin.myContext
     }
 
     companion object {
-        val EMPTY: HttpConnectionData? = HttpConnectionData(AccountName.Companion.getEmpty())
-        fun fromAccountConnectionData(accountnData: AccountConnectionData?): HttpConnectionData? {
+        val EMPTY: HttpConnectionData = HttpConnectionData(AccountName.Companion.getEmpty())
+        fun fromAccountConnectionData(accountnData: AccountConnectionData?): HttpConnectionData {
             val data = HttpConnectionData(accountnData.getAccountName())
             data.originUrl = accountnData.getOriginUrl()
             data.urlForUserToken = accountnData.getOriginUrl()

@@ -52,7 +52,6 @@ import org.andstatus.app.util.TaggedClass
 import org.andstatus.app.util.TriState
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
 import java.util.function.Supplier
 
 /**
@@ -83,7 +82,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     private val deleted: Boolean
     private var order = 0
 
-    internal constructor(accountName: AccountName) : this(AccountData.Companion.fromAccountName(accountName)) {}
+    internal constructor(accountName: AccountName) : this(AccountData.fromAccountName(accountName)) {}
 
     fun getValidOrCurrent(myContext: MyContext): MyAccount {
         return if (isValid) this else myContext.accounts().currentAccount
@@ -103,7 +102,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         }
 
     fun setConnection(): Connection? {
-        connection = Connection.Companion.fromMyAccount(this, TriState.Companion.fromBoolean(isOAuth))
+        connection = Connection.fromMyAccount(this, TriState.fromBoolean(isOAuth))
         return connection
     }
 
@@ -199,8 +198,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         }
 
     private fun setOAuth(isOAuthTriState: TriState) {
-        var isOAuthBoolean = true
-        isOAuthBoolean = if (isOAuthTriState == TriState.UNKNOWN) {
+        val isOAuthBoolean: Boolean = if (isOAuthTriState == TriState.UNKNOWN) {
             data.getDataBoolean(KEY_OAUTH, origin.isOAuthDefault())
         } else {
             isOAuthTriState.toBoolean(origin.isOAuthDefault())
@@ -258,8 +256,8 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         return isOAuth
     }
 
-    fun getPassword(): String? {
-        return getConnection()?.getPassword()
+    fun getPassword(): String {
+        return getConnection().getPassword()
     }
 
     fun isUsernameNeededToStartAddingNewAccount(): Boolean {
@@ -277,7 +275,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     fun requestSync() {
         if (!isPersistent()) return
         AccountUtils.getExistingAndroidAccount(data.accountName)
-                .onSuccess { a: Account? -> ContentResolver.requestSync(a, MatchedUri.Companion.AUTHORITY, Bundle()) }
+                .onSuccess { a: Account? -> ContentResolver.requestSync(a, MatchedUri.AUTHORITY, Bundle()) }
     }
 
     fun getSyncFrequencySeconds(): Long {
@@ -294,11 +292,11 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
 
     override fun toString(): String {
         if (EMPTY === this) {
-            return MyStringBuilder.Companion.formatKeyValue(this, "EMPTY")
+            return MyStringBuilder.formatKeyValue(this, "EMPTY")
         }
         var members = (if (isValid) "" else "(invalid) ") + "accountName:" + data.accountName + ","
         try {
-            if (actor != null && actor.nonEmpty) {
+            if (actor.nonEmpty) {
                 members += actor.toString() + ","
             }
             if (!isPersistent()) {
@@ -331,14 +329,14 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         } catch (e: Exception) {
             MyLog.v(this, members, e)
         }
-        return MyStringBuilder.Companion.formatKeyValue(this, members)
+        return MyStringBuilder.formatKeyValue(this, members)
     }
 
-    fun toJson(): JSONObject? {
+    fun toJson(): JSONObject {
         return data.updateFrom(this).toJSon()
     }
 
-    fun toAccountButtonText(): String? {
+    fun toAccountButtonText(): String {
         var accountButtonText = getShortestUniqueAccountName()
         if (!isValidAndSucceeded()) {
             accountButtonText = "($accountButtonText)"
@@ -346,17 +344,17 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         return accountButtonText
     }
 
-    override fun compareTo(another: MyAccount?): Int {
-        if (this === another) {
+    override fun compareTo(other: MyAccount?): Int {
+        if (this === other) {
             return 0
         }
-        if (another == null) {
+        if (other == null) {
             return -1
         }
-        if (isValid != another.isValid) {
+        if (isValid != other.isValid) {
             return if (isValid) -1 else 1
         }
-        return if (order > another.order) 1 else if (order < another.order) -1 else getAccountName().compareTo(another.getAccountName())
+        return if (order > other.order) 1 else if (order < other.order) -1 else getAccountName().compareTo(other.getAccountName())
     }
 
     override fun equals(other: Any?): Boolean {
@@ -369,7 +367,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
 
     override fun hashCode(): Int {
         var result = data.accountName.hashCode()
-        if (!actor.oid.isNullOrEmpty()) {
+        if (!actor.oid.isEmpty()) {
             result = 31 * result + actor.oid.hashCode()
         }
         return result
@@ -445,7 +443,7 @@ ${MyLog.getStackTrace(Exception())}""")
 
         fun setOAuth(isOauthBoolean: Boolean): Builder {
             val isOauth = if (isOauthBoolean == myAccount.origin.isOAuthDefault()) TriState.UNKNOWN
-                else TriState.Companion.fromBoolean(isOauthBoolean)
+                else TriState.fromBoolean(isOauthBoolean)
             myAccount.setOAuth(isOauth)
             return this
         }
@@ -455,7 +453,7 @@ ${MyLog.getStackTrace(Exception())}""")
         }
 
         private fun rebuildMyAccount(origin: Origin, uniqueName: String) {
-            rebuildMyAccount(AccountName.Companion.fromOriginAndUniqueName(origin, uniqueName))
+            rebuildMyAccount(AccountName.fromOriginAndUniqueName(origin, uniqueName))
         }
 
         fun rebuildMyAccount(accountName: AccountName) {
@@ -471,7 +469,7 @@ ${MyLog.getStackTrace(Exception())}""")
             return getAccount().getOAccountName().getUniqueName()
         }
 
-        fun getPassword(): String? {
+        fun getPassword(): String {
             return getAccount().getPassword()
         }
 
@@ -563,12 +561,12 @@ ${MyLog.getStackTrace(Exception())}""")
         }
 
         fun onCredentialsVerified(actor: Actor): Try<Builder> {
-            var ok = actor.nonEmpty && !actor.oid.isNullOrEmpty() && actor.isUsernameValid()
+            var ok = actor.nonEmpty && !actor.oid.isEmpty() && actor.isUsernameValid()
             val errorSettingUsername = !ok
             var credentialsOfOtherAccount = false
             // We are comparing usernames ignoring case, but we fix correct case
             // as the Originating system tells us.
-            if (ok && !myAccount.username.isNullOrEmpty()
+            if (ok && !myAccount.username.isEmpty()
                     && myAccount.data.accountName.username.compareTo(actor.getUsername(), ignoreCase = true) != 0) {
                 // Credentials belong to other Account ??
                 ok = false
@@ -581,7 +579,7 @@ ${MyLog.getStackTrace(Exception())}""")
                 actor.user.setIsMyUser(TriState.TRUE)
                 actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
                 myAccount.actor = actor
-                if (DatabaseConverterController.Companion.isUpgrading()) {
+                if (DatabaseConverterController.isUpgrading()) {
                     MyLog.v(this, "Upgrade in progress")
                     myAccount.actor.actorId = myAccount.data.getDataLong(KEY_ACTOR_ID, myAccount.actor.actorId)
                 } else {
@@ -595,7 +593,7 @@ ${MyLog.getStackTrace(Exception())}""")
                                 " to " + actor.uniqueName)
                         myAccount.data.updateFrom(myAccount)
                         val newData = myAccount.data.withAccountName(
-                                AccountName.Companion.fromOriginAndUniqueName(myAccount.origin, actor.uniqueName))
+                                AccountName.fromOriginAndUniqueName(myAccount.origin, actor.uniqueName))
                         myAccount = loadFromAccountData(newData, "onCredentialsVerified").myAccount
                     }
                     save()
@@ -711,7 +709,7 @@ ${MyLog.getStackTrace(Exception())}""")
 
             /** Loads existing account from Persistence  */
             fun loadFromAndroidAccount(myContext: MyContext, account: Account): Builder {
-                return loadFromAccountData(AccountData.Companion.fromAndroidAccount(myContext, account), "fromAndroidAccount")
+                return loadFromAccountData(AccountData.fromAndroidAccount(myContext, account), "fromAndroidAccount")
             }
 
             fun loadFromAccountData(accountData: AccountData, method: String?): Builder {
@@ -729,7 +727,7 @@ ${MyLog.getStackTrace(Exception())}""")
             @JvmField
             val CREATOR: Parcelable.Creator<Builder> = object : Parcelable.Creator<Builder> {
                 override fun createFromParcel(source: Parcel?): Builder {
-                    return Builder.loadFromAccountData(AccountData.CREATOR.createFromParcel(source), "createFromParcel")
+                    return loadFromAccountData(AccountData.CREATOR.createFromParcel(source), "createFromParcel")
                 }
 
                 override fun newArray(size: Int): Array<Builder?> {
@@ -741,7 +739,7 @@ ${MyLog.getStackTrace(Exception())}""")
 
     companion object {
         private val TAG: String = MyAccount::class.java.simpleName
-        val EMPTY: MyAccount = MyAccount(AccountName.Companion.getEmpty())
+        val EMPTY: MyAccount = MyAccount(AccountName.getEmpty())
         val KEY_ACCOUNT_NAME: String = "account_name"
 
         /** Username for the account  */
@@ -777,9 +775,9 @@ ${MyLog.getStackTrace(Exception())}""")
     }
 
     init {
-        actor = Actor.Companion.load(data.myContext(), data.getDataLong(KEY_ACTOR_ID, 0L), false,
+        actor = Actor.load(data.myContext(), data.getDataLong(KEY_ACTOR_ID, 0L), false,
                 Supplier<Actor> {
-                    Actor.Companion.fromOid(data.accountName.origin, data.getDataString(KEY_ACTOR_OID))
+                    Actor.fromOid(data.accountName.origin, data.getDataString(KEY_ACTOR_OID))
                             .withUniqueName(data.accountName.getUniqueName())
                             .lookupUser()
                 })
@@ -787,10 +785,10 @@ ${MyLog.getStackTrace(Exception())}""")
         syncFrequencySeconds = data.getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0L)
         isSyncable = data.getDataBoolean(KEY_IS_SYNCABLE, true)
         isSyncedAutomatically = data.getDataBoolean(KEY_IS_SYNCED_AUTOMATICALLY, true)
-        setOAuth(TriState.Companion.fromBoolean(data.getDataBoolean(KEY_OAUTH, origin.isOAuthDefault())))
+        setOAuth(TriState.fromBoolean(data.getDataBoolean(KEY_OAUTH, origin.isOAuthDefault())))
         setConnection()
-        getConnection().setPassword(data.getDataString(Connection.Companion.KEY_PASSWORD))
-        credentialsVerified = CredentialsVerificationStatus.Companion.load(data)
+        getConnection().setPassword(data.getDataString(Connection.KEY_PASSWORD))
+        credentialsVerified = CredentialsVerificationStatus.load(data) ?: CredentialsVerificationStatus.NEVER
         order = data.getDataInt(KEY_ORDER, 1)
     }
 }

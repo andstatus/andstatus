@@ -103,7 +103,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem?, 
     private fun loadActors(items: MutableList<ConversationViewItem?>?) {
         if (items.isEmpty()) return
         val loader = ActorsLoader(myContext, ActorsScreenType.ACTORS_AT_ORIGIN,
-                ma.getOrigin(), 0, "")
+                ma.origin, 0, "")
         items.forEach(Consumer { item: ConversationViewItem? -> item.addActorsToLoad(loader) })
         if (loader.list.isEmpty()) return
         loader.load { progress: String? -> }
@@ -141,7 +141,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem?, 
             return cachedItem
         }
         val uri: Uri = MatchedUri.Companion.getTimelineItemUri(
-                myContext.timelines()[TimelineType.EVERYTHING, Actor.Companion.EMPTY, ma.getOrigin()], item.getNoteId())
+                myContext.timelines()[TimelineType.EVERYTHING, Actor.Companion.EMPTY, ma.origin], item.getNoteId())
         myContext.context().contentResolver
                 .query(uri, item.getProjection().toArray<String?>(arrayOf<String?>()), null, null, null).use { cursor ->
                     if (cursor != null && cursor.moveToFirst()) {

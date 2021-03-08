@@ -793,7 +793,7 @@ class MediaMetadataTest {
 
     @Test
     fun testFromFilePath() {
-        val mediaMetadata: MediaMetadata = MediaMetadata.Companion.fromFilePath(DemoData.Companion.demoData.localVideoTestUri.toString())
+        val mediaMetadata: MediaMetadata = MediaMetadata.Companion.fromFilePath(DemoData.demoData.localVideoTestUri.toString())
         Assert.assertEquals(180, mediaMetadata.height.toLong())
     }
 }

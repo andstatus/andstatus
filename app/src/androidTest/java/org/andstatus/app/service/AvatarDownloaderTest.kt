@@ -816,21 +816,21 @@ class AvatarDownloaderTest {
 
     @Test
     fun testLoadPumpio() {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
-        Assert.assertTrue(DemoData.Companion.demoData.conversationAccountName + " exists", ma.isValid)
-        loadForOneMyAccount(ma, DemoData.Companion.demoData.conversationAccountAvatarUrl)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
+        Assert.assertTrue(DemoData.demoData.conversationAccountName + " exists", ma.isValid)
+        loadForOneMyAccount(ma, DemoData.demoData.conversationAccountAvatarUrl)
     }
 
     @Test
     fun testLoadBasicAuth() {
-        val ma: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
-        Assert.assertTrue(DemoData.Companion.demoData.gnusocialTestAccountName + " exists", ma.isValid)
-        loadForOneMyAccount(ma, DemoData.Companion.demoData.gnusocialTestAccountAvatarUrl)
+        val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
+        Assert.assertTrue(DemoData.demoData.gnusocialTestAccountName + " exists", ma.isValid)
+        loadForOneMyAccount(ma, DemoData.demoData.gnusocialTestAccountAvatarUrl)
     }
 
     private fun loadForOneMyAccount(ma: MyAccount?, urlStringInitial: String?) {
-        AvatarDownloaderTest.Companion.changeAvatarUrl(ma.getActor(), urlStringInitial)
-        DownloadData.Companion.deleteAllOfThisActor(ma.getOrigin().myContext, ma.actorId)
+        AvatarDownloaderTest.Companion.changeAvatarUrl(ma.actor, urlStringInitial)
+        DownloadData.Companion.deleteAllOfThisActor(ma.origin.myContext, ma.actorId)
         val loader: FileDownloader = AvatarDownloader(ma.getActor())
         Assert.assertEquals("Not loaded yet", DownloadStatus.ABSENT, loader.status)
         loadAndAssertStatusForMa(ma, "First loading",
@@ -847,10 +847,10 @@ class AvatarDownloaderTest {
         loadAndAssertStatusForMa(ma, "Avatar was deleted",
                 DownloadStatus.LOADED, DownloadStatus.LOADED, false)
         deleteMaAvatarFile(ma)
-        changeAvatarStatus(ma.getActor(), DownloadStatus.HARD_ERROR)
+        changeAvatarStatus(ma.actor, DownloadStatus.HARD_ERROR)
         loadAndAssertStatusForMa(ma, "Reload even after hard error", DownloadStatus.LOADED,
                 DownloadStatus.LOADED, false)
-        changeAvatarStatus(ma.getActor(), DownloadStatus.SOFT_ERROR)
+        changeAvatarStatus(ma.actor, DownloadStatus.SOFT_ERROR)
         loadAndAssertStatusForMa(ma, "Reload on Soft error",
                 DownloadStatus.LOADED, DownloadStatus.LOADED, false)
         changeMaAvatarUrl(ma, "")
@@ -860,7 +860,7 @@ class AvatarDownloaderTest {
         loadAndAssertStatusForMa(ma, "Inexistent avatar",
                 DownloadStatus.HARD_ERROR, DownloadStatus.LOADED, false)
         val aLoader = ActorsLoader( MyContextHolder.myContextHolder.getNow(), ActorsScreenType.ACTORS_AT_ORIGIN,
-                ma.getOrigin(), 0, "")
+                ma.origin, 0, "")
         aLoader.addActorToList(ma.getActor())
         aLoader.load { progress: String? -> }
         val viewItem = aLoader.list[0]
@@ -881,10 +881,10 @@ class AvatarDownloaderTest {
 
     @Test
     fun testDeletedFile() {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
-        changeMaAvatarUrl(ma, DemoData.Companion.demoData.conversationAccountAvatarUrl)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
+        changeMaAvatarUrl(ma, DemoData.demoData.conversationAccountAvatarUrl)
         val urlString = MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, ma.actorId)
-        Assert.assertEquals(DemoData.Companion.demoData.conversationAccountAvatarUrl, urlString)
+        Assert.assertEquals(DemoData.demoData.conversationAccountAvatarUrl, urlString)
         loadAndAssertStatusForMa(ma, "", DownloadStatus.LOADED, DownloadStatus.LOADED, false)
         var data: DownloadData = AvatarData.Companion.getCurrentForActor(ma.actor)
         Assert.assertTrue("Existence of " + data.filename, data.file.existed)
@@ -898,7 +898,7 @@ class AvatarDownloaderTest {
     }
 
     private fun changeMaAvatarUrl(ma: MyAccount?, urlString: String?) {
-        AvatarDownloaderTest.Companion.changeAvatarUrl(ma.getActor(), urlString)
+        AvatarDownloaderTest.Companion.changeAvatarUrl(ma.actor, urlString)
     }
 
     private fun changeAvatarStatus(actor: Actor?, status: DownloadStatus?) {
@@ -916,7 +916,7 @@ class AvatarDownloaderTest {
     private fun loadAndAssertStatusForMa(ma: MyAccount?, description: String?, loadStatus: DownloadStatus?,
                                          displayedStatus: DownloadStatus?, mockNetworkError: Boolean): Long {
         TestSuite.clearHttpMocks()
-        val actor: Actor = Actor.Companion.load( MyContextHolder.myContextHolder.getBlocking(), ma.getActor().actorId)
+        val actor: Actor = Actor.Companion.load( MyContextHolder.myContextHolder.getBlocking(), ma.actor.actorId)
         val loader: FileDownloader = AvatarDownloader(actor)
         if (mockNetworkError) {
             loader.setConnectionMock(ConnectionMock.Companion.newFor(ma)

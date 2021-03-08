@@ -813,7 +813,7 @@ class CommandExecutorStrategyTest {
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        ma =  MyContextHolder.myContextHolder.getNow().accounts().getFirstPreferablySucceededForOrigin(DemoData.Companion.demoData.getGnuSocialOrigin())
+        ma =  MyContextHolder.myContextHolder.getNow().accounts().getFirstPreferablySucceededForOrigin(DemoData.demoData.getGnuSocialOrigin())
         mock = ConnectionMock.Companion.newFor(ma)
         httpConnectionMock = mock.getHttpMock()
         Assert.assertTrue(ma.toString(), ma.isValidAndSucceeded())
@@ -821,7 +821,7 @@ class CommandExecutorStrategyTest {
 
     @Test
     fun testFetchTimeline() {
-        var commandData: CommandData = CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, MyAccount.Companion.EMPTY, TimelineType.HOME)
+        var commandData: CommandData = CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, MyAccount.EMPTY, TimelineType.HOME)
         var strategy: CommandExecutorStrategy = CommandExecutorStrategy.Companion.getStrategy(commandData, null)
         Assert.assertEquals(CommandExecutorStrategy::class.java, strategy.javaClass)
         commandData = CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME)
@@ -832,11 +832,11 @@ class CommandExecutorStrategyTest {
     @Test
     fun testSearch() {
         val commandData1: CommandData = CommandData.Companion.newSearch(SearchObjects.NOTES,
-                 MyContextHolder.myContextHolder.getNow(),  Origin.EMPTY, DemoData.Companion.demoData.globalPublicNoteText)
+                 MyContextHolder.myContextHolder.getNow(),  Origin.EMPTY, DemoData.demoData.globalPublicNoteText)
         var strategy: CommandExecutorStrategy = CommandExecutorStrategy.Companion.getStrategy(commandData1, null)
         Assert.assertEquals(CommandExecutorStrategy::class.java, strategy.javaClass)
         val commandData2: CommandData = CommandData.Companion.newSearch(SearchObjects.NOTES,
-                 MyContextHolder.myContextHolder.getNow(), ma.getOrigin(), DemoData.Companion.demoData.globalPublicNoteText)
+                 MyContextHolder.myContextHolder.getNow(), ma.origin, DemoData.demoData.globalPublicNoteText)
         strategy = CommandExecutorStrategy.Companion.getStrategy(commandData2, null)
         Assert.assertEquals(TimelineDownloaderOther::class.java, strategy.javaClass)
         strategy.execute()
@@ -844,7 +844,7 @@ class CommandExecutorStrategyTest {
                 ", results: '" + httpConnectionMock.getResults() + "'",
                 httpConnectionMock.getResults().stream()
                         .map { obj: HttpReadResult? -> obj.getUrl() }
-                        .anyMatch(Predicate { url: String? -> url.contains(DemoData.Companion.demoData.globalPublicNoteText) }))
+                        .anyMatch(Predicate { url: String? -> url.contains(DemoData.demoData.globalPublicNoteText) }))
     }
 
     @Test
@@ -920,7 +920,7 @@ class CommandExecutorStrategyTest {
         TestSuite.setHttpConnectionMockInstance(http)
         val commandData: CommandData = CommandData.Companion.newOriginCommand(
                 CommandEnum.GET_OPEN_INSTANCES,
-                DemoData.Companion.demoData.getGnuSocialOrigin())
+                DemoData.demoData.getGnuSocialOrigin())
         DiscoveredOrigins.clear()
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
         Assert.assertEquals(1, commandData.result.executionCount.toLong())

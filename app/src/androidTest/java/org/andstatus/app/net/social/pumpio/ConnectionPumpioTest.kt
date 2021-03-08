@@ -71,8 +71,8 @@ class ConnectionPumpioTest {
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        originUrl = UrlUtils.fromString("https://" + DemoData.Companion.demoData.pumpioMainHost)
-        mock = ConnectionMock.Companion.newFor(DemoData.Companion.demoData.conversationAccountName)
+        originUrl = UrlUtils.fromString("https://" + DemoData.demoData.pumpioMainHost)
+        mock = ConnectionMock.Companion.newFor(DemoData.demoData.conversationAccountName)
         connection = mock.connection as ConnectionPumpio
         val data = mock.getHttp().data
         data.originUrl = originUrl
@@ -140,13 +140,13 @@ class ConnectionPumpioTest {
     fun testGetConnectionAndUrl() {
         val origin = connection.getData().origin
         val actors = arrayOf<Actor?>(
-                Actor.Companion.fromOid(origin, "acct:t131t@" + DemoData.Companion.demoData.pumpioMainHost)
-                        .setWebFingerId("t131t@" + DemoData.Companion.demoData.pumpioMainHost),
-                Actor.Companion.fromOid(origin, "somebody@" + DemoData.Companion.demoData.pumpioMainHost)
-                        .setWebFingerId("somebody@" + DemoData.Companion.demoData.pumpioMainHost)
+                Actor.Companion.fromOid(origin, "acct:t131t@" + DemoData.demoData.pumpioMainHost)
+                        .setWebFingerId("t131t@" + DemoData.demoData.pumpioMainHost),
+                Actor.Companion.fromOid(origin, "somebody@" + DemoData.demoData.pumpioMainHost)
+                        .setWebFingerId("somebody@" + DemoData.demoData.pumpioMainHost)
         )
         val urls = arrayOf<String?>(originUrl.toString() + "/api/user/t131t/profile", originUrl.toString() + "/api/user/somebody/profile")
-        val hosts = arrayOf<String?>(DemoData.Companion.demoData.pumpioMainHost, DemoData.Companion.demoData.pumpioMainHost)
+        val hosts = arrayOf<String?>(DemoData.demoData.pumpioMainHost, DemoData.demoData.pumpioMainHost)
         for (ind in actors.indices) {
             val conu: ConnectionAndUrl = ConnectionAndUrl.Companion.fromActor(connection, ApiRoutineEnum.GET_ACTOR, actors[ind]).get()
             Assert.assertEquals("Expecting '" + urls[ind] + "'", Uri.parse(urls[ind]), conu.uri)
@@ -387,7 +387,7 @@ class ConnectionPumpioTest {
     @Throws(IOException::class)
     fun testDestroyStatus() {
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_delete_comment_response)
-        Assert.assertTrue("Success", connection.deleteNote("https://" + DemoData.Companion.demoData.pumpioMainHost
+        Assert.assertTrue("Success", connection.deleteNote("https://" + DemoData.demoData.pumpioMainHost
                 + "/api/comment/xf0WjLeEQSlyi8jwHJ0ttre").get())
         val tried = connection.deleteNote("")
         Assert.assertTrue(tried.isFailure)
@@ -401,7 +401,7 @@ class ConnectionPumpioTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image)
         val note: Note = Note.Companion.fromOriginAndOid(mock.getData().origin, "", DownloadStatus.SENDING)
                 .setContentPosted("Test post note with media")
-                .withAttachments(Attachments().add(Attachment.Companion.fromUriAndMimeType(DemoData.Companion.demoData.localImageTestUri,
+                .withAttachments(Attachments().add(Attachment.Companion.fromUriAndMimeType(DemoData.demoData.localImageTestUri,
                         MyContentType.IMAGE.generalMimeType)))
         val activity = connection.updateNote(note)
     }
@@ -416,7 +416,7 @@ class ConnectionPumpioTest {
         val content = "<p dir=\"ltr\">Video attachment is here</p>"
         val note: Note = Note.Companion.fromOriginAndOid(mock.getData().origin, "", DownloadStatus.SENDING)
                 .setName(name).setContentPosted(content)
-                .withAttachments(Attachments().add(Attachment.Companion.fromUriAndMimeType(DemoData.Companion.demoData.localVideoTestUri,
+                .withAttachments(Attachments().add(Attachment.Companion.fromUriAndMimeType(DemoData.demoData.localVideoTestUri,
                         MyContentType.VIDEO.generalMimeType)))
         val activity = connection.updateNote(note).get()
         Assert.assertEquals("Responses counter " + mock.getHttpMock(), 3, mock.getHttpMock().responsesCounter.toLong())
@@ -436,7 +436,7 @@ class ConnectionPumpioTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_activity_with_image)
         var note: Note? = connection.getNote("https://io.jpope.org/api/activity/w9wME-JVQw2GQe6POK7FSQ").get().note
         if (uniqueUid) {
-            note = note.withNewOid(note.oid + "_" + DemoData.Companion.demoData.testRunUid)
+            note = note.withNewOid(note.oid + "_" + DemoData.demoData.testRunUid)
         }
         Assert.assertNotNull("note returned", note)
         Assert.assertEquals("has attachment", 1, note.attachments.size().toLong())

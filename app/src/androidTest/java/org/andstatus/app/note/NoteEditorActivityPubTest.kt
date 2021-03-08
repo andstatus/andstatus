@@ -808,7 +808,7 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem?>() {
     override fun getActivityIntent(): Intent? {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithAccounts(this)
-        mock = ConnectionMock.Companion.newFor(DemoData.Companion.demoData.activityPubTestAccountName)
+        mock = ConnectionMock.Companion.newFor(DemoData.demoData.activityPubTestAccountName)
         val ma = mock.getData().myAccount
          MyContextHolder.myContextHolder.getBlocking().accounts().setCurrentAccount(ma)
         Assert.assertTrue("isValidAndSucceeded $ma", ma.isValidAndSucceeded)
@@ -824,7 +824,7 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem?>() {
         TestSuite.waitForListLoaded(activity, 2)
         ActivityTestHelper.Companion.hideEditorAndSaveDraft<ActivityViewItem?>(method, activity)
         ActivityTestHelper.Companion.openEditor<ActivityViewItem?>(method, activity)
-        val actorUniqueName = "me" + DemoData.Companion.demoData.testRunUid + "@mastodon.example.com"
+        val actorUniqueName = "me" + DemoData.demoData.testRunUid + "@mastodon.example.com"
         val content = "Sending note to the unknown yet Actor @$actorUniqueName"
         // TypeTextAction doesn't work here due to auto-correction
         Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
@@ -850,7 +850,7 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem?>() {
         TestSuite.waitForListLoaded(activity, 2)
         ActivityTestHelper.Companion.hideEditorAndSaveDraft<ActivityViewItem?>(method, activity)
         ActivityTestHelper.Companion.openEditor<ActivityViewItem?>(method, activity)
-        val content = "Sending sensitive note " + DemoData.Companion.demoData.testRunUid
+        val content = "Sending sensitive note " + DemoData.demoData.testRunUid
         Espresso.onView(ViewMatchers.withId(R.id.is_sensitive)).check(ViewAssertions.matches(ViewMatchers.isNotChecked())).perform(ViewActions.scrollTo(), ViewActions.click())
         // TypeTextAction doesn't work here due to auto-correction
         Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(content))

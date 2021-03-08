@@ -825,7 +825,7 @@ class MyUrlSpanTest : ActivityTest<HelpActivity?>() {
         forOneString(text, Audience.Companion.EMPTY) { spannedString: SpannedString? -> TryUtils.SUCCESS }
         val part0 = "A post to "
         val part1 = "@AndStatus@pleroma.site"
-        val audience2 = Audience(DemoData.Companion.demoData.getAccountActorByOid(DemoData.Companion.demoData.activityPubTestAccountActorOid).origin)
+        val audience2 = Audience(DemoData.demoData.getAccountActorByOid(DemoData.demoData.activityPubTestAccountActorOid).origin)
         val actor2: Actor = Actor.Companion.fromOid(audience2.origin, "https://pleroma.site/users/AndStatus")
         actor2.username = "AndStatus"
         actor2.profileUrl = actor2.oid

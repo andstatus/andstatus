@@ -43,10 +43,10 @@ class DemoGnuSocialConversationInserter {
     private fun mySetup() {
         iteration = iterationCounter.incrementAndGet()
         conversationOid = java.lang.Long.toString(MyLog.uniqueCurrentTimeMS())
-        origin = DemoData.Companion.demoData.getGnuSocialOrigin()
-        Assert.assertTrue(DemoData.Companion.demoData.gnusocialTestOriginName + " exists", origin.isValid())
+        origin = DemoData.demoData.getGnuSocialOrigin()
+        Assert.assertTrue(DemoData.demoData.gnusocialTestOriginName + " exists", origin.isValid())
         Assert.assertNotSame("No host URL: $origin", "", origin.getHost())
-        val myAccount: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
+        val myAccount: MyAccount = DemoData.demoData.getGnuSocialAccount()
         accountActor = myAccount.actor
         Assert.assertTrue("Should be fully defined $myAccount", accountActor.isFullyDefined())
         Assert.assertEquals("Inconsistent origin for $accountActor\n and $origin", accountActor.origin, origin)
@@ -72,7 +72,7 @@ class DemoGnuSocialConversationInserter {
         addActivity(reply1)
         addActivity(reply2)
         DemoNoteInserter.Companion.assertStoredVisibility(reply2, Visibility.PUBLIC_AND_TO_FOLLOWERS)
-        val reply4 = buildActivity(author4, "Reply 4 to Reply 1, " + DemoData.Companion.demoData.publicNoteText + " other author", reply1, null)
+        val reply4 = buildActivity(author4, "Reply 4 to Reply 1, " + DemoData.demoData.publicNoteText + " other author", reply1, null)
         addActivity(reply4)
         DemoNoteInserter.Companion.assertStoredVisibility(reply4, Visibility.PUBLIC)
         DemoNoteInserter.Companion.increaseUpdateDate(reply4).withVisibility(Visibility.PRIVATE)
@@ -82,7 +82,7 @@ class DemoGnuSocialConversationInserter {
         addWithMultipleAttachments(reply5)
         addWithMultipleImages(buildActivity(author3, "Reply 6 to Reply 4 - the second, with 2 images", reply4, null), 2)
         val reply7 = buildActivity(author1, "Reply 7 to Reply 2 is about "
-                + DemoData.Companion.demoData.publicNoteText + " and something else", reply2, null)
+                + DemoData.demoData.publicNoteText + " and something else", reply2, null)
                 .withVisibility(Visibility.PUBLIC)
         addActivity(reply7)
         DemoNoteInserter.Companion.assertStoredVisibility(reply7, Visibility.PUBLIC)
@@ -91,7 +91,7 @@ class DemoGnuSocialConversationInserter {
         addWithMultipleImages(reply9, 3)
         val reply10 = buildActivity(author3, "Reply 10 to Reply 8, number of images: 1", reply8, null)
         addWithMultipleImages(reply10, 1)
-        val reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + DemoData.Companion.demoData.globalPublicNoteText
+        val reply11 = buildActivity(author2, "Reply 11 to Reply 7 with " + DemoData.demoData.globalPublicNoteText
                 + " text", reply7, null)
                 .withVisibility(Visibility.PUBLIC)
         addActivity(reply11)

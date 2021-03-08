@@ -801,7 +801,7 @@ class SearchActorsTest : ActivityTest<ActorsScreen?>() {
         TestSuite.initializeWithAccounts(this)
         MyLog.i(this, "setUp ended")
         return Intent(MyAction.VIEW_ACTORS.action,
-                MatchedUri.Companion.getActorsScreenUri(ActorsScreenType.ACTORS_AT_ORIGIN, 0, 0, DemoData.Companion.demoData.t131tUsername))
+                MatchedUri.Companion.getActorsScreenUri(ActorsScreenType.ACTORS_AT_ORIGIN, 0, 0, DemoData.demoData.t131tUsername))
     }
 
     @Test
@@ -813,10 +813,10 @@ class SearchActorsTest : ActivityTest<ActorsScreen?>() {
     Found only ${listItems.size}items
     $listItems
     """.trimIndent(), listItems.size > 1)
-        val actor: Actor = ActorsScreenTest.Companion.getByActorOid(listItems, DemoData.Companion.demoData.pumpioTestAccountActorOid)
+        val actor: Actor = ActorsScreenTest.Companion.getByActorOid(listItems, DemoData.demoData.pumpioTestAccountActorOid)
         Assert.assertEquals("""
     Actor was not found
     $listItems
-    """.trimIndent(), DemoData.Companion.demoData.pumpioTestAccountActorOid, actor.oid)
+    """.trimIndent(), DemoData.demoData.pumpioTestAccountActorOid, actor.oid)
     }
 }

@@ -832,7 +832,7 @@ object TestSuite {
 
     fun initializeWithAccounts(testCase: Any?): Context? {
         org.andstatus.app.context.TestSuite.initialize(testCase)
-        if ( MyContextHolder.myContextHolder.getBlocking().accounts().fromAccountName(DemoData.Companion.demoData.activityPubTestAccountName).isEmpty) {
+        if ( MyContextHolder.myContextHolder.getBlocking().accounts().fromAccountName(DemoData.demoData.activityPubTestAccountName).isEmpty) {
             org.andstatus.app.context.TestSuite.ensureDataAdded()
         }
         return org.andstatus.app.context.TestSuite.getMyContextForTest().context()
@@ -983,8 +983,8 @@ object TestSuite {
         MyLog.v(method, "$method: started")
         if (!org.andstatus.app.context.TestSuite.dataAdded) {
             org.andstatus.app.context.TestSuite.dataAdded = true
-            DemoData.Companion.demoData.createNewInstance()
-            DemoData.Companion.demoData.add(org.andstatus.app.context.TestSuite.getMyContextForTest(), org.andstatus.app.context.TestSuite.dataPath)
+            DemoData.demoData.createNewInstance()
+            DemoData.demoData.add(org.andstatus.app.context.TestSuite.getMyContextForTest(), org.andstatus.app.context.TestSuite.dataPath)
         }
         MyLog.v(method, "$method: ended")
     }

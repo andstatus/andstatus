@@ -23,7 +23,7 @@ import androidx.annotation.CallSuper
 import androidx.recyclerview.widget.RecyclerView
 import java.util.*
 
-abstract class DragItemAdapter<T, VH : DragItemAdapter.ViewHolder?> : RecyclerView.Adapter<VH>() {
+abstract class DragItemAdapter<T, VH : DragItemAdapter.ViewHolder> : RecyclerView.Adapter<VH>() {
     interface DragStartCallback {
         fun startDrag(itemView: View, itemId: Long): Boolean
         val isDragging: Boolean
@@ -32,13 +32,13 @@ abstract class DragItemAdapter<T, VH : DragItemAdapter.ViewHolder?> : RecyclerVi
     private var mDragStartCallback: DragStartCallback? = null
     private var mDragItemId = RecyclerView.NO_ID
     var dropTargetId = RecyclerView.NO_ID
-    protected var mItemList: List<T?>? = null
+    protected var mItemList: MutableList<T>? = null
 
     /**
      * @return a unique id for an item at the specific position.
      */
     abstract fun getUniqueItemId(position: Int): Long
-    var itemList: List<T?>?
+    var itemList: MutableList<T>?
         get() = mItemList
         set(itemList) {
             mItemList = itemList
@@ -56,33 +56,41 @@ abstract class DragItemAdapter<T, VH : DragItemAdapter.ViewHolder?> : RecyclerVi
     }
 
     fun removeItem(pos: Int): Any? {
-        if (mItemList != null && mItemList.size > pos && pos >= 0) {
-            val item: Any = mItemList.removeAt(pos)
-            notifyItemRemoved(pos)
-            return item
+        mItemList?.let {
+            if (it.size > pos && pos >= 0) {
+                val item = it.removeAt(pos)
+                notifyItemRemoved(pos)
+                return item
+            }
         }
         return null
     }
 
-    fun addItem(pos: Int, item: T) {
-        if (mItemList != null && mItemList.size >= pos) {
-            mItemList.add(pos, item)
-            notifyItemInserted(pos)
+    fun addItem(pos: Int, item: T?) {
+        mItemList?.let {
+            if (it.size >= pos && item != null) {
+                it.add(pos, item)
+                notifyItemInserted(pos)
+            }
         }
     }
 
     fun changeItemPosition(fromPos: Int, toPos: Int) {
-        if (mItemList != null && mItemList.size > fromPos && mItemList.size > toPos) {
-            val item: T = mItemList.removeAt(fromPos)
-            mItemList.add(toPos, item)
-            notifyItemMoved(fromPos, toPos)
+        mItemList?.let {
+            if (it.size > fromPos && it.size > toPos) {
+                val item = it.removeAt(fromPos)
+                it.add(toPos, item)
+                notifyItemMoved(fromPos, toPos)
+            }
         }
     }
 
     fun swapItems(pos1: Int, pos2: Int) {
-        if (mItemList != null && mItemList.size > pos1 && mItemList.size > pos2) {
-            Collections.swap(mItemList, pos1, pos2)
-            notifyDataSetChanged()
+        mItemList?.let {
+            if (it.size > pos1 && it.size > pos2) {
+                Collections.swap(it, pos1, pos2)
+                notifyDataSetChanged()
+            }
         }
     }
 
@@ -101,20 +109,20 @@ abstract class DragItemAdapter<T, VH : DragItemAdapter.ViewHolder?> : RecyclerVi
     }
 
     override fun getItemCount(): Int {
-        return if (mItemList == null) 0 else mItemList.size
+        return mItemList?.size ?: 0
     }
 
     @CallSuper
     override fun onBindViewHolder(holder: VH, position: Int) {
         val itemId = getItemId(position)
-        holder!!.mItemId = itemId
+        holder.mItemId = itemId
         holder.itemView.visibility = if (mDragItemId == itemId) View.INVISIBLE else View.VISIBLE
         holder.setDragStartCallback(mDragStartCallback)
     }
 
     override fun onViewRecycled(holder: VH) {
         super.onViewRecycled(holder)
-        holder!!.setDragStartCallback(null)
+        holder.setDragStartCallback(null)
     }
 
     fun setDragStartedListener(dragStartedListener: DragStartCallback?) {

@@ -19,24 +19,24 @@ enum class CredentialsVerificationStatus(private val id: Int) {
      */
     SUCCEEDED(3);
 
-    fun put(dw: AccountDataWriter?) {
+    fun put(dw: AccountDataWriter) {
         dw.setDataInt(KEY, id)
     }
 
     @Throws(JSONException::class)
-    fun put(jso: JSONObject?) {
+    fun put(jso: JSONObject) {
         jso.put(KEY, id)
     }
 
     companion object {
-        val KEY: String? = "credentials_verified"
-        fun load(sp: SharedPreferences?): CredentialsVerificationStatus? {
+        val KEY: String = "credentials_verified"
+        fun load(sp: SharedPreferences): CredentialsVerificationStatus {
             val id = sp.getInt(KEY, NEVER.id)
             return fromId(id.toLong())
         }
 
-        fun fromId(id: Long): CredentialsVerificationStatus? {
-            var status: CredentialsVerificationStatus? = NEVER
+        fun fromId(id: Long): CredentialsVerificationStatus {
+            var status: CredentialsVerificationStatus = NEVER
             for (status1 in values()) {
                 if (status1.id.toLong() == id) {
                     status = status1
@@ -46,12 +46,12 @@ enum class CredentialsVerificationStatus(private val id: Int) {
             return status
         }
 
-        fun load(dr: AccountDataReader?): CredentialsVerificationStatus? {
+        fun load(dr: AccountDataReader): CredentialsVerificationStatus {
             val id = dr.getDataInt(KEY, NEVER.id)
             return fromId(id.toLong())
         }
 
-        fun load(jso: JSONObject?): CredentialsVerificationStatus? {
+        fun load(jso: JSONObject): CredentialsVerificationStatus {
             val id = jso.optInt(KEY, NEVER.id)
             return fromId(id.toLong())
         }

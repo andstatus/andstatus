@@ -325,7 +325,7 @@ object MyPreferences {
         return (Build.BRAND + "-" + Build.MODEL).replace(" ".toRegex(), "-")
     }
 
-    fun getAppInstanceName(): String? {
+    fun getAppInstanceName(): String {
         return SharedPreferencesUtil.getString(KEY_APP_INSTANCE_NAME, "")
     }
 }

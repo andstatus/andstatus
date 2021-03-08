@@ -871,10 +871,10 @@ class OriginTest {
     fun testPermalink() {
         val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
         Assert.assertEquals(OriginType.TWITTER, origin.originType)
-        val body = "Posting to Twitter " + DemoData.Companion.demoData.testRunUid
-        val noteOid = "2578909845023" + DemoData.Companion.demoData.testRunUid
+        val body = "Posting to Twitter " + DemoData.demoData.testRunUid
+        val noteOid = "2578909845023" + DemoData.demoData.testRunUid
         val activity: AActivity = DemoNoteInserter.Companion.addNoteForAccount(
-                DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.twitterTestAccountName),
+                DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName),
                 body, noteOid, DownloadStatus.LOADED)
         val noteId = activity.note.noteId
         Assert.assertNotEquals(0, noteId)
@@ -913,7 +913,7 @@ class OriginTest {
 
     @Test
     fun testUsernameIsValid() {
-        var origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.gnusocialTestOriginName)
+        var origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.gnusocialTestOriginName)
         checkUsernameIsValid(origin, "", false)
         checkUsernameIsValid(origin, "someUser.", false)
         checkUsernameIsValid(origin, "someUser ", false)
@@ -921,7 +921,7 @@ class OriginTest {
         checkUsernameIsValid(origin, "some.user", true)
         checkUsernameIsValid(origin, "some.user/GnuSocial", false)
         checkUsernameIsValid(origin, "some@user", false)
-        origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.pumpioOriginName)
+        origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.pumpioOriginName)
         checkUsernameIsValid(origin, "", false)
         checkUsernameIsValid(origin, "someUser.", false)
         checkUsernameIsValid(origin, "someUser ", false)

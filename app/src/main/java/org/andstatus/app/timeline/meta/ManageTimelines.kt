@@ -130,7 +130,7 @@ class ManageTimelines : LoadableListActivity<Any?>() {
                         .stream()
                         .map { timeline: Timeline? ->
                             ManageTimelinesViewItem(myContext, timeline,
-                                    MyAccount.Companion.EMPTY, false)
+                                    MyAccount.EMPTY, false)
                         }
                         .sorted(ManageTimelinesViewItemComparator(sortByField, sortDefault, isTotal))
                         .collect(Collectors.toList())

@@ -40,20 +40,20 @@ class DemoConversationInserter {
     private var bodySuffix: String? = ""
     fun insertConversation(bodySuffixIn: String?) {
         bodySuffix = if (bodySuffixIn.isNullOrEmpty()) "" else " $bodySuffixIn"
-        iteration = DemoData.Companion.demoData.conversationIterationCounter.incrementAndGet()
-        ma = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
-        Assert.assertTrue(DemoData.Companion.demoData.conversationAccountName + " exists", ma.isValid)
-        accountActor = ma.getActor()
+        iteration = DemoData.demoData.conversationIterationCounter.incrementAndGet()
+        ma = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
+        Assert.assertTrue(DemoData.demoData.conversationAccountName + " exists", ma.isValid)
+        accountActor = ma.actor
         insertAndTestConversation()
     }
 
     private fun insertAndTestConversation() {
-        Assert.assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, DemoData.Companion.demoData.conversationOriginType)
-        val author2 = buildActorFromOid(DemoData.Companion.demoData.conversationAuthorSecondActorOid)
+        Assert.assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, DemoData.demoData.conversationOriginType)
+        val author2 = buildActorFromOid(DemoData.demoData.conversationAuthorSecondActorOid)
         author2.setAvatarUrl("http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png")
-        val author3 = buildActorFromOid(DemoData.Companion.demoData.conversationAuthorThirdActorOid)
+        val author3 = buildActorFromOid(DemoData.demoData.conversationAuthorThirdActorOid)
         author3.setRealName("John Smith")
-        author3.withUniqueName(DemoData.Companion.demoData.conversationAuthorThirdUniqueName)
+        author3.withUniqueName(DemoData.demoData.conversationAuthorThirdUniqueName)
         author3.setHomepage("http://johnsmith.com/welcome")
         author3.setCreatedDate(GregorianCalendar(2011, 5, 12).timeInMillis)
         author3.setSummary("I am an ordinary guy, interested in computer science")
@@ -63,7 +63,7 @@ class DemoConversationInserter {
         author4.setRealName("Real Fourth")
         val minus1 = buildActivity(author2, "", "Older one note", null, null)
         val selected = buildActivity(getAuthor1(), "", "Selected note from Home timeline", minus1,
-                if (iteration == 1) DemoData.Companion.demoData.conversationEntryNoteOid else null)
+                if (iteration == 1) DemoData.demoData.conversationEntryNoteOid else null)
         selected.setSubscribedByMe(TriState.TRUE)
         val reply1 = buildActivity(author3, "The first reply", "Reply 1 to selected<br />" +
                 "&gt;&gt; Greater than<br />" +
@@ -101,10 +101,10 @@ class DemoConversationInserter {
         val MENTIONS_NOTE_BODY = """@fourthWithoutAvatar@pump.example.com Reply 5 to Reply 4
 @${author3.getUsername()} @unknownUser@example.com"""
         val reply5 = buildActivity(author2, "", MENTIONS_NOTE_BODY, reply4,
-                if (iteration == 1) DemoData.Companion.demoData.conversationMentionsNoteOid else null)
+                if (iteration == 1) DemoData.demoData.conversationMentionsNoteOid else null)
         addActivity(reply5)
         if (iteration == 1) {
-            Assert.assertEquals(reply5.toString(), DemoData.Companion.demoData.conversationMentionsNoteOid, reply5.getNote().oid)
+            Assert.assertEquals(reply5.toString(), DemoData.demoData.conversationMentionsNoteOid, reply5.getNote().oid)
         }
         MatcherAssert.assertThat("""
     The user '${author3.getUsername()}' should be a recipient
@@ -116,7 +116,7 @@ class DemoConversationInserter {
     ${reply5.getNote()}
     """.trimIndent(),
                 reply5.getNote().audience().nonSpecialActors, CoreMatchers.not<Iterable<in Actor?>?>(CoreMatchers.hasItem(author2)))
-        val reblogger1 = buildActorFromOid("acct:reblogger@" + DemoData.Companion.demoData.pumpioMainHost)
+        val reblogger1 = buildActorFromOid("acct:reblogger@" + DemoData.demoData.pumpioMainHost)
         reblogger1.setAvatarUrl("http://www.large-icons.com/stock-icons/free-large-android/48x48/dog-robot.gif")
         val reblogOf5 = buildActivity(reblogger1, ActivityType.ANNOUNCE)
         reblogOf5.setNote(reply5.getNote().shallowCopy())
@@ -129,7 +129,7 @@ class DemoConversationInserter {
         likeOf6.setNote(reply6.getNote().shallowCopy())
         addActivity(likeOf6)
         val reply7 = buildActivity(getAuthor1(), "", "Reply 7 to Reply 2 is about "
-                + DemoData.Companion.demoData.publicNoteText + " and something else", privateReply2, null)
+                + DemoData.demoData.publicNoteText + " and something else", privateReply2, null)
                 .withVisibility(Visibility.PUBLIC_AND_TO_FOLLOWERS)
         addActivity(reply7)
         DemoNoteInserter.Companion.assertStoredVisibility(reply7, Visibility.PUBLIC_AND_TO_FOLLOWERS)
@@ -152,7 +152,7 @@ class DemoConversationInserter {
         addActivity(myLikeOf9)
 
         // Note downloaded by another account
-        val ma2: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountSecondName)
+        val ma2: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountSecondName)
         author3.isMyFriend = TriState.TRUE
         author3.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
         val reply10 = buildActivity(ma2.actor, author3, "", "Reply 10 to Reply 8", reply8,
@@ -164,7 +164,7 @@ class DemoConversationInserter {
         assertIfActorIsMyFriend(author3, true, ma2)
         val anonymousReply = buildActivity(Actor.Companion.EMPTY, "", "Anonymous reply to Reply 10", reply10, null)
         addActivity(anonymousReply)
-        val reply11 = buildActivity(author2, "", "Reply 11 to Reply 7, " + DemoData.Companion.demoData.globalPublicNoteText
+        val reply11 = buildActivity(author2, "", "Reply 11 to Reply 7, " + DemoData.demoData.globalPublicNoteText
                 + " text", reply7, null)
                 .withVisibility(Visibility.PUBLIC_AND_TO_FOLLOWERS)
         addActivity(reply11)
@@ -188,14 +188,14 @@ class DemoConversationInserter {
         DemoNoteInserter.Companion.assertInteraction(reblogOfMyPrivate13, NotificationEventType.ANNOUNCE, TriState.TRUE)
         val mentionOfAuthor3 = buildActivity(reblogger1, "",
                 "@" + author3.getUsername() + " mention in reply to 4",
-                reply4, if (iteration == 1) DemoData.Companion.demoData.conversationMentionOfAuthor3Oid else null)
+                reply4, if (iteration == 1) DemoData.demoData.conversationMentionOfAuthor3Oid else null)
         addActivity(mentionOfAuthor3)
         val followAuthor3 = buildActivity(author2, ActivityType.FOLLOW)
         followAuthor3.setObjActor(author3)
         addActivity(followAuthor3)
         DemoNoteInserter.Companion.assertInteraction(followAuthor3, NotificationEventType.EMPTY, TriState.FALSE)
         val notLoadedActor: Actor = Actor.Companion.fromOid(accountActor.origin, "acct:notloaded@someother.host."
-                + DemoData.Companion.demoData.testOriginParentHost)
+                + DemoData.demoData.testOriginParentHost)
         val notLoaded1: AActivity = newPartialNote(accountActor, notLoadedActor, MyLog.uniqueDateTimeFormatted())
         val reply15 = buildActivity(author4, "", "Reply 15 to not loaded 1", notLoaded1, null)
         addActivity(reply15)
@@ -218,7 +218,7 @@ class DemoConversationInserter {
     }
 
     private fun getAuthor1(): Actor? {
-        val author1 = buildActorFromOid(DemoData.Companion.demoData.conversationEntryAuthorOid)
+        val author1 = buildActorFromOid(DemoData.demoData.conversationEntryAuthorOid)
         author1.setAvatarUrl("https://raw.github.com/andstatus/andstatus/master/app/src/main/res/drawable/splash_logo.png")
         return author1
     }
@@ -248,7 +248,7 @@ class DemoConversationInserter {
 
     companion object {
         fun assertIfActorIsMyFriend(actor: Actor?, isFriendOf: Boolean, ma: MyAccount?) {
-            val actualIsFriend: Boolean = GroupMembership.Companion.isGroupMember(ma.getActor(), GroupType.FRIENDS, actor.actorId)
+            val actualIsFriend: Boolean = GroupMembership.Companion.isGroupMember(ma.actor, GroupType.FRIENDS, actor.actorId)
             Assert.assertEquals("Actor $actor is a friend of $ma", isFriendOf, actualIsFriend)
         }
     }

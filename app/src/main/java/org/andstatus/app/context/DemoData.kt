@@ -288,7 +288,7 @@ Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts()}""",
     fun getAccountActorByOid(actorOid: String?): Actor {
         for (ma in  MyContextHolder.myContextHolder.getBlocking().accounts().get()) {
             if (ma.getActorOid() == actorOid) {
-                return ma.getActor()
+                return ma.actor
             }
         }
         return Actor.EMPTY

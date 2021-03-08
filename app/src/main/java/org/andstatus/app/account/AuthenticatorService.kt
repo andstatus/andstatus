@@ -25,9 +25,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.IBinder
-import io.vavr.control.CheckedFunction
-import io.vavr.control.CheckedPredicate
-import org.andstatus.app.account.AuthenticatorService
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
@@ -37,13 +34,13 @@ import org.andstatus.app.util.MyLog
  * Based on a very basic authenticator service for POP/IMAP...
  */
 class AuthenticatorService : Service() {
-    internal inner class Authenticator(private val context: Context?) : AbstractAccountAuthenticator(context) {
+    internal inner class Authenticator(private val context: Context) : AbstractAccountAuthenticator(context) {
         /**
          * We add account launching [AccountSettingsActivity] activity
          */
         @Throws(NetworkErrorException::class)
-        override fun addAccount(response: AccountAuthenticatorResponse?, accountType: String?,
-                                authTokenType: String?, requiredFeatures: Array<String?>?, options: Bundle?): Bundle? {
+        override fun addAccount(response: AccountAuthenticatorResponse?, accountType: String,
+                                authTokenType: String?, requiredFeatures: Array<String?>?, options: Bundle?): Bundle {
             // There are two cases here:
             // 1) We are called with a username/password; this comes from the traditional email
             //    app UI; we simply create the account and return the proper bundle
@@ -100,21 +97,24 @@ class AuthenticatorService : Service() {
             return null
         }
 
-        override fun getAccountRemovalAllowed(response: AccountAuthenticatorResponse?, account: Account?): Bundle? {
+        override fun getAccountRemovalAllowed(response: AccountAuthenticatorResponse?, account: Account): Bundle {
             var deleted = true
             if (AccountUtils.isVersionCurrent(context, account)) {
                 deleted =  MyContextHolder.myContextHolder
                         .initialize(context, this)
                         .getFuture()
                         .tryBlocking()
-                        .map<MyAccount?>(CheckedFunction { myContext: MyContext? -> myContext.accounts().fromAccountName(account.name) })
-                        .filter(CheckedPredicate { obj: MyAccount? -> obj.isValid })
-                        .map<Boolean?>(CheckedFunction { ma: MyAccount? ->
+                        .map { myContext: MyContext ->
+                            myContext.accounts()
+                                    .fromAccountName(account.name)
+                        }
+                        .filter { obj: MyAccount -> obj.isValid }
+                        .map { ma: MyAccount? ->
                             MyLog.i(this, "Removing $ma")
-                             MyContextHolder.myContextHolder.getNow().timelines().onAccountDelete(ma)
+                            MyContextHolder.myContextHolder.getNow().timelines().onAccountDelete(ma)
                             MyPreferences.onPreferencesChanged()
                             true
-                        })
+                        }
                         .getOrElse(false)
             }
             val result = Bundle()
@@ -123,9 +123,9 @@ class AuthenticatorService : Service() {
         }
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return if (AccountManager.ACTION_AUTHENTICATOR_INTENT == intent.getAction()) {
-            Authenticator(this).getIBinder()
+    override fun onBind(intent: Intent): IBinder? {
+        return if (AccountManager.ACTION_AUTHENTICATOR_INTENT == intent.action) {
+            Authenticator(this).iBinder
         } else {
             null
         }
@@ -143,8 +143,8 @@ class AuthenticatorService : Service() {
     }
 
     companion object {
-        val OPTIONS_USERNAME: String? = "username"
-        val OPTIONS_PASSWORD: String? = "password"
-        val ANDROID_ACCOUNT_TYPE: String? = "org.andstatus.app"
+        val OPTIONS_USERNAME: String = "username"
+        val OPTIONS_PASSWORD: String = "password"
+        val ANDROID_ACCOUNT_TYPE: String = "org.andstatus.app"
     }
 }

@@ -65,19 +65,19 @@ class DataUpdaterTest {
         TestSuite.initializeWithAccounts(this)
         myContext = TestSuite.getMyContextForTest()
         context = myContext.context()
-        DemoData.Companion.demoData.checkDataPath()
+        DemoData.demoData.checkDataPath()
     }
 
     @Test
     fun testFriends() {
-        val ma: MyAccount = DemoData.Companion.demoData.getPumpioConversationAccount()
+        val ma: MyAccount = DemoData.demoData.getPumpioConversationAccount()
         val accountActor = ma.actor
         val noteOid = "https://identi.ca/api/comment/dasdjfdaskdjlkewjz1EhSrTRB"
         DemoNoteInserter.Companion.deleteOldNote(accountActor.origin, noteOid)
         val executionContext = CommandExecutionContext(
                 myContext, CommandData.Companion.newAccountCommand(CommandEnum.EMPTY, ma))
         val dataUpdater = DataUpdater(executionContext)
-        val username = "somebody" + DemoData.Companion.demoData.testRunUid + "@identi.ca"
+        val username = "somebody" + DemoData.demoData.testRunUid + "@identi.ca"
         val actorOid: String = OriginPumpio.Companion.ACCOUNT_PREFIX + username
         val somebody: Actor = Actor.Companion.fromOid(accountActor.origin, actorOid)
         somebody.username = username
@@ -91,7 +91,7 @@ class DataUpdaterTest {
         val activity: AActivity = AActivity.Companion.newPartialNote(accountActor, somebody, noteOid, System.currentTimeMillis(),
                 DownloadStatus.LOADED)
         val note = activity.note
-        note.setContentPosted("The test note by Somebody at run " + DemoData.Companion.demoData.testRunUid)
+        note.setContentPosted("The test note by Somebody at run " + DemoData.demoData.testRunUid)
         note.via = "MyCoolClient"
         note.url = "http://identi.ca/somebody/comment/dasdjfdaskdjlkewjz1EhSrTRB"
         TestSuite.clearAssertions()
@@ -142,9 +142,9 @@ class DataUpdaterTest {
 
     @Test
     fun testPrivateNoteToMyAccount() {
-        val ma: MyAccount = DemoData.Companion.demoData.getPumpioConversationAccount()
+        val ma: MyAccount = DemoData.demoData.getPumpioConversationAccount()
         val accountActor = ma.actor
-        val noteOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ-" + DemoData.Companion.demoData.testRunUid
+        val noteOid = "https://pumpity.net/api/comment/sa23wdi78dhgjerdfddajDSQ-" + DemoData.demoData.testRunUid
         val username = "t131t@pumpity.net"
         val author: Actor = Actor.Companion.fromOid(accountActor.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + username)
         author.username = username
@@ -174,14 +174,14 @@ class DataUpdaterTest {
 
     @Test
     fun noteFavoritedByOtherActor() {
-        val ma: MyAccount = DemoData.Companion.demoData.getPumpioConversationAccount()
+        val ma: MyAccount = DemoData.demoData.getPumpioConversationAccount()
         val accountActor = ma.actor
         val authorUsername = "anybody@pumpity.net"
         val author: Actor = Actor.Companion.fromOid(accountActor.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + authorUsername)
         author.username = authorUsername
         author.build()
         val activity: AActivity = AActivity.Companion.newPartialNote(accountActor,
-                author, "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" + DemoData.Companion.demoData.testRunUid,
+                author, "https://pumpity.net/api/comment/sdajklsdkiewwpdsldkfsdasdjWED" + DemoData.demoData.testRunUid,
                 13312697000L, DownloadStatus.LOADED)
         val note = activity.note
         note.setContentPosted("This test note will be favorited by First Reader from http://pumpity.net")
@@ -259,23 +259,23 @@ class DataUpdaterTest {
     }
 
     private fun oneReplyNoteFavoritedByMyActor(iterationId: String?, favorited: Boolean) {
-        val ma: MyAccount = DemoData.Companion.demoData.getPumpioConversationAccount()
+        val ma: MyAccount = DemoData.demoData.getPumpioConversationAccount()
         val accountActor = ma.actor
         val authorUsername = "example@pumpity.net"
         val author: Actor = Actor.Companion.fromOid(accountActor.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + authorUsername)
         author.username = authorUsername
         author.build()
         val activity: AActivity = AActivity.Companion.newPartialNote(accountActor, author,
-                "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + iterationId + DemoData.Companion.demoData.testRunUid,
+                "https://pumpity.net/api/comment/jhlkjh3sdffpmnhfd123" + iterationId + DemoData.demoData.testRunUid,
                 13312795000L, DownloadStatus.LOADED)
         val note = activity.note
         note.setContentPosted("The test note by Example\n from the http://pumpity.net $iterationId")
         note.via = "UnknownClient"
         if (favorited) note.addFavoriteBy(accountActor, TriState.TRUE)
-        val inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB" + iterationId + DemoData.Companion.demoData.testRunUid
+        val inReplyToOid = "https://identi.ca/api/comment/dfjklzdfSf28skdkfgloxWB" + iterationId + DemoData.demoData.testRunUid
         val inReplyTo: AActivity = AActivity.Companion.newPartialNote(accountActor,
                 Actor.Companion.fromOid(accountActor.origin,
-                        "irtUser" + iterationId + DemoData.Companion.demoData.testRunUid)
+                        "irtUser" + iterationId + DemoData.demoData.testRunUid)
                         .setUsername("irt$authorUsername$iterationId")
                         .build(),
                 inReplyToOid, RelativeTime.DATETIME_MILLIS_NEVER, DownloadStatus.UNKNOWN)
@@ -340,8 +340,8 @@ $activity""",
         val accountActor = ma.actor
         val activity: AActivity = AActivity.Companion.newPartialNote(accountActor, accountActor, "",
                 System.currentTimeMillis(), DownloadStatus.SENDING)
-        activity.note.setContentPosted("Unsent note with an attachment " + DemoData.Companion.demoData.testRunUid)
-        activity.addAttachment(Attachment.Companion.fromUriAndMimeType(DemoData.Companion.demoData.localImageTestUri,
+        activity.note.setContentPosted("Unsent note with an attachment " + DemoData.demoData.testRunUid)
+        activity.addAttachment(Attachment.Companion.fromUriAndMimeType(DemoData.demoData.localImageTestUri,
                 MyContentType.VIDEO.generalMimeType))
         DataUpdater(ma).onActivity(activity)
         val note1 = activity.note
@@ -355,12 +355,12 @@ $activity""",
         DbUtils.waitMs(method, 1000)
 
         // Emulate receiving of note
-        val oid = "sentMsgOid" + DemoData.Companion.demoData.testRunUid
+        val oid = "sentMsgOid" + DemoData.demoData.testRunUid
         val activity2: AActivity = AActivity.Companion.newPartialNote(accountActor, activity.author, oid,
                 System.currentTimeMillis(), DownloadStatus.LOADED)
         activity2.note.setContentPosted("Just sent: " + note1.content)
         activity2.note.noteId = note1.noteId
-        activity2.addAttachment(Attachment.Companion.fromUri(DemoData.Companion.demoData.image1Url))
+        activity2.addAttachment(Attachment.Companion.fromUri(DemoData.demoData.image1Url))
         DataUpdater(ma).onActivity(activity2)
         val note2 = activity2.note
         Assert.assertEquals("Row id didn't change", note1.noteId, note2.noteId)
@@ -376,12 +376,12 @@ $activity""",
 
     @Test
     fun testUsernameChanged() {
-        val ma: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
+        val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         val accountActor = ma.actor
-        val username = "peter" + DemoData.Companion.demoData.testRunUid
-        val actor1 = DemoNoteInserter(ma).buildActorFromOid("34804" + DemoData.Companion.demoData.testRunUid)
+        val username = "peter" + DemoData.demoData.testRunUid
+        val actor1 = DemoNoteInserter(ma).buildActorFromOid("34804" + DemoData.demoData.testRunUid)
         actor1.username = username
-        actor1.profileUrl = "https://" + DemoData.Companion.demoData.gnusocialTestOriginName + ".example.com/"
+        actor1.profileUrl = "https://" + DemoData.demoData.gnusocialTestOriginName + ".example.com/"
         actor1.build()
         val dataUpdater = DataUpdater(ma)
         val actorId1 = dataUpdater.onActivity(accountActor.update(actor1)).objActor.actorId
@@ -410,7 +410,7 @@ $activity""",
         Assert.assertEquals("Same Actor renamed", actor1.username,
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId1))
         val actor2SameOldUsername = DemoNoteInserter(ma).buildActorFromOid("34805"
-                + DemoData.Companion.demoData.testRunUid)
+                + DemoData.demoData.testRunUid)
         actor2SameOldUsername.username = username
         actor2SameOldUsername.build()
         val actorId2 = dataUpdater.onActivity(accountActor.update(actor2SameOldUsername)).objActor.actorId
@@ -418,9 +418,9 @@ $activity""",
         Assert.assertEquals("Username stored", actor2SameOldUsername.username,
                 MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, actorId2))
         val actor3SameNewUsername = DemoNoteInserter(ma).buildActorFromOid("34806"
-                + DemoData.Companion.demoData.testRunUid)
+                + DemoData.demoData.testRunUid)
         actor3SameNewUsername.username = actor1.username
-        actor3SameNewUsername.profileUrl = "https://" + DemoData.Companion.demoData.gnusocialTestOriginName + ".other.example.com/"
+        actor3SameNewUsername.profileUrl = "https://" + DemoData.demoData.gnusocialTestOriginName + ".other.example.com/"
         actor3SameNewUsername.build()
         val actorId3 = dataUpdater.onActivity(accountActor.update(actor3SameNewUsername)).objActor.actorId
         Assert.assertTrue("Actor added $actor3SameNewUsername", actorId3 != 0L)
@@ -431,23 +431,23 @@ $activity""",
 
     @Test
     fun demoInsertGnuSocialActor() {
-        val ma: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
-        val actor1 = DemoNoteInserter(ma).buildActorFromOid("34807" + DemoData.Companion.demoData.testRunUid)
+        val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
+        val actor1 = DemoNoteInserter(ma).buildActorFromOid("34807" + DemoData.demoData.testRunUid)
         updateActor(ma, actor1)
-        val actor2: Actor = Actor.Companion.fromOid(ma.origin, "98023493" + DemoData.Companion.demoData.testRunUid)
-                .setUsername("someuser" + DemoData.Companion.demoData.testRunUid)
+        val actor2: Actor = Actor.Companion.fromOid(ma.origin, "98023493" + DemoData.demoData.testRunUid)
+                .setUsername("someuser" + DemoData.demoData.testRunUid)
         updateActor(ma, actor2)
     }
 
     @Test
     fun addActivityPubActor() {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.activityPubTestAccountName)
-        val actor: Actor = Actor.Companion.fromOid(ma.origin, "https://example.com/users/ApTester" + DemoData.Companion.demoData.testRunUid)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.activityPubTestAccountName)
+        val actor: Actor = Actor.Companion.fromOid(ma.origin, "https://example.com/users/ApTester" + DemoData.demoData.testRunUid)
         updateActor(ma, actor)
     }
 
     private fun updateActor(ma: MyAccount?, actor: Actor?) {
-        val accountActor = ma.getActor()
+        val accountActor = ma.actor
         val id = DataUpdater(ma).onActivity(accountActor.update(actor)).objActor.actorId
         Assert.assertTrue("Actor added", id != 0L)
         DemoNoteInserter.Companion.checkStoredActor(actor)
@@ -478,8 +478,8 @@ $activity""",
 
     @Test
     fun testReplyInBody() {
-        val ma: MyAccount = DemoData.Companion.demoData.getPumpioConversationAccount()
-        val buddyName = "buddy" + DemoData.Companion.demoData.testRunUid + "@example.com"
+        val ma: MyAccount = DemoData.demoData.getPumpioConversationAccount()
+        val buddyName = "buddy" + DemoData.demoData.testRunUid + "@example.com"
         val content = ("@" + buddyName + " I'm replying to you in a note's body."
                 + " Hope you will see this as a real reply!")
         addOneNote4testReplyInContent(ma, buddyName, content, true)
@@ -496,7 +496,7 @@ $activity""",
                 MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId1, 0))
         addOneNote4testReplyInContent(ma, buddyName, "<a href=\"http://example.com/a\">@" +
                 buddyName + "</a>, this is an HTML <i>formatted</i> note", true)
-        val buddyName3: String = DemoData.Companion.demoData.conversationAuthorThirdUniqueName
+        val buddyName3: String = DemoData.demoData.conversationAuthorThirdUniqueName
         addOneNote4testReplyInContent(ma, buddyName3,
                 "@$buddyName3 I know you are already in our cache", true)
         val buddyName4 = ma.actor.uniqueName
@@ -510,11 +510,11 @@ $activity""",
     }
 
     private fun addOneNote4testReplyInContent(ma: MyAccount?, buddyUniqueName: String?, content: String?, isReply: Boolean) {
-        val actorUniqueName = "somebody" + DemoData.Companion.demoData.testRunUid + "@somewhere.net"
-        val actor: Actor = Actor.Companion.fromOid(ma.getActor().origin, OriginPumpio.Companion.ACCOUNT_PREFIX + actorUniqueName)
+        val actorUniqueName = "somebody" + DemoData.demoData.testRunUid + "@somewhere.net"
+        val actor: Actor = Actor.Companion.fromOid(ma.actor.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + actorUniqueName)
         actor.withUniqueName(actorUniqueName)
         actor.profileUrl = "https://somewhere.net/$actorUniqueName"
-        val activityIn: AActivity = AActivity.Companion.newPartialNote(ma.getActor(), actor, System.nanoTime().toString(),
+        val activityIn: AActivity = AActivity.Companion.newPartialNote(ma.actor, actor, System.nanoTime().toString(),
                 System.currentTimeMillis(), DownloadStatus.LOADED)
         val noteIn = activityIn.note
         noteIn.setContentPosted(content)
@@ -542,11 +542,11 @@ $activity""",
 
     @Test
     fun testGnuSocialMention() {
-        val ma: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
+        val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         val accountActor = ma.actor
-        val myMentionedAccount: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.gnusocialTestAccount2Name)
+        val myMentionedAccount: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.gnusocialTestAccount2Name)
         val myMentionedActor = myMentionedAccount.actor
-        val author1: Actor = Actor.Companion.fromOid(accountActor.origin, "sam" + DemoData.Companion.demoData.testRunUid)
+        val author1: Actor = Actor.Companion.fromOid(accountActor.origin, "sam" + DemoData.demoData.testRunUid)
         author1.username = "samBrook"
         author1.build()
         val groupname = "gnutestgroup"
@@ -555,7 +555,7 @@ $activity""",
                         " and sending the content to !" + groupname + " group" +
                         " But Hello! is not a group name" +
                         " and!thisisnot also" +
-                        " " + DemoData.Companion.demoData.testRunUid)
+                        " " + DemoData.demoData.testRunUid)
         val activity2: AActivity = AActivity.Companion.from(accountActor, ActivityType.UPDATE)
         activity2.setActor(author1)
         activity2.setActivity(activity1)
@@ -575,11 +575,11 @@ $activity""",
 
     @Test
     fun replyToOneOfMyActorsWithTheSameUsername() {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.gnusocialTestAccount2Name)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.gnusocialTestAccount2Name)
         val dataUpdater = DataUpdater(ma)
         val accountActor = ma.actor
-        val actorFromAnotherOrigin: Actor = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.twitterTestAccountName).getActor()
-        Assert.assertEquals(DemoData.Companion.demoData.t131tUsername, actorFromAnotherOrigin.username)
+        val actorFromAnotherOrigin: Actor = DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName).getActor()
+        Assert.assertEquals(DemoData.demoData.t131tUsername, actorFromAnotherOrigin.username)
         val myAuthor1: Actor = Actor.Companion.fromOid(accountActor.origin, actorFromAnotherOrigin.oid + "22")
         myAuthor1.username = actorFromAnotherOrigin.username
         myAuthor1.webFingerId = actorFromAnotherOrigin.webFingerId
@@ -587,14 +587,14 @@ $activity""",
         myAuthor1.build()
         Assert.assertTrue("After build should be unknown if it's mine$myAuthor1", myAuthor1.user.isMyUser.unknown)
         val activity1 = newLoadedNote(accountActor, myAuthor1,
-                "My account's first note from another Social Network " + DemoData.Companion.demoData.testRunUid)
+                "My account's first note from another Social Network " + DemoData.demoData.testRunUid)
         Assert.assertTrue("Activity should be added", dataUpdater.onActivity(activity1).id != 0L)
         Assert.assertTrue("Author should be mine " + activity1.getAuthor(), activity1.getAuthor().user.isMyUser.isTrue)
-        val author2: Actor = Actor.Companion.fromOid(accountActor.origin, "replier" + DemoData.Companion.demoData.testRunUid)
+        val author2: Actor = Actor.Companion.fromOid(accountActor.origin, "replier" + DemoData.demoData.testRunUid)
         author2.username = "replier@anotherdoman.com"
         author2.build()
         val activity2 = newLoadedNote(accountActor, author2,
-                "@" + DemoData.Companion.demoData.t131tUsername + " Replying to my user from another instance")
+                "@" + DemoData.demoData.t131tUsername + " Replying to my user from another instance")
         activity2.getNote().setInReplyTo(activity1)
         Assert.assertTrue("Activity should be added", dataUpdater.onActivity(activity2).id != 0L)
         Assert.assertEquals("Audience should contain one actor " + activity2.getNote().audience(),
@@ -614,10 +614,10 @@ $activity""",
 
     @Test
     fun sendingNoteActivityPub() {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.activityPubTestAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.activityPubTestAccountName)
         val dataUpdater = DataUpdater(ma)
         val accountActor = ma.actor
-        val content = "My note from ActivityPub " + DemoData.Companion.demoData.testRunUid
+        val content = "My note from ActivityPub " + DemoData.demoData.testRunUid
         val activity0: AActivity = AActivity.Companion.newPartialNote(accountActor, accountActor, "",
                 System.currentTimeMillis(), DownloadStatus.SENDING)
         activity0.note.setContentPosted(content)
@@ -632,12 +632,12 @@ $activity""",
         // Response from a server
         val activity2: AActivity = AActivity.Companion.from(accountActor, ActivityType.CREATE)
         activity2.id = activity1.id
-        activity2.oid = "https://" + DemoData.Companion.demoData.activityPubMainHost + "/activities/" + MyLog.uniqueCurrentTimeMS()
+        activity2.oid = "https://" + DemoData.demoData.activityPubMainHost + "/activities/" + MyLog.uniqueCurrentTimeMS()
         activity2.updatedDate = MyLog.uniqueCurrentTimeMS()
 
         // No content in the response, just oid of the note
         val note2: Note = Note.Companion.fromOriginAndOid(accountActor.origin,
-                "https://" + DemoData.Companion.demoData.activityPubMainHost + "/objects/" + MyLog.uniqueCurrentTimeMS(),
+                "https://" + DemoData.demoData.activityPubMainHost + "/objects/" + MyLog.uniqueCurrentTimeMS(),
                 DownloadStatus.UNKNOWN)
         activity2.setNote(note2)
 
@@ -654,14 +654,14 @@ $activity""",
 
     @Test
     fun noteToFollowersOnly() {
-        val ma: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.activityPubTestAccountName)
+        val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.activityPubTestAccountName)
         val accountActor = ma.actor
         val authorUsername = "author101"
         val author: Actor = Actor.Companion.fromOid(accountActor.origin, "https://activitypub.org/users/$authorUsername")
         author.username = authorUsername
         author.build()
         val activity: AActivity = AActivity.Companion.newPartialNote(accountActor,
-                author, "https://activitypub.org/note/sdajklsdkiewwpdsldkfsdasdjWED" + DemoData.Companion.demoData.testRunUid,
+                author, "https://activitypub.org/note/sdajklsdkiewwpdsldkfsdasdjWED" + DemoData.demoData.testRunUid,
                 System.currentTimeMillis(), DownloadStatus.LOADED)
         val note = activity.note
         note.setContentPosted("This test note was sent to Followers only")

@@ -130,9 +130,9 @@ class ListSwipeItem : RelativeLayout {
         setSwipeTranslationX(mSwipeTranslationX + dx)
     }
 
-    fun setSwipeTranslationX(x: Float) {
+    fun setSwipeTranslationX(xIn: Float) {
         // Based on supported swipe direction reset the x position
-        var x = x
+        var x = xIn
         if (supportedSwipeDirection == SwipeDirection.LEFT && x > 0 || supportedSwipeDirection == SwipeDirection.RIGHT && x < 0 || supportedSwipeDirection == SwipeDirection.NONE) {
             x = 0f
         }
@@ -240,14 +240,14 @@ class ListSwipeItem : RelativeLayout {
         } else if (currentTranslationX < 0) {
             // Swiping done side
             if (flingSpeed > 0) {
-                0
+                0f
             } else {
                 (-measuredWidth).toFloat()
             }
         } else if (startTranslationX == 0f) {
             // Swiping action side from start position
             if (flingSpeed < 0) {
-                0
+                0f
             } else {
                 measuredWidth.toFloat()
             }
@@ -256,7 +256,7 @@ class ListSwipeItem : RelativeLayout {
             if (flingSpeed > 0) {
                 measuredWidth.toFloat()
             } else {
-                0
+                0f
             }
         }
     }

@@ -841,7 +841,7 @@ class NoteViewItemTest {
     }
 
     private fun assertDuplicates(item1: NoteViewItem?, duplicates: DuplicationLink?, item2: NoteViewItem?) {
-        Assert.assertEquals(item1.toString() + " vs " + item2, duplicates, item1.duplicates(Timeline.Companion.EMPTY,  Origin.EMPTY, item2))
+        Assert.assertEquals(item1.toString() + " vs " + item2, duplicates, item1.duplicates(Timeline.EMPTY,  Origin.EMPTY, item2))
     }
 
     companion object {

@@ -26,7 +26,6 @@ import androidx.fragment.app.FragmentActivity
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
-import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
@@ -46,35 +45,38 @@ class AccountSelector : SelectorDialog() {
         setTitle(R.string.label_accountselector)
         val listData = newListData()
         if (listData.isEmpty()) {
-            returnSelectedAccount(MyAccount.Companion.EMPTY)
+            returnSelectedAccount(MyAccount.EMPTY)
             return
         } else if (listData.size == 1) {
-            returnSelectedAccount(listData.get(0))
+            returnSelectedAccount(listData[0])
             return
         }
-        listAdapter = newListAdapter(listData)
-        listView.onItemClickListener = OnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
+        setListAdapter(newListAdapter(listData))
+        listView?.onItemClickListener = OnItemClickListener { _: AdapterView<*>?, view: View, _: Int, _: Long ->
             val actorId = (view.findViewById<View?>(R.id.id) as TextView).text.toString().toLong()
             returnSelectedAccount( MyContextHolder.myContextHolder.getNow().accounts().fromActorId(actorId))
         }
     }
 
-    private fun newListData(): MutableList<MyAccount?>? {
+    private fun newListData(): MutableList<MyAccount> {
         val originId = Optional.ofNullable(arguments)
-                .map { bundle: Bundle? -> bundle.getLong(IntentExtra.ORIGIN_ID.key) }.orElse(0L)
+                .map { bundle: Bundle -> bundle.getLong(IntentExtra.ORIGIN_ID.key) }.orElse(0L)
         val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromId(originId)
-        val origins: MutableList<Origin?>? = if (origin.isValid) listOf(origin) else getOriginsForActor()
-        val predicate = if (origins.isEmpty()) Predicate { ma: MyAccount? -> true } else Predicate { ma: MyAccount? -> origins.contains(ma.getOrigin()) }
-        return  MyContextHolder.myContextHolder.getNow().accounts().get().stream().filter(predicate).collect(Collectors.toList())
+        val origins: MutableList<Origin> = if (origin.isValid()) mutableListOf(origin) else getOriginsForActor()
+        val predicate = if (origins.isEmpty()) Predicate { true } else
+            Predicate { ma: MyAccount -> origins.contains(ma.origin) }
+        return  MyContextHolder.myContextHolder.getNow().accounts().get().stream()
+                .filter(predicate)
+                .collect(Collectors.toList())
     }
 
-    private fun getOriginsForActor(): MutableList<Origin?>? {
+    private fun getOriginsForActor(): MutableList<Origin> {
         val actorId = Optional.ofNullable(arguments)
-                .map { bundle: Bundle? -> bundle.getLong(IntentExtra.ACTOR_ID.key) }.orElse(0L)
-        return Actor.Companion.load( MyContextHolder.myContextHolder.getNow(), actorId).user.knownInOrigins( MyContextHolder.myContextHolder.getNow())
+                .map { bundle: Bundle -> bundle.getLong(IntentExtra.ACTOR_ID.key) }.orElse(0L)
+        return Actor.load( MyContextHolder.myContextHolder.getNow(), actorId).user.knownInOrigins( MyContextHolder.myContextHolder.getNow())
     }
 
-    private fun newListAdapter(listData: MutableList<MyAccount?>?): MySimpleAdapter? {
+    private fun newListAdapter(listData: MutableList<MyAccount>): MySimpleAdapter {
         val list: MutableList<MutableMap<String?, String?>?> = ArrayList()
         val syncText = getText(R.string.synced_abbreviated).toString()
         for (ma in listData) {
@@ -85,7 +87,7 @@ class AccountSelector : SelectorDialog() {
             }
             map[KEY_VISIBLE_NAME] = visibleName
             map[KEY_SYNC_AUTO] = if (ma.isSyncedAutomatically() && ma.isValidAndSucceeded()) syncText else ""
-            map[BaseColumns._ID] = java.lang.Long.toString(ma.getActorId())
+            map[BaseColumns._ID] = ma.actorId.toString()
             list.add(map)
         }
         return MySimpleAdapter(activity,
@@ -95,23 +97,23 @@ class AccountSelector : SelectorDialog() {
 
     private fun returnSelectedAccount(ma: MyAccount) {
         returnSelected(Intent()
-                .putExtra(IntentExtra.ACCOUNT_NAME.key, ma.accountName)
+                .putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName())
                 .putExtra(IntentExtra.MENU_GROUP.key,
-                        myGetArguments().getInt(IntentExtra.MENU_GROUP.key, MyContextMenu.Companion.MENU_GROUP_NOTE))
+                        myGetArguments().getInt(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE))
         )
     }
 
     companion object {
-        private val KEY_VISIBLE_NAME: String? = "visible_name"
-        private val KEY_SYNC_AUTO: String? = "sync_auto"
-        fun selectAccountOfOrigin(activity: FragmentActivity?, requestCode: ActivityRequestCode?, originId: Long) {
+        private val KEY_VISIBLE_NAME: String = "visible_name"
+        private val KEY_SYNC_AUTO: String = "sync_auto"
+        fun selectAccountOfOrigin(activity: FragmentActivity, requestCode: ActivityRequestCode, originId: Long) {
             val selector: SelectorDialog = AccountSelector()
             selector.setRequestCode(requestCode).putLong(IntentExtra.ORIGIN_ID.key, originId)
             selector.show(activity)
         }
 
-        fun selectAccountForActor(activity: FragmentActivity?, menuGroup: Int,
-                                  requestCode: ActivityRequestCode?, actor: Actor?) {
+        fun selectAccountForActor(activity: FragmentActivity, menuGroup: Int,
+                                  requestCode: ActivityRequestCode, actor: Actor) {
             val selector: SelectorDialog = AccountSelector()
             selector.setRequestCode(requestCode).putLong(IntentExtra.ACTOR_ID.key, actor.actorId)
             selector.myGetArguments().putInt(IntentExtra.MENU_GROUP.key, menuGroup)

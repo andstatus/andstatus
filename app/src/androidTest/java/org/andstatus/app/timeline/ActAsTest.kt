@@ -807,7 +807,7 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem?>() {
     override fun getActivityIntent(): Intent? {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
-        val ma: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
+        val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         Assert.assertTrue(ma.isValid)
          MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
         MyLog.i(this, "setUp ended")
@@ -820,7 +820,7 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem?>() {
     @Throws(InterruptedException::class)
     fun actAsActor() {
         TestSuite.waitForListLoaded(activity, 2)
-        Assert.assertEquals("Default actor", MyAccount.Companion.EMPTY, activity.getContextMenu().selectedActingAccount)
+        Assert.assertEquals("Default actor", MyAccount.EMPTY, activity.getContextMenu().selectedActingAccount)
         for (attempt in 1..4) {
             if (oneAttempt(attempt)) break
         }

@@ -795,11 +795,11 @@ class MyAccountsTest {
     @Test
     fun test() {
         val accounts: MyAccounts =  MyContextHolder.myContextHolder.getNow().accounts()
-        Assert.assertNotEquals(accounts.toString(), MyAccount.Companion.EMPTY,
-                accounts.fromWebFingerId(DemoData.Companion.demoData.pumpioTestAccountUniqueName.toLowerCase()))
-        Assert.assertNotEquals(accounts.toString(), MyAccount.Companion.EMPTY,
-                accounts.fromWebFingerId(DemoData.Companion.demoData.conversationAccountSecondUniqueName.toLowerCase()))
-        Assert.assertEquals(accounts.toString(), MyAccount.Companion.EMPTY,
-                accounts.fromWebFingerId(DemoData.Companion.demoData.conversationAuthorSecondUniqueName.toLowerCase()))
+        Assert.assertNotEquals(accounts.toString(), MyAccount.EMPTY,
+                accounts.fromWebFingerId(DemoData.demoData.pumpioTestAccountUniqueName.toLowerCase()))
+        Assert.assertNotEquals(accounts.toString(), MyAccount.EMPTY,
+                accounts.fromWebFingerId(DemoData.demoData.conversationAccountSecondUniqueName.toLowerCase()))
+        Assert.assertEquals(accounts.toString(), MyAccount.EMPTY,
+                accounts.fromWebFingerId(DemoData.demoData.conversationAuthorSecondUniqueName.toLowerCase()))
     }
 }

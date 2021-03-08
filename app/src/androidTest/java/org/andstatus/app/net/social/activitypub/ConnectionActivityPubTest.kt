@@ -56,7 +56,7 @@ class ConnectionActivityPubTest {
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        mock = ConnectionMock.Companion.newFor(DemoData.Companion.demoData.activityPubTestAccountName)
+        mock = ConnectionMock.Companion.newFor(DemoData.demoData.activityPubTestAccountName)
     }
 
     @Test

@@ -41,7 +41,7 @@ import java.util.concurrent.CopyOnWriteArrayList
  * @author yvolk@yurivolkov.com
  */
 class AccountListFragment : Fragment() {
-    private var mItems: MutableList<MyAccount?>? = null
+    private var mItems: MutableList<MyAccount>? = null
     private var mDragListView: DragListView? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,8 +51,8 @@ class AccountListFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.drag_list_layout, container, false)
         mDragListView = view.findViewById(R.id.drag_list_view)
-        mDragListView.recyclerView.isVerticalScrollBarEnabled = true
-        mItems = CopyOnWriteArrayList<MyAccount?>( MyContextHolder.myContextHolder.getNow().accounts().get())
+        mDragListView?.recyclerView?.isVerticalScrollBarEnabled = true
+        mItems = CopyOnWriteArrayList<MyAccount>( MyContextHolder.myContextHolder.getNow().accounts().get())
         setupListRecyclerView()
         return view
     }
@@ -68,19 +68,21 @@ class AccountListFragment : Fragment() {
 
     override fun onPause() {
         super.onPause()
-         MyContextHolder.myContextHolder.getNow().accounts().reorderAccounts(mItems)
+        mItems?.let {
+            MyContextHolder.myContextHolder.getNow().accounts().reorderAccounts(it)
+        }
     }
 
     private fun setupListRecyclerView() {
-        mDragListView.setLayoutManager(LinearLayoutManager(context))
+        mDragListView?.setLayoutManager(LinearLayoutManager(context))
         val listAdapter = ItemAdapter(mItems, R.layout.drag_accountlist_item, R.id.dragHandle)
-        mDragListView.setAdapter(listAdapter, true)
-        mDragListView.setCanDragHorizontally(false)
-        mDragListView.setCustomDragItem(MyDragItem(context, R.layout.drag_accountlist_item))
+        mDragListView?.setAdapter(listAdapter, true)
+        mDragListView?.setCanDragHorizontally(false)
+        mDragListView?.setCustomDragItem(MyDragItem(context, R.layout.drag_accountlist_item))
     }
 
     private class MyDragItem(context: Context?, layoutId: Int) : DragItem(context, layoutId) {
-        override fun onBindDragView(clickedView: View?, dragView: View?) {
+        override fun onBindDragView(clickedView: View, dragView: View) {
             val text = (clickedView.findViewById<View?>(R.id.visible_name) as TextView).text
             (dragView.findViewById<View?>(R.id.visible_name) as TextView).text = text
             dragView.setBackgroundColor(
@@ -89,35 +91,37 @@ class AccountListFragment : Fragment() {
         }
     }
 
-    internal inner class ItemAdapter(list: MutableList<MyAccount?>?, private val mLayoutId: Int, private val mGrabHandleId: Int) : DragItemAdapter<MyAccount?, AccountViewHolder?>() {
-        override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): AccountViewHolder? {
+    internal inner class ItemAdapter(list: MutableList<MyAccount>?, private val mLayoutId: Int, private val mGrabHandleId: Int) : DragItemAdapter<MyAccount, AccountViewHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AccountViewHolder {
             val view = LayoutInflater.from(parent.getContext()).inflate(mLayoutId, parent, false)
             return AccountViewHolder(view, mGrabHandleId)
         }
 
-        override fun onBindViewHolder(holder: AccountViewHolder?, position: Int) {
+        override fun onBindViewHolder(holder: AccountViewHolder, position: Int) {
             super.onBindViewHolder(holder, position)
-            val ma = mItemList[position]
+            val ma = mItemList?.get(position) ?: return
+
             var visibleName = ma.getAccountName()
             if (!ma.isValidAndSucceeded()) {
                 visibleName = "($visibleName)"
             }
-            MyUrlSpan.Companion.showText(holder.itemView, R.id.visible_name, visibleName, false, true)
-            MyUrlSpan.Companion.showText(holder.itemView, R.id.sync_auto,
+            MyUrlSpan.showText(holder.itemView, R.id.visible_name, visibleName, false, true)
+            MyUrlSpan.showText(holder.itemView, R.id.sync_auto,
                     if (ma.isSyncedAutomatically() && ma.isValidAndSucceeded()) getText(R.string.synced_abbreviated).toString() else "", false, true)
             holder.itemView.tag = visibleName
         }
 
         override fun getUniqueItemId(position: Int): Long {
-            return mItemList[position].actorId
+            return mItemList?.get(position)?.actorId ?: 0
         }
 
-        internal inner class AccountViewHolder(itemView: View?, grabHandleId: Int) : ViewHolder(itemView, grabHandleId, false) {
+        internal inner class AccountViewHolder(itemView: View, grabHandleId: Int) :
+                ViewHolder(itemView, grabHandleId, false) {
             override fun onItemClicked(view: View?) {
                 val intent = Intent(activity, AccountSettingsActivity::class.java)
                 intent.putExtra(IntentExtra.ACCOUNT_NAME.key,
                          MyContextHolder.myContextHolder.getNow().accounts().fromActorId(mItemId).getAccountName())
-                activity.startActivity(intent)
+                activity?.startActivity(intent)
             }
 
             override fun onItemLongClicked(view: View?): Boolean {
@@ -132,7 +136,7 @@ class AccountListFragment : Fragment() {
     }
 
     companion object {
-        fun newInstance(): ListFragment? {
+        fun newInstance(): ListFragment {
             return ListFragment()
         }
     }

@@ -38,7 +38,7 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
     var authorFollowed = false
     private fun calculateMyAccount(origin: Origin?, ma: MyAccount?): MyAccount {
         return if (ma == null || !origin.isValid() || ma.origin != origin || ma.nonValid) {
-            MyAccount.Companion.EMPTY
+            MyAccount.EMPTY
         } else ma
     }
 
@@ -96,7 +96,7 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
 
     companion object {
         private val TAG: String? = NoteContextMenuData::class.java.simpleName
-        val EMPTY: NoteContextMenuData? = NoteContextMenuData(NoteForAnyAccount.Companion.EMPTY, MyAccount.Companion.EMPTY)
+        val EMPTY: NoteContextMenuData? = NoteContextMenuData(NoteForAnyAccount.Companion.EMPTY, MyAccount.EMPTY)
         fun getBestAccountToDownloadNote(myContext: MyContext?, noteId: Long): MyAccount? {
             val noteForAnyAccount = NoteForAnyAccount(myContext, 0, noteId)
             var subscribedFound = false

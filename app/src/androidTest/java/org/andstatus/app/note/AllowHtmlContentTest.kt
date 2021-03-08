@@ -819,8 +819,8 @@ class AllowHtmlContentTest {
     @Test
     @Throws(Exception::class)
     fun testAllowHtlContent() {
-        val isAllowedInPumpIoStored: Boolean = DemoData.Companion.demoData.getPumpioConversationOrigin().isHtmlContentAllowed()
-        val isAllowedInGnuSocialStored: Boolean = DemoData.Companion.demoData.getGnuSocialOrigin().isHtmlContentAllowed()
+        val isAllowedInPumpIoStored: Boolean = DemoData.demoData.getPumpioConversationOrigin().isHtmlContentAllowed()
+        val isAllowedInGnuSocialStored: Boolean = DemoData.demoData.getGnuSocialOrigin().isHtmlContentAllowed()
         HtmlContentTester().insertPumpIoHtmlContent()
         oneGnuSocialTest(isAllowedInGnuSocialStored)
         setHtmlContentAllowed(!isAllowedInPumpIoStored, !isAllowedInGnuSocialStored)
@@ -833,11 +833,11 @@ class AllowHtmlContentTest {
     }
 
     private fun testShareHtml() {
-        val origin: Origin = DemoData.Companion.demoData.getPumpioConversationOrigin()
-        Assert.assertNotNull(DemoData.Companion.demoData.conversationOriginName + " exists", origin)
-        val noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, DemoData.Companion.demoData.htmlNoteOid)
+        val origin: Origin = DemoData.demoData.getPumpioConversationOrigin()
+        Assert.assertNotNull(DemoData.demoData.conversationOriginName + " exists", origin)
+        val noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, DemoData.demoData.htmlNoteOid)
         val note: Note = Note.Companion.loadContentById( MyContextHolder.myContextHolder.getNow(), noteId)
-        Assert.assertTrue("origin=" + origin.id + "; oid=" + DemoData.Companion.demoData.htmlNoteOid, noteId != 0L)
+        Assert.assertTrue("origin=" + origin.id + "; oid=" + DemoData.demoData.htmlNoteOid, noteId != 0L)
         val noteShare = NoteShare(origin, noteId, NoteDownloads.Companion.fromNoteId( MyContextHolder.myContextHolder.getNow(), noteId))
         val intent = noteShare.intentToViewAndShare(true)
         Assert.assertTrue(intent.hasExtra(Intent.EXTRA_TEXT))
@@ -855,33 +855,33 @@ class AllowHtmlContentTest {
 
     @Test
     fun testSharePlainText() {
-        val body = "Posting as a plain Text " + DemoData.Companion.demoData.testRunUid
-        val myAccount: MyAccount = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.twitterTestAccountName)
+        val body = "Posting as a plain Text " + DemoData.demoData.testRunUid
+        val myAccount: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName)
         val activity: AActivity = DemoNoteInserter.Companion.addNoteForAccount(myAccount, body,
-                DemoData.Companion.demoData.plainTextNoteOid, DownloadStatus.LOADED)
+                DemoData.demoData.plainTextNoteOid, DownloadStatus.LOADED)
         val noteShare = NoteShare(myAccount.origin, activity.note.noteId,
                 NoteDownloads.Companion.fromNoteId( MyContextHolder.myContextHolder.getNow(), activity.note.noteId))
         val intent = noteShare.intentToViewAndShare(true)
         Assert.assertTrue(intent.extras.containsKey(Intent.EXTRA_TEXT))
         Assert.assertTrue(intent.getStringExtra(Intent.EXTRA_TEXT), intent.getStringExtra(Intent.EXTRA_TEXT).contains(body))
         Assert.assertTrue(intent.extras.containsKey(Intent.EXTRA_HTML_TEXT))
-        DemoData.Companion.demoData.assertConversations()
+        DemoData.demoData.assertConversations()
     }
 
     private fun setHtmlContentAllowed(allowedInPumpIo: Boolean, allowedInGnuSocial: Boolean) {
-        Origin.Builder(DemoData.Companion.demoData.getPumpioConversationOrigin()).setHtmlContentAllowed(allowedInPumpIo).save()
-        Origin.Builder(DemoData.Companion.demoData.getGnuSocialOrigin()).setHtmlContentAllowed(allowedInGnuSocial).save()
+        Origin.Builder(DemoData.demoData.getPumpioConversationOrigin()).setHtmlContentAllowed(allowedInPumpIo).save()
+        Origin.Builder(DemoData.demoData.getGnuSocialOrigin()).setHtmlContentAllowed(allowedInGnuSocial).save()
         TestSuite.forget()
         TestSuite.initialize(this)
         Assert.assertEquals("is HTML content allowed in PumpIo", allowedInPumpIo,
-                DemoData.Companion.demoData.getPumpioConversationOrigin().isHtmlContentAllowed())
+                DemoData.demoData.getPumpioConversationOrigin().isHtmlContentAllowed())
     }
 
     @Throws(Exception::class)
     private fun oneGnuSocialTest(isHtmlAllowed: Boolean) {
         Assert.assertEquals("is HTML content allowed in GnuSocial", isHtmlAllowed,
-                DemoData.Companion.demoData.getGnuSocialOrigin().isHtmlContentAllowed())
-        val mock: ConnectionMock = ConnectionMock.Companion.newFor(DemoData.Companion.demoData.gnusocialTestAccountName)
+                DemoData.demoData.getGnuSocialOrigin().isHtmlContentAllowed())
+        val mock: ConnectionMock = ConnectionMock.Companion.newFor(DemoData.demoData.gnusocialTestAccountName)
         mock.addResponse(org.andstatus.app.tests.R.raw.gnusocial_note_with_html)
         val noteOid = "4453144"
         val activity = mock.connection.getNote(noteOid).get()
@@ -897,7 +897,7 @@ class AllowHtmlContentTest {
         Assert.assertEquals(if (isHtmlAllowed) "HTML content allowed" else "No HTML content", expectedContent, actualContent)
         activity.note.updatedDate = MyLog.uniqueCurrentTimeMS()
         activity.setUpdatedNow(0)
-        val ma: MyAccount = DemoData.Companion.demoData.getGnuSocialAccount()
+        val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         val executionContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
         DataUpdater(executionContext).onActivity(activity)

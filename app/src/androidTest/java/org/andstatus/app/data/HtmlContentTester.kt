@@ -39,7 +39,7 @@ class HtmlContentTester {
                 + "<p>A separate paragraph.</p>")
         Assert.assertFalse("HTML removed", MyHtml.htmlToPlainText(bodyString).contains("<"))
         assertHtmlNote(author, bodyString, null)
-        assertHtmlNote(author, HtmlContentTester.Companion.HTML_BODY_IMG_STRING, DemoData.Companion.demoData.htmlNoteOid)
+        assertHtmlNote(author, HtmlContentTester.Companion.HTML_BODY_IMG_STRING, DemoData.demoData.htmlNoteOid)
     }
 
     private fun assertHtmlNote(author: Actor?, bodyString: String?, noteOid: String?) {
@@ -80,10 +80,10 @@ class HtmlContentTester {
     }
 
     init {
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.Companion.demoData.conversationOriginName)
-        Assert.assertTrue(DemoData.Companion.demoData.conversationOriginName + " exists",
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.conversationOriginName)
+        Assert.assertTrue(DemoData.demoData.conversationOriginName + " exists",
                 origin.originType !== OriginType.UNKNOWN)
-        ma = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
-        Assert.assertTrue(DemoData.Companion.demoData.conversationAccountName + " exists", ma.isValid)
+        ma = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
+        Assert.assertTrue(DemoData.demoData.conversationAccountName + " exists", ma.isValid)
     }
 }
