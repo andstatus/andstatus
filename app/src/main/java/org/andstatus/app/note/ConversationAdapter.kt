@@ -44,7 +44,7 @@ class ConversationAdapter internal constructor(contextMenu: NoteContextMenu?,
                 TimelinePage(
                         TimelineParameters(contextMenu.getMyContext(),
                                 contextMenu.getActivity().myContext.timelines()
-                                        .get(TimelineType.CONVERSATION, Actor.Companion.EMPTY, origin), WhichPage.EMPTY),
+                                        .get(TimelineType.CONVERSATION, Actor.EMPTY, origin), WhichPage.EMPTY),
                         oMsgs
                 )
         )

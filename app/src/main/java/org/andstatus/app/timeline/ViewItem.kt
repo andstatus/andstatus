@@ -101,11 +101,11 @@ open class ViewItem<T : ViewItem<T>> protected constructor(private val isEmptyIn
         return builder
     }
 
-    open fun addActorsToLoad(loader: ActorsLoader?) {
+    open fun addActorsToLoad(loader: ActorsLoader) {
         // Empty
     }
 
-    open fun setLoadedActors(loader: ActorsLoader?) {
+    open fun setLoadedActors(loader: ActorsLoader) {
         // Empty
     }
 

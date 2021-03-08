@@ -55,7 +55,7 @@ internal class ConnectionAndUrl(val apiRoutine: ApiRoutineEnum?, val uri: Uri?, 
                 if (username.isNullOrEmpty()) {
                     return Try.failure(ConnectionException(StatusCode.BAD_REQUEST, apiRoutine.toString() + ": username is required"))
                 }
-                uri = connection.tryApiPath(Actor.Companion.EMPTY, apiRoutine)
+                uri = connection.tryApiPath(Actor.EMPTY, apiRoutine)
                         .map { u: Uri? -> UriUtils.map(u) { s: String? -> s.replace("%username%", username) } }.getOrElse(Uri.EMPTY)
                 host = actor.getConnectionHost()
             }

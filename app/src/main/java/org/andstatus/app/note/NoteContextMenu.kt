@@ -35,6 +35,7 @@ import org.andstatus.app.note.NoteViewItem
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.timeline.ContextMenuHeader
 import org.andstatus.app.timeline.TimelineActivity
+import org.andstatus.app.timeline.TimelineActivity.Companion.startForTimeline
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
@@ -47,15 +48,15 @@ import java.util.function.Consumer
  * Context menu and corresponding actions on notes from the list
  * @author yvolk@yurivolkov.com
  */
-class NoteContextMenu(val menuContainer: NoteContextMenuContainer?) : MyContextMenu(menuContainer.getActivity(), MyContextMenu.Companion.MENU_GROUP_NOTE) {
+class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMenu(menuContainer.getActivity(), MyContextMenu.Companion.MENU_GROUP_NOTE) {
     @Volatile
-    private var futureData: FutureNoteContextMenuData? = FutureNoteContextMenuData.Companion.EMPTY
-    private var selectedMenuItemTitle: String? = ""
+    private var futureData: FutureNoteContextMenuData = FutureNoteContextMenuData.EMPTY
+    private var selectedMenuItemTitle: String = ""
     override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?) {
         onCreateContextMenu(menu, v, menuInfo, null)
     }
 
-    fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?, next: Consumer<NoteContextMenu?>?) {
+    fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?, next: Consumer<NoteContextMenu>) {
         super.onCreateContextMenu(menu, v, menuInfo)
         when (futureData.getStateFor(getViewItem())) {
             StateForSelectedViewItem.READY -> {
@@ -275,7 +276,7 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer?) : MyContextM
         }
     }
 
-    fun onContextItemSelected(contextMenuItem: NoteContextMenuItem?, noteId: Long) {
+    fun onContextItemSelected(contextMenuItem: NoteContextMenuItem, noteId: Long) {
         if (futureData.isFor(noteId)) {
             contextMenuItem.execute(this)
         }

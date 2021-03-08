@@ -246,7 +246,7 @@ class ConnectionPumpioTest {
                 CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, mock.getData().myAccount, TimelineType.HOME))
         DataUpdater(executionContext).onActivity(activity)
         val actorStored: Actor = Actor.Companion.loadFromDatabase(mock.getData().origin.myContext, actor.actorId,
-                Supplier<Actor?> { Actor.Companion.EMPTY }, false)
+                Supplier<Actor?> { Actor.EMPTY }, false)
         assertJpopeActor(actorStored, true)
         val noteStored: Note = Note.Companion.loadContentById(mock.getData().origin.myContext, note.noteId)
         val audienceStored = noteStored.audience()
@@ -313,7 +313,7 @@ class ConnectionPumpioTest {
                 .setName(name)
                 .setContentPosted(content)
                 .setInReplyTo(AActivity.Companion.newPartialNote(mock.getData().myAccount.actor,
-                        Actor.Companion.EMPTY, inReplyToOid, RelativeTime.DATETIME_MILLIS_NEVER, DownloadStatus.UNKNOWN)
+                        Actor.EMPTY, inReplyToOid, RelativeTime.DATETIME_MILLIS_NEVER, DownloadStatus.UNKNOWN)
                         .setOid(inReplyToOid))
         connection.updateNote(note)
         val result = mock.getHttpMock().waitForPostContaining(contentPartToLookup)

@@ -164,7 +164,7 @@ class ConversationActivity : NoteEditorListActivity<Any?>(), NoteContextMenuCont
     }
 
     override fun getTimeline(): Timeline? {
-        return myContext.timelines().get(TimelineType.EVERYTHING, Actor.Companion.EMPTY, origin)
+        return myContext.timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, origin)
     }
 
     private fun getListLoader(): ConversationLoader? {

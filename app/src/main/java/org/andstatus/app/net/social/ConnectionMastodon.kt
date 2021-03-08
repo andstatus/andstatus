@@ -242,7 +242,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
     @Throws(ConnectionException::class)
     override fun actorFromJson(jso: JSONObject?): Actor {
         if (jso == null) {
-            return Actor.Companion.EMPTY
+            return Actor.EMPTY
         }
         val oid = JsonUtils.optString(jso, "id")
         val username = JsonUtils.optString(jso, "username")
@@ -311,7 +311,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                 note.audience().add(actorFromJson(recipient))
             }
             ObjectOrId.Companion.of(jso, "mentions")
-                    .mapAll<Actor?>(CheckedFunction { jso: JSONObject? -> actorFromJson(jso) }, CheckedFunction<String?, Actor?> { oid1: String? -> Actor.Companion.EMPTY })
+                    .mapAll<Actor?>(CheckedFunction { jso: JSONObject? -> actorFromJson(jso) }, CheckedFunction<String?, Actor?> { oid1: String? -> Actor.EMPTY })
                     .forEach(Consumer { o: Actor? -> note.audience().add(o) })
             if (!jso.isNull("application")) {
                 val application = jso.getJSONObject("application")

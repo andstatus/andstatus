@@ -26,19 +26,19 @@ import org.andstatus.app.util.RelativeTime
 /**
  * @author yvolk@yurivolkov.com
  */
-class NoteViewItem : BaseNoteViewItem<NoteViewItem?> {
+class NoteViewItem : BaseNoteViewItem<NoteViewItem> {
     constructor(isEmpty: Boolean, updatedDate: Long) : super(isEmpty, updatedDate) {}
 
-    override fun fromCursor(myContext: MyContext?, cursor: Cursor?): NoteViewItem {
+    override fun fromCursor(myContext: MyContext, cursor: Cursor?): NoteViewItem {
         return NoteViewItem(myContext, cursor)
     }
 
-    private constructor(myContext: MyContext?, cursor: Cursor?) : super(myContext, cursor) {
+    private constructor(myContext: MyContext, cursor: Cursor?) : super(myContext, cursor) {
         setLinkedAccount(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID))
         contentToSearch = DbUtils.getString(cursor, NoteTable.CONTENT_TO_SEARCH)
         insertedDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE)
         activityUpdatedDate = DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE)
-        author = ActorViewItem.Companion.fromActorId(origin, DbUtils.getLong(cursor, NoteTable.AUTHOR_ID))
+        author = ActorViewItem.Companion.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID))
         setOtherViewProperties(cursor)
     }
 

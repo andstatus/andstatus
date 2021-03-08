@@ -306,7 +306,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext?) : Com
                 .filter { obj: String? -> StringUtil.nonEmptyNonTemp() }
                 .map(CheckedFunction<String?, AActivity?> { inReplyToNoteOid: String? ->
                     AActivity.Companion.newPartialNote(execContext.myAccount.actor,
-                            Actor.Companion.EMPTY, inReplyToNoteOid, RelativeTime.DATETIME_MILLIS_NEVER, DownloadStatus.UNKNOWN)
+                            Actor.EMPTY, inReplyToNoteOid, RelativeTime.DATETIME_MILLIS_NEVER, DownloadStatus.UNKNOWN)
                             .setOid(inReplyToNoteOid)
                 })
                 .onSuccess { activity: AActivity? -> note.setInReplyTo(activity) }

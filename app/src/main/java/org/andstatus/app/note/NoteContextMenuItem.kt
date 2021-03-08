@@ -234,7 +234,7 @@ enum class NoteContextMenuItem @JvmOverloads constructor(private val mIsAsync: B
     OPEN_CONVERSATION(false, true) {
         override fun executeOnUiThread(menu: NoteContextMenu?, editorData: NoteEditorData?) {
             val uri: Uri = MatchedUri.Companion.getTimelineItemUri(
-                    menu.getMyContext().timelines()[TimelineType.EVERYTHING, Actor.Companion.EMPTY, menu.getOrigin()],
+                    menu.getMyContext().timelines()[TimelineType.EVERYTHING, Actor.EMPTY, menu.getOrigin()],
                     menu.getNoteId())
             val action = menu.getActivity().intent.action
             if (Intent.ACTION_PICK == action || Intent.ACTION_GET_CONTENT == action) {

@@ -50,47 +50,46 @@ import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
-import java.util.function.Function
 
-abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
-    var myContext: MyContext? =  MyContextHolder.myContextHolder.getNow()
+abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
+    var myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
     var activityUpdatedDate: Long = 0
-    var noteStatus: DownloadStatus? = DownloadStatus.UNKNOWN
+    var noteStatus: DownloadStatus = DownloadStatus.UNKNOWN
     private var activityId: Long = 0
     private var noteId: Long = 0
-    private var origin: Origin? =  Origin.EMPTY
-    var author: ActorViewItem? = ActorViewItem.Companion.EMPTY
-    var visibility: Visibility? = Visibility.UNKNOWN
-    var isSensitive = false
-    var audience: Audience? = Audience.Companion.EMPTY
+    private var origin: Origin =  Origin.EMPTY
+    var author: ActorViewItem = ActorViewItem.EMPTY
+        protected set
+    var visibility: Visibility = Visibility.UNKNOWN
+    private var isSensitive = false
+    var audience: Audience = Audience.EMPTY
     var inReplyToNoteId: Long = 0
-    var inReplyToActor: ActorViewItem? = ActorViewItem.Companion.EMPTY
-    var noteSource: String? = ""
-    private var nameString: String? = ""
-    private var name: Spannable? = SpanUtil.EMPTY
-    private var summaryString: String? = ""
-    private var summary: Spannable? = SpanUtil.EMPTY
-    private var contentString: String? = ""
-    private var content: Spannable? = SpanUtil.EMPTY
-    var contentToSearch: String? = ""
+    var inReplyToActor: ActorViewItem = ActorViewItem.EMPTY
+    var noteSource: String = ""
+    private var nameString: String = ""
+    private var name: Spannable = SpanUtil.EMPTY
+    private var summaryString: String = ""
+    private var summary: Spannable = SpanUtil.EMPTY
+    private var contentString: String = ""
+    private var content: Spannable = SpanUtil.EMPTY
+    var contentToSearch: String = ""
     var likesCount: Long = 0
     var reblogsCount: Long = 0
     var repliesCount: Long = 0
     var favorited = false
-    var rebloggers: MutableMap<Long?, String?>? = HashMap()
+    var rebloggers: MutableMap<Long, String> = HashMap()
     var reblogged = false
     val attachmentsCount: Long
-    val attachedImageFiles: AttachedImageFiles?
-    private var linkedMyAccount: MyAccount? = MyAccount.EMPTY
+    val attachedImageFiles: AttachedImageFiles
+    private var linkedMyAccount: MyAccount = MyAccount.EMPTY
     val detailsSuffix: StringBuilder = StringBuilder()
 
     protected constructor(isEmpty: Boolean, updatedDate: Long) : super(isEmpty, updatedDate) {
         attachmentsCount = 0
-        attachedImageFiles = AttachedImageFiles.Companion.EMPTY
+        attachedImageFiles = AttachedImageFiles.EMPTY
     }
 
-    internal constructor(myContext: MyContext?, cursor: Cursor?) : super(false, DbUtils.getLong(cursor, NoteTable.UPDATED_DATE)) {
+    internal constructor(myContext: MyContext, cursor: Cursor?) : super(false, DbUtils.getLong(cursor, NoteTable.UPDATED_DATE)) {
         activityId = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID)
         setNoteId(DbUtils.getLong(cursor, ActivityTable.NOTE_ID))
         setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)))
@@ -101,10 +100,10 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
         this.myContext = myContext
         if (MyPreferences.getDownloadAndDisplayAttachedImages()) {
             attachmentsCount = DbUtils.getLong(cursor, NoteTable.ATTACHMENTS_COUNT)
-            attachedImageFiles = if (attachmentsCount == 0L) AttachedImageFiles.Companion.EMPTY else AttachedImageFiles.Companion.load(myContext, noteId)
+            attachedImageFiles = if (attachmentsCount == 0L) AttachedImageFiles.EMPTY else AttachedImageFiles.load(myContext, noteId)
         } else {
             attachmentsCount = 0
-            attachedImageFiles = AttachedImageFiles.Companion.EMPTY
+            attachedImageFiles = AttachedImageFiles.EMPTY
         }
     }
 
@@ -113,27 +112,19 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
         setSummary(DbUtils.getString(cursor, NoteTable.SUMMARY))
         setContent(DbUtils.getString(cursor, NoteTable.CONTENT))
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID)
-        inReplyToActor = ActorViewItem.Companion.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID))
-        visibility = Visibility.Companion.fromCursor(cursor)
-        audience = Audience.Companion.fromNoteId(getOrigin(), getNoteId(), visibility)
-        noteStatus = DownloadStatus.Companion.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS))
+        inReplyToActor = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID))
+        visibility = Visibility.fromCursor(cursor)
+        audience = Audience.fromNoteId(getOrigin(), getNoteId(), visibility)
+        noteStatus = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS))
         favorited = DbUtils.getTriState(cursor, NoteTable.FAVORITED) == TriState.TRUE
         reblogged = DbUtils.getTriState(cursor, NoteTable.REBLOGGED) == TriState.TRUE
         val via = DbUtils.getString(cursor, NoteTable.VIA)
-        if (!via.isNullOrEmpty()) {
+        if (!via.isEmpty()) {
             noteSource = Html.fromHtml(via).toString().trim { it <= ' ' }
         }
         for (actor in MyQuery.getRebloggers( MyContextHolder.myContextHolder.getNow().getDatabase(), getOrigin(), getNoteId())) {
-            rebloggers[actor.actorId] = actor.webFingerId
+            rebloggers[actor.actorId] = actor.getWebFingerId()
         }
-    }
-
-    fun getMyContext(): MyContext {
-        return myContext
-    }
-
-    fun setMyContext(myContext: MyContext?) {
-        this.myContext = myContext
     }
 
     fun getActivityId(): Long {
@@ -148,11 +139,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
         this.noteId = noteId
     }
 
-    fun getAuthor(): ActorViewItem? {
-        return author
-    }
-
-    fun getOrigin(): Origin? {
+    fun getOrigin(): Origin {
         return origin
     }
 
@@ -161,16 +148,16 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
     }
 
     fun setLinkedAccount(linkedActorId: Long) {
-        linkedMyAccount = getMyContext().accounts().fromActorId(linkedActorId)
+        linkedMyAccount = myContext.accounts().fromActorId(linkedActorId)
     }
 
     fun getLinkedMyAccount(): MyAccount {
         return linkedMyAccount
     }
 
-    private fun setCollapsedStatus(noteDetails: MyStringBuilder?) {
-        if (isCollapsed) {
-            noteDetails.withSpace("(+$childrenCount)")
+    private fun setCollapsedStatus(noteDetails: MyStringBuilder) {
+        if (isCollapsed()) {
+            noteDetails.withSpace("(+${getChildrenCount()}")
         }
     }
 
@@ -179,16 +166,16 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
         return if (getNoteId() == other.getNoteId()) duplicatesByFavoritedAndReblogged(preferredOrigin, other) else duplicatesByOther(preferredOrigin, other)
     }
 
-    private fun duplicatesByFavoritedAndReblogged(preferredOrigin: Origin?, other: T): DuplicationLink {
+    private fun duplicatesByFavoritedAndReblogged(preferredOrigin: Origin, other: T): DuplicationLink {
         if (favorited != other.favorited) {
             return if (favorited) DuplicationLink.IS_DUPLICATED else DuplicationLink.DUPLICATES
         } else if (reblogged != other.reblogged) {
             return if (reblogged) DuplicationLink.IS_DUPLICATED else DuplicationLink.DUPLICATES
         }
         if (preferredOrigin.nonEmpty
-                && author.getActor().origin != other.author.getActor().origin) {
-            if (preferredOrigin == author.getActor().origin) return DuplicationLink.IS_DUPLICATED
-            if (preferredOrigin == other.author.getActor().origin) return DuplicationLink.DUPLICATES
+                && author.actor.origin != other.author.actor.origin) {
+            if (preferredOrigin == author.actor.origin) return DuplicationLink.IS_DUPLICATED
+            if (preferredOrigin == other.author.actor.origin) return DuplicationLink.DUPLICATES
         }
         if (getLinkedMyAccount() != other.getLinkedMyAccount()) {
             return if (getLinkedMyAccount().compareTo(other.getLinkedMyAccount()) <= 0) DuplicationLink.IS_DUPLICATED else DuplicationLink.DUPLICATES
@@ -196,7 +183,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
         return if (rebloggers.size > other.rebloggers.size) DuplicationLink.IS_DUPLICATED else DuplicationLink.DUPLICATES
     }
 
-    private fun duplicatesByOther(preferredOrigin: Origin?, other: T): DuplicationLink {
+    private fun duplicatesByOther(preferredOrigin: Origin, other: T): DuplicationLink {
         if (updatedDate > RelativeTime.SOME_TIME_AGO && other.updatedDate > RelativeTime.SOME_TIME_AGO && Math.abs(updatedDate - other.updatedDate) >= TimeUnit.HOURS.toMillis(24) || isTooShortToCompare()
                 || other.isTooShortToCompare()) return DuplicationLink.NONE
         if (contentToSearch == other.contentToSearch) {
@@ -223,7 +210,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
         return !rebloggers.isEmpty()
     }
 
-    open fun getDetails(context: Context?, showReceivedTime: Boolean): MyStringBuilder? {
+    open fun getDetails(context: Context, showReceivedTime: Boolean): MyStringBuilder {
         val builder = getMyStringBuilderWithTime(context, showReceivedTime)
         if (isSensitive() && MyPreferences.isShowSensitiveContent()) {
             builder.prependWithSeparator(myContext.context().getText(R.string.sensitive), " ")
@@ -237,44 +224,44 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
         return builder
     }
 
-    private fun setAudience(builder: MyStringBuilder?) {
-        builder.withSpace(audience.toAudienceString(inReplyToActor.getActor()))
+    private fun setAudience(builder: MyStringBuilder) {
+        builder.withSpace(audience.toAudienceString(inReplyToActor.actor))
     }
 
-    private fun setNoteSource(context: Context?, noteDetails: MyStringBuilder?) {
+    private fun setNoteSource(context: Context, noteDetails: MyStringBuilder) {
         if (!SharedPreferencesUtil.isEmpty(noteSource) && "ostatus" != noteSource
                 && "unknown" != noteSource) {
             noteDetails.withSpace(StringUtil.format(context, R.string.message_source_from, noteSource))
         }
     }
 
-    private fun setAccountDownloaded(noteDetails: MyStringBuilder?) {
+    private fun setAccountDownloaded(noteDetails: MyStringBuilder) {
         if (MyPreferences.isShowMyAccountWhichDownloadedActivity() && linkedMyAccount.isValid) {
             noteDetails.withSpace("a:" + linkedMyAccount.getShortestUniqueAccountName())
         }
     }
 
-    private fun setNoteStatus(context: Context?, noteDetails: MyStringBuilder?) {
+    private fun setNoteStatus(context: Context, noteDetails: MyStringBuilder) {
         if (noteStatus != DownloadStatus.LOADED) {
             noteDetails.withSpace("(").append(noteStatus.getTitle(context)).append(")")
         }
     }
 
-    fun setName(name: String?): BaseNoteViewItem<*>? {
+    fun setName(name: String): BaseNoteViewItem<*> {
         nameString = name
         return this
     }
 
-    fun getName(): Spannable? {
+    fun getName(): Spannable {
         return name
     }
 
-    fun setSummary(summary: String?): BaseNoteViewItem<*>? {
+    fun setSummary(summary: String): BaseNoteViewItem<*> {
         summaryString = summary
         return this
     }
 
-    fun getSummary(): Spannable? {
+    fun getSummary(): Spannable {
         return summary
     }
 
@@ -282,12 +269,12 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
         return isSensitive
     }
 
-    fun setContent(content: String?): BaseNoteViewItem<*>? {
+    fun setContent(content: String): BaseNoteViewItem<*> {
         contentString = content
         return this
     }
 
-    fun getContent(): Spannable? {
+    fun getContent(): Spannable {
         return content
     }
 
@@ -299,37 +286,37 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
         return activityUpdatedDate
     }
 
-    override fun matches(filter: TimelineFilter?): Boolean {
+    override fun matches(filter: TimelineFilter): Boolean {
         if (filter.keywordsFilter.nonEmpty || filter.searchQuery.nonEmpty) {
             if (filter.keywordsFilter.matchedAny(contentToSearch)) return false
             if (filter.searchQuery.nonEmpty && !filter.searchQuery.matchedAll(contentToSearch)) return false
         }
         return (!filter.hideRepliesNotToMeOrFriends
                 || inReplyToActor.isEmpty
-                ||  MyContextHolder.myContextHolder.getNow().users().isMeOrMyFriend(inReplyToActor.getActor()))
+                ||  MyContextHolder.myContextHolder.getNow().users().isMeOrMyFriend(inReplyToActor.actor))
     }
 
     override fun toString(): String {
-        return MyStringBuilder.Companion.formatKeyValue(this, I18n.trimTextAt(getContent().toString(), 40).toString() + ", "
-                + getDetails(getMyContext().context(), false)
+        return MyStringBuilder.formatKeyValue(this, I18n.trimTextAt(getContent().toString(), 40).toString() + ", "
+                + getDetails(myContext.context(), false)
                 + "', actorId:" + author.getActorId() + ", " + noteStatus
         )
     }
 
-    fun hideTheReblogger(actor: Actor?) {
+    fun hideTheReblogger(actor: Actor) {
         rebloggers.remove(actor.actorId)
     }
 
-    override fun addActorsToLoad(loader: ActorsLoader?) {
-        loader.addActorToList(author.getActor())
-        loader.addActorToList(inReplyToActor.getActor())
-        audience.addActorsToLoad(Consumer { actor: Actor? -> loader.addActorToList(actor) })
+    override fun addActorsToLoad(loader: ActorsLoader) {
+        loader.addActorToList(author.actor)
+        loader.addActorToList(inReplyToActor.actor)
+        audience.addActorsToLoad { actor: Actor? -> loader.addActorToList(actor) }
     }
 
-    override fun setLoadedActors(loader: ActorsLoader?) {
-        if (author.getActor().nonEmpty) author = loader.getLoaded(author)
-        if (inReplyToActor.getActor().nonEmpty) inReplyToActor = loader.getLoaded(inReplyToActor)
-        audience.setLoadedActors(Function { actor: Actor? -> loader.getLoaded(ActorViewItem.Companion.fromActor(actor)).actor })
+    override fun setLoadedActors(loader: ActorsLoader) {
+        if (author.actor.nonEmpty) author = loader.getLoaded(author)
+        if (inReplyToActor.actor.nonEmpty) inReplyToActor = loader.getLoaded(inReplyToActor)
+        audience.setLoadedActors { actor: Actor -> loader.getLoaded(ActorViewItem.fromActor(actor)).actor }
         name = SpanUtil.textToSpannable(nameString, TextMediaType.PLAIN, audience)
         summary = SpanUtil.textToSpannable(summaryString, TextMediaType.PLAIN, audience)
         content = SpanUtil.textToSpannable(contentString, TextMediaType.HTML, audience)

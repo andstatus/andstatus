@@ -31,10 +31,10 @@ class MbActivityTest {
     fun testEmpty() {
         val empty: AActivity = AActivity.Companion.EMPTY
         Assert.assertEquals(empty.toString(), true, empty.isEmpty)
-        Assert.assertEquals(Actor.Companion.EMPTY, empty.accountActor)
-        Assert.assertEquals(Actor.Companion.EMPTY, empty.actor)
-        Assert.assertEquals(Actor.Companion.EMPTY, empty.author)
-        Assert.assertEquals(empty.toString(), Actor.Companion.EMPTY, empty.objActor)
+        Assert.assertEquals(Actor.EMPTY, empty.accountActor)
+        Assert.assertEquals(Actor.EMPTY, empty.actor)
+        Assert.assertEquals(Actor.EMPTY, empty.author)
+        Assert.assertEquals(empty.toString(), Actor.EMPTY, empty.objActor)
         Assert.assertEquals(Note.Companion.EMPTY, empty.note)
         Assert.assertEquals(AActivity.Companion.EMPTY, empty.activity)
         Assert.assertEquals(AObjectType.EMPTY, empty.objectType)

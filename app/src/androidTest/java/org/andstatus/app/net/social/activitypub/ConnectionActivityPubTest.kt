@@ -132,7 +132,7 @@ class ConnectionActivityPubTest {
         Assert.assertEquals("Note oid $note", "https://lgbtq.cool/users/abby/statuses/101702144808655868", note.oid)
         val actor = activity.actor
         Assert.assertEquals("Actor's oid $activity", ACTOR_OID2, actor.oid)
-        Assert.assertEquals("Author is unknown", Actor.Companion.EMPTY, activity.author)
+        Assert.assertEquals("Author is unknown", Actor.EMPTY, activity.author)
     }
 
     @Test
@@ -329,7 +329,7 @@ class ConnectionActivityPubTest {
                         CommandEnum.GET_ACTOR, partial, "", mock.getData().origin))
         val activity = executionContext.myAccount.actor.update(received)
         DataUpdater(executionContext).onActivity(activity)
-        val stored: Actor = Actor.Companion.load(executionContext.myContext, received.actorId, true, Supplier<Actor?> { Actor.Companion.EMPTY })
+        val stored: Actor = Actor.Companion.load(executionContext.myContext, received.actorId, true, Supplier<Actor?> { Actor.EMPTY })
         Assert.assertEquals("Actor's oid $stored", actorOid, stored.oid)
     }
 }

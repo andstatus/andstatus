@@ -29,7 +29,7 @@ open class ActorsLoader(val myContext: MyContext, protected val actorsScreenType
     protected val centralActorId: Long
 
     @Volatile
-    private var centralActor: Actor = Actor.Companion.EMPTY
+    private var centralActor: Actor = Actor.EMPTY
     private var mProgress: ProgressPublisher? = null
     override fun allowLoadingFromInternet() {
         mAllowLoadingFromInternet = ma.isValidAndSucceeded()
@@ -54,11 +54,11 @@ open class ActorsLoader(val myContext: MyContext, protected val actorsScreenType
     }
 
     fun addActorIdToList(origin: Origin?, actorId: Long): Actor? {
-        return if (actorId == 0L) Actor.Companion.EMPTY else addActorToList(Actor.Companion.fromId(origin, actorId))
+        return if (actorId == 0L) Actor.EMPTY else addActorToList(Actor.Companion.fromId(origin, actorId))
     }
 
     fun addActorToList(actor: Actor?): Actor? {
-        if (actor.isEmpty) return Actor.Companion.EMPTY
+        if (actor.isEmpty) return Actor.EMPTY
         val item: ActorViewItem = ActorViewItem.Companion.fromActor(actor)
         val existing = items.indexOf(item)
         if (existing >= 0) return items[existing].actor

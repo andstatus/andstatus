@@ -43,7 +43,7 @@ class RecursiveConversationLoader(emptyItem: ConversationViewItem?, myContext: M
         conversationIds.add(item.conversationId)
         val selection = (ProjectionMap.NOTE_TABLE_ALIAS + "."
                 + NoteTable.CONVERSATION_ID + "=" + item.conversationId)
-        val uri = myContext.timelines()[TimelineType.EVERYTHING, Actor.Companion.EMPTY, ma.origin].uri
+        val uri = myContext.timelines()[TimelineType.EVERYTHING, Actor.EMPTY, ma.origin].uri
         myContext.context().contentResolver.query(uri,
                 item.getProjection().toArray<String?>(arrayOf<String?>()),
                 selection, null, null).use { cursor ->

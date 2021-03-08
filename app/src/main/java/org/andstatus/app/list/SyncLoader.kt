@@ -22,13 +22,13 @@ import java.util.*
  * @author yvolk@yurivolkov.com
  */
 abstract class SyncLoader<T> {
-    protected var items: MutableList<T?>? = ArrayList()
+    protected var items: MutableList<T> = ArrayList()
     open fun allowLoadingFromInternet() {
         // Empty
     }
 
     abstract fun load(publisher: ProgressPublisher?)
-    fun getList(): MutableList<T?> {
+    fun getList(): MutableList<T> {
         return items
     }
 

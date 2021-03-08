@@ -28,7 +28,7 @@ import java.util.stream.Collectors
 /**
  * @author yvolk@yurivolkov.com
  */
-class DuplicatesCollapser<T : ViewItem<T?>?>(val data: TimelineData<T?>?, oldDuplicatesCollapser: DuplicatesCollapser<T?>?) {
+class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplicatesCollapser: DuplicatesCollapser<T>) {
     private val maxDistanceBetweenDuplicates = MyPreferences.getMaxDistanceBetweenDuplicates()
 
     // Parameters, which may be changed during presentation of the timeline
@@ -37,17 +37,17 @@ class DuplicatesCollapser<T : ViewItem<T?>?>(val data: TimelineData<T?>?, oldDup
     val individualCollapsedStateIds = Collections.newSetFromMap(ConcurrentHashMap<Long?, Boolean?>())
 
     @Volatile
-    var preferredOrigin: Origin? = null
+    var preferredOrigin: Origin = Origin.EMPTY
 
-    private class GroupToCollapse<T : ViewItem<T?>?> internal constructor(var parent: ItemWithPage<T?>) {
-        var children: MutableSet<ItemWithPage<T?>?>? = HashSet()
+    private class GroupToCollapse<T : ViewItem<T>> internal constructor(var parent: ItemWithPage<T>) {
+        var children: MutableSet<ItemWithPage<T>> = HashSet()
         operator fun contains(itemId: Long): Boolean {
             return itemId != 0L && (parent.item.getId() == itemId ||
-                    children.stream().anyMatch { child: ItemWithPage<T?>? -> child.item.getId() == itemId })
+                    children.stream().anyMatch { child: ItemWithPage<T> -> child.item.getId() == itemId })
         }
     }
 
-    private class ItemWithPage<T : ViewItem<T?>?> internal constructor(var page: TimelinePage<T?>?, var item: T?)
+    private class ItemWithPage<T : ViewItem<T>> internal constructor(var page: TimelinePage<T>, var item: T)
 
     fun isCollapseDuplicates(): Boolean {
         return collapseDuplicates
@@ -55,14 +55,14 @@ class DuplicatesCollapser<T : ViewItem<T?>?>(val data: TimelineData<T?>?, oldDup
 
     fun canBeCollapsed(position: Int): Boolean {
         if (maxDistanceBetweenDuplicates < 1) return false
-        val item: T? = data.getItem(position)
+        val item: T = data.getItem(position)
         for (i in Math.max(position - maxDistanceBetweenDuplicates, 0)..position + maxDistanceBetweenDuplicates) {
             if (i != position && item.duplicates(data.params.timeline, preferredOrigin, data.getItem(i)).exists()) return true
         }
         return false
     }
 
-    private fun setIndividualCollapsedState(collapse: Boolean, item: T?) {
+    private fun setIndividualCollapsedState(collapse: Boolean, item: T) {
         if (collapse == isCollapseDuplicates()) {
             individualCollapsedStateIds.remove(item.getId())
         } else {
@@ -70,15 +70,15 @@ class DuplicatesCollapser<T : ViewItem<T?>?>(val data: TimelineData<T?>?, oldDup
         }
     }
 
-    fun restoreCollapsedStates(oldCollapser: DuplicatesCollapser<T?>) {
-        oldCollapser.individualCollapsedStateIds.forEach(Consumer { id: Long? ->
+    fun restoreCollapsedStates(oldCollapser: DuplicatesCollapser<T>) {
+        oldCollapser.individualCollapsedStateIds.forEach(Consumer { id: Long ->
             collapseDuplicates(
                     LoadableListViewParameters(TriState.Companion.fromBoolean(!collapseDuplicates), id, Optional.of(preferredOrigin)))
         })
     }
 
     /** For all or for only one item  */
-    fun collapseDuplicates(viewParameters: LoadableListViewParameters?) {
+    fun collapseDuplicates(viewParameters: LoadableListViewParameters) {
         if (viewParameters.collapsedItemId == 0L && viewParameters.collapseDuplicates.known && collapseDuplicates != viewParameters.collapseDuplicates.toBoolean(false)) {
             collapseDuplicates = viewParameters.collapseDuplicates.toBoolean(false)
             individualCollapsedStateIds.clear()

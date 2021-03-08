@@ -61,7 +61,7 @@ class VerifyCredentialsActivityPubTest {
                 actor.oid,
                 MyQuery.idToOid( MyContextHolder.myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0))
         assertActor(actor)
-        val stored: Actor = Actor.Companion.loadFromDatabase(mock.getData().origin.myContext, actorId, Supplier<Actor?> { Actor.Companion.EMPTY }, false)
+        val stored: Actor = Actor.Companion.loadFromDatabase(mock.getData().origin.myContext, actorId, Supplier<Actor?> { Actor.EMPTY }, false)
         assertActor(stored)
     }
 

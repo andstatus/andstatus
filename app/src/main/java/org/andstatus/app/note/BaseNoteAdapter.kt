@@ -41,10 +41,11 @@ import java.util.function.Consumer
 /**
  * @author yvolk@yurivolkov.com
  */
-abstract class BaseNoteAdapter<T : BaseNoteViewItem<T?>?>(contextMenu: NoteContextMenu, listData: TimelineData<T?>?) : BaseTimelineAdapter<T?>(contextMenu.myContext, listData) {
+abstract class BaseNoteAdapter<T : BaseNoteViewItem<T>>(contextMenu: NoteContextMenu, listData: TimelineData<T>) :
+        BaseTimelineAdapter<T>(contextMenu.getMyContext(), listData) {
     protected val showButtonsBelowNotes = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_SHOW_BUTTONS_BELOW_NOTE, true)
-    protected val contextMenu: NoteContextMenu?
-    protected var preloadedImages: MutableSet<Long?>? = HashSet(100)
+    protected val contextMenu: NoteContextMenu
+    protected var preloadedImages: MutableSet<Long> = HashSet(100)
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
         val view = getEmptyView(convertView)
         view.setOnCreateContextMenuListener(contextMenu)
@@ -55,13 +56,13 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T?>?>(contextMenu: NoteConte
         return view
     }
 
-    fun populateView(view: ViewGroup?, item: T?, showReceivedTime: Boolean, position: Int) {
+    fun populateView(view: ViewGroup, item: T, showReceivedTime: Boolean, position: Int) {
         showRebloggers(view, item)
-        MyUrlSpan.Companion.showText(view, R.id.note_author, item.author.actor.actorNameInTimelineWithOrigin, false, false)
+        MyUrlSpan.showText(view, R.id.note_author, item.author.actor.getActorNameInTimelineWithOrigin(), false, false)
         showNoteName(view, item)
         showNoteSummary(view, item)
         showNoteContent(view, item)
-        MyUrlSpan.Companion.showText(view, R.id.note_details, item.getDetails(contextMenu.getActivity(), showReceivedTime)
+        MyUrlSpan.showText(view, R.id.note_details, item.getDetails(contextMenu.getActivity(), showReceivedTime)
                 .toString(), false, false)
         showAvatarEtc(view, item)
         if (showAttachedImages) {
@@ -79,27 +80,27 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T?>?>(contextMenu: NoteConte
         showNoteNumberEtc(view, item, position)
     }
 
-    protected abstract fun showAvatarEtc(view: ViewGroup?, item: T?)
+    protected abstract fun showAvatarEtc(view: ViewGroup, item: T)
     protected abstract fun showNoteNumberEtc(view: ViewGroup?, item: T?, position: Int)
-    protected fun getEmptyView(convertView: View?): ViewGroup? {
+    protected fun getEmptyView(convertView: View?): ViewGroup {
         if (convertView == null) return newView()
         convertView.setBackgroundResource(0)
         val noteIndented = convertView.findViewById<View?>(R.id.note_indented)
         noteIndented.setBackgroundResource(0)
-        return convertView as ViewGroup?
+        return convertView as ViewGroup
     }
 
     override fun getItemId(position: Int): Long {
         return getItem(position).getNoteId()
     }
 
-    protected fun newView(): ViewGroup? {
+    protected fun newView(): ViewGroup {
         val view = LayoutInflater.from(contextMenu.getActivity()).inflate(R.layout.note, null) as ViewGroup
         setupButtons(view)
         return view
     }
 
-    protected fun showRebloggers(view: View?, item: T?) {
+    protected fun showRebloggers(view: View, item: T) {
         val viewGroup = view.findViewById<View?>(R.id.reblogged)
         if (viewGroup == null) {
             return
@@ -107,34 +108,34 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T?>?>(contextMenu: NoteConte
             viewGroup.visibility = View.VISIBLE
             val rebloggers = MyStringBuilder()
             item.rebloggers.values.forEach(Consumer { text: String? -> rebloggers.withComma(text) })
-            MyUrlSpan.Companion.showText(viewGroup, R.id.rebloggers, rebloggers.toString(), false, false)
+            MyUrlSpan.showText(viewGroup, R.id.rebloggers, rebloggers.toString(), false, false)
         } else {
             viewGroup.visibility = View.GONE
         }
     }
 
-    protected fun showNoteName(view: View?, item: T?) {
-        MyUrlSpan.Companion.showSpannable(view.findViewById<TextView?>(R.id.note_name),
+    protected fun showNoteName(view: View, item: T) {
+        MyUrlSpan.showSpannable(view.findViewById<TextView?>(R.id.note_name),
                 if (item.isSensitive() && !MyPreferences.isShowSensitiveContent()) SpanUtil.EMPTY else item.getName(), false)
     }
 
-    protected fun showNoteSummary(view: View?, item: T?) {
-        MyUrlSpan.Companion.showSpannable(view.findViewById<TextView?>(R.id.note_summary), item.getSummary(), false)
+    protected fun showNoteSummary(view: View, item: T) {
+        MyUrlSpan.showSpannable(view.findViewById<TextView?>(R.id.note_summary), item.getSummary(), false)
     }
 
-    protected fun showNoteContent(view: View?, item: T?) {
-        MyUrlSpan.Companion.showSpannable(view.findViewById<TextView?>(R.id.note_body),
+    protected fun showNoteContent(view: View, item: T) {
+        MyUrlSpan.showSpannable(view.findViewById<TextView?>(R.id.note_body),
                 if (item.isSensitive() && !MyPreferences.isShowSensitiveContent()) SpannableString.valueOf("(" + myContext.context().getText(R.string.sensitive) + ")") else item.getContent(),
                 false)
     }
 
-    protected fun showAvatar(view: View?, item: T?) {
+    protected fun showAvatar(view: View, item: T) {
         item.author.showAvatar(contextMenu.getActivity(), view.findViewById(R.id.avatar_image))
     }
 
-    private fun showAttachedImages(view: View?, item: T?) {
+    private fun showAttachedImages(view: View, item: T) {
         val attachmentsList = view.findViewById<LinearLayout?>(R.id.attachments_wrapper) ?: return
-        if (!contextMenu.getActivity().isMyResumed || item.isSensitive() && !MyPreferences.isShowSensitiveContent() ||
+        if (!contextMenu.getActivity().isMyResumed() || item.isSensitive() && !MyPreferences.isShowSensitiveContent() ||
                 !item.attachedImageFiles.imageOrLinkMayBeShown()) {
             attachmentsList.visibility = View.GONE
             return
@@ -142,7 +143,7 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T?>?>(contextMenu: NoteConte
         attachmentsList.removeAllViewsInLayout()
         for (mediaFile in item.attachedImageFiles.list) {
             if (!mediaFile.imageOrLinkMayBeShown()) continue
-            val attachmentLayout = if (mediaFile.imageMayBeShown()) if (mediaFile.isTargetVideo) R.layout.attachment_video_preview else R.layout.attachment_image else R.layout.attachment_link
+            val attachmentLayout = if (mediaFile.imageMayBeShown()) if (mediaFile.isTargetVideo()) R.layout.attachment_video_preview else R.layout.attachment_image else R.layout.attachment_link
             val attachmentView = LayoutInflater.from(contextMenu.getActivity())
                     .inflate(attachmentLayout, attachmentsList, false)
             if (mediaFile.imageMayBeShown()) {
@@ -151,26 +152,26 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T?>?>(contextMenu: NoteConte
                 mediaFile.showImage(contextMenu.getActivity(), imageView)
                 setOnImageClick(imageView, mediaFile)
             } else {
-                MyUrlSpan.Companion.showText(attachmentView, R.id.attachment_link,
-                        mediaFile.targetUri.toString(), true, false)
+                MyUrlSpan.showText(attachmentView, R.id.attachment_link,
+                        mediaFile.getTargetUri().toString(), true, false)
             }
             attachmentsList.addView(attachmentView)
         }
         attachmentsList.visibility = View.VISIBLE
     }
 
-    private fun setOnImageClick(imageView: View?, mediaFile: AttachedMediaFile?) {
-        imageView.setOnClickListener(View.OnClickListener { view: View? -> contextMenu.menuContainer.activity.startActivity(mediaFile.intentToView()) })
+    private fun setOnImageClick(imageView: View, mediaFile: AttachedMediaFile) {
+        imageView.setOnClickListener { view: View? -> contextMenu.menuContainer.getActivity().startActivity(mediaFile.intentToView()) }
     }
 
-    fun removeReplyToMeMarkerView(view: ViewGroup?) {
+    fun removeReplyToMeMarkerView(view: ViewGroup) {
         val oldView = view.findViewById<View?>(R.id.reply_timeline_marker)
         if (oldView != null) {
             view.removeView(oldView)
         }
     }
 
-    private fun showMarkRepliesToMe(view: ViewGroup?, item: T?) {
+    private fun showMarkRepliesToMe(view: ViewGroup, item: T) {
         if (myContext.users().isMe(item.inReplyToActor.actor) &&
                 !myContext.users().isMe(item.author.actor)) {
             val referencedView = view.findViewById<View?>(R.id.note_indented)
@@ -183,7 +184,7 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T?>?>(contextMenu: NoteConte
         }
     }
 
-    fun setupButtons(view: View?) {
+    fun setupButtons(view: View) {
         if (showButtonsBelowNotes) {
             val buttons = view.findViewById<View?>(R.id.note_buttons)
             if (buttons != null) {
@@ -198,20 +199,21 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T?>?>(contextMenu: NoteConte
         }
     }
 
-    private fun setOnButtonClick(viewGroup: View?, buttonId: Int, menuItem: NoteContextMenuItem?) {
-        viewGroup.findViewById<View?>(buttonId).setOnClickListener { view: View? ->
+    private fun setOnButtonClick(viewGroup: View, buttonId: Int, menuItem: NoteContextMenuItem) {
+        viewGroup.findViewById<View?>(buttonId).setOnClickListener { view: View ->
             val item = getItem(view)
             if (item != null && (item.noteStatus == DownloadStatus.LOADED || menuItem.appliedToUnsentNotesAlso)) {
-                contextMenu.onCreateContextMenu(null, view, null, Consumer { contextMenu: NoteContextMenu? -> contextMenu.onContextItemSelected(menuItem, item.noteId) })
+                contextMenu.onCreateContextMenu(null, view, null
+                ) { contextMenu: NoteContextMenu -> contextMenu.onContextItemSelected(menuItem, item.getNoteId()) }
             }
         }
     }
 
-    private fun setOnClickShowContextMenu(viewGroup: View?, buttonId: Int) {
+    private fun setOnClickShowContextMenu(viewGroup: View, buttonId: Int) {
         viewGroup.findViewById<View?>(buttonId).setOnClickListener { view: View? -> viewGroup.showContextMenu() }
     }
 
-    protected fun showButtonsBelowNote(view: View?, item: T?) {
+    protected fun showButtonsBelowNote(view: View, item: T) {
         val viewGroup = view.findViewById<View?>(R.id.note_buttons)
         if (viewGroup == null) {
             return
@@ -219,22 +221,22 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T?>?>(contextMenu: NoteConte
             viewGroup.visibility = View.VISIBLE
             tintIcon(viewGroup, item.reblogged, R.id.reblog_button, R.id.reblog_button_tinted)
             tintIcon(viewGroup, item.favorited, R.id.favorite_button, R.id.favorite_button_tinted)
-            MyUrlSpan.Companion.showText(viewGroup, R.id.likes_count, I18n.notZero(item.likesCount), false, true)
-            MyUrlSpan.Companion.showText(viewGroup, R.id.reblogs_count, I18n.notZero(item.reblogsCount), false, true)
-            MyUrlSpan.Companion.showText(viewGroup, R.id.replies_count, I18n.notZero(item.repliesCount), false, true)
+            MyUrlSpan.showText(viewGroup, R.id.likes_count, I18n.notZero(item.likesCount), false, true)
+            MyUrlSpan.showText(viewGroup, R.id.reblogs_count, I18n.notZero(item.reblogsCount), false, true)
+            MyUrlSpan.showText(viewGroup, R.id.replies_count, I18n.notZero(item.repliesCount), false, true)
         } else {
             viewGroup.visibility = View.GONE
         }
     }
 
-    private fun tintIcon(viewGroup: View?, colored: Boolean, viewId: Int, viewIdColored: Int) {
+    private fun tintIcon(viewGroup: View, colored: Boolean, viewId: Int, viewIdColored: Int) {
         val imageView = viewGroup.findViewById<ImageView?>(viewId)
         val imageViewTinted = viewGroup.findViewById<ImageView?>(viewIdColored)
         imageView.visibility = if (colored) View.GONE else View.VISIBLE
         imageViewTinted.visibility = if (colored) View.VISIBLE else View.GONE
     }
 
-    protected fun showFavorited(view: View?, item: T?) {
+    protected fun showFavorited(view: View, item: T) {
         val favorited = view.findViewById<View?>(R.id.note_favorited)
         favorited.visibility = if (item.favorited) View.VISIBLE else View.GONE
     }

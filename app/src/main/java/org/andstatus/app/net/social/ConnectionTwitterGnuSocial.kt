@@ -191,7 +191,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
     }
 
     public override fun actorBuilderFromJson(jso: JSONObject?): Actor {
-        return if (jso == null) Actor.Companion.EMPTY else super.actorBuilderFromJson(jso)
+        return if (jso == null) Actor.EMPTY else super.actorBuilderFromJson(jso)
                 .setProfileUrl(JsonUtils.optString(jso, "statusnet_profile_url"))
     }
 

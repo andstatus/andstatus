@@ -111,13 +111,13 @@ class ConnectionActivityPub : Connection() {
         return when (ApObjectType.Companion.fromJson(jso)) {
             ApObjectType.PERSON -> actorFromPersonTypeJson(jso)
             ApObjectType.COLLECTION, ApObjectType.ORDERED_COLLECTION -> actorFromCollectionTypeJson(jso)
-            ApObjectType.UNKNOWN -> Actor.Companion.EMPTY
+            ApObjectType.UNKNOWN -> Actor.EMPTY
             else -> {
                 MyLog.w(TAG, """
      Unexpected object type for Actor: ${ApObjectType.Companion.fromJson(jso)}, JSON:
      $jso
      """.trimIndent())
-                Actor.Companion.EMPTY
+                Actor.EMPTY
             }
         }
     }
@@ -276,7 +276,7 @@ class ConnectionActivityPub : Connection() {
     @Throws(ConnectionException::class)
     private fun activityFromJson(objectOrId: ObjectOrId?): AActivity {
         return if (objectOrId.id.isPresent) {
-            newPartialNote(data.accountActor, Actor.Companion.EMPTY, objectOrId.id.get())
+            newPartialNote(data.accountActor, Actor.EMPTY, objectOrId.id.get())
                     .setOid(objectOrId.id.get())
         } else if (objectOrId.optObj.isPresent) {
             activityFromJson(objectOrId.optObj.get())
@@ -378,7 +378,7 @@ class ConnectionActivityPub : Connection() {
                 return
             }
             val author = actorFromProperty(jso, "attributedTo")
-                    .orElse(Callable<Try<out Actor>> { actorFromProperty(jso, "author") }).getOrElse(Actor.Companion.EMPTY)
+                    .orElse(Callable<Try<out Actor>> { actorFromProperty(jso, "author") }).getOrElse(Actor.EMPTY)
             val noteActivity: AActivity = AActivity.Companion.newPartialNote(
                     data.accountActor,
                     author,

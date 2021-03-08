@@ -26,11 +26,13 @@ import org.andstatus.app.util.MyUrlSpan
 /**
  * @author yvolk@yurivolkov.com
  */
-class NoteAdapter(contextMenu: NoteContextMenu?, listData: TimelineData<NoteViewItem?>?) : BaseNoteAdapter<NoteViewItem?>(contextMenu, listData) {
+class NoteAdapter(contextMenu: NoteContextMenu, listData: TimelineData<NoteViewItem>) :
+        BaseNoteAdapter<NoteViewItem>(contextMenu, listData) {
     private var positionPrev = -1
     private var itemNumberShownCounter = 0
     private val TOP_TEXT: String?
-    override fun showAvatarEtc(view: ViewGroup?, item: NoteViewItem?) {
+
+    override fun showAvatarEtc(view: ViewGroup, item: NoteViewItem) {
         if (showAvatars) {
             showAvatar(view, item)
         } else {

@@ -814,7 +814,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem?>() {
                 DemoData.demoData.conversationMentionsNoteOid)
         Assert.assertNotEquals("No note with oid " + DemoData.demoData.conversationMentionsNoteOid, 0, noteId)
         val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING,
-                Actor.Companion.EMPTY,  Origin.EMPTY)
+                Actor.EMPTY,  Origin.EMPTY)
         val updatedDate = MyQuery.noteIdToLongColumnValue(NoteTable.UPDATED_DATE, noteId)
         timeline.visibleItemId = noteId
         timeline.visibleOldestDate = updatedDate
@@ -832,7 +832,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem?>() {
         val content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId)
         val logMsg = MyQuery.noteInfoForLog(activity.myContext, noteId)
         val actors: MutableList<Actor?> = Actor.Companion.newUnknown(DemoData.demoData.getPumpioConversationAccount().getOrigin(), GroupType.UNKNOWN)
-                .extractActorsFromContent(content, Actor.Companion.EMPTY)
+                .extractActorsFromContent(content, Actor.EMPTY)
         Assert.assertEquals(logMsg, 3, actors.size.toLong())
         Assert.assertEquals(logMsg, "unknownUser", actors[2].getUsername())
         Assert.assertEquals(logMsg, "unknownUser@example.com", actors[2].uniqueName)
@@ -844,7 +844,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem?>() {
         Assert.assertEquals(listItems.toString(), 5, listItems.size.toLong())
         val actorE: Actor =  MyContextHolder.myContextHolder.getNow().users().actors.values.stream()
                 .filter(Predicate { actor: Actor? -> actor.oid == DemoData.demoData.conversationAuthorThirdActorOid })
-                .findAny().orElse(Actor.Companion.EMPTY)
+                .findAny().orElse(Actor.EMPTY)
         Assert.assertTrue("Found " + DemoData.demoData.conversationAuthorThirdActorOid
                 + " cached " +  MyContextHolder.myContextHolder.getNow().users().actors, actorE.nonEmpty)
         val actorA: Actor = ActorsScreenTest.Companion.getByActorOid(listItems, DemoData.demoData.conversationAuthorThirdActorOid)
@@ -907,7 +907,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem?>() {
                     return item.actor
                 }
             }
-            return Actor.Companion.EMPTY
+            return Actor.EMPTY
         }
     }
 }

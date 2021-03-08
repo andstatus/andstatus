@@ -40,10 +40,13 @@ import org.andstatus.app.util.RelativeTime
 class ActivityViewItem : ViewItem<ActivityViewItem>, Comparable<ActivityViewItem> {
     private var id: Long = 0
     val origin: Origin?
-    val activityType: ActivityType?
+    val activityType: ActivityType
     private var noteId: Long = 0
     val objActorId: Long
-    private var actor: ActorViewItem = ActorViewItem.EMPTY
+
+    var actor: ActorViewItem = ActorViewItem.EMPTY
+        private set
+
     val noteViewItem: NoteViewItem
     private var objActorItem: ActorViewItem = ActorViewItem.EMPTY
 
@@ -51,28 +54,28 @@ class ActivityViewItem : ViewItem<ActivityViewItem>, Comparable<ActivityViewItem
         origin =  Origin.EMPTY
         activityType = ActivityType.EMPTY
         objActorId = 0
-        noteViewItem = NoteViewItem.Companion.EMPTY
+        noteViewItem = NoteViewItem.EMPTY
     }
 
     protected constructor(myContext: MyContext, cursor: Cursor?) :
             super(false, DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE)) {
         id = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID)
         origin = myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID))
-        activityType = ActivityType.Companion.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE))
+        activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE))
         insertedDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE)
-        actor = ActorViewItem.Companion.fromActor(Actor.Companion.fromId(origin, DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)))
+        actor = ActorViewItem.fromActor(Actor.fromId(origin, DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)))
         noteId = DbUtils.getLong(cursor, ActivityTable.NOTE_ID)
         objActorId = DbUtils.getLong(cursor, ActivityTable.OBJ_ACTOR_ID)
         if (objActorId != 0L) {
-            objActorItem = ActorViewItem.Companion.fromActorId(origin, objActorId)
+            objActorItem = ActorViewItem.fromActorId(origin, objActorId)
         }
         if (noteId == 0L) {
-            noteViewItem = NoteViewItem.Companion.EMPTY
+            noteViewItem = NoteViewItem.EMPTY
         } else {
-            noteViewItem = NoteViewItem.Companion.EMPTY.fromCursor(myContext, cursor)
+            noteViewItem = NoteViewItem.EMPTY.fromCursor(myContext, cursor)
             noteViewItem.setParent(this)
             if (MyPreferences.isShowDebuggingInfoInUi()) {
-                MyStringBuilder.Companion.appendWithSpace(noteViewItem.detailsSuffix, "(actId=$id)")
+                MyStringBuilder.appendWithSpace(noteViewItem.detailsSuffix, "(actId=$id)")
             }
         }
     }
@@ -86,7 +89,7 @@ class ActivityViewItem : ViewItem<ActivityViewItem>, Comparable<ActivityViewItem
     }
 
     override operator fun compareTo(other: ActivityViewItem): Int {
-        return java.lang.Long.compare(updatedDate, other.updatedDate ?: 0)
+        return java.lang.Long.compare(updatedDate, other.updatedDate)
     }
 
     override fun fromCursor(myContext: MyContext, cursor: Cursor?): ActivityViewItem {
@@ -102,7 +105,7 @@ class ActivityViewItem : ViewItem<ActivityViewItem>, Comparable<ActivityViewItem
         return true
     }
 
-    override fun duplicates(timeline: Timeline?, preferredOrigin: Origin?, other: ActivityViewItem): DuplicationLink {
+    override fun duplicates(timeline: Timeline, preferredOrigin: Origin, other: ActivityViewItem): DuplicationLink {
         if (isEmpty || other.isEmpty) return DuplicationLink.NONE
         val link = duplicatesByChildren(timeline, preferredOrigin, other)
         if (link == DuplicationLink.NONE) return link
@@ -121,10 +124,10 @@ class ActivityViewItem : ViewItem<ActivityViewItem>, Comparable<ActivityViewItem
         return super.duplicates(timeline, preferredOrigin, other)
     }
 
-    fun getDetails(context: Context?, showReceivedTime: Boolean): String? {
+    fun getDetails(context: Context, showReceivedTime: Boolean): String {
         val builder = getMyStringBuilderWithTime(context, showReceivedTime)
-        if (isCollapsed) {
-            builder.withSpace("(+$childrenCount)")
+        if (isCollapsed()) {
+            builder.withSpace("(+${getChildrenCount()})")
         }
         if (MyPreferences.isShowDebuggingInfoInUi()) {
             builder.withSpace("(actId=$id)")
@@ -135,30 +138,27 @@ class ActivityViewItem : ViewItem<ActivityViewItem>, Comparable<ActivityViewItem
     override fun toString(): String {
         return if (this === EMPTY) {
             "EMPTY"
-        } else actor.getActor().uniqueNameWithOrigin + " " + activityType + " " + if (noteId == 0L) objActorItem else noteViewItem
+        } else actor.actor.getUniqueNameWithOrigin() + " " + activityType + " " +
+                if (noteId == 0L) objActorItem else noteViewItem
     }
 
-    fun getActor(): ActorViewItem? {
-        return actor
-    }
-
-    fun getObjActorItem(): ActorViewItem? {
+    fun getObjActorItem(): ActorViewItem {
         return objActorItem
     }
 
-    fun setObjActorItem(objActorItem: ActorViewItem?) {
+    fun setObjActorItem(objActorItem: ActorViewItem) {
         this.objActorItem = objActorItem
     }
 
-    override fun addActorsToLoad(loader: ActorsLoader?) {
+    override fun addActorsToLoad(loader: ActorsLoader) {
         noteViewItem.addActorsToLoad(loader)
         if (activityType != ActivityType.CREATE && activityType != ActivityType.UPDATE) {
-            loader.addActorToList(actor.getActor())
+            loader.addActorToList(actor.actor)
         }
         loader.addActorIdToList(origin, objActorId)
     }
 
-    override fun setLoadedActors(loader: ActorsLoader?) {
+    override fun setLoadedActors(loader: ActorsLoader) {
         noteViewItem.setLoadedActors(loader)
         if (activityType != ActivityType.CREATE && activityType != ActivityType.UPDATE) {
             val index = loader.getList().indexOf(actor)

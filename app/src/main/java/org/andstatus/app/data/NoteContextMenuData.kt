@@ -95,9 +95,9 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
     }
 
     companion object {
-        private val TAG: String? = NoteContextMenuData::class.java.simpleName
-        val EMPTY: NoteContextMenuData? = NoteContextMenuData(NoteForAnyAccount.Companion.EMPTY, MyAccount.EMPTY)
-        fun getBestAccountToDownloadNote(myContext: MyContext?, noteId: Long): MyAccount? {
+        private val TAG: String = NoteContextMenuData::class.java.simpleName
+        val EMPTY: NoteContextMenuData = NoteContextMenuData(NoteForAnyAccount.EMPTY, MyAccount.EMPTY)
+        fun getBestAccountToDownloadNote(myContext: MyContext, noteId: Long): MyAccount {
             val noteForAnyAccount = NoteForAnyAccount(myContext, 0, noteId)
             var subscribedFound = false
             var bestFit = EMPTY
@@ -117,23 +117,23 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
             return if (bestFit == EMPTY) myContext.accounts().getFirstPreferablySucceededForOrigin(noteForAnyAccount.origin) else bestFit.myAccount
         }
 
-        private fun getMenuData(myContext: MyContext?, noteForAnyAccount: NoteForAnyAccount?): MutableList<NoteContextMenuData?>? {
+        private fun getMenuData(myContext: MyContext, noteForAnyAccount: NoteForAnyAccount): MutableList<NoteContextMenuData> {
             return myContext.accounts().succeededForSameOrigin(noteForAnyAccount.origin).stream()
                     .map { a: MyAccount? -> NoteContextMenuData(noteForAnyAccount, a) }.collect(Collectors.toList())
         }
 
-        fun getAccountToActOnNote(myContext: MyContext?, activityId: Long, noteId: Long,
+        fun getAccountToActOnNote(myContext: MyContext, activityId: Long, noteId: Long,
                                   myActingAccount: MyAccount,
                                   currentAccount: MyAccount): NoteContextMenuData? {
             val noteForAnyAccount = NoteForAnyAccount(myContext, activityId, noteId)
             val menuDataList = getMenuData(myContext, noteForAnyAccount)
-            val acting = menuDataList.stream().filter { atn: NoteContextMenuData? -> atn.myAccount == myActingAccount }
+            val acting = menuDataList.stream().filter { atn: NoteContextMenuData -> atn.myAccount == myActingAccount }
                     .findAny().orElse(EMPTY)
             if (acting != EMPTY) return acting
-            var bestFit = menuDataList.stream().filter { atn: NoteContextMenuData? -> atn.myAccount == currentAccount }
+            var bestFit = menuDataList.stream().filter { atn: NoteContextMenuData -> atn.myAccount == currentAccount }
                     .findAny().orElse(EMPTY)
             for (menuData in menuDataList) {
-                if (!bestFit.myAccount.isValidAndSucceeded) {
+                if (!bestFit.myAccount.isValidAndSucceeded()) {
                     bestFit = menuData
                 }
                 if (menuData.hasPrivateAccess()) {

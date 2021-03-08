@@ -23,25 +23,25 @@ import org.andstatus.app.timeline.BaseTimelineAdapter
 import org.andstatus.app.timeline.TimelineData
 import org.andstatus.app.timeline.meta.Timeline
 
-class ActorAdapter : BaseTimelineAdapter<ActorViewItem?> {
-    private val contextMenu: ActorContextMenu?
+class ActorAdapter : BaseTimelineAdapter<ActorViewItem> {
+    private val contextMenu: ActorContextMenu
     private val listItemLayoutId: Int
-    val populator: ActorViewItemPopulator?
+    val populator: ActorViewItemPopulator
 
-    constructor(contextMenu: ActorContextMenu, listData: TimelineData<ActorViewItem?>?) : super(contextMenu.activity.myContext, listData) {
+    constructor(contextMenu: ActorContextMenu, listData: TimelineData<ActorViewItem>) : super(contextMenu.getActivity().myContext, listData) {
         this.contextMenu = contextMenu
         listItemLayoutId = R.id.actor_wrapper
-        populator = ActorViewItemPopulator(contextMenu.activity, isCombined, showAvatars)
+        populator = ActorViewItemPopulator(contextMenu.getActivity(), isCombined(), showAvatars)
     }
 
-    internal constructor(contextMenu: ActorContextMenu, listItemLayoutId: Int, items: MutableList<ActorViewItem?>?,
-                         timeline: Timeline?) : super(contextMenu.activity.myContext, timeline, items) {
+    internal constructor(contextMenu: ActorContextMenu, listItemLayoutId: Int, items: MutableList<ActorViewItem>,
+                         timeline: Timeline) : super(contextMenu.getActivity().myContext, timeline, items) {
         this.contextMenu = contextMenu
         this.listItemLayoutId = listItemLayoutId
-        populator = ActorViewItemPopulator(contextMenu.activity, isCombined, showAvatars)
+        populator = ActorViewItemPopulator(contextMenu.getActivity(), isCombined(), showAvatars)
     }
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val view = convertView ?: newView()
         view.setOnCreateContextMenuListener(contextMenu)
         view.setOnClickListener(this)
@@ -51,7 +51,7 @@ class ActorAdapter : BaseTimelineAdapter<ActorViewItem?> {
         return view
     }
 
-    private fun newView(): View? {
+    private fun newView(): View {
         return LayoutInflater.from(contextMenu.getActivity()).inflate(listItemLayoutId, null)
     }
 }

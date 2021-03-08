@@ -57,10 +57,10 @@ class ConversationViewItem : BaseNoteViewItem<ConversationViewItem?>, Comparable
         setOtherViewProperties(cursor)
     }
 
-    fun newNonLoaded(myContext: MyContext?, id: Long): ConversationViewItem? {
+    fun newNonLoaded(myContext: MyContext, id: Long): ConversationViewItem {
         val item = ConversationViewItem(false, RelativeTime.DATETIME_MILLIS_NEVER)
-        item.setMyContext(myContext)
-        item.noteId = id
+        item.myContext = myContext
+        item.setNoteId(id)
         return item
     }
 

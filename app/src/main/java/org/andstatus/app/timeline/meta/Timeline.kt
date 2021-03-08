@@ -319,7 +319,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     fun fromIsCombined(myContext: MyContext, isCombinedNew: Boolean): Timeline {
         return if (isCombined == isCombinedNew || !isCombined && timelineType.isForUser() && !timelineType.isAtOrigin()
                 && actor.user.isMyUser() != TriState.TRUE) this else myContext.timelines().get(timelineType,
-                if (isCombinedNew) Actor.Companion.EMPTY else myContext.accounts().currentAccount.actor,
+                if (isCombinedNew) Actor.EMPTY else myContext.accounts().currentAccount.actor,
                 if (isCombinedNew)  Origin.EMPTY else myContext.accounts().currentAccount.origin,
                 searchQuery)
     }
@@ -748,7 +748,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     }
 
     fun cloneForOrigin(myContext: MyContext?, origin: Origin?): Timeline? {
-        return myContext.timelines().get(0, getTimelineType(), Actor.Companion.EMPTY, origin, getSearchQuery())
+        return myContext.timelines().get(0, getTimelineType(), Actor.EMPTY, origin, getSearchQuery())
     }
 
     fun onSyncEnded(myContext: MyContext?, result: CommandResult?) {

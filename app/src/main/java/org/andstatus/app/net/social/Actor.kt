@@ -811,7 +811,7 @@ class Actor private constructor(// In our system
         }
 
         /** Updates cache on load  */
-        fun fromCursor(myContext: MyContext, cursor: Cursor, useCache: Boolean): Actor {
+        fun fromCursor(myContext: MyContext, cursor: Cursor?, useCache: Boolean): Actor {
             val updatedDate = DbUtils.getLong(cursor, ActorTable.UPDATED_DATE)
             val actor = fromTwoIds(
                     myContext.origins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),

@@ -282,7 +282,7 @@ class ConnectionMastodonTest {
 
     private fun assertOneRecipient(activity: AActivity?, username: String?, profileUrl: String?, webFingerId: String?) {
         val audience = activity.getNote().audience()
-        val actor = audience.nonSpecialActors.stream().filter { a: Actor? -> a.getUsername() == username }.findAny().orElse(Actor.Companion.EMPTY)
+        val actor = audience.nonSpecialActors.stream().filter { a: Actor? -> a.getUsername() == username }.findAny().orElse(Actor.EMPTY)
         Assert.assertTrue("$username should be mentioned: $activity", actor.nonEmpty())
         Assert.assertEquals("Mentioned user: $activity", profileUrl, actor.profileUrl)
         Assert.assertEquals("Mentioned user: $activity", webFingerId, actor.webFingerId)

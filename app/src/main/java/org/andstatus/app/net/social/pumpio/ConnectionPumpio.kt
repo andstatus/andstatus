@@ -99,7 +99,7 @@ class ConnectionPumpio : Connection() {
         groupType = when (PObjectType.Companion.fromJson(jso)) {
             PObjectType.PERSON -> GroupType.NOT_A_GROUP
             PObjectType.COLLECTION -> GroupType.COLLECTION
-            else -> return Actor.Companion.EMPTY
+            else -> return Actor.EMPTY
         }
         val oid = JsonUtils.optString(jso, "id")
         val actor: Actor = Actor.Companion.fromTwoIds(data.origin, groupType, 0, oid)
@@ -384,7 +384,7 @@ class ConnectionPumpio : Connection() {
                 updatedDate = dateFromJson(jso, "published")
             }
             val noteActivity: AActivity = AActivity.Companion.newPartialNote(data.accountActor,
-                    if (jso.has("author")) actorFromJson(jso.getJSONObject("author")) else Actor.Companion.EMPTY,
+                    if (jso.has("author")) actorFromJson(jso.getJSONObject("author")) else Actor.EMPTY,
                     oid,
                     updatedDate, DownloadStatus.LOADED)
             val activity: AActivity?

@@ -60,7 +60,7 @@ abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), M
     protected var loadingText: CharSequence? = ""
     private var onRefreshHandled = false
     private var parsedUri: ParsedUri = ParsedUri.fromUri(Uri.EMPTY)
-    protected var myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
+    var myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
     private var configChangeTime: Long = 0
     var myServiceReceiver: MyServiceEventsReceiver? = null
     private val loaderLock: Any = Any()

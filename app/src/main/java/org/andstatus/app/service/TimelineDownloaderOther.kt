@@ -130,7 +130,7 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext?) : 
         }
         return if (timeline.timelineType.isForUser) {
             Try.failure(ConnectionException("No actor for the timeline:$timeline"))
-        } else Try.success(Actor.Companion.EMPTY)
+        } else Try.success(Actor.EMPTY)
     }
 
     companion object {

@@ -37,7 +37,7 @@ class PrivateNotesConversationLoader(emptyItem: ConversationViewItem?, myContext
         val audience: Audience = fromNoteId(ma.origin, nonLoaded.getNoteId())
         val selection = getSelectionForActorAndAudience("=$actorId",
                 SqlIds.Companion.actorIdsOf(audience.nonSpecialActors).getSql())
-        val uri = myContext.timelines()[TimelineType.EVERYTHING, Actor.Companion.EMPTY, ma.origin].uri
+        val uri = myContext.timelines()[TimelineType.EVERYTHING, Actor.EMPTY, ma.origin].uri
         myContext.context().contentResolver
                 .query(uri, nonLoaded.getProjection().toArray<String?>(arrayOf<String?>()), selection, null, null).use { cursor ->
                     while (cursor != null && cursor.moveToNext()) {

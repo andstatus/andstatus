@@ -142,7 +142,7 @@ class ManageTimelines : LoadableListActivity<Any?>() {
 
     override fun newListAdapter(): BaseTimelineAdapter<*>? {
         return object : BaseTimelineAdapter<ManageTimelinesViewItem?>(myContext,
-                myContext.timelines()[TimelineType.MANAGE_TIMELINES, Actor.Companion.EMPTY,  Origin.EMPTY],
+                myContext.timelines()[TimelineType.MANAGE_TIMELINES, Actor.EMPTY,  Origin.EMPTY],
                 loaded.getList()) {
             var defaultTimeline: Timeline? = myContext.timelines().default
             override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {

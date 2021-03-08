@@ -18,7 +18,7 @@ package org.andstatus.app.activity
 import org.andstatus.app.note.NoteViewItem
 import org.andstatus.app.timeline.TimelineData
 
-internal class TimelineDataNoteWrapper(listData: TimelineData<ActivityViewItem?>?) : TimelineDataWrapper<NoteViewItem?>(listData) {
+internal class TimelineDataNoteWrapper(listData: TimelineData<ActivityViewItem>) : TimelineDataWrapper<NoteViewItem>(listData) {
     override fun getItem(position: Int): NoteViewItem {
         return listData.getItem(position).noteViewItem
     }
@@ -28,11 +28,11 @@ internal class TimelineDataNoteWrapper(listData: TimelineData<ActivityViewItem?>
         if (itemId != 0L) {
             for (ind in 0 until listData.size()) {
                 val item = listData.getItem(ind)
-                if (item.noteViewItem.id == itemId) {
+                if (item.noteViewItem.getId() == itemId) {
                     return position
-                } else if (item.isCollapsed) {
-                    for (child in item.children) {
-                        if ((child as ActivityViewItem).noteViewItem.id == itemId) {
+                } else if (item.isCollapsed()) {
+                    for (child in item.getChildren()) {
+                        if (child.noteViewItem.getId() == itemId) {
                             return position
                         }
                     }

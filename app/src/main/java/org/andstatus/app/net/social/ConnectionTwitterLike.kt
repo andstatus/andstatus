@@ -200,7 +200,7 @@ abstract class ConnectionTwitterLike : Connection() {
     }
 
     fun newLoadedUpdateActivity(oid: String?, updatedDate: Long): AActivity {
-        return AActivity.Companion.newPartialNote(data.accountActor, Actor.Companion.EMPTY, oid, updatedDate,
+        return AActivity.Companion.newPartialNote(data.accountActor, Actor.EMPTY, oid, updatedDate,
                 DownloadStatus.LOADED).setOid(oid)
     }
 
@@ -282,7 +282,7 @@ abstract class ConnectionTwitterLike : Connection() {
 
     @Throws(ConnectionException::class, JSONException::class)
     private fun authorFromJson(jso: JSONObject?): Actor? {
-        var author: Actor = Actor.Companion.EMPTY
+        var author: Actor = Actor.EMPTY
         if (jso.has("sender")) {
             author = actorFromJson(jso.getJSONObject("sender"))
         } else if (jso.has("user")) {
@@ -327,7 +327,7 @@ abstract class ConnectionTwitterLike : Connection() {
     }
 
     open fun actorBuilderFromJson(jso: JSONObject?): Actor {
-        if (jso == null) return Actor.Companion.EMPTY
+        if (jso == null) return Actor.EMPTY
         var oid = ""
         if (jso.has("id_str")) {
             oid = JsonUtils.optString(jso, "id_str")

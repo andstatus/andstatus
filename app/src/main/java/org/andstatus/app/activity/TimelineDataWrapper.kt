@@ -20,20 +20,22 @@ import org.andstatus.app.timeline.TimelineData
 import org.andstatus.app.timeline.TimelinePage
 import org.andstatus.app.timeline.ViewItem
 
-internal abstract class TimelineDataWrapper<T : ViewItem<T?>?>(val listData: TimelineData<ActivityViewItem?>?) : TimelineData<T?>(null, TimelinePage<T?>(listData.params, null)) {
+internal abstract class TimelineDataWrapper<T : ViewItem<T>>(val listData: TimelineData<ActivityViewItem>) :
+        TimelineData<T>(null, TimelinePage<T>(listData.params, null)) {
     override fun size(): Int {
         return listData.size()
     }
 
-    abstract fun getItem(position: Int): T
+    abstract override fun getItem(position: Int): T
+
     override fun getById(itemId: Long): T {
         val position = getPositionById(itemId)
         return if (position < 0) {
-            pages[0].emptyItem
+            pages[0].getEmptyItem()
         } else getItem(position)
     }
 
-    abstract fun getPositionById(itemId: Long): Int
+    abstract override fun getPositionById(itemId: Long): Int
     override fun mayHaveYoungerPage(): Boolean {
         return listData != null && listData.mayHaveYoungerPage()
     }
@@ -47,7 +49,7 @@ internal abstract class TimelineDataWrapper<T : ViewItem<T?>?>(val listData: Tim
     }
 
     override fun isCollapseDuplicates(): Boolean {
-        return listData != null && listData.isCollapseDuplicates
+        return listData != null && listData.isCollapseDuplicates()
     }
 
     override fun canBeCollapsed(position: Int): Boolean {

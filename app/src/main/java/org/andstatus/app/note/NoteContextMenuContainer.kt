@@ -22,5 +22,5 @@ import org.andstatus.app.timeline.meta.Timeline
  * @author yvolk@yurivolkov.com
  */
 interface NoteContextMenuContainer : NoteEditorContainer {
-    open fun getTimeline(): Timeline?
+    open fun getTimeline(): Timeline
 }

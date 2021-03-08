@@ -21,7 +21,7 @@ import org.andstatus.app.timeline.LoadableListActivity
  * @author yvolk@yurivolkov.com
  */
 interface NoteEditorContainer {
-    open fun getActivity(): LoadableListActivity<*>?
+    open fun getActivity(): LoadableListActivity<*>
     open fun onNoteEditorVisibilityChange()
-    open fun getNoteEditor(): NoteEditor?
+    open fun getNoteEditor(): NoteEditor
 }

@@ -20,7 +20,7 @@ object Group {
     private val TAG: String? = Group::class.java.simpleName
     fun getActorsGroup(actor: Actor?, groupType: GroupType?, oid: String?): Actor {
         if (actor.actorId == 0L || actor.groupType.isGroupLike || !groupType.isGroupLike) {
-            return Actor.Companion.EMPTY
+            return Actor.EMPTY
         }
         var groupId = getActorsGroupId(actor, groupType)
         if (groupId == 0L) {

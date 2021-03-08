@@ -809,7 +809,7 @@ class MyServiceTest1 : MyServiceTest() {
         Assert.assertTrue("No successful account", myAccount.isValidAndSucceeded)
         val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
         myContext.timelines().filter(false, TriState.FALSE,
-                TimelineType.UNKNOWN, Actor.Companion.EMPTY,  Origin.EMPTY)
+                TimelineType.UNKNOWN, Actor.EMPTY,  Origin.EMPTY)
                 .filter { obj: Timeline? -> obj.isSyncedAutomatically() }
                 .forEach { timeline: Timeline? -> timeline.onSyncEnded(myContext, CommandResult()) }
         var syncResult = SyncResult()

@@ -31,8 +31,8 @@ import org.andstatus.app.util.MyUrlSpan
 /**
  * @author yvolk@yurivolkov.com
  */
-class ActivityAdapter(private val contextMenu: ActivityContextMenu, listData: TimelineData<ActivityViewItem?>?) :
-        BaseTimelineAdapter<ActivityViewItem?>(contextMenu.note.getMyContext(), listData) {
+class ActivityAdapter(private val contextMenu: ActivityContextMenu, listData: TimelineData<ActivityViewItem>) :
+        BaseTimelineAdapter<ActivityViewItem>(contextMenu.note.getMyContext(), listData) {
     private val actorAdapter: ActorAdapter?
     private val noteAdapter: NoteAdapter?
     private val objActorAdapter: ActorAdapter?
@@ -123,11 +123,11 @@ class ActivityAdapter(private val contextMenu: ActivityContextMenu, listData: Ti
         }
     }
 
-    private fun getEmptyView(convertView: View?): ViewGroup? {
+    private fun getEmptyView(convertView: View?): ViewGroup {
         if (convertView == null) {
-            val viewGroup = LayoutInflater.from(contextMenu.note.activity)
+            val viewGroup = LayoutInflater.from(contextMenu.note.getActivity())
                     .inflate(R.layout.activity, null) as ViewGroup
-            noteAdapter.setupButtons(viewGroup)
+            noteAdapter?.setupButtons(viewGroup)
             return viewGroup
         }
         convertView.setBackgroundResource(0)
@@ -137,25 +137,28 @@ class ActivityAdapter(private val contextMenu: ActivityContextMenu, listData: Ti
             convertView.findViewById<View?>(R.id.actor_avatar_image).visibility = View.GONE
             convertView.findViewById<View?>(R.id.avatar_image).visibility = View.GONE
         }
-        return convertView as ViewGroup?
+        return convertView as ViewGroup
     }
 
-    private fun showActor(view: ViewGroup?, item: ActivityViewItem?, layoutType: LayoutType?) {
+    private fun showActor(view: ViewGroup, item: ActivityViewItem, layoutType: LayoutType) {
         val actorView = view.findViewById<ViewGroup?>(R.id.action_wrapper)
         if (layoutType.isActorShown()) {
             item.noteViewItem.hideTheReblogger(item.actor.actor)
             item.getObjActorItem().hideFollowedBy(item.actor.actor)
             if (showAvatars && layoutType != LayoutType.ACTOR_ACTOR) {
                 val avatarView: AvatarView = view.findViewById(R.id.actor_avatar_image)
-                item.actor.showAvatar(contextMenu.actor.activity, avatarView)
+                item.actor.showAvatar(contextMenu.actor.getActivity(), avatarView)
             }
             MyUrlSpan.Companion.showText(view, R.id.action_title,
-                    (if (layoutType == LayoutType.ACTOR_ACTOR) item.actor.actor.actorNameInTimeline else item.actor.actor.actorNameInTimelineWithOrigin) +
-                            " " + item.activityType.getActedTitle(contextMenu.actor.activity) +
-                            if (layoutType == LayoutType.ACTOR_ACTOR) " " + item.getObjActorItem().actor.actorNameInTimelineWithOrigin else "",
+                    (if (layoutType == LayoutType.ACTOR_ACTOR) item.actor.actor.actorNameInTimeline
+                        else item.actor.actor.getActorNameInTimelineWithOrigin()) +
+                            " " + item.activityType.getActedTitle(contextMenu.actor.getActivity()) +
+                            if (layoutType == LayoutType.ACTOR_ACTOR) " " +
+                                    item.getObjActorItem().actor.getActorNameInTimelineWithOrigin()
+                            else "",
                     false, false)
             MyUrlSpan.Companion.showText(view, R.id.action_details,
-                    item.getDetails(contextMenu.actor.activity, showReceivedTime), false, false)
+                    item.getDetails(contextMenu.actor.getActivity(), showReceivedTime), false, false)
             actorView.setOnCreateContextMenuListener(contextMenu.actor)
             actorView.setOnClickListener(actorAdapter)
             actorView.visibility = View.VISIBLE
@@ -168,6 +171,6 @@ class ActivityAdapter(private val contextMenu: ActivityContextMenu, listData: Ti
         actorAdapter = ActorAdapter(contextMenu.actor, TimelineDataActorWrapper(listData))
         noteAdapter = NoteAdapter(contextMenu.note, TimelineDataNoteWrapper(listData))
         objActorAdapter = ActorAdapter(contextMenu.objActor, TimelineDataObjActorWrapper(listData))
-        showReceivedTime = listData.params.timelineType == TimelineType.UNREAD_NOTIFICATIONS
+        showReceivedTime = listData.params.getTimelineType() == TimelineType.UNREAD_NOTIFICATIONS
     }
 }

@@ -20,22 +20,22 @@ import org.andstatus.app.util.TriState
 import java.util.*
 
 /** Parameters that don't require reloading of the list  */
-class LoadableListViewParameters(val collapseDuplicates: TriState?, val collapsedItemId: Long, val preferredOrigin: Optional<Origin>) {
+class LoadableListViewParameters(val collapseDuplicates: TriState, val collapsedItemId: Long, val preferredOrigin: Optional<Origin>) {
     fun isViewChanging(): Boolean {
         return collapseDuplicates.known || preferredOrigin.isPresent()
     }
 
     companion object {
-        val EMPTY: LoadableListViewParameters? = LoadableListViewParameters(TriState.UNKNOWN, 0, Optional.empty())
-        fun collapseDuplicates(collapseDuplicates: Boolean): LoadableListViewParameters? {
+        val EMPTY: LoadableListViewParameters = LoadableListViewParameters(TriState.UNKNOWN, 0, Optional.empty())
+        fun collapseDuplicates(collapseDuplicates: Boolean): LoadableListViewParameters {
             return collapseOneDuplicate(collapseDuplicates, 0)
         }
 
-        fun collapseOneDuplicate(collapseDuplicates: Boolean, collapsedItemId: Long): LoadableListViewParameters? {
+        fun collapseOneDuplicate(collapseDuplicates: Boolean, collapsedItemId: Long): LoadableListViewParameters {
             return LoadableListViewParameters(TriState.Companion.fromBoolean(collapseDuplicates), collapsedItemId, Optional.empty())
         }
 
-        fun fromOrigin(preferredOrigin: Origin?): LoadableListViewParameters? {
+        fun fromOrigin(preferredOrigin: Origin?): LoadableListViewParameters {
             return LoadableListViewParameters(TriState.UNKNOWN, 0, Optional.ofNullable(preferredOrigin))
         }
     }

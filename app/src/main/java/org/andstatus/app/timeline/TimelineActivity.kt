@@ -434,7 +434,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
         MyLog.v(this) { "onItemClick, " + item + "; " + item + " account=" + ma.accountName }
         if (item.getNoteId() <= 0) return
         val uri: Uri = MatchedUri.Companion.getTimelineItemUri(
-                myContext.timelines()[TimelineType.EVERYTHING, Actor.Companion.EMPTY, item.getOrigin()],
+                myContext.timelines()[TimelineType.EVERYTHING, Actor.EMPTY, item.getOrigin()],
                 item.getNoteId())
         val action = intent.action
         if (Intent.ACTION_PICK == action || Intent.ACTION_GET_CONTENT == action) {

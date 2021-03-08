@@ -54,7 +54,7 @@ class TimelineSelector : SelectorDialog() {
             timelines.addAll(myContext.timelines().filter(
                     true,
                     TriState.Companion.fromBoolean(currentTimeline.isCombined),
-                    TimelineType.UNKNOWN, Actor.Companion.EMPTY, currentMyAccount.origin).collect(Collectors.toSet()))
+                    TimelineType.UNKNOWN, Actor.EMPTY, currentMyAccount.origin).collect(Collectors.toSet()))
         }
         if (timelines.isEmpty()) {
             returnSelectedTimeline(Timeline.EMPTY)

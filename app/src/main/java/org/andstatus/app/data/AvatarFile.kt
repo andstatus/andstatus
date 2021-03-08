@@ -36,7 +36,7 @@ class AvatarFile private constructor(private val actor: Actor?, filename: String
     }
 
     fun getActor(): Actor {
-        return actor ?: Actor.Companion.EMPTY
+        return actor ?: Actor.EMPTY
     }
 
     public override fun getDefaultImage(): CachedImage? {
@@ -75,7 +75,7 @@ class AvatarFile private constructor(private val actor: Actor?, filename: String
     }
 
     companion object {
-        val EMPTY: AvatarFile = AvatarFile(Actor.Companion.EMPTY, "", MediaMetadata.Companion.EMPTY,
+        val EMPTY: AvatarFile = AvatarFile(Actor.EMPTY, "", MediaMetadata.Companion.EMPTY,
                 DownloadStatus.ABSENT, RelativeTime.DATETIME_MILLIS_NEVER)
         const val AVATAR_SIZE_DIP = 48
         fun fromCursor(actor: Actor?, cursor: Cursor?): AvatarFile {

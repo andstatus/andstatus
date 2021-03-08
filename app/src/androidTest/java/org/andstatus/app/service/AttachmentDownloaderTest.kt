@@ -853,7 +853,7 @@ class AttachmentDownloaderTest {
                 loader.setConnectionMock(ConnectionMock.Companion.newFor(ma)
                         .withException(ConnectionException("Mocked IO exception")).connection)
             }
-            val commandData: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR, Actor.Companion.EMPTY, "someActor")
+            val commandData: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR, Actor.EMPTY, "someActor")
             loader.load(commandData)
             val data: DownloadData = DownloadData.Companion.fromId(dataIn.getDownloadId())
             if (DownloadStatus.LOADED == status) {

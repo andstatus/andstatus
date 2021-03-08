@@ -36,7 +36,7 @@ import java.util.*
 class DemoConversationInserter {
     private var iteration = 0
     private var ma: MyAccount? = null
-    private var accountActor: Actor? = Actor.Companion.EMPTY
+    private var accountActor: Actor? = Actor.EMPTY
     private var bodySuffix: String? = ""
     fun insertConversation(bodySuffixIn: String?) {
         bodySuffix = if (bodySuffixIn.isNullOrEmpty()) "" else " $bodySuffixIn"
@@ -162,7 +162,7 @@ class DemoConversationInserter {
         author3.isMyFriend = TriState.UNKNOWN
         author3.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
         assertIfActorIsMyFriend(author3, true, ma2)
-        val anonymousReply = buildActivity(Actor.Companion.EMPTY, "", "Anonymous reply to Reply 10", reply10, null)
+        val anonymousReply = buildActivity(Actor.EMPTY, "", "Anonymous reply to Reply 10", reply10, null)
         addActivity(anonymousReply)
         val reply11 = buildActivity(author2, "", "Reply 11 to Reply 7, " + DemoData.demoData.globalPublicNoteText
                 + " text", reply7, null)

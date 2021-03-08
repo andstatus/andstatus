@@ -42,7 +42,7 @@ class SqlIdsTest {
                 TimelineType.SENT, myAccount.actor, myAccount.origin).findFirst().orElse(Timeline.EMPTY)
         Assert.assertNotEquals(0, SqlIds.Companion.actorIdsOfTimelineActor(timeline).size().toLong())
         val timelineCombined: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().filter(false, TriState.TRUE,
-                TimelineType.SENT, Actor.Companion.EMPTY,  Origin.EMPTY).findFirst().orElse(Timeline.EMPTY)
+                TimelineType.SENT, Actor.EMPTY,  Origin.EMPTY).findFirst().orElse(Timeline.EMPTY)
         Assert.assertNotEquals("No actors for $timelineCombined", 0, SqlIds.Companion.actorIdsOfTimelineActor(timelineCombined).size().toLong())
         val actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, myAccount.originId, DemoData.demoData.conversationAuthorSecondActorOid)
         val actor: Actor = Actor.Companion.load( MyContextHolder.myContextHolder.getNow(), actorId)

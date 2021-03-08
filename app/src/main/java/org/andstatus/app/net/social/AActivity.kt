@@ -47,12 +47,12 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
     private var insDate = RelativeTime.DATETIME_MILLIS_NEVER
     val accountActor: Actor
     val type: ActivityType
-    private var actor: Actor = Actor.Companion.EMPTY
+    private var actor: Actor = Actor.EMPTY
 
     // Objects of the Activity may be of several types...
     @Volatile
     private var note: Note = Note.Companion.EMPTY
-    private var objActor: Actor = Actor.Companion.EMPTY
+    private var objActor: Actor = Actor.EMPTY
     private var aActivity = EMPTY
 
     /** Some additional attributes may appear from "My account's" (authenticated User's) point of view  */
@@ -60,7 +60,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
     private var interacted: TriState = TriState.UNKNOWN
     private var interactionEventType: NotificationEventType = NotificationEventType.EMPTY
     private var notified: TriState = TriState.UNKNOWN
-    private var notifiedActor: Actor = Actor.Companion.EMPTY
+    private var notifiedActor: Actor = Actor.EMPTY
     private var newNotificationEventType: NotificationEventType = NotificationEventType.EMPTY
 
     fun initializePublicAndFollowers() {
@@ -77,13 +77,13 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         } else when (getObjectType()) {
             AObjectType.ACTOR -> objActor
             AObjectType.NOTE -> getAuthor()
-            else -> Actor.Companion.EMPTY
+            else -> Actor.EMPTY
         }
     }
 
     fun setActor(actor: Actor?) {
-        check(!(this === EMPTY && Actor.Companion.EMPTY !== actor)) { "Cannot set Actor of EMPTY Activity" }
-        this.actor = actor ?: Actor.Companion.EMPTY
+        check(!(this === EMPTY && Actor.EMPTY !== actor)) { "Cannot set Actor of EMPTY Activity" }
+        this.actor = actor ?: Actor.EMPTY
     }
 
     fun isAuthorActor(): Boolean {
@@ -96,12 +96,12 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
 
     fun getAuthor(): Actor {
         if (isEmpty) {
-            return Actor.Companion.EMPTY
+            return Actor.EMPTY
         }
         return if (getObjectType() == AObjectType.NOTE) {
             when (type) {
                 ActivityType.CREATE, ActivityType.UPDATE, ActivityType.DELETE -> actor
-                else -> Actor.Companion.EMPTY
+                else -> Actor.EMPTY
             }
         } else getActivity().getAuthor()
     }
@@ -220,8 +220,8 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
     }
 
     fun setObjActor(actor: Actor?): AActivity? {
-        check(!(this === EMPTY && Actor.Companion.EMPTY !== actor)) { "Cannot set objActor of EMPTY Activity" }
-        objActor = actor ?: Actor.Companion.EMPTY
+        check(!(this === EMPTY && Actor.EMPTY !== actor)) { "Cannot set objActor of EMPTY Activity" }
+        objActor = actor ?: Actor.EMPTY
         return this
     }
 
@@ -410,12 +410,12 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
                             myContext.users().myActors.values.stream()
                                     .filter { a: Actor -> a.origin == accountActor.origin }
                                     .findFirst()
-                                    .orElse(Actor.Companion.EMPTY)
+                                    .orElse(Actor.EMPTY)
                     )
             NotificationEventType.ANNOUNCE, NotificationEventType.LIKE -> getAuthor()
             NotificationEventType.FOLLOW -> getObjActor()
             NotificationEventType.HOME -> accountActor
-            else -> Actor.Companion.EMPTY
+            else -> Actor.EMPTY
         }
     }
 
@@ -491,7 +491,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
     }
 
     companion object {
-        val EMPTY: AActivity = from(Actor.Companion.EMPTY, ActivityType.EMPTY)
+        val EMPTY: AActivity = from(Actor.EMPTY, ActivityType.EMPTY)
         val TRY_EMPTY = Try.success(EMPTY)
         fun fromInner(actor: Actor, type: ActivityType,
                       innerActivity: AActivity): AActivity {
@@ -552,7 +552,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
     }
 
     init {
-        this.accountActor = accountActor ?: Actor.Companion.EMPTY
+        this.accountActor = accountActor ?: Actor.EMPTY
         this.type = type ?: ActivityType.EMPTY
     }
 }

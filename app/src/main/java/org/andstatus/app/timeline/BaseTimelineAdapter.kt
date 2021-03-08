@@ -33,13 +33,13 @@ abstract class BaseTimelineAdapter<T : ViewItem<T>>(
     protected val showAttachedImages = MyPreferences.getDownloadAndDisplayAttachedImages()
     protected val markRepliesToMe = SharedPreferencesUtil.getBoolean(
             MyPreferences.KEY_MARK_REPLIES_TO_ME_IN_TIMELINE, true)
-    private val displayDensity = 0f
+    private val displayDensity: Float
 
     @Volatile
     private var positionRestored = false
 
     /** Single page data  */
-    constructor(myContext: MyContext, timeline: Timeline, items: MutableList<T?>) : this(myContext,
+    constructor(myContext: MyContext, timeline: Timeline, items: MutableList<T>) : this(myContext,
             TimelineData<T>(
                     null,
                     TimelinePage<T>(TimelineParameters(myContext, timeline, WhichPage.EMPTY), items)
@@ -59,24 +59,24 @@ abstract class BaseTimelineAdapter<T : ViewItem<T>>(
         return getItem(position).getId()
     }
 
-    override fun getItem(position: Int): T? {
+    override fun getItem(position: Int): T {
         return listData.getItem(position)
     }
 
-    fun getItem(view: View?): T? {
+    fun getItem(view: View): T? {
         return getItem(getPosition(view))
     }
 
     /** @return -1 if not found
      */
-    fun getPosition(view: View?): Int {
+    fun getPosition(view: View): Int {
         val positionView = getPositionView(view) ?: return -1
         return positionView.text.toString().toInt()
     }
 
     private fun getPositionView(view: View?): TextView? {
-        if (view == null) return null
-        var parentView = view
+        var parentView: View = view ?: return null
+
         for (i in 0..9) {
             val positionView = parentView.findViewById<TextView?>(R.id.position)
             if (positionView != null) {
@@ -92,7 +92,7 @@ abstract class BaseTimelineAdapter<T : ViewItem<T>>(
         return null
     }
 
-    protected fun setPosition(view: View?, position: Int) {
+    protected fun setPosition(view: View, position: Int) {
         val positionView = getPositionView(view)
         if (positionView != null) {
             positionView.text = Integer.toString(position)
@@ -116,10 +116,10 @@ abstract class BaseTimelineAdapter<T : ViewItem<T>>(
     }
 
     protected fun isCombined(): Boolean {
-        return listData.params.isTimelineCombined
+        return listData.params.isTimelineCombined()
     }
 
-    override fun onClick(v: View?) {
+    override fun onClick(v: View) {
         if (!MyPreferences.isLongPressToOpenContextMenu() && v.getParent() != null) {
             v.showContextMenu()
         }
@@ -127,15 +127,15 @@ abstract class BaseTimelineAdapter<T : ViewItem<T>>(
 
     // See  http://stackoverflow.com/questions/2238883/what-is-the-correct-way-to-specify-dimensions-in-dip-from-java-code
     fun dpToPixes(dp: Int): Int {
-        return (dp * displayDensity) as Int
+        return (dp * displayDensity).toInt()
     }
 
     override fun toString(): String {
-        return MyStringBuilder.Companion.formatKeyValue(this, listData)
+        return MyStringBuilder.formatKeyValue(this, listData)
     }
 
     init {
-        if (myContext.context() == null) {
+        if (myContext.isEmpty) {
             displayDensity = 1f
         } else {
             displayDensity = myContext.context().resources.displayMetrics.density

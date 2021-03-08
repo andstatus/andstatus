@@ -815,7 +815,7 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem?>() {
         Assert.assertTrue(origin.toString(), origin.isValid)
         MyLog.i(this, "setUp ended")
         return Intent(Intent.ACTION_VIEW,  MyContextHolder.myContextHolder.getNow().timelines()
-                .get(TimelineType.PUBLIC, Actor.Companion.EMPTY, origin).getUri())
+                .get(TimelineType.PUBLIC, Actor.EMPTY, origin).getUri())
     }
 
     @Test

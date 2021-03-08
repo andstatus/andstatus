@@ -29,7 +29,7 @@ import java.util.function.Consumer
 import java.util.function.Function
 import java.util.stream.Collectors
 
-class AttachedImageFiles(val list: MutableList<AttachedMediaFile?>?) : IsEmpty {
+class AttachedImageFiles(val list: MutableList<AttachedMediaFile>) : IsEmpty {
     override val isEmpty: Boolean
         get() {
             return list.isEmpty()
@@ -90,8 +90,8 @@ class AttachedImageFiles(val list: MutableList<AttachedMediaFile?>?) : IsEmpty {
     }
 
     companion object {
-        val EMPTY: AttachedImageFiles? = AttachedImageFiles(emptyList())
-        fun load(myContext: MyContext?, noteId: Long): AttachedImageFiles? {
+        val EMPTY: AttachedImageFiles = AttachedImageFiles(emptyList())
+        fun load(myContext: MyContext?, noteId: Long): AttachedImageFiles {
             val sql = "SELECT *" +
                     " FROM " + DownloadTable.TABLE_NAME +
                     " WHERE " + DownloadTable.NOTE_ID + "=" + noteId +

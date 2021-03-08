@@ -801,6 +801,6 @@ class CachedUsersAndActorsTest {
         Assert.assertEquals(DemoData.demoData.conversationOriginName, origin.name)
         val actor: Actor = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountSecondName).getActor()
         Assert.assertEquals(users.toString(), true, users.isMeOrMyFriend(actor))
-        Assert.assertEquals(users.toString(), false, users.isMeOrMyFriend(Actor.Companion.EMPTY))
+        Assert.assertEquals(users.toString(), false, users.isMeOrMyFriend(Actor.EMPTY))
     }
 }

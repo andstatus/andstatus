@@ -165,14 +165,14 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
     /** Tries to find this actor in this origin
      * Returns the same Actor, if not found  */
     fun toOrigin(actor: Actor?, origin: Origin?): Actor? {
-        return if (actor.origin == origin) actor else actor.user.actorIds.stream().map { id: Long? -> actors.getOrDefault(id, Actor.Companion.EMPTY) }
-                .filter { a: Actor? -> a !== Actor.Companion.EMPTY && a.origin == origin }
+        return if (actor.origin == origin) actor else actor.user.actorIds.stream().map { id: Long? -> actors.getOrDefault(id, Actor.EMPTY) }
+                .filter { a: Actor? -> a !== Actor.EMPTY && a.origin == origin }
                 .findAny().orElse(actor)
     }
 
     fun userFromActorId(actorId: Long, userSupplier: Supplier<User?>?): User {
         if (actorId == 0L) return User.Companion.EMPTY
-        val user1 = actors.getOrDefault(actorId, Actor.Companion.EMPTY).user
+        val user1 = actors.getOrDefault(actorId, Actor.EMPTY).user
         return if (user1.nonEmpty) user1 else users.values.stream().filter { user: User? -> user.actorIds.contains(actorId) }.findFirst().orElseGet(userSupplier)
     }
 

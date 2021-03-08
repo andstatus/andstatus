@@ -31,7 +31,7 @@ internal class FutureNoteContextMenuData private constructor(viewItem: BaseNoteV
     private val noteId: Long
 
     @Volatile
-    var menuData: NoteContextMenuData? = NoteContextMenuData.Companion.EMPTY
+    var menuData: NoteContextMenuData = NoteContextMenuData.Companion.EMPTY
 
     @Volatile
     private var loader: MyAsyncTask<Void?, Void?, NoteContextMenuData?>? = null
@@ -55,9 +55,9 @@ internal class FutureNoteContextMenuData private constructor(viewItem: BaseNoteV
     }
 
     companion object {
-        private val TAG: String? = FutureNoteContextMenuData::class.java.simpleName
+        private val TAG: String = FutureNoteContextMenuData::class.java.simpleName
         private const val MAX_SECONDS_TO_LOAD = 10
-        val EMPTY: FutureNoteContextMenuData? = FutureNoteContextMenuData(NoteViewItem.Companion.EMPTY)
+        val EMPTY: FutureNoteContextMenuData = FutureNoteContextMenuData(NoteViewItem.Companion.EMPTY)
         fun loadAsync(noteContextMenu: NoteContextMenu,
                       view: View?,
                       viewItem: BaseNoteViewItem<*>?,

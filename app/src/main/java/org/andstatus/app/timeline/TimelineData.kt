@@ -32,15 +32,15 @@ import java.util.*
  */
 open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: TimelinePage<T>) {
     val pages // Contains at least one Page
-            : MutableList<TimelinePage<T?>?>?
+            : MutableList<TimelinePage<T>>
     val updatedAt = MyLog.uniqueCurrentTimeMS()
-    val params: TimelineParameters?
+    val params: TimelineParameters
 
     @Volatile
     private var actorViewItem: ActorViewItem?
     val isSameTimeline: Boolean
-    private val duplicatesCollapser: DuplicatesCollapser<T?>?
-    private fun dropExcessivePage(lastLoadedPage: TimelinePage<T?>?) {
+    private val duplicatesCollapser: DuplicatesCollapser<T>
+    private fun dropExcessivePage(lastLoadedPage: TimelinePage<T>) {
         if (pages.size > MAX_PAGES_COUNT) {
             if (lastLoadedPage.params.whichPage == WhichPage.YOUNGER) {
                 pages.removeAt(pages.size - 1)

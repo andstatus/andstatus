@@ -38,6 +38,6 @@ class TimelinePage<T : ViewItem<T>>(val params: TimelineParameters, items: Mutab
     }
 
     init {
-        this.items = items ?: emptyList()
+        this.items = items ?: mutableListOf()
     }
 }

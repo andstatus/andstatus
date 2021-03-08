@@ -22,6 +22,7 @@ import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Audience
+import org.andstatus.app.net.social.Audience.Companion.fromNoteId
 import org.andstatus.app.net.social.Visibility
 import org.andstatus.app.note.NoteDownloads
 import org.andstatus.app.origin.Origin
@@ -34,22 +35,22 @@ import org.andstatus.app.util.StringUtil
  * Helper class to find out a relation of a Note with [.noteId] to MyAccount-s
  * @author yvolk@yurivolkov.com
  */
-class NoteForAnyAccount(val myContext: MyContext?, activityId: Long, noteId: Long) {
+class NoteForAnyAccount(val myContext: MyContext, activityId: Long, noteId: Long) {
     val origin: Origin
     val noteId: Long
-    private val noteOid: String? = ""
-    val status: DownloadStatus?
+    private var noteOid: String = ""
+    val status: DownloadStatus
     val author: Actor?
     val actor: Actor?
     val downloads: NoteDownloads?
     val visibility: Visibility?
-    var audience: Audience?
-    private val content: String? = ""
+    var audience: Audience
+    private var content: String = ""
     fun isLoaded(): Boolean {
         return status == DownloadStatus.LOADED
     }
 
-    fun getBodyTrimmed(): String? {
+    fun getBodyTrimmed(): String {
         return I18n.trimTextAt(MyHtml.htmlToCompactPlainText(content), 80).toString()
     }
 
@@ -58,8 +59,8 @@ class NoteForAnyAccount(val myContext: MyContext?, activityId: Long, noteId: Lon
     }
 
     companion object {
-        private val TAG: String? = NoteForAnyAccount::class.java.simpleName
-        val EMPTY: NoteForAnyAccount? = NoteForAnyAccount(MyContextEmpty.EMPTY, 0, 0)
+        private val TAG: String = NoteForAnyAccount::class.java.simpleName
+        val EMPTY: NoteForAnyAccount = NoteForAnyAccount(MyContextEmpty.EMPTY, 0, 0)
     }
 
     init {
@@ -69,7 +70,7 @@ class NoteForAnyAccount(val myContext: MyContext?, activityId: Long, noteId: Lon
         var authorId: Long = 0
         var statusLoc = DownloadStatus.UNKNOWN
         var visibilityLoc = Visibility.UNKNOWN
-        if (noteId != 0L && origin.isValid && db != null) {
+        if (noteId != 0L && origin.isValid() && db != null) {
             val sql = ("SELECT " + NoteTable.NOTE_STATUS + ", "
                     + NoteTable.CONTENT + ", "
                     + NoteTable.AUTHOR_ID + ","
@@ -80,11 +81,11 @@ class NoteForAnyAccount(val myContext: MyContext?, activityId: Long, noteId: Lon
             try {
                 db.rawQuery(sql, null).use { cursor ->
                     if (cursor.moveToNext()) {
-                        statusLoc = DownloadStatus.Companion.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS))
+                        statusLoc = DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS))
                         content = DbUtils.getString(cursor, NoteTable.CONTENT)
                         authorId = DbUtils.getLong(cursor, NoteTable.AUTHOR_ID)
                         noteOid = DbUtils.getString(cursor, NoteTable.NOTE_OID)
-                        visibilityLoc = Visibility.Companion.fromCursor(cursor)
+                        visibilityLoc = Visibility.fromCursor(cursor)
                     }
                 }
             } catch (e: Exception) {
@@ -94,14 +95,13 @@ class NoteForAnyAccount(val myContext: MyContext?, activityId: Long, noteId: Lon
         status = statusLoc
         visibility = visibilityLoc
         audience = fromNoteId(origin, noteId) // Now all users, mentioned in a body, are members of Audience
-        author = Actor.Companion.load(myContext, authorId)
-        downloads = NoteDownloads.Companion.fromNoteId(myContext, noteId)
-        val actorId: Long
-        actorId = if (activityId == 0L) {
+        author = Actor.load(myContext, authorId)
+        downloads = NoteDownloads.fromNoteId(myContext, noteId)
+        val actorId: Long = if (activityId == 0L) {
             authorId
         } else {
             MyQuery.activityIdToLongColumnValue(ActivityTable.ACTOR_ID, activityId)
         }
-        actor = Actor.Companion.load(myContext, actorId)
+        actor = Actor.load(myContext, actorId)
     }
 }

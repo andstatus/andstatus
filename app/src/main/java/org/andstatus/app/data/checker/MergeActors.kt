@@ -97,7 +97,7 @@ internal class MergeActors : DataChecker() {
     }
 
     private fun whomToMerge(prev: Actor, actor: Actor): AActivity {
-        val activity: AActivity = AActivity.Companion.from(Actor.Companion.EMPTY, ActivityType.UPDATE)
+        val activity: AActivity = AActivity.Companion.from(Actor.EMPTY, ActivityType.UPDATE)
         activity.setObjActor(actor)
         var mergeWith = prev
         if (myContext.accounts().fromActorId(actor.actorId).isValid) {

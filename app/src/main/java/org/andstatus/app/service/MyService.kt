@@ -116,7 +116,7 @@ class MyService : Service(), IdentifiableInstance {
         val currentTimeMillis = System.currentTimeMillis()
         if (Math.abs(currentTimeMillis - startedForegrounLastTime) < 1000) return
         startedForegrounLastTime = currentTimeMillis
-        val data = NotificationData(NotificationEventType.SERVICE_RUNNING, Actor.Companion.EMPTY, currentTimeMillis)
+        val data = NotificationData(NotificationEventType.SERVICE_RUNNING, Actor.EMPTY, currentTimeMillis)
         myContext.getNotifier().createNotificationChannel(data)
         startForeground(NotificationEventType.SERVICE_RUNNING.notificationId(), myContext.getNotifier().getAndroidNotification(data))
     }

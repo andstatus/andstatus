@@ -115,7 +115,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
                         execContext.myAccount.originId, actorOidNew)
                 if (actorId == 0L) {
                     MyLog.i(this, "Failed to identify an Actor for oid=$actorOidNew", e)
-                    return@recover Actor.Companion.EMPTY
+                    return@recover Actor.EMPTY
                 } else {
                     val actor: Actor = Actor.Companion.fromTwoIds(execContext.myAccount.origin,
                             GroupType.UNKNOWN, actorId, actorOidNew)

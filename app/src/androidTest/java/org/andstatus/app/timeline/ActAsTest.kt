@@ -811,7 +811,7 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem?>() {
         Assert.assertTrue(ma.isValid)
          MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
         MyLog.i(this, "setUp ended")
-        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.Companion.EMPTY, ma.origin)
+        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.origin)
         timeline.forgetPositionsAndDates()
         return Intent(Intent.ACTION_VIEW, timeline.uri)
     }

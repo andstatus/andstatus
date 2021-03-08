@@ -100,7 +100,7 @@ class TimelineSaver {
 
     private fun addDefaultCombinedTimelinesIfNoneFound(myContext: MyContext?) {
         if (myContext.timelines().filter(false, TriState.TRUE,
-                        TimelineType.UNKNOWN, Actor.Companion.EMPTY,  Origin.EMPTY).count() == 0L) {
+                        TimelineType.UNKNOWN, Actor.EMPTY,  Origin.EMPTY).count() == 0L) {
             val timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
                     BaseColumns._ID, TimelineTable.ACTOR_ID + "=0 AND " + TimelineTable.ORIGIN_ID + "=0")
             if (timelineId == 0L) addDefaultCombined(myContext)
@@ -126,7 +126,7 @@ class TimelineSaver {
         for (timelineType in TimelineType.Companion.getDefaultOriginTimelineTypes()) {
             if (origin.originType.isTimelineTypeSyncable(timelineType)
                     || timelineType == TimelineType.EVERYTHING) {
-                myContext.timelines().get(timelineType, Actor.Companion.EMPTY, origin).save(myContext)
+                myContext.timelines().get(timelineType, Actor.EMPTY, origin).save(myContext)
             }
         }
     }
@@ -134,7 +134,7 @@ class TimelineSaver {
     fun addDefaultCombined(myContext: MyContext?) {
         for (timelineType in TimelineType.values()) {
             if (timelineType.isCombinedRequired) {
-                myContext.timelines()[timelineType, Actor.Companion.EMPTY,  Origin.EMPTY].save(myContext)
+                myContext.timelines()[timelineType, Actor.EMPTY,  Origin.EMPTY].save(myContext)
             }
         }
     }

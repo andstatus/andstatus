@@ -39,7 +39,7 @@ class ActorTest {
         val groupname1 = "gnusocial"
         val body = """@${DemoData.demoData.gnusocialTestAccountUsername} @${DemoData.demoData.gnusocialTestAccount2Username} Please take this into account
 @$anotherUser2 @${DemoData.demoData.gnusocialTestAccount2Username} And we also send this to the group !$groupname1 And let me mention: @$shortUsername3"""
-        val actors: MutableList<Actor?> = Actor.Companion.newUnknown(origin, GroupType.UNKNOWN).extractActorsFromContent(body, Actor.Companion.EMPTY)
+        val actors: MutableList<Actor?> = Actor.Companion.newUnknown(origin, GroupType.UNKNOWN).extractActorsFromContent(body, Actor.EMPTY)
         val msgLog = "$body ->\n$actors"
         Assert.assertEquals(msgLog, 6, actors.size.toLong())
         Assert.assertEquals(msgLog, DemoData.demoData.gnusocialTestAccountUsername, actors[0].getUsername())
@@ -63,7 +63,7 @@ class ActorTest {
                 " &amp; @" + USERNAME4 +
                 " No reference !skippedGroupName" +
                 " https://t.co/djkdfeowefPh"
-        val actors: MutableList<Actor?> = Actor.Companion.newUnknown(origin, GroupType.UNKNOWN).extractActorsFromContent(body, Actor.Companion.EMPTY)
+        val actors: MutableList<Actor?> = Actor.Companion.newUnknown(origin, GroupType.UNKNOWN).extractActorsFromContent(body, Actor.EMPTY)
         val msgLog = "$body -> $actors"
         Assert.assertEquals(msgLog, 2, actors.size.toLong())
         val actor0 = actors[0]
@@ -120,7 +120,7 @@ class ActorTest {
         val content = "<a href=\"https://loadaverage.org/andstatus\">AndStatus</a> started following" +
                 " <a href=\"https://gnusocial.no/mcscx2\">ex mcscx2@quitter.no</a>."
         val actors: MutableList<Actor?> = Actor.Companion.newUnknown(DemoData.demoData.getPumpioConversationAccount().getOrigin(), GroupType.UNKNOWN)
-                .extractActorsFromContent(content, Actor.Companion.EMPTY)
+                .extractActorsFromContent(content, Actor.EMPTY)
         Assert.assertEquals("Actors: $actors", 1, actors.size.toLong())
         Assert.assertEquals("Actors: $actors", "mcscx2@quitter.no", actors[0].getWebFingerId())
     }
@@ -130,7 +130,7 @@ class ActorTest {
         val actorUniqueName = "me" + DemoData.demoData.testRunUid + "@mastodon.example.com"
         val content = "Sending note to the unknown yet Actor @$actorUniqueName"
         val actors: MutableList<Actor?> = DemoData.demoData.getMyAccount(DemoData.demoData.activityPubTestAccountName).getActor()
-                .extractActorsFromContent(content, Actor.Companion.EMPTY)
+                .extractActorsFromContent(content, Actor.EMPTY)
         Assert.assertEquals("Actors: $actors", 1, actors.size.toLong())
         Assert.assertEquals("Actors: $actors", actorUniqueName, actors[0].uniqueName)
     }
@@ -145,7 +145,7 @@ class ActorTest {
     fun extractOneUsername(username: String?) {
         val content = "Sending note to the unknown yet Actor @$username from the Fediverse"
         val actors: MutableList<Actor?> = DemoData.demoData.getMyAccount(DemoData.demoData.activityPubTestAccountName).getActor()
-                .extractActorsFromContent(content, Actor.Companion.EMPTY)
+                .extractActorsFromContent(content, Actor.EMPTY)
         Assert.assertEquals("Actors from '$content': \n$actors", 1, actors.size.toLong())
         Assert.assertEquals("Actors from '$content': \n$actors", username, actors[0].getUsername())
     }

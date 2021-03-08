@@ -785,7 +785,7 @@ import org.andstatus.app.MenuItemMock
 
 class InputActorPage(jsonCollection: AJsonCollection?, actors: MutableList<Actor?>?) : InputPage<Actor?>(jsonCollection, actors) {
     override fun empty(): Actor {
-        return Actor.Companion.EMPTY
+        return Actor.EMPTY
     }
 
     companion object {

@@ -223,7 +223,7 @@ class DataUpdaterTest {
         DemoNoteInserter.Companion.assertVisibility(audience, Visibility.PUBLIC_AND_TO_FOLLOWERS)
 
         // TODO: Below is actually a timeline query test, so maybe expand / move...
-        val contentUri = myContext.timelines()[TimelineType.EVERYTHING, Actor.Companion.EMPTY, ma.origin].uri
+        val contentUri = myContext.timelines()[TimelineType.EVERYTHING, Actor.EMPTY, ma.origin].uri
         val sa = SelectionAndArgs()
         val sortOrder = ActivityTable.getTimelineSortOrder(TimelineType.EVERYTHING, false)
         sa.addSelection(NoteTable.NOTE_ID + " = ?", java.lang.Long.toString(noteId))
@@ -523,7 +523,7 @@ $activity""",
         val activity = DataUpdater(ma).onActivity(activityIn)
         val note = activity.note
         Assert.assertTrue("Note was not added: $activity", note.noteId != 0L)
-        var buddy: Actor? = Actor.Companion.EMPTY
+        var buddy: Actor? = Actor.EMPTY
         for (recipient in activity.audience().nonSpecialActors) {
             Assert.assertFalse("Audience member is empty: $recipient,\n$note", recipient.isEmpty)
             if (recipient.uniqueName == buddyUniqueName) {
@@ -533,7 +533,7 @@ $activity""",
         }
         if (isReply) {
             Assert.assertNotEquals("'" + buddyUniqueName + "' should be a recipient " + activity.audience().nonSpecialActors,
-                    Actor.Companion.EMPTY, buddy)
+                    Actor.EMPTY, buddy)
             Assert.assertNotEquals("'$buddyUniqueName' is not added $buddy", 0, buddy.actorId)
         } else {
             Assert.assertTrue("Note is a reply to '$buddyUniqueName': $note", buddy.isEmpty)
@@ -568,7 +568,7 @@ $activity""",
         Assert.assertTrue("Group should be in audience: $audience", group.isPresent)
         Assert.assertEquals("Group type: $group", GroupType.GENERIC, group.get().groupType)
         Assert.assertNotEquals("Group id: $group", 0, group.get().actorId)
-        val savedGroup: Actor = Actor.Companion.loadFromDatabase( MyContextHolder.myContextHolder.getNow(), group.get().actorId, Supplier<Actor?> { Actor.Companion.EMPTY }, false)
+        val savedGroup: Actor = Actor.Companion.loadFromDatabase( MyContextHolder.myContextHolder.getNow(), group.get().actorId, Supplier<Actor?> { Actor.EMPTY }, false)
         Assert.assertEquals("Saved group: $savedGroup", groupname, savedGroup.username)
         Assert.assertEquals("Saved group type: $savedGroup", GroupType.GENERIC, savedGroup.groupType)
     }

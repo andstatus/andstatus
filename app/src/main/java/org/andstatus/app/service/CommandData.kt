@@ -357,11 +357,11 @@ class CommandData private constructor(
         fun newSearch(searchObjects: SearchObjects?,
                       myContext: MyContext?, origin: Origin?, queryString: String?): CommandData? {
             return if (searchObjects == SearchObjects.NOTES) {
-                val timeline = myContext.timelines().get(TimelineType.SEARCH, Actor.Companion.EMPTY, origin, queryString)
+                val timeline = myContext.timelines().get(TimelineType.SEARCH, Actor.EMPTY, origin, queryString)
                 CommandData(0, CommandEnum.GET_TIMELINE, timeline.myAccountToSync,
                         CommandTimeline.Companion.of(timeline), 0)
             } else {
-                newActorCommand(CommandEnum.SEARCH_ACTORS, Actor.Companion.EMPTY, queryString)
+                newActorCommand(CommandEnum.SEARCH_ACTORS, Actor.EMPTY, queryString)
             }
         }
 
@@ -416,7 +416,7 @@ class CommandData private constructor(
         }
 
         fun newOriginCommand(command: CommandEnum?, origin: Origin): CommandData {
-            return newTimelineCommand(command, if (origin.isEmpty) Timeline.EMPTY else  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.Companion.EMPTY, origin))
+            return newTimelineCommand(command, if (origin.isEmpty) Timeline.EMPTY else  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, origin))
         }
 
         fun newTimelineCommand(command: CommandEnum?, myAccount: MyAccount,

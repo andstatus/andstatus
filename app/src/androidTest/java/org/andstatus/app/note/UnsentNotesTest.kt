@@ -803,7 +803,7 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem?>() {
         Assert.assertTrue(ma.isValid)
          MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
         return Intent(Intent.ACTION_VIEW,
-                 MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.Companion.EMPTY, ma.origin).getUri())
+                 MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.origin).getUri())
     }
 
     @After
