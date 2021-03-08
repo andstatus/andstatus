@@ -25,15 +25,15 @@ import org.andstatus.app.util.TryUtils
 import java.util.*
 
 class ConnectionEmpty internal constructor() : Connection() {
-    override fun verifyCredentials(whoAmI: Optional<Uri?>?): Try<Actor?> {
+    override fun verifyCredentials(whoAmI: Optional<Uri>): Try<Actor?> {
         return TryUtils.notFound()
     }
 
-    override fun undoLike(noteOid: String?): Try<AActivity?>? {
+    override fun undoLike(noteOid: String?): Try<AActivity> {
         return AActivity.Companion.TRY_EMPTY
     }
 
-    override fun like(noteOid: String?): Try<AActivity?>? {
+    override fun like(noteOid: String?): Try<AActivity> {
         return AActivity.Companion.TRY_EMPTY
     }
 
@@ -41,15 +41,15 @@ class ConnectionEmpty internal constructor() : Connection() {
         return TryUtils.notFound()
     }
 
-    public override fun getNote1(noteOid: String?): Try<AActivity?>? {
+    public override fun getNote1(noteOid: String?): Try<AActivity> {
         return AActivity.Companion.TRY_EMPTY
     }
 
-    override fun updateNote(note: Note?): Try<AActivity?>? {
+    override fun updateNote(note: Note?): Try<AActivity> {
         return AActivity.Companion.TRY_EMPTY
     }
 
-    override fun announce(rebloggedNoteOid: String?): Try<AActivity?>? {
+    override fun announce(rebloggedNoteOid: String?): Try<AActivity> {
         return AActivity.Companion.TRY_EMPTY
     }
 
@@ -58,11 +58,11 @@ class ConnectionEmpty internal constructor() : Connection() {
         return Try.success(InputTimelinePage.Companion.EMPTY)
     }
 
-    override fun follow(actorOid: String?, follow: Boolean?): Try<AActivity?>? {
+    override fun follow(actorOid: String?, follow: Boolean?): Try<AActivity> {
         return AActivity.Companion.TRY_EMPTY
     }
 
-    public override fun getActor2(actorIn: Actor?): Try<Actor?>? {
+    public override fun getActor2(actorIn: Actor?): Try<Actor> {
         return Actor.Companion.TRY_EMPTY
     }
 

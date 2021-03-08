@@ -28,7 +28,7 @@ internal class OriginGnuSocial(myContext: MyContext?, originType: OriginType?) :
     override fun alternativeNotePermalink(noteId: Long): String? {
         try {
             return URL(url,
-                    (if (Visibility.Companion.fromNoteId(noteId).isPrivate()) "message" else "notice") + "/"
+                    (if (Visibility.Companion.fromNoteId(noteId).isPrivate) "message" else "notice") + "/"
                             + MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId)).toExternalForm()
         } catch (e: MalformedURLException) {
             MyLog.d(this, "Malformed URL from '" + url.toExternalForm() + "'", e)
@@ -36,11 +36,11 @@ internal class OriginGnuSocial(myContext: MyContext?, originType: OriginType?) :
         return ""
     }
 
-    override fun groupActorReferenceChar(): Optional<Char?>? {
+    override fun groupActorReferenceChar(): Optional<Char> {
         return GROUP_ACTOR_REFERENCE_CHARACTER
     }
 
     companion object {
-        private val GROUP_ACTOR_REFERENCE_CHARACTER: Optional<Char?>? = Optional.of('!')
+        private val GROUP_ACTOR_REFERENCE_CHARACTER: Optional<Char> = Optional.of('!')
     }
 }

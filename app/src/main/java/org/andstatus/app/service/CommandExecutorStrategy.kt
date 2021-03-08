@@ -49,7 +49,7 @@ internal open class CommandExecutorStrategy(protected val execContext: CommandEx
         return false
     }
 
-    protected fun <T> onParseException(message: String?): Try<T?>? {
+    protected fun <T> onParseException(message: String?): Try<T> {
         execContext.getResult().incrementParseExceptions()
         MyLog.w(this, message)
         return TryUtils.failure(message)
@@ -82,7 +82,7 @@ internal open class CommandExecutorStrategy(protected val execContext: CommandEx
         }
     }
 
-    fun <T> logException(t: Throwable?, detailedMessage: String?): Try<T?>? {
+    fun <T> logException(t: Throwable?, detailedMessage: String?): Try<T> {
         val e: ConnectionException = ConnectionException.Companion.of(t)
         val isHard = t != null && e.isHardError
         val builder: MyStringBuilder = MyStringBuilder.Companion.of(detailedMessage)
@@ -92,7 +92,7 @@ internal open class CommandExecutorStrategy(protected val execContext: CommandEx
         return logExecutionError(isHard, builder.toString())
     }
 
-    fun <T> logExecutionError(isHard: Boolean, detailedMessage: String?): Try<T?>? {
+    fun <T> logExecutionError(isHard: Boolean, detailedMessage: String?): Try<T> {
         if (isHard) {
             execContext.getResult().incrementParseExceptions()
         } else {
@@ -106,7 +106,7 @@ internal open class CommandExecutorStrategy(protected val execContext: CommandEx
 
     /** @return Success and false means soft error occurred
      */
-    open fun execute(): Try<Boolean?>? {
+    open fun execute(): Try<Boolean> {
         MyLog.d(this, "Doing nothing")
         return Try.success(true)
     }

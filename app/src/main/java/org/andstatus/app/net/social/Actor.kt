@@ -102,7 +102,7 @@ class Actor private constructor(// In our system
     private var isFullyDefined: TriState = TriState.UNKNOWN
 
     fun getDefaultMyAccountTimelineTypes(): List<TimelineType> {
-        return if (origin.getOriginType().isPrivatePostsSupported()) TimelineType.getDefaultMyAccountTimelineTypes()
+        return if (origin.originType.isPrivatePostsSupported()) TimelineType.getDefaultMyAccountTimelineTypes()
             else TimelineType.getDefaultMyAccountTimelineTypes().stream()
                 .filter { t: TimelineType? -> t != TimelineType.PRIVATE }
                 .collect(Collectors.toList())
@@ -137,7 +137,7 @@ class Actor private constructor(// In our system
         return this === EMPTY || this === PUBLIC || this === FOLLOWERS
     }
 
-    override fun isEmpty(): Boolean {
+    override val isEmpty: Boolean get() {
         if (this === EMPTY) return true
         return if (isConstant()) false else !origin.isValid() ||
                 actorId == 0L && UriUtils.nonRealOid(oid) && !isWebFingerIdValid() && !isUsernameValid()
@@ -155,7 +155,7 @@ class Actor private constructor(// In our system
     }
 
     private fun calcIsFullyDefined(): TriState {
-        if (isEmpty() || UriUtils.nonRealOid(oid)) return TriState.FALSE
+        if (isEmpty || UriUtils.nonRealOid(oid)) return TriState.FALSE
         return if (groupType.isGroupLike) TriState.TRUE
         else TriState.fromBoolean(isWebFingerIdValid() && isUsernameValid())
     }
@@ -197,7 +197,7 @@ class Actor private constructor(// In our system
     }
 
     fun canGetActor(): Boolean {
-        return (isOidReal() || isWebFingerIdValid()) && !getConnectionHost().isNullOrEmpty()
+        return (isOidReal() || isWebFingerIdValid()) && getConnectionHost().isNotEmpty()
     }
 
     override fun toString(): String {
@@ -212,13 +212,13 @@ class Actor private constructor(// In our system
                 .withComma("username", username)
                 .withComma("realName", realName)
                 .withComma("groupType", if (groupType == GroupType.UNKNOWN) "" else groupType)
-                .withComma("", user) { user.nonEmpty() }
+                .withComma("", user) { user.nonEmpty }
                 .withComma<Uri?>("profileUri", profileUri, { obj: Uri? -> UriUtils.nonEmpty(obj) })
                 .withComma<Uri?>("avatar", avatarUri, { obj: Uri? -> UriUtils.nonEmpty(obj) })
-                .withComma<AvatarFile>("avatarFile", avatarFile, { obj: AvatarFile -> obj.nonEmpty() })
+                .withComma<AvatarFile>("avatarFile", avatarFile, { obj: AvatarFile -> obj.nonEmpty })
                 .withComma("banner", endpoints.findFirst(ActorEndpointType.BANNER).orElse(null))
                 .withComma("", "latest note present", { hasLatestNote() })
-        if (parentActor.isEvaluated() && parentActor.get()?.nonEmpty() == true) {
+        if (parentActor.isEvaluated() && parentActor.get().nonEmpty) {
             members.withComma("parent", parentActor.get())
         } else if (parentActorId != 0L) {
             members.withComma("parentId", parentActorId)
@@ -231,18 +231,19 @@ class Actor private constructor(// In our system
     }
 
     fun getUniqueNameWithOrigin(): String {
-        return getUniqueName() + AccountName.ORIGIN_SEPARATOR + origin.name
+        return uniqueName + AccountName.ORIGIN_SEPARATOR + origin.name
     }
 
-    fun getUniqueName(): String {
-        if (StringUtil.nonEmptyNonTemp(username)) return username + getOptAtHostForUniqueName()
-        if (StringUtil.nonEmptyNonTemp(realName)) return realName + getOptAtHostForUniqueName()
-        if (isWebFingerIdValid()) return webFingerId
-        return if (StringUtil.nonEmptyNonTemp(oid)) oid else "id:" + actorId + getOptAtHostForUniqueName()
-    }
+    val uniqueName: String
+        get() {
+            if (StringUtil.nonEmptyNonTemp(username)) return username + getOptAtHostForUniqueName()
+            if (StringUtil.nonEmptyNonTemp(realName)) return realName + getOptAtHostForUniqueName()
+            if (isWebFingerIdValid()) return webFingerId
+            return if (StringUtil.nonEmptyNonTemp(oid)) oid else "id:" + actorId + getOptAtHostForUniqueName()
+        }
 
     private fun getOptAtHostForUniqueName(): String {
-        return if (origin.getOriginType().uniqueNameHasHost()) if (getIdHost().isNullOrEmpty()) "" else "@" + getIdHost() else ""
+        return if (origin.originType.uniqueNameHasHost()) if (getIdHost().isEmpty()) "" else "@" + getIdHost() else ""
     }
 
     fun withUniqueName(uniqueName: String?): Actor {
@@ -377,7 +378,7 @@ class Actor private constructor(// In our system
         if (!StringUtil.isEmptyOrTemp(oid)) {
             return oid
         }
-        if (isUsernameValid() && !getIdHost().isNullOrEmpty()) {
+        if (isUsernameValid() && getIdHost().isNotEmpty()) {
             return OriginPumpio.ACCOUNT_PREFIX + getUsername() + "@" + getIdHost()
         }
         return if (isWebFingerIdValid()) {
@@ -436,7 +437,7 @@ class Actor private constructor(// In our system
     }
 
     fun hasLatestNote(): Boolean {
-        return latestActivity?.isEmpty() == false
+        return latestActivity?.isEmpty == false
     }
 
     fun toAltTempOid(): String {
@@ -448,7 +449,7 @@ class Actor private constructor(// In our system
     fun toHomeOrigin(): Actor {
         return if (origin.getHost() == getIdHost()) this else user.actorIds.stream()
                 .map { id: Long -> NullUtil.getOrDefault(origin.myContext.users().actors, id, EMPTY) }
-                .filter { a: Actor -> a.nonEmpty() && a.origin.getHost() == getIdHost() }
+                .filter { a: Actor -> a.nonEmpty && a.origin.getHost() == getIdHost() }
                 .findAny().orElse(this)
     }
 
@@ -556,7 +557,7 @@ class Actor private constructor(// In our system
     }
 
     fun setSummary(summary: String?): Actor {
-        if (!isEmpty() && !summary.isNullOrEmpty() && !SharedPreferencesUtil.isEmpty(summary)) {
+        if (!isEmpty && !summary.isNullOrEmpty() && !SharedPreferencesUtil.isEmpty(summary)) {
             this.summary = summary
         }
         return this
@@ -575,23 +576,24 @@ class Actor private constructor(// In our system
     fun getRecipientName(): String {
         return if (groupType == GroupType.FOLLOWERS) {
             origin.myContext.context()?.getText(R.string.followers)?.toString() ?: ""
-        } else getUniqueName()
+        } else uniqueName
     }
 
     fun getActorNameInTimelineWithOrigin(): String {
-        return if (MyPreferences.getShowOrigin() && nonEmpty()) {
-            val name = getActorNameInTimeline() + " / " + origin.name
-            if (origin.getOriginType() === OriginType.GNUSOCIAL && MyPreferences.isShowDebuggingInfoInUi()
+        return if (MyPreferences.getShowOrigin() && nonEmpty) {
+            val name = actorNameInTimeline + " / " + origin.name
+            if (origin.originType === OriginType.GNUSOCIAL && MyPreferences.isShowDebuggingInfoInUi()
                     && oid.isNotEmpty()) {
                 "$name oid:$oid"
             } else name
-        } else getActorNameInTimeline()
+        } else actorNameInTimeline
     }
 
-    fun getActorNameInTimeline(): String {
-        val name1 = getActorNameInTimeline1()
-        return if (name1.isNotEmpty()) name1 else getUniqueNameWithOrigin()
-    }
+    val actorNameInTimeline: String
+        get() {
+            val name1 = getActorNameInTimeline1()
+            return if (name1.isNotEmpty()) name1 else getUniqueNameWithOrigin()
+        }
 
     private fun getActorNameInTimeline1(): String {
         return when (MyPreferences.getActorInTimeline()) {
@@ -649,14 +651,14 @@ class Actor private constructor(// In our system
 
     fun setLatestActivity(latestActivity: AActivity) {
         this.latestActivity = latestActivity
-        if (latestActivity.getAuthor().isEmpty()) {
+        if (latestActivity.getAuthor().isEmpty) {
             latestActivity.setAuthor(this)
         }
     }
 
     fun toActorTitle(): String {
         val builder = StringBuilder()
-        val uniqueName = getUniqueName()
+        val uniqueName = uniqueName
         if (uniqueName.isNotEmpty()) {
             builder.append("@$uniqueName")
         }
@@ -674,7 +676,7 @@ class Actor private constructor(// In our system
         if (user.isMyUser().unknown && origin.myContext.users().isMe(this)) {
             user.setIsMyUser(TriState.TRUE)
         }
-        if (user.userId == 0L) user.setKnownAs(getUniqueName())
+        if (user.userId == 0L) user.setKnownAs(uniqueName)
         user.save(origin.myContext)
     }
 
@@ -724,7 +726,7 @@ class Actor private constructor(// In our system
 
     fun setAvatarUri(avatarUri: Uri?) {
         this.avatarUri = UriUtils.notNull(avatarUri)
-        if (hasAvatar() && avatarFile.isEmpty()) {
+        if (hasAvatar() && avatarFile.isEmpty) {
             avatarFile = AvatarFile.fromActorOnly(this)
         }
     }

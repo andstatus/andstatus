@@ -801,10 +801,10 @@ class HttpRequest private constructor(val apiRoutine: ApiRoutineEnum?, val uri: 
     private var isLegacyHttpProtocol = false
     val maxSizeBytes: Long
     var mediaPartName: String? = "file"
-    var mediaUri: Optional<Uri?>? = Optional.empty()
-    var postParams: Optional<JSONObject?>? = Optional.empty()
+    var mediaUri: Optional<Uri> = Optional.empty()
+    var postParams: Optional<JSONObject> = Optional.empty()
     var fileResult: File? = null
-    fun validate(): Try<HttpRequest?>? {
+    fun validate(): Try<HttpRequest> {
         return if (UriUtils.isEmpty(uri)) {
             Try.failure(IllegalArgumentException("URi is empty; API: $apiRoutine"))
         } else Try.success(this)

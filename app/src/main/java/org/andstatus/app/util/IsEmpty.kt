@@ -17,9 +17,7 @@ package org.andstatus.app.util
 
 interface IsEmpty {
 
-    fun isEmpty(): Boolean
+    val isEmpty: Boolean
 
-    fun nonEmpty(): Boolean {
-        return !isEmpty()
-    }
+    val nonEmpty: Boolean get() = !isEmpty
 }

@@ -17,6 +17,7 @@ package org.andstatus.app.data
 
 import android.provider.BaseColumns
 import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextEmpty
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.net.social.Actor
@@ -58,7 +59,7 @@ class NoteForAnyAccount(val myContext: MyContext?, activityId: Long, noteId: Lon
 
     companion object {
         private val TAG: String? = NoteForAnyAccount::class.java.simpleName
-        val EMPTY: NoteForAnyAccount? = NoteForAnyAccount(MyContext.Companion.EMPTY, 0, 0)
+        val EMPTY: NoteForAnyAccount? = NoteForAnyAccount(MyContextEmpty.EMPTY, 0, 0)
     }
 
     init {

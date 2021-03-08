@@ -17,11 +17,11 @@ package org.andstatus.app.timeline
 
 import android.view.View
 import android.view.ViewGroup
-import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextEmpty
 import org.andstatus.app.timeline.meta.Timeline
 
 /** Avoiding null value for an adapter  */
-class EmptyBaseTimelineAdapter<T : ViewItem<T?>?> private constructor() : BaseTimelineAdapter<T?>(MyContext.Companion.EMPTY, Timeline.Companion.EMPTY, emptyList()) {
+class EmptyBaseTimelineAdapter<T : ViewItem<T?>?> private constructor() : BaseTimelineAdapter<T?>(MyContextEmpty.EMPTY, Timeline.Companion.EMPTY, emptyList()) {
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
         return null
     }

@@ -101,7 +101,7 @@ internal class Convert47 : ConvertOneStep() {
 
     companion object {
         private val TAG: String? = Convert47::class.java.simpleName
-        fun convertJson16(myContext: MyContext?, jsonIn: JSONObject?, isPersistent: Boolean): Try<JSONObject?>? {
+        fun convertJson16(myContext: MyContext?, jsonIn: JSONObject?, isPersistent: Boolean): Try<JSONObject> {
             val versionTo = 48
             val originName = JsonUtils.optString(jsonIn, Origin.Companion.KEY_ORIGIN_NAME)
             val origin = myContext.origins().fromName(originName)

@@ -19,8 +19,8 @@ package org.andstatus.app.account
  * Interface that allows to read the [MyAccount]'s persistent data (including account's connection data)
  */
 interface AccountDataReader {
-    open fun dataContains(key: String?): Boolean
-    fun getDataString(key: String?): String? {
+    open fun dataContains(key: String): Boolean
+    fun getDataString(key: String): String {
         return getDataString(key, "")
     }
 
@@ -29,6 +29,6 @@ interface AccountDataReader {
      * @param defValue Default value
      * @return Returns null only in case defValue is null
      */
-    open fun getDataString(key: String?, defValue: String?): String?
-    open fun getDataInt(key: String?, defValue: Int): Int
+    open fun getDataString(key: String, defValue: String): String
+    open fun getDataInt(key: String, defValue: Int): Int
 }

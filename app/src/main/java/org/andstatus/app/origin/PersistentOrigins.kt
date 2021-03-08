@@ -106,7 +106,7 @@ class PersistentOrigins private constructor(val myContext: MyContextImpl) {
         return StringUtil.optNotEmpty(originInAccountName).map { name: String ->
             val originType: OriginType = OriginType.fromTitle(name)
             val originsOfType: List<Origin> = if (originType === OriginType.UNKNOWN) emptyList<Origin>()
-            else mOrigins.values.stream().filter { origin: Origin -> origin.getOriginType() === originType }
+            else mOrigins.values.stream().filter { origin: Origin -> origin.originType === originType }
                     .collect(Collectors.toList())
             if (originsOfType.size == 1) {
                 return@map originsOfType
@@ -114,7 +114,7 @@ class PersistentOrigins private constructor(val myContext: MyContextImpl) {
             val originsWithName = mOrigins.values.stream()
                     .filter { origin: Origin ->
                         (origin.name.equals(name, ignoreCase = true)
-                                && (originType === OriginType.UNKNOWN || origin.getOriginType() === originType))
+                                && (originType === OriginType.UNKNOWN || origin.originType === originType))
                     }
                     .collect(Collectors.toList())
             if (originsOfType.size > originsWithName.size) originsOfType else originsWithName
@@ -127,7 +127,7 @@ class PersistentOrigins private constructor(val myContext: MyContextImpl) {
      */
     fun firstOfType(originType: OriginType?): Origin {
         for (origin in mOrigins.values) {
-            if (origin.getOriginType() === originType) {
+            if (origin.originType === originType) {
                 return origin
             }
         }
@@ -196,7 +196,7 @@ class PersistentOrigins private constructor(val myContext: MyContextImpl) {
     fun originsOfType(originType: OriginType): MutableList<Origin?> {
         val origins: MutableList<Origin?> = ArrayList()
         for (origin in collection()) {
-            if (origin.getOriginType() == originType) {
+            if (origin.originType == originType) {
                 origins.add(origin)
             }
         }

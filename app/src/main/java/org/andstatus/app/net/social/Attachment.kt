@@ -54,7 +54,7 @@ class Attachment : Comparable<Attachment>, IsEmpty {
     }
 
     fun isValid(): Boolean {
-        return nonEmpty() && contentType != MyContentType.UNKNOWN
+        return nonEmpty && contentType != MyContentType.UNKNOWN
     }
 
     override fun hashCode(): Int {
@@ -81,7 +81,7 @@ class Attachment : Comparable<Attachment>, IsEmpty {
     }
 
     fun mediaUriToPost(): Uri? {
-        return if (downloadData.isEmpty() || UriUtils.isDownloadable(uri)) {
+        return if (downloadData.isEmpty || UriUtils.isDownloadable(uri)) {
             Uri.EMPTY
         } else FileProvider.downloadFilenameToUri(downloadData.getFile().getFilename())
     }
@@ -94,9 +94,10 @@ class Attachment : Comparable<Attachment>, IsEmpty {
         } else 0
     }
 
-    override fun isEmpty(): Boolean {
-        return uri === Uri.EMPTY
-    }
+    override val isEmpty: Boolean
+        get() {
+            return uri === Uri.EMPTY
+        }
 
     fun getDownloadId(): Long {
         return downloadData.getDownloadId()

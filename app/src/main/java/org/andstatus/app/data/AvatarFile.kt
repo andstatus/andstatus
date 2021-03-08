@@ -80,13 +80,13 @@ class AvatarFile private constructor(private val actor: Actor?, filename: String
         const val AVATAR_SIZE_DIP = 48
         fun fromCursor(actor: Actor?, cursor: Cursor?): AvatarFile {
             val filename = DbUtils.getString(cursor, DownloadTable.AVATAR_FILE_NAME)
-            return if (actor.isEmpty()) EMPTY else AvatarFile(actor, filename, MediaMetadata.Companion.fromCursor(cursor),
+            return if (actor.isEmpty) EMPTY else AvatarFile(actor, filename, MediaMetadata.Companion.fromCursor(cursor),
                     DownloadStatus.Companion.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
                     DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE))
         }
 
         fun fromActorOnly(actor: Actor): AvatarFile {
-            return if (actor.isEmpty()) EMPTY else AvatarFile(actor, "", MediaMetadata.Companion.EMPTY, DownloadStatus.UNKNOWN, RelativeTime.DATETIME_MILLIS_NEVER)
+            return if (actor.isEmpty) EMPTY else AvatarFile(actor, "", MediaMetadata.Companion.EMPTY, DownloadStatus.UNKNOWN, RelativeTime.DATETIME_MILLIS_NEVER)
         }
     }
 }

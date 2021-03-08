@@ -28,7 +28,7 @@ import java.net.URL
 import java.util.*
 
 class CommandExecutorGetOpenInstances(execContext: CommandExecutionContext?) : CommandExecutorStrategy(execContext) {
-    public override fun execute(): Try<Boolean?>? {
+    public override fun execute(): Try<Boolean> {
         return Connection.Companion.fromMyAccount(execContext.myAccount, TriState.UNKNOWN)
                 .getOpenInstances()
                 .map<Boolean?>(CheckedFunction { result: MutableList<Server?>? -> saveDiscoveredOrigins(result) })

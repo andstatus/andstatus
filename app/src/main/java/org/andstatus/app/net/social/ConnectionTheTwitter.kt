@@ -80,7 +80,7 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
      * https://developer.twitter.com/en/docs/tweets/post-and-engage/api-reference/post-statuses-update
      * @return
      */
-    override fun updateNote2(note: Note?): Try<AActivity?>? {
+    override fun updateNote2(note: Note?): Try<AActivity> {
         val obj = JSONObject()
         try {
             super.updateNoteSetFields(note, obj)
@@ -132,13 +132,13 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
                 .getOrElseThrow(Function<Throwable?, ConnectionException?> { e: Throwable? -> ConnectionException.Companion.of(e) })
     }
 
-    override fun getConfig(): Try<OriginConfig?>? {
+    override fun getConfig(): Try<OriginConfig> {
         // There is https://developer.twitter.com/en/docs/developer-utilities/configuration/api-reference/get-help-configuration
         // but it doesn't have this 280 chars limit...
         return Try.success(OriginConfig(280, 5 * MyPreferences.BYTES_IN_MB))
     }
 
-    override fun like(noteOid: String?): Try<AActivity?>? {
+    override fun like(noteOid: String?): Try<AActivity> {
         val out = JSONObject()
         try {
             out.put("id", noteOid)
@@ -150,7 +150,7 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
                 .map { jso: JSONObject? -> activityFromJson(jso) }
     }
 
-    override fun undoLike(noteOid: String?): Try<AActivity?>? {
+    override fun undoLike(noteOid: String?): Try<AActivity> {
         val out = JSONObject()
         try {
             out.put("id", noteOid)
@@ -180,7 +180,7 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
                 .map(CheckedFunction { activities: MutableList<AActivity?>? -> InputTimelinePage.Companion.of(activities) })
     }
 
-    override fun searchActors(limit: Int, searchQuery: String?): Try<MutableList<Actor?>?> {
+    override fun searchActors(limit: Int, searchQuery: String?): Try<MutableList<Actor>> {
         val apiRoutine = ApiRoutineEnum.SEARCH_ACTORS
         return getApiPath(apiRoutine)
                 .map { obj: Uri? -> obj.buildUpon() }
@@ -258,7 +258,7 @@ class ConnectionTheTwitter : ConnectionTwitterLike() {
         }
     }
 
-    public override fun getActors(actor: Actor?, apiRoutine: ApiRoutineEnum?): Try<MutableList<Actor?>?>? {
+    public override fun getActors(actor: Actor?, apiRoutine: ApiRoutineEnum?): Try<MutableList<Actor>>? {
         val limit = 200
         return getApiPathWithActorId(apiRoutine, actor.oid)
                 .map { obj: Uri? -> obj.buildUpon() }

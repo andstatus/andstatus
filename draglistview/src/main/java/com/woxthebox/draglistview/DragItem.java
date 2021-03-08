@@ -107,7 +107,7 @@ public class DragItem {
     }
 
     boolean isDragging() {
-        return mDragView.getVisibility() == View.VISIBLE;
+        return mDragView.visibility == View.VISIBLE;
     }
 
     void startDrag(View startFromView, float touchX, float touchY) {

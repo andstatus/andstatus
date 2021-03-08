@@ -103,7 +103,7 @@ abstract class Connection protected constructor() : IsEmpty {
         return if (fromActor.isPresent) fromActor else Optional.of(getApiPathFromOrigin(routine)).flatMap { apiPath: String? -> pathToUri(apiPath).toOptional() }
     }
 
-    fun pathToUri(path: String?): Try<Uri?>? {
+    fun pathToUri(path: String?): Try<Uri> {
         return Try.success(path)
                 .filter { obj: String? -> StringUtil.nonEmpty() }
                 .flatMap { path2: String? -> UrlUtils.pathToUrl(data.getOriginUrl(), path2) }
@@ -115,7 +115,7 @@ abstract class Connection protected constructor() : IsEmpty {
     /**
      * Check API requests status.
      */
-    open fun rateLimitStatus(): Try<RateLimitStatus?>? {
+    open fun rateLimitStatus(): Try<RateLimitStatus> {
         return Try.success(RateLimitStatus())
     }
 
@@ -134,16 +134,16 @@ abstract class Connection protected constructor() : IsEmpty {
         http.setPassword(password)
     }
 
-    fun getPassword(): String? {
-        return http.getPassword()
+    fun getPassword(): String {
+        return http?.getPassword() ?: ""
     }
 
     /**
      * Persist the connection data
      * @return true if something changed (so it needs to be rewritten to persistence...)
      */
-    fun saveTo(dw: AccountDataWriter?): Boolean {
-        return http.saveTo(dw)
+    fun saveTo(dw: AccountDataWriter): Boolean {
+        return http?.saveTo(dw) == true
     }
 
     /**
@@ -154,8 +154,8 @@ abstract class Connection protected constructor() : IsEmpty {
         return http.getCredentialsPresent()
     }
 
-    abstract fun verifyCredentials(whoAmI: Optional<Uri?>?): Try<Actor?>
-    abstract fun undoLike(noteOid: String?): Try<AActivity?>?
+    abstract fun verifyCredentials(whoAmI: Optional<Uri>): Try<Actor?>
+    abstract fun undoLike(noteOid: String?): Try<AActivity>
 
     /**
      * Favorites the status specified in the ID parameter as the authenticating account.
@@ -163,8 +163,8 @@ abstract class Connection protected constructor() : IsEmpty {
      * @see [Twitter
      * REST API Method: favorites create](http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-favorites%C2%A0create)
      */
-    abstract fun like(noteOid: String?): Try<AActivity?>?
-    open fun undoAnnounce(noteOid: String?): Try<Boolean?>? {
+    abstract fun like(noteOid: String?): Try<AActivity>
+    open fun undoAnnounce(noteOid: String?): Try<Boolean> {
         return deleteNote(noteOid)
     }
 
@@ -174,20 +174,20 @@ abstract class Connection protected constructor() : IsEmpty {
      * @see [Twitter
      * REST API Method: statuses/destroy](http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-statuses%C2%A0destroy)
      */
-    abstract fun deleteNote(noteOid: String?): Try<Boolean?>?
-    open fun getFriendsOrFollowers(routineEnum: ApiRoutineEnum?, position: TimelinePosition?, actor: Actor?): Try<InputActorPage?>? {
+    abstract fun deleteNote(noteOid: String?): Try<Boolean>
+    open fun getFriendsOrFollowers(routineEnum: ApiRoutineEnum?, position: TimelinePosition?, actor: Actor?): Try<InputActorPage> {
         return (if (routineEnum == ApiRoutineEnum.GET_FRIENDS) getFriends(actor) else getFollowers(actor))
                 .map(CheckedFunction<MutableList<Actor?>?, InputActorPage?> { actors: MutableList<Actor?>? -> InputActorPage.Companion.of(actors) })
     }
 
-    open fun getFriendsOrFollowersIds(routineEnum: ApiRoutineEnum?, actorOid: String?): Try<MutableList<String?>?>? {
+    open fun getFriendsOrFollowersIds(routineEnum: ApiRoutineEnum?, actorOid: String?): Try<MutableList<String>>? {
         return if (routineEnum == ApiRoutineEnum.GET_FRIENDS_IDS) getFriendsIds(actorOid) else getFollowersIds(actorOid)
     }
 
     /**
      * Returns a list of actors the specified actor is following.
      */
-    open fun getFriends(actor: Actor?): Try<MutableList<Actor?>?>? {
+    open fun getFriends(actor: Actor?): Try<MutableList<Actor>>? {
         return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFriends for actor:" + actor.getUniqueNameWithOrigin()))
     }
@@ -195,17 +195,17 @@ abstract class Connection protected constructor() : IsEmpty {
     /**
      * Returns a list of IDs for every actor the specified actor is following.
      */
-    fun getFriendsIds(actorOid: String?): Try<MutableList<String?>?>? {
+    fun getFriendsIds(actorOid: String?): Try<MutableList<String>>? {
         return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFriendsIds for actorOid=$actorOid"))
     }
 
-    fun getFollowersIds(actorOid: String?): Try<MutableList<String?>?> {
+    fun getFollowersIds(actorOid: String?): Try<MutableList<String>> {
         return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFollowersIds for actorOid=$actorOid"))
     }
 
-    open fun getFollowers(actor: Actor?): Try<MutableList<Actor?>?>? {
+    open fun getFollowers(actor: Actor?): Try<MutableList<Actor>>? {
         return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFollowers for actor:" + actor.getUniqueNameWithOrigin()))
     }
@@ -219,12 +219,12 @@ abstract class Connection protected constructor() : IsEmpty {
     }
 
     /** See [.getNote]  */
-    protected abstract fun getNote1(noteOid: String?): Try<AActivity?>?
+    protected abstract fun getNote1(noteOid: String?): Try<AActivity>
     open fun canGetConversation(conversationOid: String?): Boolean {
         return UriUtils.isRealOid(conversationOid) && hasApiEndpoint(ApiRoutineEnum.GET_CONVERSATION)
     }
 
-    open fun getConversation(conversationOid: String?): Try<MutableList<AActivity?>?>? {
+    open fun getConversation(conversationOid: String?): Try<MutableList<AActivity>>? {
         return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getConversation oid=$conversationOid"))
     }
@@ -232,7 +232,7 @@ abstract class Connection protected constructor() : IsEmpty {
     /**
      * Create or update Note
      */
-    abstract fun updateNote(note: Note?): Try<AActivity?>?
+    abstract fun updateNote(note: Note?): Try<AActivity>
 
     /**
      * Post Reblog ("retweet")
@@ -241,7 +241,7 @@ abstract class Connection protected constructor() : IsEmpty {
      *
      * @param rebloggedNoteOid id of the Reblogged note
      */
-    abstract fun announce(rebloggedNoteOid: String?): Try<AActivity?>?
+    abstract fun announce(rebloggedNoteOid: String?): Try<AActivity>
 
     /**
      * Universal method for several Timeline Types...
@@ -256,7 +256,7 @@ abstract class Connection protected constructor() : IsEmpty {
         return InputTimelinePage.Companion.TRY_EMPTY
     }
 
-    open fun searchActors(limit: Int, searchQuery: String?): Try<MutableList<Actor?>?> {
+    open fun searchActors(limit: Int, searchQuery: String?): Try<MutableList<Actor>> {
         return TryUtils.emptyList()
     }
 
@@ -264,20 +264,20 @@ abstract class Connection protected constructor() : IsEmpty {
      * Allows this Account to follow (or stop following) an actor specified in the actorOid parameter
      * @param follow true - Follow, false - Stop following
      */
-    abstract fun follow(actorOid: String?, follow: Boolean?): Try<AActivity?>?
+    abstract fun follow(actorOid: String?, follow: Boolean?): Try<AActivity>
 
     /** Get information about the specified Actor  */
-    fun getActor(actorIn: Actor?): Try<Actor?>? {
+    fun getActor(actorIn: Actor?): Try<Actor> {
         return getActor2(actorIn).map(CheckedFunction { actor: Actor? ->
             if (actor.isFullyDefined() && actor.getUpdatedDate() <= RelativeTime.SOME_TIME_AGO) {
                 actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
             }
-            MyLog.v(this) { "getActor oid='" + actorIn.oid + "' -> " + actor.getUniqueName() }
+            MyLog.v(this) { "getActor oid='" + actorIn.oid + "' -> " + actor.uniqueName }
             actor
         })
     }
 
-    protected abstract fun getActor2(actorIn: Actor?): Try<Actor?>?
+    protected abstract fun getActor2(actorIn: Actor?): Try<Actor>
     protected fun strFixedDownloadLimit(limit: Int, apiRoutine: ApiRoutineEnum?): String {
         return fixedDownloadLimit(limit, apiRoutine).toString()
     }
@@ -305,7 +305,7 @@ abstract class Connection protected constructor() : IsEmpty {
         return if (http is OAuthService) http as OAuthService? else null
     }
 
-    fun registerClientForAccount(): Try<Void?>? {
+    fun registerClientForAccount(): Try<Void> {
         return http.registerClient()
     }
 
@@ -324,11 +324,11 @@ abstract class Connection protected constructor() : IsEmpty {
         return this
     }
 
-    open fun getConfig(): Try<OriginConfig?>? {
+    open fun getConfig(): Try<OriginConfig> {
         return Try.success(OriginConfig.Companion.getEmpty())
     }
 
-    open fun getOpenInstances(): Try<MutableList<Server?>?>? {
+    open fun getOpenInstances(): Try<MutableList<Server>>? {
         return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 MyStringBuilder.Companion.objToTag(this)))
     }
@@ -410,7 +410,7 @@ abstract class Connection protected constructor() : IsEmpty {
         return http.data.myContext()
     }
 
-    fun execute(request: HttpRequest?): Try<HttpReadResult?>? {
+    fun execute(request: HttpRequest?): Try<HttpReadResult> {
         return http.execute(request)
     }
 
@@ -431,14 +431,15 @@ abstract class Connection protected constructor() : IsEmpty {
                 + ", http: " + if (http == null) "(empty" else http.toString())
     }
 
-    override fun isEmpty(): Boolean {
-        return this === ConnectionEmpty.Companion.EMPTY || data == null || http == null
-    }
+    override val isEmpty: Boolean
+        get() {
+            return this === ConnectionEmpty.Companion.EMPTY || data == null || http == null
+        }
 
     companion object {
-        val KEY_PASSWORD: String? = "password"
+        val KEY_PASSWORD: String = "password"
         fun fromMyAccount(myAccount: MyAccount, isOAuth: TriState?): Connection? {
-            if (!myAccount.origin.isValid) return ConnectionEmpty.Companion.EMPTY
+            if (!myAccount.origin.isValid()) return ConnectionEmpty.Companion.EMPTY
             val connectionData: AccountConnectionData = AccountConnectionData.Companion.fromMyAccount(myAccount, isOAuth)
             return try {
                 myAccount.origin.originType.connectionClass.newInstance()
@@ -452,8 +453,8 @@ abstract class Connection protected constructor() : IsEmpty {
             }
         }
 
-        fun fromOrigin(origin: Origin, isOAuth: TriState?): Connection? {
-            if (!origin.isValid) return ConnectionEmpty.Companion.EMPTY
+        fun fromOrigin(origin: Origin, isOAuth: TriState): Connection {
+            if (!origin.isValid()) return ConnectionEmpty.EMPTY
             val connectionData: AccountConnectionData = AccountConnectionData.Companion.fromOrigin(origin, isOAuth)
             return try {
                 origin.originType.connectionClass.newInstance()

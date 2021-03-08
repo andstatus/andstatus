@@ -23,7 +23,7 @@ import org.andstatus.app.util.IsEmpty
 class SqlWhere : IsEmpty {
     private var where: String? = ""
     fun append(field: String?, actorIds: SqlIds?): SqlWhere? {
-        return if (actorIds.isEmpty()) this else append(field, actorIds.getSql())
+        return if (actorIds.isEmpty) this else append(field, actorIds.getSql())
     }
 
     fun append(field: String?, condition: String?): SqlWhere? {
@@ -55,7 +55,8 @@ class SqlWhere : IsEmpty {
         return if (where.isNullOrEmpty()) "" else " AND $where"
     }
 
-    override fun isEmpty(): Boolean {
-        return where.isNullOrEmpty()
-    }
+    override val isEmpty: Boolean
+        get() {
+            return where.isNullOrEmpty()
+        }
 }

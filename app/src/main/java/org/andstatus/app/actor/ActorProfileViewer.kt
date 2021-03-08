@@ -24,11 +24,11 @@ import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.ViewUtils
 import org.andstatus.app.view.MyContextMenu
 
-class ActorProfileViewer(container: NoteContextMenuContainer?) {
-    val contextMenu: ActorContextMenu?
-    private val populator: ActorViewItemPopulator?
-    private val profileView: View?
-    private fun getActivity(): LoadableListActivity<*>? {
+class ActorProfileViewer(container: NoteContextMenuContainer) {
+    val contextMenu: ActorContextMenu
+    private val populator: ActorViewItemPopulator
+    private val profileView: View
+    private fun getActivity(): LoadableListActivity<*> {
         return contextMenu.getActivity()
     }
 

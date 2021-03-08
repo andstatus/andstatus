@@ -81,8 +81,8 @@ class CommandData private constructor(
 
     /** Sometimes we don't know [Timeline.actor] yet...
      * Used for Actor search also  */
-    private var username: String? = ""
-    private var commandResult: CommandResult? = CommandResult()
+    private var username: String = ""
+    private var commandResult: CommandResult = CommandResult()
     private fun setTrimmedNoteContentAsDescription(noteId: Long) {
         if (noteId != 0L) {
             description = trimConditionally(
@@ -105,7 +105,7 @@ class CommandData private constructor(
         BundleUtils.putNotEmpty(bundle, IntentExtra.COMMAND, command.save())
         if (command == CommandEnum.EMPTY) return bundle
         BundleUtils.putNotZero(bundle, IntentExtra.COMMAND_ID, commandId)
-        if (myAccount.isValid()) {
+        if (myAccount.isValid) {
             bundle.putString(IntentExtra.ACCOUNT_NAME.key, myAccount.getAccountName())
         }
         getTimeline().toBundle(bundle)
@@ -122,7 +122,7 @@ class CommandData private constructor(
         ContentValuesUtils.putNotZero(values, BaseColumns._ID, commandId)
         ContentValuesUtils.putNotZero(values, CommandTable.CREATED_DATE, createdDate)
         values.put(CommandTable.COMMAND_CODE, command.save())
-        values.put(CommandTable.ACCOUNT_ID, myAccount.getActorId())
+        values.put(CommandTable.ACCOUNT_ID, myAccount.actorId)
         ContentValuesUtils.putNotEmpty(values, CommandTable.DESCRIPTION, description)
         values.put(CommandTable.IN_FOREGROUND, mInForeground)
         values.put(CommandTable.MANUALLY_LAUNCHED, mManuallyLaunched)
@@ -146,7 +146,7 @@ class CommandData private constructor(
         if (mInForeground) {
             builder.withComma("foreground")
         }
-        builder.withComma("account", myAccount.getAccountName()) { myAccount.nonEmpty() }
+        builder.withComma("account", myAccount.getAccountName()) { myAccount.nonEmpty }
         builder.withComma("username", username)
         if (!description.isNullOrEmpty() && description != username) {
             builder.withSpaceQuoted(description)
@@ -194,7 +194,7 @@ class CommandData private constructor(
         return greater
     }
 
-    fun getTimelineType(): TimelineType? {
+    fun getTimelineType(): TimelineType {
         return commandTimeline.timelineType
     }
 
@@ -207,7 +207,7 @@ class CommandData private constructor(
         return this
     }
 
-    fun getResult(): CommandResult? {
+    fun getResult(): CommandResult {
         return commandResult
     }
 
@@ -311,7 +311,7 @@ class CommandData private constructor(
         return mInForeground
     }
 
-    fun setInForeground(inForeground: Boolean): CommandData? {
+    fun setInForeground(inForeground: Boolean): CommandData {
         mInForeground = inForeground
         return this
     }
@@ -386,7 +386,7 @@ class CommandData private constructor(
         fun newActorCommandAtOrigin(command: CommandEnum?, actor: Actor?, username: String?, origin: Origin?): CommandData {
             val commandData = newTimelineCommand(command,
                      MyContextHolder.myContextHolder.getNow().timelines().get(
-                            if (origin.isEmpty()) TimelineType.SENT else TimelineType.SENT_AT_ORIGIN, actor, origin))
+                            if (origin.isEmpty) TimelineType.SENT else TimelineType.SENT_AT_ORIGIN, actor, origin))
             commandData.setUsername(username)
             commandData.description = commandData.getUsername()
             return commandData
@@ -396,16 +396,16 @@ class CommandData private constructor(
             return newOriginCommand(command,  Origin.EMPTY)
         }
 
-        fun newItemCommand(command: CommandEnum?, myAccount: MyAccount, itemId: Long): CommandData? {
+        fun newItemCommand(command: CommandEnum?, myAccount: MyAccount, itemId: Long): CommandData {
             val commandData = newAccountCommand(command, myAccount)
             commandData.itemId = itemId
             return commandData
         }
 
-        fun actOnActorCommand(command: CommandEnum?, myAccount: MyAccount?, actor: Actor?, username: String?): CommandData? {
-            if (myAccount.nonValid() || actor.isEmpty() && username.isNullOrEmpty()) return EMPTY
+        fun actOnActorCommand(command: CommandEnum?, myAccount: MyAccount?, actor: Actor?, username: String?): CommandData {
+            if (myAccount.nonValid || actor.isEmpty && username.isNullOrEmpty()) return EMPTY
             val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.SENT, actor,  Origin.EMPTY)
-            val commandData = if (actor.isEmpty()) newAccountCommand(command, myAccount) else CommandData(0, command, myAccount, CommandTimeline.Companion.of(timeline), 0)
+            val commandData = if (actor.isEmpty) newAccountCommand(command, myAccount) else CommandData(0, command, myAccount, CommandTimeline.Companion.of(timeline), 0)
             commandData.setUsername(username)
             commandData.description = commandData.getUsername()
             return commandData

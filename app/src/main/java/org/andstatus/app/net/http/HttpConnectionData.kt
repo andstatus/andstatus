@@ -84,7 +84,7 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
         return if (apiRoutine.isOriginApi()) getOriginType().getContentType().orElse(MyContentType.Companion.APPLICATION_JSON) else MyContentType.Companion.APPLICATION_JSON
     }
 
-    fun optOriginContentType(): Optional<String?>? {
+    fun optOriginContentType(): Optional<String> {
         return getOriginType().getContentType()
     }
 

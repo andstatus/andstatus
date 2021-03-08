@@ -28,6 +28,7 @@ import net.jcip.annotations.GuardedBy
 import org.andstatus.app.MyAction
 import org.andstatus.app.appwidget.AppWidgets
 import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextEmpty
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.net.social.Actor
@@ -36,7 +37,6 @@ import org.andstatus.app.notification.NotificationEventType
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.os.MyAsyncTask.PoolEnum
-import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.util.IdentifiableInstance
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
@@ -55,7 +55,7 @@ class MyService : Service(), IdentifiableInstance {
     protected val instanceId = InstanceId.next()
 
     @Volatile
-    var myContext: MyContext? = MyContext.Companion.EMPTY
+    var myContext: MyContext? = MyContextEmpty.EMPTY
 
     @Volatile
     private var startedForegrounLastTime: Long = 0

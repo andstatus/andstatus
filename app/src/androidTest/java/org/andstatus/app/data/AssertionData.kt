@@ -31,9 +31,10 @@ class AssertionData(private val key: String?, valuesIn: ContentValues?) : IsEmpt
         return values
     }
 
-    override fun isEmpty(): Boolean {
-        return values.size() == 0
-    }
+    override val isEmpty: Boolean
+        get() {
+            return values.size() == 0
+        }
 
     companion object {
         fun getEmpty(keyIn: String?): AssertionData? {

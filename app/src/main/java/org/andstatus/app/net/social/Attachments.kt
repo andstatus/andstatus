@@ -46,7 +46,7 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
         for (attachment in list) {
             val dd: DownloadData = DownloadData.Companion.fromAttachment(noteId, attachment)
             dd.setDownloadNumber(attachment.getDownloadNumber())
-            if (attachment.previewOf.nonEmpty()) {
+            if (attachment.previewOf.nonEmpty) {
                 dd.setPreviewOfDownloadId( downloads.stream().filter { d: DownloadData -> d.getUri() == attachment.previewOf.uri }.findAny()
                         .map { obj: DownloadData -> obj.getDownloadId() }.orElse(0L))
             }
@@ -76,9 +76,10 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
         }
     }
 
-    override fun isEmpty(): Boolean {
-        return list.isEmpty()
-    }
+    override val isEmpty: Boolean
+        get() {
+            return list.isEmpty()
+        }
 
     fun clear() {
         list.clear()
@@ -114,7 +115,7 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
         fun load(myContext: MyContext, noteId: Long): Attachments {
             if (myContext.isEmptyOrExpired() || noteId == 0L) return EMPTY
             val downloads: NoteDownloads = NoteDownloads.fromNoteId(myContext, noteId)
-            if (downloads.isEmpty()) return EMPTY
+            if (downloads.isEmpty) return EMPTY
             val map: MutableMap<Long, Attachment> = HashMap()
             for (downloadData in downloads.list) {
                 map[downloadData.getDownloadId()] = Attachment(downloadData)

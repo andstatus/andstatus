@@ -181,7 +181,7 @@ class DemoData {
             Assert.assertTrue("Only " + size + " accounts added: " +  MyContextHolder.myContextHolder.getNow().accounts(),
                     size > 5)
             Assert.assertEquals("No WebfingerId", Optional.empty<Any?>(), MyContextHolder.myContextHolder.getNow().accounts()
-                    .get().stream().filter { ma: MyAccount -> !ma.getActor().isWebFingerIdValid() }.findFirst())
+                    .get().stream().filter { ma: MyAccount -> !ma.actor.isWebFingerIdValid() }.findFirst())
             val size2: Int =  MyContextHolder.myContextHolder.getNow().users().size()
             Assert.assertTrue("""Only $size2 users added: ${ MyContextHolder.myContextHolder.getNow().users()}
 Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts()}""",
@@ -199,7 +199,7 @@ Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts()}""",
             demoData.setSuccessfulAccountAsCurrent()
             val defaultTimeline: Timeline = MyContextHolder.myContextHolder.getNow().timelines().filter(
                     false, TriState.TRUE, TimelineType.EVERYTHING, Actor.EMPTY,
-                    MyContextHolder.myContextHolder.getNow().accounts().getCurrentAccount().origin)
+                    MyContextHolder.myContextHolder.getNow().accounts().currentAccount.origin)
                     .findFirst().orElse(Timeline.EMPTY)
             MatcherAssert.assertThat(defaultTimeline.timelineType, CoreMatchers.`is`(TimelineType.EVERYTHING))
              MyContextHolder.myContextHolder.getNow().timelines().setDefault(defaultTimeline)
@@ -246,7 +246,7 @@ Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts()}""",
 
     private fun setSuccessfulAccountAsCurrent() {
         MyLog.i(TAG, "Persistent accounts: " +  MyContextHolder.myContextHolder.getNow().accounts().size())
-        var found = ( MyContextHolder.myContextHolder.getNow().accounts().getCurrentAccount().getCredentialsVerified()
+        var found = ( MyContextHolder.myContextHolder.getNow().accounts().currentAccount.getCredentialsVerified()
                 == CredentialsVerificationStatus.SUCCEEDED)
         if (!found) {
             for (ma in  MyContextHolder.myContextHolder.getNow().accounts().get()) {
@@ -259,14 +259,14 @@ Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts()}""",
             }
         }
         Assert.assertTrue("Found account, which is successfully verified", found)
-        Assert.assertTrue("Current account is successfully verified",  MyContextHolder.myContextHolder.getNow().accounts().getCurrentAccount().getCredentialsVerified()
+        Assert.assertTrue("Current account is successfully verified",  MyContextHolder.myContextHolder.getNow().accounts().currentAccount.getCredentialsVerified()
                 == CredentialsVerificationStatus.SUCCEEDED)
     }
 
     fun checkDataPath() {
         if (dataPath.isNotEmpty()) {
             Assert.assertEquals("Data path. " +  MyContextHolder.myContextHolder.getNow(), dataPath,
-                     MyContextHolder.myContextHolder.getNow().context()?.getDatabasePath("andstatus")?.getPath())
+                     MyContextHolder.myContextHolder.getNow().context().getDatabasePath("andstatus")?.getPath())
         }
     }
 
@@ -280,7 +280,7 @@ Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts()}""",
 
     fun getMyAccount(accountName: String?): MyAccount {
         val ma: MyAccount =  MyContextHolder.myContextHolder.getBlocking().accounts().fromAccountName(accountName)
-        Assert.assertTrue("$accountName exists", ma.isValid())
+        Assert.assertTrue("$accountName exists", ma.isValid)
         Assert.assertTrue("Origin for $accountName doesn't exist", ma.origin.isValid())
         return ma
     }

@@ -38,12 +38,12 @@ internal class ConnectionAndUrl(val apiRoutine: ApiRoutineEnum?, val uri: Uri?, 
         return HttpRequest.Companion.of(apiRoutine, uri)
     }
 
-    fun execute(request: HttpRequest?): Try<HttpReadResult?>? {
+    fun execute(request: HttpRequest?): Try<HttpReadResult> {
         return httpConnection.execute(request)
     }
 
     companion object {
-        fun fromActor(connection: ConnectionPumpio?, apiRoutine: ApiRoutineEnum?, actor: Actor?): Try<ConnectionAndUrl?>? {
+        fun fromActor(connection: ConnectionPumpio?, apiRoutine: ApiRoutineEnum?, actor: Actor?): Try<ConnectionAndUrl> {
             val endpoint = actor.getEndpoint(ActorEndpointType.Companion.from(apiRoutine))
             val uri: Uri?
             val host: String?

@@ -65,9 +65,7 @@ enum class Visibility(val id: Long) {
         }
     }
 
-    fun isPrivate(): Boolean {
-        return this == PRIVATE
-    }
+    val isPrivate: Boolean get() = this == PRIVATE
 
     companion object {
         fun fromId(id: Long): Visibility {

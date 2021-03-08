@@ -19,7 +19,7 @@ package org.andstatus.app.account
  * Interface that allows to read and write the [MyAccount]'s persistent data
  */
 interface AccountDataWriter : AccountDataReader {
-    open fun setDataInt(key: String?, value: Int)
-    open fun setDataLong(key: String?, dataLong: Long)
-    open fun setDataString(key: String?, value: String?)
+    open fun setDataInt(key: String, value: Int)
+    open fun setDataLong(key: String, value: Long)
+    open fun setDataString(key: String, value: String?)
 }

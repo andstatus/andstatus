@@ -297,14 +297,14 @@ class ConnectionActivityPubTest {
         )
         oids.forEach(Consumer { oid: String? -> Assert.assertTrue("Audience should contain $oid\n $activity\n $audience", audience.containsOid(oid)) })
         val attachments = activity.note.attachments
-        Assert.assertTrue("Attachments of $activity", attachments.nonEmpty())
+        Assert.assertTrue("Attachments of $activity", attachments.nonEmpty)
         val executionContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(),
                 CommandData.Companion.newTimelineCommand(CommandEnum.UPDATE_NOTE, mock.getData().myAccount, TimelineType.SENT))
         DataUpdater(executionContext).onActivity(activity)
         val attachmentsStored: Attachments = Attachments.Companion.load( MyContextHolder.myContextHolder.getNow(), activity.note.noteId)
         Assert.assertTrue("Attachments should be stored of $activity\n $attachmentsStored\n",
-                attachmentsStored.nonEmpty())
+                attachmentsStored.nonEmpty)
         Assert.assertEquals("Attachment stored of $activity\n $attachmentsStored\n",
                 attachments.list, attachmentsStored.list)
         val noteStored: Note = Note.Companion.loadContentById(mock.getData().origin.myContext, note.noteId)

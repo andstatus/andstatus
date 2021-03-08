@@ -26,6 +26,7 @@ import androidx.annotation.StringRes
 import org.andstatus.app.account.AccountName
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextEmpty
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.MyProvider
@@ -56,7 +57,7 @@ import java.util.regex.Pattern
  *
  * @author yvolk@yurivolkov.com
  */
-open class Origin internal constructor(val myContext: MyContext, private val originType: OriginType) : Comparable<Origin>, IsEmpty {
+open class Origin internal constructor(val myContext: MyContext, val originType: OriginType) : Comparable<Origin>, IsEmpty {
     val shortUrlLength: Int
     /** the Origin name, unique in the application */
     var name = ""
@@ -78,9 +79,6 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
     private var inCombinedPublicReload = false
     private var mMentionAsWebFingerId: TriState = TriState.UNKNOWN
     private var isValid = false
-    fun getOriginType(): OriginType {
-        return originType
-    }
 
     /**
      * Was this Origin stored for future reuse?
@@ -89,16 +87,17 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
         return id != 0L
     }
 
-    override fun isEmpty(): Boolean {
-        return this === EMPTY || originType === OriginType.UNKNOWN // TODO avoid second case
-    }
+    override val isEmpty: Boolean
+        get() {
+            return this === EMPTY || originType === OriginType.UNKNOWN // TODO avoid second case
+        }
 
     fun isValid(): Boolean {
         return isValid
     }
 
     private fun calcIsValid(): Boolean {
-        return (nonEmpty()
+        return (nonEmpty
                 && isNameValid()
                 && urlIsValid()
                 && (isSsl() == originType.sslDefault || originType.canChangeSsl))
@@ -287,11 +286,11 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
     }
 
     fun hasAccounts(): Boolean {
-        return myContext.accounts().getFirstPreferablySucceededForOrigin(this).isValid()
+        return myContext.accounts().getFirstPreferablySucceededForOrigin(this).isValid
     }
 
     fun hasNotes(): Boolean {
-        if (isEmpty()) return false
+        if (isEmpty) return false
         val db = myContext.getDatabase()
         if (db == null) {
             MyLog.databaseIsNull { "Origin hasChildren" }
@@ -638,7 +637,7 @@ open class Origin internal constructor(val myContext: MyContext, private val ori
 
     companion object {
         const val TEXT_LIMIT_FOR_WEBFINGER_ID = 200
-        val EMPTY: Origin = fromType(MyContext.EMPTY, OriginType.UNKNOWN)
+        val EMPTY: Origin = fromType(MyContextEmpty.EMPTY, OriginType.UNKNOWN)
         private val VALID_NAME_CHARS: String = "a-zA-Z_0-9/.-"
         private val VALID_NAME_PATTERN = Pattern.compile("[" + VALID_NAME_CHARS + "]+")
         private val INVALID_NAME_PART_PATTERN = Pattern.compile("[^" + VALID_NAME_CHARS + "]+")

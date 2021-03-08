@@ -25,7 +25,7 @@ import java.util.function.Function
 internal class Convert44 : ConvertOneStep() {
     private class Data private constructor(val id: Long, val username: String) {
         companion object {
-            fun fromCursor(cursor: Cursor?): Optional<Data?>? {
+            fun fromCursor(cursor: Cursor?): Optional<Data> {
                 val username = DbUtils.getString(cursor, "username")
                 val index = if (username.isNullOrEmpty()) -1 else username.indexOf("@")
                 return if (index > 0) Optional.of(Data(DbUtils.getLong(cursor, "_id"), username.substring(0, index))) else Optional.empty()

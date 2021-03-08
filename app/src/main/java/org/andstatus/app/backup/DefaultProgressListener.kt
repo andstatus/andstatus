@@ -37,7 +37,7 @@ import java.util.function.Consumer
  */
 class DefaultProgressListener(activity: MyActivity?, defaultTitleId: Int, logTag: String?) : ProgressLogger.ProgressListener, DialogInterface.OnDismissListener {
     @Volatile
-    private var activity: Optional<MyActivity?>?
+    private var activity: Optional<MyActivity>
     private val defaultTitle: CharSequence?
     private val logTag: String?
     private val iStartedAt: Long

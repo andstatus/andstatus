@@ -135,7 +135,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         val preference = findPreference<Preference>(KEY_MANAGE_ACCOUNTS)
         if (preference != null) {
             val summary: CharSequence
-            summary = if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty()) {
+            summary = if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty) {
                 getText(R.string.summary_preference_accounts_absent)
             } else {
                 (getText(R.string.summary_preference_accounts_present).toString() + ": "
@@ -188,7 +188,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
     protected fun showRingtone() {
         val preference = findPreference<Preference?>(KEY_NOTIFICATION_SELECT_RINGTONE)
         if (preference != null) {
-            val uri = NotificationMethodType.SOUND.getUri()
+            val uri = NotificationMethodType.SOUND.uri
             MyLog.v(this) { "Ringtone URI: $uri" }
             val ringtone = if (UriUtils.nonEmpty(uri)) RingtoneManager.getRingtone(activity, uri) else null
             if (ringtone != null) {
@@ -238,7 +238,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         val preference = findPreference<Preference?>(KEY_BACKUP_RESTORE)
         if (preference != null) {
             val title: CharSequence
-            title = if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty()) {
+            title = if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty) {
                 getText(R.string.label_restore)
             } else {
                 getText(R.string.label_backup)
@@ -251,7 +251,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         val preference = findPreference<Preference?>(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS) as EditTextPreference?
         if (preference != null) {
             val filter = KeywordsFilter(preference.text)
-            if (filter.isEmpty()) {
+            if (filter.isEmpty) {
                 preference.setSummary(R.string.this_option_is_turned_off)
             } else {
                 preference.summary = filter.toString()
@@ -383,7 +383,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
                 intent.putExtra(Settings.EXTRA_AUTHORITIES, arrayOf<String?>(MatchedUri.AUTHORITY))
                 startActivity(intent)
             }
-            KEY_BACKUP_RESTORE -> if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty()) {
+            KEY_BACKUP_RESTORE -> if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty) {
                 startActivity(Intent(activity, RestoreActivity::class.java))
             } else {
                 startActivity(Intent(activity, BackupActivity::class.java))
@@ -423,7 +423,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, activity.getText(R.string.notification_sound))
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
-        val currentRingtone = NotificationMethodType.SOUND.getUri()
+        val currentRingtone = NotificationMethodType.SOUND.uri
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, currentRingtone)
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, Settings.System.DEFAULT_NOTIFICATION_URI)
         intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)

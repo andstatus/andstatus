@@ -845,7 +845,7 @@ class MyUrlSpanTest : ActivityTest<HelpActivity?>() {
     }
 
     private fun forOneString(text: String?, audience: Audience?,
-                             spannedStringChecker: Function<SpannedString?, Try<Void?>?>?): Try<Void?>? {
+                             spannedStringChecker: Function<SpannedString?, Try<Void>>?): Try<Void> {
         val method = "forOneString"
         DbUtils.waitMs(method, 1000)
         val pager = activity.findViewById<ViewPager?>(R.id.help_flipper)

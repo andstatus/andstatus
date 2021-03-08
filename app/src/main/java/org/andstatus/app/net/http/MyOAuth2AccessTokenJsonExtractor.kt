@@ -807,14 +807,14 @@ class MyOAuth2AccessTokenJsonExtractor(private val data: HttpConnectionData?) : 
 
     companion object {
         private val ME_TOKEN_REGEX_PATTERN = Pattern.compile("\"me\"\\s*:\\s*\"(\\S*?)\"")
-        fun extractWhoAmI(response: String?): Optional<Uri?>? {
+        fun extractWhoAmI(response: String?): Optional<Uri> {
             return MyOAuth2AccessTokenJsonExtractor.Companion.extractParameter(response, MyOAuth2AccessTokenJsonExtractor.Companion.ME_TOKEN_REGEX_PATTERN)
                     .filter(Predicate { obj: String? -> StringUtil.nonEmptyNonTemp() })
                     .flatMap<Uri?>(Function { obj: String? -> UriUtils.toDownloadableOptional() })
         }
 
         @Throws(OAuthException::class)
-        fun extractParameter(response: String?, regexPattern: Pattern?): Optional<String?>? {
+        fun extractParameter(response: String?, regexPattern: Pattern?): Optional<String> {
             val matcher = regexPattern.matcher(response)
             return if (matcher.find()) Optional.ofNullable(matcher.group(1)) else Optional.empty()
         }

@@ -832,7 +832,7 @@ object TestSuite {
 
     fun initializeWithAccounts(testCase: Any?): Context? {
         org.andstatus.app.context.TestSuite.initialize(testCase)
-        if ( MyContextHolder.myContextHolder.getBlocking().accounts().fromAccountName(DemoData.Companion.demoData.activityPubTestAccountName).isEmpty()) {
+        if ( MyContextHolder.myContextHolder.getBlocking().accounts().fromAccountName(DemoData.Companion.demoData.activityPubTestAccountName).isEmpty) {
             org.andstatus.app.context.TestSuite.ensureDataAdded()
         }
         return org.andstatus.app.context.TestSuite.getMyContextForTest().context()

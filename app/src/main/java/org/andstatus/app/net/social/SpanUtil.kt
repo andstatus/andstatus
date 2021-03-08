@@ -80,7 +80,7 @@ object SpanUtil {
                         actor.isWebFingerIdValid() &&
                                 upperText.contains("@" + actor.getWebFingerId().toUpperCase())
                     }.findAny().orElse(Actor.Companion.EMPTY)
-            if (mentionedByAtWebfingerID.nonEmpty()) {
+            if (mentionedByAtWebfingerID.nonEmpty) {
                 return notesByActorSpanAdded(spannable, audience, region,
                         "@" + mentionedByAtWebfingerID.webFingerId, mentionedByAtWebfingerID)
             } else {
@@ -89,7 +89,7 @@ object SpanUtil {
                             actor.isWebFingerIdValid() &&
                                     upperText.contains(actor.getWebFingerId().toUpperCase())
                         }.findAny().orElse(Actor.Companion.EMPTY)
-                if (mentionedByWebfingerID.nonEmpty()) {
+                if (mentionedByWebfingerID.nonEmpty) {
                     return notesByActorSpanAdded(spannable, audience, region,
                             mentionedByWebfingerID.webFingerId, mentionedByWebfingerID)
                 } else {
@@ -98,7 +98,7 @@ object SpanUtil {
                                 actor.isUsernameValid() &&
                                         upperText.contains("@" + actor.getUsername().toUpperCase())
                             }.findAny().orElse(Actor.Companion.EMPTY)
-                    if (mentionedByUsername.nonEmpty()) {
+                    if (mentionedByUsername.nonEmpty) {
                         return notesByActorSpanAdded(spannable, audience, region,
                                 "@" + mentionedByUsername.username, mentionedByUsername)
                     }
@@ -185,8 +185,8 @@ object SpanUtil {
         val start: Int
         val end: Int
         val text: CharSequence?
-        val urlSpan: Optional<MyUrlSpan?>?
-        val otherSpan: Optional<Any?>?
+        val urlSpan: Optional<MyUrlSpan>
+        val otherSpan: Optional<Any>
 
         private constructor(spannable: Spanned?, span: Any?) {
             val spanStart = spannable.getSpanStart(span)

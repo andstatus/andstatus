@@ -40,7 +40,7 @@ object AccountConverter {
         }
     }
 
-    fun convertJson(myContext: MyContext?, jsonIn: JSONObject?, isPersistent: Boolean): Try<JSONObject?>? {
+    fun convertJson(myContext: MyContext?, jsonIn: JSONObject?, isPersistent: Boolean): Try<JSONObject> {
         val version = AccountUtils.getVersion(jsonIn)
         return when (version) {
             AccountUtils.ACCOUNT_VERSION -> Try.success(jsonIn)

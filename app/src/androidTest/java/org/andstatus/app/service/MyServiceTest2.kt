@@ -836,7 +836,7 @@ class MyServiceTest2 : MyServiceTest() {
                 Optional.empty<Any?>(), queues.inWhichQueue(cd1Home).map { q: OneQueue? -> q.queueType })
         MatcherAssert.assertThat("Second command should be in the Main or Skip queue $queues",
                 queues.inWhichQueue(cd2Interactions).map { q: OneQueue? -> q.queueType },
-                Matchers.`is`(Matchers.`in`<Optional<QueueType?>?>(Arrays.asList(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)))))
+                Matchers.`is`(Matchers.`in`<Optional<QueueType>>(Arrays.asList(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)))))
         val cd3PublicForeground: CommandData = CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE,
                 DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.twitterTestAccountName),
                 TimelineType.PUBLIC)
@@ -854,7 +854,7 @@ class MyServiceTest2 : MyServiceTest() {
                 Optional.empty<Any?>(), queues.inWhichQueue(cd3PublicForeground).map { q: OneQueue? -> q.queueType })
         MatcherAssert.assertThat("Second command should be in the Main or Skip queue $queues",
                 queues.inWhichQueue(cd2Interactions).map { q: OneQueue? -> q.queueType },
-                Matchers.`is`(Matchers.`in`<Optional<QueueType?>?>(Arrays.asList(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)))))
+                Matchers.`is`(Matchers.`in`<Optional<QueueType>>(Arrays.asList(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)))))
         val cd2FromQueue = queues.getFromAnyQueue(cd2Interactions)
         Assert.assertEquals("command id $cd2FromQueue", cd2Interactions.commandId, cd2FromQueue.commandId)
         Assert.assertTrue("command id $cd2FromQueue", cd2FromQueue.commandId >= 0)

@@ -89,7 +89,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
     }
 
     @JvmOverloads
-    fun load(actorId: Long, reloadFirst: Boolean = false): Actor? {
+    fun load(actorId: Long, reloadFirst: Boolean = false): Actor {
         val actor: Actor = Actor.Companion.load(myContext, actorId, reloadFirst, Supplier<Actor?> { Actor.Companion.getEmpty() })
         if (reloadFirst && isMe(actor)) {
             reloadFriendsOrFollowersOfMy(GroupType.FRIENDS, friendsOfMyActors, actor)
@@ -126,7 +126,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
     }
 
     fun isMeOrMyFriend(actor: Actor?): Boolean {
-        return actor.nonEmpty() && (isMe(actor) || friendsOfMyActors.containsKey(actor.actorId))
+        return actor.nonEmpty && (isMe(actor) || friendsOfMyActors.containsKey(actor.actorId))
     }
 
     fun isMe(actor: Actor): Boolean {
@@ -138,7 +138,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
     }
 
     fun lookupUser(actor: Actor?): Actor? {
-        if (actor.user.nonEmpty()) {
+        if (actor.user.nonEmpty) {
             updateCache(actor)
             return actor
         }
@@ -156,7 +156,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
             user2.setIsMyUser(actor.user.isMyUser)
         }
         actor.user = user2
-        if (actor.user.nonEmpty()) {
+        if (actor.user.nonEmpty) {
             updateCache(actor)
         }
         return actor
@@ -173,7 +173,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
     fun userFromActorId(actorId: Long, userSupplier: Supplier<User?>?): User {
         if (actorId == 0L) return User.Companion.EMPTY
         val user1 = actors.getOrDefault(actorId, Actor.Companion.EMPTY).user
-        return if (user1.nonEmpty()) user1 else users.values.stream().filter { user: User? -> user.actorIds.contains(actorId) }.findFirst().orElseGet(userSupplier)
+        return if (user1.nonEmpty) user1 else users.values.stream().filter { user: User? -> user.actorIds.contains(actorId) }.findFirst().orElseGet(userSupplier)
     }
 
     fun idToGroupType(actorId: Long): GroupType? {
@@ -199,7 +199,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
         }
         if (userId == 0L) return
         val cached = users.getOrDefault(userId, User.Companion.EMPTY)
-        if (cached.isEmpty()) {
+        if (cached.isEmpty) {
             users.putIfAbsent(userId, user)
             if (user.isMyUser.isTrue) myUsers.putIfAbsent(userId, user)
         } else if (user.isMyUser.isTrue && cached.isMyUser().untrue) {
@@ -212,7 +212,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
     }
 
     private fun updateCachedActor(actors: MutableMap<Long?, Actor?>?, actor: Actor?) {
-        if (actor.isEmpty()) return
+        if (actor.isEmpty) return
         if (actor.getUpdatedDate() <= RelativeTime.SOME_TIME_AGO) {
             actors.putIfAbsent(actor.actorId, actor)
             return

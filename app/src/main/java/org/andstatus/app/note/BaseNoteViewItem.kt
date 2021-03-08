@@ -175,7 +175,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
     }
 
     override fun duplicates(timeline: Timeline?, preferredOrigin: Origin?, other: T): DuplicationLink {
-        if (isEmpty || other.isEmpty()) return DuplicationLink.NONE
+        if (isEmpty || other.isEmpty) return DuplicationLink.NONE
         return if (getNoteId() == other.getNoteId()) duplicatesByFavoritedAndReblogged(preferredOrigin, other) else duplicatesByOther(preferredOrigin, other)
     }
 
@@ -185,7 +185,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
         } else if (reblogged != other.reblogged) {
             return if (reblogged) DuplicationLink.IS_DUPLICATED else DuplicationLink.DUPLICATES
         }
-        if (preferredOrigin.nonEmpty()
+        if (preferredOrigin.nonEmpty
                 && author.getActor().origin != other.author.getActor().origin) {
             if (preferredOrigin == author.getActor().origin) return DuplicationLink.IS_DUPLICATED
             if (preferredOrigin == other.author.getActor().origin) return DuplicationLink.DUPLICATES
@@ -249,7 +249,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
     }
 
     private fun setAccountDownloaded(noteDetails: MyStringBuilder?) {
-        if (MyPreferences.isShowMyAccountWhichDownloadedActivity() && linkedMyAccount.isValid()) {
+        if (MyPreferences.isShowMyAccountWhichDownloadedActivity() && linkedMyAccount.isValid) {
             noteDetails.withSpace("a:" + linkedMyAccount.getShortestUniqueAccountName())
         }
     }
@@ -300,12 +300,12 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
     }
 
     override fun matches(filter: TimelineFilter?): Boolean {
-        if (filter.keywordsFilter.nonEmpty() || filter.searchQuery.nonEmpty()) {
+        if (filter.keywordsFilter.nonEmpty || filter.searchQuery.nonEmpty) {
             if (filter.keywordsFilter.matchedAny(contentToSearch)) return false
-            if (filter.searchQuery.nonEmpty() && !filter.searchQuery.matchedAll(contentToSearch)) return false
+            if (filter.searchQuery.nonEmpty && !filter.searchQuery.matchedAll(contentToSearch)) return false
         }
         return (!filter.hideRepliesNotToMeOrFriends
-                || inReplyToActor.isEmpty()
+                || inReplyToActor.isEmpty
                 ||  MyContextHolder.myContextHolder.getNow().users().isMeOrMyFriend(inReplyToActor.getActor()))
     }
 
@@ -327,8 +327,8 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T?>?> : ViewItem<T?> {
     }
 
     override fun setLoadedActors(loader: ActorsLoader?) {
-        if (author.getActor().nonEmpty()) author = loader.getLoaded(author)
-        if (inReplyToActor.getActor().nonEmpty()) inReplyToActor = loader.getLoaded(inReplyToActor)
+        if (author.getActor().nonEmpty) author = loader.getLoaded(author)
+        if (inReplyToActor.getActor().nonEmpty) inReplyToActor = loader.getLoaded(inReplyToActor)
         audience.setLoadedActors(Function { actor: Actor? -> loader.getLoaded(ActorViewItem.Companion.fromActor(actor)).actor })
         name = SpanUtil.textToSpannable(nameString, TextMediaType.PLAIN, audience)
         summary = SpanUtil.textToSpannable(summaryString, TextMediaType.PLAIN, audience)

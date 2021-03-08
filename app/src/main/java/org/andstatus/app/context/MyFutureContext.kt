@@ -164,7 +164,7 @@ class MyFutureContext private constructor(private val previousContext: MyContext
         }
 
         fun completed(myContext: MyContext): MyFutureContext {
-            return MyFutureContext(MyContext.EMPTY, completedFuture(myContext))
+            return MyFutureContext(MyContextEmpty.EMPTY, completedFuture(myContext))
         }
 
         private fun completedFuture(myContext: MyContext): CompletableFuture<MyContext> {

@@ -115,7 +115,7 @@ class GroupMembership private constructor(private val parentActor: Actor?, priva
 
         fun isGroupMember(parentActor: Actor?, groupType: GroupType?, memberId: Long): Boolean {
             val group = Group.getActorsGroup(parentActor, groupType, "")
-            return group.nonEmpty() && isGroupMember(parentActor.origin.myContext, group.actorId, memberId)
+            return group.nonEmpty && isGroupMember(parentActor.origin.myContext, group.actorId, memberId)
         }
 
         private fun isGroupMember(myContext: MyContext?, groupId: Long, memberId: Long): Boolean {

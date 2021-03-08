@@ -71,7 +71,7 @@ abstract class ConnectionTwitterLike : Connection() {
         return partialPathToApiPath(url)
     }
 
-    override fun deleteNote(noteOid: String?): Try<Boolean?>? {
+    override fun deleteNote(noteOid: String?): Try<Boolean> {
         return postNoteAction(ApiRoutineEnum.DELETE_NOTE, noteOid)
                 .map(CheckedFunction { jso: JSONObject? ->
                     if (MyLog.isVerboseEnabled()) {
@@ -88,7 +88,7 @@ abstract class ConnectionTwitterLike : Connection() {
      *
      * @return
      */
-    override fun follow(actorOid: String?, follow: Boolean?): Try<AActivity?>? {
+    override fun follow(actorOid: String?, follow: Boolean?): Try<AActivity> {
         val out = JSONObject()
         try {
             out.put("user_id", actorOid)
@@ -96,7 +96,7 @@ abstract class ConnectionTwitterLike : Connection() {
             MyLog.w(this, "follow $actorOid", e)
         }
         return postRequest(if (follow) ApiRoutineEnum.FOLLOW else ApiRoutineEnum.UNDO_FOLLOW, out)
-                .flatMap(CheckedFunction<HttpReadResult?, Try<out JSONObject?>?> { obj: HttpReadResult? -> obj.getJsonObject() })
+                .flatMap(CheckedFunction<HttpReadResult?, Try<out JSONObject>> { obj: HttpReadResult? -> obj.getJsonObject() })
                 .map { jso: JSONObject? -> actorFromJson(jso) }
                 .map { friend: Actor? ->
                     data.accountActor.act(
@@ -115,7 +115,7 @@ abstract class ConnectionTwitterLike : Connection() {
      *
      * @see [GET followers/ids](https://dev.twitter.com/rest/reference/get/followers/ids)
      */
-    override fun getFriendsOrFollowersIds(apiRoutine: ApiRoutineEnum?, actorOid: String?): Try<MutableList<String?>?>? {
+    override fun getFriendsOrFollowersIds(apiRoutine: ApiRoutineEnum?, actorOid: String?): Try<MutableList<String>>? {
         return getApiPath(apiRoutine)
                 .map { obj: Uri? -> obj.buildUpon() }
                 .map { builder: Uri.Builder? -> builder.appendQueryParameter("user_id", actorOid) }
@@ -144,7 +144,7 @@ abstract class ConnectionTwitterLike : Connection() {
      * @see [Twitter
      * REST API Method: statuses/destroy](https://dev.twitter.com/docs/api/1/get/statuses/show/%3Aid)
      */
-    public override fun getNote1(noteOid: String?): Try<AActivity?>? {
+    public override fun getNote1(noteOid: String?): Try<AActivity> {
         return noteAction(ApiRoutineEnum.GET_NOTE, noteOid)
                 .map(CheckedFunction { jso: JSONObject? -> activityFromJson(jso) })
     }
@@ -182,7 +182,7 @@ abstract class ConnectionTwitterLike : Connection() {
         }
         val mainActivity = activityFromJson2(jso)
         val rebloggedActivity = rebloggedNoteFromJson(jso)
-        return if (rebloggedActivity.isEmpty()) {
+        return if (rebloggedActivity.isEmpty) {
             mainActivity
         } else {
             makeReblog(data.accountActor, mainActivity, rebloggedActivity)
@@ -387,9 +387,9 @@ abstract class ConnectionTwitterLike : Connection() {
     }
 
     fun appendPositionParameters(builder: Uri.Builder?, youngest: TimelinePosition?, oldest: TimelinePosition?): Uri.Builder? {
-        if (youngest.nonEmpty()) {
+        if (youngest.nonEmpty) {
             builder.appendQueryParameter("since_id", youngest.getPosition())
-        } else if (oldest.nonEmpty()) {
+        } else if (oldest.nonEmpty) {
             var maxIdString = oldest.getPosition()
             try {
                 // Subtract 1, as advised at https://dev.twitter.com/rest/public/timelines
@@ -403,7 +403,7 @@ abstract class ConnectionTwitterLike : Connection() {
         return builder
     }
 
-    fun jArrToTimeline(jArr: JSONArray?, apiRoutine: ApiRoutineEnum?): Try<MutableList<AActivity?>?>? {
+    fun jArrToTimeline(jArr: JSONArray?, apiRoutine: ApiRoutineEnum?): Try<MutableList<AActivity>>? {
         val timeline: MutableList<AActivity?> = ArrayList()
         if (jArr != null) {
             // Read the activities in chronological order
@@ -432,7 +432,7 @@ abstract class ConnectionTwitterLike : Connection() {
         }
     }
 
-    fun jArrToActors(jArr: JSONArray?, apiRoutine: ApiRoutineEnum?, uri: Uri?): Try<MutableList<Actor?>?>? {
+    fun jArrToActors(jArr: JSONArray?, apiRoutine: ApiRoutineEnum?, uri: Uri?): Try<MutableList<Actor>>? {
         val actors: MutableList<Actor?> = ArrayList()
         if (jArr != null) {
             for (index in 0 until jArr.length()) {
@@ -456,7 +456,7 @@ abstract class ConnectionTwitterLike : Connection() {
      *
      * @return
      */
-    public override fun getActor2(actorIn: Actor?): Try<Actor?>? {
+    public override fun getActor2(actorIn: Actor?): Try<Actor> {
         val apiRoutine = ApiRoutineEnum.GET_ACTOR
         return getApiPath(apiRoutine)
                 .map { obj: Uri? -> obj.buildUpon() }
@@ -468,7 +468,7 @@ abstract class ConnectionTwitterLike : Connection() {
                 .map { jso: JSONObject? -> actorFromJson(jso) }
     }
 
-    override fun announce(rebloggedNoteOid: String?): Try<AActivity?>? {
+    override fun announce(rebloggedNoteOid: String?): Try<AActivity> {
         return postNoteAction(ApiRoutineEnum.ANNOUNCE, rebloggedNoteOid)
                 .map(CheckedFunction { jso: JSONObject? -> activityFromJson(jso) })
     }
@@ -485,7 +485,7 @@ abstract class ConnectionTwitterLike : Connection() {
      * @see [GET
      * account/rate_limit_status](https://dev.twitter.com/docs/api/1/get/account/rate_limit_status)
      */
-    override fun rateLimitStatus(): Try<RateLimitStatus?>? {
+    override fun rateLimitStatus(): Try<RateLimitStatus> {
         val apiRoutine = ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS
         return getApiPath(apiRoutine)
                 .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })
@@ -508,13 +508,13 @@ abstract class ConnectionTwitterLike : Connection() {
                 }
     }
 
-    override fun updateNote(note: Note?): Try<AActivity?>? {
+    override fun updateNote(note: Note?): Try<AActivity> {
         return if (note.audience().hasNonSpecial() && note.audience().visibility.isPrivate) {
             updatePrivateNote(note, note.audience().firstNonSpecial.oid)
         } else updateNote2(note)
     }
 
-    abstract fun updateNote2(note: Note?): Try<AActivity?>?
+    abstract fun updateNote2(note: Note?): Try<AActivity>
     @Throws(JSONException::class)
     fun updateNoteSetFields(note: Note?, formParams: JSONObject?) {
         if (!note.getContentToPost().isNullOrEmpty()) {
@@ -525,7 +525,7 @@ abstract class ConnectionTwitterLike : Connection() {
         }
     }
 
-    private fun updatePrivateNote(note: Note?, recipientOid: String?): Try<AActivity?>? {
+    private fun updatePrivateNote(note: Note?, recipientOid: String?): Try<AActivity> {
         val formParams = JSONObject()
         try {
             formParams.put("text", note.getContentToPost())
@@ -536,7 +536,7 @@ abstract class ConnectionTwitterLike : Connection() {
             return Try.failure(e)
         }
         return postRequest(ApiRoutineEnum.UPDATE_PRIVATE_NOTE, formParams)
-                .flatMap(CheckedFunction<HttpReadResult?, Try<out JSONObject?>?> { obj: HttpReadResult? -> obj.getJsonObject() })
+                .flatMap(CheckedFunction<HttpReadResult?, Try<out JSONObject>> { obj: HttpReadResult? -> obj.getJsonObject() })
                 .map { jso: JSONObject? -> activityFromJson(jso) }
     }
 
@@ -544,7 +544,7 @@ abstract class ConnectionTwitterLike : Connection() {
      * @see [Twitter
      * REST API Method: account verify_credentials](http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-account%C2%A0verify_credentials)
      */
-    override fun verifyCredentials(whoAmI: Optional<Uri?>?): Try<Actor?> {
+    override fun verifyCredentials(whoAmI: Optional<Uri>): Try<Actor?> {
         val apiRoutine = ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS
         return getApiPath(apiRoutine)
                 .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })
@@ -553,51 +553,51 @@ abstract class ConnectionTwitterLike : Connection() {
                 .map { jso: JSONObject? -> actorFromJson(jso) }
     }
 
-    protected fun postRequest(apiRoutine: ApiRoutineEnum?, formParams: JSONObject?): Try<HttpReadResult?>? {
+    protected fun postRequest(apiRoutine: ApiRoutineEnum?, formParams: JSONObject?): Try<HttpReadResult> {
         return tryApiPath(data.accountActor, apiRoutine)
                 .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri).withPostParams(formParams) })
                 .flatMap { request: HttpRequest? -> execute(request) }
     }
 
-    fun getApiPathWithNoteId(routineEnum: ApiRoutineEnum?, noteId: String?): Try<Uri?>? {
+    fun getApiPathWithNoteId(routineEnum: ApiRoutineEnum?, noteId: String?): Try<Uri> {
         return getApiPath(routineEnum).map { uri: Uri? -> UriUtils.map(uri) { s: String? -> s.replace("%noteId%", noteId) } }
     }
 
-    fun getApiPathWithActorId(routineEnum: ApiRoutineEnum?, actorId: String?): Try<Uri?>? {
+    fun getApiPathWithActorId(routineEnum: ApiRoutineEnum?, actorId: String?): Try<Uri> {
         return getApiPath(routineEnum).map { uri: Uri? -> UriUtils.map(uri) { s: String? -> s.replace("%actorId%", actorId) } }
     }
 
-    override fun getFollowers(actor: Actor?): Try<MutableList<Actor?>?>? {
+    override fun getFollowers(actor: Actor?): Try<MutableList<Actor>>? {
         return getActors(actor, ApiRoutineEnum.GET_FOLLOWERS)
     }
 
-    override fun getFriends(actor: Actor?): Try<MutableList<Actor?>?>? {
+    override fun getFriends(actor: Actor?): Try<MutableList<Actor>>? {
         return getActors(actor, ApiRoutineEnum.GET_FRIENDS)
     }
 
-    open fun getActors(actor: Actor?, apiRoutine: ApiRoutineEnum?): Try<MutableList<Actor?>?>? {
+    open fun getActors(actor: Actor?, apiRoutine: ApiRoutineEnum?): Try<MutableList<Actor>>? {
         return TryUtils.emptyList()
     }
 
-    override fun like(noteOid: String?): Try<AActivity?>? {
+    override fun like(noteOid: String?): Try<AActivity> {
         return postNoteAction(ApiRoutineEnum.LIKE, noteOid)
                 .map(CheckedFunction { jso: JSONObject? -> activityFromJson(jso) })
     }
 
-    override fun undoLike(noteOid: String?): Try<AActivity?>? {
+    override fun undoLike(noteOid: String?): Try<AActivity> {
         return postNoteAction(ApiRoutineEnum.UNDO_LIKE, noteOid)
                 .map(CheckedFunction { jso: JSONObject? -> activityFromJson(jso) })
     }
 
-    fun noteAction(apiRoutine: ApiRoutineEnum?, noteOid: String?): Try<JSONObject?>? {
+    fun noteAction(apiRoutine: ApiRoutineEnum?, noteOid: String?): Try<JSONObject> {
         return noteAction(apiRoutine, noteOid, false)
     }
 
-    fun postNoteAction(apiRoutine: ApiRoutineEnum?, noteOid: String?): Try<JSONObject?>? {
+    fun postNoteAction(apiRoutine: ApiRoutineEnum?, noteOid: String?): Try<JSONObject> {
         return noteAction(apiRoutine, noteOid, true)
     }
 
-    private fun noteAction(apiRoutine: ApiRoutineEnum?, noteOid: String?, asPost: Boolean): Try<JSONObject?>? {
+    private fun noteAction(apiRoutine: ApiRoutineEnum?, noteOid: String?, asPost: Boolean): Try<JSONObject> {
         return if (UriUtils.nonRealOid(noteOid)) Try.success(JsonUtils.EMPTY) else getApiPathWithNoteId(apiRoutine, noteOid)
                 .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri).asPost(asPost) })
                 .flatMap { request: HttpRequest? -> execute(request) }

@@ -42,7 +42,7 @@ class DemoConversationInserter {
         bodySuffix = if (bodySuffixIn.isNullOrEmpty()) "" else " $bodySuffixIn"
         iteration = DemoData.Companion.demoData.conversationIterationCounter.incrementAndGet()
         ma = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
-        Assert.assertTrue(DemoData.Companion.demoData.conversationAccountName + " exists", ma.isValid())
+        Assert.assertTrue(DemoData.Companion.demoData.conversationAccountName + " exists", ma.isValid)
         accountActor = ma.getActor()
         insertAndTestConversation()
     }

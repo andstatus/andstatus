@@ -67,12 +67,13 @@ open class ViewItem<T : ViewItem<T>> protected constructor(private val isEmpty: 
         return true
     }
 
-    override fun isEmpty(): Boolean {
-        return isEmpty
-    }
+    override val isEmpty: Boolean
+        get() {
+            return isEmpty
+        }
 
     protected fun getChildrenCount(): Int {
-        return if (isEmpty()) 0 else Integer.max(getParent().getChildrenCount(), getChildren().size)
+        return if (isEmpty) 0 else Integer.max(getParent().getChildrenCount(), getChildren().size)
     }
 
     fun setParent(parent: ViewItem<*>?) {
@@ -84,7 +85,7 @@ open class ViewItem<T : ViewItem<T>> protected constructor(private val isEmpty: 
     }
 
     fun getTopmostId(): Long {
-        return if (getParent().isEmpty()) getId() else getParent().getId()
+        return if (getParent().isEmpty) getId() else getParent().getId()
     }
 
     protected fun getMyStringBuilderWithTime(context: Context, showReceivedTime: Boolean): MyStringBuilder {

@@ -27,8 +27,8 @@ import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.RelativeTime
 
 class NotificationData(event: NotificationEventType, myActor: Actor, updatedDate: Long) {
-    val event: NotificationEventType?
-    val myActor: Actor?
+    val event: NotificationEventType
+    val myActor: Actor
 
     @Volatile
     var updatedDate: Long
@@ -57,7 +57,7 @@ class NotificationData(event: NotificationEventType, myActor: Actor, updatedDate
                 PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
-    fun channelId(): String? {
+    fun channelId(): String {
         return "channel_" + event.id
     }
 
@@ -66,7 +66,7 @@ class NotificationData(event: NotificationEventType, myActor: Actor, updatedDate
     }
 
     companion object {
-        val EMPTY: NotificationData? = NotificationData(NotificationEventType.EMPTY, Actor.Companion.EMPTY,
+        val EMPTY: NotificationData = NotificationData(NotificationEventType.EMPTY, Actor.Companion.EMPTY,
                 RelativeTime.DATETIME_MILLIS_NEVER)
     }
 

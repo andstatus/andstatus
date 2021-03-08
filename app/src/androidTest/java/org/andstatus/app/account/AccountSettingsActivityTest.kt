@@ -807,8 +807,8 @@ class AccountSettingsActivityTest : ActivityTest<AccountSettingsActivity?>() {
 
     override fun getActivityIntent(): Intent? {
         TestSuite.initializeWithAccounts(this)
-        ma =  MyContextHolder.myContextHolder.getNow().accounts().getCurrentAccount()
-        if (ma.nonValid()) Assert.fail("No persistent accounts yet")
+        ma =  MyContextHolder.myContextHolder.getNow().accounts().currentAccount
+        if (ma.nonValid) Assert.fail("No persistent accounts yet")
         return Intent().putExtra(IntentExtra.ACCOUNT_NAME.key, ma.getAccountName())
     }
 

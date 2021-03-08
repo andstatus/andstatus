@@ -74,7 +74,7 @@ internal class FutureNoteContextMenuData private constructor(viewItem: BaseNoteV
                                 menuContainer.activity.myContext, future.activityId,
                                 future.noteId, selectedMyAccount, currentMyAccount)
                         if (MyLog.isVerboseEnabled()) {
-                            MyLog.v(noteContextMenu, """acting:${accountToNote.myAccount.accountName}${if (accountToNote.myAccount == selectedMyAccount || selectedMyAccount.nonValid()) "" else ", selected:" + selectedMyAccount.accountName}${if (accountToNote.myAccount == currentMyAccount || currentMyAccount.nonValid()) "" else ", current:" + currentMyAccount.accountName}
+                            MyLog.v(noteContextMenu, """acting:${accountToNote.myAccount.accountName}${if (accountToNote.myAccount == selectedMyAccount || selectedMyAccount.nonValid) "" else ", selected:" + selectedMyAccount.accountName}${if (accountToNote.myAccount == currentMyAccount || currentMyAccount.nonValid()) "" else ", current:" + currentMyAccount.accountName}
  $accountToNote""")
                         }
                         return if (accountToNote.myAccount.isValid) accountToNote else NoteContextMenuData.Companion.EMPTY

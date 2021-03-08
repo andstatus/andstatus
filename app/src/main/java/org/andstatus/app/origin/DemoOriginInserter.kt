@@ -69,7 +69,7 @@ class DemoOriginInserter(private val myContext: MyContext?) {
                         origin.getUrl())
             }
         } else {
-            Assert.assertEquals(origin.getOriginType().urlDefault, origin.getUrl())
+            Assert.assertEquals(origin.originType.urlDefault, origin.getUrl())
         }
         Assert.assertEquals(isSsl, origin.isSsl())
         Assert.assertEquals(sslMode, origin.getSslMode())

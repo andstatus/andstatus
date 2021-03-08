@@ -22,9 +22,10 @@ class OriginConfig(textLimit: Int, uploadLimit: Long) : IsEmpty {
     private val isEmpty: Boolean
     val textLimit: Int
     val uploadLimit: Long
-    override fun isEmpty(): Boolean {
-        return isEmpty
-    }
+    override val isEmpty: Boolean
+        get() {
+            return isEmpty
+        }
 
     override fun toString(): String {
         return "OriginConfig{" +

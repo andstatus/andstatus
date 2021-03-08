@@ -31,7 +31,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 internal class TimelineDownloaderOther(execContext: CommandExecutionContext?) : TimelineDownloader(execContext) {
-    override fun download(): Try<Boolean?>? {
+    override fun download(): Try<Boolean> {
         if (!timeline.isSyncable) {
             return Try.failure(IllegalArgumentException("Timeline cannot be synced: $timeline"))
         }
@@ -65,7 +65,7 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext?) : 
             val limit = connection.fixedDownloadLimit(
                     toDownload, timeline.timelineType.connectionApiRoutine)
             syncTracker.onPositionRequested(positionToRequest)
-            var tryPage: Try<InputTimelinePage?>?
+            var tryPage: Try<InputTimelinePage>
             tryPage = when (timeline.timelineType) {
                 TimelineType.SEARCH -> connection.searchNotes(isSyncYounger,
                         if (isSyncYounger) positionToRequest else TimelinePosition.Companion.EMPTY,

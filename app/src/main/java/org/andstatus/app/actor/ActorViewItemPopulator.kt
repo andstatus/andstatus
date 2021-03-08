@@ -61,7 +61,7 @@ class ActorViewItemPopulator(myActivity: LoadableListActivity<*>, isCombined: Bo
                 item.getMyActorsFollowingTheActor(myActivity.getMyContext())
                         .map { actor: Actor? -> myActivity.getMyContext().accounts().fromActorOfAnyOrigin(actor).accountName }
                         .collect(Collectors.joining(", ")))
-        if (builder.nonEmpty()) {
+        if (builder.nonEmpty) {
             builder.prependWithSeparator(myActivity.getText(R.string.followed_by), " ")
         }
         MyUrlSpan.Companion.showText(view, R.id.followed_by, builder.toString(), false, false)
@@ -72,7 +72,7 @@ class ActorViewItemPopulator(myActivity: LoadableListActivity<*>, isCombined: Bo
                 item.getMyActorsFollowedByTheActor(myActivity.getMyContext())
                         .map { actor: Actor? -> myActivity.getMyContext().accounts().fromActorOfAnyOrigin(actor).accountName }
                         .collect(Collectors.joining(", ")))
-        if (builder.nonEmpty()) {
+        if (builder.nonEmpty) {
             builder.prependWithSeparator(myActivity.getText(R.string.follows), " ")
         }
         MyUrlSpan.Companion.showText(view, R.id.follows, builder.toString(), false, false)

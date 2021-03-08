@@ -32,7 +32,7 @@ import java.util.function.Supplier
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-class MyAccounts private constructor(private val myContext: MyContext?) : IsEmpty {
+class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty {
     /** Current account is the first in this list  */
     val recentAccounts: MutableList<MyAccount> = CopyOnWriteArrayList()
     private val myAccounts: SortedSet<MyAccount> = ConcurrentSkipListSet()
@@ -41,9 +41,7 @@ class MyAccounts private constructor(private val myContext: MyContext?) : IsEmpt
         return myAccounts
     }
 
-    override fun isEmpty(): Boolean {
-        return myAccounts.isEmpty()
-    }
+    override val isEmpty: Boolean get() = myAccounts.isEmpty()
 
     fun size(): Int {
         return myAccounts.size
@@ -90,7 +88,7 @@ class MyAccounts private constructor(private val myContext: MyContext?) : IsEmpt
     fun delete(ma: MyAccount?): Boolean {
         val myAccountToDelete = myAccounts.stream().filter { myAccount: MyAccount? -> myAccount == ma }
                 .findFirst().orElse(MyAccount.Companion.EMPTY)
-        if (myAccountToDelete.nonValid()) return false
+        if (myAccountToDelete.nonValid) return false
         MyAccount.Builder.Companion.fromMyAccount(myAccountToDelete).deleteData()
         myAccounts.remove(myAccountToDelete)
         MyPreferences.onPreferencesChanged()
@@ -170,21 +168,21 @@ class MyAccounts private constructor(private val myContext: MyContext?) : IsEmpt
     /** My account, which can be used to sync the "other" actor's data and to interact with that actor  */
     fun toSyncThatActor(other: Actor): MyAccount {
         return if (other.isEmpty) MyAccount.Companion.EMPTY else Stream.of(fromActor(other, true, true))
-                .filter { obj: MyAccount? -> obj.isValid() }.findFirst()
+                .filter { obj: MyAccount? -> obj.isValid }.findFirst()
                 .orElseGet {
                     forRelatedActor(other, true, true)
                             .orElseGet(Supplier { if (other.origin.isEmpty) MyAccount.Companion.EMPTY else getFirstPreferablySucceededForOrigin(other.origin) })
                 }
     }
 
-    private fun forRelatedActor(relatedActor: Actor?, sameOriginOnly: Boolean, succeededOnly: Boolean): Optional<MyAccount?>? {
+    private fun forRelatedActor(relatedActor: Actor?, sameOriginOnly: Boolean, succeededOnly: Boolean): Optional<MyAccount> {
         val forFriend = forFriendOfFollower(relatedActor, sameOriginOnly, succeededOnly,
                 myContext.users().friendsOfMyActors)
         return if (forFriend.isPresent()) forFriend else forFriendOfFollower(relatedActor, sameOriginOnly, succeededOnly, myContext.users().followersOfMyActors)
     }
 
     private fun forFriendOfFollower(friend: Actor?, sameOriginOnly: Boolean, succeededOnly: Boolean,
-                                    friendsOrFollowers: MutableMap<Long?, MutableSet<Long?>?>?): Optional<MyAccount?>? {
+                                    friendsOrFollowers: MutableMap<Long?, MutableSet<Long?>?>?): Optional<MyAccount> {
         return friendsOrFollowers.getOrDefault(friend.actorId, emptySet<Long?>()).stream()
                 .map { actorId: Long? -> fromActorId(actorId) }
                 .filter { ma: MyAccount? -> ma.isValidAndSucceeded() || !succeededOnly }
@@ -203,16 +201,13 @@ class MyAccounts private constructor(private val myContext: MyContext?) : IsEmpt
     /**
      * @return current MyAccount (MyAccount selected by the User) or EMPTY if no persistent accounts exist
      */
-    fun getCurrentAccount(): MyAccount {
-        return recentAccounts.stream().findFirst().orElse(myAccounts.stream().findFirst().orElse(MyAccount.Companion.EMPTY))
-    }
+    val currentAccount: MyAccount get() = recentAccounts.stream()
+            .findFirst().orElse(myAccounts.stream().findFirst().orElse(MyAccount.Companion.EMPTY))
 
     /**
      * @return 0 if no valid persistent accounts exist
      */
-    fun getCurrentAccountActorId(): Long {
-        return getCurrentAccount().actorId
-    }
+    val currentAccountActorId: Long get() = currentAccount.actorId
 
     fun getFirstSucceeded(): MyAccount {
         return getFirstPreferablySucceededForOrigin( Origin.EMPTY)
@@ -245,7 +240,7 @@ class MyAccounts private constructor(private val myContext: MyContext?) : IsEmpt
         for (myAccount in myAccounts) {
             for (origin in origins) {
                 if (!origin.isValid() || myAccount.getOrigin() == origin) {
-                    if (ma.nonValid()) {
+                    if (ma.nonValid) {
                         ma = myAccount
                     }
                     if (myAccount.isValidAndSucceeded()) {
@@ -258,10 +253,10 @@ class MyAccounts private constructor(private val myContext: MyContext?) : IsEmpt
                         }
                     }
                 }
-                if (maSynced.isValid()) return maSynced
+                if (maSynced.isValid) return maSynced
             }
         }
-        return if (maSynced.isValid()) maSynced else if (maSucceeded.isValid()) maSucceeded else ma
+        return if (maSynced.isValid) maSynced else if (maSucceeded.isValid) maSucceeded else ma
     }
 
     /** @return this account if there are no others
@@ -277,7 +272,7 @@ class MyAccounts private constructor(private val myContext: MyContext?) : IsEmpt
      * @return Empty Set if not found
      */
     fun succeededForSameOrigin(origin: Origin?): MutableSet<MyAccount?> {
-        return if (origin.isEmpty()) myAccounts.stream().filter { obj: MyAccount? -> obj.isValidAndSucceeded() }.collect(Collectors.toSet()) else myAccounts.stream()
+        return if (origin.isEmpty) myAccounts.stream().filter { obj: MyAccount? -> obj.isValidAndSucceeded() }.collect(Collectors.toSet()) else myAccounts.stream()
                 .filter { ma: MyAccount? -> origin == ma.getOrigin() }
                 .filter { obj: MyAccount? -> obj.isValidAndSucceeded() }
                 .collect(Collectors.toSet())
@@ -355,15 +350,15 @@ class MyAccounts private constructor(private val myContext: MyContext?) : IsEmpt
         if (accountFits(oldMa, origin, succeededOnly) || !accountFits(newMa, origin, false)) {
             return oldMa
         }
-        return if (oldMa.nonValid() && newMa.isValid) {
+        return if (oldMa.nonValid && newMa.isValid) {
             newMa
         } else oldMa
     }
 
     /** Set provided MyAccount as the Current one  */
     fun setCurrentAccount(ma: MyAccount?) {
-        val prevAccount = getCurrentAccount()
-        if (ma == null || ma.nonValid() || ma == prevAccount) return
+        val prevAccount = currentAccount
+        if (ma == null || ma.nonValid || ma == prevAccount) return
         MyLog.v(this) {
             ("Changing current account from '" + prevAccount.accountName
                     + "' to '" + ma.accountName + "'")

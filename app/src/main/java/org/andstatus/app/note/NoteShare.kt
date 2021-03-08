@@ -34,7 +34,7 @@ import org.andstatus.app.util.UriUtils
 
 class NoteShare(private val origin: Origin?, private val noteId: Long, private val downloads: NoteDownloads?) {
     fun viewImage(activity: Activity?) {
-        if (downloads.nonEmpty()) {
+        if (downloads.nonEmpty) {
             activity.startActivity(intentToViewAndShare(false))
         }
     }

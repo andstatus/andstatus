@@ -250,7 +250,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer?) {
         if (item != null) {
             val enableAttach = (isVisible()
                     && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ATTACH_IMAGES_TO_MY_NOTES, true)
-                    && (!editorData.getVisibility().isPrivate || editorData.getMyAccount().origin.originType
+                    && (!editorData.visibility.isPrivate || editorData.getMyAccount().origin.originType
                     .allowAttachmentForPrivateNote()))
             item.isEnabled = enableAttach
             item.isVisible = enableAttach
@@ -319,7 +319,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer?) {
     }
 
     fun isVisible(): Boolean {
-        return editorView.getVisibility() == View.VISIBLE
+        return editorView.visibility == View.VISIBLE
     }
 
     fun startEditingSharedData(ma: MyAccount?, shared: SharedNote?) {
@@ -362,7 +362,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer?) {
         }
     }
 
-    fun startEditingCurrentWithAttachedMedia(mediaUri: Uri?, mediaType: Optional<String?>?) {
+    fun startEditingCurrentWithAttachedMedia(mediaUri: Uri?, mediaType: Optional<String>) {
         updateDataFromScreen()
         val command = NoteEditorCommand(editorData.copy())
         command.beingEdited = true
@@ -375,9 +375,9 @@ class NoteEditor(private val editorContainer: NoteEditorContainer?) {
     fun updateScreen() {
         setAdapter()
         ViewUtils.showView(editorView, R.id.is_public, editorData.canChangeVisibility())
-        MyCheckBox.set(getActivity(), R.id.is_public, editorData.getVisibility().isPublicCheckbox, true)
+        MyCheckBox.set(getActivity(), R.id.is_public, editorData.visibility.isPublicCheckbox, true)
         ViewUtils.showView(editorView, R.id.is_followers, editorData.canChangeIsFollowers())
-        MyCheckBox.set(getActivity(), R.id.is_followers, editorData.getVisibility().isFollowers, true)
+        MyCheckBox.set(getActivity(), R.id.is_followers, editorData.visibility.isFollowers, true)
         ViewUtils.showView(editorView, R.id.is_sensitive, editorData.canChangeIsSensitive())
         MyCheckBox.set(getActivity(), R.id.is_sensitive, editorData.getSensitive(), true)
         MyUrlSpan.Companion.showText(editorView, R.id.note_name_edit, editorData.activity.note.name, false,
@@ -428,7 +428,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer?) {
             builder.withSpace(StringUtil.format(getActivity(), R.string.message_source_in_reply_to,
                     inReplyToAuthor.actorNameInTimeline))
         }
-        if (editorData.getAttachedImageFiles().nonEmpty()) {
+        if (editorData.getAttachedImageFiles().nonEmpty) {
             builder.withSpace("("
                     + getActivity().getText(R.string.label_with_media).toString() + " "
                     + editorData.getAttachedImageFiles().toMediaSummary(getActivity())
@@ -469,7 +469,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer?) {
         updateDataFromScreen()
         if (!editorData.isValid()) {
             discardAndHide()
-        } else if (editorData.isEmpty()) {
+        } else if (editorData.isEmpty) {
             Toast.makeText(getActivity(), R.string.cannot_send_empty_message, Toast.LENGTH_SHORT).show()
         } else if (editorData.getMyAccount().charactersLeftForNote(editorData.getContent()) < 0) {
             Toast.makeText(getActivity(), R.string.message_is_too_long, Toast.LENGTH_SHORT).show()
@@ -518,7 +518,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer?) {
         command.acquireLock(false)
         MyPreferences.setBeingEditedNoteId(if (command.beingEdited) command.getCurrentNoteId() else 0)
         hide()
-        if (command.nonEmpty()) {
+        if (command.nonEmpty) {
             MyLog.v(NoteEditorData.Companion.TAG) { "Requested: $command" }
             AsyncTaskLauncher<NoteEditorCommand?>().execute(this,
                     NoteSaver(this), command)
@@ -655,7 +655,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer?) {
     }
 
     companion object {
-        fun subjectHasAdditionalContent(name: Optional<String?>?, content: Optional<String?>?): Boolean {
+        fun subjectHasAdditionalContent(name: Optional<String>, content: Optional<String>): Boolean {
             if (!name.isPresent()) return false
             return if (!content.isPresent()) true else content.flatMap(Function { c: String? -> name.map(Function { n: String? -> !c.startsWith(stripEllipsis(stripBeginning(n))) }) }).orElse(false)
         }

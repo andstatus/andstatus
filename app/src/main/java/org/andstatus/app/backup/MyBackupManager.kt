@@ -158,7 +158,7 @@ internal class MyBackupManager(private val activity: Activity?, progressListener
             } else false
         }
 
-        fun getExistingDescriptorFile(dataFolder: DocumentFile?): Try<DocumentFile?>? {
+        fun getExistingDescriptorFile(dataFolder: DocumentFile?): Try<DocumentFile> {
             return TryUtils.ofNullableCallable { dataFolder.findFile(DESCRIPTOR_FILE_NAME) }
         }
 

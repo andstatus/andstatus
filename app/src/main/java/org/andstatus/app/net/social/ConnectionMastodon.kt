@@ -71,7 +71,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         } else if (isConversation(timelineItem)) {
             // https://docs.joinmastodon.org/entities/conversation/
             val noteActivity = activityFromJson2(timelineItem.optJSONObject("last_status"))
-            if (noteActivity.nonEmpty()) {
+            if (noteActivity.nonEmpty) {
                 noteActivity.note.setConversationOid(timelineItem.optString("id"))
             }
             noteActivity
@@ -122,7 +122,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                 .map(CheckedFunction { activities: MutableList<AActivity?>? -> InputTimelinePage.Companion.of(activities) })
     }
 
-    override fun searchActors(limit: Int, searchQuery: String?): Try<MutableList<Actor?>?> {
+    override fun searchActors(limit: Int, searchQuery: String?): Try<MutableList<Actor>> {
         val tag = KeywordsFilter(searchQuery).firstTagOrFirstKeyword
         if (tag.isNullOrEmpty()) {
             return TryUtils.emptyList()
@@ -144,11 +144,11 @@ class ConnectionMastodon : ConnectionTwitterLike() {
     }
 
     // TODO: Delete ?
-    protected fun getApiPathWithTag(routineEnum: ApiRoutineEnum?, tag: String?): Try<Uri?>? {
+    protected fun getApiPathWithTag(routineEnum: ApiRoutineEnum?, tag: String?): Try<Uri> {
         return getApiPath(routineEnum).map { uri: Uri? -> UriUtils.map(uri) { s: String? -> s.replace("%tag%", tag) } }
     }
 
-    override fun getConversation(conversationOid: String?): Try<MutableList<AActivity?>?>? {
+    override fun getConversation(conversationOid: String?): Try<MutableList<AActivity>>? {
         return noteAction(ApiRoutineEnum.GET_CONVERSATION, conversationOid)
                 .map { jsonObject: JSONObject? -> getConversationActivities(jsonObject, conversationOid) }
     }
@@ -175,11 +175,11 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         return timeline
     }
 
-    override fun updateNote(note: Note?): Try<AActivity?>? {
+    override fun updateNote(note: Note?): Try<AActivity> {
         return updateNote2(note)
     }
 
-    override fun updateNote2(note: Note?): Try<AActivity?>? {
+    override fun updateNote2(note: Note?): Try<AActivity> {
         val obj = JSONObject()
         try {
             obj.put(SUMMARY_PROPERTY, note.getSummary())
@@ -225,7 +225,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         }
     }
 
-    private fun uploadMedia(attachment: Attachment?): Try<JSONObject?>? {
+    private fun uploadMedia(attachment: Attachment?): Try<JSONObject> {
         return tryApiPath(data.accountActor, ApiRoutineEnum.UPLOAD_MEDIA)
                 .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? ->
                     HttpRequest.Companion.of(ApiRoutineEnum.UPLOAD_MEDIA, uri)
@@ -400,7 +400,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         return parseIso8601Date(stringDate)
     }
 
-    override fun getActor2(actorIn: Actor?): Try<Actor?>? {
+    override fun getActor2(actorIn: Actor?): Try<Actor> {
         val apiRoutine = ApiRoutineEnum.GET_ACTOR
         return getApiPathWithActorId(apiRoutine,
                 if (UriUtils.isRealOid(actorIn.oid)) actorIn.oid else actorIn.getUsername())
@@ -410,7 +410,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                 .map { jso: JSONObject? -> actorFromJson(jso) }
     }
 
-    override fun follow(actorOid: String?, follow: Boolean?): Try<AActivity?>? {
+    override fun follow(actorOid: String?, follow: Boolean?): Try<AActivity> {
         val apiRoutine = if (follow) ApiRoutineEnum.FOLLOW else ApiRoutineEnum.UNDO_FOLLOW
         val tryRelationship = getApiPathWithActorId(apiRoutine, actorOid)
                 .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri).asPost() })
@@ -429,13 +429,13 @@ class ConnectionMastodon : ConnectionTwitterLike() {
         }
     }
 
-    override fun undoAnnounce(noteOid: String?): Try<Boolean?>? {
+    override fun undoAnnounce(noteOid: String?): Try<Boolean> {
         return postNoteAction(ApiRoutineEnum.UNDO_ANNOUNCE, noteOid)
                 .filter { obj: JSONObject? -> Objects.nonNull(obj) }
                 .map { any: JSONObject? -> true }
     }
 
-    public override fun getActors(actor: Actor?, apiRoutine: ApiRoutineEnum?): Try<MutableList<Actor?>?>? {
+    public override fun getActors(actor: Actor?, apiRoutine: ApiRoutineEnum?): Try<MutableList<Actor>>? {
         val limit = 400
         return getApiPathWithActorId(apiRoutine, actor.oid)
                 .map { obj: Uri? -> obj.buildUpon() }
@@ -449,7 +449,7 @@ class ConnectionMastodon : ConnectionTwitterLike() {
                 }
     }
 
-    override fun getConfig(): Try<OriginConfig?>? {
+    override fun getConfig(): Try<OriginConfig> {
         val apiRoutine = ApiRoutineEnum.GET_CONFIG
         return getApiPath(apiRoutine)
                 .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })

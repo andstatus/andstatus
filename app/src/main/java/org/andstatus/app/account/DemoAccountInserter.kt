@@ -36,7 +36,7 @@ import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UrlUtils
 import org.junit.Assert
 
-class DemoAccountInserter(private val myContext: MyContext?) {
+class DemoAccountInserter(private val myContext: MyContext) {
     private var firstAccountActorOid: String? = null
     fun insert() {
         addAccount(DemoData.Companion.demoData.pumpioTestAccountActorOid, DemoData.Companion.demoData.pumpioTestAccountName,
@@ -86,14 +86,14 @@ class DemoAccountInserter(private val myContext: MyContext?) {
         }
         actor.createdDate = MyLog.uniqueCurrentTimeMS()
         val ma = addAccountFromActor(actor, accountName)
-        val accountActorId = ma.getActorId()
+        val accountActorId = ma.actorId
         val msg = "AccountUserId for '$accountNameString, (first: '$firstAccountActorOid')"
         if (accountActorId_existing == 0L && !actorOid.contains(firstAccountActorOid)) {
             Assert.assertTrue("$msg != 1", accountActorId != 1L)
         } else {
             Assert.assertTrue("$msg != 0", accountActorId != 0L)
         }
-        Assert.assertTrue("Account $actorOid is persistent", ma.isValid())
+        Assert.assertTrue("Account $actorOid is persistent", ma.isValid)
         Assert.assertTrue("Account actorOid", ma.getActorOid().equals(actorOid, ignoreCase = true))
         Assert.assertEquals("No WebFingerId stored $actor",
                 actor.webFingerId, MyQuery.actorIdToWebfingerId(myContext, actor.actorId))
@@ -119,7 +119,7 @@ class DemoAccountInserter(private val myContext: MyContext?) {
                 maExpected, ma)
     }
 
-    private fun addAccountFromActor(actor: Actor, accountName: AccountName?): MyAccount? {
+    private fun addAccountFromActor(actor: Actor, accountName: AccountName): MyAccount {
         val builder1: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(accountName).setOAuth(true)
         if (actor.origin.isOAuthDefault || actor.origin.canChangeOAuth()) {
             insertTestClientKeys(builder1.account)
@@ -155,9 +155,9 @@ class DemoAccountInserter(private val myContext: MyContext?) {
                 (if (actor.origin.shouldHaveUrl()) actor.username + "@" + actor.origin.accountNameHost else actor.uniqueName) +
                         AccountName.Companion.ORIGIN_SEPARATOR +
                         actor.origin.getOriginInAccountName(accountName.host), ma.accountName)
-        Assert.assertEquals("Account name provided", accountName.getName(), ma.accountName)
+        Assert.assertEquals("Account name provided", accountName.name, ma.accountName)
         val existingAndroidAccount = AccountUtils.getExistingAndroidAccount(accountName)
-        Assert.assertEquals("Android account name", accountName.getName(),
+        Assert.assertEquals("Android account name", accountName.name,
                 existingAndroidAccount.map { a: Account? -> a.name }.getOrElse("(not found)"))
         Assert.assertEquals("User should be known as this actor $actor", actor.uniqueName, actor.user.knownAs)
         Assert.assertEquals("User is not mine $actor", TriState.TRUE, actor.user.isMyUser)
@@ -171,7 +171,7 @@ class DemoAccountInserter(private val myContext: MyContext?) {
                 AccountConnectionData.Companion.fromMyAccount(myAccount, TriState.UNKNOWN)
         )
         if (!UrlUtils.hasHost(connectionData.originUrl)) {
-            connectionData.originUrl = UrlUtils.fromString("https://" + myAccount.getActor().connectionHost)
+            connectionData.originUrl = UrlUtils.fromString("https://" + myAccount.actor.connectionHost)
         }
         val keys1: OAuthClientKeys = OAuthClientKeys.Companion.fromConnectionData(connectionData)
         if (!keys1.areKeysPresent()) {
@@ -188,7 +188,7 @@ class DemoAccountInserter(private val myContext: MyContext?) {
     companion object {
         fun getAutomaticallySyncableTimeline(myContext: MyContext?, myAccount: MyAccount?): Timeline {
             val timelineToSync = myContext.timelines()
-                    .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.getActor(),  Origin.EMPTY)
+                    .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.actor,  Origin.EMPTY)
                     .filter { obj: Timeline? -> obj.isSyncedAutomatically() }.findFirst().orElse(Timeline.Companion.EMPTY)
             Assert.assertTrue("""
     No syncable automatically timeline for $myAccount
@@ -199,13 +199,13 @@ class DemoAccountInserter(private val myContext: MyContext?) {
 
         fun assertDefaultTimelinesForAccounts() {
             for (myAccount in  MyContextHolder.myContextHolder.getNow().accounts().get()) {
-                for (timelineType in myAccount.getActor().defaultMyAccountTimelineTypes) {
+                for (timelineType in myAccount.actor.defaultMyAccountTimelineTypes) {
                     if (!myAccount.getConnection().hasApiEndpoint(timelineType.getConnectionApiRoutine())) continue
                     var count: Long = 0
                     val logMsg: StringBuilder = StringBuilder(myAccount.toString())
                     MyStringBuilder.Companion.appendWithSpace(logMsg, timelineType.toString())
                     for (timeline in  MyContextHolder.myContextHolder.getNow().timelines().values()) {
-                        if (timeline.getActorId() == myAccount.getActorId() && timeline.getTimelineType() == timelineType && !timeline.hasSearchQuery()) {
+                        if (timeline.getActorId() == myAccount.actorId && timeline.getTimelineType() == timelineType && !timeline.hasSearchQuery()) {
                             count++
                             MyStringBuilder.Companion.appendWithSpace(logMsg, timeline.toString())
                         }

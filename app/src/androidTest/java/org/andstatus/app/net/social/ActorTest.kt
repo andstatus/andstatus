@@ -132,7 +132,7 @@ class ActorTest {
         val actors: MutableList<Actor?> = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.activityPubTestAccountName).getActor()
                 .extractActorsFromContent(content, Actor.Companion.EMPTY)
         Assert.assertEquals("Actors: $actors", 1, actors.size.toLong())
-        Assert.assertEquals("Actors: $actors", actorUniqueName, actors[0].getUniqueName())
+        Assert.assertEquals("Actors: $actors", actorUniqueName, actors[0].uniqueName)
     }
 
     @Test

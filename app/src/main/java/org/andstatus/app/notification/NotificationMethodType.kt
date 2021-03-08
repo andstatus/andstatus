@@ -23,29 +23,28 @@ import org.andstatus.app.util.SharedPreferencesUtil
 /**
  * How to notify a User
  */
-enum class NotificationMethodType(val id: Long, val preferenceKey: String?, val defaultValue: Boolean) {
-    NOTIFICATION_AREA(1, "notification_in_notification_area", true), VIBRATION(2, "vibration", true), SOUND(3, MyPreferences.KEY_NOTIFICATION_METHOD_SOUND, false), EMPTY(0, "", false);
+enum class NotificationMethodType(val id: Long, val preferenceKey: String, val defaultValue: Boolean) {
+    NOTIFICATION_AREA(1, "notification_in_notification_area", true),
+    VIBRATION(2, "vibration", true),
+    SOUND(3, MyPreferences.KEY_NOTIFICATION_METHOD_SOUND, false),
+    EMPTY(0, "", false);
 
-    fun isEnabled(): Boolean {
-        return if (preferenceKey.isNullOrEmpty()) false else when (this) {
-            SOUND -> !SharedPreferencesUtil.getString(preferenceKey, "").isNullOrEmpty()
-            else -> SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue)
-        }
+    val isEnabled: Boolean get() = if (preferenceKey.isEmpty()) false else when (this) {
+        SOUND -> !SharedPreferencesUtil.getString(preferenceKey, "").isNullOrEmpty()
+        else -> SharedPreferencesUtil.getBoolean(preferenceKey, defaultValue)
     }
 
-    fun getUri(): Uri {
-        return when (this) {
-            SOUND -> {
-                val uriString = SharedPreferencesUtil.getString(preferenceKey,
-                        Settings.System.DEFAULT_NOTIFICATION_URI.toString())
-                if (uriString.isNullOrEmpty()) Uri.EMPTY else Uri.parse(uriString)
-            }
-            else -> Uri.EMPTY
+    val uri: Uri get() = when (this) {
+        SOUND -> {
+            val uriString = SharedPreferencesUtil.getString(preferenceKey,
+                    Settings.System.DEFAULT_NOTIFICATION_URI.toString())
+            if (uriString.isNullOrEmpty()) Uri.EMPTY else Uri.parse(uriString)
         }
+        else -> Uri.EMPTY
     }
 
     fun setEnabled(enabled: Boolean) {
-        if (!preferenceKey.isNullOrEmpty()) SharedPreferencesUtil.putBoolean(preferenceKey, enabled)
+        if (preferenceKey.isNotEmpty()) SharedPreferencesUtil.putBoolean(preferenceKey, enabled)
     }
 
     fun isEmpty(): Boolean {

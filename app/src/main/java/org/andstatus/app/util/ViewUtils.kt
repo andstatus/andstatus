@@ -67,11 +67,11 @@ object ViewUtils {
     fun showView(view: View?, show: Boolean): Boolean {
         if (view != null) {
             if (show) {
-                if (view.getVisibility() != View.VISIBLE) {
+                if (view.visibility != View.VISIBLE) {
                     view.setVisibility(View.VISIBLE)
                 }
             } else {
-                if (view.getVisibility() != View.GONE) {
+                if (view.visibility != View.GONE) {
                     view.setVisibility(View.GONE)
                 }
             }

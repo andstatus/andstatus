@@ -69,9 +69,10 @@ class ActorViewItem private constructor(val actor: Actor, isEmpty: Boolean) : Vi
                 '}'
     }
 
-    override fun isEmpty(): Boolean {
-        return actor.isEmpty
-    }
+    override val isEmpty: Boolean
+        get() {
+            return actor.isEmpty
+        }
 
     override fun getId(): Long {
         return getActor().actorId
@@ -107,7 +108,7 @@ class ActorViewItem private constructor(val actor: Actor, isEmpty: Boolean) : Vi
 
     override fun duplicates(timeline: Timeline?, preferredOrigin: Origin?, other: ActorViewItem): DuplicationLink {
         if (isEmpty || other.isEmpty) return DuplicationLink.NONE
-        if (preferredOrigin.nonEmpty() && actor.origin != other.actor.origin) {
+        if (preferredOrigin.nonEmpty && actor.origin != other.actor.origin) {
             if (preferredOrigin == actor.origin) return DuplicationLink.IS_DUPLICATED
             if (preferredOrigin == other.actor.origin) return DuplicationLink.DUPLICATES
         }
@@ -122,7 +123,7 @@ class ActorViewItem private constructor(val actor: Actor, isEmpty: Boolean) : Vi
         return NullUtil.getOrDefault<Long?, MutableSet<Long?>?>(myContext.users().friendsOfMyActors, actor.actorId, emptySet<Long?>()).stream()
                 .filter { id: Long? -> id != myActorFollowingToHide.actorId }
                 .map { id: Long? -> NullUtil.getOrDefault(myContext.users().actors, id, Actor.Companion.EMPTY) }
-                .filter { obj: Actor? -> obj.nonEmpty() }
+                .filter { obj: Actor? -> obj.nonEmpty }
     }
 
     fun hideFollowing(myActor: Actor?) {
@@ -133,7 +134,7 @@ class ActorViewItem private constructor(val actor: Actor, isEmpty: Boolean) : Vi
         return NullUtil.getOrDefault<Long?, MutableSet<Long?>?>(myContext.users().followersOfMyActors, actor.actorId, emptySet<Long?>()).stream()
                 .filter { id: Long? -> id != myActorFollowedToHide.actorId }
                 .map { id: Long? -> NullUtil.getOrDefault(myContext.users().actors, id, Actor.Companion.EMPTY) }
-                .filter { obj: Actor? -> obj.nonEmpty() }
+                .filter { obj: Actor? -> obj.nonEmpty }
     }
 
     companion object {

@@ -266,9 +266,9 @@ Pruned ${pruned2.consumedCount} avatar files, ${I18n.formatBytes(pruned2.consume
         val counter = AtomicInteger()
         actors.forEach(Consumer { actor: Actor? ->
             counter.incrementAndGet()
-            MyLog.v(TAG) { counter.get().toString() + ". Deleting: " + actor.getUniqueName() + "; " + actor }
+            MyLog.v(TAG) { counter.get().toString() + ". Deleting: " + actor.uniqueName + "; " + actor }
             MyProvider.Companion.deleteActor(myContext, actor.actorId)
-            logger.logProgressIfLongProcess(Supplier { counter.get().toString() + ". Deleting: " + actor.getUniqueName() })
+            logger.logProgressIfLongProcess(Supplier { counter.get().toString() + ". Deleting: " + actor.uniqueName })
         })
         logger.logProgress("Deleted " + actors.size + " temporary unused actors")
     }

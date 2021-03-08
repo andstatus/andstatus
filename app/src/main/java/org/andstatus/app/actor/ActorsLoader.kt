@@ -20,16 +20,16 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StopWatch
 import java.util.stream.Collectors
 
-open class ActorsLoader(val myContext: MyContext?, protected val actorsScreenType: ActorsScreenType?, origin: Origin?, centralActorId: Long,
-                        searchQuery: String?) : SyncLoader<ActorViewItem?>() {
-    private val searchQuery: String? = ""
-    protected val ma: MyAccount?
-    protected val origin: Origin?
+open class ActorsLoader(val myContext: MyContext, protected val actorsScreenType: ActorsScreenType, origin: Origin, centralActorId: Long,
+                        searchQuery: String) : SyncLoader<ActorViewItem>() {
+    private val searchQuery: String = ""
+    protected val ma: MyAccount
+    protected val origin: Origin
     protected var mAllowLoadingFromInternet = false
     protected val centralActorId: Long
 
     @Volatile
-    private var centralActor: Actor? = Actor.Companion.EMPTY
+    private var centralActor: Actor = Actor.Companion.EMPTY
     private var mProgress: ProgressPublisher? = null
     override fun allowLoadingFromInternet() {
         mAllowLoadingFromInternet = ma.isValidAndSucceeded()
@@ -58,7 +58,7 @@ open class ActorsLoader(val myContext: MyContext?, protected val actorsScreenTyp
     }
 
     fun addActorToList(actor: Actor?): Actor? {
-        if (actor.isEmpty()) return Actor.Companion.EMPTY
+        if (actor.isEmpty) return Actor.Companion.EMPTY
         val item: ActorViewItem = ActorViewItem.Companion.fromActor(actor)
         val existing = items.indexOf(item)
         if (existing >= 0) return items[existing].actor

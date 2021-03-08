@@ -37,13 +37,13 @@ import java.util.function.Consumer
  */
 class TimelineSaver {
     private var addDefaults = false
-    private var myAccount: MyAccount? = MyAccount.Companion.EMPTY
-    fun setAccount(myAccount: MyAccount): TimelineSaver? {
+    private var myAccount: MyAccount = MyAccount.EMPTY
+    fun setAccount(myAccount: MyAccount): TimelineSaver {
         this.myAccount = myAccount
         return this
     }
 
-    fun setAddDefaults(addDefaults: Boolean): TimelineSaver? {
+    fun setAddDefaults(addDefaults: Boolean): TimelineSaver {
         this.addDefaults = addDefaults
         return this
     }
@@ -88,12 +88,12 @@ class TimelineSaver {
     }
 
     private fun addDefaultMyAccountTimelinesIfNoneFound(myContext: MyContext?, ma: MyAccount?) {
-        if (ma.isValid() && myContext.timelines().filter(false, TriState.FALSE,
+        if (ma.isValid && myContext.timelines().filter(false, TriState.FALSE,
                         TimelineType.UNKNOWN, ma.getActor(),  Origin.EMPTY).count() == 0L) {
             addDefaultCombinedTimelinesIfNoneFound(myContext)
             addDefaultOriginTimelinesIfNoneFound(myContext, ma.getOrigin())
             val timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
-                    BaseColumns._ID, TimelineTable.ACTOR_ID + "=" + ma.getActorId())
+                    BaseColumns._ID, TimelineTable.ACTOR_ID + "=" + ma.actorId)
             if (timelineId == 0L) addDefaultForMyAccount(myContext, ma)
         }
     }
@@ -117,14 +117,14 @@ class TimelineSaver {
     }
 
     fun addDefaultForMyAccount(myContext: MyContext?, myAccount: MyAccount?) {
-        for (timelineType in myAccount.getActor().defaultMyAccountTimelineTypes) {
-            myContext.timelines().forUser(timelineType, myAccount.getActor()).save(myContext)
+        for (timelineType in myAccount.actor.defaultMyAccountTimelineTypes) {
+            myContext.timelines().forUser(timelineType, myAccount.actor).save(myContext)
         }
     }
 
     private fun addDefaultForOrigin(myContext: MyContext?, origin: Origin?) {
         for (timelineType in TimelineType.Companion.getDefaultOriginTimelineTypes()) {
-            if (origin.getOriginType().isTimelineTypeSyncable(timelineType)
+            if (origin.originType.isTimelineTypeSyncable(timelineType)
                     || timelineType == TimelineType.EVERYTHING) {
                 myContext.timelines().get(timelineType, Actor.Companion.EMPTY, origin).save(myContext)
             }

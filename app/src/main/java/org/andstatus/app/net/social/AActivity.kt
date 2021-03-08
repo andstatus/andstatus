@@ -38,16 +38,16 @@ import java.util.*
 
 /** Activity in a sense of Activity Streams https://www.w3.org/TR/activitystreams-core/  */
 class AActivity private constructor(accountActor: Actor?, type: ActivityType?) : AObject() {
-    private var prevTimelinePosition: TimelinePosition? = TimelinePosition.Companion.EMPTY
-    private var nextTimelinePosition: TimelinePosition? = TimelinePosition.Companion.EMPTY
-    private var oid: String? = ""
+    private var prevTimelinePosition: TimelinePosition = TimelinePosition.Companion.EMPTY
+    private var nextTimelinePosition: TimelinePosition = TimelinePosition.Companion.EMPTY
+    private var oid: String = ""
     private var storedUpdatedDate = RelativeTime.DATETIME_MILLIS_NEVER
     private var updatedDate = RelativeTime.DATETIME_MILLIS_NEVER
     private var id: Long = 0
     private var insDate = RelativeTime.DATETIME_MILLIS_NEVER
     val accountActor: Actor
     val type: ActivityType
-    private var actor: Actor? = Actor.Companion.EMPTY
+    private var actor: Actor = Actor.Companion.EMPTY
 
     // Objects of the Activity may be of several types...
     @Volatile
@@ -56,19 +56,23 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
     private var aActivity = EMPTY
 
     /** Some additional attributes may appear from "My account's" (authenticated User's) point of view  */
-    private var subscribedByMe: TriState? = TriState.UNKNOWN
-    private var interacted: TriState? = TriState.UNKNOWN
-    private var interactionEventType: NotificationEventType? = NotificationEventType.EMPTY
-    private var notified: TriState? = TriState.UNKNOWN
-    private var notifiedActor: Actor? = Actor.Companion.EMPTY
-    private var newNotificationEventType: NotificationEventType? = NotificationEventType.EMPTY
+    private var subscribedByMe: TriState = TriState.UNKNOWN
+    private var interacted: TriState = TriState.UNKNOWN
+    private var interactionEventType: NotificationEventType = NotificationEventType.EMPTY
+    private var notified: TriState = TriState.UNKNOWN
+    private var notifiedActor: Actor = Actor.Companion.EMPTY
+    private var newNotificationEventType: NotificationEventType = NotificationEventType.EMPTY
+
     fun initializePublicAndFollowers() {
-        val visibility = getNote().inReplyTo.note.audience().visibility
-        getNote().audience().visibility = if (visibility.isKnown) visibility else Visibility.Companion.fromCheckboxes(true, accountActor.origin.originType.isFollowersChangeAllowed)
+        val visibility = getNote().getInReplyTo().note.audience().visibility
+        getNote().audience().visibility =
+            if (visibility.isKnown()) visibility else
+                Visibility.fromCheckboxes(true, accountActor.origin.originType.isFollowersChangeAllowed)
+
     }
 
     fun getActor(): Actor {
-        return if (actor.nonEmpty()) {
+        return if (actor.nonEmpty) {
             actor
         } else when (getObjectType()) {
             AObjectType.ACTOR -> objActor
@@ -86,7 +90,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         return getActor().isSame(getAuthor())
     }
 
-    fun followedByActor(): TriState? {
+    fun followedByActor(): TriState {
         return if (type == ActivityType.FOLLOW) TriState.TRUE else if (type == ActivityType.UNDO_FOLLOW) TriState.FALSE else TriState.UNKNOWN
     }
 
@@ -110,44 +114,45 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         return myContext.users().isMe(getActor()) || myContext.users().isMe(getAuthor())
     }
 
-    fun getNotifiedActor(): Actor? {
+    fun getNotifiedActor(): Actor {
         return notifiedActor
     }
 
     fun getObjectType(): AObjectType {
-        return if (note != null && note.nonEmpty()) {
+        return if (note.nonEmpty) {
             AObjectType.NOTE
-        } else if (objActor.nonEmpty()) {
+        } else if (objActor.nonEmpty) {
             AObjectType.ACTOR
-        } else if (getActivity().nonEmpty()) {
+        } else if (getActivity().nonEmpty) {
             AObjectType.ACTIVITY
         } else {
             AObjectType.EMPTY
         }
     }
 
-    override fun isEmpty(): Boolean {
-        return this === EMPTY || type == ActivityType.EMPTY || getObjectType() == AObjectType.EMPTY || accountActor.isEmpty
-    }
+    override val isEmpty: Boolean
+        get() {
+            return this === EMPTY || type == ActivityType.EMPTY || getObjectType() == AObjectType.EMPTY || accountActor.isEmpty
+        }
 
-    fun getOid(): String? {
+    fun getOid(): String {
         return oid
     }
 
-    fun setOid(oidIn: String?): AActivity? {
+    fun setOid(oidIn: String?): AActivity {
         oid = if (oidIn.isNullOrEmpty()) "" else oidIn
         return this
     }
 
-    fun getPrevTimelinePosition(): TimelinePosition? {
-        return if (prevTimelinePosition.isEmpty()) if (nextTimelinePosition.isEmpty()) TimelinePosition.Companion.of(oid) else nextTimelinePosition else prevTimelinePosition
+    fun getPrevTimelinePosition(): TimelinePosition {
+        return if (prevTimelinePosition.isEmpty) if (nextTimelinePosition.isEmpty) TimelinePosition.Companion.of(oid) else nextTimelinePosition else prevTimelinePosition
     }
 
-    fun getNextTimelinePosition(): TimelinePosition? {
-        return if (nextTimelinePosition.isEmpty()) if (prevTimelinePosition.isEmpty()) TimelinePosition.Companion.of(oid) else prevTimelinePosition else nextTimelinePosition
+    fun getNextTimelinePosition(): TimelinePosition {
+        return if (nextTimelinePosition.isEmpty) if (prevTimelinePosition.isEmpty) TimelinePosition.Companion.of(oid) else prevTimelinePosition else nextTimelinePosition
     }
 
-    fun setTimelinePositions(prevPosition: String?, nextPosition: String?): AActivity? {
+    fun setTimelinePositions(prevPosition: String?, nextPosition: String?): AActivity {
         prevTimelinePosition = TimelinePosition.Companion.of(if (prevPosition.isNullOrEmpty()) "" else prevPosition)
         nextTimelinePosition = TimelinePosition.Companion.of(if (nextPosition.isNullOrEmpty()) "" else nextPosition)
         return this
@@ -197,7 +202,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
     }
 
     @JvmOverloads
-    fun addAttachment(attachment: Attachment?, maxAttachments: Int = OriginConfig.Companion.MAX_ATTACHMENTS_DEFAULT) {
+    fun addAttachment(attachment: Attachment, maxAttachments: Int = OriginConfig.Companion.MAX_ATTACHMENTS_DEFAULT) {
         val attachments = getNote().attachments.add(attachment)
         if (attachments.size() > maxAttachments) {
             attachments.list.removeAt(0)
@@ -238,40 +243,36 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
     override fun toString(): String {
         return if (this === EMPTY) {
             "EMPTY"
-        } else "AActivity{"
-                + (if (isEmpty) "(empty), " else "")
-                + type
-                + ", id:" + id
-                + ", oid:" + oid
-                + ", updated:" + MyLog.debugFormatOfDate(updatedDate)
-                + ", me:" + (if (accountActor.isEmpty) "EMPTY" else accountActor.oid)
-                + (if (subscribedByMe.known) if (subscribedByMe == TriState.TRUE) ", subscribed" else ", NOT subscribed" else "")
-                + (if (interacted.isTrue) ", interacted" else "")
-                + (if (notified.isTrue) ", notified" + (if (notifiedActor.isEmpty()) " ???" else "Actor:$objActor") else "")
-                + (if (newNotificationEventType.isEmpty()) "" else ", $newNotificationEventType")
-                + (if (actor.isEmpty()) "" else ", \nactor:$actor")
-                + (if (note == null || note.isEmpty) "" else ", \nnote:$note")
-                + (if (getActivity().isEmpty) "" else """
-     , 
-     activity:${getActivity()}
-     """.trimIndent())
-                + (if (objActor.isEmpty) "" else ", objActor:$objActor")
-                + '}'
+        } else "AActivity{" +
+            (if (isEmpty) "(empty), " else "") + type +
+            ", id:" + id +
+            ", oid:" + oid +
+            ", updated:" + MyLog.debugFormatOfDate(updatedDate) +
+            ", me:" + (if (accountActor.isEmpty) "EMPTY" else accountActor.oid) +
+            (if (subscribedByMe.known) if (subscribedByMe == TriState.TRUE) ", subscribed" else ", NOT subscribed" else "") +
+            (if (interacted.isTrue) ", interacted" else "") +
+            (if (notified.isTrue) ", notified" + (if (notifiedActor.isEmpty) " ???" else "Actor:$objActor") else "") +
+            (if (newNotificationEventType.isEmpty) "" else ", $newNotificationEventType") +
+            (if (actor.isEmpty) "" else ", \nactor:$actor") +
+            (if (note.isEmpty) "" else ", \nnote:$note") +
+            (if (getActivity().isEmpty) "" else ", activity:${getActivity()} ") +
+            (if (objActor.isEmpty) "" else ", objActor:$objActor") +
+            "}"
     }
 
     fun getId(): Long {
         return id
     }
 
-    fun isSubscribedByMe(): TriState? {
+    fun isSubscribedByMe(): TriState {
         return subscribedByMe
     }
 
-    fun setSubscribedByMe(isSubscribed: TriState?) {
-        if (isSubscribed != null) subscribedByMe = isSubscribed
+    fun setSubscribedByMe(isSubscribed: TriState) {
+        subscribedByMe = isSubscribed
     }
 
-    fun isNotified(): TriState? {
+    fun isNotified(): TriState {
         return notified
     }
 
@@ -279,12 +280,12 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         if (notified != null) this.notified = notified
     }
 
-    fun save(myContext: MyContext?): Long {
+    fun save(myContext: MyContext): Long {
         if (wontSave(myContext)) return id
         if (updatedDate > RelativeTime.SOME_TIME_AGO) calculateInteraction(myContext)
         if (getId() == 0L) {
             DbUtils.addRowWithRetry(myContext, ActivityTable.TABLE_NAME, toContentValues(), 3)
-                    .onSuccess { idAdded: Long? ->
+                    .onSuccess { idAdded: Long ->
                         id = idAdded
                         MyLog.v(this) { "Added $this" }
                     }
@@ -298,7 +299,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         return id
     }
 
-    private fun wontSave(myContext: MyContext?): Boolean {
+    private fun wontSave(myContext: MyContext): Boolean {
         if (isEmpty || type == ActivityType.UPDATE && getObjectType() == AObjectType.ACTOR
                 || oid.isNullOrEmpty() && getId() != 0L) {
             MyLog.v(this) { "Won't save $this" }
@@ -346,7 +347,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         return false
     }
 
-    private fun findExisting(myContext: MyContext?) {
+    private fun findExisting(myContext: MyContext) {
         if (!oid.isNullOrEmpty()) {
             id = MyQuery.oidToId(myContext, OidEnum.ACTIVITY_OID, accountActor.origin.id, oid)
         }
@@ -360,7 +361,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         }
     }
 
-    private fun calculateInteraction(myContext: MyContext?) {
+    private fun calculateInteraction(myContext: MyContext) {
         newNotificationEventType = calculateNotificationEventType(myContext)
         interacted = TriState.Companion.fromBoolean(newNotificationEventType.isInteracted())
         interactionEventType = newNotificationEventType
@@ -373,16 +374,16 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
                     " " + accountActor.origin.name +
                     " " + accountActor.uniqueName +
                     " " + MyLog.formatDateTime(getUpdatedDate()) +
-                    " " + actor.getActorNameInTimeline() + " " + type +
-                    (if (getNote().nonEmpty()) " '" + getNote().oid + "' " + I18n.trimTextAt(getNote().content, 300) else "") +
-                    if (getObjActor().nonEmpty()) " " + getObjActor().actorNameInTimeline else ""
+                    " " + actor.actorNameInTimeline + " " + type +
+                    (if (getNote().nonEmpty) " '" + getNote().oid + "' " + I18n.trimTextAt(getNote().content, 300) else "") +
+                    if (getObjActor().nonEmpty) " " + getObjActor().actorNameInTimeline else ""
             )
         }
     }
 
-    private fun calculateNotificationEventType(myContext: MyContext?): NotificationEventType? {
+    private fun calculateNotificationEventType(myContext: MyContext): NotificationEventType {
         if (myContext.users().isMe(getActor())) return NotificationEventType.EMPTY
-        if (getNote().audience().isMeInAudience && !isMyActorOrAuthor(myContext)) {
+        if (getNote().audience().isMeInAudience() && !isMyActorOrAuthor(myContext)) {
             return if (getNote().audience().visibility.isPrivate) NotificationEventType.PRIVATE else NotificationEventType.MENTION
         }
         return if (type == ActivityType.ANNOUNCE && myContext.users().isMe(getAuthor())) {
@@ -400,14 +401,14 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         }
     }
 
-    private fun calculateNotifiedActor(myContext: MyContext?, event: NotificationEventType?): Actor? {
+    private fun calculateNotifiedActor(myContext: MyContext, event: NotificationEventType): Actor {
         return when (event) {
             NotificationEventType.MENTION, NotificationEventType.PRIVATE -> myContext.users().myActors.values.stream()
-                    .filter { actor: Actor? -> getNote().audience().findSame(actor).isSuccess }
+                    .filter { actor: Actor -> getNote().audience().findSame(actor).isSuccess }
                     .findFirst()
                     .orElse(
                             myContext.users().myActors.values.stream()
-                                    .filter { a: Actor? -> a.origin == accountActor.origin }
+                                    .filter { a: Actor -> a.origin == accountActor.origin }
                                     .findFirst()
                                     .orElse(Actor.Companion.EMPTY)
                     )
@@ -418,7 +419,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         }
     }
 
-    private fun toContentValues(): ContentValues? {
+    private fun toContentValues(): ContentValues {
         val values = ContentValues()
         values.put(ActivityTable.ORIGIN_ID, accountActor.origin.id)
         values.put(ActivityTable.ACCOUNT_ID, accountActor.actorId)
@@ -436,16 +437,16 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         if (notified.known) {
             values.put(ActivityTable.NOTIFIED, notified.id)
         }
-        if (newNotificationEventType.nonEmpty()) {
+        if (newNotificationEventType.nonEmpty) {
             values.put(ActivityTable.NEW_NOTIFICATION_EVENT, newNotificationEventType.id)
         }
-        if (notifiedActor.nonEmpty()) {
+        if (notifiedActor.nonEmpty) {
             values.put(ActivityTable.NOTIFIED_ACTOR_ID, notifiedActor.actorId)
         }
         values.put(ActivityTable.UPDATED_DATE, updatedDate)
         if (id == 0L) {
             values.put(ActivityTable.ACTIVITY_TYPE, type.id)
-            if (oid.isNullOrEmpty()) {
+            if (oid.isEmpty()) {
                 setOid(buildTempOid())
             }
         }
@@ -453,13 +454,13 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
             insDate = MyLog.uniqueCurrentTimeMS()
             values.put(ActivityTable.INS_DATE, insDate)
         }
-        if (!oid.isNullOrEmpty()) {
+        if (oid.isNotEmpty()) {
             values.put(ActivityTable.ACTIVITY_OID, oid)
         }
         return values
     }
 
-    private fun afterSave(myContext: MyContext?) {
+    private fun afterSave(myContext: MyContext) {
         when (type) {
             ActivityType.LIKE, ActivityType.UNDO_LIKE -> {
                 val myActorAccount = myContext.accounts().fromActorOfAnyOrigin(actor)
@@ -476,7 +477,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         }
     }
 
-    fun getNewNotificationEventType(): NotificationEventType? {
+    fun getNewNotificationEventType(): NotificationEventType {
         return newNotificationEventType
     }
 
@@ -484,7 +485,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         this.id = id
     }
 
-    fun withVisibility(visibility: Visibility?): AActivity {
+    fun withVisibility(visibility: Visibility): AActivity {
         getNote().audience().withVisibility(visibility)
         return this
     }
@@ -507,7 +508,8 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
 
         @JvmOverloads
         fun newPartialNote(accountActor: Actor, actor: Actor?, noteOid: String?,
-                           updatedDate: Long = RelativeTime.DATETIME_MILLIS_NEVER, status: DownloadStatus? = DownloadStatus.UNKNOWN): AActivity {
+                           updatedDate: Long = RelativeTime.DATETIME_MILLIS_NEVER,
+                           status: DownloadStatus = DownloadStatus.UNKNOWN): AActivity {
             val note: Note = Note.Companion.fromOriginAndOid(accountActor.origin, noteOid, status)
             val activity = from(accountActor, ActivityType.UPDATE)
             activity.setActor(actor)
@@ -520,7 +522,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
             return activity
         }
 
-        fun fromCursor(myContext: MyContext?, cursor: Cursor?): AActivity? {
+        fun fromCursor(myContext: MyContext, cursor: Cursor): AActivity {
             val activity = from(
                     myContext.accounts().fromActorId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID)).actor,
                     ActivityType.Companion.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE)))

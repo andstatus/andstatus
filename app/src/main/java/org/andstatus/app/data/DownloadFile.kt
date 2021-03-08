@@ -29,12 +29,13 @@ class DownloadFile(filename: String) : IsEmpty {
     /** Existence is checked at the moment of the object creation  */
     val existed: Boolean
 
-    override fun isEmpty(): Boolean {
-        return file == null
-    }
+    override val isEmpty: Boolean
+        get() {
+            return file == null
+        }
 
     fun existsNow(): Boolean {
-        return file != null && nonEmpty() && file.exists() && file.isFile()
+        return file != null && nonEmpty && file.exists() && file.isFile()
     }
 
     fun getFile(): File? {

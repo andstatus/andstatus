@@ -89,7 +89,7 @@ class ConnectionGnuSocialTest {
         Assert.assertEquals("Should have a recipient $activity", 1, activity.audience().nonSpecialActors.size.toLong())
         Assert.assertNotEquals("Is a reblog", ActivityType.ANNOUNCE, activity.type)
         val inReplyTo = activity.note.inReplyTo
-        Assert.assertTrue("Is a reply", inReplyTo.nonEmpty())
+        Assert.assertTrue("Is a reply", inReplyTo.nonEmpty)
         Assert.assertEquals("Reply to the note id", "2663833", inReplyTo.note.oid)
         Assert.assertEquals("Reply to the note by actorOid", "114973", inReplyTo.actor.oid)
         Assert.assertEquals("Updated date should be 0 for inReplyTo note", RelativeTime.DATETIME_MILLIS_NEVER,
@@ -293,7 +293,7 @@ class ConnectionGnuSocialTest {
         Assert.assertEquals("Note Oid", noteOid, activity.note.oid)
         Assert.assertEquals("Actor Username", actorUsername, activity.actor.username)
         Assert.assertEquals("Author should be Actor", activity.actor, activity.author)
-        Assert.assertTrue("inReplyTo should not be empty $activity", activity.note.inReplyTo.nonEmpty())
+        Assert.assertTrue("inReplyTo should not be empty $activity", activity.note.inReplyTo.nonEmpty)
         activity.note.updatedDate = MyLog.uniqueCurrentTimeMS()
         activity.setUpdatedNow(0)
         val executionContext = CommandExecutionContext(
@@ -314,7 +314,7 @@ class ConnectionGnuSocialTest {
                 actors.stream().filter { actor: Actor? -> actor.actorId == 0L }.findAny().orElse(Actor.Companion.EMPTY))
         Assert.assertEquals("All recipients should be nonEmpty $audience\n$activity", Actor.Companion.EMPTY,
                 actors.stream()
-                        .filter { obj: Actor? -> obj.isEmpty() }.findAny().orElse(Actor.Companion.EMPTY))
+                        .filter { obj: Actor? -> obj.isEmpty }.findAny().orElse(Actor.Companion.EMPTY))
     }
 
     companion object {

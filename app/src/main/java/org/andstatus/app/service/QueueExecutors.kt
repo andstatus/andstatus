@@ -115,7 +115,7 @@ internal class QueueExecutors(private val myService: MyService?) {
         if (doStop) {
             success = replaceExecutor(logMessageBuilder, accessorType, previous, null)
         }
-        if (logMessageBuilder.nonEmpty()) {
+        if (logMessageBuilder.nonEmpty) {
             MyLog.v(myService) { "$method; $logMessageBuilder" }
         }
         return success

@@ -100,7 +100,7 @@ class ConnectionTwitterTest {
         Assert.assertTrue("Note is loaded", note.status == DownloadStatus.LOADED)
         Assert.assertEquals("Should have a recipient $activity", 1, note.audience().nonSpecialActors.size.toLong())
         Assert.assertNotEquals("Is a Reblog $activity", ActivityType.ANNOUNCE, activity.type)
-        Assert.assertTrue("Is a reply", note.inReplyTo.nonEmpty())
+        Assert.assertTrue("Is a reply", note.inReplyTo.nonEmpty)
         Assert.assertEquals("Reply to the note id", "17176774678", note.inReplyTo.note.oid)
         Assert.assertEquals("Reply to the note by actorOid", DemoData.Companion.demoData.twitterTestAccountActorOid, note.inReplyTo.author.oid)
         Assert.assertTrue("Reply status is unknown", note.inReplyTo.note.status == DownloadStatus.UNKNOWN)

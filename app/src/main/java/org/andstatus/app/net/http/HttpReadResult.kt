@@ -141,10 +141,10 @@ class HttpReadResult(val request: HttpRequest?) {
                 + "\nRequested: " + request)
     }
 
-    fun getJsonArrayInObject(arrayName: String?): Try<JSONArray?>? {
+    fun getJsonArrayInObject(arrayName: String?): Try<JSONArray> {
         val method = "getRequestArrayInObject"
         return getJsonObject()
-                .flatMap(CheckedFunction<JSONObject?, Try<out JSONArray?>?> { jso: JSONObject? ->
+                .flatMap(CheckedFunction<JSONObject?, Try<out JSONArray>> { jso: JSONObject? ->
                     var jArr: JSONArray? = null
                     if (jso != null) {
                         jArr = try {
@@ -157,7 +157,7 @@ class HttpReadResult(val request: HttpRequest?) {
                 })
     }
 
-    fun getJsonObject(): Try<JSONObject?>? {
+    fun getJsonObject(): Try<JSONObject> {
         return innerGetJsonObject(strResponse)
     }
 
@@ -165,7 +165,7 @@ class HttpReadResult(val request: HttpRequest?) {
         return strResponse
     }
 
-    private fun innerGetJsonObject(strJson: String?): Try<JSONObject?>? {
+    private fun innerGetJsonObject(strJson: String?): Try<JSONObject> {
         val method = "getJsonObject; "
         var jso: JSONObject? = null
         try {
@@ -185,11 +185,11 @@ class HttpReadResult(val request: HttpRequest?) {
         return Try.success(jso)
     }
 
-    fun getJsonArray(): Try<JSONArray?>? {
+    fun getJsonArray(): Try<JSONArray> {
         return getJsonArray("items")
     }
 
-    fun getJsonArray(arrayKey: String?): Try<JSONArray?>? {
+    fun getJsonArray(arrayKey: String?): Try<JSONArray> {
         val method = "getJsonArray; "
         if (strResponse.isNullOrEmpty()) {
             MyLog.v(this) { "$method; response is empty" }
@@ -259,7 +259,7 @@ class HttpReadResult(val request: HttpRequest?) {
         return exception
     }
 
-    fun tryToParse(): Try<HttpReadResult?>? {
+    fun tryToParse(): Try<HttpReadResult> {
         if (exception is ConnectionException) {
             return Try.failure(exception)
         }
@@ -287,7 +287,7 @@ class HttpReadResult(val request: HttpRequest?) {
         return exception == null && (statusCode == StatusCode.OK || statusCode == StatusCode.UNKNOWN)
     }
 
-    fun toFailure(): Try<HttpReadResult?>? {
+    fun toFailure(): Try<HttpReadResult> {
         return Try.failure(ConnectionException.Companion.from(this))
     }
 
@@ -331,7 +331,7 @@ class HttpReadResult(val request: HttpRequest?) {
         MyLog.v(this) { this.toString() }
     }
 
-    fun readStream(msgLog: String?, supplier: CheckedFunction<Void?, InputStream?>?): Try<HttpReadResult?>? {
+    fun readStream(msgLog: String?, supplier: CheckedFunction<Void?, InputStream?>?): Try<HttpReadResult> {
         return HttpConnectionUtils.readStream(this, msgLog, supplier)
     }
 

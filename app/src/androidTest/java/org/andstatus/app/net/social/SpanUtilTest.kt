@@ -99,7 +99,7 @@ class SpanUtilTest {
         Assert.assertTrue("Region $index should be a mention $region\n$message", actor.isPresent)
         Assert.assertEquals("Region $index $message",
                 "content://timeline.app.andstatus.org/note/" +
-                        accountToSync.map { obj: MyAccount? -> obj.getActorId() }.orElse(0L) +
+                        accountToSync.map { obj: MyAccount? -> obj.actorId }.orElse(0L) +
                         "/lt/sent/origin/0/actor/0",
                 urlSpan.map { obj: MyUrlSpan? -> obj.getURL() }.orElse(""))
         Assert.assertEquals("Username in region $index $message",

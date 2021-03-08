@@ -831,7 +831,7 @@ class TimelinePositionTest : TimelineActivityTest<ActivityViewItem?>() {
         val position1 = getFirstVisibleAdapterPosition()
         val listAdapter: BaseTimelineAdapter<*> = activity.listAdapter
         val item1 = listAdapter.getItem(position1)
-        if (TimelinePositionTest.Companion.previousItem.nonEmpty()) {
+        if (TimelinePositionTest.Companion.previousItem.nonEmpty) {
             val previousItemPosition = listAdapter.getPositionById(TimelinePositionTest.Companion.previousItem.getId())
             Assert.assertEquals("""; previous:${TimelinePositionTest.Companion.previousItem}
   ${if (previousItemPosition >= 0) "at position $previousItemPosition" else "not found now"}

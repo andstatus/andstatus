@@ -33,21 +33,22 @@ import java.util.stream.Collectors
 
 object AccountUtils {
     const val ACCOUNT_VERSION = 48
-    val KEY_VERSION: String? = "myversion" // Storing version of the account data
+    val KEY_VERSION: String = "myversion" // Storing version of the account data
 
     /** The Key for the android.accounts.Account bundle  */
-    val KEY_ACCOUNT: String? = "account"
-    fun isVersionCurrent(context: Context?, account: Account?): Boolean {
+    val KEY_ACCOUNT: String = "account"
+
+    fun isVersionCurrent(context: Context, account: Account): Boolean {
         return ACCOUNT_VERSION == getVersion(context, account)
     }
 
-    fun getVersion(context: Context?, account: Account?): Int {
+    fun getVersion(context: Context, account: Account): Int {
         return JsonUtils.toJsonObject(AccountManager.get(context).getUserData(account, KEY_ACCOUNT))
-                .map(CheckedFunction<JSONObject?, Int?> { obj: JSONObject? -> getVersion() })
+                .map(this::getVersion)
                 .getOrElse(0)
     }
 
-    fun isVersionCurrent(jso: JSONObject?): Boolean {
+    fun isVersionCurrent(jso: JSONObject): Boolean {
         return ACCOUNT_VERSION == getVersion(jso)
     }
 
@@ -56,12 +57,12 @@ object AccountUtils {
     }
 
     /** Add this account to the Account Manager Without userdata yet  */
-    fun addEmptyAccount(oAccountName: AccountName?, password: String?): Try<Account?>? {
-        return addEmptyAccount(AccountManager.get(oAccountName.getContext()), oAccountName.getName(), password)
+    fun addEmptyAccount(oAccountName: AccountName, password: String?): Try<Account> {
+        return addEmptyAccount(AccountManager.get(oAccountName.getContext()), oAccountName.name, password)
     }
 
     /** Add this account to the Account Manager Without userdata yet  */
-    fun addEmptyAccount(am: AccountManager?, accountName: String?, password: String?): Try<Account?>? {
+    fun addEmptyAccount(am: AccountManager?, accountName: String?, password: String?): Try<Account> {
         return Try.of {
             val androidAccount = Account(accountName, AuthenticatorService.Companion.ANDROID_ACCOUNT_TYPE)
             if (am.addAccountExplicitly(androidAccount, password, null)) {
@@ -79,13 +80,13 @@ object AccountUtils {
         }
     }
 
-    fun getExistingAndroidAccount(oAccountName: AccountName?): Try<Account?>? {
+    fun getExistingAndroidAccount(oAccountName: AccountName): Try<Account> {
         for (account in getCurrentAccounts(oAccountName.getContext())) {
-            if (oAccountName.getName() == account.name) {
+            if (oAccountName.name == account.name) {
                 return Try.success(account)
             }
         }
-        return Try.failure(NoSuchElementException(oAccountName.getName()))
+        return Try.failure(NoSuchElementException(oAccountName.name))
     }
 
     private fun getSyncFrequencySeconds(account: Account?): Long {
@@ -110,16 +111,16 @@ object AccountUtils {
         }
     }
 
-    fun getCurrentAccounts(context: Context?): MutableList<Account?> {
-        return getAllAccounts(context).stream().filter { a: Account? -> isVersionCurrent(context, a) }.collect(Collectors.toList())
+    fun getCurrentAccounts(context: Context): MutableList<Account> {
+        return getAllAccounts(context).stream().filter { a: Account -> isVersionCurrent(context, a) }.collect(Collectors.toList())
     }
 
-    fun getAllAccounts(context: Context?): MutableList<Account?> {
+    fun getAllAccounts(context: Context): List<Account> {
         if (Permissions.checkPermission(context, PermissionType.GET_ACCOUNTS)) {
             val am = AccountManager.get(context)
             return Arrays.stream(am.getAccountsByType(AuthenticatorService.Companion.ANDROID_ACCOUNT_TYPE))
                     .collect(Collectors.toList())
         }
-        return emptyList<Account?>()
+        return emptyList()
     }
 }

@@ -24,27 +24,27 @@ import org.andstatus.app.origin.OriginType
 import org.andstatus.app.util.TriState
 import java.net.URL
 
-class AccountConnectionData private constructor(private val myAccount: MyAccount?, private val origin: Origin?, triStateOAuth: TriState?) {
+class AccountConnectionData private constructor(private val myAccount: MyAccount, private val origin: Origin, triStateOAuth: TriState) {
     private val isOAuth: Boolean
     private var originUrl: URL?
     private val httpConnectionClass: Class<out HttpConnection?>?
     fun getAccountActor(): Actor {
-        return myAccount.getActor()
+        return myAccount.actor
     }
 
     fun getMyAccount(): MyAccount {
         return myAccount
     }
 
-    fun getAccountName(): AccountName? {
+    fun getAccountName(): AccountName {
         return myAccount.getOAccountName()
     }
 
-    fun getOriginType(): OriginType? {
-        return origin.getOriginType()
+    fun getOriginType(): OriginType {
+        return origin.originType
     }
 
-    fun getOrigin(): Origin? {
+    fun getOrigin(): Origin {
         return origin
     }
 
@@ -81,22 +81,22 @@ class AccountConnectionData private constructor(private val myAccount: MyAccount
     }
 
     override fun toString(): String {
-        return if (myAccount.isEmpty()) if (origin.hasHost()) origin.getHost() else originUrl.toString() else myAccount.getAccountName()
+        return if (myAccount.isEmpty) if (origin.hasHost()) origin.getHost() else originUrl.toString() else myAccount.getAccountName()
     }
 
     companion object {
-        fun fromOrigin(origin: Origin?, triStateOAuth: TriState?): AccountConnectionData? {
+        fun fromOrigin(origin: Origin?, triStateOAuth: TriState?): AccountConnectionData {
             return AccountConnectionData(MyAccount.Companion.EMPTY, origin, triStateOAuth)
         }
 
-        fun fromMyAccount(myAccount: MyAccount?, triStateOAuth: TriState?): AccountConnectionData? {
-            return AccountConnectionData(myAccount, myAccount.getOrigin(), triStateOAuth)
+        fun fromMyAccount(myAccount: MyAccount?, triStateOAuth: TriState?): AccountConnectionData {
+            return AccountConnectionData(myAccount, myAccount.origin, triStateOAuth)
         }
     }
 
     init {
-        originUrl = origin.getUrl()
-        isOAuth = origin.getOriginType().fixIsOAuth(triStateOAuth)
-        httpConnectionClass = origin.getOriginType().getHttpConnectionClass(isOAuth())
+        originUrl = origin.url
+        isOAuth = origin.originType.fixIsOAuth(triStateOAuth)
+        httpConnectionClass = origin.originType.getHttpConnectionClass(isOAuth())
     }
 }

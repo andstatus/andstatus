@@ -863,7 +863,7 @@ class PersistentTimelinesTest {
                 timeline1 = timeline
             }
         }
-        if (!found && timeline1.nonEmpty()) {
+        if (!found && timeline1.nonEmpty) {
             timeline1.setDisplayedInSelector(DisplayedInSelector.NEVER)
             myContext.timelines().saveChanged()
         }
@@ -909,7 +909,7 @@ class PersistentTimelinesTest {
 
     private fun oneFromIsCombined(myAccount: MyAccount?, timelineType: TimelineType?) {
         val combined = myContext.timelines()
-                .filter(true, TriState.TRUE, timelineType, myAccount.getActor(),  Origin.EMPTY)
+                .filter(true, TriState.TRUE, timelineType, myAccount.actor,  Origin.EMPTY)
                 .findFirst().orElse(Timeline.Companion.EMPTY)
         val notCombined = combined.fromIsCombined(myContext, false)
         Assert.assertEquals("Should be not combined $notCombined", false, notCombined.isCombined)

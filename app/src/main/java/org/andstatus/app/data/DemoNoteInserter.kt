@@ -58,7 +58,7 @@ class DemoNoteInserter(val accountActor: Actor?) {
         val actor: Actor = Actor.Companion.fromOid(origin, actorOid)
         val username: String
         val profileUrl: String
-        if (origin.getOriginType() === OriginType.PUMPIO) {
+        if (origin.originType === OriginType.PUMPIO) {
             val connection = ConnectionPumpio()
             username = connection.actorOidToUsername(actorOid)
             profileUrl = "http://" + connection.actorOidToHost(actorOid) + "/" + username
@@ -86,7 +86,7 @@ class DemoNoteInserter(val accountActor: Actor?) {
     }
 
     private fun nextActorUid(): String? {
-        return if (origin.getOriginType() === OriginType.PUMPIO) {
+        return if (origin.originType === OriginType.PUMPIO) {
             "acct:actorOf" + origin.getName() + DemoData.Companion.demoData.testRunUid + InstanceId.next()
         } else DemoData.Companion.demoData.testRunUid.toString() + InstanceId.next()
     }
@@ -96,7 +96,7 @@ class DemoNoteInserter(val accountActor: Actor?) {
         val method = "buildActivity"
         var noteOid = noteOidIn
         if (noteOid.isNullOrEmpty() && noteStatus != DownloadStatus.SENDING) {
-            noteOid = if (origin.getOriginType() === OriginType.PUMPIO) {
+            noteOid = if (origin.originType === OriginType.PUMPIO) {
                 ((if (UrlUtils.hasHost(UrlUtils.fromString(author.getProfileUrl()))) author.getProfileUrl() else "http://pumpiotest" + origin.getId() + ".example.com/actor/" + author.oid)
                         + "/" + (if (inReplyToActivity == null) "note" else "comment")
                         + "/thisisfakeuri" + System.nanoTime())
@@ -116,7 +116,7 @@ class DemoNoteInserter(val accountActor: Actor?) {
         note.reblogsCount = rand - 3
         note.repliesCount = rand + 12
         note.setInReplyTo(inReplyToActivity)
-        if (origin.getOriginType() === OriginType.PUMPIO) {
+        if (origin.originType === OriginType.PUMPIO) {
             note.url = note.oid
         }
         activity.initializePublicAndFollowers()
@@ -147,18 +147,18 @@ class DemoNoteInserter(val accountActor: Actor?) {
 
     private fun checkActivityRecursively(activity: AActivity?, level: Int) {
         val note = activity.getNote()
-        if (level == 1 && note.nonEmpty()) {
+        if (level == 1 && note.nonEmpty) {
             Assert.assertNotEquals("Activity was not added: $activity", 0, activity.getId())
         }
         if (level > DataUpdater.Companion.MAX_RECURSING || activity.getId() == 0L) return
         Assert.assertNotEquals("Account is unknown: $activity", 0, activity.accountActor.actorId)
         val actor = activity.getActor()
-        if (actor.nonEmpty()) {
+        if (actor.nonEmpty) {
             Assert.assertNotEquals("Level $level, Actor id not set for $actor in $activity", 0, actor.actorId)
             Assert.assertNotEquals("Level $level, User id not set for $actor in $activity", 0, actor.user.userId)
         }
         checkStoredActor(actor)
-        if (note.nonEmpty()) {
+        if (note.nonEmpty) {
             Assert.assertNotEquals("Note was not added at level $level $activity", 0, note.noteId)
             val permalink = origin.getNotePermalink(note.noteId)
             val urlPermalink = UrlUtils.fromString(permalink)
@@ -166,7 +166,7 @@ class DemoNoteInserter(val accountActor: Actor?) {
 $note
  origin: $origin
  author: ${activity.getAuthor()}""", urlPermalink)
-            if (origin.getUrl() != null && origin.getOriginType() !== OriginType.TWITTER) {
+            if (origin.getUrl() != null && origin.originType !== OriginType.TWITTER) {
                 Assert.assertEquals("Note permalink has the same host as origin, $note",
                         origin.getUrl().host, urlPermalink.host)
             }
@@ -186,7 +186,7 @@ $note
                 Assert.assertEquals("Note permalink", note.url, origin.getNotePermalink(note.noteId))
             }
             val author = activity.getAuthor()
-            if (author.nonEmpty()) {
+            if (author.nonEmpty) {
                 Assert.assertNotEquals("Author id for $author not set in note $note in $activity", 0,
                         MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, note.noteId))
             }
@@ -217,17 +217,17 @@ $note
         }
         if (!note.replies.isEmpty()) {
             for (replyActivity in note.replies) {
-                if (replyActivity.nonEmpty()) {
+                if (replyActivity.nonEmpty) {
                     Assert.assertNotEquals("Reply added at level $level $replyActivity", 0, replyActivity.id)
                     checkActivityRecursively(replyActivity, level + 1)
                 }
             }
         }
         note.audience().evaluateAndGetActorsToSave(activity.getAuthor()).forEach(Consumer { actor: Actor? -> checkStoredActor(actor) })
-        if (activity.getObjActor().nonEmpty()) {
+        if (activity.getObjActor().nonEmpty) {
             Assert.assertNotEquals("Actor was not added: " + activity.getObjActor(), 0, activity.getObjActor().actorId)
         }
-        if (activity.getActivity().nonEmpty()) {
+        if (activity.getActivity().nonEmpty) {
             checkActivityRecursively(activity.getActivity(), level + 1)
         }
     }
@@ -278,7 +278,7 @@ $note
         }
 
         fun addNoteForAccount(ma: MyAccount?, body: String?, noteOid: String?, noteStatus: DownloadStatus?): AActivity? {
-            Assert.assertTrue("Is not valid: $ma", ma.isValid())
+            Assert.assertTrue("Is not valid: $ma", ma.isValid)
             val accountActor = ma.getActor()
             val mi = DemoNoteInserter(accountActor)
             val activity = mi.buildActivity(accountActor, "", body, null, noteOid, noteStatus)
@@ -319,7 +319,7 @@ $note
         }
 
         fun assertVisibility(audience: Audience?, visibility: Visibility?) {
-            Assert.assertEquals("Visibility check $audience\n", visibility, audience.getVisibility())
+            Assert.assertEquals("Visibility check $audience\n", visibility, audience.visibility)
         }
     }
 

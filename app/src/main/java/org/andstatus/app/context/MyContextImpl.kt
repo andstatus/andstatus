@@ -51,14 +51,14 @@ import java.util.function.Supplier
  * @author yvolk@yurivolkov.com
  */
 @ThreadSafe
-open class MyContextImpl internal constructor(parent: MyContextImpl?, context: Context?, initializer: Any?) : MyContext {
+open class MyContextImpl internal constructor(parent: MyContext, context: Context, initializer: Any?) : MyContext {
     override val instanceId = InstanceId.next()
 
     @Volatile
     private var state: MyContextState = MyContextState.EMPTY
-    private val baseContext: Context?
-    private val context: Context?
-    private val initializedBy: String?
+    private val baseContext: Context
+    private val context: Context
+    private val initializedBy: String
 
     /**
      * When preferences, loaded into this class, were changed
@@ -70,7 +70,7 @@ open class MyContextImpl internal constructor(parent: MyContextImpl?, context: C
     private var db: DatabaseHolder? = null
 
     @Volatile
-    private var lastDatabaseError: String? = ""
+    private var lastDatabaseError: String = ""
     private val users: CachedUsersAndActors = CachedUsersAndActors.newEmpty(this)
     private val accounts: MyAccounts = MyAccounts.newEmpty(this)
     private val origins: PersistentOrigins = PersistentOrigins.newEmpty(this)
@@ -80,25 +80,21 @@ open class MyContextImpl internal constructor(parent: MyContextImpl?, context: C
     @Volatile
     private var expired = false
     private val notifier: Notifier = Notifier(this)
-    private fun calcContextToUse(parent: MyContextImpl?, contextIn: Context?): Context? {
-        val context = contextIn ?: parent?.context() ?: return null
-        var contextToUse = context.applicationContext
-        if (contextToUse == null) {
-            MyLog.w(parent, "getApplicationContext is null, trying the context itself: "
-                    + context.javaClass.name)
-            contextToUse = context
-        }
+
+    private fun calcBaseContextToUse(parent: MyContext, contextIn: Context?): Context {
+        val context: Context = contextIn ?: parent.let { if (it.nonEmpty) it.context() else null }
+                ?: throw IllegalArgumentException("parent:$parent, contextIn:$contextIn")
+        val contextToUse: Context = context.applicationContext
         // TODO: Maybe we need to determine if the context is compatible, using some Interface...
         // ...but we don't have any yet.
         if (!contextToUse.javaClass.name.contains(ClassInApplicationPackage.PACKAGE_NAME)) {
-            MyLog.w(parent, "Incompatible context: " + contextToUse.javaClass.name)
-            contextToUse = null
+            throw IllegalArgumentException("parent:$parent, Incompatible context: " + contextToUse.javaClass.name)
         }
         return contextToUse
     }
 
-    override fun newInitialized(initializer: Any?): MyContext {
-        return MyContextImpl(this, context(), initializer).initialize()
+    override fun newInitialized(initializer: Any): MyContext {
+        return MyContextImpl(this, context, initializer).initialize()
     }
 
     fun initialize(): MyContext {
@@ -112,7 +108,6 @@ open class MyContextImpl internal constructor(parent: MyContextImpl?, context: C
 
     private fun initializeInternal(initializer: Any?): MyContextImpl {
         val method = "initialize"
-        if (context == null) return this
         if (!Permissions.checkPermission(context, PermissionType.GET_ACCOUNTS)) {
             state = MyContextState.NO_PERMISSIONS
             return this
@@ -152,6 +147,8 @@ open class MyContextImpl internal constructor(parent: MyContextImpl?, context: C
     }
 
     private fun initializeDatabase(createApplicationData: Boolean) {
+        requireNotNull(baseContext)
+
         val stopWatch: StopWatch = StopWatch.createStarted()
         val method = "initializeDatabase"
         val newDb = DatabaseHolder(baseContext, createApplicationData)
@@ -177,12 +174,12 @@ open class MyContextImpl internal constructor(parent: MyContextImpl?, context: C
         MyLog.i(this, "databaseInitializedMs: " + stopWatch.time + "; " + state)
     }
 
-    private fun logDatabaseError(method: String?, e: Exception) {
+    private fun logDatabaseError(method: String, e: Exception) {
         MyLog.w(this, "$method; Error", e)
-        lastDatabaseError = e.message
+        e.message?.let { lastDatabaseError = it }
     }
 
-    override fun getLastDatabaseError(): String? {
+    override fun getLastDatabaseError(): String {
         return lastDatabaseError
     }
 
@@ -197,11 +194,11 @@ open class MyContextImpl internal constructor(parent: MyContextImpl?, context: C
         return instanceTag() + " by " + initializedBy + "; state=" + state +
                 (if (isExpired()) "; expired" else "") +
                 "; " + accounts().size() + " accounts, " +
-                if (context == null) "no context" else "context=" + context.javaClass.name
+                ("context=" + context.javaClass.name)
     }
 
-    override fun newCreator(context: Context?, initializer: Any?): MyContext {
-        return MyContextImpl(null, context, initializer)
+    override fun newCreator(context: Context, initializer: Any?): MyContext {
+        return MyContextImpl(MyContextEmpty.EMPTY, context, initializer)
     }
 
     override fun initialized(): Boolean {
@@ -216,20 +213,16 @@ open class MyContextImpl internal constructor(parent: MyContextImpl?, context: C
         return state
     }
 
-    override fun context(): Context? {
+    override fun context(): Context {
         return context
     }
 
-    override fun baseContext(): Context? {
+    override fun baseContext(): Context {
         return baseContext
     }
 
     override fun preferencesChangeTime(): Long {
         return preferencesChangeTime
-    }
-
-    override fun getMyDatabase(): DatabaseHolder? {
-        return db
     }
 
     override fun getDatabase(): SQLiteDatabase? {
@@ -294,7 +287,7 @@ open class MyContextImpl internal constructor(parent: MyContextImpl?, context: C
     }
 
     override fun getConnectionState(): ConnectionState {
-        return context?.let { UriUtils.getConnectionState(it)} ?: ConnectionState.UNKNOWN
+        return UriUtils.getConnectionState(context)
     }
 
     override fun isInForeground(): Boolean {
@@ -309,11 +302,11 @@ open class MyContextImpl internal constructor(parent: MyContextImpl?, context: C
         setInForegroundStatic(inForeground)
     }
 
-    override fun getNotifier(): Notifier? {
+    override fun getNotifier(): Notifier {
         return notifier
     }
 
-    override fun notify(data: NotificationData?) {
+    override fun notify(data: NotificationData) {
         notifier.notifyAndroid(data)
     }
 
@@ -348,9 +341,9 @@ open class MyContextImpl internal constructor(parent: MyContextImpl?, context: C
 
     init {
         initializedBy = MyStringBuilder.objToTag(initializer)
-        baseContext = calcContextToUse(parent, context)
+        baseContext = calcBaseContextToUse(parent, context)
         this.context = MyLocale.onAttachBaseContext(baseContext)
-        if (parent != null) {
+        if (parent.nonEmpty) {
             lastDatabaseError = parent.getLastDatabaseError()
         }
     }

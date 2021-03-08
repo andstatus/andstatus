@@ -24,11 +24,11 @@ import java.util.*
 import java.util.function.Function
 
 class SharedNote {
-    var name: Optional<String?>? = null
-    var content: Optional<String?>? = null
+    var name: Optional<String> = null
+    var content: Optional<String> = null
     var textMediaType: TextMediaType? = null
-    var mediaUri: Optional<Uri?>? = null
-    var mediaType: Optional<String?>? = null
+    var mediaUri: Optional<Uri> = null
+    var mediaType: Optional<String> = null
     fun isEmpty(): Boolean {
         return !name.isPresent() && !content.isPresent() && !mediaUri.isPresent()
     }
@@ -41,7 +41,7 @@ class SharedNote {
     }
 
     companion object {
-        fun fromIntent(intent: Intent?): Optional<SharedNote?>? {
+        fun fromIntent(intent: Intent?): Optional<SharedNote> {
             val shared = SharedNote()
             shared.name = StringUtil.optNotEmpty(intent.getStringExtra(Intent.EXTRA_SUBJECT))
             val html = StringUtil.optNotEmpty(intent.getStringExtra(Intent.EXTRA_HTML_TEXT))

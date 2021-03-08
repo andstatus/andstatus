@@ -31,7 +31,7 @@ import java.util.function.Consumer
  * @author yvolk@yurivolkov.com
  */
 internal abstract class TimelineDownloader(execContext: CommandExecutionContext?) : CommandExecutorStrategy(execContext) {
-    public override fun execute(): Try<Boolean?>? {
+    public override fun execute(): Try<Boolean> {
         if (!isApiSupported(execContext.timeline.timelineType.connectionApiRoutine)) {
             MyLog.v(this) {
                 (execContext.timeline.toString() + " is not supported for "
@@ -46,7 +46,7 @@ internal abstract class TimelineDownloader(execContext: CommandExecutionContext?
                 .onFailure { e: Throwable? -> onSyncEnded() }
     }
 
-    abstract fun download(): Try<Boolean?>?
+    abstract fun download(): Try<Boolean>
     protected fun getTimeline(): Timeline? {
         return execContext.timeline
     }

@@ -108,7 +108,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
     private var contextMenu: ActivityContextMenu? = null
 
     @Volatile
-    private var sharedNote: Optional<SharedNote?>? = Optional.empty()
+    private var sharedNote: Optional<SharedNote> = Optional.empty()
     private var mRateLimitText: String? = ""
     var mDrawerLayout: DrawerLayout? = null
     var mDrawerToggle: ActionBarDrawerToggle? = null
@@ -181,7 +181,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
         val params = TimelineParameters(myContext,
                 if (timeline.isEmpty) myContext.timelines().default else timeline, WhichPage.CURRENT)
         setParamsNew(params)
-        if (timeline.nonEmpty()) {
+        if (timeline.nonEmpty) {
             contextMenu.note.loadState(savedInstanceState)
         }
         val viewParameters = LoadableListViewParameters(
@@ -579,8 +579,8 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
             val ma = if (recentAccounts.size > ind) recentAccounts[ind] else MyAccount.Companion.EMPTY
             val avatarView = findViewById<AvatarView?>(if (ind == 0) R.id.current_account_avatar_image else if (ind == 1) R.id.account_avatar_image_1 else R.id.account_avatar_image_2)
                     ?: break
-            ViewUtils.showView(avatarView, ma.isValid())
-            if (ma.nonValid()) {
+            ViewUtils.showView(avatarView, ma.isValid)
+            if (ma.nonValid) {
                 avatarView.setImageResource(R.drawable.blank_image)
                 avatarView.visibility = View.VISIBLE
                 continue
@@ -712,7 +712,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
         if (MyLog.isVerboseEnabled()) posIn.logV("$method started;")
         val dataLoaded = setListData((loaded as TimelineLoader<T?>).page)
         MyLog.v(this) { method + "; " + dataLoaded.params.toSummary() }
-        val pos = if (posIn.nonEmpty() && getListData().isSameTimeline &&
+        val pos = if (posIn.nonEmpty && getListData().isSameTimeline &&
                 isPositionRestored && dataLoaded.params.whichPage != WhichPage.TOP) posIn else TimelineViewPositionStorage.Companion.loadListPosition(dataLoaded.params)
         super.onLoadFinished(pos)
         if (dataLoaded.params.whichPage == WhichPage.TOP) {
@@ -914,7 +914,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
     }
 
     private fun onAccountSelected(ma: MyAccount?) {
-        if (ma.isValid()) {
+        if (ma.isValid) {
             myContext.accounts().setCurrentAccount(ma)
             switchView(if (getParamsLoaded().getTimeline().isCombined) getParamsLoaded().getTimeline() else getParamsLoaded().getTimeline().fromMyAccount(myContext, ma))
         }

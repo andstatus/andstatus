@@ -310,7 +310,7 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer?) : MyContextM
     }
 
     override fun getActingAccount(): MyAccount {
-        return if (selectedActingAccount.nonEmpty()) selectedActingAccount else futureData.menuData.myAccount
+        return if (selectedActingAccount.nonEmpty) selectedActingAccount else futureData.menuData.myAccount
     }
 
     fun getActor(): Actor? {

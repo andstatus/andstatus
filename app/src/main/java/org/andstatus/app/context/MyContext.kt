@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2018 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2013-2021 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import org.andstatus.app.account.MyAccounts
-import org.andstatus.app.database.DatabaseHolder
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.notification.NotificationData
 import org.andstatus.app.notification.Notifier
@@ -30,19 +29,19 @@ import org.andstatus.app.timeline.meta.PersistentTimelines
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.user.CachedUsersAndActors
 import org.andstatus.app.util.IdentifiableInstance
+import org.andstatus.app.util.IsEmpty
 import java.util.function.Supplier
 
-interface MyContext : IdentifiableInstance {
-    fun newInitialized(initializer: Any?): MyContext
-    fun newCreator(context: Context?, initializer: Any?): MyContext
+interface MyContext : IdentifiableInstance, IsEmpty {
+    fun newInitialized(initializer: Any): MyContext
+    fun newCreator(context: Context, initializer: Any?): MyContext
     fun initialized(): Boolean
     fun isReady(): Boolean
     fun state(): MyContextState
-    fun context(): Context?
-    fun baseContext(): Context?
+    fun context(): Context
+    fun baseContext(): Context
     fun preferencesChangeTime(): Long
-    fun getMyDatabase(): DatabaseHolder?
-    fun getLastDatabaseError(): String?
+    fun getLastDatabaseError(): String
     fun getDatabase(): SQLiteDatabase?
     fun users(): CachedUsersAndActors
     fun accounts(): MyAccounts
@@ -54,13 +53,13 @@ interface MyContext : IdentifiableInstance {
     fun release(reason: Supplier<String>)
     fun isExpired(): Boolean
     fun setExpired(reason: Supplier<String>)
-    fun getConnectionState(): ConnectionState?
+    fun getConnectionState(): ConnectionState
 
     /** Is our application in Foreground now?  */
     fun isInForeground(): Boolean
     fun setInForeground(inForeground: Boolean)
-    fun getNotifier(): Notifier?
-    fun notify(data: NotificationData?)
+    fun getNotifier(): Notifier
+    fun notify(data: NotificationData)
     fun clearNotifications(timeline: Timeline)
     fun isTestRun(): Boolean {
         return false
@@ -70,19 +69,14 @@ interface MyContext : IdentifiableInstance {
         return null
     }
 
-    fun isEmpty(): Boolean {
-        return context() == null
-    }
+    override val isEmpty: Boolean get() = this === MyContextEmpty.EMPTY
 
     fun isEmptyOrExpired(): Boolean {
-        return isEmpty() || isExpired()
+        return isEmpty || isExpired()
     }
 
     fun isPreferencesChanged(): Boolean {
         return initialized() && preferencesChangeTime() != MyPreferences.getPreferencesChangeTime()
     }
 
-    companion object {
-        val EMPTY: MyContext = MyContextImpl(null, null, "static")
-    }
 }

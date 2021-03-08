@@ -35,17 +35,15 @@ class AccountName private constructor(uniqueName: String,
 
     /** The name is a username@originHost to be unique for the [OriginType]  */
     private val uniqueName: String
-    private val name: String?
+    val name: String
+
     val isValid: Boolean
-    fun getName(): String? {
-        return name
-    }
 
     override fun toString(): String {
-        return (if (isValid) "" else "(invalid) ") + getName()
+        return (if (isValid) "" else "(invalid) ") + name
     }
 
-    fun getContext(): Context? {
+    fun getContext(): Context {
         return myContext().context()
     }
 
@@ -61,10 +59,8 @@ class AccountName private constructor(uniqueName: String,
         return origin.name
     }
 
-    fun getLogName(): String {
-        return getUniqueName().replace("@", "-")
-                .replace(ORIGIN_SEPARATOR, "-")
-    }
+    val logName: String get() = getUniqueName().replace("@", "-")
+            .replace(ORIGIN_SEPARATOR, "-")
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

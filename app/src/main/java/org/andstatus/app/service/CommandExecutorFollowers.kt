@@ -48,7 +48,7 @@ import java.util.function.Consumer
  */
 class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandExecutorStrategy(execContext) {
     var commandSummary: String? = ""
-    public override fun execute(): Try<Boolean?>? {
+    public override fun execute(): Try<Boolean> {
         commandSummary = execContext.commandSummary
         if (actor.oid.isNullOrEmpty()) {
             return onParseException("No actorOid not for: $actor")
@@ -64,7 +64,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
                 }
     }
 
-    private fun getNewActors(command: CommandEnum?): Try<MutableList<Actor?>?>? {
+    private fun getNewActors(command: CommandEnum?): Try<MutableList<Actor>>? {
         val apiActors = if (command == CommandEnum.GET_FOLLOWERS) ApiRoutineEnum.GET_FOLLOWERS else ApiRoutineEnum.GET_FRIENDS
         return if (isApiSupported(apiActors)) {
             getNewActors(apiActors)
@@ -81,7 +81,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
         }
     }
 
-    private fun getNewActors(apiActors: ApiRoutineEnum?): Try<MutableList<Actor?>?>? {
+    private fun getNewActors(apiActors: ApiRoutineEnum?): Try<MutableList<Actor>>? {
         val actors: MutableList<Actor?> = ArrayList()
         val requested: MutableList<TimelinePosition?> = ArrayList()
         val positionToRequest = AtomicReference<TimelinePosition?>(TimelinePosition.Companion.EMPTY)
@@ -92,9 +92,9 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
             requested.add(positionToRequest.get())
             tried.onSuccess { page: InputActorPage? ->
                 actors.addAll(page.items)
-                if (page.firstPosition.nonEmpty() && !requested.contains(page.firstPosition)) {
+                if (page.firstPosition.nonEmpty && !requested.contains(page.firstPosition)) {
                     positionToRequest.set(page.firstPosition)
-                } else if (page.olderPosition.nonEmpty() && !requested.contains(page.olderPosition)) {
+                } else if (page.olderPosition.nonEmpty && !requested.contains(page.olderPosition)) {
                     positionToRequest.set(page.olderPosition)
                 }
             }
@@ -102,7 +102,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
         return Try.success(actors)
     }
 
-    private fun getActorsForOids(actorOidsNew: MutableList<String?>?): Try<MutableList<Actor?>?>? {
+    private fun getActorsForOids(actorOidsNew: MutableList<String?>?): Try<MutableList<Actor>>? {
         val actorsNew: MutableList<Actor?> = ArrayList()
         val count = AtomicLong()
         for (actorOidNew in actorOidsNew) {

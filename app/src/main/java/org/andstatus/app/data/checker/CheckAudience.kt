@@ -112,10 +112,10 @@ ${RelativeTime.getDifference(myContext.context(), insDate)}, ${I18n.trimTextAt(M
 
     private fun compareVisibility(s: FixSummary?, countOnly: Boolean, noteId: Long,
                                   audience: Audience?, storedVisibility: Visibility?) {
-        if (storedVisibility == audience.getVisibility()) return
+        if (storedVisibility == audience.visibility) return
         s.toFixCount += 1
         var msgLog = (s.toFixCount.toString() + ". Fix visibility for " + noteId + " " + storedVisibility
-                + " -> " + audience.getVisibility())
+                + " -> " + audience.visibility)
         if (s.toFixCount < 20) {
             msgLog += "; " + Note.Companion.loadContentById(myContext, noteId)
         }
@@ -123,7 +123,7 @@ ${RelativeTime.getDifference(myContext.context(), insDate)}, ${I18n.trimTextAt(M
         if (!countOnly) {
             val sql = ("UPDATE " + NoteTable.TABLE_NAME
                     + " SET "
-                    + NoteTable.VISIBILITY + "=" + audience.getVisibility().id
+                    + NoteTable.VISIBILITY + "=" + audience.visibility.id
                     + " WHERE " + BaseColumns._ID + "=" + noteId)
             myContext.database.execSQL(sql)
         }

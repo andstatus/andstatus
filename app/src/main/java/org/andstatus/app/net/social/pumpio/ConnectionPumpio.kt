@@ -83,7 +83,7 @@ class ConnectionPumpio : Connection() {
         return partialPathToApiPath(url)
     }
 
-    override fun verifyCredentials(whoAmI: Optional<Uri?>?): Try<Actor?> {
+    override fun verifyCredentials(whoAmI: Optional<Uri>): Try<Actor?> {
         return TryUtils.fromOptional(whoAmI)
                 .filter { obj: Uri? -> UriUtils.isDownloadable() }
                 .orElse { getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS) }
@@ -136,31 +136,31 @@ class ConnectionPumpio : Connection() {
         return parseIso8601Date(stringDate)
     }
 
-    override fun undoLike(noteOid: String?): Try<AActivity?>? {
+    override fun undoLike(noteOid: String?): Try<AActivity> {
         return actOnNote(PActivityType.UNFAVORITE, noteOid)
     }
 
-    override fun like(noteOid: String?): Try<AActivity?>? {
+    override fun like(noteOid: String?): Try<AActivity> {
         return actOnNote(PActivityType.FAVORITE, noteOid)
     }
 
-    override fun deleteNote(noteOid: String?): Try<Boolean?>? {
-        return actOnNote(PActivityType.DELETE, noteOid).map(CheckedFunction { obj: AActivity? -> obj.nonEmpty() })
+    override fun deleteNote(noteOid: String?): Try<Boolean> {
+        return actOnNote(PActivityType.DELETE, noteOid).map(CheckedFunction { obj: AActivity? -> obj.nonEmpty })
     }
 
-    private fun actOnNote(activityType: PActivityType?, noteId: String?): Try<AActivity?>? {
+    private fun actOnNote(activityType: PActivityType?, noteId: String?): Try<AActivity> {
         return ActivitySender.Companion.fromId(this, noteId).send(activityType)
     }
 
-    override fun getFollowers(actor: Actor?): Try<MutableList<Actor?>?>? {
+    override fun getFollowers(actor: Actor?): Try<MutableList<Actor>>? {
         return getActors(actor, ApiRoutineEnum.GET_FOLLOWERS)
     }
 
-    override fun getFriends(actor: Actor?): Try<MutableList<Actor?>?>? {
+    override fun getFriends(actor: Actor?): Try<MutableList<Actor>>? {
         return getActors(actor, ApiRoutineEnum.GET_FRIENDS)
     }
 
-    private fun getActors(actor: Actor?, apiRoutine: ApiRoutineEnum?): Try<MutableList<Actor?>?> {
+    private fun getActors(actor: Actor?, apiRoutine: ApiRoutineEnum?): Try<MutableList<Actor>> {
         val limit = 200
         return ConnectionAndUrl.Companion.fromActor(this, apiRoutine, actor)
                 .map<ConnectionAndUrl?>(CheckedFunction { conu: ConnectionAndUrl? ->
@@ -169,8 +169,8 @@ class ConnectionPumpio : Connection() {
                     val uri = builder.build()
                     conu.withUri(uri)
                 })
-                .flatMap<HttpReadResult?>(CheckedFunction<ConnectionAndUrl?, Try<out HttpReadResult?>?> { conu: ConnectionAndUrl? -> conu.execute(conu.newRequest()) })
-                .flatMap<MutableList<Actor?>?>(CheckedFunction<HttpReadResult?, Try<out MutableList<Actor?>?>?> { result: HttpReadResult? ->
+                .flatMap<HttpReadResult?>(CheckedFunction<ConnectionAndUrl?, Try<out HttpReadResult>> { conu: ConnectionAndUrl? -> conu.execute(conu.newRequest()) })
+                .flatMap<MutableList<Actor?>?>(CheckedFunction<HttpReadResult?, Try<out MutableList<Actor>>?> { result: HttpReadResult? ->
                     result.getJsonArray()
                             .map { jsonArray: JSONArray? -> jsonArrayToActors(apiRoutine, result.request.uri, jsonArray) }
                 })
@@ -194,13 +194,13 @@ class ConnectionPumpio : Connection() {
         return actors
     }
 
-    override fun getNote1(noteOid: String?): Try<AActivity?>? {
+    override fun getNote1(noteOid: String?): Try<AActivity> {
         return execute(HttpRequest.Companion.of(ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid)))
                 .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
                 .map { jsoActivity: JSONObject? -> activityFromJson(jsoActivity) }
     }
 
-    override fun updateNote(note: Note?): Try<AActivity?>? {
+    override fun updateNote(note: Note?): Try<AActivity> {
         return ActivitySender.Companion.fromContent(this, note).send(PActivityType.POST)
     }
 
@@ -237,7 +237,7 @@ class ConnectionPumpio : Connection() {
         return objectType
     }
 
-    override fun announce(rebloggedNoteOid: String?): Try<AActivity?>? {
+    override fun announce(rebloggedNoteOid: String?): Try<AActivity> {
         return actOnNote(PActivityType.SHARE, rebloggedNoteOid)
     }
 
@@ -247,11 +247,11 @@ class ConnectionPumpio : Connection() {
         if (tryConu.isFailure) return tryConu.map(CheckedFunction { any: ConnectionAndUrl? -> InputTimelinePage.Companion.EMPTY })
         val conu = tryConu.get()
         val builder = conu.uri.buildUpon()
-        if (youngestPosition.nonEmpty()) {
+        if (youngestPosition.nonEmpty) {
             // The "since" should point to the "Activity" on the timeline, not to the note
             // Otherwise we will always get "not found"
             builder.appendQueryParameter("since", youngestPosition.getPosition())
-        } else if (oldestPosition.nonEmpty()) {
+        } else if (oldestPosition.nonEmpty) {
             builder.appendQueryParameter("before", oldestPosition.getPosition())
         }
         builder.appendQueryParameter("count", strFixedDownloadLimit(limit, apiRoutine))
@@ -471,18 +471,18 @@ class ConnectionPumpio : Connection() {
         return if (indexOfAt < 0) "" else actorId.substring(indexOfAt + 1)
     }
 
-    override fun follow(actorOid: String?, follow: Boolean?): Try<AActivity?>? {
+    override fun follow(actorOid: String?, follow: Boolean?): Try<AActivity> {
         return actOnActor(if (follow) PActivityType.FOLLOW else PActivityType.STOP_FOLLOWING, actorOid)
     }
 
-    private fun actOnActor(activityType: PActivityType?, actorId: String?): Try<AActivity?>? {
+    private fun actOnActor(activityType: PActivityType?, actorId: String?): Try<AActivity> {
         return ActivitySender.Companion.fromId(this, actorId).send(activityType)
     }
 
-    public override fun getActor2(actorIn: Actor?): Try<Actor?>? {
+    public override fun getActor2(actorIn: Actor?): Try<Actor> {
         return ConnectionAndUrl.Companion.fromActor(this, ApiRoutineEnum.GET_ACTOR, actorIn)
-                .flatMap<HttpReadResult?>(CheckedFunction<ConnectionAndUrl?, Try<out HttpReadResult?>?> { conu: ConnectionAndUrl? -> conu.execute(conu.newRequest()) })
-                .flatMap<JSONObject?>(CheckedFunction<HttpReadResult?, Try<out JSONObject?>?> { obj: HttpReadResult? -> obj.getJsonObject() })
+                .flatMap<HttpReadResult?>(CheckedFunction<ConnectionAndUrl?, Try<out HttpReadResult>> { conu: ConnectionAndUrl? -> conu.execute(conu.newRequest()) })
+                .flatMap<JSONObject?>(CheckedFunction<HttpReadResult?, Try<out JSONObject>> { obj: HttpReadResult? -> obj.getJsonObject() })
                 .map<Actor?>(CheckedFunction { jso: JSONObject? -> actorFromJson(jso) })
     }
 

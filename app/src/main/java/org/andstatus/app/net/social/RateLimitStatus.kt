@@ -787,7 +787,8 @@ import org.andstatus.app.MenuItemMock
 class RateLimitStatus : IsEmpty {
     var remaining = 0
     var limit = 0
-    override fun isEmpty(): Boolean {
-        return limit == 0 && remaining == 0
-    }
+    override val isEmpty: Boolean
+        get() {
+            return limit == 0 && remaining == 0
+        }
 }

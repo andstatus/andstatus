@@ -51,7 +51,7 @@ internal class OriginTwitter(myContext: MyContext?, originType: OriginType?) : O
             return ""
         }
         val uri = fixUriForPermalink(UriUtils.fromUrl(url))
-        return if (Visibility.Companion.fromNoteId(noteId).isPrivate()) {
+        return if (Visibility.Companion.fromNoteId(noteId).isPrivate) {
             Uri.withAppendedPath(uri, "messages").toString()
         } else {
             val username = MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, noteId, ActorInTimeline.USERNAME)

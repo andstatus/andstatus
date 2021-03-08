@@ -12,7 +12,7 @@ object DiscoveredOrigins {
         var oldCount = 0
         val type = newOrigins.get(0).getOriginType()
         for (origin in mOrigins.values) {
-            if (origin.getOriginType() === type) {
+            if (origin.originType === type) {
                 mOrigins.remove(origin.getName())
                 oldCount++
             }

@@ -824,7 +824,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem?>() {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
         ma = DemoData.Companion.demoData.getMyAccount(DemoData.Companion.demoData.conversationAccountName)
-        Assert.assertTrue(ma.isValid())
+        Assert.assertTrue(ma.isValid)
          MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
         MyLog.i(this, "setUp ended")
         return Intent(Intent.ACTION_VIEW,  MyContextHolder.myContextHolder.getNow().timelines()

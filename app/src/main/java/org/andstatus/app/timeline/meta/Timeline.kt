@@ -24,6 +24,7 @@ import org.andstatus.app.IntentExtra
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.actor.ActorsScreenType
 import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextEmpty
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.ContentValuesUtils
 import org.andstatus.app.data.DbUtils
@@ -182,7 +183,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     private var lastChangedDate: Long = 0
 
     private constructor() {
-        myContext = MyContext.EMPTY
+        myContext = MyContextEmpty.EMPTY
         timelineType = TimelineType.UNKNOWN
         myAccountToSync = MyAccount.EMPTY
         actor = Actor.EMPTY
@@ -222,7 +223,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     private fun calcIsSyncable(myAccountToSync: MyAccount): Boolean {
         return (!isCombined() && timelineType.isSyncable()
                 && myAccountToSync.isValidAndSucceeded()
-                && myAccountToSync.origin.getOriginType().isTimelineTypeSyncable(timelineType))
+                && myAccountToSync.origin.originType.isTimelineTypeSyncable(timelineType))
     }
 
     private fun calcIsSyncableForAccounts(myContext: MyContext): Boolean {
@@ -238,11 +239,11 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     }
 
     private fun calcIsCombined(timelineType: TimelineType, origin: Origin): Boolean {
-        return if (timelineType.isAtOrigin()) origin.isEmpty() else actor.isEmpty()
+        return if (timelineType.isAtOrigin()) origin.isEmpty else actor.isEmpty
     }
 
     private fun calcAccountToSync(myContext: MyContext, timelineType: TimelineType, origin: Origin, actor: Actor): MyAccount {
-        return if (timelineType.isAtOrigin() && origin.nonEmpty())
+        return if (timelineType.isAtOrigin() && origin.nonEmpty)
             myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
         else myContext.accounts().toSyncThatActor(actor)
     }
@@ -257,7 +258,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
 
     private fun fixedTimelineType(timelineType: TimelineType): TimelineType {
         return if (isCombined || (if (timelineType.isAtOrigin()) origin.isValid()
-                else actor.nonEmpty())) timelineTypeFixEverything(timelineType) else TimelineType.UNKNOWN
+                else actor.nonEmpty)) timelineTypeFixEverything(timelineType) else TimelineType.UNKNOWN
     }
 
     private fun timelineTypeFixEverything(timelineType: TimelineType): TimelineType {
@@ -318,8 +319,8 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     fun fromIsCombined(myContext: MyContext, isCombinedNew: Boolean): Timeline {
         return if (isCombined == isCombinedNew || !isCombined && timelineType.isForUser() && !timelineType.isAtOrigin()
                 && actor.user.isMyUser() != TriState.TRUE) this else myContext.timelines().get(timelineType,
-                if (isCombinedNew) Actor.Companion.EMPTY else myContext.accounts().getCurrentAccount().getActor(),
-                if (isCombinedNew)  Origin.EMPTY else myContext.accounts().getCurrentAccount().origin,
+                if (isCombinedNew) Actor.Companion.EMPTY else myContext.accounts().currentAccount.actor,
+                if (isCombinedNew)  Origin.EMPTY else myContext.accounts().currentAccount.origin,
                 searchQuery)
     }
 
@@ -333,9 +334,10 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
                 myAccountNew.origin, searchQuery)
     }
 
-    override fun isEmpty(): Boolean {
-        return timelineType == TimelineType.UNKNOWN
-    }
+    override val isEmpty: Boolean
+        get() {
+            return timelineType == TimelineType.UNKNOWN
+        }
 
     fun isValid(): Boolean {
         return timelineType != TimelineType.UNKNOWN
@@ -350,7 +352,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     }
 
     fun preferredOrigin(): Origin {
-        return if (origin.nonEmpty()) origin else if (actor.nonEmpty()) actor.toHomeOrigin().origin else myContext.accounts().currentAccount.origin
+        return if (origin.nonEmpty) origin else if (actor.nonEmpty) actor.toHomeOrigin().origin else myContext.accounts().currentAccount.origin
     }
 
     fun checkBoxDisplayedInSelector(): Boolean {
@@ -445,7 +447,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     }
 
     private fun needToLoadActorInTimeline(): Boolean {
-        return (actor.nonEmpty()
+        return (actor.nonEmpty
                 && StringUtil.isEmptyOrTemp(actorInTimeline)
                 && actor.user.isMyUser.untrue)
     }
@@ -470,7 +472,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         if (isCombined || !isValid() || hasSearchQuery()) return false
         return if (timelineType.isAtOrigin()) {
             (TimelineType.Companion.getDefaultOriginTimelineTypes().contains(timelineType)
-                    && (origin.getOriginType().isTimelineTypeSyncable(timelineType)
+                    && (origin.originType.isTimelineTypeSyncable(timelineType)
                     || timelineType == TimelineType.EVERYTHING))
         } else {
             actor.user.isMyUser.isTrue && actor.getDefaultMyAccountTimelineTypes().contains(timelineType)
@@ -488,9 +490,9 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
             builder.withComma(if (origin.isValid()) origin.getName() else "(all origins)")
         }
         if (timelineType.isForUser()) {
-            if (actor.isEmpty()) {
+            if (actor.isEmpty) {
                 builder.withComma("(all accounts)")
-            } else if (myAccountToSync.isValid()) {
+            } else if (myAccountToSync.isValid) {
                 builder.withComma(myAccountToSync.getAccountName())
                 if (myAccountToSync.getOrigin() != origin && origin.isValid()) {
                     builder.withComma("origin", origin.getName())
@@ -504,7 +506,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         }
         if (!actorInTimeline.isNullOrEmpty()) {
             builder.withCommaQuoted("actor", actorInTimeline, true)
-        } else if (actor.nonEmpty()) {
+        } else if (actor.nonEmpty) {
             builder.withComma("actor$actor")
         }
         if (hasSearchQuery()) {
@@ -840,7 +842,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     }
 
     fun isSyncedByOtherUser(): Boolean {
-        return actor.isEmpty() || myAccountToSync.getActor().notSameUser(actor)
+        return actor.isEmpty || myAccountToSync.getActor().notSameUser(actor)
     }
 
     fun getDownloadedItemsCount(isTotal: Boolean): Long {
@@ -942,11 +944,11 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     }
 
     fun hasActorProfile(): Boolean {
-        return !isCombined && actor.nonEmpty() && timelineType.hasActorProfile()
+        return !isCombined && actor.nonEmpty && timelineType.hasActorProfile()
     }
 
     fun orElse(aDefault: Timeline): Timeline {
-        return if (isEmpty()) aDefault else this
+        return if (isEmpty) aDefault else this
     }
 
     companion object {
@@ -994,7 +996,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         fun fromBundle(myContext: MyContext?, bundle: Bundle?): Timeline? {
             if (bundle == null) return EMPTY
             val timeline = myContext.timelines().fromId(bundle.getLong(IntentExtra.TIMELINE_ID.key))
-            return if (timeline.nonEmpty()) timeline else myContext.timelines()[TimelineType.Companion.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)), Actor.Companion.load(myContext, bundle.getLong(IntentExtra.ACTOR_ID.key)), myContext.origins().fromId(fromBundle(bundle, IntentExtra.ORIGIN_ID)), BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY)]
+            return if (timeline.nonEmpty) timeline else myContext.timelines()[TimelineType.Companion.load(bundle.getString(IntentExtra.TIMELINE_TYPE.key)), Actor.Companion.load(myContext, bundle.getLong(IntentExtra.ACTOR_ID.key)), myContext.origins().fromId(fromBundle(bundle, IntentExtra.ORIGIN_ID)), BundleUtils.getString(bundle, IntentExtra.SEARCH_QUERY)]
         }
 
         fun fromParsedUri(myContext: MyContext?, parsedUri: ParsedUri?, searchQueryIn: String?): Timeline? {

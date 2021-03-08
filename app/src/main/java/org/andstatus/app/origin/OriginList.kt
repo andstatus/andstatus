@@ -92,7 +92,7 @@ abstract class OriginList : MyListActivity() {
 
     protected fun fillData(data: MutableList<MutableMap<String?, String?>?>?) {
         for (origin in getOrigins()) {
-            if (originType == OriginType.UNKNOWN || originType == origin.getOriginType()) {
+            if (originType == OriginType.UNKNOWN || originType == origin.originType) {
                 val map: MutableMap<String?, String?> = HashMap()
                 val visibleName = origin.getName()
                 map[KEY_VISIBLE_NAME] = visibleName

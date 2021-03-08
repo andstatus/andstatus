@@ -27,9 +27,10 @@ import java.util.concurrent.atomic.AtomicReference
 internal class NoteEditorLock(val isSave: Boolean, val noteId: Long) : IsEmpty, IdentifiableInstance {
     protected val instanceId = InstanceId.next()
     var startedAt: Long = 0
-    override fun isEmpty(): Boolean {
-        return this == EMPTY
-    }
+    override val isEmpty: Boolean
+        get() {
+            return this == EMPTY
+        }
 
     fun acquire(doWait: Boolean): Boolean {
         var acquired = true
@@ -38,7 +39,7 @@ internal class NoteEditorLock(val isSave: Boolean, val noteId: Long) : IsEmpty, 
             if (lockPrevious.expired()) {
                 startedAt = MyLog.uniqueCurrentTimeMS()
                 if (lock.compareAndSet(lockPrevious, this)) {
-                    MyLog.v(this) { "Received lock " + this + if (lockPrevious.isEmpty()) "" else ". Replaced expired $lockPrevious" }
+                    MyLog.v(this) { "Received lock " + this + if (lockPrevious.isEmpty) "" else ". Replaced expired $lockPrevious" }
                     break
                 }
             } else if (isSave && !lockPrevious.isSave) {
@@ -67,7 +68,7 @@ internal class NoteEditorLock(val isSave: Boolean, val noteId: Long) : IsEmpty, 
     }
 
     fun release(): Boolean {
-        if (nonEmpty()) {
+        if (nonEmpty) {
             if (lock.compareAndSet(this, EMPTY)) {
                 MyLog.v(this) { "Released lock $this" }
                 return true

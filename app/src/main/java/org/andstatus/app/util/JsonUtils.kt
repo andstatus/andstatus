@@ -89,7 +89,7 @@ object JsonUtils {
         return jso == null || jso.length() == 0
     }
 
-    fun toJsonObject(jsonString: String?): Try<JSONObject?>? {
+    fun toJsonObject(jsonString: String?): Try<JSONObject> {
         return if (jsonString == null) Try.failure(NoSuchElementException()) else try {
             Try.success(JSONObject(jsonString))
         } catch (e: Exception) {

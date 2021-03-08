@@ -88,7 +88,7 @@ abstract class MediaFile internal constructor(filename: String?, contentType: My
             }
             logResult("Show blank", taskSuffix)
             showBlankImage(imageView)
-            AsyncTaskLauncher.Companion.execute<ImageLoader?, CachedImage?>(ImageLoader(this, myActivity, imageView), Function { obj: ImageLoader? -> obj.load() }, Function { loader: ImageLoader? -> Consumer { tryImage: Try<CachedImage?>? -> loader.set(tryImage) } })
+            AsyncTaskLauncher.Companion.execute<ImageLoader?, CachedImage?>(ImageLoader(this, myActivity, imageView), Function { obj: ImageLoader? -> obj.load() }, Function { loader: ImageLoader? -> Consumer { tryImage: Try<CachedImage> -> loader.set(tryImage) } })
         } else {
             logResult("No image file", taskSuffix)
             onNoImage(imageView)
@@ -98,7 +98,7 @@ abstract class MediaFile internal constructor(filename: String?, contentType: My
 
     fun imageMayBeShown(): Boolean {
         return !isEmpty && downloadStatus != DownloadStatus.HARD_ERROR &&
-                (downloadStatus != DownloadStatus.LOADED || mediaMetadata.nonEmpty())
+                (downloadStatus != DownloadStatus.LOADED || mediaMetadata.nonEmpty)
     }
 
     private fun showBlankImage(imageView: ImageView?) {
@@ -142,12 +142,12 @@ abstract class MediaFile internal constructor(filename: String?, contentType: My
     private class ImageLoader private constructor(mediaFile: MediaFile?, private val myActivity: MyActivity?, private val imageView: IdentifiableImageView?) : AbstractImageLoader(mediaFile, "-asyn-" + imageView.myViewId) {
         @Volatile
         private var logged = false
-        fun load(): Try<CachedImage?>? {
+        fun load(): Try<CachedImage> {
             return TryUtils.ofNullable(
                     if (skip()) null else ImageCaches.loadAndGetImage(imageView.getCacheName(), mediaFile))
         }
 
-        fun set(tryImage: Try<CachedImage?>?) {
+        fun set(tryImage: Try<CachedImage>) {
             if (skip()) return
             tryImage.onSuccess(Consumer { image: CachedImage? ->
                 if (image.id != mediaFile.getId()) {
@@ -217,11 +217,11 @@ abstract class MediaFile internal constructor(filename: String?, contentType: My
         logResult("Show default", taskSuffix)
         uiConsumer.accept(null)
         AsyncTaskLauncher.Companion.execute<DrawableLoader?, Drawable?>(DrawableLoader(this, cacheName),
-                Function { loader: DrawableLoader? -> loader.load().map(mapper) }, Function { loader: DrawableLoader? -> Consumer { drawableTry: Try<Drawable?>? -> drawableTry.onSuccess(uiConsumer) } })
+                Function { loader: DrawableLoader? -> loader.load().map(mapper) }, Function { loader: DrawableLoader? -> Consumer { drawableTry: Try<Drawable> -> drawableTry.onSuccess(uiConsumer) } })
     }
 
     private class DrawableLoader private constructor(mediaFile: MediaFile?, private val cacheName: CacheName?) : AbstractImageLoader(mediaFile, "-asynd") {
-        fun load(): Try<Drawable?>? {
+        fun load(): Try<Drawable> {
             return TryUtils.ofNullable(ImageCaches.loadAndGetImage(cacheName, mediaFile))
                     .map { obj: CachedImage? -> obj.getDrawable() }
         }
@@ -246,15 +246,16 @@ abstract class MediaFile internal constructor(filename: String?, contentType: My
     }
 
     fun getSize(): Point? {
-        if (mediaMetadata.isEmpty() && downloadFile.existed) {
+        if (mediaMetadata.isEmpty && downloadFile.existed) {
             setMediaMetadata(MediaMetadata.Companion.fromFilePath(downloadFile.getFilePath()))
         }
         return mediaMetadata.size()
     }
 
-    override fun isEmpty(): Boolean {
-        return getId() == 0L
-    }
+    override val isEmpty: Boolean
+        get() {
+            return getId() == 0L
+        }
 
     override fun toString(): String {
         return if (isEmpty) "EMPTY" else instanceTag() + ":"

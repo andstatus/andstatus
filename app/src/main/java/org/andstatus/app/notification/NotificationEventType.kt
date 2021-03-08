@@ -49,9 +49,10 @@ enum class NotificationEventType(id: Int, preferenceKey: String?, defaultValue: 
         }
     }
 
-    override fun isEmpty(): Boolean {
-        return this == EMPTY
-    }
+    override val isEmpty: Boolean
+        get() {
+            return this == EMPTY
+        }
 
     companion object {
         val validValues = validValues()
@@ -67,10 +68,10 @@ enum class NotificationEventType(id: Int, preferenceKey: String?, defaultValue: 
             return EMPTY
         }
 
-        private fun validValues(): MutableList<NotificationEventType?>? {
-            val validValues: MutableList<NotificationEventType?> = ArrayList()
+        private fun validValues(): MutableList<NotificationEventType> {
+            val validValues: MutableList<NotificationEventType> = ArrayList()
             for (event in values()) {
-                if (event.nonEmpty()) {
+                if (event.nonEmpty) {
                     validValues.add(event)
                 }
             }

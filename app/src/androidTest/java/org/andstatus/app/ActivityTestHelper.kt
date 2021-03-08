@@ -918,7 +918,7 @@ class ActivityTestHelper<T : MyActivity?> : SelectorActivityMock {
             Assert.assertTrue(view != null)
             var ok = false
             for (i in 0..19) {
-                if (view.getVisibility() == View.VISIBLE) {
+                if (view.visibility == View.VISIBLE) {
                     ok = true
                     break
                 }
@@ -937,7 +937,7 @@ class ActivityTestHelper<T : MyActivity?> : SelectorActivityMock {
             Assert.assertTrue(view != null)
             var ok = false
             for (i in 0..19) {
-                if (view.getVisibility() != View.VISIBLE) {
+                if (view.visibility != View.VISIBLE) {
                     ok = true
                     break
                 }

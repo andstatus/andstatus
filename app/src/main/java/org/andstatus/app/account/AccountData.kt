@@ -23,6 +23,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import io.vavr.control.Try
 import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyContextEmpty
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.MatchedUri
@@ -40,7 +41,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
     val accountName: AccountName
 
     @Volatile
-    private var data: JSONObject?
+    private var data: JSONObject
 
     @Volatile
     private var persistent = false
@@ -49,12 +50,12 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         this.myContext = myContext
         data = jso
         this.persistent = persistent
-        val origin = myContext.origins().fromName(getDataString(Origin.Companion.KEY_ORIGIN_NAME))
-        accountName = AccountName.Companion.fromOriginAndUniqueName(origin, getDataString(MyAccount.Companion.KEY_UNIQUE_NAME))
+        val origin = myContext.origins().fromName(getDataString(Origin.KEY_ORIGIN_NAME))
+        accountName = AccountName.fromOriginAndUniqueName(origin, getDataString(MyAccount.KEY_UNIQUE_NAME))
         logMe("new " + accountName.name + " from jso")
     }
 
-    private constructor(accountName: AccountName, jso: JSONObject?) {
+    private constructor(accountName: AccountName, jso: JSONObject) {
         myContext = accountName.myContext()
         this.accountName = accountName
         data = jso
@@ -62,37 +63,35 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         logMe("new from " + accountName.name + " and jso")
     }
 
-    fun withAccountName(accountName: AccountName): AccountData? {
+    fun withAccountName(accountName: AccountName): AccountData {
         return AccountData(accountName, data)
     }
 
-    fun updateFrom(myAccount: MyAccount?): AccountData? {
-        setDataString(MyAccount.Companion.KEY_ACTOR_OID, myAccount.getActor().oid)
+    fun updateFrom(myAccount: MyAccount): AccountData {
+        setDataString(MyAccount.KEY_ACTOR_OID, myAccount.actor.oid)
         myAccount.getCredentialsVerified().put(this)
-        setDataBoolean(MyAccount.Companion.KEY_OAUTH, myAccount.isOAuth())
-        setDataLong(MyAccount.Companion.KEY_ACTOR_ID, myAccount.getActor().actorId)
-        if (myAccount.getConnection() != null) {
-            myAccount.getConnection().saveTo(this)
-        }
+        setDataBoolean(MyAccount.KEY_OAUTH, myAccount.isOAuth())
+        setDataLong(MyAccount.KEY_ACTOR_ID, myAccount.actor.actorId)
+        myAccount.getConnection().saveTo(this)
         setPersistent(true)
-        setDataBoolean(MyAccount.Companion.KEY_IS_SYNCABLE, myAccount.isSyncable)
-        setDataBoolean(MyAccount.Companion.KEY_IS_SYNCED_AUTOMATICALLY, myAccount.isSyncedAutomatically())
+        setDataBoolean(MyAccount.KEY_IS_SYNCABLE, myAccount.isSyncable)
+        setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, myAccount.isSyncedAutomatically())
         setDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, myAccount.getSyncFrequencySeconds())
         // We don't create accounts of other versions
         setDataInt(AccountUtils.KEY_VERSION, AccountUtils.ACCOUNT_VERSION)
-        setDataInt(MyAccount.Companion.KEY_ORDER, myAccount.getOrder())
+        setDataInt(MyAccount.KEY_ORDER, myAccount.getOrder())
         logMe("updated from $myAccount")
         return this
     }
 
     private fun updateFromAccountName() {
-        setDataString(AccountUtils.KEY_ACCOUNT, accountName.getName())
-        setDataString(MyAccount.Companion.KEY_USERNAME, accountName.username)
-        setDataString(MyAccount.Companion.KEY_UNIQUE_NAME, accountName.getUniqueName())
-        setDataString(Origin.Companion.KEY_ORIGIN_NAME, accountName.getOriginName())
+        setDataString(AccountUtils.KEY_ACCOUNT, accountName.name)
+        setDataString(MyAccount.KEY_USERNAME, accountName.username)
+        setDataString(MyAccount.KEY_UNIQUE_NAME, accountName.getUniqueName())
+        setDataString(Origin.KEY_ORIGIN_NAME, accountName.getOriginName())
     }
 
-    fun myContext(): MyContext? {
+    fun myContext(): MyContext {
         return myContext
     }
 
@@ -106,7 +105,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
 
     /** @return changed (and successfully saved) or not
      */
-    fun saveIfChanged(androidAccount: Account?): Try<Boolean?>? {
+    fun saveIfChanged(androidAccount: Account): Try<Boolean> {
         val oldData = fromAndroidAccount(myContext, androidAccount)
         if (this == oldData) return Try.success(false)
         var syncFrequencySeconds = getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0)
@@ -114,16 +113,16 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
             syncFrequencySeconds = MyPreferences.getSyncFrequencySeconds()
         }
         AccountUtils.setSyncFrequencySeconds(androidAccount, syncFrequencySeconds)
-        val isSyncable = getDataBoolean(MyAccount.Companion.KEY_IS_SYNCABLE, true)
-        if (isSyncable != ContentResolver.getIsSyncable(androidAccount, MatchedUri.Companion.AUTHORITY) > 0) {
-            ContentResolver.setIsSyncable(androidAccount, MatchedUri.Companion.AUTHORITY, if (isSyncable) 1 else 0)
+        val isSyncable = getDataBoolean(MyAccount.KEY_IS_SYNCABLE, true)
+        if (isSyncable != ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) > 0) {
+            ContentResolver.setIsSyncable(androidAccount, MatchedUri.AUTHORITY, if (isSyncable) 1 else 0)
         }
-        val syncAutomatically = getDataBoolean(MyAccount.Companion.KEY_IS_SYNCED_AUTOMATICALLY, true)
-        if (syncAutomatically != ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.Companion.AUTHORITY)) {
+        val syncAutomatically = getDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, true)
+        if (syncAutomatically != ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.AUTHORITY)) {
             // We need to preserve sync on/off during backup/restore.
             // don't know about "network tickles"... See:
             // http://stackoverflow.com/questions/5013254/what-is-a-network-tickle-and-how-to-i-go-about-sending-one
-            ContentResolver.setSyncAutomatically(androidAccount, MatchedUri.Companion.AUTHORITY, syncAutomatically)
+            ContentResolver.setSyncAutomatically(androidAccount, MatchedUri.AUTHORITY, syncAutomatically)
         }
         val am = AccountManager.get(myContext.context())
         val jsonString = toJsonString()
@@ -140,10 +139,9 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         return getDataInt(AccountUtils.KEY_VERSION, 0)
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (o === this) return true
-        if (o !is AccountData) return false
-        val other = o as AccountData?
+    override fun equals(other: Any?): Boolean {
+        if (other === this) return true
+        if (other !is AccountData) return false
         return isPersistent() == other.isPersistent() && toJsonString() == other.toJsonString()
     }
 
@@ -153,7 +151,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         return text.hashCode()
     }
 
-    override fun dataContains(key: String?): Boolean {
+    override fun dataContains(key: String): Boolean {
         var contains = false
         try {
             val str = getDataString(key, "null")
@@ -166,7 +164,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         return contains
     }
 
-    fun getDataBoolean(key: String?, defValue: Boolean): Boolean {
+    fun getDataBoolean(key: String, defValue: Boolean): Boolean {
         var value = defValue
         try {
             val str = getDataString(key, "null")
@@ -179,11 +177,11 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         return value
     }
 
-    override fun getDataString(key: String?, defValue: String?): String? {
+    override fun getDataString(key: String, defValue: String): String {
         return JsonUtils.optString(data, key, defValue)
     }
 
-    override fun getDataInt(key: String?, defValue: Int): Int {
+    override fun getDataInt(key: String, defValue: Int): Int {
         var value = defValue
         try {
             val str = getDataString(key, "null")
@@ -196,7 +194,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         return value
     }
 
-    fun getDataLong(key: String?, defValue: Long): Long {
+    fun getDataLong(key: String, defValue: Long): Long {
         var value = defValue
         try {
             val str = getDataString(key, "null")
@@ -209,7 +207,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         return value
     }
 
-    fun setDataBoolean(key: String?, value: Boolean) {
+    fun setDataBoolean(key: String, value: Boolean) {
         try {
             setDataString(key, java.lang.Boolean.toString(value))
         } catch (e: Exception) {
@@ -217,7 +215,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         }
     }
 
-    override fun setDataLong(key: String?, value: Long) {
+    override fun setDataLong(key: String, value: Long) {
         try {
             setDataString(key, java.lang.Long.toString(value))
         } catch (e: Exception) {
@@ -225,7 +223,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         }
     }
 
-    override fun setDataInt(key: String?, value: Int) {
+    override fun setDataInt(key: String, value: Int) {
         try {
             setDataString(key, Integer.toString(value))
         } catch (e: Exception) {
@@ -233,7 +231,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         }
     }
 
-    override fun setDataString(key: String?, value: String?) {
+    override fun setDataString(key: String, value: String?) {
         data = if (value.isNullOrEmpty()) {
             JsonUtils.remove(data, key)
         } else {
@@ -241,13 +239,8 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         }
     }
 
-    private fun logMe(msg: String?): AccountData? {
-        MyLog.v(this) {
-            """
-     $msg:
-     ${toJsonString()}
-     """.trimIndent()
-        }
+    private fun logMe(msg: String?): AccountData {
+        MyLog.v(this) { "$msg: ${toJsonString()}" }
         return this
     }
 
@@ -255,15 +248,15 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         return 0
     }
 
-    override fun writeToParcel(dest: Parcel?, flags: Int) {
+    override fun writeToParcel(dest: Parcel, flags: Int) {
         dest.writeString(toJsonString())
     }
 
-    fun toJSon(): JSONObject? {
+    fun toJSon(): JSONObject {
         return data
     }
 
-    fun toJsonString(): String? {
+    fun toJsonString(): String {
         return JsonUtils.toString(data, 2)
     }
 
@@ -273,46 +266,48 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
 
     companion object {
         private val TAG: String = AccountData::class.java.simpleName
-        val EMPTY: AccountData = AccountData(MyContext.Companion.EMPTY, JSONObject(), false)
-        fun fromAndroidAccount(myContext: MyContext?, androidAccount: Account?): AccountData {
+        val EMPTY: AccountData = AccountData(MyContextEmpty.EMPTY, JSONObject(), false)
+        fun fromAndroidAccount(myContext: MyContext, androidAccount: Account?): AccountData {
             requireNotNull(androidAccount) { "$TAG account is null" }
             val am = AccountManager.get(myContext.context())
             val jsonString = am.getUserData(androidAccount, AccountUtils.KEY_ACCOUNT)
             val accountData = fromJsonString(myContext, jsonString, true)
-            accountData.setDataBoolean(MyAccount.Companion.KEY_IS_SYNCABLE,
-                    ContentResolver.getIsSyncable(androidAccount, MatchedUri.Companion.AUTHORITY) != 0)
-            accountData.setDataBoolean(MyAccount.Companion.KEY_IS_SYNCED_AUTOMATICALLY,
-                    ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.Companion.AUTHORITY))
+            accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE,
+                    ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0)
+            accountData.setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY,
+                    ContentResolver.getSyncAutomatically(androidAccount, MatchedUri.AUTHORITY))
             accountData.logMe("Loaded from account " + androidAccount.name)
             return accountData
         }
 
-        private fun fromJsonString(myContext: MyContext?, userData: String?, persistent: Boolean): AccountData? {
-            return JsonUtils.toJsonObject(userData).map { jso: JSONObject? -> fromJson(myContext, jso, persistent) }.getOrElse(EMPTY)
+        private fun fromJsonString(myContext: MyContext, userData: String, persistent: Boolean): AccountData {
+            return JsonUtils.toJsonObject(userData).map { jso: JSONObject -> fromJson(myContext, jso, persistent) }
+                    .getOrElse(EMPTY)
         }
 
-        fun fromJson(myContext: MyContext?, jso: JSONObject, persistent: Boolean): AccountData? {
+        fun fromJson(myContext: MyContext, jso: JSONObject, persistent: Boolean): AccountData {
             return AccountData(myContext, jso, persistent)
         }
 
-        fun fromAccountName(accountName: AccountName): AccountData? {
+        fun fromAccountName(accountName: AccountName): AccountData {
             return AccountData(accountName, JSONObject())
         }
 
-        val CREATOR: Parcelable.Creator<AccountData?>? = object : Parcelable.Creator<AccountData?> {
-            override fun createFromParcel(source: Parcel?): AccountData? {
+        @JvmField
+        val CREATOR: Parcelable.Creator<AccountData> = object : Parcelable.Creator<AccountData> {
+            override fun createFromParcel(source: Parcel): AccountData {
                 return fromBundle( MyContextHolder.myContextHolder.getNow(), source.readBundle())
             }
 
-            override fun newArray(size: Int): Array<AccountData?>? {
-                return arrayOfNulls<AccountData?>(size)
+            override fun newArray(size: Int): Array<AccountData?> {
+                return arrayOfNulls<AccountData>(size)
             }
         }
 
-        fun fromBundle(myContext: MyContext?, bundle: Bundle?): AccountData? {
-            var jsonString: String? = ""
+        fun fromBundle(myContext: MyContext, bundle: Bundle?): AccountData {
+            var jsonString: String = ""
             if (bundle != null) {
-                jsonString = bundle.getString(AccountUtils.KEY_ACCOUNT)
+                jsonString = bundle.getString(AccountUtils.KEY_ACCOUNT) ?: ""
             }
             return fromJsonString(myContext, jsonString, false).logMe("Loaded from bundle")
         }

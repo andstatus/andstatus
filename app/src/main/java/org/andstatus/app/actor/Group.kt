@@ -55,7 +55,7 @@ object Group {
         return actor.origin.myContext.users().reload(group)
     }
 
-    private fun optOidFromEndpoint(actor: Actor?, groupType: GroupType?): Optional<String?>? {
+    private fun optOidFromEndpoint(actor: Actor?, groupType: GroupType?): Optional<String> {
         return (if (groupType == GroupType.FOLLOWERS) actor.getEndpoint(ActorEndpointType.API_FOLLOWERS) else if (groupType == GroupType.FRIENDS) actor.getEndpoint(ActorEndpointType.API_FOLLOWING) else Optional.empty())
                 .filter { obj: Uri? -> UriUtils.isDownloadable() }
                 .map { obj: Uri? -> obj.toString() }

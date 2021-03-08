@@ -68,9 +68,10 @@ class ObjectOrId : IsEmpty {
         )
     }
 
-    override fun isEmpty(): Boolean {
-        return !optObj.isPresent && !array.isPresent && !id.isPresent
-    }
+    override val isEmpty: Boolean
+        get() {
+            return !optObj.isPresent && !array.isPresent && !id.isPresent
+        }
 
     fun ifId(consumer: CheckedConsumer<String>): ObjectOrId {
         return id.map { id: String? ->

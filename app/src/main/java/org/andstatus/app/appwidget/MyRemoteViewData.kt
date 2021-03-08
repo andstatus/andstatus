@@ -44,7 +44,7 @@ internal class MyRemoteViewData {
     }
 
     companion object {
-        fun fromViewData(context: Context?, widgetData: MyAppWidgetData?): MyRemoteViewData? {
+        fun fromViewData(context: Context?, widgetData: MyAppWidgetData?): MyRemoteViewData {
             val viewData = MyRemoteViewData()
             viewData.getViewData(context, widgetData)
             return viewData

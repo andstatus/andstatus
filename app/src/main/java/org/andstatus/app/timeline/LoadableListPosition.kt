@@ -26,9 +26,10 @@ class LoadableListPosition<T : ViewItem<T>> private constructor(
         val itemId: Long, val y: Int, val position: Int,
         val minSentDate: Long, val description: String?) : IsEmpty, TaggedClass {
 
-    override fun isEmpty(): Boolean {
-        return itemId == 0L
-    }
+    override val isEmpty: Boolean
+        get() {
+            return itemId == 0L
+        }
 
     fun logV(description: String?): LoadableListPosition<T> {
         MyLog.v(TAG) { description + "; " + this.description }

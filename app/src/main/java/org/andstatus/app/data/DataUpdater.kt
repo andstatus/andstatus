@@ -122,7 +122,7 @@ class DataUpdater(private val execContext: CommandExecutionContext?) {
         val note = activity.note
         try {
             val me = execContext.myContext.accounts().fromActorOfSameOrigin(activity.accountActor)
-            if (me.nonValid()) {
+            if (me.nonValid) {
                 MyLog.w(this, "$method; my account is invalid, skipping: $activity")
                 return
             }
@@ -403,7 +403,7 @@ class DataUpdater(private val execContext: CommandExecutionContext?) {
                 values.put(ActorTable.UPDATED_DATE, actor.updatedDate)
             }
             actor.saveUser()
-            val actorUri: Uri = MatchedUri.Companion.getActorUri(me.getActorId(), actor.actorId)
+            val actorUri: Uri = MatchedUri.Companion.getActorUri(me.actorId, actor.actorId)
             if (actor.actorId == 0L) {
                 values.put(ActorTable.ORIGIN_ID, actor.origin.id)
                 values.put(ActorTable.USER_ID, actor.user.userId)
@@ -442,7 +442,7 @@ class DataUpdater(private val execContext: CommandExecutionContext?) {
         }
     }
 
-    fun downloadOneNoteBy(actor: Actor?): Try<Void?>? {
+    fun downloadOneNoteBy(actor: Actor?): Try<Void> {
         return execContext.getConnection()
                 .getTimeline(true, TimelineType.SENT.connectionApiRoutine, TimelinePosition.Companion.EMPTY,
                         TimelinePosition.Companion.EMPTY, 1, actor)

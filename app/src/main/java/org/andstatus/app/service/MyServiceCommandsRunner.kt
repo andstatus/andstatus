@@ -31,7 +31,7 @@ class MyServiceCommandsRunner(private val myContext: MyContext?) {
             MyLog.d(this, "$method; Context is not ready")
             return
         }
-        if (ma.nonValid()) {
+        if (ma.nonValid) {
             MyLog.d(this, "$method; The account was not loaded")
             return
         } else if (!ma.isValidAndSucceeded) {

@@ -823,7 +823,7 @@ class ActorsScreenWorkTest : ActivityTest<ActorsScreen?>() {
         val listItems = activity.getListLoader().list
         Assert.assertEquals(listItems.toString(), 5, listItems.size.toLong())
         val actor: Actor = ActorsScreenTest.Companion.getByActorOid(listItems, DemoData.Companion.demoData.conversationAuthorThirdActorOid)
-        Assert.assertTrue("Not found " + DemoData.Companion.demoData.conversationAuthorThirdActorOid, actor.nonEmpty())
+        Assert.assertTrue("Not found " + DemoData.Companion.demoData.conversationAuthorThirdActorOid, actor.nonEmpty)
         Assert.assertTrue("Invoked Context menu for $actor", helper.invokeContextMenuAction4ListItemId(
                 method, actor.actorId, ActorContextMenuItem.FRIENDS, 0))
         val followersScreen = helper.waitForNextActivity(method, 15000) as FollowersScreen

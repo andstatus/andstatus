@@ -127,7 +127,7 @@ class AsyncTaskLauncher<Params> {
             return execute<Any?, Any?>(null, { p: Any? ->
                 backgroundFunc.run()
                 Try.success(null)
-            }, { p: Any? -> Consumer { r: Try<Any?>? -> } })
+            }, { p: Any? -> Consumer { r: Try<Any> -> } })
         }
 
         fun <Params, Result> execute(params: Params?,

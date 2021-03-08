@@ -56,7 +56,7 @@ class TimelineTitle private constructor(val title: String?, val subTitle: String
 
         private fun calcTitle(myContext: MyContext?, timeline: Timeline?, accountToHide: MyAccount?,
                               namesAreHidden: Boolean, destination: Destination?): String? {
-            if (timeline.isEmpty() && destination == Destination.TIMELINE_ACTIVITY) {
+            if (timeline.isEmpty && destination == Destination.TIMELINE_ACTIVITY) {
                 return "AndStatus"
             }
             val title = MyStringBuilder()
@@ -82,7 +82,7 @@ class TimelineTitle private constructor(val title: String?, val subTitle: String
 
         private fun calcSubtitle(myContext: MyContext?, timeline: Timeline?, accountToHide: MyAccount?,
                                  namesAreHidden: Boolean, destination: Destination?): String? {
-            if (timeline.isEmpty() && destination == Destination.TIMELINE_ACTIVITY) {
+            if (timeline.isEmpty && destination == Destination.TIMELINE_ACTIVITY) {
                 return ""
             }
             val title = MyStringBuilder()
@@ -109,7 +109,7 @@ class TimelineTitle private constructor(val title: String?, val subTitle: String
 
         private fun showActor(timeline: Timeline?, accountToHide: MyAccount?, namesAreHidden: Boolean): Boolean {
             return (timeline.getTimelineType().isForUser
-                    && !timeline.isCombined() && timeline.actor.nonEmpty()
+                    && !timeline.isCombined() && timeline.actor.nonEmpty
                     && timeline.actor.notSameUser(accountToHide.getActor())
                     && (timeline.actor.user.isMyUser.untrue || namesAreHidden))
         }

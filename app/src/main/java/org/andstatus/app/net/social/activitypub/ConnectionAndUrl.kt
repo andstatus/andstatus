@@ -41,7 +41,7 @@ internal class ConnectionAndUrl private constructor(val apiRoutine: ApiRoutineEn
         return HttpRequest.Companion.of(apiRoutine, uri)
     }
 
-    fun execute(request: HttpRequest?): Try<HttpReadResult?>? {
+    fun execute(request: HttpRequest?): Try<HttpReadResult> {
         return httpConnection.execute(request)
     }
 
@@ -52,12 +52,12 @@ internal class ConnectionAndUrl private constructor(val apiRoutine: ApiRoutineEn
 
     companion object {
         fun fromUriActor(uri: Uri?, connection: ConnectionActivityPub?,
-                         apiRoutine: ApiRoutineEnum?, actor: Actor?): Try<ConnectionAndUrl?>? {
+                         apiRoutine: ApiRoutineEnum?, actor: Actor?): Try<ConnectionAndUrl> {
             return getConnection(connection, apiRoutine, actor).map(CheckedFunction { conu: HttpConnection? -> ConnectionAndUrl(apiRoutine, uri, conu) })
         }
 
         fun fromActor(connection: ConnectionActivityPub?, apiRoutine: ApiRoutineEnum?,
-                      position: TimelinePosition?, actor: Actor?): Try<ConnectionAndUrl?>? {
+                      position: TimelinePosition?, actor: Actor?): Try<ConnectionAndUrl> {
             val endpoint = if (position.optUri().isPresent) position.optUri() else actor.getEndpoint(ActorEndpointType.Companion.from(apiRoutine))
             return if (!endpoint.isPresent) {
                 Try.failure(ConnectionException(StatusCode.BAD_REQUEST, apiRoutine.toString() +
@@ -66,7 +66,7 @@ internal class ConnectionAndUrl private constructor(val apiRoutine: ApiRoutineEn
         }
 
         private fun getConnection(connection: ConnectionActivityPub?, apiRoutine: ApiRoutineEnum?,
-                                  actor: Actor?): Try<HttpConnection?>? {
+                                  actor: Actor?): Try<HttpConnection> {
             var httpConnection = connection.getHttp()
             val host = actor.getConnectionHost()
             if (host.isNullOrEmpty()) {

@@ -234,7 +234,7 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
         return TryUtils.notFound()
     }
 
-    private fun findInOneItemWithChildren(item: T?, actor: Actor?, preferredOrigin: Origin?): Try<ActorViewItem?>? {
+    private fun findInOneItemWithChildren(item: T?, actor: Actor?, preferredOrigin: Origin?): Try<ActorViewItem> {
         val found = findInOneItem(item, actor, preferredOrigin)
         if (found.isSuccess()) return found
         for (child in item.getChildren()) {
@@ -244,19 +244,19 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
         return TryUtils.notFound()
     }
 
-    private fun findInOneItem(item: T?, actor: Actor?, preferredOrigin: Origin?): Try<ActorViewItem?>? {
+    private fun findInOneItem(item: T?, actor: Actor?, preferredOrigin: Origin?): Try<ActorViewItem> {
         if (item is BaseNoteViewItem<*>) {
             return filterSameActorAtOrigin(actor, preferredOrigin, (item as BaseNoteViewItem<*>?).getAuthor())
         } else if (item is ActivityViewItem) {
             val activityViewItem = item as ActivityViewItem?
             return filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.getObjActorItem())
-                    .recoverWith(NoSuchElementException::class.java, CheckedFunction<NoSuchElementException?, Try<out ActorViewItem?>?> { e: NoSuchElementException? -> filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.noteViewItem.author) })
+                    .recoverWith(NoSuchElementException::class.java, CheckedFunction<NoSuchElementException?, Try<out ActorViewItem>> { e: NoSuchElementException? -> filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.noteViewItem.author) })
                     .recoverWith(NoSuchElementException::class.java) { e: NoSuchElementException? -> filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.getActor()) }
         }
         return TryUtils.notFound()
     }
 
-    private fun filterSameActorAtOrigin(actor: Actor?, origin: Origin?, actorViewItem: ActorViewItem?): Try<ActorViewItem?>? {
+    private fun filterSameActorAtOrigin(actor: Actor?, origin: Origin?, actorViewItem: ActorViewItem?): Try<ActorViewItem> {
         val otherActor = actorViewItem.getActor()
         return if (otherActor.origin == origin && otherActor.isSame(actor)) Try.success(actorViewItem) else TryUtils.notFound()
     }
@@ -285,7 +285,7 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
         }
         dropExcessivePage(thisPage)
         actorViewItem = thisPage.actorViewItem
-        if (getPreferredOrigin().nonEmpty() && getPreferredOrigin() != actorViewItem.getActor().origin) {
+        if (getPreferredOrigin().nonEmpty && getPreferredOrigin() != actorViewItem.getActor().origin) {
             setActorViewItem(getPreferredOrigin())
         }
         if (oldCollapser != null && collapsed == oldCollapser.collapseDuplicates && !oldCollapser.individualCollapsedStateIds.isEmpty()) {

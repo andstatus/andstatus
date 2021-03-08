@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.net.social
 
+import android.net.Uri
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.UriUtils
@@ -27,12 +28,13 @@ import java.util.*
  * @author yvolk@yurivolkov.com
  */
 class TimelinePosition private constructor(position: String?) : IsEmpty {
-    private val position: String? = null
-    fun getPosition(): String? {
+    private val position: String = if (position.isNullOrEmpty()) "" else position
+
+    fun getPosition(): String {
         return position
     }
 
-    fun optUri(): Optional<Uri?>? {
+    fun optUri(): Optional<Uri> {
         return UriUtils.toDownloadableOptional(position)
     }
 
@@ -44,13 +46,14 @@ class TimelinePosition private constructor(position: String?) : IsEmpty {
         return StringUtil.isTemp(position)
     }
 
-    override fun isEmpty(): Boolean {
-        return position.isNullOrEmpty()
-    }
+    override val isEmpty: Boolean
+        get() {
+            return position.isEmpty()
+        }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        return if (o !is TimelinePosition) false else position == (o as TimelinePosition?).position
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        return if (other !is TimelinePosition) false else position == other.position
     }
 
     override fun hashCode(): Int {
@@ -58,21 +61,9 @@ class TimelinePosition private constructor(position: String?) : IsEmpty {
     }
 
     companion object {
-        val EMPTY: TimelinePosition? = TimelinePosition("")
-        fun of(position: String?): TimelinePosition? {
-            return if (position.isNullOrEmpty()) {
-                TimelinePosition.Companion.EMPTY
-            } else {
-                TimelinePosition(position)
-            }
-        }
-    }
+        val EMPTY: TimelinePosition = TimelinePosition("")
 
-    init {
-        if (position.isNullOrEmpty()) {
-            this.position = ""
-        } else {
-            this.position = position
-        }
+        fun of(position: String?): TimelinePosition =
+                if (position.isNullOrEmpty()) EMPTY else TimelinePosition(position)
     }
 }

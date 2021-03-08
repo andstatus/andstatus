@@ -108,7 +108,7 @@ class AuthenticatorService : Service() {
                         .getFuture()
                         .tryBlocking()
                         .map<MyAccount?>(CheckedFunction { myContext: MyContext? -> myContext.accounts().fromAccountName(account.name) })
-                        .filter(CheckedPredicate { obj: MyAccount? -> obj.isValid() })
+                        .filter(CheckedPredicate { obj: MyAccount? -> obj.isValid })
                         .map<Boolean?>(CheckedFunction { ma: MyAccount? ->
                             MyLog.i(this, "Removing $ma")
                              MyContextHolder.myContextHolder.getNow().timelines().onAccountDelete(ma)

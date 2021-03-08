@@ -68,7 +68,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Activity oid", "22", activity.oid)
         Assert.assertEquals("Note Oid", "22", note.oid)
         Assert.assertEquals("Account unknown $activity", true,  MyContextHolder.myContextHolder.getNow().accounts()
-                .fromActorOfSameOrigin(activity.accountActor).isValid())
+                .fromActorOfSameOrigin(activity.accountActor).isValid)
         Assert.assertEquals("Is not a note $activity", AObjectType.NOTE, activity.objectType)
         Assert.assertEquals("Favorited $activity", TriState.UNKNOWN, note.getFavoritedBy(activity.accountActor))
         Assert.assertEquals("Counters $activity", 678, note.likesCount)
@@ -114,7 +114,7 @@ class ConnectionMastodonTest {
         val note3 = activity3.note
         Assert.assertEquals("Activity oid", "104114771989428879", activity3.oid)
         Assert.assertEquals("Account unknown $activity3", true,  MyContextHolder.myContextHolder.getNow().accounts()
-                .fromActorOfSameOrigin(activity3.accountActor).isValid())
+                .fromActorOfSameOrigin(activity3.accountActor).isValid)
         Assert.assertEquals("Is not a note $activity3", AObjectType.NOTE, activity3.objectType)
         Assert.assertEquals("Favorited $activity3", TriState.UNKNOWN, note3.getFavoritedBy(activity3.accountActor))
         DemoNoteInserter.Companion.assertVisibility(note3.audience(), Visibility.PRIVATE)
@@ -235,7 +235,7 @@ class ConnectionMastodonTest {
     fun testGetActor() {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_actor)
         val actor = mock.connection.getActor(Actor.Companion.fromOid(accountActor.origin, "5962")).get()
-        Assert.assertTrue(actor.toString(), actor.nonEmpty())
+        Assert.assertTrue(actor.toString(), actor.nonEmpty)
         Assert.assertEquals("Actor's Oid", "5962", actor.oid)
         Assert.assertEquals("Username", "AndStatus", actor.username)
         Assert.assertEquals("WebfingerId", "andstatus@mastodon.social", actor.webFingerId)

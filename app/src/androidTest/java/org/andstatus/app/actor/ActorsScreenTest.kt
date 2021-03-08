@@ -835,7 +835,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem?>() {
                 .extractActorsFromContent(content, Actor.Companion.EMPTY)
         Assert.assertEquals(logMsg, 3, actors.size.toLong())
         Assert.assertEquals(logMsg, "unknownUser", actors[2].getUsername())
-        Assert.assertEquals(logMsg, "unknownUser@example.com", actors[2].getUniqueName())
+        Assert.assertEquals(logMsg, "unknownUser@example.com", actors[2].uniqueName)
         Assert.assertEquals(logMsg, "unknownuser@example.com", actors[2].getWebFingerId())
         val actorsScreen = Try.of { tryToOpenActorsScreen(method, helper, logMsg) }
                 .recover(java.lang.AssertionError::class.java) { e: java.lang.AssertionError? -> tryToOpenActorsScreen(method, helper, logMsg) }
@@ -846,9 +846,9 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem?>() {
                 .filter(Predicate { actor: Actor? -> actor.oid == DemoData.Companion.demoData.conversationAuthorThirdActorOid })
                 .findAny().orElse(Actor.Companion.EMPTY)
         Assert.assertTrue("Found " + DemoData.Companion.demoData.conversationAuthorThirdActorOid
-                + " cached " +  MyContextHolder.myContextHolder.getNow().users().actors, actorE.nonEmpty())
+                + " cached " +  MyContextHolder.myContextHolder.getNow().users().actors, actorE.nonEmpty)
         val actorA: Actor = ActorsScreenTest.Companion.getByActorOid(listItems, DemoData.Companion.demoData.conversationAuthorThirdActorOid)
-        Assert.assertTrue("Not found " + DemoData.Companion.demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA.nonEmpty())
+        Assert.assertTrue("Not found " + DemoData.Companion.demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA.nonEmpty)
         compareAttributes(actorE, actorA, false)
         val actorsScreenHelper = ListScreenTestHelper(actorsScreen)
         actorsScreenHelper.clickListAtPosition(method, actorsScreenHelper.getPositionOfListItemId(listItems[if (listItems.size > 2) 2 else 0].actorId))
@@ -869,7 +869,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem?>() {
         Assert.assertTrue("""
     No view item. $logMsg
     The note was not found in the timeline $timelineData
-    """.trimIndent(), item.nonEmpty())
+    """.trimIndent(), item.nonEmpty)
         Assert.assertTrue("Invoked Context menu for $logMsg", helper.invokeContextMenuAction4ListItemId(method,
                 item.getId(), NoteContextMenuItem.ACTORS_OF_NOTE, R.id.note_wrapper))
         val actorsScreen = helper.waitForNextActivity(method, 25000) as ActorsScreen

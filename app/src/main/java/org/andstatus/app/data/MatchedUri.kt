@@ -121,7 +121,7 @@ enum class MatchedUri(private val code: Int) {
         }
 
         fun getTimelineUri(timeline: Timeline): Uri {
-            var uri = getBaseAccountUri(timeline.myAccountToSync.getActorId(), NoteTable.TABLE_NAME)
+            var uri = getBaseAccountUri(timeline.myAccountToSync.actorId, NoteTable.TABLE_NAME)
             uri = Uri.withAppendedPath(uri, LISTTYPE_SEGMENT + "/" + timeline.timelineType.save())
             uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + timeline.getOrigin().id)
             uri = Uri.withAppendedPath(uri, ACTOR_SEGMENT)

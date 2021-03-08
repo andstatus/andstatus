@@ -115,17 +115,17 @@ class MyAppWidgetData private constructor(val events: NotificationEvents?, priva
     }
 
     companion object {
-        private val TAG: String? = MyAppWidgetData::class.java.simpleName
+        private val TAG: String = MyAppWidgetData::class.java.simpleName
 
         /** Words shown in a case there is nothing new  */
-        private val PREF_NOTHING_KEY: String? = "nothing"
+        private val PREF_NOTHING_KEY: String = "nothing"
 
         /** Date and time when counters where cleared  */
-        private val PREF_DATESINCE_KEY: String? = "datecleared"
+        private val PREF_DATESINCE_KEY: String = "datecleared"
 
         /** Date and time when data was checked on the server last time  */
-        private val PREF_DATECHECKED_KEY: String? = "datechecked"
-        fun newInstance(events: NotificationEvents?, appWidgetId: Int): MyAppWidgetData? {
+        private val PREF_DATECHECKED_KEY: String = "datechecked"
+        fun newInstance(events: NotificationEvents?, appWidgetId: Int): MyAppWidgetData {
             val data = MyAppWidgetData(events, appWidgetId)
             if ( MyContextHolder.myContextHolder.getNow().isReady()) {
                 data.load()

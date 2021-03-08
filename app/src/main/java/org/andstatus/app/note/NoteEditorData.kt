@@ -121,7 +121,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
 
     override fun toString(): String {
         val builder: MyStringBuilder = MyStringBuilder.Companion.of(activity.toString())
-        if (attachedImageFiles.nonEmpty()) {
+        if (attachedImageFiles.nonEmpty) {
             builder.withComma(attachedImageFiles.toString())
         }
         if (replyToConversationParticipants) {
@@ -138,14 +138,14 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
         values.put(NoteTable.SUMMARY, activity.getNote().summary)
         values.put(NoteTable.SENSITIVE, activity.getNote().isSensitive)
         values.put(NoteTable.CONTENT, activity.getNote().content)
-        if (attachedImageFiles.nonEmpty()) {
+        if (attachedImageFiles.nonEmpty) {
             values.put(DownloadType.ATTACHMENT.name, attachedImageFiles.list.toString())
         }
         if (replyToConversationParticipants) {
             values.put("Reply", "all")
         }
         val inReplyTo = activity.getNote().inReplyTo
-        if (inReplyTo.nonEmpty()) {
+        if (inReplyTo.nonEmpty) {
             val name = inReplyTo.note.name
             val summary = inReplyTo.note.summary
             values.put("InReplyTo", (if (!name.isNullOrEmpty()) name + MyStringBuilder.Companion.COMMA else "") +
@@ -168,7 +168,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
         }
     }
 
-    fun addAttachment(uri: Uri?, mediaType: Optional<String?>?) {
+    fun addAttachment(uri: Uri?, mediaType: Optional<String>) {
         activity.addAttachment(
                 Attachment.Companion.fromUriAndMimeType(uri, mediaType.orElse("")),
                 ma.getOrigin().originType.maxAttachmentsToSend
@@ -185,12 +185,13 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
         return ma
     }
 
-    override fun isEmpty(): Boolean {
-        return activity.getNote().isEmpty
-    }
+    override val isEmpty: Boolean
+        get() {
+            return activity.getNote().isEmpty
+        }
 
     fun isValid(): Boolean {
-        return this !== EMPTY && ma.isValid()
+        return this !== EMPTY && ma.isValid
     }
 
     fun mayBeEdited(): Boolean {
@@ -230,7 +231,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
     }
 
     fun addMentionsToText(): NoteEditorData? {
-        if (ma.isValid() && getInReplyToNoteId() != 0L) {
+        if (ma.isValid && getInReplyToNoteId() != 0L) {
             if (replyToConversationParticipants) {
                 addConversationParticipantsBeforeText()
             } else if (replyToMentionedActors) {
@@ -276,7 +277,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
                 }
             }
         }
-        if (mentions.nonEmpty()) {
+        if (mentions.nonEmpty) {
             setContent(mentions.toString() + " " + getContent(), TextMediaType.HTML)
         }
         return this
@@ -287,7 +288,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
     }
 
     fun appendMentionedActorToText(mentionedActor: Actor?): NoteEditorData? {
-        val name = mentionedActor.getUniqueName()
+        val name = mentionedActor.uniqueName
         if (!name.isNullOrEmpty()) {
             var bodyText2 = "@$name "
             if (!getContent().isNullOrEmpty() && !(getContent() + " ").contains(bodyText2)) {
@@ -307,7 +308,7 @@ class NoteEditorData private constructor(val ma: MyAccount?, activity: AActivity
         return this
     }
 
-    fun getVisibility(): Visibility? {
+    fun visibility: Visibility? {
         return activity.getNote().audience().visibility
     }
 

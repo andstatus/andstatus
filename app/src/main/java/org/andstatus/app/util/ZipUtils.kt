@@ -61,7 +61,7 @@ object ZipUtils {
         }
     }
 
-    fun unzipFiles(zipped: File, targetFolder: File): Try<String?>? {
+    fun unzipFiles(zipped: File, targetFolder: File): Try<String> {
         if (!targetFolder.exists() && !targetFolder.mkdir()) {
             return Try.failure(IOException("Couldn't create folder: '" + targetFolder.absolutePath + "'"))
         }

@@ -99,7 +99,7 @@ object TimelineSql {
                 + " ON (" + ProjectionMap.NOTE_TABLE_ALIAS + "." + BaseColumns._ID + "="
                 + ProjectionMap.ACTIVITY_TABLE_ALIAS + "." + ActivityTable.NOTE_ID
                 + noteWhere.andWhere + ")")
-        if (audienceWhere.nonEmpty()) {
+        if (audienceWhere.nonEmpty) {
             tables = (tables + " INNER JOIN " + AudienceTable.TABLE_NAME + " ON (" +
                     ProjectionMap.NOTE_TABLE_ALIAS + "." + BaseColumns._ID + "=" +
                     AudienceTable.TABLE_NAME + "." + AudienceTable.NOTE_ID

@@ -36,10 +36,10 @@ class ApiDebugger(private val myContext: MyContext?, private val activityContext
     }
 
     private fun debugGet(text: String?) {
-        AsyncTaskLauncher.Companion.execute<Any?, HttpReadResult?>(null, Function { p: Any? -> debugApiAsync(text) }, Function { p: Any? -> Consumer { results: Try<HttpReadResult?>? -> debugApiSync(results) } })
+        AsyncTaskLauncher.Companion.execute<Any?, HttpReadResult?>(null, Function { p: Any? -> debugApiAsync(text) }, Function { p: Any? -> Consumer { results: Try<HttpReadResult> -> debugApiSync(results) } })
     }
 
-    private fun debugApiAsync(text: String?): Try<HttpReadResult?>? {
+    private fun debugApiAsync(text: String?): Try<HttpReadResult> {
         previousValue = text
         val connection = myContext.accounts().currentAccount.connection
         return connection.pathToUri(connection.partialPathToApiPath(text))
@@ -47,7 +47,7 @@ class ApiDebugger(private val myContext: MyContext?, private val activityContext
                 .flatMap { request: HttpRequest? -> connection.execute(request) }
     }
 
-    private fun debugApiSync(results: Try<HttpReadResult?>?) {
+    private fun debugApiSync(results: Try<HttpReadResult>) {
         results
                 .onSuccess(Consumer { result: HttpReadResult? -> DialogFactory.showOkAlertDialog(this, activityContext, android.R.string.ok, result.getResponse()) })
                 .onFailure { e: Throwable? -> DialogFactory.showOkAlertDialog(this, activityContext, R.string.error_connection_error, e.toString()) }

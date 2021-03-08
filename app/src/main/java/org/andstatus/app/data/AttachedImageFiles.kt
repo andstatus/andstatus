@@ -30,9 +30,10 @@ import java.util.function.Function
 import java.util.stream.Collectors
 
 class AttachedImageFiles(val list: MutableList<AttachedMediaFile?>?) : IsEmpty {
-    override fun isEmpty(): Boolean {
-        return list.isEmpty()
-    }
+    override val isEmpty: Boolean
+        get() {
+            return list.isEmpty()
+        }
 
     fun size(): Int {
         return list.size
@@ -69,11 +70,11 @@ class AttachedImageFiles(val list: MutableList<AttachedMediaFile?>?) : IsEmpty {
         return builder.toString()
     }
 
-    fun tooLargeAttachment(maxBytes: Long): Optional<AttachedMediaFile?>? {
+    fun tooLargeAttachment(maxBytes: Long): Optional<AttachedMediaFile> {
         return list.stream().filter { item: AttachedMediaFile? -> item.downloadFile.size > maxBytes }.findAny()
     }
 
-    fun forUri(uri: Uri?): Optional<AttachedMediaFile?>? {
+    fun forUri(uri: Uri?): Optional<AttachedMediaFile> {
         return list.stream().filter { item: AttachedMediaFile? -> uri == item.uri }.findAny()
     }
 

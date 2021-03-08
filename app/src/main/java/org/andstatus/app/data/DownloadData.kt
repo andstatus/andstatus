@@ -392,14 +392,15 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         if (fileStored.existed) {
             builder.withComma("file", getFilename())
             builder.withComma("size", fileSize)
-            if (mediaMetadata.nonEmpty()) builder.withComma(mediaMetadata.toString())
+            if (mediaMetadata.nonEmpty) builder.withComma(mediaMetadata.toString())
         }
         return MyStringBuilder.formatKeyValue(this, builder.toString())
     }
 
-    override fun isEmpty(): Boolean {
-        return this === EMPTY || uri == Uri.EMPTY
-    }
+    override val isEmpty: Boolean
+        get() {
+            return this === EMPTY || uri == Uri.EMPTY
+        }
 
     fun getDownloadedDate(): Long {
         return downloadedDate

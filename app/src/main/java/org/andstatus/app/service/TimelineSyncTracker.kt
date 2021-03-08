@@ -53,13 +53,13 @@ class TimelineSyncTracker(private val timeline: Timeline?, private val isSyncYou
 
     fun onPositionRequested(position: TimelinePosition?) {
         requestedPositions.add(position)
-        if (position.isEmpty()) {
+        if (position.isEmpty) {
             clearPosition()
         }
     }
 
     fun onNewPage(page: InputTimelinePage?) {
-        if (page.firstPosition.nonEmpty()) {
+        if (page.firstPosition.nonEmpty) {
             firstPosition = page.firstPosition
         }
         nextPosition = if (isSyncYounger) page.youngerPosition else page.olderPosition
@@ -85,15 +85,15 @@ class TimelineSyncTracker(private val timeline: Timeline?, private val isSyncYou
         return downloadedCounter
     }
 
-    fun getNextPositionToRequest(): Optional<TimelinePosition?>? {
-        val candidate = if (nextPosition.isEmpty()) getPreviousTimelinePosition() else nextPosition
-        if (candidate.nonEmpty() && !requestedPositions.contains(candidate)) return Optional.of(candidate)
-        return if (downloadedCounter == 0L && firstPosition.nonEmpty() && !requestedPositions.contains(firstPosition)) {
+    fun getNextPositionToRequest(): Optional<TimelinePosition> {
+        val candidate = if (nextPosition.isEmpty) getPreviousTimelinePosition() else nextPosition
+        if (candidate.nonEmpty && !requestedPositions.contains(candidate)) return Optional.of(candidate)
+        return if (downloadedCounter == 0L && firstPosition.nonEmpty && !requestedPositions.contains(firstPosition)) {
             Optional.of(firstPosition)
         } else Optional.empty()
     }
 
-    fun onNotFound(): Optional<TimelinePosition?>? {
+    fun onNotFound(): Optional<TimelinePosition> {
         return if (downloadedCounter > 0 || requestedPositions.contains(TimelinePosition.Companion.EMPTY)) Optional.empty() else Optional.of(TimelinePosition.Companion.EMPTY)
     }
 

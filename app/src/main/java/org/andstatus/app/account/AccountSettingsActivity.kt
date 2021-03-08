@@ -116,7 +116,7 @@ class AccountSettingsActivity : MyActivity() {
         }
     }
 
-    private class TaskResult private constructor(val status: ResultStatus?, val message: CharSequence?, val whoAmI: Optional<Uri?>?, autUri: Uri?) {
+    private class TaskResult private constructor(val status: ResultStatus?, val message: CharSequence?, val whoAmI: Optional<Uri>, autUri: Uri?) {
         val authUri: Uri
 
         internal constructor(status: ResultStatus?) : this(status, "", Optional.empty<Uri?>(), Uri.EMPTY) {}
@@ -127,7 +127,7 @@ class AccountSettingsActivity : MyActivity() {
         }
 
         companion object {
-            fun withWhoAmI(status: ResultStatus?, message: CharSequence?, whoAmI: Optional<Uri?>?): TaskResult? {
+            fun withWhoAmI(status: ResultStatus?, message: CharSequence?, whoAmI: Optional<Uri>): TaskResult? {
                 return TaskResult(status, message, whoAmI, Uri.EMPTY)
             }
 
@@ -734,7 +734,7 @@ class AccountSettingsActivity : MyActivity() {
     private fun returnToOurActivity() {
          MyContextHolder.myContextHolder
                 .initialize(this)
-                .whenSuccessAsync(Consumer { myContext: MyContext? ->
+                .whenSuccessAsync(Consumer { myContext: MyContext ->
                     MyLog.v(this, "Returning to $activityOnFinish")
                     val myAccount = myContext.accounts().fromAccountName(getState().getAccount().accountName)
                     if (myAccount.isValid) {
@@ -786,8 +786,9 @@ class AccountSettingsActivity : MyActivity() {
         }
     }
 
-    private fun saveState(): String? {
+    private fun saveState(): String {
         if (state == null) return "(no state)"
+
         var message = "action=" + state.getAccountAction()
         // Explicitly save MyAccount only on "Back key"
         state.builder.save()
@@ -1124,7 +1125,7 @@ class AccountSettingsActivity : MyActivity() {
      * Assuming we already have credentials to verify, verify them
      * @author yvolk@yurivolkov.com
      */
-    private inner class VerifyCredentialsTask internal constructor(private val whoAmI: Optional<Uri?>?) : MyAsyncTask<Void?, Void?, TaskResult?>(PoolEnum.QUICK_UI) {
+    private inner class VerifyCredentialsTask internal constructor(private val whoAmI: Optional<Uri>) : MyAsyncTask<Void?, Void?, TaskResult?>(PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
 
         @Volatile
@@ -1148,7 +1149,7 @@ class AccountSettingsActivity : MyActivity() {
 
         override fun doInBackground2(aVoid: Void?): TaskResult? {
             return if (skip) TaskResult(ResultStatus.NONE) else Try.success(state.builder)
-                    .flatMap(CheckedFunction<MyAccount.Builder?, Try<out MyAccount.Builder?>?> { getOriginConfig() })
+                    .flatMap(CheckedFunction<MyAccount.Builder?, Try<out MyAccount.Builder>> { getOriginConfig() })
                     .flatMap { b: MyAccount.Builder? -> b.getConnection().verifyCredentials(whoAmI) }
                     .flatMap { actor: Actor? -> state.builder.onCredentialsVerified(actor) }
                     .map(CheckedFunction<MyAccount.Builder?, MyAccount?> { getAccount() })
@@ -1157,7 +1158,7 @@ class AccountSettingsActivity : MyActivity() {
                         state.forget()
                         val myContext: MyContext =  MyContextHolder.myContextHolder.initialize(this@AccountSettingsActivity, this).getBlocking()
                         FirstActivity.Companion.checkAndUpdateLastOpenedAppVersion(this@AccountSettingsActivity, true)
-                        val timeline = myContext.timelines().forUser(TimelineType.HOME, myAccount.getActor())
+                        val timeline = myContext.timelines().forUser(TimelineType.HOME, myAccount.actor)
                         if (timeline.isTimeToAutoSync) {
                             initialSyncNeeded = true
                             activityOnFinish = ActivityOnFinish.HOME

@@ -192,7 +192,7 @@ class CommandQueue(private val myContext: MyContext?) {
         accessors.values.forEach(Consumer { obj: Accessor? -> obj.moveCommandsFromPreToMainQueue() })
         if (loaded) clearQueuesInDatabase(db)
         val countNotError = save(db, QueueType.CURRENT)
-                .flatMap(CheckedFunction<Int?, Try<out Int?>?> { i1: Int? -> save(db, QueueType.DOWNLOADS).map(CheckedFunction { i2: Int? -> i1 + i2 }) })
+                .flatMap(CheckedFunction<Int?, Try<out Int>> { i1: Int? -> save(db, QueueType.DOWNLOADS).map(CheckedFunction { i2: Int? -> i1 + i2 }) })
                 .flatMap { i1: Int? -> save(db, QueueType.SKIPPED).map(CheckedFunction { i2: Int? -> i1 + i2 }) }
                 .flatMap { i1: Int? -> save(db, QueueType.RETRY).map(CheckedFunction { i2: Int? -> i1 + i2 }) }
         val countError = save(db, QueueType.ERROR)
@@ -205,7 +205,7 @@ class CommandQueue(private val myContext: MyContext?) {
 
     /** @return Number of items persisted
      */
-    private fun save(db: SQLiteDatabase, queueType: QueueType): Try<Int?>? {
+    private fun save(db: SQLiteDatabase, queueType: QueueType): Try<Int> {
         val method = "saveQueue-" + queueType.save()
         val oneQueue = get(queueType)
         val queue = oneQueue.queue
@@ -243,7 +243,7 @@ class CommandQueue(private val myContext: MyContext?) {
     }
 
     @Synchronized
-    private fun clearQueuesInDatabase(db: SQLiteDatabase): Try<Void?>? {
+    private fun clearQueuesInDatabase(db: SQLiteDatabase): Try<Void> {
         val method = "clearQueuesInDatabase"
         try {
             val sql = "DELETE FROM " + CommandTable.TABLE_NAME
@@ -255,7 +255,7 @@ class CommandQueue(private val myContext: MyContext?) {
         return TryUtils.SUCCESS
     }
 
-    fun clear(): Try<Void?>? {
+    fun clear(): Try<Void> {
         loaded = true
         for ((_, value) in queues) {
             value.clear()
@@ -267,7 +267,7 @@ class CommandQueue(private val myContext: MyContext?) {
         return TryUtils.SUCCESS
     }
 
-    fun deleteCommand(commandData: CommandData?): Try<Void?>? {
+    fun deleteCommand(commandData: CommandData?): Try<Void> {
         for (oneQueue in queues.values) {
             if (commandData.deleteFromQueue(oneQueue)) {
                 changed = true
@@ -515,7 +515,7 @@ class CommandQueue(private val myContext: MyContext?) {
         return CommandData.Companion.EMPTY
     }
 
-    fun inWhichQueue(commandData: CommandData?): Optional<OneQueue?>? {
+    fun inWhichQueue(commandData: CommandData?): Optional<OneQueue> {
         for (oneQueue in queues.values) {
             val queue = oneQueue.queue
             if (queue.contains(commandData)) {

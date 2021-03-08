@@ -33,7 +33,7 @@ import java.util.function.UnaryOperator
  *
  * This class will be close to com.android.email.activity.setup.SetupData
  */
-internal class StateOfAccountChangeProcess private constructor(bundle: Bundle?) {
+class StateOfAccountChangeProcess private constructor(bundle: Bundle?) {
     private var accountAction: String? = Intent.ACTION_DEFAULT
 
     @Volatile
@@ -180,15 +180,15 @@ internal class StateOfAccountChangeProcess private constructor(bundle: Bundle?) 
                     }
                 }
             }
-            if (state.getAccount().isEmpty() && state.getAccountAction() != Intent.ACTION_INSERT) {
+            if (state.getAccount().isEmpty && state.getAccountAction() != Intent.ACTION_INSERT) {
                 when ( MyContextHolder.myContextHolder.getNow().accounts().size()) {
                     0 -> state.setAccountAction(Intent.ACTION_INSERT)
                     1 -> state.builder.rebuildMyAccount(
-                             MyContextHolder.myContextHolder.getNow().accounts().getCurrentAccount().getOAccountName())
+                             MyContextHolder.myContextHolder.getNow().accounts().currentAccount.getOAccountName())
                     else -> state.accountShouldBeSelected = true
                 }
             }
-            if (state.getAccount().isEmpty()) {
+            if (state.getAccount().isEmpty) {
                 if (state.getAccountAction() == Intent.ACTION_INSERT) {
                     val origin: Origin =  MyContextHolder.myContextHolder.getNow()
                             .origins()
@@ -197,7 +197,7 @@ internal class StateOfAccountChangeProcess private constructor(bundle: Bundle?) 
                     state.originShouldBeSelected = true
                 } else {
                     state.builder.rebuildMyAccount(
-                             MyContextHolder.myContextHolder.getNow().accounts().getCurrentAccount().getOAccountName())
+                             MyContextHolder.myContextHolder.getNow().accounts().currentAccount.getOAccountName())
                 }
                 if (!state.builder.isPersistent()) {
                     state.setAccountAction(Intent.ACTION_INSERT)

@@ -39,42 +39,42 @@ import java.util.function.Predicate
 import java.util.function.UnaryOperator
 import java.util.stream.Collectors
 
-class Notifier(val myContext: MyContext?) {
+class Notifier(val myContext: MyContext) {
     private var nM: NotificationManager? = null
     private var notificationArea = false
     private var vibration = false
     private var soundUri: Uri? = null
-    private var enabledEvents: MutableList<NotificationEventType?>? = emptyList()
-    private val refEvents: AtomicReference<NotificationEvents?>? = AtomicReference(NotificationEvents.Companion.EMPTY)
+    private var enabledEvents: MutableList<NotificationEventType> = emptyList()
+    private val refEvents: AtomicReference<NotificationEvents> = AtomicReference(NotificationEvents.Companion.EMPTY)
     fun clearAll() {
-        AppWidgets.Companion.of(refEvents.updateAndGet(UnaryOperator { obj: NotificationEvents? -> obj.clearAll() })).clearCounters().updateViews()
+        AppWidgets.Companion.of(refEvents.updateAndGet(UnaryOperator { obj: NotificationEvents -> obj.clearAll() })).clearCounters().updateViews()
         clearAndroidNotifications()
     }
 
     fun clear(timeline: Timeline) {
-        if (timeline.nonEmpty()) {
-            AppWidgets.Companion.of(refEvents.updateAndGet(UnaryOperator { events: NotificationEvents? -> events.clear(timeline) })).clearCounters().updateViews()
+        if (timeline.nonEmpty) {
+            AppWidgets.Companion.of(refEvents.updateAndGet(UnaryOperator { events: NotificationEvents -> events.clear(timeline) })).clearCounters().updateViews()
             clearAndroidNotifications()
         }
     }
 
     private fun clearAndroidNotifications() {
-        NotificationEventType.Companion.validValues.forEach(Consumer { eventType: NotificationEventType? -> clearAndroidNotification(eventType) })
+        NotificationEventType.Companion.validValues.forEach(Consumer { eventType: NotificationEventType -> clearAndroidNotification(eventType) })
     }
 
-    fun clearAndroidNotification(eventType: NotificationEventType?) {
-        if (nM != null) nM.cancel(MyLog.APPTAG, eventType.notificationId())
+    fun clearAndroidNotification(eventType: NotificationEventType) {
+        nM?.cancel(MyLog.APPTAG, eventType.notificationId())
     }
 
     fun update() {
-        AppWidgets.Companion.of(refEvents.updateAndGet(UnaryOperator { obj: NotificationEvents? -> obj.load() })).updateData().updateViews()
+        AppWidgets.Companion.of(refEvents.updateAndGet(UnaryOperator { obj: NotificationEvents -> obj.load() })).updateData().updateViews()
         if (notificationArea) {
-            refEvents.get().map.values.stream().filter { data: NotificationData? -> data.count > 0 }.forEach { data: NotificationData? -> myContext.notify(data) }
+            refEvents.get().map.values.stream().filter { data: NotificationData -> data.count > 0 }.forEach { data: NotificationData -> myContext.notify(data) }
         }
     }
 
     fun getAndroidNotification(data: NotificationData): Notification? {
-        val contentText = (if (data.myActor.nonEmpty()) data.myActor.actorNameInTimeline else myContext.context().getText(data.event.titleResId)).toString() + ": " + data.count
+        val contentText = (if (data.myActor.nonEmpty) data.myActor.actorNameInTimeline else myContext.context().getText(data.event.titleResId)).toString() + ": " + data.count
         MyLog.v(this, contentText)
         val builder = Notification.Builder(myContext.context())
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -99,18 +99,19 @@ class Notifier(val myContext: MyContext?) {
         return builder.build()
     }
 
-    fun notifyAndroid(data: NotificationData?) {
-        if (nM == null) return
-        createNotificationChannel(data)
-        try {
-            nM.notify(MyLog.APPTAG, data.event.notificationId(), getAndroidNotification(data))
-        } catch (e: Exception) {
-            MyLog.w(this, "Notification failed", e)
+    fun notifyAndroid(data: NotificationData) {
+        nM?.let {
+            createNotificationChannel(data)
+            try {
+                it.notify(MyLog.APPTAG, data.event.notificationId(), getAndroidNotification(data))
+            } catch (e: Exception) {
+                MyLog.w(this, "Notification failed", e)
+            }
         }
     }
 
     @TargetApi(Build.VERSION_CODES.O)
-    fun createNotificationChannel(data: NotificationData?) {
+    fun createNotificationChannel(data: NotificationData) {
         if (nM == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val channelId = data.channelId()
         val channelName = myContext.context().getText(data.event.titleResId)
@@ -130,7 +131,7 @@ class Notifier(val myContext: MyContext?) {
             }
         }
         channel.setSound(if (isSilent) null else soundUri, Notification.AUDIO_ATTRIBUTES_DEFAULT)
-        nM.createNotificationChannel(channel)
+        nM?.createNotificationChannel(channel)
     }
 
     fun initialize() {
@@ -144,9 +145,12 @@ class Notifier(val myContext: MyContext?) {
         notificationArea = NotificationMethodType.NOTIFICATION_AREA.isEnabled
         vibration = NotificationMethodType.VIBRATION.isEnabled
         soundUri = NotificationMethodType.SOUND.uri
-        enabledEvents = NotificationEventType.Companion.validValues.stream().filter(Predicate { obj: NotificationEventType? -> obj.isEnabled() })
+        enabledEvents = NotificationEventType.Companion.validValues.stream()
+                .filter(Predicate { obj: NotificationEventType -> obj.isEnabled() })
                 .collect(Collectors.toList())
-        refEvents.set(NotificationEvents.Companion.of(myContext, enabledEvents).load())
+                .also {
+                    refEvents.set(NotificationEvents.Companion.of(myContext, it).load())
+        }
         MyLog.i(this, "notifierInitializedMs:" + stopWatch.time + "; " + refEvents.get().size() + " events")
     }
 
@@ -160,12 +164,12 @@ class Notifier(val myContext: MyContext?) {
         update()
     }
 
-    fun getEvents(): NotificationEvents? {
+    fun getEvents(): NotificationEvents {
         return refEvents.get()
     }
 
     companion object {
-        private val VIBRATION_PATTERN: LongArray? = longArrayOf(200, 300, 200, 300)
+        private val VIBRATION_PATTERN: LongArray = longArrayOf(200, 300, 200, 300)
         private const val LIGHT_COLOR = Color.GREEN
     }
 }

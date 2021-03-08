@@ -99,7 +99,7 @@ class DataUpdaterTest {
         Assert.assertNotEquals("Note added", 0, noteId)
         Assert.assertNotEquals("Activity added", 0, activity.id)
         val data = TestSuite.getMyContextForTest().getAssertionData(DataUpdater.Companion.MSG_ASSERTION_KEY)
-        Assert.assertTrue("Data put", data.nonEmpty())
+        Assert.assertTrue("Data put", data.nonEmpty)
         Assert.assertEquals("Note Oid", noteOid, data.values
                 .getAsString(NoteTable.NOTE_OID))
         Assert.assertEquals("Note is loaded", DownloadStatus.LOADED,
@@ -536,7 +536,7 @@ $activity""",
                     Actor.Companion.EMPTY, buddy)
             Assert.assertNotEquals("'$buddyUniqueName' is not added $buddy", 0, buddy.actorId)
         } else {
-            Assert.assertTrue("Note is a reply to '$buddyUniqueName': $note", buddy.isEmpty())
+            Assert.assertTrue("Note is a reply to '$buddyUniqueName': $note", buddy.isEmpty)
         }
     }
 

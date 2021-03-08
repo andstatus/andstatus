@@ -830,7 +830,7 @@ class AvatarDownloaderTest {
 
     private fun loadForOneMyAccount(ma: MyAccount?, urlStringInitial: String?) {
         AvatarDownloaderTest.Companion.changeAvatarUrl(ma.getActor(), urlStringInitial)
-        DownloadData.Companion.deleteAllOfThisActor(ma.getOrigin().myContext, ma.getActorId())
+        DownloadData.Companion.deleteAllOfThisActor(ma.getOrigin().myContext, ma.actorId)
         val loader: FileDownloader = AvatarDownloader(ma.getActor())
         Assert.assertEquals("Not loaded yet", DownloadStatus.ABSENT, loader.status)
         loadAndAssertStatusForMa(ma, "First loading",

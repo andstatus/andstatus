@@ -836,7 +836,7 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem?>() {
         Assert.assertEquals("Visibility $note", Visibility.PUBLIC_AND_TO_FOLLOWERS, note.audience().visibility)
         Assert.assertFalse("Not sensitive $note", note.isSensitive)
         Assert.assertTrue("Audience should contain $actorUniqueName\n $note",
-                note.audience().nonSpecialActors.stream().anyMatch { a: Actor? -> actorUniqueName == a.getUniqueName() })
+                note.audience().nonSpecialActors.stream().anyMatch { a: Actor? -> actorUniqueName == a.uniqueName })
     }
 
     @Test

@@ -800,7 +800,7 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem?>() {
         mService = MyServiceTestHelper()
         mService.setUp(DemoData.Companion.demoData.gnusocialTestAccountName)
         ma = DemoData.Companion.demoData.getGnuSocialAccount()
-        Assert.assertTrue(ma.isValid())
+        Assert.assertTrue(ma.isValid)
          MyContextHolder.myContextHolder.getBlocking().accounts().setCurrentAccount(ma)
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "image/png"
@@ -822,7 +822,7 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem?>() {
     fun testSharingMediaToThisApp() {
         val method = "testSharingMediaToThisApp"
         val listScreenTestHelper: ListScreenTestHelper<TimelineActivity<*>?> = ListScreenTestHelper.Companion.newForSelectorDialog<TimelineActivity<*>?>(activity, SelectorDialog.Companion.getDialogTag())
-        listScreenTestHelper.selectIdFromSelectorDialog(method, ma.getActorId())
+        listScreenTestHelper.selectIdFromSelectorDialog(method, ma.actorId)
         val editorView = activity.findViewById<View?>(R.id.note_editor)
         ActivityTestHelper.Companion.waitViewVisible(method, editorView)
         val details = editorView.findViewById<TextView?>(R.id.noteEditDetails)

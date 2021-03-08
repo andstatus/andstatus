@@ -54,7 +54,7 @@ class MyContextHolder private constructor() : TaggedClass {
 
     @GuardedBy("CONTEXT_LOCK")
     @Volatile
-    private var myFutureContext: MyFutureContext = MyFutureContext.completed(MyContext.EMPTY)
+    private var myFutureContext: MyFutureContext = MyFutureContext.completed(MyContextEmpty.EMPTY)
 
     @Volatile
     private var onRestore = false
@@ -128,7 +128,7 @@ class MyContextHolder private constructor() : TaggedClass {
     }
 
     fun thenStartApp(): MyContextHolder {
-        return whenSuccessAsync({ myContext: MyContext? -> FirstActivity.startApp(myContext) }, UiThreadExecutor.INSTANCE)
+        return whenSuccessAsync({ myContext: MyContext -> FirstActivity.startApp(myContext) }, UiThreadExecutor.INSTANCE)
     }
 
     fun whenSuccessAsync(consumer: Consumer<MyContext>, executor: Executor): MyContextHolder {
@@ -151,11 +151,11 @@ class MyContextHolder private constructor() : TaggedClass {
      * Quickly returns, providing context for the deferred initialization
      */
     fun storeContextIfNotPresent(context: Context?, calledBy: Any?): MyContextHolder {
-        if (context == null || getNow().context() != null) return this
+        if (context == null || getNow().baseContext() != null) return this
         synchronized(CONTEXT_LOCK) {
-            if (myFutureContext.getNow().context() == null) {
+            if (myFutureContext.getNow().baseContext() == null) {
                 val contextCreator = myFutureContext.getNow().newCreator(context, calledBy)
-                requireNonNullContext(contextCreator.context(), calledBy, "no compatible context")
+                requireNonNullContext(contextCreator.baseContext(), calledBy, "no compatible context")
                 myFutureContext = MyFutureContext.completed(contextCreator)
             }
         }
@@ -227,12 +227,14 @@ class MyContextHolder private constructor() : TaggedClass {
     }
 
     private fun calculateExecutionMode(): ExecutionMode {
-        val context = getNow().context() ?: return ExecutionMode.UNKNOWN
-        if ("true" == Settings.System.getString(context.contentResolver, "firebase.test.lab")) {
+        val myContext = getNow()
+        if (myContext.isEmpty()) return ExecutionMode.UNKNOWN
+
+        if ("true" == Settings.System.getString(myContext.context().contentResolver, "firebase.test.lab")) {
             // See https://firebase.google.com/docs/test-lab/android-studio
-            return if (getNow().isTestRun()) ExecutionMode.FIREBASE_TEST else ExecutionMode.ROBO_TEST
+            return if (myContext.isTestRun()) ExecutionMode.FIREBASE_TEST else ExecutionMode.ROBO_TEST
         }
-        return if (getNow().isTestRun()) {
+        return if (myContext.isTestRun()) {
             ExecutionMode.TEST
         } else ExecutionMode.DEVICE
     }

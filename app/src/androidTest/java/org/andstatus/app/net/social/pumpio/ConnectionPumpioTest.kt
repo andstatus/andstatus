@@ -214,7 +214,7 @@ class ConnectionPumpioTest {
         activity = timeline[ind]
         note = activity.note
         Assert.assertEquals(TriState.UNKNOWN, activity.isSubscribedByMe)
-        Assert.assertTrue("Is a reply", note.inReplyTo.nonEmpty())
+        Assert.assertTrue("Is a reply", note.inReplyTo.nonEmpty)
         Assert.assertEquals("Is not a reply to this actor $activity", "jankusanagi@identi.ca",
                 note.inReplyTo.author.uniqueName)
         Assert.assertEquals(TriState.UNKNOWN, note.inReplyTo.isSubscribedByMe)
@@ -259,7 +259,7 @@ class ConnectionPumpioTest {
     private fun assertJpopeActor(actor: Actor?, stored: Boolean) {
         Assert.assertEquals("Sender's oid", "acct:jpope@io.jpope.org", actor.oid)
         Assert.assertEquals("Sender's username", "jpope", actor.getUsername())
-        Assert.assertEquals("Sender's unique name in Origin", "jpope@io.jpope.org", actor.getUniqueName())
+        Assert.assertEquals("Sender's unique name in Origin", "jpope@io.jpope.org", actor.uniqueName)
         Assert.assertEquals("Sender's Display name", "jpope", actor.getRealName())
         Assert.assertEquals("Sender's profile image URL", "https://io.jpope.org/uploads/jpope/2013/7/8/LPyLPw_thumb.png",
                 actor.getAvatarUrl())
@@ -372,7 +372,7 @@ class ConnectionPumpioTest {
         val activity = connection.follow(actorOid, false).get()
         Assert.assertEquals("Not unfollow action", ActivityType.UNDO_FOLLOW, activity.type)
         val objActor = activity.objActor
-        Assert.assertTrue("objActor is present", objActor.nonEmpty())
+        Assert.assertTrue("objActor is present", objActor.nonEmpty)
         Assert.assertEquals("Actor", "acct:t131t@pump1.example.com", activity.actor.oid)
         Assert.assertEquals("Object of action", actorOid, objActor.oid)
     }

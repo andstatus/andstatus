@@ -497,7 +497,7 @@ abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), M
         if (isVisible) {
             (findViewById<View?>(R.id.sync_text) as TextView).text = if (TextUtils.isEmpty(loadingText)) syncingText else loadingText
         }
-        if (if (isVisible) textualSyncIndicator.getVisibility() != View.VISIBLE else textualSyncIndicator.getVisibility() == View.VISIBLE) {
+        if (if (isVisible) textualSyncIndicator.visibility != View.VISIBLE else textualSyncIndicator.visibility == View.VISIBLE) {
             MyLog.v(this) { "$source set textual Sync indicator to $isVisible" }
             textualSyncIndicator.setVisibility(if (isVisible) View.VISIBLE else View.GONE)
         }
@@ -514,7 +514,7 @@ abstract class LoadableListActivity<T : ViewItem<T?>?> : MyBaseListActivity(), M
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            if (searchView != null && searchView.getVisibility() == View.VISIBLE) {
+            if (searchView != null && searchView.visibility == View.VISIBLE) {
                 searchView.onActionViewCollapsed()
                 return true
             }

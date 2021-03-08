@@ -50,7 +50,7 @@ class InstanceForNewAccountFragment : Fragment() {
         val activity = activity as AccountSettingsActivity?
         if (activity != null) {
             origin = activity.state.account.origin
-            originType = if (origin.nonEmpty()) origin.getOriginType() else OriginType.Companion.fromCode(arguments.getString(IntentExtra.ORIGIN_TYPE.key))
+            originType = if (origin.nonEmpty) origin.originType else OriginType.Companion.fromCode(arguments.getString(IntentExtra.ORIGIN_TYPE.key))
             prepareScreen(activity)
             activity.updateScreen()
             if (origin.isPersistent()) {
@@ -70,7 +70,7 @@ class InstanceForNewAccountFragment : Fragment() {
                 ${getText(if (originType === OriginType.MASTODON) R.string.host_hint_mastodon else R.string.host_hint)}
                 """.trimIndent()
             instanceTextView.hint = hint
-            if (origin.nonEmpty()) {
+            if (origin.nonEmpty) {
                 instanceTextView.text = origin.getHost()
             }
         }
@@ -91,7 +91,7 @@ class InstanceForNewAccountFragment : Fragment() {
                 .onSuccess { originNew: Origin? -> onNewOrigin(activity, originNew) }
     }
 
-    private fun getNewOrExistingOrigin(activity: AccountSettingsActivity?): Try<Origin?>? {
+    private fun getNewOrExistingOrigin(activity: AccountSettingsActivity?): Try<Origin> {
         val instanceTextView = activity.findFragmentViewById(R.id.originInstance) as TextView
                 ?: return TryUtils.failure("No text view ???")
         val hostOrUrl = instanceTextView.text.toString()
@@ -111,7 +111,7 @@ class InstanceForNewAccountFragment : Fragment() {
         return if (origin.isPersistent) Try.success(origin) else TryUtils.failure(getText(R.string.error_invalid_value).toString() + ": " + origin)
     }
 
-    private fun onNewOrigin(activity: AccountSettingsActivity?, originNew: Origin?) {
+    private fun onNewOrigin(activity: AccountSettingsActivity, originNew: Origin) {
         if (originNew == origin ||  MyContextHolder.myContextHolder.getNow().isReady()) {
             if (activity.getState().account.origin != originNew) {
                 activity.getState().builder.origin = originNew
@@ -120,9 +120,9 @@ class InstanceForNewAccountFragment : Fragment() {
         } else {
             val future1: CompletableFuture<MyContext?> =  MyContextHolder.myContextHolder.initialize(activity).getFuture().future
             MyLog.d(this, "onNewOrigin After 'initialize' $future1")
-            val future2: CompletableFuture<MyContext?> =  MyContextHolder.myContextHolder.whenSuccessAsync(Consumer { myContext: MyContext? ->
+            val future2: CompletableFuture<MyContext> =  MyContextHolder.myContextHolder.whenSuccessAsync(Consumer { myContext: MyContext ->
                 activity.finish()
-                AccountSettingsActivity.Companion.startAddNewAccount(myContext.context(), originNew.getName(), true)
+                AccountSettingsActivity.Companion.startAddNewAccount(myContext.context(), originNew.name, true)
             }, UiThreadExecutor.Companion.INSTANCE).getFuture().future
             MyLog.d(this, "onNewOrigin After 'whenSuccessAsync' $future2")
         }

@@ -165,7 +165,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
         }
 
         fun startApp(myContext: MyContext) {
-            myContext.context()?.let { startApp(it) }
+            myContext.context().let { startApp(it) }
         }
 
         private fun startApp(context: Context) {
@@ -179,7 +179,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
             if (!myContext.isReady()) {
                 MyLog.i(context, "Context is not ready: " + myContext.toString())
                 return NeedToStart.HELP
-            } else if (myContext.accounts().isEmpty()) {
+            } else if (myContext.accounts().isEmpty) {
                 MyLog.i(context, "No AndStatus Accounts yet")
                 return NeedToStart.HELP
             }

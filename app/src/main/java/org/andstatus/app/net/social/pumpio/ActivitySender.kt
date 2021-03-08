@@ -45,13 +45,13 @@ import java.util.function.Function
  * @author yvolk@yurivolkov.com
  */
 internal class ActivitySender(val connection: ConnectionPumpio?, val note: Note?) {
-    fun send(activityType: PActivityType?): Try<AActivity?>? {
+    fun send(activityType: PActivityType?): Try<AActivity> {
         return sendInternal(activityType)
-                .flatMap(CheckedFunction<HttpReadResult?, Try<out JSONObject?>?> { obj: HttpReadResult? -> obj.getJsonObject() })
+                .flatMap(CheckedFunction<HttpReadResult?, Try<out JSONObject>> { obj: HttpReadResult? -> obj.getJsonObject() })
                 .map { jsoActivity: JSONObject? -> connection.activityFromJson(jsoActivity) }
     }
 
-    private fun sendInternal(activityTypeIn: PActivityType?): Try<HttpReadResult?>? {
+    private fun sendInternal(activityTypeIn: PActivityType?): Try<HttpReadResult> {
         val activityType = if (isExisting()) if (activityTypeIn == PActivityType.POST) PActivityType.UPDATE else activityTypeIn else PActivityType.POST
         val msgLog = "Activity '" + activityType + "'" + if (isExisting()) " objectId:'" + note.oid + "'" else ""
         var activity: JSONObject? = null
@@ -209,9 +209,9 @@ internal class ActivitySender(val connection: ConnectionPumpio?, val note: Note?
      */
     @Throws(ConnectionException::class)
     private fun uploadMedia(attachment: Attachment?): JSONObject {
-        var result: Try<HttpReadResult?>? = ConnectionAndUrl.Companion.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA, getActor())
-                .flatMap<HttpReadResult?>(CheckedFunction<ConnectionAndUrl?, Try<out HttpReadResult?>?> { conu: ConnectionAndUrl? -> conu.execute(conu.newRequest().withAttachmentToPost(attachment)) })
-        if (result.flatMap(CheckedFunction<HttpReadResult?, Try<out JSONObject?>?> { obj: HttpReadResult? -> obj.getJsonObject() }).getOrElseThrow(Function<Throwable?, ConnectionException?> { e: Throwable? -> ConnectionException.Companion.of(e) }) == null) {
+        var result: Try<HttpReadResult> = ConnectionAndUrl.Companion.fromActor(connection, ApiRoutineEnum.UPLOAD_MEDIA, getActor())
+                .flatMap<HttpReadResult?>(CheckedFunction<ConnectionAndUrl?, Try<out HttpReadResult>> { conu: ConnectionAndUrl? -> conu.execute(conu.newRequest().withAttachmentToPost(attachment)) })
+        if (result.flatMap(CheckedFunction<HttpReadResult?, Try<out JSONObject>> { obj: HttpReadResult? -> obj.getJsonObject() }).getOrElseThrow(Function<Throwable?, ConnectionException?> { e: Throwable? -> ConnectionException.Companion.of(e) }) == null) {
             result = Try.failure(ConnectionException(
                     "Error uploading '$attachment': null response returned"))
         }
@@ -219,7 +219,7 @@ internal class ActivitySender(val connection: ConnectionPumpio?, val note: Note?
                 .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
                 .map { jso: JSONObject? -> jso.toString(2) }
                 .onSuccess { message: String? -> MyLog.v(this, "uploaded '$attachment' $message") }
-        return result.flatMap(CheckedFunction<HttpReadResult?, Try<out JSONObject?>?> { obj: HttpReadResult? -> obj.getJsonObject() }).getOrElseThrow(Function<Throwable?, ConnectionException?> { e: Throwable? -> ConnectionException.Companion.of(e) })
+        return result.flatMap(CheckedFunction<HttpReadResult?, Try<out JSONObject>> { obj: HttpReadResult? -> obj.getJsonObject() }).getOrElseThrow(Function<Throwable?, ConnectionException?> { e: Throwable? -> ConnectionException.Companion.of(e) })
     }
 
     @Throws(JSONException::class)

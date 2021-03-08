@@ -74,7 +74,7 @@ class ConnectionActivityPub : Connection() {
         return partialPathToApiPath(url)
     }
 
-    override fun verifyCredentials(whoAmI: Optional<Uri?>?): Try<Actor?> {
+    override fun verifyCredentials(whoAmI: Optional<Uri>): Try<Actor?> {
         return TryUtils.fromOptional(whoAmI)
                 .filter { obj: Uri? -> UriUtils.isDownloadable() }
                 .orElse { getApiPath(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS) }
@@ -87,7 +87,7 @@ class ConnectionActivityPub : Connection() {
 
     /** @return  original error, if this Mastodon's hack didn't work
      */
-    private fun mastodonsHackToVerifyCredentials(originalException: Exception?): Try<HttpReadResult?>? {
+    private fun mastodonsHackToVerifyCredentials(originalException: Exception?): Try<HttpReadResult> {
         // Get Username first by partially parsing Mastodon's non-ActivityPub response
         val userNameInMastodon = Try.success(ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS)
                 .map(CheckedFunction<ApiRoutineEnum?, String?> { routine: ApiRoutineEnum? -> ConnectionMastodon.Companion.partialPath(routine) })
@@ -153,29 +153,29 @@ class ConnectionActivityPub : Connection() {
         return parseIso8601Date(stringDate)
     }
 
-    override fun undoLike(noteOid: String?): Try<AActivity?>? {
+    override fun undoLike(noteOid: String?): Try<AActivity> {
         return actOnNote(ActivityType.UNDO_LIKE, noteOid)
     }
 
-    override fun like(noteOid: String?): Try<AActivity?>? {
+    override fun like(noteOid: String?): Try<AActivity> {
         return actOnNote(ActivityType.LIKE, noteOid)
     }
 
-    override fun deleteNote(noteOid: String?): Try<Boolean?>? {
-        return actOnNote(ActivityType.DELETE, noteOid).map(CheckedFunction { obj: AActivity? -> obj.isEmpty() })
+    override fun deleteNote(noteOid: String?): Try<Boolean> {
+        return actOnNote(ActivityType.DELETE, noteOid).map(CheckedFunction { obj: AActivity? -> obj.isEmpty })
     }
 
-    private fun actOnNote(activityType: ActivityType?, noteId: String?): Try<AActivity?>? {
+    private fun actOnNote(activityType: ActivityType?, noteId: String?): Try<AActivity> {
         return ActivitySender.Companion.fromId(this, noteId).send(activityType)
     }
 
-    override fun getFriendsOrFollowers(routineEnum: ApiRoutineEnum?, position: TimelinePosition?, actor: Actor?): Try<InputActorPage?>? {
+    override fun getFriendsOrFollowers(routineEnum: ApiRoutineEnum?, position: TimelinePosition?, actor: Actor?): Try<InputActorPage> {
         return getActors(routineEnum, position, actor)
     }
 
     private fun getActors(apiRoutine: ApiRoutineEnum?, position: TimelinePosition?, actor: Actor?): Try<InputActorPage?> {
         return ConnectionAndUrl.Companion.fromActor(this, apiRoutine, position, actor)
-                .flatMap<InputActorPage?>(CheckedFunction<ConnectionAndUrl?, Try<out InputActorPage?>?> { conu: ConnectionAndUrl? ->
+                .flatMap<InputActorPage?>(CheckedFunction<ConnectionAndUrl?, Try<out InputActorPage>> { conu: ConnectionAndUrl? ->
                     conu.execute(conu.newRequest())
                             .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
                             .map(CheckedFunction { jsonObject: JSONObject? ->
@@ -188,17 +188,17 @@ class ConnectionActivityPub : Connection() {
                 )
     }
 
-    override fun getNote1(noteOid: String?): Try<AActivity?>? {
+    override fun getNote1(noteOid: String?): Try<AActivity> {
         return execute(HttpRequest.Companion.of(ApiRoutineEnum.GET_NOTE, UriUtils.fromString(noteOid)))
                 .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
                 .map { jsoActivity: JSONObject? -> this.activityFromJson(jsoActivity) }
     }
 
-    override fun updateNote(note: Note?): Try<AActivity?>? {
+    override fun updateNote(note: Note?): Try<AActivity> {
         return ActivitySender.Companion.fromContent(this, note).send(ActivityType.CREATE)
     }
 
-    override fun announce(rebloggedNoteOid: String?): Try<AActivity?>? {
+    override fun announce(rebloggedNoteOid: String?): Try<AActivity> {
         return actOnNote(ActivityType.ANNOUNCE, rebloggedNoteOid)
     }
 
@@ -207,11 +207,11 @@ class ConnectionActivityPub : Connection() {
         return UriUtils.isDownloadable(uri)
     }
 
-    override fun getConversation(conversationOid: String?): Try<MutableList<AActivity?>?>? {
+    override fun getConversation(conversationOid: String?): Try<MutableList<AActivity>>? {
         val uri = UriUtils.fromString(conversationOid)
         return if (UriUtils.isDownloadable(uri)) {
             ConnectionAndUrl.Companion.fromUriActor(uri, this, ApiRoutineEnum.GET_CONVERSATION, data.accountActor)
-                    .flatMap<InputTimelinePage?>(CheckedFunction<ConnectionAndUrl?, Try<out InputTimelinePage?>?> { conu: ConnectionAndUrl? -> getActivities(conu) })
+                    .flatMap<InputTimelinePage?>(CheckedFunction<ConnectionAndUrl?, Try<out InputTimelinePage>> { conu: ConnectionAndUrl? -> getActivities(conu) })
                     .map<MutableList<AActivity?>?>(CheckedFunction { p: InputTimelinePage? -> p.items })
         } else {
             super.getConversation(conversationOid)
@@ -225,10 +225,10 @@ class ConnectionActivityPub : Connection() {
         // TODO: See https://github.com/andstatus/andstatus/issues/499#issuecomment-475881413
         return ConnectionAndUrl.Companion.fromActor(this, apiRoutine, requestedPosition, actor)
                 .map<ConnectionAndUrl?>(CheckedFunction { conu: ConnectionAndUrl? -> conu.withSyncDirection(syncYounger) })
-                .flatMap<InputTimelinePage?>(CheckedFunction<ConnectionAndUrl?, Try<out InputTimelinePage?>?> { conu: ConnectionAndUrl? -> getActivities(conu) })
+                .flatMap<InputTimelinePage?>(CheckedFunction<ConnectionAndUrl?, Try<out InputTimelinePage>> { conu: ConnectionAndUrl? -> getActivities(conu) })
     }
 
-    private fun getActivities(conu: ConnectionAndUrl?): Try<InputTimelinePage?>? {
+    private fun getActivities(conu: ConnectionAndUrl?): Try<InputTimelinePage> {
         return conu.execute(conu.newRequest())
                 .flatMap { obj: HttpReadResult? -> obj.getJsonObject() }
                 .map(CheckedFunction { root: JSONObject? ->
@@ -321,7 +321,7 @@ class ConnectionActivityPub : Connection() {
         return activity
     }
 
-    private fun actorFromProperty(parentObject: JSONObject?, propertyName: String?): Try<Actor?>? {
+    private fun actorFromProperty(parentObject: JSONObject?, propertyName: String?): Try<Actor> {
         return ObjectOrId.Companion.of(parentObject, propertyName).mapOne<Actor?>(CheckedFunction { jso: JSONObject? -> actorFromJson(jso) }, CheckedFunction { id: String? -> actorFromOid(id) })
     }
 
@@ -378,7 +378,7 @@ class ConnectionActivityPub : Connection() {
                 return
             }
             val author = actorFromProperty(jso, "attributedTo")
-                    .orElse(Callable<Try<out Actor?>?> { actorFromProperty(jso, "author") }).getOrElse(Actor.Companion.EMPTY)
+                    .orElse(Callable<Try<out Actor>> { actorFromProperty(jso, "author") }).getOrElse(Actor.Companion.EMPTY)
             val noteActivity: AActivity = AActivity.Companion.newPartialNote(
                     data.accountActor,
                     author,
@@ -436,18 +436,18 @@ class ConnectionActivityPub : Connection() {
         }
     }
 
-    override fun follow(actorOid: String?, follow: Boolean?): Try<AActivity?>? {
+    override fun follow(actorOid: String?, follow: Boolean?): Try<AActivity> {
         return actOnActor(if (follow) ActivityType.FOLLOW else ActivityType.UNDO_FOLLOW, actorOid)
     }
 
-    private fun actOnActor(activityType: ActivityType?, actorId: String?): Try<AActivity?>? {
+    private fun actOnActor(activityType: ActivityType?, actorId: String?): Try<AActivity> {
         return ActivitySender.Companion.fromId(this, actorId).send(activityType)
     }
 
-    public override fun getActor2(actorIn: Actor?): Try<Actor?>? {
+    public override fun getActor2(actorIn: Actor?): Try<Actor> {
         return ConnectionAndUrl.Companion.fromActor(this, ApiRoutineEnum.GET_ACTOR, TimelinePosition.Companion.EMPTY, actorIn)
-                .flatMap<HttpReadResult?>(CheckedFunction<ConnectionAndUrl?, Try<out HttpReadResult?>?> { connectionAndUrl: ConnectionAndUrl? -> connectionAndUrl.execute(connectionAndUrl.newRequest()) })
-                .flatMap<JSONObject?>(CheckedFunction<HttpReadResult?, Try<out JSONObject?>?> { obj: HttpReadResult? -> obj.getJsonObject() })
+                .flatMap<HttpReadResult?>(CheckedFunction<ConnectionAndUrl?, Try<out HttpReadResult>> { connectionAndUrl: ConnectionAndUrl? -> connectionAndUrl.execute(connectionAndUrl.newRequest()) })
+                .flatMap<JSONObject?>(CheckedFunction<HttpReadResult?, Try<out JSONObject>> { obj: HttpReadResult? -> obj.getJsonObject() })
                 .map<Actor?>(CheckedFunction { jso: JSONObject? -> actorFromJson(jso) })
     }
 

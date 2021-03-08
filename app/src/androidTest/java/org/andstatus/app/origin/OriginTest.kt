@@ -794,7 +794,7 @@ class OriginTest {
         val body = ("I set \"Shorten URL with: QTTR_AT\" URL longer than 25 Text longer than 140. Will this be shortened: "
                 + urlString)
         var origin: Origin? =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.Companion.ORIGIN_TYPE_DEFAULT)
-        Assert.assertEquals(OriginType.TWITTER, origin.getOriginType())
+        Assert.assertEquals(OriginType.TWITTER, origin.originType)
         origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
         Assert.assertEquals(OriginType.TWITTER, origin.originType)
         var textLimit = 280
@@ -830,7 +830,7 @@ class OriginTest {
         Assert.assertFalse(origin.isMentionAsWebFingerId)
         textLimit = 0
         config = OriginConfig.Companion.fromTextLimit(textLimit, uploadLimit.toLong())
-        Assert.assertTrue(config.nonEmpty())
+        Assert.assertTrue(config.nonEmpty)
         origin = Origin.Builder(origin).save(config).build()
         Assert.assertEquals("Textlimit", OriginType.Companion.TEXT_LIMIT_MAXIMUM.toLong(), origin.getTextLimit().toLong())
         Assert.assertEquals("Characters left $origin", (

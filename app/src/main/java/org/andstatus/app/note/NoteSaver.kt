@@ -80,7 +80,7 @@ class NoteSaver(private val editor: NoteEditor?) : MyAsyncTask<NoteEditorCommand
     }
 
     private fun broadcastDataChanged(data: NoteEditorData?) {
-        if (data.isEmpty()) {
+        if (data.isEmpty) {
             return
         }
         val commandData: CommandData = if (data.activity.note.status == DownloadStatus.DELETED) CommandData.Companion.newItemCommand(CommandEnum.DELETE_NOTE, data.getMyAccount(), data.getNoteId()) else CommandData.Companion.newUpdateStatus(data.getMyAccount(), data.activity.id, data.getNoteId())

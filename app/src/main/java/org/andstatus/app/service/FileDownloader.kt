@@ -33,7 +33,7 @@ import java.io.File
 abstract class FileDownloader protected constructor(val myContext: MyContext?, val data: DownloadData?) {
     private var connectionMock: Connection? = null
     private var connectionRequired: ConnectionRequired? = ConnectionRequired.ANY
-    fun load(commandData: CommandData?): Try<Boolean?>? {
+    fun load(commandData: CommandData?): Try<Boolean> {
         when (data.getStatus()) {
             DownloadStatus.LOADED -> {
             }
@@ -129,7 +129,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext?, v
             }
         }
 
-        fun load(downloadData: DownloadData?, commandData: CommandData?): Try<Boolean?>? {
+        fun load(downloadData: DownloadData?, commandData: CommandData?): Try<Boolean> {
             val downloader = newForDownloadData(commandData.myAccount.origin.myContext, downloadData)
             return downloader.load(commandData)
         }

@@ -6,9 +6,10 @@ import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.util.IsEmpty
 
 class NoteDownloads private constructor(val noteId: Long, val list: List<DownloadData>) : IsEmpty {
-    override fun isEmpty(): Boolean {
-        return list.isEmpty()
-    }
+    override val isEmpty: Boolean
+        get() {
+            return list.isEmpty()
+        }
 
     fun getFirstForTimeline(): DownloadData {
         return list.stream()

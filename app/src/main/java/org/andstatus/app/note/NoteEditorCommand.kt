@@ -27,7 +27,7 @@ class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, 
     @Volatile
     private var currentNoteId: Long? = null
     private var mediaUri = Uri.EMPTY
-    private var mediaType: Optional<String?>? = Optional.empty()
+    private var mediaType: Optional<String> = Optional.empty()
     var beingEdited = false
     var showAfterSave = false
 
@@ -71,9 +71,10 @@ class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, 
         currentData = NoteEditorData.Companion.load( MyContextHolder.myContextHolder.getNow(), getCurrentNoteId())
     }
 
-    override fun isEmpty(): Boolean {
-        return currentData.isEmpty() && previousData.isEmpty() && mediaUri === Uri.EMPTY
-    }
+    override val isEmpty: Boolean
+        get() {
+            return currentData.isEmpty && previousData.isEmpty && mediaUri === Uri.EMPTY
+        }
 
     fun setMediaUri(mediaUri: Uri?): NoteEditorCommand? {
         this.mediaUri = UriUtils.notNull(mediaUri)
@@ -85,7 +86,7 @@ class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, 
     }
 
     fun needToSavePreviousData(): Boolean {
-        return (previousData.isValid() && previousData.nonEmpty()
+        return (previousData.isValid() && previousData.nonEmpty
                 && (previousData.getNoteId() == 0L || currentData.getNoteId() != previousData.getNoteId()))
     }
 
@@ -108,11 +109,11 @@ class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, 
         return builder.toString()
     }
 
-    fun setMediaType(mediaType: Optional<String?>?) {
+    fun setMediaType(mediaType: Optional<String>) {
         this.mediaType = mediaType
     }
 
-    fun getMediaType(): Optional<String?>? {
+    fun getMediaType(): Optional<String> {
         return mediaType
     }
 

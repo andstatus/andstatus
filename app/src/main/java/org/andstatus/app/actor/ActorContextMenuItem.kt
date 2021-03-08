@@ -184,10 +184,10 @@ enum class ActorContextMenuItem @JvmOverloads constructor(private val mIsAsync: 
             MyLog.w(this, "Unknown origin for " + params.menu.getViewItem().actor)
             return
         }
-        if (params.menu.getActingAccount().nonValid() || params.menu.getActingAccount().origin != origin) {
+        if (params.menu.getActingAccount().nonValid || params.menu.getActingAccount().origin != origin) {
             params.menu.setSelectedActingAccount(params.menu.getMyContext().accounts()
                     .fromActorOfSameOrigin(actor))
-            if (params.menu.getActingAccount().nonValid()) {
+            if (params.menu.getActingAccount().nonValid) {
                 params.menu.setSelectedActingAccount(params.menu.getMyContext().accounts().getFirstPreferablySucceededForOrigin(origin))
             }
         }

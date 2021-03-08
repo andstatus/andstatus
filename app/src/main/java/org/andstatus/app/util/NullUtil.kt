@@ -18,7 +18,7 @@ package org.andstatus.app.util
 /** Avoiding null-s  */
 object NullUtil {
     fun nonEmpty(any: Any?): Boolean {
-        if (any is IsEmpty) return any.nonEmpty()
+        if (any is IsEmpty) return any.nonEmpty
         return if (any is String) !(any as String?).isNullOrEmpty() else any != null
     }
 

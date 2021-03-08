@@ -109,7 +109,7 @@ class AccountListFragment : Fragment() {
         }
 
         override fun getUniqueItemId(position: Int): Long {
-            return mItemList[position].getActorId()
+            return mItemList[position].actorId
         }
 
         internal inner class AccountViewHolder(itemView: View?, grabHandleId: Int) : ViewHolder(itemView, grabHandleId, false) {

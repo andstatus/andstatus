@@ -60,11 +60,11 @@ class AttachedMediaFile : MediaFile {
     }
 
     fun getTargetUri(): Uri? {
-        return if (previewOf.isEmpty()) uri else previewOf.uri
+        return if (previewOf.isEmpty) uri else previewOf.uri
     }
 
     fun isTargetVideo(): Boolean {
-        return if (previewOf.isEmpty()) isVideo else previewOf.isVideo()
+        return if (previewOf.isEmpty) isVideo else previewOf.isVideo()
     }
 
     override fun requestDownload() {
@@ -90,7 +90,7 @@ class AttachedMediaFile : MediaFile {
 
     fun intentToView(): Intent? {
         val intent = Intent(Intent.ACTION_VIEW)
-        val fileToView = if (previewOf.isEmpty()) this else previewOf
+        val fileToView = if (previewOf.isEmpty) this else previewOf
         val mediaFileUri = if (fileToView.downloadFile.existsNow()) FileProvider.Companion.downloadFilenameToUri(fileToView.downloadFile.filename) else fileToView.uri
         if (UriUtils.isEmpty(mediaFileUri)) {
             intent.type = "text/*"

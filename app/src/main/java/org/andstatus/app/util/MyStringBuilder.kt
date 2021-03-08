@@ -108,9 +108,10 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder = Str
         return unaryOperator.apply(this)
     }
 
-    override fun isEmpty(): Boolean {
-        return length == 0
-    }
+    override val isEmpty: Boolean
+        get() {
+            return length == 0
+        }
 
     fun toKeyValue(key: Any): String {
         return formatKeyValue(key, toString())
@@ -174,7 +175,7 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder = Str
         }
 
         fun <T> isEmptyObj(obj: T?): Boolean {
-            if (obj is IsEmpty) return (obj as IsEmpty).isEmpty()
+            if (obj is IsEmpty) return (obj as IsEmpty).isEmpty
             if (obj is Number) return (obj as Number).toLong() == 0L
             return if (obj is String) (obj as String).isEmpty() else obj == null
         }

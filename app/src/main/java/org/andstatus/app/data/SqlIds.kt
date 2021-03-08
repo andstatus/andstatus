@@ -72,9 +72,10 @@ class SqlIds : IsEmpty {
         }
     }
 
-    override fun isEmpty(): Boolean {
-        return ids.isEmpty()
-    }
+    override val isEmpty: Boolean
+        get() {
+            return ids.isEmpty()
+        }
 
     companion object {
         val EMPTY: SqlIds = SqlIds()

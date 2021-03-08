@@ -50,7 +50,7 @@ object HttpConnectionUtils {
         }
     }
 
-    fun readStream(result: HttpReadResult?, msgLog: String?, supplier: CheckedFunction<Void?, InputStream?>?): Try<HttpReadResult?>? {
+    fun readStream(result: HttpReadResult?, msgLog: String?, supplier: CheckedFunction<Void?, InputStream?>?): Try<HttpReadResult> {
         try {
             supplier.apply(null).use { `in` ->
                 if (`in` == null) {
@@ -67,7 +67,7 @@ object HttpConnectionUtils {
     }
 
     @Throws(IOException::class)
-    private fun readStreamToString(resultIn: HttpReadResult?, `in`: InputStream?): Try<HttpReadResult?>? {
+    private fun readStreamToString(resultIn: HttpReadResult?, `in`: InputStream?): Try<HttpReadResult> {
         val buffer = CharArray(BUFFER_LENGTH)
         val checker = ReadChecker(resultIn)
         val builder = StringBuilder()
@@ -87,7 +87,7 @@ object HttpConnectionUtils {
     }
 
     @Throws(IOException::class)
-    private fun readStreamToFile(resultIn: HttpReadResult?, `in`: InputStream?): Try<HttpReadResult?>? {
+    private fun readStreamToFile(resultIn: HttpReadResult?, `in`: InputStream?): Try<HttpReadResult> {
         val buffer = ByteArray(BUFFER_LENGTH)
         val checker = ReadChecker(resultIn)
         var count: Int

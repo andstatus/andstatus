@@ -20,7 +20,7 @@ import org.andstatus.app.util.TriState
 import java.util.*
 
 /** Parameters that don't require reloading of the list  */
-class LoadableListViewParameters(val collapseDuplicates: TriState?, val collapsedItemId: Long, val preferredOrigin: Optional<Origin?>?) {
+class LoadableListViewParameters(val collapseDuplicates: TriState?, val collapsedItemId: Long, val preferredOrigin: Optional<Origin>) {
     fun isViewChanging(): Boolean {
         return collapseDuplicates.known || preferredOrigin.isPresent()
     }

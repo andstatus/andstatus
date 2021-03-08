@@ -56,7 +56,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
         } else partialPathToApiPath(url)
     }
 
-    override fun getFriendsOrFollowersIds(apiRoutine: ApiRoutineEnum?, actorOid: String?): Try<MutableList<String?>?>? {
+    override fun getFriendsOrFollowersIds(apiRoutine: ApiRoutineEnum?, actorOid: String?): Try<MutableList<String>>? {
         return getApiPath(apiRoutine)
                 .map { obj: Uri? -> obj.buildUpon() }
                 .map { builder: Uri.Builder? -> builder.appendQueryParameter("user_id", actorOid) }
@@ -79,7 +79,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
                 }
     }
 
-    override fun rateLimitStatus(): Try<RateLimitStatus?>? {
+    override fun rateLimitStatus(): Try<RateLimitStatus> {
         val apiRoutine = ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS
         return getApiPath(apiRoutine)
                 .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })
@@ -95,7 +95,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
                 }
     }
 
-    override fun updateNote2(note: Note?): Try<AActivity?>? {
+    override fun updateNote2(note: Note?): Try<AActivity> {
         val formParams = JSONObject()
         try {
             super.updateNoteSetFields(note, formParams)
@@ -118,7 +118,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
                 .map { jso: JSONObject? -> activityFromJson(jso) }
     }
 
-    override fun getConfig(): Try<OriginConfig?>? {
+    override fun getConfig(): Try<OriginConfig> {
         val apiRoutine = ApiRoutineEnum.GET_CONFIG
         return getApiPath(apiRoutine)
                 .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(apiRoutine, uri) })
@@ -143,7 +143,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
                 }
     }
 
-    override fun getConversation(conversationOid: String?): Try<MutableList<AActivity?>?>? {
+    override fun getConversation(conversationOid: String?): Try<MutableList<AActivity>>? {
         if (UriUtils.nonRealOid(conversationOid)) return TryUtils.emptyList()
         val apiRoutine = ApiRoutineEnum.GET_CONVERSATION
         return getApiPathWithNoteId(apiRoutine, conversationOid)
@@ -195,7 +195,7 @@ class ConnectionTwitterGnuSocial : ConnectionTwitterLike() {
                 .setProfileUrl(JsonUtils.optString(jso, "statusnet_profile_url"))
     }
 
-    override fun getOpenInstances(): Try<MutableList<Server?>?>? {
+    override fun getOpenInstances(): Try<MutableList<Server>>? {
         val apiRoutine = ApiRoutineEnum.GET_OPEN_INSTANCES
         return getApiPath(apiRoutine)
                 .map(CheckedFunction<Uri?, HttpRequest?> { path: Uri? ->

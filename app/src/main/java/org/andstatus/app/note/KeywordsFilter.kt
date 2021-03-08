@@ -157,9 +157,10 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
         return if (keywordsRaw.isEmpty()) "" else keywordsRaw.get(0)
     }
 
-    override fun isEmpty(): Boolean {
-        return keywordsToFilter.isEmpty()
-    }
+    override val isEmpty: Boolean
+        get() {
+            return keywordsToFilter.isEmpty()
+        }
 
     override fun toString(): String {
         val builder = StringBuilder()

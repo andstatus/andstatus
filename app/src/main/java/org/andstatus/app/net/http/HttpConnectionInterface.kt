@@ -53,7 +53,7 @@ import org.andstatus.app.MenuItemMockimport
 java.lang.Exceptionimport java.lang.IllegalArgumentExceptionimport java.util.concurrent.Callable
 interface HttpConnectionInterface {
     open fun getData(): HttpConnectionData?
-    fun registerClient(): Try<Void?>? {
+    fun registerClient(): Try<Void> {
         // Do nothing in the default implementation
         return Try.success(null)
     }
@@ -69,22 +69,22 @@ interface HttpConnectionInterface {
         return true
     }
 
-    fun execute(requestIn: HttpRequest?): Try<HttpReadResult?>? {
+    fun execute(requestIn: HttpRequest?): Try<HttpReadResult> {
         val request = requestIn.withConnectionData(getData())
         return if (request.verb == Verb.POST) {
             /* See https://github.com/andstatus/andstatus/issues/249 */
             if (getData().getUseLegacyHttpProtocol() == TriState.UNKNOWN) executeOneProtocol(request, false)
-                    .orElse(Callable<Try<out HttpReadResult?>?> { executeOneProtocol(request, true) }) else executeOneProtocol(request, getData().getUseLegacyHttpProtocol().toBoolean(true))
+                    .orElse(Callable<Try<out HttpReadResult>> { executeOneProtocol(request, true) }) else executeOneProtocol(request, getData().getUseLegacyHttpProtocol().toBoolean(true))
         } else {
             executeInner(request)
         }
     }
 
-    fun executeOneProtocol(request: HttpRequest?, isLegacyHttpProtocol: Boolean): Try<HttpReadResult?>? {
+    fun executeOneProtocol(request: HttpRequest?, isLegacyHttpProtocol: Boolean): Try<HttpReadResult> {
         return executeInner(request.withLegacyHttpProtocol(isLegacyHttpProtocol))
     }
 
-    fun executeInner(request: HttpRequest?): Try<HttpReadResult?>? {
+    fun executeInner(request: HttpRequest?): Try<HttpReadResult> {
         if (request.verb == Verb.POST && MyPreferences.isLogNetworkLevelMessages()) {
             var jso = JsonUtils.put(request.postParams.orElseGet { JSONObject() }, "loggedURL", request.uri)
             if (request.mediaUri.isPresent) {
@@ -141,7 +141,7 @@ interface HttpConnectionInterface {
     }
 
     /** return not null  */
-    fun getPassword(): String? {
+    fun getPassword(): String {
         return ""
     }
 

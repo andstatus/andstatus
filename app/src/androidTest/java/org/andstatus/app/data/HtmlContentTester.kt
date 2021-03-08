@@ -59,7 +59,7 @@ class HtmlContentTester {
                 DownloadStatus.LOADED)
         mi.onActivity(activity)
         val noteStored: Note = Note.Companion.loadContentById( MyContextHolder.myContextHolder.getNow(), activity.note.noteId)
-        Assert.assertTrue("Note was loaded " + activity.note, noteStored.nonEmpty())
+        Assert.assertTrue("Note was loaded " + activity.note, noteStored.nonEmpty)
         if (htmlContentAllowed) {
             Assert.assertEquals("HTML preserved", bodyString, noteStored.content)
         } else {

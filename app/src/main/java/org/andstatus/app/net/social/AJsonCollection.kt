@@ -32,7 +32,7 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject?, propertyN
     }
 
     val objectOrId: ObjectOrId?
-    val id: Optional<String?>?
+    val id: Optional<String>
     val type: Type?
     val items: ObjectOrId?
     val firstPage: AJsonCollection?
@@ -40,9 +40,10 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject?, propertyN
     val currentPage: AJsonCollection?
     val nextPage: AJsonCollection?
     val lastPage: AJsonCollection?
-    override fun isEmpty(): Boolean {
-        return type == Type.EMPTY
-    }
+    override val isEmpty: Boolean
+        get() {
+            return type == Type.EMPTY
+        }
 
     fun <T : IsEmpty?> mapAll(fromObject: CheckedFunction<JSONObject?, T?>?, fromId: CheckedFunction<String?, T?>?): MutableList<T?>? {
         if (isEmpty) return emptyList()
@@ -53,7 +54,7 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject?, propertyN
         list.addAll(currentPage.mapAll<T?>(fromObject, fromId))
         list.addAll(nextPage.mapAll<T?>(fromObject, fromId))
         list.addAll(lastPage.mapAll<T?>(fromObject, fromId))
-        return list.stream().filter { obj: T? -> obj.nonEmpty() }.collect(Collectors.toList())
+        return list.stream().filter { obj: T? -> obj.nonEmpty }.collect(Collectors.toList())
     }
 
     fun <T : IsEmpty?> mapObjects(fromObject: CheckedFunction<JSONObject?, T?>?): MutableList<T?>? {
@@ -65,7 +66,7 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject?, propertyN
         list.addAll(currentPage.mapObjects<T?>(fromObject))
         list.addAll(nextPage.mapObjects<T?>(fromObject))
         list.addAll(lastPage.mapObjects<T?>(fromObject))
-        return list.stream().filter { obj: T? -> obj.nonEmpty() }.collect(Collectors.toList())
+        return list.stream().filter { obj: T? -> obj.nonEmpty }.collect(Collectors.toList())
     }
 
     fun getId(): String? {

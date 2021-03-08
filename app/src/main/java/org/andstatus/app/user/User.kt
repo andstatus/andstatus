@@ -43,9 +43,10 @@ class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Set<Lo
     private var isMyUser: TriState = TriState.UNKNOWN
     val actorIds: MutableSet<Long>
 
-    override fun isEmpty(): Boolean {
-        return this === EMPTY || userId == 0L && knownAs.isNullOrEmpty()
-    }
+    override val isEmpty: Boolean
+        get() {
+            return this === EMPTY || userId == 0L && knownAs.isNullOrEmpty()
+        }
 
     override fun toString(): String {
         if (this === EMPTY) {
@@ -129,7 +130,7 @@ class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Set<Lo
         fun fromCursor(myContext: MyContext?, cursor: Cursor?, useCache: Boolean): User {
             val userId = DbUtils.getLong(cursor, ActorTable.USER_ID)
             val user1 = if (useCache) myContext.users().users.getOrDefault(userId, EMPTY) else EMPTY
-            return if (user1.nonEmpty()) user1 else User(userId, DbUtils.getString(cursor, UserTable.KNOWN_AS),
+            return if (user1.nonEmpty) user1 else User(userId, DbUtils.getString(cursor, UserTable.KNOWN_AS),
                     DbUtils.getTriState(cursor, UserTable.IS_MY),
                     loadActors(myContext, userId))
         }

@@ -788,9 +788,10 @@ abstract class InputPage<T> protected constructor(jsonCollection: AJsonCollectio
     val olderPosition: TimelinePosition?
     val items: MutableList<T?>?
     private val isEmpty: Boolean
-    override fun isEmpty(): Boolean {
-        return isEmpty
-    }
+    override val isEmpty: Boolean
+        get() {
+            return isEmpty
+        }
 
     operator fun get(ind: Int): T? {
         return if (ind < 0 || ind > items.size) empty() else items.get(ind)
@@ -810,6 +811,6 @@ abstract class InputPage<T> protected constructor(jsonCollection: AJsonCollectio
         thisPosition = TimelinePosition.Companion.of(jsonCollection.getId())
         olderPosition = TimelinePosition.Companion.of(jsonCollection.nextPage.getId())
         this.items = items
-        isEmpty = jsonCollection.isEmpty()
+        isEmpty = jsonCollection.isEmpty
     }
 }

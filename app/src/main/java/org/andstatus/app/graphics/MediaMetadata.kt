@@ -38,9 +38,10 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
         return Point(width, height)
     }
 
-    override fun isEmpty(): Boolean {
-        return width <= 0 || height <= 0
-    }
+    override val isEmpty: Boolean
+        get() {
+            return width <= 0 || height <= 0
+        }
 
     fun toContentValues(values: ContentValues) {
         values.put(DownloadTable.WIDTH, width)
@@ -57,7 +58,7 @@ class MediaMetadata(val width: Int, val height: Int, val duration: Long) : IsEmp
     }
 
     fun toDetails(): String {
-        return if (nonEmpty()) width.toString() + "x" + height +
+        return if (nonEmpty) width.toString() + "x" + height +
                 (if (duration == 0L) "" else " " + formatDuration())
         else ""
     }

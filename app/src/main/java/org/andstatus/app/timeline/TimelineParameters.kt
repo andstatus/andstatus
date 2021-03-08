@@ -77,7 +77,7 @@ class TimelineParameters(private val myContext: MyContext, val timeline: Timelin
     }
 
     fun isEmpty(): Boolean {
-        return timeline.isEmpty() || whichPage == WhichPage.EMPTY
+        return timeline.isEmpty || whichPage == WhichPage.EMPTY
     }
 
     fun isAtHome(): Boolean {
