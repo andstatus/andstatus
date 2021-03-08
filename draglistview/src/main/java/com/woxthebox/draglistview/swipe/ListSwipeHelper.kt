@@ -13,189 +13,157 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.woxthebox.draglistview.swipe
 
-package com.woxthebox.draglistview.swipe;
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.content.Context
+import android.view.GestureDetector
+import android.view.GestureDetector.SimpleOnGestureListener
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewConfiguration
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
+import com.woxthebox.draglistview.swipe.ListSwipeItem.SwipeDirection
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.content.Context;
-import androidx.recyclerview.widget.RecyclerView;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewConfiguration;
-
-public class ListSwipeHelper extends RecyclerView.OnScrollListener implements RecyclerView.OnItemTouchListener {
-
-    public static abstract class OnSwipeListenerAdapter implements OnSwipeListener {
-        @Override
-        public void onItemSwipeStarted(ListSwipeItem item) {
-        }
-
-        @Override
-        public void onItemSwipeEnded(ListSwipeItem item, ListSwipeItem.SwipeDirection swipedDirection) {
-        }
-
-        @Override
-        public void onItemSwiping(ListSwipeItem item, float swipedDistanceX) {
-        }
+class ListSwipeHelper(applicationContext: Context?, private var mSwipeListener: OnSwipeListener?) : RecyclerView.OnScrollListener(), OnItemTouchListener {
+    abstract class OnSwipeListenerAdapter : OnSwipeListener {
+        override fun onItemSwipeStarted(item: ListSwipeItem?) {}
+        override fun onItemSwipeEnded(item: ListSwipeItem?, swipedDirection: SwipeDirection?) {}
+        override fun onItemSwiping(item: ListSwipeItem?, swipedDistanceX: Float) {}
     }
 
-    public interface OnSwipeListener {
-        void onItemSwipeStarted(ListSwipeItem item);
-
-        void onItemSwipeEnded(ListSwipeItem item, ListSwipeItem.SwipeDirection swipedDirection);
-
-        void onItemSwiping(ListSwipeItem item, float swipedDistanceX);
+    interface OnSwipeListener {
+        fun onItemSwipeStarted(item: ListSwipeItem?)
+        fun onItemSwipeEnded(item: ListSwipeItem?, swipedDirection: SwipeDirection?)
+        fun onItemSwiping(item: ListSwipeItem?, swipedDistanceX: Float)
     }
 
-    private GestureListener mGestureListener;
-    private GestureDetector mGestureDetector;
-    private ListSwipeItem mSwipeView;
-    private RecyclerView mRecyclerView;
-    private OnSwipeListener mSwipeListener;
-    private int mTouchSlop;
-
-    public ListSwipeHelper(Context applicationContext, OnSwipeListener listener) {
-        mSwipeListener = listener;
-        mGestureListener = new GestureListener();
-        mGestureDetector = new GestureDetector(applicationContext, mGestureListener);
+    private val mGestureListener: GestureListener
+    private val mGestureDetector: GestureDetector
+    private var mSwipeView: ListSwipeItem? = null
+    private var mRecyclerView: RecyclerView? = null
+    private var mTouchSlop = 0
+    override fun onInterceptTouchEvent(rv: RecyclerView, event: MotionEvent): Boolean {
+        handleTouch(rv, event)
+        return mGestureListener.isSwipeStarted
     }
 
-    @Override
-    public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent event) {
-        handleTouch(rv, event);
-        return mGestureListener.isSwipeStarted();
+    override fun onTouchEvent(rv: RecyclerView, event: MotionEvent) {
+        handleTouch(rv, event)
     }
 
-    @Override
-    public void onTouchEvent(RecyclerView rv, MotionEvent event) {
-        handleTouch(rv, event);
+    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+        resetSwipedViews(null)
     }
 
-    @Override
-    public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-        resetSwipedViews(null);
-    }
-
-    public void resetSwipedViews(View exceptionView) {
-        int childCount = mRecyclerView.getChildCount();
-        for (int i = 0; i < childCount; i++) {
-            View view = mRecyclerView.getChildAt(i);
-            if (view instanceof ListSwipeItem && view != exceptionView) {
-                ((ListSwipeItem) view).resetSwipe(true);
+    fun resetSwipedViews(exceptionView: View?) {
+        val childCount = mRecyclerView!!.childCount
+        for (i in 0 until childCount) {
+            val view = mRecyclerView!!.getChildAt(i)
+            if (view is ListSwipeItem && view !== exceptionView) {
+                view.resetSwipe(true)
             }
         }
     }
 
-    private void handleTouch(RecyclerView rv, MotionEvent event) {
-        mGestureDetector.onTouchEvent(event);
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                View swipeView = rv.findChildViewUnder(event.getX(), event.getY());
-                if (swipeView instanceof ListSwipeItem &&
-                        ((ListSwipeItem) swipeView).getSupportedSwipeDirection() != ListSwipeItem.SwipeDirection.NONE) {
-                    mSwipeView = (ListSwipeItem) swipeView;
+    private fun handleTouch(rv: RecyclerView, event: MotionEvent) {
+        mGestureDetector.onTouchEvent(event)
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                val swipeView = rv.findChildViewUnder(event.x, event.y)
+                if (swipeView is ListSwipeItem &&
+                        swipeView.supportedSwipeDirection != SwipeDirection.NONE) {
+                    mSwipeView = swipeView
                 }
-                break;
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 if (mSwipeView != null) {
-                    final ListSwipeItem endingSwipeView = mSwipeView;
-                    endingSwipeView.handleSwipeUp(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            if (endingSwipeView.isSwipeStarted()) {
-                                resetSwipedViews(endingSwipeView);
+                    val endingSwipeView: ListSwipeItem = mSwipeView
+                    endingSwipeView.handleSwipeUp(object : AnimatorListenerAdapter() {
+                        override fun onAnimationEnd(animation: Animator) {
+                            if (endingSwipeView.isSwipeStarted) {
+                                resetSwipedViews(endingSwipeView)
                             }
-
                             if (mSwipeListener != null) {
-                                mSwipeListener.onItemSwipeEnded(endingSwipeView, endingSwipeView.getSwipedDirection());
+                                mSwipeListener!!.onItemSwipeEnded(endingSwipeView, endingSwipeView.swipedDirection)
                             }
                         }
-                    });
+                    })
                 } else {
-                    resetSwipedViews(null);
+                    resetSwipedViews(null)
                 }
-                mSwipeView = null;
-                mRecyclerView.requestDisallowInterceptTouchEvent(false);
-                break;
+                mSwipeView = null
+                mRecyclerView!!.requestDisallowInterceptTouchEvent(false)
+            }
         }
     }
 
-    @Override
-    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-    }
-
-    public void detachFromRecyclerView() {
+    override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
+    fun detachFromRecyclerView() {
         if (mRecyclerView != null) {
-            mRecyclerView.removeOnItemTouchListener(this);
-            mRecyclerView.removeOnScrollListener(this);
+            mRecyclerView!!.removeOnItemTouchListener(this)
+            mRecyclerView!!.removeOnScrollListener(this)
         }
-        mRecyclerView = null;
+        mRecyclerView = null
     }
 
-    public void attachToRecyclerView(RecyclerView recyclerView) {
-        mRecyclerView = recyclerView;
-        mRecyclerView.addOnItemTouchListener(this);
-        mRecyclerView.addOnScrollListener(this);
-        mTouchSlop = ViewConfiguration.get(mRecyclerView.getContext()).getScaledTouchSlop();
+    fun attachToRecyclerView(recyclerView: RecyclerView?) {
+        mRecyclerView = recyclerView
+        mRecyclerView!!.addOnItemTouchListener(this)
+        mRecyclerView!!.addOnScrollListener(this)
+        mTouchSlop = ViewConfiguration.get(mRecyclerView!!.context).scaledTouchSlop
     }
 
-    public void setSwipeListener(ListSwipeHelper.OnSwipeListener listener) {
-        mSwipeListener = listener;
+    fun setSwipeListener(listener: OnSwipeListener?) {
+        mSwipeListener = listener
     }
 
-    private class GestureListener extends GestureDetector.SimpleOnGestureListener {
-        private boolean mSwipeStarted;
+    private inner class GestureListener : SimpleOnGestureListener() {
+        var isSwipeStarted = false
+            private set
 
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (e1 == null || e2 == null || mSwipeView == null || mRecyclerView.getScrollState() != RecyclerView.SCROLL_STATE_IDLE) {
-                return false;
+        override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
+            if (e1 == null || e2 == null || mSwipeView == null || mRecyclerView!!.scrollState != RecyclerView.SCROLL_STATE_IDLE) {
+                return false
             }
-
-            final float diffX = Math.abs(e2.getX() - e1.getX());
-            final float diffY = Math.abs(e2.getY() - e1.getY());
-            if (!mSwipeStarted && diffX > mTouchSlop * 2 && diffX * 0.5f > diffY) {
-                mSwipeStarted = true;
-                mRecyclerView.requestDisallowInterceptTouchEvent(true);
-                mSwipeView.handleSwipeMoveStarted(mSwipeListener);
+            val diffX = Math.abs(e2.x - e1.x)
+            val diffY = Math.abs(e2.y - e1.y)
+            if (!isSwipeStarted && diffX > mTouchSlop * 2 && diffX * 0.5f > diffY) {
+                isSwipeStarted = true
+                mRecyclerView!!.requestDisallowInterceptTouchEvent(true)
+                mSwipeView!!.handleSwipeMoveStarted(mSwipeListener)
                 if (mSwipeListener != null) {
-                    mSwipeListener.onItemSwipeStarted(mSwipeView);
+                    mSwipeListener!!.onItemSwipeStarted(mSwipeView)
                 }
             }
-
-            if (mSwipeStarted) {
-                mSwipeView.handleSwipeMove(-distanceX, mRecyclerView.getChildViewHolder(mSwipeView));
+            if (isSwipeStarted) {
+                mSwipeView!!.handleSwipeMove(-distanceX, mRecyclerView!!.getChildViewHolder(mSwipeView!!))
             }
-
-            return mSwipeStarted;
+            return isSwipeStarted
         }
 
-        @Override
-        public boolean onDown(MotionEvent e) {
-            mSwipeStarted = false;
-            return true;
+        override fun onDown(e: MotionEvent): Boolean {
+            isSwipeStarted = false
+            return true
         }
 
-        @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
             if (!canStartSwipe(e1, e2)) {
-                return false;
+                return false
             }
-
-            mSwipeView.setFlingSpeed(velocityX);
-            return true;
+            mSwipeView!!.setFlingSpeed(velocityX)
+            return true
         }
 
-        boolean isSwipeStarted() {
-            return mSwipeStarted;
+        private fun canStartSwipe(e1: MotionEvent?, e2: MotionEvent?): Boolean {
+            return !(e1 == null || e2 == null || mSwipeView == null || mRecyclerView!!.scrollState != RecyclerView.SCROLL_STATE_IDLE || mSwipeView.getSupportedSwipeDirection() == SwipeDirection.NONE)
         }
+    }
 
-        private boolean canStartSwipe(MotionEvent e1, MotionEvent e2) {
-            return !(e1 == null || e2 == null || mSwipeView == null || mRecyclerView.getScrollState() != RecyclerView.SCROLL_STATE_IDLE
-                    || mSwipeView.getSupportedSwipeDirection() == ListSwipeItem.SwipeDirection.NONE);
-        }
+    init {
+        mGestureListener = GestureListener()
+        mGestureDetector = GestureDetector(applicationContext, mGestureListener)
     }
 }

@@ -13,199 +13,169 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.woxthebox.draglistview
 
-package com.woxthebox.draglistview;
+import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
+import android.view.View
+import android.view.animation.DecelerateInterpolator
+import android.widget.FrameLayout
 
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ObjectAnimator;
-import android.animation.PropertyValuesHolder;
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
-import android.view.View;
-import android.view.animation.DecelerateInterpolator;
-import android.widget.FrameLayout;
+open class DragItem {
+    var dragItemView: View
+        private set
+    var realDragView: View? = null
+        private set
+    private var mOffsetX = 0f
+    private var mOffsetY = 0f
+    private var mPosX = 0f
+    private var mPosY = 0f
+    private var mPosTouchDx = 0f
+    private var mPosTouchDy = 0f
+    private var mAnimationDx = 0f
+    private var mAnimationDy = 0f
+    private var mCanDragHorizontally = true
+    var isSnapToTouch = true
 
-public class DragItem {
-    protected static final int ANIMATION_DURATION = 250;
-    private View mDragView;
-    private View mRealDragView;
-
-    private float mOffsetX;
-    private float mOffsetY;
-    private float mPosX;
-    private float mPosY;
-    private float mPosTouchDx;
-    private float mPosTouchDy;
-    private float mAnimationDx;
-    private float mAnimationDy;
-    private boolean mCanDragHorizontally = true;
-    private boolean mSnapToTouch = true;
-
-    DragItem(Context context) {
-        mDragView = new View(context);
-        hide();
+    internal constructor(context: Context?) {
+        dragItemView = View(context)
+        hide()
     }
 
-    public DragItem(Context context, int layoutId) {
-        mDragView = View.inflate(context, layoutId, null);
-        hide();
+    constructor(context: Context?, layoutId: Int) {
+        dragItemView = View.inflate(context, layoutId, null)
+        hide()
     }
 
-    public void onBindDragView(View clickedView, View dragView) {
-        Bitmap bitmap = Bitmap.createBitmap(clickedView.getWidth(), clickedView.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        clickedView.draw(canvas);
-        dragView.setBackground(new BitmapDrawable(clickedView.getResources(), bitmap));
+    open fun onBindDragView(clickedView: View, dragView: View) {
+        val bitmap = Bitmap.createBitmap(clickedView.width, clickedView.height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        clickedView.draw(canvas)
+        dragView.background = BitmapDrawable(clickedView.resources, bitmap)
     }
 
-    public void onMeasureDragView(View clickedView, View dragView) {
-        dragView.setLayoutParams(new FrameLayout.LayoutParams(clickedView.getMeasuredWidth(), clickedView.getMeasuredHeight()));
-        int widthSpec = View.MeasureSpec.makeMeasureSpec(clickedView.getMeasuredWidth(), View.MeasureSpec.EXACTLY);
-        int heightSpec = View.MeasureSpec.makeMeasureSpec(clickedView.getMeasuredHeight(), View.MeasureSpec.EXACTLY);
-        dragView.measure(widthSpec, heightSpec);
+    fun onMeasureDragView(clickedView: View, dragView: View) {
+        dragView.layoutParams = FrameLayout.LayoutParams(clickedView.measuredWidth, clickedView.measuredHeight)
+        val widthSpec = View.MeasureSpec.makeMeasureSpec(clickedView.measuredWidth, View.MeasureSpec.EXACTLY)
+        val heightSpec = View.MeasureSpec.makeMeasureSpec(clickedView.measuredHeight, View.MeasureSpec.EXACTLY)
+        dragView.measure(widthSpec, heightSpec)
     }
 
-    public void onStartDragAnimation(View dragView) {
+    fun onStartDragAnimation(dragView: View?) {}
+    fun onEndDragAnimation(dragView: View?) {}
+    fun canDragHorizontally(): Boolean {
+        return mCanDragHorizontally
     }
 
-    public void onEndDragAnimation(View dragView) {
+    fun setCanDragHorizontally(canDragHorizontally: Boolean) {
+        mCanDragHorizontally = canDragHorizontally
     }
 
-    boolean canDragHorizontally() {
-        return mCanDragHorizontally;
+    private fun show() {
+        dragItemView.visibility = View.VISIBLE
     }
 
-    void setCanDragHorizontally(boolean canDragHorizontally) {
-        mCanDragHorizontally = canDragHorizontally;
+    fun hide() {
+        dragItemView.visibility = View.GONE
+        realDragView = null
     }
 
-    boolean isSnapToTouch() {
-        return mSnapToTouch;
-    }
+    val isDragging: Boolean
+        get() = dragItemView.visibility === View.VISIBLE
 
-    protected void setSnapToTouch(boolean snapToTouch) {
-        mSnapToTouch = snapToTouch;
-    }
-
-    View getDragItemView() {
-        return mDragView;
-    }
-
-    View getRealDragView() {
-        return mRealDragView;
-    }
-
-    private void show() {
-        mDragView.setVisibility(View.VISIBLE);
-    }
-
-    void hide() {
-        mDragView.setVisibility(View.GONE);
-        mRealDragView = null;
-    }
-
-    boolean isDragging() {
-        return mDragView.visibility == View.VISIBLE;
-    }
-
-    void startDrag(View startFromView, float touchX, float touchY) {
-        show();
-        mRealDragView = startFromView;
-        onBindDragView(startFromView, mDragView);
-        onMeasureDragView(startFromView, mDragView);
-        onStartDragAnimation(mDragView);
-
-        float startX = startFromView.getX() - (mDragView.getMeasuredWidth() - startFromView.getMeasuredWidth()) / 2 + mDragView
-                .getMeasuredWidth() / 2;
-        float startY = startFromView.getY() - (mDragView.getMeasuredHeight() - startFromView.getMeasuredHeight()) / 2 + mDragView
-                .getMeasuredHeight() / 2;
-
-        if (mSnapToTouch) {
-            mPosTouchDx = 0;
-            mPosTouchDy = 0;
-            setPosition(touchX, touchY);
-            setAnimationDx(startX - touchX);
-            setAnimationDY(startY - touchY);
-
-            PropertyValuesHolder pvhX = PropertyValuesHolder.ofFloat("AnimationDx", mAnimationDx, 0);
-            PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("AnimationDY", mAnimationDy, 0);
-            ObjectAnimator anim = ObjectAnimator.ofPropertyValuesHolder(this, pvhX, pvhY);
-            anim.setInterpolator(new DecelerateInterpolator());
-            anim.setDuration(ANIMATION_DURATION);
-            anim.start();
+    fun startDrag(startFromView: View, touchX: Float, touchY: Float) {
+        show()
+        realDragView = startFromView
+        onBindDragView(startFromView, dragItemView)
+        onMeasureDragView(startFromView, dragItemView)
+        onStartDragAnimation(dragItemView)
+        val startX = startFromView.x - (dragItemView.measuredWidth - startFromView.measuredWidth) / 2 + dragItemView
+                .measuredWidth / 2
+        val startY = startFromView.y - (dragItemView.measuredHeight - startFromView.measuredHeight) / 2 + dragItemView
+                .measuredHeight / 2
+        if (isSnapToTouch) {
+            mPosTouchDx = 0f
+            mPosTouchDy = 0f
+            setPosition(touchX, touchY)
+            setAnimationDx(startX - touchX)
+            setAnimationDY(startY - touchY)
+            val pvhX = PropertyValuesHolder.ofFloat("AnimationDx", mAnimationDx, 0f)
+            val pvhY = PropertyValuesHolder.ofFloat("AnimationDY", mAnimationDy, 0f)
+            val anim = ObjectAnimator.ofPropertyValuesHolder(this, pvhX, pvhY)
+            anim.interpolator = DecelerateInterpolator()
+            anim.duration = ANIMATION_DURATION.toLong()
+            anim.start()
         } else {
-            mPosTouchDx = startX - touchX;
-            mPosTouchDy = startY - touchY;
-            setPosition(touchX, touchY);
+            mPosTouchDx = startX - touchX
+            mPosTouchDy = startY - touchY
+            setPosition(touchX, touchY)
         }
     }
 
-    void endDrag(View endToView, AnimatorListenerAdapter listener) {
-        onEndDragAnimation(mDragView);
-
-        float endX = endToView.getX() - (mDragView.getMeasuredWidth() - endToView.getMeasuredWidth()) / 2 + mDragView
-                .getMeasuredWidth() / 2;
-        float endY = endToView.getY() - (mDragView.getMeasuredHeight() - endToView.getMeasuredHeight()) / 2 + mDragView
-                .getMeasuredHeight() / 2;
-        PropertyValuesHolder pvhX = PropertyValuesHolder.ofFloat("X", mPosX, endX);
-        PropertyValuesHolder pvhY = PropertyValuesHolder.ofFloat("Y", mPosY, endY);
-        ObjectAnimator anim = ObjectAnimator.ofPropertyValuesHolder(this, pvhX, pvhY);
-        anim.setInterpolator(new DecelerateInterpolator());
-        anim.setDuration(ANIMATION_DURATION);
-        anim.addListener(listener);
-        anim.start();
+    fun endDrag(endToView: View?, listener: AnimatorListenerAdapter?) {
+        onEndDragAnimation(dragItemView)
+        val endX = endToView!!.x - (dragItemView.measuredWidth - endToView.measuredWidth) / 2 + dragItemView
+                .measuredWidth / 2
+        val endY = endToView.y - (dragItemView.measuredHeight - endToView.measuredHeight) / 2 + dragItemView
+                .measuredHeight / 2
+        val pvhX = PropertyValuesHolder.ofFloat("X", mPosX, endX)
+        val pvhY = PropertyValuesHolder.ofFloat("Y", mPosY, endY)
+        val anim = ObjectAnimator.ofPropertyValuesHolder(this, pvhX, pvhY)
+        anim.interpolator = DecelerateInterpolator()
+        anim.duration = ANIMATION_DURATION.toLong()
+        anim.addListener(listener)
+        anim.start()
     }
 
-    @SuppressWarnings("WeakerAccess")
-    void setAnimationDx(float x) {
-        mAnimationDx = x;
-        updatePosition();
+    fun setAnimationDx(x: Float) {
+        mAnimationDx = x
+        updatePosition()
     }
 
-    @SuppressWarnings("WeakerAccess")
-    void setAnimationDY(float y) {
-        mAnimationDy = y;
-        updatePosition();
+    fun setAnimationDY(y: Float) {
+        mAnimationDy = y
+        updatePosition()
     }
 
-    void setX(float x) {
-        mPosX = x;
-        updatePosition();
+    var x: Float
+        get() = mPosX
+        set(x) {
+            mPosX = x
+            updatePosition()
+        }
+    var y: Float
+        get() = mPosY
+        set(y) {
+            mPosY = y
+            updatePosition()
+        }
+
+    fun setPosition(touchX: Float, touchY: Float) {
+        mPosX = touchX + mPosTouchDx
+        mPosY = touchY + mPosTouchDy
+        updatePosition()
     }
 
-    void setY(float y) {
-        mPosY = y;
-        updatePosition();
+    fun setOffset(offsetX: Float, offsetY: Float) {
+        mOffsetX = offsetX
+        mOffsetY = offsetY
+        updatePosition()
     }
 
-    float getX() {
-        return mPosX;
-    }
-
-    float getY() {
-        return mPosY;
-    }
-
-    void setPosition(float touchX, float touchY) {
-        mPosX = touchX + mPosTouchDx;
-        mPosY = touchY + mPosTouchDy;
-        updatePosition();
-    }
-
-    void setOffset(float offsetX, float offsetY) {
-        mOffsetX = offsetX;
-        mOffsetY = offsetY;
-        updatePosition();
-    }
-
-    private void updatePosition() {
+    private fun updatePosition() {
         if (mCanDragHorizontally) {
-            mDragView.setX(mPosX + mOffsetX + mAnimationDx - mDragView.getMeasuredWidth() / 2);
+            dragItemView.x = mPosX + mOffsetX + mAnimationDx - dragItemView.measuredWidth / 2
         }
+        dragItemView.y = mPosY + mOffsetY + mAnimationDy - dragItemView.measuredHeight / 2
+        dragItemView.invalidate()
+    }
 
-        mDragView.setY(mPosY + mOffsetY + mAnimationDy - mDragView.getMeasuredHeight() / 2);
-        mDragView.invalidate();
+    companion object {
+        protected const val ANIMATION_DURATION = 250
     }
 }

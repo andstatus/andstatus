@@ -1,535 +1,474 @@
 /**
  * Copyright 2014 Magnus Woxblom
- * <p/>
+ *
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p/>
+ *
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
+ *
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.woxthebox.draglistview
 
-package com.woxthebox.draglistview;
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.content.Context
+import android.graphics.Canvas
+import android.graphics.drawable.Drawable
+import android.util.AttributeSet
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewConfiguration
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.woxthebox.draglistview.AutoScroller.AutoScrollListener
+import com.woxthebox.draglistview.AutoScroller.ScrollDirection
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
-import android.util.AttributeSet;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewConfiguration;
-
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-public class DragItemRecyclerView extends RecyclerView implements AutoScroller.AutoScrollListener {
-
-    public interface DragItemListener {
-        void onDragStarted(int itemPosition, float x, float y);
-
-        void onDragging(int itemPosition, float x, float y);
-
-        void onDragEnded(int newItemPosition);
+class DragItemRecyclerView : RecyclerView, AutoScrollListener {
+    interface DragItemListener {
+        fun onDragStarted(itemPosition: Int, x: Float, y: Float)
+        fun onDragging(itemPosition: Int, x: Float, y: Float)
+        fun onDragEnded(newItemPosition: Int)
     }
 
-    public interface DragItemCallback {
-        boolean canDragItemAtPosition(int dragPosition);
-
-        boolean canDropItemAtPosition(int dropPosition);
+    interface DragItemCallback {
+        fun canDragItemAtPosition(dragPosition: Int): Boolean
+        fun canDropItemAtPosition(dropPosition: Int): Boolean
     }
 
-    private enum DragState {
+    private enum class DragState {
         DRAG_STARTED, DRAGGING, DRAG_ENDED
     }
 
-    private AutoScroller mAutoScroller;
-    private DragItemListener mListener;
-    private DragItemCallback mDragCallback;
-    private DragState mDragState = DragState.DRAG_ENDED;
-    private DragItemAdapter mAdapter;
-    private DragItem mDragItem;
-    private Drawable mDropTargetBackgroundDrawable;
-    private Drawable mDropTargetForegroundDrawable;
-    private long mDragItemId = NO_ID;
-    private boolean mHoldChangePosition;
-    private int mDragItemPosition;
-    private int mTouchSlop;
-    private float mStartY;
-    private boolean mClipToPadding;
-    private boolean mCanNotDragAboveTop;
-    private boolean mCanNotDragBelowBottom;
-    private boolean mScrollingEnabled = true;
-    private boolean mDisableReorderWhenDragging;
-    private boolean mDragEnabled = true;
+    private var mAutoScroller: AutoScroller? = null
+    private var mListener: DragItemListener? = null
+    private var mDragCallback: DragItemCallback? = null
+    private var mDragState = DragState.DRAG_ENDED
+    private var mAdapter: DragItemAdapter<*, *>? = null
+    private var mDragItem: DragItem? = null
+    private var mDropTargetBackgroundDrawable: Drawable? = null
+    private var mDropTargetForegroundDrawable: Drawable? = null
+    var dragItemId = NO_ID
+        private set
+    private var mHoldChangePosition = false
+    private var mDragItemPosition = 0
+    private var mTouchSlop = 0
+    private var mStartY = 0f
+    private var mClipToPadding = false
+    private var mCanNotDragAboveTop = false
+    private var mCanNotDragBelowBottom = false
+    private var mScrollingEnabled = true
+    private var mDisableReorderWhenDragging = false
+    var isDragEnabled = true
 
-    public DragItemRecyclerView(Context context) {
-        super(context);
-        init();
+    constructor(context: Context?) : super(context!!) {
+        init()
     }
 
-    public DragItemRecyclerView(Context context, AttributeSet attrs) {
-        super(context, attrs, 0);
-        init();
+    constructor(context: Context?, attrs: AttributeSet?) : super(context!!, attrs, 0) {
+        init()
     }
 
-    public DragItemRecyclerView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        init();
+    constructor(context: Context?, attrs: AttributeSet?, defStyle: Int) : super(context!!, attrs, defStyle) {
+        init()
     }
 
-    private void init() {
-        mAutoScroller = new AutoScroller(getContext(), this);
-        mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
-
-        addItemDecoration(new ItemDecoration() {
-            @Override
-            public void onDraw(Canvas c, RecyclerView parent, State state) {
-                super.onDraw(c, parent, state);
-                drawDecoration(c, parent, mDropTargetBackgroundDrawable);
+    private fun init() {
+        mAutoScroller = AutoScroller(context, this)
+        mTouchSlop = ViewConfiguration.get(context).scaledTouchSlop
+        addItemDecoration(object : ItemDecoration() {
+            override fun onDraw(c: Canvas, parent: RecyclerView, state: State) {
+                super.onDraw(c, parent, state)
+                drawDecoration(c, parent, mDropTargetBackgroundDrawable)
             }
 
-            @Override
-            public void onDrawOver(Canvas c, RecyclerView parent, State state) {
-                super.onDrawOver(c, parent, state);
-                drawDecoration(c, parent, mDropTargetForegroundDrawable);
+            override fun onDrawOver(c: Canvas, parent: RecyclerView, state: State) {
+                super.onDrawOver(c, parent, state)
+                drawDecoration(c, parent, mDropTargetForegroundDrawable)
             }
 
-            private void drawDecoration(Canvas c, RecyclerView parent, Drawable drawable) {
+            private fun drawDecoration(c: Canvas, parent: RecyclerView, drawable: Drawable?) {
                 if (mAdapter == null || mAdapter.getDropTargetId() == NO_ID || drawable == null) {
-                    return;
+                    return
                 }
-
-                for (int i = 0; i < parent.getChildCount(); i++) {
-                    View item = parent.getChildAt(i);
-                    int pos = getChildAdapterPosition(item);
-                    if (pos != NO_POSITION && mAdapter.getItemId(pos) == mAdapter.getDropTargetId()) {
-                        drawable.setBounds(item.getLeft(), item.getTop(), item.getRight(), item.getBottom());
-                        drawable.draw(c);
+                for (i in 0 until parent.childCount) {
+                    val item = parent.getChildAt(i)
+                    val pos = getChildAdapterPosition(item)
+                    if (pos != NO_POSITION && mAdapter!!.getItemId(pos) == mAdapter.getDropTargetId()) {
+                        drawable.setBounds(item.left, item.top, item.right, item.bottom)
+                        drawable.draw(c)
                     }
                 }
             }
-        });
+        })
     }
 
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent event) {
+    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
         if (!mScrollingEnabled) {
-            return false;
+            return false
         }
-
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                mStartY = event.getY();
-                break;
-            case MotionEvent.ACTION_MOVE:
-                final float diffY = Math.abs(event.getY() - mStartY);
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> mStartY = event.y
+            MotionEvent.ACTION_MOVE -> {
+                val diffY = Math.abs(event.y - mStartY)
                 if (diffY > mTouchSlop * 0.5) {
                     // Steal event from parent as we now only want to scroll in the list
-                    getParent().requestDisallowInterceptTouchEvent(true);
+                    parent.requestDisallowInterceptTouchEvent(true)
                 }
-                break;
+            }
         }
-        return super.onInterceptTouchEvent(event);
+        return super.onInterceptTouchEvent(event)
     }
 
-    void setDragEnabled(boolean enabled) {
-        mDragEnabled = enabled;
+    fun setCanNotDragAboveTopItem(canNotDragAboveTop: Boolean) {
+        mCanNotDragAboveTop = canNotDragAboveTop
     }
 
-    boolean isDragEnabled() {
-        return mDragEnabled;
+    fun setCanNotDragBelowBottomItem(canNotDragBelowBottom: Boolean) {
+        mCanNotDragBelowBottom = canNotDragBelowBottom
     }
 
-    void setCanNotDragAboveTopItem(boolean canNotDragAboveTop) {
-        mCanNotDragAboveTop = canNotDragAboveTop;
+    fun setScrollingEnabled(scrollingEnabled: Boolean) {
+        mScrollingEnabled = scrollingEnabled
     }
 
-    void setCanNotDragBelowBottomItem(boolean canNotDragBelowBottom) {
-        mCanNotDragBelowBottom = canNotDragBelowBottom;
+    fun setDisableReorderWhenDragging(disableReorder: Boolean) {
+        mDisableReorderWhenDragging = disableReorder
     }
 
-    void setScrollingEnabled(boolean scrollingEnabled) {
-        mScrollingEnabled = scrollingEnabled;
+    fun setDropTargetDrawables(backgroundDrawable: Drawable?, foregroundDrawable: Drawable?) {
+        mDropTargetBackgroundDrawable = backgroundDrawable
+        mDropTargetForegroundDrawable = foregroundDrawable
     }
 
-    void setDisableReorderWhenDragging(boolean disableReorder) {
-        mDisableReorderWhenDragging = disableReorder;
+    fun setDragItemListener(listener: DragItemListener?) {
+        mListener = listener
     }
 
-    public void setDropTargetDrawables(Drawable backgroundDrawable, Drawable foregroundDrawable) {
-        mDropTargetBackgroundDrawable = backgroundDrawable;
-        mDropTargetForegroundDrawable = foregroundDrawable;
+    fun setDragItemCallback(callback: DragItemCallback?) {
+        mDragCallback = callback
     }
 
-    void setDragItemListener(DragItemListener listener) {
-        mListener = listener;
+    fun setDragItem(dragItem: DragItem?) {
+        mDragItem = dragItem
     }
 
-    void setDragItemCallback(DragItemCallback callback) {
-        mDragCallback = callback;
+    val isDragging: Boolean
+        get() = mDragState != DragState.DRAG_ENDED
+
+    override fun setClipToPadding(clipToPadding: Boolean) {
+        super.setClipToPadding(clipToPadding)
+        mClipToPadding = clipToPadding
     }
 
-    void setDragItem(DragItem dragItem) {
-        mDragItem = dragItem;
-    }
-
-    boolean isDragging() {
-        return mDragState != DragState.DRAG_ENDED;
-    }
-
-    long getDragItemId() {
-        return mDragItemId;
-    }
-
-    @Override
-    public void setClipToPadding(boolean clipToPadding) {
-        super.setClipToPadding(clipToPadding);
-        mClipToPadding = clipToPadding;
-    }
-
-    @Override
-    public void setAdapter(Adapter adapter) {
-        if (!isInEditMode()) {
-            if (!(adapter instanceof DragItemAdapter)) {
-                throw new RuntimeException("Adapter must extend DragItemAdapter");
+    override fun setAdapter(adapter: Adapter<*>) {
+        if (!isInEditMode) {
+            if (adapter !is DragItemAdapter<*, *>) {
+                throw RuntimeException("Adapter must extend DragItemAdapter")
             }
             if (!adapter.hasStableIds()) {
-                throw new RuntimeException("Adapter must have stable ids");
+                throw RuntimeException("Adapter must have stable ids")
             }
         }
-        super.setAdapter(adapter);
-        mAdapter = (DragItemAdapter) adapter;
+        super.setAdapter(adapter)
+        mAdapter = adapter as DragItemAdapter<*, *>
     }
 
-    @Override
-    public void swapAdapter(Adapter adapter, boolean r) {
-        if (!isInEditMode()) {
-            if (!(adapter instanceof DragItemAdapter)) {
-                throw new RuntimeException("Adapter must extend DragItemAdapter");
+    override fun swapAdapter(adapter: Adapter<*>, r: Boolean) {
+        if (!isInEditMode) {
+            if (adapter !is DragItemAdapter<*, *>) {
+                throw RuntimeException("Adapter must extend DragItemAdapter")
             }
             if (!adapter.hasStableIds()) {
-                throw new RuntimeException("Adapter must have stable ids");
+                throw RuntimeException("Adapter must have stable ids")
             }
         }
-        super.swapAdapter(adapter, r);
-        mAdapter = (DragItemAdapter) adapter;
+        super.swapAdapter(adapter, r)
+        mAdapter = adapter as DragItemAdapter<*, *>
     }
 
-    @Override
-    public void setLayoutManager(LayoutManager layout) {
-        super.setLayoutManager(layout);
-        if (!(layout instanceof LinearLayoutManager)) {
-            throw new RuntimeException("Layout must be an instance of LinearLayoutManager");
+    override fun setLayoutManager(layout: LayoutManager?) {
+        super.setLayoutManager(layout)
+        if (layout !is LinearLayoutManager) {
+            throw RuntimeException("Layout must be an instance of LinearLayoutManager")
         }
     }
 
-    @Override
-    public void onAutoScrollPositionBy(int dx, int dy) {
-        if (isDragging()) {
-            scrollBy(dx, dy);
-            updateDragPositionAndScroll();
+    override fun onAutoScrollPositionBy(dx: Int, dy: Int) {
+        if (isDragging) {
+            scrollBy(dx, dy)
+            updateDragPositionAndScroll()
         } else {
-            mAutoScroller.stopAutoScroll();
+            mAutoScroller!!.stopAutoScroll()
         }
     }
 
-    @Override
-    public void onAutoScrollColumnBy(int columns) {
-    }
+    override fun onAutoScrollColumnBy(columns: Int) {}
 
     /**
      * Returns the child view under the specific x,y coordinate.
      * This method will take margins of the child into account when finding it.
      */
-    public View findChildView(float x, float y) {
-        final int count = getChildCount();
+    fun findChildView(x: Float, y: Float): View? {
+        val count = childCount
         if (y <= 0 && count > 0) {
-            return getChildAt(0);
+            return getChildAt(0)
         }
-
-        for (int i = count - 1; i >= 0; i--) {
-            final View child = getChildAt(i);
-            MarginLayoutParams params = (MarginLayoutParams) child.getLayoutParams();
-            if (x >= child.getLeft() - params.leftMargin && x <= child.getRight() + params.rightMargin
-                    && y >= child.getTop() - params.topMargin && y <= child.getBottom() + params.bottomMargin) {
-                return child;
+        for (i in count - 1 downTo 0) {
+            val child = getChildAt(i)
+            val params = child.layoutParams as MarginLayoutParams
+            if (x >= child.left - params.leftMargin && x <= child.right + params.rightMargin && y >= child.top - params.topMargin && y <= child.bottom + params.bottomMargin) {
+                return child
             }
         }
-
-        return null;
+        return null
     }
 
-    private boolean shouldChangeItemPosition(int newPos) {
+    private fun shouldChangeItemPosition(newPos: Int): Boolean {
         // Check if drag position is changed and valid and that we are not in a hold position state
         if (mHoldChangePosition || mDragItemPosition == NO_POSITION || mDragItemPosition == newPos) {
-            return false;
+            return false
         }
         // If we are not allowed to drag above top or bottom and new pos is 0 or item count then return false
-        if ((mCanNotDragAboveTop && newPos == 0) || (mCanNotDragBelowBottom && newPos == mAdapter.getItemCount() - 1)) {
-            return false;
+        if (mCanNotDragAboveTop && newPos == 0 || mCanNotDragBelowBottom && newPos == mAdapter!!.itemCount - 1) {
+            return false
         }
         // Check with callback if we are allowed to drop at this position
-        if (mDragCallback != null && !mDragCallback.canDropItemAtPosition(newPos)) {
-            return false;
-        }
-        return true;
+        return if (mDragCallback != null && !mDragCallback!!.canDropItemAtPosition(newPos)) {
+            false
+        } else true
     }
 
-    private void updateDragPositionAndScroll() {
-        View view = findChildView(mDragItem.getX(), mDragItem.getY());
-        int newPos = getChildLayoutPosition(view);
+    private fun updateDragPositionAndScroll() {
+        val view = findChildView(mDragItem.getX(), mDragItem.getY())
+        var newPos = getChildLayoutPosition(view!!)
         if (newPos == NO_POSITION || view == null) {
-            return;
+            return
         }
 
         // If using a LinearLayoutManager and the new view has a bigger height we need to check if passing centerY as well.
         // If not doing this extra check the bigger item will move back again when dragging slowly over it.
-        boolean linearLayoutManager = getLayoutManager() instanceof LinearLayoutManager && !(getLayoutManager() instanceof GridLayoutManager);
+        val linearLayoutManager = layoutManager is LinearLayoutManager && layoutManager !is GridLayoutManager
         if (linearLayoutManager) {
-            MarginLayoutParams params = (MarginLayoutParams) view.getLayoutParams();
-            int viewHeight = view.getMeasuredHeight() + params.topMargin + params.bottomMargin;
-            int viewCenterY = view.getTop() - params.topMargin + viewHeight / 2;
-            boolean dragDown = mDragItemPosition < getChildLayoutPosition(view);
-            boolean movedPassedCenterY = dragDown ? mDragItem.getY() > viewCenterY : mDragItem.getY() < viewCenterY;
+            val params = view.layoutParams as MarginLayoutParams
+            val viewHeight = view.measuredHeight + params.topMargin + params.bottomMargin
+            val viewCenterY = view.top - params.topMargin + viewHeight / 2
+            val dragDown = mDragItemPosition < getChildLayoutPosition(view)
+            val movedPassedCenterY = if (dragDown) mDragItem.getY() > viewCenterY else mDragItem.getY() < viewCenterY
 
             // If new height is bigger then current and not passed centerY then reset back to current position
-            if (viewHeight > mDragItem.getDragItemView().getMeasuredHeight() && !movedPassedCenterY) {
-                newPos = mDragItemPosition;
+            if (viewHeight > mDragItem.getDragItemView().measuredHeight && !movedPassedCenterY) {
+                newPos = mDragItemPosition
             }
         }
-
-        LinearLayoutManager layoutManager = (LinearLayoutManager) getLayoutManager();
+        val layoutManager = layoutManager as LinearLayoutManager?
         if (shouldChangeItemPosition(newPos)) {
             if (mDisableReorderWhenDragging) {
-                mAdapter.setDropTargetId(mAdapter.getItemId(newPos));
-                mAdapter.notifyDataSetChanged();
+                mAdapter.setDropTargetId(mAdapter!!.getItemId(newPos))
+                mAdapter!!.notifyDataSetChanged()
             } else {
-                int pos = layoutManager.findFirstVisibleItemPosition();
-                View posView = layoutManager.findViewByPosition(pos);
-                mAdapter.changeItemPosition(mDragItemPosition, newPos);
-                mDragItemPosition = newPos;
+                val pos = layoutManager!!.findFirstVisibleItemPosition()
+                val posView = layoutManager.findViewByPosition(pos)
+                mAdapter!!.changeItemPosition(mDragItemPosition, newPos)
+                mDragItemPosition = newPos
 
                 // Since notifyItemMoved scrolls the list we need to scroll back to where we were after the position change.
-                if (layoutManager.getOrientation() == LinearLayoutManager.VERTICAL) {
-                    int topMargin = ((MarginLayoutParams) posView.getLayoutParams()).topMargin;
-                    layoutManager.scrollToPositionWithOffset(pos, posView.getTop() - topMargin);
+                if (layoutManager.orientation == LinearLayoutManager.VERTICAL) {
+                    val topMargin = (posView!!.layoutParams as MarginLayoutParams).topMargin
+                    layoutManager.scrollToPositionWithOffset(pos, posView.top - topMargin)
                 } else {
-                    int leftMargin = ((MarginLayoutParams) posView.getLayoutParams()).leftMargin;
-                    layoutManager.scrollToPositionWithOffset(pos, posView.getLeft() - leftMargin);
+                    val leftMargin = (posView!!.layoutParams as MarginLayoutParams).leftMargin
+                    layoutManager.scrollToPositionWithOffset(pos, posView.left - leftMargin)
                 }
             }
         }
-
-        boolean lastItemReached = false;
-        boolean firstItemReached = false;
-        int top = mClipToPadding ? getPaddingTop() : 0;
-        int bottom = mClipToPadding ? getHeight() - getPaddingBottom() : getHeight();
-        int left = mClipToPadding ? getPaddingLeft() : 0;
-        int right = mClipToPadding ? getWidth() - getPaddingRight() : getWidth();
-        ViewHolder lastChild = findViewHolderForLayoutPosition(mAdapter.getItemCount() - 1);
-        ViewHolder firstChild = findViewHolderForLayoutPosition(0);
+        var lastItemReached = false
+        var firstItemReached = false
+        val top = if (mClipToPadding) paddingTop else 0
+        val bottom = if (mClipToPadding) height - paddingBottom else height
+        val left = if (mClipToPadding) paddingLeft else 0
+        val right = if (mClipToPadding) width - paddingRight else width
+        val lastChild = findViewHolderForLayoutPosition(mAdapter!!.itemCount - 1)
+        val firstChild = findViewHolderForLayoutPosition(0)
 
         // Check if first or last item has been reached
-        if (layoutManager.getOrientation() == LinearLayoutManager.VERTICAL) {
-            if (lastChild != null && lastChild.itemView.getBottom() <= bottom) {
-                lastItemReached = true;
+        if (layoutManager!!.orientation == LinearLayoutManager.VERTICAL) {
+            if (lastChild != null && lastChild.itemView.bottom <= bottom) {
+                lastItemReached = true
             }
-            if (firstChild != null && firstChild.itemView.getTop() >= top) {
-                firstItemReached = true;
+            if (firstChild != null && firstChild.itemView.top >= top) {
+                firstItemReached = true
             }
         } else {
-            if (lastChild != null && lastChild.itemView.getRight() <= right) {
-                lastItemReached = true;
+            if (lastChild != null && lastChild.itemView.right <= right) {
+                lastItemReached = true
             }
-            if (firstChild != null && firstChild.itemView.getLeft() >= left) {
-                firstItemReached = true;
+            if (firstChild != null && firstChild.itemView.left >= left) {
+                firstItemReached = true
             }
         }
 
         // Start auto scroll if at the edge
-        if (layoutManager.getOrientation() == LinearLayoutManager.VERTICAL) {
-            if (mDragItem.getY() > getHeight() - view.getHeight() / 2 && !lastItemReached) {
-                mAutoScroller.startAutoScroll(AutoScroller.ScrollDirection.UP);
-            } else if (mDragItem.getY() < view.getHeight() / 2 && !firstItemReached) {
-                mAutoScroller.startAutoScroll(AutoScroller.ScrollDirection.DOWN);
+        if (layoutManager.orientation == LinearLayoutManager.VERTICAL) {
+            if (mDragItem.getY() > height - view.height / 2 && !lastItemReached) {
+                mAutoScroller!!.startAutoScroll(ScrollDirection.UP)
+            } else if (mDragItem.getY() < view.height / 2 && !firstItemReached) {
+                mAutoScroller!!.startAutoScroll(ScrollDirection.DOWN)
             } else {
-                mAutoScroller.stopAutoScroll();
+                mAutoScroller!!.stopAutoScroll()
             }
         } else {
-            if (mDragItem.getX() > getWidth() - view.getWidth() / 2 && !lastItemReached) {
-                mAutoScroller.startAutoScroll(AutoScroller.ScrollDirection.LEFT);
-            } else if (mDragItem.getX() < view.getWidth() / 2 && !firstItemReached) {
-                mAutoScroller.startAutoScroll(AutoScroller.ScrollDirection.RIGHT);
+            if (mDragItem.getX() > width - view.width / 2 && !lastItemReached) {
+                mAutoScroller!!.startAutoScroll(ScrollDirection.LEFT)
+            } else if (mDragItem.getX() < view.width / 2 && !firstItemReached) {
+                mAutoScroller!!.startAutoScroll(ScrollDirection.RIGHT)
             } else {
-                mAutoScroller.stopAutoScroll();
+                mAutoScroller!!.stopAutoScroll()
             }
         }
     }
 
-    boolean startDrag(View itemView, long itemId, float x, float y) {
-        int dragItemPosition = mAdapter.getPositionForItemId(itemId);
-        if (!mDragEnabled || (mCanNotDragAboveTop && dragItemPosition == 0)
-                || (mCanNotDragBelowBottom && dragItemPosition == mAdapter.getItemCount() - 1)) {
-            return false;
+    fun startDrag(itemView: View, itemId: Long, x: Float, y: Float): Boolean {
+        val dragItemPosition = mAdapter!!.getPositionForItemId(itemId)
+        if (!isDragEnabled || mCanNotDragAboveTop && dragItemPosition == 0
+                || mCanNotDragBelowBottom && dragItemPosition == mAdapter!!.itemCount - 1) {
+            return false
         }
-
-        if (mDragCallback != null && !mDragCallback.canDragItemAtPosition(dragItemPosition)) {
-            return false;
+        if (mDragCallback != null && !mDragCallback!!.canDragItemAtPosition(dragItemPosition)) {
+            return false
         }
 
         // If a drag is starting the parent must always be allowed to intercept
-        getParent().requestDisallowInterceptTouchEvent(false);
-        mDragState = DragState.DRAG_STARTED;
-        mDragItemId = itemId;
-        mDragItem.startDrag(itemView, x, y);
-        mDragItemPosition = dragItemPosition;
-        updateDragPositionAndScroll();
-
-        mAdapter.setDragItemId(mDragItemId);
-        mAdapter.notifyDataSetChanged();
+        parent.requestDisallowInterceptTouchEvent(false)
+        mDragState = DragState.DRAG_STARTED
+        dragItemId = itemId
+        mDragItem!!.startDrag(itemView, x, y)
+        mDragItemPosition = dragItemPosition
+        updateDragPositionAndScroll()
+        mAdapter!!.setDragItemId(dragItemId)
+        mAdapter!!.notifyDataSetChanged()
         if (mListener != null) {
-            mListener.onDragStarted(mDragItemPosition, mDragItem.getX(), mDragItem.getY());
+            mListener!!.onDragStarted(mDragItemPosition, mDragItem.getX(), mDragItem.getY())
         }
-
-        invalidate();
-        return true;
+        invalidate()
+        return true
     }
 
-    void onDragging(float x, float y) {
+    fun onDragging(x: Float, y: Float) {
         if (mDragState == DragState.DRAG_ENDED) {
-            return;
+            return
         }
-
-        mDragState = DragState.DRAGGING;
-        mDragItemPosition = mAdapter.getPositionForItemId(mDragItemId);
-        mDragItem.setPosition(x, y);
-
-        if (!mAutoScroller.isAutoScrolling()) {
-            updateDragPositionAndScroll();
+        mDragState = DragState.DRAGGING
+        mDragItemPosition = mAdapter!!.getPositionForItemId(dragItemId)
+        mDragItem!!.setPosition(x, y)
+        if (!mAutoScroller!!.isAutoScrolling) {
+            updateDragPositionAndScroll()
         }
-
         if (mListener != null) {
-            mListener.onDragging(mDragItemPosition, x, y);
+            mListener!!.onDragging(mDragItemPosition, x, y)
         }
-        invalidate();
+        invalidate()
     }
 
-    void onDragEnded() {
+    fun onDragEnded() {
         // Need check because sometimes the framework calls drag end twice in a row
         if (mDragState == DragState.DRAG_ENDED) {
-            return;
+            return
         }
-
-        mAutoScroller.stopAutoScroll();
-        setEnabled(false);
-
+        mAutoScroller!!.stopAutoScroll()
+        isEnabled = false
         if (mDisableReorderWhenDragging) {
-            int newPos = mAdapter.getPositionForItemId(mAdapter.getDropTargetId());
+            val newPos = mAdapter!!.getPositionForItemId(mAdapter.getDropTargetId())
             if (newPos != NO_POSITION) {
-                mAdapter.swapItems(mDragItemPosition, newPos);
-                mDragItemPosition = newPos;
+                mAdapter!!.swapItems(mDragItemPosition, newPos)
+                mDragItemPosition = newPos
             }
-            mAdapter.setDropTargetId(NO_ID);
+            mAdapter.setDropTargetId(NO_ID)
         }
 
         // Post so layout is done before we start end animation
-        post(new Runnable() {
-            @Override
-            public void run() {
-                // Sometimes the holder will be null if a holder has not yet been set for the position
-                final RecyclerView.ViewHolder holder = findViewHolderForAdapterPosition(mDragItemPosition);
-                if (holder != null) {
-                    if (getItemAnimator() != null) {
-                        getItemAnimator().endAnimation(holder);
-                    }
-                    mDragItem.endDrag(holder.itemView, new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            holder.itemView.setAlpha(1);
-                            onDragItemAnimationEnd();
-                        }
-                    });
-                } else {
-                    onDragItemAnimationEnd();
+        post { // Sometimes the holder will be null if a holder has not yet been set for the position
+            val holder = findViewHolderForAdapterPosition(mDragItemPosition)
+            if (holder != null) {
+                if (itemAnimator != null) {
+                    itemAnimator!!.endAnimation(holder)
                 }
+                mDragItem!!.endDrag(holder.itemView, object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        holder.itemView.alpha = 1f
+                        onDragItemAnimationEnd()
+                    }
+                })
+            } else {
+                onDragItemAnimationEnd()
             }
-        });
-    }
-
-    private void onDragItemAnimationEnd() {
-        mAdapter.setDragItemId(NO_ID);
-        mAdapter.setDropTargetId(NO_ID);
-        mAdapter.notifyDataSetChanged();
-
-        mDragState = DragState.DRAG_ENDED;
-        if (mListener != null) {
-            mListener.onDragEnded(mDragItemPosition);
         }
-
-        mDragItemId = NO_ID;
-        mDragItem.hide();
-        setEnabled(true);
-        invalidate();
     }
 
-    int getDragPositionForY(float y) {
-        View child = findChildView(0, y);
-        int pos;
-        if (child == null && getChildCount() > 0) {
+    private fun onDragItemAnimationEnd() {
+        mAdapter!!.setDragItemId(NO_ID)
+        mAdapter.setDropTargetId(NO_ID)
+        mAdapter!!.notifyDataSetChanged()
+        mDragState = DragState.DRAG_ENDED
+        if (mListener != null) {
+            mListener!!.onDragEnded(mDragItemPosition)
+        }
+        dragItemId = NO_ID
+        mDragItem!!.hide()
+        isEnabled = true
+        invalidate()
+    }
+
+    fun getDragPositionForY(y: Float): Int {
+        val child = findChildView(0f, y)
+        var pos: Int
+        pos = if (child == null && childCount > 0) {
             // If child is null and child count is not 0 it means that an item was
             // dragged below the last item in the list, then put it after that item
-            pos = getChildLayoutPosition(getChildAt(getChildCount() - 1)) + 1;
+            getChildLayoutPosition(getChildAt(childCount - 1)) + 1
         } else {
-            pos = getChildLayoutPosition(child);
+            getChildLayoutPosition(child!!)
         }
 
         // If pos is NO_POSITION it means that the child has not been laid out yet,
         // this only happens for pos 0 as far as I know
         if (pos == NO_POSITION) {
-            pos = 0;
+            pos = 0
         }
-        return pos;
+        return pos
     }
 
-    void addDragItemAndStart(float y, Object item, long itemId) {
-        int pos = getDragPositionForY(y);
-
-        mDragState = DragState.DRAG_STARTED;
-        mDragItemId = itemId;
-        mAdapter.setDragItemId(mDragItemId);
-        mAdapter.addItem(pos, item);
-        mDragItemPosition = pos;
-
-        mHoldChangePosition = true;
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mHoldChangePosition = false;
-            }
-        }, getItemAnimator().getMoveDuration());
-
-        invalidate();
+    fun addDragItemAndStart(y: Float, item: Any?, itemId: Long) {
+        val pos = getDragPositionForY(y)
+        mDragState = DragState.DRAG_STARTED
+        dragItemId = itemId
+        mAdapter!!.setDragItemId(dragItemId)
+        mAdapter!!.addItem(pos, item)
+        mDragItemPosition = pos
+        mHoldChangePosition = true
+        postDelayed({ mHoldChangePosition = false }, itemAnimator!!.moveDuration)
+        invalidate()
     }
 
-    Object removeDragItemAndEnd() {
+    fun removeDragItemAndEnd(): Any? {
         if (mDragItemPosition == NO_POSITION) {
-            return null;
+            return null
         }
-        mAutoScroller.stopAutoScroll();
-        Object item = mAdapter.removeItem(mDragItemPosition);
-        mAdapter.setDragItemId(NO_ID);
-        mDragState = DragState.DRAG_ENDED;
-        mDragItemId = NO_ID;
-
-        invalidate();
-        return item;
+        mAutoScroller!!.stopAutoScroll()
+        val item = mAdapter!!.removeItem(mDragItemPosition)
+        mAdapter!!.setDragItemId(NO_ID)
+        mDragState = DragState.DRAG_ENDED
+        dragItemId = NO_ID
+        invalidate()
+        return item
     }
 }

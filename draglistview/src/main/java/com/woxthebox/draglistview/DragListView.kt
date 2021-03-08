@@ -13,180 +13,146 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.woxthebox.draglistview
 
-package com.woxthebox.draglistview;
+import android.content.Context
+import android.graphics.drawable.Drawable
+import android.util.AttributeSet
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.widget.FrameLayout
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.RecyclerView
+import com.woxthebox.draglistview.DragItemAdapter.DragStartCallback
+import com.woxthebox.draglistview.DragItemRecyclerView.DragItemCallback
+import com.woxthebox.draglistview.DragItemRecyclerView.DragItemListener
+import com.woxthebox.draglistview.swipe.ListSwipeHelper
+import com.woxthebox.draglistview.swipe.ListSwipeHelper.OnSwipeListener
 
-import android.content.Context;
-import android.graphics.drawable.Drawable;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.RecyclerView;
-import android.util.AttributeSet;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.widget.FrameLayout;
-
-import com.woxthebox.draglistview.swipe.ListSwipeHelper;
-
-public class DragListView extends FrameLayout {
-
-    public interface DragListListener {
-        void onItemDragStarted(int position);
-
-        void onItemDragging(int itemPosition, float x, float y);
-
-        void onItemDragEnded(int fromPosition, int toPosition);
+class DragListView : FrameLayout {
+    interface DragListListener {
+        fun onItemDragStarted(position: Int)
+        fun onItemDragging(itemPosition: Int, x: Float, y: Float)
+        fun onItemDragEnded(fromPosition: Int, toPosition: Int)
     }
 
-    public static abstract class DragListListenerAdapter implements DragListListener {
-        @Override
-        public void onItemDragStarted(int position) {
-        }
-
-        @Override
-        public void onItemDragging(int itemPosition, float x, float y) {
-        }
-
-        @Override
-        public void onItemDragEnded(int fromPosition, int toPosition) {
-        }
+    abstract class DragListListenerAdapter : DragListListener {
+        override fun onItemDragStarted(position: Int) {}
+        override fun onItemDragging(itemPosition: Int, x: Float, y: Float) {}
+        override fun onItemDragEnded(fromPosition: Int, toPosition: Int) {}
     }
 
-    public interface DragListCallback {
-        boolean canDragItemAtPosition(int dragPosition);
-
-        boolean canDropItemAtPosition(int dropPosition);
+    interface DragListCallback {
+        fun canDragItemAtPosition(dragPosition: Int): Boolean
+        fun canDropItemAtPosition(dropPosition: Int): Boolean
     }
 
-    public static abstract class DragListCallbackAdapter implements DragListCallback {
-        @Override
-        public boolean canDragItemAtPosition(int dragPosition) {
-            return true;
+    abstract class DragListCallbackAdapter : DragListCallback {
+        override fun canDragItemAtPosition(dragPosition: Int): Boolean {
+            return true
         }
 
-        @Override
-        public boolean canDropItemAtPosition(int dropPosition) {
-            return true;
+        override fun canDropItemAtPosition(dropPosition: Int): Boolean {
+            return true
         }
     }
 
-    private DragItemRecyclerView mRecyclerView;
-    private DragListListener mDragListListener;
-    private DragListCallback mDragListCallback;
-    private DragItem mDragItem;
-    private ListSwipeHelper mSwipeHelper;
-    private float mTouchX;
-    private float mTouchY;
+    private var mRecyclerView: DragItemRecyclerView? = null
+    private var mDragListListener: DragListListener? = null
+    private var mDragListCallback: DragListCallback? = null
+    private var mDragItem: DragItem? = null
+    private var mSwipeHelper: ListSwipeHelper? = null
+    private var mTouchX = 0f
+    private var mTouchY = 0f
 
-    public DragListView(Context context) {
-        super(context);
+    constructor(context: Context?) : super(context!!) {}
+    constructor(context: Context?, attrs: AttributeSet?) : super(context!!, attrs) {}
+    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context!!, attrs, defStyleAttr) {}
+
+    override fun onFinishInflate() {
+        super.onFinishInflate()
+        mDragItem = DragItem(context)
+        mRecyclerView = createRecyclerView()
+        mRecyclerView!!.setDragItem(mDragItem)
+        addView(mRecyclerView)
+        addView(mDragItem.getDragItemView())
     }
 
-    public DragListView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+    override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
+        val retValue = handleTouchEvent(event)
+        return retValue || super.onInterceptTouchEvent(event)
     }
 
-    public DragListView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        val retValue = handleTouchEvent(event)
+        return retValue || super.onTouchEvent(event)
     }
 
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-        mDragItem = new DragItem(getContext());
-        mRecyclerView = createRecyclerView();
-        mRecyclerView.setDragItem(mDragItem);
-        addView(mRecyclerView);
-        addView(mDragItem.getDragItemView());
-    }
-
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent event) {
-        boolean retValue = handleTouchEvent(event);
-        return retValue || super.onInterceptTouchEvent(event);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        boolean retValue = handleTouchEvent(event);
-        return retValue || super.onTouchEvent(event);
-    }
-
-    private boolean handleTouchEvent(MotionEvent event) {
-        mTouchX = event.getX();
-        mTouchY = event.getY();
-        if (isDragging()) {
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_MOVE:
-                    mRecyclerView.onDragging(event.getX(), event.getY());
-                    break;
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    mRecyclerView.onDragEnded();
-                    break;
+    private fun handleTouchEvent(event: MotionEvent): Boolean {
+        mTouchX = event.x
+        mTouchY = event.y
+        if (isDragging) {
+            when (event.action) {
+                MotionEvent.ACTION_MOVE -> mRecyclerView!!.onDragging(event.x, event.y)
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> mRecyclerView!!.onDragEnded()
             }
-            return true;
+            return true
         }
-        return false;
+        return false
     }
 
-    private DragItemRecyclerView createRecyclerView() {
-        final DragItemRecyclerView recyclerView = (DragItemRecyclerView) LayoutInflater.from(getContext()).inflate(R.layout.drag_item_recycler_view, this, false);
-        recyclerView.setMotionEventSplittingEnabled(false);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setVerticalScrollBarEnabled(false);
-        recyclerView.setHorizontalScrollBarEnabled(false);
-        recyclerView.setDragItemListener(new DragItemRecyclerView.DragItemListener() {
-            private int mDragStartPosition;
-
-            @Override
-            public void onDragStarted(int itemPosition, float x, float y) {
-                getParent().requestDisallowInterceptTouchEvent(true);
-                mDragStartPosition = itemPosition;
+    private fun createRecyclerView(): DragItemRecyclerView {
+        val recyclerView = LayoutInflater.from(context).inflate(R.layout.drag_item_recycler_view, this, false) as DragItemRecyclerView
+        recyclerView.isMotionEventSplittingEnabled = false
+        recyclerView.itemAnimator = DefaultItemAnimator()
+        recyclerView.isVerticalScrollBarEnabled = false
+        recyclerView.isHorizontalScrollBarEnabled = false
+        recyclerView.setDragItemListener(object : DragItemListener {
+            private var mDragStartPosition = 0
+            override fun onDragStarted(itemPosition: Int, x: Float, y: Float) {
+                parent.requestDisallowInterceptTouchEvent(true)
+                mDragStartPosition = itemPosition
                 if (mDragListListener != null) {
-                    mDragListListener.onItemDragStarted(itemPosition);
+                    mDragListListener!!.onItemDragStarted(itemPosition)
                 }
             }
 
-            @Override
-            public void onDragging(int itemPosition, float x, float y) {
+            override fun onDragging(itemPosition: Int, x: Float, y: Float) {
                 if (mDragListListener != null) {
-                    mDragListListener.onItemDragging(itemPosition, x, y);
+                    mDragListListener!!.onItemDragging(itemPosition, x, y)
                 }
             }
 
-            @Override
-            public void onDragEnded(int newItemPosition) {
+            override fun onDragEnded(newItemPosition: Int) {
                 if (mDragListListener != null) {
-                    mDragListListener.onItemDragEnded(mDragStartPosition, newItemPosition);
+                    mDragListListener!!.onItemDragEnded(mDragStartPosition, newItemPosition)
                 }
             }
-        });
-        recyclerView.setDragItemCallback(new DragItemRecyclerView.DragItemCallback() {
-            @Override
-            public boolean canDragItemAtPosition(int dragPosition) {
-                return mDragListCallback == null || mDragListCallback.canDragItemAtPosition(dragPosition);
+        })
+        recyclerView.setDragItemCallback(object : DragItemCallback {
+            override fun canDragItemAtPosition(dragPosition: Int): Boolean {
+                return mDragListCallback == null || mDragListCallback!!.canDragItemAtPosition(dragPosition)
             }
 
-            @Override
-            public boolean canDropItemAtPosition(int dropPosition) {
-                return mDragListCallback == null || mDragListCallback.canDropItemAtPosition(dropPosition);
+            override fun canDropItemAtPosition(dropPosition: Int): Boolean {
+                return mDragListCallback == null || mDragListCallback!!.canDropItemAtPosition(dropPosition)
             }
-        });
-        return recyclerView;
+        })
+        return recyclerView
     }
 
-    public void setSwipeListener(ListSwipeHelper.OnSwipeListener swipeListener) {
+    fun setSwipeListener(swipeListener: OnSwipeListener?) {
         if (mSwipeHelper == null) {
-            mSwipeHelper = new ListSwipeHelper(getContext().getApplicationContext(), swipeListener);
+            mSwipeHelper = ListSwipeHelper(context.applicationContext, swipeListener)
         } else {
-            mSwipeHelper.setSwipeListener(swipeListener);
+            mSwipeHelper!!.setSwipeListener(swipeListener)
         }
 
         // Always detach first so we don't get double listeners
-        mSwipeHelper.detachFromRecyclerView();
+        mSwipeHelper!!.detachFromRecyclerView()
         if (swipeListener != null) {
-            mSwipeHelper.attachToRecyclerView(mRecyclerView);
+            mSwipeHelper!!.attachToRecyclerView(mRecyclerView)
         }
     }
 
@@ -195,128 +161,109 @@ public class DragListView extends FrameLayout {
      *
      * @param exceptionView This view will not be reset.
      */
-    public void resetSwipedViews(View exceptionView) {
+    fun resetSwipedViews(exceptionView: View?) {
         if (mSwipeHelper != null) {
-            mSwipeHelper.resetSwipedViews(exceptionView);
+            mSwipeHelper!!.resetSwipedViews(exceptionView)
         }
     }
 
-    public RecyclerView getRecyclerView() {
-        return mRecyclerView;
-    }
+    val recyclerView: RecyclerView?
+        get() = mRecyclerView
+    val adapter: DragItemAdapter<*, *>?
+        get() = if (mRecyclerView != null) {
+            mRecyclerView!!.adapter as DragItemAdapter<*, *>?
+        } else null
 
-    public DragItemAdapter getAdapter() {
-        if (mRecyclerView != null) {
-            return (DragItemAdapter) mRecyclerView.getAdapter();
-        }
-        return null;
-    }
-
-    public void setAdapter(DragItemAdapter adapter, boolean hasFixedItemSize) {
-        mRecyclerView.setHasFixedSize(hasFixedItemSize);
-        mRecyclerView.setAdapter(adapter);
-        adapter.setDragStartedListener(new DragItemAdapter.DragStartCallback() {
-            @Override
-            public boolean startDrag(View itemView, long itemId) {
-                return mRecyclerView.startDrag(itemView, itemId, mTouchX, mTouchY);
+    fun setAdapter(adapter: DragItemAdapter<*, *>, hasFixedItemSize: Boolean) {
+        mRecyclerView!!.setHasFixedSize(hasFixedItemSize)
+        mRecyclerView!!.adapter = adapter
+        adapter.setDragStartedListener(object : DragStartCallback {
+            override fun startDrag(itemView: View, itemId: Long): Boolean {
+                return mRecyclerView!!.startDrag(itemView, itemId, mTouchX, mTouchY)
             }
 
-            @Override
-            public boolean isDragging() {
-                return mRecyclerView.isDragging();
-            }
-        });
+            override val isDragging: Boolean
+                get() = mRecyclerView!!.isDragging
+        })
     }
 
-    public void swapAdapter(DragItemAdapter adapter, boolean removeAndRecycleExisting) {
-        mRecyclerView.swapAdapter(adapter, removeAndRecycleExisting);
-        adapter.setDragStartedListener(new DragItemAdapter.DragStartCallback() {
-            @Override
-            public boolean startDrag(View itemView, long itemId) {
-                return mRecyclerView.startDrag(itemView, itemId, mTouchX, mTouchY);
+    fun swapAdapter(adapter: DragItemAdapter<*, *>, removeAndRecycleExisting: Boolean) {
+        mRecyclerView!!.swapAdapter(adapter, removeAndRecycleExisting)
+        adapter.setDragStartedListener(object : DragStartCallback {
+            override fun startDrag(itemView: View, itemId: Long): Boolean {
+                return mRecyclerView!!.startDrag(itemView, itemId, mTouchX, mTouchY)
             }
 
-            @Override
-            public boolean isDragging() {
-                return mRecyclerView.isDragging();
-            }
-        });
+            override val isDragging: Boolean
+                get() = mRecyclerView!!.isDragging
+        })
     }
 
-    public void setLayoutManager(RecyclerView.LayoutManager layout) {
-        mRecyclerView.setLayoutManager(layout);
+    fun setLayoutManager(layout: RecyclerView.LayoutManager?) {
+        mRecyclerView!!.layoutManager = layout
     }
 
-    public void setDragListListener(DragListListener listener) {
-        mDragListListener = listener;
+    fun setDragListListener(listener: DragListListener?) {
+        mDragListListener = listener
     }
 
-    public void setDragListCallback(DragListCallback callback) {
-        mDragListCallback = callback;
+    fun setDragListCallback(callback: DragListCallback?) {
+        mDragListCallback = callback
     }
 
-    public boolean isDragEnabled() {
-        return mRecyclerView.isDragEnabled();
-    }
-
-    public void setDragEnabled(boolean enabled) {
-        mRecyclerView.setDragEnabled(enabled);
-    }
-
-    public void setCustomDragItem(DragItem dragItem) {
-        removeViewAt(1);
-
-        DragItem newDragItem;
-        if (dragItem != null) {
-            newDragItem = dragItem;
-        } else {
-            newDragItem = new DragItem(getContext());
+    var isDragEnabled: Boolean
+        get() = mRecyclerView!!.isDragEnabled
+        set(enabled) {
+            mRecyclerView.setDragEnabled(enabled)
         }
 
-        newDragItem.setCanDragHorizontally(mDragItem.canDragHorizontally());
-        newDragItem.setSnapToTouch(mDragItem.isSnapToTouch());
-        mDragItem = newDragItem;
-        mRecyclerView.setDragItem(mDragItem);
-        addView(mDragItem.getDragItemView());
+    fun setCustomDragItem(dragItem: DragItem?) {
+        removeViewAt(1)
+        val newDragItem: DragItem
+        newDragItem = dragItem ?: DragItem(context)
+        newDragItem.setCanDragHorizontally(mDragItem!!.canDragHorizontally())
+        newDragItem.isSnapToTouch = mDragItem!!.isSnapToTouch
+        mDragItem = newDragItem
+        mRecyclerView!!.setDragItem(mDragItem)
+        addView(mDragItem.getDragItemView())
     }
 
-    public boolean isDragging() {
-        return mRecyclerView.isDragging();
+    val isDragging: Boolean
+        get() = mRecyclerView!!.isDragging
+
+    fun setCanDragHorizontally(canDragHorizontally: Boolean) {
+        mDragItem!!.setCanDragHorizontally(canDragHorizontally)
     }
 
-    public void setCanDragHorizontally(boolean canDragHorizontally) {
-        mDragItem.setCanDragHorizontally(canDragHorizontally);
+    fun setSnapDragItemToTouch(snapToTouch: Boolean) {
+        mDragItem.setSnapToTouch(snapToTouch)
     }
 
-    public void setSnapDragItemToTouch(boolean snapToTouch) {
-        mDragItem.setSnapToTouch(snapToTouch);
+    fun setCanNotDragAboveTopItem(canNotDragAboveTop: Boolean) {
+        mRecyclerView!!.setCanNotDragAboveTopItem(canNotDragAboveTop)
     }
 
-    public void setCanNotDragAboveTopItem(boolean canNotDragAboveTop) {
-        mRecyclerView.setCanNotDragAboveTopItem(canNotDragAboveTop);
+    fun setCanNotDragBelowBottomItem(canNotDragBelowBottom: Boolean) {
+        mRecyclerView!!.setCanNotDragBelowBottomItem(canNotDragBelowBottom)
     }
 
-    public void setCanNotDragBelowBottomItem(boolean canNotDragBelowBottom) {
-        mRecyclerView.setCanNotDragBelowBottomItem(canNotDragBelowBottom);
-    }
-
-    public void setScrollingEnabled(boolean scrollingEnabled) {
-        mRecyclerView.setScrollingEnabled(scrollingEnabled);
+    fun setScrollingEnabled(scrollingEnabled: Boolean) {
+        mRecyclerView!!.setScrollingEnabled(scrollingEnabled)
     }
 
     /**
      * Set if items should not reorder automatically when dragging. If reorder is disabled, drop target
-     * drawables can be set with {@link #setDropTargetDrawables} which will highlight the current item that
+     * drawables can be set with [.setDropTargetDrawables] which will highlight the current item that
      * will be swapped when dropping. By default items will reorder automatically when dragging.
      *
      * @param disableReorder True if reorder of items should be disabled, false otherwise.
      */
-    public void setDisableReorderWhenDragging(boolean disableReorder) {
-        mRecyclerView.setDisableReorderWhenDragging(disableReorder);
+    fun setDisableReorderWhenDragging(disableReorder: Boolean) {
+        mRecyclerView!!.setDisableReorderWhenDragging(disableReorder)
     }
 
     /**
-     * If {@link #setDisableReorderWhenDragging} has been set to True then a background and/or foreground drawable
+     * If [.setDisableReorderWhenDragging] has been set to True then a background and/or foreground drawable
      * can be provided to highlight the current item which will be swapped when dropping. These drawables
      * will be drawn as decorations in the RecyclerView and will not interfere with the items own background
      * and foreground drawables.
@@ -324,7 +271,7 @@ public class DragListView extends FrameLayout {
      * @param backgroundDrawable The background drawable for the item that will be swapped.
      * @param foregroundDrawable The foreground drawable for the item that will be swapped.
      */
-    public void setDropTargetDrawables(Drawable backgroundDrawable, Drawable foregroundDrawable) {
-        mRecyclerView.setDropTargetDrawables(backgroundDrawable, foregroundDrawable);
+    fun setDropTargetDrawables(backgroundDrawable: Drawable?, foregroundDrawable: Drawable?) {
+        mRecyclerView!!.setDropTargetDrawables(backgroundDrawable, foregroundDrawable)
     }
 }

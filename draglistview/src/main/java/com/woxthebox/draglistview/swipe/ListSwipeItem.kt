@@ -13,305 +13,269 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.woxthebox.draglistview.swipe
 
-package com.woxthebox.draglistview.swipe;
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
+import android.content.Context
+import android.util.AttributeSet
+import android.view.View
+import android.view.animation.DecelerateInterpolator
+import android.widget.RelativeLayout
+import androidx.recyclerview.widget.RecyclerView
+import com.woxthebox.draglistview.R
+import com.woxthebox.draglistview.swipe.ListSwipeHelper.OnSwipeListener
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.ObjectAnimator;
-import android.content.Context;
-import android.content.res.TypedArray;
-import androidx.recyclerview.widget.RecyclerView;
-import android.util.AttributeSet;
-import android.view.View;
-import android.view.animation.DecelerateInterpolator;
-import android.widget.RelativeLayout;
-
-import com.woxthebox.draglistview.R;
-
-public class ListSwipeItem extends RelativeLayout {
-
-    private enum SwipeState {
-        IDLE, // Item is not moving
-        SWIPING, // Item is moving because the user is swiping with the finger
+class ListSwipeItem : RelativeLayout {
+    private enum class SwipeState {
+        IDLE,  // Item is not moving
+        SWIPING,  // Item is moving because the user is swiping with the finger
         ANIMATING // Item is animating
     }
 
-    public enum SwipeDirection {
+    enum class SwipeDirection {
         LEFT, RIGHT, LEFT_AND_RIGHT, NONE
     }
 
-    public enum SwipeInStyle {
+    enum class SwipeInStyle {
         APPEAR, SLIDE
     }
 
-    private View mLeftView;
-    private View mRightView;
-    private View mSwipeView;
-    private RecyclerView.ViewHolder mViewHolder;
-    private SwipeState mSwipeState = SwipeState.IDLE;
-    private float mSwipeTranslationX;
-    private float mStartSwipeTranslationX;
-    private float mFlingSpeed;
-    private boolean mSwipeStarted;
-    private int mSwipeViewId;
-    private int mLeftViewId;
-    private int mRightViewId;
-    private SwipeDirection mSwipeDirection = SwipeDirection.LEFT_AND_RIGHT;
-    private SwipeInStyle mSwipeInStyle = SwipeInStyle.APPEAR;
+    private var mLeftView: View? = null
+    private var mRightView: View? = null
+    private var mSwipeView: View? = null
+    private var mViewHolder: RecyclerView.ViewHolder? = null
+    private var mSwipeState = SwipeState.IDLE
+    private var mSwipeTranslationX = 0f
+    private var mStartSwipeTranslationX = 0f
+    private var mFlingSpeed = 0f
+    var isSwipeStarted = false
+        private set
+    private var mSwipeViewId = 0
+    private var mLeftViewId = 0
+    private var mRightViewId = 0
+    var supportedSwipeDirection = SwipeDirection.LEFT_AND_RIGHT
+    private var mSwipeInStyle = SwipeInStyle.APPEAR
 
     // Used to report swiped distance to listener. This is will be set at the start of the swipe and reset at the end.
-    private ListSwipeHelper.OnSwipeListener mSwipeListener;
+    private var mSwipeListener: OnSwipeListener? = null
 
-    public ListSwipeItem(Context context) {
-        super(context);
+    constructor(context: Context?) : super(context) {}
+    constructor(context: Context?, attrs: AttributeSet) : super(context, attrs) {
+        init(attrs)
     }
 
-    public ListSwipeItem(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(attrs);
+    constructor(context: Context?, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+        init(attrs)
     }
 
-    public ListSwipeItem(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init(attrs);
+    private fun init(attrs: AttributeSet) {
+        val a = context.obtainStyledAttributes(attrs, R.styleable.ListSwipeItem)
+        mSwipeViewId = a.getResourceId(R.styleable.ListSwipeItem_swipeViewId, -1)
+        mLeftViewId = a.getResourceId(R.styleable.ListSwipeItem_leftViewId, -1)
+        mRightViewId = a.getResourceId(R.styleable.ListSwipeItem_rightViewId, -1)
+        a.recycle()
     }
 
-    private void init(AttributeSet attrs) {
-        TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.ListSwipeItem);
-
-        mSwipeViewId = a.getResourceId(R.styleable.ListSwipeItem_swipeViewId, -1);
-        mLeftViewId = a.getResourceId(R.styleable.ListSwipeItem_leftViewId, -1);
-        mRightViewId = a.getResourceId(R.styleable.ListSwipeItem_rightViewId, -1);
-
-        a.recycle();
-    }
-
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-        mSwipeView = findViewById(mSwipeViewId);
-        mLeftView = findViewById(mLeftViewId);
-        mRightView = findViewById(mRightViewId);
-
+    override fun onFinishInflate() {
+        super.onFinishInflate()
+        mSwipeView = findViewById(mSwipeViewId)
+        mLeftView = findViewById(mLeftViewId)
+        mRightView = findViewById(mRightViewId)
         if (mLeftView != null) {
-            mLeftView.setVisibility(View.INVISIBLE);
+            mLeftView!!.visibility = INVISIBLE
         }
         if (mRightView != null) {
-            mRightView.setVisibility(View.INVISIBLE);
+            mRightView!!.visibility = INVISIBLE
         }
     }
 
-    @Override
-    public void setTag(Object tag) {
-        super.setTag(tag);
+    override fun setTag(tag: Any) {
+        super.setTag(tag)
         // If view holder is recyclable then reset as this view might be used to another card
-        if (mViewHolder != null && mViewHolder.isRecyclable()) {
-            resetSwipe(false);
+        if (mViewHolder != null && mViewHolder!!.isRecyclable) {
+            resetSwipe(false)
         }
     }
 
-    public void setSwipeInStyle(SwipeInStyle style) {
-        mSwipeInStyle = style;
+    fun setSwipeInStyle(style: SwipeInStyle) {
+        mSwipeInStyle = style
     }
 
-    public void setSupportedSwipeDirection(SwipeDirection swipeDirection) {
-        mSwipeDirection = swipeDirection;
+    fun setSwipeListener(listener: OnSwipeListener?) {
+        mSwipeListener = listener
     }
 
-    public SwipeDirection getSupportedSwipeDirection() {
-        return mSwipeDirection;
-    }
-
-    void setSwipeListener(ListSwipeHelper.OnSwipeListener listener) {
-        mSwipeListener = listener;
-    }
-
-    SwipeDirection getSwipedDirection() {
-        if (mSwipeState != SwipeState.IDLE) {
-            return SwipeDirection.NONE;
+    val swipedDirection: SwipeDirection
+        get() {
+            if (mSwipeState != SwipeState.IDLE) {
+                return SwipeDirection.NONE
+            }
+            if (mSwipeView!!.translationX == -measuredWidth.toFloat()) {
+                return SwipeDirection.LEFT
+            } else if (mSwipeView!!.translationX == measuredWidth.toFloat()) {
+                return SwipeDirection.RIGHT
+            }
+            return SwipeDirection.NONE
         }
+    val isAnimating: Boolean
+        get() = mSwipeState == SwipeState.ANIMATING
 
-        if (mSwipeView.getTranslationX() == -getMeasuredWidth()) {
-            return SwipeDirection.LEFT;
-        } else if (mSwipeView.getTranslationX() == getMeasuredWidth()) {
-            return SwipeDirection.RIGHT;
-        }
-        return SwipeDirection.NONE;
+    fun setFlingSpeed(speed: Float) {
+        mFlingSpeed = speed
     }
 
-    boolean isAnimating() {
-        return mSwipeState == SwipeState.ANIMATING;
+    fun swipeTranslationByX(dx: Float) {
+        setSwipeTranslationX(mSwipeTranslationX + dx)
     }
 
-    boolean isSwipeStarted() {
-        return mSwipeStarted;
-    }
-
-    void setFlingSpeed(float speed) {
-        mFlingSpeed = speed;
-    }
-
-    void swipeTranslationByX(float dx) {
-        setSwipeTranslationX(mSwipeTranslationX + dx);
-    }
-
-    void setSwipeTranslationX(float x) {
+    fun setSwipeTranslationX(x: Float) {
         // Based on supported swipe direction reset the x position
-        if ((mSwipeDirection == SwipeDirection.LEFT && x > 0) || (mSwipeDirection == SwipeDirection.RIGHT && x < 0) || mSwipeDirection == SwipeDirection.NONE) {
-            x = 0;
+        var x = x
+        if (supportedSwipeDirection == SwipeDirection.LEFT && x > 0 || supportedSwipeDirection == SwipeDirection.RIGHT && x < 0 || supportedSwipeDirection == SwipeDirection.NONE) {
+            x = 0f
         }
-
-        mSwipeTranslationX = x;
-        mSwipeTranslationX = Math.min(mSwipeTranslationX, getMeasuredWidth());
-        mSwipeTranslationX = Math.max(mSwipeTranslationX, -getMeasuredWidth());
-
-        mSwipeView.setTranslationX(mSwipeTranslationX);
+        mSwipeTranslationX = x
+        mSwipeTranslationX = Math.min(mSwipeTranslationX, measuredWidth.toFloat())
+        mSwipeTranslationX = Math.max(mSwipeTranslationX, -measuredWidth.toFloat())
+        mSwipeView!!.translationX = mSwipeTranslationX
         if (mSwipeListener != null) {
-            mSwipeListener.onItemSwiping(this, mSwipeTranslationX);
+            mSwipeListener!!.onItemSwiping(this, mSwipeTranslationX)
         }
-
         if (mSwipeTranslationX < 0) {
             if (mSwipeInStyle == SwipeInStyle.SLIDE) {
-                mRightView.setTranslationX(getMeasuredWidth() + mSwipeTranslationX);
+                mRightView!!.translationX = measuredWidth + mSwipeTranslationX
             }
-            mRightView.setVisibility(View.VISIBLE);
-            mLeftView.setVisibility(View.INVISIBLE);
+            mRightView!!.visibility = VISIBLE
+            mLeftView!!.visibility = INVISIBLE
         } else if (mSwipeTranslationX > 0) {
             if (mSwipeInStyle == SwipeInStyle.SLIDE) {
-                mLeftView.setTranslationX(-getMeasuredWidth() + mSwipeTranslationX);
+                mLeftView!!.translationX = -measuredWidth + mSwipeTranslationX
             }
-            mLeftView.setVisibility(View.VISIBLE);
-            mRightView.setVisibility(View.INVISIBLE);
+            mLeftView!!.visibility = VISIBLE
+            mRightView!!.visibility = INVISIBLE
         } else {
-            mRightView.setVisibility(View.INVISIBLE);
-            mLeftView.setVisibility(View.INVISIBLE);
+            mRightView!!.visibility = INVISIBLE
+            mLeftView!!.visibility = INVISIBLE
         }
     }
 
-    void animateToSwipeTranslationX(float x, Animator.AnimatorListener... listeners) {
+    fun animateToSwipeTranslationX(x: Float, vararg listeners: Animator.AnimatorListener?) {
         if (x == mSwipeTranslationX) {
-            return;
+            return
         }
-
-        mSwipeState = SwipeState.ANIMATING;
-        ObjectAnimator animator = ObjectAnimator.ofFloat(this, "SwipeTranslationX", mSwipeTranslationX, x);
-        animator.setDuration(250);
-        animator.setInterpolator(new DecelerateInterpolator());
-        for (Animator.AnimatorListener listener : listeners) {
+        mSwipeState = SwipeState.ANIMATING
+        val animator = ObjectAnimator.ofFloat(this, "SwipeTranslationX", mSwipeTranslationX, x)
+        animator.duration = 250
+        animator.interpolator = DecelerateInterpolator()
+        for (listener in listeners) {
             if (listener != null) {
-                animator.addListener(listener);
+                animator.addListener(listener)
             }
         }
-        animator.start();
+        animator.start()
     }
 
-    void resetSwipe(boolean animate) {
-        if (isAnimating() || !mSwipeStarted) {
-            return;
+    fun resetSwipe(animate: Boolean) {
+        if (isAnimating || !isSwipeStarted) {
+            return
         }
-
-        if (mSwipeTranslationX != 0) {
+        if (mSwipeTranslationX != 0f) {
             if (animate) {
-                animateToSwipeTranslationX(0, new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        mSwipeState = SwipeState.IDLE;
-                        mSwipeListener = null;
+                animateToSwipeTranslationX(0f, object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        mSwipeState = SwipeState.IDLE
+                        mSwipeListener = null
                     }
-                });
+                })
             } else {
-                setSwipeTranslationX(0);
-                mSwipeState = SwipeState.IDLE;
-                mSwipeListener = null;
+                setSwipeTranslationX(0f)
+                mSwipeState = SwipeState.IDLE
+                mSwipeListener = null
             }
         } else {
-            mSwipeListener = null;
+            mSwipeListener = null
         }
-
-        if (mViewHolder != null && !mViewHolder.isRecyclable()) {
-            mViewHolder.setIsRecyclable(true);
+        if (mViewHolder != null && !mViewHolder!!.isRecyclable) {
+            mViewHolder!!.setIsRecyclable(true)
         }
-
-        mViewHolder = null;
-        mFlingSpeed = 0;
-        mStartSwipeTranslationX = 0;
-        mSwipeStarted = false;
+        mViewHolder = null
+        mFlingSpeed = 0f
+        mStartSwipeTranslationX = 0f
+        isSwipeStarted = false
     }
 
-    void handleSwipeUp(Animator.AnimatorListener listener) {
-        if (isAnimating() || !mSwipeStarted) {
-            return;
+    fun handleSwipeUp(listener: Animator.AnimatorListener?) {
+        if (isAnimating || !isSwipeStarted) {
+            return
         }
-
-        AnimatorListenerAdapter idleListener = new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mSwipeState = SwipeState.IDLE;
-                if (mSwipeTranslationX == 0) {
-                    resetSwipe(false);
+        val idleListener: AnimatorListenerAdapter = object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                mSwipeState = SwipeState.IDLE
+                if (mSwipeTranslationX == 0f) {
+                    resetSwipe(false)
                 }
                 if (mViewHolder != null) {
-                    mViewHolder.setIsRecyclable(true);
+                    mViewHolder!!.setIsRecyclable(true)
                 }
             }
-        };
-
-        if (mFlingSpeed == 0 && Math.abs(mStartSwipeTranslationX - mSwipeTranslationX) < getMeasuredWidth() / 3) {
+        }
+        if (mFlingSpeed == 0f && Math.abs(mStartSwipeTranslationX - mSwipeTranslationX) < measuredWidth / 3) {
             // Bounce back
-            animateToSwipeTranslationX(mStartSwipeTranslationX, idleListener, listener);
+            animateToSwipeTranslationX(mStartSwipeTranslationX, idleListener, listener)
         } else {
             // Animate to end
-            float newX = getTranslateToXPosition(mStartSwipeTranslationX, mSwipeTranslationX, mFlingSpeed);
-            animateToSwipeTranslationX(newX, idleListener, listener);
+            val newX = getTranslateToXPosition(mStartSwipeTranslationX, mSwipeTranslationX, mFlingSpeed)
+            animateToSwipeTranslationX(newX, idleListener, listener)
         }
-        mStartSwipeTranslationX = 0;
-        mFlingSpeed = 0;
+        mStartSwipeTranslationX = 0f
+        mFlingSpeed = 0f
     }
 
-    private float getTranslateToXPosition(float startTranslationX, float currentTranslationX, float flingSpeed) {
-        if (flingSpeed == 0 && Math.abs(startTranslationX - currentTranslationX) < getMeasuredWidth() / 3) {
+    private fun getTranslateToXPosition(startTranslationX: Float, currentTranslationX: Float, flingSpeed: Float): Float {
+        return if (flingSpeed == 0f && Math.abs(startTranslationX - currentTranslationX) < measuredWidth / 3) {
             // Bounce back
-            return startTranslationX;
+            startTranslationX
         } else if (currentTranslationX < 0) {
             // Swiping done side
             if (flingSpeed > 0) {
-                return 0;
+                0
             } else {
-                return -getMeasuredWidth();
+                (-measuredWidth).toFloat()
             }
-        } else if (startTranslationX == 0) {
+        } else if (startTranslationX == 0f) {
             // Swiping action side from start position
             if (flingSpeed < 0) {
-                return 0;
+                0
             } else {
-                return getMeasuredWidth();
+                measuredWidth.toFloat()
             }
         } else {
             // Swiping action side from action position
             if (flingSpeed > 0) {
-                return getMeasuredWidth();
+                measuredWidth.toFloat()
             } else {
-                return 0;
+                0
             }
         }
     }
 
-    void handleSwipeMoveStarted(ListSwipeHelper.OnSwipeListener listener) {
-        mStartSwipeTranslationX = mSwipeTranslationX;
-        mSwipeListener = listener;
+    fun handleSwipeMoveStarted(listener: OnSwipeListener?) {
+        mStartSwipeTranslationX = mSwipeTranslationX
+        mSwipeListener = listener
     }
 
-    void handleSwipeMove(float dx, RecyclerView.ViewHolder viewHolder) {
-        if (isAnimating()) {
-            return;
+    fun handleSwipeMove(dx: Float, viewHolder: RecyclerView.ViewHolder?) {
+        if (isAnimating) {
+            return
         }
-        mSwipeState = SwipeState.SWIPING;
-        if (!mSwipeStarted) {
-            mSwipeStarted = true;
-            mViewHolder = viewHolder;
-            mViewHolder.setIsRecyclable(false);
+        mSwipeState = SwipeState.SWIPING
+        if (!isSwipeStarted) {
+            isSwipeStarted = true
+            mViewHolder = viewHolder
+            mViewHolder!!.setIsRecyclable(false)
         }
-        swipeTranslationByX(dx);
+        swipeTranslationByX(dx)
     }
 }

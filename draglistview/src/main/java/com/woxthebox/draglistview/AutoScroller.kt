@@ -13,121 +13,96 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.woxthebox.draglistview
 
-package com.woxthebox.draglistview;
+import android.content.Context
+import android.os.Handler
 
-import android.content.Context;
-import android.os.Handler;
-
-class AutoScroller {
-    enum AutoScrollMode {
+internal class AutoScroller(context: Context, private val mListener: AutoScrollListener) {
+    internal enum class AutoScrollMode {
         POSITION, COLUMN
     }
 
-    enum ScrollDirection {
+    internal enum class ScrollDirection {
         UP, DOWN, LEFT, RIGHT
     }
 
-    interface AutoScrollListener {
-        void onAutoScrollPositionBy(int dx, int dy);
-
-        void onAutoScrollColumnBy(int columns);
+    internal interface AutoScrollListener {
+        fun onAutoScrollPositionBy(dx: Int, dy: Int)
+        fun onAutoScrollColumnBy(columns: Int)
     }
 
-    private static final int SCROLL_SPEED_DP = 8;
-    private static final int AUTO_SCROLL_UPDATE_DELAY = 12;
-    private static final int COLUMN_SCROLL_UPDATE_DELAY = 1000;
-
-    private Handler mHandler = new Handler();
-    private AutoScrollListener mListener;
-    private boolean mIsAutoScrolling;
-    private int mScrollSpeed;
-    private long mLastScrollTime;
-    private AutoScrollMode mAutoScrollMode = AutoScrollMode.POSITION;
-
-    AutoScroller(Context context, AutoScrollListener listener) {
-        mListener = listener;
-        mScrollSpeed = (int) (context.getResources().getDisplayMetrics().density * SCROLL_SPEED_DP);
+    private val mHandler = Handler()
+    var isAutoScrolling = false
+        private set
+    private val mScrollSpeed: Int
+    private var mLastScrollTime: Long = 0
+    private var mAutoScrollMode = AutoScrollMode.POSITION
+    fun setAutoScrollMode(autoScrollMode: AutoScrollMode) {
+        mAutoScrollMode = autoScrollMode
     }
 
-    void setAutoScrollMode(AutoScrollMode autoScrollMode) {
-        mAutoScrollMode = autoScrollMode;
+    fun stopAutoScroll() {
+        isAutoScrolling = false
     }
 
-    boolean isAutoScrolling() {
-        return mIsAutoScrolling;
-    }
-
-    void stopAutoScroll() {
-        mIsAutoScrolling = false;
-    }
-
-    void startAutoScroll(ScrollDirection direction) {
-        switch (direction) {
-            case UP:
-                startAutoScrollPositionBy(0, mScrollSpeed);
-                break;
-            case DOWN:
-                startAutoScrollPositionBy(0, -mScrollSpeed);
-                break;
-            case LEFT:
-                if (mAutoScrollMode == AutoScrollMode.POSITION) {
-                    startAutoScrollPositionBy(mScrollSpeed, 0);
-                } else {
-                    startAutoScrollColumnBy(1);
-                }
-                break;
-            case RIGHT:
-                if (mAutoScrollMode == AutoScrollMode.POSITION) {
-                    startAutoScrollPositionBy(-mScrollSpeed, 0);
-                } else {
-                    startAutoScrollColumnBy(-1);
-                }
-                break;
-        }
-    }
-
-    private void startAutoScrollPositionBy(int dx, int dy) {
-        if (!mIsAutoScrolling) {
-            mIsAutoScrolling = true;
-            autoScrollPositionBy(dx, dy);
-        }
-    }
-
-    private void autoScrollPositionBy(final int dx, final int dy) {
-        if (mIsAutoScrolling) {
-            mListener.onAutoScrollPositionBy(dx, dy);
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    autoScrollPositionBy(dx, dy);
-                }
-            }, AUTO_SCROLL_UPDATE_DELAY);
-        }
-    }
-
-    private void startAutoScrollColumnBy(int columns) {
-        if (!mIsAutoScrolling) {
-            mIsAutoScrolling = true;
-            autoScrollColumnBy(columns);
-        }
-    }
-
-    private void autoScrollColumnBy(final int columns) {
-        if (mIsAutoScrolling) {
-            if (System.currentTimeMillis() - mLastScrollTime > COLUMN_SCROLL_UPDATE_DELAY) {
-                mListener.onAutoScrollColumnBy(columns);
-                mLastScrollTime = System.currentTimeMillis();
+    fun startAutoScroll(direction: ScrollDirection?) {
+        when (direction) {
+            ScrollDirection.UP -> startAutoScrollPositionBy(0, mScrollSpeed)
+            ScrollDirection.DOWN -> startAutoScrollPositionBy(0, -mScrollSpeed)
+            ScrollDirection.LEFT -> if (mAutoScrollMode == AutoScrollMode.POSITION) {
+                startAutoScrollPositionBy(mScrollSpeed, 0)
             } else {
-                mListener.onAutoScrollColumnBy(0);
+                startAutoScrollColumnBy(1)
             }
-
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    autoScrollColumnBy(columns);
-                }
-            }, AUTO_SCROLL_UPDATE_DELAY);
+            ScrollDirection.RIGHT -> if (mAutoScrollMode == AutoScrollMode.POSITION) {
+                startAutoScrollPositionBy(-mScrollSpeed, 0)
+            } else {
+                startAutoScrollColumnBy(-1)
+            }
         }
+    }
+
+    private fun startAutoScrollPositionBy(dx: Int, dy: Int) {
+        if (!isAutoScrolling) {
+            isAutoScrolling = true
+            autoScrollPositionBy(dx, dy)
+        }
+    }
+
+    private fun autoScrollPositionBy(dx: Int, dy: Int) {
+        if (isAutoScrolling) {
+            mListener.onAutoScrollPositionBy(dx, dy)
+            mHandler.postDelayed({ autoScrollPositionBy(dx, dy) }, AUTO_SCROLL_UPDATE_DELAY.toLong())
+        }
+    }
+
+    private fun startAutoScrollColumnBy(columns: Int) {
+        if (!isAutoScrolling) {
+            isAutoScrolling = true
+            autoScrollColumnBy(columns)
+        }
+    }
+
+    private fun autoScrollColumnBy(columns: Int) {
+        if (isAutoScrolling) {
+            if (System.currentTimeMillis() - mLastScrollTime > COLUMN_SCROLL_UPDATE_DELAY) {
+                mListener.onAutoScrollColumnBy(columns)
+                mLastScrollTime = System.currentTimeMillis()
+            } else {
+                mListener.onAutoScrollColumnBy(0)
+            }
+            mHandler.postDelayed({ autoScrollColumnBy(columns) }, AUTO_SCROLL_UPDATE_DELAY.toLong())
+        }
+    }
+
+    companion object {
+        private const val SCROLL_SPEED_DP = 8
+        private const val AUTO_SCROLL_UPDATE_DELAY = 12
+        private const val COLUMN_SCROLL_UPDATE_DELAY = 1000
+    }
+
+    init {
+        mScrollSpeed = (context.resources.displayMetrics.density * SCROLL_SPEED_DP).toInt()
     }
 }
