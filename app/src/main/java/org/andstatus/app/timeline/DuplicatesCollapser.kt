@@ -22,24 +22,23 @@ import org.andstatus.app.util.TriState
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
-import java.util.function.Function
 import java.util.stream.Collectors
 
 /**
  * @author yvolk@yurivolkov.com
  */
-class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplicatesCollapser: DuplicatesCollapser<T>) {
+class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplicatesCollapser: DuplicatesCollapser<T>?) {
     private val maxDistanceBetweenDuplicates = MyPreferences.getMaxDistanceBetweenDuplicates()
 
     // Parameters, which may be changed during presentation of the timeline
     @Volatile
     var collapseDuplicates = false
-    val individualCollapsedStateIds = Collections.newSetFromMap(ConcurrentHashMap<Long?, Boolean?>())
+    val individualCollapsedStateIds: MutableSet<Long> = Collections.newSetFromMap(ConcurrentHashMap())
 
     @Volatile
     var preferredOrigin: Origin = Origin.EMPTY
 
-    private class GroupToCollapse<T : ViewItem<T>> internal constructor(var parent: ItemWithPage<T>) {
+    private class GroupToCollapse<T : ViewItem<T>>(var parent: ItemWithPage<T>) {
         var children: MutableSet<ItemWithPage<T>> = HashSet()
         operator fun contains(itemId: Long): Boolean {
             return itemId != 0L && (parent.item.getId() == itemId ||
@@ -47,7 +46,7 @@ class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplica
         }
     }
 
-    private class ItemWithPage<T : ViewItem<T>> internal constructor(var page: TimelinePage<T>, var item: T)
+    private class ItemWithPage<T : ViewItem<T>>(var page: TimelinePage<T>, var item: T)
 
     fun isCollapseDuplicates(): Boolean {
         return collapseDuplicates
@@ -71,10 +70,10 @@ class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplica
     }
 
     fun restoreCollapsedStates(oldCollapser: DuplicatesCollapser<T>) {
-        oldCollapser.individualCollapsedStateIds.forEach(Consumer { id: Long ->
+        oldCollapser.individualCollapsedStateIds.forEach { id: Long ->
             collapseDuplicates(
-                    LoadableListViewParameters(TriState.Companion.fromBoolean(!collapseDuplicates), id, Optional.of(preferredOrigin)))
-        })
+                    LoadableListViewParameters(TriState.fromBoolean(!collapseDuplicates), id, Optional.of(preferredOrigin)))
+        }
     }
 
     /** For all or for only one item  */
@@ -83,11 +82,11 @@ class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplica
             collapseDuplicates = viewParameters.collapseDuplicates.toBoolean(false)
             individualCollapsedStateIds.clear()
         }
-        viewParameters.preferredOrigin.ifPresent { o: Origin? -> preferredOrigin = o }
+        viewParameters.preferredOrigin.ifPresent { o: Origin -> preferredOrigin = o }
         when (viewParameters.collapseDuplicates) {
             TriState.TRUE -> collapseDuplicates(viewParameters.collapsedItemId)
             TriState.FALSE -> showDuplicates(viewParameters.collapsedItemId)
-            else -> viewParameters.preferredOrigin.ifPresent { o: Origin? ->
+            else -> viewParameters.preferredOrigin.ifPresent {
                 if (collapseDuplicates) {
                     showDuplicates(0)
                     collapseDuplicates(0)
@@ -101,18 +100,18 @@ class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplica
 
     private fun collapseDuplicates(itemId: Long) {
         if (maxDistanceBetweenDuplicates < 1) return
-        val toCollapse: MutableSet<ItemWithPage<T?>?> = HashSet()
+        val toCollapse: MutableSet<ItemWithPage<T>> = HashSet()
         innerCollapseDuplicates(itemId, toCollapse)
         for (itemWithPage in toCollapse) {
             itemWithPage.page.items.remove(itemWithPage.item)
         }
     }
 
-    private fun innerCollapseDuplicates(itemId: Long, toCollapse: MutableSet<ItemWithPage<T?>?>?) {
-        val groups: MutableList<GroupToCollapse<T?>?> = ArrayList()
+    private fun innerCollapseDuplicates(itemId: Long, toCollapse: MutableSet<ItemWithPage<T>>) {
+        val groups: MutableList<GroupToCollapse<T>> = ArrayList()
         for (page in data.pages) {
             for (item in page.items) {
-                val itemPair = ItemWithPage<T?>(page, item)
+                val itemPair = ItemWithPage(page, item)
                 var found = false
                 for (group in groups) {
                     when (item.duplicates(data.params.timeline, preferredOrigin, group.parent.item)) {
@@ -132,7 +131,7 @@ class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplica
                 }
                 if (!found) {
                     if (itemId != 0L) {
-                        val selectedGroupOpt = groups.stream().filter { group: GroupToCollapse<T?>? -> group.contains(itemId) }.findAny()
+                        val selectedGroupOpt = groups.stream().filter { group: GroupToCollapse<T> -> group.contains(itemId) }.findAny()
                         if (selectedGroupOpt.isPresent) {
                             collapseThisGroup(itemId, selectedGroupOpt.get(), toCollapse)
                             return
@@ -156,20 +155,19 @@ class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplica
         }
     }
 
-    private fun collapseThisGroup(itemId: Long, group: GroupToCollapse<T?>?,
-                                  toCollapse: MutableCollection<ItemWithPage<T?>?>?) {
+    private fun collapseThisGroup(itemId: Long, group: GroupToCollapse<T>,
+                                  toCollapse: MutableCollection<ItemWithPage<T>>) {
         if (group.children.isEmpty()) return
         val groupOfSelectedItem = group.contains(itemId)
         if (groupOfSelectedItem) {
             setIndividualCollapsedState(true, group.parent.item)
-            group.children
-                    .forEach(Consumer { child: ItemWithPage<T?>? -> setIndividualCollapsedState(true, child.item) })
+            group.children.forEach { child: ItemWithPage<T> -> setIndividualCollapsedState(true, child.item) }
         }
         val noIndividualCollapseState = (groupOfSelectedItem || individualCollapsedStateIds.isEmpty()
-                || group.children.stream().noneMatch { child: ItemWithPage<T?>? -> individualCollapsedStateIds.contains(child.item.getId()) })
+                || group.children.stream().noneMatch { child: ItemWithPage<T> -> individualCollapsedStateIds.contains(child.item.getId()) })
         if (noIndividualCollapseState) {
-            group.children.stream().filter { child: ItemWithPage<T?>? -> group.parent != child }
-                    .forEach { child: ItemWithPage<T?>? ->
+            group.children.stream().filter { child: ItemWithPage<T> -> group.parent != child }
+                    .forEach { child: ItemWithPage<T> ->
                         group.parent.item.collapse(child.item)
                         toCollapse.add(child)
                     }
@@ -188,20 +186,21 @@ class DuplicatesCollapser<T : ViewItem<T>>(val data: TimelineData<T>, oldDuplica
         }
     }
 
-    private fun showDuplicatesOfOneItem(itemId: Long, page: TimelinePage<T?>?, ind: Int): Boolean {
+    private fun showDuplicatesOfOneItem(itemId: Long, page: TimelinePage<T>, ind: Int): Boolean {
         val item = page.items[ind]
         val groupOfSelectedItem = (itemId == item.getId()
-                || itemId != 0L && item.getChildren().stream().anyMatch { child: T? -> child.getId() == itemId })
+                || itemId != 0L && item.getChildren().stream().anyMatch { child: T -> child.getId() == itemId })
         if (groupOfSelectedItem) {
             setIndividualCollapsedState(false, item)
-            item.getChildren().forEach(Consumer { child: T? -> setIndividualCollapsedState(false, child) })
+            item.getChildren().forEach(Consumer { child: T -> setIndividualCollapsedState(false, child) })
         }
         val noIndividualCollapseState = (groupOfSelectedItem || individualCollapsedStateIds.isEmpty()
-                || item.getChildren().stream().noneMatch { child: T? -> individualCollapsedStateIds.contains(child.getId()) })
+                || item.getChildren().stream().noneMatch { child: T -> individualCollapsedStateIds.contains(child.getId()) })
         if (noIndividualCollapseState && (itemId == 0L || groupOfSelectedItem)) {
             var ind2 = ind + 1
-            for (child in item.getChildren().stream().sorted(
-                    Comparator.comparing(Function { obj: T? -> obj.getDate() }).reversed()).collect(Collectors.toList())) {
+            for (child in item.getChildren().stream()
+                    .sorted(Comparator.comparing { obj: T -> obj.getDate() }.reversed())
+                    .collect(Collectors.toList())) {
                 page.items.add(ind2++, child)
             }
             item.getChildren().clear()

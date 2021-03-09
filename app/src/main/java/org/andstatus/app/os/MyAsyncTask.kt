@@ -31,7 +31,7 @@ import java.util.function.Function
 /**
  * @author yvolk@yurivolkov.com
  */
-abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnum) : AsyncTask<Params?, Progress?, Result?>(), IdentifiableInstance {
+abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnum) : AsyncTask<Params, Progress, Result>(), IdentifiableInstance {
     private var maxCommandExecutionSeconds = MAX_COMMAND_EXECUTION_SECONDS
     private val taskId: String?
     protected val createdAt = MyLog.uniqueCurrentTimeMS()
@@ -105,7 +105,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
         super.onCancelled()
     }
 
-    override fun doInBackground(vararg params: Params?): Result? {
+    override fun doInBackground(vararg params: Params): Result? {
         backgroundStartedAt = System.currentTimeMillis()
         currentlyExecutingSince = backgroundStartedAt
         try {
@@ -127,7 +127,7 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
 
     protected abstract fun doInBackground2(params: Params?): Result?
 
-    override fun onPostExecute(result: Result?) {
+    override fun onPostExecute(result: Result) {
         backgroundEndedAt = System.currentTimeMillis()
         ExceptionsCounter.showErrorDialogIfErrorsPresent()
         onPostExecute2(result)
@@ -135,15 +135,16 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
         onFinish(result, true)
     }
 
-    protected open fun onPostExecute2(result: Result?) {}
-    override fun onCancelled(result: Result?) {
+    protected open fun onPostExecute2(result: Result) {}
+
+    override fun onCancelled(result: Result) {
         backgroundEndedAt = System.currentTimeMillis()
         onCancelled2(result)
         super.onCancelled(result)
         onFinish(result, false)
     }
 
-    protected open fun onCancelled2(result: Result?) {}
+    protected open fun onCancelled2(result: Result) {}
 
     /** Is called in both cases: Cancelled or not, before changing status to FINISH   */
     protected open fun onFinish(result: Result?, success: Boolean) {}
@@ -264,12 +265,13 @@ abstract class MyAsyncTask<Params, Progress, Result>(taskId: Any?, pool: PoolEnu
             return Looper.myLooper() == Looper.getMainLooper()
         }
 
-        fun <Params, Progress, Result> fromFunc(params: Params?,
-                                                backgroundFunc: Function<Params?, Try<Result>?>,
-                                                uiConsumer: Function<Params?, Consumer<Try<Result>?>>):
-                MyAsyncTask<Params?, Progress?, Try<Result>?> {
-            return object : MyAsyncTask<Params?, Progress?, Try<Result>?>(params, PoolEnum.LONG_UI) {
-                override fun doInBackground2(params: Params?): Try<Result>? {
+        fun <Params, Progress, Result> fromFunc(params: Params,
+                                                backgroundFunc: Function<Params?, Try<Result>>,
+                                                uiConsumer: Function<Params, Consumer<Try<Result>>>):
+                MyAsyncTask<Params, Progress, Try<Result>> {
+            return object : MyAsyncTask<Params, Progress, Try<Result>>(params, PoolEnum.LONG_UI) {
+
+                override fun doInBackground2(params: Params?): Try<Result> {
                     return backgroundFunc.apply(params)
                 }
 

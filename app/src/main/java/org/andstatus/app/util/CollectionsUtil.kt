@@ -26,9 +26,9 @@ import java.util.stream.Collectors
  * See also http://www.javacreed.com/sorting-a-copyonwritearraylist/
  */
 object CollectionsUtil {
-    fun <T : Comparable<T?>?> sort(list: MutableList<T?>) {
-        val sortableList: MutableList<T?> = ArrayList(list)
-        Collections.sort(sortableList)
+    fun <T : Comparable<T>> sort(list: MutableList<T>) {
+        val sortableList: MutableList<T> = ArrayList(list)
+        sortableList.sort()
         list.clear()
         list.addAll(sortableList)
     }

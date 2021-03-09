@@ -127,13 +127,13 @@ class AsyncTaskLauncher<Params> {
             return execute<Any?, Any?>(null, { p: Any? ->
                 backgroundFunc.run()
                 Try.success(null)
-            }, { p: Any? -> Consumer { r: Try<Any> -> } })
+            }, { p: Any? -> Consumer { r: Try<Any?> -> } })
         }
 
         fun <Params, Result> execute(params: Params?,
-                                     backgroundFunc: Function<Params?, Try<Result>?>,
-                                     uiConsumer: Function<Params?, Consumer<Try<Result>?>>): Try<Void> {
-            val asyncTask: MyAsyncTask<Params?, Void?, Try<Result>?> = MyAsyncTask.fromFunc(params, backgroundFunc, uiConsumer)
+                                     backgroundFunc: Function<Params?, Try<Result>>,
+                                     uiConsumer: Function<Params?, Consumer<Try<Result>>>): Try<Void> {
+            val asyncTask: MyAsyncTask<Params?, Void, Try<Result>> = MyAsyncTask.fromFunc(params, backgroundFunc, uiConsumer)
             return AsyncTaskLauncher<Params?>().execute(params, asyncTask, params)
         }
 

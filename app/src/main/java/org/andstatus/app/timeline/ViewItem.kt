@@ -59,7 +59,7 @@ open class ViewItem<T : ViewItem<T>> protected constructor(private val isEmptyIn
         getChildren().add(child)
     }
 
-    open fun fromCursor(myContext: MyContext, cursor: Cursor?): T {
+    open fun fromCursor(myContext: MyContext, cursor: Cursor): T {
         return getEmpty(TimelineType.UNKNOWN)
     }
 

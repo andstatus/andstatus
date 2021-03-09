@@ -23,5 +23,5 @@ import org.andstatus.app.timeline.LoadableListActivity
 interface NoteEditorContainer {
     open fun getActivity(): LoadableListActivity<*>
     open fun onNoteEditorVisibilityChange()
-    open fun getNoteEditor(): NoteEditor
+    open fun getNoteEditor(): NoteEditor?
 }

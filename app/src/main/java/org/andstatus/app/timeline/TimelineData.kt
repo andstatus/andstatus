@@ -15,7 +15,6 @@
  */
 package org.andstatus.app.timeline
 
-import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.actor.ActorViewItem
@@ -31,13 +30,14 @@ import java.util.*
  * @author yvolk@yurivolkov.com
  */
 open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: TimelinePage<T>) {
-    val pages // Contains at least one Page
-            : MutableList<TimelinePage<T>>
+    // Contains at least one Page
+    val pages: MutableList<TimelinePage<T>>
     val updatedAt = MyLog.uniqueCurrentTimeMS()
     val params: TimelineParameters
 
     @Volatile
-    private var actorViewItem: ActorViewItem?
+    private var actorViewItem: ActorViewItem = ActorViewItem.EMPTY
+
     val isSameTimeline: Boolean
     private val duplicatesCollapser: DuplicatesCollapser<T>
     private fun dropExcessivePage(lastLoadedPage: TimelinePage<T>) {
@@ -50,7 +50,7 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
         }
     }
 
-    private fun addThisPage(page: TimelinePage<T?>?) {
+    private fun addThisPage(page: TimelinePage<T>) {
         when (page.params.whichPage) {
             WhichPage.YOUNGEST -> if (mayHaveYoungerPage()) {
                 pages.clear()
@@ -81,7 +81,7 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
                 var found = -1
                 var ind = 0
                 while (ind < pages.size) {
-                    val p: TimelinePage<*>? = pages.get(ind)
+                    val p: TimelinePage<*> = pages.get(ind)
                     if (p.params.maxDate == page.params.maxDate
                             && p.params.minDate == page.params.minDate) {
                         found = ind
@@ -101,17 +101,17 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
         }
     }
 
-    private fun removeDuplicatesWithYounger(page: TimelinePage<T?>?, indExistingPage: Int) {
+    private fun removeDuplicatesWithYounger(page: TimelinePage<T>, indExistingPage: Int) {
         for (ind in Integer.min(indExistingPage, pages.size - 1) downTo 0) {
             pages.get(ind).items.removeAll(page.items)
         }
     }
 
-    private fun mergeWithExisting(newItem: T?, existingItem: T?) {
+    private fun mergeWithExisting(newItem: T, existingItem: T) {
         // TODO: Merge something...
     }
 
-    private fun removeDuplicatesWithOlder(page: TimelinePage<T?>?, indExistingPage: Int) {
+    private fun removeDuplicatesWithOlder(page: TimelinePage<T>, indExistingPage: Int) {
         for (ind in Integer.max(indExistingPage, 0) until pages.size) {
             pages.get(ind).items.removeAll(page.items)
         }
@@ -207,24 +207,24 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
     /**
      * For all or for only one item
      */
-    open fun updateView(viewParameters: LoadableListViewParameters?) {
+    open fun updateView(viewParameters: LoadableListViewParameters) {
         if (viewParameters.preferredOrigin.isPresent) {
             setActorViewItem(viewParameters.preferredOrigin.get())
         }
         duplicatesCollapser.collapseDuplicates(viewParameters)
     }
 
-    private fun setActorViewItem(preferredOrigin: Origin?) {
+    private fun setActorViewItem(preferredOrigin: Origin) {
         if (params.timeline.hasActorProfile()) {
-            findActorViewItem(params.timeline.actor, preferredOrigin).onSuccess { a: ActorViewItem? -> actorViewItem = a }
+            findActorViewItem(params.timeline.actor, preferredOrigin).onSuccess { a: ActorViewItem -> actorViewItem = a }
         }
     }
 
-    fun getActorViewItem(): ActorViewItem? {
+    fun getActorViewItem(): ActorViewItem {
         return actorViewItem
     }
 
-    fun findActorViewItem(actor: Actor?, preferredOrigin: Origin?): Try<ActorViewItem?> {
+    fun findActorViewItem(actor: Actor, preferredOrigin: Origin): Try<ActorViewItem> {
         for (page in pages) {
             for (item in page.items) {
                 val found = findInOneItemWithChildren(item, actor, preferredOrigin)
@@ -234,7 +234,7 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
         return TryUtils.notFound()
     }
 
-    private fun findInOneItemWithChildren(item: T?, actor: Actor?, preferredOrigin: Origin?): Try<ActorViewItem> {
+    private fun findInOneItemWithChildren(item: T, actor: Actor, preferredOrigin: Origin): Try<ActorViewItem> {
         val found = findInOneItem(item, actor, preferredOrigin)
         if (found.isSuccess()) return found
         for (child in item.getChildren()) {
@@ -244,24 +244,24 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
         return TryUtils.notFound()
     }
 
-    private fun findInOneItem(item: T?, actor: Actor?, preferredOrigin: Origin?): Try<ActorViewItem> {
+    private fun findInOneItem(item: T, actor: Actor, preferredOrigin: Origin): Try<ActorViewItem> {
         if (item is BaseNoteViewItem<*>) {
-            return filterSameActorAtOrigin(actor, preferredOrigin, (item as BaseNoteViewItem<*>?).getAuthor())
+            return filterSameActorAtOrigin(actor, preferredOrigin, (item as BaseNoteViewItem<*>).author)
         } else if (item is ActivityViewItem) {
-            val activityViewItem = item as ActivityViewItem?
+            val activityViewItem = item
             return filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.getObjActorItem())
-                    .recoverWith(NoSuchElementException::class.java, CheckedFunction<NoSuchElementException?, Try<out ActorViewItem>> { e: NoSuchElementException? -> filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.noteViewItem.author) })
-                    .recoverWith(NoSuchElementException::class.java) { e: NoSuchElementException? -> filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.getActor()) }
+                    .recoverWith(NoSuchElementException::class.java) { e: NoSuchElementException -> filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.noteViewItem.author) }
+                    .recoverWith(NoSuchElementException::class.java) { e: NoSuchElementException -> filterSameActorAtOrigin(actor, preferredOrigin, activityViewItem.actor) }
         }
         return TryUtils.notFound()
     }
 
-    private fun filterSameActorAtOrigin(actor: Actor?, origin: Origin?, actorViewItem: ActorViewItem?): Try<ActorViewItem> {
-        val otherActor = actorViewItem.getActor()
+    private fun filterSameActorAtOrigin(actor: Actor, origin: Origin, actorViewItem: ActorViewItem): Try<ActorViewItem> {
+        val otherActor = actorViewItem.actor
         return if (otherActor.origin == origin && otherActor.isSame(actor)) Try.success(actorViewItem) else TryUtils.notFound()
     }
 
-    fun getPreferredOrigin(): Origin? {
+    fun getPreferredOrigin(): Origin {
         return duplicatesCollapser.preferredOrigin
     }
 
@@ -272,8 +272,8 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
     init {
         params = thisPage.params
         isSameTimeline = oldData != null && params.getContentUri() == oldData.params.getContentUri()
-        pages = if (isSameTimeline) ArrayList(oldData.pages) else ArrayList()
-        val oldCollapser = if (isSameTimeline) oldData.duplicatesCollapser else null
+        pages = if (isSameTimeline && oldData != null) ArrayList(oldData.pages) else ArrayList()
+        val oldCollapser = if (isSameTimeline && oldData != null) oldData.duplicatesCollapser else null
         duplicatesCollapser = DuplicatesCollapser(this, oldCollapser)
         val collapsed = isCollapseDuplicates()
         if (!duplicatesCollapser.individualCollapsedStateIds.isEmpty()) {
@@ -285,7 +285,7 @@ open class TimelineData<T : ViewItem<T>>(oldData: TimelineData<T>?, thisPage: Ti
         }
         dropExcessivePage(thisPage)
         actorViewItem = thisPage.actorViewItem
-        if (getPreferredOrigin().nonEmpty && getPreferredOrigin() != actorViewItem.getActor().origin) {
+        if (getPreferredOrigin().nonEmpty && getPreferredOrigin() != actorViewItem.actor.origin) {
             setActorViewItem(getPreferredOrigin())
         }
         if (oldCollapser != null && collapsed == oldCollapser.collapseDuplicates && !oldCollapser.individualCollapsedStateIds.isEmpty()) {

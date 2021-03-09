@@ -24,20 +24,20 @@ import org.andstatus.app.R
 /**
  * @author yvolk@yurivolkov.com
  */
-class ContextMenuHeader(context: Context?, contextMenu: ContextMenu?) {
-    private val header: View?
-    fun setTitle(title: String?): ContextMenuHeader? {
+class ContextMenuHeader(context: Context, contextMenu: ContextMenu) {
+    private val header: View = View.inflate(context, R.layout.context_menu_header, null)
+
+    fun setTitle(title: String?): ContextMenuHeader {
         (header.findViewById<View?>(R.id.title) as TextView).text = title
         return this
     }
 
-    fun setSubtitle(subtitle: String?): ContextMenuHeader? {
+    fun setSubtitle(subtitle: String?): ContextMenuHeader {
         (header.findViewById<View?>(R.id.subTitle) as TextView).text = subtitle
         return this
     }
 
     init {
-        header = View.inflate(context, R.layout.context_menu_header, null)
         contextMenu.setHeaderView(header)
     }
 }

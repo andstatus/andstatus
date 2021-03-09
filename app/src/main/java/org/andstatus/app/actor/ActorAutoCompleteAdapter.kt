@@ -32,13 +32,13 @@ import org.andstatus.app.util.I18n
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyUrlSpan
 
-class ActorAutoCompleteAdapter(myActivity: LoadableListActivity<*>, origin: Origin) : BaseAdapter(), Filterable {
-    private val origin: Origin?
-    private val myActivity: LoadableListActivity<*>?
-    private val mInflater: LayoutInflater?
+class ActorAutoCompleteAdapter(private val myActivity: LoadableListActivity<*>,
+                               private val origin: Origin) : BaseAdapter(), Filterable {
+    private val mInflater: LayoutInflater = LayoutInflater.from(myActivity)
     private var mFilter: ArrayFilter? = null
     private var items = FilteredValues.EMPTY
-    fun getOrigin(): Origin? {
+
+    fun getOrigin(): Origin {
         return origin
     }
 
@@ -46,32 +46,32 @@ class ActorAutoCompleteAdapter(myActivity: LoadableListActivity<*>, origin: Orig
         return items.viewItems.size
     }
 
-    override fun getItem(position: Int): ActorViewItem? {
+    override fun getItem(position: Int): ActorViewItem {
         return items.viewItems.get(position)
     }
 
     override fun getItemId(position: Int): Long {
-        return position
+        return position.toLong()
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val view: View?
+        val view: View
         view = convertView ?: mInflater.inflate(R.layout.actor_lookup, parent, false)
         val item = getItem(position)
-        if (item == null || item.actor.isEmpty) {
-            MyUrlSpan.Companion.showText(view, R.id.username,
+        if (item.actor.isEmpty) {
+            MyUrlSpan.showText(view, R.id.username,
                     myActivity.getText(R.string.nothing_in_the_loadable_list).toString(), false, true)
         } else {
-            val username = item.getActor().uniqueName
-            MyUrlSpan.Companion.showAsPlainText(view, R.id.username, username, true)
-            MyUrlSpan.Companion.showAsPlainText(view, R.id.description,
-                    I18n.trimTextAt(item.actor.summary, 80).toString(), false)
+            val username = item.actor.uniqueName
+            MyUrlSpan.showAsPlainText(view, R.id.username, username, true)
+            MyUrlSpan.showAsPlainText(view, R.id.description,
+                    I18n.trimTextAt(item.actor.getSummary(), 80).toString(), false)
             showAvatar(view, item)
         }
         return view
     }
 
-    private fun showAvatar(view: View?, item: ActorViewItem?) {
+    private fun showAvatar(view: View, item: ActorViewItem?) {
         val avatarView: AvatarView = view.findViewById(R.id.avatar_image)
         if (item == null) {
             avatarView.visibility = View.INVISIBLE
@@ -81,15 +81,14 @@ class ActorAutoCompleteAdapter(myActivity: LoadableListActivity<*>, origin: Orig
     }
 
     override fun getFilter(): Filter {
-        if (mFilter == null) {
-            mFilter = ArrayFilter()
+        return mFilter ?: ArrayFilter().also {
+            mFilter = it
         }
-        return mFilter
     }
 
-    private class FilteredValues private constructor(val matchGroupsOnly: Boolean, val referenceChar: String?, val viewItems: MutableList<ActorViewItem?>?) {
+    private class FilteredValues(val matchGroupsOnly: Boolean, val referenceChar: String, val viewItems: MutableList<ActorViewItem>) {
         companion object {
-            val EMPTY: FilteredValues? = FilteredValues(false, "", emptyList())
+            val EMPTY: FilteredValues = FilteredValues(false, "", mutableListOf())
         }
     }
 
@@ -100,8 +99,9 @@ class ActorAutoCompleteAdapter(myActivity: LoadableListActivity<*>, origin: Orig
      * is removed from the list.
      */
     private inner class ArrayFilter : Filter() {
-        override fun performFiltering(prefixWithReferenceChar: CharSequence?): FilterResults? {
-            if (!origin.isValid() || prefixWithReferenceChar.isNullOrEmpty() || prefixWithReferenceChar.length < NoteBodyTokenizer.Companion.MIN_LENGHT_TO_SEARCH + 1) {
+        override fun performFiltering(prefixWithReferenceChar: CharSequence?): FilterResults {
+            if (!origin.isValid() || prefixWithReferenceChar.isNullOrEmpty() ||
+                    prefixWithReferenceChar.length < NoteBodyTokenizer.MIN_LENGHT_TO_SEARCH + 1) {
                 val results = FilterResults()
                 results.values = FilteredValues.EMPTY
                 results.count = 0
@@ -118,8 +118,8 @@ class ActorAutoCompleteAdapter(myActivity: LoadableListActivity<*>, origin: Orig
             return results
         }
 
-        private fun loadFiltered(matchGroupsOnly: Boolean, prefixString: String?): MutableList<ActorViewItem?>? {
-            val loader: ActorsLoader = object : ActorsLoader(myActivity.getMyContext(), ActorsScreenType.ACTORS_AT_ORIGIN,
+        private fun loadFiltered(matchGroupsOnly: Boolean, prefixString: String): MutableList<ActorViewItem> {
+            val loader: ActorsLoader = object : ActorsLoader(myActivity.myContext, ActorsScreenType.ACTORS_AT_ORIGIN,
                     origin, 0, "") {
                 override fun getSelection(): String {
                     return if (matchGroupsOnly) {
@@ -134,14 +134,14 @@ class ActorAutoCompleteAdapter(myActivity: LoadableListActivity<*>, origin: Orig
                 }
             }
             loader.load(null)
-            val filteredValues = loader.list
+            val filteredValues = loader.getList()
             for (viewItem in filteredValues) {
                 MyLog.v(this) { "filtered: " + viewItem.actor }
             }
             return filteredValues
         }
 
-        override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+        override fun publishResults(constraint: CharSequence, results: FilterResults) {
             items = results.values as FilteredValues
             if (results.count > 0) {
                 notifyDataSetChanged()
@@ -150,19 +150,15 @@ class ActorAutoCompleteAdapter(myActivity: LoadableListActivity<*>, origin: Orig
             }
         }
 
-        override fun convertResultToString(resultValue: Any?): CharSequence? {
+        override fun convertResultToString(resultValue: Any?): CharSequence {
             if (resultValue !is ActorViewItem) {
                 return ""
             }
-            val item = resultValue as ActorViewItem?
             return items.referenceChar +
-                    if (item.getActor().isEmpty) "" else if (origin.isMentionAsWebFingerId() && !items.matchGroupsOnly) item.actor.uniqueName else item.actor.username
+                    if (resultValue.actor.isEmpty) "" else
+                        if (origin.isMentionAsWebFingerId() && !items.matchGroupsOnly) resultValue.actor.uniqueName
+                        else resultValue.actor.getUsername()
         }
     }
 
-    init {
-        this.origin = origin
-        this.myActivity = myActivity
-        mInflater = LayoutInflater.from(myActivity)
-    }
 }

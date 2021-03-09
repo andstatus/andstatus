@@ -31,9 +31,9 @@ import java.util.function.Function
  * @author yvolk@yurivolkov.com
  */
 class CheckConversations : DataChecker() {
-    private val items: MutableMap<Long?, NoteItem?>? = TreeMap()
-    private val replies: MutableMap<Long?, MutableList<NoteItem?>?>? = TreeMap()
-    private val noteIdsOfOneConversation: MutableSet<Long?>? = HashSet()
+    private val items: MutableMap<Long, NoteItem> = TreeMap()
+    private val replies: MutableMap<Long, MutableList<NoteItem>> = TreeMap()
+    private val noteIdsOfOneConversation: MutableSet<Long> = HashSet()
 
     private inner class NoteItem {
         var id: Long = 0
@@ -84,7 +84,7 @@ class CheckConversations : DataChecker() {
         }
     }
 
-    fun setNoteIdsOfOneConversation(ids: MutableSet<Long?>): CheckConversations? {
+    fun setNoteIdsOfOneConversation(ids: MutableSet<Long>): CheckConversations {
         noteIdsOfOneConversation.addAll(ids)
         return this
     }

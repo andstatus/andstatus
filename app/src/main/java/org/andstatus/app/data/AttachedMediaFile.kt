@@ -116,8 +116,8 @@ class AttachedMediaFile : MediaFile {
     }
 
     companion object {
-        val EMPTY: AttachedMediaFile? = AttachedMediaFile()
-        fun fromCursor(cursor: Cursor?): AttachedMediaFile? {
+        val EMPTY: AttachedMediaFile = AttachedMediaFile()
+        fun fromCursor(cursor: Cursor): AttachedMediaFile {
             val downloadId = DbUtils.getLong(cursor, BaseColumns._ID)
             return if (downloadId == 0L) EMPTY else AttachedMediaFile(downloadId, cursor)
         }

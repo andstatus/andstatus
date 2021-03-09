@@ -31,8 +31,9 @@ import java.util.*
 /**
  * @author yvolk@yurivolkov.com
  */
-abstract class NoteEditorListActivity<T : ViewItem<T?>?> : LoadableListActivity<T?>(), NoteEditorContainer {
+abstract class NoteEditorListActivity<T : ViewItem<T>> : LoadableListActivity<T>(), NoteEditorContainer {
     private var noteEditor: NoteEditor? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (!isFinishing) {
@@ -41,13 +42,11 @@ abstract class NoteEditorListActivity<T : ViewItem<T?>?> : LoadableListActivity<
     }
 
     override fun canSwipeRefreshChildScrollUp(): Boolean {
-        return if (noteEditor != null && noteEditor.isVisible()) {
-            true
-        } else super.canSwipeRefreshChildScrollUp()
+        return noteEditor?.isVisible() ?: super.canSwipeRefreshChildScrollUp()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (ActivityRequestCode.Companion.fromId(requestCode)) {
+        when (ActivityRequestCode.fromId(requestCode)) {
             ActivityRequestCode.ATTACH -> if (resultCode == RESULT_OK && data != null) {
                 attachmentSelected(data)
             }
@@ -55,33 +54,34 @@ abstract class NoteEditorListActivity<T : ViewItem<T?>?> : LoadableListActivity<
         }
     }
 
-    private fun attachmentSelected(data: Intent?) {
-        val uri = UriUtils.notNull(data.getData())
+    private fun attachmentSelected(data: Intent) {
+        val uri = UriUtils.notNull(data.data)
         if (!UriUtils.isEmpty(uri)) {
-            UriUtils.takePersistableUriPermission(activity, uri, data.getFlags())
-            getNoteEditor().startEditingCurrentWithAttachedMedia(uri, Optional.ofNullable(data.getType()))
+            UriUtils.takePersistableUriPermission(getActivity(), uri, data.flags)
+            getNoteEditor()?.startEditingCurrentWithAttachedMedia(uri, Optional.ofNullable(data.type))
         }
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0 && noteEditor != null && noteEditor.isVisible()) {
-            if (activity.isFullScreen) {
-                activity.toggleFullscreen(TriState.FALSE)
-            } else noteEditor.saveDraft()
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.repeatCount == 0 && noteEditor != null &&
+                noteEditor?.isVisible() == true) {
+            if (getActivity().isFullScreen()) {
+                getActivity().toggleFullscreen(TriState.FALSE)
+            } else noteEditor?.saveDraft()
             return true
         }
         return super.onKeyDown(keyCode, event)
     }
 
     override fun onPause() {
-        if (noteEditor != null) noteEditor.saveAsBeingEditedAndHide()
+        noteEditor?.saveAsBeingEditedAndHide()
         super.onPause()
     }
 
-    override fun onReceiveAfterExecutingCommand(commandData: CommandData?) {
+    override fun onReceiveAfterExecutingCommand(commandData: CommandData) {
         super.onReceiveAfterExecutingCommand(commandData)
-        when (commandData.getCommand()) {
-            CommandEnum.UPDATE_NOTE -> noteEditor.loadCurrentDraft()
+        when (commandData.command) {
+            CommandEnum.UPDATE_NOTE -> noteEditor?.loadCurrentDraft()
             else -> {
             }
         }
@@ -90,21 +90,17 @@ abstract class NoteEditorListActivity<T : ViewItem<T?>?> : LoadableListActivity<
     override fun onResume() {
         super.onResume()
         if (!isFinishing) {
-            noteEditor.loadCurrentDraft()
+            noteEditor?.loadCurrentDraft()
         }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        if (noteEditor != null) {
-            noteEditor.onCreateOptionsMenu(menu)
-        }
+        noteEditor?.onCreateOptionsMenu(menu)
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        if (noteEditor != null) {
-            noteEditor.onPrepareOptionsMenu(menu)
-        }
+        noteEditor?.onPrepareOptionsMenu(menu)
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -117,6 +113,6 @@ abstract class NoteEditorListActivity<T : ViewItem<T?>?> : LoadableListActivity<
     }
 
     override fun onFullScreenToggle(fullscreenNew: Boolean) {
-        if (noteEditor != null) noteEditor.onScreenToggle(false, fullscreenNew)
+        noteEditor?.onScreenToggle(false, fullscreenNew)
     }
 }

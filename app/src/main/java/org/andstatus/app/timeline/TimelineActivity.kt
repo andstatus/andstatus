@@ -119,7 +119,7 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
     var syncOlderView: View? = null
     var actorProfileViewer: ActorProfileViewer? = null
     override fun onRefresh() {
-        syncWithInternet(getParamsLoaded().getTimeline(), true, true)
+        syncWithInternet(getParamsLoaded().timeline, true, true)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -545,7 +545,8 @@ class TimelineActivity<T : ViewItem<T?>?> : NoteEditorListActivity<T?>(), NoteCo
         mDrawerToggle.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome)
         if (getParamsLoaded().isAtHome) {
             myContext.accounts().currentAccount.actor.avatarFile
-                    .loadDrawable({ drawable: Drawable? -> scaleDrawableForToolbar(drawable) }) { indicator: Drawable? -> mDrawerToggle.setHomeAsUpIndicator(indicator) }
+                    .loadDrawable({ drawable: Drawable? -> scaleDrawableForToolbar(drawable) })
+                    { indicator: Drawable? -> mDrawerToggle.setHomeAsUpIndicator(indicator) }
         } else {
             mDrawerToggle.setHomeAsUpIndicator(null)
         }

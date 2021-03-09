@@ -31,16 +31,16 @@ import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
 
-enum class ActorContextMenuItem @JvmOverloads constructor(private val mIsAsync: Boolean = false) : ContextMenuItem {
+enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = false) : ContextMenuItem {
     GET_ACTOR(true) {
-        override fun executeAsync(params: Params?): NoteEditorData? {
+        override fun executeAsync(params: Params): NoteEditorData {
             params.menu.getViewItem().actor.requestDownload(true)
             return super.executeAsync(params)
         }
     },
     POST_TO(true) {
-        override fun executeAsync(params: Params?): NoteEditorData? {
-            return NoteEditorData.Companion.newEmpty(params.menu.getActingAccount())
+        override fun executeAsync(params: Params): NoteEditorData {
+            return NoteEditorData.newEmpty(params.menu.getActingAccount())
                     .setPublicAndFollowers(false, false)
                     .addActorsBeforeText(listOf(params.menu.getViewItem().actor))
         }
@@ -121,7 +121,7 @@ enum class ActorContextMenuItem @JvmOverloads constructor(private val mIsAsync: 
     },
     NONEXISTENT, UNKNOWN;
 
-    private class Params internal constructor(var menu: ActorContextMenu?)
+    class Params(var menu: ActorContextMenu)
 
     override fun getId(): Int {
         return Menu.FIRST + ordinal + 1
@@ -135,7 +135,7 @@ enum class ActorContextMenuItem @JvmOverloads constructor(private val mIsAsync: 
         menu.add(menuGroup, this.id, order, title)
     }
 
-    fun execute(menu: ActorContextMenu?): Boolean {
+    fun execute(menu: ActorContextMenu): Boolean {
         val params = Params(menu)
         MyLog.v(this, "execute started")
         if (mIsAsync) {
@@ -148,7 +148,7 @@ enum class ActorContextMenuItem @JvmOverloads constructor(private val mIsAsync: 
         return false
     }
 
-    private fun executeAsync1(params: Params?) {
+    private fun executeAsync1(params: Params) {
         AsyncTaskLauncher.Companion.execute(TAG,
                 object : MyAsyncTask<Void?, Void?, NoteEditorData?>(TAG + name, PoolEnum.QUICK_UI) {
                     override fun doInBackground2(aVoid: Void?): NoteEditorData? {
@@ -169,18 +169,18 @@ enum class ActorContextMenuItem @JvmOverloads constructor(private val mIsAsync: 
         )
     }
 
-    open fun executeAsync(params: Params?): NoteEditorData? {
+    open fun executeAsync(params: Params): NoteEditorData {
         return NoteEditorData.Companion.newEmpty(params.menu.getActingAccount())
     }
 
-    open fun executeOnUiThread(menu: ActorContextMenu?, editorData: NoteEditorData?) {
+    open fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
         // Empty
     }
 
-    fun setActingAccountForActor(params: Params?) {
-        val actor = params.menu.getViewItem().getActor()
+    fun setActingAccountForActor(params: Params) {
+        val actor = params.menu.getViewItem().actor
         val origin = params.menu.getOrigin()
-        if (!origin.isValid) {
+        if (!origin.isValid()) {
             MyLog.w(this, "Unknown origin for " + params.menu.getViewItem().actor)
             return
         }
@@ -211,10 +211,10 @@ enum class ActorContextMenuItem @JvmOverloads constructor(private val mIsAsync: 
     }
 
     companion object {
-        private val TAG: String? = ActorContextMenuItem::class.java.simpleName
-        fun fromId(id: Int): ActorContextMenuItem? {
+        private val TAG: String = ActorContextMenuItem::class.java.simpleName
+        fun fromId(id: Int): ActorContextMenuItem {
             for (item in values()) {
-                if (item.id == id) {
+                if (item.getId() == id) {
                     return item
                 }
             }

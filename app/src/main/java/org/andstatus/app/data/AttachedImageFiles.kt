@@ -26,7 +26,6 @@ import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyStringBuilder
 import java.util.*
 import java.util.function.Consumer
-import java.util.function.Function
 import java.util.stream.Collectors
 
 class AttachedImageFiles(val list: MutableList<AttachedMediaFile>) : IsEmpty {
@@ -49,39 +48,39 @@ class AttachedImageFiles(val list: MutableList<AttachedMediaFile>) : IsEmpty {
     }
 
     override fun toString(): String {
-        return MyStringBuilder.Companion.formatKeyValue(this, list)
+        return MyStringBuilder.formatKeyValue(this, list)
     }
 
     fun preloadImagesAsync() {
         for (mediaFile in list) {
-            if (mediaFile.contentType.isImage) {
+            if (mediaFile.contentType.isImage()) {
                 mediaFile.preloadImageAsync(CacheName.ATTACHED_IMAGE)
             }
         }
     }
 
-    fun toMediaSummary(context: Context?): String? {
+    fun toMediaSummary(context: Context): String {
         val builder = MyStringBuilder()
-        list.forEach(Consumer { item: AttachedMediaFile? ->
+        list.forEach(Consumer { item: AttachedMediaFile ->
             builder.withComma(
-                    item.mediaMetadata.toDetails() + " "
-                            + Formatter.formatShortFileSize(context, item.downloadFile.size))
+                    item.mediaMetadata?.toDetails() + " "
+                            + Formatter.formatShortFileSize(context, item.downloadFile.getSize()))
         })
         return builder.toString()
     }
 
     fun tooLargeAttachment(maxBytes: Long): Optional<AttachedMediaFile> {
-        return list.stream().filter { item: AttachedMediaFile? -> item.downloadFile.size > maxBytes }.findAny()
+        return list.stream().filter { item: AttachedMediaFile -> item.downloadFile.getSize() > maxBytes }.findAny()
     }
 
-    fun forUri(uri: Uri?): Optional<AttachedMediaFile> {
-        return list.stream().filter { item: AttachedMediaFile? -> uri == item.uri }.findAny()
+    fun forUri(uri: Uri): Optional<AttachedMediaFile> {
+        return list.stream().filter { item: AttachedMediaFile -> uri == item.uri }.findAny()
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
-        val that = o as AttachedImageFiles?
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val that = other as AttachedImageFiles
         return list == that.list
     }
 
@@ -90,8 +89,9 @@ class AttachedImageFiles(val list: MutableList<AttachedMediaFile>) : IsEmpty {
     }
 
     companion object {
-        val EMPTY: AttachedImageFiles = AttachedImageFiles(emptyList())
-        fun load(myContext: MyContext?, noteId: Long): AttachedImageFiles {
+        val EMPTY: AttachedImageFiles = AttachedImageFiles(mutableListOf())
+
+        fun load(myContext: MyContext, noteId: Long): AttachedImageFiles {
             val sql = "SELECT *" +
                     " FROM " + DownloadTable.TABLE_NAME +
                     " WHERE " + DownloadTable.NOTE_ID + "=" + noteId +
@@ -100,21 +100,21 @@ class AttachedImageFiles(val list: MutableList<AttachedMediaFile>) : IsEmpty {
                     " IN(" + MyContentType.IMAGE.save() + ", " + MyContentType.ANIMATED_IMAGE.save() + ", " +
                     MyContentType.VIDEO.save() + ")" +
                     " ORDER BY " + DownloadTable.DOWNLOAD_NUMBER
-            val mediaFiles1 = MyQuery.getList(myContext, sql, Function<Cursor?, AttachedMediaFile?> { cursor: Cursor? -> AttachedMediaFile.Companion.fromCursor(cursor) })
-            val mediaFiles2 = foldPreviews(mediaFiles1)
-            return AttachedImageFiles(mediaFiles2)
+            val mediaFiles1 = MyQuery.getList(myContext, sql) { cursor: Cursor -> AttachedMediaFile.fromCursor(cursor) }
+            val mediaFiles2 = foldPreviews(mediaFiles1.toMutableList())
+            return AttachedImageFiles(mediaFiles2.toMutableList())
         }
 
-        private fun foldPreviews(mediaFiles: MutableList<AttachedMediaFile?>?): MutableList<AttachedMediaFile?>? {
-            val out: MutableList<AttachedMediaFile?> = ArrayList()
-            val toSkip = mediaFiles.stream().map { i: AttachedMediaFile? -> i.previewOfDownloadId }.filter { i: Long? -> i != 0L }
+        private fun foldPreviews(mediaFiles: MutableList<AttachedMediaFile>): MutableList<AttachedMediaFile> {
+            val out: MutableList<AttachedMediaFile> = ArrayList()
+            val toSkip = mediaFiles.stream().map { i: AttachedMediaFile -> i.previewOfDownloadId }.filter { i: Long? -> i != 0L }
                     .collect(Collectors.toList())
             for (mediaFile in mediaFiles) {
-                if (mediaFile.isEmpty() || toSkip.contains(mediaFile.downloadId)) continue
+                if (mediaFile.isEmpty || toSkip.contains(mediaFile.downloadId)) continue
                 if (mediaFile.previewOfDownloadId == 0L) {
                     out.add(mediaFile)
                 } else {
-                    var fullImage: AttachedMediaFile? = AttachedMediaFile.Companion.EMPTY
+                    var fullImage: AttachedMediaFile? = AttachedMediaFile.EMPTY
                     for (other in mediaFiles) {
                         if (other.downloadId == mediaFile.previewOfDownloadId) {
                             fullImage = other

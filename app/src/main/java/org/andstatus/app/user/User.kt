@@ -37,15 +37,15 @@ import java.util.stream.Collectors
 /**
  * @author yvolk@yurivolkov.com
  */
-class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Set<Long>?) : IsEmpty {
+class User(userId: Long, knownAs: String, isMyUser: TriState, actorIds: Set<Long>) : IsEmpty {
     var userId = 0L
-    private var knownAs: String? = ""
+    private var knownAs: String = ""
     private var isMyUser: TriState = TriState.UNKNOWN
-    val actorIds: MutableSet<Long>
+    val actorIds: Set<Long>
 
     override val isEmpty: Boolean
         get() {
-            return this === EMPTY || userId == 0L && knownAs.isNullOrEmpty()
+            return this === EMPTY || userId == 0L && knownAs.isEmpty()
         }
 
     override fun toString(): String {
@@ -54,7 +54,7 @@ class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Set<Lo
         }
         val str = User::class.java.simpleName
         var members = "id=$userId"
-        if (!knownAs.isNullOrEmpty()) {
+        if (!knownAs.isEmpty()) {
             members += "; knownAs=$knownAs"
         }
         if (isMyUser.known) {
@@ -63,16 +63,16 @@ class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Set<Lo
         return "$str{$members}"
     }
 
-    fun getKnownAs(): String? {
+    fun getKnownAs(): String {
         return knownAs
     }
 
-    fun save(myContext: MyContext?) {
-        val values = toContentValues(myContext)
+    fun save(myContext: MyContext) {
+        val values = toContentValues()
         if (this === EMPTY || values.size() == 0) return
         if (userId == 0L) {
             DbUtils.addRowWithRetry(myContext, UserTable.TABLE_NAME, values, 3)
-                    .onSuccess { idAdded: Long? ->
+                    .onSuccess { idAdded: Long ->
                         userId = idAdded
                         MyLog.v(this) { "Added $this" }
                     }
@@ -84,9 +84,9 @@ class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Set<Lo
         }
     }
 
-    private fun toContentValues(myContext: MyContext?): ContentValues? {
+    private fun toContentValues(): ContentValues {
         val values = ContentValues()
-        if (!knownAs.isNullOrEmpty()) values.put(UserTable.KNOWN_AS, knownAs)
+        if (!knownAs.isEmpty()) values.put(UserTable.KNOWN_AS, knownAs)
         if (isMyUser.known) values.put(UserTable.IS_MY, isMyUser.id)
         return values
     }
@@ -99,12 +99,12 @@ class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Set<Lo
         return isMyUser
     }
 
-    fun setKnownAs(knownAs: String?) {
+    fun setKnownAs(knownAs: String) {
         this.knownAs = knownAs
     }
 
     fun knownInOrigins(myContext: MyContext): MutableList<Origin> {
-        return actorIds.stream().map(Function<Long, Actor> { id: Long -> Actor.Companion.load(myContext, id) })
+        return actorIds.stream().map { id: Long -> Actor.load(myContext, id) }
                 .map { actor: Actor -> actor.origin }
                 .filter { obj: Origin -> obj.isValid() }
                 .distinct()
@@ -119,15 +119,15 @@ class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Set<Lo
         }
 
         private fun loadInternal(myContext: MyContext, actorId: Long): User {
-            if (actorId == 0L || MyAsyncTask.Companion.isUiThread()) return EMPTY
-            val sql = ("SELECT " + ActorSql.select(false, true)
-                    + " FROM " + ActorSql.tables(false, true, false)
+            if (actorId == 0L || MyAsyncTask.isUiThread()) return EMPTY
+            val sql = ("SELECT " + ActorSql.select(fullProjection = false, userOnly = true)
+                    + " FROM " + ActorSql.tables(isFullProjection = false, userOnly = true, userIsOptional = false)
                     + " WHERE " + ActorTable.TABLE_NAME + "." + BaseColumns._ID + "=" + actorId)
-            val function = Function { cursor: Cursor? -> fromCursor(myContext, cursor, true) }
-            return MyQuery.get(myContext, sql, function).stream().findFirst().orElse(EMPTY)
+            val function = Function { cursor: Cursor -> fromCursor(myContext, cursor, true) }
+            return MyQuery[myContext, sql, function].stream().findFirst().orElse(EMPTY)
         }
 
-        fun fromCursor(myContext: MyContext?, cursor: Cursor?, useCache: Boolean): User {
+        fun fromCursor(myContext: MyContext, cursor: Cursor, useCache: Boolean): User {
             val userId = DbUtils.getLong(cursor, ActorTable.USER_ID)
             val user1 = if (useCache) myContext.users().users.getOrDefault(userId, EMPTY) else EMPTY
             return if (user1.nonEmpty) user1 else User(userId, DbUtils.getString(cursor, UserTable.KNOWN_AS),
@@ -135,7 +135,7 @@ class User(userId: Long, knownAs: String?, isMyUser: TriState?, actorIds: Set<Lo
                     loadActors(myContext, userId))
         }
 
-        fun loadActors(myContext: MyContext?, userId: Long): MutableSet<Long?> {
+        fun loadActors(myContext: MyContext, userId: Long): Set<Long> {
             return MyQuery.getLongs(myContext, "SELECT " + BaseColumns._ID
                     + " FROM " + ActorTable.TABLE_NAME
                     + " WHERE " + ActorTable.USER_ID + "=" + userId)

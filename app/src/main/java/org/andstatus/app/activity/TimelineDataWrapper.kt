@@ -56,7 +56,7 @@ internal abstract class TimelineDataWrapper<T : ViewItem<T>>(val listData: Timel
         return listData.canBeCollapsed(position)
     }
 
-    override fun updateView(viewParameters: LoadableListViewParameters?) {
+    override fun updateView(viewParameters: LoadableListViewParameters) {
         // Empty
     }
 }

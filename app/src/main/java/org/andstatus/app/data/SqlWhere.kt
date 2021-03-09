@@ -21,22 +21,22 @@ import org.andstatus.app.util.IsEmpty
  * @author yvolk@yurivolkov.com
  */
 class SqlWhere : IsEmpty {
-    private var where: String? = ""
-    fun append(field: String?, actorIds: SqlIds?): SqlWhere? {
+    private var where: String = ""
+    fun append(field: String, actorIds: SqlIds): SqlWhere {
         return if (actorIds.isEmpty) this else append(field, actorIds.getSql())
     }
 
-    fun append(field: String?, condition: String?): SqlWhere? {
-        return if (condition.isNullOrEmpty()) {
+    fun append(field: String, condition: String): SqlWhere {
+        return if (condition.isEmpty()) {
             this
         } else append(field + condition)
     }
 
-    fun append(condition: String?): SqlWhere? {
-        if (condition.isNullOrEmpty()) {
+    fun append(condition: String): SqlWhere {
+        if (condition.isEmpty()) {
             return this
         }
-        if (!where.isNullOrEmpty()) {
+        if (where.isNotEmpty()) {
             where += " AND "
         }
         where += "($condition)"
@@ -48,15 +48,13 @@ class SqlWhere : IsEmpty {
     }
 
     fun getWhere(): String {
-        return if (where.isNullOrEmpty()) "" else " WHERE ($where)"
+        return if (where.isEmpty()) "" else " WHERE ($where)"
     }
 
     fun getAndWhere(): String {
-        return if (where.isNullOrEmpty()) "" else " AND $where"
+        return if (where.isEmpty()) "" else " AND $where"
     }
 
     override val isEmpty: Boolean
-        get() {
-            return where.isNullOrEmpty()
-        }
+        get() = where.isEmpty()
 }

@@ -28,7 +28,7 @@ import org.andstatus.app.net.social.ActivityType
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
 
-class ConversationViewItem : BaseNoteViewItem<ConversationViewItem?>, Comparable<ConversationViewItem?> {
+class ConversationViewItem : BaseNoteViewItem<ConversationViewItem>, Comparable<ConversationViewItem> {
     var inReplyToViewItem: ConversationViewItem? = null
     var activityType: ActivityType? = ActivityType.EMPTY
     var conversationId: Long = 0
@@ -49,11 +49,12 @@ class ConversationViewItem : BaseNoteViewItem<ConversationViewItem?>, Comparable
     var replyLevel = 0
 
     protected constructor(isEmpty: Boolean, updatedDate: Long) : super(isEmpty, updatedDate) {}
-    internal constructor(myContext: MyContext?, cursor: Cursor?) : super(myContext, cursor) {
+
+    internal constructor(myContext: MyContext, cursor: Cursor) : super(myContext, cursor) {
         conversationId = DbUtils.getLong(cursor, NoteTable.CONVERSATION_ID)
-        author = ActorViewItem.Companion.fromActorId(origin, DbUtils.getLong(cursor, NoteTable.AUTHOR_ID))
+        author = ActorViewItem.fromActorId(getOrigin(), DbUtils.getLong(cursor, NoteTable.AUTHOR_ID))
         inReplyToNoteId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID)
-        activityType = ActivityType.Companion.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE))
+        activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE))
         setOtherViewProperties(cursor)
     }
 
@@ -64,24 +65,20 @@ class ConversationViewItem : BaseNoteViewItem<ConversationViewItem?>, Comparable
         return item
     }
 
-    fun setReversedListOrder(reversedListOrder: Boolean) {
-        this.reversedListOrder = reversedListOrder
-    }
-
     /**
      * The newest replies are first, "branches" look up
      */
-    override fun compareTo(another: ConversationViewItem?): Int {
-        var compared = mListOrder - another.mListOrder
+    override fun compareTo(other: ConversationViewItem): Int {
+        var compared = mListOrder - other.mListOrder
         if (compared == 0) {
-            compared = if (updatedDate == another.updatedDate) {
-                if (noteId == another.getNoteId()) {
+            compared = if (updatedDate == other.updatedDate) {
+                if (getNoteId() == other.getNoteId()) {
                     0
                 } else {
-                    if (another.getNoteId() - noteId > 0) 1 else -1
+                    if (other.getNoteId() - getNoteId() > 0) 1 else -1
                 }
             } else {
-                if (another.updatedDate - updatedDate > 0) 1 else -1
+                if (other.updatedDate - updatedDate > 0) 1 else -1
             }
         }
         if (reversedListOrder) compared = 0 - compared
@@ -92,29 +89,28 @@ class ConversationViewItem : BaseNoteViewItem<ConversationViewItem?>, Comparable
         return updatedDate > 0
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (o === this) {
+    override fun equals(other: Any?): Boolean {
+        if (other === this) {
             return true
         }
-        if (o !is ConversationViewItem) {
+        if (other !is ConversationViewItem) {
             return false
         }
-        val other = o as ConversationViewItem?
-        return noteId == other.getNoteId()
+        return getNoteId() == other.getNoteId()
     }
 
     override fun hashCode(): Int {
-        return java.lang.Long.valueOf(noteId).hashCode()
+        return getNoteId().hashCode()
     }
 
-    fun getProjection(): MutableSet<String?>? {
+    fun getProjection(): MutableSet<String> {
         return TimelineSql.getConversationProjection()
     }
 
-    override fun getDetails(context: Context?, showReceivedTime: Boolean): MyStringBuilder? {
+    override fun getDetails(context: Context, showReceivedTime: Boolean): MyStringBuilder {
         val builder = super.getDetails(context, showReceivedTime)
-        if (inReplyToViewItem != null) {
-            builder.withSpace("(" + inReplyToViewItem.historyOrder + ")")
+        inReplyToViewItem?.let {
+            builder.withSpace("(" + it.historyOrder + ")")
         }
         if (MyPreferences.isShowDebuggingInfoInUi()) {
             builder.withSpace("(i$indentLevel,r$replyLevel)")
@@ -122,7 +118,7 @@ class ConversationViewItem : BaseNoteViewItem<ConversationViewItem?>, Comparable
         return builder
     }
 
-    override fun fromCursor(myContext: MyContext?, cursor: Cursor?): ConversationViewItem {
+    override fun fromCursor(myContext: MyContext, cursor: Cursor): ConversationViewItem {
         return ConversationViewItem(myContext, cursor)
     }
 

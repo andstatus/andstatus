@@ -212,7 +212,7 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
     private val isSearchTimelineSyncable: Boolean
     private val isPrivateTimelineSyncable: Boolean
     private val isInteractionsTimelineSyncable: Boolean
-    private val isPrivateNoteAllowsReply: Boolean
+    val isPrivateNoteAllowsReply: Boolean
     val hasNoteName: Boolean
     val hasNoteSummary: Boolean
     val visibilityChangeAllowed: Boolean
@@ -312,10 +312,6 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
 
     fun allowEditing(): Boolean {
         return allowEditing
-    }
-
-    fun isPrivateNoteAllowsReply(): Boolean {
-        return isPrivateNoteAllowsReply
     }
 
     fun isUsernameNeededToStartAddingNewAccount(isOAuth: Boolean): Boolean {

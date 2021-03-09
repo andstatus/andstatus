@@ -18,20 +18,21 @@ package org.andstatus.app.activity
 import org.andstatus.app.actor.ActorViewItem
 import org.andstatus.app.timeline.TimelineData
 
-internal class TimelineDataObjActorWrapper(listData: TimelineData<ActivityViewItem?>?) : TimelineDataWrapper<ActorViewItem?>(listData) {
+internal class TimelineDataObjActorWrapper(listData: TimelineData<ActivityViewItem>) :
+        TimelineDataWrapper<ActorViewItem>(listData) {
     override fun getItem(position: Int): ActorViewItem {
-        return listData.getItem(position).objActorItem
+        return listData.getItem(position).getObjActorItem()
     }
 
     override fun getPositionById(itemId: Long): Int {
         if (itemId != 0L) {
             for (position in 0 until listData.size()) {
                 val item = listData.getItem(position)
-                if (item.objActorItem.id == itemId) {
+                if (item.getObjActorItem().getId() == itemId) {
                     return position
-                } else if (item.isCollapsed) {
-                    for (child in item.children) {
-                        if ((child as ActivityViewItem).objActorItem.id == itemId) {
+                } else if (item.isCollapsed()) {
+                    for (child in item.getChildren()) {
+                        if (child.getObjActorItem().getId() == itemId) {
                             return position
                         }
                     }

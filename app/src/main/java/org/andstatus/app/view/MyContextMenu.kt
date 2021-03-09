@@ -33,7 +33,7 @@ import java.util.*
  */
 open class MyContextMenu(protected val listActivity: LoadableListActivity<*>, val menuGroup: Int) : OnCreateContextMenuListener {
     private var viewOfTheContext: View? = null
-    protected var mViewItem: ViewItem<*>? = EmptyViewItem.EMPTY
+    protected var mViewItem: ViewItem<*> = EmptyViewItem.EMPTY
 
     /**
      * Corresponding account information ( "Reply As..." ... )
@@ -41,14 +41,16 @@ open class MyContextMenu(protected val listActivity: LoadableListActivity<*>, va
      */
     @Volatile
     private var selectedActingAccount: MyAccount = MyAccount.EMPTY
-    override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?) {
+
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
         saveContextOfSelectedItem(v)
     }
 
     private fun saveContextOfSelectedItem(v: View?) {
         viewOfTheContext = v
-        val viewItem = if (menuGroup == MENU_GROUP_ACTOR_PROFILE) listActivity.listData.actorViewItem else listActivity.saveContextOfSelectedItem(v)
-        if (viewItem.isEmpty || mViewItem.isEmpty || mViewItem.getId() != viewItem.id) {
+        val viewItem = if (menuGroup == MENU_GROUP_ACTOR_PROFILE) listActivity.getListData().getActorViewItem()
+            else listActivity.saveContextOfSelectedItem(v)
+        if (viewItem.isEmpty || mViewItem.isEmpty || mViewItem.getId() != viewItem.getId()) {
             selectedActingAccount = MyAccount.EMPTY
         }
         mViewItem = viewItem
@@ -59,17 +61,18 @@ open class MyContextMenu(protected val listActivity: LoadableListActivity<*>, va
     }
 
     fun showContextMenu() {
-        if (viewOfTheContext != null && viewOfTheContext.getParent() != null && listActivity.isMyResumed) {
-            viewOfTheContext.post(object : Runnable {
-                override fun run() {
-                    try {
-                        listActivity.openContextMenu(viewOfTheContext)
-                    } catch (e: NullPointerException) {
-                        MyLog.d(this, "on showContextMenu", e)
-                    }
+        viewOfTheContext?.takeIf { it.getParent() != null && listActivity.isMyResumed() }
+                ?.let { view ->
+                    view.post(object : Runnable {
+                        override fun run() {
+                            try {
+                                listActivity.openContextMenu(view)
+                            } catch (e: NullPointerException) {
+                                MyLog.d(this, "on showContextMenu", e)
+                            }
+                        }
+                    })
                 }
-            })
-        }
     }
 
     open fun getActingAccount(): MyAccount {
@@ -86,7 +89,7 @@ open class MyContextMenu(protected val listActivity: LoadableListActivity<*>, va
     }
 
     fun getMyContext(): MyContext {
-        return getActivity().getMyContext()
+        return getActivity().myContext
     }
 
     companion object {

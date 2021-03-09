@@ -507,7 +507,7 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         }
 
         @JvmOverloads
-        fun newPartialNote(accountActor: Actor, actor: Actor?, noteOid: String?,
+        fun newPartialNote(accountActor: Actor, actor: Actor, noteOid: String?,
                            updatedDate: Long = RelativeTime.DATETIME_MILLIS_NEVER,
                            status: DownloadStatus = DownloadStatus.UNKNOWN): AActivity {
             val note: Note = Note.Companion.fromOriginAndOid(accountActor.origin, noteOid, status)

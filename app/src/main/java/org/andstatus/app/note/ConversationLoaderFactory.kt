@@ -23,9 +23,9 @@ import org.andstatus.app.origin.Origin
  * @author yvolk@yurivolkov.com
  */
 class ConversationLoaderFactory {
-    fun getLoader(emptyItem: ConversationViewItem?, myContext: MyContext?, origin: Origin?, noteId: Long, sync: Boolean): ConversationLoader? {
+    fun getLoader(emptyItem: ConversationViewItem, myContext: MyContext, origin: Origin, noteId: Long, sync: Boolean): ConversationLoader {
         val recursiveLoader = origin.originType.isPrivateNoteAllowsReply ||
-                Visibility.Companion.fromNoteId(noteId).id < Visibility.PRIVATE.id
+                Visibility.fromNoteId(noteId).id < Visibility.PRIVATE.id
         return if (recursiveLoader) {
             RecursiveConversationLoader(emptyItem, myContext, origin, noteId, sync)
         } else {

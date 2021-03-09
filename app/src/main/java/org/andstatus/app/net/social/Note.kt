@@ -51,8 +51,8 @@ class Note : AObject {
     @Volatile
     private var audience: Audience
     private var name: String = ""
-    private var summary: String = ""
-        get() = field
+    var summary: String = ""
+        private set
     private var isSensitive = false
     var content: String = ""
         get() = field

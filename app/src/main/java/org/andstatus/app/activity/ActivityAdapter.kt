@@ -33,9 +33,9 @@ import org.andstatus.app.util.MyUrlSpan
  */
 class ActivityAdapter(private val contextMenu: ActivityContextMenu, listData: TimelineData<ActivityViewItem>) :
         BaseTimelineAdapter<ActivityViewItem>(contextMenu.note.getMyContext(), listData) {
-    private val actorAdapter: ActorAdapter?
-    private val noteAdapter: NoteAdapter?
-    private val objActorAdapter: ActorAdapter?
+    private val actorAdapter: ActorAdapter
+    private val noteAdapter: NoteAdapter
+    private val objActorAdapter: ActorAdapter
     private val showReceivedTime: Boolean
 
     internal enum class LayoutType {
@@ -70,7 +70,7 @@ class ActivityAdapter(private val contextMenu: ActivityContextMenu, listData: Ti
         }
     }
 
-    override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View? {
+    override fun getView(position: Int, convertView: View?, viewGroup: ViewGroup?): View {
         val view = getEmptyView(convertView)
         view.setOnClickListener(this)
         setPosition(view, position)
@@ -105,9 +105,9 @@ class ActivityAdapter(private val contextMenu: ActivityContextMenu, listData: Ti
         return view
     }
 
-    private fun calcLayoutType(item: ActivityViewItem?): LayoutType? {
-        return if (item.noteViewItem.id == 0L) {
-            if (item.getObjActorItem().id == 0L) {
+    private fun calcLayoutType(item: ActivityViewItem): LayoutType {
+        return if (item.noteViewItem.getId() == 0L) {
+            if (item.getObjActorItem().getId() == 0L) {
                 LayoutType.ACTOR
             } else if (myContext.users().isMe(item.getObjActorItem().actor)) {
                 LayoutType.ACTOR_ACTOR

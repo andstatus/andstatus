@@ -41,30 +41,35 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import java.util.stream.Collectors
 
-abstract class ConversationLoader(private val emptyItem: ConversationViewItem?, protected val myContext: MyContext?, origin: Origin?, selectedNoteId: Long, sync: Boolean) : SyncLoader<ConversationViewItem?>() {
-    protected val ma: MyAccount?
-    private val selectedNoteId: Long
-    var conversationIds: MutableSet<Long?>? = HashSet()
+abstract class ConversationLoader(private val emptyItem: ConversationViewItem,
+                                  protected val myContext: MyContext,
+                                  origin: Origin,
+                                  private val selectedNoteId: Long,
+                                  sync: Boolean) :
+        SyncLoader<ConversationViewItem>() {
+    protected val ma: MyAccount = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
+    var conversationIds: MutableSet<Long> = HashSet()
     var fixConversation = false
-    private val sync = false
+    private val sync: Boolean = sync || MyPreferences.isSyncWhileUsingApplicationEnabled()
     private var conversationSyncRequested = false
     var mAllowLoadingFromInternet = false
-    private val replyLevelComparator: ReplyLevelComparator<ConversationViewItem?>? = ReplyLevelComparator()
-    val cachedConversationItems: MutableMap<Long?, ConversationViewItem?>? = ConcurrentHashMap()
-    var mProgress: ProgressPublisher? = null
-    val idsOfItemsToFind: MutableList<Long?>? = ArrayList()
+    private val replyLevelComparator: ReplyLevelComparator = ReplyLevelComparator()
+    val cachedConversationItems: MutableMap<Long, ConversationViewItem> = ConcurrentHashMap()
+    private var mProgress: ProgressPublisher? = null
+    private val idsOfItemsToFind: MutableList<Long> = ArrayList()
+
     override fun load(publisher: ProgressPublisher?) {
         mProgress = publisher
         load1()
         if (fixConversation) {
             CheckConversations()
                     .setNoteIdsOfOneConversation(
-                            items.stream().map { obj: ConversationViewItem? -> obj.getNoteId() }.collect(Collectors.toSet()))
+                            items.stream().map { obj: ConversationViewItem -> obj.getNoteId() }.collect(Collectors.toSet()))
                     .setMyContext(myContext).fix()
             load1()
         }
         loadActors(items)
-        items.sort(replyLevelComparator)
+        items.sortWith(replyLevelComparator)
         enumerateNotes()
     }
 
@@ -100,14 +105,14 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem?, 
         }
     }
 
-    private fun loadActors(items: MutableList<ConversationViewItem?>?) {
+    private fun loadActors(items: MutableList<ConversationViewItem>) {
         if (items.isEmpty()) return
         val loader = ActorsLoader(myContext, ActorsScreenType.ACTORS_AT_ORIGIN,
                 ma.origin, 0, "")
-        items.forEach(Consumer { item: ConversationViewItem? -> item.addActorsToLoad(loader) })
-        if (loader.list.isEmpty()) return
-        loader.load { progress: String? -> }
-        items.forEach(Consumer { item: ConversationViewItem? -> item.setLoadedActors(loader) })
+        items.forEach(Consumer { item: ConversationViewItem -> item.addActorsToLoad(loader) })
+        if (loader.getList().isEmpty()) return
+        loader.load()
+        items.forEach(Consumer { item: ConversationViewItem -> item.setLoadedActors(loader) })
     }
 
     /** Returns true if note was added false in a case the note existed already  */
@@ -123,7 +128,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem?, 
     }
 
     protected fun getItem(noteId: Long, conversationId: Long, replyLevel: Int): ConversationViewItem {
-        var item = cachedConversationItems.get(noteId)
+        var item = cachedConversationItems[noteId]
         if (item == null) {
             item = emptyItem.newNonLoaded(myContext, noteId)
             item.conversationId = conversationId
@@ -132,24 +137,24 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem?, 
         return item
     }
 
-    protected fun loadItemFromDatabase(item: ConversationViewItem?): ConversationViewItem {
+    protected fun loadItemFromDatabase(item: ConversationViewItem): ConversationViewItem {
         if (item.isLoaded() || item.getNoteId() == 0L) {
             return item
         }
-        val cachedItem = cachedConversationItems.get(item.getNoteId())
+        val cachedItem = cachedConversationItems[item.getNoteId()]
         if (cachedItem != null) {
             return cachedItem
         }
-        val uri: Uri = MatchedUri.Companion.getTimelineItemUri(
+        val uri: Uri = MatchedUri.getTimelineItemUri(
                 myContext.timelines()[TimelineType.EVERYTHING, Actor.EMPTY, ma.origin], item.getNoteId())
         myContext.context().contentResolver
-                .query(uri, item.getProjection().toArray<String?>(arrayOf<String?>()), null, null, null).use { cursor ->
+                .query(uri, item.getProjection().toTypedArray(), null, null, null).use { cursor ->
                     if (cursor != null && cursor.moveToFirst()) {
                         val loadedItem = item.fromCursor(myContext, cursor)
                         loadedItem.replyLevel = item.replyLevel
                         cacheConversation(loadedItem)
                         MyLog.v(this) {
-                            ("Loaded (" + loadedItem.isLoaded + ")"
+                            ("Loaded (" + loadedItem.isLoaded() + ")"
                                     + " from a database noteId=" + item.getNoteId())
                         }
                         return loadedItem
@@ -159,15 +164,13 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem?, 
         return item
     }
 
-    protected fun addItemToList(item: ConversationViewItem?): Boolean {
+    protected fun addItemToList(item: ConversationViewItem): Boolean {
         var added = false
         if (items.contains(item)) {
             MyLog.v(this) { "Note id=" + item.getNoteId() + " is in the list already" }
         } else {
             items.add(item)
-            if (mProgress != null) {
-                mProgress.publish(Integer.toString(items.size))
-            }
+            mProgress?.publish(items.size.toString())
             added = true
         }
         return added
@@ -177,7 +180,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem?, 
         if (requestConversationSync(noteId)) {
             return
         }
-        Note.Companion.requestDownload(ma, noteId, true)
+        Note.requestDownload(ma, noteId, true)
     }
 
     private fun requestConversationSync(noteId_in: Long): Boolean {
@@ -186,7 +189,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem?, 
         }
         var noteId = selectedNoteId
         var conversationOid = MyQuery.noteIdToConversationOid(myContext, noteId)
-        if (conversationOid.isNullOrEmpty() && noteId_in != noteId) {
+        if (conversationOid.isEmpty() && noteId_in != noteId) {
             noteId = noteId_in
             conversationOid = MyQuery.noteIdToConversationOid(myContext, noteId)
         }
@@ -196,15 +199,15 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem?, 
                 MyLog.v(this, "Conversation oid=" + conversationOid + " for noteId=" + noteId
                         + " will be loaded from the Internet")
             }
-            MyServiceManager.Companion.sendForegroundCommand(
-                    CommandData.Companion.newItemCommand(CommandEnum.GET_CONVERSATION, ma, noteId))
+            MyServiceManager.sendForegroundCommand(
+                    CommandData.newItemCommand(CommandEnum.GET_CONVERSATION, ma, noteId))
             return true
         }
         return false
     }
 
-    private class ReplyLevelComparator<T : ConversationViewItem?> : Comparator<T?>, Serializable {
-        override fun compare(lhs: T?, rhs: T?): Int {
+    private class ReplyLevelComparator : Comparator<ConversationViewItem>, Serializable {
+        override fun compare(lhs: ConversationViewItem, rhs: ConversationViewItem): Int {
             var compared = rhs.replyLevel - lhs.replyLevel
             if (compared == 0) {
                 compared = if (lhs.updatedDate == rhs.updatedDate) {
@@ -246,7 +249,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem?, 
         }
     }
 
-    private fun enumerateBranch(oMsg: ConversationViewItem?, order: OrderCounters?, indent: Int) {
+    private fun enumerateBranch(oMsg: ConversationViewItem, order: OrderCounters, indent: Int) {
         if (!addNoteIdToFind(oMsg.getNoteId())) {
             return
         }
@@ -275,9 +278,4 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem?, 
         private const val MAX_INDENT_LEVEL = 19
     }
 
-    init {
-        ma = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
-        this.selectedNoteId = selectedNoteId
-        this.sync = sync || MyPreferences.isSyncWhileUsingApplicationEnabled()
-    }
 }

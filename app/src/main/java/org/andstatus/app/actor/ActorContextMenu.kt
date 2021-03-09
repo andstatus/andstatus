@@ -28,57 +28,59 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.view.MyContextMenu
 
-open class ActorContextMenu(val menuContainer: NoteEditorContainer?, menuGroup: Int) : MyContextMenu(menuContainer.getActivity(), menuGroup) {
-    override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?) {
+open class ActorContextMenu(val menuContainer: NoteEditorContainer, menuGroup: Int) : MyContextMenu(menuContainer.getActivity(), menuGroup) {
+
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
         val method = "onCreateContextMenu"
         super.onCreateContextMenu(menu, v, menuInfo)
         if (getViewItem().isEmpty) {
             return
         }
         val actor = getViewItem().actor
-        if (!myContext.accounts().succeededForSameUser(actor).contains(selectedActingAccount)) {
-            selectedActingAccount = myContext.accounts()
-                    .firstOtherSucceededForSameUser(actor, actingAccount)
+        if (!getMyContext().accounts().succeededForSameUser(actor).contains(getSelectedActingAccount())) {
+            setSelectedActingAccount(
+                    getMyContext().accounts().firstOtherSucceededForSameUser(actor, getActingAccount())
+            )
         }
         var order = 0
         try {
-            ContextMenuHeader(activity, menu)
+            ContextMenuHeader(getActivity(), menu)
                     .setTitle(actor.toActorTitle())
-                    .setSubtitle(actingAccount.accountName)
-            val shortName = actor.username
+                    .setSubtitle(getActingAccount().getAccountName())
+            val shortName = actor.getUsername()
             if (actor.groupType.isGroupLike) {
                 ActorContextMenuItem.GROUP_NOTES.addTo(menu, menuGroup, order++,
-                        StringUtil.format(activity, R.string.group_notes, shortName))
+                        StringUtil.format(getActivity(), R.string.group_notes, shortName))
             }
-            if (actor.isIdentified) {
+            if (actor.isIdentified()) {
                 ActorContextMenuItem.NOTES_BY_ACTOR.addTo(menu, menuGroup, order++,
-                        StringUtil.format(activity, R.string.menu_item_user_messages, shortName))
+                        StringUtil.format(getActivity(), R.string.menu_item_user_messages, shortName))
                 ActorContextMenuItem.FRIENDS.addTo(menu, menuGroup, order++,
-                        StringUtil.format(activity, R.string.friends_of, shortName))
+                        StringUtil.format(getActivity(), R.string.friends_of, shortName))
                 ActorContextMenuItem.FOLLOWERS.addTo(menu, menuGroup, order++,
-                        StringUtil.format(activity, R.string.followers_of, shortName))
-                if (actingAccount.actor.notSameUser(actor)) {
-                    if (actingAccount.isFollowing(actor)) {
+                        StringUtil.format(getActivity(), R.string.followers_of, shortName))
+                if (getActingAccount().actor.notSameUser(actor)) {
+                    if (getActingAccount().isFollowing(actor)) {
                         ActorContextMenuItem.STOP_FOLLOWING.addTo(menu, menuGroup, order++,
-                                StringUtil.format(activity, R.string.menu_item_stop_following_user, shortName))
+                                StringUtil.format(getActivity(), R.string.menu_item_stop_following_user, shortName))
                     } else {
                         ActorContextMenuItem.FOLLOW.addTo(menu, menuGroup, order++,
-                                StringUtil.format(activity, R.string.menu_item_follow_user, shortName))
+                                StringUtil.format(getActivity(), R.string.menu_item_follow_user, shortName))
                     }
-                    if (!menuContainer.getNoteEditor().isVisible) {
+                    if (menuContainer.getNoteEditor()?.isVisible() == false) {
                         ActorContextMenuItem.POST_TO.addTo(menu, menuGroup, order++,
-                                StringUtil.format(activity, R.string.post_to, shortName))
+                                StringUtil.format(getActivity(), R.string.post_to, shortName))
                     }
                 }
-                when (myContext.accounts().succeededForSameUser(actor).size) {
+                when (getMyContext().accounts().succeededForSameUser(actor).size) {
                     0, 1 -> {
                     }
                     2 -> ActorContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT.addTo(menu, menuGroup, order++,
                             StringUtil.format(
-                                    activity, R.string.menu_item_act_as_user,
-                                    myContext.accounts()
-                                            .firstOtherSucceededForSameUser(actor, actingAccount)
-                                            .shortestUniqueAccountName))
+                                    getActivity(), R.string.menu_item_act_as_user,
+                                    getMyContext().accounts()
+                                            .firstOtherSucceededForSameUser(actor, getActingAccount())
+                                            .getShortestUniqueAccountName()))
                     else -> ActorContextMenuItem.ACT_AS.addTo(menu, menuGroup, order++, R.string.menu_item_act_as)
                 }
             }
@@ -90,13 +92,13 @@ open class ActorContextMenu(val menuContainer: NoteEditorContainer?, menuGroup: 
         }
     }
 
-    fun onContextItemSelected(item: MenuItem?): Boolean {
-        val ma = actingAccount
+    fun onContextItemSelected(item: MenuItem): Boolean {
+        val ma = getActingAccount()
         return if (ma.isValid) {
-            val contextMenuItem: ActorContextMenuItem = ActorContextMenuItem.Companion.fromId(item.getItemId())
+            val contextMenuItem: ActorContextMenuItem = ActorContextMenuItem.fromId(item.getItemId())
             MyLog.v(this) {
                 ("onContextItemSelected: " + contextMenuItem + "; account="
-                        + ma.accountName + "; actor=" + getViewItem().actor.uniqueName)
+                        + ma.getAccountName() + "; actor=" + getViewItem().actor.uniqueName)
             }
             contextMenuItem.execute(this)
         } else {
@@ -106,18 +108,18 @@ open class ActorContextMenu(val menuContainer: NoteEditorContainer?, menuGroup: 
 
     fun getViewItem(): ActorViewItem {
         if (mViewItem.isEmpty) {
-            return ActorViewItem.Companion.EMPTY
+            return ActorViewItem.EMPTY
         }
         return if (mViewItem is ActivityViewItem) {
             getViewItem(mViewItem as ActivityViewItem)
         } else mViewItem as ActorViewItem
     }
 
-    protected open fun getViewItem(activityViewItem: ActivityViewItem?): ActorViewItem {
+    protected open fun getViewItem(activityViewItem: ActivityViewItem): ActorViewItem {
         return activityViewItem.getObjActorItem()
     }
 
-    fun getOrigin(): Origin? {
+    fun getOrigin(): Origin {
         return getViewItem().actor.origin
     }
 }

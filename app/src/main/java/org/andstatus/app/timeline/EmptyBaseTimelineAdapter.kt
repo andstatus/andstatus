@@ -21,12 +21,13 @@ import org.andstatus.app.context.MyContextEmpty
 import org.andstatus.app.timeline.meta.Timeline
 
 /** Avoiding null value for an adapter  */
-class EmptyBaseTimelineAdapter<T : ViewItem<T?>?> private constructor() : BaseTimelineAdapter<T?>(MyContextEmpty.EMPTY, Timeline.EMPTY, emptyList()) {
+class EmptyBaseTimelineAdapter<T : ViewItem<T>> private constructor() : BaseTimelineAdapter<T>(MyContextEmpty.EMPTY,
+        Timeline.EMPTY, mutableListOf()) {
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
         return null
     }
 
     companion object {
-        val EMPTY: EmptyBaseTimelineAdapter<*>? = EmptyBaseTimelineAdapter<Any?>()
+        val EMPTY: EmptyBaseTimelineAdapter<*> = EmptyBaseTimelineAdapter<ViewItem<*>>()
     }
 }

@@ -92,7 +92,7 @@ class ActivityViewItem : ViewItem<ActivityViewItem>, Comparable<ActivityViewItem
         return java.lang.Long.compare(updatedDate, other.updatedDate)
     }
 
-    override fun fromCursor(myContext: MyContext, cursor: Cursor?): ActivityViewItem {
+    override fun fromCursor(myContext: MyContext, cursor: Cursor): ActivityViewItem {
         return ActivityViewItem(myContext, cursor)
     }
 

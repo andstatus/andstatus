@@ -18,8 +18,6 @@ package org.andstatus.app.net.http
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 
-import kotlin.jvm.Volatile
-
 /**
  * CLient Keys, obtained dynamically for each host and Origin.
  * @author yvolk@yurivolkov.com
@@ -29,34 +27,35 @@ class OAuthClientKeysDynamic : OAuthClientKeysStrategy {
     var keySuffix: String? = ""
 
     @Volatile
-    var keyConsumerKey: String? = ""
+    var keyConsumerKey: String = ""
 
     @Volatile
-    var keyConsumerSecret: String? = ""
+    var keyConsumerSecret: String = ""
 
     @Volatile
-    var consumerKey: String? = ""
+    private var consumerKey: String = ""
 
     @Volatile
-    var consumerSecret: String? = ""
-    override fun initialize(connectionData: HttpConnectionData?) {
+    private var consumerSecret: String = ""
+
+    override fun initialize(connectionData: HttpConnectionData) {
         if (connectionData.originUrl == null) {
             MyLog.v(this) { "OriginUrl is null; " + connectionData.toString() }
             return
         }
-        keySuffix = java.lang.Long.toString(connectionData.getAccountName().getOrigin().id) +
-                "-" + connectionData.originUrl.host
-        keyConsumerKey = OAuthClientKeysDynamic.Companion.KEY_OAUTH_CLIENT_KEY + keySuffix
-        keyConsumerSecret = OAuthClientKeysDynamic.Companion.KEY_OAUTH_CLIENT_SECRET + keySuffix
+        keySuffix = java.lang.Long.toString(connectionData.getAccountName().origin.id) +
+                "-" + connectionData.originUrl?.host
+        keyConsumerKey = KEY_OAUTH_CLIENT_KEY + keySuffix
+        keyConsumerSecret = KEY_OAUTH_CLIENT_SECRET + keySuffix
         consumerKey = SharedPreferencesUtil.getString(keyConsumerKey, "")
         consumerSecret = SharedPreferencesUtil.getString(keyConsumerSecret, "")
     }
 
-    override fun getConsumerKey(): String? {
+    override fun getConsumerKey(): String {
         return consumerKey
     }
 
-    override fun getConsumerSecret(): String? {
+    override fun getConsumerSecret(): String {
         return consumerSecret
     }
 
@@ -79,7 +78,7 @@ class OAuthClientKeysDynamic : OAuthClientKeysStrategy {
     }
 
     companion object {
-        private val KEY_OAUTH_CLIENT_KEY: String? = "oauth_client_key"
-        private val KEY_OAUTH_CLIENT_SECRET: String? = "oauth_client_secret"
+        private val KEY_OAUTH_CLIENT_KEY: String = "oauth_client_key"
+        private val KEY_OAUTH_CLIENT_SECRET: String = "oauth_client_secret"
     }
 }

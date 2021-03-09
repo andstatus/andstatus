@@ -27,7 +27,7 @@ abstract class SyncLoader<T> {
         // Empty
     }
 
-    abstract fun load(publisher: ProgressPublisher?)
+    abstract fun load(publisher: ProgressPublisher? = null)
     fun getList(): MutableList<T> {
         return items
     }

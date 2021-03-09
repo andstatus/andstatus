@@ -32,9 +32,9 @@ open class IdentifiableImageView : AppCompatImageView {
     @Volatile
     private var loaded = false
 
-    constructor(context: Context?) : super(context) {}
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
-    constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {}
+    constructor(context: Context) : super(context) {}
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {}
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {}
 
     fun getImageId(): Long {
         return imageId
@@ -53,7 +53,7 @@ open class IdentifiableImageView : AppCompatImageView {
         loaded = true
     }
 
-    open fun getCacheName(): CacheName? {
+    open fun getCacheName(): CacheName {
         return CacheName.ATTACHED_IMAGE
     }
 }

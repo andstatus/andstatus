@@ -31,13 +31,11 @@ import java.util.*
 abstract class MyBaseListActivity : MyActivity(), CanSwipeRefreshScrollUpCallback, OnRefreshListener {
     protected var mSwipeLayout: MySwipeRefreshLayout? = null
     private var mPositionOfContextMenu = -1
-    private var mAdapter: ListAdapter? = EmptyBaseTimelineAdapter.Companion.EMPTY
+    private var mAdapter: ListAdapter = EmptyBaseTimelineAdapter.EMPTY
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mSwipeLayout = findSwipeLayout()
-        if (mSwipeLayout != null) {
-            mSwipeLayout.setOnRefreshListener(this)
-        }
+        mSwipeLayout?.setOnRefreshListener(this)
     }
 
     protected fun findSwipeLayout(): MySwipeRefreshLayout? {
@@ -65,7 +63,7 @@ abstract class MyBaseListActivity : MyActivity(), CanSwipeRefreshScrollUpCallbac
         return mAdapter
     }
 
-    open fun getListView(): ListView? {
+    open fun getListView(): ListView {
         return findViewById<View?>(android.R.id.list) as ListView
     }
 
@@ -91,9 +89,9 @@ abstract class MyBaseListActivity : MyActivity(), CanSwipeRefreshScrollUpCallbac
     }
 
     protected fun setCircularSyncIndicator(source: String?, isSyncing: Boolean) {
-        if (mSwipeLayout != null && mSwipeLayout.isRefreshing() != isSyncing && !isFinishing) {
+        if (mSwipeLayout != null && mSwipeLayout?.isRefreshing != isSyncing && !isFinishing) {
             MyLog.v(this) { "$source set Circular Syncing to $isSyncing" }
-            mSwipeLayout.setRefreshing(isSyncing)
+            mSwipeLayout?.isRefreshing = isSyncing
         }
     }
 
