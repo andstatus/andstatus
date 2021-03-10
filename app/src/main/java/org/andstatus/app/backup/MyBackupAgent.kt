@@ -24,8 +24,6 @@ import android.os.ParcelFileDescriptor
 import android.text.format.Formatter
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.R
-import org.andstatus.app.backup.MyBackupDataOutput
-import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyContextState
 import org.andstatus.app.context.MyPreferences
@@ -36,13 +34,13 @@ import org.andstatus.app.database.DatabaseHolder
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.service.MyServiceState
 import org.andstatus.app.util.FileUtils
+import org.andstatus.app.util.FileUtils.newFileOutputStreamWithRetry
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.ZipUtils
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.util.function.Supplier
 
 class MyBackupAgent : BackupAgent() {
     private var activity: Activity? = null
@@ -68,7 +66,7 @@ class MyBackupAgent : BackupAgent() {
 
     @Throws(IOException::class)
     override fun onBackup(oldState: ParcelFileDescriptor?, data: BackupDataOutput?,
-                          newState: ParcelFileDescriptor?) {
+                          newState: ParcelFileDescriptor) {
         if ( MyContextHolder.myContextHolder.getNow().isTestRun()) {
             val logmsg = "onBackup; skipped due to test run"
             MyLog.i(this, logmsg)
@@ -80,9 +78,9 @@ class MyBackupAgent : BackupAgent() {
             throw IOException(logmsg)
         }
         onBackup(
-                MyBackupDescriptor.Companion.fromOldParcelFileDescriptor(oldState, ProgressLogger.Companion.getEmpty("")),
+                MyBackupDescriptor.fromOldParcelFileDescriptor(oldState, ProgressLogger.getEmpty("")),
                 MyBackupDataOutput(getContext(), data),
-                MyBackupDescriptor.Companion.fromEmptyParcelFileDescriptor(newState, ProgressLogger.Companion.getEmpty("")))
+                MyBackupDescriptor.fromEmptyParcelFileDescriptor(newState, ProgressLogger.getEmpty("")))
     }
 
     @Throws(IOException::class)
@@ -90,8 +88,8 @@ class MyBackupAgent : BackupAgent() {
                  newDescriptor: MyBackupDescriptor?) {
         val method = "onBackup"
         // Ignore oldDescriptor for now...
-        MyLog.i(this, method + " started" + (if (data != null) ", folder='" + data.dataFolderName + "'" else "") +
-                ", " + if (oldDescriptor.saved()) "oldState:" + oldDescriptor.toString() else "no old state")
+        MyLog.i(this, method + " started" + (if (data != null) ", folder='" + data.getDataFolderName() + "'" else "") +
+                ", " + if (oldDescriptor?.saved() == true) "oldState:" + oldDescriptor.toString() else "no old state")
          MyContextHolder.myContextHolder.initialize(this).getBlocking()
         backupDescriptor = newDescriptor
         try {
@@ -104,25 +102,25 @@ class MyBackupAgent : BackupAgent() {
             } else {
                 val isServiceAvailableStored = checkAndSetServiceUnavailable()
                 doBackup(data)
-                backupDescriptor.save(getContext())
+                backupDescriptor?.save(getContext())
                 MyLog.v(this) { method + "; newState: " + backupDescriptor.toString() }
                 if (isServiceAvailableStored) {
-                    MyServiceManager.Companion.setServiceAvailable()
+                    MyServiceManager.setServiceAvailable()
                 }
             }
         } finally {
-            MyLog.i(this, method + " ended, " + if (backupDescriptor.saved()) "success" else "failure")
+            MyLog.i(this, method + " ended, " + if (backupDescriptor?.saved() == true) "success" else "failure")
         }
     }
 
     @Throws(IOException::class)
     fun checkAndSetServiceUnavailable(): Boolean {
-        val isServiceAvailableStored: Boolean = MyServiceManager.Companion.isServiceAvailable()
-        MyServiceManager.Companion.setServiceUnavailable()
-        MyServiceManager.Companion.stopService()
+        val isServiceAvailableStored: Boolean = MyServiceManager.isServiceAvailable()
+        MyServiceManager.setServiceUnavailable()
+        MyServiceManager.stopService()
         var ind = 0
         while (true) {
-            if (MyServiceManager.Companion.getServiceState() == MyServiceState.STOPPED) {
+            if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
                 break
             }
             if (ind > 5) {
@@ -135,38 +133,44 @@ class MyBackupAgent : BackupAgent() {
     }
 
     @Throws(IOException::class)
-    private fun doBackup(data: MyBackupDataOutput?) {
-         MyContextHolder.myContextHolder.release(Supplier { "doBackup" })
+    private fun doBackup(data: MyBackupDataOutput) {
+         MyContextHolder.myContextHolder.release { "doBackup" }
         sharedPreferencesBackedUp = backupFile(data,
                 SHARED_PREFERENCES_KEY,
                 SharedPreferencesUtil.defaultSharedPreferencesPath(getContext()))
         if (MyPreferences.isBackupDownloads()) {
-            foldersBackedUp += backupFolder(data, DOWNLOADS_KEY,
-                    MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS))
+            MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS)?.let { folder ->
+                foldersBackedUp += backupFolder(data, DOWNLOADS_KEY, folder)
+            }
         }
-        databasesBackedUp = backupFile(data,
-                DATABASE_KEY + "_" + DatabaseHolder.Companion.DATABASE_NAME,
-                MyStorage.getDatabasePath(DatabaseHolder.Companion.DATABASE_NAME))
+        MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME)?.let { folder ->
+            databasesBackedUp = backupFile(data,
+                    DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME, folder)
+        }
         if (MyPreferences.isBackupLogFiles()) {
-            foldersBackedUp += backupFolder(data, LOG_FILES_KEY,
-                    MyStorage.getDataFilesDir(MyStorage.DIRECTORY_LOGS))
+            MyStorage.getDataFilesDir(MyStorage.DIRECTORY_LOGS)?.let { folder ->
+                foldersBackedUp += backupFolder(data, LOG_FILES_KEY, folder)
+            }
         }
-        accountsBackedUp =  MyContextHolder.myContextHolder.getNow().accounts().onBackup(data, backupDescriptor)
+        accountsBackedUp =  MyContextHolder.myContextHolder.getNow().accounts().onBackup(data, backupDescriptor!!)
     }
 
-    private fun backupFolder(data: MyBackupDataOutput?, key: String?, sourceFolder: File?): Long {
+    private fun backupFolder(data: MyBackupDataOutput, key: String, sourceFolder: File): Long {
         return ZipUtils.zipFiles(sourceFolder, MyStorage.newTempFile("$key.zip"))
-                .map { zipFile: File? ->
+                .map { zipFile: File ->
                     backupFile(data, key, zipFile)
                     zipFile.delete()
-                    1
+                    1L
                 }
-                .onFailure { e: Throwable? -> MyLog.w(this, "Failed to backup folder " + sourceFolder.getAbsolutePath() + ", " + e.message) }
+                .onFailure { e: Throwable ->
+                    MyLog.w(this, "Failed to backup folder " +
+                            sourceFolder.getAbsolutePath() + ", " + e.message)
+                }
                 .getOrElse(0)
     }
 
     @Throws(IOException::class)
-    private fun backupFile(data: MyBackupDataOutput?, key: String?, dataFile: File?): Long {
+    private fun backupFile(data: MyBackupDataOutput, key: String, dataFile: File): Long {
         var backedUpFilesCount: Long = 0
         if (dataFile.exists()) {
             val fileLength = dataFile.length()
@@ -174,8 +178,8 @@ class MyBackupAgent : BackupAgent() {
                 throw FileNotFoundException("File '"
                         + dataFile.getName() + "' is too large for backup: " + formatBytes(fileLength))
             }
-            val bytesToWrite = fileLength as Int
-            data.writeEntityHeader(key, bytesToWrite, MyBackupDataOutput.Companion.getDataFileExtension(dataFile))
+            val bytesToWrite = fileLength.toInt()
+            data.writeEntityHeader(key, bytesToWrite, MyBackupDataOutput.getDataFileExtension(dataFile))
             var bytesWritten = 0
             while (bytesWritten < bytesToWrite) {
                 val bytes = FileUtils.getBytes(dataFile, bytesWritten, MyStorage.FILE_CHUNK_SIZE)
@@ -190,7 +194,7 @@ class MyBackupAgent : BackupAgent() {
                         + filePartiallyWritten(key, dataFile, bytesToWrite, bytesWritten))
             }
             backedUpFilesCount++
-            backupDescriptor.getLogger().logProgress(
+            backupDescriptor?.getLogger()?.logProgress(
                     "Backed up " + fileWritten(key, dataFile, bytesWritten))
         } else {
             MyLog.v(this) { "File doesn't exist key='" + key + "', path='" + dataFile.getAbsolutePath() }
@@ -202,11 +206,11 @@ class MyBackupAgent : BackupAgent() {
         return Formatter.formatFileSize(baseContext, fileLength)
     }
 
-    private fun fileWritten(key: String?, dataFile: File?, bytesWritten: Int): String? {
+    private fun fileWritten(key: String, dataFile: File, bytesWritten: Int): String {
         return filePartiallyWritten(key, dataFile, bytesWritten, bytesWritten)
     }
 
-    private fun filePartiallyWritten(key: String?, dataFile: File?, bytesToWrite: Int, bytesWritten: Int): String? {
+    private fun filePartiallyWritten(key: String, dataFile: File, bytesToWrite: Int, bytesWritten: Int): String {
         return if (bytesWritten == bytesToWrite) {
             ("file:'" + dataFile.getName()
                     + "', key:'" + key + "', size:" + formatBytes(bytesWritten.toLong()))
@@ -220,20 +224,20 @@ class MyBackupAgent : BackupAgent() {
     @Throws(IOException::class)
     override fun onRestore(data: BackupDataInput?, appVersionCode: Int, newState: ParcelFileDescriptor?) {
         onRestore(MyBackupDataInput(getContext(), data), appVersionCode,
-                MyBackupDescriptor.Companion.fromOldParcelFileDescriptor(newState, ProgressLogger.Companion.getEmpty("")))
+                MyBackupDescriptor.fromOldParcelFileDescriptor(newState, ProgressLogger.getEmpty("")))
     }
 
     @Throws(IOException::class)
-    fun onRestore(data: MyBackupDataInput?, appVersionCode: Int, newDescriptor: MyBackupDescriptor?) {
+    fun onRestore(data: MyBackupDataInput?, appVersionCode: Int, newDescriptor: MyBackupDescriptor) {
         val method = "onRestore"
         backupDescriptor = newDescriptor
         MyLog.i(this, method + " started" +
                 ", from app version code '" + appVersionCode + "'" +
-                (if (data == null) "" else ", folder:'" + data.dataFolderName + "'") +
+                (if (data == null) "" else ", folder:'" + data.getDataFolderName() + "'") +
                 ", " + if (newDescriptor.saved()) " newState:" + newDescriptor.toString() else "no new state")
         var success = false
         success = try {
-            when (backupDescriptor.getBackupSchemaVersion()) {
+            when (backupDescriptor?.getBackupSchemaVersion()) {
                 MyBackupDescriptor.Companion.BACKUP_SCHEMA_VERSION_UNKNOWN -> throw FileNotFoundException("No backup information in the backup descriptor")
                 MyBackupDescriptor.Companion.BACKUP_SCHEMA_VERSION -> if (data == null) {
                     throw FileNotFoundException("No BackupDataInput")
@@ -245,7 +249,7 @@ class MyBackupAgent : BackupAgent() {
                     true
                 }
                 else -> throw FileNotFoundException("Incompatible backup version "
-                        + newDescriptor.getBackupSchemaVersion() + ", expected:" + MyBackupDescriptor.Companion.BACKUP_SCHEMA_VERSION)
+                        + newDescriptor.getBackupSchemaVersion() + ", expected:" + MyBackupDescriptor.BACKUP_SCHEMA_VERSION)
             }
         } finally {
             MyLog.i(this, method + " ended, " + if (success) "success" else "failure")
@@ -263,42 +267,48 @@ class MyBackupAgent : BackupAgent() {
         } else if ( MyContextHolder.myContextHolder.getNow().accounts().nonEmpty) {
             throw FileNotFoundException("Cannot restore: AndStatus accounts are present. Please reinstall application before restore")
         }
-        MyServiceManager.Companion.setServiceUnavailable()
-        MyServiceManager.Companion.stopService()
-         MyContextHolder.myContextHolder.release(Supplier { "ensureNoDataIsPresent" })
+        MyServiceManager.setServiceUnavailable()
+        MyServiceManager.stopService()
+         MyContextHolder.myContextHolder.release { "ensureNoDataIsPresent" }
     }
 
     @Throws(IOException::class)
-    private fun doRestore(data: MyBackupDataInput?) {
+    private fun doRestore(data: MyBackupDataInput) {
         restoreSharedPreferences(data)
         if (optionalNextHeader(data, DOWNLOADS_KEY)) {
-            foldersRestored += restoreFolder(data, MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS))
+            MyStorage.getDataFilesDir(MyStorage.DIRECTORY_DOWNLOADS)?.let { folder ->
+                foldersRestored += restoreFolder(data, folder)
+            }
         }
-        assertNextHeader(data, DATABASE_KEY + "_" + DatabaseHolder.Companion.DATABASE_NAME)
-        databasesRestored += restoreFile(data, MyStorage.getDatabasePath(DatabaseHolder.Companion.DATABASE_NAME))
-         MyContextHolder.myContextHolder.release(Supplier { "doRestore, database restored" })
-         MyContextHolder.myContextHolder
+        assertNextHeader(data, DATABASE_KEY + "_" + DatabaseHolder.DATABASE_NAME)
+        MyStorage.getDatabasePath(DatabaseHolder.DATABASE_NAME)?.let { file ->
+            databasesRestored += restoreFile(data, file)
+        }
+        MyContextHolder.myContextHolder.release { "doRestore, database restored" }
+        MyContextHolder.myContextHolder
                 .setOnRestore(true)
                 .initialize(this).getBlocking()
         if ( MyContextHolder.myContextHolder.getNow().state() == MyContextState.UPGRADING && activity != null) {
              MyContextHolder.myContextHolder.upgradeIfNeeded(activity)
         }
         if (optionalNextHeader(data, LOG_FILES_KEY)) {
-            foldersRestored += restoreFolder(data, MyStorage.getDataFilesDir(MyStorage.DIRECTORY_LOGS))
+            MyStorage.getDataFilesDir(MyStorage.DIRECTORY_LOGS)?.let { folder ->
+                foldersRestored += restoreFolder(data, folder)
+            }
         }
-        DataPruner.Companion.setDataPrunedNow()
+        DataPruner.setDataPrunedNow()
         data.setMyContext( MyContextHolder.myContextHolder.getNow())
         assertNextHeader(data, KEY_ACCOUNT)
-        accountsRestored += data.getMyContext().accounts().onRestore(data, backupDescriptor)
-         MyContextHolder.myContextHolder.release(Supplier { "doRestore, accounts restored" })
-         MyContextHolder.myContextHolder.setOnRestore(false)
+        accountsRestored += data.getMyContext()?.accounts()?.onRestore(data, backupDescriptor!!) ?: 0
+         MyContextHolder.myContextHolder.release { "doRestore, accounts restored" }
+        MyContextHolder.myContextHolder.setOnRestore(false)
          MyContextHolder.myContextHolder.initialize(this).getBlocking()
     }
 
     @Throws(IOException::class)
-    private fun restoreSharedPreferences(data: MyBackupDataInput?) {
+    private fun restoreSharedPreferences(data: MyBackupDataInput) {
         MyLog.i(this, "On restoring Shared preferences")
-        FirstActivity.Companion.setDefaultValues(getContext())
+        FirstActivity.setDefaultValues(getContext())
         assertNextHeader(data, SHARED_PREFERENCES_KEY)
         val filename = MyStorage.TEMP_FILENAME_PREFIX + "preferences"
         val tempFile = File(SharedPreferencesUtil.prefsDirectory(getContext()), "$filename.xml")
@@ -309,12 +319,12 @@ class MyBackupAgent : BackupAgent() {
             MyLog.v(this) { "Couldn't delete " + tempFile.absolutePath }
         }
         fixExternalStorage()
-         MyContextHolder.myContextHolder.release(Supplier { "restoreSharedPreferences" })
-         MyContextHolder.myContextHolder.initialize(this).getBlocking()
+        MyContextHolder.myContextHolder.release { "restoreSharedPreferences" }
+        MyContextHolder.myContextHolder.initialize(this).getBlocking()
     }
 
-    private fun getContext(): Context? {
-        return if (activity == null) this else activity
+    private fun getContext(): Context {
+        return activity ?: this
     }
 
     private fun fixExternalStorage() {
@@ -322,12 +332,12 @@ class MyBackupAgent : BackupAgent() {
                 MyStorage.isWritableExternalStorageAvailable(null)) {
             return
         }
-        backupDescriptor.getLogger().logProgress("External storage is not available")
+        backupDescriptor?.getLogger()?.logProgress("External storage is not available")
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false)
     }
 
     @Throws(IOException::class)
-    private fun assertNextHeader(data: MyBackupDataInput?, key: String?) {
+    private fun assertNextHeader(data: MyBackupDataInput, key: String) {
         if (key != previousKey && !data.readNextHeader()) {
             throw FileNotFoundException("Unexpected end of backup on key='$key'")
         }
@@ -338,7 +348,7 @@ class MyBackupAgent : BackupAgent() {
     }
 
     @Throws(IOException::class)
-    private fun optionalNextHeader(data: MyBackupDataInput?, key: String?): Boolean {
+    private fun optionalNextHeader(data: MyBackupDataInput, key: String): Boolean {
         if (data.readNextHeader()) {
             previousKey = data.getKey()
             return key == data.getKey()
@@ -347,21 +357,21 @@ class MyBackupAgent : BackupAgent() {
     }
 
     @Throws(IOException::class)
-    private fun restoreFolder(data: MyBackupDataInput?, targetFolder: File?): Long {
+    private fun restoreFolder(data: MyBackupDataInput, targetFolder: File): Long {
         val tempFile = MyStorage.newTempFile(data.getKey() + ".zip")
         restoreFile(data, tempFile)
         val result = ZipUtils.unzipFiles(tempFile, targetFolder)
         tempFile.delete()
         return result
-                .onSuccess { s: String? -> backupDescriptor.getLogger().logProgress(s) }
-                .onFailure { e: Throwable? -> backupDescriptor.getLogger().logProgress(e.message) }
+                .onSuccess { s: String -> backupDescriptor!!.getLogger().logProgress(s) }
+                .onFailure { e: Throwable -> backupDescriptor!!.getLogger().logProgress(e.message) }
                 .map { s: String? -> 1L }.getOrElse(0L)
     }
 
     /** @return count of restores files
      */
     @Throws(IOException::class)
-    fun restoreFile(data: MyBackupDataInput?, dataFile: File?): Long {
+    fun restoreFile(data: MyBackupDataInput, dataFile: File): Long {
         if (dataFile.exists() && !dataFile.delete()) {
             throw FileNotFoundException("Couldn't delete old file before restore '"
                     + dataFile.getName() + "'")
@@ -385,7 +395,7 @@ class MyBackupAgent : BackupAgent() {
                         + filePartiallyWritten(data.getKey(), dataFile, bytesToWrite, bytesWritten))
             }
         }
-        backupDescriptor.getLogger().logProgress("Restored "
+        backupDescriptor!!.getLogger().logProgress("Restored "
                 + filePartiallyWritten(data.getKey(), dataFile, bytesToWrite, bytesWritten))
         return 1
     }
@@ -411,10 +421,10 @@ class MyBackupAgent : BackupAgent() {
     }
 
     companion object {
-        val SHARED_PREFERENCES_KEY: String? = "shared_preferences"
-        val DOWNLOADS_KEY: String? = "downloads"
-        val DATABASE_KEY: String? = "database"
-        val LOG_FILES_KEY: String? = "logs"
-        val KEY_ACCOUNT: String? = "account"
+        val SHARED_PREFERENCES_KEY: String = "shared_preferences"
+        val DOWNLOADS_KEY: String = "downloads"
+        val DATABASE_KEY: String = "database"
+        val LOG_FILES_KEY: String = "logs"
+        val KEY_ACCOUNT: String = "account"
     }
 }

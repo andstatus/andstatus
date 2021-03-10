@@ -126,9 +126,9 @@ enum class MatchedUri(private val code: Int) {
             uri = Uri.withAppendedPath(uri, ORIGIN_SEGMENT + "/" + timeline.getOrigin().id)
             uri = Uri.withAppendedPath(uri, ACTOR_SEGMENT)
             uri = ContentUris.withAppendedId(uri, timeline.getActorId())
-            if (timeline.getSearchQuery().isNotEmpty()) {
+            if (timeline.searchQuery.isNotEmpty()) {
                 uri = Uri.withAppendedPath(uri, SEARCH_SEGMENT)
-                uri = Uri.withAppendedPath(uri, Uri.encode(timeline.getSearchQuery()))
+                uri = Uri.withAppendedPath(uri, Uri.encode(timeline.searchQuery))
             }
             return uri
         }

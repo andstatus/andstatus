@@ -107,7 +107,7 @@ class CommandTimeline(private val myContext: MyContext,
             data.id = timeline.getId()
             data.timelineType = timeline.timelineType
             data.actorId = timeline.getActorId()
-            data.searchQuery = timeline.getSearchQuery()
+            data.searchQuery = timeline.searchQuery
             return data
         }
 

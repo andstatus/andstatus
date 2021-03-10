@@ -26,6 +26,6 @@ class TimelineFilter internal constructor(timeline: Timeline) {
             SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS, ""))
     val hideRepliesNotToMeOrFriends: Boolean = (timeline.timelineType == TimelineType.HOME
             && SharedPreferencesUtil.getBoolean(MyPreferences.KEY_FILTER_HIDE_REPLIES_NOT_TO_ME_OR_FRIENDS, false))
-    val searchQuery: KeywordsFilter = KeywordsFilter(timeline.getSearchQuery())
+    val searchQuery: KeywordsFilter = KeywordsFilter(timeline.searchQuery)
 
 }

@@ -19,16 +19,18 @@ import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.Audience.Companion.fromNoteId
 import org.andstatus.app.origin.Origin
-import java.util.function.Consumer
 
 /**
  * @author yvolk@yurivolkov.com
  */
-class MentionedActorsLoader(myContext: MyContext?, origin: Origin?, private val selectedNoteId: Long) : ActorsLoader(myContext, ActorsScreenType.ACTORS_OF_NOTE, origin, 0, "") {
-    private val originOfSelectedNote: Origin?
+class MentionedActorsLoader(myContext: MyContext, origin: Origin, private val selectedNoteId: Long) :
+        ActorsLoader(myContext, ActorsScreenType.ACTORS_OF_NOTE, origin, 0, "") {
+    private val originOfSelectedNote: Origin
     override fun loadInternal() {
-        fromNoteId(originOfSelectedNote, selectedNoteId).getNonSpecialActors().forEach(Consumer { actor: Actor? -> addActorToList(actor) })
+        fromNoteId(originOfSelectedNote, selectedNoteId).getNonSpecialActors()
+                .forEach { actor: Actor -> addActorToList(actor) }
         if (!items.isEmpty()) super.loadInternal()
     }
 

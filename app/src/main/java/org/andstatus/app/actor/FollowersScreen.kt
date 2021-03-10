@@ -43,7 +43,7 @@ class FollowersScreen : ActorsScreen() {
                         .setManuallyLaunched(manuallyLaunched))
     }
 
-    override fun newSyncLoader(args: Bundle?): ActorsLoader? {
+    override fun newSyncLoader(args: Bundle?): ActorsLoader {
         return FriendsAndFollowersLoader(myContext, actorsScreenType, parsedUri.getOrigin(myContext),
                 getFollowedActorId(), parsedUri.searchQuery)
     }

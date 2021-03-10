@@ -43,16 +43,17 @@ import org.andstatus.app.view.MyContextMenu
  * e.g. "Actors of the note", "Followers of my account(s)" etc.
  * @author yvolk@yurivolkov.com
  */
-open class ActorsScreen : NoteEditorListActivity<Any?>() {
-    protected var actorsScreenType: ActorsScreenType? = ActorsScreenType.UNKNOWN
+open class ActorsScreen : NoteEditorListActivity<ActorViewItem>() {
+    protected var actorsScreenType: ActorsScreenType = ActorsScreenType.UNKNOWN
     private var contextMenu: ActorContextMenu? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (isFinishing) {
             return
         }
-        actorsScreenType = parsedUri.actorsScreenType
-        contextMenu = ActorContextMenu(this, MyContextMenu.Companion.MENU_GROUP_OBJACTOR)
+        actorsScreenType = parsedUri.getActorsScreenType()
+        contextMenu = ActorContextMenu(this, MyContextMenu.MENU_GROUP_OBJACTOR)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -60,8 +61,8 @@ open class ActorsScreen : NoteEditorListActivity<Any?>() {
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item.getItemId()) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.sync_menu_item -> syncWithInternet(true)
             else -> return super.onOptionsItemSelected(item)
         }
@@ -74,18 +75,18 @@ open class ActorsScreen : NoteEditorListActivity<Any?>() {
 
     open fun syncWithInternet(manuallyLaunched: Boolean) {
         val method = "syncWithInternet"
-        if (parsedUri.isSearch) {
+        if (parsedUri.isSearch()) {
             showSyncing(method, getText(R.string.options_menu_sync))
-            MyServiceManager.Companion.sendManualForegroundCommand(
-                    CommandData.Companion.newSearch(SearchObjects.ACTORS, getMyContext(),
-                            parsedUri.getOrigin(getMyContext()), parsedUri.searchQuery))
+            MyServiceManager.sendManualForegroundCommand(
+                    CommandData.newSearch(SearchObjects.ACTORS, myContext,
+                            parsedUri.getOrigin(myContext), parsedUri.searchQuery))
         } else {
             showList(WhichPage.CURRENT)
             hideSyncing(method)
         }
     }
 
-    override fun newSyncLoader(args: Bundle?): ActorsLoader? {
+    override fun newSyncLoader(args: Bundle?): ActorsLoader {
         return when (actorsScreenType) {
             ActorsScreenType.ACTORS_OF_NOTE -> ActorsOfNoteLoader(myContext, actorsScreenType, parsedUri.getOrigin(myContext),
                     centralItemId, parsedUri.searchQuery)
@@ -94,55 +95,53 @@ open class ActorsScreen : NoteEditorListActivity<Any?>() {
         }
     }
 
-    override fun onContextItemSelected(item: MenuItem?): Boolean {
-        if (contextMenu != null) {
-            contextMenu.onContextItemSelected(item)
-        }
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        contextMenu?.onContextItemSelected(item)
         return super.onContextItemSelected(item)
     }
 
-    override fun newListAdapter(): BaseTimelineAdapter<*>? {
-        return ActorAdapter(contextMenu, R.layout.actor, getListLoader().getList(),
-                Timeline.Companion.fromParsedUri(myContext, parsedUri, ""))
+    override fun newListAdapter(): BaseTimelineAdapter<ActorViewItem> {
+        return ActorAdapter(contextMenu!!, R.layout.actor, getListLoader().getList(),
+                Timeline.fromParsedUri(myContext, parsedUri, ""))
     }
 
-    fun getListLoader(): ActorsLoader? {
-        return loaded as ActorsLoader
+    fun getListLoader(): ActorsLoader {
+        return getLoaded() as ActorsLoader
     }
 
-    override fun getCustomTitle(): CharSequence? {
+    override fun getCustomTitle(): CharSequence {
         mSubtitle = I18n.trimTextAt(MyHtml.htmlToCompactPlainText(getListLoader().getSubtitle()), 80)
         val title = MyStringBuilder()
         if (actorsScreenType.scope == ListScope.ORIGIN) {
             title.withSpace(actorsScreenType.title(this))
             val origin = parsedUri.getOrigin(myContext)
-            if (origin.isValid) {
+            if (origin.isValid()) {
                 title.withSpace(actorsScreenType.scope.timelinePreposition(myContext))
                 title.withSpace(origin.name)
             }
         } else {
-            val actor: Actor = Actor.Companion.load(myContext, parsedUri.actorId)
+            val actor: Actor = Actor.load(myContext, parsedUri.getActorId())
             if (actor.isEmpty) {
                 title.withSpace(actorsScreenType.title(this))
             } else {
                 title.withSpace(actorsScreenType.title(this, actor.actorNameInTimeline))
             }
         }
-        if (!parsedUri.searchQuery.isNullOrEmpty()) {
+        if (parsedUri.searchQuery.isNotEmpty()) {
             title.withSpace("'" + parsedUri.searchQuery + "'")
         }
         return title.toString()
     }
 
-    override fun isCommandToShowInSyncIndicator(commandData: CommandData?): Boolean {
-        return when (commandData.getCommand()) {
+    override fun isCommandToShowInSyncIndicator(commandData: CommandData): Boolean {
+        return when (commandData.command) {
             CommandEnum.GET_ACTOR, CommandEnum.GET_FOLLOWERS, CommandEnum.GET_FRIENDS, CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW, CommandEnum.SEARCH_ACTORS, CommandEnum.GET_AVATAR -> true
             else -> false
         }
     }
 
-    override fun isRefreshNeededAfterExecuting(commandData: CommandData?): Boolean {
-        return when (commandData.getCommand()) {
+    override fun isRefreshNeededAfterExecuting(commandData: CommandData): Boolean {
+        return when (commandData.command) {
             CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW, CommandEnum.SEARCH_ACTORS -> true
             else -> super.isRefreshNeededAfterExecuting(commandData)
         }
@@ -157,18 +156,18 @@ open class ActorsScreen : NoteEditorListActivity<Any?>() {
         if (resultCode != RESULT_OK || data == null) {
             return
         }
-        when (ActivityRequestCode.Companion.fromId(requestCode)) {
+        when (ActivityRequestCode.fromId(requestCode)) {
             ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS -> accountToActAsSelected(data)
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
-    private fun accountToActAsSelected(data: Intent?) {
+    private fun accountToActAsSelected(data: Intent) {
         val ma = myContext.accounts().fromAccountName(
                 data.getStringExtra(IntentExtra.ACCOUNT_NAME.key))
         if (ma.isValid) {
-            contextMenu.setSelectedActingAccount(ma)
-            contextMenu.showContextMenu()
+            contextMenu?.setSelectedActingAccount(ma)
+            contextMenu?.showContextMenu()
         }
     }
 

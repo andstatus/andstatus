@@ -12,31 +12,31 @@ import org.andstatus.app.util.RelativeTime
 
 internal class MyRemoteViewData {
     /** "Text" is what is shown in bold  */
-    var widgetText: String? = ""
+    var widgetText: String = ""
 
     /** And the "Comment" is less visible, below the "Text"  */
-    var widgetComment: String? = ""
+    var widgetComment: String = ""
 
     /** Construct period of counting...  */
-    var widgetTime: String? = ""
+    var widgetTime: String = ""
     var onClickIntent: PendingIntent? = null
-    private fun getViewData(context: Context?, widgetData: MyAppWidgetData?) {
+    private fun getViewData(context: Context, widgetData: MyAppWidgetData) {
         val method = "updateView"
         if (widgetData.dateLastChecked == 0L) {
             MyLog.d(this, "dateLastChecked==0 ?? " + widgetData.toString())
             widgetComment = context.getString(R.string.appwidget_nodata)
         } else {
             widgetTime = formatWidgetTime(context, widgetData.dateSince, widgetData.dateLastChecked)
-            widgetData.events.map.values.stream().filter { detail: NotificationData? -> detail.getCount() > 0 }
-                    .forEach { detail: NotificationData? ->
+            widgetData.events.map.values.stream().filter { detail: NotificationData -> detail.getCount() > 0 }
+                    .forEach { detail: NotificationData ->
                         widgetText += ((if (widgetText.length > 0) "\n" else "")
                                 + context.getText(detail.event.titleResId) + ": " + detail.getCount())
                     }
-            if (widgetData.events.isEmpty) {
-                widgetComment = widgetData.nothingPref
+            if (widgetData.events.isEmpty()) {
+                widgetComment = widgetData.nothingPref ?: ""
             }
         }
-        onClickIntent = widgetData.events.pendingIntent
+        onClickIntent = widgetData.events.getPendingIntent()
         MyLog.v(this) {
             (method + "; text=\"" + widgetText.replace("\n".toRegex(), "; ")
                     + "\"; comment=\"" + widgetComment + "\"")
@@ -44,17 +44,17 @@ internal class MyRemoteViewData {
     }
 
     companion object {
-        fun fromViewData(context: Context?, widgetData: MyAppWidgetData?): MyRemoteViewData {
+        fun fromViewData(context: Context, widgetData: MyAppWidgetData): MyRemoteViewData {
             val viewData = MyRemoteViewData()
             viewData.getViewData(context, widgetData)
             return viewData
         }
 
-        fun formatWidgetTime(context: Context?, startMillis: Long,
-                             endMillis: Long): String? {
-            var formatted: String? = ""
-            var strStart: String? = ""
-            var strEnd: String? = ""
+        fun formatWidgetTime(context: Context, startMillis: Long,
+                             endMillis: Long): String {
+            var formatted = ""
+            var strStart = ""
+            var strEnd = ""
             if (endMillis == 0L) {
                 formatted = "=0 ???"
                 MyLog.w(context, "formatWidgetTime: endMillis == 0")
@@ -63,7 +63,7 @@ internal class MyRemoteViewData {
                 timeStart.set(startMillis)
                 val timeEnd = Time()
                 timeEnd.set(endMillis)
-                var flags = 0
+                var flags: Int
                 if (timeStart.yearDay < timeEnd.yearDay) {
                     strStart = RelativeTime.getDifference(context, startMillis)
                     if (DateUtils.isToday(endMillis)) {

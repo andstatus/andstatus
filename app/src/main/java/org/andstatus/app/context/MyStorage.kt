@@ -69,13 +69,13 @@ object MyStorage {
         var dir: File? = null
         val textToLog = StringBuilder()
         val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
-        if (myContext.context() == null) {
+        if (myContext.isEmpty) {
             textToLog.append("No android.content.Context yet")
         } else {
             if (isStorageExternal(useExternalStorage)) {
                 if (isWritableExternalStorageAvailable(textToLog)) {
                     try {
-                        dir = myContext.baseContext()?.getExternalFilesDir(type)
+                        dir = myContext.baseContext().getExternalFilesDir(type)
                     } catch (e: NullPointerException) {
                         // I noticed this exception once, but that time it was related to SD card malfunction...
                         if (logged) {
@@ -84,7 +84,7 @@ object MyStorage {
                     }
                 }
             } else {
-                dir = myContext.baseContext()?.filesDir
+                dir = myContext.baseContext().filesDir
                 if (!type.isNullOrEmpty()) {
                     dir = File(dir, type)
                 }
@@ -166,17 +166,16 @@ object MyStorage {
         Arrays.stream(it.listFiles()).filter { obj: File -> obj.isFile() }
     }
 
-    fun newTempFile(filename: String?): File? {
+    fun newTempFile(filename: String): File {
         return newMediaFile(TEMP_FILENAME_PREFIX + filename)
     }
 
-    fun newMediaFile(filename: String): File? {
+    fun newMediaFile(filename: String): File {
         val folder = getDataFilesDir(DIRECTORY_DOWNLOADS)
-        folder?.let {
+        return folder?.let {
             if (!it.exists()) it.mkdir()
             return File(it, filename)
-        }
-        return null
+        } ?: throw IllegalStateException("Couldn't create media file")
     }
 
     fun getMediaFilesSize(): Long {

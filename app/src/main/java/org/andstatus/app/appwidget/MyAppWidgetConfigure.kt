@@ -33,6 +33,7 @@ class MyAppWidgetConfigure : Activity() {
     var mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID
     var mAppWidgetTitle: EditText? = null
     var appWidgetData: MyAppWidgetData? = null
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
          MyContextHolder.myContextHolder.initialize(this)
@@ -56,16 +57,17 @@ class MyAppWidgetConfigure : Activity() {
         if (mAppWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
             finish()
         }
-        appWidgetData = MyAppWidgetData.Companion.newInstance(NotificationEvents.Companion.newInstance(), mAppWidgetId)
-        // For now we have only one setting to configure:
-        mAppWidgetTitle.setText(appWidgetData.nothingPref)
+        appWidgetData = MyAppWidgetData.newInstance(NotificationEvents.newInstance(), mAppWidgetId).also {
+            // For now we have only one setting to configure:
+            mAppWidgetTitle?.setText(it.nothingPref)
+        }
     }
 
     var mOnClickListener: View.OnClickListener? = View.OnClickListener { // When the button is clicked, save configuration settings in our prefs
         // and return that they clicked OK.
-        appWidgetData.nothingPref = mAppWidgetTitle.getText().toString()
-        appWidgetData.clearCounters()
-        appWidgetData.save()
+        appWidgetData?.nothingPref = mAppWidgetTitle?.getText().toString()
+        appWidgetData?.clearCounters()
+        appWidgetData?.save()
 
         // Push widget update to surface with newly set prefix
         val appWidgetIds = intArrayOf(mAppWidgetId)
@@ -84,6 +86,6 @@ class MyAppWidgetConfigure : Activity() {
     }
 
     companion object {
-        val TAG: String? = MyAppWidgetConfigure::class.java.simpleName
+        val TAG: String = MyAppWidgetConfigure::class.java.simpleName
     }
 }

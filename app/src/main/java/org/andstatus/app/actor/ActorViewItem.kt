@@ -91,7 +91,7 @@ class ActorViewItem private constructor(val actor: Actor, isEmpty: Boolean) : Vi
         getAvatarFile().showImage(myActivity, imageView)
     }
 
-    override fun fromCursor(myContext: MyContext, cursor: Cursor?): ActorViewItem {
+    override fun fromCursor(myContext: MyContext, cursor: Cursor): ActorViewItem {
         val actor: Actor = Actor.fromCursor(myContext, cursor, true)
         val item = ActorViewItem(actor, false)
         item.populated = true

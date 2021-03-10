@@ -39,7 +39,7 @@ import org.andstatus.app.util.RelativeTime
  */
 class ActivityViewItem : ViewItem<ActivityViewItem>, Comparable<ActivityViewItem> {
     private var id: Long = 0
-    val origin: Origin?
+    val origin: Origin
     val activityType: ActivityType
     private var noteId: Long = 0
     val objActorId: Long

@@ -59,7 +59,8 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     protected var syncingText: CharSequence? = ""
     protected var loadingText: CharSequence? = ""
     private var onRefreshHandled = false
-    private var parsedUri: ParsedUri = ParsedUri.fromUri(Uri.EMPTY)
+    var parsedUri: ParsedUri = ParsedUri.fromUri(Uri.EMPTY)
+        private set
     var myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
     private var configChangeTime: Long = 0
     var myServiceReceiver: MyServiceEventsReceiver? = null
@@ -99,11 +100,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
         }
         myServiceReceiver = MyServiceEventsReceiver(myContext, this)
         parsedUri = ParsedUri.fromIntent(intent)
-        centralItemId = getParsedUri().getItemId()
-    }
-
-    protected fun getParsedUri(): ParsedUri {
-        return parsedUri
+        centralItemId = parsedUri.getItemId()
     }
 
     open fun getListData(): TimelineData<T> {
@@ -289,7 +286,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
         } else {
             adapter.notifyDataSetChanged()
         }
-        adapter.setPositionRestored(LoadableListPosition.Companion.restore(list, adapter, pos))
+        adapter.setPositionRestored(LoadableListPosition.restore(list, adapter, pos))
         if (viewParameters.isViewChanging()) {
             updateScreen()
         }
@@ -313,7 +310,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     protected open fun updateTitle(progress: String?) {
         val title = StringBuilder(getCustomTitle())
         if (!progress.isNullOrEmpty()) {
-            MyStringBuilder.Companion.appendWithSpace(title, progress)
+            MyStringBuilder.appendWithSpace(title, progress)
         }
         setTitle(title.toString())
         setSubtitle(mSubtitle)
@@ -394,7 +391,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
                 }, commandData)
     }
 
-    protected open fun isCommandToShowInSyncIndicator(commandData: CommandData?): Boolean {
+    protected open fun isCommandToShowInSyncIndicator(commandData: CommandData): Boolean {
         return false
     }
 

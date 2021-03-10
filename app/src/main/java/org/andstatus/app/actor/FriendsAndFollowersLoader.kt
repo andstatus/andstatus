@@ -22,14 +22,14 @@ import org.andstatus.app.origin.Origin
 /**
  * @author yvolk@yurivolkov.com
  */
-class FriendsAndFollowersLoader(myContext: MyContext?, actorsScreenType: ActorsScreenType?, origin: Origin?,
-                                centralItemId: Long, searchQuery: String?) : ActorsLoader(myContext, actorsScreenType, origin, centralItemId, searchQuery) {
-    override fun getSqlActorIds(): String? {
+class FriendsAndFollowersLoader(myContext: MyContext, actorsScreenType: ActorsScreenType, origin: Origin,
+                                centralItemId: Long, searchQuery: String) : ActorsLoader(myContext, actorsScreenType, origin, centralItemId, searchQuery) {
+    override fun getSqlActorIds(): String {
         val groupType = if (actorsScreenType == ActorsScreenType.FOLLOWERS) GroupType.FOLLOWERS else GroupType.FRIENDS
-        return " IN (" + GroupMembership.Companion.selectMemberIds(listOf<Long?>(centralActorId), groupType, false) + ")"
+        return " IN (" + GroupMembership.selectMemberIds(mutableListOf(centralActorId), groupType, false) + ")"
     }
 
-    override fun getSubtitle(): String? {
+    override fun getSubtitle(): String {
         return ma.toAccountButtonText()
     }
 }

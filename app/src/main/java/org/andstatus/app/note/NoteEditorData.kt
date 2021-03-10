@@ -56,7 +56,7 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
     private var replyToConversationParticipants = false
     private var replyToMentionedActors = false
     val myContext: MyContext
-    var timeline: Timeline? = Timeline.EMPTY
+    var timeline: Timeline = Timeline.EMPTY
 
     constructor(myAccount: MyAccount, noteId: Long, initialize: Boolean,
                 inReplyToNoteId: Long, andLoad: Boolean) : this(myAccount, toActivity(myAccount, noteId, andLoad)) {
@@ -75,22 +75,22 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
         note.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, noteId))
         note.setSensitive(MyQuery.isSensitive(noteId))
         note.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId))
-        note.setAudience(Audience.Companion.load(activity.accountActor.origin, noteId, Optional.empty()))
+        note.setAudience(Audience.load(activity.accountActor.origin, noteId, Optional.empty()))
         val inReplyToNoteId = if (inReplyToNoteIdIn == 0L) MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId) else inReplyToNoteIdIn
         if (inReplyToNoteId != 0L) {
             var inReplyToActorId = MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_ACTOR_ID, noteId)
             if (inReplyToActorId == 0L) {
                 inReplyToActorId = MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, inReplyToNoteId)
             }
-            val inReplyTo: AActivity = AActivity.Companion.newPartialNote(getMyAccount().actor,
-                    Actor.Companion.load(myContext, inReplyToActorId),
+            val inReplyTo: AActivity = AActivity.newPartialNote(getMyAccount().actor,
+                    Actor.load(myContext, inReplyToActorId),
                     MyQuery.idToOid(myContext, OidEnum.NOTE_OID, inReplyToNoteId, 0),
                     RelativeTime.DATETIME_MILLIS_NEVER, DownloadStatus.UNKNOWN)
             val inReplyToNote = inReplyTo.getNote()
             inReplyToNote.noteId = inReplyToNoteId
             inReplyToNote.setName(MyQuery.noteIdToStringColumnValue(NoteTable.NAME, inReplyToNoteId))
             inReplyToNote.setSummary(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, inReplyToNoteId))
-            inReplyToNote.audience().visibility = Visibility.Companion.fromNoteId(inReplyToNoteId)
+            inReplyToNote.audience().visibility = Visibility.fromNoteId(inReplyToNoteId)
             inReplyToNote.setSensitive(MyQuery.isSensitive(inReplyToNoteId))
             inReplyToNote.setContentStored(MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, inReplyToNoteId))
             note.setInReplyTo(inReplyTo)
@@ -98,7 +98,7 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
         attachedImageFiles = AttachedImageFiles.load(myContext, noteId).also {
             it.list.forEach { imageFile: AttachedMediaFile -> imageFile.preloadImageAsync(CacheName.ATTACHED_IMAGE) }
         }
-        activity.setNote(note.withAttachments(Attachments.Companion.load(myContext, noteId)))
+        activity.setNote(note.withAttachments(Attachments.load(myContext, noteId)))
         MyLog.v(TAG) { "Loaded $this" }
     }
 
@@ -111,24 +111,23 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
         return result
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
-        val other = o as NoteEditorData
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || other !is NoteEditorData) return false
         if (ma != other.ma) return false
         return if (attachedImageFiles != other.attachedImageFiles) false else activity == other.activity
     }
 
     override fun toString(): String {
-        val builder: MyStringBuilder = MyStringBuilder.Companion.of(activity.toString())
-        if (attachedImageFiles?.nonEmpty == true) {
+        val builder: MyStringBuilder = MyStringBuilder.of(activity.toString())
+        if (attachedImageFiles.nonEmpty == true) {
             builder.withComma(attachedImageFiles.toString())
         }
         if (replyToConversationParticipants) {
             builder.withComma("ReplyAll")
         }
         builder.withComma("ma", ma.getAccountName())
-        return MyStringBuilder.Companion.formatKeyValue(this, builder)
+        return MyStringBuilder.formatKeyValue(this, builder)
     }
 
     fun toTestSummary(): String {
@@ -138,8 +137,8 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
         values.put(NoteTable.SUMMARY, activity.getNote().summary)
         values.put(NoteTable.SENSITIVE, activity.getNote().isSensitive())
         values.put(NoteTable.CONTENT, activity.getNote().content)
-        if (attachedImageFiles?.nonEmpty == true) {
-            values.put(DownloadType.ATTACHMENT.name, attachedImageFiles?.list.toString())
+        if (attachedImageFiles.nonEmpty) {
+            values.put(DownloadType.ATTACHMENT.name, attachedImageFiles.list.toString())
         }
         if (replyToConversationParticipants) {
             values.put("Reply", "all")
@@ -148,8 +147,8 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
         if (inReplyTo.nonEmpty) {
             val name = inReplyTo.getNote().getName()
             val summary = inReplyTo.getNote().summary
-            values.put("InReplyTo", (if (!name.isNullOrEmpty()) name + MyStringBuilder.Companion.COMMA else "") +
-                    (if (!summary.isNullOrEmpty()) summary + MyStringBuilder.Companion.COMMA else "") +
+            values.put("InReplyTo", (if (name.isNotEmpty()) name + MyStringBuilder.COMMA else "") +
+                    (if (summary.isNotEmpty()) summary + MyStringBuilder.COMMA else "") +
                     inReplyTo.getNote().content)
         }
         values.put("audience", activity.getNote().audience().toAudienceString(inReplyTo.getAuthor()))
@@ -170,7 +169,7 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
 
     fun addAttachment(uri: Uri, mediaType: Optional<String>) {
         activity.addAttachment(
-                Attachment.Companion.fromUriAndMimeType(uri, mediaType.orElse("")),
+                Attachment.fromUriAndMimeType(uri, mediaType.orElse("")),
                 ma.origin.originType.getMaxAttachmentsToSend()
         )
     }
@@ -195,7 +194,7 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
     }
 
     fun mayBeEdited(): Boolean {
-        return Note.Companion.mayBeEdited(ma.origin.originType, activity.getNote().getStatus())
+        return Note.mayBeEdited(ma.origin.originType, activity.getNote().getStatus())
     }
 
     fun setContent(content: String?, mediaType: TextMediaType): NoteEditorData {
@@ -211,7 +210,7 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
         return attachedImageFiles
     }
 
-    fun setNoteId(noteId: Long): NoteEditorData? {
+    fun setNoteId(noteId: Long): NoteEditorData {
         activity.getNote().noteId = noteId
         return this
     }
@@ -220,17 +219,17 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
         return activity.getNote().noteId
     }
 
-    fun setReplyToConversationParticipants(replyToConversationParticipants: Boolean): NoteEditorData? {
+    fun setReplyToConversationParticipants(replyToConversationParticipants: Boolean): NoteEditorData {
         this.replyToConversationParticipants = replyToConversationParticipants
         return this
     }
 
-    fun setReplyToMentionedActors(replyToMentionedUsers: Boolean): NoteEditorData? {
+    fun setReplyToMentionedActors(replyToMentionedUsers: Boolean): NoteEditorData {
         replyToMentionedActors = replyToMentionedUsers
         return this
     }
 
-    fun addMentionsToText(): NoteEditorData? {
+    fun addMentionsToText(): NoteEditorData {
         if (ma.isValid && getInReplyToNoteId() != 0L) {
             if (replyToConversationParticipants) {
                 addConversationParticipantsBeforeText()
@@ -246,33 +245,33 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
     private fun addConversationParticipantsBeforeText() {
         val loader = ConversationLoaderFactory().getLoader(
                 ConversationViewItem.EMPTY,  MyContextHolder.myContextHolder.getNow(), ma.origin, getInReplyToNoteId(), false)
-        loader.load { _ -> }
-        addActorsBeforeText(loader.list.stream()
-                .filter { obj: ConversationViewItem? -> obj.isActorAConversationParticipant() }
-                .map { o: ConversationViewItem? -> o.author.actor }.collect(Collectors.toList()))
+        loader.load()
+        addActorsBeforeText(loader.getList().stream()
+                .filter { obj: ConversationViewItem -> obj.isActorAConversationParticipant() }
+                .map { o: ConversationViewItem -> o.author.actor }.collect(Collectors.toList()))
     }
 
     private fun addMentionedActorsBeforeText() {
         val loader = MentionedActorsLoader(myContext, ma.origin,
                 getInReplyToNoteId())
-        loader.load(null)
-        addActorsBeforeText(loader.list.stream().map { obj: ActorViewItem? -> obj.getActor() }.collect(Collectors.toList()))
+        loader.load()
+        addActorsBeforeText(loader.getList().stream().map { obj: ActorViewItem -> obj.actor }.collect(Collectors.toList()))
     }
 
-    fun addActorsBeforeText(toMention: MutableList<Actor?>?): NoteEditorData? {
+    fun addActorsBeforeText(toMention: MutableList<Actor>): NoteEditorData {
         if (getInReplyToNoteId() != 0L) {
-            toMention.add(0, Actor.Companion.load(myContext, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, getInReplyToNoteId())))
+            toMention.add(0, Actor.load(myContext, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, getInReplyToNoteId())))
         }
         val mentionedNames: MutableList<String?> = ArrayList()
         mentionedNames.add(ma.actor.uniqueName) // Don't mention the author of this note
         val mentions = MyStringBuilder()
         for (actor in toMention) {
-            if (actor.isEmpty()) continue
-            val name = actor.getUniqueName()
-            if (!name.isNullOrEmpty() && !mentionedNames.contains(name)) {
+            if (actor.isEmpty) continue
+            val name = actor.uniqueName
+            if (name.isNotEmpty() && !mentionedNames.contains(name)) {
                 mentionedNames.add(name)
                 val mentionText = "@$name"
-                if (getContent().isNullOrEmpty() || !(getContent() + " ").contains("$mentionText ")) {
+                if (getContent().isEmpty() || !(getContent() + " ").contains("$mentionText ")) {
                     mentions.withSpace(mentionText)
                 }
             }
@@ -284,14 +283,14 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
     }
 
     fun getInReplyToNoteId(): Long {
-        return activity.getNote().inReplyTo.note.noteId
+        return activity.getNote().getInReplyTo().getNote().noteId
     }
 
-    fun appendMentionedActorToText(mentionedActor: Actor?): NoteEditorData? {
+    fun appendMentionedActorToText(mentionedActor: Actor): NoteEditorData {
         val name = mentionedActor.uniqueName
-        if (!name.isNullOrEmpty()) {
+        if (name.isNotEmpty()) {
             var bodyText2 = "@$name "
-            if (!getContent().isNullOrEmpty() && !(getContent() + " ").contains(bodyText2)) {
+            if (getContent().isNotEmpty() && !(getContent() + " ").contains(bodyText2)) {
                 bodyText2 = getContent().trim { it <= ' ' } + " " + bodyText2
             }
             setContent(bodyText2, TextMediaType.HTML)
@@ -299,38 +298,36 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
         return this
     }
 
-    fun addToAudience(actorId: Long): NoteEditorData? {
-        return addToAudience(Actor.Companion.load( MyContextHolder.myContextHolder.getNow(), actorId))
+    fun addToAudience(actorId: Long): NoteEditorData {
+        return addToAudience(Actor.load( MyContextHolder.myContextHolder.getNow(), actorId))
     }
 
-    fun addToAudience(actor: Actor?): NoteEditorData? {
+    fun addToAudience(actor: Actor): NoteEditorData {
         activity.getNote().audience().add(actor)
         return this
     }
 
-    fun visibility: Visibility? {
-        return activity.getNote().audience().visibility
-    }
+    val visibility: Visibility get() = activity.getNote().audience().visibility
 
     fun setPublicAndFollowers(isPublic: Boolean, isFollowers: Boolean): NoteEditorData {
         if (canChangeVisibility()) {
-            activity.getNote().audience().withVisibility(Visibility.Companion.fromCheckboxes(isPublic, canChangeIsFollowers() && isFollowers))
+            activity.getNote().audience().withVisibility(Visibility.fromCheckboxes(isPublic, canChangeIsFollowers() && isFollowers))
         }
         return this
     }
 
-    fun setTimeline(timeline: Timeline?): NoteEditorData? {
+    fun setTimeline(timeline: Timeline): NoteEditorData {
         this.timeline = timeline
         return this
     }
 
-    fun setName(name: String?): NoteEditorData? {
-        activity.getNote().name = name
+    fun setName(name: String): NoteEditorData {
+        activity.getNote().setName(name)
         return this
     }
 
-    fun setSummary(summary: String?): NoteEditorData? {
-        activity.getNote().summary = summary
+    fun setSummary(summary: String): NoteEditorData {
+        activity.getNote().setSummary(summary)
         return this
     }
 
@@ -345,12 +342,12 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
     }
 
     fun getSensitive(): Boolean {
-        return activity.getNote().isSensitive
+        return activity.getNote().isSensitive()
     }
 
-    fun setSensitive(isSensitive: Boolean): NoteEditorData? {
+    fun setSensitive(isSensitive: Boolean): NoteEditorData {
         if (canChangeIsSensitive()) {
-            activity.getNote().isSensitive = isSensitive
+            activity.getNote().setSensitive(isSensitive)
         }
         return this
     }
@@ -359,37 +356,37 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
         return ma.origin.originType.isSensitiveChangeAllowed
     }
 
-    fun copySensitiveProperty(): NoteEditorData? {
+    fun copySensitiveProperty(): NoteEditorData {
         if (MyQuery.isSensitive(getInReplyToNoteId())) {
-            activity.getNote().isSensitive = true
+            activity.getNote().setSensitive(true)
             StringUtil.optNotEmpty(MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, getInReplyToNoteId()))
-                    .ifPresent { summary: String? -> setSummary(summary) }
+                    .ifPresent { summary: String -> setSummary(summary) }
         }
         return this
     }
 
     companion object {
-        val TAG: String? = NoteEditorData::class.java.simpleName
+        val TAG: String = NoteEditorData::class.java.simpleName
         val EMPTY = newEmpty(MyAccount.EMPTY)
         private fun toActivity(ma: MyAccount, noteId: Long, andLoad: Boolean): AActivity {
             val activity: AActivity
             if (noteId == 0L || !andLoad) {
-                activity = AActivity.Companion.newPartialNote(ma.actor, ma.actor, "", System.currentTimeMillis(),
+                activity = AActivity.newPartialNote(ma.actor, ma.actor, "", System.currentTimeMillis(),
                         DownloadStatus.DRAFT)
             } else {
                 val noteOid = MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId)
-                activity = AActivity.Companion.newPartialNote(ma.actor,
+                activity = AActivity.newPartialNote(ma.actor,
                         ma.actor, noteOid,
                         System.currentTimeMillis(),
-                        DownloadStatus.Companion.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)))
-                activity.id = MyQuery.oidToId(ma.origin.myContext, OidEnum.ACTIVITY_OID,
+                        DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)))
+                activity.setId(MyQuery.oidToId(ma.origin.myContext, OidEnum.ACTIVITY_OID,
                         activity.accountActor.origin.id,
-                        activity.oid)
-                if (activity.id == 0L) {
-                    activity.id = MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, noteId)
+                        activity.getOid()))
+                if (activity.getId() == 0L) {
+                    activity.setId(MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, noteId))
                 }
             }
-            activity.note.noteId = noteId
+            activity.getNote().noteId = noteId
             return activity
         }
 
@@ -410,7 +407,7 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
 
         fun recreateKnownAudience(activity: AActivity) {
             val note = activity.getNote()
-            if (note === Note.Companion.EMPTY) return
+            if (note === Note.EMPTY) return
             val audience = Audience(activity.accountActor.origin).withVisibility(note.audience().visibility)
             audience.add(note.getInReplyTo().getActor())
             audience.addActorsFromContent(note.content, activity.getAuthor(), note.getInReplyTo().getActor())

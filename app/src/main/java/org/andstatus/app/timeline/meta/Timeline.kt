@@ -1009,7 +1009,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         fun fromParsedUri(myContext: MyContext, parsedUri: ParsedUri, searchQueryIn: String?): Timeline {
             val timeline = myContext.timelines()[parsedUri.getTimelineType(), Actor.load(myContext,
                     parsedUri.getActorId()), parsedUri.getOrigin(myContext),
-                    if (searchQueryIn.isNullOrEmpty()) parsedUri.getSearchQuery() else searchQueryIn]
+                    if (searchQueryIn.isNullOrEmpty()) parsedUri.searchQuery else searchQueryIn]
             if (timeline.timelineType == TimelineType.UNKNOWN && parsedUri.getActorsScreenType() == ActorsScreenType.UNKNOWN) {
                 MyLog.w(Timeline::class.java, "fromParsedUri; uri:" + parsedUri.getUri() + "; " + timeline)
             }

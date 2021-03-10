@@ -26,16 +26,23 @@ import org.andstatus.app.util.StringUtil
  */
 enum class ActorsScreenType(
         /** code of the enum that is used in notes  */
-        private val code: String?, @field:StringRes private val titleResId: Int, @field:StringRes private val titleResWithParamsId: Int, val scope: ListScope?) {
+        private val code: String,
+        @field:StringRes private val titleResId: Int,
+        @field:StringRes private val titleResWithParamsId: Int,
+        val scope: ListScope) {
     UNKNOWN("unknown", R.string.unknown_userlist, 0, ListScope.ORIGIN),
 
     /** Actors, related to the selected note, including mentioned actors  */
-    ACTORS_OF_NOTE("actors_of_note", R.string.users_of_message, 0, ListScope.ORIGIN), FOLLOWERS("followers", R.string.followers, R.string.followers_of, ListScope.USER), FRIENDS("friends", R.string.friends, R.string.friends_of, ListScope.USER), ACTORS_AT_ORIGIN("actors", R.string.user_list, 0, ListScope.ORIGIN), GROUPS_AT_ORIGIN("groups", R.string.groups, 0, ListScope.ORIGIN);
+    ACTORS_OF_NOTE("actors_of_note", R.string.users_of_message, 0, ListScope.ORIGIN),
+    FOLLOWERS("followers", R.string.followers, R.string.followers_of, ListScope.USER),
+    FRIENDS("friends", R.string.friends, R.string.friends_of, ListScope.USER),
+    ACTORS_AT_ORIGIN("actors", R.string.user_list, 0, ListScope.ORIGIN),
+    GROUPS_AT_ORIGIN("groups", R.string.groups, 0, ListScope.ORIGIN);
 
     /**
      * String to be used for persistence
      */
-    fun save(): String? {
+    fun save(): String {
         return code
     }
 
@@ -44,7 +51,7 @@ enum class ActorsScreenType(
     }
 
     /** Localized title for UI  */
-    fun title(context: Context?): CharSequence? {
+    fun title(context: Context?): CharSequence {
         return if (titleResId == 0 || context == null) {
             this.code
         } else {
@@ -52,7 +59,7 @@ enum class ActorsScreenType(
         }
     }
 
-    fun title(context: Context?, vararg params: Any?): CharSequence? {
+    fun title(context: Context?, vararg params: Any?): CharSequence {
         return StringUtil.format(context, titleResWithParamsId, *params)
     }
 
@@ -60,7 +67,7 @@ enum class ActorsScreenType(
         /**
          * Returns the enum or UNKNOWN
          */
-        fun load(strCode: String?): ActorsScreenType? {
+        fun load(strCode: String?): ActorsScreenType {
             for (tt in values()) {
                 if (tt.code == strCode) {
                     return tt

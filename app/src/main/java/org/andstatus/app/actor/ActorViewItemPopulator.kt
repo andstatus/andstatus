@@ -29,58 +29,58 @@ import java.util.stream.Collectors
 
 class ActorViewItemPopulator(myActivity: LoadableListActivity<*>, isCombined: Boolean,
                              showAvatars: Boolean) {
-    private val myActivity: LoadableListActivity<*>?
+    private val myActivity: LoadableListActivity<*>
     private val isCombined: Boolean
     private val showAvatars: Boolean
-    fun populateView(view: View?, item: ActorViewItem?, position: Int) {
-        MyUrlSpan.Companion.showText(view, R.id.realname, item.actor.realName, false, false)
-        MyUrlSpan.Companion.showText(view, R.id.username, item.actor.uniqueName, false, false)
+    fun populateView(view: View, item: ActorViewItem, position: Int) {
+        MyUrlSpan.showText(view, R.id.realname, item.actor.getRealName(), false, false)
+        MyUrlSpan.showText(view, R.id.username, item.actor.uniqueName, false, false)
         if (showAvatars) {
             showAvatar(item, view)
         }
-        MyUrlSpan.Companion.showText(view, R.id.homepage, item.actor.homepage, true, false)
-        MyUrlSpan.Companion.showSpannable(view.findViewById<TextView?>(R.id.description),
-                SpanUtil.textToSpannable(item.getDescription(), TextMediaType.UNKNOWN, Audience.Companion.EMPTY), false)
-        MyUrlSpan.Companion.showText(view, R.id.location, item.actor.location, false, false)
-        MyUrlSpan.Companion.showText(view, R.id.profile_url, item.actor.profileUrl, true, false)
+        MyUrlSpan.showText(view, R.id.homepage, item.actor.getHomepage(), true, false)
+        MyUrlSpan.showSpannable(view.findViewById<TextView?>(R.id.description),
+                SpanUtil.textToSpannable(item.getDescription(), TextMediaType.UNKNOWN, Audience.EMPTY), false)
+        MyUrlSpan.showText(view, R.id.location, item.actor.location, false, false)
+        MyUrlSpan.showText(view, R.id.profile_url, item.actor.getProfileUrl(), true, false)
         showCounter(view, R.id.msg_count, item.actor.notesCount)
         showCounter(view, R.id.favorites_count, item.actor.favoritesCount)
         showCounter(view, R.id.following_count, item.actor.followingCount)
         showCounter(view, R.id.followers_count, item.actor.followersCount)
-        MyUrlSpan.Companion.showText(view, R.id.location, item.actor.location, false, false)
+        MyUrlSpan.showText(view, R.id.location, item.actor.location, false, false)
         showMyActorsFollowingTheActor(view, item)
         showMyActorsFollowedByTheActor(view, item)
     }
 
-    private fun showAvatar(item: ActorViewItem?, view: View?) {
+    private fun showAvatar(item: ActorViewItem, view: View) {
         item.showAvatar(myActivity, view.findViewById(R.id.avatar_image))
     }
 
-    private fun showMyActorsFollowingTheActor(view: View?, item: ActorViewItem?) {
-        val builder: MyStringBuilder = MyStringBuilder.Companion.of(
-                item.getMyActorsFollowingTheActor(myActivity.getMyContext())
-                        .map { actor: Actor? -> myActivity.getMyContext().accounts().fromActorOfAnyOrigin(actor).accountName }
+    private fun showMyActorsFollowingTheActor(view: View, item: ActorViewItem) {
+        val builder: MyStringBuilder = MyStringBuilder.of(
+                item.getMyActorsFollowingTheActor(myActivity.myContext)
+                        .map { actor: Actor -> myActivity.myContext.accounts().fromActorOfAnyOrigin(actor).getAccountName() }
                         .collect(Collectors.joining(", ")))
         if (builder.nonEmpty) {
             builder.prependWithSeparator(myActivity.getText(R.string.followed_by), " ")
         }
-        MyUrlSpan.Companion.showText(view, R.id.followed_by, builder.toString(), false, false)
+        MyUrlSpan.showText(view, R.id.followed_by, builder.toString(), false, false)
     }
 
-    private fun showMyActorsFollowedByTheActor(view: View?, item: ActorViewItem?) {
-        val builder: MyStringBuilder = MyStringBuilder.Companion.of(
-                item.getMyActorsFollowedByTheActor(myActivity.getMyContext())
-                        .map { actor: Actor? -> myActivity.getMyContext().accounts().fromActorOfAnyOrigin(actor).accountName }
+    private fun showMyActorsFollowedByTheActor(view: View, item: ActorViewItem) {
+        val builder: MyStringBuilder = MyStringBuilder.of(
+                item.getMyActorsFollowedByTheActor(myActivity.myContext)
+                        .map { actor: Actor -> myActivity.myContext.accounts().fromActorOfAnyOrigin(actor).getAccountName() }
                         .collect(Collectors.joining(", ")))
         if (builder.nonEmpty) {
             builder.prependWithSeparator(myActivity.getText(R.string.follows), " ")
         }
-        MyUrlSpan.Companion.showText(view, R.id.follows, builder.toString(), false, false)
+        MyUrlSpan.showText(view, R.id.follows, builder.toString(), false, false)
     }
 
     companion object {
-        private fun showCounter(parentView: View?, viewId: Int, counter: Long) {
-            MyUrlSpan.Companion.showText(parentView, viewId, if (counter <= 0) "-" else counter.toString(), false, false)
+        private fun showCounter(parentView: View, viewId: Int, counter: Long) {
+            MyUrlSpan.showText(parentView, viewId, if (counter <= 0) "-" else counter.toString(), false, false)
         }
     }
 

@@ -30,7 +30,7 @@ import java.nio.charset.StandardCharsets
 
 /** Allowing to instantiate and to mock BackupDataOutput class  */
 class MyBackupDataOutput {
-    private val context: Context?
+    private val context: Context
     private var docFolder: DocumentFile? = null
     private var backupDataOutput: BackupDataOutput? = null
     private var sizeToWrite = 0
@@ -38,29 +38,26 @@ class MyBackupDataOutput {
     private var docFile: DocumentFile? = null
     private var headerOrdinalNumber = 0
 
-    constructor(context: Context?, backupDataOutput: BackupDataOutput?) {
+    constructor(context: Context, backupDataOutput: BackupDataOutput?) {
         this.context = context
         this.backupDataOutput = backupDataOutput
     }
 
-    constructor(context: Context?, docFolder: DocumentFile?) {
+    constructor(context: Context, docFolder: DocumentFile?) {
         this.context = context
         this.docFolder = docFolder
     }
 
     /** [BackupDataOutput.writeEntityHeader]  */
     @Throws(IOException::class)
-    fun writeEntityHeader(key: String?, dataSize: Int, fileExtension: String?): Int {
+    fun writeEntityHeader(key: String, dataSize: Int, fileExtension: String): Int {
         headerOrdinalNumber++
-        return if (backupDataOutput != null) {
-            backupDataOutput.writeEntityHeader(key, dataSize)
-        } else {
-            writeEntityHeader2(key, dataSize, fileExtension)
-        }
+        return backupDataOutput?.writeEntityHeader(key, dataSize)
+                ?:  writeEntityHeader2(key, dataSize, fileExtension)
     }
 
     @Throws(IOException::class)
-    private fun writeEntityHeader2(key: String?, dataSize: Int, fileExtension: String?): Int {
+    private fun writeEntityHeader2(key: String, dataSize: Int, fileExtension: String): Int {
         MyLog.v(this, "Writing header for '$key', size=$dataSize")
         sizeToWrite = dataSize
         sizeWritten = 0
@@ -70,7 +67,7 @@ class MyBackupDataOutput {
     }
 
     @Throws(IOException::class)
-    private fun writeHeaderFile(key: String?, dataSize: Int, fileExtension: String?) {
+    private fun writeHeaderFile(key: String, dataSize: Int, fileExtension: String) {
         val jso = JSONObject()
         try {
             jso.put(KEY_KEYNAME, key)
@@ -92,18 +89,14 @@ class MyBackupDataOutput {
 
     /** [BackupDataOutput.writeEntityData]  */
     @Throws(IOException::class)
-    fun writeEntityData(data: ByteArray?, size: Int): Int {
-        return if (backupDataOutput != null) {
-            backupDataOutput.writeEntityData(data, size)
-        } else {
-            writeEntityData2(data, size)
-        }
+    fun writeEntityData(data: ByteArray, size: Int): Int {
+        return backupDataOutput?.writeEntityData(data, size) ?: writeEntityData2(data, size)
     }
 
     @Throws(IOException::class)
-    private fun writeEntityData2(data: ByteArray?, size: Int): Int {
-        if (!docFile.exists()) {
-            throw FileNotFoundException("Output document doesn't exist " + docFile.getUri())
+    private fun writeEntityData2(data: ByteArray, size: Int): Int {
+        if (docFile?.exists() != true) {
+            throw FileNotFoundException("Output document doesn't exist " + docFile?.getUri())
         }
         if (size < 0) {
             throw FileNotFoundException("Wrong number of bytes to write: $size")
@@ -125,52 +118,54 @@ class MyBackupDataOutput {
     }
 
     @Throws(IOException::class)
-    private fun appendBytesToFile(data: ByteArray?, size: Int) {
-        getOutputStreamAppend(size).use { fileOutputStream -> BufferedOutputStream(fileOutputStream).use { out -> out.write(data, 0, size) } }
+    private fun appendBytesToFile(data: ByteArray, size: Int) {
+        getOutputStreamAppend(size)?.use { fileOutputStream -> BufferedOutputStream(fileOutputStream).use { out -> out.write(data, 0, size) } }
     }
 
     @Throws(IOException::class)
-    private fun getOutputStreamAppend(size: Int): OutputStream? {
-        MyLog.v(this, "Appending data to document='" + docFile.getName() + "', size=" + size)
-        return context.getContentResolver().openOutputStream(docFile.getUri(), "wa")
-    }
+    private fun getOutputStreamAppend(size: Int): OutputStream? =
+            docFile?.let { df ->
+                MyLog.v(this, "Appending data to document='" + df.name + "', size=" + size)
+                context.contentResolver.openOutputStream(df.uri, "wa")
+            }
 
     @Throws(IOException::class)
-    private fun appendBytesToChild(childName: String?, data: ByteArray?, size: Int) {
+    private fun appendBytesToChild(childName: String, data: ByteArray, size: Int) {
         MyLog.v(this, "Appending data to file='$childName', size=$size")
-        getOutputStreamAppend(childName, size).use { outputStream -> BufferedOutputStream(outputStream).use { out -> out.write(data, 0, size) } }
+        getOutputStreamAppend(childName, size)?.use { outputStream -> BufferedOutputStream(outputStream).use { out -> out.write(data, 0, size) } }
     }
 
     @Throws(IOException::class)
-    private fun getOutputStreamAppend(childName: String?, size: Int): OutputStream? {
+    private fun getOutputStreamAppend(childName: String, size: Int): OutputStream? {
         return context.getContentResolver().openOutputStream(createDocumentIfNeeded(size, childName).getUri(), "wa")
     }
 
     @Throws(IOException::class)
-    private fun createDocumentIfNeeded(dataSize: Int, childName: String?): DocumentFile? {
-        var documentFile = docFolder.findFile(childName)
+    private fun createDocumentIfNeeded(dataSize: Int, childName: String): DocumentFile {
+        var documentFile = docFolder?.findFile(childName)
         if (documentFile == null) {
-            documentFile = docFolder.createFile("", childName)
+            documentFile = docFolder?.createFile("", childName)
         }
         if (documentFile == null) {
-            throw IOException("Couldn't create '" + childName + "' document inside '" + docFolder.getUri() + "'")
+            throw IOException("Couldn't create '" + childName + "' document inside '" + docFolder?.getUri() + "'")
         }
         return documentFile
     }
 
     fun getDataFolderName(): String {
-        return if (docFolder == null) "(empty)" else docFolder.getUri().toString()
+        return docFolder?.getUri()?.toString() ?: "(empty)"
     }
 
     companion object {
-        val HEADER_FILE_SUFFIX: String? = "_header.json"
-        val DATA_FILE_SUFFIX: String? = "_data"
-        val DATA_FILE_EXTENSION_DEFAULT: String? = ".dat"
-        val KEY_KEYNAME: String? = "key"
-        val KEY_DATA_SIZE: String? = "data_size"
-        val KEY_ORDINAL_NUMBER: String? = "ordinal_number"
-        val KEY_FILE_EXTENSION: String? = "file_extension"
-        fun getDataFileExtension(dataFile: File?): String? {
+        val HEADER_FILE_SUFFIX: String = "_header.json"
+        val DATA_FILE_SUFFIX: String = "_data"
+        val DATA_FILE_EXTENSION_DEFAULT: String = ".dat"
+        val KEY_KEYNAME: String = "key"
+        val KEY_DATA_SIZE: String = "data_size"
+        val KEY_ORDINAL_NUMBER: String = "ordinal_number"
+        val KEY_FILE_EXTENSION: String = "file_extension"
+
+        fun getDataFileExtension(dataFile: File): String {
             val name = dataFile.getName()
             val indDot = name.lastIndexOf(".")
             return if (indDot >= 0) {

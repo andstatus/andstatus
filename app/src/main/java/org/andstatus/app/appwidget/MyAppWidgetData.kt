@@ -29,8 +29,8 @@ import org.andstatus.app.util.SharedPreferencesUtil
  *
  * @author yvolk@yurivolkov.com
  */
-class MyAppWidgetData private constructor(val events: NotificationEvents?, private val appWidgetId: Int) {
-    private val prefsFileName: String?
+class MyAppWidgetData private constructor(val events: NotificationEvents, private val appWidgetId: Int) {
+    private val prefsFileName: String = TAG + appWidgetId
     private var isLoaded = false
     var nothingPref: String? = ""
 
@@ -125,7 +125,7 @@ class MyAppWidgetData private constructor(val events: NotificationEvents?, priva
 
         /** Date and time when data was checked on the server last time  */
         private val PREF_DATECHECKED_KEY: String = "datechecked"
-        fun newInstance(events: NotificationEvents?, appWidgetId: Int): MyAppWidgetData {
+        fun newInstance(events: NotificationEvents, appWidgetId: Int): MyAppWidgetData {
             val data = MyAppWidgetData(events, appWidgetId)
             if ( MyContextHolder.myContextHolder.getNow().isReady()) {
                 data.load()
@@ -134,7 +134,4 @@ class MyAppWidgetData private constructor(val events: NotificationEvents?, priva
         }
     }
 
-    init {
-        prefsFileName = TAG + appWidgetId
-    }
 }

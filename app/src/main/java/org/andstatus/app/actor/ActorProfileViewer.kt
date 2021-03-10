@@ -35,12 +35,12 @@ class ActorProfileViewer(container: NoteContextMenuContainer) {
     private fun setContextMenuTo(viewId: Int) {
         val view = profileView.findViewById<View?>(viewId)
         view.setOnCreateContextMenuListener(contextMenu)
-        view.setOnClickListener { obj: View? -> obj.showContextMenu() }
+        view.setOnClickListener { obj: View -> obj.showContextMenu() }
     }
 
     fun ensureView(added: Boolean) {
-        val listView = getActivity().getListView() ?: return
-        if (listView.findViewById<View?>(R.id.actor_profile_wrapper) == null xor added) return
+        val listView = getActivity().getListView()
+        if ( (listView.findViewById<View?>(R.id.actor_profile_wrapper) == null) xor added) return
         if (added) {
             listView.addHeaderView(profileView)
         } else {
@@ -49,21 +49,21 @@ class ActorProfileViewer(container: NoteContextMenuContainer) {
     }
 
     fun populateView() {
-        val item = getActivity().getListData().actorViewItem
+        val item = getActivity().getListData().getActorViewItem()
         populator.populateView(profileView, item, 0)
         showOrigin(item)
-        MyUrlSpan.Companion.showText(profileView, R.id.profileAge, RelativeTime.getDifference(
-                contextMenu.getMyContext().context(), item.actor.updatedDate), false, false)
+        MyUrlSpan.showText(profileView, R.id.profileAge, RelativeTime.getDifference(
+                contextMenu.getMyContext().context(), item.actor.getUpdatedDate()), false, false)
     }
 
-    private fun showOrigin(item: ActorViewItem?) {
-        MyUrlSpan.Companion.showText(profileView, R.id.selectProfileOriginButton, item.actor.origin.name, false, true)
+    private fun showOrigin(item: ActorViewItem) {
+        MyUrlSpan.showText(profileView, R.id.selectProfileOriginButton, item.actor.origin.name, false, true)
         val origins = item.actor.user.knownInOrigins(contextMenu.getMyContext())
         ViewUtils.showView(profileView, R.id.selectProfileOriginDropDown, origins.size > 1)
     }
 
     init {
-        contextMenu = ActorContextMenu(container, MyContextMenu.Companion.MENU_GROUP_ACTOR_PROFILE)
+        contextMenu = ActorContextMenu(container, MyContextMenu.MENU_GROUP_ACTOR_PROFILE)
         populator = ActorViewItemPopulator(getActivity(), false, true)
         profileView = View.inflate(getActivity(), R.layout.actor_profile, null)
         setContextMenuTo(R.id.actor_profile_wrapper)

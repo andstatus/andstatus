@@ -18,7 +18,6 @@ package org.andstatus.app.backup
 import android.app.backup.BackupDataInput
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
-import org.andstatus.app.backup.MyBackupDataOutput
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyStorage
 import org.andstatus.app.util.DocumentFileUtils
@@ -30,54 +29,46 @@ import java.io.IOException
 import java.util.*
 
 class MyBackupDataInput {
-    private val context: Context?
+    private val context: Context
     private var myContext: MyContext? = null
     private var backupDataInput: BackupDataInput? = null
     private var docFolder: DocumentFile? = null
-    private val headers: MutableSet<BackupHeader?>? = TreeSet()
-    private var keysIterator: MutableIterator<BackupHeader?>? = null
+    private val headers: MutableSet<BackupHeader> = TreeSet()
+    private var keysIterator: MutableIterator<BackupHeader>? = null
     private var mHeaderReady = false
     private var dataOffset = 0
     private var header = BackupHeader.getEmpty()
 
-    internal class BackupHeader(var key: String?, var ordinalNumber: Long, var dataSize: Int, var fileExtension: String?) : Comparable<BackupHeader?> {
-        override fun compareTo(another: BackupHeader?): Int {
-            return java.lang.Long.compare(ordinalNumber, another.ordinalNumber)
+    internal class BackupHeader(var key: String, var ordinalNumber: Long, var dataSize: Int, var fileExtension: String) : Comparable<BackupHeader> {
+
+        override fun compareTo(other: BackupHeader): Int {
+            return java.lang.Long.compare(ordinalNumber, other.ordinalNumber)
         }
 
         override fun hashCode(): Int {
             val prime = 31
             var result = 1
             result = prime * result + dataSize
-            result = prime * result + if (fileExtension == null) 0 else fileExtension.hashCode()
-            result = prime * result + if (key == null) 0 else key.hashCode()
-            result = prime * result + (ordinalNumber xor (ordinalNumber ushr 32)) as Int
+            result = prime * result + fileExtension.hashCode()
+            result = prime * result + key.hashCode()
+            result = prime * result + (ordinalNumber xor (ordinalNumber ushr 32)).toInt()
             return result
         }
 
-        override fun equals(o: Any?): Boolean {
-            if (this === o) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) {
                 return true
             }
-            if (o == null || javaClass != o.javaClass) {
+            if (other !is BackupHeader) {
                 return false
             }
-            val other = o as BackupHeader?
             if (dataSize != other.dataSize) {
                 return false
             }
-            if (fileExtension == null) {
-                if (other.fileExtension != null) {
-                    return false
-                }
-            } else if (fileExtension != other.fileExtension) {
+            if (fileExtension != other.fileExtension) {
                 return false
             }
-            if (key == null) {
-                if (other.key != null) {
-                    return false
-                }
-            } else if (key != other.key) {
+            if (key != other.key) {
                 return false
             }
             return if (ordinalNumber != other.ordinalNumber) {
@@ -91,57 +82,54 @@ class MyBackupDataInput {
         }
 
         companion object {
-            fun getEmpty(): BackupHeader? {
+            fun getEmpty(): BackupHeader {
                 return BackupHeader("", 0, 0, "")
             }
 
-            fun fromJson(jso: JSONObject?): BackupHeader? {
+            fun fromJson(jso: JSONObject): BackupHeader {
                 return BackupHeader(
-                        JsonUtils.optString(jso, MyBackupDataOutput.Companion.KEY_KEYNAME),
-                        jso.optLong(MyBackupDataOutput.Companion.KEY_ORDINAL_NUMBER, 0),
-                        jso.optInt(MyBackupDataOutput.Companion.KEY_DATA_SIZE, 0),
-                        JsonUtils.optString(jso, MyBackupDataOutput.Companion.KEY_FILE_EXTENSION, MyBackupDataOutput.Companion.DATA_FILE_EXTENSION_DEFAULT))
+                        JsonUtils.optString(jso, MyBackupDataOutput.KEY_KEYNAME),
+                        jso.optLong(MyBackupDataOutput.KEY_ORDINAL_NUMBER, 0),
+                        jso.optInt(MyBackupDataOutput.KEY_DATA_SIZE, 0),
+                        JsonUtils.optString(jso, MyBackupDataOutput.KEY_FILE_EXTENSION,
+                                MyBackupDataOutput.DATA_FILE_EXTENSION_DEFAULT))
             }
         }
     }
 
-    internal constructor(context: Context?, backupDataInput: BackupDataInput?) {
+    internal constructor(context: Context, backupDataInput: BackupDataInput?) {
         this.context = context
         this.backupDataInput = backupDataInput
     }
 
-    internal constructor(context: Context?, fileFolder: DocumentFile?) {
+    internal constructor(context: Context, fileFolder: DocumentFile) {
         this.context = context
         docFolder = fileFolder
-        for (file in docFolder.listFiles()) {
+        for (file in fileFolder.listFiles()) {
             val filename = file.name
-            if (filename != null && filename.endsWith(MyBackupDataOutput.Companion.HEADER_FILE_SUFFIX)) {
+            if (filename != null && filename.endsWith(MyBackupDataOutput.HEADER_FILE_SUFFIX)) {
                 headers.add(BackupHeader.fromJson(DocumentFileUtils.getJSONObject(context, file)))
             }
         }
         keysIterator = headers.iterator()
     }
 
-    fun listKeys(): MutableSet<BackupHeader?>? {
+    internal fun listKeys(): MutableSet<BackupHeader> {
         return headers
     }
 
     /** [BackupDataInput.readNextHeader]   */
     @Throws(IOException::class)
     fun readNextHeader(): Boolean {
-        return if (backupDataInput != null) {
-            backupDataInput.readNextHeader()
-        } else {
-            readNextHeader2()
-        }
+        return backupDataInput?.readNextHeader() ?: readNextHeader2()
     }
 
     @Throws(IOException::class)
     private fun readNextHeader2(): Boolean {
         mHeaderReady = false
         dataOffset = 0
-        if (keysIterator.hasNext()) {
-            header = keysIterator.next()
+        keysIterator?.takeIf { it.hasNext() }?.let { iterator ->
+            header = iterator.next()
             mHeaderReady = if (header.dataSize > 0) {
                 true
             } else {
@@ -152,15 +140,11 @@ class MyBackupDataInput {
     }
 
     /** [BackupDataInput.getKey]   */
-    fun getKey(): String? {
-        return if (backupDataInput != null) {
-            backupDataInput.getKey()
-        } else {
-            getKey2()
-        }
+    fun getKey(): String {
+        return backupDataInput?.getKey() ?: getKey2()
     }
 
-    private fun getKey2(): String? {
+    private fun getKey2(): String {
         return if (mHeaderReady) {
             header.key
         } else {
@@ -170,11 +154,7 @@ class MyBackupDataInput {
 
     /** [BackupDataInput.getDataSize]   */
     fun getDataSize(): Int {
-        return if (backupDataInput != null) {
-            backupDataInput.getDataSize()
-        } else {
-            getDataSize2()
-        }
+        return backupDataInput?.getDataSize() ?: getDataSize2()
     }
 
     private fun getDataSize2(): Int {
@@ -187,16 +167,12 @@ class MyBackupDataInput {
 
     /** [BackupDataInput.readEntityData]   */
     @Throws(IOException::class)
-    fun readEntityData(data: ByteArray?, offset: Int, size: Int): Int {
-        return if (backupDataInput != null) {
-            backupDataInput.readEntityData(data, offset, size)
-        } else {
-            readEntityData2(data, offset, size)
-        }
+    fun readEntityData(data: ByteArray, offset: Int, size: Int): Int {
+        return backupDataInput?.readEntityData(data, offset, size) ?: readEntityData2(data, offset, size)
     }
 
     @Throws(IOException::class)
-    private fun readEntityData2(data: ByteArray?, offset: Int, size: Int): Int {
+    private fun readEntityData2(data: ByteArray, offset: Int, size: Int): Int {
         var bytesRead = 0
         if (size > MyStorage.FILE_CHUNK_SIZE) {
             throw FileNotFoundException("Size to read is too large: $size")
@@ -215,21 +191,18 @@ class MyBackupDataInput {
     }
 
     @Throws(IOException::class)
-    private fun getBytes(size: Int): ByteArray? {
-        val childName = header.key + MyBackupDataOutput.Companion.DATA_FILE_SUFFIX + header.fileExtension
-        val childDocFile = docFolder.findFile(childName)
-                ?: throw IOException("File '" + childName + "' not found in folder '" + docFolder.getName() + "'")
+    private fun getBytes(size: Int): ByteArray {
+        val childName = header.key + MyBackupDataOutput.DATA_FILE_SUFFIX + header.fileExtension
+        val childDocFile = docFolder?.findFile(childName)
+                ?: throw IOException("File '" + childName + "' not found in folder '" + docFolder?.getName() + "'")
         return DocumentFileUtils.getBytes(context, childDocFile, dataOffset, size)
     }
 
     /** [BackupDataInput.skipEntityData]   */
     @Throws(IOException::class)
+
     fun skipEntityData() {
-        if (backupDataInput != null) {
-            backupDataInput.skipEntityData()
-        } else {
-            skipEntityData2()
-        }
+        backupDataInput?.skipEntityData() ?: skipEntityData2()
     }
 
     private fun skipEntityData2() {
@@ -241,10 +214,10 @@ class MyBackupDataInput {
     }
 
     fun getDataFolderName(): String {
-        return if (docFolder == null) "(empty)" else docFolder.getUri().toString()
+        return docFolder?.getUri()?.toString() ?: "(empty)"
     }
 
-    fun setMyContext(myContext: MyContext?) {
+    fun setMyContext(myContext: MyContext) {
         this.myContext = myContext
     }
 
@@ -253,6 +226,6 @@ class MyBackupDataInput {
     }
 
     companion object {
-        private val ENTITY_HEADER_NOT_READ: String? = "Entity header not read"
+        private val ENTITY_HEADER_NOT_READ: String = "Entity header not read"
     }
 }

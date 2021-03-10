@@ -114,7 +114,7 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
         }
     }
 
-    private class RestoreTask internal constructor(private val activity: RestoreActivity?) : MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.Companion.thatCannotBeShutDown()) {
+    private class RestoreTask internal constructor(private val activity: RestoreActivity) : MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.Companion.thatCannotBeShutDown()) {
         override fun doInBackground2(dataFolder: DocumentFile?): Void? {
             MyBackupManager.Companion.restoreInteractively(dataFolder, activity, activity)
             return null

@@ -28,6 +28,7 @@ import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.timeline.TimelineActivity.Companion.startForTimeline
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
 
@@ -42,80 +43,80 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
         override fun executeAsync(params: Params): NoteEditorData {
             return NoteEditorData.newEmpty(params.menu.getActingAccount())
                     .setPublicAndFollowers(false, false)
-                    .addActorsBeforeText(listOf(params.menu.getViewItem().actor))
+                    .addActorsBeforeText(mutableListOf(params.menu.getViewItem().actor))
         }
 
-        override fun executeOnUiThread(menu: ActorContextMenu?, editorData: NoteEditorData?) {
-            menu.menuContainer.noteEditor.startEditingNote(editorData)
+        override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
+            menu.menuContainer.getNoteEditor()?.startEditingNote(editorData)
         }
     },
     SHARE {
-        override fun executeOnUiThread(menu: ActorContextMenu?, editorData: NoteEditorData?) {
+        override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
             // TODO
         }
     },
     NOTES_BY_ACTOR(true) {
-        override fun executeAsync(params: Params?): NoteEditorData? {
+        override fun executeAsync(params: Params): NoteEditorData {
             startForTimeline(
                     params.menu.getActivity().myContext,
                     params.menu.getActivity(),
                     params.menu.getActivity().myContext.timelines()
-                            .forUserAtHomeOrigin(TimelineType.SENT, params.menu.getViewItem().getActor())
+                            .forUserAtHomeOrigin(TimelineType.SENT, params.menu.getViewItem().actor)
             )
             return super.executeAsync(params)
         }
     },
     GROUP_NOTES(true) {
-        override fun executeAsync(params: Params?): NoteEditorData? {
+        override fun executeAsync(params: Params): NoteEditorData {
             startForTimeline(
                     params.menu.getActivity().myContext,
                     params.menu.getActivity(),
                     params.menu.getActivity().myContext.timelines()
-                            .forUserAtHomeOrigin(TimelineType.GROUP, params.menu.getViewItem().getActor())
+                            .forUserAtHomeOrigin(TimelineType.GROUP, params.menu.getViewItem().actor)
             )
             return super.executeAsync(params)
         }
     },
     FOLLOW {
-        override fun executeOnUiThread(menu: ActorContextMenu?, editorData: NoteEditorData?) {
+        override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
             sendActOnActorCommand(CommandEnum.FOLLOW, menu)
         }
     },
     STOP_FOLLOWING {
-        override fun executeOnUiThread(menu: ActorContextMenu?, editorData: NoteEditorData?) {
+        override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
             sendActOnActorCommand(CommandEnum.UNDO_FOLLOW, menu)
         }
     },
     ACT_AS_FIRST_OTHER_ACCOUNT {
-        override fun executeOnUiThread(menu: ActorContextMenu?, editorData: NoteEditorData?) {
+        override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
             menu.setSelectedActingAccount(menu.getMyContext().accounts()
                     .firstOtherSucceededForSameUser(menu.getViewItem().actor, menu.getActingAccount()))
             menu.showContextMenu()
         }
     },
     ACT_AS {
-        override fun executeOnUiThread(menu: ActorContextMenu?, editorData: NoteEditorData?) {
-            AccountSelector.Companion.selectAccountForActor(menu.getActivity(), menu.menuGroup,
-                    ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, menu.getViewItem().getActor())
+        override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
+            AccountSelector.selectAccountForActor(menu.getActivity(), menu.menuGroup,
+                    ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS, menu.getViewItem().actor)
         }
     },
     FOLLOWERS(true) {
-        override fun executeAsync(params: Params?): NoteEditorData? {
+        override fun executeAsync(params: Params): NoteEditorData {
             setActingAccountForActor(params)
             return super.executeAsync(params)
         }
 
-        override fun executeOnUiThread(menu: ActorContextMenu?, editorData: NoteEditorData?) {
+        override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
             startActorsScreen(menu, ActorsScreenType.FOLLOWERS)
         }
     },
     FRIENDS(true) {
-        override fun executeAsync(params: Params?): NoteEditorData? {
+        override fun executeAsync(params: Params): NoteEditorData {
             setActingAccountForActor(params)
             return super.executeAsync(params)
         }
 
-        override fun executeOnUiThread(menu: ActorContextMenu?, editorData: NoteEditorData?) {
+        override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
             startActorsScreen(menu, ActorsScreenType.FRIENDS)
         }
     },
@@ -127,12 +128,12 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
         return Menu.FIRST + ordinal + 1
     }
 
-    fun addTo(menu: Menu?, menuGroup: Int, order: Int, titleRes: Int) {
-        menu.add(menuGroup, this.id, order, titleRes)
+    fun addTo(menu: Menu, menuGroup: Int, order: Int, titleRes: Int) {
+        menu.add(menuGroup, this.getId(), order, titleRes)
     }
 
-    fun addTo(menu: Menu?, menuGroup: Int, order: Int, title: CharSequence?) {
-        menu.add(menuGroup, this.id, order, title)
+    fun addTo(menu: Menu, menuGroup: Int, order: Int, title: CharSequence) {
+        menu.add(menuGroup, this.getId(), order, title)
     }
 
     fun execute(menu: ActorContextMenu): Boolean {
@@ -149,20 +150,20 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
     }
 
     private fun executeAsync1(params: Params) {
-        AsyncTaskLauncher.Companion.execute(TAG,
-                object : MyAsyncTask<Void?, Void?, NoteEditorData?>(TAG + name, PoolEnum.QUICK_UI) {
-                    override fun doInBackground2(aVoid: Void?): NoteEditorData? {
+        AsyncTaskLauncher.execute(TAG,
+                object : MyAsyncTask<Void?, Void?, NoteEditorData>(TAG + name, PoolEnum.QUICK_UI) {
+                    override fun doInBackground2(aVoid: Void?): NoteEditorData {
                         MyLog.v(this, "execute async started. "
-                                + params.menu.getViewItem().actor.uniqueNameWithOrigin)
+                                + params.menu.getViewItem().actor.getUniqueNameWithOrigin())
                         return executeAsync(params)
                     }
 
-                    override fun onPostExecute2(editorData: NoteEditorData?) {
+                    override fun onPostExecute2(editorData: NoteEditorData) {
                         MyLog.v(this, "execute async ended")
                         executeOnUiThread(params.menu, editorData)
                     }
 
-                    override fun toString(): String? {
+                    override fun toString(): String {
                         return TAG + "; " + super.toString()
                     }
                 }
@@ -170,7 +171,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
     }
 
     open fun executeAsync(params: Params): NoteEditorData {
-        return NoteEditorData.Companion.newEmpty(params.menu.getActingAccount())
+        return NoteEditorData.newEmpty(params.menu.getActingAccount())
     }
 
     open fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
@@ -193,21 +194,21 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
         }
     }
 
-    fun startActorsScreen(menu: ActorContextMenu?, actorsScreenType: ActorsScreenType?) {
-        val uri: Uri = MatchedUri.Companion.getActorsScreenUri(
+    fun startActorsScreen(menu: ActorContextMenu, actorsScreenType: ActorsScreenType) {
+        val uri: Uri = MatchedUri.getActorsScreenUri(
                 actorsScreenType,
                 menu.getOrigin().id,
-                menu.getViewItem().actorId, "")
+                menu.getViewItem().getActorId(), "")
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, "startActorsScreen, $actorsScreenType, uri:$uri")
         }
         menu.getActivity().startActivity(MyAction.VIEW_FOLLOWERS.getIntent(uri))
     }
 
-    fun sendActOnActorCommand(command: CommandEnum?, menu: ActorContextMenu?) {
-        MyServiceManager.Companion.sendManualForegroundCommand(
-                CommandData.Companion.actOnActorCommand(command, menu.getActingAccount(),
-                        menu.getViewItem().actor, menu.getViewItem().actor.username))
+    fun sendActOnActorCommand(command: CommandEnum, menu: ActorContextMenu) {
+        MyServiceManager.sendManualForegroundCommand(
+                CommandData.actOnActorCommand(command, menu.getActingAccount(),
+                        menu.getViewItem().actor, menu.getViewItem().actor.getUsername()))
     }
 
     companion object {

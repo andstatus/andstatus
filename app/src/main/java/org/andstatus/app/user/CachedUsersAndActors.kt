@@ -84,7 +84,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
         MyQuery.get(myContext, sql, function)
     }
 
-    fun reload(actor: Actor?): Actor? {
+    fun reload(actor: Actor): Actor {
         return load(actor.actorId, true)
     }
 

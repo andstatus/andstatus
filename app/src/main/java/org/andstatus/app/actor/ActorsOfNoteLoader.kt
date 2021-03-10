@@ -21,15 +21,15 @@ import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.net.social.Actor
+import org.andstatus.app.net.social.Audience.Companion.fromNoteId
 import org.andstatus.app.origin.Origin
-import java.util.function.Consumer
 
 /**
  * @author yvolk@yurivolkov.com
  */
-class ActorsOfNoteLoader(myContext: MyContext?, actorsScreenType: ActorsScreenType?, origin: Origin?, private val selectedNoteId: Long,
-                         searchQuery: String?) : ActorsLoader(myContext, actorsScreenType, origin, 0, searchQuery) {
-    private val originOfSelectedNote: Origin?
+class ActorsOfNoteLoader(myContext: MyContext, actorsScreenType: ActorsScreenType, origin: Origin, private val selectedNoteId: Long,
+                         searchQuery: String) : ActorsLoader(myContext, actorsScreenType, origin, 0, searchQuery) {
+    private val originOfSelectedNote: Origin
     val noteContent: String?
     override fun loadInternal() {
         addFromNoteRow()
@@ -39,8 +39,10 @@ class ActorsOfNoteLoader(myContext: MyContext?, actorsScreenType: ActorsScreenTy
     private fun addFromNoteRow() {
         addActorIdToList(originOfSelectedNote, MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, selectedNoteId))
         addActorIdToList(originOfSelectedNote, MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedNoteId))
-        fromNoteId(originOfSelectedNote, selectedNoteId).getNonSpecialActors().forEach(Consumer { actor: Actor? -> addActorToList(actor) })
-        MyQuery.getRebloggers( MyContextHolder.myContextHolder.getNow().getDatabase(), origin, selectedNoteId).forEach(Consumer { actor: Actor? -> addActorToList(actor) })
+        fromNoteId(originOfSelectedNote, selectedNoteId).getNonSpecialActors()
+                .forEach { actor: Actor -> addActorToList(actor) }
+        MyQuery.getRebloggers( MyContextHolder.myContextHolder.getNow().getDatabase(), origin, selectedNoteId)
+                .forEach { actor: Actor -> addActorToList(actor) }
     }
 
     override fun getSubtitle(): String? {

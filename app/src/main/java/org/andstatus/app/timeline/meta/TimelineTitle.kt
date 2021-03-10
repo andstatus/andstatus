@@ -70,7 +70,7 @@ class TimelineTitle private constructor(val title: String?, val subTitle: String
             } else {
                 title.withSpace(timeline.timelineType.title(myContext.context()))
                 if (showOrigin(timeline, namesAreHidden)) {
-                    title.withSpaceQuoted(timeline.getSearchQuery())
+                    title.withSpaceQuoted(timeline.searchQuery)
                 }
             }
             return title.toString()
@@ -95,7 +95,7 @@ class TimelineTitle private constructor(val title: String?, val subTitle: String
                 title.withSpace(timeline.getOrigin().name)
             }
             if (!showOrigin(timeline, namesAreHidden)) {
-                title.withSpaceQuoted(timeline.getSearchQuery())
+                title.withSpaceQuoted(timeline.searchQuery)
             }
             if (timeline.isCombined()) {
                 title.withSpace(if (myContext.context() == null) "combined" else myContext.context().getText(R.string.combined_timeline_on))

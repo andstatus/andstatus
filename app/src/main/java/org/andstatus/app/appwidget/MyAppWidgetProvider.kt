@@ -23,7 +23,6 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.notification.NotificationEvents
 import org.andstatus.app.util.MyLog
 import java.util.*
-import java.util.function.Consumer
 import java.util.function.Predicate
 
 /**
@@ -33,21 +32,22 @@ import java.util.function.Predicate
  * @author yvolk@yurivolkov.com
  */
 class MyAppWidgetProvider : AppWidgetProvider() {
-    override fun onReceive(context: Context?, intent: Intent?) {
-        MyLog.i(TAG, "onReceive; action=" + intent.getAction())
+
+    override fun onReceive(context: Context, intent: Intent) {
+        MyLog.i(TAG, "onReceive; action=" + intent.action)
          MyContextHolder.myContextHolder.initialize(context, TAG).getBlocking()
         super.onReceive(context, intent)
     }
 
-    override fun onUpdate(context: Context?, appWidgetManager: AppWidgetManager?, appWidgetIds: IntArray?) {
-        MyLog.v(TAG) { "onUpdate; ids=" + Arrays.toString(appWidgetIds) }
-        AppWidgets.Companion.of(NotificationEvents.Companion.newInstance()).updateViews(appWidgetManager, filterIds(appWidgetIds))
+    override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        MyLog.v(TAG) { "onUpdate; ids=" + appWidgetIds.contentToString() }
+        AppWidgets.of(NotificationEvents.newInstance()).updateViews(appWidgetManager, filterIds(appWidgetIds))
     }
 
-    override fun onDeleted(context: Context?, appWidgetIds: IntArray?) {
-        MyLog.v(TAG) { "onDeleted; ids=" + Arrays.toString(appWidgetIds) }
-        AppWidgets.Companion.of(NotificationEvents.Companion.newInstance()).list()
-                .stream().filter(filterIds(appWidgetIds)).forEach(Consumer { obj: MyAppWidgetData? -> obj.update() })
+    override fun onDeleted(context: Context?, appWidgetIds: IntArray) {
+        MyLog.v(TAG) { "onDeleted; ids=" + appWidgetIds.contentToString() }
+        AppWidgets.of(NotificationEvents.newInstance()).list()
+                .stream().filter(filterIds(appWidgetIds)).forEach { obj: MyAppWidgetData -> obj.update() }
     }
 
     override fun onEnabled(context: Context?) {
@@ -59,9 +59,10 @@ class MyAppWidgetProvider : AppWidgetProvider() {
     }
 
     companion object {
-        private val TAG: String? = MyAppWidgetProvider::class.java.simpleName
-        private fun filterIds(appWidgetIds: IntArray?): Predicate<MyAppWidgetData?>? {
-            return Predicate { data: MyAppWidgetData? -> Arrays.stream(appWidgetIds).boxed().anyMatch { id: Int? -> data.getId() == id } }
+        private val TAG: String = MyAppWidgetProvider::class.java.simpleName
+        private fun filterIds(appWidgetIds: IntArray): Predicate<MyAppWidgetData> {
+            return Predicate { data: MyAppWidgetData -> Arrays.stream(appWidgetIds).boxed()
+                    .anyMatch { id: Int -> data.getId() == id } }
         }
     }
 }

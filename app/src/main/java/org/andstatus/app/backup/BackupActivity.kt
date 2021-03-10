@@ -16,6 +16,7 @@
 package org.andstatus.app.backup
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
@@ -25,7 +26,6 @@ import androidx.documentfile.provider.DocumentFile
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
-import org.andstatus.app.backup.BackupActivity
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.os.AsyncTaskLauncher
@@ -34,8 +34,8 @@ import org.andstatus.app.util.Permissions
 import org.andstatus.app.util.Permissions.PermissionType
 
 class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
-    var backupFolder: DocumentFile? = null
-    var asyncTask: BackupTask? = null
+    private var backupFolder: DocumentFile? = null
+    private var asyncTask: BackupTask? = null
     private var progressCounter = 0
     override fun onCreate(savedInstanceState: Bundle?) {
         mLayoutId = R.layout.backup
@@ -48,10 +48,11 @@ class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     private fun doBackup(v: View?) {
-        if (asyncTask == null || asyncTask.completedBackgroundWork()) {
+        if (asyncTask == null || asyncTask?.completedBackgroundWork() == true) {
             resetProgress()
-            asyncTask = BackupTask(this@BackupActivity)
-            AsyncTaskLauncher<DocumentFile?>().execute(this, asyncTask, getBackupFolder())
+            asyncTask = BackupTask(this@BackupActivity).also {
+                AsyncTaskLauncher<DocumentFile?>().execute(this, it, getBackupFolder())
+            }
         }
     }
 
@@ -64,15 +65,13 @@ class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     private fun getBackupFolder(): DocumentFile {
-        return if (backupFolder != null && backupFolder.exists()) {
-            backupFolder
-        } else MyBackupManager.Companion.getDefaultBackupFolder(this)
+        return backupFolder?.takeIf { it.exists() } ?: MyBackupManager.getDefaultBackupFolder(this)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (ActivityRequestCode.Companion.fromId(requestCode)) {
+        when (ActivityRequestCode.fromId(requestCode)) {
             ActivityRequestCode.SELECT_BACKUP_FOLDER -> if (resultCode == RESULT_OK) {
-                setBackupFolder(DocumentFile.fromTreeUri(this, data.getData()))
+                setBackupFolder(DocumentFile.fromTreeUri(this, data?.getData() ?: Uri.EMPTY))
             }
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
@@ -105,9 +104,11 @@ class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
         }
     }
 
-    private class BackupTask internal constructor(private val activity: BackupActivity?) : MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.LONG_UI) {
+    private class BackupTask(private val activity: BackupActivity) : MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.LONG_UI) {
         override fun doInBackground2(file: DocumentFile?): Void? {
-            MyBackupManager.Companion.backupInteractively(file, activity, activity)
+            file?.let {
+                MyBackupManager.backupInteractively(file, activity, activity)
+            }
             return null
         }
     }

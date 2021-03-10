@@ -27,10 +27,26 @@ import org.andstatus.app.util.StringUtil
 
 class ParsedUri private constructor(intent: Intent?) {
     private val uri: Uri = intent?.data ?: Uri.EMPTY
-    private val matchedUri: MatchedUri? = MatchedUri.fromUri(uri)
-    private val searchQuery: String? = if (intent == null) "" else intent.getStringExtra(IntentExtra.SEARCH_QUERY.key)
+    private val matchedUri: MatchedUri = MatchedUri.fromUri(uri)
+    val searchQuery: String = intent?.getStringExtra(IntentExtra.SEARCH_QUERY.key) ?: ""
+        get() {
+            if (searchQuery.isNotEmpty()) {
+                return field
+            }
+            try {
+                when (matchedUri) {
+                    MatchedUri.TIMELINE_SEARCH, MatchedUri.ACTORS_SEARCH -> return StringUtil.notNull(uri.getPathSegments()[9])
+                    else -> {
+                    }
+                }
+            } catch (e: Exception) {
+                MyLog.d(this, toString(), e)
+            }
+            return ""
+        }
 
-    fun matched(): MatchedUri? {
+
+    fun matched(): MatchedUri {
         return matchedUri
     }
 
@@ -101,7 +117,7 @@ class ParsedUri private constructor(intent: Intent?) {
         return TimelineType.UNKNOWN
     }
 
-    fun getActorsScreenType(): ActorsScreenType? {
+    fun getActorsScreenType(): ActorsScreenType {
         try {
             when (matchedUri) {
                 MatchedUri.ACTORS,
@@ -150,23 +166,7 @@ class ParsedUri private constructor(intent: Intent?) {
     }
 
     fun isSearch(): Boolean {
-        return getSearchQuery().isNotEmpty()
-    }
-
-    fun getSearchQuery(): String {
-        if (!searchQuery.isNullOrEmpty()) {
-            return searchQuery
-        }
-        try {
-            when (matchedUri) {
-                MatchedUri.TIMELINE_SEARCH, MatchedUri.ACTORS_SEARCH -> return StringUtil.notNull(uri.getPathSegments()[9])
-                else -> {
-                }
-            }
-        } catch (e: Exception) {
-            MyLog.d(this, toString(), e)
-        }
-        return ""
+        return searchQuery.isNotEmpty()
     }
 
     fun getItemId(): Long {
