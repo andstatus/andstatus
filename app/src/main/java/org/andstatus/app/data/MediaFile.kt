@@ -28,6 +28,7 @@ import org.andstatus.app.graphics.CachedImage
 import org.andstatus.app.graphics.IdentifiableImageView
 import org.andstatus.app.graphics.ImageCaches
 import org.andstatus.app.graphics.MediaMetadata
+import org.andstatus.app.graphics.MediaMetadata.Companion.fromFilePath
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.util.IdentifiableInstance
 import org.andstatus.app.util.IsEmpty
@@ -45,7 +46,7 @@ abstract class MediaFile internal constructor(filename: String,
     val downloadFile: DownloadFile = DownloadFile(filename)
 
     @Volatile
-    var mediaMetadata: MediaMetadata? = mediaMetadata
+    var mediaMetadata: MediaMetadata = mediaMetadata
         private set
 
     fun isVideo(): Boolean {
@@ -70,7 +71,7 @@ abstract class MediaFile internal constructor(filename: String,
         val taskSuffix = "-sync-" + imageView.myViewId
         if (downloadFile.existed) {
             val cachedImage = getImageFromCache(imageView.getCacheName())
-            if (cachedImage === CachedImage.Companion.BROKEN) {
+            if (cachedImage === CachedImage.BROKEN) {
                 logResult("Broken", taskSuffix)
                 onNoImage(imageView)
                 return
@@ -83,7 +84,7 @@ abstract class MediaFile internal constructor(filename: String,
             }
             logResult("Show blank", taskSuffix)
             showBlankImage(imageView)
-            AsyncTaskLauncher.Companion.execute<ImageLoader, CachedImage>(
+            AsyncTaskLauncher.execute<ImageLoader, CachedImage>(
                     ImageLoader(this, myActivity, imageView),
                     { obj: ImageLoader? -> obj?.load() ?: TryUtils.notFound() },
                     { loader: ImageLoader? -> Consumer { tryImage: Try<CachedImage> -> loader?.set(tryImage) } })
@@ -96,7 +97,7 @@ abstract class MediaFile internal constructor(filename: String,
 
     fun imageMayBeShown(): Boolean {
         return !isEmpty && downloadStatus != DownloadStatus.HARD_ERROR &&
-                (downloadStatus != DownloadStatus.LOADED || mediaMetadata?.nonEmpty == true)
+                (downloadStatus != DownloadStatus.LOADED || mediaMetadata.nonEmpty)
     }
 
     private fun showBlankImage(imageView: ImageView) {
@@ -125,7 +126,7 @@ abstract class MediaFile internal constructor(filename: String,
     fun preloadImageAsync(cacheName: CacheName) {
         val image = getImageFromCache(cacheName)
         if (image == null && downloadFile.existed) {
-            AsyncTaskLauncher.Companion.execute(Runnable { preloadImage(this, cacheName) })
+            AsyncTaskLauncher.execute { preloadImage(this, cacheName) }
         }
     }
 
@@ -164,7 +165,7 @@ abstract class MediaFile internal constructor(filename: String,
                 } catch (e: Exception) {
                     MyLog.d(mediaFile, mediaFile.getMsgLog("Error on setting image", taskSuffix), e)
                 }
-            }.onFailure { e: Throwable? -> logResult("No success onFinish") }
+            }.onFailure { e: Throwable -> logResult("No success onFinish") }
         }
 
         private fun skip(): Boolean {
@@ -205,7 +206,7 @@ abstract class MediaFile internal constructor(filename: String,
         }
         val cacheName = if (this is AvatarFile) CacheName.AVATAR else CacheName.ATTACHED_IMAGE
         val cachedImage = getImageFromCache(cacheName)
-        if (cachedImage === CachedImage.Companion.BROKEN) {
+        if (cachedImage === CachedImage.BROKEN) {
             logResult("Broken", taskSuffix)
             uiConsumer.accept(null)
             return
@@ -216,9 +217,11 @@ abstract class MediaFile internal constructor(filename: String,
         }
         logResult("Show default", taskSuffix)
         uiConsumer.accept(null)
-        AsyncTaskLauncher.Companion.execute<DrawableLoader, Drawable?>(DrawableLoader(this, cacheName),
-                Function { loader: DrawableLoader -> loader.load().map(mapper) },
-                Function { loader: DrawableLoader -> Consumer { drawableTry: Try<Drawable> -> drawableTry.onSuccess(uiConsumer) } })
+        AsyncTaskLauncher.execute(DrawableLoader(this, cacheName),
+            Function<DrawableLoader?, Try<Drawable>> {
+                loader: DrawableLoader? -> loader?.load()?.map(mapper) ?: TryUtils.notFound() },
+            Function {
+                loader: DrawableLoader? -> Consumer { drawableTry: Try<Drawable> -> drawableTry.onSuccess(uiConsumer) } })
     }
 
     private class DrawableLoader(mediaFile: MediaFile?, private val cacheName: CacheName) :
@@ -248,7 +251,7 @@ abstract class MediaFile internal constructor(filename: String,
 
     fun getSize(): Point {
         if (mediaMetadata.isEmpty && downloadFile.existed) {
-            setMediaMetadata(MediaMetadata.Companion.fromFilePath(downloadFile.getFilePath()))
+            mediaMetadata = fromFilePath(downloadFile.getFilePath())
         }
         return mediaMetadata.size()
     }
@@ -259,15 +262,11 @@ abstract class MediaFile internal constructor(filename: String,
         }
 
     override fun toString(): String {
-        return if (isEmpty) "EMPTY" else instanceTag() + ":"
-        +contentType + ", "
-        +mediaMetadata + ", "
-        +downloadFile
+        return if (isEmpty) "EMPTY"
+        else instanceTag() + ":" + contentType + ", " + mediaMetadata + ", " + downloadFile
     }
 
-    override fun getInstanceId(): Long {
-        return getId()
-    }
+    override val instanceId: Long get() = getId()
 
     open fun getId(): Long {
         return downloadId
@@ -287,12 +286,16 @@ abstract class MediaFile internal constructor(filename: String,
         fun preloadImage(mediaFile: MediaFile, cacheName: CacheName) {
             val taskSuffix = "-prel"
             val image = ImageCaches.loadAndGetImage(cacheName, mediaFile)
-            if (image == null) {
-                mediaFile.logResult("Failed to preload", taskSuffix)
-            } else if (image.id != mediaFile.getId()) {
-                mediaFile.logResult("Loaded wrong image.id:" + image.id, taskSuffix)
-            } else {
-                mediaFile.logResult("Preloaded", taskSuffix)
+            when {
+                image == null -> {
+                    mediaFile.logResult("Failed to preload", taskSuffix)
+                }
+                image.id != mediaFile.getId() -> {
+                    mediaFile.logResult("Loaded wrong image.id:" + image.id, taskSuffix)
+                }
+                else -> {
+                    mediaFile.logResult("Preloaded", taskSuffix)
+                }
             }
         }
     }

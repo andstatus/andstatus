@@ -320,15 +320,15 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
 
     private fun showMaximumSizeOfCachedMedia() {
         showMaximumSizeOfCachedMedia(Optional.empty())
-        val backgroundFunc: (MySettingsFragment?) -> Try<Optional<Long>>? = { fragment: MySettingsFragment? ->
+        val backgroundFunc: (MySettingsFragment?) -> Try<Optional<Long>> = { fragment: MySettingsFragment? ->
             Try.success(Optional.of(MyStorage.getMediaFilesSize()))
         }
-        val uiConsumer: (MySettingsFragment?) -> Consumer<Try<Optional<Long>>?> = { fragment: MySettingsFragment? ->
-            { size: Try<Optional<Long>>? ->
-                size?.onSuccess { optSize ->
+        val uiConsumer: (MySettingsFragment?) -> Consumer<Try<Optional<Long>>> = { fragment: MySettingsFragment? ->
+            { size: Try<Optional<Long>> ->
+                size.onSuccess { optSize ->
                     fragment?.showMaximumSizeOfCachedMedia(optSize)
                 }
-            } as Consumer<Try<Optional<Long>>?>
+            } as Consumer<Try<Optional<Long>>>
         }
 
         AsyncTaskLauncher.execute<MySettingsFragment, Optional<Long>>(this, backgroundFunc, uiConsumer)
@@ -408,8 +408,9 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
 
     private fun launchDataPruner(doLaunch: Boolean) {
         if (!doLaunch) return
-        val progressListener = DefaultProgressListener(
-                activity as MyActivity?, R.string.delete_old_data, "DataPruner")
+        val activity = activity as MyActivity? ?: return
+
+        val progressListener = DefaultProgressListener(activity, R.string.delete_old_data, "DataPruner")
         progressListener.setCancelable(true)
         val pruner = DataPruner( MyContextHolder.myContextHolder.getNow())
                 .setLogger(ProgressLogger(progressListener))
@@ -513,8 +514,10 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
     }
 
     private fun launchDataChecker(resultCode: Int) {
+        val activity = activity as MyActivity? ?: return
+
         val progressListener: ProgressLogger.ProgressListener = DefaultProgressListener(
-                activity as MyActivity?, R.string.app_name, "DataChecker")
+                activity, R.string.app_name, "DataChecker")
         progressListener.setCancelable(true)
         DataChecker.fixDataAsync(ProgressLogger(progressListener),
                 checkDataIncludeLong,

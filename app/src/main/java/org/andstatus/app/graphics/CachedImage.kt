@@ -25,8 +25,8 @@ import android.graphics.drawable.Drawable
  */
 class CachedImage {
     val id: Long
-    private val bitmap: Bitmap?
-    protected val source: Drawable?
+    private val bitmap: Bitmap
+    protected val source: Drawable
 
     @Volatile
     private var expired = false
@@ -37,7 +37,7 @@ class CachedImage {
         source = BitmapSubsetDrawable(bitmap, srcRect)
     }
 
-    constructor(imageId: Long, drawable: Drawable?) {
+    constructor(imageId: Long, drawable: Drawable) {
         id = imageId
         bitmap = EMPTY_BITMAP
         source = drawable
@@ -55,26 +55,27 @@ class CachedImage {
         return expired
     }
 
-    fun makeExpired(): CachedImage? {
+    fun makeExpired(): CachedImage {
         expired = true
         return this
     }
 
-    fun getDrawable(): Drawable? {
+    fun getDrawable(): Drawable {
         return source
     }
 
-    fun getImageSize(): Point? {
+    fun getImageSize(): Point {
         return Point(source.getIntrinsicWidth(), source.getIntrinsicHeight())
     }
 
     companion object {
-        val BITMAP_CONFIG: Bitmap.Config? = Bitmap.Config.ARGB_8888
-        val EMPTY_RECT: Rect? = Rect(0, 0, 0, 0)
+        val BITMAP_CONFIG: Bitmap.Config = Bitmap.Config.ARGB_8888
+        val EMPTY_RECT: Rect = Rect(0, 0, 0, 0)
         val EMPTY_BITMAP = newBitmap(1)
         val EMPTY = CachedImage(-1, EMPTY_BITMAP, EMPTY_RECT).makeExpired()
         val BROKEN = CachedImage(-2, EMPTY_BITMAP, EMPTY_RECT).makeExpired()
-        private fun newBitmap(size: Int): Bitmap? {
+
+        private fun newBitmap(size: Int): Bitmap {
             return Bitmap.createBitmap(size, size, BITMAP_CONFIG)
         }
     }

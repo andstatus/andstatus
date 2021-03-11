@@ -71,13 +71,13 @@ object ContentValuesUtils {
         return keyValue
     }
 
-    fun putNotEmpty(values: ContentValues?, key: String?, value: String?) {
+    fun putNotEmpty(values: ContentValues, key: String, value: String?) {
         if (!value.isNullOrEmpty()) {
             values.put(key, value)
         }
     }
 
-    fun putNotZero(values: ContentValues?, key: String?, value: Long?) {
+    fun putNotZero(values: ContentValues, key: String, value: Long?) {
         if (value != null && value != 0L) {
             values.put(key, value)
         }

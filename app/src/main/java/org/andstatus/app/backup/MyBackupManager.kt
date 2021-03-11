@@ -154,7 +154,7 @@ internal class MyBackupManager(private val activity: Activity, progressListener:
                 backupManager.prepareForBackup(backupFolder)
                 backupManager.backup()
             } catch (e: Throwable) {
-                backupManager.progressLogger.logProgress(e.message)
+                backupManager.progressLogger.logProgress(e.message ?: "(some error)")
                 backupManager.progressLogger.logFailure()
                 MyLog.w(backupManager, "Backup failed", e)
             }
@@ -181,7 +181,7 @@ internal class MyBackupManager(private val activity: Activity, progressListener:
                 }
             } catch (e: Throwable) {
                 MyLog.ignored(backupManager, e)
-                backupManager.progressLogger.logProgress(e.message)
+                backupManager.progressLogger.logProgress(e.message ?: "(some error)")
                 backupManager.progressLogger.logFailure()
             }
         }

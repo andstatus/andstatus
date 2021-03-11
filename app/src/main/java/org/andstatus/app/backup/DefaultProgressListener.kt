@@ -21,25 +21,22 @@ import android.widget.Toast
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
-import org.andstatus.app.backup.DefaultProgressListener
-import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyContextState
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.util.DialogFactory
 import org.andstatus.app.util.MyLog
 import java.util.*
-import java.util.function.Consumer
 
 /**
  * @author yvolk@yurivolkov.com
  * Only one "progressing" process is allowed. all previous are being marked as cancelled
  */
-class DefaultProgressListener(activity: MyActivity?, defaultTitleId: Int, logTag: String?) : ProgressLogger.ProgressListener, DialogInterface.OnDismissListener {
+class DefaultProgressListener(activity: MyActivity, defaultTitleId: Int, logTag: String) : ProgressLogger.ProgressListener, DialogInterface.OnDismissListener {
     @Volatile
     private var activity: Optional<MyActivity>
     private val defaultTitle: CharSequence?
-    private val logTag: String?
+    private val logTag: String
     private val iStartedAt: Long
     private val upgradingText: CharSequence?
     private val cancelText: CharSequence?
@@ -60,44 +57,44 @@ class DefaultProgressListener(activity: MyActivity?, defaultTitleId: Int, logTag
         this.isCancelable = isCancelable
     }
 
-    override fun onProgressMessage(messageIn: CharSequence?) {
+    override fun onProgressMessage(messageIn: CharSequence) {
         val message = formatMessage(messageIn)
         showMessage(message)
-        if (!isCancelled() && ProgressLogger.Companion.startedAt.get() != iStartedAt) {
+        if (!isCancelled() && ProgressLogger.startedAt.get() != iStartedAt) {
             showMessage("New progress started, cancelling this...")
             cancel()
         }
     }
 
-    private fun showMessage(message: String?) {
+    private fun showMessage(message: String) {
         if (!isCancelled() && activity.isPresent()) {
-            activity.ifPresent(Consumer { activity: MyActivity? -> showMessage(activity, message) })
+            activity.ifPresent { activity: MyActivity -> showMessage(activity, message) }
         } else {
             MyLog.i(logTag, message)
         }
     }
 
-    private fun showMessage(activity: MyActivity?, message: String?) {
+    private fun showMessage(activity: MyActivity, message: String) {
         val method = "showMessage"
         try {
-            activity.runOnUiThread(Runnable {
+            activity.runOnUiThread {
                 var shown = false
                 if (activity.isMyResumed()) {
                     try {
                         if (progressDialog == null) {
-                            progressDialog = ProgressDialog(activity, ProgressDialog.STYLE_SPINNER)
-                            progressDialog.setOnDismissListener(this@DefaultProgressListener)
-                            progressDialog.setTitle(if ( MyContextHolder.myContextHolder.getNow().state() == MyContextState.UPGRADING) upgradingText else defaultTitle)
-                            progressDialog.setMessage(message)
-                            if (isCancelable && !isCancelled()) {
-                                progressDialog.setCancelable(false)
-                                progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
-                                        cancelText,
-                                        DialogInterface.OnClickListener { dialog: DialogInterface?, which: Int -> cancel() })
+                            progressDialog = ProgressDialog(activity, ProgressDialog.STYLE_SPINNER).also { dialog ->
+                                dialog.setOnDismissListener(this@DefaultProgressListener)
+                                dialog.setTitle(if (MyContextHolder.myContextHolder.getNow().state() == MyContextState.UPGRADING) upgradingText else defaultTitle)
+                                dialog.setMessage(message)
+                                if (isCancelable && !isCancelled()) {
+                                    dialog.setCancelable(false)
+                                    dialog.setButton(DialogInterface.BUTTON_NEGATIVE, cancelText)
+                                        { dialog1: DialogInterface, which: Int -> cancel() }
+                                }
+                                dialog.show()
                             }
-                            progressDialog.show()
                         } else {
-                            progressDialog.setMessage(message)
+                            progressDialog?.setMessage(message)
                         }
                         shown = true
                     } catch (e: Exception) {
@@ -107,13 +104,13 @@ class DefaultProgressListener(activity: MyActivity?, defaultTitleId: Int, logTag
                 if (!shown) {
                     showToast(message)
                 }
-            })
+            }
         } catch (e: Exception) {
             MyLog.d(logTag, "$method '$message'", e)
         }
     }
 
-    private fun formatMessage(message: CharSequence?): String? {
+    private fun formatMessage(message: CharSequence?): String {
         return (if (isCancelled()) cancelText.toString() + ": " else "") + message
     }
 
@@ -138,17 +135,17 @@ class DefaultProgressListener(activity: MyActivity?, defaultTitleId: Int, logTag
 
     override fun onComplete(success: Boolean) {
         isCompleted = true
-        activity.ifPresent(Consumer { activity: MyActivity? ->
+        activity.ifPresent { activity: MyActivity ->
             try {
-                activity.runOnUiThread(Runnable {
+                activity.runOnUiThread {
                     freeResources()
-                    FirstActivity.Companion.goHome(activity)
+                    FirstActivity.goHome(activity)
                     activity.finish()
-                })
+                }
             } catch (e: Exception) {
                 MyLog.d(logTag, "onComplete $success", e)
             }
-        })
+        }
     }
 
     override fun cancel() {
@@ -165,7 +162,7 @@ class DefaultProgressListener(activity: MyActivity?, defaultTitleId: Int, logTag
     }
 
     private fun freeResources() {
-        if (!activity.isPresent() || MyAsyncTask.Companion.isUiThread()) {
+        if (!activity.isPresent() || MyAsyncTask.isUiThread()) {
             DialogFactory.dismissSafely(progressDialog)
         } else {
             try {
@@ -182,14 +179,14 @@ class DefaultProgressListener(activity: MyActivity?, defaultTitleId: Int, logTag
         return isCancelled || isCompleted
     }
 
-    override fun getLogTag(): String? {
+    override fun getLogTag(): String {
         return logTag
     }
 
     init {
         this.activity = Optional.ofNullable(activity)
         this.logTag = logTag
-        iStartedAt = ProgressLogger.Companion.newStartingTime()
+        iStartedAt = ProgressLogger.newStartingTime()
         defaultTitle = activity.getText(defaultTitleId)
         upgradingText = activity.getText(R.string.label_upgrading)
         cancelText = activity.getText(android.R.string.cancel)

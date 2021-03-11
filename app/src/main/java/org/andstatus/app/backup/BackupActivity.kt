@@ -37,6 +37,7 @@ class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
     private var backupFolder: DocumentFile? = null
     private var asyncTask: BackupTask? = null
     private var progressCounter = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         mLayoutId = R.layout.backup
         super.onCreate(savedInstanceState)
@@ -139,7 +140,7 @@ class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
          MyContextHolder.myContextHolder.getNow().setInForeground(false)
     }
 
-    override fun onProgressMessage(message: CharSequence?) {
+    override fun onProgressMessage(message: CharSequence) {
         runOnUiThread { addProgressMessage(message) }
     }
 }

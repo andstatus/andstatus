@@ -23,6 +23,7 @@ import org.andstatus.app.backup.ProgressLogger
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MyStorage
+import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.data.DownloadData.ConsumedSummary
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.ActorTable
@@ -43,17 +44,16 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Consumer
 import java.util.function.Function
-import java.util.function.Supplier
 
 /**
  * Clean database from outdated information
  * old Notes, log files...
  */
 class DataPruner(private val myContext: MyContext) {
-    private val db: SQLiteDatabase?
-    private val mContentResolver: ContentResolver?
+    private val db: SQLiteDatabase? = myContext.getDatabase()
+    private val mContentResolver: ContentResolver = myContext.context().contentResolver
     private var pruneNow = false
-    private var logger: ProgressLogger? = ProgressLogger.Companion.getEmpty(TAG)
+    private var logger: ProgressLogger = ProgressLogger.getEmpty(TAG)
     private var mDeleted: Long = 0
     private var latestTimestamp: Long = 0
     fun setPruneNow(): DataPruner {
@@ -61,7 +61,7 @@ class DataPruner(private val myContext: MyContext) {
         return this
     }
 
-    fun setLogger(logger: ProgressLogger?): DataPruner {
+    fun setLogger(logger: ProgressLogger): DataPruner {
         this.logger = logger
         return this
     }
@@ -103,16 +103,16 @@ class DataPruner(private val myContext: MyContext) {
         val sp = SharedPreferencesUtil.getDefaultSharedPreferences()
 
         // Don't delete my activities
-        val myActorIds: SqlIds = SqlIds.Companion.myActorsIds()
-        val sqlNotMyActivity = ActivityTable.TABLE_NAME + "." + ActivityTable.ACTOR_ID + myActorIds.notSql
+        val myActorIds: SqlIds = SqlIds.myActorsIds()
+        val sqlNotMyActivity = ActivityTable.TABLE_NAME + "." + ActivityTable.ACTOR_ID + myActorIds.getNotSql()
         val sqlNotLatestActivityByActor = (ActivityTable.TABLE_NAME + "." + BaseColumns._ID + " NOT IN("
                 + " SELECT " + ActorTable.ACTOR_ACTIVITY_ID + " FROM " + ActorTable.TABLE_NAME + ")")
-        val maxDays = sp.getString(MyPreferences.KEY_HISTORY_TIME, "3").toInt().toLong()
+        val maxDays = sp?.getString(MyPreferences.KEY_HISTORY_TIME, "3")?.toLong() ?: 0
         latestTimestamp = getLatestTimestamp(maxDays)
         var nActivities: Long = 0
         var nToDeleteSize: Long = 0
         var nDeletedSize: Long = 0
-        val maxSize = sp.getString(MyPreferences.KEY_HISTORY_SIZE, "2000").toInt().toLong()
+        val maxSize = sp?.getString(MyPreferences.KEY_HISTORY_SIZE, "2000")?.toLong() ?: 0
         var latestTimestampSize: Long = 0
         var cursor: Cursor? = null
         try {
@@ -122,27 +122,29 @@ class DataPruner(private val myContext: MyContext) {
                         java.lang.Long.toString(latestTimestamp))
                 sa.addSelection(sqlNotMyActivity)
                 sa.addSelection(sqlNotLatestActivityByActor)
-                nDeletedTime = MyProvider.Companion.deleteActivities(myContext, sa.selection, sa.selectionArgs, false)
+                nDeletedTime = MyProvider.deleteActivities(myContext, sa.selection, sa.selectionArgs, false)
             }
             if (maxSize > 0) {
                 nActivities = MyQuery.getCountOfActivities("")
                 nToDeleteSize = nActivities - maxSize
                 if (nToDeleteSize > 0) {
                     // Find INS_DATE of the most recent tweet to delete
-                    cursor = mContentResolver.query(MatchedUri.Companion.ACTIVITY_CONTENT_URI, arrayOf<String?>(
+                    cursor = mContentResolver.query(MatchedUri.ACTIVITY_CONTENT_URI, arrayOf<String>(
                             ActivityTable.INS_DATE
                     ), null, null, ActivityTable.INS_DATE + " ASC LIMIT 0," + nToDeleteSize)
-                    if (cursor.moveToLast()) {
-                        latestTimestampSize = cursor.getLong(0)
-                    }
-                    cursor.close()
+                            ?.also {
+                                if (it.moveToLast()) {
+                                    latestTimestampSize = it.getLong(0)
+                                }
+                                it.close()
+                            }
                     if (latestTimestampSize > 0) {
                         val sa = SelectionAndArgs()
                         sa.addSelection(ActivityTable.TABLE_NAME + "." + ActivityTable.INS_DATE + " <=  ?",
                                 java.lang.Long.toString(latestTimestampSize))
                         sa.addSelection(sqlNotMyActivity)
                         sa.addSelection(sqlNotLatestActivityByActor)
-                        nDeletedSize = MyProvider.Companion.deleteActivities(myContext, sa.selection, sa.selectionArgs, false).toLong()
+                        nDeletedSize = MyProvider.deleteActivities(myContext, sa.selection, sa.selectionArgs, false).toLong()
                     }
                 }
             }
@@ -160,7 +162,9 @@ History size=$maxSize notes; deleted $nDeletedSize of $nActivities notes, before
     }
 
     private fun deleteTempFiles() {
-        MyStorage.getMediaFiles().filter { obj: File? -> MyStorage.isTempFile() }.forEach { obj: File? -> obj.delete() }
+        MyStorage.getMediaFiles()
+                .filter(MyStorage::isTempFile)
+                .forEach(File::delete)
     }
 
     fun pruneMedia(): Long {
@@ -173,9 +177,9 @@ History size=$maxSize notes; deleted $nDeletedSize of $nActivities notes, before
                 + " maximum: " + I18n.formatBytes(maxSize) + " + min to prune: " + I18n.formatBytes(bytesToPruneMin)
         )
         if (bytesToPrune < bytesToPruneMin) return 0
-        val pruned1: ConsumedSummary = DownloadData.Companion.pruneFiles(myContext, DownloadType.ATTACHMENT,
+        val pruned1: ConsumedSummary = DownloadData.pruneFiles(myContext, DownloadType.ATTACHMENT,
                 Math.round(maxSize * ATTACHMENTS_SIZE_PART))
-        val pruned2: ConsumedSummary = DownloadData.Companion.pruneFiles(myContext, DownloadType.AVATAR,
+        val pruned2: ConsumedSummary = DownloadData.pruneFiles(myContext, DownloadType.AVATAR,
                 Math.round(maxSize * (1 - ATTACHMENTS_SIZE_PART)))
         val prunedCount = pruned1.consumedCount + pruned2.consumedCount
         logger.logProgressAndPause("""Pruned ${pruned1.consumedCount} attachment files, ${I18n.formatBytes(pruned1.consumedSize)}
@@ -193,7 +197,7 @@ Pruned ${pruned2.consumedCount} avatar files, ${I18n.formatBytes(pruned2.consume
                 + ")")
         var nDeleted: Long = 0
         for (noteId in MyQuery.getLongs(myContext, sql)) {
-            DownloadData.Companion.deleteAllOfThisNote(db, noteId)
+            DownloadData.deleteAllOfThisNote(db, noteId)
             nDeleted++
         }
         logger.logProgressAndPause("$method; Attachments deleted for $nDeleted notes", nDeleted)
@@ -201,14 +205,14 @@ Pruned ${pruned2.consumedCount} avatar files, ${I18n.formatBytes(pruned2.consume
     }
 
     private fun pruneTimelines(latestTimestamp: Long) {
-        myContext.timelines().stream().filter { t: Timeline? ->
+        myContext.timelines().stream().filter { t: Timeline ->
             (!t.isRequired()
                     && t.isDisplayedInSelector() == DisplayedInSelector.NEVER && t.getLastChangedDate() < latestTimestamp)
-        }.forEach { t: Timeline? -> t.delete(myContext) }
+        }.forEach { t: Timeline -> t.delete(myContext) }
     }
 
     private fun mayPruneNow(): Boolean {
-        return if (pruneNow) true else !myContext.isInForeground &&
+        return if (pruneNow) true else !myContext.isInForeground() &&
                 RelativeTime.moreSecondsAgoThan(
                         SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE),
                         TimeUnit.DAYS.toSeconds(PRUNE_MIN_PERIOD_DAYS))
@@ -218,10 +222,10 @@ Pruned ${pruned2.consumedCount} avatar files, ${I18n.formatBytes(pruned2.consume
         val method = "pruneLogs"
         val latestTimestamp = getLatestTimestamp(maxDaysToKeep)
         var deletedCount: Long = 0
-        val dir = MyStorage.getLogsDir(true) ?: return deletedCount
+        val dir: File = MyStorage.getLogsDir(true) ?: return deletedCount
         var errorCount: Long = 0
         var skippedCount: Long = 0
-        for (filename in dir.list()) {
+        dir.list()?.forEach { filename ->
             val file = File(dir, filename)
             if (file.isFile && file.lastModified() < latestTimestamp) {
                 if (file.delete()) {
@@ -250,25 +254,25 @@ Pruned ${pruned2.consumedCount} avatar files, ${I18n.formatBytes(pruned2.consume
 
     private fun pruneTempActors() {
         logger.logProgress("Delete temporary unused actors started")
-        val myActorIds: SqlIds = SqlIds.Companion.myActorsIds()
+        val myActorIds: SqlIds = SqlIds.myActorsIds()
         val sql = ("SELECT " + ActorSql.selectFullProjection()
                 + " FROM " + ActorSql.allTables() +
                 " WHERE " + ActorTable.TABLE_NAME + "." + ActorTable.PARENT_ACTOR_ID + " = 0" +
                 " AND " + ActorTable.TABLE_NAME + "." + ActorTable.ACTOR_OID + " LIKE ('andstatustemp:%')" +
-                " AND " + ActorTable.TABLE_NAME + "." + BaseColumns._ID + myActorIds.notSql +
+                " AND " + ActorTable.TABLE_NAME + "." + BaseColumns._ID + myActorIds.getNotSql() +
                 " AND NOT EXISTS (SELECT * FROM " + AudienceTable.TABLE_NAME +
                 " WHERE " + AudienceTable.ACTOR_ID + " = " + ActorTable.TABLE_NAME + "." + BaseColumns._ID + ")" +
                 " AND NOT EXISTS (SELECT * FROM " + ActivityTable.TABLE_NAME +
                 " WHERE " + ActivityTable.ACTOR_ID + " = " + ActorTable.TABLE_NAME + "." + BaseColumns._ID + ")")
-        val function = Function<Cursor?, Actor?> { cursor: Cursor? -> Actor.Companion.fromCursor(myContext, cursor, true) }
+        val function = Function<Cursor, Actor> { cursor: Cursor -> Actor.fromCursor(myContext, cursor, true) }
         val actors = MyQuery.get(myContext, sql, function)
         logger.logProgress("To delete: " + actors.size + " temporary unused actors")
         val counter = AtomicInteger()
-        actors.forEach(Consumer { actor: Actor? ->
+        actors.forEach(Consumer { actor: Actor ->
             counter.incrementAndGet()
             MyLog.v(TAG) { counter.get().toString() + ". Deleting: " + actor.uniqueName + "; " + actor }
-            MyProvider.Companion.deleteActor(myContext, actor.actorId)
-            logger.logProgressIfLongProcess(Supplier { counter.get().toString() + ". Deleting: " + actor.uniqueName })
+            MyProvider.deleteActor(myContext, actor.actorId)
+            logger.logProgressIfLongProcess { counter.get().toString() + ". Deleting: " + actor.uniqueName }
         })
         logger.logProgress("Deleted " + actors.size + " temporary unused actors")
     }
@@ -281,7 +285,7 @@ Pruned ${pruned2.consumedCount} avatar files, ${I18n.formatBytes(pruned2.consume
     }
 
     companion object {
-        val TAG: String? = DataPruner::class.java.simpleName
+        val TAG: String = DataPruner::class.java.simpleName
         const val ATTACHMENTS_TO_STORE_MIN: Long = 5
         const val MAX_DAYS_LOGS_TO_KEEP: Long = 10
         const val MAX_DAYS_UNUSED_TIMELINES_TO_KEEP: Long = 31
@@ -296,8 +300,4 @@ Pruned ${pruned2.consumedCount} avatar files, ${I18n.formatBytes(pruned2.consume
         }
     }
 
-    init {
-        db = myContext.database
-        mContentResolver = myContext.context().contentResolver
-    }
 }

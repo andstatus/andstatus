@@ -228,7 +228,7 @@ class MyContextHolder private constructor() : TaggedClass {
 
     private fun calculateExecutionMode(): ExecutionMode {
         val myContext = getNow()
-        if (myContext.isEmpty()) return ExecutionMode.UNKNOWN
+        if (myContext.isEmpty) return ExecutionMode.UNKNOWN
 
         if ("true" == Settings.System.getString(myContext.context().contentResolver, "firebase.test.lab")) {
             // See https://firebase.google.com/docs/test-lab/android-studio
@@ -263,7 +263,8 @@ class MyContextHolder private constructor() : TaggedClass {
     companion object {
         private val TAG: String = MyContextHolder::class.java.simpleName
         val myContextHolder: MyContextHolder = MyContextHolder()
-        private fun requireNonNullContext(context: Context?, calledBy: Any?, message: String?) {
+
+        private fun requireNonNullContext(context: Context?, calledBy: Any?, message: String) {
             checkNotNull(context) { TAG + ": " + message + ", called by " + MyStringBuilder.objToTag(calledBy) }
         }
     }

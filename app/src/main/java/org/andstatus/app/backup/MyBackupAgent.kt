@@ -236,7 +236,7 @@ class MyBackupAgent : BackupAgent() {
                 (if (data == null) "" else ", folder:'" + data.getDataFolderName() + "'") +
                 ", " + if (newDescriptor.saved()) " newState:" + newDescriptor.toString() else "no new state")
         var success = false
-        success = try {
+        try {
             when (backupDescriptor?.getBackupSchemaVersion()) {
                 MyBackupDescriptor.Companion.BACKUP_SCHEMA_VERSION_UNKNOWN -> throw FileNotFoundException("No backup information in the backup descriptor")
                 MyBackupDescriptor.Companion.BACKUP_SCHEMA_VERSION -> if (data == null) {
@@ -246,7 +246,7 @@ class MyBackupAgent : BackupAgent() {
                 } else {
                     ensureNoDataIsPresent()
                     doRestore(data)
-                    true
+                    success = true
                 }
                 else -> throw FileNotFoundException("Incompatible backup version "
                         + newDescriptor.getBackupSchemaVersion() + ", expected:" + MyBackupDescriptor.BACKUP_SCHEMA_VERSION)
@@ -364,7 +364,7 @@ class MyBackupAgent : BackupAgent() {
         tempFile.delete()
         return result
                 .onSuccess { s: String -> backupDescriptor!!.getLogger().logProgress(s) }
-                .onFailure { e: Throwable -> backupDescriptor!!.getLogger().logProgress(e.message) }
+                .onFailure { e: Throwable -> backupDescriptor!!.getLogger().logProgress(e.message ?: "(some error)") }
                 .map { s: String? -> 1L }.getOrElse(0L)
     }
 

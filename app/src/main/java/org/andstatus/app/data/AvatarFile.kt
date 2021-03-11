@@ -29,8 +29,9 @@ import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 
-class AvatarFile private constructor(private val actor: Actor?, filename: String?, mediaMetadata: MediaMetadata?, downloadStatus: DownloadStatus?,
-                                     downloadedDate: Long) : MediaFile(filename, MyContentType.IMAGE, mediaMetadata, 0, downloadStatus, downloadedDate) {
+class AvatarFile private constructor(private val actor: Actor, filename: String, mediaMetadata: MediaMetadata,
+                                     downloadStatus: DownloadStatus, downloadedDate: Long) :
+        MediaFile(filename, MyContentType.IMAGE, mediaMetadata, 0, downloadStatus, downloadedDate) {
     override fun getId(): Long {
         return getActor().actorId
     }
@@ -39,7 +40,7 @@ class AvatarFile private constructor(private val actor: Actor?, filename: String
         return actor ?: Actor.EMPTY
     }
 
-    public override fun getDefaultImage(): CachedImage? {
+    public override fun getDefaultImage(): CachedImage {
         return if (getActor().groupType.isGroupLike) {
             ImageCaches.getStyledImage(R.drawable.ic_people_black_24dp, R.drawable.ic_people_white_24dp)
         } else {

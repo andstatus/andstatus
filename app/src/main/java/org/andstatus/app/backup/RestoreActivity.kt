@@ -16,6 +16,7 @@
 package org.andstatus.app.backup
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
@@ -26,17 +27,18 @@ import io.vavr.control.Try
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
-import org.andstatus.app.backup.RestoreActivity
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.util.Permissions
 import org.andstatus.app.util.Permissions.PermissionType
+import org.andstatus.app.util.UriUtils
 
 class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
-    var dataFolder: DocumentFile? = null
-    var asyncTask: RestoreTask? = null
+    private var dataFolder: DocumentFile? = null
+    private var asyncTask: RestoreTask? = null
     private var progressCounter = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         mLayoutId = R.layout.restore
         super.onCreate(savedInstanceState)
@@ -48,12 +50,13 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     private fun doRestore(v: View?) {
-        if (asyncTask == null || asyncTask.completedBackgroundWork()) {
+        if (asyncTask?.completedBackgroundWork() ?: true) {
             resetProgress()
-            asyncTask = RestoreTask(this@RestoreActivity)
+            asyncTask = (RestoreTask(this@RestoreActivity)
                     .setMaxCommandExecutionSeconds(MAX_RESTORE_SECONDS.toLong())
-                    .setCancelable(false) as RestoreTask
-            AsyncTaskLauncher<DocumentFile?>().execute(this, asyncTask, getDataFolder())
+                    .setCancelable(false) as RestoreTask).also {
+                AsyncTaskLauncher<DocumentFile?>().execute(this, it, getDataFolder())
+            }
         }
     }
 
@@ -66,15 +69,14 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     private fun getDataFolder(): DocumentFile {
-        return if (dataFolder != null && dataFolder.exists()) {
-            dataFolder
-        } else MyBackupManager.Companion.getDefaultBackupFolder(this)
+        return dataFolder?.takeIf { it.exists() } ?: MyBackupManager.getDefaultBackupFolder(this)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (ActivityRequestCode.Companion.fromId(requestCode)) {
+        val uri = data?.getData() ?: Uri.EMPTY
+        if (UriUtils.nonEmpty(uri)) when (ActivityRequestCode.fromId(requestCode)) {
             ActivityRequestCode.SELECT_BACKUP_FOLDER -> if (resultCode == RESULT_OK) {
-                setDataFolder(DocumentFile.fromTreeUri(this, data.getData()))
+                setDataFolder(DocumentFile.fromTreeUri(this, uri))
             }
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
@@ -94,10 +96,10 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
             addProgressMessage("The folder doesn't exist: '" + selectedFolder.uri.path + "'")
             return
         }
-        val descriptorFile: Try<DocumentFile?> = MyBackupManager.Companion.getExistingDescriptorFile(selectedFolder)
+        val descriptorFile: Try<DocumentFile> = MyBackupManager.getExistingDescriptorFile(selectedFolder)
         if (descriptorFile.isFailure) {
             addProgressMessage("This is not an AndStatus backup folder." +
-                    " Descriptor file " + MyBackupManager.Companion.DESCRIPTOR_FILE_NAME +
+                    " Descriptor file " + MyBackupManager.DESCRIPTOR_FILE_NAME +
                     " doesn't exist in: '" + selectedFolder.uri.path + "'")
             return
         }
@@ -110,13 +112,17 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
         val view = findViewById<TextView?>(R.id.backup_folder)
         if (view != null) {
             val folder = getDataFolder()
-            view.text = if (MyBackupManager.Companion.isDataFolder(folder)) folder.uri.path else getText(R.string.not_set)
+            view.text = if (MyBackupManager.isDataFolder(folder)) folder.uri.path else getText(R.string.not_set)
         }
     }
 
-    private class RestoreTask internal constructor(private val activity: RestoreActivity) : MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.Companion.thatCannotBeShutDown()) {
+    private class RestoreTask(private val activity: RestoreActivity) :
+            MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.thatCannotBeShutDown()) {
+
         override fun doInBackground2(dataFolder: DocumentFile?): Void? {
-            MyBackupManager.Companion.restoreInteractively(dataFolder, activity, activity)
+            dataFolder?.let {
+                MyBackupManager.restoreInteractively(dataFolder, activity, activity)
+            }
             return null
         }
     }
@@ -147,7 +153,7 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
          MyContextHolder.myContextHolder.getNow().setInForeground(false)
     }
 
-    override fun onProgressMessage(message: CharSequence?) {
+    override fun onProgressMessage(message: CharSequence) {
         runOnUiThread { addProgressMessage(message) }
     }
 

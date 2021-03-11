@@ -34,7 +34,7 @@ class ProgressLogger {
     val logTag: String
 
     fun interface ProgressListener {
-        fun onProgressMessage(message: CharSequence?)
+        fun onProgressMessage(message: CharSequence)
         fun onComplete(success: Boolean) {}
         fun onActivityFinish() {}
         fun setCancelable(isCancelable: Boolean) {}
@@ -49,7 +49,7 @@ class ProgressLogger {
     }
 
     private class EmptyListener : ProgressListener {
-        override fun onProgressMessage(message: CharSequence?) {
+        override fun onProgressMessage(message: CharSequence) {
             // Empty
         }
     }
@@ -96,14 +96,14 @@ class ProgressLogger {
         }
     }
 
-    fun logProgressAndPause(message: CharSequence?, pauseIfPositive: Long) {
+    fun logProgressAndPause(message: CharSequence, pauseIfPositive: Long) {
         logProgress(message)
         if (pauseIfPositive > 0 && progressListener.isPresent()) {
             DbUtils.waitMs(this, 2000)
         }
     }
 
-    fun logProgress(message: CharSequence?) {
+    fun logProgress(message: CharSequence) {
         updateLastLoggedTime()
         MyLog.i(logTag, message.toString())
         if (makeServiceUnavalable) MyServiceManager.setServiceUnavailable()

@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.graphics
 
-enum class CacheName(val title: String?) {
-    ATTACHED_IMAGE("Attached images"), AVATAR("Avatars");
+enum class CacheName(val title: String) {
+    ATTACHED_IMAGE("Attached images"),
+    AVATAR("Avatars");
 }

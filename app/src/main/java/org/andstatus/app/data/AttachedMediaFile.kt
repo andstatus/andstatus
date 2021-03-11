@@ -30,33 +30,33 @@ import org.andstatus.app.util.UriUtils
 class AttachedMediaFile : MediaFile {
     val uri: Uri?
     val previewOfDownloadId: Long
-    val previewOf: AttachedMediaFile?
+    val previewOf: AttachedMediaFile
 
-    private constructor() : super("", MyContentType.UNKNOWN, MediaMetadata.Companion.EMPTY, 0, DownloadStatus.ABSENT, RelativeTime.DATETIME_MILLIS_NEVER) {
+    private constructor() : super("", MyContentType.UNKNOWN, MediaMetadata.EMPTY, 0, DownloadStatus.ABSENT, RelativeTime.DATETIME_MILLIS_NEVER) {
         uri = Uri.EMPTY
         previewOfDownloadId = 0
         previewOf = EMPTY
     }
 
     private constructor(downloadId: Long, cursor: Cursor?) : super(DbUtils.getString(cursor, DownloadTable.FILE_NAME),
-            MyContentType.Companion.load(DbUtils.getLong(cursor, DownloadTable.CONTENT_TYPE)),
-            MediaMetadata.Companion.fromCursor(cursor), downloadId,
-            DownloadStatus.Companion.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
+            MyContentType.load(DbUtils.getLong(cursor, DownloadTable.CONTENT_TYPE)),
+            MediaMetadata.fromCursor(cursor), downloadId,
+            DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
             DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE)) {
         uri = UriUtils.fromString(DbUtils.getString(cursor, DownloadTable.URL))
         previewOfDownloadId = DbUtils.getLong(cursor, DownloadTable.PREVIEW_OF_DOWNLOAD_ID)
         previewOf = EMPTY
     }
 
-    constructor(data: DownloadData?) : super(data.getFilename(), data.getContentType(), data.mediaMetadata, data.getDownloadId(), data.getStatus(),
+    constructor(data: DownloadData) : super(data.getFilename(), data.getContentType(), data.mediaMetadata, data.getDownloadId(), data.getStatus(),
             data.getDownloadedDate()) {
         uri = data.getUri()
         previewOfDownloadId = 0
         previewOf = EMPTY
     }
 
-    override fun getDefaultImage(): CachedImage? {
-        return CachedImage.Companion.EMPTY
+    override fun getDefaultImage(): CachedImage {
+        return CachedImage.EMPTY
     }
 
     fun getTargetUri(): Uri? {
@@ -64,34 +64,36 @@ class AttachedMediaFile : MediaFile {
     }
 
     fun isTargetVideo(): Boolean {
-        return if (previewOf.isEmpty) isVideo else previewOf.isVideo()
+        return if (previewOf.isEmpty) isVideo() else previewOf.isVideo()
     }
 
     override fun requestDownload() {
-        if (downloadId == 0L || uri === Uri.EMPTY || !contentType.downloadMediaOfThisType) return
-        MyServiceManager.Companion.sendCommand(CommandData.Companion.newFetchAttachment(0, downloadId))
+        if (downloadId == 0L || uri === Uri.EMPTY || !contentType.getDownloadMediaOfThisType()) return
+        MyServiceManager.sendCommand(CommandData.newFetchAttachment(0, downloadId))
     }
 
-    internal constructor(previewFile: AttachedMediaFile?, previewOf: AttachedMediaFile?) : super(previewFile.downloadFile.filename,
-            previewFile.contentType,
-            previewFile.mediaMetadata,
-            previewFile.downloadId,
-            previewFile.downloadStatus,
-            previewFile.downloadedDate) {
+    internal constructor(previewFile: AttachedMediaFile, previewOf: AttachedMediaFile) :
+            super(previewFile.downloadFile.getFilename(),
+                    previewFile.contentType,
+                    previewFile.mediaMetadata,
+                    previewFile.downloadId,
+                    previewFile.downloadStatus,
+                    previewFile.downloadedDate) {
         uri = previewFile.uri
         previewOfDownloadId = previewFile.previewOfDownloadId
         this.previewOf = previewOf
     }
 
     fun imageOrLinkMayBeShown(): Boolean {
-        return contentType.isImage &&
+        return contentType.isImage() &&
                 (super.imageMayBeShown() || uri !== Uri.EMPTY)
     }
 
-    fun intentToView(): Intent? {
+    fun intentToView(): Intent {
         val intent = Intent(Intent.ACTION_VIEW)
         val fileToView = if (previewOf.isEmpty) this else previewOf
-        val mediaFileUri = if (fileToView.downloadFile.existsNow()) FileProvider.Companion.downloadFilenameToUri(fileToView.downloadFile.filename) else fileToView.uri
+        val mediaFileUri = if (fileToView.downloadFile.existsNow()) FileProvider.downloadFilenameToUri(
+                fileToView.downloadFile.getFilename()) else fileToView.uri
         if (UriUtils.isEmpty(mediaFileUri)) {
             intent.type = "text/*"
         } else {
@@ -105,13 +107,13 @@ class AttachedMediaFile : MediaFile {
     override fun equals(o: Any?): Boolean {
         if (this === o) return true
         if (o == null || javaClass != o.javaClass) return false
-        val imageFile = o as AttachedMediaFile?
+        val imageFile = o as AttachedMediaFile
         return if (previewOfDownloadId != imageFile.previewOfDownloadId) false else uri == imageFile.uri
     }
 
     override fun hashCode(): Int {
         var result = uri.hashCode()
-        result = 31 * result + (previewOfDownloadId xor (previewOfDownloadId ushr 32)) as Int
+        result = 31 * result + (previewOfDownloadId xor (previewOfDownloadId ushr 32)).toInt()
         return result
     }
 

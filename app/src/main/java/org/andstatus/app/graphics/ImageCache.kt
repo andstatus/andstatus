@@ -35,6 +35,7 @@ import android.util.DisplayMetrics
 import android.util.LruCache
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
+import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.data.MediaFile
 import org.andstatus.app.data.MyContentType
 import org.andstatus.app.util.MyLog
@@ -48,25 +49,22 @@ import java.util.concurrent.atomic.AtomicLong
  * @author yvolk@yurivolkov.com
  * On LruCache usage read http://developer.android.com/reference/android/util/LruCache.html
  */
-class ImageCache(context: Context?, name: CacheName?, maxBitmapHeightWidthIn: Int, requestedCacheSizeIn: Int) : LruCache<String?, CachedImage?>(requestedCacheSizeIn) {
-    val name: CacheName?
+class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int, requestedCacheSizeIn: Int) : LruCache<String, CachedImage>(requestedCacheSizeIn) {
+    val name: CacheName
 
-    @Volatile
     private val requestedCacheSize: Int
-
-    @Volatile
-    private val currentCacheSize: Int
+    private var currentCacheSize: Int
 
     @Volatile
     var maxBitmapHeight = 0
 
     @Volatile
-    var maxBitmapWidth = 0
-    val hits: AtomicLong? = AtomicLong()
-    val misses: AtomicLong? = AtomicLong()
-    val brokenBitmaps: MutableSet<String?>? = ConcurrentSkipListSet()
-    val recycledBitmaps: Queue<Bitmap?>?
-    val displayMetrics: DisplayMetrics?
+    private var maxBitmapWidth = 0
+    val hits: AtomicLong = AtomicLong()
+    val misses: AtomicLong = AtomicLong()
+    val brokenBitmaps: MutableSet<String> = ConcurrentSkipListSet()
+    val recycledBitmaps: Queue<Bitmap>
+    val displayMetrics: DisplayMetrics
 
     @Volatile
     var rounded = false
@@ -77,26 +75,26 @@ class ImageCache(context: Context?, name: CacheName?, maxBitmapHeightWidthIn: In
 
     private fun newBlankBitmap(): Bitmap? {
         return Bitmap.createBitmap(displayMetrics, maxBitmapWidth,
-                maxBitmapHeight, CachedImage.Companion.BITMAP_CONFIG)
+                maxBitmapHeight, CachedImage.BITMAP_CONFIG)
     }
 
-    fun getCachedImage(mediaFile: MediaFile?): CachedImage? {
+    fun getCachedImage(mediaFile: MediaFile): CachedImage? {
         return getImage(mediaFile, true)
     }
 
-    fun loadAndGetImage(mediaFile: MediaFile?): CachedImage? {
+    fun loadAndGetImage(mediaFile: MediaFile): CachedImage? {
         return getImage(mediaFile, false)
     }
 
-    override fun entryRemoved(evicted: Boolean, key: String?, oldValue: CachedImage?, newValue: CachedImage?) {
+    override fun entryRemoved(evicted: Boolean, key: String, oldValue: CachedImage, newValue: CachedImage) {
         if (oldValue.isBitmapRecyclable()) {
             oldValue.makeExpired()
             recycledBitmaps.add(oldValue.getBitmap())
         }
     }
 
-    private fun getImage(mediaFile: MediaFile?, fromCacheOnly: Boolean): CachedImage? {
-        if (mediaFile.getPath().isNullOrEmpty()) {
+    private fun getImage(mediaFile: MediaFile, fromCacheOnly: Boolean): CachedImage? {
+        if (mediaFile.getPath().isEmpty()) {
             return null
         }
         var image = get(mediaFile.getPath())
@@ -104,7 +102,7 @@ class ImageCache(context: Context?, name: CacheName?, maxBitmapHeightWidthIn: In
             hits.incrementAndGet()
         } else if (brokenBitmaps.contains(mediaFile.getPath())) {
             hits.incrementAndGet()
-            return CachedImage.Companion.BROKEN
+            return CachedImage.BROKEN
         } else {
             misses.incrementAndGet()
             if (!fromCacheOnly && File(mediaFile.getPath()).exists()) {
@@ -121,8 +119,8 @@ class ImageCache(context: Context?, name: CacheName?, maxBitmapHeightWidthIn: In
         return image
     }
 
-    private fun loadImage(mediaFile: MediaFile?): CachedImage? {
-        return when (MyContentType.Companion.fromPathOfSavedFile(mediaFile.getPath())) {
+    private fun loadImage(mediaFile: MediaFile): CachedImage? {
+        return when (MyContentType.fromPathOfSavedFile(mediaFile.getPath())) {
             MyContentType.IMAGE, MyContentType.ANIMATED_IMAGE -> {
                 if (showImageInimations && Build.VERSION.SDK_INT >= 28) {
                     ImageCacheApi28Helper.animatedFileToCachedImage(this, mediaFile)
@@ -133,11 +131,11 @@ class ImageCache(context: Context?, name: CacheName?, maxBitmapHeightWidthIn: In
         }
     }
 
-    fun imageFileToCachedImage(mediaFile: MediaFile?): CachedImage? {
+    fun imageFileToCachedImage(mediaFile: MediaFile): CachedImage? {
         return bitmapToCachedImage(mediaFile, imageFileToBitmap(mediaFile))
     }
 
-    fun bitmapToCachedImage(mediaFile: MediaFile?, bitmap: Bitmap?): CachedImage? {
+    fun bitmapToCachedImage(mediaFile: MediaFile, bitmap: Bitmap?): CachedImage? {
         if (bitmap == null) {
             return null
         }
@@ -172,8 +170,8 @@ class ImageCache(context: Context?, name: CacheName?, maxBitmapHeightWidthIn: In
     /**
      * The solution is from http://evel.io/2013/07/21/rounded-avatars-in-android/
      */
-    private fun drawRoundedBitmap(canvas: Canvas?, bitmap: Bitmap?) {
-        val rectF = RectF(0, 0, bitmap.getWidth(), bitmap.getHeight())
+    private fun drawRoundedBitmap(canvas: Canvas, bitmap: Bitmap) {
+        val rectF = RectF(0f, 0f, bitmap.getWidth().toFloat(), bitmap.getHeight().toFloat())
         val paint = Paint()
         paint.isAntiAlias = true
         paint.isDither = true
@@ -186,7 +184,7 @@ class ImageCache(context: Context?, name: CacheName?, maxBitmapHeightWidthIn: In
         return recycledBitmaps.poll()
     }
 
-    private fun imageFileToBitmap(mediaFile: MediaFile?): Bitmap? {
+    private fun imageFileToBitmap(mediaFile: MediaFile): Bitmap? {
         return try {
             val bitmap: Bitmap?
             val options = calculateScaling(mediaFile, mediaFile.getSize())
@@ -212,7 +210,7 @@ class ImageCache(context: Context?, name: CacheName?, maxBitmapHeightWidthIn: In
         }
     }
 
-    private fun videoFileToBitmap(mediaFile: MediaFile?): Bitmap? {
+    private fun videoFileToBitmap(mediaFile: MediaFile): Bitmap? {
         var retriever: MediaMetadataRetriever? = null
         return try {
             retriever = MediaMetadataRetriever()
@@ -235,7 +233,7 @@ class ImageCache(context: Context?, name: CacheName?, maxBitmapHeightWidthIn: In
         }
     }
 
-    fun calculateScaling(objTag: Any?, imageSize: Point?): BitmapFactory.Options? {
+    fun calculateScaling(objTag: Any, imageSize: Point): BitmapFactory.Options {
         val options = BitmapFactory.Options()
         options.inSampleSize = 1
         var x = maxBitmapWidth
@@ -252,7 +250,7 @@ class ImageCache(context: Context?, name: CacheName?, maxBitmapHeightWidthIn: In
         return options
     }
 
-    fun getInfo(): String? {
+    fun getInfo(): String {
         val builder = StringBuilder(name.title)
         builder.append(": " + maxBitmapWidth + "x" + maxBitmapHeight + ", "
                 + size() + " of " + currentCacheSize)
@@ -285,7 +283,7 @@ class ImageCache(context: Context?, name: CacheName?, maxBitmapHeightWidthIn: In
     }
 
     companion object {
-        val TAG: String? = ImageCache::class.java.simpleName
+        val TAG: String = ImageCache::class.java.simpleName
         const val BYTES_PER_PIXEL = 4
     }
 

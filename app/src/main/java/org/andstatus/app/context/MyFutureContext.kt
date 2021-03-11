@@ -113,9 +113,10 @@ class MyFutureContext private constructor(private val previousContext: MyContext
 
     companion object {
         private val TAG: String = MyFutureContext::class.java.simpleName
+
         fun fromPrevious(previousFuture: MyFutureContext, calledBy: Any?): MyFutureContext {
             val future = previousFuture.getHealthyFuture(calledBy)
-                    .thenApplyAsync(initializeMyContextIfNeeded(calledBy), NonUiThreadExecutor.INSTANCE)
+                    .thenApplyAsync(initializeMyContextIfNeeded(calledBy ?: previousFuture), NonUiThreadExecutor.INSTANCE)
             return MyFutureContext(previousFuture.getNow(), future)
         }
 
@@ -140,7 +141,7 @@ class MyFutureContext private constructor(private val previousContext: MyContext
                     }
                     MyLog.v(TAG) { "Preparing for " + reasonSupplier.get() }
                     release(previousContext, reasonSupplier)
-                    val myContext = previousContext.newInitialized(calledBy)
+                    val myContext = previousContext.newInitialized(calledBy ?: previousContext)
                     SyncInitiator.register(myContext)
                     myContext
                 }
@@ -179,13 +180,13 @@ class MyFutureContext private constructor(private val previousContext: MyContext
                 if (myContext.isReady()) {
                     try {
                         MyLog.d(TAG, "Start activity with intent:$intent")
-                        myContext.context()?.startActivity(intent)
+                        myContext.context().startActivity(intent)
                         launched = true
                     } catch (e: AndroidRuntimeException) {
                         try {
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             MyLog.d(TAG, "Start activity with intent (new task):$intent")
-                            myContext.context()?.startActivity(intent)
+                            myContext.context().startActivity(intent)
                             launched = true
                         } catch (e2: Exception) {
                             MyLog.e(TAG, "Launching activity with Intent.FLAG_ACTIVITY_NEW_TASK flag", e)

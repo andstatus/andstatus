@@ -18,7 +18,6 @@ package org.andstatus.app.data
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 import org.andstatus.app.context.MyContextHolder
-import org.andstatus.app.data.ActorActivity
 import org.andstatus.app.database.table.ActivityTable
 import org.andstatus.app.database.table.ActorTable
 import org.andstatus.app.util.MyLog
@@ -138,7 +137,7 @@ class ActorActivity {
             sql += ", " + ActorTable.ACTOR_ACTIVITY_DATE + "=" + lastActivityDate
             sql = ("UPDATE " + ActorTable.TABLE_NAME + " SET " + sql
                     + " WHERE " + BaseColumns._ID + "=" + actorId)
-            val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().getDatabase()
+            val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().getDatabase()
             if (db == null) {
                 MyLog.databaseIsNull { "Save $this" }
                 return false
@@ -153,6 +152,6 @@ class ActorActivity {
     }
 
     companion object {
-        private val TAG: String? = ActorActivity::class.java.simpleName
+        private val TAG: String = ActorActivity::class.java.simpleName
     }
 }

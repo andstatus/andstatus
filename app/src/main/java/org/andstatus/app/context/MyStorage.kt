@@ -162,9 +162,9 @@ object MyStorage {
         return file.getName().startsWith(TEMP_FILENAME_PREFIX)
     }
 
-    fun getMediaFiles(): Stream<File>? = getDataFilesDir(DIRECTORY_DOWNLOADS)?.let {
+    fun getMediaFiles(): Stream<File> = getDataFilesDir(DIRECTORY_DOWNLOADS)?.let {
         Arrays.stream(it.listFiles()).filter { obj: File -> obj.isFile() }
-    }
+    } ?: Stream.empty()
 
     fun newTempFile(filename: String): File {
         return newMediaFile(TEMP_FILENAME_PREFIX + filename)
@@ -179,7 +179,7 @@ object MyStorage {
     }
 
     fun getMediaFilesSize(): Long {
-        return getMediaFiles()?.mapToLong { obj: File -> obj.length() }?.sum() ?: 0
+        return getMediaFiles().mapToLong { obj: File -> obj.length() }?.sum() ?: 0
     }
 
     fun getLogsDir(logged: Boolean): File? {

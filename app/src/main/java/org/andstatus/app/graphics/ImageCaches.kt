@@ -24,8 +24,6 @@ import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MyTheme
 import org.andstatus.app.data.AvatarFile
 import org.andstatus.app.data.MediaFile
-import org.andstatus.app.graphics.AttachedImageView
-import org.andstatus.app.graphics.CachedImage
 import org.andstatus.app.util.I18n
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
@@ -48,19 +46,20 @@ object ImageCaches {
 
     @Volatile
     private var avatarsCache: ImageCache? = null
+
     @Synchronized
-    fun initialize(context: Context?) {
-        val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+    fun initialize(context: Context) {
+        val stopWatch: StopWatch = StopWatch.createStarted()
         styledImages.clear()
         initializeAttachedImagesCache(context)
         initializeAvatarsCache(context)
         MyLog.i(ImageCaches::class.java.simpleName, "imageCachesInitializedMs:" + stopWatch.time + "; " + getCacheInfo())
     }
 
-    private fun initializeAttachedImagesCache(context: Context?) {
+    private fun initializeAttachedImagesCache(context: Context) {
         // We assume that current display orientation is preferred, so we use "y" size only
-        var imageSize = Math.round(AttachedImageView.Companion.MAX_ATTACHED_IMAGE_PART *
-                getDisplaySize(context).y) as Int
+        var imageSize = Math.round(AttachedImageView.MAX_ATTACHED_IMAGE_PART *
+                getDisplaySize(context).y).toInt()
         var cacheSize = 0
         for (i in 0..4) {
             cacheSize = calcCacheSize(context, imageSize,
@@ -77,9 +76,9 @@ object ImageCaches {
                 cacheSize)
     }
 
-    private fun initializeAvatarsCache(context: Context?) {
+    private fun initializeAvatarsCache(context: Context) {
         val displayDensity = context.getResources().displayMetrics.density
-        var imageSize: Int = Math.round(AvatarFile.Companion.AVATAR_SIZE_DIP * displayDensity)
+        var imageSize: Int = Math.round(AvatarFile.AVATAR_SIZE_DIP * displayDensity)
         var cacheSize = 0
         for (i in 0..4) {
             cacheSize = calcCacheSize(context, imageSize, AVATARS_CACHE_PART_OF_TOTAL_APP_MEMORY)
@@ -96,12 +95,12 @@ object ImageCaches {
     }
 
     fun setAvatarsRounded() {
-        avatarsCache.evictAll()
-        avatarsCache.rounded = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ROUNDED_AVATARS, true)
+        avatarsCache?.evictAll()
+        avatarsCache?.rounded = SharedPreferencesUtil.getBoolean(MyPreferences.KEY_ROUNDED_AVATARS, true)
     }
 
     private fun calcCacheSize(context: Context?, imageSize: Int, partOfAvailableMemory: Float): Int {
-        return Math.round(partOfAvailableMemory * getTotalAppMemory(context) / imageSize / imageSize / ImageCache.Companion.BYTES_PER_PIXEL)
+        return Math.round(partOfAvailableMemory * getTotalAppMemory(context) / imageSize / imageSize / ImageCache.BYTES_PER_PIXEL)
     }
 
     private fun getTotalAppMemory(context: Context?): Long {
@@ -122,32 +121,33 @@ object ImageCaches {
         return memInfo
     }
 
-    fun loadAndGetImage(cacheName: CacheName?, mediaFile: MediaFile?): CachedImage? {
+    fun loadAndGetImage(cacheName: CacheName, mediaFile: MediaFile): CachedImage? {
         return getCache(cacheName).loadAndGetImage(mediaFile)
     }
 
-    fun getCachedImage(cacheName: CacheName?, mediaFile: MediaFile?): CachedImage? {
+    fun getCachedImage(cacheName: CacheName, mediaFile: MediaFile?): CachedImage? {
         return getCache(cacheName).getCachedImage(mediaFile)
     }
 
-    fun getCache(cacheName: CacheName?): ImageCache? {
+    fun getCache(cacheName: CacheName): ImageCache {
         return when (cacheName) {
-            CacheName.ATTACHED_IMAGE -> attachedImagesCache
-            else -> avatarsCache
+            CacheName.ATTACHED_IMAGE -> attachedImagesCache ?: throw IllegalStateException("No attached images cache")
+            else -> avatarsCache ?: throw IllegalStateException("No avatars cache")
         }
     }
 
-    fun getCacheInfo(): String? {
+    fun getCacheInfo(): String {
         val builder = StringBuilder("ImageCaches: ")
         if (avatarsCache == null || attachedImagesCache == null) {
             builder.append("not initialized")
         } else {
-            builder.append(avatarsCache.getInfo() + "; ")
-            builder.append(attachedImagesCache.getInfo() + "; ")
+            builder.append(avatarsCache?.getInfo() + "; ")
+            builder.append(attachedImagesCache?.getInfo() + "; ")
             builder.append("Styled images: " + styledImages.size + "; ")
         }
-        val context: Context =  MyContextHolder.myContextHolder.getNow().context()
-        if (context != null) {
+        val myContext = MyContextHolder.myContextHolder.getNow()
+        if (!myContext.isEmpty) {
+            val context: Context =  myContext.context()
             builder.append("Memory. App total: " + I18n.formatBytes(getTotalAppMemory(context)))
             val memInfo = getMemoryInfo(context)
             builder.append("; Device: available " + I18n.formatBytes(memInfo.availMem) + " of "
@@ -159,9 +159,9 @@ object ImageCaches {
     /**
      * See http://stackoverflow.com/questions/1016896/how-to-get-screen-dimensions
      */
-    fun getDisplaySize(context: Context?): Point? {
+    fun getDisplaySize(context: Context): Point {
         val size = Point()
-        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager?
         if (windowManager != null) {
             val display = windowManager.defaultDisplay
             display?.getSize(size)
@@ -174,22 +174,24 @@ object ImageCaches {
         return size
     }
 
-    fun getImageCompat(context: Context?, resourceId: Int): CachedImage? {
-        return CachedImage(resourceId, context.getTheme().getDrawable(resourceId))
+    fun getImageCompat(context: Context, resourceId: Int): CachedImage {
+        return CachedImage(resourceId.toLong(), context.getTheme().getDrawable(resourceId))
     }
 
-    private val styledImages: MutableMap<Int?, Array<CachedImage?>?>? = ConcurrentHashMap()
-    fun getStyledImage(resourceIdLight: Int, resourceId: Int): CachedImage? {
-        var styledImage = styledImages.get(resourceId)
+    private val styledImages: MutableMap<Int, Array<CachedImage>> = ConcurrentHashMap()
+
+    fun getStyledImage(resourceIdLight: Int, resourceId: Int): CachedImage {
+        var styledImage = styledImages[resourceId]
         if (styledImage == null) {
-            val context: Context =  MyContextHolder.myContextHolder.getNow().context()
-            if (context != null) {
+            val myContext = MyContextHolder.myContextHolder.getNow()
+            if (!myContext.isEmpty) {
+                val context: Context =  myContext.context()
                 val image = getImageCompat(context, resourceId)
                 val imageLight = getImageCompat(context, resourceIdLight)
                 styledImage = arrayOf(image, imageLight)
                 styledImages[resourceId] = styledImage
             } else {
-                return CachedImage.Companion.EMPTY
+                return CachedImage.EMPTY
             }
         }
         return styledImage[if (MyTheme.isThemeLight()) 1 else 0]

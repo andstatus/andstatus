@@ -63,7 +63,7 @@ class AttachedImageFiles(val list: MutableList<AttachedMediaFile>) : IsEmpty {
         val builder = MyStringBuilder()
         list.forEach(Consumer { item: AttachedMediaFile ->
             builder.withComma(
-                    item.mediaMetadata?.toDetails() + " "
+                    item.mediaMetadata.toDetails() + " "
                             + Formatter.formatShortFileSize(context, item.downloadFile.getSize()))
         })
         return builder.toString()
@@ -114,7 +114,7 @@ class AttachedImageFiles(val list: MutableList<AttachedMediaFile>) : IsEmpty {
                 if (mediaFile.previewOfDownloadId == 0L) {
                     out.add(mediaFile)
                 } else {
-                    var fullImage: AttachedMediaFile? = AttachedMediaFile.EMPTY
+                    var fullImage: AttachedMediaFile = AttachedMediaFile.EMPTY
                     for (other in mediaFiles) {
                         if (other.downloadId == mediaFile.previewOfDownloadId) {
                             fullImage = other
