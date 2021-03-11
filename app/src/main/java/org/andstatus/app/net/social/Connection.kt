@@ -47,6 +47,7 @@ import java.text.DateFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.properties.Delegates
 
 /**
  * Handles connection to the API of the Social Network (i.e. to the "Origin")
@@ -56,13 +57,13 @@ import java.util.*
  * @author yvolk@yurivolkov.com
  */
 abstract class Connection protected constructor() : IsEmpty {
-    protected var http: HttpConnection? = null
-    protected var data: AccountConnectionData? = null
+    protected var http: HttpConnection by Delegates.notNull<HttpConnection>()
+    protected var data: AccountConnectionData by Delegates.notNull<AccountConnectionData>()
 
     /**
      * @return an empty string in case the API routine is not supported
      */
-    protected open fun getApiPathFromOrigin(routine: ApiRoutineEnum?): String {
+    protected open fun getApiPathFromOrigin(routine: ApiRoutineEnum): String {
         return ""
     }
 
@@ -95,21 +96,21 @@ abstract class Connection protected constructor() : IsEmpty {
         return getApiUri(data.getAccountActor(), routine).isPresent()
     }
 
-    private fun getApiUri(endpointActor: Actor?, routine: ApiRoutineEnum?): Optional<Uri> {
+    private fun getApiUri(endpointActor: Actor, routine: ApiRoutineEnum): Optional<Uri> {
         if (routine == null || routine == ApiRoutineEnum.DUMMY_API) {
             return Optional.empty()
         }
         val fromActor = endpointActor.getEndpoint(ActorEndpointType.Companion.from(routine))
-        return if (fromActor.isPresent) fromActor else Optional.of(getApiPathFromOrigin(routine)).flatMap { apiPath: String? -> pathToUri(apiPath).toOptional() }
+        return if (fromActor.isPresent) fromActor else Optional.of(getApiPathFromOrigin(routine)).flatMap { apiPath: String -> pathToUri(apiPath).toOptional() }
     }
 
-    fun pathToUri(path: String?): Try<Uri> {
+    fun pathToUri(path: String): Try<Uri> {
         return Try.success(path)
-                .filter { obj: String? -> StringUtil.nonEmpty() }
-                .flatMap { path2: String? -> UrlUtils.pathToUrl(data.getOriginUrl(), path2) }
-                .map { obj: URL? -> obj.toExternalForm() }
-                .map { obj: String? -> UriUtils.fromString() }
-                .filter { obj: Uri? -> UriUtils.isDownloadable() }
+                .filter { obj: String -> obj.isNotEmpty() }
+                .flatMap { path2: String -> UrlUtils.pathToUrl(data.getOriginUrl(), path2) }
+                .map { obj: URL -> obj.toExternalForm() }
+                .map { obj: String -> UriUtils.fromString(obj) }
+                .filter { obj: Uri -> UriUtils.isDownloadable(obj) }
     }
 
     /**
@@ -174,10 +175,11 @@ abstract class Connection protected constructor() : IsEmpty {
      * @see [Twitter
      * REST API Method: statuses/destroy](http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-statuses%C2%A0destroy)
      */
-    abstract fun deleteNote(noteOid: String?): Try<Boolean>
-    open fun getFriendsOrFollowers(routineEnum: ApiRoutineEnum?, position: TimelinePosition?, actor: Actor?): Try<InputActorPage> {
+    abstract fun deleteNote(noteOid: String): Try<Boolean>
+
+    open fun getFriendsOrFollowers(routineEnum: ApiRoutineEnum, position: TimelinePosition, actor: Actor): Try<InputActorPage> {
         return (if (routineEnum == ApiRoutineEnum.GET_FRIENDS) getFriends(actor) else getFollowers(actor))
-                .map(CheckedFunction<MutableList<Actor?>?, InputActorPage?> { actors: MutableList<Actor?>? -> InputActorPage.Companion.of(actors) })
+                .map(CheckedFunction<MutableList<Actor>, InputActorPage> { actors: MutableList<Actor> -> InputActorPage.Companion.of(actors) })
     }
 
     open fun getFriendsOrFollowersIds(routineEnum: ApiRoutineEnum?, actorOid: String?): Try<MutableList<String>>? {
@@ -187,7 +189,7 @@ abstract class Connection protected constructor() : IsEmpty {
     /**
      * Returns a list of actors the specified actor is following.
      */
-    open fun getFriends(actor: Actor?): Try<MutableList<Actor>>? {
+    open fun getFriends(actor: Actor): Try<MutableList<Actor>> {
         return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFriends for actor:" + actor.getUniqueNameWithOrigin()))
     }
@@ -195,12 +197,12 @@ abstract class Connection protected constructor() : IsEmpty {
     /**
      * Returns a list of IDs for every actor the specified actor is following.
      */
-    fun getFriendsIds(actorOid: String?): Try<MutableList<String>>? {
+    fun getFriendsIds(actorOid: String): Try<MutableList<String>> {
         return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFriendsIds for actorOid=$actorOid"))
     }
 
-    fun getFollowersIds(actorOid: String?): Try<MutableList<String>> {
+    fun getFollowersIds(actorOid: String): Try<MutableList<String>> {
         return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFollowersIds for actorOid=$actorOid"))
     }
@@ -248,15 +250,15 @@ abstract class Connection protected constructor() : IsEmpty {
      * @param syncYounger
      * @param actor For the [ApiRoutineEnum.ACTOR_TIMELINE], null for the other timelines
      */
-    abstract fun getTimeline(syncYounger: Boolean, apiRoutine: ApiRoutineEnum?,
-                             youngestPosition: TimelinePosition?, oldestPosition: TimelinePosition?, limit: Int, actor: Actor?): Try<InputTimelinePage?>
+    abstract fun getTimeline(syncYounger: Boolean, apiRoutine: ApiRoutineEnum,
+                             youngestPosition: TimelinePosition, oldestPosition: TimelinePosition, limit: Int, actor: Actor): Try<InputTimelinePage>
 
-    open fun searchNotes(syncYounger: Boolean, youngestPosition: TimelinePosition?,
-                         oldestPosition: TimelinePosition?, limit: Int, searchQuery: String?): Try<InputTimelinePage?> {
+    open fun searchNotes(syncYounger: Boolean, youngestPosition: TimelinePosition,
+                         oldestPosition: TimelinePosition, limit: Int, searchQuery: String): Try<InputTimelinePage> {
         return InputTimelinePage.Companion.TRY_EMPTY
     }
 
-    open fun searchActors(limit: Int, searchQuery: String?): Try<MutableList<Actor>> {
+    open fun searchActors(limit: Int, searchQuery: String): Try<List<Actor>> {
         return TryUtils.emptyList()
     }
 
@@ -267,8 +269,8 @@ abstract class Connection protected constructor() : IsEmpty {
     abstract fun follow(actorOid: String?, follow: Boolean?): Try<AActivity>
 
     /** Get information about the specified Actor  */
-    fun getActor(actorIn: Actor?): Try<Actor> {
-        return getActor2(actorIn).map(CheckedFunction { actor: Actor? ->
+    fun getActor(actorIn: Actor): Try<Actor> {
+        return getActor2(actorIn).map(CheckedFunction { actor: Actor ->
             if (actor.isFullyDefined() && actor.getUpdatedDate() <= RelativeTime.SOME_TIME_AGO) {
                 actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
             }
@@ -277,7 +279,7 @@ abstract class Connection protected constructor() : IsEmpty {
         })
     }
 
-    protected abstract fun getActor2(actorIn: Actor?): Try<Actor>
+    protected abstract fun getActor2(actorIn: Actor): Try<Actor>
     protected fun strFixedDownloadLimit(limit: Int, apiRoutine: ApiRoutineEnum?): String {
         return fixedDownloadLimit(limit, apiRoutine).toString()
     }
@@ -406,20 +408,12 @@ abstract class Connection protected constructor() : IsEmpty {
         return unixDate
     }
 
-    fun myContext(): MyContext? {
+    fun myContext(): MyContext {
         return http.data.myContext()
     }
 
     fun execute(request: HttpRequest?): Try<HttpReadResult> {
         return http.execute(request)
-    }
-
-    fun getHttp(): HttpConnection? {
-        return http
-    }
-
-    fun getData(): AccountConnectionData? {
-        return data
     }
 
     fun partialPathToApiPath(partialPath: String?): String {

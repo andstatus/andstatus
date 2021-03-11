@@ -20,7 +20,6 @@ import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.StopWatch
 import org.andstatus.app.util.TriState
 import java.util.concurrent.ConcurrentHashMap
-import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
@@ -41,7 +40,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
     }
 
     fun initialize(): CachedUsersAndActors {
-        val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+        val stopWatch: StopWatch = StopWatch.createStarted()
         initializeMyUsers()
         initializeMyFriendsOrFollowers(GroupType.FRIENDS, friendsOfMyActors)
         initializeMyFriendsOrFollowers(GroupType.FOLLOWERS, followersOfMyActors)
@@ -62,8 +61,8 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
         val sql = ("SELECT " + ActorSql.selectFullProjection()
                 + " FROM " + ActorSql.allTables()
                 + " WHERE " + UserTable.IS_MY + "=" + TriState.TRUE.id)
-        val function = Function<Cursor?, Actor?> { cursor: Cursor? -> Actor.Companion.fromCursor(myContext, cursor, true) }
-        MyQuery.get(myContext, sql, function).forEach(Consumer { actor: Actor? -> updateCache(actor) })
+        val function = Function<Cursor, Actor> { cursor: Cursor -> Actor.fromCursor(myContext, cursor, true) }
+        MyQuery.get(myContext, sql, function).forEach(Consumer { actor: Actor -> updateCache(actor) })
     }
 
     private fun initializeMyFriendsOrFollowers(groupType: GroupType, groupMembers: MutableMap<Long, MutableSet<Long>>) {
@@ -72,12 +71,12 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
         val sql = ("SELECT DISTINCT " + ActorSql.selectFullProjection()
                 + ", friends." + ActorTable.PARENT_ACTOR_ID + " AS " + MY_ACTOR_ID
                 + " FROM (" + ActorSql.allTables() + ")"
-                + " INNER JOIN (" + GroupMembership.Companion.selectMemberIds(myActors.keys, groupType, true)
+                + " INNER JOIN (" + GroupMembership.selectMemberIds(myActors.keys, groupType, true)
                 + " ) as friends ON friends." + GroupMembersTable.MEMBER_ID +
                 "=" + ActorTable.TABLE_NAME + "." + BaseColumns._ID)
-        val function = Function<Cursor?, Void?> { cursor: Cursor? ->
-            val other: Actor = Actor.Companion.fromCursor(myContext, cursor, true)
-            val me: Actor = Actor.Companion.load(myContext, DbUtils.getLong(cursor, MY_ACTOR_ID))
+        val function = Function<Cursor, Void> { cursor: Cursor ->
+            val other: Actor = Actor.fromCursor(myContext, cursor, true)
+            val me: Actor = Actor.load(myContext, DbUtils.getLong(cursor, MY_ACTOR_ID))
             groupMembers.compute(other.actorId, CollectionsUtil.addValue(me.actorId))
             null
         }
@@ -90,7 +89,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
 
     @JvmOverloads
     fun load(actorId: Long, reloadFirst: Boolean = false): Actor {
-        val actor: Actor = Actor.Companion.load(myContext, actorId, reloadFirst, Supplier<Actor?> { Actor.Companion.getEmpty() })
+        val actor: Actor = Actor.load(myContext, actorId, reloadFirst) { Actor.getEmpty() }
         if (reloadFirst && isMe(actor)) {
             reloadFriendsOrFollowersOfMy(GroupType.FRIENDS, friendsOfMyActors, actor)
             reloadFriendsOrFollowersOfMy(GroupType.FOLLOWERS, followersOfMyActors, actor)
@@ -98,11 +97,11 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
         return actor
     }
 
-    private fun reloadFriendsOrFollowersOfMy(groupType: GroupType?, groupMembers: MutableMap<Long?, MutableSet<Long?>?>?, actor: Actor?) {
-        groupMembers.entries.stream().filter { entry: MutableMap.MutableEntry<Long?, MutableSet<Long?>?>? -> entry.value.contains(actor.actorId) }
-                .forEach { entry: MutableMap.MutableEntry<Long?, MutableSet<Long?>?>? -> groupMembers.compute(entry.key, CollectionsUtil.removeValue(actor.actorId)) }
-        GroupMembership.Companion.getGroupMemberIds(myContext, actor.actorId, groupType)
-                .forEach(Consumer { friendId: Long? -> groupMembers.compute(friendId, CollectionsUtil.addValue(actor.actorId)) }
+    private fun reloadFriendsOrFollowersOfMy(groupType: GroupType, groupMembers: MutableMap<Long, MutableSet<Long>>, actor: Actor) {
+        groupMembers.entries.stream().filter { entry: MutableMap.MutableEntry<Long, MutableSet<Long>> -> entry.value.contains(actor.actorId) }
+                .forEach { entry: MutableMap.MutableEntry<Long, MutableSet<Long>> -> groupMembers.compute(entry.key, CollectionsUtil.removeValue(actor.actorId)) }
+        GroupMembership.getGroupMemberIds(myContext, actor.actorId, groupType)
+                .forEach(Consumer { friendId: Long -> groupMembers.compute(friendId, CollectionsUtil.addValue(actor.actorId)) }
                 )
     }
 
@@ -113,7 +112,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
                 + " SELECT DISTINCT " + TimelineTable.ACTOR_ID
                 + " FROM " + TimelineTable.TABLE_NAME
                 + ")")
-        val function = Function<Cursor?, Actor?> { cursor: Cursor? -> Actor.Companion.fromCursor(myContext, cursor, true) }
+        val function = Function<Cursor, Actor> { cursor: Cursor -> Actor.fromCursor(myContext, cursor, true) }
         MyQuery.get(myContext, sql, function)
     }
 
@@ -125,7 +124,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
         return "MyUsers{\n$myUsers\nMy actors: $myActors\nMy friends: $friendsOfMyActors}"
     }
 
-    fun isMeOrMyFriend(actor: Actor?): Boolean {
+    fun isMeOrMyFriend(actor: Actor): Boolean {
         return actor.nonEmpty && (isMe(actor) || friendsOfMyActors.containsKey(actor.actorId))
     }
 
@@ -134,26 +133,26 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
     }
 
     fun isMe(actorId: Long): Boolean {
-        return actorId != 0L && (myActors.containsKey(actorId) || myUsers.values.stream().anyMatch { user: User? -> user.actorIds.contains(actorId) })
+        return actorId != 0L && (myActors.containsKey(actorId) || myUsers.values.stream().anyMatch { user: User -> user.actorIds.contains(actorId) })
     }
 
-    fun lookupUser(actor: Actor?): Actor? {
+    fun lookupUser(actor: Actor): Actor {
         if (actor.user.nonEmpty) {
             updateCache(actor)
             return actor
         }
-        var user2: User = User.Companion.EMPTY
+        var user2: User = User.EMPTY
         if (user2.isEmpty && actor.actorId != 0L) {
-            user2 = User.Companion.load(myContext, actor.actorId)
+            user2 = User.load(myContext, actor.actorId)
         }
         if (user2.isEmpty && actor.isWebFingerIdValid()) {
-            user2 = User.Companion.load(myContext, MyQuery.webFingerIdToId(myContext, 0, actor.getWebFingerId(), false))
+            user2 = User.load(myContext, MyQuery.webFingerIdToId(myContext, 0, actor.getWebFingerId(), false))
         }
         if (user2.isEmpty) {
-            user2 = User.Companion.getNew()
+            user2 = User.getNew()
         }
-        if (actor.user.isMyUser.known) {
-            user2.setIsMyUser(actor.user.isMyUser)
+        if (actor.user.isMyUser().known) {
+            user2.setIsMyUser(actor.user.isMyUser())
         }
         actor.user = user2
         if (actor.user.nonEmpty) {
@@ -164,22 +163,26 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
 
     /** Tries to find this actor in this origin
      * Returns the same Actor, if not found  */
-    fun toOrigin(actor: Actor?, origin: Origin?): Actor? {
-        return if (actor.origin == origin) actor else actor.user.actorIds.stream().map { id: Long? -> actors.getOrDefault(id, Actor.EMPTY) }
-                .filter { a: Actor? -> a !== Actor.EMPTY && a.origin == origin }
+    fun toOrigin(actor: Actor, origin: Origin): Actor {
+        return if (actor.origin == origin) actor else actor.user.actorIds.stream()
+                .map { id: Long -> actors.getOrDefault(id, Actor.EMPTY) }
+                .filter { a: Actor -> a !== Actor.EMPTY && a.origin == origin }
                 .findAny().orElse(actor)
     }
 
-    fun userFromActorId(actorId: Long, userSupplier: Supplier<User?>?): User {
-        if (actorId == 0L) return User.Companion.EMPTY
+    fun userFromActorId(actorId: Long, userSupplier: Supplier<User>): User {
+        if (actorId == 0L) return User.EMPTY
         val user1 = actors.getOrDefault(actorId, Actor.EMPTY).user
-        return if (user1.nonEmpty) user1 else users.values.stream().filter { user: User? -> user.actorIds.contains(actorId) }.findFirst().orElseGet(userSupplier)
+        return if (user1.nonEmpty) user1 else users.values.stream()
+                .filter { user: User -> user.actorIds.contains(actorId) }
+                .findFirst()
+                .orElseGet(userSupplier)
     }
 
-    fun idToGroupType(actorId: Long): GroupType? {
+    fun idToGroupType(actorId: Long): GroupType {
         val groupTypeCached = actorGroupTypes.get(actorId)
         if (groupTypeCached != null) return groupTypeCached
-        val groupTypeStored: GroupType = GroupType.Companion.fromId(MyQuery.idToLongColumnValue(
+        val groupTypeStored: GroupType = GroupType.fromId(MyQuery.idToLongColumnValue(
                 myContext.getDatabase(), ActorTable.TABLE_NAME, ActorTable.GROUP_TYPE, actorId))
         actorGroupTypes[actorId] = groupTypeStored
         return groupTypeStored
@@ -195,14 +198,14 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
                 user.actorIds.add(actorId)
             }
             updateCachedActor(actors, actor)
-            if (user.isMyUser.isTrue) updateCachedActor(myActors, actor)
+            if (user.isMyUser().isTrue) updateCachedActor(myActors, actor)
         }
         if (userId == 0L) return
-        val cached = users.getOrDefault(userId, User.Companion.EMPTY)
+        val cached = users.getOrDefault(userId, User.EMPTY)
         if (cached.isEmpty) {
             users.putIfAbsent(userId, user)
-            if (user.isMyUser.isTrue) myUsers.putIfAbsent(userId, user)
-        } else if (user.isMyUser.isTrue && cached.isMyUser().untrue) {
+            if (user.isMyUser().isTrue) myUsers.putIfAbsent(userId, user)
+        } else if (user.isMyUser().isTrue && cached.isMyUser().untrue) {
             user.actorIds.addAll(cached.actorIds)
             users[userId] = user
             myUsers[userId] = user
@@ -211,7 +214,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
         }
     }
 
-    private fun updateCachedActor(actors: MutableMap<Long?, Actor?>?, actor: Actor?) {
+    private fun updateCachedActor(actors: MutableMap<Long, Actor>, actor: Actor) {
         if (actor.isEmpty) return
         if (actor.getUpdatedDate() <= RelativeTime.SOME_TIME_AGO) {
             actors.putIfAbsent(actor.actorId, actor)
@@ -223,7 +226,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
             if (actor.isOidReal()) {
                 originIdAndUsernameToActorId[actor.origin.id.toString() + ";" + actor.getUsername()] = actor.actorId
             }
-            myActors.computeIfPresent(actor.actorId, BiFunction { id: Long?, actor1: Actor? -> actor })
+            myActors.computeIfPresent(actor.actorId, { id: Long, actor1: Actor -> actor })
         }
     }
 

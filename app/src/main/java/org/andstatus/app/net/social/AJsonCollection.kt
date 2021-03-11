@@ -25,62 +25,62 @@ import java.util.*
 import java.util.stream.Collectors
 
 /** https://www.w3.org/TR/activitystreams-core/#collections  */
-class AJsonCollection private constructor(parentObjectIn: JSONObject?, propertyName: String?) : IsEmpty {
+class AJsonCollection private constructor(parentObjectIn: JSONObject, propertyName: String) : IsEmpty {
     /** https://www.w3.org/TR/activitystreams-core/#dfn-collectionpage  */
     enum class Type {
         EMPTY, COLLECTION, ORDERED_COLLECTION, PAGED_COLLECTION, PAGED_ORDERED_COLLECTION, PAGE, ORDERED_PAGE
     }
 
-    val objectOrId: ObjectOrId?
+    val objectOrId: ObjectOrId
     val id: Optional<String>
-    val type: Type?
-    val items: ObjectOrId?
-    val firstPage: AJsonCollection?
-    val prevPage: AJsonCollection?
-    val currentPage: AJsonCollection?
-    val nextPage: AJsonCollection?
-    val lastPage: AJsonCollection?
+    val type: Type
+    val items: ObjectOrId
+    val firstPage: AJsonCollection
+    val prevPage: AJsonCollection
+    val currentPage: AJsonCollection
+    val nextPage: AJsonCollection
+    val lastPage: AJsonCollection
     override val isEmpty: Boolean
         get() {
             return type == Type.EMPTY
         }
 
-    fun <T : IsEmpty?> mapAll(fromObject: CheckedFunction<JSONObject?, T?>?, fromId: CheckedFunction<String?, T?>?): MutableList<T?>? {
-        if (isEmpty) return emptyList()
-        val list: MutableList<T?> = ArrayList()
+    fun <T : IsEmpty> mapAll(fromObject: CheckedFunction<JSONObject, T>, fromId: CheckedFunction<String, T>): MutableList<T> {
+        if (isEmpty) return mutableListOf()
+        val list: MutableList<T> = ArrayList()
         list.addAll(items.mapAll(fromObject, fromId))
-        list.addAll(firstPage.mapAll<T?>(fromObject, fromId))
-        list.addAll(prevPage.mapAll<T?>(fromObject, fromId))
-        list.addAll(currentPage.mapAll<T?>(fromObject, fromId))
-        list.addAll(nextPage.mapAll<T?>(fromObject, fromId))
-        list.addAll(lastPage.mapAll<T?>(fromObject, fromId))
-        return list.stream().filter { obj: T? -> obj.nonEmpty }.collect(Collectors.toList())
+        list.addAll(firstPage.mapAll<T>(fromObject, fromId))
+        list.addAll(prevPage.mapAll<T>(fromObject, fromId))
+        list.addAll(currentPage.mapAll<T>(fromObject, fromId))
+        list.addAll(nextPage.mapAll<T>(fromObject, fromId))
+        list.addAll(lastPage.mapAll<T>(fromObject, fromId))
+        return list.stream().filter { obj: T -> obj.nonEmpty }.collect(Collectors.toList())
     }
 
-    fun <T : IsEmpty?> mapObjects(fromObject: CheckedFunction<JSONObject?, T?>?): MutableList<T?>? {
-        if (isEmpty) return emptyList()
-        val list: MutableList<T?> = ArrayList()
+    fun <T : IsEmpty> mapObjects(fromObject: CheckedFunction<JSONObject, T>): MutableList<T> {
+        if (isEmpty) return mutableListOf()
+        val list: MutableList<T> = ArrayList()
         list.addAll(items.mapObjects(fromObject))
-        list.addAll(firstPage.mapObjects<T?>(fromObject))
-        list.addAll(prevPage.mapObjects<T?>(fromObject))
-        list.addAll(currentPage.mapObjects<T?>(fromObject))
-        list.addAll(nextPage.mapObjects<T?>(fromObject))
-        list.addAll(lastPage.mapObjects<T?>(fromObject))
-        return list.stream().filter { obj: T? -> obj.nonEmpty }.collect(Collectors.toList())
+        list.addAll(firstPage.mapObjects<T>(fromObject))
+        list.addAll(prevPage.mapObjects<T>(fromObject))
+        list.addAll(currentPage.mapObjects<T>(fromObject))
+        list.addAll(nextPage.mapObjects<T>(fromObject))
+        list.addAll(lastPage.mapObjects<T>(fromObject))
+        return list.stream().filter { obj: T -> obj.nonEmpty }.collect(Collectors.toList())
     }
 
-    fun getId(): String? {
+    fun getId(): String {
         return id.orElse("")
     }
 
-    fun getPrevId(): String? {
+    fun getPrevId(): String {
         if (prevPage.id.isPresent()) return prevPage.id.get()
         if (firstPage.prevPage.id.isPresent()) return firstPage.prevPage.id.get()
         if (nextPage.id.isPresent()) return nextPage.id.get()
         return if (firstPage.id.isPresent()) firstPage.id.get() else getId()
     }
 
-    fun getNextId(): String? {
+    fun getNextId(): String {
         if (nextPage.id.isPresent()) return nextPage.id.get()
         if (firstPage.nextPage.id.isPresent()) return firstPage.nextPage.id.get()
         if (prevPage.id.isPresent()) return prevPage.id.get()
@@ -93,11 +93,11 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject?, propertyN
 
     companion object {
         val EMPTY = of("")
-        fun empty(): AJsonCollection? {
+        fun empty(): AJsonCollection {
             return EMPTY
         }
 
-        fun of(strRoot: String?): AJsonCollection? {
+        fun of(strRoot: String?): AJsonCollection {
             val parentObject: JSONObject
             parentObject = try {
                 if (strRoot.isNullOrEmpty()) {
@@ -112,11 +112,11 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject?, propertyN
         }
 
         @JvmOverloads
-        fun of(parentObject: JSONObject?, propertyName: String? = ""): AJsonCollection? {
+        fun of(parentObject: JSONObject, propertyName: String = ""): AJsonCollection {
             return AJsonCollection(parentObject, propertyName)
         }
 
-        private fun calcType(jso: JSONObject): Type? {
+        private fun calcType(jso: JSONObject): Type {
             return when (JsonUtils.optString(jso, "type")) {
                 "Collection" -> if (jso.has("items")) Type.COLLECTION else Type.PAGED_COLLECTION
                 "OrderedCollection" -> if (jso.has("orderedItems")) Type.ORDERED_COLLECTION else Type.PAGED_ORDERED_COLLECTION
@@ -126,25 +126,25 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject?, propertyN
             }
         }
 
-        private fun calcItems(jso: JSONObject, type: Type?): ObjectOrId? {
+        private fun calcItems(jso: JSONObject, type: Type?): ObjectOrId {
             return when (type) {
-                Type.COLLECTION, Type.PAGE -> ObjectOrId.Companion.of(jso, "items")
-                Type.ORDERED_COLLECTION, Type.ORDERED_PAGE -> ObjectOrId.Companion.of(jso, "orderedItems")
-                else -> ObjectOrId.Companion.empty()
+                Type.COLLECTION, Type.PAGE -> ObjectOrId.of(jso, "items")
+                Type.ORDERED_COLLECTION, Type.ORDERED_PAGE -> ObjectOrId.of(jso, "orderedItems")
+                else -> ObjectOrId.empty()
             }
         }
     }
 
     init {
-        objectOrId = if (propertyName.isNullOrEmpty()) ObjectOrId.Companion.of(parentObjectIn) else ObjectOrId.Companion.of(parentObjectIn, propertyName)
-        val parent = objectOrId.optObj
-        id = if (objectOrId.id.isPresent) objectOrId.id else parent.flatMap { p: JSONObject? -> ObjectOrId.Companion.of(p, "id").id }
-        type = parent.map { jso: JSONObject? -> calcType(jso) }.orElse(Type.EMPTY)
-        items = parent.map { p: JSONObject? -> calcItems(p, type) }.orElse(ObjectOrId.Companion.empty())
-        firstPage = parent.map { p: JSONObject? -> of(p, "first") }.orElse(empty())
-        prevPage = parent.map { p: JSONObject? -> of(p, "prev") }.orElse(empty())
-        currentPage = parent.map { p: JSONObject? -> of(p, "current") }.orElse(empty())
-        nextPage = parent.map { p: JSONObject? -> of(p, "next") }.orElse(empty())
-        lastPage = parent.map { p: JSONObject? -> of(p, "last") }.orElse(empty())
+        objectOrId = if (propertyName.isEmpty()) ObjectOrId.of(parentObjectIn) else ObjectOrId.of(parentObjectIn, propertyName)
+        val parent: Optional<JSONObject> = objectOrId.optObj
+        id = if (objectOrId.id.isPresent) objectOrId.id else parent.flatMap { p: JSONObject -> ObjectOrId.of(p, "id").id }
+        type = parent.map { jso: JSONObject -> calcType(jso) }.orElse(Type.EMPTY)
+        items = parent.map { p: JSONObject -> calcItems(p, type) }.orElse(ObjectOrId.empty())
+        firstPage = parent.map { p: JSONObject -> of(p, "first") }.orElse(empty())
+        prevPage = parent.map { p: JSONObject -> of(p, "prev") }.orElse(empty())
+        currentPage = parent.map { p: JSONObject -> of(p, "current") }.orElse(empty())
+        nextPage = parent.map { p: JSONObject -> of(p, "next") }.orElse(empty())
+        lastPage = parent.map { p: JSONObject -> of(p, "last") }.orElse(empty())
     }
 }

@@ -29,7 +29,7 @@ enum class TimelineType(val scope: ListScope,
                         private val code: String, @field:StringRes @param:StringRes private val titleResId: Int,
                         @field:StringRes @param:StringRes val titleResWithParamsId: Int,
                         /** Api routine to download this timeline  */
-                        private val connectionApiRoutine: ApiRoutineEnum) : SelectableEnum {
+                        val connectionApiRoutine: ApiRoutineEnum) : SelectableEnum {
 
     UNKNOWN(ListScope.ORIGIN, "unknown", R.string.timeline_title_unknown, 0, ApiRoutineEnum.DUMMY_API),
 
@@ -75,7 +75,7 @@ enum class TimelineType(val scope: ListScope,
     }
 
     fun isSyncable(): Boolean {
-        return getConnectionApiRoutine() != ApiRoutineEnum.DUMMY_API
+        return connectionApiRoutine != ApiRoutineEnum.DUMMY_API
     }
 
     fun isSyncedAutomaticallyByDefault(): Boolean {
@@ -149,10 +149,6 @@ enum class TimelineType(val scope: ListScope,
 
     override fun getDialogTitleResId(): Int {
         return R.string.dialog_title_select_timeline
-    }
-
-    fun getConnectionApiRoutine(): ApiRoutineEnum {
-        return connectionApiRoutine
     }
 
     companion object {

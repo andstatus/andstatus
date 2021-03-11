@@ -39,12 +39,12 @@ object CollectionsUtil {
     }
 
     /** Helper for [java.util.Map.compute] where the map value is an immutable [Set].  */
-    fun <T> addValue(toAdd: T?): BiFunction<T?, MutableSet<T?>?, MutableSet<T?>?> {
-        return BiFunction { key: T?, valuesNullable: MutableSet<T?>? ->
+    fun <T> addValue(toAdd: T): BiFunction<T, MutableSet<T>?, MutableSet<T>?> {
+        return BiFunction { key: T, valuesNullable: MutableSet<T>? ->
             if (valuesNullable != null && valuesNullable.contains(toAdd)) {
                 valuesNullable
             } else {
-                val values: MutableSet<T?> = HashSet()
+                val values: MutableSet<T> = HashSet()
                 if (valuesNullable != null) values.addAll(valuesNullable)
                 values.add(toAdd)
                 values
@@ -53,8 +53,8 @@ object CollectionsUtil {
     }
 
     /** Helper for [java.util.Map.compute] where the map value is an immutable [Set].  */
-    fun <T> removeValue(toRemove: T?): BiFunction<T?, MutableSet<T?>?, MutableSet<T?>?> {
-        return BiFunction { key: T?, valuesNullable: MutableSet<T?>? ->
+    fun <T> removeValue(toRemove: T): BiFunction<T, MutableSet<T>?, MutableSet<T>?> {
+        return BiFunction { key: T, valuesNullable: MutableSet<T>? ->
             if (valuesNullable != null && valuesNullable.contains(toRemove))
                 valuesNullable.stream()
                         .filter { key2: T? -> key2 !== toRemove }

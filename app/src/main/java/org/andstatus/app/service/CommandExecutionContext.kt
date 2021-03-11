@@ -9,15 +9,16 @@ import org.andstatus.app.timeline.meta.Timeline
 class CommandExecutionContext(val myContext: MyContext, val commandData: CommandData) {
 
     fun getConnection(): Connection {
-        return getMyAccount().connection
+        return getMyAccount().getConnection()
     }
 
     fun getMyAccount(): MyAccount {
         if (commandData.myAccount.isValid) return commandData.myAccount
-        return if (getTimeline().myAccountToSync.isValid) getTimeline().myAccountToSync else myContext.accounts().firstSucceeded
+        return if (getTimeline().myAccountToSync.isValid) getTimeline().myAccountToSync
+        else myContext.accounts().getFirstSucceeded()
     }
 
-    fun getContext(): Context? {
+    fun getContext(): Context {
         return myContext.context()
     }
 
@@ -25,7 +26,7 @@ class CommandExecutionContext(val myContext: MyContext, val commandData: Command
         return commandData.getTimeline()
     }
 
-    fun getResult(): CommandResult? {
+    fun getResult(): CommandResult {
         return commandData.getResult()
     }
 
@@ -34,12 +35,11 @@ class CommandExecutionContext(val myContext: MyContext, val commandData: Command
     }
 
     // TODO: Do we need this?
-    fun toExceptionContext(): String? {
+    fun toExceptionContext(): String {
         return toString()
     }
 
-    fun getCommandSummary(): String? {
-        val commandData = getCommandData() ?: return "No command"
-        return commandData.toCommandSummary(getMyContext())
+    fun getCommandSummary(): String {
+        return commandData.toCommandSummary(myContext)
     }
  }

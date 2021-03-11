@@ -37,7 +37,7 @@ class AvatarFile private constructor(private val actor: Actor, filename: String,
     }
 
     fun getActor(): Actor {
-        return actor ?: Actor.EMPTY
+        return actor
     }
 
     public override fun getDefaultImage(): CachedImage {
@@ -49,16 +49,16 @@ class AvatarFile private constructor(private val actor: Actor, filename: String,
     }
 
     public override fun requestDownload() {
-        if (getActor().actorId == 0L || !getActor().hasAvatar() || !contentType.downloadMediaOfThisType) return
+        if (getActor().actorId == 0L || !getActor().hasAvatar() || !contentType.getDownloadMediaOfThisType()) return
         MyLog.v(this) {
             """
      Requesting download ${getActor()}
      $this
      """.trimIndent()
         }
-        MyServiceManager.Companion.sendCommand(
-                CommandData.Companion.newActorCommandAtOrigin(CommandEnum.GET_AVATAR, getActor(),
-                        getActor().username, getActor().origin))
+        MyServiceManager.sendCommand(
+                CommandData.newActorCommandAtOrigin(CommandEnum.GET_AVATAR, getActor(),
+                        getActor().getUsername(), getActor().origin))
     }
 
     override fun isDefaultImageRequired(): Boolean {
@@ -76,18 +76,18 @@ class AvatarFile private constructor(private val actor: Actor, filename: String,
     }
 
     companion object {
-        val EMPTY: AvatarFile = AvatarFile(Actor.EMPTY, "", MediaMetadata.Companion.EMPTY,
+        val EMPTY: AvatarFile = AvatarFile(Actor.EMPTY, "", MediaMetadata.EMPTY,
                 DownloadStatus.ABSENT, RelativeTime.DATETIME_MILLIS_NEVER)
         const val AVATAR_SIZE_DIP = 48
-        fun fromCursor(actor: Actor?, cursor: Cursor?): AvatarFile {
+        fun fromCursor(actor: Actor, cursor: Cursor): AvatarFile {
             val filename = DbUtils.getString(cursor, DownloadTable.AVATAR_FILE_NAME)
-            return if (actor.isEmpty) EMPTY else AvatarFile(actor, filename, MediaMetadata.Companion.fromCursor(cursor),
-                    DownloadStatus.Companion.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
+            return if (actor.isEmpty) EMPTY else AvatarFile(actor, filename, MediaMetadata.fromCursor(cursor),
+                    DownloadStatus.load(DbUtils.getLong(cursor, DownloadTable.DOWNLOAD_STATUS)),
                     DbUtils.getLong(cursor, DownloadTable.DOWNLOADED_DATE))
         }
 
         fun fromActorOnly(actor: Actor): AvatarFile {
-            return if (actor.isEmpty) EMPTY else AvatarFile(actor, "", MediaMetadata.Companion.EMPTY, DownloadStatus.UNKNOWN, RelativeTime.DATETIME_MILLIS_NEVER)
+            return if (actor.isEmpty) EMPTY else AvatarFile(actor, "", MediaMetadata.EMPTY, DownloadStatus.UNKNOWN, RelativeTime.DATETIME_MILLIS_NEVER)
         }
     }
 }

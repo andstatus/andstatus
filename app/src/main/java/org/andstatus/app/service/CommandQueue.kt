@@ -40,11 +40,11 @@ import java.util.function.Function
 /**
  * @author yvolk@yurivolkov.com
  */
-class CommandQueue(private val myContext: MyContext?) {
-    private val mRetryQueueProcessedAt: AtomicLong? = AtomicLong()
-    private val queues: MutableMap<QueueType?, OneQueue?>? = HashMap()
-    private val generalAccessor: Accessor?
-    private val accessors: MutableMap<AccessorType?, Accessor?>? = HashMap()
+class CommandQueue(private val myContext: MyContext) {
+    private val mRetryQueueProcessedAt: AtomicLong = AtomicLong()
+    private val queues: MutableMap<QueueType, OneQueue> = HashMap()
+    private val generalAccessor: Accessor
+    private val accessors: MutableMap<AccessorType, Accessor> = HashMap()
 
     @Volatile
     private var loaded = false
@@ -52,8 +52,8 @@ class CommandQueue(private val myContext: MyContext?) {
     @Volatile
     private var changed = false
 
-    internal class OneQueue private constructor(val queueType: QueueType?) {
-        var queue: Queue<CommandData?>? = PriorityBlockingQueue(INITIAL_CAPACITY)
+    class OneQueue private constructor(val queueType: QueueType) {
+        var queue: Queue<CommandData> = PriorityBlockingQueue(INITIAL_CAPACITY)
         fun clear() {
             queue.clear()
         }
@@ -71,8 +71,8 @@ class CommandQueue(private val myContext: MyContext?) {
             return false
         }
 
-        fun addToQueue(commandData: CommandData?): Boolean {
-            when (commandData.getCommand()) {
+        fun addToQueue(commandData: CommandData): Boolean {
+            when (commandData.command) {
                 CommandEnum.EMPTY, CommandEnum.UNKNOWN -> {
                     MyLog.v(TAG) { "Didn't add unknown command to $queueType queue: $commandData" }
                     return true
@@ -106,17 +106,17 @@ class CommandQueue(private val myContext: MyContext?) {
         }
     }
 
-    fun getAccessor(accessorType: AccessorType?): Accessor {
+    fun getAccessor(accessorType: AccessorType): Accessor {
         val accessor = accessors.get(accessorType)
         return accessor ?: generalAccessor
     }
 
-    operator fun get(queueType: QueueType?): OneQueue {
+    operator fun get(queueType: QueueType): OneQueue {
         return queues.get(queueType) ?: throw IllegalArgumentException("Unknown queueType $queueType")
     }
 
     @Synchronized
-    fun load(): CommandQueue? {
+    fun load(): CommandQueue {
         if (loaded) {
             MyLog.v(TAG, "Already loaded")
         } else {
@@ -305,11 +305,11 @@ class CommandQueue(private val myContext: MyContext?) {
         return accessors.values.stream().anyMatch { obj: Accessor? -> obj.isAnythingToExecuteNow() }
     }
 
-    internal enum class AccessorType {
+    enum class AccessorType {
         GENERAL, DOWNLOADS
     }
 
-    internal class Accessor private constructor(private val cq: CommandQueue?, val accessorType: AccessorType?) {
+    class Accessor private constructor(private val cq: CommandQueue?, val accessorType: AccessorType?) {
         fun isAnythingToExecuteNow(): Boolean {
             moveCommandsFromPreToMainQueue()
             return (!cq.loaded

@@ -41,7 +41,7 @@ class User(userId: Long, knownAs: String, isMyUser: TriState, actorIds: Set<Long
     var userId = 0L
     private var knownAs: String = ""
     private var isMyUser: TriState = TriState.UNKNOWN
-    val actorIds: Set<Long>
+    val actorIds: MutableSet<Long>
 
     override val isEmpty: Boolean
         get() {
@@ -150,6 +150,6 @@ class User(userId: Long, knownAs: String, isMyUser: TriState, actorIds: Set<Long
         this.userId = userId
         this.knownAs = knownAs
         this.isMyUser = isMyUser
-        this.actorIds = actorIds
+        this.actorIds = actorIds.toMutableSet()
     }
 }

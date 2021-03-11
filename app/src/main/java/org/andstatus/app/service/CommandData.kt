@@ -38,6 +38,7 @@ import org.andstatus.app.service.CommandQueue.OneQueue
 import org.andstatus.app.timeline.ListScope
 import org.andstatus.app.timeline.WhichPage
 import org.andstatus.app.timeline.meta.Timeline
+import org.andstatus.app.timeline.meta.TimelineTitle
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.BundleUtils
 import org.andstatus.app.util.I18n
@@ -118,7 +119,7 @@ class CommandData private constructor(
         return bundle
     }
 
-    fun toContentValues(values: ContentValues?) {
+    fun toContentValues(values: ContentValues) {
         ContentValuesUtils.putNotZero(values, BaseColumns._ID, commandId)
         ContentValuesUtils.putNotZero(values, CommandTable.CREATED_DATE, createdDate)
         values.put(CommandTable.COMMAND_CODE, command.save())
@@ -170,10 +171,9 @@ class CommandData private constructor(
         return result
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o !is CommandData) return false
-        val other = o as CommandData?
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is CommandData) return false
         if (command != other.command) return false
         if (myAccount != other.myAccount) return false
         return if (commandTimeline != other.commandTimeline) false else itemId == other.itemId
@@ -211,15 +211,15 @@ class CommandData private constructor(
         return commandResult
     }
 
-    fun share(myContext: MyContext?): String? {
+    fun share(myContext: MyContext): String {
         return toUserFriendlyForm(myContext, false)
     }
 
-    fun toCommandSummary(myContext: MyContext?): String? {
+    fun toCommandSummary(myContext: MyContext): String {
         return toUserFriendlyForm(myContext, true)
     }
 
-    private fun toUserFriendlyForm(myContext: MyContext?, summaryOnly: Boolean): String? {
+    private fun toUserFriendlyForm(myContext: MyContext, summaryOnly: Boolean): String {
         val builder: MyStringBuilder = MyStringBuilder.Companion.of(
                 if (command == CommandEnum.GET_TIMELINE || command == CommandEnum.GET_OLDER_TIMELINE) "" else toShortCommandName(myContext))
         if (!summaryOnly) {
@@ -229,17 +229,17 @@ class CommandData private constructor(
         when (command) {
             CommandEnum.GET_AVATAR -> {
                 builder.withSpace(ListScope.USER.timelinePreposition(myContext))
-                builder.withSpace(getTimeline().actor.webFingerId)
-                if (myContext.accounts().distinctOriginsCount > 1) {
+                builder.withSpace(getTimeline().actor.getWebFingerId())
+                if (myContext.accounts().getDistinctOriginsCount() > 1) {
                     builder.withSpace(ListScope.ORIGIN.timelinePreposition(myContext))
                     builder.withSpace(commandTimeline.origin.name)
                 }
             }
             CommandEnum.GET_ATTACHMENT, CommandEnum.UPDATE_NOTE -> builder.withSpaceQuoted(trimConditionally(description, summaryOnly))
-            CommandEnum.GET_TIMELINE -> builder.append(from(myContext, getTimeline()).toString())
+            CommandEnum.GET_TIMELINE -> builder.append(TimelineTitle.from(myContext, getTimeline()).toString())
             CommandEnum.GET_OLDER_TIMELINE -> {
                 builder.append(WhichPage.OLDER.getTitle(myContext.context()))
-                builder.withSpace(from(myContext, getTimeline()).toString())
+                builder.withSpace(TimelineTitle.from(myContext, getTimeline()).toString())
             }
             CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW, CommandEnum.GET_FOLLOWERS, CommandEnum.GET_FRIENDS -> builder.withSpace(getTimeline().actor.actorNameInTimeline)
             CommandEnum.GET_ACTOR, CommandEnum.SEARCH_ACTORS -> if (!getUsername().isNullOrEmpty()) builder.withSpaceQuoted(getUsername())
@@ -252,26 +252,26 @@ class CommandData private constructor(
         return builder.toString()
     }
 
-    private fun appendScopeName(myContext: MyContext?, builder: MyStringBuilder?) {
+    private fun appendScopeName(myContext: MyContext, builder: MyStringBuilder) {
         if (getTimeline().myAccountToSync.isValid) {
             builder.withSpace(getTimelineType().scope.timelinePreposition(myContext))
             if (getTimelineType().isAtOrigin()) {
                 builder.withSpace(commandTimeline.origin.name)
             } else {
-                builder.withSpace(getTimeline().myAccountToSync.accountName)
+                builder.withSpace(getTimeline().myAccountToSync.getAccountName())
             }
         }
     }
 
-    fun createdDateWithLabel(context: Context?): String? {
+    fun createdDateWithLabel(context: Context): String {
         return context.getText(R.string.created_label).toString() + " " + RelativeTime.getDifference(context, getCreatedDate())
     }
 
-    fun toCommandProgress(myContext: MyContext?): String? {
+    fun toCommandProgress(myContext: MyContext): String {
         return toShortCommandName(myContext) + "; " + getResult().getProgress()
     }
 
-    private fun toShortCommandName(myContext: MyContext?): String? {
+    private fun toShortCommandName(myContext: MyContext): String {
         val builder = StringBuilder()
         when (command) {
             CommandEnum.GET_TIMELINE -> builder.append(getTimelineType().title(myContext.context()))
@@ -280,14 +280,14 @@ class CommandData private constructor(
                 builder.append(" ")
                 builder.append(getTimelineType().title(myContext.context()))
             }
-            else -> builder.append(command.getTitle(myContext, getTimeline().myAccountToSync.accountName))
+            else -> builder.append(command.getTitle(myContext, getTimeline().myAccountToSync.getAccountName()))
         }
         return builder.toString()
     }
 
     /** @return true if the command was deleted
      */
-    fun deleteFromQueue(oneQueue: OneQueue?): Boolean {
+    private fun deleteFromQueue(oneQueue: OneQueue): Boolean {
         val queue = oneQueue.queue
         val deleted = AtomicBoolean(false)
         val method = "deleteFromQueue " + oneQueue.queueType
@@ -322,7 +322,7 @@ class CommandData private constructor(
     }
 
     fun resetRetries() {
-        getResult().resetRetries(getCommand())
+        getResult().resetRetries(command)
     }
 
     fun getCommandId(): Long {
@@ -459,7 +459,7 @@ class CommandData private constructor(
             return commandData
         }
 
-        fun fromCursor(myContext: MyContext?, cursor: Cursor?): CommandData? {
+        fun fromCursor(myContext: MyContext, cursor: Cursor): CommandData {
             val command: CommandEnum = CommandEnum.Companion.load(DbUtils.getString(cursor, CommandTable.COMMAND_CODE))
             if (CommandEnum.UNKNOWN == command) return EMPTY
             val commandData = CommandData(

@@ -107,7 +107,7 @@ enum class CommandEnum @JvmOverloads constructor(
         /**
          * Returns the enum for a String action code or UNKNOWN
          */
-        fun load(strCode: String?): CommandEnum? {
+        fun load(strCode: String?): CommandEnum {
             if (!strCode.isNullOrEmpty()) {
                 for (serviceCommand in values()) {
                     if (serviceCommand.code == strCode) {

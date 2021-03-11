@@ -27,7 +27,6 @@ import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
-import java.util.function.BiConsumer
 import java.util.function.Consumer
 
 /**
@@ -54,11 +53,11 @@ class CommandResult : Parcelable {
     // Counters for user notifications
     private var downloadedCount: Long = 0
     private var newCount: Long = 0
-    val notificationEventCounts: MutableMap<NotificationEventType?, AtomicLong?>? = HashMap()
+    val notificationEventCounts: MutableMap<NotificationEventType, AtomicLong> = HashMap()
 
     constructor() {}
 
-    override fun writeToParcel(dest: Parcel?, flags: Int) {
+    override fun writeToParcel(dest: Parcel, flags: Int) {
         dest.writeLong(lastExecutedDate)
         dest.writeInt(executionCount)
         dest.writeInt(retriesLeft)
@@ -73,7 +72,7 @@ class CommandResult : Parcelable {
         dest.writeString(progress)
     }
 
-    constructor(parcel: Parcel?) {
+    constructor(parcel: Parcel) {
         lastExecutedDate = parcel.readLong()
         executionCount = parcel.readInt()
         retriesLeft = parcel.readInt()
@@ -88,7 +87,7 @@ class CommandResult : Parcelable {
         progress = parcel.readString()
     }
 
-    fun toContentValues(values: ContentValues?) {
+    fun toContentValues(values: ContentValues) {
         values.put(CommandTable.LAST_EXECUTED_DATE, lastExecutedDate)
         values.put(CommandTable.EXECUTION_COUNT, executionCount)
         values.put(CommandTable.RETRIES_LEFT, retriesLeft)
@@ -127,14 +126,14 @@ class CommandResult : Parcelable {
     }
 
     override fun toString(): String {
-        return MyStringBuilder.Companion.formatKeyValue(this, toSummaryBuilder())
+        return MyStringBuilder.formatKeyValue(this, toSummaryBuilder())
     }
 
-    fun toSummary(): String? {
+    fun toSummary(): String {
         return toSummaryBuilder().toString()
     }
 
-    private fun toSummaryBuilder(): StringBuilder? {
+    private fun toSummaryBuilder(): StringBuilder {
         val message = StringBuilder()
         if (executionCount > 0) {
             message.append("executed:$executionCount, ")
@@ -155,7 +154,9 @@ class CommandResult : Parcelable {
         if (newCount > 0) {
             message.append("new:$newCount, ")
         }
-        notificationEventCounts.forEach(BiConsumer { event: NotificationEventType?, count: AtomicLong? -> if (count.get() > 0) message.append(event.name + ":" + count.get() + ", ") })
+        notificationEventCounts.forEach { event: NotificationEventType, count: AtomicLong ->
+            if (count.get() > 0) message.append(event.name + ":" + count.get() + ", ")
+        }
         if (!mMessage.isNullOrEmpty()) {
             message.append(" \n$mMessage")
         }
@@ -209,7 +210,8 @@ class CommandResult : Parcelable {
     fun onNotificationEvent(event: NotificationEventType) {
         if (event == NotificationEventType.EMPTY) return
         val count = notificationEventCounts.get(event)
-        count?.incrementAndGet() ?: (notificationEventCounts[event] = AtomicLong(1))
+        count?.incrementAndGet()
+        if (count == null) notificationEventCounts[event] = AtomicLong(1)
     }
 
     fun incrementDownloadedCount() {
@@ -248,7 +250,7 @@ class CommandResult : Parcelable {
         hourlyLimit = 0
         remainingHits = 0
         newCount = 0
-        notificationEventCounts.values.forEach(Consumer { c: AtomicLong? -> c.set(0) })
+        notificationEventCounts.values.forEach(Consumer { c: AtomicLong -> c.set(0) })
         downloadedCount = 0
         progress = ""
     }
@@ -296,17 +298,18 @@ class CommandResult : Parcelable {
 
     companion object {
         const val INITIAL_NUMBER_OF_RETRIES = 10
-        val CREATOR: Parcelable.Creator<CommandResult?>? = object : Parcelable.Creator<CommandResult?> {
-            override fun createFromParcel(`in`: Parcel?): CommandResult? {
-                return CommandResult(`in`)
+
+        @JvmField val CREATOR: Parcelable.Creator<CommandResult> = object : Parcelable.Creator<CommandResult> {
+            override fun createFromParcel(inp: Parcel): CommandResult {
+                return CommandResult(inp)
             }
 
-            override fun newArray(size: Int): Array<CommandResult?>? {
+            override fun newArray(size: Int): Array<CommandResult?> {
                 return arrayOfNulls<CommandResult?>(size)
             }
         }
 
-        fun fromCursor(cursor: Cursor?): CommandResult? {
+        fun fromCursor(cursor: Cursor): CommandResult {
             val result = CommandResult()
             result.lastExecutedDate = DbUtils.getLong(cursor, CommandTable.LAST_EXECUTED_DATE)
             result.executionCount = DbUtils.getInt(cursor, CommandTable.EXECUTION_COUNT)
@@ -320,7 +323,7 @@ class CommandResult : Parcelable {
             return result
         }
 
-        fun toString(commandResult: CommandResult?): String? {
+        fun toString(commandResult: CommandResult?): String {
             return commandResult?.toString() ?: "(result is null)"
         }
     }

@@ -89,7 +89,7 @@ class Actor private constructor(// In our system
     private var latestActivity: AActivity? = null
 
     // Hack for Twitter-like origins...
-    var isMyFriend: TriState? = TriState.UNKNOWN
+    var isMyFriend: TriState = TriState.UNKNOWN
 
     @Volatile
     var actorId = 0L
@@ -575,7 +575,7 @@ class Actor private constructor(// In our system
 
     fun getRecipientName(): String {
         return if (groupType == GroupType.FOLLOWERS) {
-            origin.myContext.context()?.getText(R.string.followers)?.toString() ?: ""
+            origin.myContext.context().getText(R.string.followers).toString()
         } else uniqueName
     }
 
@@ -645,8 +645,8 @@ class Actor private constructor(// In our system
         } else oid.compareTo(other.oid)
     }
 
-    fun getLatestActivity(): AActivity? {
-        return latestActivity
+    fun getLatestActivity(): AActivity {
+        return latestActivity ?: AActivity.EMPTY
     }
 
     fun setLatestActivity(latestActivity: AActivity) {
@@ -811,7 +811,7 @@ class Actor private constructor(// In our system
         }
 
         /** Updates cache on load  */
-        fun fromCursor(myContext: MyContext, cursor: Cursor?, useCache: Boolean): Actor {
+        fun fromCursor(myContext: MyContext, cursor: Cursor, useCache: Boolean): Actor {
             val updatedDate = DbUtils.getLong(cursor, ActorTable.UPDATED_DATE)
             val actor = fromTwoIds(
                     myContext.origins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
