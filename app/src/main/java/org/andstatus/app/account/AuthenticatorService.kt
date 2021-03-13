@@ -109,7 +109,7 @@ class AuthenticatorService : Service() {
                                     .fromAccountName(account.name)
                         }
                         .filter { obj: MyAccount -> obj.isValid }
-                        .map { ma: MyAccount? ->
+                        .map { ma: MyAccount ->
                             MyLog.i(this, "Removing $ma")
                             MyContextHolder.myContextHolder.getNow().timelines().onAccountDelete(ma)
                             MyPreferences.onPreferencesChanged()

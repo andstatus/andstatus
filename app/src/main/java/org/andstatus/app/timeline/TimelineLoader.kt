@@ -31,13 +31,14 @@ import java.util.function.Consumer
 /**
  * @author yvolk@yurivolkov.com
  */
-class TimelineLoader<T : ViewItem<T?>?>(params: TimelineParameters, instanceId: Long) : SyncLoader<T?>() {
-    private val params: TimelineParameters?
-    private val page: TimelinePage<T?>?
+class TimelineLoader<T : ViewItem<T>>(params: TimelineParameters, instanceId: Long) : SyncLoader<T>() {
+    private val params: TimelineParameters
+    private val page: TimelinePage<T>
     private val instanceId: Long
+
     override fun load(publisher: ProgressPublisher?) {
         val method = "load"
-        val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+        val stopWatch: StopWatch = StopWatch.createStarted()
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, method + " started; " + params.toSummary())
         }
@@ -56,7 +57,7 @@ class TimelineLoader<T : ViewItem<T?>?>(params: TimelineParameters, instanceId: 
 
     private fun queryDatabase(): Cursor? {
         val method = "queryDatabase"
-        val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+        val stopWatch: StopWatch = StopWatch.createStarted()
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, "$method started")
         }
@@ -79,20 +80,20 @@ class TimelineLoader<T : ViewItem<T?>?>(params: TimelineParameters, instanceId: 
         return cursor
     }
 
-    private fun loadFromCursor(cursor: Cursor?): MutableList<T?>? {
+    private fun loadFromCursor(cursor: Cursor?): MutableList<T> {
         val method = "loadFromCursor"
-        val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+        val stopWatch: StopWatch = StopWatch.createStarted()
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, "$method started")
         }
-        val items: MutableList<T?> = ArrayList()
+        val items: MutableList<T> = ArrayList()
         var rowsCount = 0
         if (cursor != null && !cursor.isClosed) {
             try {
                 if (cursor.moveToFirst()) {
                     do {
                         rowsCount++
-                        val item: T? = page.getEmptyItem().fromCursor(params.getMyContext(), cursor) as T
+                        val item: T = page.getEmptyItem().fromCursor(params.getMyContext(), cursor)
                         getParams().rememberItemDateLoaded(item.getDate())
                         items.add(item)
                     } while (cursor.moveToNext())
@@ -108,26 +109,26 @@ class TimelineLoader<T : ViewItem<T?>?>(params: TimelineParameters, instanceId: 
         return items
     }
 
-    private fun loadActors(items: MutableList<T?>?): MutableList<T?>? {
+    private fun loadActors(items: MutableList<T>): MutableList<T> {
         if (items.isEmpty() && !params.timeline.hasActorProfile()) return items
         val loader = ActorsLoader(params.getMyContext(), ActorsScreenType.ACTORS_AT_ORIGIN,
-                getParams().getTimeline().origin, 0, "")
-        items.forEach(Consumer { item: T? -> item.addActorsToLoad(loader) })
+                getParams().timeline.getOrigin(), 0, "")
+        items.forEach(Consumer { item: T -> item.addActorsToLoad(loader) })
         if (params.timeline.timelineType.hasActorProfile()) loader.addActorToList(params.timeline.actor)
-        if (loader.list.isEmpty()) return items
-        loader.load { progress: String? -> }
-        items.forEach(Consumer { item: T? -> item.setLoadedActors(loader) })
+        if (loader.getList().isEmpty()) return items
+        loader.load(null)
+        items.forEach(Consumer { item: T -> item.setLoadedActors(loader) })
         page.setLoadedActor(loader)
         return items
     }
 
-    protected fun filter(items: MutableList<T?>?) {
+    protected fun filter(items: MutableList<T>) {
         val method = "filter"
-        val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+        val stopWatch: StopWatch = StopWatch.createStarted()
         if (MyLog.isDebugEnabled()) {
             MyLog.d(this, "$method started")
         }
-        val filter = TimelineFilter(getParams().getTimeline())
+        val filter = TimelineFilter(getParams().timeline)
         var rowsCount = 0
         var filteredOutCount = 0
         val reversedOrder = getParams().isSortOrderAscending()
@@ -153,15 +154,15 @@ class TimelineLoader<T : ViewItem<T?>?>(params: TimelineParameters, instanceId: 
         }
     }
 
-    fun getParams(): TimelineParameters? {
+    fun getParams(): TimelineParameters {
         return params
     }
 
     override fun toString(): String {
-        return MyStringBuilder.Companion.formatKeyValue(this, getParams())
+        return MyStringBuilder.formatKeyValue(this, getParams())
     }
 
-    fun getPage(): TimelinePage<T?> {
+    fun getPage(): TimelinePage<T> {
         return page
     }
 

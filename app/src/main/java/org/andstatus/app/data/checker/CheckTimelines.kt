@@ -36,7 +36,7 @@ internal class CheckTimelines : DataChecker() {
     private fun deleteInvalidTimelines(): Long {
         logger.logProgress("Checking if invalid timelines are present")
         val size1 = myContext.timelines().values().size.toLong()
-        val toDelete: MutableSet<Timeline?> = HashSet()
+        val toDelete: MutableSet<Timeline> = HashSet()
         var deletedCount: Long = 0
         try {
             MyQuery[myContext, "SELECT * FROM " + TimelineTable.TABLE_NAME,
@@ -50,7 +50,7 @@ internal class CheckTimelines : DataChecker() {
             })
             deletedCount = toDelete.size.toLong()
             if (!countOnly) {
-                toDelete.forEach(Consumer { timeline: Timeline? -> myContext.timelines().delete(timeline) })
+                toDelete.forEach(Consumer { timeline: Timeline -> myContext.timelines().delete(timeline) })
             }
         } catch (e: Exception) {
             val logMsg = "Error: " + e.message
@@ -89,7 +89,7 @@ internal class CheckTimelines : DataChecker() {
     private fun removeDuplicatedTimelines(): Long {
         logger.logProgress("Checking if duplicated timelines are present")
         val size1 = myContext.timelines().values().size.toLong()
-        val toDelete: MutableSet<Timeline?> = HashSet()
+        val toDelete: MutableSet<Timeline> = HashSet()
         try {
             for (timeline1 in myContext.timelines().values()) {
                 for (timeline2 in myContext.timelines().values()) {
@@ -97,7 +97,7 @@ internal class CheckTimelines : DataChecker() {
                 }
             }
             if (!countOnly) {
-                toDelete.forEach(Consumer { timeline: Timeline? -> myContext.timelines().delete(timeline) })
+                toDelete.forEach(Consumer { timeline: Timeline -> myContext.timelines().delete(timeline) })
             }
         } catch (e: Exception) {
             val logMsg = "Error: " + e.message

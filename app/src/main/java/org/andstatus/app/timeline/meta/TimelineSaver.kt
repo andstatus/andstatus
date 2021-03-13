@@ -38,6 +38,7 @@ import java.util.function.Consumer
 class TimelineSaver {
     private var addDefaults = false
     private var myAccount: MyAccount = MyAccount.EMPTY
+
     fun setAccount(myAccount: MyAccount): TimelineSaver {
         this.myAccount = myAccount
         return this
@@ -48,15 +49,15 @@ class TimelineSaver {
         return this
     }
 
-    fun execute(myContext: MyContext?): CompletableFuture<MyContext?>? {
-        return if (MyAsyncTask.Companion.isUiThread()) {
-            CompletableFuture.supplyAsync({ executeSynchronously(myContext) }, NonUiThreadExecutor.Companion.INSTANCE)
+    fun execute(myContext: MyContext): CompletableFuture<MyContext> {
+        return if (MyAsyncTask.isUiThread()) {
+            CompletableFuture.supplyAsync({ executeSynchronously(myContext) }, NonUiThreadExecutor.INSTANCE)
         } else {
             CompletableFuture.completedFuture(executeSynchronously(myContext))
         }
     }
 
-    private fun executeSynchronously(myContext: MyContext?): MyContext? {
+    private fun executeSynchronously(myContext: MyContext): MyContext {
         for (count in 30 downTo 1) {
             if (executing.compareAndSet(false, true)) {
                 executeSequentially(myContext)
@@ -66,7 +67,7 @@ class TimelineSaver {
         return myContext
     }
 
-    private fun executeSequentially(myContext: MyContext?) {
+    private fun executeSequentially(myContext: MyContext) {
         try {
             if (addDefaults) {
                 if (myAccount === MyAccount.EMPTY) {
@@ -83,11 +84,11 @@ class TimelineSaver {
         }
     }
 
-    private fun addDefaultTimelinesIfNoneFound(myContext: MyContext?) {
-        myContext.accounts().get().forEach(Consumer { ma: MyAccount? -> addDefaultMyAccountTimelinesIfNoneFound(myContext, ma) })
+    private fun addDefaultTimelinesIfNoneFound(myContext: MyContext) {
+        myContext.accounts().get().forEach(Consumer { ma: MyAccount -> addDefaultMyAccountTimelinesIfNoneFound(myContext, ma) })
     }
 
-    private fun addDefaultMyAccountTimelinesIfNoneFound(myContext: MyContext?, ma: MyAccount?) {
+    private fun addDefaultMyAccountTimelinesIfNoneFound(myContext: MyContext, ma: MyAccount) {
         if (ma.isValid && myContext.timelines().filter(false, TriState.FALSE,
                         TimelineType.UNKNOWN, ma.actor,  Origin.EMPTY).count() == 0L) {
             addDefaultCombinedTimelinesIfNoneFound(myContext)
@@ -98,7 +99,7 @@ class TimelineSaver {
         }
     }
 
-    private fun addDefaultCombinedTimelinesIfNoneFound(myContext: MyContext?) {
+    private fun addDefaultCombinedTimelinesIfNoneFound(myContext: MyContext) {
         if (myContext.timelines().filter(false, TriState.TRUE,
                         TimelineType.UNKNOWN, Actor.EMPTY,  Origin.EMPTY).count() == 0L) {
             val timelineId = MyQuery.conditionToLongColumnValue(TimelineTable.TABLE_NAME,
@@ -107,39 +108,39 @@ class TimelineSaver {
         }
     }
 
-    private fun addDefaultOriginTimelinesIfNoneFound(myContext: MyContext?, origin: Origin?) {
+    private fun addDefaultOriginTimelinesIfNoneFound(myContext: MyContext, origin: Origin) {
         if (!origin.isValid()) return
         val timelineId = MyQuery.conditionToLongColumnValue(myContext.getDatabase(),
                 "Any timeline for " + origin.name,
                 TimelineTable.TABLE_NAME, BaseColumns._ID,
-                TimelineTable.ORIGIN_ID + "=" + origin.getId())
+                TimelineTable.ORIGIN_ID + "=" + origin.id)
         if (timelineId == 0L) addDefaultForOrigin(myContext, origin)
     }
 
-    fun addDefaultForMyAccount(myContext: MyContext?, myAccount: MyAccount?) {
-        for (timelineType in myAccount.actor.defaultMyAccountTimelineTypes) {
+    fun addDefaultForMyAccount(myContext: MyContext, myAccount: MyAccount) {
+        for (timelineType in myAccount.actor.getDefaultMyAccountTimelineTypes()) {
             myContext.timelines().forUser(timelineType, myAccount.actor).save(myContext)
         }
     }
 
-    private fun addDefaultForOrigin(myContext: MyContext?, origin: Origin?) {
-        for (timelineType in TimelineType.Companion.getDefaultOriginTimelineTypes()) {
+    private fun addDefaultForOrigin(myContext: MyContext, origin: Origin) {
+        for (timelineType in TimelineType.getDefaultOriginTimelineTypes()) {
             if (origin.originType.isTimelineTypeSyncable(timelineType)
                     || timelineType == TimelineType.EVERYTHING) {
-                myContext.timelines().get(timelineType, Actor.EMPTY, origin).save(myContext)
+                myContext.timelines()[timelineType, Actor.EMPTY, origin].save(myContext)
             }
         }
     }
 
-    fun addDefaultCombined(myContext: MyContext?) {
+    fun addDefaultCombined(myContext: MyContext) {
         for (timelineType in TimelineType.values()) {
-            if (timelineType.isCombinedRequired) {
+            if (timelineType.isCombinedRequired()) {
                 myContext.timelines()[timelineType, Actor.EMPTY,  Origin.EMPTY].save(myContext)
             }
         }
     }
 
     companion object {
-        private val executing: AtomicBoolean? = AtomicBoolean(false)
+        private val executing: AtomicBoolean = AtomicBoolean(false)
     }
 }

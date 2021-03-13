@@ -22,6 +22,7 @@ import cz.msebera.android.httpclient.entity.ContentType
 import cz.msebera.android.httpclient.entity.mime.MultipartEntityBuilder
 import cz.msebera.android.httpclient.message.BasicNameValuePair
 import cz.msebera.android.httpclient.protocol.HTTP
+import org.andstatus.app.data.MyContentType.Companion.uri2MimeType
 import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.util.FileUtils
 import org.andstatus.app.util.JsonUtils
@@ -32,7 +33,7 @@ import java.util.*
 
 internal object ApacheHttpClientUtils {
     @Throws(ConnectionException::class)
-    fun buildMultipartFormEntityBytes(request: HttpRequest?): MultipartFormEntityBytes? {
+    fun buildMultipartFormEntityBytes(request: HttpRequest): MultipartFormEntityBytes {
         val httpEntity = multiPartFormEntity(request)
         return MultipartFormEntityBytes(
                 httpEntity.getContentType().name,
@@ -41,9 +42,9 @@ internal object ApacheHttpClientUtils {
     }
 
     @Throws(ConnectionException::class)
-    fun multiPartFormEntity(request: HttpRequest?): HttpEntity? {
+    fun multiPartFormEntity(request: HttpRequest): HttpEntity {
         val builder = MultipartEntityBuilder.create()
-        request.postParams.ifPresent { formParams: JSONObject? ->
+        request.postParams.ifPresent { formParams: JSONObject ->
             val iterator = formParams.keys()
             val textContentType = ContentType.create(HTTP.PLAIN_TEXT_TYPE, HTTP.UTF_8)
             while (iterator.hasNext()) {
@@ -54,7 +55,7 @@ internal object ApacheHttpClientUtils {
             }
         }
         val contentResolver = request.myContext().context().contentResolver
-                ?: throw ConnectionException.Companion.fromStatusCode(StatusCode.NOT_FOUND,
+                ?: throw ConnectionException.fromStatusCode(StatusCode.NOT_FOUND,
                         "Content Resolver is null in " + request.myContext().context())
         if (request.mediaUri.isPresent) {
             val mediaUri = request.mediaUri.get()
@@ -65,16 +66,16 @@ internal object ApacheHttpClientUtils {
                     builder.addBinaryBody(request.mediaPartName, FileUtils.getBytes(ins), mediaContentType, mediaUri.path)
                 }
             } catch (e: SecurityException) {
-                throw ConnectionException.Companion.hardConnectionException("mediaUri='$mediaUri'", e)
+                throw ConnectionException.hardConnectionException("mediaUri='$mediaUri'", e)
             } catch (e: IOException) {
-                throw ConnectionException.Companion.hardConnectionException("mediaUri='$mediaUri'", e)
+                throw ConnectionException.hardConnectionException("mediaUri='$mediaUri'", e)
             }
         }
         return builder.build()
     }
 
     @Throws(ConnectionException::class)
-    private fun httpEntityToBytes(httpEntity: HttpEntity?): ByteArray? {
+    private fun httpEntityToBytes(httpEntity: HttpEntity): ByteArray {
         val out = ByteArrayOutputStream()
         try {
             httpEntity.writeTo(out)
@@ -85,13 +86,13 @@ internal object ApacheHttpClientUtils {
         return out.toByteArray()
     }
 
-    fun jsonToNameValuePair(jso: JSONObject?): MutableList<NameValuePair?>? {
-        val formParams: MutableList<NameValuePair?> = ArrayList()
+    fun jsonToNameValuePair(jso: JSONObject): MutableList<NameValuePair> {
+        val formParams: MutableList<NameValuePair> = ArrayList()
         val iterator = jso.keys()
         while (iterator.hasNext()) {
             val name = iterator.next()
             val value = JsonUtils.optString(jso, name)
-            if (!value.isNullOrEmpty()) {
+            if (value.isNotEmpty()) {
                 formParams.add(BasicNameValuePair(name, value))
             }
         }

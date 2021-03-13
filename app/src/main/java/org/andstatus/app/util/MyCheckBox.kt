@@ -39,7 +39,8 @@ object MyCheckBox {
         return set(activity, viewId, checked, true)
     }
 
-    fun setEnabled(parentView: View, @IdRes viewId: Int, checked: Boolean): Boolean {
+    fun setEnabled(parentView: View?, @IdRes viewId: Int, checked: Boolean): Boolean {
+        parentView ?: return false
         return set(parentView, viewId, checked, EMPTY_ON_CHECKED_CHANGE_LISTENER)
     }
 

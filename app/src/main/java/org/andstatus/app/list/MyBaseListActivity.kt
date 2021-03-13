@@ -32,6 +32,7 @@ abstract class MyBaseListActivity : MyActivity(), CanSwipeRefreshScrollUpCallbac
     protected var mSwipeLayout: MySwipeRefreshLayout? = null
     private var mPositionOfContextMenu = -1
     private var mAdapter: ListAdapter = EmptyBaseTimelineAdapter.EMPTY
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mSwipeLayout = findSwipeLayout()
@@ -56,25 +57,23 @@ abstract class MyBaseListActivity : MyActivity(), CanSwipeRefreshScrollUpCallbac
     protected open fun setListAdapter(adapter: ListAdapter) {
         Objects.requireNonNull(adapter)
         mAdapter = adapter
-        getListView().setAdapter(mAdapter)
+        listView?.setAdapter(mAdapter)
     }
 
     open fun getListAdapter(): ListAdapter {
         return mAdapter
     }
 
-    open fun getListView(): ListView {
-        return findViewById<View?>(android.R.id.list) as ListView
-    }
+    open val listView: ListView? get() = findViewById<View?>(android.R.id.list) as ListView?
 
     override fun canSwipeRefreshChildScrollUp(): Boolean {
         var can = true
         try {
             // See http://stackoverflow.com/questions/3014089/maintain-save-restore-scroll-position-when-returning-to-a-listview/3035521#3035521
-            val index = getListView().getFirstVisiblePosition()
+            val index = listView?.getFirstVisiblePosition()
             if (index == 0) {
-                val v = getListView().getChildAt(0)
-                val top = if (v == null) 0 else v.top - getListView().getPaddingTop()
+                val v = listView?.getChildAt(0)
+                val top = if (v == null) 0 else v.top - (listView?.getPaddingTop() ?: 0)
                 can = top < 0
             }
         } catch (e: IllegalStateException) {

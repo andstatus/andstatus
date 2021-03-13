@@ -253,7 +253,9 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     }
 
     fun getCurrentListPosition(): LoadableListPosition<*> {
-        return LoadableListPosition.getCurrent(getListView(), getListAdapter(), centralItemId)
+        return listView?.let {
+            LoadableListPosition.getCurrent(it, getListAdapter(), centralItemId)
+        } ?: LoadableListPosition.EMPTY
     }
 
     open fun onLoadFinished(pos: LoadableListPosition<*>) {
@@ -275,7 +277,8 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
 
     private fun updateList(pos: LoadableListPosition<*>, viewParameters: LoadableListViewParameters, newAdapter: Boolean) {
         val method = "updateList"
-        val list = getListView()
+        val list = listView ?: return
+
         if (MyLog.isVerboseEnabled()) pos.logV(method + "; Before " + if (newAdapter) "setting new adapter" else "notifying change")
         val adapter = if (newAdapter) newListAdapter() else getListAdapter()
         if (viewParameters.isViewChanging()) {

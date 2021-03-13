@@ -23,19 +23,18 @@ import cz.msebera.android.httpclient.client.entity.UrlEncodedFormEntity
 import cz.msebera.android.httpclient.client.methods.HttpGet
 import cz.msebera.android.httpclient.client.methods.HttpPost
 import cz.msebera.android.httpclient.protocol.HTTP
-import io.vavr.control.CheckedFunction
+import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.util.MyLog
 import org.json.JSONObject
-import java.io.InputStream
 import java.io.UnsupportedEncodingException
 import java.util.*
-import java.util.function.Function
 
-class HttpConnectionApacheCommon internal constructor(private val specific: HttpConnectionApacheSpecific?, private val data: HttpConnectionData?) {
-    fun postRequest(result: HttpReadResult?): HttpReadResult? {
+class HttpConnectionApacheCommon internal constructor(private val specific: HttpConnectionApacheSpecific, private val data: HttpConnectionData) {
+
+    fun postRequest(result: HttpReadResult): HttpReadResult {
         val httpPost = HttpPost(result.getUrl())
-        if (result.request.isLegacyHttpProtocol) {
+        if (result.request.isLegacyHttpProtocol()) {
             httpPost.protocolVersion = HttpVersion.HTTP_1_0
         }
         if (result.request.mediaUri.isPresent) {
@@ -46,9 +45,9 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
                 MyLog.i(this, e)
             }
         } else {
-            result.request.postParams.ifPresent { params: JSONObject? ->
+            result.request.postParams.ifPresent { params: JSONObject ->
                 try {
-                    data.optOriginContentType().ifPresent { value: String? -> httpPost.addHeader("Content-Type", value) }
+                    data.optOriginContentType().ifPresent { value: String -> httpPost.addHeader("Content-Type", value) }
                     fillSinglePartPost(httpPost, params)
                 } catch (e: Exception) {
                     result.setException(e)
@@ -60,18 +59,16 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
     }
 
     @Throws(UnsupportedEncodingException::class)
-    private fun fillSinglePartPost(httpPost: HttpPost?, formParams: JSONObject?) {
+    private fun fillSinglePartPost(httpPost: HttpPost, formParams: JSONObject) {
         val nvFormParams = ApacheHttpClientUtils.jsonToNameValuePair(formParams)
-        if (nvFormParams != null) {
-            val formEntity: HttpEntity = UrlEncodedFormEntity(nvFormParams, HTTP.UTF_8)
-            httpPost.setEntity(formEntity)
-        }
+        val formEntity: HttpEntity = UrlEncodedFormEntity(nvFormParams, HTTP.UTF_8)
+        httpPost.setEntity(formEntity)
     }
 
-    fun getRequest(result: HttpReadResult?): HttpReadResult? {
+    fun getRequest(result: HttpReadResult): HttpReadResult {
         var response: HttpResponse? = null
         try {
-            var stop = false
+            var stop: Boolean
             do {
                 val httpGet = newHttpGet(result.getUrl())
                 data.optOriginContentType().ifPresent { value: String? -> httpGet.addHeader("Accept", value) }
@@ -85,15 +82,15 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
                     StatusCode.OK, StatusCode.UNKNOWN -> {
                         val entity = response.entity
                         if (entity != null) {
-                            result.readStream("", CheckedFunction { o: Void? -> entity.content })
+                            result.readStream("") { o: Void? -> entity.content }
                         }
                         stop = true
                     }
                     StatusCode.MOVED -> stop = specific.onMoved(result)
                     else -> {
-                        entity = response.entity
+                        val entity = response.entity
                         if (entity != null) {
-                            result.readStream("", CheckedFunction<Void?, InputStream?> { o: Void? -> entity.getContent() })
+                            result.readStream("") { o: Void? -> entity.getContent() }
                         }
                         stop = result.noMoreHttpRetries()
                     }
@@ -108,18 +105,18 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
         return result
     }
 
-    private fun newHttpGet(url: String?): HttpGet? {
+    private fun newHttpGet(url: String): HttpGet {
         val httpGet = HttpGet(url)
-        httpGet.setHeader("User-Agent", HttpConnectionInterface.Companion.USER_AGENT)
+        httpGet.setHeader("User-Agent", HttpConnectionInterface.USER_AGENT)
         return httpGet
     }
 
     companion object {
-        fun setStatusCodeAndHeaders(result: HttpReadResult?, httpResponse: HttpResponse?) {
+        fun setStatusCodeAndHeaders(result: HttpReadResult, httpResponse: HttpResponse) {
             val statusLine = httpResponse.getStatusLine()
             result.statusLine = statusLine.toString()
             result.setStatusCode(statusLine.statusCode)
-            result.setHeaders(Arrays.stream(httpResponse.getAllHeaders()), Function { obj: Header? -> obj.getName() }, Function { obj: Header? -> obj.getValue() })
+            result.setHeaders(Arrays.stream(httpResponse.getAllHeaders()), { obj: Header -> obj.getName() }, { obj: Header -> obj.getValue() })
         }
     }
 }

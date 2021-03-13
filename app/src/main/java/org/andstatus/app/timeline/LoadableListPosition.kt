@@ -37,7 +37,7 @@ class LoadableListPosition<T : ViewItem<T>> private constructor(
     }
 
     override fun toString(): String {
-        return MyStringBuilder.Companion.formatKeyValue(this, description)
+        return MyStringBuilder.formatKeyValue(this, description)
     }
 
     override fun classTag(): String {
@@ -95,7 +95,8 @@ class LoadableListPosition<T : ViewItem<T>> private constructor(
             return current(itemId, y, position, minDate, description)
         }
 
-        fun getViewOfPosition(list: ListView, position: Int): View? {
+        fun getViewOfPosition(list: ListView?, position: Int): View? {
+            list ?: return null
             var viewOfPosition: View? = null
             for (ind in 0 until list.getChildCount()) {
                 val view = list.getChildAt(ind)

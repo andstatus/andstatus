@@ -15,7 +15,6 @@
  */
 package org.andstatus.app.list
 
-import android.os.Bundle
 import android.view.View
 import android.widget.ListAdapter
 import android.widget.ListView
@@ -30,44 +29,32 @@ import org.andstatus.app.R
  * @author yvolk@yurivolkov.com
  */
 open class MyListActivity : MyBaseListActivity() {
-    var listFragment: ListFragment? = null
-    var listView: ListView? = null
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+    private var listFragment: ListFragment? = null
+
+    override var listView: ListView? = null
+        get() {
+            if (field == null && listFragment == null) {
+                findFragment()
+            }
+            field ?: listFragment?.listView ?: findViewById<View?>(android.R.id.list) as ListView?
+            return listFragment?.listView ?: field
+        }
 
     override fun setListAdapter(adapter: ListAdapter) {
         findListView()
-        if (listFragment != null) {
-            listFragment.setListAdapter(adapter)
-        } else if (listView != null) {
-            listView.setAdapter(adapter)
-        }
+        listFragment?.setListAdapter(adapter) ?: listView?.setAdapter(adapter)
     }
 
     override fun getListAdapter(): ListAdapter {
         findListView()
-        if (listFragment != null) {
-            return listFragment.getListAdapter()
-        } else if (listView != null) {
-            return listView.getAdapter()
-        }
-        return super.getListAdapter()
-    }
-
-    override fun getListView(): ListView? {
-        findListView()
-        return if (listFragment != null) {
-            listFragment.getListView()
-        } else listView
+        return listFragment?.listAdapter ?: listView?.adapter ?: super.getListAdapter()
     }
 
     private fun findListView() {
-        if (listFragment == null && listView == null) {
-            listFragment = supportFragmentManager.findFragmentById(R.id.relative_list_parent) as ListFragment?
-            if (listFragment == null) {
-                listView = findViewById<View?>(android.R.id.list) as ListView
-            }
-        }
+        if (listView == null) findFragment()
+    }
+
+    private fun findFragment() {
+        listFragment = supportFragmentManager.findFragmentById(R.id.relative_list_parent) as ListFragment?
     }
 }

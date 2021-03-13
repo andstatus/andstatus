@@ -25,7 +25,6 @@ import org.andstatus.app.util.I18n
 import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UrlUtils
 import org.json.JSONArray
@@ -36,10 +35,7 @@ import java.io.InputStream
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
-import java.util.function.BinaryOperator
-import java.util.function.Consumer
 import java.util.function.Function
-import java.util.function.UnaryOperator
 import java.util.stream.Collector
 import java.util.stream.Collectors
 import java.util.stream.Stream
@@ -47,34 +43,37 @@ import java.util.stream.Stream
 class HttpReadResult(val request: HttpRequest) {
     private var urlString: String = ""
     private var url: URL? = null
-    private var headers: MutableMap<String?, MutableList<String?>?>? = emptyMap<String?, MutableList<String?>?>()
+    private var headers: MutableMap<String, MutableList<String>> = mutableMapOf()
     var redirected = false
     private var location: Optional<String> = Optional.empty()
     var retriedWithoutAuthentication = false
-    private val logBuilder: StringBuilder? = StringBuilder()
+    private val logBuilder: StringBuilder = StringBuilder()
     private var exception: Exception? = null
-    var strResponse: String? = ""
-    var statusLine: String? = ""
+    var strResponse: String = ""
+    var statusLine: String = ""
     private var intStatusCode = 0
     private var statusCode: StatusCode? = StatusCode.UNKNOWN
-    fun getHeaders(): MutableMap<String?, MutableList<String?>?>? {
+
+    fun getHeaders(): MutableMap<String, MutableList<String>> {
         return headers
     }
 
-    fun <T> setHeaders(headers: Stream<T?>?, keyMapper: Function<T?, String?>?, valueMapper: Function<T?, String?>?): HttpReadResult? {
+    fun <T> setHeaders(headers: Stream<T>, keyMapper: Function<T, String>, valueMapper: Function<T, String>): HttpReadResult {
         return setHeaders(headers.collect(toHeaders(keyMapper, valueMapper)))
     }
 
-    private fun setHeaders(headers: MutableMap<String?, MutableList<String?>?>): HttpReadResult? {
+    private fun setHeaders(headers: MutableMap<String, MutableList<String>>): HttpReadResult {
         // Header field names are case-insensitive, see https://stackoverflow.com/a/5259004/297710
-        val lowercaseKeysMap: MutableMap<String?, MutableList<String?>?> = HashMap()
-        headers.entries.forEach(Consumer { entry: MutableMap.MutableEntry<String?, MutableList<String?>?>? -> lowercaseKeysMap[if (entry.key == null) null else entry.key.toLowerCase()] = entry.value })
+        val lowercaseKeysMap: MutableMap<String, MutableList<String>> = HashMap()
+        headers.entries.forEach { entry ->
+            lowercaseKeysMap[if (entry.key.isEmpty()) "" else entry.key.toLowerCase()] = entry.value
+        }
         this.headers = lowercaseKeysMap
         location = Optional.ofNullable(this.headers.get("location"))
-                .orElse(emptyList<String?>()).stream()
-                .filter { obj: String? -> StringUtil.nonEmpty() }
+                .orElse(mutableListOf<String>()).stream()
+                .filter { obj: String -> obj.isNotEmpty() }
                 .findFirst()
-                .map { l: String? -> l.replace("%3F", "?") }
+                .map { l: String -> l.replace("%3F", "?") }
         return this
     }
 
@@ -96,14 +95,14 @@ class HttpReadResult(val request: HttpRequest) {
 
     fun setStatusCode(intStatusCodeIn: Int) {
         intStatusCode = intStatusCodeIn
-        statusCode = StatusCode.Companion.fromResponseCode(intStatusCodeIn)
+        statusCode = StatusCode.fromResponseCode(intStatusCodeIn)
     }
 
     fun getStatusCode(): StatusCode? {
         return statusCode
     }
 
-    fun getUrl(): String? {
+    fun getUrl(): String {
         return urlString
     }
 
@@ -121,19 +120,19 @@ class HttpReadResult(val request: HttpRequest) {
         logBuilder.append(chars)
     }
 
-    fun logMsg(): String? {
+    fun logMsg(): String {
         return logBuilder.toString()
     }
 
     override fun toString(): String {
         return (logMsg()
-                + (if (statusCode == StatusCode.OK || statusLine.isNullOrEmpty()) "" else "; statusLine:'$statusLine'")
+                + (if (statusCode == StatusCode.OK || statusLine.isEmpty()) "" else "; statusLine:'$statusLine'")
                 + (if (intStatusCode == 0) "" else "; statusCode:$statusCode ($intStatusCode)")
                 + (if (redirected) "; redirected" else "")
                 + "; url:'" + urlString + "'"
                 + (if (retriedWithoutAuthentication) "; retried without auth" else "")
-                + (if (strResponse.isNullOrEmpty()) "" else "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
-                + location.map(Function { str: String? -> "; location:'$str'" }).orElse("")
+                + (if (strResponse.isEmpty()) "" else "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
+                + location.map { str: String -> "; location:'$str'" }.orElse("")
                 + (if (exception == null) "" else """
      ; 
      exception: ${exception.toString()}
@@ -141,33 +140,31 @@ class HttpReadResult(val request: HttpRequest) {
                 + "\nRequested: " + request)
     }
 
-    fun getJsonArrayInObject(arrayName: String?): Try<JSONArray> {
+    fun getJsonArrayInObject(arrayName: String): Try<JSONArray> {
         val method = "getRequestArrayInObject"
         return getJsonObject()
-                .flatMap(CheckedFunction<JSONObject?, Try<out JSONArray>> { jso: JSONObject? ->
-                    var jArr: JSONArray? = null
+                .flatMap { jso: JSONObject? ->
                     if (jso != null) {
-                        jArr = try {
-                            jso.getJSONArray(arrayName)
+                        try {
+                            Try.success(jso.getJSONArray(arrayName))
                         } catch (e: JSONException) {
-                            return@flatMap Try.failure<JSONArray?>(ConnectionException.Companion.loggedJsonException(this, "$method, arrayName=$arrayName", e, jso))
+                            Try.failure(ConnectionException.loggedJsonException(this, "$method, arrayName=$arrayName", e, jso))
                         }
-                    }
-                    Try.success(jArr)
-                })
+                    } else Try.success(JSONArray())
+                }
     }
 
     fun getJsonObject(): Try<JSONObject> {
         return innerGetJsonObject(strResponse)
     }
 
-    fun getResponse(): String? {
+    fun getResponse(): String {
         return strResponse
     }
 
     private fun innerGetJsonObject(strJson: String?): Try<JSONObject> {
         val method = "getJsonObject; "
-        var jso: JSONObject? = null
+        val jso: JSONObject?
         try {
             if (strJson.isNullOrEmpty()) {
                 jso = JSONObject()
@@ -180,7 +177,7 @@ class HttpReadResult(val request: HttpRequest) {
                 }
             }
         } catch (e: JSONException) {
-            return Try.failure(ConnectionException.Companion.loggedJsonException(this, method + I18n.trimTextAt(toString(), 500), e, strJson))
+            return Try.failure(ConnectionException.loggedJsonException(this, method + I18n.trimTextAt(toString(), 500), e, strJson))
         }
         return Try.success(jso)
     }
@@ -189,23 +186,23 @@ class HttpReadResult(val request: HttpRequest) {
         return getJsonArray("items")
     }
 
-    fun getJsonArray(arrayKey: String?): Try<JSONArray> {
+    fun getJsonArray(arrayKey: String): Try<JSONArray> {
         val method = "getJsonArray; "
-        if (strResponse.isNullOrEmpty()) {
+        if (strResponse.isEmpty()) {
             MyLog.v(this) { "$method; response is empty" }
             return Try.success(JSONArray())
         }
         val jst = JSONTokener(strResponse)
-        var jsa: JSONArray? = null
+        val jsa: JSONArray?
         try {
             var obj = jst.nextValue()
             if (obj is JSONObject) {
-                val jso = obj as JSONObject
+                val jso = obj
                 if (jso.has(arrayKey)) {
                     obj = try {
                         jso.getJSONArray(arrayKey)
                     } catch (e: JSONException) {
-                        return Try.failure(ConnectionException.Companion.loggedJsonException(this, "'" + arrayKey + "' is not an array?!"
+                        return Try.failure(ConnectionException.loggedJsonException(this, "'" + arrayKey + "' is not an array?!"
                                 + method + toString(), e, jso))
                     }
                 } else {
@@ -223,16 +220,16 @@ class HttpReadResult(val request: HttpRequest) {
             }
             jsa = obj as JSONArray
         } catch (e: JSONException) {
-            return Try.failure(ConnectionException.Companion.loggedJsonException(this, method + toString(), e, strResponse))
+            return Try.failure(ConnectionException.loggedJsonException(this, method + toString(), e, strResponse))
         } catch (e: Exception) {
-            return Try.failure(ConnectionException.Companion.loggedHardJsonException(this, method + toString(), e, strResponse))
+            return Try.failure(ConnectionException.loggedHardJsonException(this, method + toString(), e, strResponse))
         }
         return Try.success(jsa)
     }
 
-    fun getExceptionFromJsonErrorResponse(): ConnectionException? {
+    fun getExceptionFromJsonErrorResponse(): ConnectionException {
         var statusCode = statusCode
-        var error: String? = "?"
+        var error = "?"
         return if (TextUtils.isEmpty(strResponse)) {
             ConnectionException(statusCode, "Empty response; " + toString())
         } else try {
@@ -247,10 +244,10 @@ class HttpReadResult(val request: HttpRequest) {
         }
     }
 
-    fun setException(e: Throwable?): HttpReadResult? {
+    fun setException(e: Throwable?): HttpReadResult {
         TryUtils.checkException(e)
         if (exception == null) {
-            exception = if (e is Exception) e as Exception? else ConnectionException("Unexpected exception", e)
+            exception = if (e is Exception) e else ConnectionException("Unexpected exception", e)
         }
         return this
     }
@@ -265,18 +262,19 @@ class HttpReadResult(val request: HttpRequest) {
         }
         if (isStatusOk()) {
             if (request.isFileTooLarge()) {
-                setException(ConnectionException.Companion.hardConnectionException(
+                setException(ConnectionException.hardConnectionException(
                         "File, downloaded from \"" + urlString + "\", is too large: "
-                                + Formatter.formatShortFileSize( MyContextHolder.myContextHolder.getNow().context(), request.fileResult.length()),
+                                + Formatter.formatShortFileSize( MyContextHolder.myContextHolder.getNow().context(),
+                                request.fileResult?.length() ?: 0),
                         null))
                 return Try.failure(exception)
             }
             MyLog.v(this) { this.toString() }
         } else {
-            if (!strResponse.isNullOrEmpty()) {
+            if (strResponse.isNotEmpty()) {
                 setException(getExceptionFromJsonErrorResponse())
             } else {
-                setException(ConnectionException.Companion.fromStatusCodeAndThrowable(statusCode, toString(), exception))
+                setException(ConnectionException.fromStatusCodeAndThrowable(statusCode, toString(), exception))
             }
             return Try.failure(exception)
         }
@@ -288,23 +286,23 @@ class HttpReadResult(val request: HttpRequest) {
     }
 
     fun toFailure(): Try<HttpReadResult> {
-        return Try.failure(ConnectionException.Companion.from(this))
+        return Try.failure(ConnectionException.from(this))
     }
 
     fun logResponse(): HttpReadResult {
-        if (strResponse != null && MyPreferences.isLogNetworkLevelMessages()) {
+        if (MyPreferences.isLogNetworkLevelMessages()) {
             val objTag: Any = "response"
             MyLog.logNetworkLevelMessage(objTag, request.getLogName(), strResponse,
-                    MyStringBuilder.Companion.of("")
+                    MyStringBuilder.of("")
                             .atNewLine("logger-URL", urlString)
-                            .atNewLine("logger-account", request.connectionData().accountName.name)
+                            .atNewLine("logger-account", request.connectionData().getAccountName().name)
                             .atNewLine("logger-authenticated", java.lang.Boolean.toString(authenticate()))
-                            .apply(UnaryOperator { builder: MyStringBuilder? -> appendHeaders(builder) }).toString())
+                            .apply { builder: MyStringBuilder -> appendHeaders(builder) }.toString())
         }
         return this
     }
 
-    fun appendHeaders(builder: MyStringBuilder?): MyStringBuilder? {
+    fun appendHeaders(builder: MyStringBuilder): MyStringBuilder {
         builder.atNewLine("Headers:")
         for ((key, value) in getHeaders()) {
             builder.atNewLine(key, value.toString())
@@ -337,13 +335,13 @@ class HttpReadResult(val request: HttpRequest) {
 
     companion object {
         private fun <T> toHeaders(
-                fieldNameMapper: Function<T?, String?>?,
-                valueMapper: Function<T?, String?>?): Collector<T?, *, MutableMap<String?, MutableList<String?>?>?>? {
+                fieldNameMapper: Function<T, String>,
+                valueMapper: Function<T, String>): Collector<T, *, MutableMap<String, MutableList<String>>> {
             return Collectors.toMap(
                     fieldNameMapper,
-                    Function<T?, MutableList<String?>?> { v: T? -> listOf(valueMapper.apply(v)) },
-                    BinaryOperator { a: MutableList<String?>?, b: MutableList<String?>? ->
-                        val out: MutableList<String?> = ArrayList(a)
+                    { v: T -> mutableListOf(valueMapper.apply(v)) },
+                    { a: MutableList<String>, b: MutableList<String> ->
+                        val out: MutableList<String> = ArrayList(a)
                         out.addAll(b)
                         out
                     })

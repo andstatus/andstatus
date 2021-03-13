@@ -39,7 +39,7 @@ class ActorProfileViewer(container: NoteContextMenuContainer) {
     }
 
     fun ensureView(added: Boolean) {
-        val listView = getActivity().getListView()
+        val listView = getActivity().listView ?: return
         if ( (listView.findViewById<View?>(R.id.actor_profile_wrapper) == null) xor added) return
         if (added) {
             listView.addHeaderView(profileView)

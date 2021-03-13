@@ -25,9 +25,9 @@ import java.io.IOException
  * @author yvolk@yurivolkov.com
  */
 interface HttpConnectionApacheSpecific : HttpConnectionInterface {
-    open fun httpApachePostRequest(httpPost: HttpPost?, result: HttpReadResult?): HttpReadResult?
+    open fun httpApachePostRequest(httpPost: HttpPost, result: HttpReadResult): HttpReadResult
     @Throws(IOException::class)
-    open fun httpApacheGetResponse(httpGet: HttpGet?): HttpResponse?
+    open fun httpApacheGetResponse(httpGet: HttpGet): HttpResponse
     @Throws(IOException::class)
-    open fun httpApacheSetAuthorization(httpGet: HttpGet?)
+    open fun httpApacheSetAuthorization(httpGet: HttpGet)
 }

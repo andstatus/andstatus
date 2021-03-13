@@ -780,7 +780,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     private fun isSyncedSimultaneously(timeline: Timeline): Boolean {
         return (this != timeline &&
                 !timeline.isCombined &&
-                timelineType.getConnectionApiRoutine() == timeline.timelineType.getConnectionApiRoutine() &&
+                timelineType.connectionApiRoutine == timeline.timelineType.connectionApiRoutine &&
                 searchQuery == timeline.searchQuery &&
                 myAccountToSync == timeline.myAccountToSync &&
                 actor == timeline.actor &&
@@ -790,7 +790,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
     private fun onSyncEnded(result: CommandResult): Timeline {
         if (result.hasError()) {
             syncFailedDate.set(System.currentTimeMillis())
-            if (!result.getMessage().isNullOrEmpty()) {
+            if (result.getMessage().isNotEmpty()) {
                 errorMessage = result.getMessage()
             }
             syncFailedTimesCount.incrementAndGet()

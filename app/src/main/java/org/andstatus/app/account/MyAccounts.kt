@@ -379,7 +379,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
         }
     }
 
-    fun accountsToSync(): MutableList<MyAccount?>? {
+    fun accountsToSync(): MutableList<MyAccount> {
         val syncedAutomaticallyOnly = hasSyncedAutomatically()
         return myAccounts.stream().filter { myAccount: MyAccount -> accountToSyncFilter(myAccount, syncedAutomaticallyOnly) }
                 .collect(Collectors.toList())
