@@ -155,29 +155,29 @@ internal class Convert26 : ConvertOneStep() {
                 " favorited=2" +
                 " WHERE EXISTS " +
                 " (SELECT user_id AS actor_id, msg_id FROM msgofuser WHERE favorited=1 AND actor_id IS NOT NULL" +
-                " AND actor_id" + myAccountIds.sql + " AND msg_id=msg._id)"
+                " AND actor_id" + myAccountIds.getSql() + " AND msg_id=msg._id)"
         DbUtils.execSQL(db, sql)
         progressLogger.logProgress("$stepTitle: Updating account for Favorites")
         sql = "UPDATE activity SET" +
                 " subscribed=2," +
                 " account_id=(" +
                 "SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id" +
-                " AND msgofuser.favorited=1 AND user_id" + myAccountIds.sql +
+                " AND msgofuser.favorited=1 AND user_id" + myAccountIds.getSql() +
                 ")" +
                 " WHERE activity_type=5 AND EXISTS" +
                 " (SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id AND msgofuser.favorited=1" +
-                " AND user_id" + myAccountIds.sql + ")"
+                " AND user_id" + myAccountIds.getSql() + ")"
         DbUtils.execSQL(db, sql)
         progressLogger.logProgress("$stepTitle: Setting Subscribed for Update activities")
         sql = "UPDATE activity SET" +
                 " subscribed=2," +
                 " account_id=(" +
                 "SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id" +
-                " AND msgofuser.subscribed=1 AND user_id" + myAccountIds.sql +
+                " AND msgofuser.subscribed=1 AND user_id" + myAccountIds.getSql() +
                 ")" +
                 " WHERE activity_type=6 AND EXISTS" +
                 " (SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id AND msgofuser.subscribed=1" +
-                " AND user_id" + myAccountIds.sql + ")"
+                " AND user_id" + myAccountIds.getSql() + ")"
         DbUtils.execSQL(db, sql)
         progressLogger.logProgress("$stepTitle: Marking Private messages")
         sql = "UPDATE msg SET" +
@@ -191,18 +191,18 @@ internal class Convert26 : ConvertOneStep() {
                 " subscribed=2," +
                 " account_id=(" +
                 "SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id" +
-                " AND msgofuser.directed=1 AND user_id" + myAccountIds.sql +
+                " AND msgofuser.directed=1 AND user_id" + myAccountIds.getSql() +
                 ")" +
                 " WHERE activity_type=6 AND EXISTS" +
                 " (SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id AND msgofuser.directed=1" +
-                " AND user_id" + myAccountIds.sql + ")"
+                " AND user_id" + myAccountIds.getSql() + ")"
         DbUtils.execSQL(db, sql)
         progressLogger.logProgress("$stepTitle: Marking Mentions")
         sql = "UPDATE msg SET" +
                 " mentioned=2" +
                 " WHERE EXISTS" +
                 " (SELECT user_id FROM msgofuser WHERE msg_id=msg._id AND msgofuser.mentioned=1 " +
-                " AND user_id" + myAccountIds.sql + ")"
+                " AND user_id" + myAccountIds.getSql() + ")"
         DbUtils.execSQL(db, sql)
         progressLogger.logProgress("$stepTitle: Updating account for Mentions")
         sql = "UPDATE activity SET" +
@@ -210,11 +210,11 @@ internal class Convert26 : ConvertOneStep() {
                 " subscribed=2," +
                 " account_id=(" +
                 "SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id" +
-                " AND msgofuser.mentioned=1 AND user_id" + myAccountIds.sql +
+                " AND msgofuser.mentioned=1 AND user_id" + myAccountIds.getSql() +
                 ")" +
                 " WHERE activity_type=6 AND EXISTS" +
                 " (SELECT user_id FROM msgofuser WHERE msg_id=activity.activity_msg_id AND msgofuser.mentioned=1" +
-                " AND user_id" + myAccountIds.sql + ")"
+                " AND user_id" + myAccountIds.getSql() + ")"
         DbUtils.execSQL(db, sql)
         sql = "CREATE TABLE audience (user_id INTEGER NOT NULL,msg_id INTEGER NOT NULL, CONSTRAINT pk_audience PRIMARY KEY (msg_id ASC, user_id ASC))"
         DbUtils.execSQL(db, sql)

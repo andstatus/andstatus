@@ -219,13 +219,13 @@ class AActivity private constructor(accountActor: Actor?, type: ActivityType?) :
         return objActor
     }
 
-    fun setObjActor(actor: Actor?): AActivity? {
+    fun setObjActor(actor: Actor): AActivity {
         check(!(this === EMPTY && Actor.EMPTY !== actor)) { "Cannot set objActor of EMPTY Activity" }
         objActor = actor ?: Actor.EMPTY
         return this
     }
 
-    fun audience(): Audience? {
+    fun audience(): Audience {
         return getNote().audience()
     }
 

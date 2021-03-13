@@ -46,7 +46,6 @@ import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.stream.Collectors
-import java.util.stream.Stream
 
 /**
  * Database provider for the MyDatabase database.
@@ -70,7 +69,7 @@ class MyProvider : ContentProvider() {
      * [Why use ContentProvider.getType() to get MIME type](http://stackoverflow.com/questions/5351669/why-use-contentprovider-gettype-to-get-mime-type)
      */
     override fun getType(uri: Uri): String? {
-        return MatchedUri.Companion.fromUri(uri).getMimeType()
+        return MatchedUri.fromUri(uri).getMimeType()
     }
 
     override fun delete(uri: Uri, selection: String?, selectionArgs: Array<String?>?): Int {
@@ -88,17 +87,17 @@ class MyProvider : ContentProvider() {
         val rowId: Long
         var newUri: Uri? = null
         try {
-            val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().getDatabase()
+            val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().getDatabase()
             if (db == null) {
                 MyLog.databaseIsNull { "insert" }
                 return null
             }
             val table: String
             values = initialValues?.let { ContentValues(it) } ?: ContentValues()
-            val uriParser: ParsedUri = ParsedUri.Companion.fromUri(uri)
+            val uriParser: ParsedUri = ParsedUri.fromUri(uri)
             when (uriParser.matched()) {
                 MatchedUri.NOTE_ITEM -> {
-                    accountActorId = uriParser.accountActorId
+                    accountActorId = uriParser.getAccountActorId()
                     table = NoteTable.TABLE_NAME
                     if (!values.containsKey(NoteTable.CONTENT)) {
                         values.put(NoteTable.CONTENT, "")
@@ -111,7 +110,7 @@ class MyProvider : ContentProvider() {
                 MatchedUri.ACTOR_ITEM -> {
                     table = ActorTable.TABLE_NAME
                     values.put(ActorTable.INS_DATE, MyLog.uniqueCurrentTimeMS())
-                    accountActorId = uriParser.accountActorId
+                    accountActorId = uriParser.getAccountActorId()
                 }
                 else -> throw IllegalArgumentException(uriParser.toString())
             }
@@ -120,9 +119,9 @@ class MyProvider : ContentProvider() {
                 throw SQLException("Failed to insert row into $uri")
             }
             when (uriParser.matched()) {
-                MatchedUri.NOTE_ITEM -> newUri = MatchedUri.Companion.getMsgUri(accountActorId, rowId)
-                MatchedUri.ORIGIN_ITEM -> newUri = MatchedUri.Companion.getOriginUri(rowId)
-                MatchedUri.ACTOR_ITEM -> newUri = MatchedUri.Companion.getActorUri(accountActorId, rowId)
+                MatchedUri.NOTE_ITEM -> newUri = MatchedUri.getMsgUri(accountActorId, rowId)
+                MatchedUri.ORIGIN_ITEM -> newUri = MatchedUri.getOriginUri(rowId)
+                MatchedUri.ACTOR_ITEM -> newUri = MatchedUri.getActorUri(accountActorId, rowId)
                 else -> {
                 }
             }
@@ -137,19 +136,26 @@ class MyProvider : ContentProvider() {
      *
      * @see android.content.ContentProvider.query
      */
-    override fun query(uri: Uri, projection: Array<String?>?, selectionIn: String?, selectionArgsIn: Array<String?>?,
+    override fun query(uri: Uri, projection: Array<String>?, selectionIn: String?, selectionArgsIn: Array<String>?,
                        sortOrderIn: String?): Cursor? {
+        if (projection == null) return null
+
+        val db: SQLiteDatabase = MyContextHolder.myContextHolder.getNow().getDatabase() ?: kotlin.run {
+            MyLog.databaseIsNull {}
+            return null
+        }
+
         val PAGE_SIZE = 400
         val qb = SQLiteQueryBuilder()
         var built = false
-        val tables: MutableList<String?>?
+        val tables: MutableList<String>
         val where: String
         val selection: String?
-        var selectionArgs: Array<String?>? = selectionArgsIn ?: arrayOf()
-        var selectionArgs2: Array<String?>? = arrayOf()
+        var selectionArgs: Array<String> = selectionArgsIn ?: arrayOf()
+        var selectionArgs2: Array<String> = arrayOf()
         var limit: String? = null
-        var sql: String? = ""
-        val uriParser: ParsedUri = ParsedUri.Companion.fromUri(uri)
+        var sql = ""
+        val uriParser: ParsedUri = ParsedUri.fromUri(uri)
         when (uriParser.matched()) {
             MatchedUri.TIMELINE -> {
                 qb.isDistinct = true
@@ -163,13 +169,13 @@ class MyProvider : ContentProvider() {
                 qb.setProjectionMap(ProjectionMap.TIMELINE)
                 selection = selectionIn
                 where = (ProjectionMap.ACTIVITY_TABLE_ALIAS + "."
-                        + ActivityTable.NOTE_ID + "=" + uriParser.noteId)
+                        + ActivityTable.NOTE_ID + "=" + uriParser.getNoteId())
             }
             MatchedUri.TIMELINE_SEARCH -> {
                 tables = TimelineSql.tablesForTimeline(uri, projection)
                 qb.setProjectionMap(ProjectionMap.TIMELINE)
                 val rawQuery = uriParser.searchQuery
-                if (!rawQuery.isNullOrEmpty()) {
+                if (rawQuery.isNotEmpty()) {
                     val searchQuery = KeywordsFilter(rawQuery)
                     selection = "(" + searchQuery.getSqlSelection(NoteTable.CONTENT_TO_SEARCH) + ")" +
                             if (!selectionIn.isNullOrEmpty()) " AND ($selectionIn)" else ""
@@ -180,21 +186,21 @@ class MyProvider : ContentProvider() {
                 where = ""
             }
             MatchedUri.ACTIVITY -> {
-                tables = listOf<String?>(ActivityTable.TABLE_NAME + " AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS)
+                tables = mutableListOf<String>(ActivityTable.TABLE_NAME + " AS " + ProjectionMap.ACTIVITY_TABLE_ALIAS)
                 qb.setProjectionMap(ProjectionMap.TIMELINE)
                 selection = selectionIn
                 where = ""
             }
             MatchedUri.ACTOR, MatchedUri.ACTORS, MatchedUri.ACTORS_SEARCH -> {
-                tables = listOf<String?>(ActorSql.allTables())
+                tables = mutableListOf<String>(ActorSql.allTables())
                 qb.setProjectionMap(ActorSql.fullProjectionMap)
-                rawQuery = uriParser.searchQuery
-                val actorWhere = SqlWhere().append(selectionIn)
-                if (uriParser.actorsScreenType == ActorsScreenType.GROUPS_AT_ORIGIN) {
+                val rawQuery = uriParser.searchQuery
+                val actorWhere = SqlWhere().append(selectionIn ?: "")
+                if (uriParser.getActorsScreenType() == ActorsScreenType.GROUPS_AT_ORIGIN) {
                     actorWhere.append(ActorTable.GROUP_TYPE +
-                            SqlIds.Companion.fromIds(GroupType.GENERIC.id, GroupType.ACTOR_OWNED.id).getSql())
+                            SqlIds.fromIds(GroupType.GENERIC.id, GroupType.ACTOR_OWNED.id).getSql())
                 }
-                if (!rawQuery.isNullOrEmpty()) {
+                if (rawQuery.isNotEmpty()) {
                     actorWhere.append(ActorTable.WEBFINGER_ID + " LIKE ?" +
                             " OR " + ActorTable.REAL_NAME + " LIKE ?" +
                             " OR " + ActorTable.USERNAME + " LIKE ?")
@@ -202,68 +208,67 @@ class MyProvider : ContentProvider() {
                     selectionArgs = StringUtil.addBeforeArray(selectionArgs, "%$rawQuery%")
                     selectionArgs = StringUtil.addBeforeArray(selectionArgs, "%$rawQuery%")
                 }
-                selection = actorWhere.condition
+                selection = actorWhere.getCondition()
                 where = ""
                 limit = PAGE_SIZE.toString()
             }
             MatchedUri.ACTORS_ITEM -> {
-                tables = listOf<String?>(ActorSql.allTables())
+                tables = mutableListOf<String>(ActorSql.allTables())
                 qb.setProjectionMap(ActorSql.fullProjectionMap)
                 selection = selectionIn
-                where = BaseColumns._ID + "=" + uriParser.actorId
+                where = BaseColumns._ID + "=" + uriParser.getActorId()
             }
             MatchedUri.ACTOR_ITEM -> {
-                tables = listOf<String?>(ActorTable.TABLE_NAME)
+                tables = mutableListOf<String>(ActorTable.TABLE_NAME)
                 qb.setProjectionMap(ActorSql.fullProjectionMap)
                 selection = selectionIn
-                where = BaseColumns._ID + "=" + uriParser.actorId
+                where = BaseColumns._ID + "=" + uriParser.getActorId()
             }
             else -> throw IllegalArgumentException(uriParser.toString())
         }
 
         // If no sort order is specified use the default
-        val sortOrder: String?
-        sortOrder = if (sortOrderIn.isNullOrEmpty()) {
+        val sortOrder: String = if (sortOrderIn.isNullOrEmpty()) {
             when (uriParser.matched()) {
-                MatchedUri.TIMELINE, MatchedUri.TIMELINE_ITEM, MatchedUri.TIMELINE_SEARCH -> ActivityTable.getTimelineSortOrder(uriParser.timelineType, false)
-                MatchedUri.ACTOR, MatchedUri.ACTORS, MatchedUri.ACTORS_ITEM, MatchedUri.ACTORS_SEARCH, MatchedUri.ACTOR_ITEM -> ActorTable.DEFAULT_SORT_ORDER
+                MatchedUri.TIMELINE,
+                MatchedUri.TIMELINE_ITEM,
+                MatchedUri.TIMELINE_SEARCH ->
+                    ActivityTable.getTimelineSortOrder(uriParser.getTimelineType(), false)
+                MatchedUri.ACTOR,
+                MatchedUri.ACTORS,
+                MatchedUri.ACTORS_ITEM,
+                MatchedUri.ACTORS_SEARCH,
+                MatchedUri.ACTOR_ITEM -> ActorTable.DEFAULT_SORT_ORDER
                 else -> throw IllegalArgumentException(uriParser.toString())
             }
         } else {
             sortOrderIn
         }
-        var c: Cursor? = null
+        var cursor: Cursor? = null
         if ( MyContextHolder.myContextHolder.getNow().isReady()) {
-            // Get the database and run the query
-            val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().getDatabase()
             try {
-                if (!where.isNullOrEmpty()) {
+                if (where.isNotEmpty()) {
                     qb.appendWhere(where)
                 }
-                if (sql.length == 0) {
+                if (sql.isEmpty()) {
                     if (tables.size == 1) {
                         qb.tables = tables.get(0)
                         sql = qb.buildQuery(projection, selection, null, null, sortOrder, limit)
                         selectionArgs2 = selectionArgs
                     } else {
-                        val subQueries: Array<String?> = tables.stream().map { str: String? ->
+                        val subQueries: Array<String> = tables.stream().map { str: String? ->
                             qb.tables = str
                             qb.buildQuery(projection, selection, null, null, null, null)
-                        }.collect(Collectors.toList()).toArray<String?>(arrayOf<String?>())
-                        for (ind in subQueries.indices) {
-                            // Concatenate two arrays
-                            selectionArgs2 = Stream.of(selectionArgs2, selectionArgs)
-                                    .flatMap(Function<Array<String?>?, Stream<out String?>?> { values: Array<String?>? -> Stream.of(values) })
-                                    .toArray { _Dummy_.__Array__() }
-                        }
+                        }.collect(Collectors.toList()).toTypedArray()
+                        selectionArgs2 += selectionArgs
                         qb.isDistinct = true
                         sql = qb.buildUnionQuery(subQueries, sortOrder, limit)
                     }
                     built = true
                 }
                 // Here we substitute ?-s in selection with values from selectionArgs
-                c = db.rawQuery(sql, selectionArgs2)
-                if (c == null) {
+                cursor = db.rawQuery(sql, selectionArgs2)
+                if (cursor == null) {
                     MyLog.e(this, "Null cursor returned " + formatSql(sql, selectionArgs2))
                 }
             } catch (e: Exception) {
@@ -279,11 +284,11 @@ class MyProvider : ContentProvider() {
                 }
             }
         }
-        c?.setNotificationUri(context.getContentResolver(), uri)
-        return c
+        cursor?.setNotificationUri(context?.contentResolver, uri)
+        return cursor
     }
 
-    fun formatSql(sql: String?, selectionArgs2: Array<String?>?): String? {
+    fun formatSql(sql: String, selectionArgs2: Array<String>): String {
         var msg1 = "query, SQL=\"$sql\""
         if (selectionArgs2.size > 0) {
             msg1 += "; selectionArgs=" + Arrays.toString(selectionArgs2)
@@ -294,18 +299,18 @@ class MyProvider : ContentProvider() {
     /**
      * Update objects (one or several records) in the database
      */
-    override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<String?>?): Int {
-        val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().getDatabase()
-        if (db == null) {
+    override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<String>?): Int {
+        if (values == null) return 0
+        val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().getDatabase() ?: kotlin.run {
             MyLog.databaseIsNull { "update" }
             return 0
         }
         var count = 0
-        val uriParser: ParsedUri = ParsedUri.Companion.fromUri(uri)
+        val uriParser: ParsedUri = ParsedUri.fromUri(uri)
         when (uriParser.matched()) {
             MatchedUri.ACTIVITY -> count = db.update(NoteTable.TABLE_NAME, values, selection, selectionArgs)
             MatchedUri.NOTE_ITEM -> {
-                val rowId = uriParser.noteId
+                val rowId = uriParser.getNoteId()
                 if (values.size() > 0) {
                     count = db.update(NoteTable.TABLE_NAME, values, BaseColumns._ID + "=" + rowId
                             + if (!selection.isNullOrEmpty()) " AND ($selection)" else "",
@@ -314,7 +319,7 @@ class MyProvider : ContentProvider() {
             }
             MatchedUri.ACTOR -> count = db.update(ActorTable.TABLE_NAME, values, selection, selectionArgs)
             MatchedUri.ACTOR_ITEM -> {
-                val selectedActorId = uriParser.actorId
+                val selectedActorId = uriParser.getActorId()
                 if (values.size() > 0) {
                     count = db.update(ActorTable.TABLE_NAME, values, BaseColumns._ID + "=" + selectedActorId
                             + if (!selection.isNullOrEmpty()) " AND ($selection)" else "",
@@ -327,7 +332,7 @@ class MyProvider : ContentProvider() {
     }
 
     companion object {
-        val TAG: String? = MyProvider::class.java.simpleName
+        val TAG: String = MyProvider::class.java.simpleName
 
         /** @return Number of deleted activities of this note
          */
@@ -335,7 +340,7 @@ class MyProvider : ContentProvider() {
             return if (context == null || noteId == 0L) 0 else deleteActivities(context, ActivityTable.NOTE_ID + "=" + noteId, null, true)
         }
 
-        fun deleteActivities(myContext: MyContext?, selection: String?, selectionArgs: Array<String?>?, inTransaction: Boolean): Int {
+        fun deleteActivities(myContext: MyContext, selection: String?, selectionArgs: Array<String>?, inTransaction: Boolean): Int {
             val db = myContext.getDatabase()
             if (db == null) {
                 MyLog.databaseIsNull { "deleteActivities" }
@@ -368,7 +373,7 @@ class MyProvider : ContentProvider() {
                 sqlDesc = selectionG + descSuffix
                 count += db.delete(AudienceTable.TABLE_NAME, selectionG, arrayOf())
                 for (noteId in noteIds) {
-                    DownloadData.Companion.deleteAllOfThisNote(db, noteId)
+                    DownloadData.deleteAllOfThisNote(db, noteId)
                 }
 
                 // Notes
@@ -390,28 +395,28 @@ class MyProvider : ContentProvider() {
             return count
         }
 
-        fun deleteActor(myContext: MyContext?, actorIdToDelete: Long): Long {
+        fun deleteActor(myContext: MyContext, actorIdToDelete: Long): Long {
             return deleteActor(myContext, actorIdToDelete, 0)
         }
 
-        private fun deleteActor(myContext: MyContext?, actorId: Long, recursionLevel: Long): Long {
+        private fun deleteActor(myContext: MyContext, actorId: Long, recursionLevel: Long): Long {
             if (recursionLevel < 3) {
                 MyQuery.foldLeft(myContext, "SELECT " + BaseColumns._ID + " FROM " +
                         ActorTable.TABLE_NAME + " WHERE " + ActorTable.PARENT_ACTOR_ID + "=" + actorId,
                         ArrayList(),
-                        Function { id: ArrayList<Long?>? ->
-                            Function { cursor: Cursor? ->
+                        { id: ArrayList<Long> ->
+                            Function { cursor: Cursor ->
                                 id.add(DbUtils.getLong(cursor, BaseColumns._ID))
                                 id
                             }
                         }
-                ).forEach(Consumer { childActorId: Long? -> deleteActor(myContext, childActorId, recursionLevel + 1) })
+                ).forEach(Consumer { childActorId: Long -> deleteActor(myContext, childActorId, recursionLevel + 1) })
             }
             val userId = MyQuery.idToLongColumnValue(myContext.getDatabase(), ActorTable.TABLE_NAME, ActorTable.USER_ID, actorId)
             delete(myContext, AudienceTable.TABLE_NAME, AudienceTable.ACTOR_ID, actorId)
             delete(myContext, GroupMembersTable.TABLE_NAME, GroupMembersTable.GROUP_ID, actorId)
             delete(myContext, GroupMembersTable.TABLE_NAME, GroupMembersTable.MEMBER_ID, actorId)
-            DownloadData.Companion.deleteAllOfThisActor(myContext, actorId)
+            DownloadData.deleteAllOfThisActor(myContext, actorId)
             delete(myContext, ActorEndpointTable.TABLE_NAME, ActorEndpointTable.ACTOR_ID, actorId)
             delete(myContext, ActorTable.TABLE_NAME, BaseColumns._ID, actorId)
             if (!MyQuery.dExists(myContext.getDatabase(), "SELECT * FROM " + ActorTable.TABLE_NAME
@@ -427,8 +432,7 @@ class MyProvider : ContentProvider() {
 
         fun delete(myContext: MyContext, tableName: String, where: String?): Int {
             val method = "delete"
-            val db = myContext.database
-            if (db == null) {
+            val db = myContext.getDatabase() ?: kotlin.run {
                 MyLog.databaseIsNull { method }
                 return 0
             }
@@ -441,9 +445,8 @@ class MyProvider : ContentProvider() {
         }
 
         // TODO: return Try<Long>
-        fun deleteActivity(myContext: MyContext?, activityId: Long, noteId: Long, inTransaction: Boolean): Long {
-            val db = myContext.getDatabase()
-            if (db == null) {
+        fun deleteActivity(myContext: MyContext, activityId: Long, noteId: Long, inTransaction: Boolean): Long {
+            val db = myContext.getDatabase() ?: kotlin.run {
                 MyLog.databaseIsNull { "deleteActivity" }
                 return 0
             }
@@ -468,8 +471,8 @@ class MyProvider : ContentProvider() {
             return count
         }
 
-        fun updateNoteReblogged(myContext: MyContext?, origin: Origin?, noteId: Long) {
-            val reblogged: TriState = TriState.Companion.fromBoolean(
+        fun updateNoteReblogged(myContext: MyContext, origin: Origin, noteId: Long) {
+            val reblogged: TriState = TriState.fromBoolean(
                     myContext.users().containsMe(MyQuery.getRebloggers(myContext.getDatabase(), origin, noteId))
             )
             update(myContext, NoteTable.TABLE_NAME,
@@ -478,8 +481,8 @@ class MyProvider : ContentProvider() {
         }
 
         fun updateNoteFavorited(myContext: MyContext, origin: Origin, noteId: Long) {
-            val favorited: TriState = TriState.Companion.fromBoolean(
-                    myContext.users().containsMe(MyQuery.getStargazers(myContext.database, origin, noteId))
+            val favorited: TriState = TriState.fromBoolean(
+                    myContext.users().containsMe(MyQuery.getStargazers(myContext.getDatabase(), origin, noteId))
             )
             update(myContext, NoteTable.TABLE_NAME,
                     NoteTable.FAVORITED + "=" + favorited.id,
@@ -509,8 +512,7 @@ class MyProvider : ContentProvider() {
 
         fun update(myContext: MyContext, tableName: String, set: String, where: String?) {
             val method = "update"
-            val db = myContext.database
-            if (db == null) {
+            val db = myContext.getDatabase()?: kotlin.run {
                 MyLog.databaseIsNull { method }
                 return
             }
@@ -522,7 +524,7 @@ class MyProvider : ContentProvider() {
             }
         }
 
-        fun insert(myContext: MyContext?, tableName: String?, values: ContentValues?): Long {
+        fun insert(myContext: MyContext, tableName: String, values: ContentValues): Long {
             val db = myContext.getDatabase()
             if (db == null || values.size() == 0) return -1
             val rowId = db.insert(tableName, null, values)

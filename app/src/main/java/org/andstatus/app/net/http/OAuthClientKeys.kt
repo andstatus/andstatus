@@ -35,19 +35,20 @@ import org.andstatus.app.util.MyLog
  *
  * For more information please read
  * [Developer FAQ](https://github.com/andstatus/andstatus/wiki/Developerfaq).
+ *
+ * Strategy pattern, see http://en.wikipedia.org/wiki/Strategy_pattern
  */
-class OAuthClientKeys private constructor() {
-    // Strategy pattern, see http://en.wikipedia.org/wiki/Strategy_pattern
-    private var strategy: OAuthClientKeysStrategy? = null
+class OAuthClientKeys private constructor(private val strategy: OAuthClientKeysStrategy) {
+
     fun areKeysPresent(): Boolean {
-        return !getConsumerKey().isNullOrEmpty() && !getConsumerSecret().isNullOrEmpty()
+        return getConsumerKey().isNotEmpty() && !getConsumerSecret().isEmpty()
     }
 
-    fun getConsumerKey(): String? {
+    fun getConsumerKey(): String {
         return strategy.getConsumerKey()
     }
 
-    fun getConsumerSecret(): String? {
+    fun getConsumerSecret(): String {
         return strategy.getConsumerSecret()
     }
 
@@ -63,31 +64,30 @@ class OAuthClientKeys private constructor() {
     }
 
     companion object {
-        private val TAG: String? = OAuthClientKeys::class.java.simpleName
-        private val SECRET_CLASS_NAME: String? = OAuthClientKeysOpenSource::class.java.getPackage().getName() + "." + "OAuthClientKeysSecret"
+        private val TAG: String = OAuthClientKeys::class.java.simpleName
+        private val SECRET_CLASS_NAME: String = OAuthClientKeysOpenSource::class.java.getPackage()?.getName() +
+                "." + "OAuthClientKeysSecret"
         private var noSecretClass = false
-        fun fromConnectionData(connectionData: HttpConnectionData?): OAuthClientKeys {
-            val keys = OAuthClientKeys()
+
+        fun fromConnectionData(connectionData: HttpConnectionData): OAuthClientKeys {
+            // Load keys published in the public source code repository
+            var strategy: OAuthClientKeysStrategy = OAuthClientKeysOpenSource()
+
             if (!noSecretClass) {
                 // Try to load the application's secret keys first
                 try {
                     val cls = Class.forName(SECRET_CLASS_NAME)
-                    keys.strategy = cls.newInstance() as OAuthClientKeysStrategy
+                    strategy = cls.newInstance() as OAuthClientKeysStrategy
                 } catch (e: Exception) {
-                    MyLog.v(TAG, "Class " + SECRET_CLASS_NAME + " was not loaded", e)
+                    MyLog.v(TAG, "Class $SECRET_CLASS_NAME was not loaded", e)
                     noSecretClass = true
                 }
             }
-            if (keys.strategy == null) {
-                // Load keys published in the public source code repository
-                keys.strategy = OAuthClientKeysOpenSource()
-            }
+            var keys = OAuthClientKeys(strategy)
+
             keys.strategy.initialize(connectionData)
             if (!keys.areKeysPresent()) {
-                keys.strategy = null
-            }
-            if (keys.strategy == null) {
-                keys.strategy = OAuthClientKeysDynamic()
+                keys = OAuthClientKeys(OAuthClientKeysDynamic())
                 keys.strategy.initialize(connectionData)
             }
             MyLog.d(TAG, "Loaded " + keys.strategy.toString() + "; "

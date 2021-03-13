@@ -266,7 +266,7 @@ abstract class Connection protected constructor() : IsEmpty {
      * Allows this Account to follow (or stop following) an actor specified in the actorOid parameter
      * @param follow true - Follow, false - Stop following
      */
-    abstract fun follow(actorOid: String?, follow: Boolean?): Try<AActivity>
+    abstract fun follow(actorOid: String?, follow: Boolean): Try<AActivity>
 
     /** Get information about the specified Actor  */
     fun getActor(actorIn: Actor): Try<Actor> {
@@ -319,7 +319,7 @@ abstract class Connection protected constructor() : IsEmpty {
         return http.data.areOAuthClientKeysPresent()
     }
 
-    open fun setAccountConnectionData(connectionData: AccountConnectionData?): Connection? {
+    open fun setAccountConnectionData(connectionData: AccountConnectionData): Connection {
         data = connectionData
         http = connectionData.newHttpConnection()
         http.setHttpConnectionData(HttpConnectionData.Companion.fromAccountConnectionData(connectionData))

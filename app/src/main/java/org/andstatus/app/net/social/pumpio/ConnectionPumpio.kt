@@ -59,15 +59,16 @@ import java.util.function.UnaryOperator
  * @author yvolk@yurivolkov.com
  */
 class ConnectionPumpio : Connection() {
+
     override fun setAccountConnectionData(connectionData: AccountConnectionData?): Connection? {
-        val host = connectionData.getAccountActor().connectionHost
-        if (StringUtil.nonEmpty(host)) {
+        val host = connectionData.getAccountActor().getConnectionHost()
+        if (host.isNotEmpty()) {
             connectionData.setOriginUrl(UrlUtils.buildUrl(host, connectionData.isSsl()))
         }
         return super.setAccountConnectionData(connectionData)
     }
 
-    override fun getApiPathFromOrigin(routine: ApiRoutineEnum?): String {
+    override fun getApiPathFromOrigin(routine: ApiRoutineEnum): String {
         val url: String
         url = when (routine) {
             ApiRoutineEnum.ACCOUNT_VERIFY_CREDENTIALS -> "whoami"
@@ -453,9 +454,10 @@ class ConnectionPumpio : Connection() {
     /**
      * 2014-01-22 According to the crash reports, actorId may not have "acct:" prefix
      */
-    fun actorOidToUsername(actorId: String?): String? {
-        return if (actorId.isNullOrEmpty()) "" else UriUtils.toOptional(actorId)
-                .map { obj: Uri? -> obj.getPath() }
+    fun actorOidToUsername(actorId: String?): String {
+        return if (actorId.isNullOrEmpty()) ""
+        else UriUtils.toOptional(actorId)
+                .map { obj: Uri -> obj.getPath() ?: "" }
                 .map(stripBefore("/api"))
                 .map(stripBefore("/"))
                 .orElse(Optional.of(actorId)
@@ -465,49 +467,54 @@ class ConnectionPumpio : Connection() {
                 )
     }
 
-    fun actorOidToHost(actorId: String?): String? {
+    fun actorOidToHost(actorId: String?): String {
         if (actorId.isNullOrEmpty()) return ""
         val indexOfAt = actorId.indexOf('@')
         return if (indexOfAt < 0) "" else actorId.substring(indexOfAt + 1)
     }
 
-    override fun follow(actorOid: String?, follow: Boolean?): Try<AActivity> {
+    override fun follow(actorOid: String?, follow: Boolean): Try<AActivity> {
         return actOnActor(if (follow) PActivityType.FOLLOW else PActivityType.STOP_FOLLOWING, actorOid)
     }
 
-    private fun actOnActor(activityType: PActivityType?, actorId: String?): Try<AActivity> {
+    private fun actOnActor(activityType: PActivityType, actorId: String?): Try<AActivity> {
         return ActivitySender.Companion.fromId(this, actorId).send(activityType)
     }
 
-    public override fun getActor2(actorIn: Actor?): Try<Actor> {
+    public override fun getActor2(actorIn: Actor): Try<Actor> {
         return ConnectionAndUrl.Companion.fromActor(this, ApiRoutineEnum.GET_ACTOR, actorIn)
-                .flatMap<HttpReadResult?>(CheckedFunction<ConnectionAndUrl?, Try<out HttpReadResult>> { conu: ConnectionAndUrl? -> conu.execute(conu.newRequest()) })
-                .flatMap<JSONObject?>(CheckedFunction<HttpReadResult?, Try<out JSONObject>> { obj: HttpReadResult? -> obj.getJsonObject() })
-                .map<Actor?>(CheckedFunction { jso: JSONObject? -> actorFromJson(jso) })
+                .flatMap { conu: ConnectionAndUrl -> conu.execute(conu.newRequest()) }
+                .flatMap { obj: HttpReadResult -> obj.getJsonObject() }
+                .map { jso: JSONObject? -> actorFromJson(jso) }
     }
 
     companion object {
-        private val TAG: String? = ConnectionPumpio::class.java.simpleName
-        val PUBLIC_COLLECTION_ID: String? = "http://activityschema.org/collection/public"
-        val APPLICATION_ID: String? = "http://andstatus.org/andstatus"
-        val NAME_PROPERTY: String? = "displayName"
-        val CONTENT_PROPERTY: String? = "content"
-        val VIDEO_OBJECT: String? = "stream"
-        val IMAGE_OBJECT: String? = "image"
-        val FULL_IMAGE_OBJECT: String? = "fullImage"
-        fun stripBefore(prefixEnd: String?): UnaryOperator<String?> {
-            return label@ UnaryOperator { value: String? ->
-                if (value.isNullOrEmpty()) return@label ""
-                val index = value.indexOf(prefixEnd)
-                if (index >= 0) value.substring(index + prefixEnd.length) else value
+        private val TAG: String = ConnectionPumpio::class.java.simpleName
+        val PUBLIC_COLLECTION_ID: String = "http://activityschema.org/collection/public"
+        val APPLICATION_ID: String = "http://andstatus.org/andstatus"
+        val NAME_PROPERTY: String = "displayName"
+        val CONTENT_PROPERTY: String = "content"
+        val VIDEO_OBJECT: String = "stream"
+        val IMAGE_OBJECT: String = "image"
+        val FULL_IMAGE_OBJECT: String = "fullImage"
+
+        fun stripBefore(prefixEnd: String): (String?) -> String {
+            return { value: String? ->
+                if (value.isNullOrEmpty()) ""
+                else {
+                    val index = value.indexOf(prefixEnd)
+                    if (index >= 0) value.substring(index + prefixEnd.length) else value
+                }
             }
         }
 
-        fun stripAfter(suffixStart: String?): UnaryOperator<String?> {
-            return label@ UnaryOperator { value: String? ->
-                if (value.isNullOrEmpty()) return@label ""
-                val index = value.indexOf(suffixStart)
-                if (index >= 0) value.substring(0, index) else value
+        fun stripAfter(suffixStart: String): (String?) -> String {
+            return { value: String? ->
+                if (value.isNullOrEmpty())  ""
+                else {
+                    val index = value.indexOf(suffixStart)
+                    if (index >= 0) value.substring(0, index) else value
+                }
             }
         }
     }

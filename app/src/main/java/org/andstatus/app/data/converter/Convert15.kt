@@ -42,7 +42,7 @@ internal class Convert15 : ConvertOneStep() {
     }
 
     companion object {
-        private val TAG: String? = Convert15::class.java.simpleName
+        private val TAG: String = Convert15::class.java.simpleName
         fun convertAccounts(db: SQLiteDatabase?, oldVersion: Int): Int {
             val method = "convert14to16"
             val versionTo = 16
@@ -52,40 +52,40 @@ internal class Convert15 : ConvertOneStep() {
                 val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
                 myContext.origins().initialize(db)
                 val am = AccountManager.get(myContext.context())
-                val accountsToRemove: MutableCollection<Account?> = ArrayList()
+                val accountsToRemove: MutableCollection<Account> = ArrayList()
                 for (androidAccount in AccountUtils.getAllAccounts(myContext.context())) {
-                    DatabaseConverterController.Companion.stillUpgrading()
+                    DatabaseConverterController.stillUpgrading()
                     val androidAccountData = AndroidAccountData(am, androidAccount)
                     val versionOldBefore16 = androidAccountData.getDataInt(AccountUtils.KEY_VERSION, 0)
-                    val accountDataOld: AccountData = AccountData.Companion.fromAndroidAccount(myContext, androidAccount)
+                    val accountDataOld: AccountData = AccountData.fromAndroidAccount(myContext, androidAccount)
                     val versionOld2 = accountDataOld.getDataInt(AccountUtils.KEY_VERSION, 0)
                     if (versionOld2 == versionTo) {
                         MyLog.i(TAG, "Account " + androidAccount.name + " is already converted?!, skipping")
                     } else if (versionOldBefore16 == 14 &&
-                            !androidAccountData.getDataBoolean(MyAccount.Companion.KEY_DELETED, false)) {
+                            !androidAccountData.getDataBoolean(MyAccount.KEY_DELETED, false)) {
                         MyLog.v(TAG, "Upgrading account " + androidAccount.name)
                         am.setUserData(androidAccount, AccountUtils.KEY_VERSION, null)
-                        val accountData: AccountData = AccountData.Companion.fromJson(myContext, JSONObject(), false)
-                        androidAccountData.moveStringKeyTo(MyAccount.Companion.KEY_USERNAME, accountData)
-                        androidAccountData.moveStringKeyTo(Origin.Companion.KEY_ORIGIN_NAME, accountData)
-                        androidAccountData.moveStringKeyTo(MyAccount.Companion.KEY_ACTOR_OID, accountData)
-                        androidAccountData.moveLongKeyTo(MyAccount.Companion.KEY_ACTOR_ID, accountData)
+                        val accountData: AccountData = AccountData.fromJson(myContext, JSONObject(), false)
+                        androidAccountData.moveStringKeyTo(MyAccount.KEY_USERNAME, accountData)
+                        androidAccountData.moveStringKeyTo(Origin.KEY_ORIGIN_NAME, accountData)
+                        androidAccountData.moveStringKeyTo(MyAccount.KEY_ACTOR_OID, accountData)
+                        androidAccountData.moveLongKeyTo(MyAccount.KEY_ACTOR_ID, accountData)
                         val origin = myContext.origins().fromName(
-                                accountData.getDataString(Origin.Companion.KEY_ORIGIN_NAME))
-                        val isOauth = androidAccountData.getDataBoolean(MyAccount.Companion.KEY_OAUTH, origin.isOAuthDefault)
-                        accountData.setDataBoolean(MyAccount.Companion.KEY_OAUTH, isOauth)
-                        am.setUserData(androidAccount, MyAccount.Companion.KEY_OAUTH, null)
+                                accountData.getDataString(Origin.KEY_ORIGIN_NAME))
+                        val isOauth = androidAccountData.getDataBoolean(MyAccount.KEY_OAUTH, origin.isOAuthDefault())
+                        accountData.setDataBoolean(MyAccount.KEY_OAUTH, isOauth)
+                        am.setUserData(androidAccount, MyAccount.KEY_OAUTH, null)
                         if (isOauth) {
                             androidAccountData.moveStringKeyTo("user_token", accountData)
                             androidAccountData.moveStringKeyTo("user_secret", accountData)
                         } else {
                             androidAccountData.moveStringKeyTo("password", accountData)
                         }
-                        CredentialsVerificationStatus.Companion.load(androidAccountData).put(accountData)
-                        am.setUserData(androidAccount, CredentialsVerificationStatus.Companion.KEY, null)
+                        CredentialsVerificationStatus.load(androidAccountData).put(accountData)
+                        am.setUserData(androidAccount, CredentialsVerificationStatus.KEY, null)
                         MyLog.v(TAG, method + "; " + accountData.toJsonString())
                         androidAccountData.moveLongKeyTo(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, accountData)
-                        accountData.saveIfChanged(androidAccount).onFailure { e: Throwable? ->
+                        accountData.saveIfChanged(androidAccount).onFailure { e: Throwable ->
                             MyLog.e(TAG, "Failed to convert account " + androidAccount.name + ", deleting")
                             accountsToRemove.add(androidAccount)
                         }

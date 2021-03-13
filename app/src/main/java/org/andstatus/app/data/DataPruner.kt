@@ -110,7 +110,7 @@ class DataPruner(private val myContext: MyContext) {
         val maxDays = sp?.getString(MyPreferences.KEY_HISTORY_TIME, "3")?.toLong() ?: 0
         latestTimestamp = getLatestTimestamp(maxDays)
         var nActivities: Long = 0
-        var nToDeleteSize: Long = 0
+        val nToDeleteSize: Long
         var nDeletedSize: Long = 0
         val maxSize = sp?.getString(MyPreferences.KEY_HISTORY_SIZE, "2000")?.toLong() ?: 0
         var latestTimestampSize: Long = 0

@@ -33,14 +33,14 @@ import java.util.stream.IntStream
  * @author yvolk@yurivolkov.com
  */
 internal class MergeActors : DataChecker() {
-    public override fun fixInternal(): Long {
-        var changedCount = 0
-        val actorsToMerge: MutableList<AActivity?> = ArrayList(getActorsToMerge())
+    override fun fixInternal(): Long {
+        var changedCount = 0L
+        val actorsToMerge: MutableList<AActivity> = ArrayList(getActorsToMerge())
         for (activity in actorsToMerge) {
             MyLog.d(this, "Problems found: " + actorsToMerge.size)
             IntStream.range(0, actorsToMerge.size)
                     .mapToObj { i: Int ->
-                        (Integer.toString(i) + ". To merge " + actorsToMerge[i].getObjActor()
+                        (i.toString() + ". To merge " + actorsToMerge[i].getObjActor()
                                 + " with " + actorsToMerge[i].getActor())
                     }
                     .forEachOrdered { s: String? -> MyLog.d(this, s) }
@@ -52,9 +52,9 @@ internal class MergeActors : DataChecker() {
         return changedCount
     }
 
-    private fun getActorsToMerge(): MutableSet<AActivity?>? {
+    private fun getActorsToMerge(): MutableSet<AActivity> {
         val method = "getActorsToMerge"
-        val mergeActivities: MutableSet<AActivity?> = ConcurrentSkipListSet()
+        val mergeActivities: MutableSet<AActivity> = ConcurrentSkipListSet()
         val sql = ("SELECT " + BaseColumns._ID
                 + ", " + ActorTable.ORIGIN_ID
                 + ", " + ActorTable.ACTOR_OID
@@ -63,18 +63,18 @@ internal class MergeActors : DataChecker() {
                 + " ORDER BY " + ActorTable.ORIGIN_ID
                 + ", " + ActorTable.ACTOR_OID)
         var rowsCount: Long = 0
-        myContext.database.rawQuery(sql, null).use { c ->
-            var prev: Actor? = null
+        myContext.getDatabase()?.rawQuery(sql, null)?.use { c ->
+            var prev: Actor = Actor.EMPTY
             while (c.moveToNext()) {
                 rowsCount++
-                val actor: Actor = Actor.Companion.fromOid(myContext.origins().fromId(c.getLong(1)),
+                val actor: Actor = Actor.fromOid(myContext.origins().fromId(c.getLong(1)),
                         c.getString(2))
                 actor.actorId = c.getLong(0)
-                actor.webFingerId = c.getString(3)
+                actor.setWebFingerId(c.getString(3))
                 prev = if (isTheSameActor(prev, actor)) {
                     val activity = whomToMerge(prev, actor)
                     mergeActivities.add(activity)
-                    activity.actor
+                    activity.getActor()
                 } else {
                     actor
                 }
@@ -91,13 +91,11 @@ internal class MergeActors : DataChecker() {
         if (prev.origin != actor.origin) {
             return false
         }
-        return if (prev.oid != actor.oid) {
-            false
-        } else true
+        return prev.oid == actor.oid
     }
 
     private fun whomToMerge(prev: Actor, actor: Actor): AActivity {
-        val activity: AActivity = AActivity.Companion.from(Actor.EMPTY, ActivityType.UPDATE)
+        val activity: AActivity = AActivity.from(Actor.EMPTY, ActivityType.UPDATE)
         activity.setObjActor(actor)
         var mergeWith = prev
         if (myContext.accounts().fromActorId(actor.actorId).isValid) {
@@ -108,7 +106,7 @@ internal class MergeActors : DataChecker() {
         return activity
     }
 
-    private fun mergeActor(activity: AActivity?) {
+    private fun mergeActor(activity: AActivity) {
         val logMsg = "Merging " + activity.getObjActor() + " into " + activity.getActor()
         logger.logProgress(logMsg)
         updateColumn(logMsg, activity, ActivityTable.TABLE_NAME, ActivityTable.ACTOR_ID, false)
@@ -116,10 +114,10 @@ internal class MergeActors : DataChecker() {
         updateColumn(logMsg, activity, NoteTable.TABLE_NAME, NoteTable.AUTHOR_ID, false)
         updateColumn(logMsg, activity, NoteTable.TABLE_NAME, NoteTable.IN_REPLY_TO_ACTOR_ID, false)
         updateColumn(logMsg, activity, AudienceTable.TABLE_NAME, AudienceTable.ACTOR_ID, true)
-        MyProvider.Companion.deleteActor(myContext, activity.getObjActor().actorId)
+        MyProvider.deleteActor(myContext, activity.getObjActor().actorId)
     }
 
-    private fun updateColumn(logMsg: String?, activity: AActivity?, tableName: String?, column: String?, ignoreError: Boolean) {
+    private fun updateColumn(logMsg: String, activity: AActivity, tableName: String, column: String, ignoreError: Boolean) {
         var sql = ""
         try {
             sql = ("UPDATE "
@@ -128,7 +126,7 @@ internal class MergeActors : DataChecker() {
                     + column + "=" + activity.getActor().actorId
                     + " WHERE "
                     + column + "=" + activity.getObjActor().actorId)
-            myContext.database.execSQL(sql)
+            myContext.getDatabase()?.execSQL(sql)
         } catch (e: Exception) {
             if (!ignoreError) {
                 logger.logProgress("Error: " + e.message + ", SQL:" + sql)

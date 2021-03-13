@@ -29,35 +29,43 @@ import org.andstatus.app.util.MyLog
  */
 @TargetApi(28)
 object ImageCacheApi28Helper {
-    fun animatedFileToCachedImage(imageCache: ImageCache?, mediaFile: MediaFile?): CachedImage? {
-        return try {
-            val source = ImageDecoder.createSource(mediaFile.downloadFile.file)
-            val drawable = ImageDecoder.decodeDrawable(source) { decoder: ImageDecoder?, info: ImageInfo?, source1: ImageDecoder.Source? ->
-                // To allow drawing bitmaps on Software canvases
-                decoder.setAllocator(ImageDecoder.ALLOCATOR_SOFTWARE)
-                setTargetSize(imageCache, mediaFile, decoder, info.getSize())
+
+    fun animatedFileToCachedImage(imageCache: ImageCache, mediaFile: MediaFile): CachedImage? {
+        var cachedImage: CachedImage? = try {
+            val source = mediaFile.downloadFile.getFile()?.let { ImageDecoder.createSource(it) }
+            if (source == null) {
+                null
+            } else {
+                val drawable = ImageDecoder.decodeDrawable(source) { decoder: ImageDecoder, info: ImageInfo, source1: ImageDecoder.Source ->
+                    // To allow drawing bitmaps on Software canvases
+                    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                    setTargetSize(imageCache, mediaFile, decoder, info.size)
+                }
+                if (drawable is BitmapDrawable) {
+                    imageCache.bitmapToCachedImage(mediaFile, drawable.bitmap)
+                } else {
+                    if (drawable is Animatable) {
+                        (drawable as Animatable).start()
+                    }
+                    CachedImage(mediaFile.downloadId, drawable)
+                }
             }
-            if (drawable is BitmapDrawable) {
-                return imageCache.bitmapToCachedImage(mediaFile, (drawable as BitmapDrawable).bitmap)
-            }
-            if (drawable is Animatable) {
-                (drawable as Animatable).start()
-            }
-            CachedImage(mediaFile.downloadId, drawable)
         } catch (e: Exception) {
-            MyLog.i(ImageCache.Companion.TAG, "Failed to decode $mediaFile", e)
-            imageCache.imageFileToCachedImage(mediaFile)
+            MyLog.i(ImageCache.TAG, "Failed to decode $mediaFile", e)
+            null
         }
+        if (cachedImage == null) cachedImage = imageCache.imageFileToCachedImage(mediaFile)
+        return cachedImage
     }
 
-    private fun setTargetSize(imageCache: ImageCache?, objTag: Any?, decoder: ImageDecoder?, imageSize: Size?) {
-        var width = imageSize.getWidth()
-        var height = imageSize.getHeight()
-        while (height > imageCache.maxBitmapHeight || width > imageCache.maxBitmapWidth) {
+    private fun setTargetSize(imageCache: ImageCache, objTag: Any?, decoder: ImageDecoder, imageSize: Size) {
+        var width = imageSize.width
+        var height = imageSize.height
+        while (height > imageCache.maxBitmapHeight || width > imageCache.getMaxBitmapWidth()) {
             height = height * 3 / 4
             width = width * 3 / 4
         }
-        if (width != imageSize.getWidth()) {
+        if (width != imageSize.width) {
             MyLog.v(objTag, "Large bitmap " + imageSize + " scaled to " + width + "x" + height)
             decoder.setTargetSize(width, height)
         }

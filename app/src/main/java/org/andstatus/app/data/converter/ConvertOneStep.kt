@@ -23,13 +23,13 @@ import org.andstatus.app.util.MyLog
 internal abstract class ConvertOneStep {
     var db: SQLiteDatabase? = null
     var oldVersion = 0
-    var progressLogger: ProgressLogger? = null
+    var progressLogger: ProgressLogger = ProgressLogger.getEmpty("convert")
     var versionTo = 0
     var sql: String = ""
     private var lastError: String = "?"
     protected var stepTitle: String = ""
 
-    fun execute(db: SQLiteDatabase, oldVersion: Int, progressLogger: ProgressLogger?): Int {
+    fun execute(db: SQLiteDatabase, oldVersion: Int, progressLogger: ProgressLogger): Int {
         var ok = false
         this.db = db
         this.oldVersion = oldVersion

@@ -25,34 +25,36 @@ import org.andstatus.app.util.UriUtils
 
 internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
     var logMe = false
-    private fun userTokenKey(): String? {
+    private fun userTokenKey(): String {
         return "user_token"
     }
 
-    private fun userSecretKey(): String? {
+    private fun userSecretKey(): String {
         return "user_secret"
     }
 
     private var userToken: String? = null
     private var userSecret: String? = null
-    override fun setHttpConnectionData(connectionData: HttpConnectionData?) {
+
+    override fun setHttpConnectionData(connectionData: HttpConnectionData) {
         super.setHttpConnectionData(connectionData)
         connectionData.oauthClientKeys = OAuthClientKeys.Companion.fromConnectionData(connectionData)
         // We look for saved user keys
-        if (connectionData.dataReader.dataContains(userTokenKey()) && connectionData.dataReader.dataContains(userSecretKey())) {
-            userToken = connectionData.dataReader.getDataString(userTokenKey())
-            userSecret = connectionData.dataReader.getDataString(userSecretKey())
+        if (connectionData.dataReader?.dataContains(userTokenKey()) == true &&
+                connectionData.dataReader?.dataContains(userSecretKey()) == true) {
+            userToken = connectionData.dataReader?.getDataString(userTokenKey())
+            userSecret = connectionData.dataReader?.getDataString(userSecretKey())
             setUserTokenWithSecret(userToken, userSecret)
         }
     }
 
     override fun getCredentialsPresent(): Boolean {
-        val yes = (data.oauthClientKeys.areKeysPresent()
+        val yes = (data.oauthClientKeys?.areKeysPresent() == true
                 && !userToken.isNullOrEmpty()
                 && !userSecret.isNullOrEmpty())
         if (!yes && logMe) {
             MyLog.v(this) {
-                ("Credentials presence: clientKeys:" + data.oauthClientKeys.areKeysPresent()
+                ("Credentials presence: clientKeys:" + data.oauthClientKeys?.areKeysPresent()
                         + "; userKeys:" + !userToken.isNullOrEmpty() + "," + !userSecret.isNullOrEmpty())
             }
         }
@@ -111,7 +113,7 @@ internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
         return userSecret
     }
 
-    override fun saveTo(dw: AccountDataWriter?): Boolean {
+    override fun saveTo(dw: AccountDataWriter): Boolean {
         var changed = super.saveTo(dw)
         if (!TextUtils.equals(userToken, dw.getDataString(userTokenKey())) ||
                 !TextUtils.equals(userSecret, dw.getDataString(userSecretKey()))) {

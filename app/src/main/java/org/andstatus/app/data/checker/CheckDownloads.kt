@@ -29,43 +29,44 @@ import java.util.function.Function
 internal class CheckDownloads : DataChecker() {
     private class Results {
         var totalCount: Long = 0
-        var toFix: MutableList<Result?>? = ArrayList()
+        var toFix: MutableList<Result> = ArrayList()
     }
 
-    private class Result private constructor(val downloadId: Long)
+    private class Result(val downloadId: Long)
 
-    public override fun fixInternal(): Long {
+    override fun fixInternal(): Long {
         val results = getResults()
-        if (countOnly) return results.toFix.size
-        logger.logProgress("Marking " + DataChecker.Companion.getSomeOfTotal(results.toFix.size.toLong(), results.totalCount) + " downloads as absent")
+        if (countOnly) return results.toFix.size.toLong()
+        logger.logProgress("Marking " + getSomeOfTotal(results.toFix.size.toLong(), results.totalCount) + " downloads as absent")
         val fixedCount = AtomicLong()
-        results.toFix.forEach(Consumer { result: Result? ->
+        results.toFix.forEach(Consumer { result: Result ->
             val sql = "UPDATE " + DownloadTable.TABLE_NAME +
                     " SET " + DownloadTable.DOWNLOAD_STATUS + "=" + DownloadStatus.ABSENT.save() +
                     ", " + DownloadTable.FILE_NAME + "=null" +
                     ", " + DownloadTable.FILE_SIZE + "=0" +
                     " WHERE " + BaseColumns._ID + "=" + result.downloadId
-            myContext.database.execSQL(sql)
+            myContext.getDatabase()?.execSQL(sql)
             fixedCount.incrementAndGet()
         })
         return fixedCount.get()
     }
 
-    private fun getResults(): Results? {
+    private fun getResults(): Results {
         val sql = ("SELECT *"
                 + " FROM " + DownloadTable.TABLE_NAME
                 + " WHERE " + DownloadTable.DOWNLOAD_STATUS + "=" + DownloadStatus.LOADED.save())
-        return MyQuery.foldLeft(myContext, sql, Results(), { results: Results? ->
-            label@ Function { cursor: Cursor? ->
-                if (logger.isCancelled) return@label results
-                val dd: DownloadData = DownloadData.Companion.fromCursor(cursor)
-                results.totalCount++
-                if (!dd.file.existsNow()) {
-                    results.toFix.add(Result(dd.downloadId))
-                }
-                logger.logProgressIfLongProcess {
-                    "Will mark " +
-                            DataChecker.Companion.getSomeOfTotal(results.toFix.size.toLong(), results.totalCount) + " downloads as absent"
+        return MyQuery.foldLeft(myContext, sql, Results(), { results: Results ->
+            Function { cursor: Cursor ->
+                if (!logger.isCancelled) {
+                    val dd: DownloadData = DownloadData.fromCursor(cursor)
+                    results.totalCount++
+                    if (!dd.getFile().existsNow()) {
+                        results.toFix.add(Result(dd.getDownloadId()))
+                    }
+                    logger.logProgressIfLongProcess {
+                        "Will mark " +
+                                getSomeOfTotal(results.toFix.size.toLong(), results.totalCount) + " downloads as absent"
+                    }
                 }
                 results
             }

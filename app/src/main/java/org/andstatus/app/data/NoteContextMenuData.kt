@@ -25,7 +25,7 @@ import java.util.stream.Collectors
  * Helper class to find out a relation of a Note to [.myAccount]
  * @author yvolk@yurivolkov.com
  */
-class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: MyAccount?) {
+class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: MyAccount) {
     private var isAuthorMySucceededMyAccount = false
     private val myAccount: MyAccount
     var isSubscribed = false
@@ -36,7 +36,8 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
     var reblogged = false
     var actorFollowed = false
     var authorFollowed = false
-    private fun calculateMyAccount(origin: Origin?, ma: MyAccount?): MyAccount {
+
+    private fun calculateMyAccount(origin: Origin, ma: MyAccount?): MyAccount {
         return if (ma == null || !origin.isValid() || ma.origin != origin || ma.nonValid) {
             MyAccount.EMPTY
         } else ma
@@ -45,7 +46,7 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
     private fun loadData() {
         isRecipient = noteForAnyAccount.audience.findSame(myAccount.actor).isSuccess
         isAuthor = myAccount.actorId == noteForAnyAccount.author.actorId
-        isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded
+        isAuthorMySucceededMyAccount = isAuthor && myAccount.isValidAndSucceeded()
         val actorToNote = MyQuery.favoritedAndReblogged(noteForAnyAccount.myContext,
                 noteForAnyAccount.noteId, myAccount.actorId)
         favorited = actorToNote.favorited
@@ -81,7 +82,7 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
         return TAG + "{" +
                 "noteForAnyAccount=" + noteForAnyAccount +
                 ", isAuthorMySucceededMyAccount=" + isAuthorMySucceededMyAccount +
-                ", myAccount=" + myAccount.accountName +
+                ", myAccount=" + myAccount.getAccountName() +
                 ", accountActorId=" + myAccount.actorId +
                 ", isSubscribed=" + isSubscribed +
                 ", isAuthor=" + isAuthor +
@@ -119,7 +120,7 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
 
         private fun getMenuData(myContext: MyContext, noteForAnyAccount: NoteForAnyAccount): MutableList<NoteContextMenuData> {
             return myContext.accounts().succeededForSameOrigin(noteForAnyAccount.origin).stream()
-                    .map { a: MyAccount? -> NoteContextMenuData(noteForAnyAccount, a) }.collect(Collectors.toList())
+                    .map { a: MyAccount -> NoteContextMenuData(noteForAnyAccount, a) }.collect(Collectors.toList())
         }
 
         fun getAccountToActOnNote(myContext: MyContext, activityId: Long, noteId: Long,

@@ -21,9 +21,8 @@ import org.andstatus.app.account.AccountName
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.data.MyContentType
 import org.andstatus.app.net.social.ApiRoutineEnum
-import org.andstatus.app.util.TriState
-
 import org.andstatus.app.origin.OriginType
+import org.andstatus.app.util.TriState
 import java.net.URL
 import java.util.*
 
@@ -32,6 +31,7 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
     var urlForUserToken: URL? = null
     var dataReader: AccountDataReader? = null
     var oauthClientKeys: OAuthClientKeys? = null
+
     fun copy(): HttpConnectionData {
         val data = HttpConnectionData(accountName)
         data.originUrl = originUrl
@@ -63,13 +63,8 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
         return accountName.origin.originType
     }
 
-    fun getBasicPath(): String {
-        return getOriginType().getBasicPath()
-    }
-
-    fun getOauthPath(): String {
-        return getOriginType().getOauthPath()
-    }
+    val basicPath: String get() =getOriginType().getBasicPath()
+    val oauthPath: String get() = getOriginType().getOauthPath()
 
     fun isSsl(): Boolean {
         return accountName.origin.isSsl()

@@ -25,7 +25,7 @@ interface OAuthClientKeysStrategy {
     /**
      * @return not null, empty if no pre-registered key exist
      */
-    open fun getConsumerKey(): String?
+    open fun getConsumerKey(): String
 
     /**
      * @return not null, empty if no pre-registered key exist

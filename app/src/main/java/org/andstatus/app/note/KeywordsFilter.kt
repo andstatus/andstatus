@@ -21,12 +21,12 @@ import org.andstatus.app.util.StringUtil
 import java.util.*
 
 class KeywordsFilter(keywordsIn: String?) : IsEmpty {
-    internal class Keyword @JvmOverloads constructor(val value: String?, val contains: Boolean = false) {
+    internal class Keyword @JvmOverloads constructor(val value: String, val contains: Boolean = false) {
         val nonEmpty: Boolean
         override fun equals(o: Any?): Boolean {
             if (this === o) return true
             if (o == null || javaClass != o.javaClass) return false
-            val keyword = o as Keyword?
+            val keyword = o as Keyword
             return contains == keyword.contains && value == keyword.value
         }
 
@@ -43,10 +43,10 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
         }
     }
 
-    val keywordsToFilter: MutableList<Keyword?>?
-    private val keywordsRaw: MutableList<String?>?
-    private fun parseFilterString(text: String?): MutableList<String?> {
-        val keywords: MutableList<String?> = ArrayList()
+    private val keywordsToFilter: MutableList<Keyword>
+    private val keywordsRaw: MutableList<String>
+    private fun parseFilterString(text: String?): MutableList<String> {
+        val keywords: MutableList<String> = ArrayList()
         if (text.isNullOrEmpty()) {
             return keywords
         }
@@ -69,7 +69,7 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
         return keywords
     }
 
-    private fun nextQuote(text: String?, atPos: Int): Int {
+    private fun nextQuote(text: String, atPos: Int): Int {
         for (ind in atPos until text.length) {
             if (DOUBLE_QUOTE == text.get(ind)) {
                 return ind
@@ -78,7 +78,7 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
         return text.length
     }
 
-    private fun nextSeparatorInd(text: String?, atPos: Int): Int {
+    private fun nextSeparatorInd(text: String, atPos: Int): Int {
         val SEPARATORS = ", " + DOUBLE_QUOTE
         for (ind in atPos until text.length) {
             if (SEPARATORS.indexOf(text.get(ind)) >= 0) {
@@ -88,8 +88,8 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
         return text.length
     }
 
-    private fun rawToActual(keywordsRaw: MutableList<String?>?): MutableList<Keyword?> {
-        val keywords: MutableList<Keyword?> = ArrayList()
+    private fun rawToActual(keywordsRaw: MutableList<String>): MutableList<Keyword> {
+        val keywords: MutableList<Keyword> = ArrayList()
         for (itemRaw in keywordsRaw) {
             val contains = itemRaw.startsWith(CONTAINS_PREFIX)
             val contentToSearch = MyHtml.getContentToSearch(if (contains) itemRaw.substring(CONTAINS_PREFIX.length) else itemRaw)
@@ -140,7 +140,7 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
         return if (selection.length == 0) "" else "($selection)"
     }
 
-    fun prependSqlSelectionArgs(selectionArgs: Array<String?>?): Array<String?> {
+    fun prependSqlSelectionArgs(selectionArgs: Array<String>?): Array<String> {
         var selectionArgsOut = selectionArgs
         for (keyword in keywordsToFilter) {
             selectionArgsOut = StringUtil.addBeforeArray(selectionArgsOut, "%" + keyword.value + "%")
@@ -174,7 +174,7 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
     }
 
     companion object {
-        val CONTAINS_PREFIX: String? = "contains:"
+        val CONTAINS_PREFIX: String = "contains:"
         private const val DOUBLE_QUOTE = '"'
     }
 

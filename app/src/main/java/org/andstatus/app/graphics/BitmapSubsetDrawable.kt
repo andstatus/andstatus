@@ -26,8 +26,9 @@ import android.graphics.drawable.Drawable
  * @author yvolk@yurivolkov.com
  */
 class BitmapSubsetDrawable(bitmap: Bitmap, srcRect: Rect) : Drawable() {
-    private val bitmap: Bitmap?
-    private val scrRect: Rect?
+    private val bitmap: Bitmap
+    private val scrRect: Rect
+
     override fun getIntrinsicWidth(): Int {
         return scrRect.width()
     }
@@ -36,7 +37,7 @@ class BitmapSubsetDrawable(bitmap: Bitmap, srcRect: Rect) : Drawable() {
         return scrRect.height()
     }
 
-    override fun draw(canvas: Canvas?) {
+    override fun draw(canvas: Canvas) {
         canvas.drawBitmap(bitmap, scrRect, bounds, null)
     }
 
@@ -52,7 +53,7 @@ class BitmapSubsetDrawable(bitmap: Bitmap, srcRect: Rect) : Drawable() {
         return PixelFormat.OPAQUE
     }
 
-    fun getBitmap(): Bitmap? {
+    fun getBitmap(): Bitmap {
         return bitmap
     }
 

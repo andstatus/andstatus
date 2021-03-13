@@ -84,7 +84,7 @@ abstract class MediaFile internal constructor(filename: String,
             }
             logResult("Show blank", taskSuffix)
             showBlankImage(imageView)
-            AsyncTaskLauncher.execute<ImageLoader, CachedImage>(
+            AsyncTaskLauncher.execute(
                     ImageLoader(this, myActivity, imageView),
                     { obj: ImageLoader? -> obj?.load() ?: TryUtils.notFound() },
                     { loader: ImageLoader? -> Consumer { tryImage: Try<CachedImage> -> loader?.set(tryImage) } })
@@ -130,7 +130,7 @@ abstract class MediaFile internal constructor(filename: String,
         }
     }
 
-    fun loadAndGetImage(cacheName: CacheName?): CachedImage? {
+    fun loadAndGetImage(cacheName: CacheName): CachedImage? {
         if (downloadFile.existed) {
             return ImageCaches.loadAndGetImage(cacheName, this)
         }
@@ -151,7 +151,7 @@ abstract class MediaFile internal constructor(filename: String,
         fun set(tryImage: Try<CachedImage>) {
             if (skip()) return
             tryImage.onSuccess { image: CachedImage ->
-                if (image.id != mediaFile?.getId()) {
+                if (image.id != mediaFile.getId()) {
                     logResult("Loaded wrong image.id:" + image.id)
                     return@onSuccess
                 }
@@ -177,7 +177,7 @@ abstract class MediaFile internal constructor(filename: String,
                 logResult("Skipped already loaded")
                 return true
             }
-            if (imageView.getImageId() != mediaFile?.getId()) {
+            if (imageView.getImageId() != mediaFile.getId()) {
                 logResult("Skipped view.imageId:" + imageView.getImageId())
                 return true
             }
@@ -187,7 +187,7 @@ abstract class MediaFile internal constructor(filename: String,
         private fun logResult(msgLog: String) {
             if (!logged) {
                 logged = true
-                mediaFile?.logResult(msgLog, taskSuffix)
+                mediaFile.logResult(msgLog, taskSuffix)
             }
         }
     }
@@ -224,7 +224,7 @@ abstract class MediaFile internal constructor(filename: String,
                 loader: DrawableLoader? -> Consumer { drawableTry: Try<Drawable> -> drawableTry.onSuccess(uiConsumer) } })
     }
 
-    private class DrawableLoader(mediaFile: MediaFile?, private val cacheName: CacheName) :
+    private class DrawableLoader(mediaFile: MediaFile, private val cacheName: CacheName) :
             AbstractImageLoader(mediaFile, "-asynd") {
         fun load(): Try<Drawable> {
             return TryUtils.ofNullable(ImageCaches.loadAndGetImage(cacheName, mediaFile))
@@ -232,9 +232,9 @@ abstract class MediaFile internal constructor(filename: String,
         }
     }
 
-    private open class AbstractImageLoader(val mediaFile: MediaFile?, val taskSuffix: String) : IdentifiableInstance {
+    private open class AbstractImageLoader(val mediaFile: MediaFile, val taskSuffix: String) : IdentifiableInstance {
         override val instanceId: Long
-            get() = mediaFile?.getId() ?: 0
+            get() = mediaFile.getId()
 
         override fun instanceIdString(): String {
             return super.instanceIdString() + taskSuffix

@@ -221,8 +221,8 @@ class MyBackupDataInput {
         this.myContext = myContext
     }
 
-    fun getMyContext(): MyContext? {
-        return myContext
+    fun getMyContext(): MyContext {
+        return myContext ?: throw IllegalStateException("Context is null")
     }
 
     companion object {

@@ -45,7 +45,7 @@ object StringUtil {
     }
 
     fun isTemp(string: String?): Boolean {
-        return !string.isNullOrEmpty() && string.startsWith(TEMP_OID_PREFIX) ?: false
+        return !string.isNullOrEmpty() && string.startsWith(TEMP_OID_PREFIX)
     }
 
     /** empty and null strings are treated as the same  */
@@ -94,14 +94,10 @@ object StringUtil {
         return count
     }
 
-    fun addBeforeArray(array: Array<String?>?, s: String?): Array<String?> {
-        val length = array?.size ?: 0
-        val ans = arrayOfNulls<String?>(length + 1)
-        array?.let {
-            System.arraycopy(array, 0, ans, 1, length)
-        }
-        ans[0] = s
-        return ans
+    fun addBeforeArray(array: Array<String>?, s: String): Array<String> {
+        val out = mutableListOf(s)
+        array?.let { out.addAll(array)}
+        return out.toTypedArray()
     }
 
     fun isFilled(value: String?): Boolean {

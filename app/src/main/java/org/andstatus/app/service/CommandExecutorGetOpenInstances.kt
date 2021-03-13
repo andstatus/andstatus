@@ -60,7 +60,7 @@ class CommandExecutorGetOpenInstances(execContext: CommandExecutionContext?) : C
             return true
         }
         for (origin in  MyContextHolder.myContextHolder.getNow().origins().collection()) {
-            if (origin.getUrl() != null && origin.getUrl().host == url.host) {
+            if (origin.url != null && origin.url.host == url.host) {
                 return true
             }
         }

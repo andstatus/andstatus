@@ -22,8 +22,9 @@ import org.andstatus.app.account.AccountDataWriter
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 
-internal class AndroidAccountData(private val am: AccountManager?, private val androidAccount: Account?) : AccountDataReader {
-    override fun getDataInt(key: String?, defValue: Int): Int {
+internal class AndroidAccountData(private val am: AccountManager, private val androidAccount: Account) : AccountDataReader {
+
+    override fun getDataInt(key: String, defValue: Int): Int {
         var value = defValue
         try {
             val str = getDataString(key, "null")
@@ -36,7 +37,7 @@ internal class AndroidAccountData(private val am: AccountManager?, private val a
         return value
     }
 
-    fun getDataLong(key: String?, defValue: Long): Long {
+    fun getDataLong(key: String, defValue: Long): Long {
         var value = defValue
         try {
             val str = getDataString(key, "null")
@@ -49,7 +50,7 @@ internal class AndroidAccountData(private val am: AccountManager?, private val a
         return value
     }
 
-    fun getDataBoolean(key: String?, defValue: Boolean): Boolean {
+    fun getDataBoolean(key: String, defValue: Boolean): Boolean {
         var value = defValue
         try {
             val str = getDataString(key, "null")
@@ -62,7 +63,7 @@ internal class AndroidAccountData(private val am: AccountManager?, private val a
         return value
     }
 
-    override fun dataContains(key: String?): Boolean {
+    override fun dataContains(key: String): Boolean {
         var contains = false
         try {
             val str = getDataString(key, "null")
@@ -78,7 +79,7 @@ internal class AndroidAccountData(private val am: AccountManager?, private val a
     /**
      * Actor's and User Data associated with the account
      */
-    override fun getDataString(key: String?, defValue: String?): String? {
+    override fun getDataString(key: String, defValue: String): String {
         var value = defValue
         val str = am.getUserData(androidAccount, key)
         if (!str.isNullOrEmpty()) {
@@ -87,12 +88,12 @@ internal class AndroidAccountData(private val am: AccountManager?, private val a
         return value
     }
 
-    fun moveStringKeyTo(key: String?, accountData: AccountDataWriter?) {
-        accountData.setDataString(key, getDataString(key, null))
+    fun moveStringKeyTo(key: String, accountData: AccountDataWriter) {
+        accountData.setDataString(key, getDataString(key, ""))
         am.setUserData(androidAccount, key, null)
     }
 
-    fun moveLongKeyTo(key: String?, accountData: AccountDataWriter?) {
+    fun moveLongKeyTo(key: String, accountData: AccountDataWriter) {
         accountData.setDataLong(key, getDataLong(key, 0L))
         am.setUserData(androidAccount, key, null)
     }

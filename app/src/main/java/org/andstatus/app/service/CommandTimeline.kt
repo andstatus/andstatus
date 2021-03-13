@@ -27,7 +27,6 @@ import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.LazyVal
 import org.andstatus.app.util.MyStringBuilder
 import java.util.*
-import java.util.function.Supplier
 
 /**
  * Command data about a Timeline. The timeline is lazily evaluated
@@ -35,7 +34,7 @@ import java.util.function.Supplier
  */
 class CommandTimeline(private val myContext: MyContext,
                       val origin: Origin,
-                      val timelineIn: LazyVal<Timeline>?) {
+                      timelineIn: LazyVal<Timeline>?) {
     val timeline: LazyVal<Timeline> = timelineIn ?: LazyVal.of { evaluateTimeline() }
     private var id: Long = 0
     var timelineType: TimelineType = TimelineType.UNKNOWN
@@ -44,8 +43,8 @@ class CommandTimeline(private val myContext: MyContext,
 
     private fun evaluateTimeline(): Timeline {
         if (id != 0L) return myContext.timelines().fromId(id)
-        val actor: Actor = Actor.Companion.load(myContext, actorId)
-        return myContext.timelines().get(id, timelineType, actor, origin ?: Origin.EMPTY, searchQuery)
+        val actor: Actor = Actor.load(myContext, actorId)
+        return myContext.timelines().get(id, timelineType, actor, origin, searchQuery)
     }
 
     fun toContentValues(values: ContentValues) {
@@ -64,10 +63,10 @@ class CommandTimeline(private val myContext: MyContext,
         return timelineType != TimelineType.UNKNOWN
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
-        val data = o as CommandTimeline
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val data = other as CommandTimeline
         return getId() == data.getId() && actorId == data.actorId && timelineType == data.timelineType && origin == data.origin && searchQuery == data.searchQuery
     }
 
@@ -103,11 +102,11 @@ class CommandTimeline(private val myContext: MyContext,
 
     companion object {
         fun of(timeline: Timeline): CommandTimeline {
-            val data = CommandTimeline(timeline.myContext, timeline.getOrigin(), LazyVal.of<Timeline?>(timeline))
+            val data = CommandTimeline(timeline.myContext, timeline.getOrigin(), LazyVal.of<Timeline>(timeline))
             data.id = timeline.getId()
             data.timelineType = timeline.timelineType
             data.actorId = timeline.getActorId()
-            data.searchQuery = timeline.searchQuery
+            data.searchQuery = timeline.getSearchQuery()
             return data
         }
 
@@ -116,7 +115,7 @@ class CommandTimeline(private val myContext: MyContext,
                     myContext.origins().fromId(DbUtils.getLong(cursor, CommandTable.ORIGIN_ID)),
                     null)
             data.id = DbUtils.getLong(cursor, CommandTable.TIMELINE_ID)
-            data.timelineType = TimelineType.Companion.load(DbUtils.getString(cursor, CommandTable.TIMELINE_TYPE))
+            data.timelineType = TimelineType.load(DbUtils.getString(cursor, CommandTable.TIMELINE_TYPE))
             data.actorId = DbUtils.getLong(cursor, CommandTable.ACTOR_ID)
             data.searchQuery = DbUtils.getString(cursor, CommandTable.SEARCH_QUERY)
             return data

@@ -24,7 +24,7 @@ internal class Convert16 : ConvertOneStep() {
     override fun execute2() {
         versionTo = 17
         val avatarsDir = MyStorage.getDataFilesDir("avatars")
-        if (avatarsDir.exists()) {
+        if (avatarsDir?.exists() == true) {
             FileUtils.deleteFilesRecursively(avatarsDir)
             if (!avatarsDir.delete()) {
                 MyLog.e(this, "Couldn't delete " + avatarsDir.absolutePath)

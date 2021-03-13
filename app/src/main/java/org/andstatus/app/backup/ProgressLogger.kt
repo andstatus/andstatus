@@ -64,7 +64,7 @@ class ProgressLogger {
         this.logTag = StringUtil.notEmpty(logTag, TAG)
     }
 
-    fun isCancelled(): Boolean {
+    val isCancelled: Boolean get() {
         return progressListener.map { obj: ProgressListener -> obj.isCancelled() }.orElse(false)
     }
 

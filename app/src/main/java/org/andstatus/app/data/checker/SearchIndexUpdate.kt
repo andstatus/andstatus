@@ -31,25 +31,25 @@ import java.util.function.Consumer
  * @author yvolk@yurivolkov.com
  */
 internal class SearchIndexUpdate : DataChecker() {
-    public override fun fixInternal(): Long {
-        val sql: String = Note.Companion.getSqlToLoadContent(0) +
+    override fun fixInternal(): Long {
+        val sql: String = Note.getSqlToLoadContent(0) +
                 " ORDER BY " + BaseColumns._ID + " DESC" +
                 if (includeLong) "" else " LIMIT 0, 10000"
-        val notesToFix: MutableList<Note?> = ArrayList()
+        val notesToFix: MutableList<Note> = ArrayList()
         val counter = AtomicInteger()
         try {
-            myContext.database.rawQuery(sql, null).use { cursor ->
+            myContext.getDatabase()?.rawQuery(sql, null)?.use { cursor ->
                 while (cursor.moveToNext()) {
                     if (logger.isCancelled) break
                     counter.incrementAndGet()
-                    val note: Note = Note.Companion.contentFromCursor(myContext, cursor)
+                    val note: Note = Note.contentFromCursor(myContext, cursor)
                     val contentToSearchStored = DbUtils.getString(cursor, NoteTable.CONTENT_TO_SEARCH)
-                    if (contentToSearchStored != note.contentToSearch) {
+                    if (contentToSearchStored != note.getContentToSearch()) {
                         notesToFix.add(note)
                         logger.logProgressIfLongProcess {
                             ("Need to fix " + notesToFix.size + " of " + counter.get() + " notes, "
                                     + ", id=" + note.noteId + "; "
-                                    + I18n.trimTextAt(note.contentToSearch, 120))
+                                    + I18n.trimTextAt(note.getContentToSearch(), 120))
                         }
                     }
                 }
@@ -59,12 +59,13 @@ internal class SearchIndexUpdate : DataChecker() {
             logger.logProgress(logMsg)
             MyLog.e(this, logMsg, e)
         }
-        if (!countOnly) notesToFix.forEach(Consumer { note: Note? -> fixOneNote(note) })
-        logger.logProgress(if (notesToFix.isEmpty()) "No changes to search index were needed. $counter notes" else "Updated search index for " + notesToFix.size + " of " + counter + " notes")
-        return notesToFix.size
+        if (!countOnly) notesToFix.forEach(Consumer { note: Note -> fixOneNote(note) })
+        logger.logProgress(if (notesToFix.isEmpty()) "No changes to search index were needed. $counter notes"
+        else "Updated search index for " + notesToFix.size + " of " + counter + " notes")
+        return notesToFix.size.toLong()
     }
 
-    private fun fixOneNote(note: Note?) {
+    private fun fixOneNote(note: Note) {
         if (logger.isCancelled) return
         var sql = ""
         try {
@@ -72,13 +73,13 @@ internal class SearchIndexUpdate : DataChecker() {
                     + " SET "
                     + NoteTable.CONTENT_TO_SEARCH + "=" + MyQuery.quoteIfNotQuoted(note.getContentToSearch())
                     + " WHERE " + BaseColumns._ID + "=" + note.noteId)
-            myContext.database.execSQL(sql)
+            myContext.getDatabase()?.execSQL(sql)
             logger.logProgressIfLongProcess {
                 "Updating search index for " +
                         I18n.trimTextAt(note.getContentToSearch(), 120) +
                         " id=" + note.noteId
             }
-            MyServiceManager.Companion.setServiceUnavailable()
+            MyServiceManager.setServiceUnavailable()
         } catch (e: Exception) {
             val logMsg = "Error: " + e.message + ", SQL:" + sql
             logger.logProgress(logMsg)

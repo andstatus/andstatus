@@ -42,8 +42,8 @@ class CommandResult : Parcelable {
     private var numAuthExceptions: Long = 0
     private var numIoExceptions: Long = 0
     private var numParseExceptions: Long = 0
-    private var mMessage: String? = ""
-    private var progress: String? = ""
+    private var mMessage: String = ""
+    private var progress: String = ""
     private var itemId: Long = 0
 
     // 0 means these values were not set
@@ -79,12 +79,12 @@ class CommandResult : Parcelable {
         numAuthExceptions = parcel.readLong()
         numIoExceptions = parcel.readLong()
         numParseExceptions = parcel.readLong()
-        mMessage = parcel.readString()
+        mMessage = parcel.readString() ?: ""
         itemId = parcel.readLong()
         hourlyLimit = parcel.readInt()
         remainingHits = parcel.readInt()
         downloadedCount = parcel.readLong()
-        progress = parcel.readString()
+        progress = parcel.readString() ?: ""
     }
 
     fun toContentValues(values: ContentValues) {
@@ -157,7 +157,7 @@ class CommandResult : Parcelable {
         notificationEventCounts.forEach { event: NotificationEventType, count: AtomicLong ->
             if (count.get() > 0) message.append(event.name + ":" + count.get() + ", ")
         }
-        if (!mMessage.isNullOrEmpty()) {
+        if (mMessage.isNotEmpty()) {
             message.append(" \n$mMessage")
         }
         return message
@@ -280,19 +280,19 @@ class CommandResult : Parcelable {
         return lastExecutedDate
     }
 
-    fun getMessage(): String? {
+    fun getMessage(): String {
         return mMessage
     }
 
-    fun setMessage(message: String?) {
+    fun setMessage(message: String) {
         mMessage = message
     }
 
-    fun getProgress(): String? {
+    fun getProgress(): String {
         return progress
     }
 
-    fun setProgress(progress: String?) {
+    fun setProgress(progress: String) {
         this.progress = progress
     }
 

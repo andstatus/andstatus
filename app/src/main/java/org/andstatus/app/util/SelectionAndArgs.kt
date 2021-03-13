@@ -23,7 +23,7 @@ class SelectionAndArgs @JvmOverloads constructor(selection_in: String = "") : Ta
     var selection: String
 
     @Volatile
-    var selectionArgs: Array<String?> = arrayOf()
+    var selectionArgs: Array<String> = arrayOf()
 
     @Volatile
     private var nArgs = 0
@@ -34,14 +34,14 @@ class SelectionAndArgs @JvmOverloads constructor(selection_in: String = "") : Ta
     }
 
     fun addSelection(selection_in: String?): Int {
-        return addSelection(selection_in, arrayOf())
+        return addSelection(selection_in, emptyArray())
     }
 
     fun addSelection(selectionAdd: String?, selectionArgAdd: String?): Int {
-        return addSelection(selectionAdd, arrayOf(selectionArgAdd))
+        return addSelection(selectionAdd, selectionArgAdd?.let { arrayOf(it) } ?: emptyArray())
     }
 
-    fun addSelection(selectionAdd: String?, selectionArgsAdd: Array<String?>?): Int {
+    fun addSelection(selectionAdd: String?, selectionArgsAdd: Array<String>?): Int {
         val nArgsAdd = selectionArgsAdd?.size ?: 0
         if (!selectionAdd.isNullOrEmpty()) {
             selection = if (selection.isEmpty()) {
@@ -52,10 +52,7 @@ class SelectionAndArgs @JvmOverloads constructor(selection_in: String = "") : Ta
         }
         if (nArgsAdd > 0 && selectionArgsAdd != null) {
             val nArgs2 = nArgs + nArgsAdd
-            val selectionArgs2 = arrayOfNulls<String>(nArgs2)
-            System.arraycopy(selectionArgs, 0, selectionArgs2, 0, nArgs)
-            System.arraycopy(selectionArgsAdd, 0, selectionArgs2, nArgs, nArgsAdd)
-            selectionArgs = selectionArgs2
+            selectionArgs += selectionArgsAdd
             nArgs = nArgs2
         }
         return nArgs

@@ -73,7 +73,7 @@ class DatabaseHolder(context: Context, private val creationEnabled: Boolean) :
      *
      * @see android.database.sqlite.SQLiteOpenHelper.getWritableDatabase
      */
-    override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (onUpgradeTriggered.compareAndSet(false, true)) {
             DatabaseConverterController().onUpgrade(db, oldVersion, newVersion)
         }

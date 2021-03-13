@@ -36,16 +36,17 @@ import org.andstatus.app.util.StringUtil
  * @author yvolk@yurivolkov.com
  */
 class NoteForAnyAccount(val myContext: MyContext, activityId: Long, noteId: Long) {
-    val origin: Origin
+    val origin: Origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId))
     val noteId: Long
     private var noteOid: String = ""
     val status: DownloadStatus
-    val author: Actor?
-    val actor: Actor?
-    val downloads: NoteDownloads?
-    val visibility: Visibility?
+    val author: Actor
+    val actor: Actor
+    val downloads: NoteDownloads
+    val visibility: Visibility
     var audience: Audience
     private var content: String = ""
+
     fun isLoaded(): Boolean {
         return status == DownloadStatus.LOADED
     }
@@ -64,7 +65,6 @@ class NoteForAnyAccount(val myContext: MyContext, activityId: Long, noteId: Long
     }
 
     init {
-        origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId))
         this.noteId = noteId
         val db = myContext.getDatabase()
         var authorId: Long = 0

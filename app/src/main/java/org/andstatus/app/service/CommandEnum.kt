@@ -93,8 +93,8 @@ enum class CommandEnum @JvmOverloads constructor(
     }
 
     companion object {
-        fun fromBundle(bundle: Bundle?): CommandEnum? {
-            var command: CommandEnum? = UNKNOWN
+        fun fromBundle(bundle: Bundle?): CommandEnum {
+            var command: CommandEnum = UNKNOWN
             if (bundle != null) {
                 command = load(bundle.getString(IntentExtra.COMMAND.key))
                 if (command == UNKNOWN) {

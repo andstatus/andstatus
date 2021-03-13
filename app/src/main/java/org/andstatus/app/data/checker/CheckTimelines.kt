@@ -24,13 +24,12 @@ import org.andstatus.app.timeline.meta.TimelineSaver
 import org.andstatus.app.util.MyLog
 import java.util.*
 import java.util.function.Consumer
-import java.util.function.Function
 
 /**
  * @author yvolk@yurivolkov.com
  */
 internal class CheckTimelines : DataChecker() {
-    public override fun fixInternal(): Long {
+    override fun fixInternal(): Long {
         return deleteInvalidTimelines() + addDefaultTimelines() + removeDuplicatedTimelines()
     }
 
@@ -40,9 +39,9 @@ internal class CheckTimelines : DataChecker() {
         val toDelete: MutableSet<Timeline?> = HashSet()
         var deletedCount: Long = 0
         try {
-            MyQuery.get(myContext, "SELECT * FROM " + TimelineTable.TABLE_NAME,
-                    Function<Cursor?, Timeline?> { cursor: Cursor? -> Timeline.Companion.fromCursor(myContext, cursor) }
-            ).forEach(Consumer { timeline: Timeline? ->
+            MyQuery[myContext, "SELECT * FROM " + TimelineTable.TABLE_NAME,
+                    { cursor: Cursor -> Timeline.fromCursor(myContext, cursor) }]
+                    .forEach(Consumer { timeline: Timeline ->
                 if (!timeline.isValid()) {
                     logger.logProgress("Invalid timeline: $timeline")
                     DbUtils.waitMs(this, 1000)
@@ -60,7 +59,8 @@ internal class CheckTimelines : DataChecker() {
             MyLog.e(this, logMsg, e)
         }
         myContext.timelines().saveChanged()
-        logger.logProgress(if (deletedCount == 0L) "No invalid timelines found" else (if (countOnly) "To delete " else "Deleted ") + deletedCount + " invalid timelines. Valid timelines: " + size1)
+        logger.logProgress(if (deletedCount == 0L) "No invalid timelines found"
+        else (if (countOnly) "To delete " else "Deleted ") + deletedCount + " invalid timelines. Valid timelines: " + size1)
         DbUtils.waitMs(this, if (deletedCount == 0L) 1000 else 3000)
         return deletedCount
     }
@@ -106,10 +106,10 @@ internal class CheckTimelines : DataChecker() {
         }
         myContext.timelines().saveChanged()
         val size2 = myContext.timelines().values().size
-        val deletedCount: Long = if (countOnly) toDelete.size else size1 - size2
+        val deletedCount = if (countOnly) toDelete.size else size1 - size2
         logger.logProgress(if (deletedCount == 0L) "No duplicated timelines found. $size2 timelines" else (if (countOnly) "To delete " else "Deleted ") + deletedCount +
                 " duplicates of " + size1 + " timelines")
         DbUtils.waitMs(this, if (deletedCount == 0L) 1000 else 3000)
-        return deletedCount
+        return deletedCount.toLong()
     }
 }

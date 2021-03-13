@@ -20,7 +20,6 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import org.andstatus.app.R
-import org.andstatus.app.graphics.AttachedImageView
 import org.andstatus.app.util.MyLog
 
 /**
@@ -33,9 +32,9 @@ class AttachedImageView : IdentifiableImageView {
     private var widthMeasureSpecStored = 0
     private var heightMeasureSpecStored = 0
 
-    constructor(context: Context?) : super(context) {}
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs) {}
-    constructor(context: Context?, attrs: AttributeSet?, defStyle: Int) : super(context, attrs, defStyle) {}
+    constructor(context: Context) : super(context) {}
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {}
+    constructor(context: Context, attrs: AttributeSet?, defStyle: Int) : super(context, attrs, defStyle) {}
 
     fun setReferencedView(referencedViewIn: View?) {
         referencedView = referencedViewIn
@@ -56,8 +55,8 @@ class AttachedImageView : IdentifiableImageView {
             saveMeasureSpec(measuredWidthAndState, measuredHeightAndState)
             return
         }
-        val refWidthPixels = referencedView.getMeasuredWidth()
-        var height = Math.floor((refWidthPixels * getDrawableHeightToWidthRatio()).toDouble()) as Int
+        val refWidthPixels = referencedView?.getMeasuredWidth() ?: 1
+        var height = Math.floor((refWidthPixels * getDrawableHeightToWidthRatio()).toDouble()).toInt()
         logIt(method, refWidthPixels, widthMeasureSpec, height.toFloat())
         var mode = MeasureSpec.EXACTLY
         if (height == 0) {
@@ -66,7 +65,7 @@ class AttachedImageView : IdentifiableImageView {
         }
         if (height > MAX_ATTACHED_IMAGE_PART * getDisplayHeight()) {
             height = Math.floor(MAX_ATTACHED_IMAGE_PART
-                    * getDisplayHeight()) as Int
+                    * getDisplayHeight()).toInt()
         }
         layoutParams.height = height
         val widthSpec = MeasureSpec.makeMeasureSpec(refWidthPixels, MeasureSpec.EXACTLY)
@@ -75,7 +74,7 @@ class AttachedImageView : IdentifiableImageView {
         setMeasuredDimension(widthSpec, heightSpec)
     }
 
-    private fun logIt(method: String?, refWidthPixels: Int?, widthMeasureSpec: Int, height: Float) {
+    private fun logIt(method: String, refWidthPixels: Int?, widthMeasureSpec: Int, height: Float) {
         if (isInEditMode || !MyLog.isVerboseEnabled()) {
             return
         }

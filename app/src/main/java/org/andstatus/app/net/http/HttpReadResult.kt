@@ -44,7 +44,7 @@ import java.util.stream.Collector
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-class HttpReadResult(val request: HttpRequest?) {
+class HttpReadResult(val request: HttpRequest) {
     private var urlString: String = ""
     private var url: URL? = null
     private var headers: MutableMap<String?, MutableList<String?>?>? = emptyMap<String?, MutableList<String?>?>()
@@ -291,7 +291,7 @@ class HttpReadResult(val request: HttpRequest?) {
         return Try.failure(ConnectionException.Companion.from(this))
     }
 
-    fun logResponse(): HttpReadResult? {
+    fun logResponse(): HttpReadResult {
         if (strResponse != null && MyPreferences.isLogNetworkLevelMessages()) {
             val objTag: Any = "response"
             MyLog.logNetworkLevelMessage(objTag, request.getLogName(), strResponse,

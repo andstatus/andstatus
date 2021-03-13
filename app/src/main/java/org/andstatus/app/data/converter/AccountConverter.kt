@@ -28,9 +28,9 @@ import java.util.*
  * @author yvolk@yurivolkov.com
  */
 object AccountConverter {
-    private val TAG: String? = AccountConverter::class.java.simpleName
-    fun removeOldAccounts(am: AccountManager?,
-                          accountsToRemove: MutableCollection<Account?>?) {
+    private val TAG: String = AccountConverter::class.java.simpleName
+    fun removeOldAccounts(am: AccountManager,
+                          accountsToRemove: MutableCollection<Account>) {
         if (!accountsToRemove.isEmpty()) {
             MyLog.i(TAG, "Removing " + accountsToRemove.size + " old accounts")
             for (account in accountsToRemove) {
@@ -40,12 +40,12 @@ object AccountConverter {
         }
     }
 
-    fun convertJson(myContext: MyContext?, jsonIn: JSONObject?, isPersistent: Boolean): Try<JSONObject> {
+    fun convertJson(myContext: MyContext, jsonIn: JSONObject, isPersistent: Boolean): Try<JSONObject> {
         val version = AccountUtils.getVersion(jsonIn)
         return when (version) {
             AccountUtils.ACCOUNT_VERSION -> Try.success(jsonIn)
             0 -> Try.failure(NoSuchElementException("No version info found in $jsonIn"))
-            16 -> Try.success(jsonIn).flatMap { json: JSONObject? -> Convert47.Companion.convertJson16(myContext, json, isPersistent) }
+            16 -> Try.success(jsonIn).flatMap { json: JSONObject -> Convert47.convertJson16(myContext, json, isPersistent) }
             else -> Try.failure(IllegalArgumentException("Unsuppoerted account version: $version"))
         }
     }

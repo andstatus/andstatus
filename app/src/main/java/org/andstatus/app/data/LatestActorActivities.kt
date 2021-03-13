@@ -15,21 +15,21 @@
  */
 package org.andstatus.app.data
 
-java.util.HashMap
+import java.util.HashMap
 /**
  * Collects [ActorActivity] data (e.g. during timeline download) and allows to save it in bulk
  * @author yvolk@yurivolkov.com
  */
 class LatestActorActivities {
-    private val actorActivities: MutableMap<Long?, ActorActivity?>? = HashMap()
+    private val actorActivities: MutableMap<Long, ActorActivity> = HashMap()
 
     /**
      * Add information about new Actor's activity
      */
-    fun onNewActorActivity(uaIn: ActorActivity?) {
+    fun onNewActorActivity(uaIn: ActorActivity) {
         // On different implementations see 
         // http://stackoverflow.com/questions/81346/most-efficient-way-to-increment-a-map-value-in-java
-        var um = actorActivities.get(uaIn.getActorId())
+        var um = actorActivities[uaIn.getActorId()]
         if (um == null) {
             um = uaIn
         } else {

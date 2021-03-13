@@ -24,12 +24,13 @@ import java.util.concurrent.TimeUnit
 
 internal class DatabaseConverter {
     var startTime = System.currentTimeMillis()
-    var progressLogger: ProgressLogger? = null
-    var converterError: String? = ""
-    fun execute(params: UpgradeParams?): Boolean {
+    var progressLogger: ProgressLogger = ProgressLogger.getEmpty("DatabaseConverter")
+    var converterError: String = ""
+
+    fun execute(params: UpgradeParams): Boolean {
         var success = false
         progressLogger = params.progressLogger
-        var msgLog = ""
+        var msgLog: String
         var endTime: Long = 0
         try {
             convertAll(params.db, params.oldVersion, params.newVersion)
@@ -37,7 +38,7 @@ internal class DatabaseConverter {
             endTime = System.currentTimeMillis()
         } catch (e: ApplicationUpgradeException) {
             endTime = System.currentTimeMillis()
-            msgLog = e.message
+            msgLog = e.message ?: ""
             progressLogger.logProgress(msgLog)
             converterError = msgLog
             MyLog.ignored(this, e)
@@ -60,7 +61,7 @@ internal class DatabaseConverter {
         return success
     }
 
-    private fun convertAll(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+    private fun convertAll(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         var currentVersion = oldVersion
         MyLog.i(this, "Upgrading database from version $oldVersion to version $newVersion")
         var converterNotFound = false
@@ -70,7 +71,7 @@ internal class DatabaseConverter {
             oneStep = null
             try {
                 val prevVersion = currentVersion
-                val clazz = Class.forName(this.javaClass.getPackage().getName() + ".Convert" + currentVersion)
+                val clazz = Class.forName(this.javaClass.getPackage()?.getName() + ".Convert" + currentVersion)
                 oneStep = clazz.newInstance() as ConvertOneStep
                 currentVersion = oneStep.execute(db, currentVersion, progressLogger)
                 if (currentVersion == prevVersion) {

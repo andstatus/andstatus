@@ -61,15 +61,15 @@ class DemoOriginInserter(private val myContext: MyContext?) {
         if (origin.shouldHaveUrl()) {
             if (UrlUtils.isHostOnly(UrlUtils.buildUrl(hostOrUrl, isSsl))) {
                 Assert.assertEquals((if (isSsl) "https" else "http") + "://" + hostOrUrl,
-                        origin.getUrl().toExternalForm())
+                        origin.url.toExternalForm())
             } else {
                 val hostOrUrl2 = if (hostOrUrl.endsWith("/")) hostOrUrl else "$hostOrUrl/"
                 Assert.assertEquals("Input host or URL: '$hostOrUrl'",
                         UrlUtils.buildUrl(hostOrUrl2, origin.isSsl()),
-                        origin.getUrl())
+                        origin.url)
             }
         } else {
-            Assert.assertEquals(origin.originType.urlDefault, origin.getUrl())
+            Assert.assertEquals(origin.originType.urlDefault, origin.url)
         }
         Assert.assertEquals(isSsl, origin.isSsl())
         Assert.assertEquals(sslMode, origin.getSslMode())

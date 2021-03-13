@@ -746,7 +746,9 @@ object MyQuery {
         } else idToOid(myContext, OidEnum.NOTE_OID, conversationId, 0)
     }
 
-    fun dExists(db: SQLiteDatabase, sql: String): Boolean {
+    fun dExists(db: SQLiteDatabase?, sql: String): Boolean {
+        if (db == null) return false
+
         var exists = false
         try {
             db.rawQuery(sql, null).use { cursor -> exists = cursor.moveToFirst() }

@@ -305,7 +305,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         }
 
         fun fromBundle(myContext: MyContext, bundle: Bundle?): AccountData {
-            var jsonString: String = ""
+            var jsonString = ""
             if (bundle != null) {
                 jsonString = bundle.getString(AccountUtils.KEY_ACCOUNT) ?: ""
             }

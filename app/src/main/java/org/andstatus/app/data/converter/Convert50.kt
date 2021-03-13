@@ -28,9 +28,10 @@ import kotlin.collections.HashSet
 
 internal class Convert50 : ConvertOneStep() {
     private class Data {
-        val friends: MutableMap<Long?, MutableSet<Long?>?>? = HashMap()
-        val followers: MutableMap<Long?, MutableSet<Long?>?>? = HashMap()
-        fun addFromCursor(cursor: Cursor?): Data? {
+        val friends: MutableMap<Long, MutableSet<Long>> = HashMap()
+        val followers: MutableMap<Long, MutableSet<Long>> = HashMap()
+
+        fun addFromCursor(cursor: Cursor): Data {
             val friendId = DbUtils.getLong(cursor, "friend_id")
             val actorId = DbUtils.getLong(cursor, "actor_id")
             if (friendId != 0L && actorId != 0L) {
@@ -40,7 +41,7 @@ internal class Convert50 : ConvertOneStep() {
             return this
         }
 
-        fun addMember(membership: MutableMap<Long?, MutableSet<Long?>?>?, groupId: Long, memberId: Long) {
+        fun addMember(membership: MutableMap<Long, MutableSet<Long>>, groupId: Long, memberId: Long) {
             val members = Optional.ofNullable(membership.get(groupId)).orElseGet { HashSet() }
             members.add(memberId)
             membership[groupId] = members
@@ -62,39 +63,40 @@ internal class Convert50 : ConvertOneStep() {
         sql = "CREATE INDEX idx_membership ON group_members (member_id, group_id)"
         DbUtils.execSQL(db, sql)
         sql = "SELECT * FROM friendship WHERE followed=1"
-        val data = MyQuery.foldLeft(db, sql, Data(), { d: Data? -> Function { cursor: Cursor? -> d.addFromCursor(cursor) } })
+        val data = MyQuery.foldLeft(db, sql, Data(), { d: Data -> Function { cursor: Cursor -> d.addFromCursor(cursor) } })
         data.friends.entries.forEach(groupMembersCreator(GroupType.FRIENDS))
         data.followers.entries.forEach(groupMembersCreator(GroupType.FOLLOWERS))
         sql = "DROP TABLE friendship"
         DbUtils.execSQL(db, sql)
     }
 
-    private fun groupMembersCreator(groupType: GroupType?): Consumer<MutableMap.MutableEntry<Long?, MutableSet<Long?>?>?>? {
-        return label@ Consumer { entry: MutableMap.MutableEntry<Long?, MutableSet<Long?>?>? ->
+    private fun groupMembersCreator(groupType: GroupType): Consumer<MutableMap.MutableEntry<Long, MutableSet<Long>>> {
+        return Consumer { entry: MutableMap.MutableEntry<Long, MutableSet<Long>> ->
             val parentActorId = entry.key
-            if (entry.value.size < 2) return@label
-            val originId = MyQuery.actorIdToLongColumnValue("origin_id", parentActorId)
-            val parentUsername = MyQuery.actorIdToStringColumnValue("username", parentActorId)
-            val groupUsername = groupType.name + ".of." + parentUsername + "." + parentActorId
+            if (entry.value.size >= 2) {
+                val originId = MyQuery.actorIdToLongColumnValue("origin_id", parentActorId)
+                val parentUsername = MyQuery.actorIdToStringColumnValue("username", parentActorId)
+                val groupUsername = groupType.name + ".of." + parentUsername + "." + parentActorId
 
-            // Add group
-            val values = ContentValues()
-            values.put("parent_actor_id", parentActorId)
-            values.put("group_type", groupType.id)
-            values.put("origin_id", originId)
-            values.put("user_id", 0)
-            values.put("actor_oid", StringUtil.toTempOid(groupUsername))
-            values.put("username", groupUsername)
-            values.put("webfinger_id", "")
-            values.put("actor_ins_date", System.currentTimeMillis())
-            val groupId = db.insert("actor", "", values)
+                // Add group
+                val values = ContentValues()
+                values.put("parent_actor_id", parentActorId)
+                values.put("group_type", groupType.id)
+                values.put("origin_id", originId)
+                values.put("user_id", 0)
+                values.put("actor_oid", StringUtil.toTempOid(groupUsername))
+                values.put("username", groupUsername)
+                values.put("webfinger_id", "")
+                values.put("actor_ins_date", System.currentTimeMillis())
+                val groupId = db?.insert("actor", "", values)
 
-            // Add members
-            entry.value.forEach(Consumer { memberId: Long? ->
-                sql = "INSERT INTO group_members (group_id, member_id)" +
-                        " VALUES (" + groupId + ", " + memberId + ")"
-                DbUtils.execSQL(db, sql)
-            })
+                // Add members
+                entry.value.forEach(Consumer { memberId: Long? ->
+                    sql = "INSERT INTO group_members (group_id, member_id)" +
+                            " VALUES (" + groupId + ", " + memberId + ")"
+                    DbUtils.execSQL(db, sql)
+                })
+            }
         }
     }
 

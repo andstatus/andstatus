@@ -27,16 +27,18 @@ import org.andstatus.app.util.StopWatch
 import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
+import kotlin.properties.Delegates
 
 /**
  * @author yvolk@yurivolkov.com
  */
 abstract class DataChecker {
-    var myContext: MyContext? = null
+    var myContext: MyContext by Delegates.notNull<MyContext>()
     var logger: ProgressLogger = ProgressLogger.getEmpty("DataChecker")
     var includeLong = false
     var countOnly = false
-    fun setMyContext(myContext: MyContext?): DataChecker {
+
+    fun setMyContext(myContext: MyContext): DataChecker {
         this.myContext = myContext
         return this
     }
@@ -129,7 +131,7 @@ abstract class DataChecker {
                         .filter { c: DataChecker -> scope.contains("All") || scope.contains(c.javaClass.simpleName) }
                         .collect(Collectors.toList())
                 for (checker in selectedCheckers) {
-                    if (logger.isCancelled()) break
+                    if (logger.isCancelled) break
                     MyServiceManager.setServiceUnavailable()
                     counter += checker.setMyContext(myContext).setIncludeLong(includeLong).setLogger(logger)
                             .setCountOnly(countOnly)

@@ -27,7 +27,7 @@ internal class Convert44 : ConvertOneStep() {
         companion object {
             fun fromCursor(cursor: Cursor?): Optional<Data> {
                 val username = DbUtils.getString(cursor, "username")
-                val index = if (username.isNullOrEmpty()) -1 else username.indexOf("@")
+                val index = if (username.isEmpty()) -1 else username.indexOf("@")
                 return if (index > 0) Optional.of(Data(DbUtils.getLong(cursor, "_id"), username.substring(0, index))) else Optional.empty()
             }
         }
@@ -37,12 +37,12 @@ internal class Convert44 : ConvertOneStep() {
         progressLogger.logProgress("$stepTitle: Transforming Pump.io actors")
         sql = "SELECT actor._id, username FROM actor INNER JOIN origin on actor.origin_id=origin._id" +
                 " WHERE origin.origin_type_id=2"
-        MyQuery.foldLeft(db, sql, HashSet(), { set: MutableSet<Data?>? ->
+        MyQuery.foldLeft(db, sql, HashSet(), { set: MutableSet<Data> ->
             Function { cursor: Cursor? ->
-                Data.fromCursor(cursor).ifPresent(Consumer { e: Data? -> set.add(e) })
+                Data.fromCursor(cursor).ifPresent { e: Data -> set.add(e) }
                 set
             }
-        }).forEach(Consumer { data: Data? ->
+        }).forEach(Consumer { data: Data ->
             DbUtils.execSQL(db, "UPDATE actor SET username='" + data.username + "'" +
                     " WHERE _id=" + data.id)
         }

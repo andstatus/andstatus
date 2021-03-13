@@ -125,7 +125,7 @@ object ImageCaches {
         return getCache(cacheName).loadAndGetImage(mediaFile)
     }
 
-    fun getCachedImage(cacheName: CacheName, mediaFile: MediaFile?): CachedImage? {
+    fun getCachedImage(cacheName: CacheName, mediaFile: MediaFile): CachedImage? {
         return getCache(cacheName).getCachedImage(mediaFile)
     }
 

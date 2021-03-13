@@ -33,27 +33,27 @@ import java.util.stream.IntStream
  */
 internal class CheckUsers : DataChecker() {
     private class CheckResults {
-        var actorsToMergeUsers: MutableMap<String?, MutableSet<Actor?>?>? = HashMap()
-        var usersToSave: MutableSet<User?>? = HashSet()
-        var actorsWithoutUsers: MutableSet<Actor?>? = HashSet()
-        var actorsToFixWebFingerId: MutableSet<Actor?>? = HashSet()
-        var actorsWithoutOrigin: MutableSet<Actor?>? = HashSet()
-        var problems: MutableList<String?>? = ArrayList()
+        var actorsToMergeUsers: MutableMap<String, MutableSet<Actor>> = HashMap()
+        var usersToSave: MutableSet<User> = HashSet()
+        var actorsWithoutUsers: MutableSet<Actor> = HashSet()
+        var actorsToFixWebFingerId: MutableSet<Actor> = HashSet()
+        var actorsWithoutOrigin: MutableSet<Actor> = HashSet()
+        var problems: MutableList<String> = ArrayList()
     }
 
-    public override fun fixInternal(): Long {
+    override fun fixInternal(): Long {
         val results = getResults()
         logResults(results)
-        if (countOnly) return results.problems.size
+        if (countOnly) return results.problems.size.toLong()
         var changedCount: Long = 0
         for (user in results.usersToSave) {
             user.save(myContext)
             changedCount++
         }
-        changedCount += results.actorsToMergeUsers.values.stream().mapToLong { actors: MutableSet<Actor?>? -> mergeUsers(actors) }.sum()
+        changedCount += results.actorsToMergeUsers.values.stream().mapToLong { actors: MutableSet<Actor> -> mergeUsers(actors) }.sum()
         for (actor in results.actorsWithoutOrigin) {
             val parent = actor.getParent()
-            if (parent.nonEmpty()) {
+            if (parent.nonEmpty) {
                 // The error affects development database only
                 val groupUsername: String = actor.groupType.name + ".of." + parent.getUsername() + "." + parent.actorId
                 val groupTempOid = StringUtil.toTempOid(groupUsername)
@@ -62,7 +62,7 @@ internal class CheckUsers : DataChecker() {
                         ActorTable.USERNAME + "='" + groupUsername + "', " +
                         ActorTable.ACTOR_OID + "='" + groupTempOid + "'" +
                         " WHERE " + BaseColumns._ID + "=" + actor.actorId
-                myContext.database.execSQL(sql)
+                myContext.getDatabase()?.execSQL(sql)
                 changedCount++
             } else {
                 MyLog.w(this, "Couldn't fix origin for $actor")
@@ -71,7 +71,7 @@ internal class CheckUsers : DataChecker() {
         for (actor in results.actorsToFixWebFingerId) {
             val sql = ("UPDATE " + ActorTable.TABLE_NAME + " SET " + ActorTable.WEBFINGER_ID + "='"
                     + actor.getWebFingerId() + "' WHERE " + BaseColumns._ID + "=" + actor.actorId)
-            myContext.database.execSQL(sql)
+            myContext.getDatabase()?.execSQL(sql)
             changedCount++
         }
         for (actor1 in results.actorsWithoutUsers) {
@@ -79,43 +79,43 @@ internal class CheckUsers : DataChecker() {
             actor.saveUser()
             val sql = ("UPDATE " + ActorTable.TABLE_NAME + " SET " + ActorTable.USER_ID + "="
                     + actor.user.userId + " WHERE " + BaseColumns._ID + "=" + actor.actorId)
-            myContext.database.execSQL(sql)
+            myContext.getDatabase()?.execSQL(sql)
             changedCount++
         }
         return changedCount
     }
 
-    private fun logResults(results: CheckResults?) {
+    private fun logResults(results: CheckResults) {
         if (results.problems.isEmpty()) {
             MyLog.d(this, "No problems found")
             return
         }
         MyLog.i(this, "Problems found: " + results.problems.size)
         IntStream.range(0, results.problems.size)
-                .mapToObj { i: Int -> Integer.toString(i + 1) + ". " + results.problems.get(i) }
+                .mapToObj { i: Int -> (i + 1).toString() + ". " + results.problems[i] }
                 .forEachOrdered { s: String? -> MyLog.i(this, s) }
     }
 
-    private fun getResults(): CheckResults? {
+    private fun getResults(): CheckResults {
         val results = CheckResults()
         val sql = ("SELECT " + ActorSql.selectFullProjection()
-                + " FROM " + ActorSql.tables(true, false, true)
+                + " FROM " + ActorSql.tables(isFullProjection = true, userOnly = false, userIsOptional = true)
                 + " ORDER BY " + ActorTable.WEBFINGER_ID + " COLLATE NOCASE")
         var rowsCount: Long = 0
         MyLog.v(this) { sql }
-        myContext.database.rawQuery(sql, null).use { c ->
+        myContext.getDatabase()?.rawQuery(sql, null).use { c ->
             var key = ""
-            var actors: MutableSet<Actor?> = HashSet()
-            while (c.moveToNext()) {
+            var actors: MutableSet<Actor> = HashSet()
+            while (c?.moveToNext() == true) {
                 rowsCount++
-                val actor: Actor = Actor.Companion.fromCursor(myContext, c, false)
+                val actor: Actor = Actor.fromCursor(myContext, c, false)
                 val webFingerId = DbUtils.getString(c, ActorTable.WEBFINGER_ID)
-                if (actor.isWebFingerIdValid && actor.webFingerId != webFingerId) {
+                if (actor.isWebFingerIdValid() && actor.getWebFingerId() != webFingerId) {
                     results.actorsToFixWebFingerId.add(actor)
                     results.problems.add("Fix webfingerId: '$webFingerId' $actor")
                 }
-                if (myContext.accounts().fromWebFingerId(actor.webFingerId).isValid
-                        && actor.user.isMyUser.untrue) {
+                if (myContext.accounts().fromWebFingerId(actor.getWebFingerId()).isValid
+                        && actor.user.isMyUser().untrue) {
                     actor.user.setIsMyUser(TriState.TRUE)
                     results.usersToSave.add(actor.user)
                     results.problems.add("Fix user isMy: $actor")
@@ -127,12 +127,12 @@ internal class CheckUsers : DataChecker() {
                     results.actorsWithoutOrigin.add(actor)
                     results.problems.add("Fix no Origin: $actor")
                 }
-                if (key.isNullOrEmpty() || actor.webFingerId != key) {
+                if (key.isEmpty() || actor.getWebFingerId() != key) {
                     if (shouldMerge(actors)) {
                         results.actorsToMergeUsers[key] = actors
                         results.problems.add("Fix merge users 1 \"$key\": $actors")
                     }
-                    key = actor.webFingerId
+                    key = actor.getWebFingerId()
                     actors = HashSet()
                 }
                 actors.add(actor)
@@ -151,22 +151,22 @@ internal class CheckUsers : DataChecker() {
         return results
     }
 
-    private fun shouldMerge(actors: MutableSet<Actor?>?): Boolean {
-        return actors.size > 1 && (actors.stream().anyMatch { a: Actor? -> a.user.userId == 0L }
-                || actors.stream().mapToLong { a: Actor? -> a.user.userId }.distinct().count() > 1)
+    private fun shouldMerge(actors: MutableSet<Actor>): Boolean {
+        return actors.size > 1 && (actors.stream().anyMatch { a: Actor -> a.user.userId == 0L }
+                || actors.stream().mapToLong { a: Actor -> a.user.userId }.distinct().count() > 1)
     }
 
-    private fun mergeUsers(actors: MutableSet<Actor?>?): Long {
-        val userWith = actors.stream().map { a: Actor? -> a.user }.reduce { a: User?, b: User? -> if (a.userId < b.userId) a else b }
-                .orElse(User.Companion.EMPTY)
-        return if (userWith.userId == 0L) 0 else actors.stream().map { actor: Actor? ->
+    private fun mergeUsers(actors: MutableSet<Actor>): Long {
+        val userWith = actors.stream().map { a: Actor -> a.user }.reduce { a: User, b: User -> if (a.userId < b.userId) a else b }
+                .orElse(User.EMPTY)
+        return if (userWith.userId == 0L) 0 else actors.stream().map { actor: Actor ->
             val logMsg = "Linking $actor with $userWith"
             if (logger.loggedMoreSecondsAgoThan(5)) logger.logProgress(logMsg)
-            MyProvider.Companion.update(myContext, ActorTable.TABLE_NAME,
+            MyProvider.update(myContext, ActorTable.TABLE_NAME,
                     ActorTable.USER_ID + "=" + userWith.userId,
                     BaseColumns._ID + "=" + actor.actorId
             )
-            if (actor.user.userId != 0L && actor.user.userId != userWith.userId && userWith.isMyUser.isTrue) {
+            if (actor.user.userId != 0L && actor.user.userId != userWith.userId && userWith.isMyUser().isTrue) {
                 actor.user.setIsMyUser(TriState.FALSE)
                 actor.user.save(myContext)
             }

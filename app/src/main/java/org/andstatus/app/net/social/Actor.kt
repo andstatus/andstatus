@@ -668,7 +668,7 @@ class Actor private constructor(// In our system
         return builder.toString()
     }
 
-    fun lookupUser(): Actor? {
+    fun lookupUser(): Actor {
         return origin.myContext.users().lookupUser(this)
     }
 

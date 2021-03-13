@@ -145,10 +145,10 @@ class OriginEditor : MyActivity() {
         val showHostOrUrl = origin.shouldHaveUrl()
         if (showHostOrUrl) {
             val strHostOrUrl: String?
-            strHostOrUrl = if (UrlUtils.isHostOnly(origin.getUrl())) {
-                origin.getUrl().host
-            } else if (origin.getUrl() != null) {
-                origin.getUrl().toExternalForm()
+            strHostOrUrl = if (UrlUtils.isHostOnly(origin.url)) {
+                origin.url.host
+            } else if (origin.url != null) {
+                origin.url.toExternalForm()
             } else {
                 ""
             }
@@ -199,8 +199,8 @@ class OriginEditor : MyActivity() {
             val origin = Origin.Builder(
                     builder.getMyContext(), originTypes.get(spinnerOriginType.getSelectedItemPosition()))
                     .setHostOrUrl(editTextHost.getText().toString()).build()
-            if (origin.getUrl() != null) {
-                editTextOriginName.setText(origin.getUrl().host)
+            if (origin.url != null) {
+                editTextOriginName.setText(origin.url.host)
             }
         }
     }

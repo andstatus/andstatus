@@ -39,8 +39,8 @@ import java.util.function.Function
  * @author yvolk@yurivolkov.com
  */
 internal class CheckAudience : DataChecker() {
-    public override fun fixInternal(): Long {
-        return myContext.origins().collection().stream().mapToInt { o: Origin? -> fixOneOrigin(o, countOnly) }.sum()
+    override fun fixInternal(): Long {
+        return myContext.origins().collection().map { o: Origin -> fixOneOrigin(o, countOnly) }.sum().toLong()
     }
 
     private class FixSummary {
@@ -48,7 +48,7 @@ internal class CheckAudience : DataChecker() {
         var toFixCount = 0
     }
 
-    private fun fixOneOrigin(origin: Origin?, countOnly: Boolean): Int {
+    private fun fixOneOrigin(origin: Origin, countOnly: Boolean): Int {
         if (logger.isCancelled) return 0
         val ma = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
         if (ma.isEmpty) return 0
@@ -61,12 +61,12 @@ internal class CheckAudience : DataChecker() {
                 NoteTable.AUTHOR_ID + ", " +
                 NoteTable.IN_REPLY_TO_ACTOR_ID +
                 " FROM " + NoteTable.TABLE_NAME +
-                " WHERE " + NoteTable.ORIGIN_ID + "=" + origin.getId() +
+                " WHERE " + NoteTable.ORIGIN_ID + "=" + origin.id +
                 " AND " + NoteTable.NOTE_STATUS + "=" + DownloadStatus.LOADED.save() +
                 " ORDER BY " + BaseColumns._ID + " DESC" +
                 if (includeLong) "" else " LIMIT 0, 500"
         val summary = MyQuery.foldLeft(myContext, sql, FixSummary(),
-                { fixSummary: FixSummary? -> Function { cursor: Cursor? -> foldOneNote(ma, dataUpdater, countOnly, fixSummary, cursor) } })
+                { fixSummary: FixSummary -> Function { cursor: Cursor -> foldOneNote(ma, dataUpdater, countOnly, fixSummary, cursor) } })
         logger.logProgress(origin.name + ": " +
                 if (summary.toFixCount == 0) "No changes to Audience were needed. " + summary.rowsCount + " notes" else (if (countOnly) "Need to update " else "Updated") + " Audience for " + summary.toFixCount +
                         " of " + summary.rowsCount + " notes")
@@ -74,16 +74,16 @@ internal class CheckAudience : DataChecker() {
         return summary.toFixCount
     }
 
-    private fun foldOneNote(ma: MyAccount?, dataUpdater: DataUpdater?, countOnly: Boolean, fixSummary: FixSummary?, cursor: Cursor?): FixSummary? {
+    private fun foldOneNote(ma: MyAccount, dataUpdater: DataUpdater, countOnly: Boolean, fixSummary: FixSummary, cursor: Cursor): FixSummary {
         if (logger.isCancelled) return fixSummary
         val origin = ma.origin
         fixSummary.rowsCount++
         val noteId = DbUtils.getLong(cursor, BaseColumns._ID)
         val insDate = DbUtils.getLong(cursor, NoteTable.INS_DATE)
-        val storedVisibility: Visibility = Visibility.Companion.fromCursor(cursor)
+        val storedVisibility: Visibility = Visibility.fromCursor(cursor)
         val content = DbUtils.getString(cursor, NoteTable.CONTENT)
-        val author: Actor = Actor.Companion.load(myContext, DbUtils.getLong(cursor, NoteTable.AUTHOR_ID))
-        val inReplyToActor: Actor = Actor.Companion.load(myContext, DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID))
+        val author: Actor = Actor.load(myContext, DbUtils.getLong(cursor, NoteTable.AUTHOR_ID))
+        val inReplyToActor: Actor = Actor.load(myContext, DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_ACTOR_ID))
         if (origin.originType === OriginType.GNUSOCIAL || origin.originType === OriginType.TWITTER) {
 
             // See org.andstatus.app.note.NoteEditorData.recreateAudience
@@ -93,14 +93,15 @@ internal class CheckAudience : DataChecker() {
             audience.lookupUsers()
             val actorsToSave = audience.evaluateAndGetActorsToSave(author)
             if (!countOnly) {
-                actorsToSave.stream().filter { a: Actor? -> a.actorId == 0L }.forEach { actor: Actor? -> dataUpdater.updateObjActor(ma.actor.update(actor), 0) }
+                actorsToSave.stream().filter { a: Actor -> a.actorId == 0L }
+                        .forEach { actor: Actor -> dataUpdater.updateObjActor(ma.actor.update(actor), 0) }
             }
             compareVisibility(fixSummary, countOnly, noteId, audience, storedVisibility)
             if (audience.save(author, noteId, audience.visibility, countOnly)) {
                 fixSummary.toFixCount += 1
             }
         } else {
-            val audience: Audience = Audience.Companion.fromNoteId(origin, noteId, storedVisibility)
+            val audience: Audience = Audience.fromNoteId(origin, noteId, storedVisibility)
             compareVisibility(fixSummary, countOnly, noteId, audience, storedVisibility)
         }
         logger.logProgressIfLongProcess {
@@ -110,14 +111,14 @@ ${RelativeTime.getDifference(myContext.context(), insDate)}, ${I18n.trimTextAt(M
         return fixSummary
     }
 
-    private fun compareVisibility(s: FixSummary?, countOnly: Boolean, noteId: Long,
-                                  audience: Audience?, storedVisibility: Visibility?) {
+    private fun compareVisibility(s: FixSummary, countOnly: Boolean, noteId: Long,
+                                  audience: Audience, storedVisibility: Visibility) {
         if (storedVisibility == audience.visibility) return
         s.toFixCount += 1
         var msgLog = (s.toFixCount.toString() + ". Fix visibility for " + noteId + " " + storedVisibility
                 + " -> " + audience.visibility)
         if (s.toFixCount < 20) {
-            msgLog += "; " + Note.Companion.loadContentById(myContext, noteId)
+            msgLog += "; " + Note.loadContentById(myContext, noteId)
         }
         MyLog.i(TAG, msgLog)
         if (!countOnly) {
@@ -125,11 +126,11 @@ ${RelativeTime.getDifference(myContext.context(), insDate)}, ${I18n.trimTextAt(M
                     + " SET "
                     + NoteTable.VISIBILITY + "=" + audience.visibility.id
                     + " WHERE " + BaseColumns._ID + "=" + noteId)
-            myContext.database.execSQL(sql)
+            myContext.getDatabase()?.execSQL(sql)
         }
     }
 
     companion object {
-        private val TAG: String? = CheckAudience::class.java.simpleName
+        private val TAG: String = CheckAudience::class.java.simpleName
     }
 }

@@ -18,6 +18,7 @@ package org.andstatus.app.data.checker
 import android.database.Cursor
 import android.provider.BaseColumns
 import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.data.MyQuery
 import org.andstatus.app.data.SqlIds
 import org.andstatus.app.database.table.NoteTable
@@ -25,7 +26,6 @@ import org.andstatus.app.util.MyLog
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.function.Function
 
 /**
  * @author yvolk@yurivolkov.com
@@ -38,9 +38,9 @@ class CheckConversations : DataChecker() {
     private inner class NoteItem {
         var id: Long = 0
         var originId: Long = 0
-        var inReplyToId_initial: Long = 0
+        var inReplyToIdInitial: Long = 0
         var inReplyToId: Long = 0
-        var conversationId_initial: Long = 0
+        var conversationIdInitial: Long = 0
         var conversationId: Long = 0
         var conversationOid: String? = ""
         fun fixConversationId(conversationId: Long): Boolean {
@@ -64,20 +64,20 @@ class CheckConversations : DataChecker() {
         }
 
         fun isConversationIdChanged(): Boolean {
-            return conversationId != conversationId_initial
+            return conversationId != conversationIdInitial
         }
 
         fun isInReplyToIdChanged(): Boolean {
-            return inReplyToId != inReplyToId_initial
+            return inReplyToId != inReplyToIdInitial
         }
 
         override fun toString(): String {
             return "MsgItem{" +
                     "id=" + id +
                     ", originId=" + originId +
-                    ", inReplyToId_initial=" + inReplyToId_initial +
+                    ", inReplyToId_initial=" + inReplyToIdInitial +
                     ", inReplyToId=" + inReplyToId +
-                    ", conversationId_initial=" + conversationId_initial +
+                    ", conversationId_initial=" + conversationIdInitial +
                     ", conversationId=" + conversationId +
                     ", conversationOid='" + conversationOid + '\'' +
                     '}'
@@ -89,7 +89,7 @@ class CheckConversations : DataChecker() {
         return this
     }
 
-    public override fun fixInternal(): Long {
+    override fun fixInternal(): Long {
         loadNotes()
         if (noteIdsOfOneConversation.isEmpty()) {
             fixConversationsUsingReplies()
@@ -97,7 +97,7 @@ class CheckConversations : DataChecker() {
         } else {
             fixOneConversation()
         }
-        return saveChanges(countOnly)
+        return saveChanges(countOnly).toLong()
     }
 
     private fun loadNotes() {
@@ -113,39 +113,39 @@ class CheckConversations : DataChecker() {
             sql += (" WHERE " + NoteTable.CONVERSATION_ID + " IN ("
                     + "SELECT DISTINCT " + NoteTable.CONVERSATION_ID
                     + " FROM " + NoteTable.TABLE_NAME + " WHERE "
-                    + BaseColumns._ID + SqlIds.Companion.fromIds(noteIdsOfOneConversation).getSql()
+                    + BaseColumns._ID + SqlIds.fromIds(noteIdsOfOneConversation).getSql()
                     + ")")
         }
         var cursor: Cursor? = null
         var rowsCount: Long = 0
         try {
-            cursor = myContext.database.rawQuery(sql, null)
-            while (cursor.moveToNext()) {
+            cursor = myContext.getDatabase()?.rawQuery(sql, null)
+            while (cursor?.moveToNext() == true) {
                 rowsCount++
                 val item = NoteItem()
                 item.id = DbUtils.getLong(cursor, BaseColumns._ID)
                 item.originId = DbUtils.getLong(cursor, NoteTable.ORIGIN_ID)
                 item.inReplyToId = DbUtils.getLong(cursor, NoteTable.IN_REPLY_TO_NOTE_ID)
-                item.inReplyToId_initial = item.inReplyToId
+                item.inReplyToIdInitial = item.inReplyToId
                 item.conversationId = DbUtils.getLong(cursor, NoteTable.CONVERSATION_ID)
-                item.conversationId_initial = item.conversationId
+                item.conversationIdInitial = item.conversationId
                 item.conversationOid = DbUtils.getString(cursor, NoteTable.CONVERSATION_OID)
                 items[item.id] = item
                 if (item.inReplyToId != 0L) {
-                    replies.computeIfAbsent(item.inReplyToId, Function<Long?, MutableList<NoteItem?>?> { k: Long? -> ArrayList() }).add(item)
+                    replies.computeIfAbsent(item.inReplyToId) { ArrayList() }.add(item)
                 }
             }
         } finally {
             closeSilently(cursor)
         }
-        logger.logProgress(java.lang.Long.toString(rowsCount) + " notes loaded")
+        logger.logProgress(rowsCount.toString() + " notes loaded")
     }
 
     private fun fixConversationsUsingReplies() {
         val counter = AtomicInteger()
         for (item in items.values) {
             if (item.inReplyToId != 0L) {
-                val parent = items.get(item.inReplyToId)
+                val parent = items[item.inReplyToId]
                 if (parent == null) {
                     item.fixInReplyToId(0)
                 } else {
@@ -187,8 +187,8 @@ class CheckConversations : DataChecker() {
         }
     }
 
-    private fun changeConversationOfReplies(parent: NoteItem?, level: Int) {
-        val replies1 = replies.get(parent.id) ?: return
+    private fun changeConversationOfReplies(parent: NoteItem, level: Int) {
+        val replies1 = replies[parent.id] ?: return
         for (item in replies1) {
             if (item.fixConversationId(parent.conversationId)) {
                 if (level > 0) {
@@ -201,8 +201,8 @@ class CheckConversations : DataChecker() {
     }
 
     private fun fixOneConversation() {
-        val newConversationId = items.values.stream().map { noteItem: NoteItem? -> noteItem.conversationId }
-                .min { obj: Long?, anotherLong: Long? -> obj.compareTo(anotherLong) }.orElse(0L)
+        val newConversationId = items.values.stream().map { noteItem: NoteItem -> noteItem.conversationId }
+                .min { obj: Long, anotherLong: Long -> obj.compareTo(anotherLong) }.orElse(0L)
         check(newConversationId != 0L) { "Conversation ID=0, $noteIdsOfOneConversation" }
         for (item in items.values) {
             item.conversationId = newConversationId
@@ -218,10 +218,10 @@ class CheckConversations : DataChecker() {
                     if (counter.get() < 5 && MyLog.isVerboseEnabled()) {
                         MyLog.v(this, "noteId=" + item.id + "; "
                                 + (if (item.isInReplyToIdChanged()) "inReplyToId changed from "
-                                + item.inReplyToId_initial + " to " + item.inReplyToId else "")
+                                + item.inReplyToIdInitial + " to " + item.inReplyToId else "")
                                 + (if (item.isInReplyToIdChanged() && item.isConversationIdChanged()) " and " else "")
                                 + (if (item.isConversationIdChanged()) "conversationId changed from "
-                                + item.conversationId_initial + " to " + item.conversationId else "")
+                                + item.conversationIdInitial + " to " + item.conversationId else "")
                                 + ", Content:'" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, item.id) + "'")
                     }
                     if (!countOnly) {
@@ -231,7 +231,7 @@ class CheckConversations : DataChecker() {
                                 + (if (item.isInReplyToIdChanged() && item.isConversationIdChanged()) ", " else "")
                                 + (if (item.isConversationIdChanged()) NoteTable.CONVERSATION_ID + "=" + DbUtils.sqlZeroToNull(item.conversationId) else "")
                                 + " WHERE " + BaseColumns._ID + "=" + item.id)
-                        myContext.database.execSQL(sql)
+                        myContext.getDatabase()?.execSQL(sql)
                     }
                     counter.incrementAndGet()
                     logger.logProgressIfLongProcess { "Saved changes for $counter notes" }

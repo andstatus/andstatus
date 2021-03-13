@@ -103,7 +103,7 @@ object UrlUtils {
         // Test with: http://www.regexplanet.com/advanced/java/index.html
     }
 
-    fun pathToUrlString(originUrl: URL?, path: String?, failOnInvalid: Boolean): Try<String> {
+    fun pathToUrlString(originUrl: URL?, path: String, failOnInvalid: Boolean): Try<String> {
         val url: Try<URL> = pathToUrl(originUrl, path)
         if (url.isFailure()) {
             return if (failOnInvalid) Try.failure(ConnectionException.hardConnectionException("URL is unknown or malformed. System URL:'"
@@ -116,11 +116,9 @@ object UrlUtils {
         } else url.map { it.toExternalForm() }
     }
 
-    fun pathToUrl(originUrl: URL?, path: String?): Try<URL> {
+    fun pathToUrl(originUrl: URL?, path: String): Try<URL> {
         return try {
-            if (path != null && path.contains("://")) {
-                Try.success(URL(path))
-            } else Try.success(URL(originUrl, path))
+            if (path.contains("://")) Try.success(URL(path)) else Try.success(URL(originUrl, path))
         } catch (e: MalformedURLException) {
             TryUtils.failure("Malformed URL, originUrl:'$originUrl', path:'$path'")
         }
