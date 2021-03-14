@@ -22,7 +22,6 @@ import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.lang.SelectableEnum
 import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpConnectionBasic
-import org.andstatus.app.net.http.HttpConnectionEmpty
 import org.andstatus.app.net.http.HttpConnectionOAuthApache
 import org.andstatus.app.net.http.HttpConnectionOAuthJavaNet
 import org.andstatus.app.net.http.HttpConnectionOAuthMastodon
@@ -294,9 +293,9 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
         return isSearchTimelineSyncable
     }
 
-    fun partialPathToApiPath(partialPath: String?): String? {
+    fun partialPathToApiPath(partialPath: String): String {
         var apiPath = partialPath
-        if (!apiPath.isNullOrEmpty() && !apiPath.contains("://")) {
+        if (apiPath.isNotEmpty() && !apiPath.contains("://")) {
             apiPath = getBasicPath() + "/" + apiPath
         }
         return apiPath
@@ -380,7 +379,7 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
                 originFactory = Function { myContext: MyContext? -> OriginPumpio(myContext, this) }
                 connectionClass = ConnectionPumpio::class.java
                 httpConnectionClassOauth = HttpConnectionOAuthJavaNet::class.java
-                httpConnectionClassBasic = HttpConnectionEmpty::class.java
+                httpConnectionClassBasic = HttpConnection::class.java
                 isPublicTimeLineSyncable = false
                 isSearchTimelineSyncable = false
                 isPrivateTimelineSyncable = false
@@ -406,7 +405,7 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
                 originFactory = Function { myContext: MyContext? -> OriginActivityPub(myContext, this) }
                 connectionClass = ConnectionActivityPub::class.java
                 httpConnectionClassOauth = HttpConnectionOAuthMastodon::class.java
-                httpConnectionClassBasic = HttpConnectionEmpty::class.java
+                httpConnectionClassBasic = HttpConnection::class.java
                 isPublicTimeLineSyncable = true
                 isSearchTimelineSyncable = false
                 isPrivateTimelineSyncable = false
@@ -456,7 +455,7 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
                 originFactory = Function { myContext: MyContext? -> OriginMastodon(myContext, this) }
                 connectionClass = ConnectionMastodon::class.java
                 httpConnectionClassOauth = HttpConnectionOAuthMastodon::class.java
-                httpConnectionClassBasic = HttpConnectionEmpty::class.java
+                httpConnectionClassBasic = HttpConnection::class.java
                 isPublicTimeLineSyncable = true
                 isSearchTimelineSyncable = true
                 isPrivateTimelineSyncable = true
@@ -474,8 +473,8 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
                 oauthPath = OAUTH_PATH_DEFAULT
                 originFactory = Function { myContext: MyContext -> Origin(myContext, this) }
                 connectionClass = ConnectionEmpty::class.java
-                httpConnectionClassOauth = HttpConnectionEmpty::class.java
-                httpConnectionClassBasic = HttpConnectionEmpty::class.java
+                httpConnectionClassOauth = HttpConnection::class.java
+                httpConnectionClassBasic = HttpConnection::class.java
                 isPublicTimeLineSyncable = false
                 isSearchTimelineSyncable = false
                 isPrivateTimelineSyncable = false

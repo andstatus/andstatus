@@ -23,7 +23,7 @@ import org.andstatus.app.util.UriUtils
 import java.util.*
 
 class HttpConnectionOAuthActivityPub : HttpConnectionOAuth2JavaNet() {
-    public override fun getApiUri(routine: ApiRoutineEnum?): Uri? {
+    public override fun getApiUri(routine: ApiRoutineEnum?): Uri {
         var url: String?
         url = when (routine) {
             ApiRoutineEnum.OAUTH_ACCESS_TOKEN, ApiRoutineEnum.OAUTH_REQUEST_TOKEN -> data.oauthPath + "/token"
@@ -39,9 +39,9 @@ class HttpConnectionOAuthActivityPub : HttpConnectionOAuth2JavaNet() {
     /**
      * @see OAuth20Service.getAuthorizationUrl
      */
-    override fun getAdditionalAuthorizationParams(): MutableMap<String?, String?>? {
-        val additionalParams: MutableMap<String?, String?> = HashMap()
-        additionalParams[OAuthConstants.SCOPE] = HttpConnectionOAuth2JavaNet.Companion.OAUTH_SCOPES
+    override fun getAdditionalAuthorizationParams(): MutableMap<String, String> {
+        val additionalParams: MutableMap<String, String> = HashMap()
+        additionalParams[OAuthConstants.SCOPE] = OAUTH_SCOPES
         return additionalParams
     }
 }

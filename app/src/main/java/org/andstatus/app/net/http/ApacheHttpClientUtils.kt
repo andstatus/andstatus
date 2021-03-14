@@ -99,7 +99,8 @@ internal object ApacheHttpClientUtils {
         return formParams
     }
 
-    fun getHttpClient(sslMode: SslModeEnum?): HttpClient? {
-        return if (sslMode == SslModeEnum.MISCONFIGURED) MisconfiguredSslHttpClientFactory.getHttpClient() else MyHttpClientFactory.getHttpClient(sslMode)
+    fun getHttpClient(sslMode: SslModeEnum): HttpClient {
+        return if (sslMode == SslModeEnum.MISCONFIGURED) MisconfiguredSslHttpClientFactory.getHttpClient()
+        else MyHttpClientFactory.getHttpClient(sslMode)
     }
 }

@@ -13,44 +13,36 @@ import android.net.SSLCertificateSocketFactory
 import cz.msebera.android.httpclient.HttpHost
 import cz.msebera.android.httpclient.conn.socket.ConnectionSocketFactory
 import cz.msebera.android.httpclient.conn.socket.LayeredConnectionSocketFactory
+import cz.msebera.android.httpclient.conn.ssl.AllowAllHostnameVerifier
+import cz.msebera.android.httpclient.conn.ssl.BrowserCompatHostnameVerifier
+import cz.msebera.android.httpclient.protocol.HttpContext
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.util.MyLog
+import java.io.IOException
+import java.net.InetSocketAddress
+import java.net.Socket
+import java.util.concurrent.ConcurrentHashMap
+import javax.net.ssl.HostnameVerifier
+import javax.net.ssl.SSLPeerUnverifiedException
+import javax.net.ssl.SSLSocket
 
-cz.msebera.android.httpclient.conn.ssl.AllowAllHostnameVerifierimport cz.msebera.android.httpclient.conn.ssl.BrowserCompatHostnameVerifierimport cz.msebera.android.httpclient.protocol.HttpContext
-import org.andstatus.app.context.CompletableFutureTest.TestData
-import org.andstatus.app.service.MyServiceTest
-import org.andstatus.app.service.AvatarDownloaderTest
-import org.andstatus.app.service.RepeatingFailingCommandTest
-import org.hamcrest.core.Is
-import org.hamcrest.core.IsNot
-import org.andstatus.app.timeline.meta.TimelineSyncTrackerTest
-import org.andstatus.app.timeline.TimelinePositionTest
-import org.andstatus.app.util.EspressoUtils
-import org.andstatus.app.timeline.TimeLineActivityLayoutToggleTest
-import org.andstatus.app.appwidget.MyAppWidgetProviderTest.DateTest
-import org.andstatus.app.appwidget.MyAppWidgetProviderTest
-import org.andstatus.app.notification.NotifierTest
-import org.andstatus.app.ActivityTestHelper.MenuItemClicker
-import org.andstatus.app.MenuItemMockimport
-
-java.io.IOExceptionimport java.net.InetSocketAddressimport java.net.Socketimport java.util.concurrent.ConcurrentHashMapimport javax.net.ssl.HostnameVerifierimport javax.net.ssl.SSLPeerUnverifiedExceptionimport javax.net.ssl.SSLSocket
 class TlsSniSocketFactory(sslMode: SslModeEnum?) : LayeredConnectionSocketFactory {
     private val secure: Boolean
-    private val sslSocketFactory: SSLCertificateSocketFactory? = null
+    private var sslSocketFactory: SSLCertificateSocketFactory? = null
     @Throws(IOException::class)
     override fun createSocket(context: HttpContext?): Socket? {
-        return sslSocketFactory.createSocket()
+        return sslSocketFactory?.createSocket()
     }
 
     @Throws(IOException::class)
-    override fun connectSocket(timeout: Int, plain: Socket?, host: HttpHost?, remoteAddr: InetSocketAddress?, localAddr: InetSocketAddress?, context: HttpContext?): Socket? {
+    override fun connectSocket(timeout: Int, plain: Socket, host: HttpHost, remoteAddr: InetSocketAddress, localAddr: InetSocketAddress?, context: HttpContext?): Socket {
         MyLog.d(TAG, "Preparing direct SSL connection (without proxy) to $host")
 
         // we'll rather use an SSLSocket directly
         plain.close()
 
         // create a plain SSL socket, but don't do hostname/certificate verification yet
-        val ssl = sslSocketFactory.createSocket(remoteAddr.getAddress(), host.getPort()) as SSLSocket
+        val ssl = sslSocketFactory?.createSocket(remoteAddr.getAddress(), host.getPort()) as SSLSocket
 
         // connect, set SNI, shake hands, verify, print connection info
         connectWithSNI(ssl, host.getHostName())
@@ -58,11 +50,11 @@ class TlsSniSocketFactory(sslMode: SslModeEnum?) : LayeredConnectionSocketFactor
     }
 
     @Throws(IOException::class)
-    override fun createLayeredSocket(plain: Socket?, host: String?, port: Int, context: HttpContext?): Socket? {
+    override fun createLayeredSocket(plain: Socket?, host: String, port: Int, context: HttpContext?): Socket {
         MyLog.d(TAG, "Preparing layered SSL connection (over proxy) to $host")
 
         // create a layered SSL socket, but don't do hostname/certificate verification yet
-        val ssl = sslSocketFactory.createSocket(plain, host, port, true) as SSLSocket
+        val ssl = sslSocketFactory?.createSocket(plain, host, port, true) as SSLSocket
 
         // already connected, but verify host name again and print some connection info
         MyLog.d(TAG, "Setting SNI/TLSv1.2 will silently fail because the handshake is already done")
@@ -71,12 +63,12 @@ class TlsSniSocketFactory(sslMode: SslModeEnum?) : LayeredConnectionSocketFactor
     }
 
     @Throws(SSLPeerUnverifiedException::class)
-    private fun connectWithSNI(ssl: SSLSocket?, host: String?) {
+    private fun connectWithSNI(ssl: SSLSocket, host: String) {
         // set reasonable SSL/TLS settings before the handshake:
         // - enable all supported protocols
         ssl.setEnabledProtocols(ssl.getSupportedProtocols())
         MyLog.d(TAG, "Using documented SNI with host name $host")
-        sslSocketFactory.setHostname(ssl, host)
+        sslSocketFactory?.setHostname(ssl, host)
 
         // verify hostname and certificate
         val session = ssl.getSession()
@@ -92,8 +84,8 @@ class TlsSniSocketFactory(sslMode: SslModeEnum?) : LayeredConnectionSocketFactor
     }
 
     companion object {
-        private val TAG: String? = TlsSniSocketFactory::class.java.simpleName
-        private val instances: ConcurrentHashMap<SslModeEnum?, TlsSniSocketFactory?>? = ConcurrentHashMap()
+        private val TAG: String = TlsSniSocketFactory::class.java.simpleName
+        private val instances: ConcurrentHashMap<SslModeEnum?, TlsSniSocketFactory?> = ConcurrentHashMap()
         fun getInstance(sslMode: SslModeEnum?): ConnectionSocketFactory? {
             if (!instances.containsKey(sslMode)) {
                 instances[sslMode] = TlsSniSocketFactory(sslMode)

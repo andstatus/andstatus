@@ -221,7 +221,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
 
         fun startMeAsync(context: Context, myAction: MyAction) {
             val intent = Intent(context, FirstActivity::class.java)
-            intent.action = myAction.getAction()
+            intent.action = myAction.action
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
         }

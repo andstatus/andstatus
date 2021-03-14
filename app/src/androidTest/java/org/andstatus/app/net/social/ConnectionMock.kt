@@ -26,8 +26,8 @@ import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpConnectionMock
 import java.io.IOException
 
-class ConnectionMock private constructor(val connection: Connection?) {
-    fun withException(e: ConnectionException?): ConnectionMock? {
+class ConnectionMock private constructor(val connection: Connection) {
+    fun withException(e: ConnectionException?): ConnectionMock {
         getHttpMock().setException(e)
         return this
     }
@@ -37,12 +37,12 @@ class ConnectionMock private constructor(val connection: Connection?) {
         getHttpMock().addResponse(responseResourceId)
     }
 
-    fun getData(): AccountConnectionData? {
-        return connection.getData()
+    fun getData(): AccountConnectionData {
+        return connection.data
     }
 
-    fun getHttp(): HttpConnection? {
-        return connection.getHttp()
+    fun getHttp(): HttpConnection {
+        return connection.http
     }
 
     fun getHttpMock(): HttpConnectionMock {
@@ -50,11 +50,11 @@ class ConnectionMock private constructor(val connection: Connection?) {
     }
 
     companion object {
-        fun newFor(accountName: String?): ConnectionMock? {
+        fun newFor(accountName: String?): ConnectionMock {
             return newFor(DemoData.demoData.getMyAccount(accountName))
         }
 
-        fun newFor(myAccount: MyAccount?): ConnectionMock? {
+        fun newFor(myAccount: MyAccount): ConnectionMock {
             TestSuite.setHttpConnectionMockClass(HttpConnectionMock::class.java)
             val mock = ConnectionMock(myAccount.setConnection())
             TestSuite.setHttpConnectionMockClass(null)
@@ -63,7 +63,7 @@ class ConnectionMock private constructor(val connection: Connection?) {
 
         fun getHttpMock(http: HttpConnection?): HttpConnectionMock {
             if (http != null && HttpConnectionMock::class.java.isAssignableFrom(http.javaClass)) {
-                return http as HttpConnectionMock?
+                return http as HttpConnectionMock
             }
             checkNotNull(http) { "http is null" }
              MyContextHolder.myContextHolder.getNow().getHttpConnectionMock()

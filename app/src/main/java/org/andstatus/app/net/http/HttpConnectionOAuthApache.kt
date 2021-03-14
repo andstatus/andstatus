@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.net.http
 
+import cz.msebera.android.httpclient.HttpResponse
 import cz.msebera.android.httpclient.client.methods.HttpGet
 import cz.msebera.android.httpclient.client.methods.HttpPost
 import cz.msebera.android.httpclient.impl.client.BasicResponseHandler
@@ -25,34 +26,17 @@ import oauth.signpost.commonshttp.CommonsHttpOAuthProvider
 import oauth.signpost.exception.OAuthCommunicationException
 import oauth.signpost.exception.OAuthExpectationFailedException
 import oauth.signpost.exception.OAuthMessageSignerException
-import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.social.ApiRoutineEnum
+import java.io.IOException
 
-cz.msebera.android.httpclient.HttpResponse
-import org.andstatus.app.context.CompletableFutureTest.TestData
-import org.andstatus.app.service.MyServiceTest
-import org.andstatus.app.service.AvatarDownloaderTest
-import org.andstatus.app.service.RepeatingFailingCommandTest
-import org.hamcrest.core.Is
-import org.hamcrest.core.IsNot
-import org.andstatus.app.timeline.meta.TimelineSyncTrackerTest
-import org.andstatus.app.timeline.TimelinePositionTest
-import org.andstatus.app.util.EspressoUtils
-import org.andstatus.app.timeline.TimeLineActivityLayoutToggleTest
-import org.andstatus.app.appwidget.MyAppWidgetProviderTest.DateTest
-import org.andstatus.app.appwidget.MyAppWidgetProviderTest
-import org.andstatus.app.notification.NotifierTest
-import org.andstatus.app.ActivityTestHelper.MenuItemClicker
-import org.andstatus.app.MenuItemMockimport
-
-java.io.IOExceptionimport java.lang.Exception
 class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpecific {
-    override fun setHttpConnectionData(connectionData: HttpConnectionData?) {
+
+    override fun setHttpConnectionData(connectionData: HttpConnectionData) {
         super.setHttpConnectionData(connectionData)
     }
 
     @Throws(ConnectionException::class)
-    override fun getProvider(): OAuthProvider? {
+    override fun getProvider(): OAuthProvider {
         val provider = CommonsHttpOAuthProvider(
                 getApiUri(ApiRoutineEnum.OAUTH_REQUEST_TOKEN).toString(),
                 getApiUri(ApiRoutineEnum.OAUTH_ACCESS_TOKEN).toString(),
@@ -62,27 +46,27 @@ class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpe
         return provider
     }
 
-    override fun getConsumer(): OAuthConsumer? {
-        val consumer: OAuthConsumer = CommonsHttpOAuthConsumer(data.oauthClientKeys.consumerKey,
-                data.oauthClientKeys.consumerSecret)
+    override fun getConsumer(): OAuthConsumer {
+        val consumer: OAuthConsumer = CommonsHttpOAuthConsumer(data.oauthClientKeys?.getConsumerKey(),
+                data.oauthClientKeys?.getConsumerSecret())
         if (credentialsPresent) {
             consumer.setTokenWithSecret(userToken, userSecret)
         }
         return consumer
     }
 
-    override fun postRequest(result: HttpReadResult?): HttpReadResult? {
+    override fun postRequest(result: HttpReadResult): HttpReadResult {
         return HttpConnectionApacheCommon(this, data).postRequest(result)
     }
 
-    override fun httpApachePostRequest(post: HttpPost?, result: HttpReadResult?): HttpReadResult? {
+    override fun httpApachePostRequest(httpPost: HttpPost, result: HttpReadResult): HttpReadResult {
         try {
             // TODO: Redo like for get request
             if (result.authenticate()) {
-                signRequest(post)
+                signRequest(httpPost)
             }
             result.strResponse = ApacheHttpClientUtils.getHttpClient(data.sslMode).execute(
-                    post, BasicResponseHandler())
+                    httpPost, BasicResponseHandler())
         } catch (e: Exception) {
             // We don't catch other exceptions because in fact it's vary difficult to tell
             // what was a real cause of it. So let's make code clearer.
@@ -92,15 +76,15 @@ class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpe
     }
 
     @Throws(IOException::class)
-    override fun httpApacheGetResponse(httpGet: HttpGet?): HttpResponse? {
+    override fun httpApacheGetResponse(httpGet: HttpGet): HttpResponse {
         return ApacheHttpClientUtils.getHttpClient(data.sslMode).execute(httpGet)
     }
 
     @Throws(IOException::class)
     private fun signRequest(httpGetOrPost: Any?) {
-        if (data.oauthClientKeys.areKeysPresent()) {
+        if (data.oauthClientKeys?.areKeysPresent() == true) {
             try {
-                consumer.sign(httpGetOrPost)
+                getConsumer().sign(httpGetOrPost)
             } catch (e: OAuthMessageSignerException) {
                 throw IOException(e)
             } catch (e: OAuthExpectationFailedException) {
@@ -112,11 +96,11 @@ class HttpConnectionOAuthApache : HttpConnectionOAuth(), HttpConnectionApacheSpe
     }
 
     @Throws(IOException::class)
-    override fun httpApacheSetAuthorization(httpGet: HttpGet?) {
+    override fun httpApacheSetAuthorization(httpGet: HttpGet) {
         signRequest(httpGet)
     }
 
-    override fun getRequest(result: HttpReadResult?): HttpReadResult? {
+    override fun getRequest(result: HttpReadResult): HttpReadResult {
         return HttpConnectionApacheCommon(this, data).getRequest(result)
     }
 }

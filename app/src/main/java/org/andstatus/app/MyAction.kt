@@ -44,19 +44,15 @@ enum class MyAction(actionOrSuffix: String) {
     CLOSE_ALL_ACTIVITIES("CLOSE_ALL_ACTIVITIES"),
     UNKNOWN("UNKNOWN");
 
-    private val action: String = if (actionOrSuffix.contains(".")) actionOrSuffix
+    val action: String = if (actionOrSuffix.contains(".")) actionOrSuffix
         else ClassInApplicationPackage.PACKAGE_NAME + ".action." + actionOrSuffix
 
     fun getIntent(): Intent {
-        return Intent(getAction())
+        return Intent(action)
     }
 
     fun getIntent(uri: Uri?): Intent {
-        return Intent(getAction(), uri)
-    }
-
-    fun getAction(): String {
-        return action
+        return Intent(action, uri)
     }
 
     companion object {

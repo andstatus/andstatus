@@ -52,7 +52,6 @@ import org.andstatus.app.util.TaggedClass
 import org.andstatus.app.util.TriState
 import org.json.JSONObject
 import java.util.concurrent.TimeUnit
-import java.util.function.Supplier
 
 /**
  * Immutable class that holds "AndStatus account"-specific information including:
@@ -101,9 +100,10 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
             return this === EMPTY
         }
 
-    fun setConnection(): Connection? {
-        connection = Connection.fromMyAccount(this, TriState.fromBoolean(isOAuth))
-        return connection
+    fun setConnection(): Connection {
+        return Connection.fromMyAccount(this, TriState.fromBoolean(isOAuth)).also {
+            connection = it
+        }
     }
 
     private fun getNewOrExistingAndroidAccount(): Try<Account> {
@@ -775,12 +775,12 @@ ${MyLog.getStackTrace(Exception())}""")
     }
 
     init {
-        actor = Actor.load(data.myContext(), data.getDataLong(KEY_ACTOR_ID, 0L), false,
-                Supplier<Actor> {
-                    Actor.fromOid(data.accountName.origin, data.getDataString(KEY_ACTOR_OID))
-                            .withUniqueName(data.accountName.getUniqueName())
-                            .lookupUser()
-                })
+        actor = Actor.load(data.myContext(), data.getDataLong(KEY_ACTOR_ID, 0L), false
+        ) {
+            Actor.fromOid(data.accountName.origin, data.getDataString(KEY_ACTOR_OID))
+                    .withUniqueName(data.accountName.getUniqueName())
+                    .lookupUser()
+        }
         deleted = data.getDataBoolean(KEY_DELETED, false)
         syncFrequencySeconds = data.getDataLong(MyPreferences.KEY_SYNC_FREQUENCY_SECONDS, 0L)
         isSyncable = data.getDataBoolean(KEY_IS_SYNCABLE, true)
@@ -788,7 +788,7 @@ ${MyLog.getStackTrace(Exception())}""")
         setOAuth(TriState.fromBoolean(data.getDataBoolean(KEY_OAUTH, origin.isOAuthDefault())))
         setConnection()
         getConnection().setPassword(data.getDataString(Connection.KEY_PASSWORD))
-        credentialsVerified = CredentialsVerificationStatus.load(data) ?: CredentialsVerificationStatus.NEVER
+        credentialsVerified = CredentialsVerificationStatus.load(data)
         order = data.getDataInt(KEY_ORDER, 1)
     }
 }

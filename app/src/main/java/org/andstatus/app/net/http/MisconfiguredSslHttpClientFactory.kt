@@ -33,7 +33,7 @@ import cz.msebera.android.httpclient.protocol.HTTP
 import org.andstatus.app.context.MyPreferences
 
 object MisconfiguredSslHttpClientFactory {
-    fun getHttpClient(): HttpClient? {
+    fun getHttpClient(): HttpClient {
         val schemeRegistry = SchemeRegistry()
         schemeRegistry.register(Scheme("http", PlainSocketFactory.getSocketFactory(), 80))
         val socketFactory = SSLSocketFactory.getSocketFactory()
@@ -52,7 +52,7 @@ object MisconfiguredSslHttpClientFactory {
         return client
     }
 
-    private fun getHttpParams(): HttpParams? {
+    private fun getHttpParams(): HttpParams {
         val params: HttpParams = BasicHttpParams()
         HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1)
         HttpProtocolParams.setContentCharset(params, HTTP.UTF_8)

@@ -23,7 +23,7 @@ import org.andstatus.app.util.MyLog
 enum class MyServiceEvent {
     ON_COMMAND_RECEIVED, BEFORE_EXECUTING_COMMAND, PROGRESS_EXECUTING_COMMAND, AFTER_EXECUTING_COMMAND, ON_STOP, UNKNOWN;
 
-    fun save(): String? {
+    fun save(): String {
         return this.toString()
     }
 
@@ -31,7 +31,7 @@ enum class MyServiceEvent {
         /**
          * Like valueOf but doesn't throw exceptions: it returns UNKNOWN instead
          */
-        fun load(str: String?): MyServiceEvent? {
+        fun load(str: String): MyServiceEvent {
             val state: MyServiceEvent
             state = try {
                 valueOf(str)

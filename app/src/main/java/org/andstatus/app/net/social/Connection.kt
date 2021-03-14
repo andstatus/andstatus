@@ -16,7 +16,6 @@
 package org.andstatus.app.net.social
 
 import android.net.Uri
-import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.account.AccountConnectionData
 import org.andstatus.app.account.AccountDataWriter
@@ -36,7 +35,6 @@ import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
-import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
@@ -57,8 +55,8 @@ import kotlin.properties.Delegates
  * @author yvolk@yurivolkov.com
  */
 abstract class Connection protected constructor() : IsEmpty {
-    protected var http: HttpConnection by Delegates.notNull<HttpConnection>()
-    protected var data: AccountConnectionData by Delegates.notNull<AccountConnectionData>()
+    var http: HttpConnection by Delegates.notNull<HttpConnection>()
+    var data: AccountConnectionData by Delegates.notNull<AccountConnectionData>()
 
     /**
      * @return an empty string in case the API routine is not supported
@@ -72,19 +70,19 @@ abstract class Connection protected constructor() : IsEmpty {
      * Use [.tryApiPath]
      * @return URL or throws a ConnectionException in case the API routine is not supported
      */
-    protected fun getApiPath(routine: ApiRoutineEnum?): Try<Uri?> {
+    protected fun getApiPath(routine: ApiRoutineEnum): Try<Uri> {
         return tryApiPath(data.getAccountActor(), routine)
     }
 
     /**
      * Full path of the API. Logged
      */
-    fun tryApiPath(endpointActor: Actor?, routine: ApiRoutineEnum?): Try<Uri?> {
+    fun tryApiPath(endpointActor: Actor, routine: ApiRoutineEnum): Try<Uri> {
         return TryUtils.fromOptional(getApiUri(endpointActor, routine)) {
             ConnectionException(StatusCode.UNSUPPORTED_API, this.javaClass.simpleName +
                     ": " + "The API is not supported: '$routine'")
         }
-                .onSuccess { uri: Uri? -> MyLog.v(this.javaClass.simpleName) { "API '$routine' URI=$uri" } }
+                .onSuccess { uri: Uri -> MyLog.v(this.javaClass.simpleName) { "API '$routine' URI=$uri" } }
     }
 
     /**
@@ -92,15 +90,15 @@ abstract class Connection protected constructor() : IsEmpty {
      * and even before presenting corresponding action to the User.
      * @return true if supported
      */
-    fun hasApiEndpoint(routine: ApiRoutineEnum?): Boolean {
+    fun hasApiEndpoint(routine: ApiRoutineEnum): Boolean {
         return getApiUri(data.getAccountActor(), routine).isPresent()
     }
 
     private fun getApiUri(endpointActor: Actor, routine: ApiRoutineEnum): Optional<Uri> {
-        if (routine == null || routine == ApiRoutineEnum.DUMMY_API) {
+        if (routine == ApiRoutineEnum.DUMMY_API) {
             return Optional.empty()
         }
-        val fromActor = endpointActor.getEndpoint(ActorEndpointType.Companion.from(routine))
+        val fromActor = endpointActor.getEndpoint(ActorEndpointType.from(routine))
         return if (fromActor.isPresent) fromActor else Optional.of(getApiPathFromOrigin(routine)).flatMap { apiPath: String -> pathToUri(apiPath).toOptional() }
     }
 
@@ -132,11 +130,11 @@ abstract class Connection protected constructor() : IsEmpty {
      * Set Account's password if the Connection object needs it
      */
     fun setPassword(password: String?) {
-        http.setPassword(password)
+        http.password = password ?: ""
     }
 
     fun getPassword(): String {
-        return http?.getPassword() ?: ""
+        return http.password
     }
 
     /**
@@ -144,7 +142,7 @@ abstract class Connection protected constructor() : IsEmpty {
      * @return true if something changed (so it needs to be rewritten to persistence...)
      */
     fun saveTo(dw: AccountDataWriter): Boolean {
-        return http?.saveTo(dw) == true
+        return http.saveTo(dw) == true
     }
 
     /**
@@ -152,7 +150,7 @@ abstract class Connection protected constructor() : IsEmpty {
      * @return true == yes
      */
     fun getCredentialsPresent(): Boolean {
-        return http.getCredentialsPresent()
+        return http.credentialsPresent
     }
 
     abstract fun verifyCredentials(whoAmI: Optional<Uri>): Try<Actor?>
@@ -164,8 +162,8 @@ abstract class Connection protected constructor() : IsEmpty {
      * @see [Twitter
      * REST API Method: favorites create](http://apiwiki.twitter.com/Twitter-REST-API-Method%3A-favorites%C2%A0create)
      */
-    abstract fun like(noteOid: String?): Try<AActivity>
-    open fun undoAnnounce(noteOid: String?): Try<Boolean> {
+    abstract fun like(noteOid: String): Try<AActivity>
+    open fun undoAnnounce(noteOid: String): Try<Boolean> {
         return deleteNote(noteOid)
     }
 
@@ -179,10 +177,10 @@ abstract class Connection protected constructor() : IsEmpty {
 
     open fun getFriendsOrFollowers(routineEnum: ApiRoutineEnum, position: TimelinePosition, actor: Actor): Try<InputActorPage> {
         return (if (routineEnum == ApiRoutineEnum.GET_FRIENDS) getFriends(actor) else getFollowers(actor))
-                .map(CheckedFunction<MutableList<Actor>, InputActorPage> { actors: MutableList<Actor> -> InputActorPage.Companion.of(actors) })
+                .map { actors: MutableList<Actor> -> InputActorPage.of(actors) }
     }
 
-    open fun getFriendsOrFollowersIds(routineEnum: ApiRoutineEnum?, actorOid: String?): Try<MutableList<String>>? {
+    open fun getFriendsOrFollowersIds(routineEnum: ApiRoutineEnum, actorOid: String): Try<MutableList<String>> {
         return if (routineEnum == ApiRoutineEnum.GET_FRIENDS_IDS) getFriendsIds(actorOid) else getFollowersIds(actorOid)
     }
 
@@ -190,7 +188,7 @@ abstract class Connection protected constructor() : IsEmpty {
      * Returns a list of actors the specified actor is following.
      */
     open fun getFriends(actor: Actor): Try<MutableList<Actor>> {
-        return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
+        return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFriends for actor:" + actor.getUniqueNameWithOrigin()))
     }
 
@@ -198,17 +196,17 @@ abstract class Connection protected constructor() : IsEmpty {
      * Returns a list of IDs for every actor the specified actor is following.
      */
     fun getFriendsIds(actorOid: String): Try<MutableList<String>> {
-        return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
+        return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFriendsIds for actorOid=$actorOid"))
     }
 
     fun getFollowersIds(actorOid: String): Try<MutableList<String>> {
-        return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
+        return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFollowersIds for actorOid=$actorOid"))
     }
 
-    open fun getFollowers(actor: Actor?): Try<MutableList<Actor>>? {
-        return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
+    open fun getFollowers(actor: Actor): Try<MutableList<Actor>> {
+        return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFollowers for actor:" + actor.getUniqueNameWithOrigin()))
     }
 
@@ -216,7 +214,7 @@ abstract class Connection protected constructor() : IsEmpty {
      * Requests a single note (status), specified by the id parameter.
      * More than one activity may be returned (as replies) to reflect Favoriting and Reblogging of the "status"
      */
-    fun getNote(noteOid: String?): Try<AActivity?> {
+    fun getNote(noteOid: String?): Try<AActivity> {
         return getNote1(noteOid)
     }
 
@@ -227,7 +225,7 @@ abstract class Connection protected constructor() : IsEmpty {
     }
 
     open fun getConversation(conversationOid: String?): Try<MutableList<AActivity>>? {
-        return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
+        return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getConversation oid=$conversationOid"))
     }
 
@@ -255,7 +253,7 @@ abstract class Connection protected constructor() : IsEmpty {
 
     open fun searchNotes(syncYounger: Boolean, youngestPosition: TimelinePosition,
                          oldestPosition: TimelinePosition, limit: Int, searchQuery: String): Try<InputTimelinePage> {
-        return InputTimelinePage.Companion.TRY_EMPTY
+        return InputTimelinePage.TRY_EMPTY
     }
 
     open fun searchActors(limit: Int, searchQuery: String): Try<List<Actor>> {
@@ -266,17 +264,17 @@ abstract class Connection protected constructor() : IsEmpty {
      * Allows this Account to follow (or stop following) an actor specified in the actorOid parameter
      * @param follow true - Follow, false - Stop following
      */
-    abstract fun follow(actorOid: String?, follow: Boolean): Try<AActivity>
+    abstract fun follow(actorOid: String, follow: Boolean): Try<AActivity>
 
     /** Get information about the specified Actor  */
     fun getActor(actorIn: Actor): Try<Actor> {
-        return getActor2(actorIn).map(CheckedFunction { actor: Actor ->
+        return getActor2(actorIn).map { actor: Actor ->
             if (actor.isFullyDefined() && actor.getUpdatedDate() <= RelativeTime.SOME_TIME_AGO) {
                 actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
             }
             MyLog.v(this) { "getActor oid='" + actorIn.oid + "' -> " + actor.uniqueName }
             actor
-        })
+        }
     }
 
     protected abstract fun getActor2(actorIn: Actor): Try<Actor>
@@ -322,23 +320,23 @@ abstract class Connection protected constructor() : IsEmpty {
     open fun setAccountConnectionData(connectionData: AccountConnectionData): Connection {
         data = connectionData
         http = connectionData.newHttpConnection()
-        http.setHttpConnectionData(HttpConnectionData.Companion.fromAccountConnectionData(connectionData))
+        http.setHttpConnectionData(HttpConnectionData.fromAccountConnectionData(connectionData))
         return this
     }
 
     open fun getConfig(): Try<OriginConfig> {
-        return Try.success(OriginConfig.Companion.getEmpty())
+        return Try.success(OriginConfig.getEmpty())
     }
 
     open fun getOpenInstances(): Try<MutableList<Server>>? {
-        return Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNSUPPORTED_API,
-                MyStringBuilder.Companion.objToTag(this)))
+        return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
+                MyStringBuilder.objToTag(this)))
     }
 
     /**
      * @return Unix time. Returns 0 in a case of an error or absence of such a field
      */
-    fun dateFromJson(jso: JSONObject?, fieldName: String?): Long {
+    fun dateFromJson(jso: JSONObject?, fieldName: String): Long {
         var date: Long = 0
         if (jso != null && jso.has(fieldName)) {
             val updated = JsonUtils.optString(jso, fieldName)
@@ -368,7 +366,7 @@ abstract class Connection protected constructor() : IsEmpty {
             } else {
                 val dateFormat1: DateFormat = SimpleDateFormat(format, Locale.ENGLISH)
                 try {
-                    unixDate = dateFormat1.parse(stringDate).time
+                    unixDate = dateFormat1.parse(stringDate)?.time ?: 0L
                 } catch (e: ParseException) {
                     MyLog.ignored(this, e)
                 }
@@ -400,7 +398,7 @@ abstract class Connection protected constructor() : IsEmpty {
             val formatString = if (stringDate.contains(".")) if (stringDate.length - stringDate.lastIndexOf(".") > 4) "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ" else "yyyy-MM-dd'T'HH:mm:ss.SSSZ" else "yyyy-MM-dd'T'HH:mm:ssZ"
             val iso8601DateFormatSec: DateFormat = SimpleDateFormat(formatString, Locale.GERMANY)
             try {
-                unixDate = iso8601DateFormatSec.parse(datePrepared).time
+                unixDate = iso8601DateFormatSec.parse(datePrepared)?.time ?: 0L
             } catch (e: ParseException) {
                 MyLog.w(this, "Failed to parse the date: '$stringDate' using '$formatString'", e)
             }
@@ -412,12 +410,12 @@ abstract class Connection protected constructor() : IsEmpty {
         return http.data.myContext()
     }
 
-    fun execute(request: HttpRequest?): Try<HttpReadResult> {
+    fun execute(request: HttpRequest): Try<HttpReadResult> {
         return http.execute(request)
     }
 
-    fun partialPathToApiPath(partialPath: String?): String {
-        return http.data.accountName.origin.originType.partialPathToApiPath(partialPath)
+    fun partialPathToApiPath(partialPath: String): String {
+        return http.data.getAccountName().origin.originType.partialPathToApiPath(partialPath)
     }
 
     override fun toString(): String {
@@ -427,38 +425,39 @@ abstract class Connection protected constructor() : IsEmpty {
 
     override val isEmpty: Boolean
         get() {
-            return this === ConnectionEmpty.Companion.EMPTY || data == null || http == null
+            return this === ConnectionEmpty.EMPTY || data == null || http == null
         }
 
     companion object {
         val KEY_PASSWORD: String = "password"
-        fun fromMyAccount(myAccount: MyAccount, isOAuth: TriState?): Connection? {
-            if (!myAccount.origin.isValid()) return ConnectionEmpty.Companion.EMPTY
-            val connectionData: AccountConnectionData = AccountConnectionData.Companion.fromMyAccount(myAccount, isOAuth)
+
+        fun fromMyAccount(myAccount: MyAccount, isOAuth: TriState): Connection {
+            if (!myAccount.origin.isValid()) return ConnectionEmpty.EMPTY
+            val connectionData: AccountConnectionData = AccountConnectionData.fromMyAccount(myAccount, isOAuth)
             return try {
-                myAccount.origin.originType.connectionClass.newInstance()
+                (myAccount.origin.originType.getConnectionClass().newInstance() as Connection)
                         .setAccountConnectionData(connectionData)
             } catch (e: InstantiationException) {
                 MyLog.e("Failed to instantiate connection for $myAccount", e)
-                ConnectionEmpty.Companion.EMPTY
+                ConnectionEmpty.EMPTY
             } catch (e: IllegalAccessException) {
                 MyLog.e("Failed to instantiate connection for $myAccount", e)
-                ConnectionEmpty.Companion.EMPTY
+                ConnectionEmpty.EMPTY
             }
         }
 
         fun fromOrigin(origin: Origin, isOAuth: TriState): Connection {
             if (!origin.isValid()) return ConnectionEmpty.EMPTY
-            val connectionData: AccountConnectionData = AccountConnectionData.Companion.fromOrigin(origin, isOAuth)
+            val connectionData: AccountConnectionData = AccountConnectionData.fromOrigin(origin, isOAuth)
             return try {
-                origin.originType.connectionClass.newInstance()
+                (origin.originType.getConnectionClass().newInstance() as Connection)
                         .setAccountConnectionData(connectionData)
             } catch (e: InstantiationException) {
                 MyLog.e("Failed to instantiate connection for $origin", e)
-                ConnectionEmpty.Companion.EMPTY
+                ConnectionEmpty.EMPTY
             } catch (e: IllegalAccessException) {
                 MyLog.e("Failed to instantiate connection for $origin", e)
-                ConnectionEmpty.Companion.EMPTY
+                ConnectionEmpty.EMPTY
             }
         }
     }

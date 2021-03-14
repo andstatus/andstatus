@@ -29,7 +29,7 @@ import java.util.function.Consumer
 import java.util.function.Function
 
 /** Send any GET requests using current account  */
-class ApiDebugger(private val myContext: MyContext?, private val activityContext: Context?) {
+class ApiDebugger(private val myContext: MyContext?, private val activityContext: Context) {
     fun debugGet() {
         DialogFactory.showTextInputBox(activityContext, "Debug Social network API",
                 "Type API path to GET e.g.\nstatusnet/conversation/12345.json\nor complete URL", { text: String? -> this.debugGet(text) }, previousValue)

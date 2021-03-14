@@ -51,10 +51,10 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
 
     override fun toString(): String {
         return ("HttpConnectionData {" + accountName + ", isSsl:" + isSsl()
-                + ", sslMode:" + getSslMode()
+                + ", sslMode:" + sslMode
                 + (if (getUseLegacyHttpProtocol() != TriState.UNKNOWN) ", HTTP:" + (if (getUseLegacyHttpProtocol() == TriState.TRUE) "legacy" else "latest") else "")
-                + ", basicPath:" + getBasicPath()
-                + ", oauthPath:" + getOauthPath()
+                + ", basicPath:" + basicPath
+                + ", oauthPath:" + oauthPath
                 + ", originUrl:" + originUrl + ", hostForUserToken:" + urlForUserToken + ", dataReader:"
                 + dataReader + ", oauthClientKeys:" + oauthClientKeys + "}")
     }
@@ -63,7 +63,7 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
         return accountName.origin.originType
     }
 
-    val basicPath: String get() =getOriginType().getBasicPath()
+    val basicPath: String get() = getOriginType().getBasicPath()
     val oauthPath: String get() = getOriginType().getOauthPath()
 
     fun isSsl(): Boolean {
@@ -74,9 +74,7 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
         return accountName.origin.useLegacyHttpProtocol()
     }
 
-    fun getSslMode(): SslModeEnum {
-        return accountName.origin.getSslMode()
-    }
+    val sslMode: SslModeEnum get() = accountName.origin.getSslMode()
 
     fun jsonContentType(apiRoutine: ApiRoutineEnum): String {
         return if (apiRoutine.isOriginApi()) getOriginType().getContentType()
@@ -94,11 +92,11 @@ class HttpConnectionData private constructor(private val accountName: AccountNam
 
     companion object {
         val EMPTY: HttpConnectionData = HttpConnectionData(AccountName.getEmpty())
-        fun fromAccountConnectionData(accountnData: AccountConnectionData): HttpConnectionData {
-            val data = HttpConnectionData(accountnData.getAccountName())
-            data.originUrl = accountnData.getOriginUrl()
-            data.urlForUserToken = accountnData.getOriginUrl()
-            data.dataReader = accountnData.getDataReader()
+        fun fromAccountConnectionData(acData: AccountConnectionData): HttpConnectionData {
+            val data = HttpConnectionData(acData.getAccountName())
+            data.originUrl = acData.getOriginUrl()
+            data.urlForUserToken = acData.getOriginUrl()
+            data.dataReader = acData.getDataReader()
             return data
         }
     }

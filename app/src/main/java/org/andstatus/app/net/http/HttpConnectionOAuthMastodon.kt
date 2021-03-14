@@ -23,14 +23,13 @@ import org.andstatus.app.util.UriUtils
 import java.util.*
 
 class HttpConnectionOAuthMastodon : HttpConnectionOAuth2JavaNet() {
-    public override fun getApiUri(routine: ApiRoutineEnum?): Uri? {
-        var url: String?
-        url = when (routine) {
+    override fun getApiUri(routine: ApiRoutineEnum?): Uri {
+        var url: String = when (routine) {
             ApiRoutineEnum.OAUTH_ACCESS_TOKEN, ApiRoutineEnum.OAUTH_REQUEST_TOKEN -> data.oauthPath + "/token"
             ApiRoutineEnum.OAUTH_REGISTER_CLIENT -> data.basicPath + "/v1/apps"
             else -> super.getApiUri(routine).toString()
         }
-        if (!url.isNullOrEmpty()) {
+        if (url.isNotEmpty()) {
             url = pathToUrlString(url)
         }
         return UriUtils.fromString(url)
@@ -39,9 +38,9 @@ class HttpConnectionOAuthMastodon : HttpConnectionOAuth2JavaNet() {
     /**
      * @see OAuth20Service.getAuthorizationUrl
      */
-    override fun getAdditionalAuthorizationParams(): MutableMap<String?, String?>? {
-        val additionalParams: MutableMap<String?, String?> = HashMap()
-        additionalParams[OAuthConstants.SCOPE] = HttpConnectionOAuth2JavaNet.Companion.OAUTH_SCOPES
+    override fun getAdditionalAuthorizationParams(): MutableMap<String, String> {
+        val additionalParams: MutableMap<String, String> = HashMap()
+        additionalParams[OAuthConstants.SCOPE] = OAUTH_SCOPES
         return additionalParams
     }
 }

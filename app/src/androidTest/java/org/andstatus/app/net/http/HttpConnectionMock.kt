@@ -24,7 +24,6 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RawResourceUtils
 import org.andstatus.app.util.UrlUtils
 import org.json.JSONObject
-import org.junit.Assert
 import java.io.IOException
 import java.io.InputStream
 import java.util.*
@@ -33,8 +32,8 @@ import java.util.function.Consumer
 import java.util.stream.Collectors
 
 class HttpConnectionMock : HttpConnection() {
-    private val results: MutableList<HttpReadResult?>? = CopyOnWriteArrayList()
-    private val responses: MutableList<String?>? = CopyOnWriteArrayList()
+    private val results: MutableList<HttpReadResult> = CopyOnWriteArrayList()
+    private val responses: MutableList<String> = CopyOnWriteArrayList()
 
     @Volatile
     var responsesCounter = 0
@@ -50,15 +49,14 @@ class HttpConnectionMock : HttpConnection() {
     private var exception: ConnectionException? = null
 
     @Volatile
-    private var password: String? = "password"
+    override var password: String = "password"
 
     @Volatile
-    private var userToken: String? = "token"
+    override var userToken: String = "token"
 
     @Volatile
-    private var userSecret: String? = "secret"
+    override var userSecret: String = "secret"
 
-    @Volatile
     private val networkDelayMs: Long = 1000
     private val mInstanceId = InstanceId.next()
     fun setSameResponse(sameResponse: Boolean) {
@@ -74,7 +72,7 @@ class HttpConnectionMock : HttpConnection() {
         addResponse(RawResourceUtils.getString(responseResourceId))
     }
 
-    fun addResponse(responseString: String?) {
+    fun addResponse(responseString: String) {
         responses.add(responseString)
     }
 
@@ -90,20 +88,20 @@ class HttpConnectionMock : HttpConnection() {
         this.exception = exception
     }
 
-    override fun pathToUrlString(path: String?): String? {
+    override fun pathToUrlString(path: String): String {
         if (data.originUrl == null) {
             data.originUrl = UrlUtils.buildUrl("mocked.example.com", true)
         }
         return super.pathToUrlString(path)
     }
 
-    override fun postRequest(result: HttpReadResult?): HttpReadResult? {
+    override fun postRequest(result: HttpReadResult): HttpReadResult {
         onRequest("postRequestWithObject", result)
         setExceptions(result)
         return result
     }
 
-    private fun setExceptions(result: HttpReadResult?) {
+    private fun setExceptions(result: HttpReadResult) {
         if (runtimeException != null) {
             result.setException(runtimeException)
         } else if (exception != null) {
@@ -112,19 +110,11 @@ class HttpConnectionMock : HttpConnection() {
     }
 
     override fun setUserTokenWithSecret(token: String?, secret: String?) {
-        userToken = token
-        userSecret = secret
+        userToken = token ?: ""
+        userSecret = secret ?: ""
     }
 
-    override fun getUserToken(): String? {
-        return userToken
-    }
-
-    override fun getUserSecret(): String? {
-        return userSecret
-    }
-
-    private fun onRequest(method: String?, result: HttpReadResult?) {
+    private fun onRequest(method: String, result: HttpReadResult) {
         result.strResponse = getNextResponse()
         if (responseStreamSupplier != null) {
             result.readStream("", responseStreamSupplier)
@@ -137,22 +127,15 @@ class HttpConnectionMock : HttpConnection() {
     }
 
     @Synchronized
-    private fun getNextResponse(): String? {
-        return if (sameResponse) if (responses.isEmpty()) "" else responses.get(responses.size - 1) else if (responsesCounter < responses.size) responses.get(responsesCounter++) else ""
+    private fun getNextResponse(): String {
+        return if (sameResponse) if (responses.isEmpty()) "" else responses.get(responses.size - 1)
+        else if (responsesCounter < responses.size) responses.get(responsesCounter++) else ""
     }
 
-    private fun getRequestInner(method: String?, result: HttpReadResult?): HttpReadResult? {
+    private fun getRequestInner(method: String, result: HttpReadResult): HttpReadResult {
         onRequest(method, result)
         setExceptions(result)
         return result
-    }
-
-    override fun setPassword(password: String?) {
-        this.password = password
-    }
-
-    override fun getPassword(): String? {
-        return password
     }
 
     override fun clearAuthInformation() {
@@ -161,19 +144,18 @@ class HttpConnectionMock : HttpConnection() {
         userSecret = ""
     }
 
-    override fun getCredentialsPresent(): Boolean {
-        return !password.isNullOrEmpty() || !TextUtils.isDigitsOnly(userToken) && !userSecret.isNullOrEmpty()
-    }
+    override val credentialsPresent: Boolean get() =
+        password.isNotEmpty() || !TextUtils.isDigitsOnly(userToken) && userSecret.isNotEmpty()
 
     fun getLatestPostedJSONObject(): JSONObject? {
         return results.get(results.size - 1).request.postParams.orElse(JSONObject())
     }
 
-    fun getResults(): MutableList<HttpReadResult?>? {
+    fun getResults(): MutableList<HttpReadResult> {
         return results
     }
 
-    fun substring2PostedPath(substringToSearch: String?): String? {
+    fun substring2PostedPath(substringToSearch: String): String {
         var found = ""
         for (result in getResults()) {
             if (result.getUrl().contains(substringToSearch)) {
@@ -188,16 +170,16 @@ class HttpConnectionMock : HttpConnection() {
         return results.size
     }
 
-    fun getPostedObjects(): MutableList<JSONObject?>? {
+    fun getPostedObjects(): MutableList<JSONObject> {
         return getResults().stream()
-                .map { r: HttpReadResult? -> r.request.postParams.orElse(null) }
+                .map { r: HttpReadResult -> r.request.postParams.orElse(null) }
                 .collect(Collectors.toList())
     }
 
     fun getPostedCounter(): Int {
         return getResults().stream().reduce(0,
-                { a: Int?, r: HttpReadResult? -> r.request.postParams.map { p: JSONObject? -> a + 1 }.orElse(a) },
-                { a1: Int?, a2: Int? -> a1 + a2 })
+                { a: Int, r: HttpReadResult -> r.request.postParams.map { p: JSONObject? -> a + 1 }.orElse(a) },
+                { a1: Int, a2: Int -> a1 + a2 })
     }
 
     fun clearPostedData() {
@@ -208,25 +190,23 @@ class HttpConnectionMock : HttpConnection() {
         return mInstanceId
     }
 
-    override fun getNewInstance(): HttpConnection? {
+    override fun getNewInstance(): HttpConnection {
         return this
     }
 
-    override fun getRequest(result: HttpReadResult?): HttpReadResult? {
+    override fun getRequest(result: HttpReadResult): HttpReadResult {
         return getRequestInner("getRequest", result)
     }
 
-    fun waitForPostContaining(substring: String?): HttpReadResult? {
+    fun waitForPostContaining(substring: String): HttpReadResult {
         for (attempt in 0..9) {
             val result = getResults().stream()
-                    .filter { r: HttpReadResult? -> r.request.postParams.toString().contains(substring) }
+                    .filter { r: HttpReadResult -> r.request.postParams.toString().contains(substring) }
                     .findFirst()
             if (result.isPresent) return result.get()
             if (DbUtils.waitMs("waitForPostContaining", 2000)) break
         }
-        Assert.fail("""The content should be sent: '$substring'
- Results:${getResults()}""")
-        return null
+        throw IllegalStateException("The content should be sent: '$substring' Results:${getResults()}")
     }
 
     override fun toString(): String {

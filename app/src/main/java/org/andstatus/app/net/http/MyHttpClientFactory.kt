@@ -15,6 +15,7 @@
  */
 package org.andstatus.app.net.http
 
+import cz.msebera.android.httpclient.client.HttpClient
 import cz.msebera.android.httpclient.client.config.RequestConfig
 import cz.msebera.android.httpclient.config.RegistryBuilder
 import cz.msebera.android.httpclient.conn.socket.ConnectionSocketFactory
@@ -23,28 +24,11 @@ import cz.msebera.android.httpclient.impl.client.HttpClients
 import cz.msebera.android.httpclient.impl.conn.PoolingHttpClientConnectionManager
 import org.andstatus.app.context.MyPreferences
 
-cz.msebera.android.httpclient.client.HttpClient
-import org.andstatus.app.context.CompletableFutureTest.TestData
-import org.andstatus.app.service.MyServiceTest
-import org.andstatus.app.service.AvatarDownloaderTest
-import org.andstatus.app.service.RepeatingFailingCommandTest
-import org.hamcrest.core.Is
-import org.hamcrest.core.IsNot
-import org.andstatus.app.timeline.meta.TimelineSyncTrackerTest
-import org.andstatus.app.timeline.TimelinePositionTest
-import org.andstatus.app.util.EspressoUtils
-import org.andstatus.app.timeline.TimeLineActivityLayoutToggleTest
-import org.andstatus.app.appwidget.MyAppWidgetProviderTest.DateTest
-import org.andstatus.app.appwidget.MyAppWidgetProviderTest
-import org.andstatus.app.notification.NotifierTest
-import org.andstatus.app.ActivityTestHelper.MenuItemClicker
-import org.andstatus.app.MenuItemMock
-
 object MyHttpClientFactory {
-    fun getHttpClient(sslMode: SslModeEnum?): HttpClient? {
+    fun getHttpClient(sslMode: SslModeEnum): HttpClient {
         val registry = RegistryBuilder.create<ConnectionSocketFactory?>()
                 .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                .register("https", TlsSniSocketFactory.Companion.getInstance(sslMode))
+                .register("https", TlsSniSocketFactory.getInstance(sslMode))
                 .build()
         val connectionManager = PoolingHttpClientConnectionManager(registry)
         // max.  3 connections in total
@@ -66,7 +50,7 @@ object MyHttpClientFactory {
                 .setRedirectStrategy(DavRedirectStrategy.INSTANCE)  
                 */
                 .disableRedirectHandling()
-                .setUserAgent(HttpConnectionInterface.Companion.USER_AGENT)
+                .setUserAgent(HttpConnectionInterface.USER_AGENT)
                 .disableCookieManagement()
         return builder.build()
     }

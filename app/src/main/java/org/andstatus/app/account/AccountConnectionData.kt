@@ -16,7 +16,6 @@
 package org.andstatus.app.account
 
 import org.andstatus.app.net.http.HttpConnection
-import org.andstatus.app.net.http.HttpConnectionEmpty
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginType
@@ -73,11 +72,11 @@ class AccountConnectionData private constructor(private val myAccount: MyAccount
         val http = origin.myContext.getHttpConnectionMock()
         return http
                 ?: try {
-                    httpConnectionClass.newInstance() ?: HttpConnectionEmpty.EMPTY
+                    httpConnectionClass.newInstance() ?: HttpConnection.EMPTY
                 } catch (e: InstantiationException) {
-                    HttpConnectionEmpty.Companion.EMPTY
+                    HttpConnection.EMPTY
                 } catch (e: IllegalAccessException) {
-                    HttpConnectionEmpty.Companion.EMPTY
+                    HttpConnection.EMPTY
                 }
     }
 

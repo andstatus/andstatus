@@ -29,13 +29,13 @@ import org.andstatus.app.util.MyStringBuilder
 /**
  * @author yvolk@yurivolkov.com
  */
-class MyServiceEventsReceiver(private val myContext: MyContext?, private val listener: MyServiceEventsListener?) : BroadcastReceiver() {
+class MyServiceEventsReceiver(private val myContext: MyContext, private val listener: MyServiceEventsListener) : BroadcastReceiver() {
     private val mInstanceId = InstanceId.next()
-    fun registerReceiver(context: Context?) {
+    fun registerReceiver(context: Context) {
         context.registerReceiver(this, IntentFilter(MyAction.SERVICE_STATE.action))
     }
 
-    fun unregisterReceiver(context: Context?) {
+    fun unregisterReceiver(context: Context) {
         try {
             context.unregisterReceiver(this)
         } catch (e: IllegalArgumentException) {
@@ -44,20 +44,20 @@ class MyServiceEventsReceiver(private val myContext: MyContext?, private val lis
         }
     }
 
-    override fun onReceive(context: Context?, intent: Intent?) {
-        val event: MyServiceEvent = MyServiceEvent.Companion.load(intent.getStringExtra(IntentExtra.SERVICE_EVENT.key))
+    override fun onReceive(context: Context, intent: Intent) {
+        val event: MyServiceEvent = MyServiceEvent.load(intent.getStringExtra(IntentExtra.SERVICE_EVENT.key) ?: "")
         if (event == MyServiceEvent.UNKNOWN) return
         MyLog.v(this) {
-            ("onReceive " + event + " for " + MyStringBuilder.Companion.objToTag(listener)
+            ("onReceive " + event + " for " + MyStringBuilder.objToTag(listener)
                     + ", instanceId:" + mInstanceId)
         }
-        listener.onReceive(CommandData.Companion.fromIntent(myContext, intent), event)
+        listener.onReceive(CommandData.fromIntent(myContext, intent), event)
     }
 
     init {
         MyLog.v(this) {
             ("Created, instanceId=" + mInstanceId
-                    + if (listener == null) "" else "; listener=" + MyStringBuilder.Companion.objToTag(listener))
+                    + ("; listener=" + MyStringBuilder.objToTag(listener)))
         }
     }
 }

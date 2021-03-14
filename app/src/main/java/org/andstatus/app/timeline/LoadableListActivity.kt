@@ -355,8 +355,8 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
         getListAdapter().setPositionRestored(false)
     }
 
-    override fun onReceive(commandData: CommandData, event: MyServiceEvent) {
-        when (event) {
+    override fun onReceive(commandData: CommandData, myServiceEvent: MyServiceEvent) {
+        when (myServiceEvent) {
             MyServiceEvent.BEFORE_EXECUTING_COMMAND -> if (isCommandToShowInSyncIndicator(commandData)) {
                 showSyncing(commandData)
             }
@@ -368,7 +368,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
             else -> {
             }
         }
-        if (isAutoRefreshNow(event == MyServiceEvent.ON_STOP)) {
+        if (isAutoRefreshNow(myServiceEvent == MyServiceEvent.ON_STOP)) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "Auto refresh on content change")
             }

@@ -215,7 +215,9 @@ object FileUtils {
 
     @JvmOverloads
     @Throws(FileNotFoundException::class)
-    fun newFileOutputStreamWithRetry(file: File, append: Boolean = false): FileOutputStream {
+    fun newFileOutputStreamWithRetry(file: File?, append: Boolean = false): FileOutputStream? {
+        if (file == null) return null
+
         return try {
             FileOutputStream(file, append)
         } catch (e: FileNotFoundException) {

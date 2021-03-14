@@ -96,7 +96,7 @@ import org.andstatus.app.net.http.ApacheHttpClientUtils
 import cz.msebera.android.httpclient.HttpEntity
 import cz.msebera.android.httpclient.client.methods.HttpGet
 import org.andstatus.app.account.AccountDataWriter
-import org.andstatus.app.net.http.HttpConnectionEmpty
+import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.net.http.HttpConnectionUtils.ReadChecker
 import org.andstatus.app.service.ConnectionState
 import cz.msebera.android.httpclient.conn.socket.ConnectionSocketFactory

@@ -16,14 +16,14 @@
 package org.andstatus.app.net.http
 
 import android.content.ContentResolver
-import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import oauth.signpost.OAuthConsumer
 import oauth.signpost.OAuthProvider
 import oauth.signpost.basic.DefaultOAuthConsumer
 import oauth.signpost.basic.DefaultOAuthProvider
 import org.andstatus.app.context.MyContextHolder
-import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.data.DbUtils.closeSilently
+import org.andstatus.app.data.MyContentType.Companion.uri2MimeType
 import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
@@ -38,8 +38,6 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.util.*
-import java.util.Map
-import java.util.function.Function
 
 open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
     /**
@@ -47,40 +45,40 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
      */
     override fun registerClient(): Try<Void> {
         val uri = getApiUri(ApiRoutineEnum.OAUTH_REGISTER_CLIENT)
-        val logmsg: MyStringBuilder = MyStringBuilder.Companion.of("registerClient; for " + data.originUrl
+        val logmsg: MyStringBuilder = MyStringBuilder.of("registerClient; for " + data.originUrl
                 + "; URL='" + uri + "'")
         MyLog.v(this) { logmsg.toString() }
-        var consumerKey = ""
-        var consumerSecret = ""
-        data.oauthClientKeys.clear()
+        val consumerKey: String
+        val consumerSecret: String
+        data.oauthClientKeys?.clear()
         var writer: Writer? = null
         try {
             val endpoint = URL(uri.toString())
             val conn = endpoint.openConnection() as HttpURLConnection
-            val params: MutableMap<String?, String?> = HashMap()
+            val params: MutableMap<String, String> = HashMap()
             params["type"] = "client_associate"
             params["application_type"] = "native"
-            params["redirect_uris"] = HttpConnectionInterface.Companion.CALLBACK_URI.toString()
-            params["client_name"] = HttpConnectionInterface.Companion.USER_AGENT
-            params["application_name"] = HttpConnectionInterface.Companion.USER_AGENT
+            params["redirect_uris"] = HttpConnectionInterface.CALLBACK_URI.toString()
+            params["client_name"] = HttpConnectionInterface.USER_AGENT
+            params["application_name"] = HttpConnectionInterface.USER_AGENT
             val requestBody = HttpConnectionUtils.encode(params)
             conn.doOutput = true
             conn.doInput = true
             writer = OutputStreamWriter(conn.outputStream, StandardCharsets.UTF_8)
             writer.write(requestBody)
             writer.close()
-            val result: HttpReadResult = HttpRequest.Companion.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
-                    .withConnectionData(getData())
+            val result: HttpReadResult = HttpRequest.of(ApiRoutineEnum.OAUTH_REGISTER_CLIENT, uri)
+                    .withConnectionData(data)
                     .newResult()
             setStatusCodeAndHeaders(result, conn)
-            if (result.isStatusOk) {
-                result.readStream("") { o: Void? -> conn.inputStream }
+            if (result.isStatusOk()) {
+                result.readStream("") { conn.inputStream }
                 val jso = JSONObject(result.strResponse)
                 consumerKey = jso.getString("client_id")
                 consumerSecret = jso.getString("client_secret")
-                data.oauthClientKeys.setConsumerKeyAndSecret(consumerKey, consumerSecret)
+                data.oauthClientKeys?.setConsumerKeyAndSecret(consumerKey, consumerSecret)
             } else {
-                result.readStream("") { o: Void? -> conn.errorStream }
+                result.readStream("") { conn.errorStream }
                 logmsg.atNewLine("Server returned an error response", result.strResponse)
                 logmsg.atNewLine("Response message from server", conn.responseMessage)
                 MyLog.i(this, logmsg.toString())
@@ -91,10 +89,10 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
         } finally {
             closeSilently(writer)
         }
-        if (data.oauthClientKeys.areKeysPresent()) {
+        if (data.oauthClientKeys?.areKeysPresent() == true) {
             MyLog.v(this) { "Completed $logmsg" }
         } else {
-            return Try.failure(ConnectionException.Companion.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,
+            return Try.failure(ConnectionException.fromStatusCodeAndHost(StatusCode.NO_CREDENTIALS_FOR_HOST,
                     "Failed to obtain client keys for host; $logmsg", data.originUrl))
         }
         return Try.success(null)
@@ -102,7 +100,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
 
     @Throws(ConnectionException::class)
     override fun getProvider(): OAuthProvider? {
-        var provider: OAuthProvider? = null
+        val provider: OAuthProvider
         provider = DefaultOAuthProvider(
                 getApiUri(ApiRoutineEnum.OAUTH_REQUEST_TOKEN).toString(),
                 getApiUri(ApiRoutineEnum.OAUTH_ACCESS_TOKEN).toString(),
@@ -111,9 +109,9 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
         return provider
     }
 
-    override fun postRequest(result: HttpReadResult?): HttpReadResult? {
+    override fun postRequest(result: HttpReadResult): HttpReadResult {
         try {
-            val conn = result.getUrlObj().openConnection() as HttpURLConnection
+            val conn = result.getUrlObj()?.openConnection() as HttpURLConnection? ?: return result
             conn.doOutput = true
             conn.doInput = true
             conn.requestMethod = "POST"
@@ -121,7 +119,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
                 if (result.request.mediaUri.isPresent) {
                     writeMedia(conn, result.request)
                 } else {
-                    result.request.postParams.ifPresent { params: JSONObject? ->
+                    result.request.postParams.ifPresent { params: JSONObject ->
                         try {
                             writeJson(conn, result.request, params)
                         } catch (e: Exception) {
@@ -134,9 +132,9 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
             }
             setStatusCodeAndHeaders(result, conn)
             when (result.getStatusCode()) {
-                StatusCode.OK -> result.readStream("", CheckedFunction { o: Void? -> conn.inputStream })
+                StatusCode.OK -> result.readStream("") { conn.inputStream }
                 else -> {
-                    result.readStream("", CheckedFunction { o: Void? -> conn.errorStream })
+                    result.readStream("") { conn.errorStream }
                     result.setException(result.getExceptionFromJsonErrorResponse())
                 }
             }
@@ -148,17 +146,17 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
 
     /** This method is not legacy HTTP  */
     @Throws(IOException::class)
-    private fun writeMedia(conn: HttpURLConnection?, request: HttpRequest?) {
-        val contentResolver: ContentResolver =  MyContextHolder.myContextHolder.getNow().context().getContentResolver()
+    private fun writeMedia(conn: HttpURLConnection, request: HttpRequest) {
+        val contentResolver: ContentResolver =  MyContextHolder.myContextHolder.getNow().context().contentResolver
         val mediaUri = request.mediaUri.get()
         conn.setChunkedStreamingMode(0)
         conn.setRequestProperty("Content-Type", uri2MimeType(contentResolver, mediaUri))
-        signConnection(conn, consumer, false)
-        contentResolver.openInputStream(mediaUri).use { `in` ->
+        signConnection(conn, getConsumer(), false)
+        contentResolver.openInputStream(mediaUri)?.use { inputStream ->
             val buffer = ByteArray(16384)
-            BufferedOutputStream(conn.getOutputStream()).use { out ->
+            BufferedOutputStream(conn.outputStream).use { out ->
                 var length: Int
-                while (`in`.read(buffer).also { length = it } != -1) {
+                while (inputStream.read(buffer).also { length = it } != -1) {
                     out.write(buffer, 0, length)
                 }
             }
@@ -166,32 +164,32 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
     }
 
     @Throws(IOException::class)
-    private fun writeJson(conn: HttpURLConnection?, request: HttpRequest?, formParams: JSONObject?) {
+    private fun writeJson(conn: HttpURLConnection, request: HttpRequest, formParams: JSONObject) {
         conn.setRequestProperty("Content-Type", data.jsonContentType(request.apiRoutine))
-        signConnection(conn, consumer, false)
-        conn.getOutputStream().use { os -> OutputStreamWriter(os, UTF_8).use { writer -> writer.write(formParams.toString()) } }
+        signConnection(conn, getConsumer(), false)
+        conn.outputStream.use { os -> OutputStreamWriter(os, UTF_8).use { writer -> writer.write(formParams.toString()) } }
     }
 
-    override fun getConsumer(): OAuthConsumer? {
+    override fun getConsumer(): OAuthConsumer {
         val consumer: OAuthConsumer = DefaultOAuthConsumer(
-                data.oauthClientKeys.consumerKey,
-                data.oauthClientKeys.consumerSecret)
+                data.oauthClientKeys?.getConsumerKey(),
+                data.oauthClientKeys?.getConsumerSecret())
         if (credentialsPresent) {
             consumer.setTokenWithSecret(userToken, userSecret)
         }
         return consumer
     }
 
-    override fun getRequest(result: HttpReadResult?): HttpReadResult? {
+    override fun getRequest(result: HttpReadResult): HttpReadResult {
         var connCopy: HttpURLConnection? = null
         try {
-            val consumer = consumer
+            val consumer = getConsumer()
             var redirected = false
-            var stop = false
+            var stop: Boolean
             do {
-                connCopy = result.getUrlObj().openConnection() as HttpURLConnection
+                connCopy = result.getUrlObj()?.openConnection() as HttpURLConnection? ?: return result
                 val conn = connCopy
-                data.optOriginContentType().ifPresent { value: String? -> conn.addRequestProperty("Accept", value) }
+                data.optOriginContentType().ifPresent { value: String -> conn.addRequestProperty("Accept", value) }
                 conn.instanceFollowRedirects = false
                 if (result.authenticate()) {
                     signConnection(conn, consumer, redirected)
@@ -200,7 +198,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
                 setStatusCodeAndHeaders(result, conn)
                 when (result.getStatusCode()) {
                     StatusCode.OK -> {
-                        result.readStream("", CheckedFunction { o: Void? -> conn.inputStream })
+                        result.readStream("") { conn.inputStream }
                         stop = true
                     }
                     StatusCode.MOVED -> {
@@ -208,7 +206,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
                         stop = onMoved(result)
                     }
                     else -> {
-                        result.readStream("", CheckedFunction { o: Void? -> conn.errorStream })
+                        result.readStream("") { conn.errorStream }
                         stop = result.noMoreHttpRetries()
                     }
                 }
@@ -223,26 +221,28 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
     }
 
     @Throws(IOException::class)
-    private fun setStatusCodeAndHeaders(result: HttpReadResult?, conn: HttpURLConnection?) {
-        result.setStatusCode(conn.getResponseCode())
+    private fun setStatusCodeAndHeaders(result: HttpReadResult, conn: HttpURLConnection) {
+        result.setStatusCode(conn.responseCode)
         try {
             result.setHeaders(
-                    conn.getHeaderFields().entries.stream().flatMap { entry: MutableMap.MutableEntry<String?, MutableList<String?>?>? ->
+                    conn.headerFields.entries.stream().flatMap { entry ->
                         entry.value.stream()
-                                .map { value: String? -> ImmutablePair(entry.key, value) }
-                    }, Function { Map.Entry.key }, Function { Map.Entry.value })
+                                .map { value: String -> ImmutablePair(entry.key, value) }
+                    }, {it.key}, {it.value})
         } catch (ignored: Exception) {
             // ignore
         }
     }
 
     @Throws(ConnectionException::class)
-    protected open fun signConnection(conn: HttpURLConnection?, consumer: OAuthConsumer?, redirected: Boolean) {
-        if (!credentialsPresent || consumer == null) {
+    protected open fun signConnection(conn: HttpURLConnection, consumer: OAuthConsumer, redirected: Boolean) {
+        val originUrl = data.originUrl
+        val urlForUserToken = data.urlForUserToken
+        if (!credentialsPresent || originUrl == null || urlForUserToken == null) {
             return
         }
         try {
-            if (data.originUrl.host.contentEquals(data.urlForUserToken.host)) {
+            if (originUrl.host == urlForUserToken.host) {
                 consumer.sign(conn)
             } else {
                 // See http://tools.ietf.org/html/draft-prodromou-dialback-00
@@ -251,11 +251,11 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
                     consumer.sign(conn)
                 } else {
                     conn.setRequestProperty("Authorization", "Dialback")
-                    conn.setRequestProperty("host", data.urlForUserToken.host)
+                    conn.setRequestProperty("host", urlForUserToken.host)
                     conn.setRequestProperty("token", userToken)
                     MyLog.v(this) {
-                        ("Dialback authorization at " + data.originUrl
-                                + "; urlForUserToken=" + data.urlForUserToken + "; token=" + userToken)
+                        ("Dialback authorization at " + originUrl
+                                + "; urlForUserToken=" + urlForUserToken + "; token=" + userToken)
                     }
                     consumer.sign(conn)
                 }
@@ -266,6 +266,6 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
     }
 
     companion object {
-        private val UTF_8: String? = "UTF-8"
+        private val UTF_8: String = "UTF-8"
     }
 }

@@ -16,5 +16,5 @@
 package org.andstatus.app.service
 
 interface MyServiceEventsListener {
-    open fun onReceive(commandData: CommandData, event: MyServiceEvent)
+    fun onReceive(commandData: CommandData, myServiceEvent: MyServiceEvent)
 }

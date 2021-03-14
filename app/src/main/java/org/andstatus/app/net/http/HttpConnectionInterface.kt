@@ -119,14 +119,7 @@ interface HttpConnectionInterface {
         return false
     }
 
-    fun setPassword(password: String?) {
-        // Nothing to do
-    }
-
-    /** return not null  */
-    fun getPassword(): String {
-        return ""
-    }
+    var password: String
 
     /**
      * Persist the connection data
@@ -140,25 +133,17 @@ interface HttpConnectionInterface {
      * Do we have enough credentials to verify them?
      * @return true == yes
      */
-    fun getCredentialsPresent(): Boolean {
-        return false
-    }
+    val credentialsPresent: Boolean get() = false
 
-    fun getSslMode(): SslModeEnum? {
-        return data.getSslMode()
-    }
+    val sslMode: SslModeEnum get() = data.sslMode
 
     fun setUserTokenWithSecret(token: String?, secret: String?) {
         throw IllegalArgumentException("setUserTokenWithSecret is for OAuth only!")
     }
 
-    fun getUserToken(): String? {
-        return ""
-    }
+    val userToken: String get() = ""
 
-    fun getUserSecret(): String? {
-        return ""
-    }
+    val userSecret: String get() = ""
 
     fun getNewInstance(): HttpConnectionInterface
 

@@ -23,7 +23,7 @@ import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.UriUtils
 
-internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
+abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
     var logMe = false
     private fun userTokenKey(): String {
         return "user_token"
@@ -33,36 +33,40 @@ internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
         return "user_secret"
     }
 
-    private var userToken: String? = null
-    private var userSecret: String? = null
+    override var userToken: String = ""
+    override var userSecret: String = ""
+    // TODO: Do we need this?
+    override var password: String = ""
 
     override fun setHttpConnectionData(connectionData: HttpConnectionData) {
         super.setHttpConnectionData(connectionData)
-        connectionData.oauthClientKeys = OAuthClientKeys.Companion.fromConnectionData(connectionData)
+        connectionData.oauthClientKeys = OAuthClientKeys.fromConnectionData(connectionData)
         // We look for saved user keys
-        if (connectionData.dataReader?.dataContains(userTokenKey()) == true &&
-                connectionData.dataReader?.dataContains(userSecretKey()) == true) {
-            userToken = connectionData.dataReader?.getDataString(userTokenKey())
-            userSecret = connectionData.dataReader?.getDataString(userSecretKey())
-            setUserTokenWithSecret(userToken, userSecret)
+        connectionData.dataReader?.let { dataReader ->
+            if (dataReader.dataContains(userTokenKey()) == true &&
+                    dataReader.dataContains(userSecretKey()) == true) {
+                userToken = dataReader.getDataString(userTokenKey())
+                userSecret = dataReader.getDataString(userSecretKey())
+                setUserTokenWithSecret(userToken, userSecret)
+            }
         }
     }
 
-    override fun getCredentialsPresent(): Boolean {
+    override val credentialsPresent: Boolean get() {
         val yes = (data.oauthClientKeys?.areKeysPresent() == true
-                && !userToken.isNullOrEmpty()
-                && !userSecret.isNullOrEmpty())
+                && !userToken.isEmpty()
+                && !userSecret.isEmpty())
         if (!yes && logMe) {
             MyLog.v(this) {
                 ("Credentials presence: clientKeys:" + data.oauthClientKeys?.areKeysPresent()
-                        + "; userKeys:" + !userToken.isNullOrEmpty() + "," + !userSecret.isNullOrEmpty())
+                        + "; userKeys:" + !userToken.isEmpty() + "," + !userSecret.isEmpty())
             }
         }
         return yes
     }
 
-    open fun getApiUri(routine: ApiRoutineEnum?): Uri? {
-        var url: String?
+    open fun getApiUri(routine: ApiRoutineEnum?): Uri {
+        var url: String
         url = when (routine) {
             ApiRoutineEnum.OAUTH_ACCESS_TOKEN -> data.oauthPath + "/access_token"
             ApiRoutineEnum.OAUTH_AUTHORIZE -> data.oauthPath + "/authorize"
@@ -84,18 +88,14 @@ internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
         return false
     }
 
-    override fun getAdditionalAuthorizationParams(): MutableMap<String?, String?>? {
-        return null
-    }
-
     /**
      * @param token empty value means to clear the old values
      * @param secret
      */
     override fun setUserTokenWithSecret(token: String?, secret: String?) {
         synchronized(this) {
-            userToken = token
-            userSecret = secret
+            userToken = token ?: ""
+            userSecret = secret ?: ""
         }
         if (logMe) {
             MyLog.v(this) {
@@ -105,20 +105,12 @@ internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
         }
     }
 
-    override fun getUserToken(): String? {
-        return userToken
-    }
-
-    override fun getUserSecret(): String? {
-        return userSecret
-    }
-
     override fun saveTo(dw: AccountDataWriter): Boolean {
         var changed = super.saveTo(dw)
         if (!TextUtils.equals(userToken, dw.getDataString(userTokenKey())) ||
                 !TextUtils.equals(userSecret, dw.getDataString(userSecretKey()))) {
             changed = true
-            if (userToken.isNullOrEmpty()) {
+            if (userToken.isEmpty()) {
                 dw.setDataString(userTokenKey(), "")
                 if (logMe) {
                     MyLog.d(TAG, "Clearing OAuth Token")
@@ -129,7 +121,7 @@ internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
                     MyLog.d(TAG, "Saving OAuth Token: $userToken")
                 }
             }
-            if (userSecret.isNullOrEmpty()) {
+            if (userSecret.isEmpty()) {
                 dw.setDataString(userSecretKey(), "")
                 if (logMe) {
                     MyLog.d(TAG, "Clearing OAuth Secret")
@@ -149,6 +141,6 @@ internal abstract class HttpConnectionOAuth : HttpConnection(), OAuthService {
     }
 
     companion object {
-        private val TAG: String? = HttpConnectionOAuth::class.java.simpleName
+        private val TAG: String = HttpConnectionOAuth::class.java.simpleName
     }
 }

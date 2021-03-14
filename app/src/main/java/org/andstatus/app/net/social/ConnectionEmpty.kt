@@ -17,10 +17,7 @@ package org.andstatus.app.net.social
 
 import android.net.Uri
 import io.vavr.control.Try
-import org.andstatus.app.net.http.HttpConnectionEmpty
-import org.andstatus.app.net.social.AActivity
-import org.andstatus.app.net.social.Actor
-import org.andstatus.app.net.social.InputTimelinePage
+import org.andstatus.app.net.http.HttpConnection
 import org.andstatus.app.util.TryUtils
 import java.util.*
 
@@ -30,40 +27,41 @@ class ConnectionEmpty internal constructor() : Connection() {
     }
 
     override fun undoLike(noteOid: String?): Try<AActivity> {
-        return AActivity.Companion.TRY_EMPTY
+        return AActivity.TRY_EMPTY
     }
 
-    override fun like(noteOid: String?): Try<AActivity> {
-        return AActivity.Companion.TRY_EMPTY
+    override fun like(noteOid: String): Try<AActivity> {
+        return AActivity.TRY_EMPTY
     }
 
-    override fun deleteNote(noteOid: String?): Try<Boolean?> {
+    override fun deleteNote(noteOid: String): Try<Boolean> {
         return TryUtils.notFound()
     }
 
     public override fun getNote1(noteOid: String?): Try<AActivity> {
-        return AActivity.Companion.TRY_EMPTY
+        return AActivity.TRY_EMPTY
     }
 
     override fun updateNote(note: Note?): Try<AActivity> {
-        return AActivity.Companion.TRY_EMPTY
+        return AActivity.TRY_EMPTY
     }
 
     override fun announce(rebloggedNoteOid: String?): Try<AActivity> {
-        return AActivity.Companion.TRY_EMPTY
+        return AActivity.TRY_EMPTY
     }
 
-    override fun getTimeline(syncYounger: Boolean, apiRoutine: ApiRoutineEnum?,
-                             youngestPosition: TimelinePosition?, oldestPosition: TimelinePosition?, limit: Int, actor: Actor?): Try<InputTimelinePage?> {
-        return Try.success(InputTimelinePage.Companion.EMPTY)
+    override fun getTimeline(syncYounger: Boolean, apiRoutine: ApiRoutineEnum,
+                             youngestPosition: TimelinePosition, oldestPosition: TimelinePosition,
+                             limit: Int, actor: Actor): Try<InputTimelinePage> {
+        return Try.success(InputTimelinePage.EMPTY)
     }
 
-    override fun follow(actorOid: String?, follow: Boolean?): Try<AActivity> {
-        return AActivity.Companion.TRY_EMPTY
+    override fun follow(actorOid: String, follow: Boolean): Try<AActivity> {
+        return AActivity.TRY_EMPTY
     }
 
-    public override fun getActor2(actorIn: Actor?): Try<Actor> {
-        return Actor.Companion.TRY_EMPTY
+    public override fun getActor2(actorIn: Actor): Try<Actor> {
+        return Actor.TRY_EMPTY
     }
 
     companion object {
@@ -71,6 +69,6 @@ class ConnectionEmpty internal constructor() : Connection() {
     }
 
     init {
-        http = HttpConnectionEmpty.EMPTY
+        http = HttpConnection.EMPTY
     }
 }

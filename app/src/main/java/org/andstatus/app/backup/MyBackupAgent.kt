@@ -238,8 +238,8 @@ class MyBackupAgent : BackupAgent() {
         var success = false
         try {
             when (backupDescriptor?.getBackupSchemaVersion()) {
-                MyBackupDescriptor.Companion.BACKUP_SCHEMA_VERSION_UNKNOWN -> throw FileNotFoundException("No backup information in the backup descriptor")
-                MyBackupDescriptor.Companion.BACKUP_SCHEMA_VERSION -> if (data == null) {
+                MyBackupDescriptor.BACKUP_SCHEMA_VERSION_UNKNOWN -> throw FileNotFoundException("No backup information in the backup descriptor")
+                MyBackupDescriptor.BACKUP_SCHEMA_VERSION -> if (data == null) {
                     throw FileNotFoundException("No BackupDataInput")
                 } else if (!newDescriptor.saved()) {
                     throw FileNotFoundException("No new state")
@@ -299,7 +299,7 @@ class MyBackupAgent : BackupAgent() {
         DataPruner.setDataPrunedNow()
         data.setMyContext( MyContextHolder.myContextHolder.getNow())
         assertNextHeader(data, KEY_ACCOUNT)
-        accountsRestored += data.getMyContext()?.accounts()?.onRestore(data, backupDescriptor!!) ?: 0
+        accountsRestored += data.getMyContext().accounts().onRestore(data, backupDescriptor!!)
          MyContextHolder.myContextHolder.release { "doRestore, accounts restored" }
         MyContextHolder.myContextHolder.setOnRestore(false)
          MyContextHolder.myContextHolder.initialize(this).getBlocking()
@@ -380,7 +380,7 @@ class MyBackupAgent : BackupAgent() {
         MyLog.i(this, method + " started, " + fileWritten(data.getKey(), dataFile, data.getDataSize()))
         val bytesToWrite = data.getDataSize()
         var bytesWritten = 0
-        newFileOutputStreamWithRetry(dataFile).use { output ->
+        newFileOutputStreamWithRetry(dataFile)?.use { output ->
             while (bytesToWrite > bytesWritten) {
                 val bytes = ByteArray(MyStorage.FILE_CHUNK_SIZE)
                 val bytesRead = data.readEntityData(bytes, 0, bytes.size)
