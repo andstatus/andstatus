@@ -25,7 +25,7 @@ import java.util.*
 import java.util.concurrent.atomic.AtomicReference
 
 internal class NoteEditorLock(val isSave: Boolean, val noteId: Long) : IsEmpty, IdentifiableInstance {
-    protected val instanceId = InstanceId.next()
+    override val instanceId = InstanceId.next()
     var startedAt: Long = 0
     override val isEmpty: Boolean
         get() {
@@ -88,24 +88,20 @@ internal class NoteEditorLock(val isSave: Boolean, val noteId: Long) : IsEmpty, 
             builder.withComma("noteId", noteId)
         }
         builder.withComma("started", Date(startedAt))
-        return MyStringBuilder.Companion.formatKeyValue(this, builder.toString())
+        return MyStringBuilder.formatKeyValue(this, builder.toString())
     }
 
     fun expired(): Boolean {
         return isEmpty || Math.abs(System.currentTimeMillis() - startedAt) > 60000
     }
 
-    override fun getInstanceId(): Long {
-        return instanceId
-    }
-
-    override fun classTag(): String? {
+    override fun classTag(): String {
         return TAG
     }
 
     companion object {
-        private val TAG: String? = NoteEditorLock::class.java.simpleName
-        val EMPTY: NoteEditorLock? = NoteEditorLock(false, 0)
-        val lock: AtomicReference<NoteEditorLock?>? = AtomicReference(EMPTY)
+        private val TAG: String = NoteEditorLock::class.java.simpleName
+        val EMPTY: NoteEditorLock = NoteEditorLock(false, 0)
+        val lock: AtomicReference<NoteEditorLock> = AtomicReference(EMPTY)
     }
 }

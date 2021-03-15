@@ -32,8 +32,8 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.UriUtils
 
-class NoteShare(private val origin: Origin?, private val noteId: Long, private val downloads: NoteDownloads?) {
-    fun viewImage(activity: Activity?) {
+class NoteShare(private val origin: Origin, private val noteId: Long, private val downloads: NoteDownloads) {
+    fun viewImage(activity: Activity) {
         if (downloads.nonEmpty) {
             activity.startActivity(intentToViewAndShare(false))
         }
@@ -42,25 +42,24 @@ class NoteShare(private val origin: Origin?, private val noteId: Long, private v
     /**
      * @return true if succeeded
      */
-    fun share(context: Context?): Boolean {
-        if (origin == null) {
+    fun share(context: Context): Boolean {
+        if (!origin.isValid()) {
             return false
         }
         context.startActivity(
-                Intent.createChooser(intentToViewAndShare(true),
-                        context.getText(R.string.menu_item_share)))
+            Intent.createChooser(intentToViewAndShare(true), context.getText(R.string.menu_item_share)))
         return true
     }
 
-    fun intentToViewAndShare(share: Boolean): Intent? {
+    fun intentToViewAndShare(share: Boolean): Intent {
         val noteName = MyQuery.noteIdToStringColumnValue(NoteTable.NAME, noteId)
         val noteSummary = MyQuery.noteIdToStringColumnValue(NoteTable.SUMMARY, noteId)
         val noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId)
         var subjectString: CharSequence = noteName
-        if (!noteSummary.isNullOrEmpty()) {
-            subjectString = subjectString.toString() + (if (!subjectString.isNullOrEmpty()) ". " else "") + noteSummary
+        if (noteSummary.isNotEmpty()) {
+            subjectString = subjectString.toString() + (if (subjectString.isNotEmpty()) ". " else "") + noteSummary
         }
-        if (subjectString.isNullOrEmpty()) {
+        if (subjectString.isEmpty()) {
             subjectString = I18n.trimTextAt(MyHtml.htmlToCompactPlainText(noteContent), 80)
         }
         subjectString = (if (MyQuery.isSensitive(noteId)) "(" +  MyContextHolder.myContextHolder.getNow().context().getText(R.string.sensitive) + ") " else "") +
@@ -68,11 +67,13 @@ class NoteShare(private val origin: Origin?, private val noteId: Long, private v
                 " - " + subjectString
         val intent = Intent(if (share) Intent.ACTION_SEND else Intent.ACTION_VIEW)
         val downloadData = downloads.getFirstToShare()
-        val mediaFileUri = if (downloadData.file.existsNow()) FileProvider.Companion.downloadFilenameToUri(downloadData.filename) else downloadData.uri
+        val mediaFileUri = if (downloadData.getFile().existsNow())
+            FileProvider.downloadFilenameToUri(downloadData.getFilename())
+            else downloadData.getUri()
         if (share || UriUtils.isEmpty(mediaFileUri)) {
             intent.type = "text/*"
         } else {
-            intent.setDataAndType(mediaFileUri, downloadData.mimeType)
+            intent.setDataAndType(mediaFileUri, downloadData.getMimeType())
         }
         if (UriUtils.nonEmpty(mediaFileUri)) {
             intent.putExtra(Intent.EXTRA_STREAM, mediaFileUri)
@@ -84,7 +85,7 @@ class NoteShare(private val origin: Origin?, private val noteId: Long, private v
         return intent
     }
 
-    private fun buildBody(origin: Origin?, noteContent: String?, isHtml: Boolean): String? {
+    private fun buildBody(origin: Origin, noteContent: String?, isHtml: Boolean): String {
         return StringBuilder()
                 .append(noteContent)
                 .append(
@@ -101,14 +102,15 @@ class NoteShare(private val origin: Origin?, private val noteId: Long, private v
     /**
      * @return true if succeeded
      */
-    fun openPermalink(context: Context?): Boolean {
-        return if (origin == null) false else openLink(context, origin.getNotePermalink(noteId))
+    fun openPermalink(context: Context): Boolean {
+        return if (!origin.isValid()) false else openLink(context, origin.getNotePermalink(noteId))
     }
 
     companion object {
-        private val SIGNATURE_FORMAT_HTML: String? = "<p>-- <br />\n%s<br />\nURL: %s</p>"
-        private val SIGNATURE_PLAIN_TEXT: String? = "\n-- \n%s\n URL: %s"
-        fun openLink(context: Context?, urlString: String?): Boolean {
+        private val SIGNATURE_FORMAT_HTML: String = "<p>-- <br />\n%s<br />\nURL: %s</p>"
+        private val SIGNATURE_PLAIN_TEXT: String = "\n-- \n%s\n URL: %s"
+
+        fun openLink(context: Context, urlString: String?): Boolean {
             return if (urlString.isNullOrEmpty()) {
                 false
             } else {
@@ -121,7 +123,7 @@ class NoteShare(private val origin: Origin?, private val noteId: Long, private v
     }
 
     init {
-        if (origin == null) {
+        if (!origin.isValid()) {
             MyLog.v(this) { "Origin not found for noteId=$noteId" }
         }
     }

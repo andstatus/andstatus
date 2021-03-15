@@ -57,7 +57,7 @@ class ActivityViewItem : ViewItem<ActivityViewItem>, Comparable<ActivityViewItem
         noteViewItem = NoteViewItem.EMPTY
     }
 
-    protected constructor(myContext: MyContext, cursor: Cursor?) :
+    protected constructor(myContext: MyContext, cursor: Cursor) :
             super(false, DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE)) {
         id = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID)
         origin = myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID))

@@ -88,8 +88,9 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem,
         addMissedFromCache()
     }
 
-    protected abstract fun load2(nonLoaded: ConversationViewItem?)
-    open fun cacheConversation(item: ConversationViewItem?) {
+    protected abstract fun load2(nonLoaded: ConversationViewItem)
+
+    open fun cacheConversation(item: ConversationViewItem) {
         // Empty
     }
 

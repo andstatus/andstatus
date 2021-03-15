@@ -39,7 +39,7 @@ class NotificationEvents private constructor(val myContext: MyContext,
     }
 
     fun size(): Long {
-        return map.values.stream().mapToLong { obj: NotificationData -> obj.getCount() }.sum()
+        return map.values.stream().mapToLong { obj: NotificationData -> obj.count }.sum()
     }
 
     fun clearAll(): NotificationEvents {

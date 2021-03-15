@@ -115,7 +115,7 @@ class ConversationActivity : NoteEditorListActivity<ConversationViewItem>(), Not
         return true
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         prepareDrawer()
         return super.onPrepareOptionsMenu(menu)
     }

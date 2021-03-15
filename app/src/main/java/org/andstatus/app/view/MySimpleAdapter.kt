@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.SimpleAdapter
 import org.andstatus.app.context.MyPreferences
 
-class MySimpleAdapter(context: Context?, data: MutableList<out MutableMap<String?, *>?>?, resource: Int,
+class MySimpleAdapter(context: Context, data: MutableList<out MutableMap<String, *>>, resource: Int,
                       from: Array<String?>?, to: IntArray?, val hasActionOnClick: Boolean) : SimpleAdapter(context, data, resource, from, to), View.OnClickListener {
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
         val view = super.getView(position, convertView, parent)
@@ -18,7 +18,7 @@ class MySimpleAdapter(context: Context?, data: MutableList<out MutableMap<String
     }
 
     override fun getItemId(position: Int): Long {
-        val item = getItem(position) as MutableMap<String?, *>
+        val item = getItem(position) as MutableMap<String, *>
         return try {
             val id = item[BaseColumns._ID] as String?
             id?.toLong() ?: 0
@@ -38,7 +38,7 @@ class MySimpleAdapter(context: Context?, data: MutableList<out MutableMap<String
         return -1
     }
 
-    override fun onClick(v: View?) {
+    override fun onClick(v: View) {
         if (!MyPreferences.isLongPressToOpenContextMenu() && v.getParent() != null) {
             v.showContextMenu()
         }

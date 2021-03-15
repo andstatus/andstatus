@@ -123,7 +123,7 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder = Str
             return MyStringBuilder(text)
         }
 
-        fun of(content: Optional<String>): MyStringBuilder? {
+        fun of(content: Optional<String>): MyStringBuilder {
             return content.map { text: String -> of(text) }.orElse(MyStringBuilder())
         }
 

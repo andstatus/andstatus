@@ -107,7 +107,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
 
     private fun assertAccountIsAddedToAccountManager(maExpected: MyAccount) {
         val aa = AccountUtils.getCurrentAccounts(myContext.context())
-        var ma: MyAccount = null
+        var ma: MyAccount = MyAccount.EMPTY
         for (account in aa) {
             ma = MyAccount.Builder.loadFromAndroidAccount(myContext, account).getAccount()
             if (maExpected.getAccountName() == ma.getAccountName()) {

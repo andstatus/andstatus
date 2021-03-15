@@ -18,12 +18,11 @@ package org.andstatus.app.note
 import android.net.Uri
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
-import org.andstatus.app.note.NoteEditorData
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.UriUtils
 import java.util.*
 
-class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, previousData: NoteEditorData? = NoteEditorData.Companion.EMPTY) : IsEmpty {
+class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, previousData: NoteEditorData? = NoteEditorData.EMPTY) : IsEmpty {
     @Volatile
     private var currentNoteId: Long? = null
     private var mediaUri = Uri.EMPTY
@@ -32,11 +31,12 @@ class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, 
     var showAfterSave = false
 
     @Volatile
-    private var lock: NoteEditorLock? = NoteEditorLock.Companion.EMPTY
+    private var lock: NoteEditorLock = NoteEditorLock.EMPTY
 
     @Volatile
     var currentData: NoteEditorData?
     val previousData: NoteEditorData?
+
     fun acquireLock(wait: Boolean): Boolean {
         if (hasLock()) {
             return true
@@ -58,41 +58,41 @@ class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, 
     }
 
     fun getCurrentNoteId(): Long {
-        if (currentData.isValid()) {
-            return currentData.getNoteId()
+        if (currentData?.isValid() == true) {
+            return currentData?.getNoteId() ?: 0
         }
         if (currentNoteId == null) {
             currentNoteId = MyPreferences.getBeingEditedNoteId()
         }
-        return currentNoteId
+        return currentNoteId ?: 0
     }
 
     fun loadCurrent() {
-        currentData = NoteEditorData.Companion.load( MyContextHolder.myContextHolder.getNow(), getCurrentNoteId())
+        currentData = NoteEditorData.load( MyContextHolder.myContextHolder.getNow(), getCurrentNoteId())
     }
 
     override val isEmpty: Boolean
         get() {
-            return currentData.isEmpty && previousData.isEmpty && mediaUri === Uri.EMPTY
+            return currentData?.isEmpty == true && previousData?.isEmpty == true && mediaUri === Uri.EMPTY
         }
 
-    fun setMediaUri(mediaUri: Uri?): NoteEditorCommand? {
+    fun setMediaUri(mediaUri: Uri?): NoteEditorCommand {
         this.mediaUri = UriUtils.notNull(mediaUri)
         return this
     }
 
-    fun getMediaUri(): Uri? {
+    fun getMediaUri(): Uri {
         return mediaUri
     }
 
     fun needToSavePreviousData(): Boolean {
-        return (previousData.isValid() && previousData.nonEmpty
-                && (previousData.getNoteId() == 0L || currentData.getNoteId() != previousData.getNoteId()))
+        return (previousData?.isValid() == true && previousData.nonEmpty
+                && (previousData.getNoteId() == 0L || currentData?.getNoteId() != previousData.getNoteId()))
     }
 
     override fun toString(): String {
         val builder = StringBuilder("Save ")
-        if (currentData === NoteEditorData.Companion.EMPTY) {
+        if (currentData === NoteEditorData.EMPTY) {
             builder.append("current draft,")
         } else {
             builder.append(currentData.toString())
@@ -124,6 +124,6 @@ class NoteEditorCommand @JvmOverloads constructor(currentData: NoteEditorData?, 
     init {
         requireNotNull(currentData) { "currentData is null" }
         this.currentData = currentData
-        this.previousData = previousData ?: NoteEditorData.Companion.EMPTY
+        this.previousData = previousData ?: NoteEditorData.EMPTY
     }
 }

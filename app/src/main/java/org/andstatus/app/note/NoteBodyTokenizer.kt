@@ -25,8 +25,9 @@ import java.util.regex.Pattern
 
 class NoteBodyTokenizer : Tokenizer {
     @Volatile
-    private var origin: Origin? =  Origin.EMPTY
-    fun setOrigin(origin: Origin?) {
+    private var origin: Origin =  Origin.EMPTY
+
+    fun setOrigin(origin: Origin) {
         this.origin = origin
     }
 
@@ -49,7 +50,7 @@ class NoteBodyTokenizer : Tokenizer {
         return start
     }
 
-    override fun findTokenEnd(text: CharSequence?, cursor: Int): Int {
+    override fun findTokenEnd(text: CharSequence, cursor: Int): Int {
         var i = cursor
         val length = text.length
         while (i < length) {
@@ -61,7 +62,7 @@ class NoteBodyTokenizer : Tokenizer {
         return length
     }
 
-    override fun terminateToken(text: CharSequence?): CharSequence? {
+    override fun terminateToken(text: CharSequence): CharSequence {
         var i = text.length
         while (i > 0 && nonWebfingerIdChar(text, i)) {
             i--
@@ -78,7 +79,7 @@ class NoteBodyTokenizer : Tokenizer {
     }
 
     companion object {
-        private val WEBFINGER_CHARACTERS_REGEX: String? = "[_A-Za-z0-9-+.@]+"
+        private val WEBFINGER_CHARACTERS_REGEX: String = "[_A-Za-z0-9-+.@]+"
         const val MIN_LENGHT_TO_SEARCH = 2
         private val webFingerCharactersPattern = Pattern.compile(WEBFINGER_CHARACTERS_REGEX)
         private fun nonWebfingerIdChar(text: CharSequence?, cursor: Int): Boolean {

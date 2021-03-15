@@ -60,7 +60,9 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
         when (futureData.getStateFor(getViewItem())) {
             StateForSelectedViewItem.READY -> {
                 next(this)
-                createContextMenu(menu, v, getViewItem())
+                if (menu != EmptyContextMenu.EMPTY) {
+                    createContextMenu(menu, v, getViewItem())
+                }
             }
             StateForSelectedViewItem.NEW -> FutureNoteContextMenuData.loadAsync(this, v, getViewItem(), next)
             else -> {

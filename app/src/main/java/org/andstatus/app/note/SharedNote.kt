@@ -21,27 +21,27 @@ import org.andstatus.app.data.TextMediaType
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.UriUtils
 import java.util.*
-import java.util.function.Function
 
 class SharedNote {
-    var name: Optional<String> = null
-    var content: Optional<String> = null
+    var name: Optional<String> = Optional.empty()
+    var content: Optional<String> = Optional.empty()
     var textMediaType: TextMediaType? = null
-    var mediaUri: Optional<Uri> = null
-    var mediaType: Optional<String> = null
+    var mediaUri: Optional<Uri> = Optional.empty()
+    var mediaType: Optional<String> = Optional.empty()
+
     fun isEmpty(): Boolean {
-        return !name.isPresent() && !content.isPresent() && !mediaUri.isPresent()
+        return !name.isPresent && !content.isPresent && !mediaUri.isPresent
     }
 
     override fun toString(): String {
         return "Share via this app " +
-                name.map(Function { s: String? -> "; title:'$s'" }).orElse("") +
-                content.map(Function { s: String? -> "; content:'$s' $textMediaType" }).orElse("") +
-                mediaUri.map(Function { s: Uri? -> "; media:'" + s + "' " + mediaType.orElse("") }).orElse("")
+                name.map { s: String? -> "; title:'$s'" }.orElse("") +
+                content.map { s: String? -> "; content:'$s' $textMediaType" }.orElse("") +
+                mediaUri.map { s: Uri? -> "; media:'" + s + "' " + mediaType.orElse("") }.orElse("")
     }
 
     companion object {
-        fun fromIntent(intent: Intent?): Optional<SharedNote> {
+        fun fromIntent(intent: Intent): Optional<SharedNote> {
             val shared = SharedNote()
             shared.name = StringUtil.optNotEmpty(intent.getStringExtra(Intent.EXTRA_SUBJECT))
             val html = StringUtil.optNotEmpty(intent.getStringExtra(Intent.EXTRA_HTML_TEXT))
@@ -54,8 +54,8 @@ class SharedNote {
             }
             shared.mediaUri = Optional.ofNullable<Any?>(intent.getParcelableExtra(Intent.EXTRA_STREAM))
                     .map { obj: Any? -> obj.toString() }
-                    .flatMap { obj: String? -> UriUtils.toOptional() }
-            shared.mediaType = shared.mediaUri.flatMap(Function { u: Uri? -> Optional.ofNullable(intent.getType()) })
+                    .flatMap { obj: String? -> UriUtils.toOptional(obj) }
+            shared.mediaType = shared.mediaUri.flatMap { u: Uri? -> Optional.ofNullable(intent.type) }
             return if (shared.isEmpty()) Optional.empty() else Optional.of(shared)
         }
     }

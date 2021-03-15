@@ -37,7 +37,7 @@ class ActivityContextMenu(container: NoteContextMenuContainer) {
         }
     }
 
-    fun saveState(outState: Bundle?) {
+    fun saveState(outState: Bundle) {
         note.saveState(outState)
     }
 

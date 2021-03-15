@@ -30,16 +30,18 @@ import org.andstatus.app.timeline.meta.TimelineType
 /**
  * @author yvolk@yurivolkov.com
  */
-class PrivateNotesConversationLoader(emptyItem: ConversationViewItem?, myContext: MyContext?, origin: Origin?,
-                                     selectedNoteId: Long, sync: Boolean) : ConversationLoader(emptyItem, myContext, origin, selectedNoteId, sync) {
-    override fun load2(nonLoaded: ConversationViewItem?) {
+class PrivateNotesConversationLoader(emptyItem: ConversationViewItem, myContext: MyContext, origin: Origin,
+                                     selectedNoteId: Long, sync: Boolean) :
+        ConversationLoader(emptyItem, myContext, origin, selectedNoteId, sync) {
+
+    override fun load2(nonLoaded: ConversationViewItem) {
         val actorId = MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, nonLoaded.getNoteId())
-        val audience: Audience = fromNoteId(ma.origin, nonLoaded.getNoteId())
+        val audience: Audience = Audience.fromNoteId(ma.origin, nonLoaded.getNoteId())
         val selection = getSelectionForActorAndAudience("=$actorId",
-                SqlIds.Companion.actorIdsOf(audience.nonSpecialActors).getSql())
-        val uri = myContext.timelines()[TimelineType.EVERYTHING, Actor.EMPTY, ma.origin].uri
+                SqlIds.actorIdsOf(audience.getNonSpecialActors()).getSql())
+        val uri = myContext.timelines()[TimelineType.EVERYTHING, Actor.EMPTY, ma.origin].getUri()
         myContext.context().contentResolver
-                .query(uri, nonLoaded.getProjection().toArray<String?>(arrayOf<String?>()), selection, null, null).use { cursor ->
+                .query(uri, nonLoaded.getProjection().toTypedArray(), selection, null, null).use { cursor ->
                     while (cursor != null && cursor.moveToNext()) {
                         addItemToList(nonLoaded.fromCursor(myContext, cursor))
                     }

@@ -35,8 +35,6 @@ import org.andstatus.app.util.StopWatch
 import org.andstatus.app.util.UriUtils
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
-import java.util.function.Predicate
-import java.util.function.UnaryOperator
 import java.util.stream.Collectors
 
 class Notifier(val myContext: MyContext) {
@@ -44,22 +42,22 @@ class Notifier(val myContext: MyContext) {
     private var notificationArea = false
     private var vibration = false
     private var soundUri: Uri? = null
-    private var enabledEvents: MutableList<NotificationEventType> = emptyList()
-    private val refEvents: AtomicReference<NotificationEvents> = AtomicReference(NotificationEvents.Companion.EMPTY)
+    private var enabledEvents: MutableList<NotificationEventType> = mutableListOf()
+    private val refEvents: AtomicReference<NotificationEvents> = AtomicReference(NotificationEvents.EMPTY)
     fun clearAll() {
-        AppWidgets.Companion.of(refEvents.updateAndGet(UnaryOperator { obj: NotificationEvents -> obj.clearAll() })).clearCounters().updateViews()
+        AppWidgets.of(refEvents.updateAndGet { obj: NotificationEvents -> obj.clearAll() }).clearCounters().updateViews()
         clearAndroidNotifications()
     }
 
     fun clear(timeline: Timeline) {
         if (timeline.nonEmpty) {
-            AppWidgets.Companion.of(refEvents.updateAndGet(UnaryOperator { events: NotificationEvents -> events.clear(timeline) })).clearCounters().updateViews()
+            AppWidgets.of(refEvents.updateAndGet { events: NotificationEvents -> events.clear(timeline) }).clearCounters().updateViews()
             clearAndroidNotifications()
         }
     }
 
     private fun clearAndroidNotifications() {
-        NotificationEventType.Companion.validValues.forEach(Consumer { eventType: NotificationEventType -> clearAndroidNotification(eventType) })
+        NotificationEventType.validValues.forEach(Consumer { eventType: NotificationEventType -> clearAndroidNotification(eventType) })
     }
 
     fun clearAndroidNotification(eventType: NotificationEventType) {
@@ -67,7 +65,7 @@ class Notifier(val myContext: MyContext) {
     }
 
     fun update() {
-        AppWidgets.Companion.of(refEvents.updateAndGet(UnaryOperator { obj: NotificationEvents -> obj.load() })).updateData().updateViews()
+        AppWidgets.of(refEvents.updateAndGet { obj: NotificationEvents -> obj.load() }).updateData().updateViews()
         if (notificationArea) {
             refEvents.get().map.values.stream().filter { data: NotificationData -> data.count > 0 }.forEach { data: NotificationData -> myContext.notify(data) }
         }
@@ -135,7 +133,7 @@ class Notifier(val myContext: MyContext) {
     }
 
     fun initialize() {
-        val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+        val stopWatch: StopWatch = StopWatch.createStarted()
         if (myContext.isReady()) {
             nM = myContext.context().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             if (nM == null) {
@@ -145,11 +143,11 @@ class Notifier(val myContext: MyContext) {
         notificationArea = NotificationMethodType.NOTIFICATION_AREA.isEnabled
         vibration = NotificationMethodType.VIBRATION.isEnabled
         soundUri = NotificationMethodType.SOUND.uri
-        enabledEvents = NotificationEventType.Companion.validValues.stream()
-                .filter(Predicate { obj: NotificationEventType -> obj.isEnabled() })
+        enabledEvents = NotificationEventType.validValues.stream()
+                .filter { obj: NotificationEventType -> obj.isEnabled() }
                 .collect(Collectors.toList())
                 .also {
-                    refEvents.set(NotificationEvents.Companion.of(myContext, it).load())
+                    refEvents.set(NotificationEvents.of(myContext, it).load())
         }
         MyLog.i(this, "notifierInitializedMs:" + stopWatch.time + "; " + refEvents.get().size() + " events")
     }
@@ -160,7 +158,7 @@ class Notifier(val myContext: MyContext) {
 
     fun onUnsentActivity(activityId: Long) {
         if (activityId == 0L || !isEnabled(NotificationEventType.OUTBOX)) return
-        MyProvider.Companion.setUnsentActivityNotification(myContext, activityId)
+        MyProvider.setUnsentActivityNotification(myContext, activityId)
         update()
     }
 

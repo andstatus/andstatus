@@ -19,4 +19,4 @@ import android.content.Context
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatMultiAutoCompleteTextView
 
-class NoteEditorBodyView(context: Context?, attrs: AttributeSet?) : AppCompatMultiAutoCompleteTextView(context, attrs)
+class NoteEditorBodyView(context: Context, attrs: AttributeSet?) : AppCompatMultiAutoCompleteTextView(context, attrs)

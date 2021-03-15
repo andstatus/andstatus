@@ -23,10 +23,11 @@ import java.util.*
 class KeywordsFilter(keywordsIn: String?) : IsEmpty {
     internal class Keyword @JvmOverloads constructor(val value: String, val contains: Boolean = false) {
         val nonEmpty: Boolean
-        override fun equals(o: Any?): Boolean {
-            if (this === o) return true
-            if (o == null || javaClass != o.javaClass) return false
-            val keyword = o as Keyword
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || javaClass != other.javaClass) return false
+            val keyword = other as Keyword
             return contains == keyword.contains && value == keyword.value
         }
 
@@ -39,7 +40,7 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
         }
 
         init {
-            nonEmpty = !value.isNullOrEmpty()
+            nonEmpty = value.isNotEmpty()
         }
     }
 
@@ -58,10 +59,10 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
                 break
             }
             val item = text.substring(atPos, separatorInd)
-            if (!item.isNullOrEmpty() && !keywords.contains(item)) {
+            if (item.isNotEmpty() && !keywords.contains(item)) {
                 keywords.add(item)
             }
-            if (separatorInd < text.length && text.get(separatorInd) == '"') {
+            if (separatorInd < text.length && text[separatorInd] == '"') {
                 inQuote = !inQuote
             }
             atPos = separatorInd + 1
@@ -71,7 +72,7 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
 
     private fun nextQuote(text: String, atPos: Int): Int {
         for (ind in atPos until text.length) {
-            if (DOUBLE_QUOTE == text.get(ind)) {
+            if (DOUBLE_QUOTE == text[ind]) {
                 return ind
             }
         }
@@ -79,9 +80,9 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
     }
 
     private fun nextSeparatorInd(text: String, atPos: Int): Int {
-        val SEPARATORS = ", " + DOUBLE_QUOTE
+        val SEPARATORS = ", $DOUBLE_QUOTE"
         for (ind in atPos until text.length) {
-            if (SEPARATORS.indexOf(text.get(ind)) >= 0) {
+            if (SEPARATORS.indexOf(text[ind]) >= 0) {
                 return ind
             }
         }
@@ -137,10 +138,10 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
             }
             selection.append("$fieldName LIKE ?")
         }
-        return if (selection.length == 0) "" else "($selection)"
+        return if (selection.isEmpty()) "" else "($selection)"
     }
 
-    fun prependSqlSelectionArgs(selectionArgs: Array<String>?): Array<String> {
+    fun prependSqlSelectionArgs(selectionArgs: Array<String>): Array<String> {
         var selectionArgsOut = selectionArgs
         for (keyword in keywordsToFilter) {
             selectionArgsOut = StringUtil.addBeforeArray(selectionArgsOut, "%" + keyword.value + "%")
@@ -154,7 +155,7 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
                 return keyword.substring(1)
             }
         }
-        return if (keywordsRaw.isEmpty()) "" else keywordsRaw.get(0)
+        return if (keywordsRaw.isEmpty()) "" else keywordsRaw[0]
     }
 
     override val isEmpty: Boolean
@@ -165,7 +166,7 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
     override fun toString(): String {
         val builder = StringBuilder()
         for (keyword in keywordsRaw) {
-            if (builder.length > 0) {
+            if (builder.isNotEmpty()) {
                 builder.append(", ")
             }
             builder.append("\"" + keyword + "\"")

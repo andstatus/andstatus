@@ -95,11 +95,11 @@ abstract class NoteEditorListActivity<T : ViewItem<T>> : LoadableListActivity<T>
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        noteEditor?.onCreateOptionsMenu(menu)
+        menu?.let { noteEditor?.onCreateOptionsMenu(menu) }
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         noteEditor?.onPrepareOptionsMenu(menu)
         return super.onPrepareOptionsMenu(menu)
     }

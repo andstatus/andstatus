@@ -26,15 +26,14 @@ import org.andstatus.app.origin.Origin
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.RelativeTime
 
-class NotificationData(event: NotificationEventType, myActor: Actor, updatedDate: Long) {
-    val event: NotificationEventType
-    val myActor: Actor
+class NotificationData(val event: NotificationEventType, val myActor: Actor, updatedDate: Long) {
 
     @Volatile
     var updatedDate: Long
 
     @Volatile
     var count: Long
+
     @Synchronized
     fun addEventsAt(numberOfEvents: Long, updatedDate: Long) {
         if (numberOfEvents < 1 || updatedDate <= RelativeTime.DATETIME_MILLIS_NEVER) return
@@ -42,16 +41,17 @@ class NotificationData(event: NotificationEventType, myActor: Actor, updatedDate
         if (this.updatedDate < updatedDate) this.updatedDate = updatedDate
     }
 
-    fun getPendingIntent(myContext: MyContext?): PendingIntent? {
-        val timelineType: TimelineType = TimelineType.Companion.from(event)
+    fun getPendingIntent(myContext: MyContext): PendingIntent {
+        val timelineType: TimelineType = TimelineType.from(event)
         // When clicking on notifications, always open Combine timeline for Unread notifications
-        val timeline = myContext.timelines().get(timelineType,
-                if (timelineType == TimelineType.UNREAD_NOTIFICATIONS) Actor.EMPTY else myActor,  Origin.EMPTY)
-                .orElse(myContext.timelines().default)
+        val timeline = myContext.timelines()[timelineType,
+                if (timelineType == TimelineType.UNREAD_NOTIFICATIONS) Actor.EMPTY
+                else myActor, Origin.EMPTY]
+                .orElse(myContext.timelines().getDefault())
         val intent = Intent(myContext.context(), FirstActivity::class.java)
         // "rnd" is necessary to actually bring Extra to the target intent
         // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity
-        intent.data = Uri.withAppendedPath(timeline.uri,
+        intent.data = Uri.withAppendedPath(timeline.getUri(),
                 "rnd/" + SystemClock.elapsedRealtime())
         return PendingIntent.getActivity(myContext.context(), timeline.hashCode(), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT)
@@ -61,18 +61,12 @@ class NotificationData(event: NotificationEventType, myActor: Actor, updatedDate
         return "channel_" + event.id
     }
 
-    fun getCount(): Long {
-        return count
-    }
-
     companion object {
         val EMPTY: NotificationData = NotificationData(NotificationEventType.EMPTY, Actor.EMPTY,
                 RelativeTime.DATETIME_MILLIS_NEVER)
     }
 
     init {
-        this.event = event
-        this.myActor = myActor
         this.updatedDate = updatedDate
         count = if (updatedDate > RelativeTime.DATETIME_MILLIS_NEVER) 1 else 0.toLong()
     }

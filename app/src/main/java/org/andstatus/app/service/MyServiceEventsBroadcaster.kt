@@ -21,29 +21,30 @@ import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.util.MyLog
 
-class MyServiceEventsBroadcaster private constructor(private val mMyContext: MyContext?, private val mState: MyServiceState?) {
-    private var mCommandData: CommandData? = CommandData.Companion.EMPTY
-    private var mEvent: MyServiceEvent? = MyServiceEvent.UNKNOWN
-    private var progress: String? = null
-    fun setCommandData(commandData: CommandData): MyServiceEventsBroadcaster? {
+class MyServiceEventsBroadcaster private constructor(private val mMyContext: MyContext, private val mState: MyServiceState) {
+    private var mCommandData: CommandData = CommandData.EMPTY
+    private var mEvent: MyServiceEvent = MyServiceEvent.UNKNOWN
+    private var progress: String = ""
+
+    fun setCommandData(commandData: CommandData): MyServiceEventsBroadcaster {
         mCommandData = commandData
         return this
     }
 
-    fun setEvent(serviceEvent: MyServiceEvent?): MyServiceEventsBroadcaster? {
+    fun setEvent(serviceEvent: MyServiceEvent): MyServiceEventsBroadcaster {
         mEvent = serviceEvent
         return this
     }
 
-    fun setProgress(text: String?): MyServiceEventsBroadcaster? {
-        progress = text
+    fun setProgress(text: String?): MyServiceEventsBroadcaster {
+        progress = text ?: ""
         return this
     }
 
     fun broadcast() {
-        val intent = MyAction.SERVICE_STATE.intent
-        if (mCommandData !== CommandData.Companion.EMPTY) {
-            mCommandData.getResult().progress = progress
+        val intent = MyAction.SERVICE_STATE.getIntent()
+        if (mCommandData !== CommandData.EMPTY) {
+            mCommandData.getResult().setProgress(progress)
         }
         mCommandData.toIntent(intent)
         intent.putExtra(IntentExtra.SERVICE_STATE.key, mState.save())
@@ -52,14 +53,14 @@ class MyServiceEventsBroadcaster private constructor(private val mMyContext: MyC
             MyLog.v(this) {
                 ("state:" + mState + ", event:" + mEvent
                         + ", " + mCommandData.toCommandSummary( MyContextHolder.myContextHolder.getNow())
-                        + if (progress.isNullOrEmpty()) "" else ", progress:$progress")
+                        + if (progress.isEmpty()) "" else ", progress:$progress")
             }
         }
         mMyContext.context().sendBroadcast(intent)
     }
 
     companion object {
-        fun newInstance(myContext: MyContext?, state: MyServiceState?): MyServiceEventsBroadcaster? {
+        fun newInstance(myContext: MyContext, state: MyServiceState): MyServiceEventsBroadcaster {
             return MyServiceEventsBroadcaster(myContext, state)
         }
     }

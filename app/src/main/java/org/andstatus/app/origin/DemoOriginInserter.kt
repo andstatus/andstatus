@@ -8,7 +8,7 @@ import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.UrlUtils
 import org.junit.Assert
 
-class DemoOriginInserter(private val myContext: MyContext?) {
+class DemoOriginInserter(private val myContext: MyContext) {
     fun insert() {
         DemoData.demoData.checkDataPath()
         createOneOrigin(OriginType.TWITTER, DemoData.demoData.twitterTestOriginName,
@@ -33,35 +33,37 @@ class DemoOriginInserter(private val myContext: MyContext?) {
         myContext.origins().initialize()
     }
 
-    fun createOneOrigin(originType: OriginType?,
-                        originName: String?, hostOrUrl: String?, isSsl: Boolean,
-                        sslMode: SslModeEnum?, allowHtml: Boolean,
-                        inCombinedGlobalSearch: Boolean, inCombinedPublicReload: Boolean): Origin? {
+    fun createOneOrigin(originType: OriginType,
+                        originName: String?, hostOrUrl: String, isSsl: Boolean,
+                        sslMode: SslModeEnum, allowHtml: Boolean,
+                        inCombinedGlobalSearch: Boolean,
+                        inCombinedPublicReload: Boolean): Origin {
         val builder = Origin.Builder(myContext, originType).setName(originName)
                 .setHostOrUrl(hostOrUrl)
                 .setSsl(isSsl)
                 .setSslMode(sslMode)
                 .setHtmlContentAllowed(allowHtml)
                 .save()
-        Assert.assertTrue(builder.toString(), builder.isSaved)
+        Assert.assertTrue(builder.toString(), builder.isSaved())
         val origin = builder.build()
         checkAttributes(origin, originName, hostOrUrl, isSsl, sslMode, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload)
         myContext.origins().initialize()
-        val origin2 = myContext.origins().fromId(origin.getId())
+        val origin2 = myContext.origins().fromId(origin.id)
         checkAttributes(origin2, originName, hostOrUrl, isSsl, sslMode, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload)
         return origin
     }
 
-    private fun checkAttributes(origin: Origin?, originName: String?, hostOrUrl: String?,
-                                isSsl: Boolean, sslMode: SslModeEnum?, allowHtml: Boolean, inCombinedGlobalSearch: Boolean, inCombinedPublicReload: Boolean) {
+    private fun checkAttributes(origin: Origin, originName: String?, hostOrUrl: String,
+                                isSsl: Boolean, sslMode: SslModeEnum, allowHtml: Boolean,
+                                inCombinedGlobalSearch: Boolean, inCombinedPublicReload: Boolean) {
         Assert.assertTrue("Origin $originName added", origin.isPersistent())
         Assert.assertEquals(originName, origin.name)
         if (origin.shouldHaveUrl()) {
             if (UrlUtils.isHostOnly(UrlUtils.buildUrl(hostOrUrl, isSsl))) {
                 Assert.assertEquals((if (isSsl) "https" else "http") + "://" + hostOrUrl,
-                        origin.url.toExternalForm())
+                        origin.url?.toExternalForm())
             } else {
                 val hostOrUrl2 = if (hostOrUrl.endsWith("/")) hostOrUrl else "$hostOrUrl/"
                 Assert.assertEquals("Input host or URL: '$hostOrUrl'",
@@ -81,11 +83,11 @@ class DemoOriginInserter(private val myContext: MyContext?) {
             val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
             for (origin in myContext.origins().collection()) {
                 val myAccount = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
-                for (timelineType in TimelineType.Companion.getDefaultOriginTimelineTypes()) {
+                for (timelineType in TimelineType.getDefaultOriginTimelineTypes()) {
                     var count = 0
                     for (timeline in myContext.timelines().values()) {
-                        if (timeline.origin == origin && timeline.timelineType == timelineType &&
-                                timeline.searchQuery.isEmpty()) {
+                        if (timeline.getOrigin() == origin && timeline.timelineType == timelineType &&
+                                timeline.getSearchQuery().isEmpty()) {
                             count++
                         }
                     }
