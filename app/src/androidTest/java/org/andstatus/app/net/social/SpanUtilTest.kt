@@ -95,15 +95,15 @@ class SpanUtilTest {
         val region = regions.get(index)
         val urlSpan = region.urlSpan
         val actor = urlSpan.flatMap { u: MyUrlSpan? -> u.data.actor }
-        val accountToSync = actor.map { a: Actor? -> a.origin.myContext.accounts().toSyncThatActor(a) }
+        val accountToSync = actor.map { a: Actor -> a.origin.myContext.accounts().toSyncThatActor(a) }
         Assert.assertTrue("Region $index should be a mention $region\n$message", actor.isPresent)
         Assert.assertEquals("Region $index $message",
                 "content://timeline.app.andstatus.org/note/" +
-                        accountToSync.map { obj: MyAccount? -> obj.actorId }.orElse(0L) +
+                        accountToSync.map { obj: MyAccount -> obj.actorId }.orElse(0L) +
                         "/lt/sent/origin/0/actor/0",
                 urlSpan.map { obj: MyUrlSpan? -> obj.getURL() }.orElse(""))
         Assert.assertEquals("Username in region $index $message",
-                username.toUpperCase(), actor.map { obj: Actor? -> obj.getUsername() }.orElse("").toUpperCase())
+                username.toUpperCase(), actor.map { obj: Actor -> obj.getUsername() }.orElse("").toUpperCase())
     }
 
     private fun oneHashTag(regions: MutableList<SpanUtil.Region?>?, message: String?, index: Int, term: String?) {
@@ -264,7 +264,7 @@ class SpanUtilTest {
         notAHashTag(regions2, message2, 4)
     }
 
-    private fun addRecipient(ma: MyAccount?, audience: Audience?, uniqueName: String?, actorOid: String?) {
+    private fun addRecipient(ma: MyAccount, audience: Audience?, uniqueName: String?, actorOid: String?) {
         val actor1: Actor = Actor.Companion.fromOid(ma.origin, actorOid)
         actor1.withUniqueName(uniqueName)
         audience.add(actor1)

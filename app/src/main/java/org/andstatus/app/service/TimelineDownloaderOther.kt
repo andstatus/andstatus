@@ -73,7 +73,7 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext?) : 
                         limit, timeline.searchQuery)
                 else -> {
                     val positionToRequest2 = positionToRequest
-                    tryActor.flatMap { actor: Actor? ->
+                    tryActor.flatMap { actor: Actor ->
                         connection.getTimeline(isSyncYounger,
                                 timeline.timelineType.connectionApiRoutine,
                                 if (isSyncYounger) positionToRequest2 else TimelinePosition.Companion.EMPTY,
@@ -117,7 +117,7 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext?) : 
         return Try.success(true)
     }
 
-    private fun getActorWithOid(): Try<Actor?> {
+    private fun getActorWithOid(): Try<Actor> {
         if (actor.actorId == 0L) {
             if (timeline.myAccountToSync.isValid) {
                 return Try.success(timeline.myAccountToSync.actor)

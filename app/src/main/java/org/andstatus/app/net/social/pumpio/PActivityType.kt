@@ -21,7 +21,7 @@ import org.andstatus.app.net.social.ActivityType
  * These are only partially the same as:
  * @see [Activity Types](https://www.w3.org/TR/activitystreams-vocabulary/.activity-types)
  */
-internal enum class PActivityType(val activityType: ActivityType?, val code: String?) {
+internal enum class PActivityType(val activityType: ActivityType, val code: String) {
     DELETE(ActivityType.DELETE, "delete"),
     FAVORITE(ActivityType.LIKE, "favorite"),
     FOLLOW(ActivityType.FOLLOW, "follow"),

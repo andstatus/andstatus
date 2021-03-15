@@ -907,7 +907,7 @@ class PersistentTimelinesTest {
         oneFromIsCombined(myAccount, TimelineType.NOTIFICATIONS)
     }
 
-    private fun oneFromIsCombined(myAccount: MyAccount?, timelineType: TimelineType?) {
+    private fun oneFromIsCombined(myAccount: MyAccount, timelineType: TimelineType?) {
         val combined = myContext.timelines()
                 .filter(true, TriState.TRUE, timelineType, myAccount.actor,  Origin.EMPTY)
                 .findFirst().orElse(Timeline.EMPTY)
@@ -928,7 +928,7 @@ class PersistentTimelinesTest {
         oneFromMyAccount(myAccount1, myAccount2, TimelineType.NOTIFICATIONS)
     }
 
-    private fun oneFromMyAccount(ma1: MyAccount?, ma2: MyAccount?, timelineType: TimelineType?) {
+    private fun oneFromMyAccount(ma1: MyAccount, ma2: MyAccount, timelineType: TimelineType?) {
         val timeline1 = myContext.timelines()
                 .filter(true, TriState.FALSE, timelineType, ma1.getActor(), ma1.getOrigin())
                 .findFirst().orElseGet { myContext.timelines().get(timelineType, ma1.getActor(), ma1.getOrigin()) }

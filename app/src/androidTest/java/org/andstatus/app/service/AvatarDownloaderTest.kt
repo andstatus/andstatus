@@ -828,7 +828,7 @@ class AvatarDownloaderTest {
         loadForOneMyAccount(ma, DemoData.demoData.gnusocialTestAccountAvatarUrl)
     }
 
-    private fun loadForOneMyAccount(ma: MyAccount?, urlStringInitial: String?) {
+    private fun loadForOneMyAccount(ma: MyAccount, urlStringInitial: String?) {
         AvatarDownloaderTest.Companion.changeAvatarUrl(ma.actor, urlStringInitial)
         DownloadData.Companion.deleteAllOfThisActor(ma.origin.myContext, ma.actorId)
         val loader: FileDownloader = AvatarDownloader(ma.getActor())
@@ -874,7 +874,7 @@ class AvatarDownloaderTest {
         Assert.assertEquals("Updated the same row ", rowIdError, rowIdRecovered)
     }
 
-    private fun deleteMaAvatarFile(ma: MyAccount?) {
+    private fun deleteMaAvatarFile(ma: MyAccount) {
         val data: DownloadData = AvatarData.Companion.getCurrentForActor(ma.getActor())
         Assert.assertTrue("Loaded avatar file deleted", data.file.delete())
     }
@@ -897,11 +897,11 @@ class AvatarDownloaderTest {
         Assert.assertTrue(data.file.existed)
     }
 
-    private fun changeMaAvatarUrl(ma: MyAccount?, urlString: String?) {
+    private fun changeMaAvatarUrl(ma: MyAccount, urlString: String?) {
         AvatarDownloaderTest.Companion.changeAvatarUrl(ma.actor, urlString)
     }
 
-    private fun changeAvatarStatus(actor: Actor?, status: DownloadStatus?) {
+    private fun changeAvatarStatus(actor: Actor, status: DownloadStatus?) {
         val values = ContentValues()
         values.put(DownloadTable.DOWNLOAD_STATUS, status.save())
         values.put(DownloadTable.DOWNLOADED_DATE, MyLog.uniqueCurrentTimeMS())
@@ -913,7 +913,7 @@ class AvatarDownloaderTest {
         Assert.assertEquals("Download status for $actor2", status, avatarData.status)
     }
 
-    private fun loadAndAssertStatusForMa(ma: MyAccount?, description: String?, loadStatus: DownloadStatus?,
+    private fun loadAndAssertStatusForMa(ma: MyAccount, description: String?, loadStatus: DownloadStatus?,
                                          displayedStatus: DownloadStatus?, mockNetworkError: Boolean): Long {
         TestSuite.clearHttpMocks()
         val actor: Actor = Actor.Companion.load( MyContextHolder.myContextHolder.getBlocking(), ma.actor.actorId)
@@ -947,7 +947,7 @@ class AvatarDownloaderTest {
     }
 
     companion object {
-        fun changeAvatarUrl(actor: Actor?, urlString: String?) {
+        fun changeAvatarUrl(actor: Actor, urlString: String?) {
             val values = ContentValues()
             actor.setAvatarUrl(urlString)
             actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS())

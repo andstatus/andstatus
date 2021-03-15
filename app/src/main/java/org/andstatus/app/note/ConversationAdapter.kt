@@ -34,11 +34,11 @@ import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.ViewUtils
 import java.util.*
 
-class ConversationAdapter internal constructor(contextMenu: NoteContextMenu?,
-                                               origin: Origin?, selectedNoteId: Long,
-                                               oMsgs: MutableList<ConversationViewItem?>?,
+class ConversationAdapter internal constructor(contextMenu: NoteContextMenu,
+                                               origin: Origin, selectedNoteId: Long,
+                                               oMsgs: MutableList<ConversationViewItem>,
                                                showThreads: Boolean,
-                                               oldNotesFirst: Boolean) : BaseNoteAdapter<ConversationViewItem?>(contextMenu,
+                                               oldNotesFirst: Boolean) : BaseNoteAdapter<ConversationViewItem>(contextMenu,
         TimelineData(
                 null,
                 TimelinePage(
@@ -49,10 +49,11 @@ class ConversationAdapter internal constructor(contextMenu: NoteContextMenu?,
                 )
         )
 ) {
-    private val context: MyActivity?
+    private val context: MyActivity
     private val selectedNoteId: Long
     private val showThreads: Boolean
-    private fun setInReplyToViewItem(oMsgs: MutableList<ConversationViewItem?>?, viewItem: ConversationViewItem?) {
+
+    private fun setInReplyToViewItem(oMsgs: MutableList<ConversationViewItem>, viewItem: ConversationViewItem) {
         if (viewItem.inReplyToNoteId == 0L) {
             return
         }
@@ -64,7 +65,7 @@ class ConversationAdapter internal constructor(contextMenu: NoteContextMenu?,
         }
     }
 
-    public override fun showAvatarEtc(view: ViewGroup?, item: ConversationViewItem?) {
+    public override fun showAvatarEtc(view: ViewGroup, item: ConversationViewItem) {
         var indentPixels = getIndentPixels(item)
         showIndentImage(view, indentPixels)
         showDivider(view, if (indentPixels == 0) 0 else R.id.indent_image)
@@ -75,20 +76,20 @@ class ConversationAdapter internal constructor(contextMenu: NoteContextMenu?,
         showCentralItem(view, item)
     }
 
-    fun getIndentPixels(item: ConversationViewItem?): Int {
+    fun getIndentPixels(item: ConversationViewItem): Int {
         val indentLevel = if (showThreads) item.indentLevel else 0
         return dpToPixes(10) * indentLevel
     }
 
-    private fun showCentralItem(view: View?, item: ConversationViewItem?) {
+    private fun showCentralItem(view: View, item: ConversationViewItem) {
         if (item.getNoteId() == selectedNoteId && count > 1) {
             view.findViewById<View?>(R.id.note_indented).background = ImageCaches.getStyledImage(
                     R.drawable.current_message_background_light,
-                    R.drawable.current_message_background).drawable
+                    R.drawable.current_message_background).getDrawable()
         }
     }
 
-    private fun showIndentImage(view: View?, indentPixels: Int) {
+    private fun showIndentImage(view: View, indentPixels: Int) {
         val referencedView = view.findViewById<View?>(R.id.note_indented)
         val parentView = referencedView.parent as ViewGroup
         val oldView = parentView.findViewById<ImageView?>(R.id.indent_image)
@@ -103,14 +104,14 @@ class ConversationAdapter internal constructor(contextMenu: NoteContextMenu?,
         }
     }
 
-    private fun showDivider(view: View?, viewToTheLeftId: Int) {
+    private fun showDivider(view: View, viewToTheLeftId: Int) {
         val divider = view.findViewById<View?>(R.id.divider)
         val layoutParams = divider.layoutParams as RelativeLayout.LayoutParams
         setRightOf(layoutParams, viewToTheLeftId)
         divider.layoutParams = layoutParams
     }
 
-    private fun showAvatar(view: View?, item: BaseNoteViewItem<*>?, indentPixels: Int): Int {
+    private fun showAvatar(view: View, item: BaseNoteViewItem<*>, indentPixels: Int): Int {
         val avatarView: AvatarView = view.findViewById(R.id.avatar_image)
         val layoutParams = avatarView.layoutParams as RelativeLayout.LayoutParams
         layoutParams.leftMargin = dpToPixes(if (indentPixels == 0) 2 else 1) + indentPixels
@@ -119,7 +120,7 @@ class ConversationAdapter internal constructor(contextMenu: NoteContextMenu?,
         return ViewUtils.getWidthWithMargins(avatarView)
     }
 
-    private fun setRightOf(layoutParams: RelativeLayout.LayoutParams?, viewToTheLeftId: Int) {
+    private fun setRightOf(layoutParams: RelativeLayout.LayoutParams, viewToTheLeftId: Int) {
         if (viewToTheLeftId == 0) {
             layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE)
         } else {
@@ -127,23 +128,23 @@ class ConversationAdapter internal constructor(contextMenu: NoteContextMenu?,
         }
     }
 
-    private fun indentedNote(view: View?, indentPixels: Int) {
+    private fun indentedNote(view: View, indentPixels: Int) {
         val msgView = view.findViewById<View?>(R.id.note_indented)
         msgView.setPadding(indentPixels + 6, msgView.paddingTop, msgView.paddingRight,
                 msgView.paddingBottom)
     }
 
-    override fun showNoteNumberEtc(view: ViewGroup?, item: ConversationViewItem?, position: Int) {
+    override fun showNoteNumberEtc(view: ViewGroup, item: ConversationViewItem, position: Int) {
         val number = view.findViewById<TextView?>(R.id.note_number)
-        number.text = Integer.toString(item.historyOrder)
+        number.text = item.historyOrder.toString()
     }
 
     init {
-        context = this.contextMenu.activity
+        context = this.contextMenu.getActivity()
         this.selectedNoteId = selectedNoteId
         this.showThreads = showThreads
         for (oMsg in oMsgs) {
-            oMsg.setReversedListOrder(oldNotesFirst)
+            oMsg.reversedListOrder = oldNotesFirst
             setInReplyToViewItem(oMsgs, oMsg)
         }
         Collections.sort(oMsgs)

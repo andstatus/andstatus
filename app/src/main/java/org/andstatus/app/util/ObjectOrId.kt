@@ -111,7 +111,7 @@ class ObjectOrId : IsEmpty {
         return this
     }
 
-    fun <T> mapOne(fromObject: CheckedFunction<JSONObject?, T?>, fromId: CheckedFunction<String?, T?>): Try<T> {
+    fun <T> mapOne(fromObject: CheckedFunction<JSONObject, T>, fromId: CheckedFunction<String, T>): Try<T> {
         if (optObj.isPresent()) {
             return Try.success(optObj.get()).map(fromObject)
         }

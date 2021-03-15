@@ -33,7 +33,6 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.list.SyncLoader
 import org.andstatus.app.net.social.Actor
-import org.andstatus.app.note.ConversationViewItem
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.service.QueueViewer
 import org.andstatus.app.timeline.BaseTimelineAdapter
@@ -50,20 +49,21 @@ import org.andstatus.app.util.MyStringBuilder
  *
  * @author yvolk@yurivolkov.com
  */
-class ConversationActivity : NoteEditorListActivity<Any?>(), NoteContextMenuContainer {
+class ConversationActivity : NoteEditorListActivity<ConversationViewItem>(), NoteContextMenuContainer {
     private var mContextMenu: NoteContextMenu? = null
     var mDrawerLayout: DrawerLayout? = null
     var mDrawerToggle: ActionBarDrawerToggle? = null
     private var showThreadsOfConversation = false
     private var oldNotesFirstInConversation = false
-    private var origin: Origin? =  Origin.EMPTY
+    private var origin: Origin =  Origin.EMPTY
+
     override fun onCreate(savedInstanceState: Bundle?) {
         mLayoutId = R.layout.conversation
         super.onCreate(savedInstanceState)
         if (isFinishing) {
             return
         }
-        origin = parsedUri.getOrigin(getMyContext())
+        origin = parsedUri.getOrigin(myContext)
         mContextMenu = NoteContextMenu(this)
         showThreadsOfConversation = MyPreferences.isShowThreadsOfConversation()
         oldNotesFirstInConversation = MyPreferences.areOldNotesFirstInConversation()
@@ -73,7 +73,7 @@ class ConversationActivity : NoteEditorListActivity<Any?>(), NoteContextMenuCont
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
-        mDrawerToggle.syncState()
+        mDrawerToggle?.syncState()
     }
 
     private fun initializeDrawer() {
@@ -84,27 +84,28 @@ class ConversationActivity : NoteEditorListActivity<Any?>(), NoteContextMenuCont
                     mDrawerLayout,
                     R.string.drawer_open,
                     R.string.drawer_close
-            ) {}
-            mDrawerLayout.addDrawerListener(mDrawerToggle)
+            ) {}.also {
+                mDrawerLayout?.addDrawerListener(it)
+            }
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (ActivityRequestCode.Companion.fromId(requestCode)) {
+        when (ActivityRequestCode.fromId(requestCode)) {
             ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS -> if (resultCode == RESULT_OK) {
                 val myAccount: MyAccount =  MyContextHolder.myContextHolder.getNow().accounts().fromAccountName(
-                        data.getStringExtra(IntentExtra.ACCOUNT_NAME.key))
+                        data?.getStringExtra(IntentExtra.ACCOUNT_NAME.key))
                 if (myAccount.isValid) {
-                    mContextMenu.setSelectedActingAccount(myAccount)
-                    mContextMenu.showContextMenu()
+                    mContextMenu?.setSelectedActingAccount(myAccount)
+                    mContextMenu?.showContextMenu()
                 }
             }
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
     }
 
-    override fun onContextItemSelected(item: MenuItem?): Boolean {
-        mContextMenu.onContextItemSelected(item)
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        mContextMenu?.onContextItemSelected(item)
         return super.onContextItemSelected(item)
     }
 
@@ -127,12 +128,12 @@ class ConversationActivity : NoteEditorListActivity<Any?>(), NoteContextMenuCont
                 oldNotesFirstInConversation) { v: CompoundButton?, isChecked: Boolean -> onOldNotesFirstInConversationChanged(v, isChecked) }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (mDrawerToggle?.onOptionsItemSelected(item) == true) {
             return true
         }
         when (item.getItemId()) {
-            R.id.commands_queue_id -> startActivity(Intent(activity, QueueViewer::class.java))
+            R.id.commands_queue_id -> startActivity(Intent(getActivity(), QueueViewer::class.java))
             else -> return super.onOptionsItemSelected(item)
         }
         return false
@@ -142,50 +143,52 @@ class ConversationActivity : NoteEditorListActivity<Any?>(), NoteContextMenuCont
         closeDrawer()
         showThreadsOfConversation = isChecked
         MyPreferences.setShowThreadsOfConversation(isChecked)
-        updateList(LoadableListPosition.Companion.EMPTY)
+        updateList(LoadableListPosition.EMPTY)
     }
 
     fun onOldNotesFirstInConversationChanged(v: View?, isChecked: Boolean) {
         closeDrawer()
         oldNotesFirstInConversation = isChecked
         MyPreferences.setOldNotesFirstInConversation(isChecked)
-        updateList(LoadableListPosition.Companion.EMPTY)
+        updateList(LoadableListPosition.EMPTY)
     }
 
     fun onShowSensitiveContentToggleClick(view: View?) {
         closeDrawer()
-        MyPreferences.setShowSensitiveContent((view as CheckBox?).isChecked())
-        updateList(LoadableListPosition.Companion.EMPTY)
+        MyPreferences.setShowSensitiveContent((view as CheckBox).isChecked())
+        updateList(LoadableListPosition.EMPTY)
     }
 
     private fun closeDrawer() {
         val mDrawerList = findViewById<ViewGroup?>(R.id.navigation_drawer)
-        mDrawerLayout.closeDrawer(mDrawerList)
+        mDrawerLayout?.closeDrawer(mDrawerList)
     }
 
-    override fun getTimeline(): Timeline? {
+    override fun getTimeline(): Timeline {
         return myContext.timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, origin)
     }
 
-    private fun getListLoader(): ConversationLoader? {
-        return loaded as ConversationLoader
+    private fun getListLoader(): ConversationLoader {
+        return getLoaded() as ConversationLoader
     }
 
-    override fun newSyncLoader(args: Bundle?): SyncLoader<*>? {
-        return ConversationLoaderFactory().getLoader(ConversationViewItem.Companion.EMPTY,
-                getMyContext(), origin, centralItemId, BundleUtils.hasKey(args, IntentExtra.SYNC.key))
+    override fun newSyncLoader(args: Bundle?): SyncLoader<ConversationViewItem> {
+        return ConversationLoaderFactory().getLoader(ConversationViewItem.EMPTY,
+                myContext, origin, centralItemId, BundleUtils.hasKey(args, IntentExtra.SYNC.key))
     }
 
-    override fun newListAdapter(): BaseTimelineAdapter<*>? {
-        return ConversationAdapter(mContextMenu, origin, centralItemId, getListLoader().getList(),
-                showThreadsOfConversation, oldNotesFirstInConversation)
+    override fun newListAdapter(): BaseTimelineAdapter<ConversationViewItem> {
+        return mContextMenu?.let {
+            ConversationAdapter(it, origin, centralItemId, getListLoader().getList(),
+                    showThreadsOfConversation, oldNotesFirstInConversation)
+        } ?: throw IllegalStateException("No context menu")
     }
 
-    override fun getCustomTitle(): CharSequence? {
+    override fun getCustomTitle(): CharSequence {
         mSubtitle = ""
         val title = StringBuilder(getText(R.string.label_conversation))
-        MyStringBuilder.Companion.appendWithSpace(title, ListScope.ORIGIN.timelinePreposition(myContext))
-        MyStringBuilder.Companion.appendWithSpace(title, origin.name)
+        MyStringBuilder.appendWithSpace(title, ListScope.ORIGIN.timelinePreposition(myContext))
+        MyStringBuilder.appendWithSpace(title, origin.name)
         return title
     }
 }

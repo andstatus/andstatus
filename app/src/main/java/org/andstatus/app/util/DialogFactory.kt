@@ -102,7 +102,7 @@ object DialogFactory {
         theBox.show()
     }
 
-    fun showTextInputBox(context: Context, title: String, message: String, textConsumer: Consumer<String?>,
+    fun showTextInputBox(context: Context, title: String, message: String, textConsumer: Consumer<String>,
                          initialValue: String?) {
         val input = EditText(context)
         if (!initialValue.isNullOrEmpty()) {

@@ -22,11 +22,11 @@ import org.andstatus.app.util.TryUtils
 import java.util.*
 
 class ConnectionEmpty internal constructor() : Connection() {
-    override fun verifyCredentials(whoAmI: Optional<Uri>): Try<Actor?> {
+    override fun verifyCredentials(whoAmI: Optional<Uri>): Try<Actor> {
         return TryUtils.notFound()
     }
 
-    override fun undoLike(noteOid: String?): Try<AActivity> {
+    override fun undoLike(noteOid: String): Try<AActivity> {
         return AActivity.TRY_EMPTY
     }
 
@@ -38,15 +38,15 @@ class ConnectionEmpty internal constructor() : Connection() {
         return TryUtils.notFound()
     }
 
-    public override fun getNote1(noteOid: String?): Try<AActivity> {
+    public override fun getNote1(noteOid: String): Try<AActivity> {
         return AActivity.TRY_EMPTY
     }
 
-    override fun updateNote(note: Note?): Try<AActivity> {
+    override fun updateNote(note: Note): Try<AActivity> {
         return AActivity.TRY_EMPTY
     }
 
-    override fun announce(rebloggedNoteOid: String?): Try<AActivity> {
+    override fun announce(rebloggedNoteOid: String): Try<AActivity> {
         return AActivity.TRY_EMPTY
     }
 

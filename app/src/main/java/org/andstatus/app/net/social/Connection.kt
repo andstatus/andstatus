@@ -153,8 +153,8 @@ abstract class Connection protected constructor() : IsEmpty {
         return http.credentialsPresent
     }
 
-    abstract fun verifyCredentials(whoAmI: Optional<Uri>): Try<Actor?>
-    abstract fun undoLike(noteOid: String?): Try<AActivity>
+    abstract fun verifyCredentials(whoAmI: Optional<Uri>): Try<Actor>
+    abstract fun undoLike(noteOid: String): Try<AActivity>
 
     /**
      * Favorites the status specified in the ID parameter as the authenticating account.
@@ -177,17 +177,17 @@ abstract class Connection protected constructor() : IsEmpty {
 
     open fun getFriendsOrFollowers(routineEnum: ApiRoutineEnum, position: TimelinePosition, actor: Actor): Try<InputActorPage> {
         return (if (routineEnum == ApiRoutineEnum.GET_FRIENDS) getFriends(actor) else getFollowers(actor))
-                .map { actors: MutableList<Actor> -> InputActorPage.of(actors) }
+                .map { actors: List<Actor> -> InputActorPage.of(actors) }
     }
 
-    open fun getFriendsOrFollowersIds(routineEnum: ApiRoutineEnum, actorOid: String): Try<MutableList<String>> {
-        return if (routineEnum == ApiRoutineEnum.GET_FRIENDS_IDS) getFriendsIds(actorOid) else getFollowersIds(actorOid)
+    open fun getFriendsOrFollowersIds(apiRoutine: ApiRoutineEnum, actorOid: String): Try<List<String>> {
+        return if (apiRoutine == ApiRoutineEnum.GET_FRIENDS_IDS) getFriendsIds(actorOid) else getFollowersIds(actorOid)
     }
 
     /**
      * Returns a list of actors the specified actor is following.
      */
-    open fun getFriends(actor: Actor): Try<MutableList<Actor>> {
+    open fun getFriends(actor: Actor): Try<List<Actor>> {
         return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFriends for actor:" + actor.getUniqueNameWithOrigin()))
     }
@@ -195,17 +195,17 @@ abstract class Connection protected constructor() : IsEmpty {
     /**
      * Returns a list of IDs for every actor the specified actor is following.
      */
-    fun getFriendsIds(actorOid: String): Try<MutableList<String>> {
+    fun getFriendsIds(actorOid: String): Try<List<String>> {
         return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFriendsIds for actorOid=$actorOid"))
     }
 
-    fun getFollowersIds(actorOid: String): Try<MutableList<String>> {
+    fun getFollowersIds(actorOid: String): Try<List<String>> {
         return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFollowersIds for actorOid=$actorOid"))
     }
 
-    open fun getFollowers(actor: Actor): Try<MutableList<Actor>> {
+    open fun getFollowers(actor: Actor): Try<List<Actor>> {
         return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getFollowers for actor:" + actor.getUniqueNameWithOrigin()))
     }
@@ -214,17 +214,17 @@ abstract class Connection protected constructor() : IsEmpty {
      * Requests a single note (status), specified by the id parameter.
      * More than one activity may be returned (as replies) to reflect Favoriting and Reblogging of the "status"
      */
-    fun getNote(noteOid: String?): Try<AActivity> {
+    fun getNote(noteOid: String): Try<AActivity> {
         return getNote1(noteOid)
     }
 
     /** See [.getNote]  */
-    protected abstract fun getNote1(noteOid: String?): Try<AActivity>
+    protected abstract fun getNote1(noteOid: String): Try<AActivity>
     open fun canGetConversation(conversationOid: String?): Boolean {
         return UriUtils.isRealOid(conversationOid) && hasApiEndpoint(ApiRoutineEnum.GET_CONVERSATION)
     }
 
-    open fun getConversation(conversationOid: String?): Try<MutableList<AActivity>>? {
+    open fun getConversation(conversationOid: String): Try<List<AActivity>> {
         return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 "getConversation oid=$conversationOid"))
     }
@@ -232,7 +232,7 @@ abstract class Connection protected constructor() : IsEmpty {
     /**
      * Create or update Note
      */
-    abstract fun updateNote(note: Note?): Try<AActivity>
+    abstract fun updateNote(note: Note): Try<AActivity>
 
     /**
      * Post Reblog ("retweet")
@@ -241,7 +241,7 @@ abstract class Connection protected constructor() : IsEmpty {
      *
      * @param rebloggedNoteOid id of the Reblogged note
      */
-    abstract fun announce(rebloggedNoteOid: String?): Try<AActivity>
+    abstract fun announce(rebloggedNoteOid: String): Try<AActivity>
 
     /**
      * Universal method for several Timeline Types...
@@ -328,7 +328,7 @@ abstract class Connection protected constructor() : IsEmpty {
         return Try.success(OriginConfig.getEmpty())
     }
 
-    open fun getOpenInstances(): Try<MutableList<Server>>? {
+    open fun getOpenInstances(): Try<List<Server>> {
         return Try.failure(ConnectionException.fromStatusCode(StatusCode.UNSUPPORTED_API,
                 MyStringBuilder.objToTag(this)))
     }

@@ -21,7 +21,7 @@ import org.json.JSONObject
 /** @see [Object Types](https://www.w3.org/TR/activitystreams-vocabulary/.activity-types)
  *
  */
-internal enum class PObjectType(val id: String?, compatibleType: PObjectType?) {
+internal enum class PObjectType(val id: String, compatibleType: PObjectType?) {
     ACTIVITY("activity", null) {
         override fun isTypeOf(jso: JSONObject?): Boolean {
             var `is` = false
@@ -39,7 +39,8 @@ internal enum class PObjectType(val id: String?, compatibleType: PObjectType?) {
     },
     APPLICATION("application", null), PERSON("person", null), COMMENT("comment", null), IMAGE("image", COMMENT), VIDEO("video", COMMENT), NOTE("note", COMMENT), COLLECTION("collection", null), UNKNOWN("unknown", null);
 
-    private val compatibleType: PObjectType? = this
+    private val compatibleType: PObjectType = compatibleType ?: this
+
     open fun isTypeOf(jso: JSONObject?): Boolean {
         var `is` = false
         if (jso != null) {
@@ -49,12 +50,12 @@ internal enum class PObjectType(val id: String?, compatibleType: PObjectType?) {
     }
 
     companion object {
-        fun compatibleWith(jso: JSONObject?): PObjectType? {
+        fun compatibleWith(jso: JSONObject?): PObjectType {
             val type = fromJson(jso)
-            return type.compatibleType ?: UNKNOWN
+            return type.compatibleType
         }
 
-        fun fromJson(jso: JSONObject?): PObjectType? {
+        fun fromJson(jso: JSONObject?): PObjectType {
             for (type in values()) {
                 if (type.isTypeOf(jso)) {
                     return type
@@ -63,10 +64,4 @@ internal enum class PObjectType(val id: String?, compatibleType: PObjectType?) {
             return UNKNOWN
         }
     }
-
-    init {
-        if (compatibleType != null) {
-            this.compatibleType = compatibleType
-        }
-    }
-}
+ }

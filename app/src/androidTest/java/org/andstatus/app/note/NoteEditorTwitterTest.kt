@@ -825,7 +825,7 @@ class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem?>() {
                  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.actor,  Origin.EMPTY).getUri())
     }
 
-    private fun getStaticData(ma: MyAccount?): NoteEditorData? {
+    private fun getStaticData(ma: MyAccount): NoteEditorData? {
         return NoteEditorData.Companion.newEmpty(ma)
                 .setContent(MyHtmlTest.Companion.twitterBodyTypedPlain + " " + DemoData.demoData.testRunUid, TextMediaType.PLAIN)
     }

@@ -33,11 +33,11 @@ import org.andstatus.app.util.TryUtils
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 
-internal open class CommandExecutorStrategy(protected val execContext: CommandExecutionContext?) : CommandExecutorParent, IdentifiableInstance {
+internal open class CommandExecutorStrategy(protected val execContext: CommandExecutionContext) : CommandExecutorParent, IdentifiableInstance {
     protected val instanceId = InstanceId.next()
     private var parent: CommandExecutorParent? = null
     protected var lastProgressBroadcastAt: Long = 0
-    private val stopWatch: StopWatch? = StopWatch.Companion.createStarted()
+    private val stopWatch: StopWatch = StopWatch.Companion.createStarted()
     fun logSoftErrorIfStopping(): Boolean {
         if (isStopping) {
             if (!execContext.getResult().hasError()) {
@@ -115,7 +115,7 @@ internal open class CommandExecutorStrategy(protected val execContext: CommandEx
         return !execContext.getResult().hasError()
     }
 
-    fun getActor(): Actor? {
+    fun getActor(): Actor {
         return execContext.getCommandData().timeline.actor
     }
 

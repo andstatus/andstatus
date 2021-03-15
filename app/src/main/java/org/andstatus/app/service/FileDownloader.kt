@@ -30,10 +30,11 @@ import org.andstatus.app.net.social.Connection
 import org.andstatus.app.util.MyLog
 import java.io.File
 
-abstract class FileDownloader protected constructor(val myContext: MyContext?, val data: DownloadData?) {
+abstract class FileDownloader protected constructor(val myContext: MyContext, val data: DownloadData) {
     private var connectionMock: Connection? = null
     private var connectionRequired: ConnectionRequired? = ConnectionRequired.ANY
-    fun load(commandData: CommandData?): Try<Boolean> {
+
+    fun load(commandData: CommandData): Try<Boolean> {
         when (data.getStatus()) {
             DownloadStatus.LOADED -> {
             }
@@ -114,7 +115,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext?, v
         return data.getStatus()
     }
 
-    protected abstract fun findBestAccountForDownload(): MyAccount?
+    protected abstract fun findBestAccountForDownload(): MyAccount
     fun setConnectionMock(connectionMock: Connection?): FileDownloader? {
         this.connectionMock = connectionMock
         return this

@@ -19,13 +19,10 @@ import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.util.IsEmpty
 
 class OriginConfig(textLimit: Int, uploadLimit: Long) : IsEmpty {
-    private val isEmpty: Boolean
-    val textLimit: Int
-    val uploadLimit: Long
-    override val isEmpty: Boolean
-        get() {
-            return isEmpty
-        }
+    val textLimit: Int = if (textLimit > 0) textLimit else TEXT_LIMIT_MAXIMUM
+    val uploadLimit: Long = if (uploadLimit > 0) uploadLimit else MyPreferences.getMaximumSizeOfAttachmentBytes()
+
+    override val isEmpty: Boolean = textLimit < 0
 
     override fun toString(): String {
         return "OriginConfig{" +
@@ -39,15 +36,15 @@ class OriginConfig(textLimit: Int, uploadLimit: Long) : IsEmpty {
         const val MAX_ATTACHMENTS_DEFAULT = 10
         const val MAX_ATTACHMENTS_MASTODON = 4
         const val MAX_ATTACHMENTS_TWITTER = 4
-        fun getEmpty(): OriginConfig? {
+        fun getEmpty(): OriginConfig {
             return OriginConfig(-1, 0)
         }
 
-        fun fromTextLimit(textLimit: Int, uploadLimit: Long): OriginConfig? {
+        fun fromTextLimit(textLimit: Int, uploadLimit: Long): OriginConfig {
             return OriginConfig(textLimit, uploadLimit)
         }
 
-        fun getMaxAttachmentsToSend(originType: OriginType?): Int {
+        fun getMaxAttachmentsToSend(originType: OriginType): Int {
             return when (originType) {
                 OriginType.ACTIVITYPUB -> MAX_ATTACHMENTS_DEFAULT
                 OriginType.MASTODON -> MAX_ATTACHMENTS_MASTODON
@@ -57,9 +54,4 @@ class OriginConfig(textLimit: Int, uploadLimit: Long) : IsEmpty {
         }
     }
 
-    init {
-        isEmpty = textLimit < 0
-        this.textLimit = if (textLimit > 0) textLimit else OriginType.Companion.TEXT_LIMIT_MAXIMUM
-        this.uploadLimit = if (uploadLimit > 0) uploadLimit else MyPreferences.getMaximumSizeOfAttachmentBytes()
-    }
 }

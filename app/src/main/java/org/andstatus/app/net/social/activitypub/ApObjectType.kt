@@ -23,14 +23,14 @@ import org.json.JSONObject
  * [Actor Types](https://www.w3.org/TR/activitystreams-vocabulary/.actor-types)
  *
  */
-internal enum class ApObjectType(private val id: String?, compatibleType: ApObjectType?) {
+internal enum class ApObjectType(private val id: String, compatibleType: ApObjectType?) {
     ACTIVITY("Activity", null) {
         override fun isTypeOf(jso: JSONObject?): Boolean {
             var `is` = false
             if (jso != null) {
                 `is` = if (jso.has("type")) {
                     super.isTypeOf(jso) ||
-                            ActivityType.Companion.from(JsonUtils.optString(jso, "type")) != ActivityType.EMPTY && jso.has("object")
+                            ActivityType.from(JsonUtils.optString(jso, "type")) != ActivityType.EMPTY && jso.has("object")
                 } else {
                     jso.has("object")
                 }
@@ -40,8 +40,8 @@ internal enum class ApObjectType(private val id: String?, compatibleType: ApObje
     },
     APPLICATION("application", null), PERSON("Person", null), NOTE("Note", null), IMAGE("Image", NOTE), VIDEO("Video", NOTE), COLLECTION("Collection", null), ORDERED_COLLECTION("OrderedCollection", null), COLLECTION_PAGE("CollectionPage", null), ORDERED_COLLECTION_PAGE("OrderedCollectionPage", null), RELATIONSHIP("Relationship", null), UNKNOWN("unknown", null);
 
-    private val compatibleType: ApObjectType? = this
-    fun id(): String? {
+    private val compatibleType: ApObjectType =  compatibleType ?: this
+    fun id(): String {
         return id
     }
 
@@ -54,12 +54,12 @@ internal enum class ApObjectType(private val id: String?, compatibleType: ApObje
     }
 
     companion object {
-        fun compatibleWith(jso: JSONObject?): ApObjectType? {
+        fun compatibleWith(jso: JSONObject): ApObjectType {
             val type = fromJson(jso)
             return type.compatibleType ?: type
         }
 
-        fun fromJson(jso: JSONObject?): ApObjectType? {
+        fun fromJson(jso: JSONObject?): ApObjectType {
             for (type in values()) {
                 if (type.isTypeOf(jso)) {
                     return type
@@ -68,7 +68,7 @@ internal enum class ApObjectType(private val id: String?, compatibleType: ApObje
             return UNKNOWN
         }
 
-        fun fromId(activityType: ActivityType?, oid: String?): ApObjectType? {
+        fun fromId(activityType: ActivityType, oid: String): ApObjectType {
             return when (activityType) {
                 ActivityType.FOLLOW, ActivityType.UNDO_FOLLOW -> PERSON
                 ActivityType.LIKE, ActivityType.CREATE, ActivityType.DELETE, ActivityType.UPDATE, ActivityType.ANNOUNCE, ActivityType.UNDO_LIKE, ActivityType.UNDO_ANNOUNCE -> {
@@ -82,12 +82,6 @@ internal enum class ApObjectType(private val id: String?, compatibleType: ApObje
                 }
                 else -> UNKNOWN
             }
-        }
-    }
-
-    init {
-        if (compatibleType != null) {
-            this.compatibleType = compatibleType
         }
     }
 }

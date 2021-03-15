@@ -793,7 +793,7 @@ import org.andstatus.app.MenuItemMock
 
 class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem?>() {
     private var mService: MyServiceTestHelper? = null
-    private var ma: MyAccount? = null
+    private var ma: MyAccount = null
     override fun getActivityIntent(): Intent? {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithAccounts(this)

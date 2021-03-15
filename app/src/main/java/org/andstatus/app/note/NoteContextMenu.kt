@@ -31,7 +31,6 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.net.social.Note
 import org.andstatus.app.note.FutureNoteContextMenuData.StateForSelectedViewItem
-import org.andstatus.app.note.NoteViewItem
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.timeline.ContextMenuHeader
 import org.andstatus.app.timeline.TimelineActivity
@@ -42,51 +41,49 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyUrlSpan
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.view.MyContextMenu
-import java.util.function.Consumer
 
 /**
  * Context menu and corresponding actions on notes from the list
  * @author yvolk@yurivolkov.com
  */
-class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMenu(menuContainer.getActivity(), MyContextMenu.Companion.MENU_GROUP_NOTE) {
+class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMenu(menuContainer.getActivity(), MyContextMenu.MENU_GROUP_NOTE) {
     @Volatile
     private var futureData: FutureNoteContextMenuData = FutureNoteContextMenuData.EMPTY
     private var selectedMenuItemTitle: String = ""
-    override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?) {
-        onCreateContextMenu(menu, v, menuInfo, null)
+
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
+        onCreateContextMenu(menu, v, menuInfo, { _ -> })
     }
 
-    fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?, next: Consumer<NoteContextMenu>) {
+    fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo, next: (NoteContextMenu) -> Unit) {
         super.onCreateContextMenu(menu, v, menuInfo)
         when (futureData.getStateFor(getViewItem())) {
             StateForSelectedViewItem.READY -> {
-                next?.accept(this)
-                if (menu != null) {
-                    createContextMenu(menu, v, getViewItem())
-                }
+                next(this)
+                createContextMenu(menu, v, getViewItem())
             }
-            StateForSelectedViewItem.NEW -> FutureNoteContextMenuData.Companion.loadAsync(this, v, getViewItem(), next)
+            StateForSelectedViewItem.NEW -> FutureNoteContextMenuData.loadAsync(this, v, getViewItem(), next)
             else -> {
             }
         }
     }
 
-    private fun createContextMenu(menu: ContextMenu?, v: View?, viewItem: BaseNoteViewItem<*>?) {
+    private fun createContextMenu(menu: ContextMenu, v: View, viewItem: BaseNoteViewItem<*>) {
         val method = "createContextMenu"
         val menuData = futureData.menuData
         val noteForAnyAccount = futureData.menuData.noteForAnyAccount
-        if (selectedActingAccount.isValid && selectedActingAccount != menuData.myAccount) {
-            selectedActingAccount = menuData.myAccount
+        if (getSelectedActingAccount().isValid && getSelectedActingAccount() != menuData.getMyAccount()) {
+            setSelectedActingAccount(menuData.getMyAccount())
         }
-        if (futureData === FutureNoteContextMenuData.Companion.EMPTY) return
+        if (futureData === FutureNoteContextMenuData.EMPTY) return
         var order = 0
         try {
-            ContextMenuHeader(activity, menu).setTitle(noteForAnyAccount.bodyTrimmed)
-                    .setSubtitle(actingAccount.accountName)
-            if ((myContext.context().getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager).isTouchExplorationEnabled) {
+            ContextMenuHeader(getActivity(), menu).setTitle(noteForAnyAccount.getBodyTrimmed())
+                    .setSubtitle(getActingAccount().getAccountName())
+            if ((getMyContext().context().getSystemService(Context.ACCESSIBILITY_SERVICE) as AccessibilityManager).isTouchExplorationEnabled) {
                 addNoteLinksSubmenu(menu, v, order++)
             }
-            if (!ConversationActivity::class.java.isAssignableFrom(activity.javaClass)) {
+            if (!ConversationActivity::class.java.isAssignableFrom(getActivity().javaClass)) {
                 NoteContextMenuItem.OPEN_CONVERSATION.addTo(menu, order++, R.string.menu_item_open_conversation)
             }
             if (menuContainer.getTimeline().actor.notSameUser(noteForAnyAccount.actor)
@@ -94,16 +91,16 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
                 // Notes, where an Actor of this note is an Actor ("Sent timeline" of that actor)
                 NoteContextMenuItem.NOTES_BY_ACTOR.addTo(menu, order++,
                         StringUtil.format(
-                                activity, R.string.menu_item_user_messages,
+                                getActivity(), R.string.menu_item_user_messages,
                                 noteForAnyAccount.actor.actorNameInTimeline))
             }
             if (viewItem.isCollapsed()) {
                 NoteContextMenuItem.SHOW_DUPLICATES.addTo(menu, order++, R.string.show_duplicates)
-            } else if (activity.listData.canBeCollapsed(activity.positionOfContextMenu)) {
+            } else if (getActivity().getListData().canBeCollapsed(getActivity().getPositionOfContextMenu())) {
                 NoteContextMenuItem.COLLAPSE_DUPLICATES.addTo(menu, order++, R.string.collapse_duplicates)
             }
             NoteContextMenuItem.ACTORS_OF_NOTE.addTo(menu, order++, R.string.users_of_message)
-            if (menuData.isAuthorSucceededMyAccount && Note.Companion.mayBeEdited(
+            if (menuData.isAuthorSucceededMyAccount() && Note.mayBeEdited(
                             noteForAnyAccount.origin.originType,
                             noteForAnyAccount.status)) {
                 NoteContextMenuItem.EDIT.addTo(menu, order++, R.string.menu_item_edit)
@@ -115,16 +112,16 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
                 NoteContextMenuItem.COPY_TEXT.addTo(menu, order++, R.string.menu_item_copy_text)
                 NoteContextMenuItem.COPY_AUTHOR.addTo(menu, order++, R.string.menu_item_copy_author)
             }
-            if (menuData.myActor.notSameUser(noteForAnyAccount.actor)) {
+            if (menuData.getMyActor().notSameUser(noteForAnyAccount.actor)) {
                 if (menuData.actorFollowed) {
                     NoteContextMenuItem.UNDO_FOLLOW_ACTOR.addTo(menu, order++,
                             StringUtil.format(
-                                    activity, R.string.menu_item_stop_following_user,
+                                    getActivity(), R.string.menu_item_stop_following_user,
                                     noteForAnyAccount.actor.actorNameInTimeline))
                 } else {
                     NoteContextMenuItem.FOLLOW_ACTOR.addTo(menu, order++,
                             StringUtil.format(
-                                    activity, R.string.menu_item_follow_user,
+                                    getActivity(), R.string.menu_item_follow_user,
                                     noteForAnyAccount.actor.actorNameInTimeline))
                 }
             }
@@ -134,24 +131,24 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
                     // Sent timeline of that actor
                     NoteContextMenuItem.NOTES_BY_AUTHOR.addTo(menu, order++,
                             StringUtil.format(
-                                    activity, R.string.menu_item_user_messages,
+                                    getActivity(), R.string.menu_item_user_messages,
                                     noteForAnyAccount.author.actorNameInTimeline))
                 }
-                if (menuData.myActor.notSameUser(noteForAnyAccount.author)) {
+                if (menuData.getMyActor().notSameUser(noteForAnyAccount.author)) {
                     if (menuData.authorFollowed) {
                         NoteContextMenuItem.UNDO_FOLLOW_AUTHOR.addTo(menu, order++,
                                 StringUtil.format(
-                                        activity, R.string.menu_item_stop_following_user,
+                                        getActivity(), R.string.menu_item_stop_following_user,
                                         noteForAnyAccount.author.actorNameInTimeline))
                     } else {
                         NoteContextMenuItem.FOLLOW_AUTHOR.addTo(menu, order++,
                                 StringUtil.format(
-                                        activity, R.string.menu_item_follow_user,
+                                        getActivity(), R.string.menu_item_follow_user,
                                         noteForAnyAccount.author.actorNameInTimeline))
                     }
                 }
             }
-            if (noteForAnyAccount.isLoaded && (!noteForAnyAccount.visibility.isPrivate ||
+            if (noteForAnyAccount.isLoaded() && (!noteForAnyAccount.visibility.isPrivate ||
                             noteForAnyAccount.origin.originType.isPrivateNoteAllowsReply) && !isEditorVisible()) {
                 NoteContextMenuItem.REPLY.addTo(menu, order++, R.string.menu_item_reply)
                 NoteContextMenuItem.REPLY_TO_CONVERSATION_PARTICIPANTS.addTo(menu, order++,
@@ -162,9 +159,9 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
             NoteContextMenuItem.SHARE.addTo(menu, order++, R.string.menu_item_share)
             if (!getAttachedMedia().isEmpty) {
                 NoteContextMenuItem.VIEW_MEDIA.addTo(menu, order++,
-                        if (getAttachedMedia().firstToShare.contentType.isImage) R.string.menu_item_view_image else R.string.view_media)
+                        if (getAttachedMedia().getFirstToShare().getContentType().isImage()) R.string.menu_item_view_image else R.string.view_media)
             }
-            if (noteForAnyAccount.isLoaded && !noteForAnyAccount.visibility.isPrivate) {
+            if (noteForAnyAccount.isLoaded() && !noteForAnyAccount.visibility.isPrivate) {
                 if (menuData.favorited) {
                     NoteContextMenuItem.UNDO_LIKE.addTo(menu, order++,
                             R.string.menu_item_destroy_favorite)
@@ -174,37 +171,37 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
                 }
                 if (menuData.reblogged) {
                     NoteContextMenuItem.UNDO_ANNOUNCE.addTo(menu, order++,
-                            actingAccount.alternativeTermForResourceId(R.string.menu_item_destroy_reblog))
+                            getActingAccount().alternativeTermForResourceId(R.string.menu_item_destroy_reblog))
                 } else {
                     // Don't allow an Actor to reblog himself
-                    if (actingAccount.actorId != noteForAnyAccount.actor.actorId) {
+                    if (getActingAccount().actorId != noteForAnyAccount.actor.actorId) {
                         NoteContextMenuItem.ANNOUNCE.addTo(menu, order++,
-                                actingAccount.alternativeTermForResourceId(R.string.menu_item_reblog))
+                                getActingAccount().alternativeTermForResourceId(R.string.menu_item_reblog))
                     }
                 }
             }
-            if (noteForAnyAccount.isLoaded) {
+            if (noteForAnyAccount.isLoaded()) {
                 NoteContextMenuItem.OPEN_NOTE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink)
             }
-            if (noteForAnyAccount.isLoaded) {
-                when (myContext.accounts().succeededForSameOrigin(noteForAnyAccount.origin).size) {
+            if (noteForAnyAccount.isLoaded()) {
+                when (getMyContext().accounts().succeededForSameOrigin(noteForAnyAccount.origin).size) {
                     0, 1 -> {
                     }
                     2 -> NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT.addTo(menu, order++,
                             StringUtil.format(
-                                    activity, R.string.menu_item_act_as_user,
-                                    myContext.accounts()
-                                            .firstOtherSucceededForSameOrigin(noteForAnyAccount.origin, actingAccount)
-                                            .shortestUniqueAccountName))
+                                    getActivity(), R.string.menu_item_act_as_user,
+                                    getMyContext().accounts()
+                                            .firstOtherSucceededForSameOrigin(noteForAnyAccount.origin, getActingAccount())
+                                            .getShortestUniqueAccountName()))
                     else -> NoteContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as)
                 }
             }
-            if (noteForAnyAccount.isPresentAtServer) {
+            if (noteForAnyAccount.isPresentAtServer()) {
                 NoteContextMenuItem.GET_NOTE.addTo(menu, order, R.string.get_message)
             }
-            if (menuData.isAuthorSucceededMyAccount) {
-                if (noteForAnyAccount.isPresentAtServer) {
-                    if (!menuData.reblogged && actingAccount.connection
+            if (menuData.isAuthorSucceededMyAccount()) {
+                if (noteForAnyAccount.isPresentAtServer()) {
+                    if (!menuData.reblogged && getActingAccount().getConnection()
                                     .hasApiEndpoint(ApiRoutineEnum.DELETE_NOTE)) {
                         NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++,
                                 R.string.menu_item_destroy_status)
@@ -222,32 +219,32 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
 
     fun getViewItem(): BaseNoteViewItem<*> {
         if (mViewItem.isEmpty) {
-            return NoteViewItem.Companion.EMPTY
+            return NoteViewItem.EMPTY
         }
         if (mViewItem is BaseNoteViewItem<*>) {
             return mViewItem as BaseNoteViewItem<*>
         } else if (mViewItem is ActivityViewItem) {
             return (mViewItem as ActivityViewItem).noteViewItem
         }
-        return NoteViewItem.Companion.EMPTY
+        return NoteViewItem.EMPTY
     }
 
-    private fun addNoteLinksSubmenu(menu: ContextMenu?, v: View?, order: Int) {
-        val links: Array<URLSpan?> = MyUrlSpan.Companion.getUrlSpans(v.findViewById<View?>(R.id.note_body))
+    private fun addNoteLinksSubmenu(menu: ContextMenu, v: View, order: Int) {
+        val links: Array<URLSpan> = MyUrlSpan.getUrlSpans(v.findViewById<View?>(R.id.note_body))
         when (links.size) {
             0 -> {
             }
-            1 -> menu.add(ContextMenu.NONE, NoteContextMenuItem.OPEN_NOTE_LINK.id,
-                    order, activity.getText(R.string.n_message_link).toString() +
-                    NoteContextMenuItem.Companion.NOTE_LINK_SEPARATOR +
+            1 -> menu.add(ContextMenu.NONE, NoteContextMenuItem.OPEN_NOTE_LINK.getId(),
+                    order, getActivity().getText(R.string.n_message_link).toString() +
+                    NoteContextMenuItem.NOTE_LINK_SEPARATOR +
                     links[0].getURL())
             else -> {
                 val subMenu = menu.addSubMenu(ContextMenu.NONE, ContextMenu.NONE, order,
-                        StringUtil.format(activity, R.string.n_message_links,
+                        StringUtil.format(getActivity(), R.string.n_message_links,
                                 links.size))
                 var orderSubmenu = 0
                 for (link in links) {
-                    subMenu.add(ContextMenu.NONE, NoteContextMenuItem.OPEN_NOTE_LINK.id,
+                    subMenu.add(ContextMenu.NONE, NoteContextMenuItem.OPEN_NOTE_LINK.getId(),
                             orderSubmenu++, link.getURL())
                 }
             }
@@ -255,8 +252,8 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
     }
 
     override fun setSelectedActingAccount(myAccount: MyAccount) {
-        if (myAccount != futureData.menuData.myAccount) {
-            futureData = FutureNoteContextMenuData.Companion.EMPTY
+        if (myAccount != futureData.menuData.getMyAccount()) {
+            futureData = FutureNoteContextMenuData.EMPTY
         }
         super.setSelectedActingAccount(myAccount)
     }
@@ -266,13 +263,13 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
     }
 
     private fun isEditorVisible(): Boolean {
-        return menuContainer.getNoteEditor().isVisible
+        return menuContainer.getNoteEditor()?.isVisible() == true
     }
 
     fun onContextItemSelected(item: MenuItem?) {
         if (item != null) {
             selectedMenuItemTitle = StringUtil.notNull(item.title.toString())
-            onContextItemSelected(NoteContextMenuItem.Companion.fromId(item.itemId), getNoteId())
+            onContextItemSelected(NoteContextMenuItem.fromId(item.itemId), getNoteId())
         }
     }
 
@@ -282,24 +279,24 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
         }
     }
 
-    fun switchTimelineActivityView(timeline: Timeline?) {
-        if (TimelineActivity::class.java.isAssignableFrom(activity.javaClass)) {
-            (activity as TimelineActivity<*>).switchView(timeline)
+    fun switchTimelineActivityView(timeline: Timeline) {
+        if (TimelineActivity::class.java.isAssignableFrom(getActivity().javaClass)) {
+            (getActivity() as TimelineActivity<*>).switchView(timeline)
         } else {
-            startForTimeline(myContext, activity, timeline)
+            startForTimeline(getMyContext(), getActivity(), timeline)
         }
     }
 
     fun loadState(savedInstanceState: Bundle?) {
         if (savedInstanceState != null && savedInstanceState.containsKey(IntentExtra.ACCOUNT_NAME.key)) {
-            selectedActingAccount = menuContainer.getActivity().myContext.accounts().fromAccountName(
+            setSelectedActingAccount(menuContainer.getActivity().myContext.accounts().fromAccountName(
                     savedInstanceState.getString(IntentExtra.ACCOUNT_NAME.key,
-                            menuContainer.getActivity().myContext.accounts().currentAccount.accountName))
+                            menuContainer.getActivity().myContext.accounts().currentAccount.getAccountName())))
         }
     }
 
-    fun saveState(outState: Bundle?) {
-        outState.putString(IntentExtra.ACCOUNT_NAME.key, selectedActingAccount.accountName)
+    fun saveState(outState: Bundle) {
+        outState.putString(IntentExtra.ACCOUNT_NAME.key, getSelectedActingAccount().getAccountName())
     }
 
     fun getNoteId(): Long {
@@ -311,14 +308,14 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
     }
 
     override fun getActingAccount(): MyAccount {
-        return if (selectedActingAccount.nonEmpty) selectedActingAccount else futureData.menuData.myAccount
+        return if (getSelectedActingAccount().nonEmpty) getSelectedActingAccount() else futureData.menuData.getMyAccount()
     }
 
-    fun getActor(): Actor? {
+    fun getActor(): Actor {
         return futureData.menuData.noteForAnyAccount.actor
     }
 
-    fun getAuthor(): Actor? {
+    fun getAuthor(): Actor {
         return futureData.menuData.noteForAnyAccount.author
     }
 
@@ -326,7 +323,7 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
         return selectedMenuItemTitle
     }
 
-    fun setFutureData(futureData: FutureNoteContextMenuData?) {
+    fun setFutureData(futureData: FutureNoteContextMenuData) {
         this.futureData = futureData
     }
 }

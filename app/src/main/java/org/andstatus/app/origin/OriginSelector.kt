@@ -48,24 +48,24 @@ class OriginSelector : SelectorDialog() {
             returnSelectedItem(listData.get(0))
             return
         }
-        listAdapter = newListAdapter(listData)
+        setListAdapter(newListAdapter(listData))
         listView.onItemClickListener = OnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
             val selectedId = (view.findViewById<View?>(R.id.id) as TextView).text.toString().toLong()
             returnSelectedItem( MyContextHolder.myContextHolder.getNow().origins().fromId(selectedId))
         }
     }
 
-    private fun newListData(): MutableList<Origin?>? {
+    private fun newListData(): MutableList<Origin> {
         return getOriginsForActor()
     }
 
-    private fun getOriginsForActor(): MutableList<Origin?>? {
+    private fun getOriginsForActor(): MutableList<Origin> {
         val actorId = Optional.ofNullable(arguments)
                 .map { bundle: Bundle? -> bundle.getLong(IntentExtra.ACTOR_ID.key) }.orElse(0L)
         return Actor.Companion.load( MyContextHolder.myContextHolder.getNow(), actorId).user.knownInOrigins( MyContextHolder.myContextHolder.getNow())
     }
 
-    private fun newListAdapter(listData: MutableList<Origin?>?): MySimpleAdapter? {
+    private fun newListAdapter(listData: MutableList<Origin>): MySimpleAdapter {
         val list: MutableList<MutableMap<String?, String?>?> = ArrayList()
         for (item in listData) {
             val map: MutableMap<String?, String?> = HashMap()
@@ -91,10 +91,10 @@ class OriginSelector : SelectorDialog() {
     }
 
     companion object {
-        private val KEY_VISIBLE_NAME: String? = "visible_name"
-        private val KEY_SYNC_AUTO: String? = "sync_auto"
-        fun selectOriginForActor(activity: FragmentActivity?, menuGroup: Int,
-                                 requestCode: ActivityRequestCode?, actor: Actor?) {
+        private val KEY_VISIBLE_NAME: String = "visible_name"
+        private val KEY_SYNC_AUTO: String = "sync_auto"
+        fun selectOriginForActor(activity: FragmentActivity, menuGroup: Int,
+                                 requestCode: ActivityRequestCode, actor: Actor) {
             val selector: SelectorDialog = OriginSelector()
             selector.setRequestCode(requestCode).putLong(IntentExtra.ACTOR_ID.key, actor.actorId)
             selector.myGetArguments().putInt(IntentExtra.MENU_GROUP.key, menuGroup)

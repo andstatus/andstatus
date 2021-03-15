@@ -310,7 +310,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
     override fun addActorsToLoad(loader: ActorsLoader) {
         loader.addActorToList(author.actor)
         loader.addActorToList(inReplyToActor.actor)
-        audience.addActorsToLoad { actor: Actor? -> loader.addActorToList(actor) }
+        audience.addActorsToLoad { actor: Actor -> loader.addActorToList(actor) }
     }
 
     override fun setLoadedActors(loader: ActorsLoader) {

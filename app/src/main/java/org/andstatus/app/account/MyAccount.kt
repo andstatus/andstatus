@@ -60,7 +60,7 @@ import java.util.concurrent.TimeUnit
  *
  * @author yvolk@yurivolkov.com
  */
-class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccount?>, IsEmpty, TaggedClass {
+class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccount>, IsEmpty, TaggedClass {
     var actor: Actor = Actor.EMPTY
         get() = Actor.load(data.myContext(), actor.actorId, false) { actor }
         private set
@@ -344,7 +344,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         return accountButtonText
     }
 
-    override fun compareTo(other: MyAccount?): Int {
+    override fun compareTo(other: MyAccount): Int {
         if (this === other) {
             return 0
         }
@@ -754,7 +754,7 @@ ${MyLog.getStackTrace(Exception())}""")
         /** [ActorTable.ACTOR_OID] in Microblogging System.  */
         val KEY_ACTOR_OID: String = "user_oid"
 
-        /** Is OAuth on for this MyAccount?  */
+        /** Is OAuth on for this MyAccount  */
         val KEY_OAUTH: String = "oauth"
 
         /** This account is in the process of deletion and should be ignored...  */

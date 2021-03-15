@@ -808,7 +808,7 @@ import org.andstatus.app.MenuItemMock
 class CommandExecutorStrategyTest {
     private var mock: ConnectionMock? = null
     private var httpConnectionMock: HttpConnectionMock? = null
-    private var ma: MyAccount? = null
+    private var ma: MyAccount = null
     @Before
     @Throws(Exception::class)
     fun setUp() {

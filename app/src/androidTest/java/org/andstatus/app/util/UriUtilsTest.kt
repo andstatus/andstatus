@@ -843,7 +843,7 @@ class UriUtilsTest {
         private val EMPTY_URIS: Array<Uri?>? = arrayOf(null, Uri.EMPTY, Uri.parse(""),
                 UriUtils.fromString(""), UriUtils.fromString(" "))
 
-        fun assertEndpoint(endpointType: ActorEndpointType?, value: String?, actor: Actor?) {
+        fun assertEndpoint(endpointType: ActorEndpointType?, value: String?, actor: Actor) {
             Assert.assertEquals("Endpoint $endpointType of $actor",
                     UriUtils.toDownloadableOptional(value), actor.getEndpoint(endpointType))
         }

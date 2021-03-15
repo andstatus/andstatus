@@ -55,13 +55,10 @@ class Note : AObject {
         private set
     private var isSensitive = false
     var content: String = ""
-        get() = field
-        private set(value) {
-            field = value
-        }
+        private set
     private val contentToSearch: LazyVal<String> = LazyVal.of { evalContentToSearch() }
     private var inReplyTo: AActivity = AActivity.EMPTY
-    val replies: List<AActivity>
+    val replies: MutableList<AActivity>
     var conversationOid: String = ""
     var via: String = ""
     var url: String = ""
@@ -84,7 +81,7 @@ class Note : AObject {
         this.origin = origin
         this.oid = oid
         audience = if (origin.isEmpty) Audience.EMPTY else Audience(origin)
-        replies = if (origin.isEmpty) emptyList() else ArrayList()
+        replies = if (origin.isEmpty) mutableListOf() else ArrayList()
         attachments = if (origin.isEmpty) Attachments.EMPTY else Attachments()
     }
 
@@ -307,7 +304,6 @@ class Note : AObject {
         if (favoritedByMe != TriState.TRUE) {
             return
         }
-        require (replies is MutableList) { "replies should be mutable" }
         val favorite: AActivity = AActivity.from(accountActor, ActivityType.LIKE)
         favorite.setActor(accountActor)
         favorite.setUpdatedDate(updatedDate)
@@ -427,7 +423,7 @@ class Note : AObject {
         }
 
         fun loadContentById(myContext: MyContext, noteId: Long): Note {
-            return MyQuery.get(myContext, getSqlToLoadContent(noteId)) { cursor: Cursor -> contentFromCursor(myContext, cursor) }
+            return MyQuery[myContext, getSqlToLoadContent(noteId), { cursor: Cursor -> contentFromCursor(myContext, cursor) }]
                     .stream().findAny().map { obj: Note -> obj.loadAudience() }.orElse(EMPTY)
         }
 

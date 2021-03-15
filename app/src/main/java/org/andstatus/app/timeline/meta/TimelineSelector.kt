@@ -117,7 +117,7 @@ class TimelineSelector : SelectorDialog() {
         private val KEY_VISIBLE_NAME: String? = "visible_name"
         private val KEY_SYNC_AUTO: String? = "sync_auto"
         fun selectTimeline(activity: FragmentActivity?, requestCode: ActivityRequestCode?,
-                           timeline: Timeline?, currentMyAccount: MyAccount?) {
+                           timeline: Timeline?, currentMyAccount: MyAccount) {
             val selector: SelectorDialog = TimelineSelector()
             selector.setRequestCode(requestCode)
             selector.arguments.putLong(IntentExtra.TIMELINE_ID.key, timeline.getId())

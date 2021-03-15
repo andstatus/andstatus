@@ -84,7 +84,7 @@ internal class MergeActors : DataChecker() {
         return mergeActivities
     }
 
-    private fun isTheSameActor(prev: Actor?, actor: Actor?): Boolean {
+    private fun isTheSameActor(prev: Actor, actor: Actor): Boolean {
         if (prev == null || actor == null) {
             return false
         }

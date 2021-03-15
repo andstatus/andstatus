@@ -28,7 +28,7 @@ abstract class MyServiceTest {
     val mService: MyServiceTestHelper get() = mMService ?: throw IllegalStateException("MyServiceTestHelper is null")
 
     @Volatile
-    private var mMa: MyAccount? = null
+    private var mMa: MyAccount = null
     val ma: MyAccount get() = mMa ?: throw IllegalStateException("MyAccount is null")
 
     @Before

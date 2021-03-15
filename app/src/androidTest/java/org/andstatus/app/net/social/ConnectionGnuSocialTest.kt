@@ -309,12 +309,12 @@ class ConnectionGnuSocialTest {
         val actors = audience.getNonSpecialActors()
         Assert.assertEquals("Wrong number of audience members $audience\n$activity", numberOfMembers.toLong(), actors.size.toLong())
         Assert.assertEquals("All recipients should have valid usernames $audience\n$activity", Actor.EMPTY,
-                actors.stream().filter { actor: Actor? -> !actor.isUsernameValid() }.findAny().orElse(Actor.EMPTY))
+                actors.stream().filter { actor: Actor -> !actor.isUsernameValid() }.findAny().orElse(Actor.EMPTY))
         Assert.assertEquals("All recipients should have id $audience\n$activity", Actor.EMPTY,
-                actors.stream().filter { actor: Actor? -> actor.actorId == 0L }.findAny().orElse(Actor.EMPTY))
+                actors.stream().filter { actor: Actor -> actor.actorId == 0L }.findAny().orElse(Actor.EMPTY))
         Assert.assertEquals("All recipients should be nonEmpty $audience\n$activity", Actor.EMPTY,
                 actors.stream()
-                        .filter { obj: Actor? -> obj.isEmpty }.findAny().orElse(Actor.EMPTY))
+                        .filter { obj: Actor -> obj.isEmpty }.findAny().orElse(Actor.EMPTY))
     }
 
     companion object {

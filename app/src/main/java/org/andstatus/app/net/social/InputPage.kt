@@ -15,15 +15,14 @@
  */
 package org.andstatus.app.net.social
 
-import org.andstatus.app.net.social.TimelinePosition
 import org.andstatus.app.util.HasEmpty
 
 abstract class InputPage<T> protected constructor(jsonCollection: AJsonCollection,
-                                                  val items: MutableList<T>) : HasEmpty<T> {
-    val firstPosition: TimelinePosition = TimelinePosition.Companion.of(jsonCollection.firstPage.getId())
-    val youngerPosition: TimelinePosition = TimelinePosition.Companion.of(jsonCollection.prevPage.getId())
-    val thisPosition: TimelinePosition = TimelinePosition.Companion.of(jsonCollection.getId())
-    val olderPosition: TimelinePosition = TimelinePosition.Companion.of(jsonCollection.nextPage.getId())
+                                                  val items: List<T>) : HasEmpty<T> {
+    val firstPosition: TimelinePosition = TimelinePosition.of(jsonCollection.firstPage.getId())
+    val youngerPosition: TimelinePosition = TimelinePosition.of(jsonCollection.prevPage.getId())
+    val thisPosition: TimelinePosition = TimelinePosition.of(jsonCollection.getId())
+    val olderPosition: TimelinePosition = TimelinePosition.of(jsonCollection.nextPage.getId())
 
     override val isEmpty: Boolean = jsonCollection.isEmpty
 

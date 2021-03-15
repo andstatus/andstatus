@@ -23,7 +23,7 @@ import org.andstatus.app.timeline.ViewItem
  * @author yvolk@yurivolkov.com
  */
 class ManageTimelinesViewItem(myContext: MyContext?, val timeline: Timeline?,
-                              accountToHide: MyAccount?, namesAreHidden: Boolean) : ViewItem<ManageTimelinesViewItem?>(false, timeline.getLastChangedDate()) {
+                              accountToHide: MyAccount, namesAreHidden: Boolean) : ViewItem<ManageTimelinesViewItem>(false, timeline.getLastChangedDate()) {
     val timelineTitle: TimelineTitle?
     val countSince: Long
     override fun getId(): Long {

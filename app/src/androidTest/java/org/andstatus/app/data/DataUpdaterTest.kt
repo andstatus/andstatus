@@ -446,7 +446,7 @@ $activity""",
         updateActor(ma, actor)
     }
 
-    private fun updateActor(ma: MyAccount?, actor: Actor?) {
+    private fun updateActor(ma: MyAccount, actor: Actor) {
         val accountActor = ma.actor
         val id = DataUpdater(ma).onActivity(accountActor.update(actor)).objActor.actorId
         Assert.assertTrue("Actor added", id != 0L)
@@ -509,7 +509,7 @@ $activity""",
                 "Sending a note to the !$groupName1 group", false)
     }
 
-    private fun addOneNote4testReplyInContent(ma: MyAccount?, buddyUniqueName: String?, content: String?, isReply: Boolean) {
+    private fun addOneNote4testReplyInContent(ma: MyAccount, buddyUniqueName: String?, content: String?, isReply: Boolean) {
         val actorUniqueName = "somebody" + DemoData.demoData.testRunUid + "@somewhere.net"
         val actor: Actor = Actor.Companion.fromOid(ma.actor.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + actorUniqueName)
         actor.withUniqueName(actorUniqueName)
@@ -523,7 +523,7 @@ $activity""",
         val activity = DataUpdater(ma).onActivity(activityIn)
         val note = activity.note
         Assert.assertTrue("Note was not added: $activity", note.noteId != 0L)
-        var buddy: Actor? = Actor.EMPTY
+        var buddy: Actor = Actor.EMPTY
         for (recipient in activity.audience().nonSpecialActors) {
             Assert.assertFalse("Audience member is empty: $recipient,\n$note", recipient.isEmpty)
             if (recipient.uniqueName == buddyUniqueName) {
@@ -564,11 +564,11 @@ $activity""",
         Assert.assertTrue("Note should be added", noteId != 0L)
         val audience = activity1.audience()
         Assert.assertEquals("Audience should contain two actors: $audience", 2, audience.nonSpecialActors.size.toLong())
-        val group = audience.nonSpecialActors.stream().filter { a: Actor? -> groupname == a.getUsername() }.findAny()
+        val group = audience.nonSpecialActors.stream().filter { a: Actor -> groupname == a.getUsername() }.findAny()
         Assert.assertTrue("Group should be in audience: $audience", group.isPresent)
         Assert.assertEquals("Group type: $group", GroupType.GENERIC, group.get().groupType)
         Assert.assertNotEquals("Group id: $group", 0, group.get().actorId)
-        val savedGroup: Actor = Actor.Companion.loadFromDatabase( MyContextHolder.myContextHolder.getNow(), group.get().actorId, Supplier<Actor?> { Actor.EMPTY }, false)
+        val savedGroup: Actor = Actor.Companion.loadFromDatabase( MyContextHolder.myContextHolder.getNow(), group.get().actorId, Supplier<Actor> { Actor.EMPTY }, false)
         Assert.assertEquals("Saved group: $savedGroup", groupname, savedGroup.username)
         Assert.assertEquals("Saved group type: $savedGroup", GroupType.GENERIC, savedGroup.groupType)
     }
@@ -603,7 +603,7 @@ $activity""",
         Assert.assertEquals("Notified actor $activity2", actorFromAnotherOrigin, activity2.getNotifiedActor())
     }
 
-    private fun newLoadedNote(accountActor: Actor?, author: Actor?, content: String?): AActivity? {
+    private fun newLoadedNote(accountActor: Actor, author: Actor, content: String?): AActivity? {
         val activity1: AActivity = AActivity.Companion.newPartialNote(accountActor, author, System.nanoTime().toString(),
                 System.currentTimeMillis(), DownloadStatus.LOADED)
         val note = activity1.note

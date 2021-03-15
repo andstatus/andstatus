@@ -27,8 +27,10 @@ import org.andstatus.app.util.ViewUtils
  * This custom ImageView allows dynamically crop its image according to the height of the other view
  * @author yvolk@yurivolkov.com
  */
-class ConversationIndentImageView(contextIn: Context?, private val referencedView: View?, private val widthPixels: Int, imageResourceIdLight: Int,
+class ConversationIndentImageView(contextIn: Context, private val referencedView: View,
+                                  private val widthPixels: Int, imageResourceIdLight: Int,
                                   imageResourceId: Int) : AppCompatImageView(contextIn) {
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val method = "onMeasure"
         val refHeight = ViewUtils.getHeightWithMargins(referencedView)
@@ -62,6 +64,6 @@ class ConversationIndentImageView(contextIn: Context?, private val referencedVie
         scaleType = ScaleType.MATRIX
         layoutParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE)
         setLayoutParams(layoutParams)
-        setImageDrawable(ImageCaches.getStyledImage(imageResourceIdLight, imageResourceId).drawable)
+        setImageDrawable(ImageCaches.getStyledImage(imageResourceIdLight, imageResourceId).getDrawable())
     }
 }

@@ -60,25 +60,24 @@ class NoteAdapter(contextMenu: NoteContextMenu, listData: TimelineData<NoteViewI
         }
     }
 
-    override fun showNoteNumberEtc(view: ViewGroup?, item: NoteViewItem?, position: Int) {
+    override fun showNoteNumberEtc(view: ViewGroup, item: NoteViewItem, position: Int) {
         preloadAttachments(position)
-        val text: String?
-        text = when (position) {
+        val text: String? = when (position) {
             0 -> if (mayHaveYoungerPage()) "1" else TOP_TEXT
             1, 2 -> Integer.toString(position + 1)
             else -> if (itemNumberShownCounter < 3) Integer.toString(position + 1) else ""
         }
-        MyUrlSpan.Companion.showText(view, R.id.note_number, text, false, false)
+        MyUrlSpan.showText(view, R.id.note_number, text, linkify = false, showIfEmpty = false)
         itemNumberShownCounter++
         positionPrev = position
     }
 
-    override fun onClick(v: View?) {
+    override fun onClick(v: View) {
         var handled = false
         if (MyPreferences.isLongPressToOpenContextMenu()) {
             val item = getItem(v)
-            if (TimelineActivity::class.java.isAssignableFrom(contextMenu.activity.javaClass)) {
-                (contextMenu.activity as TimelineActivity<*>).onItemClick(item)
+            if (TimelineActivity::class.java.isAssignableFrom(contextMenu.getActivity().javaClass)) {
+                (contextMenu.getActivity() as TimelineActivity<*>).onItemClick(item)
                 handled = true
             }
         }

@@ -17,7 +17,6 @@ package org.andstatus.app.net.social
 
 import android.content.Context
 import android.net.Uri
-import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContext
@@ -26,31 +25,32 @@ import org.andstatus.app.net.http.HttpRequest
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.util.DialogFactory
 import java.util.function.Consumer
-import java.util.function.Function
 
 /** Send any GET requests using current account  */
-class ApiDebugger(private val myContext: MyContext?, private val activityContext: Context) {
+class ApiDebugger(private val myContext: MyContext, private val activityContext: Context) {
     fun debugGet() {
         DialogFactory.showTextInputBox(activityContext, "Debug Social network API",
-                "Type API path to GET e.g.\nstatusnet/conversation/12345.json\nor complete URL", { text: String? -> this.debugGet(text) }, previousValue)
+                "Type API path to GET e.g.\nstatusnet/conversation/12345.json\nor complete URL",
+                { text: String -> this.debugGet(text) }, previousValue)
     }
 
-    private fun debugGet(text: String?) {
-        AsyncTaskLauncher.Companion.execute<Any?, HttpReadResult?>(null, Function { p: Any? -> debugApiAsync(text) }, Function { p: Any? -> Consumer { results: Try<HttpReadResult> -> debugApiSync(results) } })
+    private fun debugGet(text: String) {
+        AsyncTaskLauncher.execute<Any?, HttpReadResult>(null, { debugApiAsync(text) },
+                { Consumer { results: Try<HttpReadResult> -> debugApiSync(results) } })
     }
 
-    private fun debugApiAsync(text: String?): Try<HttpReadResult> {
+    private fun debugApiAsync(text: String): Try<HttpReadResult> {
         previousValue = text
-        val connection = myContext.accounts().currentAccount.connection
+        val connection = myContext.accounts().currentAccount.getConnection()
         return connection.pathToUri(connection.partialPathToApiPath(text))
-                .map(CheckedFunction<Uri?, HttpRequest?> { uri: Uri? -> HttpRequest.Companion.of(ApiRoutineEnum.HOME_TIMELINE, uri) })
-                .flatMap { request: HttpRequest? -> connection.execute(request) }
+                .map { uri: Uri -> HttpRequest.of(ApiRoutineEnum.HOME_TIMELINE, uri) }
+                .flatMap { request: HttpRequest -> connection.execute(request) }
     }
 
     private fun debugApiSync(results: Try<HttpReadResult>) {
         results
-                .onSuccess(Consumer { result: HttpReadResult? -> DialogFactory.showOkAlertDialog(this, activityContext, android.R.string.ok, result.getResponse()) })
-                .onFailure { e: Throwable? -> DialogFactory.showOkAlertDialog(this, activityContext, R.string.error_connection_error, e.toString()) }
+                .onSuccess { result: HttpReadResult -> DialogFactory.showOkAlertDialog(this, activityContext, android.R.string.ok, result.getResponse()) }
+                .onFailure { e: Throwable -> DialogFactory.showOkAlertDialog(this, activityContext, R.string.error_connection_error, e.toString()) }
     }
 
     companion object {

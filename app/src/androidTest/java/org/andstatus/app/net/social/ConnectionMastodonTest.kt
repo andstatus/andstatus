@@ -44,7 +44,7 @@ import java.util.function.Consumer
 
 class ConnectionMastodonTest {
     private var mock: ConnectionMock? = null
-    private var accountActor: Actor? = null
+    private var accountActor: Actor = null
     @Before
     @Throws(Exception::class)
     fun setUp() {
@@ -121,9 +121,9 @@ class ConnectionMastodonTest {
         Assert.assertTrue("Audience: " + note3.audience(), note3.audience().containsOid("886798"))
         Assert.assertEquals("Audience: " + note3.audience(), "lanodan@queer.hacktivis.me",
                 note3.audience().recipients.stream()
-                        .filter { actor: Actor? -> actor.getUsername() == "lanodan" }
+                        .filter { actor: Actor -> actor.getUsername() == "lanodan" }
                         .findAny()
-                        .map { obj: Actor? -> obj.getWebFingerId() }
+                        .map { obj: Actor -> obj.getWebFingerId() }
                         .orElse("(not found)"))
         val actor3 = activity3.actor
         val stringDate = "2016-10-14T08:05:36.581Z"
@@ -282,7 +282,7 @@ class ConnectionMastodonTest {
 
     private fun assertOneRecipient(activity: AActivity?, username: String?, profileUrl: String?, webFingerId: String?) {
         val audience = activity.getNote().audience()
-        val actor = audience.nonSpecialActors.stream().filter { a: Actor? -> a.getUsername() == username }.findAny().orElse(Actor.EMPTY)
+        val actor = audience.nonSpecialActors.stream().filter { a: Actor -> a.getUsername() == username }.findAny().orElse(Actor.EMPTY)
         Assert.assertTrue("$username should be mentioned: $activity", actor.nonEmpty())
         Assert.assertEquals("Mentioned user: $activity", profileUrl, actor.profileUrl)
         Assert.assertEquals("Mentioned user: $activity", webFingerId, actor.webFingerId)

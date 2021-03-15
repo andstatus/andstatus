@@ -55,8 +55,8 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
         }
         val command = execContext.commandData.command
         return getNewActors(command)
-                .onSuccess(Consumer { actorsNew: MutableList<Actor?>? -> updateGroupMemberships(command, actorsNew) })
-                .map { actorsNew: MutableList<Actor?>? ->
+                .onSuccess(Consumer { actorsNew: MutableList<Actor>? -> updateGroupMemberships(command, actorsNew) })
+                .map { actorsNew: MutableList<Actor>? ->
                     val syncTracker = TimelineSyncTracker(execContext.timeline, true)
                     syncTracker.onTimelineDownloaded()
                     MyLog.d(this, commandSummary + " ended, " + actorsNew.size + " actors")
@@ -82,7 +82,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
     }
 
     private fun getNewActors(apiActors: ApiRoutineEnum?): Try<MutableList<Actor>>? {
-        val actors: MutableList<Actor?> = ArrayList()
+        val actors: MutableList<Actor> = ArrayList()
         val requested: MutableList<TimelinePosition?> = ArrayList()
         val positionToRequest = AtomicReference<TimelinePosition?>(TimelinePosition.Companion.EMPTY)
         for (pageNum in 0..99) {
@@ -103,10 +103,10 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
     }
 
     private fun getActorsForOids(actorOidsNew: MutableList<String?>?): Try<MutableList<Actor>>? {
-        val actorsNew: MutableList<Actor?> = ArrayList()
+        val actorsNew: MutableList<Actor> = ArrayList()
         val count = AtomicLong()
         for (actorOidNew in actorOidsNew) {
-            connection.getActor(Actor.Companion.fromOid(execContext.myAccount.origin, actorOidNew)).map { actor: Actor? ->
+            connection.getActor(Actor.Companion.fromOid(execContext.myAccount.origin, actorOidNew)).map { actor: Actor ->
                 count.incrementAndGet()
                 execContext.result.incrementDownloadedCount()
                 actor
@@ -124,7 +124,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
                     return@recover actor
                 }
             }
-                    .onSuccess { actor: Actor? ->
+                    .onSuccess { actor: Actor ->
                         broadcastProgress(count.toString() + ". "
                                 + execContext.context.getText(R.string.get_user)
                                 + ": " + actor.getUniqueNameWithOrigin(), true)
@@ -137,7 +137,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
         return Try.success(actorsNew)
     }
 
-    private fun updateGroupMemberships(command: CommandEnum?, actorsNew: MutableList<Actor?>?) {
+    private fun updateGroupMemberships(command: CommandEnum?, actorsNew: MutableList<Actor>?) {
         val groupType = if (command == CommandEnum.GET_FOLLOWERS) GroupType.FOLLOWERS else GroupType.FRIENDS
         val actionStringRes = if (groupType == GroupType.FOLLOWERS) R.string.followers else R.string.friends
         val actorIdsOld: MutableSet<Long?> = GroupMembership.Companion.getGroupMemberIds(execContext.myContext, actor.actorId, groupType)
@@ -165,7 +165,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
         execContext.myContext.users().reload(actor)
     }
 
-    private fun areAllNotesLoaded(actorsNew: MutableList<Actor?>?): Boolean {
+    private fun areAllNotesLoaded(actorsNew: MutableList<Actor>?): Boolean {
         val dataUpdater = DataUpdater(execContext)
         var allNotesLoaded = true
         var count: Long = 0
@@ -186,7 +186,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
     /**
      * @return true if we need to interrupt process
      */
-    private fun updateNewActorsAndTheirLatestActions(actorsNew: MutableList<Actor?>?): Boolean {
+    private fun updateNewActorsAndTheirLatestActions(actorsNew: MutableList<Actor>?): Boolean {
         val dataUpdater = DataUpdater(execContext)
         var count: Long = 0
         for (actor in actorsNew) {

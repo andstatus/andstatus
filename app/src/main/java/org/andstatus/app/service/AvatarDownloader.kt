@@ -26,10 +26,10 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.util.MyLog
 
-class AvatarDownloader(myContext: MyContext?, data: DownloadData?) : FileDownloader(myContext, data) {
-    constructor(actor: Actor?) : this(actor.origin.myContext, AvatarData.Companion.getCurrentForActor(actor)) {}
+class AvatarDownloader(myContext: MyContext, data: DownloadData) : FileDownloader(myContext, data) {
+    constructor(actor: Actor) : this(actor.origin.myContext, AvatarData.getCurrentForActor(actor)) {}
 
-    override fun findBestAccountForDownload(): MyAccount? {
+    override fun findBestAccountForDownload(): MyAccount {
         val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromId(
                 MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID, data.actorId))
         return  MyContextHolder.myContextHolder.getNow().accounts().getFirstPreferablySucceededForOrigin(origin)
@@ -38,6 +38,6 @@ class AvatarDownloader(myContext: MyContext?, data: DownloadData?) : FileDownloa
     override fun onSuccessfulLoad() {
         data.deleteOtherOfThisActor( MyContextHolder.myContextHolder.getNow())
          MyContextHolder.myContextHolder.getNow().users().load(data.actorId, true)
-        MyLog.v(this) { "Loaded avatar actorId:" + data.actorId + "; uri:'" + data.uri + "'" }
+        MyLog.v(this) { "Loaded avatar actorId:" + data.actorId + "; uri:'" + data.getUri() + "'" }
     }
 }

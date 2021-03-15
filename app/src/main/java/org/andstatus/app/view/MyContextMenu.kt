@@ -46,7 +46,7 @@ open class MyContextMenu(protected val listActivity: LoadableListActivity<*>, va
         saveContextOfSelectedItem(v)
     }
 
-    private fun saveContextOfSelectedItem(v: View?) {
+    private fun saveContextOfSelectedItem(v: View) {
         viewOfTheContext = v
         val viewItem = if (menuGroup == MENU_GROUP_ACTOR_PROFILE) listActivity.getListData().getActorViewItem()
             else listActivity.saveContextOfSelectedItem(v)

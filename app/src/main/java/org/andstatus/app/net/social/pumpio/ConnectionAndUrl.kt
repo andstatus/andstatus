@@ -29,53 +29,54 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UrlUtils
 
-internal class ConnectionAndUrl(val apiRoutine: ApiRoutineEnum?, val uri: Uri?, val httpConnection: HttpConnection?) {
-    fun withUri(newUri: Uri?): ConnectionAndUrl? {
+internal class ConnectionAndUrl(val apiRoutine: ApiRoutineEnum, val uri: Uri, val httpConnection: HttpConnection) {
+    fun withUri(newUri: Uri): ConnectionAndUrl {
         return ConnectionAndUrl(apiRoutine, newUri, httpConnection)
     }
 
-    fun newRequest(): HttpRequest? {
-        return HttpRequest.Companion.of(apiRoutine, uri)
+    fun newRequest(): HttpRequest {
+        return HttpRequest.of(apiRoutine, uri)
     }
 
-    fun execute(request: HttpRequest?): Try<HttpReadResult> {
+    fun execute(request: HttpRequest): Try<HttpReadResult> {
         return httpConnection.execute(request)
     }
 
     companion object {
-        fun fromActor(connection: ConnectionPumpio?, apiRoutine: ApiRoutineEnum?, actor: Actor?): Try<ConnectionAndUrl> {
-            val endpoint = actor.getEndpoint(ActorEndpointType.Companion.from(apiRoutine))
-            val uri: Uri?
+        fun fromActor(connection: ConnectionPumpio, apiRoutine: ApiRoutineEnum, actor: Actor): Try<ConnectionAndUrl> {
+            val endpoint = actor.getEndpoint(ActorEndpointType.from(apiRoutine))
+            val uri: Uri
             val host: String?
             if (endpoint.isPresent) {
                 uri = endpoint.get()
                 host = uri.host
             } else {
                 val username = actor.getUsername()
-                if (username.isNullOrEmpty()) {
-                    return Try.failure(ConnectionException(StatusCode.BAD_REQUEST, apiRoutine.toString() + ": username is required"))
+                if (username.isEmpty()) {
+                    return Try.failure(ConnectionException(StatusCode.BAD_REQUEST, "$apiRoutine: username is required"))
                 }
                 uri = connection.tryApiPath(Actor.EMPTY, apiRoutine)
-                        .map { u: Uri? -> UriUtils.map(u) { s: String? -> s.replace("%username%", username) } }.getOrElse(Uri.EMPTY)
+                        .map { u: Uri -> UriUtils.map(u) { s: String? -> s?.replace("%username%", username) } }
+                        .getOrElse(Uri.EMPTY)
                 host = actor.getConnectionHost()
             }
-            var httpConnection = connection.getHttp()
+            var httpConnection =  connection.http
             if (host.isNullOrEmpty()) {
                 return Try.failure(ConnectionException(StatusCode.BAD_REQUEST, apiRoutine.toString() +
                         ": host is empty for " + actor))
-            } else if (connection.getHttp().data.originUrl == null ||
-                    host.compareTo(connection.getHttp().data.originUrl.host, ignoreCase = true) != 0) {
+            } else if ( connection.http.data.originUrl == null ||
+                    host.compareTo( connection.http.data.originUrl?.host ?: "", ignoreCase = true) != 0) {
                 MyLog.v(connection) { "Requesting data from the host: $host" }
-                val connectionData1 = connection.getHttp().data.copy()
+                val connectionData1 =  connection.http.data.copy()
                 connectionData1.oauthClientKeys = null
-                connectionData1.originUrl = UrlUtils.buildUrl(host, connectionData1.isSsl)
-                httpConnection = connection.getHttp().newInstance
+                connectionData1.originUrl = UrlUtils.buildUrl(host, connectionData1.isSsl())
+                httpConnection =  connection.http.getNewInstance()
                 httpConnection.setHttpConnectionData(connectionData1)
             }
             if (!httpConnection.data.areOAuthClientKeysPresent()) {
                 httpConnection.registerClient()
                 if (!httpConnection.credentialsPresent) {
-                    return Try.failure(ConnectionException.Companion.fromStatusCodeAndHost(
+                    return Try.failure(ConnectionException.fromStatusCodeAndHost(
                             StatusCode.NO_CREDENTIALS_FOR_HOST,
                             "No credentials", httpConnection.data.originUrl))
                 }

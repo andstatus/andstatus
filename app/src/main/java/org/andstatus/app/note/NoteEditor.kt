@@ -237,7 +237,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer?) {
         }
     }
 
-    private fun accountForCreateNoteButton(): MyAccount? {
+    private fun accountForCreateNoteButton(): MyAccount {
         return if (isVisible()) {
             editorData.getMyAccount()
         } else {
@@ -322,7 +322,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer?) {
         return editorView.visibility == View.VISIBLE
     }
 
-    fun startEditingSharedData(ma: MyAccount?, shared: SharedNote?) {
+    fun startEditingSharedData(ma: MyAccount, shared: SharedNote?) {
         MyLog.v(NoteEditorData.Companion.TAG) { "startEditingSharedData " + shared.toString() }
         updateDataFromScreen()
         val contentWithName: MyStringBuilder = MyStringBuilder.Companion.of(shared.content)

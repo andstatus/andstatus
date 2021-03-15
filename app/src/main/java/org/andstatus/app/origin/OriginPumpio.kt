@@ -19,7 +19,7 @@ import androidx.annotation.StringRes
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContext
 
-class OriginPumpio internal constructor(myContext: MyContext?, originType: OriginType?) : Origin(myContext, originType) {
+class OriginPumpio internal constructor(myContext: MyContext, originType: OriginType) : Origin(myContext, originType) {
     override fun alternativeTermForResourceId(@StringRes resId: Int): Int {
         val resIdOut: Int
         resIdOut = when (resId) {
@@ -32,6 +32,6 @@ class OriginPumpio internal constructor(myContext: MyContext?, originType: Origi
     }
 
     companion object {
-        val ACCOUNT_PREFIX: String? = "acct:"
+        val ACCOUNT_PREFIX: String = "acct:"
     }
 }

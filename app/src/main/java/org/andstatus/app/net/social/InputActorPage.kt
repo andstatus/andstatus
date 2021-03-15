@@ -17,7 +17,7 @@ package org.andstatus.app.net.social
 
 import io.vavr.control.Try
 
-class InputActorPage(jsonCollection: AJsonCollection, actors: MutableList<Actor>) : InputPage<Actor>(jsonCollection, actors) {
+class InputActorPage(jsonCollection: AJsonCollection, actors: List<Actor>) : InputPage<Actor>(jsonCollection, actors) {
     override fun empty(): Actor {
         return Actor.EMPTY
     }
@@ -25,7 +25,7 @@ class InputActorPage(jsonCollection: AJsonCollection, actors: MutableList<Actor>
     companion object {
         val EMPTY: InputActorPage = of(mutableListOf())
         val TRY_EMPTY = Try.success(EMPTY)
-        fun of(actors: MutableList<Actor>): InputActorPage {
+        fun of(actors: List<Actor>): InputActorPage {
             return InputActorPage(AJsonCollection.EMPTY, actors)
         }
 

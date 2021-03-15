@@ -54,7 +54,7 @@ object UriUtils {
         } else Uri.EMPTY
     }
 
-    fun map(uri: Uri?, mapper: Function<String?, String?>): Uri {
+    fun map(uri: Uri, mapper: Function<String?, String?>): Uri {
         return fromString(mapper.apply(uri.toString()))
     }
 

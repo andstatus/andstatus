@@ -1166,7 +1166,7 @@ class AccountSettingsActivity : MyActivity() {
             return if (skip) TaskResult(ResultStatus.NONE) else Try.success(state?.builder)
                     .flatMap { it?.getOriginConfig() }
                     .flatMap { b: MyAccount.Builder -> b.getConnection().verifyCredentials(whoAmI) }
-                    .flatMap { actor: Actor? -> state?.builder?.onCredentialsVerified(actor ?: Actor.EMPTY) }
+                    .flatMap { actor: Actor -> state?.builder?.onCredentialsVerified(actor ?: Actor.EMPTY) }
                     .map({ it.getAccount() })
                     .filter { obj: MyAccount -> obj.isValidAndSucceeded() }
                     .onSuccess { myAccount: MyAccount ->

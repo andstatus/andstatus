@@ -28,7 +28,7 @@ import org.andstatus.app.util.MyHtml
 import org.junit.Assert
 
 class HtmlContentTester {
-    private val ma: MyAccount?
+    private val ma: MyAccount
     fun insertPumpIoHtmlContent() {
         val author = DemoNoteInserter(ma).buildActorFromOid("acct:html@example.com")
         Assert.assertEquals("Author1: $author", MyContextState.READY, author.origin.myContext.state())
@@ -42,7 +42,7 @@ class HtmlContentTester {
         assertHtmlNote(author, HtmlContentTester.Companion.HTML_BODY_IMG_STRING, DemoData.demoData.htmlNoteOid)
     }
 
-    private fun assertHtmlNote(author: Actor?, bodyString: String?, noteOid: String?) {
+    private fun assertHtmlNote(author: Actor, bodyString: String?, noteOid: String?) {
         if (author.origin.isHtmlContentAllowed) {
             assertHtmlNoteContentAllowed(author, bodyString, noteOid, true)
         } else {
@@ -51,7 +51,7 @@ class HtmlContentTester {
         }
     }
 
-    private fun assertHtmlNoteContentAllowed(author: Actor?,
+    private fun assertHtmlNoteContentAllowed(author: Actor,
                                              bodyString: String?, noteOid: String?, htmlContentAllowed: Boolean) {
         val mi = DemoNoteInserter(ma)
         Assert.assertEquals("Author: $author", MyContextState.READY, author.origin.myContext.state())

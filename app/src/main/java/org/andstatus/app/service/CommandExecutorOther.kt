@@ -45,7 +45,7 @@ import java.util.function.BooleanSupplier
 import java.util.function.Consumer
 import java.util.stream.Collectors
 
-internal class CommandExecutorOther(execContext: CommandExecutionContext?) : CommandExecutorStrategy(execContext) {
+internal class CommandExecutorOther(execContext: CommandExecutionContext) : CommandExecutorStrategy(execContext) {
     public override fun execute(): Try<Boolean> {
         return when (execContext.commandData.command) {
             CommandEnum.LIKE, CommandEnum.UNDO_LIKE -> createOrDestroyFavorite(execContext.commandData.itemId,
@@ -76,7 +76,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext?) : Com
             logExecutionError(true, "$msgLog, empty query")
         } else connection
                 .searchActors(ACTORS_LIMIT, searchQuery)
-                .map { actors: MutableList<Actor?>? ->
+                .map { actors: MutableList<Actor>? ->
                     val dataUpdater = DataUpdater(execContext)
                     val myAccountActor = execContext.myAccount.actor
                     for (actor in actors) {
@@ -114,7 +114,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext?) : Com
                 .mapFailure { e: Throwable? -> ConnectionException.Companion.of(e).append(MyQuery.noteInfoForLog(execContext.myContext, noteId)) }
     }
 
-    private fun getActorCommand(actorIn: Actor?, username: String?): Try<Boolean> {
+    private fun getActorCommand(actorIn: Actor, username: String?): Try<Boolean> {
         val method = "getActor"
         var msgLog = "$method;"
         val actorIn2 = if (UriUtils.nonRealOid(actorIn.oid) && actorIn.origin.isUsernameValid(username)
@@ -127,8 +127,8 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext?) : Com
         val msgLog2 = msgLog + "; username='" + actorIn2.getUsername() + "'"
         return connection
                 .getActor(actorIn2)
-                .flatMap { actor: Actor? -> failIfActorIsEmpty(msgLog2, actor) }
-                .map { actor: Actor? ->
+                .flatMap { actor: Actor -> failIfActorIsEmpty(msgLog2, actor) }
+                .map { actor: Actor ->
                     val activity = execContext.myAccount.actor.update(actor)
                     DataUpdater(execContext).onActivity(activity)
                     true
@@ -193,7 +193,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext?) : Com
     /**
      * @param follow true - Follow, false - Stop following
      */
-    private fun followOrStopFollowingActor(actor: Actor?, follow: Boolean): Try<Boolean> {
+    private fun followOrStopFollowingActor(actor: Actor, follow: Boolean): Try<Boolean> {
         val method = (if (follow) "follow" else "stopFollowing") + "Actor"
         return connection
                 .follow(actor.oid, follow)
@@ -201,20 +201,20 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext?) : Com
                     val friend = activity.getObjActor()
                     friend.isMyFriend = TriState.UNKNOWN // That "hack" attribute may only confuse us here as it can show outdated info
                     failIfActorIsEmpty(method, friend)
-                            .map(CheckedFunction { a: Actor? ->
+                            .map(CheckedFunction { a: Actor ->
                                 DataUpdater(execContext).onActivity(activity)
                                 true
                             })
                 }
     }
 
-    private fun failIfActorIsEmpty(method: String?, actor: Actor?): Try<Actor> {
+    private fun failIfActorIsEmpty(method: String?, actor: Actor): Try<Actor> {
         return if (actor == null || actor.isEmpty) {
             logExecutionError(false, "Actor is empty, $method")
         } else Try.success(actor)
     }
 
-    private fun actorInfoLogged(actor: Actor?): String? {
+    private fun actorInfoLogged(actor: Actor): String? {
         return actor.toString()
     }
 

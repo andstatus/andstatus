@@ -850,7 +850,7 @@ class TimelineSyncTrackerTest {
                 timeline.isValid() && timeline.isDisplayedInSelector() != DisplayedInSelector.NEVER)
     }
 
-    private fun findTimeline(myContext: MyContext?, timelineType: TimelineType?, ma: MyAccount?): Timeline {
+    private fun findTimeline(myContext: MyContext?, timelineType: TimelineType?, ma: MyAccount): Timeline {
         return myContext.timelines().filter(false, TriState.UNKNOWN, timelineType, ma.actor,
                 ma.origin).findFirst().orElse(Timeline.EMPTY)
     }

@@ -17,6 +17,6 @@ package org.andstatus.app.net.social.pumpio
  */ /**
  * @see [Properties](https://www.w3.org/TR/activitystreams-vocabulary/.properties)
  */
-internal enum class Properties(val code: String?) {
+internal enum class Properties(val code: String) {
     GENERATOR("generator");
 }

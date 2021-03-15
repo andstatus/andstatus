@@ -63,7 +63,7 @@ abstract class BaseTimelineAdapter<T : ViewItem<T>>(
         return listData.getItem(position)
     }
 
-    fun getItem(view: View): T? {
+    fun getItem(view: View): T {
         return getItem(getPosition(view))
     }
 

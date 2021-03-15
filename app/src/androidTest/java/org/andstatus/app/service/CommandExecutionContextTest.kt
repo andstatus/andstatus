@@ -776,7 +776,7 @@ import org.andstatus.app.ActivityTestHelper.MenuItemClicker
 import org.andstatus.app.MenuItemMock
 
 class CommandExecutionContextTest {
-    private var ma: MyAccount? = null
+    private var ma: MyAccount = null
     @Before
     @Throws(Exception::class)
     fun setUp() {

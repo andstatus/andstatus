@@ -17,73 +17,73 @@ package org.andstatus.app.note
 
 import android.view.View
 import org.andstatus.app.data.NoteContextMenuData
-import org.andstatus.app.note.NoteViewItem
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.util.MyLog
 import java.util.function.Consumer
 
-internal class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*>?) {
-    internal enum class StateForSelectedViewItem {
+class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*>?) {
+    enum class StateForSelectedViewItem {
         READY, LOADING, NEW
     }
 
-    private val activityId: Long
-    private val noteId: Long
+    private val activityId: Long = viewItem?.getActivityId() ?: 0
+    private val noteId: Long = viewItem?.getNoteId() ?: 0
 
     @Volatile
-    var menuData: NoteContextMenuData = NoteContextMenuData.Companion.EMPTY
+    var menuData: NoteContextMenuData = NoteContextMenuData.EMPTY
 
     @Volatile
-    private var loader: MyAsyncTask<Void?, Void?, NoteContextMenuData?>? = null
+    private var loader: MyAsyncTask<Void?, Void?, NoteContextMenuData>? = null
+
     fun getNoteId(): Long {
         return noteId
     }
 
-    fun getStateFor(currentItem: BaseNoteViewItem<*>?): StateForSelectedViewItem? {
-        if (noteId == 0L || currentItem == null || loader == null || currentItem.noteId != noteId) {
+    fun getStateFor(currentItem: BaseNoteViewItem<*>?): StateForSelectedViewItem {
+        if (noteId == 0L || currentItem == null || loader == null || currentItem.getNoteId() != noteId) {
             return StateForSelectedViewItem.NEW
         }
-        if (loader.isReallyWorking()) {
+        if (loader?.isReallyWorking() == true) {
             return StateForSelectedViewItem.LOADING
         }
-        return if (currentItem.noteId == menuData.noteForAnyAccount.noteId) StateForSelectedViewItem.READY else StateForSelectedViewItem.NEW
+        return if (currentItem.getNoteId() == menuData.noteForAnyAccount.noteId) StateForSelectedViewItem.READY else StateForSelectedViewItem.NEW
     }
 
     fun isFor(noteId: Long): Boolean {
-        return (noteId != 0L && loader != null && !loader.needsBackgroundWork()
+        return (noteId != 0L && loader?.needsBackgroundWork() == false
                 && noteId == menuData.noteForAnyAccount.noteId)
     }
 
     companion object {
         private val TAG: String = FutureNoteContextMenuData::class.java.simpleName
         private const val MAX_SECONDS_TO_LOAD = 10
-        val EMPTY: FutureNoteContextMenuData = FutureNoteContextMenuData(NoteViewItem.Companion.EMPTY)
+        val EMPTY: FutureNoteContextMenuData = FutureNoteContextMenuData(NoteViewItem.EMPTY)
+
         fun loadAsync(noteContextMenu: NoteContextMenu,
                       view: View?,
                       viewItem: BaseNoteViewItem<*>?,
-                      next: Consumer<NoteContextMenu?>?) {
+                      next: Consumer<NoteContextMenu>) {
             val menuContainer = noteContextMenu.menuContainer
             val future = FutureNoteContextMenuData(viewItem)
             if (menuContainer != null && view != null && future.noteId != 0L) {
-                future.loader = object : MyAsyncTask<Void?, Void?, NoteContextMenuData?>(
+                future.loader = object : MyAsyncTask<Void?, Void?, NoteContextMenuData>(
                         TAG + future.noteId, PoolEnum.QUICK_UI) {
                     override fun doInBackground2(aVoid: Void?): NoteContextMenuData? {
-                        val selectedMyAccount = noteContextMenu.selectedActingAccount
-                        val currentMyAccount = menuContainer.activity.myContext.accounts().currentAccount
-                        val accountToNote: NoteContextMenuData = NoteContextMenuData.Companion.getAccountToActOnNote(
-                                menuContainer.activity.myContext, future.activityId,
+                        val selectedMyAccount = noteContextMenu.getSelectedActingAccount()
+                        val currentMyAccount = menuContainer.getActivity().myContext.accounts().currentAccount
+                        val accountToNote: NoteContextMenuData = NoteContextMenuData.getAccountToActOnNote(
+                                menuContainer.getActivity().myContext, future.activityId,
                                 future.noteId, selectedMyAccount, currentMyAccount)
                         if (MyLog.isVerboseEnabled()) {
-                            MyLog.v(noteContextMenu, """acting:${accountToNote.myAccount.accountName}${if (accountToNote.myAccount == selectedMyAccount || selectedMyAccount.nonValid) "" else ", selected:" + selectedMyAccount.accountName}${if (accountToNote.myAccount == currentMyAccount || currentMyAccount.nonValid()) "" else ", current:" + currentMyAccount.accountName}
- $accountToNote""")
+                            MyLog.v(noteContextMenu, """acting:${accountToNote.getMyAccount().getAccountName()}${if (accountToNote.getMyAccount() == selectedMyAccount || selectedMyAccount.nonValid) "" else ", selected:" + selectedMyAccount.getAccountName()}${if (accountToNote.getMyAccount() == currentMyAccount || currentMyAccount.nonValid) "" else ", current:" + currentMyAccount.getAccountName()} $accountToNote""")
                         }
-                        return if (accountToNote.myAccount.isValid) accountToNote else NoteContextMenuData.Companion.EMPTY
+                        return if (accountToNote.getMyAccount().isValid) accountToNote else NoteContextMenuData.EMPTY
                     }
 
                     override fun onFinish(menuData: NoteContextMenuData?, success: Boolean) {
-                        future.menuData = menuData ?: NoteContextMenuData.Companion.EMPTY
+                        future.menuData = menuData ?: NoteContextMenuData.EMPTY
                         noteContextMenu.setFutureData(future)
-                        if (future.menuData.noteForAnyAccount.noteId != 0L && noteContextMenu.viewItem.noteId == future.noteId) {
+                        if (future.menuData.noteForAnyAccount.noteId != 0L && noteContextMenu.getViewItem().getNoteId() == future.noteId) {
                             if (next != null) {
                                 next.accept(noteContextMenu)
                             } else {
@@ -94,15 +94,11 @@ internal class FutureNoteContextMenuData private constructor(viewItem: BaseNoteV
                 }
             }
             noteContextMenu.setFutureData(future)
-            if (future.loader != null) {
-                future.loader.setMaxCommandExecutionSeconds(MAX_SECONDS_TO_LOAD.toLong())
-                future.loader.execute()
+            future.loader?.let { loader ->
+                loader.setMaxCommandExecutionSeconds(MAX_SECONDS_TO_LOAD.toLong())
+                loader.execute()
             }
         }
     }
 
-    init {
-        activityId = viewItem?.activityId ?: 0
-        noteId = viewItem?.noteId ?: 0
-    }
 }

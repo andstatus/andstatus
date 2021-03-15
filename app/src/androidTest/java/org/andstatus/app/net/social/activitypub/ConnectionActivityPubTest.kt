@@ -329,7 +329,7 @@ class ConnectionActivityPubTest {
                         CommandEnum.GET_ACTOR, partial, "", mock.getData().origin))
         val activity = executionContext.myAccount.actor.update(received)
         DataUpdater(executionContext).onActivity(activity)
-        val stored: Actor = Actor.Companion.load(executionContext.myContext, received.actorId, true, Supplier<Actor?> { Actor.EMPTY })
+        val stored: Actor = Actor.Companion.load(executionContext.myContext, received.actorId, true, Supplier<Actor> { Actor.EMPTY })
         Assert.assertEquals("Actor's oid $stored", actorOid, stored.oid)
     }
 }

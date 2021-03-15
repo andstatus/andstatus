@@ -61,11 +61,11 @@ class VerifyCredentialsActivityPubTest {
                 actor.oid,
                 MyQuery.idToOid( MyContextHolder.myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0))
         assertActor(actor)
-        val stored: Actor = Actor.Companion.loadFromDatabase(mock.getData().origin.myContext, actorId, Supplier<Actor?> { Actor.EMPTY }, false)
+        val stored: Actor = Actor.Companion.loadFromDatabase(mock.getData().origin.myContext, actorId, Supplier<Actor> { Actor.EMPTY }, false)
         assertActor(stored)
     }
 
-    private fun assertActor(actor: Actor?) {
+    private fun assertActor(actor: Actor) {
         Assert.assertEquals("Username", "AndStatus", actor.getUsername())
         Assert.assertEquals("Name", "AndStatus", actor.getRealName())
         Assert.assertEquals("Summary", "AndStatus - Open Source multiple accounts client for multiple social networks for Android<br><a href=\"http://andstatus.org/\">http://andstatus.org/</a>", actor.getSummary())

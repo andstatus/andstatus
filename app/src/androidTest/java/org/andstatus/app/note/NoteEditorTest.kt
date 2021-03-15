@@ -88,7 +88,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem?>() {
         return Intent(Intent.ACTION_VIEW, timeline.uri)
     }
 
-    private fun getStaticData(ma: MyAccount?): NoteEditorData? {
+    private fun getStaticData(ma: MyAccount): NoteEditorData? {
         return NoteEditorData.Companion.newReplyTo(MyQuery.oidToId(OidEnum.NOTE_OID, ma.origin.id,
                 DemoData.demoData.conversationEntryNoteOid), ma)
                 .addToAudience(MyQuery.oidToId(OidEnum.ACTOR_OID, ma.origin.id,

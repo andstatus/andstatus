@@ -22,8 +22,9 @@ import org.andstatus.app.data.DownloadData
 import org.andstatus.app.data.NoteContextMenuData
 import org.andstatus.app.util.MyLog
 
-class AttachmentDownloader(myContext: MyContext?, data: DownloadData?) : FileDownloader(myContext, data) {
-    override fun findBestAccountForDownload(): MyAccount? {
+class AttachmentDownloader(myContext: MyContext, data: DownloadData) : FileDownloader(myContext, data) {
+
+    override fun findBestAccountForDownload(): MyAccount {
         return NoteContextMenuData.Companion.getBestAccountToDownloadNote( MyContextHolder.myContextHolder.getNow(), data.noteId)
     }
 

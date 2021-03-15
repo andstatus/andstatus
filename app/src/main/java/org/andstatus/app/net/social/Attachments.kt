@@ -40,11 +40,11 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
         return attachments
     }
 
-    fun save(execContext: CommandExecutionContext?, noteId: Long) {
+    fun save(execContext: CommandExecutionContext, noteId: Long) {
         renumber()
         val downloads: MutableList<DownloadData> = ArrayList()
         for (attachment in list) {
-            val dd: DownloadData = DownloadData.Companion.fromAttachment(noteId, attachment)
+            val dd: DownloadData = DownloadData.fromAttachment(noteId, attachment)
             dd.setDownloadNumber(attachment.getDownloadNumber())
             if (attachment.previewOf.nonEmpty) {
                 dd.setPreviewOfDownloadId( downloads.stream().filter { d: DownloadData -> d.getUri() == attachment.previewOf.uri }.findAny()
@@ -60,16 +60,16 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
                         dd.requestDownload(execContext.myContext)
                     }
                 } else {
-                    FileDownloader.Companion.load(dd, execContext.getCommandData())
+                    FileDownloader.load(dd, execContext.commandData)
                 }
             }
         }
-        DownloadData.Companion.deleteOtherOfThisNote(execContext.getMyContext(), noteId,
-                downloads.stream().map { obj: DownloadData? -> obj.getDownloadId() }.collect(Collectors.toList()))
+        DownloadData.deleteOtherOfThisNote(execContext.myContext, noteId,
+                downloads.stream().map { obj: DownloadData -> obj.getDownloadId() }.collect(Collectors.toList()))
     }
 
     private fun renumber() {
-        val copy: MutableList<Attachment?> = ArrayList(list)
+        val copy: MutableList<Attachment> = ArrayList(list)
         Collections.sort(copy)
         for (ind in copy.indices) {
             copy[ind].setDownloadNumber(ind.toLong())
@@ -85,7 +85,7 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
         list.clear()
     }
 
-    fun copy(): Attachments? {
+    fun copy(): Attachments {
         val attachments = Attachments()
         attachments.list.addAll(list)
         return attachments
@@ -102,11 +102,11 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
     }
 
     fun toUploadCount(): Long {
-        return list.stream().filter { a: Attachment? -> !UriUtils.isDownloadable(a.uri) }.count()
+        return list.stream().filter { a: Attachment -> !UriUtils.isDownloadable(a.uri) }.count()
     }
 
-    fun getFirstToUpload(): Attachment? {
-        return list.stream().filter { a: Attachment? -> !UriUtils.isDownloadable(a.uri) }.findFirst().orElse(Attachment.Companion.EMPTY)
+    fun getFirstToUpload(): Attachment {
+        return list.stream().filter { a: Attachment -> !UriUtils.isDownloadable(a.uri) }.findFirst().orElse(Attachment.EMPTY)
     }
 
     companion object {
@@ -120,7 +120,7 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
             for (downloadData in downloads.list) {
                 map[downloadData.getDownloadId()] = Attachment(downloadData)
             }
-            var attachments: Attachments = Attachments()
+            var attachments = Attachments()
             for (downloadData in downloads.list) {
                 map[downloadData.getDownloadId()]?.let { attachment ->
                     if (downloadData.getPreviewOfDownloadId() != 0L) {
@@ -139,6 +139,6 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
     }
 
     init {
-        list = if (isEmpty) emptyList() else ArrayList()
+        list = if (isEmpty) mutableListOf() else ArrayList()
     }
 }

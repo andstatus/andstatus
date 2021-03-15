@@ -81,7 +81,9 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T>>(contextMenu: NoteContext
     }
 
     protected abstract fun showAvatarEtc(view: ViewGroup, item: T)
-    protected abstract fun showNoteNumberEtc(view: ViewGroup?, item: T?, position: Int)
+
+    protected abstract fun showNoteNumberEtc(view: ViewGroup, item: T, position: Int)
+
     protected fun getEmptyView(convertView: View?): ViewGroup {
         if (convertView == null) return newView()
         convertView.setBackgroundResource(0)

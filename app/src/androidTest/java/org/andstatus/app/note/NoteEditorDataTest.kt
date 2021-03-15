@@ -43,7 +43,7 @@ class NoteEditorDataTest {
         assertData(ma, 0, 0, memberActorId, 0, true)
     }
 
-    private fun assertData(ma: MyAccount?, inReplyToMsgId: Long, inReplyToActorId: Long, recipientId: Long,
+    private fun assertData(ma: MyAccount, inReplyToMsgId: Long, inReplyToActorId: Long, recipientId: Long,
                            memberActorId: Long, replyAll: Boolean) {
         val uri = Uri.parse("http://example.com/" + DemoData.demoData.testRunUid + "/some.png")
         val data: NoteEditorData = NoteEditorData.Companion.newReplyTo(inReplyToMsgId, ma)

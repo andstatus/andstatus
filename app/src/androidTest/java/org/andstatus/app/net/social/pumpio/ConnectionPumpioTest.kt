@@ -139,7 +139,7 @@ class ConnectionPumpioTest {
     @Throws(ConnectionException::class)
     fun testGetConnectionAndUrl() {
         val origin = connection.getData().origin
-        val actors = arrayOf<Actor?>(
+        val actors = arrayOf<Actor>(
                 Actor.Companion.fromOid(origin, "acct:t131t@" + DemoData.demoData.pumpioMainHost)
                         .setWebFingerId("t131t@" + DemoData.demoData.pumpioMainHost),
                 Actor.Companion.fromOid(origin, "somebody@" + DemoData.demoData.pumpioMainHost)
@@ -239,14 +239,14 @@ class ConnectionPumpioTest {
     """.trimIndent(), Visibility.PUBLIC, audience.visibility)
         Assert.assertFalse("Is to Followers. We shouldn't know this yet?! $audience", audience.isFollowers)
         MatcherAssert.assertThat(audience.recipients.toString(),
-                audience.nonSpecialActors.stream().map { obj: Actor? -> obj.getUsername() }.collect(Collectors.toList()),
+                audience.nonSpecialActors.stream().map { obj: Actor -> obj.getUsername() }.collect(Collectors.toList()),
                 Matchers.containsInAnyOrder("user/jpope/followers"))
         val executionContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(),
                 CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, mock.getData().myAccount, TimelineType.HOME))
         DataUpdater(executionContext).onActivity(activity)
         val actorStored: Actor = Actor.Companion.loadFromDatabase(mock.getData().origin.myContext, actor.actorId,
-                Supplier<Actor?> { Actor.EMPTY }, false)
+                Supplier<Actor> { Actor.EMPTY }, false)
         assertJpopeActor(actorStored, true)
         val noteStored: Note = Note.Companion.loadContentById(mock.getData().origin.myContext, note.noteId)
         val audienceStored = noteStored.audience()
@@ -256,7 +256,7 @@ class ConnectionPumpioTest {
         MatcherAssert.assertThat(audienceStored.recipients.toString(), audienceStored.nonSpecialActors, Matchers.`is`(Matchers.empty()))
     }
 
-    private fun assertJpopeActor(actor: Actor?, stored: Boolean) {
+    private fun assertJpopeActor(actor: Actor, stored: Boolean) {
         Assert.assertEquals("Sender's oid", "acct:jpope@io.jpope.org", actor.oid)
         Assert.assertEquals("Sender's username", "jpope", actor.getUsername())
         Assert.assertEquals("Sender's unique name in Origin", "jpope@io.jpope.org", actor.uniqueName)

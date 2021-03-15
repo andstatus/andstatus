@@ -21,12 +21,12 @@ class NoteDownloads private constructor(val noteId: Long, val list: List<Downloa
                                 .orElse(list.stream().findFirst().orElse(DownloadData.EMPTY)))
     }
 
-    fun getFirstToShare(): DownloadData? {
+    fun getFirstToShare(): DownloadData {
         return list.stream().filter { d: DownloadData -> d.getPreviewOfDownloadId() == 0L }.findFirst()
                 .orElse(list.stream().findFirst().orElse(DownloadData.EMPTY))
     }
 
-    fun fromId(downloadId: Long): DownloadData? {
+    fun fromId(downloadId: Long): DownloadData {
         return list.stream().filter { d: DownloadData -> d.getDownloadId() == downloadId }.findFirst().orElse(DownloadData.EMPTY)
     }
 

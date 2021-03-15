@@ -18,7 +18,6 @@ package org.andstatus.app.util
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
 import android.text.Html
@@ -60,7 +59,7 @@ class MyUrlSpan : URLSpan {
                 MyContextHolder.myContextHolder.getNow().timelines()
                         .get(TimelineType.SEARCH, Actor.EMPTY, Origin.EMPTY, s)
             })
-                    .orElse(actor.map({ a: Actor? ->
+                    .orElse(actor.map({ a: Actor ->
                         MyContextHolder.myContextHolder.getNow().timelines().forUserAtHomeOrigin(TimelineType.SENT, a)
                     })
                             .orElse(Timeline.EMPTY))
@@ -68,7 +67,7 @@ class MyUrlSpan : URLSpan {
 
         override fun toString(): String = "MyUrlSpan{" +
             Stream.of(
-                    actor.map { obj: Actor? -> obj.toString() },
+                    actor.map { obj: Actor -> obj.toString() },
                     searchQuery.map { obj: String? -> obj.toString() },
                     url.map { obj: String? -> obj.toString() }
             )
@@ -95,9 +94,9 @@ class MyUrlSpan : URLSpan {
             MyLog.v(this, e)
             try {
                 MyLog.i(this, "Malformed link:'$url', $data")
-                val context: Context? = MyContextHolder.myContextHolder.getNow().context()
-                if (context != null) {
-                    Toast.makeText(context, context.getText(R.string.malformed_link)
+                val myContext = MyContextHolder.myContextHolder.getNow()
+                if (myContext.nonEmpty) {
+                    Toast.makeText(myContext.context(), myContext.context().getText(R.string.malformed_link)
                             .toString() + "\n URL:'" + url + "'", Toast.LENGTH_SHORT).show()
                 }
             } catch (e2: Exception) {
@@ -107,9 +106,9 @@ class MyUrlSpan : URLSpan {
             MyLog.v(this, e)
             try {
                 MyLog.i(this, "Malformed link:'$url', $data")
-                val context: Context? =  MyContextHolder.myContextHolder.getNow().context()
-                if (context != null) {
-                    Toast.makeText(context, context.getText(R.string.malformed_link)
+                val myContext = MyContextHolder.myContextHolder.getNow()
+                if (myContext.nonEmpty) {
+                    Toast.makeText(myContext.context(), myContext.context().getText(R.string.malformed_link)
                             .toString() + "\n URL:'" + url + "'", Toast.LENGTH_SHORT).show()
                 }
             } catch (e2: Exception) {
@@ -131,7 +130,8 @@ class MyUrlSpan : URLSpan {
         val SOFT_HYPHEN: String = "\u00AD"
         val EMPTY_SPANNABLE: Spannable = SpannableString("")
         val EMPTY_URL: String = "content://"
-        val CREATOR: Parcelable.Creator<MyUrlSpan> = object : Parcelable.Creator<MyUrlSpan> {
+
+        @JvmField val CREATOR: Parcelable.Creator<MyUrlSpan> = object : Parcelable.Creator<MyUrlSpan> {
             override fun createFromParcel(parcel: Parcel): MyUrlSpan {
                 return MyUrlSpan(parcel.readString() ?: "")
             }
@@ -178,8 +178,8 @@ class MyUrlSpan : URLSpan {
             }
         }
 
-        fun toSpannable(text: String?, mediaType: TextMediaType?, linkify: Boolean): Spannable {
-            var text = text
+        fun toSpannable(textIn: String?, mediaType: TextMediaType?, linkify: Boolean): Spannable {
+            var text = textIn
             if (text.isNullOrEmpty()) return EMPTY_SPANNABLE
 
             // Android 6 bug, see https://github.com/andstatus/andstatus/issues/334
@@ -237,7 +237,7 @@ class MyUrlSpan : URLSpan {
                     y += widget.getScrollY()
                     val layout = widget.getLayout()
                     val line = layout.getLineForVertical(y.toInt())
-                    val off = layout.getOffsetForHorizontal(line, x.toFloat())
+                    val off = layout.getOffsetForHorizontal(line, x)
                     val link = buffer.getSpans(off, off,
                             ClickableSpan::class.java)
                     if (link.size > 0) {
@@ -279,7 +279,7 @@ class MyUrlSpan : URLSpan {
             }
         }
 
-        fun getUrlSpans(view: View?): Array<URLSpan?>? {
+        fun getUrlSpans(view: View?): Array<URLSpan> {
             if (view is TextView) {
                 val text = view.getText()
                 if (text is Spanned) {

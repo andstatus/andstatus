@@ -83,8 +83,8 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
     /**
      * @return Was the MyAccount (and Account) deleted?
      */
-    fun delete(ma: MyAccount?): Boolean {
-        val myAccountToDelete = myAccounts.stream().filter { myAccount: MyAccount? -> myAccount == ma }
+    fun delete(ma: MyAccount): Boolean {
+        val myAccountToDelete = myAccounts.stream().filter { myAccount: MyAccount -> myAccount == ma }
                 .findFirst().orElse(MyAccount.EMPTY)
         if (myAccountToDelete.nonValid) return false
         MyAccount.Builder.fromMyAccount(myAccountToDelete).deleteData()
@@ -322,7 +322,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
      * Find MyAccount, which may be linked to a note in this origin.
      * First try two supplied accounts, then try any other existing account
      */
-    fun getAccountForThisNote(origin: Origin, firstAccount: MyAccount?, preferredAccount: MyAccount?,
+    fun getAccountForThisNote(origin: Origin, firstAccount: MyAccount, preferredAccount: MyAccount,
                               succeededOnly: Boolean): MyAccount {
         val method = "getAccountForThisNote"
         var ma = firstAccount ?: MyAccount.EMPTY
@@ -344,7 +344,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
         return ma
     }
 
-    private fun accountFits(ma: MyAccount?, origin: Origin, succeededOnly: Boolean): Boolean {
+    private fun accountFits(ma: MyAccount, origin: Origin, succeededOnly: Boolean): Boolean {
         return (ma != null && (if (succeededOnly) ma.isValidAndSucceeded() else ma.isValid)
                 && (!origin.isValid() || ma.origin == origin))
     }
@@ -360,7 +360,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
     }
 
     /** Set provided MyAccount as the Current one  */
-    fun setCurrentAccount(ma: MyAccount?) {
+    fun setCurrentAccount(ma: MyAccount) {
         val prevAccount = currentAccount
         if (ma == null || ma.nonValid || ma == prevAccount) return
         MyLog.v(this) {

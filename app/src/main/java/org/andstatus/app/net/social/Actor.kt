@@ -164,7 +164,7 @@ class Actor private constructor(// In our system
         return !isFullyDefined()
     }
 
-    fun isBetterToCacheThan(other: Actor?): Boolean {
+    fun isBetterToCacheThan(other: Actor): Boolean {
         if (this === other) return false
         if (other == null || other === EMPTY ||
                 isFullyDefined() && other.isNotFullyDefined()) return true
@@ -273,7 +273,7 @@ class Actor private constructor(// In our system
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        return if (other !is Actor) false else isSame(other as Actor?, true)
+        return if (other !is Actor) false else isSame(other as Actor, true)
     }
 
     override fun hashCode(): Int {
@@ -292,11 +292,11 @@ class Actor private constructor(// In our system
     }
 
     /** Doesn't take origin into account  */
-    fun isSame(that: Actor?): Boolean {
+    fun isSame(that: Actor): Boolean {
         return isSame(that, false)
     }
 
-    fun isSame(other: Actor?, sameOriginOnly: Boolean): Boolean {
+    fun isSame(other: Actor, sameOriginOnly: Boolean): Boolean {
         if (this === other) return true
         if (other == null) return false
         if (actorId != 0L) {
@@ -498,7 +498,7 @@ class Actor private constructor(// In our system
             actor.setWebFingerId(webFingerId)
             actor.setUsername(validUsername)
         } else {
-            // Is this a reply to Actor?
+            // Is this a reply to Actor
             if (validUsername.equals(inReplyToActor.getUsername(), ignoreCase = true)) {
                 actor = inReplyToActor
             } else if (validUsername.equals(getUsername(), ignoreCase = true)) {

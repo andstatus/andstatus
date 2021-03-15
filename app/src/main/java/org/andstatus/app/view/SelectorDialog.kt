@@ -46,7 +46,7 @@ open class SelectorDialog : DialogFragment() {
     private var toolbar: Toolbar? = null
     var listView: ListView? = null
     private val mLayoutId = R.layout.my_list_dialog
-    protected var myContext: MyContext? =  MyContextHolder.myContextHolder.getNow()
+    protected var myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
     private var resultReturned = false
 
     fun setRequestCode(requestCode: ActivityRequestCode): Bundle {

@@ -37,7 +37,7 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
     var actorFollowed = false
     var authorFollowed = false
 
-    private fun calculateMyAccount(origin: Origin, ma: MyAccount?): MyAccount {
+    private fun calculateMyAccount(origin: Origin, ma: MyAccount): MyAccount {
         return if (ma == null || !origin.isValid() || ma.origin != origin || ma.nonValid) {
             MyAccount.EMPTY
         } else ma
@@ -125,7 +125,7 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
 
         fun getAccountToActOnNote(myContext: MyContext, activityId: Long, noteId: Long,
                                   myActingAccount: MyAccount,
-                                  currentAccount: MyAccount): NoteContextMenuData? {
+                                  currentAccount: MyAccount): NoteContextMenuData {
             val noteForAnyAccount = NoteForAnyAccount(myContext, activityId, noteId)
             val menuDataList = getMenuData(myContext, noteForAnyAccount)
             val acting = menuDataList.stream().filter { atn: NoteContextMenuData -> atn.myAccount == myActingAccount }
