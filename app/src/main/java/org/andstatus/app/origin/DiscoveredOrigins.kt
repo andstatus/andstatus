@@ -36,9 +36,9 @@ object DiscoveredOrigins {
         return mOrigins.values
     }
 
-    fun fromName(originName: String?): Origin? {
+    fun fromName(originName: String?): Origin {
         return if (!originName.isNullOrEmpty() && mOrigins.containsKey(originName)) {
-            mOrigins[originName]
+            mOrigins[originName] ?: Origin.EMPTY
         } else {
              Origin.EMPTY
         }

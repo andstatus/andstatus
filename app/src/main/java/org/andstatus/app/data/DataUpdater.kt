@@ -458,7 +458,8 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
     companion object {
         const val MAX_RECURSING = 4
         val MSG_ASSERTION_KEY: String = "updateNote"
-        fun onActivities(execContext: CommandExecutionContext, activities: MutableList<AActivity>) {
+
+        fun onActivities(execContext: CommandExecutionContext, activities: List<AActivity>) {
             val dataUpdater = DataUpdater(execContext)
             for (mbActivity in activities) {
                 dataUpdater.onActivity(mbActivity)

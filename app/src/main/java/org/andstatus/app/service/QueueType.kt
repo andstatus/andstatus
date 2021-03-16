@@ -1,15 +1,17 @@
 package org.andstatus.app.service
 
-enum class QueueType(private val code: String?, private val acronym: String?, private val executable: Boolean, val createQueue: Boolean, val onAddRemoveExisting: Boolean) {
-    CURRENT("current", "C", true, true, false), DOWNLOADS("downloads", "D", true, true, false), RETRY("retry", "R", true, true, true), ERROR("error", "E", false, true, true), PRE("pre", "P", true, false, false), SKIPPED("skipped", "S", true, true, true), UNKNOWN("unknown", "U", false, false, false);
+enum class QueueType(val code: String, val acronym: String, val executable: Boolean, val createQueue: Boolean, val onAddRemoveExisting: Boolean) {
+    CURRENT("current", "C", true, true, false),
+    DOWNLOADS("downloads", "D", true, true, false),
+    RETRY("retry", "R", true, true, true),
+    ERROR("error", "E", false, true, true),
+    PRE("pre", "P", true, false, false),
+    SKIPPED("skipped", "S", true, true, true),
+    UNKNOWN("unknown", "U", false, false, false);
 
     /** String to be used for persistence  */
-    fun save(): String? {
+    fun save(): String {
         return code
-    }
-
-    fun getAcronym(): String? {
-        return acronym
     }
 
     fun isExecutable(): Boolean {

@@ -89,8 +89,6 @@ import org.andstatus.app.util.TriState
 import org.andstatus.app.util.ViewUtils
 import org.andstatus.app.view.MyContextMenu
 import java.util.*
-import java.util.function.BooleanSupplier
-import java.util.function.Consumer
 
 /**
  * @author yvolk@yurivolkov.com
@@ -362,7 +360,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
         }
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         menu ?: return false
 
         val ma = myContext.accounts().currentAccount
@@ -911,7 +909,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
         when (ActivityRequestCode.fromId(requestCode)) {
             ActivityRequestCode.SELECT_ACCOUNT -> onAccountSelected(data)
             ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS -> setSelectedActingAccount(data)
-            ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA -> sharedNote.ifPresent { shared: SharedNote? ->
+            ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA -> sharedNote.ifPresent { shared: SharedNote ->
                 getNoteEditor()?.startEditingSharedData(
                         myContext.accounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)),
                         shared)

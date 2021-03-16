@@ -33,22 +33,22 @@ import org.andstatus.app.timeline.WhichPage
 import org.andstatus.app.util.MyLog
 import java.util.*
 import java.util.function.Consumer
-import java.util.function.Function
 
-class QueueViewer : LoadableListActivity<Any?>() {
+class QueueViewer : LoadableListActivity<QueueData>() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         mLayoutId = R.layout.my_list
         super.onCreate(savedInstanceState)
     }
 
-    override fun newSyncLoader(args: Bundle?): SyncLoader<QueueData?>? {
-        return object : SyncLoader<QueueData?>() {
+    override fun newSyncLoader(args: Bundle?): SyncLoader<QueueData> {
+        return object : SyncLoader<QueueData>() {
             override fun load(publisher: ProgressPublisher?) {
-                val queueTypes = arrayOf<QueueType?>(QueueType.CURRENT, QueueType.SKIPPED, QueueType.RETRY, QueueType.ERROR)
+                val queueTypes = arrayOf<QueueType>(QueueType.CURRENT, QueueType.SKIPPED, QueueType.RETRY, QueueType.ERROR)
                 for (queueType in queueTypes) {
                     val oneQueue = myContext.queues()[queueType]
                     for (commandData in oneQueue.queue) {
-                        items.add(QueueData.Companion.getNew(queueType, commandData))
+                        items.add(QueueData.getNew(queueType, commandData))
                     }
                 }
                 Collections.sort(items)
@@ -56,8 +56,8 @@ class QueueViewer : LoadableListActivity<Any?>() {
         }
     }
 
-    override fun newListAdapter(): BaseTimelineAdapter<*>? {
-        return QueueViewerAdapter(this, loaded.getList())
+    override fun newListAdapter(): BaseTimelineAdapter<QueueData> {
+        return QueueViewerAdapter(this, getLoaded().getList() as MutableList<QueueData>)
     }
 
     private var queueData: QueueData? = null
@@ -66,47 +66,50 @@ class QueueViewer : LoadableListActivity<Any?>() {
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.getItemId()) {
-            R.id.clear_the_queue -> AsyncTaskLauncher.Companion.execute<QueueViewer?, Void?>(this,
-                    Function<QueueViewer?, Try<Void>> { activity: QueueViewer? ->  MyContextHolder.myContextHolder.getBlocking().queues().clear() },
-                    Function { activity: QueueViewer? -> Consumer { r: Try<Void> -> activity.showList(WhichPage.CURRENT) } })
+            R.id.clear_the_queue -> AsyncTaskLauncher.execute<QueueViewer?, Void>(this,
+                    { activity: QueueViewer? ->  MyContextHolder.myContextHolder.getBlocking().queues().clear() },
+                    { activity: QueueViewer? -> Consumer { r: Try<Void> -> activity?.showList(WhichPage.CURRENT) } })
             else -> return super.onOptionsItemSelected(item)
         }
         return false
     }
 
-    override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?) {
+    override fun onCreateContextMenu(menu: ContextMenu?, v: View, menuInfo: ContextMenuInfo?) {
         super.onCreateContextMenu(menu, v, menuInfo)
-        queueData = listAdapter.getItem(v) as QueueData?
+        queueData = getListAdapter().getItem(v)
         val inflater = menuInflater
         inflater.inflate(R.menu.queue_context_menu, menu)
     }
 
-    override fun onContextItemSelected(item: MenuItem?): Boolean {
-        return if (queueData == null) {
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        val data = queueData
+        return if (data == null) {
             super.onContextItemSelected(item)
         } else when (item.getItemId()) {
             R.id.menuItemShare -> {
-                share(queueData)
+                share(data)
                 true
             }
             R.id.menuItemResend -> {
-                queueData.commandData.resetRetries()
-                MyServiceManager.Companion.sendManualForegroundCommand(queueData.commandData)
+                data.commandData.resetRetries()
+                MyServiceManager.sendManualForegroundCommand(data.commandData)
                 true
             }
             R.id.menuItemDelete -> {
-                AsyncTaskLauncher.Companion.execute<QueueViewer?, Void?>(this,
-                        Function<QueueViewer?, Try<Void>> { activity: QueueViewer? ->  MyContextHolder.myContextHolder.getBlocking().queues().deleteCommand(queueData.commandData) },
-                        Function { activity: QueueViewer? -> Consumer { r: Try<Void> -> activity.showList(WhichPage.CURRENT) } })
+                AsyncTaskLauncher.execute<QueueViewer?, Void>(this,
+                        { activity: QueueViewer? ->
+                            MyContextHolder.myContextHolder.getBlocking().queues().deleteCommand(data.commandData)
+                        },
+                        { activity: QueueViewer? -> Consumer { r: Try<Void> -> activity?.showList(WhichPage.CURRENT) } })
                 true
             }
             else -> super.onContextItemSelected(item)
         }
     }
 
-    private fun share(queueData: QueueData?) {
+    private fun share(queueData: QueueData) {
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "text/plain"
         intent.putExtra(Intent.EXTRA_SUBJECT, queueData.toSharedSubject())
@@ -114,7 +117,7 @@ class QueueViewer : LoadableListActivity<Any?>() {
         startActivity(Intent.createChooser(intent, getText(R.string.menu_item_share)))
     }
 
-    override fun onReceive(commandData: CommandData?, myServiceEvent: MyServiceEvent?) {
+    override fun onReceive(commandData: CommandData, myServiceEvent: MyServiceEvent) {
         if (MyServiceEvent.ON_STOP == myServiceEvent) {
             MyLog.v(this, "On service stop")
             showList(WhichPage.CURRENT)

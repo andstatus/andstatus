@@ -23,7 +23,6 @@ import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.lang.SelectableEnum
 import org.andstatus.app.lang.SelectableEnumList
-import org.andstatus.app.origin.OriginType
 import java.util.*
 
 /**
@@ -42,17 +41,17 @@ class EnumSelector<E>(private val enumList: SelectableEnumList<E>) : SelectorDia
         setTitle(enums.getDialogTitleResId())
         setListAdapter(newListAdapter())
         listView?.onItemClickListener = OnItemClickListener { parent, view, position, id ->
-            returnSelected(Intent().putExtra(IntentExtra.SELECTABLE_ENUM.key, enums[position]?.getCode() ?: 0)) }
+            returnSelected(Intent().putExtra(IntentExtra.SELECTABLE_ENUM.key, enums[position].getCode() ?: 0)) }
     }
 
     private fun newListAdapter(): MySimpleAdapter {
-        val list: MutableList<MutableMap<String?, String?>?> = ArrayList()
+        val list: MutableList<MutableMap<String, String>> = ArrayList()
         for (value in enumList.getList()) {
-            val map: MutableMap<String?, String?> = HashMap()
+            val map: MutableMap<String, String> = HashMap()
             map[KEY_VISIBLE_NAME] = value.title(activity).toString()
             list.add(map)
         }
-        return MySimpleAdapter(activity,
+        return MySimpleAdapter(activity ?: throw IllegalStateException("No activity"),
                 list,
                 R.layout.accountlist_item, arrayOf(KEY_VISIBLE_NAME), intArrayOf(R.id.visible_name), true)
     }
@@ -60,7 +59,7 @@ class EnumSelector<E>(private val enumList: SelectableEnumList<E>) : SelectorDia
     companion object {
         private val KEY_VISIBLE_NAME: String = "visible_name"
         fun <E> newInstance(
-                requestCode: ActivityRequestCode, clazz: Class<OriginType>): SelectorDialog where E : Enum<E>, E : SelectableEnum? {
+                requestCode: ActivityRequestCode, clazz: Class<E>): SelectorDialog where E : Enum<E>, E : SelectableEnum? {
             val selector: EnumSelector<*> = EnumSelector<E>(SelectableEnumList.newInstance(clazz))
             selector.setRequestCode(requestCode)
             return selector

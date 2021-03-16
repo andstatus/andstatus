@@ -26,8 +26,9 @@ import org.andstatus.app.timeline.LoadableListActivity
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.view.MyContextMenu
 
-class ManageTimelinesContextMenu(listActivity: LoadableListActivity<*>?) : MyContextMenu(listActivity, 0) {
-    override fun onCreateContextMenu(menu: ContextMenu?, v: View?, menuInfo: ContextMenuInfo?) {
+class ManageTimelinesContextMenu(listActivity: LoadableListActivity<ManageTimelinesViewItem>) : MyContextMenu(listActivity, 0) {
+
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
         val method = "onCreateContextMenu"
         super.onCreateContextMenu(menu, v, menuInfo)
         if (getViewItem() == null) {

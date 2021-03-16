@@ -45,12 +45,12 @@ class OriginSelector : SelectorDialog() {
             returnSelectedItem( Origin.EMPTY)
             return
         } else if (listData.size == 1) {
-            returnSelectedItem(listData.get(0))
+            returnSelectedItem(listData[0])
             return
         }
         setListAdapter(newListAdapter(listData))
-        listView.onItemClickListener = OnItemClickListener { parent: AdapterView<*>?, view: View?, position: Int, id: Long ->
-            val selectedId = (view.findViewById<View?>(R.id.id) as TextView).text.toString().toLong()
+        listView?.onItemClickListener = OnItemClickListener { parent: AdapterView<*>, view: View, position: Int, id: Long ->
+            val selectedId = (view.findViewById<View>(R.id.id) as TextView).text.toString().toLong()
             returnSelectedItem( MyContextHolder.myContextHolder.getNow().origins().fromId(selectedId))
         }
     }
@@ -61,23 +61,23 @@ class OriginSelector : SelectorDialog() {
 
     private fun getOriginsForActor(): MutableList<Origin> {
         val actorId = Optional.ofNullable(arguments)
-                .map { bundle: Bundle? -> bundle.getLong(IntentExtra.ACTOR_ID.key) }.orElse(0L)
-        return Actor.Companion.load( MyContextHolder.myContextHolder.getNow(), actorId).user.knownInOrigins( MyContextHolder.myContextHolder.getNow())
+                .map { bundle: Bundle -> bundle.getLong(IntentExtra.ACTOR_ID.key) }.orElse(0L)
+        return Actor.load( MyContextHolder.myContextHolder.getNow(), actorId).user.knownInOrigins( MyContextHolder.myContextHolder.getNow())
     }
 
     private fun newListAdapter(listData: MutableList<Origin>): MySimpleAdapter {
-        val list: MutableList<MutableMap<String?, String?>?> = ArrayList()
+        val list: MutableList<MutableMap<String, String>> = ArrayList()
         for (item in listData) {
-            val map: MutableMap<String?, String?> = HashMap()
+            val map: MutableMap<String, String> = HashMap()
             var visibleName: String = item.name
             if (!item.isValid()) {
                 visibleName = "($visibleName)"
             }
             map[KEY_VISIBLE_NAME] = visibleName
-            map[BaseColumns._ID] = java.lang.Long.toString(item.id)
+            map[BaseColumns._ID] = item.id.toString()
             list.add(map)
         }
-        return MySimpleAdapter(activity,
+        return MySimpleAdapter(activity ?: throw IllegalStateException("No activity"),
                 list,
                 R.layout.accountlist_item, arrayOf(KEY_VISIBLE_NAME, KEY_SYNC_AUTO, BaseColumns._ID), intArrayOf(R.id.visible_name, R.id.sync_auto, R.id.id), true)
     }
@@ -86,7 +86,7 @@ class OriginSelector : SelectorDialog() {
         returnSelected(Intent()
                 .putExtra(IntentExtra.ORIGIN_NAME.key, item.name)
                 .putExtra(IntentExtra.MENU_GROUP.key,
-                        myGetArguments().getInt(IntentExtra.MENU_GROUP.key, MyContextMenu.Companion.MENU_GROUP_NOTE))
+                        myGetArguments().getInt(IntentExtra.MENU_GROUP.key, MyContextMenu.MENU_GROUP_NOTE))
         )
     }
 

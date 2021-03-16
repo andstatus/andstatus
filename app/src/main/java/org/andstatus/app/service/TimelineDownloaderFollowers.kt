@@ -18,17 +18,17 @@ package org.andstatus.app.service
 import io.vavr.control.Try
 import org.andstatus.app.net.social.ApiRoutineEnum
 
-internal class TimelineDownloaderFollowers(execContext: CommandExecutionContext?) : TimelineDownloader(execContext) {
+internal class TimelineDownloaderFollowers(execContext: CommandExecutionContext) : TimelineDownloader(execContext) {
     override fun download(): Try<Boolean> {
         val strategy: CommandExecutorStrategy = CommandExecutorFollowers(execContext)
         return strategy.execute()
     }
 
-    public override fun isApiSupported(routine: ApiRoutineEnum?): Boolean {
+    override fun isApiSupported(routine: ApiRoutineEnum): Boolean {
         return super.isApiSupported(routine) || super.isApiSupported(getAlternativeApiRoutine(routine))
     }
 
-    private fun getAlternativeApiRoutine(routine: ApiRoutineEnum?): ApiRoutineEnum? {
+    private fun getAlternativeApiRoutine(routine: ApiRoutineEnum?): ApiRoutineEnum {
         return when (routine) {
             ApiRoutineEnum.GET_FOLLOWERS -> ApiRoutineEnum.GET_FOLLOWERS_IDS
             ApiRoutineEnum.GET_FOLLOWERS_IDS -> ApiRoutineEnum.GET_FOLLOWERS

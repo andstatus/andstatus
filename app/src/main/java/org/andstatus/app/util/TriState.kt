@@ -72,8 +72,8 @@ enum class TriState(val id: Long, val isTrue: Boolean, isFalse: Boolean) {
             return fromId(BundleUtils.fromBundle(bundle, intentExtra, UNKNOWN.id))
         }
 
-        fun fromEntriesPosition(position: Int): TriState? {
-            var obj: TriState? = UNKNOWN
+        fun fromEntriesPosition(position: Int): TriState {
+            var obj: TriState = UNKNOWN
             for (`val` in values()) {
                 if (`val`.ordinal == position) {
                     obj = `val`

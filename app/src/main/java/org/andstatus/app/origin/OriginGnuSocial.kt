@@ -24,14 +24,14 @@ import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
 
-internal class OriginGnuSocial(myContext: MyContext?, originType: OriginType?) : Origin(myContext, originType) {
-    override fun alternativeNotePermalink(noteId: Long): String? {
+internal class OriginGnuSocial(myContext: MyContext, originType: OriginType) : Origin(myContext, originType) {
+    override fun alternativeNotePermalink(noteId: Long): String {
         try {
             return URL(url,
-                    (if (Visibility.Companion.fromNoteId(noteId).isPrivate) "message" else "notice") + "/"
+                    (if (Visibility.fromNoteId(noteId).isPrivate) "message" else "notice") + "/"
                             + MyQuery.noteIdToStringColumnValue(NoteTable.NOTE_OID, noteId)).toExternalForm()
         } catch (e: MalformedURLException) {
-            MyLog.d(this, "Malformed URL from '" + url.toExternalForm() + "'", e)
+            MyLog.d(this, "Malformed URL from '" + url?.toExternalForm() + "'", e)
         }
         return ""
     }

@@ -3,7 +3,6 @@ package org.andstatus.app.service
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.os.MyAsyncTask
-import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.CommandQueue.AccessorType
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
@@ -13,16 +12,17 @@ import org.andstatus.app.util.SharedPreferencesUtil
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicLong
 
-internal class QueueExecutor(myService: MyService?, accessorType: AccessorType?) : MyAsyncTask<Void?, Void?, Boolean?>(TAG + "-" + accessorType, PoolEnum.SYNC), CommandExecutorParent {
-    private val myServiceRef: WeakReference<MyService?>?
-    private val accessorType: AccessorType?
-    private val executedCounter: AtomicLong? = AtomicLong()
-    override fun instanceTag(): String? {
+class QueueExecutor(myService: MyService, accessorType: AccessorType) : MyAsyncTask<Void?, Void?, Boolean?>(TAG + "-" + accessorType, PoolEnum.SYNC), CommandExecutorParent {
+    private val myServiceRef: WeakReference<MyService>?
+    private val accessorType: AccessorType
+    private val executedCounter: AtomicLong = AtomicLong()
+
+    override fun instanceTag(): String {
         return super.instanceTag() + "-" + accessorType
     }
 
-    override fun doInBackground2(aVoid: Void?): Boolean? {
-        val myService = myServiceRef.get()
+    override fun doInBackground2(aVoid: Void?): Boolean {
+        val myService = myServiceRef?.get()
         if (myService == null) {
             MyLog.v(this) { "Didn't start, no reference to MyService" }
             return true
@@ -32,7 +32,7 @@ internal class QueueExecutor(myService: MyService?, accessorType: AccessorType?)
         MyLog.v(this) { "Started, " + accessor.countToExecuteNow() + " commands to process" }
         val breakReason: String
         do {
-            if (isStopping) {
+            if (isStopping()) {
                 breakReason = "isStopping"
                 break
             }
@@ -49,7 +49,7 @@ internal class QueueExecutor(myService: MyService?, accessorType: AccessorType?)
                 break
             }
             val commandData = accessor.pollQueue()
-            if (commandData == null) {
+            if (commandData == null || commandData == CommandData.EMPTY) {
                 breakReason = "No more commands"
                 break
             }
@@ -57,10 +57,10 @@ internal class QueueExecutor(myService: MyService?, accessorType: AccessorType?)
             currentlyExecutingSince = System.currentTimeMillis()
             currentlyExecutingDescription = commandData.toString()
             myService.broadcastBeforeExecutingCommand(commandData)
-            CommandExecutorStrategy.Companion.executeCommand(commandData, this)
-            if (commandData.result.shouldWeRetry()) {
+            CommandExecutorStrategy.executeCommand(commandData, this)
+            if (commandData.getResult().shouldWeRetry()) {
                 myService.myContext.queues().addToQueue(QueueType.RETRY, commandData)
-            } else if (commandData.result.hasError()) {
+            } else if (commandData.getResult().hasError()) {
                 myService.myContext.queues().addToQueue(QueueType.ERROR, commandData)
             } else {
                 addSyncAfterNoteWasSent(myService, commandData)
@@ -74,19 +74,19 @@ internal class QueueExecutor(myService: MyService?, accessorType: AccessorType?)
         return true
     }
 
-    private fun addSyncAfterNoteWasSent(myService: MyService?, commandDataExecuted: CommandData?) {
+    private fun addSyncAfterNoteWasSent(myService: MyService, commandDataExecuted: CommandData) {
         if (commandDataExecuted.getResult().hasError()
-                || commandDataExecuted.getCommand() != CommandEnum.UPDATE_NOTE || !SharedPreferencesUtil.getBoolean(
+                || commandDataExecuted.command != CommandEnum.UPDATE_NOTE || !SharedPreferencesUtil.getBoolean(
                         MyPreferences.KEY_SYNC_AFTER_NOTE_WAS_SENT, false)) {
             return
         }
-        myService.myContext.queues().addToQueue(QueueType.CURRENT, CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE,
+        myService.myContext.queues().addToQueue(QueueType.CURRENT, CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
                 commandDataExecuted.getTimeline().myAccountToSync, TimelineType.SENT)
                 .setInForeground(commandDataExecuted.isInForeground()))
     }
 
     override fun onFinish(aBoolean: Boolean?, success: Boolean) {
-        val myService = myServiceRef.get()
+        val myService = myServiceRef?.get()
         if (myService != null) {
             myService.latestActivityTime = System.currentTimeMillis()
         }
@@ -99,11 +99,11 @@ internal class QueueExecutor(myService: MyService?, accessorType: AccessorType?)
     }
 
     override fun isStopping(): Boolean {
-        val myService = myServiceRef.get()
-        return myService == null || myService.isStopping
+        val myService = myServiceRef?.get()
+        return myService == null || myService.isStopping() == true
     }
 
-    override fun classTag(): String? {
+    override fun classTag(): String {
         return TAG
     }
 
@@ -115,7 +115,7 @@ internal class QueueExecutor(myService: MyService?, accessorType: AccessorType?)
             sb.withComma("executing", currentlyExecutingDescription)
             sb.withComma("since", RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context(), currentlyExecutingSince))
         }
-        if (isStopping) {
+        if (isStopping()) {
             sb.withComma("stopping")
         }
         sb.withComma(super.toString())
@@ -124,7 +124,7 @@ internal class QueueExecutor(myService: MyService?, accessorType: AccessorType?)
 
     companion object {
         const val MAX_EXECUTION_TIME_SECONDS: Long = 60
-        private val TAG: String? = "QueueExecutor"
+        private val TAG: String = "QueueExecutor"
     }
 
     init {

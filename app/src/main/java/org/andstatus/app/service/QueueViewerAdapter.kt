@@ -25,10 +25,12 @@ import org.andstatus.app.timeline.BaseTimelineAdapter
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyUrlSpan
 
-internal class QueueViewerAdapter(private val container: QueueViewer?, items: MutableList<QueueData?>?) : BaseTimelineAdapter<QueueData?>(container.getMyContext(),
-        container.getMyContext().timelines()[TimelineType.COMMANDS_QUEUE, Actor.EMPTY,  Origin.EMPTY],
+internal class QueueViewerAdapter(private val container: QueueViewer, items: MutableList<QueueData>) :
+        BaseTimelineAdapter<QueueData>(container.myContext,
+        container.myContext.timelines()[TimelineType.COMMANDS_QUEUE, Actor.EMPTY,  Origin.EMPTY],
         items) {
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View? {
+
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         val view = convertView ?: newView()
         view.setOnCreateContextMenuListener(container)
         view.setOnClickListener(this)
@@ -38,11 +40,11 @@ internal class QueueViewerAdapter(private val container: QueueViewer?, items: Mu
         MyUrlSpan.Companion.showText(view, R.id.command_summary, item.commandData.toCommandSummary(myContext)
                 + "\t "
                 + item.commandData.createdDateWithLabel(myContext.context()), false, false)
-        MyUrlSpan.Companion.showText(view, R.id.result_summary, item.commandData.result.toSummary(), false, false)
+        MyUrlSpan.Companion.showText(view, R.id.result_summary, item.commandData.getResult().toSummary(), false, false)
         return view
     }
 
-    private fun newView(): View? {
+    private fun newView(): View {
         return LayoutInflater.from(container).inflate(R.layout.queue_item, null)
     }
 }

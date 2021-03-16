@@ -22,7 +22,7 @@ import java.util.*
 /**
  * @author yvolk@yurivolkov.com
  */
-class SelectableEnumList<E> private constructor(clazz: Class<E?>?) where E : Enum<E>, E : SelectableEnum? {
+class SelectableEnumList<E> private constructor(clazz: Class<E>) where E : Enum<E>, E : SelectableEnum {
     private val list: MutableList<E> = ArrayList()
     fun getList(): MutableList<E> {
         return list
@@ -33,7 +33,7 @@ class SelectableEnumList<E> private constructor(clazz: Class<E?>?) where E : Enu
      */
     fun getIndex(other: SelectableEnum?): Int {
         for (index in list.indices) {
-            val selectableEnum: SelectableEnum? = list[index]
+            val selectableEnum: SelectableEnum = list[index]
             if (selectableEnum == other) {
                 return index
             }
@@ -44,7 +44,7 @@ class SelectableEnumList<E> private constructor(clazz: Class<E?>?) where E : Enu
     /**
      * @return the first element if not found
      */
-    operator fun get(index: Int): E? {
+    operator fun get(index: Int): E {
         return list[if (index >= 0 && index < list.size) index else 0]
     }
 
@@ -68,14 +68,14 @@ class SelectableEnumList<E> private constructor(clazz: Class<E?>?) where E : Enu
     }
 
     companion object {
-        fun <E> newInstance(clazz: Class<E?>?): SelectableEnumList<E> where E : Enum<E>, E : SelectableEnum? {
+        fun <E> newInstance(clazz: Class<E>): SelectableEnumList<E> where E : Enum<E>, E : SelectableEnum {
             return SelectableEnumList(clazz)
         }
     }
 
     init {
         require(clazz is SelectableEnum) {
-            "Class '" + clazz?.name +
+            "Class '" + clazz.name +
                     "' doesn't implement SelectableEnum"
         }
         for (value in EnumSet.allOf(clazz)) {

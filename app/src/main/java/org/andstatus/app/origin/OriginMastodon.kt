@@ -19,14 +19,12 @@ import androidx.annotation.StringRes
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContext
 
-class OriginMastodon internal constructor(myContext: MyContext?, originType: OriginType?) : Origin(myContext, originType) {
+class OriginMastodon internal constructor(myContext: MyContext, originType: OriginType) : Origin(myContext, originType) {
     override fun alternativeTermForResourceId(@StringRes resId: Int): Int {
-        val resIdOut: Int
-        resIdOut = when (resId) {
+        return when (resId) {
             R.string.label_host -> R.string.label_host_mastodon
             R.string.host_hint -> R.string.host_hint_mastodon
             else -> resId
         }
-        return resIdOut
     }
 }

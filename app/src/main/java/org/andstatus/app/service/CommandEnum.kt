@@ -33,7 +33,7 @@ enum class CommandEnum @JvmOverloads constructor(
         /** The id of the string resource with the localized name of this enum to use in UI  */
         private val titleResId: Int = 0,
         /** less value of the  priority means higher priority  */
-        private val priority: Int = 0, private val connectionRequired: ConnectionRequired? = ConnectionRequired.ANY) {
+        private val priority: Int = 0, private val connectionRequired: ConnectionRequired = ConnectionRequired.ANY) {
     /** The action is unknown  */
     UNKNOWN("unknown"),
 
@@ -66,7 +66,7 @@ enum class CommandEnum @JvmOverloads constructor(
      * @param accountName
      */
     fun getTitle(myContext: MyContext?, accountName: String?): CharSequence? {
-        if (titleResId == 0 || myContext == null || myContext.context() == null) {
+        if (titleResId == 0 || myContext == null || myContext.isEmpty) {
             return this.code
         }
         var resId = titleResId
@@ -81,7 +81,7 @@ enum class CommandEnum @JvmOverloads constructor(
         return priority
     }
 
-    fun getConnectionRequired(): ConnectionRequired? {
+    fun getConnectionRequired(): ConnectionRequired {
         return connectionRequired
     }
 

@@ -15,7 +15,6 @@
  */
 package org.andstatus.app.service
 
-import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.data.DataUpdater
@@ -41,30 +40,29 @@ import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
-import java.util.function.BooleanSupplier
-import java.util.function.Consumer
 import java.util.stream.Collectors
 
 internal class CommandExecutorOther(execContext: CommandExecutionContext) : CommandExecutorStrategy(execContext) {
-    public override fun execute(): Try<Boolean> {
+
+    override fun execute(): Try<Boolean> {
         return when (execContext.commandData.command) {
             CommandEnum.LIKE, CommandEnum.UNDO_LIKE -> createOrDestroyFavorite(execContext.commandData.itemId,
                     execContext.commandData.command == CommandEnum.LIKE)
-            CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW -> followOrStopFollowingActor(actor,
+            CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW -> followOrStopFollowingActor(getActor(),
                     execContext.commandData.command == CommandEnum.FOLLOW)
             CommandEnum.UPDATE_NOTE -> updateNote(execContext.commandData.itemId)
             CommandEnum.DELETE_NOTE -> deleteNote(execContext.commandData.itemId)
             CommandEnum.UNDO_ANNOUNCE -> undoAnnounce(execContext.commandData.itemId)
             CommandEnum.GET_CONVERSATION -> getConversation(execContext.commandData.itemId)
             CommandEnum.GET_NOTE -> getNote(execContext.commandData.itemId)
-            CommandEnum.GET_ACTOR -> getActorCommand(actor, execContext.commandData.username)
-            CommandEnum.SEARCH_ACTORS -> searchActors(execContext.commandData.username)
+            CommandEnum.GET_ACTOR -> getActorCommand(getActor(), execContext.commandData.getUsername())
+            CommandEnum.SEARCH_ACTORS -> searchActors(execContext.commandData.getUsername())
             CommandEnum.ANNOUNCE -> reblog(execContext.commandData.itemId)
             CommandEnum.RATE_LIMIT_STATUS -> rateLimitStatus()
-            CommandEnum.GET_ATTACHMENT -> FileDownloader.Companion.newForDownloadData(execContext.myContext, DownloadData.Companion.fromId(execContext.commandData.itemId))
+            CommandEnum.GET_ATTACHMENT -> FileDownloader.newForDownloadData(execContext.myContext, DownloadData.fromId(execContext.commandData.itemId))
                     .setConnectionRequired(ConnectionRequired.DOWNLOAD_ATTACHMENT)
                     .load(execContext.commandData)
-            CommandEnum.GET_AVATAR -> AvatarDownloader(actor).load(execContext.commandData)
+            CommandEnum.GET_AVATAR -> AvatarDownloader(getActor()).load(execContext.commandData)
             else -> TryUtils.failure("Unexpected command here " + execContext.commandData)
         }
     }
@@ -74,62 +72,62 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         val msgLog = "$method; query='$searchQuery'"
         return if (searchQuery.isNullOrEmpty()) {
             logExecutionError(true, "$msgLog, empty query")
-        } else connection
+        } else getConnection()
                 .searchActors(ACTORS_LIMIT, searchQuery)
-                .map { actors: MutableList<Actor>? ->
+                .map { actors: List<Actor> ->
                     val dataUpdater = DataUpdater(execContext)
-                    val myAccountActor = execContext.myAccount.actor
+                    val myAccountActor = execContext.getMyAccount().actor
                     for (actor in actors) {
                         dataUpdater.onActivity(myAccountActor.update(actor))
                     }
                     true
                 }
-                .mapFailure { e: Throwable? -> ConnectionException.Companion.of(e).append(msgLog) }
+                .mapFailure { e: Throwable? -> ConnectionException.of(e).append(msgLog) }
     }
 
     private fun getConversation(noteId: Long): Try<Boolean> {
         val method = "getConversation"
         val conversationOid = MyQuery.noteIdToConversationOid(execContext.myContext, noteId)
-        return if (conversationOid.isNullOrEmpty()) {
+        return if (conversationOid.isEmpty()) {
             logExecutionError(true, method + " empty conversationId " +
                     MyQuery.noteInfoForLog(execContext.myContext, noteId))
-        } else connection
+        } else getConnection()
                 .getConversation(conversationOid)
-                .onSuccess { activities: MutableList<AActivity?>? ->
-                    DataUpdater.Companion.onActivities(execContext, activities)
+                .onSuccess { activities: List<AActivity> ->
+                    DataUpdater.onActivities(execContext, activities)
                     MyLog.d(this, method + if (noErrors()) " succeeded" else " failed")
                 }
-                .onSuccess { activities: MutableList<AActivity?>? ->
+                .onSuccess { activities: List<AActivity> ->
                     val noteIds = activities.stream()
-                            .map { activity: AActivity? -> activity.getNote().noteId }
+                            .map { activity: AActivity -> activity.getNote().noteId }
                             .collect(Collectors.toSet())
                     if (noteIds.size > 1) {
                         if (CheckConversations().setNoteIdsOfOneConversation(noteIds)
                                         .setMyContext(execContext.myContext).fix() > 0) {
-                            execContext.commandData.result.incrementNewCount()
+                            execContext.commandData.getResult().incrementNewCount()
                         }
                     }
                 }
-                .map { activities: MutableList<AActivity?>? -> true }
-                .mapFailure { e: Throwable? -> ConnectionException.Companion.of(e).append(MyQuery.noteInfoForLog(execContext.myContext, noteId)) }
+                .map { activities -> true }
+                .mapFailure { e: Throwable -> ConnectionException.of(e).append(MyQuery.noteInfoForLog(execContext.myContext, noteId)) }
     }
 
     private fun getActorCommand(actorIn: Actor, username: String?): Try<Boolean> {
         val method = "getActor"
         var msgLog = "$method;"
         val actorIn2 = if (UriUtils.nonRealOid(actorIn.oid) && actorIn.origin.isUsernameValid(username)
-                && !actorIn.isUsernameValid()) Actor.Companion.fromId(actorIn.origin, actorIn.actorId).setUsername(username)
+                && !actorIn.isUsernameValid()) Actor.fromId(actorIn.origin, actorIn.actorId).setUsername(username)
                 .setWebFingerId(actorIn.getWebFingerId()) else actorIn
         if (!actorIn2.canGetActor()) {
             msgLog += ", cannot get Actor"
             return logExecutionError(true, msgLog + actorInfoLogged(actorIn2))
         }
         val msgLog2 = msgLog + "; username='" + actorIn2.getUsername() + "'"
-        return connection
+        return getConnection()
                 .getActor(actorIn2)
                 .flatMap { actor: Actor -> failIfActorIsEmpty(msgLog2, actor) }
                 .map { actor: Actor ->
-                    val activity = execContext.myAccount.actor.update(actor)
+                    val activity = execContext.getMyAccount().actor.update(actor)
                     DataUpdater(execContext).onActivity(activity)
                     true
                 }
@@ -142,12 +140,12 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
     private fun createOrDestroyFavorite(noteId: Long, create: Boolean): Try<Boolean> {
         val method = (if (create) "create" else "destroy") + "Favorite"
         return getNoteOid(method, noteId, true)
-                .flatMap { oid: String? -> if (create) connection.like(oid) else connection.undoLike(oid) }
-                .flatMap { activity: AActivity? ->
+                .flatMap { oid: String -> if (create) getConnection().like(oid) else getConnection().undoLike(oid) }
+                .flatMap { activity: AActivity ->
                     failIfEmptyNote(method, noteId, activity.getNote())
-                            .map(CheckedFunction { b: Boolean? -> activity })
+                            .map { b: Boolean -> activity }
                 }
-                .flatMap { activity: AActivity? ->
+                .flatMap { activity: AActivity ->
                     if (activity.type != if (create) ActivityType.LIKE else ActivityType.UNDO_LIKE) {
                         /*
                  * yvolk: 2011-09-27 Twitter docs state that
@@ -169,22 +167,22 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                             // so let's try another time...
                             // This is safe, because "delete favorite"
                             // works even for the "Unfavorited" tweet :-)
-                            return@flatMap logExecutionError<AActivity?>(false, method + "; Favorited flag didn't change yet. " +
+                            return@flatMap logExecutionError<AActivity>(false, method + "; Favorited flag didn't change yet. " +
                                     MyQuery.noteInfoForLog(execContext.myContext, noteId))
                         }
                     }
                     Try.success(activity)
                 }
-                .map { activity: AActivity? ->
+                .map { activity: AActivity ->
                     // Please note that the Favorited note may be NOT in the Account's Home timeline!
                     DataUpdater(execContext).onActivity(activity)
                     true
                 }
     }
 
-    private fun getNoteOid(method: String?, noteId: Long, required: Boolean): Try<String?> {
+    private fun getNoteOid(method: String?, noteId: Long, required: Boolean): Try<String> {
         val oid = MyQuery.idToOid(execContext.myContext, OidEnum.NOTE_OID, noteId, 0)
-        return if (required && oid.isNullOrEmpty()) {
+        return if (required && oid.isEmpty()) {
             logExecutionError(true, method + "; no note ID in the Social Network "
                     + MyQuery.noteInfoForLog(execContext.myContext, noteId))
         } else Try.success(oid)
@@ -195,26 +193,26 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
      */
     private fun followOrStopFollowingActor(actor: Actor, follow: Boolean): Try<Boolean> {
         val method = (if (follow) "follow" else "stopFollowing") + "Actor"
-        return connection
+        return getConnection()
                 .follow(actor.oid, follow)
-                .flatMap { activity: AActivity? ->
+                .flatMap { activity: AActivity ->
                     val friend = activity.getObjActor()
                     friend.isMyFriend = TriState.UNKNOWN // That "hack" attribute may only confuse us here as it can show outdated info
                     failIfActorIsEmpty(method, friend)
-                            .map(CheckedFunction { a: Actor ->
+                            .map { a: Actor ->
                                 DataUpdater(execContext).onActivity(activity)
                                 true
-                            })
+                            }
                 }
     }
 
-    private fun failIfActorIsEmpty(method: String?, actor: Actor): Try<Actor> {
-        return if (actor == null || actor.isEmpty) {
+    private fun failIfActorIsEmpty(method: String, actor: Actor): Try<Actor> {
+        return if (actor.isEmpty) {
             logExecutionError(false, "Actor is empty, $method")
         } else Try.success(actor)
     }
 
-    private fun actorInfoLogged(actor: Actor): String? {
+    private fun actorInfoLogged(actor: Actor): String {
         return actor.toString()
     }
 
@@ -224,22 +222,22 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
             MyLog.d(this, "$method skipped as noteId == 0")
             return Try.success(true)
         }
-        val author: Actor = Actor.Companion.load(execContext.getMyContext(), MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, noteId))
-        return (if (execContext.myAccount.actor.isSame(author)) deleteNoteAtServer(noteId, method) else Try.success(true))
-                .onSuccess(Consumer { b: Boolean? -> MyProvider.Companion.deleteNoteAndItsActivities(execContext.getMyContext(), noteId) })
+        val author: Actor = Actor.load(execContext.myContext, MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, noteId))
+        return (if (execContext.getMyAccount().actor.isSame(author)) deleteNoteAtServer(noteId, method) else Try.success(true))
+                .onSuccess { b: Boolean? -> MyProvider.deleteNoteAndItsActivities(execContext.myContext, noteId) }
     }
 
-    private fun deleteNoteAtServer(noteId: Long, method: String?): Try<Boolean> {
+    private fun deleteNoteAtServer(noteId: Long, method: String): Try<Boolean> {
         val tryOid = getNoteOid(method, noteId, false)
-        val statusStored: DownloadStatus = DownloadStatus.Companion.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId))
-        if (tryOid.filter { obj: String? -> StringUtil.nonEmptyNonTemp() }.isFailure || statusStored != DownloadStatus.LOADED) {
+        val statusStored: DownloadStatus = DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId))
+        if (tryOid.filter { obj: String? -> StringUtil.nonEmptyNonTemp(obj) }.isFailure || statusStored != DownloadStatus.LOADED) {
             MyLog.i(this, "$method; OID='$tryOid', status='$statusStored' for noteId=$noteId")
             return Try.success(true)
         }
         return tryOid
-                .flatMap { oid: String? -> connection.deleteNote(oid) }
+                .flatMap { oid: String -> getConnection().deleteNote(oid) }
                 .recoverWith(ConnectionException::class.java
-                ) { e: ConnectionException? ->  // "Not found" means that there is no such "Status", so we may
+                ) { e: ConnectionException ->  // "Not found" means that there is no such "Status", so we may
                     // assume that it's Ok!
                     if (e.getStatusCode() == StatusCode.NOT_FOUND) Try.success(true) else logException<Any?>(e, method + "; noteOid:" + tryOid + ", " +
                             MyQuery.noteInfoForLog(execContext.myContext, noteId)).map { any: Any? -> true }
@@ -248,49 +246,49 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
 
     private fun undoAnnounce(noteId: Long): Try<Boolean> {
         val method = "destroyReblog"
-        val actorId = execContext.myAccount.actorId
+        val actorId = execContext.getMyAccount().actorId
         val reblogAndType = MyQuery.noteIdToLastReblogging(
-                execContext.getMyContext().database, noteId, actorId)
+                execContext.myContext.getDatabase(), noteId, actorId)
         if (reblogAndType.second != ActivityType.ANNOUNCE) {
             return logExecutionError(true, "No local Reblog of "
                     + MyQuery.noteInfoForLog(execContext.myContext, noteId) +
-                    " by " + execContext.myAccount)
+                    " by " + execContext.getMyAccount())
         }
         val reblogOid = MyQuery.idToOid(execContext.myContext, OidEnum.REBLOG_OID, noteId, actorId)
-        return connection
+        return getConnection()
                 .undoAnnounce(reblogOid)
                 .recoverWith(ConnectionException::class.java
-                ) { e: ConnectionException? ->  // "Not found" means that there is no such "Status", so we may
+                ) { e: ConnectionException ->  // "Not found" means that there is no such "Status", so we may
                     // assume that it's Ok!
                     if (e.getStatusCode() == StatusCode.NOT_FOUND) Try.success(true) else logException<Any?>(e, method + "; reblogOid:" + reblogOid + ", " +
                             MyQuery.noteInfoForLog(execContext.myContext, noteId)).map { any: Any? -> true }
                 }
-                .onSuccess { b: Boolean? ->  // And delete the reblog from local storage
-                    MyProvider.Companion.deleteActivity(execContext.getMyContext(), reblogAndType.first, noteId, false)
+                .onSuccess { b: Boolean ->  // And delete the reblog from local storage
+                    MyProvider.deleteActivity(execContext.myContext, reblogAndType.first ?: 0, noteId, false)
                 }
     }
 
     private fun getNote(noteId: Long): Try<Boolean> {
         val method = "getNote"
         return getNoteOid(method, noteId, true)
-                .flatMap { oid: String? -> connection.getNote(oid) }
-                .flatMap { activity: AActivity? ->
+                .flatMap { oid: String -> getConnection().getNote(oid) }
+                .flatMap { activity: AActivity ->
                     if (activity.isEmpty) {
-                        return@flatMap logExecutionError<Boolean?>(false, "Received Note is empty, "
+                        return@flatMap logExecutionError<Boolean>(false, "Received Note is empty, "
                                 + MyQuery.noteInfoForLog(execContext.myContext, noteId))
                     } else {
                         try {
                             DataUpdater(execContext).onActivity(activity)
                             return@flatMap Try.success(true)
                         } catch (e: Exception) {
-                            return@flatMap logExecutionError<Boolean?>(false, "Error while saving to the local cache,"
+                            return@flatMap logExecutionError<Boolean>(false, "Error while saving to the local cache,"
                                     + MyQuery.noteInfoForLog(execContext.myContext, noteId) + ", " + e.message)
                         }
                     }
                 }
-                .onFailure { e: Throwable? ->
-                    if (ConnectionException.Companion.of(e).getStatusCode() == StatusCode.NOT_FOUND) {
-                        execContext.result.incrementParseExceptions()
+                .onFailure { e: Throwable ->
+                    if (ConnectionException.of(e).getStatusCode() == StatusCode.NOT_FOUND) {
+                        execContext.getResult().incrementParseExceptions()
                         // This means that there is no such "Status"
                         // TODO: so we don't need to retry this command
                     }
@@ -300,38 +298,38 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
     private fun updateNote(activityId: Long): Try<Boolean> {
         val method = "updateNote"
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, activityId)
-        val note: Note = Note.Companion.loadContentById(execContext.myContext, noteId)
-                .withAttachments(Attachments.Companion.load(execContext.myContext, noteId))
+        val note: Note = Note.loadContentById(execContext.myContext, noteId)
+                .withAttachments(Attachments.load(execContext.myContext, noteId))
         getNoteOid(method, MyQuery.noteIdToLongColumnValue(NoteTable.IN_REPLY_TO_NOTE_ID, noteId), false)
-                .filter { obj: String? -> StringUtil.nonEmptyNonTemp() }
-                .map(CheckedFunction<String?, AActivity?> { inReplyToNoteOid: String? ->
-                    AActivity.Companion.newPartialNote(execContext.myAccount.actor,
+                .filter { obj: String? -> StringUtil.nonEmptyNonTemp(obj) }
+                .map { inReplyToNoteOid: String? ->
+                    AActivity.newPartialNote(execContext.getMyAccount().actor,
                             Actor.EMPTY, inReplyToNoteOid, RelativeTime.DATETIME_MILLIS_NEVER, DownloadStatus.UNKNOWN)
                             .setOid(inReplyToNoteOid)
-                })
+                }
                 .onSuccess { activity: AActivity? -> note.setInReplyTo(activity) }
-        DemoData.Companion.crashTest(BooleanSupplier { note.content.startsWith("Crash me on sending 2015-04-10") })
+        DemoData.crashTest { note.content.startsWith("Crash me on sending 2015-04-10") }
         if (MyLog.isVerboseEnabled()) {
-            val msgLog = ((if (!note.name.isNullOrEmpty()) "name:'" + note.name + "'; " else "")
-                    + (if (!note.summary.isNullOrEmpty()) "summary:'" + note.summary + "'; " else "")
-                    + (if (!note.content.isNullOrEmpty()) "content:'" + MyLog.trimmedString(note.contentToPost, 80) + "'" else "")
+            val msgLog = ((if (!note.getName().isEmpty()) "name:'" + note.getName() + "'; " else "")
+                    + (if (!note.summary.isEmpty()) "summary:'" + note.summary + "'; " else "")
+                    + (if (!note.content.isEmpty()) "content:'" + MyLog.trimmedString(note.getContentToPost(), 80) + "'" else "")
                     + if (note.attachments.isEmpty) "" else "; " + note.attachments)
             MyLog.v(this) { "$method;$msgLog" }
         }
-        return if (!note.status.mayBeSent()) {
-            Try.failure(ConnectionException.Companion.hardConnectionException("Wrong note status: " + note.status, null))
-        } else connection.updateNote(note)
-                .flatMap { activity: AActivity? ->
-                    failIfEmptyNote(method, noteId, activity.getNote()).map(CheckedFunction { b: Boolean? ->
+        return if (!note.getStatus().mayBeSent()) {
+            Try.failure(ConnectionException.hardConnectionException("Wrong note status: " + note.getStatus(), null))
+        } else getConnection().updateNote(note)
+                .flatMap { activity: AActivity ->
+                    failIfEmptyNote(method, noteId, activity.getNote()).map { b: Boolean? ->
                         // The note was sent successfully, so now update unsent message
                         // New Actor's note should be put into the Account's Home timeline.
                         activity.setId(activityId)
                         activity.getNote().noteId = noteId
                         DataUpdater(execContext).onActivity(activity)
-                        execContext.result.itemId = noteId
+                        execContext.getResult().setItemId(noteId)
                         true
-                    })
-                            .onFailure { e: Throwable? -> execContext.getMyContext().notifier.onUnsentActivity(activityId) }
+                    }
+                            .onFailure { e: Throwable? -> execContext.myContext.getNotifier().onUnsentActivity(activityId) }
                 }
     }
 
@@ -345,23 +343,23 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
     private fun reblog(rebloggedNoteId: Long): Try<Boolean> {
         val method = "Reblog"
         return getNoteOid(method, rebloggedNoteId, true)
-                .flatMap { oid: String? -> connection.announce(oid) }
-                .map { activity: AActivity? ->
+                .flatMap { oid: String -> getConnection().announce(oid) }
+                .map { activity: AActivity ->
                     failIfEmptyNote(method, rebloggedNoteId, activity.getNote())
                     // The tweet was sent successfully
                     // Reblog should be put into the Account's Home timeline!
                     DataUpdater(execContext).onActivity(activity)
-                    MyProvider.Companion.updateNoteReblogged(execContext.getMyContext(), activity.accountActor.origin, rebloggedNoteId)
+                    MyProvider.updateNoteReblogged(execContext.myContext, activity.accountActor.origin, rebloggedNoteId)
                     true
                 }
     }
 
     private fun rateLimitStatus(): Try<Boolean> {
-        return connection.rateLimitStatus()
-                .map { rateLimitStatus: RateLimitStatus? ->
+        return getConnection().rateLimitStatus()
+                .map { rateLimitStatus: RateLimitStatus ->
                     if (rateLimitStatus.nonEmpty) {
-                        execContext.result.remainingHits = rateLimitStatus.remaining
-                        execContext.result.hourlyLimit = rateLimitStatus.limit
+                        execContext.getResult().setRemainingHits(rateLimitStatus.remaining)
+                        execContext.getResult().setHourlyLimit(rateLimitStatus.limit)
                     }
                     rateLimitStatus.nonEmpty
                 }

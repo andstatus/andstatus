@@ -22,21 +22,17 @@ import org.andstatus.app.timeline.ViewItem
 /**
  * @author yvolk@yurivolkov.com
  */
-class ManageTimelinesViewItem(myContext: MyContext?, val timeline: Timeline?,
+class ManageTimelinesViewItem(myContext: MyContext, val timeline: Timeline,
                               accountToHide: MyAccount, namesAreHidden: Boolean) : ViewItem<ManageTimelinesViewItem>(false, timeline.getLastChangedDate()) {
-    val timelineTitle: TimelineTitle?
-    val countSince: Long
+    val timelineTitle: TimelineTitle = TimelineTitle.from(myContext, timeline, accountToHide, namesAreHidden,
+            TimelineTitle.Destination.DEFAULT)
+    val countSince: Long = timeline.getCountSince()
     override fun getId(): Long {
-        return timeline?.id ?: 0
+        return timeline.getId()
     }
 
     override fun getDate(): Long {
-        return timeline?.lastSyncedDate ?: 0
+        return timeline.getLastSyncedDate()
     }
 
-    init {
-        timelineTitle = TimelineTitle.Companion.from(myContext, timeline, accountToHide, namesAreHidden,
-                TimelineTitle.Destination.DEFAULT)
-        countSince = timeline.getCountSince()
-    }
 }

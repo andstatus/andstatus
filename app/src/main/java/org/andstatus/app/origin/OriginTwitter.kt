@@ -26,7 +26,7 @@ import org.andstatus.app.net.social.Visibility
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.UriUtils
 
-internal class OriginTwitter(myContext: MyContext?, originType: OriginType?) : Origin(myContext, originType) {
+internal class OriginTwitter(myContext: MyContext, originType: OriginType) : Origin(myContext, originType) {
     /**
      * In order to comply with Twitter's "Developer Display Requirements"
      * https://dev.twitter.com/terms/display-requirements
@@ -46,12 +46,12 @@ internal class OriginTwitter(myContext: MyContext?, originType: OriginType?) : O
         return resIdOut
     }
 
-    override fun alternativeNotePermalink(noteId: Long): String? {
+    override fun alternativeNotePermalink(noteId: Long): String {
         if (url == null) {
             return ""
         }
         val uri = fixUriForPermalink(UriUtils.fromUrl(url))
-        return if (Visibility.Companion.fromNoteId(noteId).isPrivate) {
+        return if (Visibility.fromNoteId(noteId).isPrivate) {
             Uri.withAppendedPath(uri, "messages").toString()
         } else {
             val username = MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, noteId, ActorInTimeline.USERNAME)
@@ -65,11 +65,11 @@ internal class OriginTwitter(myContext: MyContext?, originType: OriginType?) : O
         return if (host.startsWith(API_DOT)) host.substring(API_DOT.length) else host
     }
 
-    override fun fixUriForPermalink(uri1: Uri?): Uri? {
+    override fun fixUriForPermalink(uri1: Uri): Uri {
         var uri2 = uri1
-        if (uri2 != null) {
+        if (UriUtils.nonEmpty(uri2)) {
             try {
-                if (uri2.host.startsWith(API_DOT)) {
+                if (uri2.host?.startsWith(API_DOT) == true) {
                     uri2 = Uri.parse(uri1.toString().replace("//" + API_DOT, "//"))
                 }
             } catch (e: NullPointerException) {
@@ -80,6 +80,6 @@ internal class OriginTwitter(myContext: MyContext?, originType: OriginType?) : O
     }
 
     companion object {
-        val API_DOT: String? = "api."
+        val API_DOT: String = "api."
     }
 }

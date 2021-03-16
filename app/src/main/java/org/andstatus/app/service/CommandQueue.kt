@@ -18,13 +18,12 @@ package org.andstatus.app.service
 import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
-import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DbUtils
+import org.andstatus.app.data.DbUtils.closeSilently
 import org.andstatus.app.database.table.CommandTable
-import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
@@ -35,7 +34,6 @@ import java.util.concurrent.PriorityBlockingQueue
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
-import java.util.function.Function
 
 /**
  * @author yvolk@yurivolkov.com
@@ -52,7 +50,7 @@ class CommandQueue(private val myContext: MyContext) {
     @Volatile
     private var changed = false
 
-    class OneQueue private constructor(val queueType: QueueType) {
+    class OneQueue(val queueType: QueueType) {
         var queue: Queue<CommandData> = PriorityBlockingQueue(INITIAL_CAPACITY)
         fun clear() {
             queue.clear()
@@ -120,7 +118,7 @@ class CommandQueue(private val myContext: MyContext) {
         if (loaded) {
             MyLog.v(TAG, "Already loaded")
         } else {
-            val stopWatch: StopWatch = StopWatch.Companion.createStarted()
+            val stopWatch: StopWatch = StopWatch.createStarted()
             val count = (load(QueueType.CURRENT) + load(QueueType.DOWNLOADS)
                     + load(QueueType.SKIPPED) + load(QueueType.RETRY))
             val countError = load(QueueType.ERROR)
@@ -151,7 +149,7 @@ class CommandQueue(private val myContext: MyContext) {
         try {
             c = db.rawQuery(sql, null)
             while (c.moveToNext()) {
-                val cd: CommandData = CommandData.Companion.fromCursor(myContext, c)
+                val cd: CommandData = CommandData.fromCursor(myContext, c)
                 if (CommandEnum.EMPTY == cd.command) {
                     MyLog.w(TAG, "$method; empty skipped $cd")
                 } else if (queue.contains(cd)) {
@@ -189,12 +187,12 @@ class CommandQueue(private val myContext: MyContext) {
             MyLog.d(TAG, "save; Cannot save: context is " + myContext.state())
             return
         }
-        accessors.values.forEach(Consumer { obj: Accessor? -> obj.moveCommandsFromPreToMainQueue() })
+        accessors.values.forEach(Consumer { obj: Accessor -> obj.moveCommandsFromPreToMainQueue() })
         if (loaded) clearQueuesInDatabase(db)
         val countNotError = save(db, QueueType.CURRENT)
-                .flatMap(CheckedFunction<Int?, Try<out Int>> { i1: Int? -> save(db, QueueType.DOWNLOADS).map(CheckedFunction { i2: Int? -> i1 + i2 }) })
-                .flatMap { i1: Int? -> save(db, QueueType.SKIPPED).map(CheckedFunction { i2: Int? -> i1 + i2 }) }
-                .flatMap { i1: Int? -> save(db, QueueType.RETRY).map(CheckedFunction { i2: Int? -> i1 + i2 }) }
+                .flatMap { i1: Int -> save(db, QueueType.DOWNLOADS).map { i2: Int -> i1 + i2 } }
+                .flatMap { i1: Int -> save(db, QueueType.SKIPPED).map { i2: Int -> i1 + i2 } }
+                .flatMap { i1: Int -> save(db, QueueType.RETRY).map { i2: Int -> i1 + i2 } }
         val countError = save(db, QueueType.ERROR)
         MyLog.d(TAG, (if (loaded) "Queues saved" else "Saved new queued commands only") + ", "
                 + if (countNotError.isFailure || countError.isFailure()) " Error saving commands!" else (if (countNotError.get() > 0) Integer.toString(countNotError.get()) else "no") + " commands"
@@ -215,17 +213,19 @@ class CommandQueue(private val myContext: MyContext) {
                 val commands: MutableList<CommandData?> = ArrayList()
                 while (!queue.isEmpty() && count < 300) {
                     val cd = queue.poll()
-                    val values = ContentValues()
-                    cd.toContentValues(values)
-                    values.put(CommandTable.QUEUE_TYPE, queueType.save())
-                    db.insert(CommandTable.TABLE_NAME, null, values)
-                    count++
-                    commands.add(cd)
-                    if (MyLog.isVerboseEnabled() && (count < 6 || cd.getCommand() == CommandEnum.UPDATE_NOTE)) {
-                        MyLog.v(TAG, method + "; " + count + ": " + cd.toString())
-                    }
-                    if (myContext.isTestRun() && queue.contains(cd)) {
-                        MyLog.e(TAG, method + "; Duplicated command in a queue:" + count + " " + cd.toString())
+                    if (cd != null) {
+                        val values = ContentValues()
+                        cd.toContentValues(values)
+                        values.put(CommandTable.QUEUE_TYPE, queueType.save())
+                        db.insert(CommandTable.TABLE_NAME, null, values)
+                        count++
+                        commands.add(cd)
+                        if (MyLog.isVerboseEnabled() && (count < 6 || cd.command == CommandEnum.UPDATE_NOTE)) {
+                            MyLog.v(TAG, method + "; " + count + ": " + cd.toString())
+                        }
+                        if (myContext.isTestRun() && queue.contains(cd)) {
+                            MyLog.e(TAG, method + "; Duplicated command in a queue:" + count + " " + cd.toString())
+                        }
                     }
                 }
                 val left = queue.size
@@ -267,15 +267,15 @@ class CommandQueue(private val myContext: MyContext) {
         return TryUtils.SUCCESS
     }
 
-    fun deleteCommand(commandData: CommandData?): Try<Void> {
+    fun deleteCommand(commandData: CommandData): Try<Void> {
         for (oneQueue in queues.values) {
             if (commandData.deleteFromQueue(oneQueue)) {
                 changed = true
             }
         }
-        if (commandData.getResult().downloadedCount == 0L) {
+        if (commandData.getResult().getDownloadedCount() == 0L) {
             commandData.getResult().incrementParseExceptions()
-            commandData.getResult().message = "Didn't delete command #" + commandData.itemId
+            commandData.getResult().setMessage("Didn't delete command #" + commandData.itemId)
         }
         commandData.getResult().afterExecutionEnded()
         return TryUtils.SUCCESS
@@ -293,7 +293,7 @@ class CommandQueue(private val myContext: MyContext) {
 
     /** @return true if success
      */
-    fun addToQueue(queueTypeIn: QueueType?, commandData: CommandData?): Boolean {
+    fun addToQueue(queueTypeIn: QueueType, commandData: CommandData): Boolean {
         if (get(queueTypeIn).addToQueue(commandData)) {
             changed = true
             return true
@@ -302,14 +302,14 @@ class CommandQueue(private val myContext: MyContext) {
     }
 
     fun isAnythingToExecuteNow(): Boolean {
-        return accessors.values.stream().anyMatch { obj: Accessor? -> obj.isAnythingToExecuteNow() }
+        return accessors.values.stream().anyMatch { obj: Accessor -> obj.isAnythingToExecuteNow() }
     }
 
     enum class AccessorType {
         GENERAL, DOWNLOADS
     }
 
-    class Accessor private constructor(private val cq: CommandQueue?, val accessorType: AccessorType?) {
+    class Accessor(private val cq: CommandQueue, val accessorType: AccessorType) {
         fun isAnythingToExecuteNow(): Boolean {
             moveCommandsFromPreToMainQueue()
             return (!cq.loaded
@@ -325,13 +325,13 @@ class CommandQueue(private val myContext: MyContext) {
                     + if (isTimeToProcessRetryQueue()) countToExecuteNowIn(QueueType.RETRY) else 0)
         }
 
-        private fun isForAccessor(cd: CommandData?): Boolean {
-            val commandForDownloads = (cd.getCommand() == CommandEnum.GET_ATTACHMENT
-                    || cd.getCommand() == CommandEnum.GET_AVATAR)
-            return accessorType == AccessorType.GENERAL xor commandForDownloads
+        private fun isForAccessor(cd: CommandData): Boolean {
+            val commandForDownloads = (cd.command == CommandEnum.GET_ATTACHMENT
+                    || cd.command == CommandEnum.GET_AVATAR)
+            return (accessorType == AccessorType.GENERAL) xor commandForDownloads
         }
 
-        private fun mainQueueType(): QueueType? {
+        private fun mainQueueType(): QueueType {
             return if (accessorType == AccessorType.GENERAL) QueueType.CURRENT else QueueType.DOWNLOADS
         }
 
@@ -376,38 +376,38 @@ class CommandQueue(private val myContext: MyContext) {
                     break
                 }
                 commandData = findInRetryQueue(commandData)
-                if (commandData != null) {
+                if (commandData != CommandData.EMPTY) {
                     commandData = findInErrorQueue(commandData)
                 }
-                if (skip(commandData)) {
+                if (skip(commandData) && commandData != CommandData.EMPTY) {
                     cq.addToQueue(QueueType.SKIPPED, commandData)
                     commandData = null
                 }
-            } while (commandData == null)
+            } while (commandData == null || commandData == CommandData.EMPTY)
             MyLog.v(TAG, "Polled $accessorType in "
                     + (if (cq.myContext.isInForeground()) "foreground "
                     + if (MyPreferences.isSyncWhileUsingApplicationEnabled()) "enabled" else "disabled" else "background")
                     + if (commandData == null) " (no command)" else " $commandData")
             if (commandData != null) {
                 cq.changed = true
-                commandData.isManuallyLaunched = false
+                commandData.setManuallyLaunched(false)
             }
             return commandData
         }
 
         private fun skip(commandData: CommandData?): Boolean {
-            if (commandData == null) return false
-            if (!commandData.isInForeground && cq.myContext.isInForeground()
+            if (commandData == null || commandData == CommandData.EMPTY) return false
+            if (!commandData.isInForeground() && cq.myContext.isInForeground()
                     && !MyPreferences.isSyncWhileUsingApplicationEnabled()) {
                 return true
             }
-            return if (!commandData.command.connectionRequired
+            return if (!commandData.command.getConnectionRequired()
                             .isConnectionStateOk(cq.myContext.getConnectionState())) {
                 true
             } else false
         }
 
-        private fun moveCommandsFromPreToMainQueue() {
+        fun moveCommandsFromPreToMainQueue() {
             for (cd in preQueue.queue) {
                 if (addToMainOrSkipQueue(cd)) {
                     preQueue.queue.remove(cd)
@@ -429,7 +429,7 @@ class CommandQueue(private val myContext: MyContext) {
 
         /** @return true if success
          */
-        private fun addToMainOrSkipQueue(commandData: CommandData?): Boolean {
+        private fun addToMainOrSkipQueue(commandData: CommandData): Boolean {
             if (!isForAccessor(commandData)) return false
             return if (skip(commandData)) {
                 cq.addToQueue(QueueType.SKIPPED, commandData)
@@ -450,20 +450,20 @@ class CommandQueue(private val myContext: MyContext) {
             cq.mRetryQueueProcessedAt.set(System.currentTimeMillis())
         }
 
-        private fun findInRetryQueue(cdIn: CommandData?): CommandData? {
+        private fun findInRetryQueue(cdIn: CommandData): CommandData {
             val queue = cq.get(QueueType.RETRY).queue
             var cdOut = cdIn
             if (queue.contains(cdIn)) {
                 for (cd in queue) {
                     if (cd == cdIn) {
                         cd.resetRetries()
-                        if (cdIn.isManuallyLaunched || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
+                        if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
                             cdOut = cd
                             queue.remove(cd)
                             cq.changed = true
                             MyLog.v(TAG) { "Returned from Retry queue: $cd" }
                         } else {
-                            cdOut = null
+                            cdOut = CommandData.EMPTY
                             MyLog.v(TAG) { "Found in Retry queue, but left there: $cd" }
                         }
                         break
@@ -473,20 +473,20 @@ class CommandQueue(private val myContext: MyContext) {
             return cdOut
         }
 
-        private fun findInErrorQueue(cdIn: CommandData?): CommandData? {
+        private fun findInErrorQueue(cdIn: CommandData): CommandData {
             val queue = cq.get(QueueType.ERROR).queue
             var cdOut = cdIn
             if (queue.contains(cdIn)) {
                 for (cd in queue) {
                     if (cd == cdIn) {
-                        if (cdIn.isManuallyLaunched || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
+                        if (cdIn.isManuallyLaunched() || cd.executedMoreSecondsAgoThan(MIN_RETRY_PERIOD_SECONDS)) {
                             cdOut = cd
                             queue.remove(cd)
                             cq.changed = true
                             MyLog.v(TAG) { "Returned from Error queue: $cd" }
                             cd.resetRetries()
                         } else {
-                            cdOut = null
+                            cdOut = CommandData.EMPTY
                             MyLog.v(TAG) { "Found in Error queue, but left there: $cd" }
                         }
                     } else {
@@ -502,17 +502,17 @@ class CommandQueue(private val myContext: MyContext) {
         }
     }
 
-    fun getFromAnyQueue(dataIn: CommandData?): CommandData {
+    fun getFromAnyQueue(dataIn: CommandData): CommandData {
         return inWhichQueue(dataIn)
-                .map(Function { oneQueue: OneQueue? -> getFromQueue(oneQueue.queueType, dataIn) })
-                .orElse(CommandData.Companion.EMPTY)
+                .map { oneQueue: OneQueue -> getFromQueue(oneQueue.queueType, dataIn) }
+                .orElse(CommandData.EMPTY)
     }
 
-    fun getFromQueue(queueType: QueueType?, dataIn: CommandData?): CommandData {
+    fun getFromQueue(queueType: QueueType, dataIn: CommandData): CommandData {
         for (data in get(queueType).queue) {
-            if (dataIn == data) return data as CommandData
+            if (dataIn == data) return data
         }
-        return CommandData.Companion.EMPTY
+        return CommandData.EMPTY
     }
 
     fun inWhichQueue(commandData: CommandData?): Optional<OneQueue> {
@@ -540,13 +540,13 @@ class CommandQueue(private val myContext: MyContext) {
     }
 
     companion object {
-        private val TAG: String? = CommandQueue::class.java.simpleName
+        private val TAG: String = CommandQueue::class.java.simpleName
         private const val INITIAL_CAPACITY = 100
         private const val RETRY_QUEUE_PROCESSING_PERIOD_SECONDS: Long = 900
         private const val MIN_RETRY_PERIOD_SECONDS: Long = 900
         private const val MAX_DAYS_IN_ERROR_QUEUE: Long = 10
-        private val preQueue: OneQueue? = OneQueue(QueueType.PRE)
-        fun addToPreQueue(commandData: CommandData?) {
+        private val preQueue: OneQueue = OneQueue(QueueType.PRE)
+        fun addToPreQueue(commandData: CommandData) {
             preQueue.addToQueue(commandData)
         }
     }

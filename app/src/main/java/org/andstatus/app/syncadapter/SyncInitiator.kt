@@ -33,7 +33,6 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.UriUtils
 import java.util.*
 import java.util.concurrent.TimeUnit
-import java.util.function.Consumer
 
 /**
  * Periodic syncing doesn't work reliably, when a device is in a Doze mode, so we need
@@ -41,8 +40,8 @@ import java.util.function.Consumer
  */
 class SyncInitiator : BroadcastReceiver() {
     // Testing Doze: https://developer.android.com/training/monitoring-device-state/doze-standby.html#testing_doze
-    override fun onReceive(context: Context?, intent: Intent?) {
-        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+    override fun onReceive(context: Context, intent: Intent?) {
+        val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager ?
         MyLog.v(this
         ) {
             ("onReceive "
@@ -52,13 +51,13 @@ class SyncInitiator : BroadcastReceiver() {
         initializeApp(context)
     }
 
-    private fun initializeApp(context: Context?) {
+    private fun initializeApp(context: Context) {
          MyContextHolder.myContextHolder
                 .initialize(context, this)
-                .whenSuccessAsync(Consumer { myContext: MyContext? -> checkConnectionState(myContext) }, AsyncTask.THREAD_POOL_EXECUTOR)
+                .whenSuccessAsync({ myContext: MyContext -> checkConnectionState(myContext) }, AsyncTask.THREAD_POOL_EXECUTOR)
     }
 
-    private fun checkConnectionState(myContext: MyContext?) {
+    private fun checkConnectionState(myContext: MyContext) {
         if (!syncIfNeeded(myContext)) {
             Timer().schedule(object : TimerTask() {
                 override fun run() {
@@ -68,8 +67,8 @@ class SyncInitiator : BroadcastReceiver() {
         }
     }
 
-    private fun syncIfNeeded(myContext: MyContext?): Boolean {
-        if (!MyServiceManager.Companion.isServiceAvailable()) {
+    private fun syncIfNeeded(myContext: MyContext): Boolean {
+        if (!MyServiceManager.isServiceAvailable()) {
             MyLog.v(this) { "syncIfNeeded Service is unavailable" }
             return false
         }
@@ -77,7 +76,7 @@ class SyncInitiator : BroadcastReceiver() {
         MyLog.v(this) { "syncIfNeeded " + UriUtils.getConnectionState(myContext.context()) }
         if (!ConnectionRequired.SYNC.isConnectionStateOk(connectionState)) return false
         for (myAccount in myContext.accounts().accountsToSync()) {
-            if (!myContext.timelines().toAutoSyncForAccount(myAccount).isEmpty()) {
+            if (myContext.timelines().toAutoSyncForAccount(myAccount).isNotEmpty()) {
                 myAccount.requestSync()
             }
         }
@@ -85,16 +84,17 @@ class SyncInitiator : BroadcastReceiver() {
     }
 
     companion object {
-        private val BROADCAST_RECEIVER: SyncInitiator? = SyncInitiator()
-        fun tryToSync(context: Context?) {
+        private val BROADCAST_RECEIVER: SyncInitiator = SyncInitiator()
+
+        fun tryToSync(context: Context) {
             BROADCAST_RECEIVER.initializeApp(context)
         }
 
         private fun getRandomDelayMillis(minSeconds: Int): Long {
-            return TimeUnit.SECONDS.toMillis(minSeconds as Long + Random().nextInt(minSeconds * 4))
+            return TimeUnit.SECONDS.toMillis((minSeconds + Random().nextInt(minSeconds * 4)).toLong())
         }
 
-        fun register(myContext: MyContext?) {
+        fun register(myContext: MyContext) {
             scheduleRepeatingAlarm(myContext)
             registerBroadcastReceiver(myContext)
         }
@@ -113,7 +113,7 @@ class SyncInitiator : BroadcastReceiver() {
                 alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
                         SystemClock.elapsedRealtime() + randomDelay,
                         minSyncIntervalMillis,
-                        PendingIntent.getBroadcast(myContext.context(), 0, MyAction.SYNC.intent, 0)
+                        PendingIntent.getBroadcast(myContext.context(), 0, MyAction.SYNC.getIntent(), 0)
                 )
             }
         }

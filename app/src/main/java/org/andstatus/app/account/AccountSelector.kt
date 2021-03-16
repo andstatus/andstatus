@@ -73,14 +73,15 @@ class AccountSelector : SelectorDialog() {
     private fun getOriginsForActor(): MutableList<Origin> {
         val actorId = Optional.ofNullable(arguments)
                 .map { bundle: Bundle -> bundle.getLong(IntentExtra.ACTOR_ID.key) }.orElse(0L)
-        return Actor.load( MyContextHolder.myContextHolder.getNow(), actorId).user.knownInOrigins( MyContextHolder.myContextHolder.getNow())
+        return Actor.load( MyContextHolder.myContextHolder.getNow(), actorId)
+                .user.knownInOrigins( MyContextHolder.myContextHolder.getNow())
     }
 
     private fun newListAdapter(listData: MutableList<MyAccount>): MySimpleAdapter {
-        val list: MutableList<MutableMap<String?, String?>?> = ArrayList()
+        val list: MutableList<MutableMap<String, String>> = ArrayList()
         val syncText = getText(R.string.synced_abbreviated).toString()
         for (ma in listData) {
-            val map: MutableMap<String?, String?> = HashMap()
+            val map: MutableMap<String, String> = HashMap()
             var visibleName = ma.getAccountName()
             if (!ma.isValidAndSucceeded()) {
                 visibleName = "($visibleName)"
@@ -90,9 +91,10 @@ class AccountSelector : SelectorDialog() {
             map[BaseColumns._ID] = ma.actorId.toString()
             list.add(map)
         }
-        return MySimpleAdapter(activity,
+        return MySimpleAdapter(activity ?: throw IllegalStateException("No activity"),
                 list,
-                R.layout.accountlist_item, arrayOf(KEY_VISIBLE_NAME, KEY_SYNC_AUTO, BaseColumns._ID), intArrayOf(R.id.visible_name, R.id.sync_auto, R.id.id), true)
+                R.layout.accountlist_item, arrayOf(KEY_VISIBLE_NAME, KEY_SYNC_AUTO, BaseColumns._ID),
+                intArrayOf(R.id.visible_name, R.id.sync_auto, R.id.id), true)
     }
 
     private fun returnSelectedAccount(ma: MyAccount) {

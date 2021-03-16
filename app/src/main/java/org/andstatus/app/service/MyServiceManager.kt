@@ -23,14 +23,12 @@ import org.andstatus.app.IntentExtra
 import org.andstatus.app.MyAction
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.os.MyAsyncTask
-import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.syncadapter.SyncInitiator
 import org.andstatus.app.util.IdentifiableInstance
 import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.MyLog
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.UnaryOperator
 
 /**
  * This receiver starts and stops [MyService] and also queries its state.
@@ -38,49 +36,46 @@ import java.util.function.UnaryOperator
  * This is why we're keeping a state in static fields.
  */
 class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
-    private val instanceId = InstanceId.next()
-    override fun getInstanceId(): Long {
-        return instanceId
-    }
+    override val instanceId = InstanceId.next()
 
     private class MyServiceStateInTime {
         /** Is the service started.
          * @See [here](http://groups.google.com/group/android-developers/browse_thread/thread/8c4bd731681b8331/bf3ae8ef79cad75d)
          */
         @Volatile
-        private var stateEnum: MyServiceState? = MyServiceState.UNKNOWN
+        var stateEnum: MyServiceState? = MyServiceState.UNKNOWN
 
         /**
          * [System.nanoTime] when the state was queued or received last time ( 0 - never )
          */
         @Volatile
-        private var stateQueuedTime: Long = 0
+        var stateQueuedTime: Long = 0
 
         /** If true, we sent state request and are waiting for reply from [MyService]  */
         @Volatile
-        private val isWaiting = false
+        var isWaiting = false
 
         companion object {
-            fun getUnknown(): MyServiceStateInTime? {
+            fun getUnknown(): MyServiceStateInTime {
                 return MyServiceStateInTime()
             }
 
-            fun fromIntent(intent: Intent?): MyServiceStateInTime? {
+            fun fromIntent(intent: Intent): MyServiceStateInTime {
                 val state = MyServiceStateInTime()
                 state.stateQueuedTime = System.nanoTime()
-                state.stateEnum = MyServiceState.Companion.load(intent.getStringExtra(IntentExtra.SERVICE_STATE.key))
+                state.stateEnum = MyServiceState.load(intent.getStringExtra(IntentExtra.SERVICE_STATE.key))
                 return state
             }
         }
     }
 
-    override fun onReceive(context: Context?, intent: Intent?) {
-        when (MyAction.Companion.fromIntent(intent)) {
+    override fun onReceive(context: Context, intent: Intent) {
+        when (MyAction.fromIntent(intent)) {
             MyAction.BOOT_COMPLETED -> {
                 MyLog.d(this, "Trying to start service on boot")
-                sendCommand(CommandData.Companion.EMPTY)
+                sendCommand(CommandData.EMPTY)
             }
-            MyAction.SYNC -> SyncInitiator.Companion.tryToSync(context)
+            MyAction.SYNC -> SyncInitiator.tryToSync(context)
             MyAction.SERVICE_STATE -> {
                 if (isServiceAvailable()) {
                      MyContextHolder.myContextHolder.initialize(context, this)
@@ -108,13 +103,13 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
             return if (timeWhenServiceWillBeAvailable == 0L) 0 else Math.max(timeWhenServiceWillBeAvailable - System.currentTimeMillis(), 0)
         }
 
-        fun checkAndGetNew(): ServiceAvailability? {
+        fun checkAndGetNew(): ServiceAvailability {
             return if (isAvailable()) AVAILABLE else newUnavailable()
         }
 
         companion object {
-            val AVAILABLE: ServiceAvailability? = ServiceAvailability(0)
-            fun newUnavailable(): ServiceAvailability? {
+            val AVAILABLE: ServiceAvailability = ServiceAvailability(0)
+            fun newUnavailable(): ServiceAvailability {
                 return ServiceAvailability(System.currentTimeMillis() +
                         TimeUnit.MINUTES.toMillis(15))
             }
@@ -122,7 +117,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
     }
 
     companion object {
-        private val TAG: String? = MyServiceManager::class.java.simpleName
+        private val TAG: String = MyServiceManager::class.java.simpleName
 
         @Volatile
         private var stateInTime = MyServiceStateInTime.getUnknown()
@@ -138,35 +133,35 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
          *
          * @param commandData to the service or null
          */
-        fun sendCommand(commandData: CommandData?) {
+        fun sendCommand(commandData: CommandData) {
             if (!isServiceAvailable()) {
                 // Imitate a soft service error
                 commandData.getResult().incrementNumIoExceptions()
-                commandData.getResult().message = "Service is not available"
-                MyServiceEventsBroadcaster.Companion.newInstance( MyContextHolder.myContextHolder.getNow(), MyServiceState.STOPPED)
+                commandData.getResult().setMessage("Service is not available")
+                MyServiceEventsBroadcaster.newInstance( MyContextHolder.myContextHolder.getNow(), MyServiceState.STOPPED)
                         .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
                 return
             }
             sendCommandIgnoringServiceAvailability(commandData)
         }
 
-        fun sendManualForegroundCommand(commandData: CommandData?) {
+        fun sendManualForegroundCommand(commandData: CommandData) {
             sendForegroundCommand(commandData.setManuallyLaunched(true))
         }
 
-        fun sendForegroundCommand(commandData: CommandData?) {
+        fun sendForegroundCommand(commandData: CommandData) {
             sendCommand(commandData.setInForeground(true))
         }
 
-        fun sendCommandIgnoringServiceAvailability(commandData: CommandData?) {
+        fun sendCommandIgnoringServiceAvailability(commandData: CommandData) {
             // Using explicit Service intent,
             // see http://stackoverflow.com/questions/18924640/starting-android-service-using-explicit-vs-implicit-intent
-            var serviceIntent: Intent? = Intent( MyContextHolder.myContextHolder.getNow().context(), MyService::class.java)
-            when (commandData.getCommand()) {
+            var serviceIntent = Intent( MyContextHolder.myContextHolder.getNow().context(), MyService::class.java)
+            when (commandData.command) {
                 CommandEnum.STOP_SERVICE, CommandEnum.BROADCAST_SERVICE_STATE -> serviceIntent = commandData.toIntent(serviceIntent)
                 CommandEnum.UNKNOWN -> {
                 }
-                else -> CommandQueue.Companion.addToPreQueue(commandData)
+                else -> CommandQueue.addToPreQueue(commandData)
             }
             try {
                  MyContextHolder.myContextHolder.getNow().context().startService(serviceIntent)
@@ -198,8 +193,8 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
             // Don't do "context.stopService", because we may lose some information and (or) get Force Close
             // This is "mild" stopping
              MyContextHolder.myContextHolder.getNow().context()
-                    .sendBroadcast(CommandData.Companion.newCommand(CommandEnum.STOP_SERVICE)
-                            .toIntent(MyAction.EXECUTE_COMMAND.intent))
+                    .sendBroadcast(CommandData.newCommand(CommandEnum.STOP_SERVICE)
+                            .toIntent(MyAction.EXECUTE_COMMAND.getIntent()))
         }
 
         /**
@@ -223,26 +218,26 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
                 state.stateQueuedTime = time
                 stateInTime = state
                  MyContextHolder.myContextHolder.getNow().context()
-                        .sendBroadcast(CommandData.Companion.newCommand(CommandEnum.BROADCAST_SERVICE_STATE)
-                                .toIntent(MyAction.EXECUTE_COMMAND.intent))
+                        .sendBroadcast(CommandData.newCommand(CommandEnum.BROADCAST_SERVICE_STATE)
+                                .toIntent(MyAction.EXECUTE_COMMAND.getIntent()))
             }
             return state.stateEnum
         }
 
-        private val serviceAvailability: AtomicReference<ServiceAvailability?>? = AtomicReference(ServiceAvailability.AVAILABLE)
+        private val serviceAvailability: AtomicReference<ServiceAvailability> = AtomicReference(ServiceAvailability.AVAILABLE)
         fun isServiceAvailable(): Boolean {
             var isAvailable: Boolean =  MyContextHolder.myContextHolder.getNow().isReady()
             if (!isAvailable) {
                 val tryToInitialize = serviceAvailability.get().isAvailable()
                 if (tryToInitialize
-                        && MyAsyncTask.Companion.nonUiThread() // Don't block on UI thread
+                        && MyAsyncTask.nonUiThread() // Don't block on UI thread
                         && ! MyContextHolder.myContextHolder.getNow().initialized()) {
                      MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
                     isAvailable =  MyContextHolder.myContextHolder.getNow().isReady()
                 }
             }
             if (isAvailable) {
-                val availableInMillis = serviceAvailability.updateAndGet(UnaryOperator { obj: ServiceAvailability? -> obj.checkAndGetNew() })
+                val availableInMillis = serviceAvailability.updateAndGet { obj: ServiceAvailability -> obj.checkAndGetNew() }
                         .willBeAvailableInMillis()
                 isAvailable = availableInMillis == 0L
                 if (!isAvailable && MyLog.isVerboseEnabled()) {

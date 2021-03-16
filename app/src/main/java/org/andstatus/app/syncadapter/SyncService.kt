@@ -43,7 +43,8 @@ class SyncService : Service() {
     }
 
     private object ResourceHolder {
-        var syncAdapter: SyncAdapter? = SyncAdapter( MyContextHolder.myContextHolder.getNow().context(), true)
+        // TODO: Fix the leak!
+        var syncAdapter: SyncAdapter = SyncAdapter( MyContextHolder.myContextHolder.getNow().context(), true)
     }
 
     override fun onDestroy() {

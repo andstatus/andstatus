@@ -18,15 +18,13 @@ package org.andstatus.app.service
 import android.content.SyncResult
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContext
-import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.util.MyLog
-import java.util.function.Function
 
-class MyServiceCommandsRunner(private val myContext: MyContext?) {
+class MyServiceCommandsRunner(private val myContext: MyContext) {
     private var ignoreServiceAvailability = false
-    fun autoSyncAccount(ma: MyAccount, syncResult: SyncResult?) {
-        val method = "syncAccount " + ma.accountName
+    fun autoSyncAccount(ma: MyAccount, syncResult: SyncResult) {
+        val method = "syncAccount " + ma.getAccountName()
         if (!myContext.isReady()) {
             MyLog.d(this, "$method; Context is not ready")
             return
@@ -34,7 +32,7 @@ class MyServiceCommandsRunner(private val myContext: MyContext?) {
         if (ma.nonValid) {
             MyLog.d(this, "$method; The account was not loaded")
             return
-        } else if (!ma.isValidAndSucceeded) {
+        } else if (!ma.isValidAndSucceeded()) {
             syncResult.stats.numAuthExceptions++
             MyLog.d(this, "$method; Credentials failed, skipping")
             return
@@ -46,18 +44,18 @@ class MyServiceCommandsRunner(private val myContext: MyContext?) {
         }
         MyLog.v(this) { method + " started, " + timelines.size + " timelines" }
         timelines.stream()
-                .map(Function<Timeline?, CommandData?> { t: Timeline? -> CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, t) })
-                .forEach { commandData: CommandData? -> sendCommand(commandData) }
+                .map { t: Timeline -> CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, t) }
+                .forEach { commandData: CommandData -> sendCommand(commandData) }
         MyLog.v(this) { method + " ended, " + timelines.size + " timelines requested: " + timelines }
     }
 
-    private fun sendCommand(commandData: CommandData?) {
+    private fun sendCommand(commandData: CommandData) {
         // we don't wait for completion anymore.
         // TODO: Implement Synchronous background sync ?!
         if (ignoreServiceAvailability) {
-            MyServiceManager.Companion.sendCommandIgnoringServiceAvailability(commandData)
+            MyServiceManager.sendCommandIgnoringServiceAvailability(commandData)
         } else {
-            MyServiceManager.Companion.sendCommand(commandData)
+            MyServiceManager.sendCommand(commandData)
         }
     }
 

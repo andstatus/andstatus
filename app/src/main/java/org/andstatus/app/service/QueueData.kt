@@ -21,45 +21,47 @@ import org.andstatus.app.timeline.ViewItem
 /**
  * @author yvolk@yurivolkov.com
  */
-class QueueData protected constructor(val queueType: QueueType, val commandData: CommandData) : ViewItem<QueueData?>(false, commandData.createdDate), Comparable<QueueData?> {
+class QueueData protected constructor(val queueType: QueueType, val commandData: CommandData) : ViewItem<QueueData>(false, commandData.getCreatedDate()), Comparable<QueueData> {
+
     override fun getId(): Long {
-        return commandData.hashCode()
+        return commandData.hashCode().toLong()
     }
 
     override fun getDate(): Long {
-        return commandData.createdDate
+        return commandData.getCreatedDate()
     }
 
-    fun toSharedSubject(): String? {
+    fun toSharedSubject(): String {
         return (queueType.acronym + "; "
                 + commandData.toCommandSummary( MyContextHolder.myContextHolder.getNow()))
     }
 
-    fun toSharedText(): String? {
+    fun toSharedText(): String {
         return (queueType.acronym + "; "
                 + commandData.share( MyContextHolder.myContextHolder.getNow()))
     }
 
-    override operator fun compareTo(another: QueueData): Int {
-        return -longCompare(date, another.date)
+    override operator fun compareTo(other: QueueData): Int {
+        return -longCompare(getDate(), other.getDate())
     }
 
-    override fun equals(o: Any?): Boolean {
-        if (this === o) return true
-        if (o == null || javaClass != o.javaClass) return false
-        val queueData = o as QueueData?
-        return if (queueType != queueData.queueType) false else commandData.createdDate == queueData.commandData.createdDate
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val queueData = other as QueueData
+        return if (queueType != queueData.queueType) false
+        else commandData.getCreatedDate() == queueData.commandData.getCreatedDate()
     }
 
     override fun hashCode(): Int {
         var result = queueType.hashCode()
-        result = 31 * result + (commandData.createdDate xor (commandData.createdDate ushr 32)) as Int
+        result = 31 * result + (commandData.getCreatedDate() xor (commandData.getCreatedDate() ushr 32)).toInt()
         return result
     }
 
     companion object {
-        val EMPTY: QueueData = QueueData(QueueType.UNKNOWN, CommandData.Companion.EMPTY)
-        fun getNew(queueType: QueueType, commandData: CommandData): QueueData? {
+        val EMPTY: QueueData = QueueData(QueueType.UNKNOWN, CommandData.EMPTY)
+        fun getNew(queueType: QueueType, commandData: CommandData): QueueData {
             return QueueData(queueType, commandData)
         }
 

@@ -24,17 +24,17 @@ import java.util.*
  * Retrieves and saves information about times and positions in a Timeline of the youngest/oldest downloaded timeline items.
  * The "timeline item" is e.g. a "note" for Twitter and an "Activity" for Pump.Io.
  */
-class TimelineSyncTracker(private val timeline: Timeline?, private val isSyncYounger: Boolean) {
-    var requestedPositions: MutableList<TimelinePosition?>? = ArrayList()
-    var firstPosition: TimelinePosition? = TimelinePosition.Companion.EMPTY
-    private var nextPosition: TimelinePosition? = TimelinePosition.Companion.EMPTY
+class TimelineSyncTracker(private val timeline: Timeline, private val isSyncYounger: Boolean) {
+    var requestedPositions: MutableList<TimelinePosition> = ArrayList()
+    var firstPosition: TimelinePosition = TimelinePosition.EMPTY
+    private var nextPosition: TimelinePosition = TimelinePosition.EMPTY
     private var downloadedCounter: Long = 0
-    fun getPreviousPosition(): TimelinePosition? {
+    fun getPreviousPosition(): TimelinePosition {
         return if (requestedPositions.isEmpty()) getPreviousTimelinePosition() else requestedPositions.get(requestedPositions.size - 1)
     }
 
-    private fun getPreviousTimelinePosition(): TimelinePosition? {
-        return TimelinePosition.Companion.of(if (isSyncYounger) timeline.getYoungestPosition() else timeline.getOldestPosition())
+    private fun getPreviousTimelinePosition(): TimelinePosition {
+        return TimelinePosition.of(if (isSyncYounger) timeline.getYoungestPosition() else timeline.getOldestPosition())
     }
 
     /**
@@ -51,14 +51,14 @@ class TimelineSyncTracker(private val timeline: Timeline?, private val isSyncYou
         return if (isSyncYounger) timeline.getYoungestSyncedDate() else timeline.getOldestSyncedDate()
     }
 
-    fun onPositionRequested(position: TimelinePosition?) {
+    fun onPositionRequested(position: TimelinePosition) {
         requestedPositions.add(position)
         if (position.isEmpty) {
             clearPosition()
         }
     }
 
-    fun onNewPage(page: InputTimelinePage?) {
+    fun onNewPage(page: InputTimelinePage) {
         if (page.firstPosition.nonEmpty) {
             firstPosition = page.firstPosition
         }
@@ -69,8 +69,8 @@ class TimelineSyncTracker(private val timeline: Timeline?, private val isSyncYou
     fun onNewActivity(timelineItemDate: Long, prevPosition: TimelinePosition?, nextPosition: TimelinePosition?) {
         downloadedCounter++
         timeline.onNewMsg(timelineItemDate,
-                if (prevPosition == null) "" else prevPosition.position,
-                if (nextPosition == null) "" else nextPosition.position)
+                if (prevPosition == null) "" else prevPosition.getPosition(),
+                if (nextPosition == null) "" else nextPosition.getPosition())
     }
 
     fun onTimelineDownloaded() {
@@ -94,7 +94,8 @@ class TimelineSyncTracker(private val timeline: Timeline?, private val isSyncYou
     }
 
     fun onNotFound(): Optional<TimelinePosition> {
-        return if (downloadedCounter > 0 || requestedPositions.contains(TimelinePosition.Companion.EMPTY)) Optional.empty() else Optional.of(TimelinePosition.Companion.EMPTY)
+        return if (downloadedCounter > 0 || requestedPositions.contains(TimelinePosition.EMPTY)) Optional.empty()
+        else Optional.of(TimelinePosition.EMPTY)
     }
 
     override fun toString(): String {
@@ -109,6 +110,6 @@ class TimelineSyncTracker(private val timeline: Timeline?, private val isSyncYou
     }
 
     companion object {
-        private val TAG: String? = TimelineSyncTracker::class.java.simpleName
+        private val TAG: String = TimelineSyncTracker::class.java.simpleName
     }
 }

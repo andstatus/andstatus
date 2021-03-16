@@ -15,7 +15,6 @@
  */
 package org.andstatus.app.service
 
-import io.vavr.control.CheckedFunction
 import io.vavr.control.Try
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.net.social.Connection
@@ -27,22 +26,22 @@ import org.andstatus.app.util.TriState
 import java.net.URL
 import java.util.*
 
-class CommandExecutorGetOpenInstances(execContext: CommandExecutionContext?) : CommandExecutorStrategy(execContext) {
-    public override fun execute(): Try<Boolean> {
-        return Connection.Companion.fromMyAccount(execContext.myAccount, TriState.UNKNOWN)
+class CommandExecutorGetOpenInstances(execContext: CommandExecutionContext) : CommandExecutorStrategy(execContext) {
+    override fun execute(): Try<Boolean> {
+        return Connection.fromMyAccount(execContext.getMyAccount(), TriState.UNKNOWN)
                 .getOpenInstances()
-                .map<Boolean?>(CheckedFunction { result: MutableList<Server?>? -> saveDiscoveredOrigins(result) })
+                .map { result -> saveDiscoveredOrigins(result) }
     }
 
-    private fun saveDiscoveredOrigins(result: MutableList<Server?>?): Boolean? {
-        val execOrigin = execContext.commandData.timeline.origin
-        val newOrigins: MutableList<Origin?> = ArrayList()
+    private fun saveDiscoveredOrigins(result: List<Server>): Boolean {
+        val execOrigin = execContext.commandData.getTimeline().getOrigin()
+        val newOrigins: MutableList<Origin> = ArrayList()
         for (mbOrigin in result) {
-            execContext.result.incrementDownloadedCount()
+            execContext.getResult().incrementDownloadedCount()
             val origin = Origin.Builder(execContext.myContext, execOrigin.originType).setName(mbOrigin.name)
                     .setHostOrUrl(mbOrigin.urlString)
                     .build()
-            if (origin.isValid
+            if (origin.isValid()
                     && ! MyContextHolder.myContextHolder.getNow().origins().fromName(origin.name)
                             .isValid()
                     && !haveOriginsWithThisHostName(origin.url)) {
@@ -60,8 +59,8 @@ class CommandExecutorGetOpenInstances(execContext: CommandExecutionContext?) : C
             return true
         }
         for (origin in  MyContextHolder.myContextHolder.getNow().origins().collection()) {
-            if (origin.url != null && origin.url.host == url.host) {
-                return true
+            origin.url?.let {
+                if (it.host == url.host) return true
             }
         }
         return false

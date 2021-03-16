@@ -27,10 +27,10 @@ internal class MyRemoteViewData {
             widgetComment = context.getString(R.string.appwidget_nodata)
         } else {
             widgetTime = formatWidgetTime(context, widgetData.dateSince, widgetData.dateLastChecked)
-            widgetData.events.map.values.stream().filter { detail: NotificationData -> detail.getCount() > 0 }
+            widgetData.events.map.values.stream().filter { detail: NotificationData -> detail.count > 0 }
                     .forEach { detail: NotificationData ->
                         widgetText += ((if (widgetText.length > 0) "\n" else "")
-                                + context.getText(detail.event.titleResId) + ": " + detail.getCount())
+                                + context.getText(detail.event.titleResId) + ": " + detail.count)
                     }
             if (widgetData.events.isEmpty()) {
                 widgetComment = widgetData.nothingPref ?: ""

@@ -25,11 +25,11 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.util.MyLog
 
 class PersistentOriginList : OriginList() {
-    override fun getOrigins(): Iterable<Origin?>? {
+    override fun getOrigins(): Iterable<Origin> {
         return  MyContextHolder.myContextHolder.getNow().origins().collection()
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         var item = menu.findItem(R.id.addOriginButton)
         if (item != null) {
             item.isEnabled = addEnabled
@@ -44,8 +44,8 @@ class PersistentOriginList : OriginList() {
         return super.onPrepareOptionsMenu(menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item.getItemId()) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.addOriginButton -> onAddOriginSelected("")
             R.id.discoverOpenInstances -> {
                 val intent = Intent(this, DiscoveredOriginList::class.java)
@@ -62,16 +62,16 @@ class PersistentOriginList : OriginList() {
         val intent = Intent(this, OriginEditor::class.java)
         intent.action = Intent.ACTION_INSERT
         intent.putExtra(IntentExtra.ORIGIN_NAME.key, originName)
-        intent.putExtra(IntentExtra.ORIGIN_TYPE.key, originType.code)
+        intent.putExtra(IntentExtra.ORIGIN_TYPE.key, originType.getCode())
         startActivityForResult(intent, ActivityRequestCode.EDIT_ORIGIN.id)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        MyLog.v(this) { "onActivityResult " + ActivityRequestCode.Companion.fromId(requestCode) }
-        when (ActivityRequestCode.Companion.fromId(requestCode)) {
+        MyLog.v(this) { "onActivityResult " + ActivityRequestCode.fromId(requestCode) }
+        when (ActivityRequestCode.fromId(requestCode)) {
             ActivityRequestCode.EDIT_ORIGIN -> fillList()
             ActivityRequestCode.SELECT_OPEN_INSTANCE -> if (resultCode == RESULT_OK) {
-                val originName = data.getStringExtra(IntentExtra.ORIGIN_NAME.key)
+                val originName = data?.getStringExtra(IntentExtra.ORIGIN_NAME.key)
                 if (!originName.isNullOrEmpty()) {
                     onAddOriginSelected(originName)
                 }

@@ -287,7 +287,7 @@ class CommandData private constructor(
 
     /** @return true if the command was deleted
      */
-    private fun deleteFromQueue(oneQueue: OneQueue): Boolean {
+    fun deleteFromQueue(oneQueue: OneQueue): Boolean {
         val queue = oneQueue.queue
         val deleted = AtomicBoolean(false)
         val method = "deleteFromQueue " + oneQueue.queueType

@@ -32,7 +32,7 @@ import java.io.File
 
 abstract class FileDownloader protected constructor(val myContext: MyContext, val data: DownloadData) {
     private var connectionMock: Connection? = null
-    private var connectionRequired: ConnectionRequired? = ConnectionRequired.ANY
+    private var connectionRequired: ConnectionRequired = ConnectionRequired.ANY
 
     fun load(commandData: CommandData): Try<Boolean> {
         when (data.getStatus()) {
@@ -40,8 +40,8 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
             }
             else -> loadUrl()
         }
-        if (data.isError() && !data.getMessage().isNullOrEmpty()) {
-            commandData.getResult().message = data.getMessage()
+        if (data.isError() && data.getMessage().isNotEmpty()) {
+            commandData.getResult().setMessage(data.getMessage())
         }
         if (data.isHardError()) {
             commandData.getResult().incrementParseExceptions()
@@ -49,7 +49,9 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
         if (data.isSoftError()) {
             commandData.getResult().incrementNumIoExceptions()
         }
-        return if (commandData.getResult().hasError()) Try.failure(ConnectionException.Companion.fromStatusCode(StatusCode.UNKNOWN, commandData.getResult().toSummary())) else Try.success(true)
+        return if (commandData.getResult().hasError()) Try.failure(ConnectionException.fromStatusCode(
+                StatusCode.UNKNOWN, commandData.getResult().toSummary()))
+        else Try.success(true)
     }
 
     private fun loadUrl() {
@@ -65,10 +67,10 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
     private fun downloadFile() {
         val method = "downloadFile"
         val fileTemp = DownloadFile(MyStorage.TEMP_FILENAME_PREFIX + data.getFilenameNew())
-        val file = fileTemp.file
+        val file = fileTemp.getFile()
         val ma = findBestAccountForDownload()
         if (ma.isValidAndSucceeded()) {
-            val connection = if (connectionMock == null) ma.getConnection() else connectionMock
+            val connection = connectionMock ?: ma.getConnection()
             MyLog.v(this) {
                 ("About to download " + data.toString() + "; connection"
                         + (if (connectionMock == null) "" else " (mocked)")
@@ -76,10 +78,10 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
                         + "; account:" + ma.getAccountName())
             }
             Try.success(connection)
-                    .flatMap { connection1: Connection? -> connection1.execute(newRequest(file)) }
+                    .flatMap { connection1: Connection -> connection1.execute(newRequest(file)) }
                     .onFailure { e: Throwable? ->
-                        val ce: ConnectionException = ConnectionException.Companion.of(e)
-                        if (ce.isHardError) {
+                        val ce: ConnectionException = ConnectionException.of(e)
+                        if (ce.isHardError()) {
                             data.hardErrorLogged(method, ce)
                         } else {
                             data.softErrorLogged(method, ce)
@@ -94,35 +96,36 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
         }
         val fileNew = DownloadFile(data.getFilenameNew())
         fileNew.delete()
-        if (!data.isError() && !fileTemp.file.renameTo(fileNew.file)) {
+        val file2 = fileNew.getFile()
+        if (file2 == null || (!data.isError() && fileTemp.getFile()?.renameTo(file2) == false)) {
             data.softErrorLogged("$method; Couldn't rename file $fileTemp to $fileNew", null)
         }
         data.onDownloaded()
     }
 
-    private fun newRequest(file: File?): HttpRequest? {
-        return HttpRequest.Companion.of(ApiRoutineEnum.DOWNLOAD_FILE, data.getUri())
+    private fun newRequest(file: File?): HttpRequest {
+        return HttpRequest.of(ApiRoutineEnum.DOWNLOAD_FILE, data.getUri())
                 .withConnectionRequired(connectionRequired)
                 .withFile(file)
     }
 
-    fun setConnectionRequired(connectionRequired: ConnectionRequired?): FileDownloader? {
+    fun setConnectionRequired(connectionRequired: ConnectionRequired): FileDownloader {
         this.connectionRequired = connectionRequired
         return this
     }
 
-    fun getStatus(): DownloadStatus? {
+    fun getStatus(): DownloadStatus {
         return data.getStatus()
     }
 
     protected abstract fun findBestAccountForDownload(): MyAccount
-    fun setConnectionMock(connectionMock: Connection?): FileDownloader? {
+    fun setConnectionMock(connectionMock: Connection?): FileDownloader {
         this.connectionMock = connectionMock
         return this
     }
 
     companion object {
-        fun newForDownloadData(myContext: MyContext?, data: DownloadData?): FileDownloader? {
+        fun newForDownloadData(myContext: MyContext, data: DownloadData): FileDownloader {
             return if (data.actorId != 0L) {
                 AvatarDownloader(myContext, data)
             } else {
@@ -130,7 +133,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
             }
         }
 
-        fun load(downloadData: DownloadData?, commandData: CommandData?): Try<Boolean> {
+        fun load(downloadData: DownloadData, commandData: CommandData): Try<Boolean> {
             val downloader = newForDownloadData(commandData.myAccount.origin.myContext, downloadData)
             return downloader.load(commandData)
         }

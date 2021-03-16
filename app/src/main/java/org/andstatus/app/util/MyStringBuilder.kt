@@ -119,8 +119,8 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder = Str
 
     companion object {
         val COMMA: String = ","
-        fun of(text: CharSequence): MyStringBuilder {
-            return MyStringBuilder(text)
+        fun of(text: CharSequence?): MyStringBuilder {
+            return MyStringBuilder(text ?: "")
         }
 
         fun of(content: Optional<String>): MyStringBuilder {

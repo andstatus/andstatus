@@ -345,13 +345,12 @@ class BoardView : HorizontalScrollView, AutoScrollListener {
     }
 
     private val closestSnapColumn: Int
-        private get() {
+        get() {
             var column = 0
             var minDiffX = Int.MAX_VALUE
             for (i in mLists.indices) {
                 val listParent = mLists[i].parent as View
-                var diffX = 0
-                diffX = when (mSnapPosition) {
+                val diffX = when (mSnapPosition) {
                     ColumnSnapPosition.LEFT -> {
                         val leftPosX = scrollX
                         Math.abs(listParent.left - leftPosX)
@@ -384,9 +383,9 @@ class BoardView : HorizontalScrollView, AutoScrollListener {
     }
 
     private val isDraggingColumn: Boolean
-        private get() = mCurrentRecyclerView != null && mDragColumn!!.isDragging
+        get() = mCurrentRecyclerView != null && mDragColumn!!.isDragging
     private val isDragging: Boolean
-        private get() = mCurrentRecyclerView != null && (mCurrentRecyclerView!!.isDragging || isDraggingColumn)
+        get() = mCurrentRecyclerView != null && (mCurrentRecyclerView!!.isDragging || isDraggingColumn)
 
     fun getRecyclerView(column: Int): RecyclerView? {
         return if (column >= 0 && column < mLists.size) {

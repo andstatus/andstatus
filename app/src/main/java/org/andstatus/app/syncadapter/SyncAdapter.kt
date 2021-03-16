@@ -29,10 +29,10 @@ import org.andstatus.app.service.MyServiceCommandsRunner
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 
-class SyncAdapter(private val mContext: Context?, autoInitialize: Boolean) : AbstractThreadedSyncAdapter(mContext, autoInitialize) {
-    override fun onPerformSync(account: Account?, extras: Bundle?, authority: String?,
-                               provider: ContentProviderClient?, syncResult: SyncResult?) {
-        if (!MyServiceManager.Companion.isServiceAvailable()) {
+class SyncAdapter(private val mContext: Context, autoInitialize: Boolean) : AbstractThreadedSyncAdapter(mContext, autoInitialize) {
+    override fun onPerformSync(account: Account, extras: Bundle?, authority: String?,
+                               provider: ContentProviderClient?, syncResult: SyncResult) {
+        if (!MyServiceManager.isServiceAvailable()) {
             MyLog.d(this, account.name + " Service unavailable")
             return
         }

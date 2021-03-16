@@ -20,18 +20,18 @@ import org.andstatus.app.service.CommandQueue.AccessorType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
 
 /** Two specialized threads to execute [CommandQueue]  */
-internal class QueueExecutors(private val myService: MyService?) {
-    private val general: AtomicReference<QueueExecutor?>? = AtomicReference()
-    private val downloads: AtomicReference<QueueExecutor?>? = AtomicReference()
+class QueueExecutors(private val myService: MyService) {
+    private val general: AtomicReference<QueueExecutor> = AtomicReference()
+    private val downloads: AtomicReference<QueueExecutor> = AtomicReference()
+
     fun ensureExecutorsStarted() {
         ensureExecutorStarted(AccessorType.GENERAL)
         ensureExecutorStarted(AccessorType.DOWNLOADS)
     }
 
-    private fun ensureExecutorStarted(accessorType: AccessorType?) {
+    private fun ensureExecutorStarted(accessorType: AccessorType) {
         val method = "ensureExecutorStarted-$accessorType"
         val logMessageBuilder = MyStringBuilder()
         val previous = getRef(accessorType).get()
@@ -46,7 +46,7 @@ internal class QueueExecutors(private val myService: MyService?) {
         }
         if (replace) {
             val accessor = myService.myContext.queues().getAccessor(accessorType)
-            val current = if (accessor.isAnythingToExecuteNow) QueueExecutor(myService, accessorType) else null
+            val current = if (accessor.isAnythingToExecuteNow()) QueueExecutor(myService, accessorType) else null
             if (current == null && previous == null) {
                 logMessageBuilder.withComma("Nothing to execute")
             } else {
@@ -55,27 +55,27 @@ internal class QueueExecutors(private val myService: MyService?) {
                         logMessageBuilder.withComma("Nothing to execute")
                     } else {
                         logMessageBuilder.withComma("Starting new Executor $current")
-                        AsyncTaskLauncher.Companion.execute(myService.classTag() + "-" + accessorType, current)
-                                .onFailure(Consumer { throwable: Throwable? ->
+                        AsyncTaskLauncher.execute(myService.classTag() + "-" + accessorType, current)
+                                .onFailure { throwable: Throwable? ->
                                     logMessageBuilder.withComma("Failed to start new executor: $throwable")
                                     replaceExecutor(logMessageBuilder, accessorType, current, null)
-                                })
+                                }
                     }
                 }
             }
         } else {
             logMessageBuilder.withComma("There is an Executor already $previous")
         }
-        if (logMessageBuilder.length > 0) {
+        if (logMessageBuilder.isNotEmpty()) {
             MyLog.v(myService) { "$method; $logMessageBuilder" }
         }
     }
 
-    fun getRef(accessorType: AccessorType?): AtomicReference<QueueExecutor?> {
+    fun getRef(accessorType: AccessorType): AtomicReference<QueueExecutor> {
         return if (accessorType == AccessorType.GENERAL) general else downloads
     }
 
-    private fun replaceExecutor(logMessageBuilder: MyStringBuilder?, accessorType: AccessorType?,
+    private fun replaceExecutor(logMessageBuilder: MyStringBuilder, accessorType: AccessorType,
                                 previous: QueueExecutor?, current: QueueExecutor?): Boolean {
         if (getRef(accessorType).compareAndSet(previous, current)) {
             if (previous == null) {
@@ -97,7 +97,7 @@ internal class QueueExecutors(private val myService: MyService?) {
                 && stopExecutor(AccessorType.DOWNLOADS, forceNow))
     }
 
-    private fun stopExecutor(accessorType: AccessorType?, forceNow: Boolean): Boolean {
+    private fun stopExecutor(accessorType: AccessorType, forceNow: Boolean): Boolean {
         val method = "couldStopExecutor-$accessorType"
         val logMessageBuilder = MyStringBuilder()
         val executorRef = getRef(accessorType)
@@ -124,11 +124,11 @@ internal class QueueExecutors(private val myService: MyService?) {
     fun isReallyWorking(): Boolean {
         val gExecutor = general.get()
         val dExecutor = downloads.get()
-        return gExecutor != null && (gExecutor.isReallyWorking
-                || dExecutor != null && dExecutor.isReallyWorking)
+        return gExecutor != null && (gExecutor.isReallyWorking()
+                || dExecutor != null && dExecutor.isReallyWorking())
     }
 
     override fun toString(): String {
-        return general.toString() + "; " + downloads.toString()
+        return "$general; $downloads"
     }
 }

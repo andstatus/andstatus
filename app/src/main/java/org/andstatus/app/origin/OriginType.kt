@@ -350,7 +350,7 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
                 urlDefault = UrlUtils.fromString("https://api.twitter.com")
                 basicPath = "1.1"
                 oauthPath = OAUTH_PATH_DEFAULT
-                originFactory = Function { myContext: MyContext? -> OriginTwitter(myContext, this) }
+                originFactory = Function { myContext: MyContext -> OriginTwitter(myContext, this) }
                 connectionClass = ConnectionTheTwitter::class.java
                 httpConnectionClassOauth = HttpConnectionOAuthApache::class.java
                 httpConnectionClassBasic = HttpConnectionBasic::class.java
@@ -376,7 +376,7 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
                 urlDefault = null
                 basicPath = BASIC_PATH_DEFAULT
                 oauthPath = OAUTH_PATH_DEFAULT
-                originFactory = Function { myContext: MyContext? -> OriginPumpio(myContext, this) }
+                originFactory = Function { myContext: MyContext -> OriginPumpio(myContext, this) }
                 connectionClass = ConnectionPumpio::class.java
                 httpConnectionClassOauth = HttpConnectionOAuthJavaNet::class.java
                 httpConnectionClassBasic = HttpConnection::class.java
@@ -402,7 +402,7 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
                 urlDefault = null
                 basicPath = BASIC_PATH_DEFAULT
                 oauthPath = OAUTH_PATH_DEFAULT
-                originFactory = Function { myContext: MyContext? -> OriginActivityPub(myContext, this) }
+                originFactory = Function { myContext: MyContext -> OriginActivityPub(myContext, this) }
                 connectionClass = ConnectionActivityPub::class.java
                 httpConnectionClassOauth = HttpConnectionOAuthMastodon::class.java
                 httpConnectionClassBasic = HttpConnection::class.java
@@ -427,7 +427,7 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
                 canChangeSsl = true
                 basicPath = BASIC_PATH_DEFAULT
                 oauthPath = BASIC_PATH_DEFAULT
-                originFactory = Function { myContext: MyContext? -> OriginGnuSocial(myContext, this) }
+                originFactory = Function { myContext: MyContext -> OriginGnuSocial(myContext, this) }
                 connectionClass = ConnectionTwitterGnuSocial::class.java
                 httpConnectionClassOauth = HttpConnectionOAuthApache::class.java
                 httpConnectionClassBasic = HttpConnectionBasic::class.java
@@ -452,7 +452,7 @@ enum class OriginType(private val id: Long, val title: String, api: ApiEnum, not
                 urlDefault = null
                 basicPath = BASIC_PATH_DEFAULT
                 oauthPath = OAUTH_PATH_DEFAULT
-                originFactory = Function { myContext: MyContext? -> OriginMastodon(myContext, this) }
+                originFactory = Function { myContext: MyContext -> OriginMastodon(myContext, this) }
                 connectionClass = ConnectionMastodon::class.java
                 httpConnectionClassOauth = HttpConnectionOAuthMastodon::class.java
                 httpConnectionClassBasic = HttpConnection::class.java

@@ -41,39 +41,39 @@ import org.andstatus.app.util.TriState
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
 
 /**
  * @author yvolk@yurivolkov.com
  */
-class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandExecutorStrategy(execContext) {
-    var commandSummary: String? = ""
-    public override fun execute(): Try<Boolean> {
-        commandSummary = execContext.commandSummary
-        if (actor.oid.isNullOrEmpty()) {
-            return onParseException("No actorOid not for: $actor")
+class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandExecutorStrategy(execContext) {
+    var commandSummary: String = ""
+
+    override fun execute(): Try<Boolean> {
+        commandSummary = execContext.getCommandSummary()
+        if (getActor().oid.isEmpty()) {
+            return onParseException("No actorOid not for: ${getActor()}")
         }
         val command = execContext.commandData.command
         return getNewActors(command)
-                .onSuccess(Consumer { actorsNew: MutableList<Actor>? -> updateGroupMemberships(command, actorsNew) })
-                .map { actorsNew: MutableList<Actor>? ->
-                    val syncTracker = TimelineSyncTracker(execContext.timeline, true)
+                .onSuccess { actorsNew: List<Actor> -> updateGroupMemberships(command, actorsNew) }
+                .map { actorsNew: List<Actor> ->
+                    val syncTracker = TimelineSyncTracker(execContext.getTimeline(), true)
                     syncTracker.onTimelineDownloaded()
                     MyLog.d(this, commandSummary + " ended, " + actorsNew.size + " actors")
                     true
                 }
     }
 
-    private fun getNewActors(command: CommandEnum?): Try<MutableList<Actor>>? {
+    private fun getNewActors(command: CommandEnum?): Try<List<Actor>> {
         val apiActors = if (command == CommandEnum.GET_FOLLOWERS) ApiRoutineEnum.GET_FOLLOWERS else ApiRoutineEnum.GET_FRIENDS
         return if (isApiSupported(apiActors)) {
             getNewActors(apiActors)
         } else {
             val apiIds = if (command == CommandEnum.GET_FOLLOWERS) ApiRoutineEnum.GET_FOLLOWERS_IDS else ApiRoutineEnum.GET_FRIENDS_IDS
             if (isApiSupported(apiIds)) {
-                connection
-                        .getFriendsOrFollowersIds(apiIds, actor.oid)
-                        .flatMap { actorOidsNew: MutableList<String?>? -> getActorsForOids(actorOidsNew) }
+                getConnection()
+                        .getFriendsOrFollowersIds(apiIds, getActor().oid)
+                        .flatMap { actorOidsNew: List<String> -> getActorsForOids(actorOidsNew) }
             } else {
                 Try.failure(ConnectionException(StatusCode.UNSUPPORTED_API,
                         "$apiActors and $apiIds"))
@@ -81,16 +81,16 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
         }
     }
 
-    private fun getNewActors(apiActors: ApiRoutineEnum?): Try<MutableList<Actor>>? {
+    private fun getNewActors(apiActors: ApiRoutineEnum): Try<List<Actor>> {
         val actors: MutableList<Actor> = ArrayList()
         val requested: MutableList<TimelinePosition?> = ArrayList()
-        val positionToRequest = AtomicReference<TimelinePosition?>(TimelinePosition.Companion.EMPTY)
+        val positionToRequest = AtomicReference<TimelinePosition?>(TimelinePosition.EMPTY)
         for (pageNum in 0..99) {
             if (requested.contains(positionToRequest.get())) break
-            val tried = connection.getFriendsOrFollowers(apiActors, positionToRequest.get(), actor)
-            if (tried.isFailure) return tried.map { page: InputActorPage? -> page.items }
+            val tried = getConnection().getFriendsOrFollowers(apiActors, positionToRequest.get() ?: TimelinePosition.EMPTY, getActor())
+            if (tried.isFailure) return tried.map { page: InputActorPage -> page.items }
             requested.add(positionToRequest.get())
-            tried.onSuccess { page: InputActorPage? ->
+            tried.onSuccess { page: InputActorPage ->
                 actors.addAll(page.items)
                 if (page.firstPosition.nonEmpty && !requested.contains(page.firstPosition)) {
                     positionToRequest.set(page.firstPosition)
@@ -102,47 +102,47 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
         return Try.success(actors)
     }
 
-    private fun getActorsForOids(actorOidsNew: MutableList<String?>?): Try<MutableList<Actor>>? {
+    private fun getActorsForOids(actorOidsNew: List<String>): Try<List<Actor>> {
         val actorsNew: MutableList<Actor> = ArrayList()
         val count = AtomicLong()
         for (actorOidNew in actorOidsNew) {
-            connection.getActor(Actor.Companion.fromOid(execContext.myAccount.origin, actorOidNew)).map { actor: Actor ->
+            getConnection().getActor(Actor.fromOid(execContext.getMyAccount().origin, actorOidNew)).map { actor: Actor ->
                 count.incrementAndGet()
-                execContext.result.incrementDownloadedCount()
+                execContext.getResult().incrementDownloadedCount()
                 actor
             }.recover(Exception::class.java) { e: Exception? ->
                 val actorId = MyQuery.oidToId(OidEnum.ACTOR_OID,
-                        execContext.myAccount.originId, actorOidNew)
+                        execContext.getMyAccount().originId, actorOidNew)
                 if (actorId == 0L) {
                     MyLog.i(this, "Failed to identify an Actor for oid=$actorOidNew", e)
                     return@recover Actor.EMPTY
                 } else {
-                    val actor: Actor = Actor.Companion.fromTwoIds(execContext.myAccount.origin,
+                    val actor: Actor = Actor.fromTwoIds(execContext.getMyAccount().origin,
                             GroupType.UNKNOWN, actorId, actorOidNew)
-                    actor.webFingerId = MyQuery.actorIdToWebfingerId(execContext.myContext, actorId)
+                    getActor().setWebFingerId(MyQuery.actorIdToWebfingerId(execContext.myContext, actorId))
                     MyLog.v(this, "Server doesn't return Actor object for $actor", e)
                     return@recover actor
                 }
             }
                     .onSuccess { actor: Actor ->
                         broadcastProgress(count.toString() + ". "
-                                + execContext.context.getText(R.string.get_user)
+                                + execContext.getContext().getText(R.string.get_user)
                                 + ": " + actor.getUniqueNameWithOrigin(), true)
                         actorsNew.add(actor)
                     }
             if (logSoftErrorIfStopping()) {
-                return Try.failure(Exception(execContext.result.message))
+                return Try.failure(Exception(execContext.getResult().getMessage()))
             }
         }
         return Try.success(actorsNew)
     }
 
-    private fun updateGroupMemberships(command: CommandEnum?, actorsNew: MutableList<Actor>?) {
+    private fun updateGroupMemberships(command: CommandEnum, actorsNew: List<Actor>) {
         val groupType = if (command == CommandEnum.GET_FOLLOWERS) GroupType.FOLLOWERS else GroupType.FRIENDS
         val actionStringRes = if (groupType == GroupType.FOLLOWERS) R.string.followers else R.string.friends
-        val actorIdsOld: MutableSet<Long?> = GroupMembership.Companion.getGroupMemberIds(execContext.myContext, actor.actorId, groupType)
-        execContext.result.incrementDownloadedCount()
-        broadcastProgress(execContext.context.getText(actionStringRes).toString()
+        val actorIdsOld: MutableSet<Long> = GroupMembership.getGroupMemberIds(execContext.myContext, getActor().actorId, groupType)
+        execContext.getResult().incrementDownloadedCount()
+        broadcastProgress(execContext.getContext().getText(actionStringRes).toString()
                 + ": " + actorIdsOld.size + " -> " + actorsNew.size, false)
         val loadLatestNotes = actorsNew.size < 30 // TODO: Too long...
         if (loadLatestNotes && !areAllNotesLoaded(actorsNew)) {
@@ -150,29 +150,29 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
         } else {
             val dataUpdater = DataUpdater(execContext)
             for (actor in actorsNew) {
-                val activity = execContext.myAccount.actor.update(actor)
+                val activity = execContext.getMyAccount().actor.update(actor)
                 dataUpdater.onActivity(activity)
             }
         }
         for (actor in actorsNew) {
             actorIdsOld.remove(actor.actorId)
-            GroupMembership.Companion.setMember(execContext.myContext, getActor(), groupType, TriState.TRUE, actor)
+            GroupMembership.setMember(execContext.myContext, getActor(), groupType, TriState.TRUE, actor)
         }
         for (actorIdOld in actorIdsOld) {
-            GroupMembership.Companion.setMember(execContext.myContext, actor, groupType,
-                    TriState.FALSE, Actor.Companion.load(execContext.myContext, actorIdOld))
+            GroupMembership.setMember(execContext.myContext, getActor(), groupType,
+                    TriState.FALSE, Actor.load(execContext.myContext, actorIdOld))
         }
-        execContext.myContext.users().reload(actor)
+        execContext.myContext.users().reload(getActor())
     }
 
-    private fun areAllNotesLoaded(actorsNew: MutableList<Actor>?): Boolean {
+    private fun areAllNotesLoaded(actorsNew: List<Actor>): Boolean {
         val dataUpdater = DataUpdater(execContext)
         var allNotesLoaded = true
         var count: Long = 0
-        val myAccountActor = execContext.myAccount.actor
+        val myAccountActor = execContext.getMyAccount().actor
         for (actor in actorsNew) {
             count++
-            broadcastProgress(count.toString() + ". " + execContext.context.getText(R.string.button_save)
+            broadcastProgress(count.toString() + ". " + execContext.getContext().getText(R.string.button_save)
                     + ": " + actor.getUniqueNameWithOrigin(), true)
             dataUpdater.onActivity(myAccountActor.update(actor), false)
             if (!actor.hasLatestNote()) {
@@ -186,7 +186,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
     /**
      * @return true if we need to interrupt process
      */
-    private fun updateNewActorsAndTheirLatestActions(actorsNew: MutableList<Actor>?): Boolean {
+    private fun updateNewActorsAndTheirLatestActions(actorsNew: List<Actor>): Boolean {
         val dataUpdater = DataUpdater(execContext)
         var count: Long = 0
         for (actor in actorsNew) {
@@ -195,16 +195,16 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
             var exception: Exception? = null
             try {
                 broadcastProgress(count.toString() + ". "
-                        + execContext.context.getText(R.string.title_command_get_status)
+                        + execContext.getContext().getText(R.string.title_command_get_status)
                         + ": " + actor.getUniqueNameWithOrigin(), true)
                 dataUpdater.downloadOneNoteBy(actor)
-                execContext.result.incrementDownloadedCount()
+                execContext.getResult().incrementDownloadedCount()
             } catch (e: Exception) {
                 exception = e
             }
             var lastActivityId = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actor.actorId)
             if (lastActivityId == 0L) {
-                lastActivityId = MyQuery.conditionToLongColumnValue(execContext.getMyContext().database,
+                lastActivityId = MyQuery.conditionToLongColumnValue(execContext.myContext.getDatabase(),
                         "getLatestActivity",
                         ActivityTable.TABLE_NAME,
                         BaseColumns._ID,
@@ -221,7 +221,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext?) : CommandE
                             + actor.getUniqueNameWithOrigin(), exception)
                 } else {
                     val updatedDate = MyQuery.idToLongColumnValue(
-                            execContext.getMyContext().database,
+                            execContext.myContext.getDatabase(),
                             ActivityTable.TABLE_NAME,
                             ActivityTable.UPDATED_DATE,
                             lastActivityId)

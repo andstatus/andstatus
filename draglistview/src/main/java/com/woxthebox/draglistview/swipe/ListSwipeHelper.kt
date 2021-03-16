@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
 import com.woxthebox.draglistview.swipe.ListSwipeItem.SwipeDirection
 
 class ListSwipeHelper(applicationContext: Context?, private var mSwipeListener: OnSwipeListener?) : RecyclerView.OnScrollListener(), OnItemTouchListener {
+
     abstract class OnSwipeListenerAdapter : OnSwipeListener {
         override fun onItemSwipeStarted(item: ListSwipeItem?) {}
         override fun onItemSwipeEnded(item: ListSwipeItem?, swipedDirection: SwipeDirection?) {}
@@ -125,7 +126,7 @@ class ListSwipeHelper(applicationContext: Context?, private var mSwipeListener: 
         var isSwipeStarted = false
             private set
 
-        override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
+        override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
             if (e1 == null || e2 == null || mSwipeView == null || mRecyclerView!!.scrollState != RecyclerView.SCROLL_STATE_IDLE) {
                 return false
             }

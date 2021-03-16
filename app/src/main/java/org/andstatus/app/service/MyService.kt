@@ -45,17 +45,16 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
-import java.util.function.Consumer
 
 /**
  * This service asynchronously executes commands, mostly related to communication
  * between this Android Device and Social networks.
  */
 class MyService : Service(), IdentifiableInstance {
-    protected val instanceId = InstanceId.next()
+    override val instanceId = InstanceId.next()
 
     @Volatile
-    var myContext: MyContext? = MyContextEmpty.EMPTY
+    var myContext: MyContext = MyContextEmpty.EMPTY
 
     @Volatile
     private var startedForegrounLastTime: Long = 0
@@ -68,22 +67,22 @@ class MyService : Service(), IdentifiableInstance {
     var latestActivityTime: Long = 0
 
     /** Flag to control the Service state persistence  */
-    private val initialized: AtomicBoolean? = AtomicBoolean(false)
+    private val initialized: AtomicBoolean = AtomicBoolean(false)
 
     @Volatile
     private var initializedTime: Long = 0
 
     /** We are stopping this service  */
-    private val isStopping: AtomicBoolean? = AtomicBoolean(false)
-    val executors: QueueExecutors? = QueueExecutors(this)
-    private val heartBeatRef: AtomicReference<HeartBeat?>? = AtomicReference()
+    private val isStopping: AtomicBoolean = AtomicBoolean(false)
+    val executors: QueueExecutors = QueueExecutors(this)
+    private val heartBeatRef: AtomicReference<HeartBeat> = AtomicReference()
 
     /**
      * The reference to the wake lock used to keep the CPU from stopping during
      * background operations.
      */
-    private val wakeLockRef: AtomicReference<WakeLock?>? = AtomicReference()
-    private fun getServiceState(): MyServiceState? {
+    private val wakeLockRef: AtomicReference<WakeLock> = AtomicReference()
+    private fun getServiceState(): MyServiceState {
         return if (initialized.get()) {
             if (isStopping.get()) {
                 MyServiceState.STOPPING
@@ -122,7 +121,7 @@ class MyService : Service(), IdentifiableInstance {
     }
 
     @GuardedBy("serviceStateLock")
-    private val intentReceiver: BroadcastReceiver? = object : BroadcastReceiver() {
+    private val intentReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(arg0: Context?, intent: Intent?) {
             MyLog.v(TAG) { "MyService " + instanceId + " onReceive " + intent.toString() }
             receiveCommand(intent, 0)
@@ -130,7 +129,7 @@ class MyService : Service(), IdentifiableInstance {
     }
 
     private fun receiveCommand(intent: Intent?, startId: Int) {
-        val commandData: CommandData = CommandData.Companion.fromIntent(myContext, intent)
+        val commandData: CommandData = CommandData.fromIntent(myContext, intent)
         when (commandData.command) {
             CommandEnum.STOP_SERVICE -> {
                 MyLog.v(TAG) { "MyService " + instanceId + " command " + commandData.command + " received" }
@@ -158,13 +157,13 @@ class MyService : Service(), IdentifiableInstance {
         return mForcedToStop ||  MyContextHolder.myContextHolder.isShuttingDown()
     }
 
-    fun broadcastBeforeExecutingCommand(commandData: CommandData?) {
-        MyServiceEventsBroadcaster.Companion.newInstance(myContext, getServiceState())
+    fun broadcastBeforeExecutingCommand(commandData: CommandData) {
+        MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
                 .setCommandData(commandData).setEvent(MyServiceEvent.BEFORE_EXECUTING_COMMAND).broadcast()
     }
 
-    fun broadcastAfterExecutingCommand(commandData: CommandData?) {
-        MyServiceEventsBroadcaster.Companion.newInstance(myContext, getServiceState())
+    fun broadcastAfterExecutingCommand(commandData: CommandData) {
+        MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
                 .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
     }
 
@@ -178,11 +177,11 @@ class MyService : Service(), IdentifiableInstance {
             initializedTime = System.currentTimeMillis()
             registerReceiver(intentReceiver, IntentFilter(MyAction.EXECUTE_COMMAND.action))
             if (widgetsInitialized.compareAndSet(false, true)) {
-                AppWidgets.Companion.of(myContext).updateViews()
+                AppWidgets.of(myContext).updateViews()
             }
             reviveHeartBeat()
             MyLog.d(TAG, "MyService $instanceId initialized")
-            MyServiceEventsBroadcaster.Companion.newInstance(myContext, getServiceState()).broadcast()
+            MyServiceEventsBroadcaster.newInstance(myContext, getServiceState()).broadcast()
         }
     }
 
@@ -196,10 +195,10 @@ class MyService : Service(), IdentifiableInstance {
             val current = HeartBeat(this)
             if (heartBeatRef.compareAndSet(previous, current)) {
                 previous?.cancelLogged(true)
-                AsyncTaskLauncher.Companion.execute(TAG, current).onFailure(Consumer { t: Throwable? ->
+                AsyncTaskLauncher.execute(TAG, current).onFailure { t: Throwable? ->
                     heartBeatRef.compareAndSet(current, null)
                     MyLog.w(TAG, "MyService $instanceId Failed to revive heartbeat", t)
-                })
+                }
             }
         }
     }
@@ -229,20 +228,20 @@ class MyService : Service(), IdentifiableInstance {
         val previous = wakeLockRef.get()
         if (previous == null) {
             MyLog.v(TAG) { "MyService $instanceId acquiring wakelock" }
-            val pm = getSystemService(POWER_SERVICE) as PowerManager
+            val pm = getSystemService(POWER_SERVICE) as PowerManager ?
             if (pm == null) {
                 MyLog.w(TAG, "No Power Manager ???")
                 return
             }
             val current = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, MyService::class.java.name)
             if (current != null && wakeLockRef.compareAndSet(previous, current)) {
-                current.acquire()
+                current.acquire(60*1000L /*1 minute*/)
             }
         }
     }
 
     private fun isAnythingToExecuteNow(): Boolean {
-        return myContext.queues().isAnythingToExecuteNow || executors.isReallyWorking()
+        return myContext.queues().isAnythingToExecuteNow() || executors.isReallyWorking()
     }
 
     override fun onDestroy() {
@@ -269,7 +268,7 @@ class MyService : Service(), IdentifiableInstance {
             return
         }
         unInitialize()
-        MyServiceEventsBroadcaster.Companion.newInstance(myContext, getServiceState())
+        MyServiceEventsBroadcaster.newInstance(myContext, getServiceState())
                 .setEvent(MyServiceEvent.ON_STOP).broadcast()
     }
 
@@ -285,7 +284,7 @@ class MyService : Service(), IdentifiableInstance {
         if (heartBeat != null && heartBeatRef.compareAndSet(heartBeat, null)) {
             heartBeat.cancelLogged(true)
         }
-        AsyncTaskLauncher.Companion.cancelPoolTasks(PoolEnum.SYNC)
+        AsyncTaskLauncher.cancelPoolTasks(PoolEnum.SYNC)
         releaseWakeLock()
         stopSelf()
         myContext.getNotifier().clearAndroidNotification(NotificationEventType.SERVICE_RUNNING)
@@ -301,16 +300,12 @@ class MyService : Service(), IdentifiableInstance {
         }
     }
 
-    override fun getInstanceId(): Long {
-        return instanceId
-    }
-
-    override fun instanceTag(): String? {
+    override fun instanceTag(): String {
         return TAG
     }
 
-    private class HeartBeat internal constructor(myService: MyService?) : MyAsyncTask<Void?, Long?, Void?>(TAG, PoolEnum.SYNC) {
-        private val myServiceRef: WeakReference<MyService?>?
+    private class HeartBeat constructor(myService: MyService) : MyAsyncTask<Void?, Long?, Void?>(TAG, PoolEnum.SYNC) {
+        private val myServiceRef: WeakReference<MyService>
 
         @Volatile
         private var previousBeat = createdAt
@@ -327,7 +322,7 @@ class MyService : Service(), IdentifiableInstance {
                     break
                 }
                 val heartBeat = myService.heartBeatRef.get()
-                if (heartBeat != null && heartBeat !== this && heartBeat.isReallyWorking) {
+                if (heartBeat != null && heartBeat !== this && heartBeat.isReallyWorking()) {
                     breakReason = "Other instance found: $heartBeat"
                     break
                 }
@@ -344,7 +339,7 @@ class MyService : Service(), IdentifiableInstance {
                     breakReason = "Not initialized"
                     break
                 }
-                publishProgress(iteration)
+                publishProgress(iteration.toLong())
             }
             val breakReasonVal = breakReason
             MyLog.v(this) { "Ended $breakReasonVal; $this" }
@@ -354,14 +349,14 @@ class MyService : Service(), IdentifiableInstance {
         }
 
         override fun onProgressUpdate(vararg values: Long?) {
-            mIteration = values[0]
+            mIteration = values[0] ?: 0
             previousBeat = MyLog.uniqueCurrentTimeMS()
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this) { "onProgressUpdate; $this" }
             }
             if (MyLog.isDebugEnabled() && RelativeTime.moreSecondsAgoThan(createdAt,
-                            QueueExecutor.Companion.MAX_EXECUTION_TIME_SECONDS)) {
-                MyLog.d(this, AsyncTaskLauncher.Companion.threadPoolInfo())
+                            QueueExecutor.MAX_EXECUTION_TIME_SECONDS)) {
+                MyLog.d(this, AsyncTaskLauncher.threadPoolInfo())
             }
             val myService = myServiceRef.get()
             myService?.startStopExecution()
@@ -371,11 +366,11 @@ class MyService : Service(), IdentifiableInstance {
             return instanceTag() + "; " + super.toString()
         }
 
-        override fun instanceTag(): String? {
+        override fun instanceTag(): String {
             return super.instanceTag() + "-it" + mIteration
         }
 
-        override fun classTag(): String? {
+        override fun classTag(): String {
             return TAG
         }
 
@@ -384,7 +379,7 @@ class MyService : Service(), IdentifiableInstance {
         }
 
         companion object {
-            private val TAG: String? = "HeartBeat"
+            private val TAG: String = "HeartBeat"
             private const val HEARTBEAT_PERIOD_SECONDS: Long = 11
         }
 
@@ -398,8 +393,8 @@ class MyService : Service(), IdentifiableInstance {
     }
 
     companion object {
-        private val TAG: String? = MyService::class.java.simpleName
+        private val TAG: String = MyService::class.java.simpleName
         private const val STOP_ON_INACTIVITY_AFTER_SECONDS: Long = 10
-        private val widgetsInitialized: AtomicBoolean? = AtomicBoolean(false)
+        private val widgetsInitialized: AtomicBoolean = AtomicBoolean(false)
     }
 }

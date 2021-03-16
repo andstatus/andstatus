@@ -23,7 +23,7 @@ import org.andstatus.app.util.MyLog
 enum class MyServiceState {
     RUNNING, STOPPING, STOPPED, UNKNOWN;
 
-    fun save(): String? {
+    fun save(): String {
         return this.toString()
     }
 
@@ -31,15 +31,15 @@ enum class MyServiceState {
         /**
          * Like valueOf but doesn't throw exceptions: it returns UNKNOWN instead
          */
-        fun load(str: String?): MyServiceState? {
-            val state: MyServiceState
-            state = try {
+        fun load(str: String?): MyServiceState {
+            if (str == null) return UNKNOWN
+
+            return try {
                 valueOf(str)
             } catch (e: IllegalArgumentException) {
                 MyLog.v(MyServiceState::class.java, e)
                 UNKNOWN
             }
-            return state
         }
     }
 }

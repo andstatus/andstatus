@@ -18,10 +18,8 @@ package org.andstatus.app.service
 import io.vavr.control.Try
 import org.andstatus.app.data.DataPruner
 import org.andstatus.app.data.DataUpdater
-import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.util.MyLog
-import java.util.function.Consumer
 
 /**
  * Downloads ("loads") different types of Timelines
@@ -30,35 +28,36 @@ import java.util.function.Consumer
  *
  * @author yvolk@yurivolkov.com
  */
-internal abstract class TimelineDownloader(execContext: CommandExecutionContext?) : CommandExecutorStrategy(execContext) {
-    public override fun execute(): Try<Boolean> {
-        if (!isApiSupported(execContext.timeline.timelineType.connectionApiRoutine)) {
+internal abstract class TimelineDownloader(execContext: CommandExecutionContext) : CommandExecutorStrategy(execContext) {
+
+    override fun execute(): Try<Boolean> {
+        if (!isApiSupported(execContext.getTimeline().timelineType.connectionApiRoutine)) {
             MyLog.v(this) {
-                (execContext.timeline.toString() + " is not supported for "
-                        + execContext.myAccount.accountName)
+                (execContext.getTimeline().toString() + " is not supported for "
+                        + execContext.getMyAccount().getAccountName())
             }
             return Try.success(true)
         }
-        MyLog.d(this, "Getting " + execContext.commandData.toCommandSummary(execContext.getMyContext()) +
-                " by " + execContext.myAccount.accountName)
+        MyLog.d(this, "Getting " + execContext.commandData.toCommandSummary(execContext.myContext) +
+                " by " + execContext.getMyAccount().getAccountName())
         return download()
-                .onSuccess(Consumer { b: Boolean? -> onSyncEnded() })
+                .onSuccess { b: Boolean? -> onSyncEnded() }
                 .onFailure { e: Throwable? -> onSyncEnded() }
     }
 
     abstract fun download(): Try<Boolean>
-    protected fun getTimeline(): Timeline? {
-        return execContext.timeline
+    protected fun getTimeline(): Timeline {
+        return execContext.getTimeline()
     }
 
     fun onSyncEnded() {
-        getTimeline().onSyncEnded(execContext.getMyContext(), execContext.commandData.result)
-        if (execContext.result.downloadedCount > 0) {
-            if (!execContext.result.hasError() && !isStopping) {
-                DataPruner(execContext.getMyContext()).prune()
+        getTimeline().onSyncEnded(execContext.myContext, execContext.commandData.getResult())
+        if (execContext.getResult().getDownloadedCount() > 0) {
+            if (!execContext.getResult().hasError() && !isStopping()) {
+                DataPruner(execContext.myContext).prune()
             }
             MyLog.v(this, "Notifying of timeline changes")
-            execContext.getMyContext().notifier.update()
+            execContext.myContext.getNotifier().update()
         }
     }
 
