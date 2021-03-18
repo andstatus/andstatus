@@ -74,11 +74,11 @@ object ZipUtils {
                     val zipEntry = enu.nextElement() as ZipEntry
                     val file = File(targetFolder, zipEntry.name)
                     if (FileUtils.isFileInsideFolder(file, targetFolder)) {
-                        zipFile.getInputStream(zipEntry).use { `is` ->
-                            newFileOutputStreamWithRetry(file).use { fos ->
+                        zipFile.getInputStream(zipEntry).use { inputStream ->
+                            newFileOutputStreamWithRetry(file)?.use { fos ->
                                 val bytes = ByteArray(MyStorage.FILE_CHUNK_SIZE)
                                 var length: Int
-                                while (`is`.read(bytes).also { length = it } >= 0) {
+                                while (inputStream.read(bytes).also { length = it } >= 0) {
                                     fos.write(bytes, 0, length)
                                 }
                             }

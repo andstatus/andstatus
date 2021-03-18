@@ -220,7 +220,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
             actors.putIfAbsent(actor.actorId, actor)
             return
         }
-        if (actor.isBetterToCacheThan(actors.get(actor.actorId))) {
+        if (actor.isBetterToCacheThan(actors.get(actor.actorId) ?: Actor.EMPTY)) {
             actors[actor.actorId] = actor
             actorGroupTypes[actor.actorId] = actor.groupType
             if (actor.isOidReal()) {

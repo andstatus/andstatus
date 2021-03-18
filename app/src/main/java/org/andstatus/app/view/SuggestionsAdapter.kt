@@ -34,36 +34,35 @@ import java.util.concurrent.CopyOnWriteArrayList
 /**
  * For now Timeline suggestions are taken from Search timelines, user suggestions are not persistent
  */
-class SuggestionsAdapter(activity: LoadableListActivity<*>, searchObjects: SearchObjects) : BaseAdapter(), Filterable {
-    private val mInflater: LayoutInflater?
-    private val searchObjects: SearchObjects?
+class SuggestionsAdapter(activity: LoadableListActivity<*>,
+                         private val searchObjects: SearchObjects) : BaseAdapter(), Filterable {
+    private val mInflater: LayoutInflater = LayoutInflater.from(activity)
     private var mFilter: ArrayFilter? = null
-    private var items: MutableList<String?>? = ArrayList()
+    private var items: MutableList<String> = ArrayList()
+
     override fun getCount(): Int {
         return items.size
     }
 
-    override fun getItem(position: Int): String? {
+    override fun getItem(position: Int): String {
         return items.get(position)
     }
 
     override fun getItemId(position: Int): Long {
-        return position
+        return position.toLong()
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val view: View?
-        view = convertView ?: mInflater.inflate(R.layout.suggestion_item, parent, false)
+        val view: View = convertView ?: mInflater.inflate(R.layout.suggestion_item, parent, false)
         val item = getItem(position)
-        MyUrlSpan.Companion.showText(view, R.id.suggestion, item, false, true)
+        MyUrlSpan.showText(view, R.id.suggestion, item, false, true)
         return view
     }
 
     override fun getFilter(): Filter {
-        if (mFilter == null) {
-            mFilter = ArrayFilter()
+        return mFilter ?: ArrayFilter().also {
+            mFilter = it
         }
-        return mFilter
     }
 
     /**
@@ -73,8 +72,8 @@ class SuggestionsAdapter(activity: LoadableListActivity<*>, searchObjects: Searc
      * is removed from the list.
      */
     private inner class ArrayFilter : Filter() {
-        override fun performFiltering(prefix: CharSequence?): FilterResults? {
-            var filteredValues: MutableList<String?>? = ArrayList()
+        override fun performFiltering(prefix: CharSequence?): FilterResults {
+            var filteredValues: MutableList<String> = ArrayList()
             if (!TextUtils.isEmpty(prefix)) {
                 val prefixString = prefix.toString().toLowerCase()
                 filteredValues = loadFiltered(prefixString)
@@ -86,11 +85,11 @@ class SuggestionsAdapter(activity: LoadableListActivity<*>, searchObjects: Searc
             return results
         }
 
-        private fun loadFiltered(prefixString: String?): MutableList<String?>? {
+        private fun loadFiltered(prefixString: String?): MutableList<String> {
             if (prefixString.isNullOrEmpty()) {
-                return emptyList<String?>()
+                return mutableListOf<String>()
             }
-            val filteredValues: MutableList<String?> = ArrayList()
+            val filteredValues: MutableList<String> = ArrayList()
             for (item in getAllSuggestions(searchObjects)) {
                 if (item.toLowerCase().startsWith(prefixString)) {
                     filteredValues.add(item)
@@ -103,8 +102,8 @@ class SuggestionsAdapter(activity: LoadableListActivity<*>, searchObjects: Searc
             return filteredValues
         }
 
-        override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-            items = results.values as MutableList<String?>
+        override fun publishResults(constraint: CharSequence?, results: FilterResults) {
+            items = results.values as MutableList<String>
             if (results.count > 0) {
                 notifyDataSetChanged()
             } else {
@@ -120,8 +119,8 @@ class SuggestionsAdapter(activity: LoadableListActivity<*>, searchObjects: Searc
     }
 
     companion object {
-        private val notesSuggestions: MutableList<String?>? = CopyOnWriteArrayList()
-        private val actorsSuggestions: MutableList<String?>? = CopyOnWriteArrayList()
+        private val notesSuggestions: MutableList<String> = CopyOnWriteArrayList()
+        private val actorsSuggestions: MutableList<String> = CopyOnWriteArrayList()
         fun addSuggestion(searchObjects: SearchObjects?, suggestion: String?) {
             if (suggestion.isNullOrEmpty()) {
                 return
@@ -133,17 +132,15 @@ class SuggestionsAdapter(activity: LoadableListActivity<*>, searchObjects: Searc
             suggestions.add(0, suggestion)
         }
 
-        private fun getAllSuggestions(searchObjects: SearchObjects?): MutableList<String?> {
+        private fun getAllSuggestions(searchObjects: SearchObjects?): MutableList<String> {
             return if (SearchObjects.NOTES == searchObjects) notesSuggestions else actorsSuggestions
         }
     }
 
     init {
-        mInflater = LayoutInflater.from(activity)
-        this.searchObjects = searchObjects
         for (timeline in activity.myContext.timelines().values()) {
-            if (timeline.hasSearchQuery() && !notesSuggestions.contains(timeline.searchQuery)) {
-                notesSuggestions.add(timeline.searchQuery)
+            if (timeline.hasSearchQuery() && !notesSuggestions.contains(timeline.getSearchQuery())) {
+                notesSuggestions.add(timeline.getSearchQuery())
             }
         }
     }

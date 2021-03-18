@@ -19,7 +19,7 @@ package org.andstatus.app.net.social
  * API routines (functions, "resources" in terms of Twitter)  enumerated
  * @author yvolk@yurivolkov.com
  */
-enum class ApiRoutineEnum @JvmOverloads constructor(private val isNotePrivate: Boolean = false) {
+enum class ApiRoutineEnum constructor(private val isNotePrivate: Boolean = false) {
     ACCOUNT_RATE_LIMIT_STATUS, ACCOUNT_VERIFY_CREDENTIALS,
 
     /** Returns most recent notes privately sent to the authenticating user  */

@@ -5,6 +5,7 @@ import org.andstatus.app.list.ContextMenuItem
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.timeline.TimelineActivity.Companion.startForTimeline
 import org.andstatus.app.timeline.WhichPage
 
 /*
@@ -23,35 +24,35 @@ import org.andstatus.app.timeline.WhichPage
 * limitations under the License.
 */   enum class ManageTimelinesContextMenuItem : ContextMenuItem {
     OPEN_TIMELINE {
-        override fun execute(menu: ManageTimelinesContextMenu?, viewItem: ManageTimelinesViewItem?): Boolean {
+        override fun execute(menu: ManageTimelinesContextMenu, viewItem: ManageTimelinesViewItem): Boolean {
             startForTimeline(menu.getActivity().myContext, menu.getActivity(),
                     viewItem.timeline)
             return true
         }
     },
     SYNC_NOW {
-        override fun execute(menu: ManageTimelinesContextMenu?, viewItem: ManageTimelinesViewItem?): Boolean {
-            MyServiceManager.Companion.sendManualForegroundCommand(
-                    CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, viewItem.timeline))
+        override fun execute(menu: ManageTimelinesContextMenu, viewItem: ManageTimelinesViewItem): Boolean {
+            MyServiceManager.sendManualForegroundCommand(
+                    CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE, viewItem.timeline))
             return true
         }
     },
     DELETE {
-        override fun execute(menu: ManageTimelinesContextMenu?, viewItem: ManageTimelinesViewItem?): Boolean {
+        override fun execute(menu: ManageTimelinesContextMenu, viewItem: ManageTimelinesViewItem): Boolean {
             menu.getActivity().myContext.timelines().delete(viewItem.timeline)
             saveAndShowList(menu)
             return true
         }
     },
     MAKE_DEFAULT {
-        override fun execute(menu: ManageTimelinesContextMenu?, viewItem: ManageTimelinesViewItem?): Boolean {
-            menu.getActivity().myContext.timelines().default = viewItem.timeline
+        override fun execute(menu: ManageTimelinesContextMenu, viewItem: ManageTimelinesViewItem): Boolean {
+            menu.getActivity().myContext.timelines().setDefault(viewItem.timeline)
             saveAndShowList(menu)
             return true
         }
     },
     FORGET_SYNC_EVENTS {
-        override fun execute(menu: ManageTimelinesContextMenu?, viewItem: ManageTimelinesViewItem?): Boolean {
+        override fun execute(menu: ManageTimelinesContextMenu, viewItem: ManageTimelinesViewItem): Boolean {
             viewItem.timeline.forgetPositionsAndDates()
             viewItem.timeline.resetCounters(true)
             saveAndShowList(menu)
@@ -64,23 +65,23 @@ import org.andstatus.app.timeline.WhichPage
         return Menu.FIRST + ordinal + 1
     }
 
-    fun addTo(menu: Menu?, order: Int, titleRes: Int) {
-        menu.add(Menu.NONE, this.id, order, titleRes)
+    fun addTo(menu: Menu, order: Int, titleRes: Int) {
+        menu.add(Menu.NONE, this.getId(), order, titleRes)
     }
 
-    open fun execute(menu: ManageTimelinesContextMenu?, viewItem: ManageTimelinesViewItem?): Boolean {
+    open fun execute(menu: ManageTimelinesContextMenu, viewItem: ManageTimelinesViewItem): Boolean {
         return false
     }
 
     companion object {
-        private fun saveAndShowList(menu: ManageTimelinesContextMenu?) {
+        private fun saveAndShowList(menu: ManageTimelinesContextMenu) {
             menu.getActivity().myContext.timelines().saveChanged()
                     .thenRun { menu.getActivity().showList(WhichPage.CURRENT) }
         }
 
-        fun fromId(id: Int): ManageTimelinesContextMenuItem? {
+        fun fromId(id: Int): ManageTimelinesContextMenuItem {
             for (item in values()) {
-                if (item.id == id) {
+                if (item.getId() == id) {
                     return item
                 }
             }

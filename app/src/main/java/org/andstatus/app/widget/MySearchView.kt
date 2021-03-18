@@ -66,7 +66,7 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
             // See https://stackoverflow.com/questions/3205339/android-how-to-make-keyboard-enter-button-say-search-and-handle-its-click
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 val query = v.text.toString()
-                if (!query.isNullOrEmpty()) {
+                if (query.isNotEmpty()) {
                     onQueryTextSubmit(query)
                     return@OnEditorActionListener true
                 }
@@ -116,8 +116,8 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
 
     fun showSearchView(timeline: Timeline) {
         this.timeline = timeline
-        if (isCombined() != timeline.isCombined()) {
-            combined?.setChecked(timeline.isCombined())
+        if (isCombined() != timeline.isCombined) {
+            combined?.setChecked(timeline.isCombined)
         }
         onActionViewExpanded()
     }
@@ -149,8 +149,8 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
     }
 
     private fun launchInternetSearch(query: String?) {
-        val myContext = parentActivity?.getMyContext()
-        if (myContext == null) return
+        val myContext = parentActivity?.myContext ?: return
+        if (myContext.isEmpty) return
 
         for (origin in myContext.origins().originsForInternetSearch(
                 getSearchObjects(), getOrigin(), isCombined())) {
@@ -175,7 +175,7 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
         intent.putExtra(IntentExtra.SEARCH_QUERY.key, query)
         if (timeline?.hasSearchQuery() == true
                 && getSearchObjects() == SearchObjects.NOTES &&
-                parentActivity?.getMyContext()?.timelines()?.getDefault() != timeline) {
+                parentActivity?.myContext?.timelines()?.getDefault() != timeline) {
             // Send intent to existing activity
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -183,7 +183,7 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
     }
 
     private fun onSearchContextChanged() {
-        isInternetSearchEnabled = parentActivity?.getMyContext()
+        isInternetSearchEnabled = parentActivity?.myContext
                 ?.origins()?.isSearchSupported(
                         getSearchObjects(), getOrigin(), isCombined()) ?: false
         internetSearch?.setEnabled(isInternetSearchEnabled)
@@ -194,8 +194,8 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
 
     private fun getUri(): Uri? {
         return when (getSearchObjects()) {
-            SearchObjects.NOTES -> timeline?.fromSearch(parentActivity?.getMyContext(), isInternetSearch())
-                    ?.fromIsCombined(parentActivity?.getMyContext(), isCombined())?.getUri()
+            SearchObjects.NOTES -> timeline?.fromSearch(parentActivity?.myContext ?: return null, isInternetSearch())
+                    ?.fromIsCombined(parentActivity?.myContext ?: return null, isCombined())?.getUri()
             SearchObjects.ACTORS -> MatchedUri.getActorsScreenUri(ActorsScreenType.ACTORS_AT_ORIGIN,
                     if (isCombined()) 0 else getOrigin().id, 0, "")
             SearchObjects.GROUPS -> MatchedUri.getActorsScreenUri(ActorsScreenType.GROUPS_AT_ORIGIN,
@@ -209,7 +209,7 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
 
     private fun getOrigin(): Origin {
         return if (timeline?.getOrigin()?.isValid() == true) timeline?.getOrigin() ?: Origin.EMPTY
-            else parentActivity?.getMyContext()?.accounts()?.getCurrentAccount()?.origin ?: Origin.EMPTY
+            else parentActivity?.myContext?.accounts()?.currentAccount?.origin ?: Origin.EMPTY
     }
 
     private fun isInternetSearch(): Boolean {

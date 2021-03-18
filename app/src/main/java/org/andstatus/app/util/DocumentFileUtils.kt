@@ -31,7 +31,7 @@ object DocumentFileUtils {
     private val TAG: String = DocumentFileUtils::class.java.simpleName
     fun getJSONObject(context: Context, fileDescriptor: DocumentFile): JSONObject {
         var jso: JSONObject? = null
-        val fileString = uri2String(context, fileDescriptor.getUri())
+        val fileString = uri2String(context, fileDescriptor.uri)
         if (fileString.isNotEmpty()) {
             jso = try {
                 JSONObject(fileString)
@@ -49,7 +49,7 @@ object DocumentFileUtils {
     private fun uri2String(context: Context, uri: Uri): String {
         val bufferLength = 10000
         try {
-            context.getContentResolver().openInputStream(uri)?.use { ins ->
+            context.contentResolver.openInputStream(uri)?.use { ins ->
                 InputStreamReader(ins, StandardCharsets.UTF_8).use { reader ->
                     val buffer = CharArray(bufferLength)
                     val builder = StringBuilder()
@@ -86,8 +86,8 @@ object DocumentFileUtils {
 
     /** Reads up to 'size' bytes, starting from 'offset'  */
     @Throws(IOException::class)
-    fun getBytes(context: Context, file: DocumentFile?, offset: Int, size: Int): ByteArray {
-        if (file == null) return ByteArray(0)
-        context.getContentResolver().openInputStream(file.uri).use { ins -> return FileUtils.getBytes(ins, file.uri.path, offset, size) }
-    }
+    fun getBytes(context: Context, file: DocumentFile?, offset: Int, size: Int): ByteArray = file?.let {
+        context.contentResolver.openInputStream(file.uri)
+                ?.use { ins -> return FileUtils.getBytes(ins, file.uri.path, offset, size) }
+    }  ?: ByteArray(0)
 }

@@ -23,6 +23,7 @@ import org.andstatus.app.R
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.timeline.ContextMenuHeader
 import org.andstatus.app.timeline.LoadableListActivity
+import org.andstatus.app.timeline.meta.TimelineTitle.Companion.from
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.view.MyContextMenu
 
@@ -31,23 +32,21 @@ class ManageTimelinesContextMenu(listActivity: LoadableListActivity<ManageTimeli
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
         val method = "onCreateContextMenu"
         super.onCreateContextMenu(menu, v, menuInfo)
-        if (getViewItem() == null) {
-            return
-        }
+        val viewItem = getViewItem()
         var order = 0
         try {
-            val title: TimelineTitle = from(myContext, getViewItem().timeline)
-            ContextMenuHeader(activity, menu)
+            val title: TimelineTitle = from(getMyContext(), viewItem.timeline)
+            ContextMenuHeader(getActivity(), menu)
                     .setTitle(title.title)
                     .setSubtitle(title.subTitle)
             ManageTimelinesContextMenuItem.OPEN_TIMELINE.addTo(menu, ++order, R.string.show_timeline_messages)
-            if (getViewItem().timeline.isSyncable) {
+            if (viewItem.timeline.isSyncable()) {
                 ManageTimelinesContextMenuItem.SYNC_NOW.addTo(menu, ++order, R.string.options_menu_sync)
             }
-            if (!getViewItem().timeline.isRequired) {
+            if (!viewItem.timeline.isRequired()) {
                 ManageTimelinesContextMenuItem.DELETE.addTo(menu, ++order, R.string.button_delete)
             }
-            if (myContext.timelines().default != getViewItem().timeline) {
+            if (getMyContext().timelines().getDefault() != viewItem.timeline) {
                 ManageTimelinesContextMenuItem.MAKE_DEFAULT.addTo(menu, ++order, R.string.set_as_default_timeline)
             }
             ManageTimelinesContextMenuItem.FORGET_SYNC_EVENTS.addTo(menu, ++order, R.string.forget_sync_events)
@@ -56,8 +55,8 @@ class ManageTimelinesContextMenu(listActivity: LoadableListActivity<ManageTimeli
         }
     }
 
-    fun onContextItemSelected(item: MenuItem?): Boolean {
-        val contextMenuItem: ManageTimelinesContextMenuItem = ManageTimelinesContextMenuItem.Companion.fromId(item.getItemId())
+    fun onContextItemSelected(item: MenuItem): Boolean {
+        val contextMenuItem: ManageTimelinesContextMenuItem = ManageTimelinesContextMenuItem.fromId(item.itemId)
         MyLog.v(this) {
             "onContextItemSelected: " + contextMenuItem +
                     "; timeline=" + getViewItem().timeline
@@ -65,7 +64,7 @@ class ManageTimelinesContextMenu(listActivity: LoadableListActivity<ManageTimeli
         return contextMenuItem.execute(this, getViewItem())
     }
 
-    fun getViewItem(): ManageTimelinesViewItem? {
+    private fun getViewItem(): ManageTimelinesViewItem {
         return if (mViewItem.isEmpty) {
             ManageTimelinesViewItem(listActivity.myContext, Timeline.EMPTY,
                     MyAccount.EMPTY, false)

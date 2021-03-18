@@ -27,7 +27,7 @@ import org.andstatus.app.util.MyLog
  *
  * @author yvolk@yurivolkov.com
  */
-enum class CommandEnum @JvmOverloads constructor(
+enum class CommandEnum constructor(
         /** code of the enum that is used in notes  */
         private val code: String?,
         /** The id of the string resource with the localized name of this enum to use in UI  */
