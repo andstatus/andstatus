@@ -15,6 +15,7 @@ import org.junit.Test
 import java.net.MalformedURLException
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.math.roundToLong
 
 class DataPrunerTest {
     @Before
@@ -33,7 +34,7 @@ class DataPrunerTest {
         MyLog.setLogToFile(false)
         MyLog.setLogToFile(true)
         val filename = MyLog.getLogFilename()
-        val logFile1 = MyLog.getFileInLogDir(filename, true)
+        val logFile1 = MyLog.getFileInLogDir(filename, true) ?: throw IllegalStateException("No file")
         MyLog.v(this, method)
         MyLog.setLogToFile(false)
         Assert.assertTrue(logFile1.exists())
@@ -57,7 +58,7 @@ class DataPrunerTest {
         if (logFile1.setLastModified(lastModifiedNew)) {
             MyLog.v(this, "$method; Last modified date set for $filename")
             clearPrunedDate()
-            val logFile2 = MyLog.getFileInLogDir(filename, true)
+            val logFile2 = MyLog.getFileInLogDir(filename, true) ?: throw IllegalStateException("No file")
             Assert.assertEquals(lastModifiedNew, logFile2.lastModified())
             Assert.assertTrue("Pruned", dp.prune())
             Assert.assertFalse("File " + logFile2.name + " was old: " + millisToDateString(lastModifiedNew),
@@ -99,9 +100,9 @@ class DataPrunerTest {
             MyLog.i(this, "Too few media files to prune, size $dirSize1")
             return
         }
-        val maximumSizeOfStoredMediaMb = Math.round((
+        val maximumSizeOfStoredMediaMb = (
                 (dirSize1 - DataPruner.Companion.ATTACHMENTS_TO_STORE_MIN * newSizeOfAttachment) / MyPreferences.BYTES_IN_MB - 1
-                ).toFloat())
+                ).toFloat().roundToLong()
         SharedPreferencesUtil.forget()
         SharedPreferencesUtil.putLong(MyPreferences.KEY_MAXIMUM_SIZE_OF_ATTACHMENT_MB, newSizeOfAttachmentMb)
         SharedPreferencesUtil.putLong(MyPreferences.KEY_MAXIMUM_SIZE_OF_CACHED_MEDIA_MB, maximumSizeOfStoredMediaMb)
@@ -122,7 +123,7 @@ class DataPrunerTest {
         SharedPreferencesUtil.putLong(MyPreferences.KEY_DATA_PRUNED_DATE, 0)
     }
 
-    private fun millisToDateString(dateTime: Long): String? {
+    private fun millisToDateString(dateTime: Long): String {
         return Date(dateTime).toString()
     }
 }

@@ -876,7 +876,7 @@ class OriginTest {
         val activity: AActivity = DemoNoteInserter.Companion.addNoteForAccount(
                 DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName),
                 body, noteOid, DownloadStatus.LOADED)
-        val noteId = activity.note.noteId
+        val noteId = activity.getNote().noteId
         Assert.assertNotEquals(0, noteId)
         val userName = MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, noteId,
                 ActorInTimeline.USERNAME)

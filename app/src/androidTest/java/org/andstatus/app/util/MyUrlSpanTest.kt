@@ -827,9 +827,9 @@ class MyUrlSpanTest : ActivityTest<HelpActivity?>() {
         val part1 = "@AndStatus@pleroma.site"
         val audience2 = Audience(DemoData.demoData.getAccountActorByOid(DemoData.demoData.activityPubTestAccountActorOid).origin)
         val actor2: Actor = Actor.Companion.fromOid(audience2.origin, "https://pleroma.site/users/AndStatus")
-        actor2.username = "AndStatus"
-        actor2.profileUrl = actor2.oid
-        actor2.webFingerId = "andstatus@pleroma.site"
+        actor2.setUsername( "AndStatus")
+        actor2.setProfileUrl(actor2.oid)
+        actor2.setWebFingerId("andstatus@pleroma.site")
         audience2.add(actor2)
         forOneString(part0 + part1, audience2) { spannedString: SpannedString? ->
             val regions = SpanUtil.regionsOf(spannedString)
@@ -841,7 +841,7 @@ class MyUrlSpanTest : ActivityTest<HelpActivity?>() {
                 return@forOneString TryUtils.failure<Void?>("Region(1) is wrong. $regions")
             }
             TryUtils.SUCCESS
-        }.onFailure(Consumer { t: Throwable? -> Assert.fail(t.message) })
+        }.onFailure(Consumer { t: Throwable? -> Assert.fail(t.getMessage()) })
     }
 
     private fun forOneString(text: String?, audience: Audience?,

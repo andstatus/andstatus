@@ -804,7 +804,7 @@ class NoteForAnyAccountTest {
         Assert.assertTrue(dataActivity1.isTiedToThisAccount)
         Assert.assertTrue(dataActivity1.hasPrivateAccess())
         val author2 = mi.buildActorFromOid("acct:a2." + DemoData.demoData.testRunUid + "@pump.example.com")
-        val replyTo1 = mi.buildActivity(author2, "", "@" + accountActor.username
+        val replyTo1 = mi.buildActivity(author2, "", "@" + accountActor.getUsername()
                 + " Replying to you privately", activity1, null, DownloadStatus.LOADED)
         replyTo1.note.audience().visibility = Visibility.PRIVATE
         mi.onActivity(replyTo1)
@@ -817,7 +817,7 @@ class NoteForAnyAccountTest {
         Assert.assertTrue(dataReplyTo1.isTiedToThisAccount)
         Assert.assertTrue(dataReplyTo1.hasPrivateAccess())
         val author3 = mi.buildActorFromOid("acct:b3." + DemoData.demoData.testRunUid + "@pumpity.example.com")
-        val reply2 = mi.buildActivity(author3, "", "@" + author2.username
+        val reply2 = mi.buildActivity(author3, "", "@" + author2.getUsername()
                 + " Replying publicly to the second author", replyTo1, null, DownloadStatus.LOADED)
         reply2.note.audience().visibility = Visibility.PUBLIC_AND_TO_FOLLOWERS
         mi.onActivity(reply2)
@@ -830,7 +830,7 @@ class NoteForAnyAccountTest {
         Assert.assertFalse(dataReply2.isTiedToThisAccount)
         Assert.assertFalse(dataReply2.hasPrivateAccess())
         Assert.assertFalse(dataReply2.reblogged)
-        val reblogged1 = mi.buildActivity(author3, "", "@" + author2.username
+        val reblogged1 = mi.buildActivity(author3, "", "@" + author2.getUsername()
                 + " This reply is reblogged by anotherMan", replyTo1, null, DownloadStatus.LOADED)
         val anotherMan = mi.buildActorFromOid("acct:c4." + DemoData.demoData.testRunUid + "@pump.example.com")
                 .setUsername("anotherMan" + DemoData.demoData.testRunUid).build()

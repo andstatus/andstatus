@@ -104,12 +104,12 @@ class ActorTest {
         val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromId(18)
         val actor1: Actor = Actor.Companion.fromOid(origin, "acct:fourthWithoutAvatar@pump.example.com")
         actor1.actorId = 11
-        actor1.username = "fourthWithoutAvatar@pump.example.com"
-        actor1.realName = "Real Fourth"
-        actor1.profileUrl = "http://pump.example.com/fourthWithoutAvatar"
+        actor1.setUsername( "fourthWithoutAvatar@pump.example.com")
+        actor1.setRealName("Real Fourth")
+        actor1.setProfileUrl("http://pump.example.com/fourthWithoutAvatar")
         actor1.build()
         val actor2: Actor = Actor.Companion.fromId(origin, 11)
-        actor2.username = "fourthWithoutAvatar@pump.example.com"
+        actor2.setUsername( "fourthWithoutAvatar@pump.example.com")
         actor2.build()
         Assert.assertEquals(actor1, actor2)
         Assert.assertEquals("$actor1 vs $actor2", actor1.hashCode().toLong(), actor2.hashCode().toLong())
@@ -119,7 +119,7 @@ class ActorTest {
     fun extractActorsFromContent() {
         val content = "<a href=\"https://loadaverage.org/andstatus\">AndStatus</a> started following" +
                 " <a href=\"https://gnusocial.no/mcscx2\">ex mcscx2@quitter.no</a>."
-        val actors: MutableList<Actor> = Actor.Companion.newUnknown(DemoData.demoData.getPumpioConversationAccount().getOrigin(), GroupType.UNKNOWN)
+        val actors: List<Actor> = Actor.Companion.newUnknown(DemoData.demoData.getPumpioConversationAccount().origin, GroupType.UNKNOWN)
                 .extractActorsFromContent(content, Actor.EMPTY)
         Assert.assertEquals("Actors: $actors", 1, actors.size.toLong())
         Assert.assertEquals("Actors: $actors", "mcscx2@quitter.no", actors[0].getWebFingerId())
@@ -129,7 +129,7 @@ class ActorTest {
     fun extractActorsFromContentActivityPub() {
         val actorUniqueName = "me" + DemoData.demoData.testRunUid + "@mastodon.example.com"
         val content = "Sending note to the unknown yet Actor @$actorUniqueName"
-        val actors: MutableList<Actor> = DemoData.demoData.getMyAccount(DemoData.demoData.activityPubTestAccountName).getActor()
+        val actors: List<Actor> = DemoData.demoData.getMyAccount(DemoData.demoData.activityPubTestAccountName).actor
                 .extractActorsFromContent(content, Actor.EMPTY)
         Assert.assertEquals("Actors: $actors", 1, actors.size.toLong())
         Assert.assertEquals("Actors: $actors", actorUniqueName, actors[0].uniqueName)
@@ -144,7 +144,7 @@ class ActorTest {
 
     fun extractOneUsername(username: String?) {
         val content = "Sending note to the unknown yet Actor @$username from the Fediverse"
-        val actors: MutableList<Actor> = DemoData.demoData.getMyAccount(DemoData.demoData.activityPubTestAccountName).getActor()
+        val actors: List<Actor> = DemoData.demoData.getMyAccount(DemoData.demoData.activityPubTestAccountName).actor
                 .extractActorsFromContent(content, Actor.EMPTY)
         Assert.assertEquals("Actors from '$content': \n$actors", 1, actors.size.toLong())
         Assert.assertEquals("Actors from '$content': \n$actors", username, actors[0].getUsername())

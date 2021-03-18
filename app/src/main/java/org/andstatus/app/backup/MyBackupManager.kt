@@ -41,7 +41,7 @@ import java.util.function.UnaryOperator
  * For each backup "key": header file and data file
  * @author yvolk (Yuri Volkov), http://yurivolkov.com
  */
-internal class MyBackupManager(private val activity: Activity, progressListener: ProgressLogger.ProgressListener?) {
+internal class MyBackupManager(private val activity: Activity?, progressListener: ProgressLogger.ProgressListener?) {
     private var dataFolder: DocumentFile? = null
     private var newDescriptor: MyBackupDescriptor = MyBackupDescriptor.getEmpty()
     private var backupAgent: MyBackupAgent? = null

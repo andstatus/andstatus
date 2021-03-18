@@ -73,7 +73,7 @@ class VerifyCredentialsTest {
         builder.onCredentialsVerified(actor)
         Assert.assertTrue("Account is persistent", builder.isPersistent)
         val actorId = builder.account.actorId
-        Assert.assertTrue("Account " + actor.username + " has ActorId", actorId != 0L)
+        Assert.assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0L)
         Assert.assertEquals("Account actorOid", builder.account.actorOid, actor.oid)
         Assert.assertEquals("Actor in the database for id=$actorId",
                 actor.oid,
@@ -82,7 +82,7 @@ class VerifyCredentialsTest {
         val noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, noteOid)
         Assert.assertTrue("Note not found", noteId != 0L)
         val actorIdM = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, noteId)
-        Assert.assertEquals("Note not by " + actor.username + " found", actorId, actorIdM)
+        Assert.assertEquals("Note not by " + actor.getUsername() + " found", actorId, actorIdM)
         Assert.assertEquals("Note permalink at twitter",
                 "https://" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.url)).host
                         + "/"

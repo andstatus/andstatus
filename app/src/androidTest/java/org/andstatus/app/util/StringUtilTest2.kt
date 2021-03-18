@@ -814,7 +814,7 @@ class StringUtilTest2 {
         try {
             Assert.assertEquals("“Person”的朋友", String.format(context.getText(R.string.format_test_quotes2).toString(), "Person"))
         } catch (e: UnknownFormatConversionException) {
-            error = e.message
+            error = e.getMessage()
         }
         Assert.assertEquals("Conversion = '”'", error)
         val noContext = StringUtil.format(null as Context?, R.string.format_test_quotes2, "Person")

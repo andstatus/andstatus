@@ -55,7 +55,7 @@ class VerifyCredentialsActivityPubTest {
         builder.onCredentialsVerified(actor)
         Assert.assertTrue("Account is persistent", builder.isPersistent)
         val actorId = builder.account.actorId
-        Assert.assertTrue("Account " + actor.username + " has ActorId", actorId != 0L)
+        Assert.assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0L)
         Assert.assertEquals("Account actorOid", "https://pleroma.site/users/AndStatus", actor.oid)
         Assert.assertEquals("Actor in the database for id=$actorId",
                 actor.oid,

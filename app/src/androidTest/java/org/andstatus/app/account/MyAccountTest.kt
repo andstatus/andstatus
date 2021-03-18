@@ -45,26 +45,26 @@ class MyAccountTest {
         createAccountOfOriginType("AndStatus", "pleroma.site", OriginType.ACTIVITYPUB)
     }
 
-    private fun createAccountOfOriginType(username: String?, host: String?, originType: OriginType?) {
+    private fun createAccountOfOriginType(username: String?, host: String?, originType: OriginType) {
         val uniqueName = if (username.isNullOrEmpty()) "" else "$username@$host"
         val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
         val logMsg = "Creating account '$uniqueName' for '$originType'"
         MyLog.v(this, logMsg)
-        val origin = myContext.origins().fromOriginInAccountNameAndHost(originType.getTitle(), host)
+        val origin = myContext.origins().fromOriginInAccountNameAndHost(originType.title, host)
         val accountNameString = uniqueName + AccountName.Companion.ORIGIN_SEPARATOR + origin.getOriginInAccountName(host)
         val accountName: AccountName = AccountName.Companion.fromAccountName(myContext, accountNameString)
         val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(accountName)
-        Assert.assertEquals(logMsg, origin, builder.account.origin)
-        Assert.assertEquals(logMsg, accountNameString, builder.account.accountName)
-        Assert.assertEquals(logMsg, username, builder.account.username)
-        if (uniqueName.isNullOrEmpty()) {
-            Assert.assertEquals(logMsg, "", builder.account.webFingerId)
+        Assert.assertEquals(logMsg, origin, builder.getAccount().origin)
+        Assert.assertEquals(logMsg, accountNameString, builder.getAccount().getAccountName())
+        Assert.assertEquals(logMsg, username, builder.getAccount().username)
+        if (uniqueName.isEmpty()) {
+            Assert.assertEquals(logMsg, "", builder.getAccount().getWebFingerId())
         } else {
-            Assert.assertNotEquals(logMsg, uniqueName, builder.account.username)
+            Assert.assertNotEquals(logMsg, uniqueName, builder.getAccount().username)
             val indexOfAt = uniqueName.lastIndexOf("@")
-            Assert.assertEquals(logMsg, uniqueName, builder.account.username +
+            Assert.assertEquals(logMsg, uniqueName, builder.getAccount().username +
                     "@" + uniqueName.substring(indexOfAt + 1))
-            Assert.assertEquals(logMsg, uniqueName.toLowerCase(), builder.account.actor.webFingerId)
+            Assert.assertEquals(logMsg, uniqueName.toLowerCase(), builder.getAccount().actor.getWebFingerId())
         }
     }
 
@@ -73,23 +73,23 @@ class MyAccountTest {
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(DemoData.demoData.conversationAccountName + " exists", ma.isValid)
         val accountActor = ma.actor
-        Assert.assertTrue("Should be fully defined $accountActor", accountActor.isFullyDefined)
+        Assert.assertTrue("Should be fully defined $accountActor", accountActor.isFullyDefined())
     }
 
     companion object {
-        fun fixPersistentAccounts(myContext: MyContext?) {
+        fun fixPersistentAccounts(myContext: MyContext) {
             for (ma in myContext.accounts().get()) {
-                MyAccountTest.Companion.fixAccountByName(myContext, ma.accountName)
+                fixAccountByName(myContext, ma.getAccountName())
             }
         }
 
-        private fun fixAccountByName(myContext: MyContext?, accountName: String?) {
+        private fun fixAccountByName(myContext: MyContext, accountName: String?) {
             val ma = myContext.accounts().fromAccountName(accountName)
             Assert.assertTrue("Account $accountName is valid", ma.isValid)
-            if (ma.credentialsVerified == CredentialsVerificationStatus.SUCCEEDED) {
+            if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
                 return
             }
-            val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(ma.oAccountName)
+            val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(ma.getOAccountName())
             builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED)
             builder.saveSilently()
         }

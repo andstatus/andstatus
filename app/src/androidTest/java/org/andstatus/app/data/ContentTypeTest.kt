@@ -5,6 +5,7 @@ import android.net.Uri
 import cz.msebera.android.httpclient.entity.ContentType
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.data.MyContentType.Companion.uri2MimeType
 import org.andstatus.app.util.UriUtils
 import org.junit.Assert
 import org.junit.Test
@@ -22,7 +23,7 @@ class ContentTypeTest {
 
     @Test
     fun testMyContentType() {
-        val contentResolver: ContentResolver =  MyContextHolder.myContextHolder.getNow().context().getContentResolver()
+        val contentResolver: ContentResolver =  MyContextHolder.myContextHolder.getNow().context().contentResolver
         Assert.assertEquals("image/png", uri2MimeType(contentResolver, DemoData.demoData.image1Url))
         Assert.assertEquals("image/jpeg", uri2MimeType(null,
                 UriUtils.fromString("http://www.publicdomainpictures.net/pictures/100000/nahled/autumn-tree-in-a-park.jpg")))

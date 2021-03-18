@@ -37,7 +37,6 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 import org.junit.Assert
 import org.junit.Test
-import java.util.function.Predicate
 
 class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
     private var noteId: Long = 0
@@ -77,11 +76,11 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
         val listItems = actorsScreen.getListLoader().getList()
         Assert.assertEquals(listItems.toString(), 5, listItems.size.toLong())
         val actorE: Actor =  MyContextHolder.myContextHolder.getNow().users().actors.values.stream()
-                .filter(Predicate { actor: Actor -> actor.oid == DemoData.demoData.conversationAuthorThirdActorOid })
+                .filter { actor: Actor -> actor.oid == DemoData.demoData.conversationAuthorThirdActorOid }
                 .findAny().orElse(Actor.EMPTY)
         Assert.assertTrue("Found " + DemoData.demoData.conversationAuthorThirdActorOid
                 + " cached " +  MyContextHolder.myContextHolder.getNow().users().actors, actorE.nonEmpty)
-        val actorA: Actor = ActorsScreenTest.Companion.getByActorOid(listItems, DemoData.demoData.conversationAuthorThirdActorOid)
+        val actorA: Actor = getByActorOid(listItems, DemoData.demoData.conversationAuthorThirdActorOid)
         Assert.assertTrue("Not found " + DemoData.demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA.nonEmpty)
         compareAttributes(actorE, actorA, false)
         val actorsScreenHelper = ListScreenTestHelper(actorsScreen)
@@ -105,7 +104,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
     The note was not found in the timeline $timelineData
     """.trimIndent(), item.nonEmpty)
         Assert.assertTrue("Invoked Context menu for $logMsg", helper.invokeContextMenuAction4ListItemId(method,
-                item.getId(), NoteContextMenuItem.ACTORS_OF_NOTE, R.id.note_wrapper))
+                item.getId(), NoteContextMenuItem.ACTORS_OF_NOTE, org.andstatus.app.R.id.note_wrapper))
         val actorsScreen = helper.waitForNextActivity(method, 25000) as ActorsScreen
         TestSuite.waitForListLoaded(actorsScreen, 1)
         return actorsScreen

@@ -39,17 +39,17 @@ class AccountNameTest {
         assertForOneOrigin(DemoData.demoData.getGnuSocialOrigin())
     }
 
-    fun assertForOneOrigin(origin: Origin?) {
+    fun assertForOneOrigin(origin: Origin) {
         assertInputValues(origin, "")
         assertInputValues(origin, "user1")
         assertInputValues(origin, "user1" + if (origin.hasHost()) "@" + origin.getHost() else "")
     }
 
-    fun assertInputValues(origin: Origin?, uniqueName: String?) {
+    fun assertInputValues(origin: Origin, uniqueName: String?) {
         val accountName: AccountName = AccountName.Companion.fromOriginAndUniqueName(origin, uniqueName)
         Assert.assertEquals(origin, accountName.origin)
         val expected = if (uniqueName.isNullOrEmpty()) "" else if (uniqueName.contains("@")) uniqueName else uniqueName + if (origin.hasHost()) "@" + origin.getHost() else ""
-        Assert.assertEquals(expected, accountName.uniqueName)
+        Assert.assertEquals(expected, accountName.getUniqueName())
     }
 
     @Test

@@ -70,7 +70,7 @@ class FileProvider : ContentProvider() {
         val AUTHORITY: String = ClassInApplicationPackage.PACKAGE_NAME + ".data.FileProvider"
         val DOWNLOAD_FILE_PATH: String = "downloadfile"
         val DOWNLOAD_FILE_URI = Uri.parse("content://" + AUTHORITY + "/" + DOWNLOAD_FILE_PATH)
-        fun downloadFilenameToUri(filename: String?): Uri? {
+        fun downloadFilenameToUri(filename: String?): Uri {
             return if (filename.isNullOrEmpty()) {
                 Uri.EMPTY
             } else {

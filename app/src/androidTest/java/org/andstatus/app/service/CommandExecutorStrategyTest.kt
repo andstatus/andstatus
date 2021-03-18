@@ -853,9 +853,9 @@ class CommandExecutorStrategyTest {
         var commandData = getCommandDataForUnsentNote("1")
         mock.addResponse(org.andstatus.app.tests.R.raw.quitter_update_note_response)
         httpConnectionMock.setSameResponse(true)
-        Assert.assertEquals(0, commandData.getResult().executionCount.toLong())
+        Assert.assertEquals(0, commandData.getResult().getExecutionCount().toLong())
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
-        Assert.assertEquals(1, commandData.getResult().executionCount.toLong())
+        Assert.assertEquals(1, commandData.getResult().getExecutionCount().toLong())
         Assert.assertEquals(commandData.toString(), (CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 1).toLong(), commandData.getResult().getRetriesLeft().toLong())
         Assert.assertFalse(commandData.toString(), commandData.getResult().hasSoftError())
         Assert.assertFalse(commandData.toString(), commandData.getResult().hasHardError())
@@ -865,16 +865,16 @@ class CommandExecutorStrategyTest {
         var errorMessage = "Request was bad"
         httpConnectionMock.setException(ConnectionException(StatusCode.UNKNOWN, errorMessage))
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
-        Assert.assertEquals(1, commandData.getResult().executionCount.toLong())
+        Assert.assertEquals(1, commandData.getResult().getExecutionCount().toLong())
         Assert.assertEquals((CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 1).toLong(), commandData.getResult().getRetriesLeft().toLong())
         Assert.assertTrue(commandData.toString(), commandData.getResult().hasSoftError())
         Assert.assertFalse(commandData.toString(), commandData.getResult().hasHardError())
         Assert.assertTrue(commandData.toString(), commandData.getResult().shouldWeRetry())
-        Assert.assertTrue("Error message: '" + commandData.getResult().message + "' should contain '"
-                + errorMessage + "'", commandData.getResult().message.contains(errorMessage))
+        Assert.assertTrue("Error message: '" + commandData.getResult().getMessage() + "' should contain '"
+                + errorMessage + "'", commandData.getResult().getMessage().contains(errorMessage))
         httpConnectionMock.setException(null)
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
-        Assert.assertEquals(commandData.toString(), 2, commandData.getResult().executionCount.toLong())
+        Assert.assertEquals(commandData.toString(), 2, commandData.getResult().getExecutionCount().toLong())
         Assert.assertEquals(commandData.toString(), (CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 2).toLong(), commandData.getResult().getRetriesLeft().toLong())
         Assert.assertFalse(commandData.toString(), commandData.getResult().hasSoftError())
         Assert.assertFalse(commandData.toString(), commandData.getResult().hasHardError())
@@ -882,34 +882,34 @@ class CommandExecutorStrategyTest {
         errorMessage = "some text"
         httpConnectionMock.setException(ConnectionException(StatusCode.AUTHENTICATION_ERROR, errorMessage))
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
-        Assert.assertEquals(3, commandData.getResult().executionCount.toLong())
+        Assert.assertEquals(3, commandData.getResult().getExecutionCount().toLong())
         Assert.assertEquals(commandData.toString(), (CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 3).toLong(), commandData.getResult().getRetriesLeft().toLong())
         Assert.assertFalse(commandData.toString(), commandData.getResult().hasSoftError())
         Assert.assertTrue(commandData.toString(), commandData.getResult().hasHardError())
         Assert.assertFalse(commandData.toString(), commandData.getResult().shouldWeRetry())
-        Assert.assertTrue("Error message: '" + commandData.getResult().message + "' should contain '"
-                + errorMessage + "'", commandData.getResult().message.contains(errorMessage))
+        Assert.assertTrue("Error message: '" + commandData.getResult().getMessage() + "' should contain '"
+                + errorMessage + "'", commandData.getResult().getMessage().contains(errorMessage))
         httpConnectionMock.setException(null)
         commandData = CommandData.Companion.newItemCommand(
                 CommandEnum.DELETE_NOTE,
                 mock.getData().myAccount,
                 noteId)
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
-        Assert.assertFalse(commandData.toString(), commandData.result.hasError())
+        Assert.assertFalse(commandData.toString(), commandData.getResult().hasError())
         val INEXISTENT_MSG_ID: Long = -1
         commandData = CommandData.Companion.newItemCommand(
                 CommandEnum.DELETE_NOTE,
                 mock.getData().myAccount,
                 INEXISTENT_MSG_ID)
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
-        Assert.assertFalse(commandData.toString(), commandData.result.hasError())
+        Assert.assertFalse(commandData.toString(), commandData.getResult().hasError())
         httpConnectionMock.setException(null)
     }
 
     private fun getCommandDataForUnsentNote(suffix: String?): CommandData? {
         val body = "Some text " + suffix + " to send " + System.currentTimeMillis() + "ms"
         val activity: AActivity = DemoNoteInserter.Companion.addNoteForAccount(ma, body, "", DownloadStatus.SENDING)
-        return CommandData.Companion.newUpdateStatus(ma, activity.id, activity.note.noteId)
+        return CommandData.Companion.newUpdateStatus(ma, activity.getId(), activity.getNote().noteId)
     }
 
     @Test
@@ -923,9 +923,9 @@ class CommandExecutorStrategyTest {
                 DemoData.demoData.getGnuSocialOrigin())
         DiscoveredOrigins.clear()
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
-        Assert.assertEquals(1, commandData.result.executionCount.toLong())
-        Assert.assertFalse(commandData.result.hasError())
-        Assert.assertTrue(commandData.result.downloadedCount > 0)
+        Assert.assertEquals(1, commandData.getResult().getExecutionCount().toLong())
+        Assert.assertFalse(commandData.getResult().hasError())
+        Assert.assertTrue(commandData.getResult().downloadedCount > 0)
         Assert.assertFalse(DiscoveredOrigins.get().isEmpty())
     }
 

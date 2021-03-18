@@ -66,21 +66,21 @@ class ConnectionTwitterTest {
         Assert.assertEquals("Number of items in the Timeline", size.toLong(), timeline.size().toLong())
         var ind = 0
         var activity = timeline[ind]
-        var note = activity.note
+        var note = activity.getNote()
         val hostName: String = DemoData.demoData.twitterTestHostWithoutApiDot
-        Assert.assertEquals("Posting note", AObjectType.NOTE, activity.objectType)
-        Assert.assertEquals("Activity oid", "381172771428257792", activity.oid)
+        Assert.assertEquals("Posting note", AObjectType.NOTE, activity.getObjectType())
+        Assert.assertEquals("Activity oid", "381172771428257792", activity.getOid())
         Assert.assertEquals("Note Oid", "381172771428257792", note.oid)
         Assert.assertEquals("MyAccount", connection.getData().accountActor, activity.accountActor)
         Assert.assertEquals("Favorited $activity", TriState.TRUE, note.getFavoritedBy(activity.accountActor))
         Assert.assertEquals("Counters $activity", 232, note.likesCount)
         Assert.assertEquals("Counters $activity", 408, note.reblogsCount)
         Assert.assertEquals("Counters $activity", 0, note.repliesCount)
-        val author = activity.author
+        val author = activity.getAuthor()
         Assert.assertEquals("Oid", "221452291", author.oid)
-        Assert.assertEquals("Username", "Know", author.username)
-        Assert.assertEquals("WebFinger ID", "know@$hostName", author.webFingerId)
-        Assert.assertEquals("Display name", "Just so you Know", author.realName)
+        Assert.assertEquals("Username", "Know", author.getUsername())
+        Assert.assertEquals("WebFinger ID", "know@$hostName", author.getWebFingerId())
+        Assert.assertEquals("Display name", "Just so you Know", author.getRealName())
         Assert.assertEquals("Description", "Unimportant facts you'll never need to know. Legally responsible publisher: @FUN", author.summary)
         Assert.assertEquals("Location", "Library of Congress", author.location)
         Assert.assertEquals("Profile URL", "https://$hostName/Know", author.profileUrl)
@@ -91,51 +91,51 @@ class ConnectionTwitterTest {
         Assert.assertEquals("Favorites count", 163, author.favoritesCount)
         Assert.assertEquals("Following (friends) count", 151, author.followingCount)
         Assert.assertEquals("Followers count", 1878136, author.followersCount)
-        Assert.assertEquals("Created at", connection.parseDate("Tue Nov 30 18:17:25 +0000 2010"), author.createdDate)
-        Assert.assertEquals("Updated at", 0, author.updatedDate)
-        Assert.assertEquals("Actor is author", author.oid, activity.actor.oid)
+        Assert.assertEquals("Created at", connection.parseDate("Tue Nov 30 18:17:25 +0000 2010"), author.getCreatedDate())
+        Assert.assertEquals("Updated at", 0, author.getUpdatedDate())
+        Assert.assertEquals("Actor is author", author.oid, activity.getActor().oid)
         ind++
         activity = timeline[ind]
-        note = activity.note
+        note = activity.getNote()
         Assert.assertTrue("Note is loaded", note.status == DownloadStatus.LOADED)
         Assert.assertEquals("Should have a recipient $activity", 1, note.audience().nonSpecialActors.size.toLong())
         Assert.assertNotEquals("Is a Reblog $activity", ActivityType.ANNOUNCE, activity.type)
-        Assert.assertTrue("Is a reply", note.inReplyTo.nonEmpty)
-        Assert.assertEquals("Reply to the note id", "17176774678", note.inReplyTo.note.oid)
-        Assert.assertEquals("Reply to the note by actorOid", DemoData.demoData.twitterTestAccountActorOid, note.inReplyTo.author.oid)
-        Assert.assertTrue("Reply status is unknown", note.inReplyTo.note.status == DownloadStatus.UNKNOWN)
-        Assert.assertEquals("Favorited by me $activity", TriState.UNKNOWN, activity.note.getFavoritedBy(activity.accountActor))
+        Assert.assertTrue("Is a reply", note.getInReplyTo().nonEmpty)
+        Assert.assertEquals("Reply to the note id", "17176774678", note.getInReplyTo().note.oid)
+        Assert.assertEquals("Reply to the note by actorOid", DemoData.demoData.twitterTestAccountActorOid, note.getInReplyTo().author.oid)
+        Assert.assertTrue("Reply status is unknown", note.getInReplyTo().note.status == DownloadStatus.UNKNOWN)
+        Assert.assertEquals("Favorited by me $activity", TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor))
         var startsWith = "@t131t"
         Assert.assertEquals("Body of this note starts with", startsWith, note.content.substring(0, startsWith.length))
         ind++
         activity = timeline[ind]
-        note = activity.note
+        note = activity.getNote()
         MatcherAssert.assertThat("Should not have non special recipients", note.audience().nonSpecialActors, Matchers.`is`(Matchers.empty()))
         Assert.assertEquals("Is not a Reblog $activity", ActivityType.ANNOUNCE, activity.type)
-        Assert.assertTrue("Is not a reply", note.inReplyTo.isEmpty)
+        Assert.assertTrue("Is not a reply", note.getInReplyTo().isEmpty)
         Assert.assertEquals("Reblog of the note id", "315088751183409153", note.oid)
-        Assert.assertEquals("Author of reblogged note oid", "442756884", activity.author.oid)
-        Assert.assertEquals("Reblog id", "383295679507869696", activity.oid)
-        Assert.assertEquals("Reblogger oid", "111911542", activity.actor.oid)
-        Assert.assertEquals("Favorited by me $activity", TriState.UNKNOWN, activity.note.getFavoritedBy(activity.accountActor))
+        Assert.assertEquals("Author of reblogged note oid", "442756884", activity.getAuthor().oid)
+        Assert.assertEquals("Reblog id", "383295679507869696", activity.getOid())
+        Assert.assertEquals("Reblogger oid", "111911542", activity.getActor().oid)
+        Assert.assertEquals("Favorited by me $activity", TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor))
         startsWith = "This AndStatus application"
         Assert.assertEquals("Body of reblogged note starts with", startsWith,
                 note.content.substring(0, startsWith.length))
         var date = TestSuite.utcTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 5)
         Assert.assertEquals("Reblogged at Thu Sep 26 18:23:05 +0000 2013 ($date) $activity", date,
-                TestSuite.utcTime(activity.updatedDate))
+                TestSuite.utcTime(activity.getUpdatedDate()))
         date = TestSuite.utcTime(2013, Calendar.MARCH, 22, 13, 13, 7)
         Assert.assertEquals("Reblogged note created at Fri Mar 22 13:13:07 +0000 2013 ($date)$note",
                 date, TestSuite.utcTime(note.updatedDate))
         ind++
         activity = timeline[ind]
-        note = activity.note
+        note = activity.getNote()
         MatcherAssert.assertThat("Should not have non special recipients", note.audience().nonSpecialActors, Matchers.`is`(Matchers.empty()))
         Assert.assertNotEquals("Is a Reblog $activity", ActivityType.ANNOUNCE, activity.type)
-        Assert.assertTrue("Is not a reply", note.inReplyTo.isEmpty)
-        Assert.assertEquals("Favorited by me $activity", TriState.UNKNOWN, activity.note.getFavoritedBy(activity.accountActor))
+        Assert.assertTrue("Is not a reply", note.getInReplyTo().isEmpty)
+        Assert.assertEquals("Favorited by me $activity", TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor))
         Assert.assertEquals("Author's oid is actor oid of this account",
-                connection.getData().accountActor.oid, activity.author.oid)
+                connection.getData().accountActor.oid, activity.getAuthor().oid)
         startsWith = "And this is"
         Assert.assertEquals("Body of this note starts with", startsWith, note.content.substring(0, startsWith.length))
     }
@@ -173,7 +173,7 @@ class ConnectionTwitterTest {
     fun getNoteWithAnimatedGif() {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_note_with_animated_gif)
         val activity = connection.getNote("1271153637457367042").get()
-        val note = activity.note
+        val note = activity.getNote()
         Assert.assertFalse("note returned", note.isEmpty)
         Assert.assertEquals("Should have two attachments $note", 2, note.attachments.size().toLong())
         val attachment0 = note.attachments.list[0]
@@ -194,8 +194,8 @@ class ConnectionTwitterTest {
         val body = "Update: Streckensperrung zw. Berliner Tor &lt;&gt; Bergedorf. Ersatzverkehr mit Bussen und Taxis " +
                 "Störungsdauer bis ca. 10 Uhr. #hvv #sbahnhh"
         val activity = connection.getNote("834306097003581440").get()
-        Assert.assertEquals("No note returned $activity", AObjectType.NOTE, activity.objectType)
-        val note = activity.note
+        Assert.assertEquals("No note returned $activity", AObjectType.NOTE, activity.getObjectType())
+        val note = activity.getNote()
         Assert.assertEquals("Body of this note", body, note.content)
         Assert.assertEquals("Body of this note", ",update,streckensperrung,zw,berliner,tor,bergedorf,ersatzverkehr,mit,bussen," +
                 "und,taxis,störungsdauer,bis,ca,10,uhr,hvv,#hvv,sbahnhh,#sbahnhh,", note.contentToSearch)
@@ -222,8 +222,8 @@ class ConnectionTwitterTest {
                 "4,apostrophe," +
                 "5,br,html,tag,br,/,and,without,/,br,"
         val activity = connection.getNote("1070738478198071296").get()
-        Assert.assertEquals("No note returned $activity", AObjectType.NOTE, activity.objectType)
-        val note = activity.note
+        Assert.assertEquals("No note returned $activity", AObjectType.NOTE, activity.getObjectType())
+        val note = activity.getNote()
         Assert.assertEquals("Body of this note", MyHtmlTest.Companion.twitterBodyHtml, note.content)
         Assert.assertEquals("""
     Body to post is wrong. Try to type:
@@ -241,9 +241,9 @@ class ConnectionTwitterTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.twitter_follow)
         val actorOid = "96340134"
         val activity = connection.follow(actorOid, true).get()
-        Assert.assertEquals("No actor returned $activity", AObjectType.ACTOR, activity.objectType)
-        val friend = activity.objActor
-        Assert.assertEquals("Wrong username returned $activity", "LPirro93", friend.username)
+        Assert.assertEquals("No actor returned $activity", AObjectType.ACTOR, activity.getObjectType())
+        val friend = activity.getObjActor()
+        Assert.assertEquals("Wrong username returned $activity", "LPirro93", friend.getUsername())
         val ma: MyAccount = DemoData.demoData.getMyAccount(connection.getData().accountName.toString())
         val friend2: Actor = Actor.Companion.fromId(ma.origin, 123)
         val executionContext = CommandExecutionContext(
@@ -251,6 +251,6 @@ class ConnectionTwitterTest {
         DataUpdater(executionContext).onActivity(activity)
         val friendId = MyQuery.oidToId( MyContextHolder.myContextHolder.getNow(), OidEnum.ACTOR_OID, ma.originId, actorOid)
         Assert.assertNotEquals("Followed Actor was not added $activity", 0, friendId)
-        Assert.assertNotEquals("Activity was not added $activity", 0, activity.id)
+        Assert.assertNotEquals("Activity was not added $activity", 0, activity.getId())
     }
 }

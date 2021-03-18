@@ -54,6 +54,7 @@ class MyBackupAgent : BackupAgent() {
     var sharedPreferencesRestored: Long = 0
     private var foldersBackedUp: Long = 0
     var foldersRestored: Long = 0
+
     fun setActivity(activity: Activity?) {
         this.activity = activity
          MyContextHolder.myContextHolder.initialize(activity)

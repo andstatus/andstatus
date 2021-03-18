@@ -58,15 +58,15 @@ class HtmlContentTester {
         val activity = mi.buildActivity(author, "", bodyString, null, noteOid,
                 DownloadStatus.LOADED)
         mi.onActivity(activity)
-        val noteStored: Note = Note.Companion.loadContentById( MyContextHolder.myContextHolder.getNow(), activity.note.noteId)
-        Assert.assertTrue("Note was loaded " + activity.note, noteStored.nonEmpty)
+        val noteStored: Note = Note.Companion.loadContentById( MyContextHolder.myContextHolder.getNow(), activity.getNote().noteId)
+        Assert.assertTrue("Note was loaded " + activity.getNote(), noteStored.nonEmpty)
         if (htmlContentAllowed) {
             Assert.assertEquals("HTML preserved", bodyString, noteStored.content)
         } else {
             Assert.assertFalse("HTML should be removed: " + noteStored.content,
                     noteStored.content.replace(MyHtml.LINEBREAK_HTML.toRegex(), "\n").contains("<"))
         }
-        Assert.assertEquals("Stored content " + activity.note, activity.note.contentToSearch,
+        Assert.assertEquals("Stored content " + activity.getNote(), activity.getNote().contentToSearch,
                 noteStored.contentToSearch)
         val storedContentToSearch = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT_TO_SEARCH, noteStored.noteId)
         Assert.assertEquals("Stored content to search", noteStored.contentToSearch, storedContentToSearch)

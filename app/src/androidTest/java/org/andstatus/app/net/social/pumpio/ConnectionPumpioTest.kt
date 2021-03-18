@@ -168,36 +168,36 @@ class ConnectionPumpioTest {
         val size = 6
         Assert.assertEquals("Number of items in the Timeline", size.toLong(), timeline.size().toLong())
         var ind = 0
-        Assert.assertEquals("Posting image", AObjectType.NOTE, timeline[ind].objectType)
+        Assert.assertEquals("Posting image", AObjectType.NOTE, timeline[ind].getObjectType())
         assertActivity0FromTimeline(timeline[ind])
         ind++
         var activity = timeline[ind]
         Assert.assertEquals("Is not FOLLOW $activity", ActivityType.FOLLOW, activity.type)
-        Assert.assertEquals("Actor", "acct:jpope@io.jpope.org", activity.actor.oid)
-        Assert.assertEquals("Actor is not my friend", TriState.TRUE, activity.actor.isMyFriend)
-        Assert.assertEquals("Activity Object", AObjectType.ACTOR, activity.objectType)
-        var objActor = activity.objActor
+        Assert.assertEquals("Actor", "acct:jpope@io.jpope.org", activity.getActor().oid)
+        Assert.assertEquals("Actor is not my friend", TriState.TRUE, activity.getActor().isMyFriend)
+        Assert.assertEquals("Activity Object", AObjectType.ACTOR, activity.getObjectType())
+        var objActor = activity.getObjActor()
         Assert.assertEquals("objActor followed", "acct:atalsta@microca.st", objActor.oid)
-        Assert.assertEquals("WebFinger ID", "atalsta@microca.st", objActor.webFingerId)
+        Assert.assertEquals("WebFinger ID", "atalsta@microca.st", objActor.getWebFingerId())
         Assert.assertEquals("Actor is my friend", TriState.FALSE, objActor.isMyFriend)
         ind++
         activity = timeline[ind]
         Assert.assertEquals("Is not FOLLOW $activity", ActivityType.FOLLOW, activity.type)
-        Assert.assertEquals("Actor", AObjectType.ACTOR, activity.objectType)
-        objActor = activity.objActor
-        Assert.assertEquals("Url of the actor", "https://identi.ca/t131t", activity.actor.profileUrl)
-        Assert.assertEquals("WebFinger ID", "t131t@identi.ca", activity.actor.webFingerId)
+        Assert.assertEquals("Actor", AObjectType.ACTOR, activity.getObjectType())
+        objActor = activity.getObjActor()
+        Assert.assertEquals("Url of the actor", "https://identi.ca/t131t", activity.getActor().profileUrl)
+        Assert.assertEquals("WebFinger ID", "t131t@identi.ca", activity.getActor().getWebFingerId())
         Assert.assertEquals("Actor is not my friend", TriState.TRUE, objActor.isMyFriend)
         Assert.assertEquals("Url of objActor", "https://fmrl.me/grdryn", objActor.profileUrl)
         ind++
         activity = timeline[ind]
         Assert.assertEquals("Is not LIKE $activity", ActivityType.LIKE, activity.type)
-        Assert.assertEquals("Actor $activity", "acct:jpope@io.jpope.org", activity.actor.oid)
+        Assert.assertEquals("Actor $activity", "acct:jpope@io.jpope.org", activity.getActor().oid)
         Assert.assertEquals("Activity updated $activity",
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 20, 22, 20, 25),
-                TestSuite.utcTime(activity.updatedDate))
-        var note = activity.note
-        Assert.assertEquals("Author $activity", "acct:lostson@fmrl.me", activity.author.oid)
+                TestSuite.utcTime(activity.getUpdatedDate()))
+        var note = activity.getNote()
+        Assert.assertEquals("Author $activity", "acct:lostson@fmrl.me", activity.getAuthor().oid)
         Assert.assertTrue("Has a non special recipient " + note.audience().recipients,
                 note.audience().nonSpecialActors.isEmpty())
         Assert.assertEquals("Note oid $note", "https://fmrl.me/api/note/Dp-njbPQSiOfdclSOuAuFw", note.oid)
@@ -212,12 +212,12 @@ class ConnectionPumpioTest {
         Assert.assertEquals("Directed to yvolk", "acct:yvolk@identi.ca", note.audience().firstNonSpecial.oid)
         ind++
         activity = timeline[ind]
-        note = activity.note
+        note = activity.getNote()
         Assert.assertEquals(TriState.UNKNOWN, activity.isSubscribedByMe)
-        Assert.assertTrue("Is a reply", note.inReplyTo.nonEmpty)
+        Assert.assertTrue("Is a reply", note.getInReplyTo().nonEmpty)
         Assert.assertEquals("Is not a reply to this actor $activity", "jankusanagi@identi.ca",
-                note.inReplyTo.author.uniqueName)
-        Assert.assertEquals(TriState.UNKNOWN, note.inReplyTo.isSubscribedByMe)
+                note.getInReplyTo().author.uniqueName)
+        Assert.assertEquals(TriState.UNKNOWN, note.getInReplyTo().isSubscribedByMe)
     }
 
     private fun assertActivity0FromTimeline(activity: AActivity?) {
@@ -296,10 +296,10 @@ class ConnectionPumpioTest {
         val size = 5
         Assert.assertEquals("Response for t131t", size.toLong(), actors.size.toLong())
         Assert.assertEquals("Does the Pope shit in the woods?", actors[1].summary)
-        Assert.assertEquals("gitorious", actors[2].username)
+        Assert.assertEquals("gitorious", actors[2].getUsername())
         Assert.assertEquals("gitorious@identi.ca", actors[2].uniqueName)
         Assert.assertEquals("acct:ken@coding.example", actors[3].oid)
-        Assert.assertEquals("Yuri Volkov", actors[4].realName)
+        Assert.assertEquals("Yuri Volkov", actors[4].getRealName())
     }
 
     @Test
@@ -371,9 +371,9 @@ class ConnectionPumpioTest {
         val actorOid = "acct:evan@e14n.com"
         val activity = connection.follow(actorOid, false).get()
         Assert.assertEquals("Not unfollow action", ActivityType.UNDO_FOLLOW, activity.type)
-        val objActor = activity.objActor
+        val objActor = activity.getObjActor()
         Assert.assertTrue("objActor is present", objActor.nonEmpty)
-        Assert.assertEquals("Actor", "acct:t131t@pump1.example.com", activity.actor.oid)
+        Assert.assertEquals("Actor", "acct:t131t@pump1.example.com", activity.getActor().oid)
         Assert.assertEquals("Object of action", actorOid, objActor.oid)
     }
 
@@ -420,7 +420,7 @@ class ConnectionPumpioTest {
                         MyContentType.VIDEO.generalMimeType)))
         val activity = connection.updateNote(note).get()
         Assert.assertEquals("Responses counter " + mock.getHttpMock(), 3, mock.getHttpMock().responsesCounter.toLong())
-        val note2 = activity.note
+        val note2 = activity.getNote()
         Assert.assertEquals("Note name $activity", name, note2.name)
         Assert.assertEquals("Note content $activity", content, note2.content)
         Assert.assertEquals("Should have an attachment $activity", false, note2.attachments.isEmpty)
@@ -458,12 +458,12 @@ class ConnectionPumpioTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.pumpio_note_self)
         val noteOid = "https://identi.ca/api/note/Z-x96Q8rTHSxTthYYULRHA"
         val activity = connection.getNote(noteOid).get()
-        val note = activity.note
+        val note = activity.getNote()
         Assert.assertNotNull("note returned", note)
         Assert.assertEquals("Note oid", noteOid, note.oid)
         Assert.assertEquals("Number of replies", 2, note.replies.size.toLong())
         val reply = note.replies[0].note
         Assert.assertEquals("Reply oid", "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw", reply.oid)
-        Assert.assertEquals("Is not a Reply $activity", noteOid, reply.inReplyTo.note.oid)
+        Assert.assertEquals("Is not a Reply $activity", noteOid, reply.getInReplyTo().note.oid)
     }
 }

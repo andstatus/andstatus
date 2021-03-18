@@ -818,9 +818,9 @@ import org.andstatus.app.MenuItemMock
                 DownloadStatus.LOADED)
         activity.addAttachment(Attachment.Companion.fromUri("http://www.example.com/pictures/large_image.png"))
         inserter.onActivity(activity)
-        val dd: DownloadData = DownloadData.Companion.getSingleAttachment(activity.note.noteId
+        val dd: DownloadData = DownloadData.Companion.getSingleAttachment(activity.getNote().noteId
         )
-        Assert.assertEquals("Image URI stored", activity.note.attachments.list[0].getUri(), dd.uri)
+        Assert.assertEquals("Image URI stored", activity.getNote().attachments.list[0].getUri(), dd.uri)
         val commandData: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR,
                 Actor.Companion.fromId(ma.origin, 34234), "")
         val loader = AttachmentDownloader(ma.origin.myContext, dd)
@@ -833,8 +833,8 @@ import org.andstatus.app.MenuItemMock
         loader.load(commandData)
         Assert.assertEquals("Requested", 1, connMock.httpMock.requestsCounter.toLong())
         val data: DownloadData = DownloadData.Companion.fromId(dd.downloadId)
-        Assert.assertFalse("Loaded " + data.uri, commandData.result.hasError())
-        Assert.assertTrue("File exists " + data.uri, data.file.existed)
+        Assert.assertFalse("Loaded " + data.getUri(), commandData.getResult().hasError())
+        Assert.assertTrue("File exists " + data.getUri(), data.getFile().existed)
         DemoData.demoData.assertConversations()
         return data
     }

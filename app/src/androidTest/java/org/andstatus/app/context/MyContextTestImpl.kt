@@ -81,7 +81,7 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
     /**
      * @return Empty data object if not found
      */
-    fun getAssertionData(key: String?): AssertionData? {
+    fun getAssertionData(key: String): AssertionData {
         return assertionData.getOrDefault(key, AssertionData.getEmpty(key))
     }
 

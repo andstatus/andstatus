@@ -48,7 +48,7 @@ class SpanUtilTest {
         addRecipient(ma, audience, uniqueName2, OriginPumpio.Companion.ACCOUNT_PREFIX + uniqueName2)
         val modifier = SpanUtil.spansModifier(audience)
         val text = """
-            Hello @${ma.actor.webFingerId}. Thank you for noticing.
+            Hello @${ma.actor.getWebFingerId()}. Thank you for noticing.
             @$uniqueName2
             """.trimIndent()
         val spannable: Spannable? = SpannableString.valueOf(text)

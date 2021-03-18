@@ -34,9 +34,9 @@ class MbActivityTest {
         Assert.assertEquals(Actor.EMPTY, empty.accountActor)
         Assert.assertEquals(Actor.EMPTY, empty.actor)
         Assert.assertEquals(Actor.EMPTY, empty.author)
-        Assert.assertEquals(empty.toString(), Actor.EMPTY, empty.objActor)
+        Assert.assertEquals(empty.toString(), Actor.EMPTY, empty.getObActor())
         Assert.assertEquals(Note.Companion.EMPTY, empty.note)
         Assert.assertEquals(AActivity.Companion.EMPTY, empty.activity)
-        Assert.assertEquals(AObjectType.EMPTY, empty.objectType)
+        Assert.assertEquals(AObjectType.EMPTY, empty.getObjectType())
     }
 }

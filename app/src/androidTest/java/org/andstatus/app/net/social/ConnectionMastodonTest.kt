@@ -64,25 +64,25 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Number of items in the Timeline", size.toLong(), timeline.size().toLong())
         val ind = 0
         val activity = timeline[ind]
-        val note = activity.note
-        Assert.assertEquals("Activity oid", "22", activity.oid)
+        val note = activity.getNote()
+        Assert.assertEquals("Activity oid", "22", activity.getOid())
         Assert.assertEquals("Note Oid", "22", note.oid)
         Assert.assertEquals("Account unknown $activity", true,  MyContextHolder.myContextHolder.getNow().accounts()
                 .fromActorOfSameOrigin(activity.accountActor).isValid)
-        Assert.assertEquals("Is not a note $activity", AObjectType.NOTE, activity.objectType)
+        Assert.assertEquals("Is not a note $activity", AObjectType.NOTE, activity.getObjectType())
         Assert.assertEquals("Favorited $activity", TriState.UNKNOWN, note.getFavoritedBy(activity.accountActor))
         Assert.assertEquals("Counters $activity", 678, note.likesCount)
         Assert.assertEquals("Counters $activity", 234, note.reblogsCount)
         Assert.assertEquals("Counters $activity", 11, note.repliesCount)
         DemoNoteInserter.Companion.assertVisibility(note.audience(), Visibility.PUBLIC_AND_TO_FOLLOWERS)
-        val actor = activity.actor
+        val actor = activity.getActor()
         val stringDate = "2017-04-16T11:13:12.133Z"
         val parsedDate = mock.connection.parseDate(stringDate)
         Assert.assertEquals("Parsing $stringDate", 4, (Date(parsedDate).month + 1).toLong())
-        Assert.assertEquals("Created at", parsedDate, actor.createdDate)
-        Assert.assertTrue("Actor is partially defined $actor", actor.isFullyDefined)
+        Assert.assertEquals("Created at", parsedDate, actor.getCreatedDate())
+        Assert.assertTrue("Actor is partially defined $actor", actor.isFullyDefined())
         Assert.assertEquals("Actor Oid", "37", actor.oid)
-        Assert.assertEquals("Username", "t131t1", actor.username)
+        Assert.assertEquals("Username", "t131t1", actor.getUsername())
         Assert.assertEquals("Note Oid $activity", "22", note.oid)
         Assert.assertEquals("Note url$activity", "https://neumastodon.com/@t131t1/22", note.url)
         Assert.assertEquals("Name", "", note.name)
@@ -115,7 +115,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Activity oid", "104114771989428879", activity3.oid)
         Assert.assertEquals("Account unknown $activity3", true,  MyContextHolder.myContextHolder.getNow().accounts()
                 .fromActorOfSameOrigin(activity3.accountActor).isValid)
-        Assert.assertEquals("Is not a note $activity3", AObjectType.NOTE, activity3.objectType)
+        Assert.assertEquals("Is not a note $activity3", AObjectType.NOTE, activity3.getObjectType())
         Assert.assertEquals("Favorited $activity3", TriState.UNKNOWN, note3.getFavoritedBy(activity3.accountActor))
         DemoNoteInserter.Companion.assertVisibility(note3.audience(), Visibility.PRIVATE)
         Assert.assertTrue("Audience: " + note3.audience(), note3.audience().containsOid("886798"))
@@ -129,10 +129,10 @@ class ConnectionMastodonTest {
         val stringDate = "2016-10-14T08:05:36.581Z"
         val parsedDate = mock.connection.parseDate(stringDate)
         Assert.assertEquals("Parsing $stringDate", 10, (Date(parsedDate).month + 1).toLong())
-        Assert.assertEquals("Created at", parsedDate, actor3.createdDate)
-        Assert.assertTrue("Actor is partially defined $actor3", actor3.isFullyDefined)
+        Assert.assertEquals("Created at", parsedDate, actor3.getCreatedDate())
+        Assert.assertTrue("Actor is partially defined $actor3", actor3.isFullyDefined())
         Assert.assertEquals("Actor Oid", "5962", actor3.oid)
-        Assert.assertEquals("Username", "AndStatus", actor3.username)
+        Assert.assertEquals("Username", "AndStatus", actor3.getUsername())
         Assert.assertEquals("Note Oid", "104114771989428879", note3.oid)
         Assert.assertEquals("Note url$activity3", "https://mastodon.social/@AndStatus/104114771989428879", note3.url)
         Assert.assertEquals("Name", "", note3.name)
@@ -186,48 +186,48 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Number of items in the Timeline", 20, timeline.size().toLong())
         var ind = 0
         var activity = timeline[ind]
-        Assert.assertEquals("Activity oid", "2667058", activity.oid)
-        Assert.assertEquals("Note Oid", "4729037", activity.note.oid)
+        Assert.assertEquals("Activity oid", "2667058", activity.getOid())
+        Assert.assertEquals("Note Oid", "4729037", activity.getNote().oid)
         Assert.assertEquals("Is not a Reblog $activity", ActivityType.ANNOUNCE, activity.type)
-        Assert.assertEquals("Is not an activity", AObjectType.ACTIVITY, activity.objectType)
-        var actor = activity.actor
+        Assert.assertEquals("Is not an activity", AObjectType.ACTIVITY, activity.getObjectType())
+        var actor = activity.getActor()
         Assert.assertEquals("Actor's Oid", "15451", actor.oid)
-        Assert.assertEquals("Actor's username", "Chaosphere", actor.username)
-        Assert.assertEquals("WebfingerId", "chaosphere@mastodon.social", actor.webFingerId)
-        Assert.assertEquals("Author's username$activity", "AndStatus", activity.author.username)
-        Assert.assertEquals("Favorited $activity", TriState.UNKNOWN, activity.note.getFavoritedBy(activity.accountActor))
+        Assert.assertEquals("Actor's username", "Chaosphere", actor.getUsername())
+        Assert.assertEquals("WebfingerId", "chaosphere@mastodon.social", actor.getWebFingerId())
+        Assert.assertEquals("Author's username$activity", "AndStatus", activity.getAuthor().getUsername())
+        Assert.assertEquals("Favorited $activity", TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor))
         ind = 2
         activity = timeline[ind]
-        Assert.assertEquals("Activity oid", "2674022", activity.oid)
-        Assert.assertEquals("Note Oid", "4729037", activity.note.oid)
-        Assert.assertEquals("Is not an activity $activity", AObjectType.ACTIVITY, activity.objectType)
+        Assert.assertEquals("Activity oid", "2674022", activity.getOid())
+        Assert.assertEquals("Note Oid", "4729037", activity.getNote().oid)
+        Assert.assertEquals("Is not an activity $activity", AObjectType.ACTIVITY, activity.getObjectType())
         Assert.assertEquals("Is not LIKE $activity", ActivityType.LIKE, activity.type)
-        MatcherAssert.assertThat(activity.note.content, CoreMatchers.`is`("<p>IT infrastructure of modern church</p>"))
-        Assert.assertEquals("Favorited $activity", TriState.UNKNOWN, activity.note.getFavoritedBy(activity.accountActor))
-        Assert.assertEquals("Author's username", "AndStatus", activity.author.username)
-        actor = activity.actor
+        MatcherAssert.assertThat(activity.getNote().content, CoreMatchers.`is`("<p>IT infrastructure of modern church</p>"))
+        Assert.assertEquals("Favorited $activity", TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor))
+        Assert.assertEquals("Author's username", "AndStatus", activity.getAuthor().getUsername())
+        actor = activity.getActor()
         Assert.assertEquals("Actor's Oid", "48790", actor.oid)
-        Assert.assertEquals("Actor's Username", "vfrmedia", actor.username)
-        Assert.assertEquals("WebfingerId", "vfrmedia@social.tchncs.de", actor.webFingerId)
+        Assert.assertEquals("Actor's Username", "vfrmedia", actor.getUsername())
+        Assert.assertEquals("WebfingerId", "vfrmedia@social.tchncs.de", actor.getWebFingerId())
         ind = 17
         activity = timeline[ind]
         Assert.assertEquals("Is not FOLLOW $activity", ActivityType.FOLLOW, activity.type)
-        Assert.assertEquals("Is not an ACTOR", AObjectType.ACTOR, activity.objectType)
-        actor = activity.actor
+        Assert.assertEquals("Is not an ACTOR", AObjectType.ACTOR, activity.getObjectType())
+        actor = activity.getActor()
         Assert.assertEquals("Actor's Oid", "24853", actor.oid)
-        Assert.assertEquals("Username", "resir014", actor.username)
-        Assert.assertEquals("WebfingerId", "resir014@icosahedron.website", actor.webFingerId)
-        val objActor = activity.objActor
+        Assert.assertEquals("Username", "resir014", actor.getUsername())
+        Assert.assertEquals("WebfingerId", "resir014@icosahedron.website", actor.getWebFingerId())
+        val objActor = activity.getObjActor()
         Assert.assertEquals("Not following me$activity", accountActor.oid, objActor.oid)
         ind = 19
         activity = timeline[ind]
         Assert.assertEquals("Is not UPDATE $activity", ActivityType.UPDATE, activity.type)
-        Assert.assertEquals("Is not a note", AObjectType.NOTE, activity.objectType)
-        MatcherAssert.assertThat(activity.note.content, CoreMatchers.containsString("universe of Mastodon"))
-        actor = activity.actor
+        Assert.assertEquals("Is not a note", AObjectType.NOTE, activity.getObjectType())
+        MatcherAssert.assertThat(activity.getNote().content, CoreMatchers.containsString("universe of Mastodon"))
+        actor = activity.getActor()
         Assert.assertEquals("Actor's Oid", "119218", actor.oid)
-        Assert.assertEquals("Username", "izwx6502", actor.username)
-        Assert.assertEquals("WebfingerId", "izwx6502@mstdn.jp", actor.webFingerId)
+        Assert.assertEquals("Username", "izwx6502", actor.getUsername())
+        Assert.assertEquals("WebfingerId", "izwx6502@mstdn.jp", actor.getWebFingerId())
     }
 
     @Test
@@ -237,8 +237,8 @@ class ConnectionMastodonTest {
         val actor = mock.connection.getActor(Actor.Companion.fromOid(accountActor.origin, "5962")).get()
         Assert.assertTrue(actor.toString(), actor.nonEmpty)
         Assert.assertEquals("Actor's Oid", "5962", actor.oid)
-        Assert.assertEquals("Username", "AndStatus", actor.username)
-        Assert.assertEquals("WebfingerId", "andstatus@mastodon.social", actor.webFingerId)
+        Assert.assertEquals("Username", "AndStatus", actor.getUsername())
+        Assert.assertEquals("WebfingerId", "andstatus@mastodon.social", actor.getWebFingerId())
         MatcherAssert.assertThat("Bio", actor.summary, CoreMatchers.containsString("multiple Social networks"))
         MatcherAssert.assertThat("Fields appended", actor.summary, CoreMatchers.containsString("Website: "))
         MatcherAssert.assertThat("Fields appended", actor.summary, CoreMatchers.containsString("FAQ: "))
@@ -259,12 +259,12 @@ class ConnectionMastodonTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_note)
         val activity = mock.connection.getNote("101064848262880936").get()
         Assert.assertEquals("Is not UPDATE $activity", ActivityType.UPDATE, activity.type)
-        Assert.assertEquals("Is not a note", AObjectType.NOTE, activity.objectType)
-        val actor = activity.actor
+        Assert.assertEquals("Is not a note", AObjectType.NOTE, activity.getObjectType())
+        val actor = activity.getActor()
         Assert.assertEquals("Actor's Oid", "32", actor.oid)
-        Assert.assertEquals("Username", "somePettter", actor.username)
-        Assert.assertEquals("WebfingerId", "somepettter@social.umeahackerspace.se", actor.webFingerId)
-        val note = activity.note
+        Assert.assertEquals("Username", "somePettter", actor.getUsername())
+        Assert.assertEquals("WebfingerId", "somepettter@social.umeahackerspace.se", actor.getWebFingerId())
+        val note = activity.getNote()
         MatcherAssert.assertThat(note.content, CoreMatchers.containsString("CW should properly"))
         activity.setUpdatedNow(0)
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
@@ -275,8 +275,8 @@ class ConnectionMastodonTest {
                 "andstatus@" + accountActor.origin.host)
         assertOneRecipient(activity, "qwertystop", "https://wandering.shop/@qwertystop",
                 "qwertystop@wandering.shop")
-        DemoNoteInserter.Companion.assertVisibility(activity.note.audience(), Visibility.PUBLIC_AND_TO_FOLLOWERS)
-        val audience: Audience = fromNoteId(accountActor.origin, activity.note.noteId)
+        DemoNoteInserter.Companion.assertVisibility(activity.getNote().audience(), Visibility.PUBLIC_AND_TO_FOLLOWERS)
+        val audience: Audience = fromNoteId(accountActor.origin, activity.getNote().noteId)
         DemoNoteInserter.Companion.assertVisibility(audience, Visibility.PUBLIC_AND_TO_FOLLOWERS)
     }
 
@@ -285,7 +285,7 @@ class ConnectionMastodonTest {
         val actor = audience.nonSpecialActors.stream().filter { a: Actor -> a.getUsername() == username }.findAny().orElse(Actor.EMPTY)
         Assert.assertTrue("$username should be mentioned: $activity", actor.nonEmpty())
         Assert.assertEquals("Mentioned user: $activity", profileUrl, actor.profileUrl)
-        Assert.assertEquals("Mentioned user: $activity", webFingerId, actor.webFingerId)
+        Assert.assertEquals("Mentioned user: $activity", webFingerId, actor.getWebFingerId())
     }
 
     @Test
@@ -294,24 +294,24 @@ class ConnectionMastodonTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.mastodon_get_reblog)
         val activity = mock.connection.getNote("101100271392454703").get()
         Assert.assertEquals("Is not ANNOUNCE $activity", ActivityType.ANNOUNCE, activity.type)
-        Assert.assertEquals("Is not an Activity", AObjectType.ACTIVITY, activity.objectType)
-        val actor = activity.actor
+        Assert.assertEquals("Is not an Activity", AObjectType.ACTIVITY, activity.getObjectType())
+        val actor = activity.getActor()
         Assert.assertEquals("Actor's Oid", "153111", actor.oid)
-        Assert.assertEquals("Username", "ZeniorXV", actor.username)
-        Assert.assertEquals("WebfingerId", "zeniorxv@mastodon.social", actor.webFingerId)
-        val note = activity.note
+        Assert.assertEquals("Username", "ZeniorXV", actor.getUsername())
+        Assert.assertEquals("WebfingerId", "zeniorxv@mastodon.social", actor.getWebFingerId())
+        val note = activity.getNote()
         MatcherAssert.assertThat(note.content, CoreMatchers.containsString("car of the future"))
-        val author = activity.author
+        val author = activity.getAuthor()
         Assert.assertEquals("Author's Oid", "159379", author.oid)
-        Assert.assertEquals("Username", "bjoern", author.username)
-        Assert.assertEquals("WebfingerId", "bjoern@mastodon.social", author.webFingerId)
+        Assert.assertEquals("Username", "bjoern", author.getUsername())
+        Assert.assertEquals("WebfingerId", "bjoern@mastodon.social", author.getWebFingerId())
         activity.setUpdatedNow(0)
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
         DataUpdater(executionContext).onActivity(activity)
-        Assert.assertNotEquals("Activity wasn't saved $activity", 0, activity.id)
-        Assert.assertNotEquals("Reblogged note wasn't saved $activity", 0, activity.note.noteId)
+        Assert.assertNotEquals("Activity wasn't saved $activity", 0, activity.getId())
+        Assert.assertNotEquals("Reblogged note wasn't saved $activity", 0, activity.getNote().noteId)
     }
 
     @Test
@@ -339,7 +339,7 @@ class ConnectionMastodonTest {
         Assert.assertNotNull("timeline returned", timeline)
         Assert.assertEquals("Number of items in the Timeline", 1, timeline.size().toLong())
         val activity = timeline[0]
-        val note = activity.note
+        val note = activity.getNote()
         Assert.assertEquals("Media attachments " + note.attachments, 2, note.attachments.size().toLong())
         val video = note.attachments.list[0]
         Assert.assertEquals("Content type", MyContentType.VIDEO, video.contentType)
@@ -365,7 +365,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Video URL $downloads", video.uri, dVideo.getUri())
         Assert.assertEquals("Video $downloads", 1, dVideo.getDownloadNumber())
         val nfa = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
-                activity.id, activity.note.noteId)
+                activity.getId(), activity.getNote().noteId)
         Assert.assertEquals(preview.uri, nfa.downloads.firstForTimeline.uri)
         Assert.assertEquals(MyContentType.IMAGE, nfa.downloads.firstForTimeline.contentType)
         Assert.assertEquals(dVideo.getDownloadId(), nfa.downloads.firstForTimeline.previewOfDownloadId)

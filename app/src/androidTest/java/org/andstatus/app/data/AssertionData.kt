@@ -21,14 +21,11 @@ import org.andstatus.app.util.IsEmpty
 /**
  * @author yvolk@yurivolkov.com
  */
-class AssertionData(private val key: String?, valuesIn: ContentValues?) : IsEmpty {
-    private val values: ContentValues? = null
-    fun getKey(): String? {
-        return key
-    }
+class AssertionData(private val key: String, valuesIn: ContentValues?) : IsEmpty {
+    val values: ContentValues = valuesIn ?: ContentValues()
 
-    fun getValues(): ContentValues? {
-        return values
+    fun getKey(): String {
+        return key
     }
 
     override val isEmpty: Boolean
@@ -37,12 +34,9 @@ class AssertionData(private val key: String?, valuesIn: ContentValues?) : IsEmpt
         }
 
     companion object {
-        fun getEmpty(keyIn: String?): AssertionData? {
+        fun getEmpty(keyIn: String): AssertionData {
             return AssertionData(keyIn, null)
         }
     }
 
-    init {
-        values = valuesIn ?: ContentValues()
-    }
 }

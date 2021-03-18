@@ -856,8 +856,8 @@ class MyServiceTest2 : MyServiceTest() {
                 queues.inWhichQueue(cd2Interactions).map { q: OneQueue? -> q.queueType },
                 Matchers.`is`(Matchers.`in`<Optional<QueueType>>(Arrays.asList(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)))))
         val cd2FromQueue = queues.getFromAnyQueue(cd2Interactions)
-        Assert.assertEquals("command id $cd2FromQueue", cd2Interactions.commandId, cd2FromQueue.commandId)
-        Assert.assertTrue("command id $cd2FromQueue", cd2FromQueue.commandId >= 0)
+        Assert.assertEquals("command id $cd2FromQueue", cd2Interactions.getCommandId(), cd2FromQueue.getCommandId())
+        Assert.assertTrue("command id $cd2FromQueue", cd2FromQueue.getCommandId() >= 0)
         MyLog.i(this, "$method ended")
          MyContextHolder.myContextHolder.getNow().queues().clear()
     }
