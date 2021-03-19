@@ -15,10 +15,7 @@
 package org.apache.geode.test.junit
 
 import org.apache.geode.test.junit.support.DefaultIgnoreCondition
-import java.lang.annotation.Documented
 import java.lang.annotation.Inherited
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
 import kotlin.reflect.KClass
 
 /**
@@ -32,8 +29,8 @@ import kotlin.reflect.KClass
  *
  * @see org.apache.geode.test.junit.support.DefaultIgnoreCondition
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
+@MustBeDocumented
+@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER)
 @Inherited // Added by yvolk@yurivolkov.com 2017-05-29 - Now the annotation may be set on a superclass.
-annotation class ConditionalIgnore(val condition: KClass<out IgnoreCondition?> = DefaultIgnoreCondition::class, val until: String = "1970-01-01", val value: String = "")
+annotation class ConditionalIgnore(val condition: KClass<out IgnoreCondition> = DefaultIgnoreCondition::class, val until: String = "1970-01-01", val value: String = "")

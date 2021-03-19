@@ -22,5 +22,5 @@ import org.junit.runner.Description
  * @see org.junit.runner.Description
  */
 interface IgnoreCondition {
-    open fun evaluate(testCaseDescription: Description?): Boolean
+    fun evaluate(testCaseDescription: Description?): Boolean
 }

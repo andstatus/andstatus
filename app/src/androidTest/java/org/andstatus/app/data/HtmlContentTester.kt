@@ -32,18 +32,18 @@ class HtmlContentTester {
     fun insertPumpIoHtmlContent() {
         val author = DemoNoteInserter(ma).buildActorFromOid("acct:html@example.com")
         Assert.assertEquals("Author1: $author", MyContextState.READY, author.origin.myContext.state())
-        author.avatarUrl = "http://png-5.findicons.com/files/icons/2198/dark_glass/128/html.png"
+        author.setAvatarUrl("http://png-5.findicons.com/files/icons/2198/dark_glass/128/html.png")
         val bodyString = ("<h4>This is a note with HTML content</h4>"
                 + "<p>This is a second line, <b>Bold</b> formatting."
                 + "<br /><i>This is italics</i>. <b>And this is bold</b> <u>The text is underlined</u>.</p>"
                 + "<p>A separate paragraph.</p>")
         Assert.assertFalse("HTML removed", MyHtml.htmlToPlainText(bodyString).contains("<"))
         assertHtmlNote(author, bodyString, null)
-        assertHtmlNote(author, HtmlContentTester.Companion.HTML_BODY_IMG_STRING, DemoData.demoData.htmlNoteOid)
+        assertHtmlNote(author, HTML_BODY_IMG_STRING, DemoData.demoData.htmlNoteOid)
     }
 
     private fun assertHtmlNote(author: Actor, bodyString: String?, noteOid: String?) {
-        if (author.origin.isHtmlContentAllowed) {
+        if (author.origin.isHtmlContentAllowed()) {
             assertHtmlNoteContentAllowed(author, bodyString, noteOid, true)
         } else {
             assertHtmlNoteContentAllowed(author, "$bodyString no HTML",
@@ -66,14 +66,14 @@ class HtmlContentTester {
             Assert.assertFalse("HTML should be removed: " + noteStored.content,
                     noteStored.content.replace(MyHtml.LINEBREAK_HTML.toRegex(), "\n").contains("<"))
         }
-        Assert.assertEquals("Stored content " + activity.getNote(), activity.getNote().contentToSearch,
-                noteStored.contentToSearch)
+        Assert.assertEquals("Stored content " + activity.getNote(), activity.getNote().getContentToSearch(),
+                noteStored.getContentToSearch())
         val storedContentToSearch = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT_TO_SEARCH, noteStored.noteId)
-        Assert.assertEquals("Stored content to search", noteStored.contentToSearch, storedContentToSearch)
+        Assert.assertEquals("Stored content to search", noteStored.getContentToSearch(), storedContentToSearch)
     }
 
     companion object {
-        val HTML_BODY_IMG_STRING: String? = ("A note with <b>HTML</b> <i>img</i> tag: "
+        val HTML_BODY_IMG_STRING: String = ("A note with <b>HTML</b> <i>img</i> tag: "
                 + "<img src='http://static.fsf.org/dbd/hollyweb.jpeg' alt='Stop DRM in HTML5' />"
                 + ", <a href='http://www.fsf.org/'>the link in 'a' tag</a> <br/>"
                 + "and a plain text link to the issue 60: https://github.com/andstatus/andstatus/issues/60")

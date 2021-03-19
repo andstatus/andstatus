@@ -16,7 +16,6 @@ package org.apache.geode.test.junit.rules
 
 import org.apache.geode.test.junit.ConditionalIgnore
 import org.apache.geode.test.junit.IgnoreCondition
-import org.apache.geode.test.junit.rules.ConditionalIgnoreRule
 import org.apache.geode.test.junit.support.IgnoreConditionEvaluationException
 import org.junit.AssumptionViolatedException
 import org.junit.rules.TestRule
@@ -27,6 +26,7 @@ import java.text.DateFormat
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.reflect.KClass
 
 /**
  * The ConditionalIgnoreRule class...
@@ -42,7 +42,7 @@ import java.util.*
  * @see org.apache.geode.test.junit.IgnoreCondition
  */
 class ConditionalIgnoreRule : TestRule, Serializable {
-    override fun apply(base: Statement?, description: Description?): Statement? {
+    override fun apply(base: Statement, description: Description): Statement {
         return object : Statement() {
             @Throws(Throwable::class)
             override fun evaluate() {
@@ -52,22 +52,23 @@ class ConditionalIgnoreRule : TestRule, Serializable {
     }
 
     @Throws(Throwable::class)
-    fun evaluate(statement: Statement?, description: Description?) {
+    fun evaluate(statement: Statement, description: Description) {
         throwOnIgnoreTest(statement, description).evaluate()
     }
 
-    protected fun throwOnIgnoreTest(statement: Statement?, description: Description?): Statement? {
+    protected fun throwOnIgnoreTest(statement: Statement, description: Description): Statement {
         if (isTest(description)) {
             var ignoreTest = false
             var message = ""
             val testCaseAnnotation = description.getAnnotation(ConditionalIgnore::class.java)
             if (testCaseAnnotation != null) {
                 ignoreTest = evaluate(testCaseAnnotation, description)
-                message = testCaseAnnotation.value()
+                message = testCaseAnnotation.value
             } else if (description.getTestClass().isAnnotationPresent(ConditionalIgnore::class.java)) {
-                val testClassAnnotation = description.getTestClass().getAnnotation(ConditionalIgnore::class.java)
-                ignoreTest = evaluate(testClassAnnotation, description)
-                message = testClassAnnotation.value()
+                description.getTestClass().getAnnotation(ConditionalIgnore::class.java)?.let { annotation ->
+                    ignoreTest = evaluate(annotation, description)
+                    message = annotation.value
+                }
             }
             if (ignoreTest) {
                 throw AssumptionViolatedException(format(message, description))
@@ -76,43 +77,44 @@ class ConditionalIgnoreRule : TestRule, Serializable {
         return statement
     }
 
-    protected fun isTest(description: Description?): Boolean {
+    protected fun isTest(description: Description): Boolean {
         return description.isSuite() || description.isTest()
     }
 
-    protected fun format(message: String?, description: Description?): String? {
+    protected fun format(message: String, description: Description): String {
         var message = message
         message = if (!message.isEmpty()) message else DEFAULT_MESSAGE
         return String.format(message, description.getMethodName(), description.getClassName())
     }
 
-    protected fun evaluate(conditionalIgnoreAnnotation: ConditionalIgnore?,
-                           description: Description?): Boolean {
-        return (evaluateCondition(conditionalIgnoreAnnotation.condition(), description)
-                || evaluateUntil(conditionalIgnoreAnnotation.until()))
+    protected fun evaluate(conditionalIgnoreAnnotation: ConditionalIgnore,
+                           description: Description): Boolean {
+        return (evaluateCondition(conditionalIgnoreAnnotation.condition, description)
+                || evaluateUntil(conditionalIgnoreAnnotation.until))
     }
 
-    protected fun evaluateCondition(ignoreConditionType: Class<out IgnoreCondition?>?,
+    protected fun evaluateCondition(ignoreConditionType: KClass<out IgnoreCondition>,
                                     description: Description?): Boolean {
         return try {
-            ignoreConditionType.newInstance().evaluate(description)
+            ignoreConditionType.javaPrimitiveType?.newInstance()?.evaluate(description) == true
         } catch (e: Exception) {
-            throw IgnoreConditionEvaluationException(String.format("failed to evaluate IgnoreCondition: %1\$s", ignoreConditionType.getName()),
+            throw IgnoreConditionEvaluationException(
+                    String.format("failed to evaluate IgnoreCondition: %1\$s", ignoreConditionType.qualifiedName),
                     e)
         }
     }
 
-    protected fun evaluateUntil(timestamp: String?): Boolean {
+    protected fun evaluateUntil(timestamp: String): Boolean {
         return try {
-            DATE_FORMAT.parse(timestamp).after(Calendar.getInstance().time)
+            DATE_FORMAT.parse(timestamp)?.after(Calendar.getInstance().time) == true
         } catch (e: ParseException) {
             false
         }
     }
 
     companion object {
-        protected val DATE_FORMAT_PATTERN: String? = "yyyy-MM-dd"
-        protected val DEFAULT_MESSAGE: String? = "Ignoring test case (%1\$s) of test class (%2\$s)!"
-        protected val DATE_FORMAT: DateFormat? = SimpleDateFormat(DATE_FORMAT_PATTERN)
+        protected val DATE_FORMAT_PATTERN: String = "yyyy-MM-dd"
+        protected val DEFAULT_MESSAGE: String = "Ignoring test case (%1\$s) of test class (%2\$s)!"
+        protected val DATE_FORMAT: DateFormat = SimpleDateFormat(DATE_FORMAT_PATTERN)
     }
 }

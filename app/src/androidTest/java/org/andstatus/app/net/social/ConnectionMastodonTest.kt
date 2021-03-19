@@ -164,7 +164,7 @@ class ConnectionMastodonTest {
         mock.getHttpMock().addResponse(stringResponse)
         val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
                 TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor).get()
-        DemoNoteInserter.Companion.assertVisibility(timeline[0].note.audience(), visibility)
+        DemoNoteInserter.Companion.assertVisibility(timeline[0].getNote().audience(), visibility)
     }
 
     @Test

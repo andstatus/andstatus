@@ -101,9 +101,9 @@ class ConnectionTwitterTest {
         Assert.assertEquals("Should have a recipient $activity", 1, note.audience().nonSpecialActors.size.toLong())
         Assert.assertNotEquals("Is a Reblog $activity", ActivityType.ANNOUNCE, activity.type)
         Assert.assertTrue("Is a reply", note.getInReplyTo().nonEmpty)
-        Assert.assertEquals("Reply to the note id", "17176774678", note.getInReplyTo().note.oid)
+        Assert.assertEquals("Reply to the note id", "17176774678", note.getInReplyTo().getNote().oid)
         Assert.assertEquals("Reply to the note by actorOid", DemoData.demoData.twitterTestAccountActorOid, note.getInReplyTo().author.oid)
-        Assert.assertTrue("Reply status is unknown", note.getInReplyTo().note.status == DownloadStatus.UNKNOWN)
+        Assert.assertTrue("Reply status is unknown", note.getInReplyTo().getNote().status == DownloadStatus.UNKNOWN)
         Assert.assertEquals("Favorited by me $activity", TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor))
         var startsWith = "@t131t"
         Assert.assertEquals("Body of this note starts with", startsWith, note.content.substring(0, startsWith.length))
@@ -198,7 +198,7 @@ class ConnectionTwitterTest {
         val note = activity.getNote()
         Assert.assertEquals("Body of this note", body, note.content)
         Assert.assertEquals("Body of this note", ",update,streckensperrung,zw,berliner,tor,bergedorf,ersatzverkehr,mit,bussen," +
-                "und,taxis,störungsdauer,bis,ca,10,uhr,hvv,#hvv,sbahnhh,#sbahnhh,", note.contentToSearch)
+                "und,taxis,störungsdauer,bis,ca,10,uhr,hvv,#hvv,sbahnhh,#sbahnhh,", note.getContentToSearch())
         addAsGetNote(activity)
     }
 
@@ -231,7 +231,7 @@ class ConnectionTwitterTest {
     
     """.trimIndent(),
                 MyHtmlTest.Companion.twitterBodyToPost, note.contentToPost)
-        Assert.assertEquals("Content to Search of this note", contentToSearch, note.contentToSearch)
+        Assert.assertEquals("Content to Search of this note", contentToSearch, note.getContentToSearch())
         addAsGetNote(activity)
     }
 

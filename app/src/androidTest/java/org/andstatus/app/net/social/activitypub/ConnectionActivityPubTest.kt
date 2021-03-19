@@ -217,7 +217,7 @@ class ConnectionActivityPubTest {
         Assert.assertEquals("Actor's Webfinger $activity9", "", actor9.getWebFingerId())
         Assert.assertEquals("Actor is an Author", actor9, activity9.author)
         Assert.assertEquals("Should be Create $activity9", ActivityType.CREATE, activity9.type)
-        Assert.assertEquals("Favorited by me $activity9", TriState.UNKNOWN, activity9.note.getFavoritedBy(activity9.accountActor))
+        Assert.assertEquals("Favorited by me $activity9", TriState.UNKNOWN, activity9.getNote().getFavoritedBy(activity9.accountActor))
     }
 
     @Test

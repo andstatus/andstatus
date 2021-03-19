@@ -464,6 +464,6 @@ class ConnectionPumpioTest {
         Assert.assertEquals("Number of replies", 2, note.replies.size.toLong())
         val reply = note.replies[0].note
         Assert.assertEquals("Reply oid", "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw", reply.oid)
-        Assert.assertEquals("Is not a Reply $activity", noteOid, reply.getInReplyTo().note.oid)
+        Assert.assertEquals("Is not a Reply $activity", noteOid, reply.getInReplyTo().getNote().oid)
     }
 }

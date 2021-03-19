@@ -26,7 +26,7 @@ import org.junit.runner.Description
  *
  * @see org.apache.geode.test.junit.IgnoreCondition
  */
-class DefaultIgnoreCondition @JvmOverloads constructor(private val ignore: Boolean = DEFAULT_IGNORE) : IgnoreCondition {
+class DefaultIgnoreCondition constructor(private val ignore: Boolean = DEFAULT_IGNORE) : IgnoreCondition {
     fun isIgnore(): Boolean {
         return ignore
     }
@@ -37,7 +37,7 @@ class DefaultIgnoreCondition @JvmOverloads constructor(private val ignore: Boole
 
     companion object {
         const val DEFAULT_IGNORE = false
-        val DO_NOT_IGNORE: DefaultIgnoreCondition? = DefaultIgnoreCondition(false)
-        val IGNORE: DefaultIgnoreCondition? = DefaultIgnoreCondition(true)
+        val DO_NOT_IGNORE: DefaultIgnoreCondition = DefaultIgnoreCondition(false)
+        val IGNORE: DefaultIgnoreCondition = DefaultIgnoreCondition(true)
     }
 }
