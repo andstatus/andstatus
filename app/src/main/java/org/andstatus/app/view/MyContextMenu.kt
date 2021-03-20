@@ -42,7 +42,7 @@ open class MyContextMenu(protected val listActivity: LoadableListActivity<*>, va
     @Volatile
     private var selectedActingAccount: MyAccount = MyAccount.EMPTY
 
-    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo?) {
         saveContextOfSelectedItem(v)
     }
 

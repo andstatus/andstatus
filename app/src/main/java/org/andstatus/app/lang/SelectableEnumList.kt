@@ -74,7 +74,7 @@ class SelectableEnumList<E> private constructor(clazz: Class<E>) where E : Enum<
     }
 
     init {
-        require(clazz is SelectableEnum) {
+        require(SelectableEnum::class.java.isAssignableFrom(clazz)) {
             "Class '" + clazz.name +
                     "' doesn't implement SelectableEnum"
         }

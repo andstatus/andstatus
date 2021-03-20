@@ -56,10 +56,10 @@ class CompletableFutureTest {
         val future3 = future2.thenCompose { testData: TestData -> CompletableFuture.supplyAsync({ testData.next() }, UiThreadExecutor.Companion.INSTANCE) }
         MyLog.i(this, "$method future3 created")
         val finalData = future3
-                .whenCompleteAsync({ testData: TestData, throwable: Throwable -> assertFuture3("async1", testData) },
+                .whenCompleteAsync({ testData: TestData, throwable: Throwable? -> assertFuture3("async1", testData) },
                         AsyncTaskLauncher.Companion.getExecutor(PoolEnum.QUICK_UI))
-                .whenCompleteAsync({ testData: TestData, throwable: Throwable -> assertFuture3("async2", testData) }, UiThreadExecutor.Companion.INSTANCE)
-                .whenCompleteAsync({ testData: TestData, throwable: Throwable -> assertFuture3("async3", testData) },
+                .whenCompleteAsync({ testData: TestData, throwable: Throwable? -> assertFuture3("async2", testData) }, UiThreadExecutor.Companion.INSTANCE)
+                .whenCompleteAsync({ testData: TestData, throwable: Throwable? -> assertFuture3("async3", testData) },
                         AsyncTaskLauncher.Companion.getExecutor(PoolEnum.LONG_UI))
                 .thenCompose { testData: TestData ->
                     CompletableFuture.supplyAsync({ testData.next() },

@@ -30,7 +30,7 @@ import org.andstatus.app.view.MyContextMenu
 
 open class ActorContextMenu(val menuContainer: NoteEditorContainer, menuGroup: Int) : MyContextMenu(menuContainer.getActivity(), menuGroup) {
 
-    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo?) {
         val method = "onCreateContextMenu"
         super.onCreateContextMenu(menu, v, menuInfo)
         if (getViewItem().isEmpty) {

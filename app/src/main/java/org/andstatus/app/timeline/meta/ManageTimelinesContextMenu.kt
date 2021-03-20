@@ -29,7 +29,7 @@ import org.andstatus.app.view.MyContextMenu
 
 class ManageTimelinesContextMenu(listActivity: LoadableListActivity<ManageTimelinesViewItem>) : MyContextMenu(listActivity, 0) {
 
-    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo?) {
         val method = "onCreateContextMenu"
         super.onCreateContextMenu(menu, v, menuInfo)
         val viewItem = getViewItem()

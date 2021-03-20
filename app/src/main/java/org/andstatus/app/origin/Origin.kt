@@ -287,7 +287,7 @@ open class Origin internal constructor(val myContext: MyContext, val originType:
     }
 
     fun hasAccounts(): Boolean {
-        return myContext.accounts().getFirstPreferablySucceededForOrigin(this).isValid
+        return if (isEmpty) false else myContext.accounts().getFirstPreferablySucceededForOrigin(this).isValid
     }
 
     fun hasNotes(): Boolean {

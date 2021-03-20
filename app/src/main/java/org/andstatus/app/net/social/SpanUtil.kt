@@ -126,14 +126,14 @@ object SpanUtil {
             if (start3 > region.end + 1) return false
             spannable.setSpan(MyUrlSpan(spanData), start2, Math.min(start3, region.end), 0)
             if (indInRegion >= MIN_SPAN_LENGTH) {
-                modifySpansInRegion(spannable, audience).apply {
+                modifySpansInRegion(spannable, audience).invoke(
                     Region(spannable, region.start, start2)
-                }
+                )
             }
             if (start3 + MIN_SPAN_LENGTH <= region.end) {
-                modifySpansInRegion(spannable, audience).apply {
+                modifySpansInRegion(spannable, audience).invoke(
                     Region(spannable, start3, region.end)
-                }
+                )
             }
         }
         return true

@@ -703,6 +703,7 @@ ${MyLog.getStackTrace(Exception())}""")
              * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
              */
             private fun myAccountFromName(accountName: AccountName): MyAccount {
+                if (accountName.myContext().isEmpty) return EMPTY
                 val persistentAccount = accountName.myContext().accounts().fromAccountName(accountName)
                 return if (persistentAccount.isValid) persistentAccount else MyAccount(accountName)
             }

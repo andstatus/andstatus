@@ -58,8 +58,8 @@ enum class Visibility(val id: Long) {
         if (other == UNKNOWN) return this
         if (this == NOT_PUBLIC_NEEDS_CLARIFICATION) return other
         return if (other == NOT_PUBLIC_NEEDS_CLARIFICATION) this else when (other) {
-            PUBLIC -> if (id <= id) PUBLIC_AND_TO_FOLLOWERS else PUBLIC
-            TO_FOLLOWERS -> if (id <= id) PUBLIC_AND_TO_FOLLOWERS else TO_FOLLOWERS
+            PUBLIC -> if (id <= TO_FOLLOWERS.id) PUBLIC_AND_TO_FOLLOWERS else PUBLIC
+            TO_FOLLOWERS -> if (id <= PUBLIC.id) PUBLIC_AND_TO_FOLLOWERS else TO_FOLLOWERS
             UNKNOWN -> this
             else -> if (id < other.id) this else other
         }

@@ -141,7 +141,7 @@ class ActorAutoCompleteAdapter(private val myActivity: LoadableListActivity<*>,
             return filteredValues
         }
 
-        override fun publishResults(constraint: CharSequence, results: FilterResults) {
+        override fun publishResults(constraint: CharSequence?, results: FilterResults) {
             items = results.values as FilteredValues
             if (results.count > 0) {
                 notifyDataSetChanged()

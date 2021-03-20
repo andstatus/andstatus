@@ -71,7 +71,7 @@ class AccountSettingsActivityTest : ActivityTest<AccountSettingsActivity>() {
     private fun assertUniqueNameTextField(viewId: Int) {
         val uniqueNameText = activity.findViewById<View?>(viewId) as TextView?
         Assert.assertTrue(uniqueNameText != null)
-        Assert.assertEquals("Unique name of selected account $ma", ma?.getOAccountName()?.getUniqueName(), uniqueNameText?.text.toString())
+        Assert.assertEquals("Unique name of selected account $ma", ma.getOAccountName().getUniqueName(), uniqueNameText?.text.toString())
     }
 
     @Throws(InterruptedException::class)

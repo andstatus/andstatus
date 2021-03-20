@@ -9,6 +9,7 @@ import org.junit.Test
 
 class BackupActivityTest : ActivityTest<BackupActivity>() {
     @Rule
+    @JvmField
     var mRuntimePermissionRule: GrantPermissionRule = GrantPermissionRule.grant(
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE)

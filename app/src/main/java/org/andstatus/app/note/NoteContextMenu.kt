@@ -51,11 +51,11 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
     private var futureData: FutureNoteContextMenuData = FutureNoteContextMenuData.EMPTY
     private var selectedMenuItemTitle: String = ""
 
-    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo) {
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo?) {
         onCreateContextMenu(menu, v, menuInfo, { _ -> })
     }
 
-    fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo, next: (NoteContextMenu) -> Unit) {
+    fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo?, next: (NoteContextMenu) -> Unit) {
         super.onCreateContextMenu(menu, v, menuInfo)
         when (futureData.getStateFor(getViewItem())) {
             StateForSelectedViewItem.READY -> {

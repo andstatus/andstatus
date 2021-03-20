@@ -33,28 +33,26 @@ open class MyListActivity : MyBaseListActivity() {
 
     override var listView: ListView? = null
         get() {
-            if (field == null && listFragment == null) {
+            if (field == null) {
                 findFragment()
+                field = listFragment?.listView ?: findViewById<View?>(android.R.id.list) as ListView?
             }
-            field ?: listFragment?.listView ?: findViewById<View?>(android.R.id.list) as ListView?
-            return listFragment?.listView ?: field
+            return field
         }
 
     override fun setListAdapter(adapter: ListAdapter) {
-        findListView()
+        findFragment()
         listFragment?.setListAdapter(adapter) ?: listView?.setAdapter(adapter)
     }
 
     override fun getListAdapter(): ListAdapter {
-        findListView()
+        findFragment()
         return listFragment?.listAdapter ?: listView?.adapter ?: super.getListAdapter()
     }
 
-    private fun findListView() {
-        if (listView == null) findFragment()
-    }
-
     private fun findFragment() {
-        listFragment = supportFragmentManager.findFragmentById(R.id.relative_list_parent) as ListFragment?
+        if (listFragment == null) {
+            listFragment = supportFragmentManager.findFragmentById(R.id.relative_list_parent) as ListFragment?
+        }
     }
 }

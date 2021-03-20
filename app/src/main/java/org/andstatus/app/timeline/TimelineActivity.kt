@@ -625,9 +625,10 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
     }
 
     override fun getListData(): TimelineData<T> {
-        return TimelineData<T>(null, TimelinePage(getParamsNew(), mutableListOf())).also {
-            listData = it
-        }
+        return listData ?: TimelineData<T>(null, TimelinePage(getParamsNew(), mutableListOf()))
+                .also {
+                    listData = it
+                }
     }
 
     private fun setListData(pageLoaded: TimelinePage<T>): TimelineData<T> {

@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit
 
 class MyBackupAgentTest {
     @Rule
+    @JvmField
     var mRuntimePermissionRule = GrantPermissionRule.grant(
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE)

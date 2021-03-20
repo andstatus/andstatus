@@ -24,7 +24,7 @@ import org.andstatus.app.actor.ActorsLoader
 class TimelinePage<T : ViewItem<T>>(val params: TimelineParameters, items: MutableList<T>?) {
     var actorViewItem: ActorViewItem = ActorViewItem.EMPTY
     private val emptyItem: T = ViewItem.getEmpty(params.getTimelineType())
-    val items: MutableList<T>
+    val items: MutableList<T> = items ?: mutableListOf()
 
     fun getEmptyItem(): T {
         return emptyItem
@@ -37,7 +37,4 @@ class TimelinePage<T : ViewItem<T>>(val params: TimelineParameters, items: Mutab
         }
     }
 
-    init {
-        this.items = items ?: mutableListOf()
-    }
 }
