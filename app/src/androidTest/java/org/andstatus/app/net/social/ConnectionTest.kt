@@ -20,9 +20,10 @@ class ConnectionTest {
                 TestSuite.utcTime(2013, Calendar.SEPTEMBER, 26, 18, 23, 5))
     }
 
-    private fun parseOneDate(connection: Connection?, stringDate: String?, date: Date?) {
+    private fun parseOneDate(connection: Connection, stringDate: String, date: Date) {
         val unixDate: Long
         unixDate = connection.parseDate(stringDate)
-        Assert.assertEquals("Testing the date: " + date + " (string: " + stringDate + ") vs " + Date(unixDate).toString() + "; ", date.getTime(), unixDate)
+        Assert.assertEquals("Testing the date: " + date + " (string: " + stringDate + ") vs "
+                + Date(unixDate).toString() + "; ", date.getTime(), unixDate)
     }
 }

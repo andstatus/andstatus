@@ -16,6 +16,7 @@
 package org.andstatus.app.util
 
 import android.content.Context
+import org.andstatus.app.R
 import org.andstatus.app.context.TestSuite
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
@@ -23,9 +24,11 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.util.*
+import kotlin.properties.Delegates
 
 class StringUtilTest2 {
-    var context: Context? = null
+    var context: Context by Delegates.notNull()
+
     @Before
     @Throws(Exception::class)
     fun setUp() {
@@ -51,7 +54,7 @@ class StringUtilTest2 {
         try {
             Assert.assertEquals("“Person”的朋友", String.format(context.getText(R.string.format_test_quotes2).toString(), "Person"))
         } catch (e: UnknownFormatConversionException) {
-            error = e.getMessage()
+            error = e.message ?: ""
         }
         Assert.assertEquals("Conversion = '”'", error)
         val noContext = StringUtil.format(null as Context?, R.string.format_test_quotes2, "Person")

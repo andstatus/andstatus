@@ -19,10 +19,7 @@ import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.TestSuite
-import org.andstatus.app.service.CommandData
-import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.CommandQueue.OneQueue
-import org.andstatus.app.service.QueueType
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
@@ -49,8 +46,8 @@ class MyServiceTest2 : MyServiceTest() {
         mService.sendListenedCommand()
         mService.assertCommandExecutionStarted("First command should start", startCount, TriState.TRUE)
         Assert.assertTrue("First command should end execution", mService.waitForCommandExecutionEnded(endCount))
-        Assert.assertEquals(cd1Home.toString() + " " + mService.http.toString(),
-                1, mService.http.requestsCounter.toLong())
+        Assert.assertEquals(cd1Home.toString() + " " + mService .getHttp().toString(),
+                1, mService .getHttp()?.getRequestsCounter()?.toLong())
         Assert.assertTrue(TestSuite.setAndWaitForIsInForeground(true))
         MyLog.i(this, "$method; we are in a foreground")
         val cd2Interactions: CommandData = CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE,
@@ -65,14 +62,14 @@ class MyServiceTest2 : MyServiceTest() {
         Assert.assertTrue("Service should stop", mService.waitForServiceStopped(false))
         MyLog.i(this, "$method; Service stopped after the second command")
         Assert.assertEquals("No new data should be posted while in foreground",
-                1, mService.http.requestsCounter.toLong())
+                1, mService .getHttp()?.getRequestsCounter()?.toLong())
         val queues: CommandQueue =  MyContextHolder.myContextHolder.getBlocking().queues()
         MyLog.i(this, "$method; Queues1:$queues")
         Assert.assertEquals("First command shouldn't be in any queue $queues",
-                Optional.empty<Any?>(), queues.inWhichQueue(cd1Home).map { q: OneQueue? -> q.queueType })
+                Optional.empty<Any?>(), queues.inWhichQueue(cd1Home).map { q: OneQueue -> q.queueType })
         MatcherAssert.assertThat("Second command should be in the Main or Skip queue $queues",
-                queues.inWhichQueue(cd2Interactions).map { q: OneQueue? -> q.queueType },
-                Matchers.`is`(Matchers.`in`<Optional<QueueType>>(Arrays.asList(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)))))
+                queues.inWhichQueue(cd2Interactions).map { q: OneQueue -> q.queueType },
+                Matchers.`is`(Matchers.`in`<Optional<QueueType>>(listOf(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)))))
         val cd3PublicForeground: CommandData = CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE,
                 DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName),
                 TimelineType.PUBLIC)
@@ -87,10 +84,10 @@ class MyServiceTest2 : MyServiceTest() {
         Assert.assertTrue("Service stopped", mService.waitForServiceStopped(false))
         MyLog.i(this, "$method; Queues2:$queues")
         Assert.assertEquals("Third command shouldn't be in any queue $queues",
-                Optional.empty<Any?>(), queues.inWhichQueue(cd3PublicForeground).map { q: OneQueue? -> q.queueType })
+                Optional.empty<Any?>(), queues.inWhichQueue(cd3PublicForeground).map { q: OneQueue -> q.queueType })
         MatcherAssert.assertThat("Second command should be in the Main or Skip queue $queues",
-                queues.inWhichQueue(cd2Interactions).map { q: OneQueue? -> q.queueType },
-                Matchers.`is`(Matchers.`in`<Optional<QueueType>>(Arrays.asList(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)))))
+                queues.inWhichQueue(cd2Interactions).map { q: OneQueue -> q.queueType },
+                Matchers.`is`(Matchers.`in`<Optional<QueueType>>(listOf(Optional.of(QueueType.CURRENT), Optional.of(QueueType.SKIPPED)))))
         val cd2FromQueue = queues.getFromAnyQueue(cd2Interactions)
         Assert.assertEquals("command id $cd2FromQueue", cd2Interactions.getCommandId(), cd2FromQueue.getCommandId())
         Assert.assertTrue("command id $cd2FromQueue", cd2FromQueue.getCommandId() >= 0)

@@ -40,7 +40,7 @@ class WhichPageTest {
         Assert.assertEquals(WhichPage.EMPTY, WhichPage.Companion.load(args))
     }
 
-    private fun assertOne(whichPage: WhichPage?) {
+    private fun assertOne(whichPage: WhichPage) {
         val args = whichPage.toBundle()
         Assert.assertEquals(whichPage, WhichPage.Companion.load(args))
     }

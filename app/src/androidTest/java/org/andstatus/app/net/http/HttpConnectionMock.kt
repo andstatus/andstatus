@@ -40,7 +40,7 @@ class HttpConnectionMock : HttpConnection() {
     private var sameResponse = false
 
     @Volatile
-    private var responseStreamSupplier: CheckedFunction<Void?, InputStream?>? = null
+    private var responseStreamSupplier: CheckedFunction<Void, InputStream>? = null
 
     @Volatile
     private var runtimeException: RuntimeException? = null
@@ -76,7 +76,7 @@ class HttpConnectionMock : HttpConnection() {
         responses.add(responseString)
     }
 
-    fun setResponseStreamSupplier(responseStreamSupplier: CheckedFunction<Void?, InputStream?>?) {
+    fun setResponseStreamSupplier(responseStreamSupplier: CheckedFunction<Void, InputStream>?) {
         this.responseStreamSupplier = responseStreamSupplier
     }
 
@@ -116,8 +116,8 @@ class HttpConnectionMock : HttpConnection() {
 
     private fun onRequest(method: String, result: HttpReadResult) {
         result.strResponse = getNextResponse()
-        if (responseStreamSupplier != null) {
-            result.readStream("", responseStreamSupplier)
+        responseStreamSupplier?.let {
+            result.readStream("", it)
         }
         results.add(result)
         MyLog.v(this, method + " num:" + results.size + "; path:'" + result.getUrl()

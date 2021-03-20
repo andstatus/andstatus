@@ -51,7 +51,7 @@ class SpanUtilTest {
             Hello @${ma.actor.getWebFingerId()}. Thank you for noticing.
             @$uniqueName2
             """.trimIndent()
-        val spannable: Spannable? = SpannableString.valueOf(text)
+        val spannable: Spannable = SpannableString.valueOf(text)
         val modified = modifier.apply(spannable)
         val spans = modified.getSpans(0, modified.length, Any::class.java)
         Assert.assertEquals("Spans created: " + Arrays.toString(spans), 2, spans.size.toLong())
@@ -91,34 +91,34 @@ class SpanUtilTest {
                         "%23%D0%9B%D0%BE%D0%B3%D0%B8%D0%BA%D0%B0")
     }
 
-    private fun oneMention(regions: MutableList<SpanUtil.Region?>?, message: String?, index: Int, username: String?) {
+    private fun oneMention(regions: List<SpanUtil.Region>, message: String, index: Int, username: String) {
         val region = regions.get(index)
         val urlSpan = region.urlSpan
-        val actor = urlSpan.flatMap { u: MyUrlSpan? -> u.data.actor }
+        val actor = urlSpan.flatMap { u: MyUrlSpan -> u.data.actor }
         val accountToSync = actor.map { a: Actor -> a.origin.myContext.accounts().toSyncThatActor(a) }
         Assert.assertTrue("Region $index should be a mention $region\n$message", actor.isPresent)
         Assert.assertEquals("Region $index $message",
                 "content://timeline.app.andstatus.org/note/" +
                         accountToSync.map { obj: MyAccount -> obj.actorId }.orElse(0L) +
                         "/lt/sent/origin/0/actor/0",
-                urlSpan.map { obj: MyUrlSpan? -> obj.getURL() }.orElse(""))
+                urlSpan.map { obj: MyUrlSpan -> obj.getURL() }.orElse(""))
         Assert.assertEquals("Username in region $index $message",
                 username.toUpperCase(), actor.map { obj: Actor -> obj.getUsername() }.orElse("").toUpperCase())
     }
 
-    private fun oneHashTag(regions: MutableList<SpanUtil.Region?>?, message: String?, index: Int, term: String?) {
+    private fun oneHashTag(regions: List<SpanUtil.Region>, message: String, index: Int, term: String) {
         oneHashTag(regions, message, index, "#$term",
                 "content://timeline.app.andstatus.org/note/0/lt/search/origin/0/actor/0/search/%23$term")
     }
 
-    private fun oneHashTag(regions: MutableList<SpanUtil.Region?>?, message: String?, index: Int, hashTag: String?, url: String?) {
+    private fun oneHashTag(regions: List<SpanUtil.Region>, message: String, index: Int, hashTag: String, url: String) {
         val region = regions.get(index)
         val urlSpan = region.urlSpan
         Assert.assertEquals("Region $index should be a hashtag $region\n$message", hashTag,
-                urlSpan.flatMap { u: MyUrlSpan? -> u.data.searchQuery }.orElse(""))
-        val timeline = urlSpan.map { u: MyUrlSpan? -> u.data.timeline }.orElse(Timeline.EMPTY)
-        Assert.assertEquals(message, hashTag, timeline.searchQuery)
-        val onClickUrl = urlSpan.map { obj: MyUrlSpan? -> obj.getURL() }.orElse("")
+                urlSpan.flatMap { u: MyUrlSpan -> u.data.searchQuery }.orElse(""))
+        val timeline = urlSpan.map { u: MyUrlSpan -> u.data.getTimeline() }.orElse(Timeline.EMPTY)
+        Assert.assertEquals(message, hashTag, timeline.getSearchQuery())
+        val onClickUrl = urlSpan.map { obj: MyUrlSpan -> obj.getURL() }.orElse("")
         Assert.assertEquals(message, url, onClickUrl)
         val parsedUri: ParsedUri = ParsedUri.Companion.fromUri(Uri.parse(onClickUrl))
         Assert.assertEquals("""
@@ -167,11 +167,11 @@ class SpanUtilTest {
         oneHashTag(regions2, message2, 17, "ZeroCarbon")
     }
 
-    private fun notAHashTag(regions: MutableList<SpanUtil.Region?>?, message: String?, index: Int) {
+    private fun notAHashTag(regions: List<SpanUtil.Region>, message: String, index: Int) {
         val region = regions.get(index)
         val urlSpan = region.urlSpan
         Assert.assertEquals("Region $index should not be a hashtag $region\n$message", "",
-                urlSpan.flatMap { u: MyUrlSpan? -> u.data.searchQuery }.orElse(""))
+                urlSpan.flatMap { u: MyUrlSpan -> u.data.searchQuery }.orElse(""))
     }
 
     @Test
@@ -186,7 +186,7 @@ class SpanUtilTest {
         textWithMentions2(modifier)
     }
 
-    private fun textWithMentions1(modifier: Function<Spannable?, Spannable?>?) {
+    private fun textWithMentions1(modifier: Function<Spannable, Spannable>) {
         val text = "<p><span class=\"h-card\"><a href=\"https://netzkombin.at/users/nipos\" class=\"u-url mention\">" +
                 "@<span>nipos</span></a></span> Unfortunately, <a href=\"https://mastodon.social/tags/mastodon\"" +
                 " class=\"mention hashtag\" rel=\"tag\">#<span>Mastodon</span></a> API uses instance-specific" +
@@ -219,7 +219,7 @@ class SpanUtilTest {
         oneMention(regions2, message2, 8, "switchingsocial")
     }
 
-    private fun textWithMentions2(modifier: Function<Spannable?, Spannable?>?) {
+    private fun textWithMentions2(modifier: Function<Spannable, Spannable>) {
         val text = "Same mentions @nIpos but in a different case ß @er1N"
         val spannable: Spannable = MyUrlSpan.Companion.toSpannable(text, TextMediaType.HTML, true)
         val regions1 = SpanUtil.regionsOf(spannable)
@@ -264,7 +264,7 @@ class SpanUtilTest {
         notAHashTag(regions2, message2, 4)
     }
 
-    private fun addRecipient(ma: MyAccount, audience: Audience?, uniqueName: String?, actorOid: String?) {
+    private fun addRecipient(ma: MyAccount, audience: Audience, uniqueName: String, actorOid: String?) {
         val actor1: Actor = Actor.Companion.fromOid(ma.origin, actorOid)
         actor1.withUniqueName(uniqueName)
         audience.add(actor1)

@@ -18,7 +18,7 @@ class AttachedImageScalingTest {
     fun testScaling() {
         ImageCaches.initialize( MyContextHolder.myContextHolder.getNow().context())
         val cache = ImageCaches.getCache(CacheName.ATTACHED_IMAGE)
-        val exactlyMaxSize = Point(cache.maxBitmapWidth, cache.maxBitmapWidth)
+        val exactlyMaxSize = Point(cache.getMaxBitmapWidth(), cache.getMaxBitmapWidth())
         var options = cache.calculateScaling(this, exactlyMaxSize)
         Assert.assertEquals(1, options.inSampleSize.toLong())
         val largerSize = Point(exactlyMaxSize.y + 10, exactlyMaxSize.x + 30)

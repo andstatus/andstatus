@@ -22,14 +22,13 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Spinner
 import org.andstatus.app.IntentExtra
+import org.andstatus.app.R
 import org.andstatus.app.context.ActivityTest
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.lang.SelectableEnumList
 import org.andstatus.app.net.http.SslModeEnum
-import org.andstatus.app.origin.OriginEditor
-import org.andstatus.app.origin.OriginType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UrlUtils
@@ -40,8 +39,9 @@ import org.junit.Test
 /**
  * @author yvolk@yurivolkov.com
  */
-class OriginEditorTest : ActivityTest<OriginEditor?>() {
-    override fun getActivityClass(): Class<OriginEditor?>? {
+class OriginEditorTest : ActivityTest<OriginEditor>() {
+
+    override fun getActivityClass(): Class<OriginEditor> {
         TestSuite.initialize(this)
         return OriginEditor::class.java
     }
@@ -76,28 +76,27 @@ class OriginEditorTest : ActivityTest<OriginEditor?>() {
                 true, true)
     }
 
-    private fun forOneOrigin(originType: OriginType?, originName: String?,
-                             hostOrUrl: String?, isSsl: Boolean, sslMode: SslModeEnum?,
-                             allowHtml: Boolean, mentionAsWebFingerId: TriState?,
-                             useLegacyHttpProtocol: TriState?,
+    private fun forOneOrigin(originType: OriginType, originName: String,
+                             hostOrUrl: String, isSsl: Boolean, sslMode: SslModeEnum,
+                             allowHtml: Boolean, mentionAsWebFingerId: TriState,
+                             useLegacyHttpProtocol: TriState,
                              inCombinedGlobalSearch: Boolean, inCombinedPublicReload: Boolean) {
         val method = "OriginEditorTest"
         val originOld: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(originName)
         val intent = Intent()
-        if (originOld.isPersistent) {
+        if (originOld.isPersistent()) {
             intent.action = Intent.ACTION_EDIT
             intent.putExtra(IntentExtra.ORIGIN_NAME.key, originOld.name)
         } else {
             intent.action = Intent.ACTION_INSERT
         }
         val activity = activity
-        activity.runOnUiThread(Runnable { // This is needed because the activity is actually never
+        activity.runOnUiThread { // This is needed because the activity is actually never
             // destroyed
             // and onCreate occurs only once.
             activity.onNewIntent(intent)
         }
-        )
-        instrumentation.waitForIdleSync()
+        getInstrumentation().waitForIdleSync()
         DbUtils.waitMs(method, 200)
         val buttonSave = activity.findViewById<Button?>(R.id.button_save)
         val spinnerOriginType = activity.findViewById<Spinner?>(R.id.origin_type)
@@ -110,7 +109,7 @@ class OriginEditorTest : ActivityTest<OriginEditor?>() {
         val spinnerUseLegacyHttpProtocol = activity.findViewById<Spinner?>(R.id.use_legacy_http_protocol)
         val clicker: Runnable = object : Runnable {
             override fun run() {
-                spinnerOriginType.setSelection(SelectableEnumList.Companion.newInstance<OriginType?>(OriginType::class.java).getIndex(originType))
+                spinnerOriginType.setSelection(SelectableEnumList.Companion.newInstance<OriginType>(OriginType::class.java).getIndex(originType))
                 editTextOriginName.setText(originName)
                 editTextHost.setText(hostOrUrl)
                 checkBoxIsSsl.isChecked = isSsl
@@ -127,7 +126,7 @@ class OriginEditorTest : ActivityTest<OriginEditor?>() {
         }
         MyLog.v(this, "$method-Log before run clicker 1")
         activity.runOnUiThread(clicker)
-        instrumentation.waitForIdleSync()
+        getInstrumentation().waitForIdleSync()
         DbUtils.waitMs(method, 200)
         val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(originName)
         Assert.assertEquals("Origin '$originName' added", originName, origin.name)
@@ -144,13 +143,13 @@ class OriginEditorTest : ActivityTest<OriginEditor?>() {
                 }
             }
         }
-        Assert.assertEquals(isSsl, origin.isSsl)
-        Assert.assertEquals(sslMode, origin.sslMode)
-        Assert.assertEquals(allowHtml, origin.isHtmlContentAllowed)
-        Assert.assertEquals(mentionAsWebFingerId, origin.mentionAsWebFingerId)
+        Assert.assertEquals(isSsl, origin.isSsl())
+        Assert.assertEquals(sslMode, origin.getSslMode())
+        Assert.assertEquals(allowHtml, origin.isHtmlContentAllowed())
+        Assert.assertEquals(mentionAsWebFingerId, origin.getMentionAsWebFingerId())
         Assert.assertEquals(useLegacyHttpProtocol, origin.useLegacyHttpProtocol())
-        Assert.assertEquals(inCombinedGlobalSearch, origin.isInCombinedGlobalSearch)
-        Assert.assertEquals(inCombinedPublicReload, origin.isInCombinedPublicReload)
+        Assert.assertEquals(inCombinedGlobalSearch, origin.isInCombinedGlobalSearch())
+        Assert.assertEquals(inCombinedPublicReload, origin.isInCombinedPublicReload())
     }
 
     @After

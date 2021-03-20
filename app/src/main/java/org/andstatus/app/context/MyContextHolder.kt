@@ -151,10 +151,10 @@ class MyContextHolder private constructor() : TaggedClass {
      * Quickly returns, providing context for the deferred initialization
      */
     fun storeContextIfNotPresent(context: Context?, calledBy: Any?): MyContextHolder {
-        if (context == null || getNow().baseContext() != null) return this
+        if (context == null || getNow().nonEmpty) return this
         synchronized(CONTEXT_LOCK) {
-            if (myFutureContext.getNow().baseContext() == null) {
-                val contextCreator = myFutureContext.getNow().newCreator(context, calledBy)
+            if (getNow().isEmpty) {
+                val contextCreator = MyContextImpl(MyContextEmpty.EMPTY, context, calledBy)
                 requireNonNullContext(contextCreator.baseContext(), calledBy, "no compatible context")
                 myFutureContext = MyFutureContext.completed(contextCreator)
             }

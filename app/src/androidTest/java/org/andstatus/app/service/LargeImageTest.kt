@@ -12,8 +12,6 @@ import org.andstatus.app.graphics.CacheName
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.Attachment
 import org.andstatus.app.net.social.ConnectionMock
-import org.andstatus.app.service.CommandData
-import org.andstatus.app.service.CommandEnum
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -47,7 +45,7 @@ import java.io.IOException
         loadingTest(dd)
     }
 
-    private fun insertNote(): DownloadData? {
+    private fun insertNote(): DownloadData {
         val body = "Large image attachment"
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         val inserter = DemoNoteInserter(ma)
@@ -57,30 +55,31 @@ import java.io.IOException
         inserter.onActivity(activity)
         val dd: DownloadData = DownloadData.Companion.getSingleAttachment(activity.getNote().noteId
         )
-        Assert.assertEquals("Image URI stored", activity.getNote().attachments.list[0].getUri(), dd.uri)
+        Assert.assertEquals("Image URI stored", activity.getNote().attachments.list[0].uri, dd.getUri())
         val commandData: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR,
                 Actor.Companion.fromId(ma.origin, 34234), "")
         val loader = AttachmentDownloader(ma.origin.myContext, dd)
-        val connMock: ConnectionMock = ConnectionMock.Companion.newFor(DemoData.demoData.gnusocialTestAccountName)
-        connMock.httpMock.setResponseStreamSupplier { o: Void? ->
+        val connMock: ConnectionMock = ConnectionMock.newFor(DemoData.demoData.gnusocialTestAccountName)
+        connMock.getHttpMock().setResponseStreamSupplier {
             InstrumentationRegistry.getInstrumentation().context.resources
                     .openRawResource(org.andstatus.app.tests.R.raw.large_image)
         }
         loader.setConnectionMock(connMock.connection)
         loader.load(commandData)
-        Assert.assertEquals("Requested", 1, connMock.httpMock.requestsCounter.toLong())
-        val data: DownloadData = DownloadData.Companion.fromId(dd.downloadId)
+        Assert.assertEquals("Requested", 1, connMock.getHttpMock().getRequestsCounter().toLong())
+        val data: DownloadData = DownloadData.Companion.fromId(dd.getDownloadId())
         Assert.assertFalse("Loaded " + data.getUri(), commandData.getResult().hasError())
         Assert.assertTrue("File exists " + data.getUri(), data.getFile().existed)
         DemoData.demoData.assertConversations()
         return data
     }
 
-    private fun loadingTest(dd: DownloadData?) {
+    private fun loadingTest(dd: DownloadData) {
         val image = AttachedMediaFile(dd).loadAndGetImage(CacheName.ATTACHED_IMAGE)
-        val width = image.imageSize.x
-        Assert.assertTrue("Too wide: $width", width < 4000 && width > 10)
-        val height = image.imageSize.y
-        Assert.assertTrue("Too high: $height", height < 4000 && height > 10)
+                ?: throw IllegalStateException("No image")
+        val width = image.getImageSize().x
+        Assert.assertTrue("Too wide: $width", width in 11..3999)
+        val height = image.getImageSize().y
+        Assert.assertTrue("Too high: $height", height in 11..3999)
     }
 }

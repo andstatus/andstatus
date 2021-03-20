@@ -18,7 +18,6 @@ package org.andstatus.app.util
 import android.net.Uri
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ActorEndpointType
-import org.andstatus.app.util.UriUtilsTest
 import org.json.JSONException
 import org.json.JSONObject
 import org.junit.Assert
@@ -27,7 +26,7 @@ import org.junit.Test
 class UriUtilsTest {
     @Test
     fun testIsEmpty() {
-        for (uri in UriUtilsTest.Companion.EMPTY_URIS) {
+        for (uri in EMPTY_URIS) {
             Assert.assertTrue(UriUtils.isEmpty(uri))
         }
         Assert.assertFalse(UriUtils.isEmpty(UriUtils.fromString(".")))
@@ -64,7 +63,7 @@ class UriUtilsTest {
 
     @Test
     fun testIsDownloadable() {
-        for (uri in UriUtilsTest.Companion.EMPTY_URIS) {
+        for (uri in EMPTY_URIS) {
             Assert.assertFalse(UriUtils.isDownloadable(uri))
         }
         Assert.assertFalse(UriUtils.isDownloadable(UriUtils.fromString(".")))
@@ -77,7 +76,7 @@ class UriUtilsTest {
     }
 
     companion object {
-        private val EMPTY_URIS: Array<Uri?>? = arrayOf(null, Uri.EMPTY, Uri.parse(""),
+        private val EMPTY_URIS: Array<Uri?> = arrayOf(null, Uri.EMPTY, Uri.parse(""),
                 UriUtils.fromString(""), UriUtils.fromString(" "))
 
         fun assertEndpoint(endpointType: ActorEndpointType?, value: String?, actor: Actor) {

@@ -38,7 +38,7 @@ class ParsedUriTest {
 
     @Test
     fun testActorsScreen() {
-        assertOneActorsScreen(DemoData.demoData.getPumpioConversationOrigin().getId())
+        assertOneActorsScreen(DemoData.demoData.getPumpioConversationOrigin().id)
         assertOneActorsScreen(0)
     }
 
@@ -47,12 +47,12 @@ class ParsedUriTest {
         val uri: Uri = MatchedUri.Companion.getActorsScreenUri(ActorsScreenType.ACTORS_OF_NOTE, originId, noteId, "")
         val parsedUri: ParsedUri = ParsedUri.Companion.fromUri(uri)
         val msgLog = parsedUri.toString()
-        Assert.assertEquals(TimelineType.UNKNOWN, parsedUri.timelineType)
-        Assert.assertEquals(msgLog, ActorsScreenType.ACTORS_OF_NOTE, parsedUri.actorsScreenType)
-        Assert.assertEquals(msgLog, originId, parsedUri.originId)
-        Assert.assertEquals(msgLog, noteId, parsedUri.noteId)
-        Assert.assertEquals(msgLog, noteId, parsedUri.itemId)
-        Assert.assertEquals(msgLog, 0, parsedUri.actorId)
+        Assert.assertEquals(TimelineType.UNKNOWN, parsedUri.getTimelineType())
+        Assert.assertEquals(msgLog, ActorsScreenType.ACTORS_OF_NOTE, parsedUri.getActorsScreenType())
+        Assert.assertEquals(msgLog, originId, parsedUri.getOriginId())
+        Assert.assertEquals(msgLog, noteId, parsedUri.getNoteId())
+        Assert.assertEquals(msgLog, noteId, parsedUri.getItemId())
+        Assert.assertEquals(msgLog, 0, parsedUri.getActorId())
     }
 
     @Test
@@ -82,12 +82,12 @@ class ParsedUriTest {
     private fun oneSearchQuery(searchQuery: String?) {
         val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.SEARCH, Actor.EMPTY,
                  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL), searchQuery)
-        val clickUri = timeline.clickUri
+        val clickUri = timeline.getClickUri()
         val parsedUri: ParsedUri = ParsedUri.Companion.fromUri(clickUri)
         Assert.assertEquals("""
     $parsedUri
     $timeline
-    """.trimIndent(), TimelineType.SEARCH, parsedUri.timelineType)
+    """.trimIndent(), TimelineType.SEARCH, parsedUri.getTimelineType())
         Assert.assertEquals("""
     $parsedUri
     $timeline

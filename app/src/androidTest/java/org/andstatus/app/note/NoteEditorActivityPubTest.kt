@@ -40,16 +40,18 @@ import org.andstatus.app.util.MyHtml
 import org.andstatus.app.util.MyLog
 import org.junit.Assert
 import org.junit.Test
+import kotlin.properties.Delegates
 
-class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem?>() {
-    private var mock: ConnectionMock? = null
-    override fun getActivityIntent(): Intent? {
+class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
+    private var mock: ConnectionMock by Delegates.notNull()
+
+    override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithAccounts(this)
         mock = ConnectionMock.Companion.newFor(DemoData.demoData.activityPubTestAccountName)
-        val ma = mock.getData().myAccount
+        val ma = mock.getData().getMyAccount()
          MyContextHolder.myContextHolder.getBlocking().accounts().setCurrentAccount(ma)
-        Assert.assertTrue("isValidAndSucceeded $ma", ma.isValidAndSucceeded)
+        Assert.assertTrue("isValidAndSucceeded $ma", ma.isValidAndSucceeded())
         MyLog.i(this, "setUp ended")
         return Intent(Intent.ACTION_VIEW,
                  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.actor,  Origin.EMPTY).getUri())
@@ -60,21 +62,21 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem?>() {
     fun sendingPublic() {
         val method = "sendingPublic"
         TestSuite.waitForListLoaded(activity, 2)
-        ActivityTestHelper.Companion.hideEditorAndSaveDraft<ActivityViewItem?>(method, activity)
-        ActivityTestHelper.Companion.openEditor<ActivityViewItem?>(method, activity)
+        ActivityTestHelper.Companion.hideEditorAndSaveDraft<ActivityViewItem>(method, activity)
+        ActivityTestHelper.Companion.openEditor<ActivityViewItem>(method, activity)
         val actorUniqueName = "me" + DemoData.demoData.testRunUid + "@mastodon.example.com"
         val content = "Sending note to the unknown yet Actor @$actorUniqueName"
         // TypeTextAction doesn't work here due to auto-correction
-        Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
+        Espresso.onView(ViewMatchers.withId(org.andstatus.app.R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
         TestSuite.waitForIdleSync()
-        ActivityTestHelper.Companion.clickSendButton<ActivityViewItem?>(method, activity)
+        ActivityTestHelper.Companion.clickSendButton<ActivityViewItem>(method, activity)
         val noteId: Long = ActivityTestHelper.Companion.waitAndGetIdOfStoredNote(method, content)
         val note: Note = Note.Companion.loadContentById(mock.connection.myContext(), noteId)
-        Assert.assertEquals("Note $note", DownloadStatus.SENDING, note.status)
+        Assert.assertEquals("Note $note", DownloadStatus.SENDING, note.getStatus())
         Assert.assertEquals("Visibility $note", Visibility.PUBLIC_AND_TO_FOLLOWERS, note.audience().visibility)
-        Assert.assertFalse("Not sensitive $note", note.isSensitive)
+        Assert.assertFalse("Not sensitive $note", note.isSensitive())
         Assert.assertTrue("Audience should contain $actorUniqueName\n $note",
-                note.audience().nonSpecialActors.stream().anyMatch { a: Actor -> actorUniqueName == a.uniqueName })
+                note.audience().getNonSpecialActors().stream().anyMatch { a: Actor -> actorUniqueName == a.uniqueName })
     }
 
     @Test
@@ -86,19 +88,19 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem?>() {
     private fun _sendingSensitive() {
         val method = "sendingSensitive"
         TestSuite.waitForListLoaded(activity, 2)
-        ActivityTestHelper.Companion.hideEditorAndSaveDraft<ActivityViewItem?>(method, activity)
-        ActivityTestHelper.Companion.openEditor<ActivityViewItem?>(method, activity)
+        ActivityTestHelper.Companion.hideEditorAndSaveDraft<ActivityViewItem>(method, activity)
+        ActivityTestHelper.Companion.openEditor<ActivityViewItem>(method, activity)
         val content = "Sending sensitive note " + DemoData.demoData.testRunUid
-        Espresso.onView(ViewMatchers.withId(R.id.is_sensitive)).check(ViewAssertions.matches(ViewMatchers.isNotChecked())).perform(ViewActions.scrollTo(), ViewActions.click())
+        Espresso.onView(ViewMatchers.withId(org.andstatus.app.R.id.is_sensitive)).check(ViewAssertions.matches(ViewMatchers.isNotChecked())).perform(ViewActions.scrollTo(), ViewActions.click())
         // TypeTextAction doesn't work here due to auto-correction
-        Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
+        Espresso.onView(ViewMatchers.withId(org.andstatus.app.R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
         TestSuite.waitForIdleSync()
-        ActivityTestHelper.Companion.clickSendButton<ActivityViewItem?>(method, activity)
+        ActivityTestHelper.Companion.clickSendButton<ActivityViewItem>(method, activity)
         val noteId: Long = ActivityTestHelper.Companion.waitAndGetIdOfStoredNote(method, content)
         val note: Note = Note.Companion.loadContentById(mock.connection.myContext(), noteId)
-        Assert.assertEquals("Note $note", DownloadStatus.SENDING, note.status)
+        Assert.assertEquals("Note $note", DownloadStatus.SENDING, note.getStatus())
         Assert.assertEquals("Visibility $note", Visibility.PUBLIC_AND_TO_FOLLOWERS, note.audience().visibility)
-        Assert.assertTrue("Sensitive $note", note.isSensitive)
+        Assert.assertTrue("Sensitive $note", note.isSensitive())
         val result = mock.getHttpMock().waitForPostContaining(content)
         val postedObject = result.request.postParams.get()
         val jso = postedObject.getJSONObject("object")

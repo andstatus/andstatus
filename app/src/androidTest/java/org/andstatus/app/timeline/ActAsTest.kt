@@ -17,6 +17,7 @@ package org.andstatus.app.timeline
 
 import android.content.Intent
 import org.andstatus.app.ActivityTestHelper
+import org.andstatus.app.R
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
@@ -38,8 +39,9 @@ import org.junit.Test
 /**
  * @author yvolk@yurivolkov.com
  */
-class ActAsTest : TimelineActivityTest<ActivityViewItem?>() {
-    override fun getActivityIntent(): Intent? {
+class ActAsTest : TimelineActivityTest<ActivityViewItem>() {
+
+    override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
@@ -48,14 +50,14 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem?>() {
         MyLog.i(this, "setUp ended")
         val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.origin)
         timeline.forgetPositionsAndDates()
-        return Intent(Intent.ACTION_VIEW, timeline.uri)
+        return Intent(Intent.ACTION_VIEW, timeline.getUri())
     }
 
     @Test
     @Throws(InterruptedException::class)
     fun actAsActor() {
         TestSuite.waitForListLoaded(activity, 2)
-        Assert.assertEquals("Default actor", MyAccount.EMPTY, activity.getContextMenu().selectedActingAccount)
+        Assert.assertEquals("Default actor", MyAccount.EMPTY, activity.getContextMenu()?.getSelectedActingAccount())
         for (attempt in 1..4) {
             if (oneAttempt(attempt)) break
         }
@@ -64,10 +66,10 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem?>() {
     @Throws(InterruptedException::class)
     private fun oneAttempt(attempt: Int): Boolean {
         val method = "actAsActor"
-        val listData = activity.listData
-        val helper = ListScreenTestHelper<TimelineActivity<*>?>(activity,
+        val listData = activity.getListData()
+        val helper = ListScreenTestHelper<TimelineActivity<*>>(activity,
                 ConversationActivity::class.java)
-        val listItemId = helper.listItemIdOfLoadedReply
+        val listItemId = helper.getListItemIdOfLoadedReply()
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId)
         val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
         val origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId))
@@ -76,28 +78,28 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem?>() {
                 + ", text='" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'")
         val invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper)
-        val actor1 = activity.getContextMenu().selectedActingAccount
+        val actor1 = activity.getContextMenu()?.getSelectedActingAccount() ?: MyAccount.EMPTY
         logMsg += """
             ;${if (invoked) "" else " failed to invoke context menu 1,"}
             actor1=$actor1
             """.trimIndent()
-        if (activity.listData !== listData) return false
+        if (activity.getListData() !== listData) return false
         Assert.assertTrue("Actor is not valid. $logMsg", actor1.isValid)
         Assert.assertEquals(logMsg, origin, actor1.origin)
-        ActivityTestHelper.Companion.closeContextMenu(activity)
+        ActivityTestHelper.closeContextMenu(activity)
         logMsg += "\nMyContext: $myContext"
         val firstOtherActor = myContext.accounts().firstOtherSucceededForSameOrigin(origin, actor1)
         logMsg += "\nfirstOtherActor=$firstOtherActor"
-        if (activity.listData !== listData) return false
+        if (activity.getListData() !== listData) return false
         Assert.assertNotEquals(logMsg, actor1, firstOtherActor)
         val invoked2 = helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper)
-        val actor2 = activity.getContextMenu().selectedActingAccount
+        val actor2 = activity.getContextMenu()?.getSelectedActingAccount()
         logMsg += """
             ;${if (invoked2) "" else " failed to invoke context menu 2,"}
             actor2=$actor2
             """.trimIndent()
-        if (activity.listData !== listData) return false
+        if (activity.getListData() !== listData) return false
         Assert.assertNotEquals(logMsg, actor1, actor2)
         return true
     }

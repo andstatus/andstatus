@@ -4,8 +4,6 @@ import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.notification.NotificationEventType
-import org.andstatus.app.service.CommandData
-import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.timeline.meta.TimelineType
 import org.junit.Assert
 import org.junit.Before
@@ -13,7 +11,8 @@ import org.junit.Test
 import java.util.concurrent.atomic.AtomicLong
 
 class CommandExecutionContextTest {
-    private var ma: MyAccount = null
+    private var ma: MyAccount = MyAccount.EMPTY
+
     @Before
     @Throws(Exception::class)
     fun setUp() {
@@ -25,7 +24,7 @@ class CommandExecutionContextTest {
     fun testMentionsAccumulation() {
         val execContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.INTERACTIONS))
-        Assert.assertEquals(TimelineType.INTERACTIONS, execContext.timeline.timelineType)
+        Assert.assertEquals(TimelineType.INTERACTIONS, execContext.getTimeline().timelineType)
         val noteCount = 4
         val mentionCount = 2
         for (ind in 0 until noteCount) {
@@ -34,8 +33,8 @@ class CommandExecutionContextTest {
         for (ind in 0 until mentionCount) {
             execContext.getResult().onNotificationEvent(NotificationEventType.MENTION)
         }
-        Assert.assertEquals(noteCount.toLong(), execContext.getResult().newCount)
-        Assert.assertEquals(mentionCount.toLong(), execContext.getResult().notificationEventCounts[NotificationEventType.MENTION].get())
+        Assert.assertEquals(noteCount.toLong(), execContext.getResult().getNewCount())
+        Assert.assertEquals(mentionCount.toLong(), execContext.getResult().notificationEventCounts[NotificationEventType.MENTION]?.get())
         Assert.assertEquals(0, execContext.getResult().notificationEventCounts.getOrDefault(
                 NotificationEventType.PRIVATE, AtomicLong(0)).get())
     }
@@ -48,9 +47,9 @@ class CommandExecutionContextTest {
         for (ind in 0 until privateCount) {
             execContext.getResult().onNotificationEvent(NotificationEventType.PRIVATE)
         }
-        Assert.assertEquals(0, execContext.getResult().newCount)
+        Assert.assertEquals(0, execContext.getResult().getNewCount())
         Assert.assertEquals(0, execContext.getResult().notificationEventCounts.getOrDefault(
                 NotificationEventType.MENTION, AtomicLong(0)).get())
-        Assert.assertEquals(privateCount.toLong(), execContext.getResult().notificationEventCounts[NotificationEventType.PRIVATE].get())
+        Assert.assertEquals(privateCount.toLong(), execContext.getResult().notificationEventCounts[NotificationEventType.PRIVATE]?.get())
     }
 }

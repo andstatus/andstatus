@@ -44,7 +44,7 @@ class KeywordsFilter(keywordsIn: String?) : IsEmpty {
         }
     }
 
-    private val keywordsToFilter: MutableList<Keyword>
+    internal val keywordsToFilter: MutableList<Keyword>
     private val keywordsRaw: MutableList<String>
     private fun parseFilterString(text: String?): MutableList<String> {
         val keywords: MutableList<String> = ArrayList()

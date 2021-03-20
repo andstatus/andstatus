@@ -42,7 +42,8 @@ abstract class MediaFile internal constructor(filename: String,
                                               mediaMetadata: MediaMetadata,
                                               val downloadId: Long,
                                               val downloadStatus: DownloadStatus,
-                                              val downloadedDate: Long) : IsEmpty, IdentifiableInstance {
+                                              val downloadedDate: Long,
+                                              override val isEmpty: Boolean = false) : IsEmpty, IdentifiableInstance {
     val downloadFile: DownloadFile = DownloadFile(filename)
 
     @Volatile
@@ -255,11 +256,6 @@ abstract class MediaFile internal constructor(filename: String,
         }
         return mediaMetadata.size()
     }
-
-    override val isEmpty: Boolean
-        get() {
-            return getId() == 0L
-        }
 
     override fun toString(): String {
         return if (isEmpty) "EMPTY"

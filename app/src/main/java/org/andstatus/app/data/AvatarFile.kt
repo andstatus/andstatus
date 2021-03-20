@@ -26,18 +26,20 @@ import org.andstatus.app.net.social.Actor
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.MyServiceManager
+import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.RelativeTime
 
 class AvatarFile private constructor(private val actor: Actor, filename: String, mediaMetadata: MediaMetadata,
-                                     downloadStatus: DownloadStatus, downloadedDate: Long) :
-        MediaFile(filename, MyContentType.IMAGE, mediaMetadata, 0, downloadStatus, downloadedDate) {
+                                     downloadStatus: DownloadStatus, downloadedDate: Long, isEmpty: Boolean = false) :
+        MediaFile(filename, MyContentType.IMAGE, mediaMetadata, 0, downloadStatus, downloadedDate, isEmpty) {
+
     override fun getId(): Long {
         return getActor().actorId
     }
 
     fun getActor(): Actor {
-        return actor
+        return if(isEmpty) Actor.EMPTY else actor
     }
 
     public override fun getDefaultImage(): CachedImage {
@@ -77,7 +79,7 @@ class AvatarFile private constructor(private val actor: Actor, filename: String,
 
     companion object {
         val EMPTY: AvatarFile = AvatarFile(Actor.EMPTY, "", MediaMetadata.EMPTY,
-                DownloadStatus.ABSENT, RelativeTime.DATETIME_MILLIS_NEVER)
+                DownloadStatus.ABSENT, RelativeTime.DATETIME_MILLIS_NEVER, true)
         const val AVATAR_SIZE_DIP = 48
         fun fromCursor(actor: Actor, cursor: Cursor): AvatarFile {
             val filename = DbUtils.getString(cursor, DownloadTable.AVATAR_FILE_NAME)

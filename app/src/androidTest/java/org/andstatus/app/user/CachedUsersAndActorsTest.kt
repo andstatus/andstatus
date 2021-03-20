@@ -36,7 +36,7 @@ class CachedUsersAndActorsTest {
         Assert.assertTrue(users.toString(), users.size() > 4)
         val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.conversationOriginName)
         Assert.assertEquals(DemoData.demoData.conversationOriginName, origin.name)
-        val actor: Actor = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountSecondName).getActor()
+        val actor: Actor = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountSecondName).actor
         Assert.assertEquals(users.toString(), true, users.isMeOrMyFriend(actor))
         Assert.assertEquals(users.toString(), false, users.isMeOrMyFriend(Actor.EMPTY))
     }

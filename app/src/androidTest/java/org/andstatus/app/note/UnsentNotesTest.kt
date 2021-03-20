@@ -7,6 +7,7 @@ import androidx.test.espresso.Espresso
 import androidx.test.espresso.action.ReplaceTextAction
 import androidx.test.espresso.matcher.ViewMatchers
 import org.andstatus.app.ActivityTestHelper
+import org.andstatus.app.R
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
@@ -29,9 +30,10 @@ import org.junit.After
 import org.junit.Assert
 import org.junit.Test
 
-class UnsentNotesTest : TimelineActivityTest<ActivityViewItem?>() {
-    private val mService: MyServiceTestHelper? = MyServiceTestHelper()
-    override fun getActivityIntent(): Intent? {
+class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
+    private val mService: MyServiceTestHelper = MyServiceTestHelper()
+
+    override fun getActivityIntent(): Intent {
         TestSuite.initializeWithAccounts(this)
         mService.setUp(null)
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
@@ -52,14 +54,14 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem?>() {
         val method = "testEditUnsentNote"
         var step = "Start editing a note"
         MyLog.v(this, "$method started")
-        val editorView: View = ActivityTestHelper.Companion.openEditor<ActivityViewItem?>("$method; $step", activity)
+        val editorView: View = ActivityTestHelper.openEditor<ActivityViewItem>("$method; $step", activity)
         val suffix = "unsent" + DemoData.demoData.testRunUid
         val body = "Test unsent note, which we will try to edit $suffix"
         TestSuite.waitForIdleSync()
         Espresso.onView(ViewMatchers.withId(R.id.noteBodyEditText)).perform(ReplaceTextAction(body))
         TestSuite.waitForIdleSync()
         mService.serviceStopped = false
-        ActivityTestHelper.Companion.clickSendButton<ActivityViewItem?>(method, activity)
+        ActivityTestHelper.clickSendButton<ActivityViewItem>(method, activity)
         mService.waitForServiceStopped(false)
         val condition = NoteTable.CONTENT + " LIKE('%" + suffix + "%')"
         val unsentMsgId = MyQuery.conditionToLongColumnValue(NoteTable.TABLE_NAME, BaseColumns._ID, condition)
@@ -68,11 +70,11 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem?>() {
         Assert.assertEquals("$method; $step", DownloadStatus.SENDING, DownloadStatus.Companion.load(
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)))
         step = "Start editing unsent note $unsentMsgId"
-        activity.noteEditor.startEditingNote(NoteEditorData.Companion.load( MyContextHolder.myContextHolder.getNow(), unsentMsgId))
-        ActivityTestHelper.Companion.waitViewVisible("$method; $step", editorView)
+        activity.getNoteEditor()?.startEditingNote(NoteEditorData.Companion.load( MyContextHolder.myContextHolder.getNow(), unsentMsgId))
+        ActivityTestHelper.waitViewVisible("$method; $step", editorView)
         TestSuite.waitForIdleSync()
         step = "Saving previously unsent note $unsentMsgId as a draft"
-        ActivityTestHelper.Companion.hideEditorAndSaveDraft<ActivityViewItem?>("$method; $step", activity)
+        ActivityTestHelper.hideEditorAndSaveDraft<ActivityViewItem>("$method; $step", activity)
         Assert.assertEquals("$method; $step", DownloadStatus.DRAFT, DownloadStatus.Companion.load(
                 MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, unsentMsgId)))
         MyLog.v(this, "$method ended")
@@ -84,8 +86,8 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem?>() {
         val method = "testGnuSocialReblog"
         MyLog.v(this, "$method started")
         TestSuite.waitForListLoaded(activity, 1)
-        val helper = ListScreenTestHelper<TimelineActivity<*>?>(activity)
-        val itemId = helper.getListItemIdOfLoadedReply { item: BaseNoteViewItem<*>? -> !item.visibility.isPrivate }
+        val helper = ListScreenTestHelper<TimelineActivity<*>>(activity)
+        val itemId = helper.getListItemIdOfLoadedReply { item: BaseNoteViewItem<*> -> !item.visibility.isPrivate }
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, itemId)
         val noteOid = MyQuery.idToOid(activity.myContext, OidEnum.NOTE_OID, noteId, 0)
         val logMsg = MyQuery.noteInfoForLog(activity.myContext, noteId)
@@ -94,12 +96,12 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem?>() {
         mService.serviceStopped = false
         TestSuite.waitForIdleSync()
         mService.waitForServiceStopped(false)
-        val results = mService.getHttp().results
+        val results = mService.getHttp()?.getResults() ?: emptyList()
         Assert.assertTrue("""
     No results in ${mService.getHttp()}
     $logMsg
     """.trimIndent(), !results.isEmpty())
-        val urlFound = results.stream().anyMatch { result: HttpReadResult? ->
+        val urlFound = results.stream().anyMatch { result: HttpReadResult ->
             result.getUrl().contains("retweet") &&
                     result.getUrl().contains(noteOid)
         }

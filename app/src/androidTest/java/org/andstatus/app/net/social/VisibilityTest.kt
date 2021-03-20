@@ -35,7 +35,7 @@ class VisibilityTest {
         assertAdd(Visibility.PUBLIC, Visibility.PRIVATE, Visibility.PUBLIC)
     }
 
-    private fun assertAdd(expected: Visibility?, a: Visibility?, b: Visibility?) {
+    private fun assertAdd(expected: Visibility, a: Visibility, b: Visibility) {
         Assert.assertEquals("Test: $a add $b", expected, a.add(b))
         Assert.assertEquals("Test: $b add $a", expected, b.add(a))
     }

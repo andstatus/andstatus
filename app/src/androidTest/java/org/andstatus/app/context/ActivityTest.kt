@@ -32,9 +32,11 @@ import org.junit.Rule
 @ConditionalIgnore(condition = NoScreenSupport::class)
 abstract class ActivityTest<T : Activity> {
     @Rule
-    var conditionalIgnoreRule: ConditionalIgnoreRule? = ConditionalIgnoreRule()
+    @JvmField
+    var conditionalIgnoreRule: ConditionalIgnoreRule = ConditionalIgnoreRule()
 
     @Rule
+    @JvmField
     var mActivityRule: ActivityTestRule<T> = object : ActivityTestRule<T>(getActivityClass()) {
         override fun getActivityIntent(): Intent? {
             return this@ActivityTest.getActivityIntent()

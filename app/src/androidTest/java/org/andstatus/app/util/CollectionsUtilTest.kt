@@ -22,7 +22,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 class CollectionsUtilTest {
     @Test
     fun testSort() {
-        val list: MutableList<String?> = CopyOnWriteArrayList(arrayOf<String?>("one", "two", "three", "four"))
+        val list: MutableList<String> = CopyOnWriteArrayList(arrayOf("one", "two", "three", "four"))
         CollectionsUtil.sort(list)
         Assert.assertEquals("four", list[0])
         Assert.assertEquals("two", list[3])

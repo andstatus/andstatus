@@ -24,7 +24,6 @@ import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.service.MyServiceManager
-import org.andstatus.app.timeline.TimeLineActivityLayoutToggleTest
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
@@ -33,28 +32,29 @@ import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicInteger
 
-class TimeLineActivityLayoutToggleTest : TimelineActivityTest<ActivityViewItem?>() {
+class TimeLineActivityLayoutToggleTest : TimelineActivityTest<ActivityViewItem>() {
     private var showAttachedImages = false
     private var showAvatars = false
-    override fun getActivityIntent(): Intent? {
+
+    override fun getActivityIntent(): Intent {
         TestSuite.initializeWithData(this)
-        when (TimeLineActivityLayoutToggleTest.Companion.iteration.incrementAndGet()) {
+        when (iteration.incrementAndGet()) {
             2 -> {
-                showAttachedImages = TimeLineActivityLayoutToggleTest.Companion.showAttachedImagesOld
-                showAvatars = !TimeLineActivityLayoutToggleTest.Companion.showAvatarsOld
+                showAttachedImages = showAttachedImagesOld
+                showAvatars = !showAvatarsOld
             }
             3 -> {
-                showAttachedImages = !TimeLineActivityLayoutToggleTest.Companion.showAttachedImagesOld
-                showAvatars = TimeLineActivityLayoutToggleTest.Companion.showAvatarsOld
+                showAttachedImages = !showAttachedImagesOld
+                showAvatars = showAvatarsOld
             }
             4 -> {
-                showAttachedImages = !TimeLineActivityLayoutToggleTest.Companion.showAttachedImagesOld
-                showAvatars = !TimeLineActivityLayoutToggleTest.Companion.showAvatarsOld
-                TimeLineActivityLayoutToggleTest.Companion.iteration.set(0)
+                showAttachedImages = !showAttachedImagesOld
+                showAvatars = !showAvatarsOld
+                iteration.set(0)
             }
             else -> {
-                showAttachedImages = TimeLineActivityLayoutToggleTest.Companion.showAttachedImagesOld
-                showAvatars = TimeLineActivityLayoutToggleTest.Companion.showAvatarsOld
+                showAttachedImages = showAttachedImagesOld
+                showAvatars = showAvatarsOld
             }
         }
         setPreferences()
@@ -69,7 +69,7 @@ class TimeLineActivityLayoutToggleTest : TimelineActivityTest<ActivityViewItem?>
 
     private fun logStartStop(text: String?) {
         MyLog.i(this, text + ";"
-                + " iteration " + TimeLineActivityLayoutToggleTest.Companion.iteration.get()
+                + " iteration " + iteration.get()
                 + (if (showAvatars) " avatars;" else "")
                 + if (showAttachedImages) " attached images;" else "")
     }
@@ -113,13 +113,13 @@ class TimeLineActivityLayoutToggleTest : TimelineActivityTest<ActivityViewItem?>
     @Throws(Exception::class)
     fun tearDown() {
         logStartStop("tearDown started")
-        showAttachedImages = TimeLineActivityLayoutToggleTest.Companion.showAttachedImagesOld
-        showAvatars = TimeLineActivityLayoutToggleTest.Companion.showAvatarsOld
+        showAttachedImages = showAttachedImagesOld
+        showAvatars = showAvatarsOld
         setPreferences()
     }
 
     companion object {
-        private val iteration: AtomicInteger? = AtomicInteger()
+        private val iteration: AtomicInteger = AtomicInteger()
         private val showAttachedImagesOld = MyPreferences.getDownloadAndDisplayAttachedImages()
         private val showAvatarsOld = MyPreferences.getShowAvatars()
     }

@@ -15,7 +15,6 @@
  */
 package org.andstatus.app.note
 
-import org.andstatus.app.note.KeywordsFilter
 import org.andstatus.app.note.KeywordsFilter.Keyword
 import org.andstatus.app.util.MyHtml
 import org.junit.Assert

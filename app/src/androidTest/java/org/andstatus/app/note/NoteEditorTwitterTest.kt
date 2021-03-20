@@ -19,6 +19,7 @@ import android.content.Intent
 import android.view.View
 import android.widget.TextView
 import org.andstatus.app.ActivityTestHelper
+import org.andstatus.app.R
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
@@ -38,17 +39,19 @@ import org.andstatus.app.util.MyLog
 import org.junit.Assert
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.properties.Delegates
 
 /**
  * On activity testing: http://developer.android.com/tools/testing/activity_testing.html
  * @author yvolk@yurivolkov.com
  */
-class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem?>() {
-    private var data: NoteEditorData? = null
-    override fun getActivityIntent(): Intent? {
+class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem>() {
+    private var data: NoteEditorData by Delegates.notNull()
+
+    override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithAccounts(this)
-        if (NoteEditorTwitterTest.Companion.editingStep.get() != 1) {
+        if (editingStep.get() != 1) {
             MyPreferences.setBeingEditedNoteId(0)
         }
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName)
@@ -61,9 +64,9 @@ class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem?>() {
                  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.actor,  Origin.EMPTY).getUri())
     }
 
-    private fun getStaticData(ma: MyAccount): NoteEditorData? {
+    private fun getStaticData(ma: MyAccount): NoteEditorData {
         return NoteEditorData.Companion.newEmpty(ma)
-                .setContent(MyHtmlTest.Companion.twitterBodyTypedPlain + " " + DemoData.demoData.testRunUid, TextMediaType.PLAIN)
+                .setContent(MyHtmlTest.twitterBodyTypedPlain + " " + DemoData.demoData.testRunUid, TextMediaType.PLAIN)
     }
 
     @Test
@@ -82,25 +85,25 @@ class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem?>() {
     @Throws(InterruptedException::class)
     private fun editingTester() {
         TestSuite.waitForListLoaded(activity, 2)
-        when (NoteEditorTwitterTest.Companion.editingStep.incrementAndGet()) {
+        when (editingStep.incrementAndGet()) {
             2 -> editingStep2()
             else -> {
-                NoteEditorTwitterTest.Companion.editingStep.set(1)
-                ActivityTestHelper.Companion.openEditor<ActivityViewItem?>("default", activity)
+                editingStep.set(1)
+                ActivityTestHelper.openEditor<ActivityViewItem>("default", activity)
                 editingStep1()
             }
         }
-        MyLog.v(this, "After step " + NoteEditorTwitterTest.Companion.editingStep + " ended")
+        MyLog.v(this, "After step " + editingStep + " ended")
     }
 
     @Throws(InterruptedException::class)
     private fun editingStep1() {
         val method = "editingStep1"
         MyLog.v(this, "$method started")
-        val editorView: View = ActivityTestHelper.Companion.hideEditorAndSaveDraft<ActivityViewItem?>(method, activity)
-        val editor = activity.noteEditor
-        instrumentation.runOnMainSync { editor.startEditingNote(data) }
-        ActivityTestHelper.Companion.waitViewVisible(method, editorView)
+        val editorView: View = ActivityTestHelper.hideEditorAndSaveDraft<ActivityViewItem>(method, activity)
+        val editor = activity.getNoteEditor() ?: throw IllegalStateException("No editor")
+        getInstrumentation().runOnMainSync { editor.startEditingNote(data) }
+        ActivityTestHelper.waitViewVisible(method, editorView)
         assertInitialText("Initial text")
         MyLog.v(this, "$method ended")
     }
@@ -110,35 +113,34 @@ class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem?>() {
         val method = "editingStep2"
         MyLog.v(this, "$method started")
         val editorView = activity.findViewById<View?>(R.id.note_editor)
-        ActivityTestHelper.Companion.waitViewVisible("$method; Restored note is visible", editorView)
+        ActivityTestHelper.waitViewVisible("$method; Restored note is visible", editorView)
         assertInitialText("Note restored")
-        ActivityTestHelper.Companion.hideEditorAndSaveDraft<ActivityViewItem?>(method, activity)
-        ActivityTestHelper.Companion.openEditor<ActivityViewItem?>(method, activity)
+        ActivityTestHelper.hideEditorAndSaveDraft<ActivityViewItem>(method, activity)
+        ActivityTestHelper.openEditor<ActivityViewItem>(method, activity)
         assertTextCleared()
-        val helper = ActivityTestHelper<TimelineActivity<*>?>(activity)
+        val helper = ActivityTestHelper<TimelineActivity<*>>(activity)
         helper.clickMenuItem("$method click Discard", R.id.discardButton)
-        ActivityTestHelper.Companion.waitViewInvisible("$method; Editor hidden after discard", editorView)
+        ActivityTestHelper.waitViewInvisible("$method; Editor hidden after discard", editorView)
         MyLog.v(this, "$method ended")
     }
 
     @Throws(InterruptedException::class)
-    private fun assertInitialText(description: String?) {
-        val editor = activity.noteEditor
+    private fun assertInitialText(description: String) {
+        val editor = activity.getNoteEditor() ?: throw IllegalStateException("No editor")
         val textView = activity.findViewById<TextView?>(R.id.noteBodyEditText)
-        ActivityTestHelper.Companion.waitTextInAView(description, textView,
+        ActivityTestHelper.waitTextInAView(description, textView,
                 MyHtml.fromContentStored(data.getContent(), TextMediaType.PLAIN))
-        Assert.assertEquals(description, data.toTestSummary(), editor.data.toTestSummary())
+        Assert.assertEquals(description, data.toTestSummary(), editor.getData().toTestSummary())
     }
 
     private fun assertTextCleared() {
-        val editor = activity.noteEditor
-        Assert.assertTrue("Editor is not null", editor != null)
+        val editor = activity.getNoteEditor() ?: throw IllegalStateException("No editor")
         Assert.assertEquals(NoteEditorData.Companion.newEmpty(
                 activity.myContext.accounts().currentAccount).toTestSummary(),
-                editor.data.toTestSummary())
+                editor.getData().toTestSummary())
     }
 
     companion object {
-        private val editingStep: AtomicInteger? = AtomicInteger()
+        private val editingStep: AtomicInteger = AtomicInteger()
     }
 }

@@ -669,7 +669,7 @@ class Actor private constructor(// In our system
     }
 
     fun lookupUser(): Actor {
-        return origin.myContext.users().lookupUser(this)
+        return if(isEmpty) this else origin.myContext.users().lookupUser(this)
     }
 
     fun saveUser() {

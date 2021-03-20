@@ -42,7 +42,7 @@ class UrlUtilsTest {
         val strUrl = "https://$host"
         Assert.assertEquals(strUrl, url?.toExternalForm())
         val path = "somepath/somewhere.json"
-        Assert.assertEquals("$strUrl/$path", UrlUtils.pathToUrlString(url, path, false)?.get())
+        Assert.assertEquals("$strUrl/$path", UrlUtils.pathToUrlString(url, path, false).get())
         Assert.assertTrue(UrlUtils.isHostOnly(url))
         isSsl = false
         url = UrlUtils.buildUrl(hostOrUrl, isSsl)
@@ -102,7 +102,7 @@ class UrlUtilsTest {
         assertPath2Url(strUrl, path, addSlash)
     }
 
-    private fun assertPath2Url(strUrl: String?, path: String?, addSlash: Boolean) {
+    private fun assertPath2Url(strUrl: String?, path: String, addSlash: Boolean) {
         val isSsl = true
         val url1 = UrlUtils.buildUrl(strUrl, isSsl)
         val strUrl2 = UrlUtils.pathToUrlString(url1, path, false).getOrElse("(failure)")

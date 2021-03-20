@@ -30,29 +30,24 @@ import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.ConnectionMock
 import org.andstatus.app.origin.DiscoveredOrigins
 import org.andstatus.app.origin.Origin
-import org.andstatus.app.service.CommandData
-import org.andstatus.app.service.CommandEnum
-import org.andstatus.app.service.CommandExecutorStrategy
-import org.andstatus.app.service.CommandResult
-import org.andstatus.app.service.TimelineDownloaderOther
 import org.andstatus.app.timeline.meta.TimelineType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.io.IOException
-import java.util.function.Predicate
+import kotlin.properties.Delegates
 
 class CommandExecutorStrategyTest {
-    private var mock: ConnectionMock? = null
-    private var httpConnectionMock: HttpConnectionMock? = null
-    private var ma: MyAccount = null
+    private var mock: ConnectionMock by Delegates.notNull()
+    private var httpConnectionMock: HttpConnectionMock by Delegates.notNull()
+    private var ma: MyAccount = MyAccount.EMPTY
     @Before
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
         ma =  MyContextHolder.myContextHolder.getNow().accounts().getFirstPreferablySucceededForOrigin(DemoData.demoData.getGnuSocialOrigin())
-        mock = ConnectionMock.Companion.newFor(ma)
+        mock = ConnectionMock.newFor(ma)
         httpConnectionMock = mock.getHttpMock()
         Assert.assertTrue(ma.toString(), ma.isValidAndSucceeded())
     }
@@ -81,8 +76,8 @@ class CommandExecutorStrategyTest {
         Assert.assertTrue("Requested " + commandData2 +
                 ", results: '" + httpConnectionMock.getResults() + "'",
                 httpConnectionMock.getResults().stream()
-                        .map { obj: HttpReadResult? -> obj.getUrl() }
-                        .anyMatch(Predicate { url: String? -> url.contains(DemoData.demoData.globalPublicNoteText) }))
+                        .map { obj: HttpReadResult -> obj.getUrl() }
+                        .anyMatch { url: String -> url.contains(DemoData.demoData.globalPublicNoteText) })
     }
 
     @Test
@@ -130,21 +125,21 @@ class CommandExecutorStrategyTest {
         httpConnectionMock.setException(null)
         commandData = CommandData.Companion.newItemCommand(
                 CommandEnum.DELETE_NOTE,
-                mock.getData().myAccount,
+                mock.getData().getMyAccount(),
                 noteId)
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
         Assert.assertFalse(commandData.toString(), commandData.getResult().hasError())
         val INEXISTENT_MSG_ID: Long = -1
         commandData = CommandData.Companion.newItemCommand(
                 CommandEnum.DELETE_NOTE,
-                mock.getData().myAccount,
+                mock.getData().getMyAccount(),
                 INEXISTENT_MSG_ID)
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
         Assert.assertFalse(commandData.toString(), commandData.getResult().hasError())
         httpConnectionMock.setException(null)
     }
 
-    private fun getCommandDataForUnsentNote(suffix: String?): CommandData? {
+    private fun getCommandDataForUnsentNote(suffix: String?): CommandData {
         val body = "Some text " + suffix + " to send " + System.currentTimeMillis() + "ms"
         val activity: AActivity = DemoNoteInserter.Companion.addNoteForAccount(ma, body, "", DownloadStatus.SENDING)
         return CommandData.Companion.newUpdateStatus(ma, activity.getId(), activity.getNote().noteId)
@@ -163,7 +158,7 @@ class CommandExecutorStrategyTest {
         CommandExecutorStrategy.Companion.executeCommand(commandData, null)
         Assert.assertEquals(1, commandData.getResult().getExecutionCount().toLong())
         Assert.assertFalse(commandData.getResult().hasError())
-        Assert.assertTrue(commandData.getResult().downloadedCount > 0)
+        Assert.assertTrue(commandData.getResult().getDownloadedCount() > 0)
         Assert.assertFalse(DiscoveredOrigins.get().isEmpty())
     }
 

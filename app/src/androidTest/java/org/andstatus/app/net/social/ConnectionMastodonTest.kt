@@ -25,6 +25,8 @@ import org.andstatus.app.data.DownloadData
 import org.andstatus.app.data.MyContentType
 import org.andstatus.app.data.NoteForAnyAccount
 import org.andstatus.app.net.http.ConnectionException
+import org.andstatus.app.net.social.Audience.Companion.fromNoteId
+import org.andstatus.app.net.social.ConnectionMock.Companion
 import org.andstatus.app.service.CommandData
 import org.andstatus.app.service.CommandEnum
 import org.andstatus.app.service.CommandExecutionContext
@@ -41,16 +43,17 @@ import org.junit.Test
 import java.io.IOException
 import java.util.*
 import java.util.function.Consumer
+import kotlin.properties.Delegates
 
 class ConnectionMastodonTest {
-    private var mock: ConnectionMock? = null
-    private var accountActor: Actor = null
+    private var mock: ConnectionMock by Delegates.notNull()
+    private var accountActor: Actor = Actor.EMPTY
     @Before
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        mock = ConnectionMock.Companion.newFor(DemoData.demoData.mastodonTestAccountName)
-        accountActor = mock.getData().accountActor
+        mock = Companion.newFor(DemoData.demoData.mastodonTestAccountName)
+        accountActor = mock.getData().getAccountActor()
     }
 
     @Test
@@ -63,7 +66,7 @@ class ConnectionMastodonTest {
         val size = 1
         Assert.assertEquals("Number of items in the Timeline", size.toLong(), timeline.size().toLong())
         val ind = 0
-        val activity = timeline[ind]
+        val activity = timeline[ind] ?: throw IllegalStateException("No activity")
         val note = activity.getNote()
         Assert.assertEquals("Activity oid", "22", activity.getOid())
         Assert.assertEquals("Note Oid", "22", note.oid)
@@ -71,9 +74,9 @@ class ConnectionMastodonTest {
                 .fromActorOfSameOrigin(activity.accountActor).isValid)
         Assert.assertEquals("Is not a note $activity", AObjectType.NOTE, activity.getObjectType())
         Assert.assertEquals("Favorited $activity", TriState.UNKNOWN, note.getFavoritedBy(activity.accountActor))
-        Assert.assertEquals("Counters $activity", 678, note.likesCount)
-        Assert.assertEquals("Counters $activity", 234, note.reblogsCount)
-        Assert.assertEquals("Counters $activity", 11, note.repliesCount)
+        Assert.assertEquals("Counters $activity", 678, note.getLikesCount())
+        Assert.assertEquals("Counters $activity", 234, note.getReblogsCount())
+        Assert.assertEquals("Counters $activity", 11, note.getRepliesCount())
         DemoNoteInserter.Companion.assertVisibility(note.audience(), Visibility.PUBLIC_AND_TO_FOLLOWERS)
         val actor = activity.getActor()
         val stringDate = "2017-04-16T11:13:12.133Z"
@@ -85,7 +88,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Username", "t131t1", actor.getUsername())
         Assert.assertEquals("Note Oid $activity", "22", note.oid)
         Assert.assertEquals("Note url$activity", "https://neumastodon.com/@t131t1/22", note.url)
-        Assert.assertEquals("Name", "", note.name)
+        Assert.assertEquals("Name", "", note.getName())
         Assert.assertEquals("Summary", "This is a test spoiler", note.summary)
         Assert.assertEquals("Body", "<p>I&apos;m figuring out how to work with Mastodon</p>", note.content)
         Assert.assertEquals("Note application", "Web", note.via)
@@ -93,8 +96,8 @@ class ConnectionMastodonTest {
         val attachment = note.attachments.list[0]
         Assert.assertEquals("Content type", MyContentType.IMAGE, attachment.contentType)
         Assert.assertEquals("Media URI", UriUtils.fromString("https://files.neumastodon.com/media_attachments/files/000/306/223/original/e678f956970a585b.png?1492832537"),
-                attachment.getUri())
-        timeline.items.forEach(Consumer { act: AActivity? -> act.setUpdatedNow(0) })
+                attachment.uri)
+        timeline.items.forEach(Consumer { act: AActivity -> act.setUpdatedNow(0) })
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.HOME))
@@ -110,9 +113,9 @@ class ConnectionMastodonTest {
         Assert.assertNotNull("timeline returned", timeline)
         val size = 4
         Assert.assertEquals("Number of items in the Timeline", size.toLong(), timeline.size().toLong())
-        val activity3 = timeline[3]
-        val note3 = activity3.note
-        Assert.assertEquals("Activity oid", "104114771989428879", activity3.oid)
+        val activity3 = timeline[3] ?: throw IllegalStateException("No activity")
+        val note3 = activity3.getNote()
+        Assert.assertEquals("Activity oid", "104114771989428879", activity3.getOid())
         Assert.assertEquals("Account unknown $activity3", true,  MyContextHolder.myContextHolder.getNow().accounts()
                 .fromActorOfSameOrigin(activity3.accountActor).isValid)
         Assert.assertEquals("Is not a note $activity3", AObjectType.NOTE, activity3.getObjectType())
@@ -120,12 +123,12 @@ class ConnectionMastodonTest {
         DemoNoteInserter.Companion.assertVisibility(note3.audience(), Visibility.PRIVATE)
         Assert.assertTrue("Audience: " + note3.audience(), note3.audience().containsOid("886798"))
         Assert.assertEquals("Audience: " + note3.audience(), "lanodan@queer.hacktivis.me",
-                note3.audience().recipients.stream()
+                note3.audience().getRecipients().stream()
                         .filter { actor: Actor -> actor.getUsername() == "lanodan" }
                         .findAny()
                         .map { obj: Actor -> obj.getWebFingerId() }
                         .orElse("(not found)"))
-        val actor3 = activity3.actor
+        val actor3 = activity3.getActor()
         val stringDate = "2016-10-14T08:05:36.581Z"
         val parsedDate = mock.connection.parseDate(stringDate)
         Assert.assertEquals("Parsing $stringDate", 10, (Date(parsedDate).month + 1).toLong())
@@ -135,7 +138,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Username", "AndStatus", actor3.getUsername())
         Assert.assertEquals("Note Oid", "104114771989428879", note3.oid)
         Assert.assertEquals("Note url$activity3", "https://mastodon.social/@AndStatus/104114771989428879", note3.url)
-        Assert.assertEquals("Name", "", note3.name)
+        Assert.assertEquals("Name", "", note3.getName())
         Assert.assertEquals("Summary", "", note3.summary)
         MatcherAssert.assertThat("Body", note3.content, CoreMatchers.containsString("Will monitor there"))
         Assert.assertEquals("Note application", "Web", note3.via)
@@ -143,7 +146,7 @@ class ConnectionMastodonTest {
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE, ma, TimelineType.PRIVATE))
-        timeline.items.forEach(Consumer { act: AActivity? ->
+        timeline.items.forEach(Consumer { act: AActivity ->
             act.setUpdatedNow(0)
             DataUpdater(executionContext).onActivity(act)
         })
@@ -160,11 +163,11 @@ class ConnectionMastodonTest {
         oneVisibility(response.replace(pattern, "\"visibility\": \"direct\""), Visibility.PRIVATE)
     }
 
-    private fun oneVisibility(stringResponse: String?, visibility: Visibility?) {
+    private fun oneVisibility(stringResponse: String, visibility: Visibility) {
         mock.getHttpMock().addResponse(stringResponse)
         val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.HOME_TIMELINE,
                 TimelinePosition.Companion.of("2656388"), TimelinePosition.Companion.EMPTY, 20, accountActor).get()
-        DemoNoteInserter.Companion.assertVisibility(timeline[0].getNote().audience(), visibility)
+        DemoNoteInserter.Companion.assertVisibility(timeline[0]!!.getNote().audience(), visibility)
     }
 
     @Test
@@ -185,7 +188,7 @@ class ConnectionMastodonTest {
         Assert.assertNotNull("timeline returned", timeline)
         Assert.assertEquals("Number of items in the Timeline", 20, timeline.size().toLong())
         var ind = 0
-        var activity = timeline[ind]
+        var activity = timeline[ind] ?: throw IllegalStateException("No activity")
         Assert.assertEquals("Activity oid", "2667058", activity.getOid())
         Assert.assertEquals("Note Oid", "4729037", activity.getNote().oid)
         Assert.assertEquals("Is not a Reblog $activity", ActivityType.ANNOUNCE, activity.type)
@@ -197,7 +200,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Author's username$activity", "AndStatus", activity.getAuthor().getUsername())
         Assert.assertEquals("Favorited $activity", TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor))
         ind = 2
-        activity = timeline[ind]
+        activity = timeline[ind] ?: throw IllegalStateException("No activity")
         Assert.assertEquals("Activity oid", "2674022", activity.getOid())
         Assert.assertEquals("Note Oid", "4729037", activity.getNote().oid)
         Assert.assertEquals("Is not an activity $activity", AObjectType.ACTIVITY, activity.getObjectType())
@@ -210,7 +213,7 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Actor's Username", "vfrmedia", actor.getUsername())
         Assert.assertEquals("WebfingerId", "vfrmedia@social.tchncs.de", actor.getWebFingerId())
         ind = 17
-        activity = timeline[ind]
+        activity = timeline[ind] ?: throw IllegalStateException("No activity")
         Assert.assertEquals("Is not FOLLOW $activity", ActivityType.FOLLOW, activity.type)
         Assert.assertEquals("Is not an ACTOR", AObjectType.ACTOR, activity.getObjectType())
         actor = activity.getActor()
@@ -220,7 +223,7 @@ class ConnectionMastodonTest {
         val objActor = activity.getObjActor()
         Assert.assertEquals("Not following me$activity", accountActor.oid, objActor.oid)
         ind = 19
-        activity = timeline[ind]
+        activity = timeline[ind] ?: throw IllegalStateException("No activity")
         Assert.assertEquals("Is not UPDATE $activity", ActivityType.UPDATE, activity.type)
         Assert.assertEquals("Is not a note", AObjectType.NOTE, activity.getObjectType())
         MatcherAssert.assertThat(activity.getNote().content, CoreMatchers.containsString("universe of Mastodon"))
@@ -239,10 +242,10 @@ class ConnectionMastodonTest {
         Assert.assertEquals("Actor's Oid", "5962", actor.oid)
         Assert.assertEquals("Username", "AndStatus", actor.getUsername())
         Assert.assertEquals("WebfingerId", "andstatus@mastodon.social", actor.getWebFingerId())
-        MatcherAssert.assertThat("Bio", actor.summary, CoreMatchers.containsString("multiple Social networks"))
-        MatcherAssert.assertThat("Fields appended", actor.summary, CoreMatchers.containsString("Website: "))
-        MatcherAssert.assertThat("Fields appended", actor.summary, CoreMatchers.containsString("FAQ: "))
-        MatcherAssert.assertThat("Fields appended", actor.summary, CoreMatchers.containsString("GitHub: "))
+        MatcherAssert.assertThat("Bio", actor.getSummary(), CoreMatchers.containsString("multiple Social networks"))
+        MatcherAssert.assertThat("Fields appended", actor.getSummary(), CoreMatchers.containsString("Website: "))
+        MatcherAssert.assertThat("Fields appended", actor.getSummary(), CoreMatchers.containsString("FAQ: "))
+        MatcherAssert.assertThat("Fields appended", actor.getSummary(), CoreMatchers.containsString("GitHub: "))
     }
 
     @Test
@@ -272,7 +275,7 @@ class ConnectionMastodonTest {
                  MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_NOTE, ma, 123))
         DataUpdater(executionContext).onActivity(activity)
         assertOneRecipient(activity, "AndStatus", "https://mastodon.example.com/@AndStatus",
-                "andstatus@" + accountActor.origin.host)
+                "andstatus@" + accountActor.origin.getHost())
         assertOneRecipient(activity, "qwertystop", "https://wandering.shop/@qwertystop",
                 "qwertystop@wandering.shop")
         DemoNoteInserter.Companion.assertVisibility(activity.getNote().audience(), Visibility.PUBLIC_AND_TO_FOLLOWERS)
@@ -280,11 +283,12 @@ class ConnectionMastodonTest {
         DemoNoteInserter.Companion.assertVisibility(audience, Visibility.PUBLIC_AND_TO_FOLLOWERS)
     }
 
-    private fun assertOneRecipient(activity: AActivity?, username: String?, profileUrl: String?, webFingerId: String?) {
+    private fun assertOneRecipient(activity: AActivity, username: String?, profileUrl: String?, webFingerId: String?) {
         val audience = activity.getNote().audience()
-        val actor = audience.nonSpecialActors.stream().filter { a: Actor -> a.getUsername() == username }.findAny().orElse(Actor.EMPTY)
-        Assert.assertTrue("$username should be mentioned: $activity", actor.nonEmpty())
-        Assert.assertEquals("Mentioned user: $activity", profileUrl, actor.profileUrl)
+        val actor = audience.getNonSpecialActors().stream()
+                .filter { a: Actor -> a.getUsername() == username }.findAny().orElse(Actor.EMPTY)
+        Assert.assertTrue("$username should be mentioned: $activity", actor.nonEmpty)
+        Assert.assertEquals("Mentioned user: $activity", profileUrl, actor.getProfileUrl())
         Assert.assertEquals("Mentioned user: $activity", webFingerId, actor.getWebFingerId())
     }
 
@@ -335,41 +339,43 @@ class ConnectionMastodonTest {
     @Throws(ConnectionException::class)
     private fun assertOneTootWithVideo(actorOid: String?, videoUri: String?, previewUri: String?) {
         val timeline = mock.connection.getTimeline(true, ApiRoutineEnum.ACTOR_TIMELINE,
-                TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20, Actor.Companion.fromOid(mock.getData().origin, actorOid)).get()
+                TimelinePosition.Companion.EMPTY, TimelinePosition.Companion.EMPTY, 20,
+                Actor.Companion.fromOid(mock.getData().getOrigin(), actorOid)).get()
         Assert.assertNotNull("timeline returned", timeline)
         Assert.assertEquals("Number of items in the Timeline", 1, timeline.size().toLong())
-        val activity = timeline[0]
+        val activity = timeline[0] ?: throw IllegalStateException("No activity")
         val note = activity.getNote()
         Assert.assertEquals("Media attachments " + note.attachments, 2, note.attachments.size().toLong())
         val video = note.attachments.list[0]
         Assert.assertEquals("Content type", MyContentType.VIDEO, video.contentType)
         Assert.assertEquals("Media URI", UriUtils.fromString(videoUri),
-                video.getUri())
+                video.uri)
         val preview = note.attachments.list[1]
         Assert.assertEquals("Content type", MyContentType.IMAGE, preview.contentType)
         Assert.assertEquals("Media URI", UriUtils.fromString(previewUri),
-                preview.getUri())
+                preview.uri)
         Assert.assertEquals("Preview of", preview.previewOf, video)
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.mastodonTestAccountName)
         val executionContext = CommandExecutionContext(
                  MyContextHolder.myContextHolder.getNow(), CommandData.Companion.newItemCommand(CommandEnum.GET_CONVERSATION, ma, 123))
         DataUpdater(executionContext).onActivity(activity)
-        val downloads: MutableList<DownloadData?> = DownloadData.Companion.fromNoteId( MyContextHolder.myContextHolder.getNow(), note.noteId)
+        val downloads: List<DownloadData> = DownloadData.Companion.fromNoteId( MyContextHolder.myContextHolder.getNow(), note.noteId)
         Assert.assertEquals("Saved downloads $downloads", 2, downloads.size.toLong())
-        val dPreview = downloads.stream().filter { d: DownloadData? -> d.getContentType().isImage }.findAny().orElse(DownloadData.Companion.EMPTY)
+        val dPreview = downloads.stream().filter { d: DownloadData -> d.getContentType().isImage() }.findAny().orElse(DownloadData.Companion.EMPTY)
         Assert.assertEquals("Preview URL $downloads", preview.uri, dPreview.getUri())
         Assert.assertEquals("Preview $downloads", 0, dPreview.getDownloadNumber())
-        val dVideo = downloads.stream().filter { d: DownloadData? -> d.getContentType() == MyContentType.VIDEO }.findAny().orElse(DownloadData.Companion.EMPTY)
+        val dVideo = downloads.stream().filter { d: DownloadData -> d.getContentType() == MyContentType.VIDEO }
+                .findAny().orElse(DownloadData.Companion.EMPTY)
         Assert.assertNotEquals("Video URL not saved $downloads", 0, dVideo.getDownloadId())
         Assert.assertEquals("Preview $downloads", dVideo.getDownloadId(), dPreview.getPreviewOfDownloadId())
         Assert.assertEquals("Video URL $downloads", video.uri, dVideo.getUri())
         Assert.assertEquals("Video $downloads", 1, dVideo.getDownloadNumber())
         val nfa = NoteForAnyAccount( MyContextHolder.myContextHolder.getNow(),
                 activity.getId(), activity.getNote().noteId)
-        Assert.assertEquals(preview.uri, nfa.downloads.firstForTimeline.uri)
-        Assert.assertEquals(MyContentType.IMAGE, nfa.downloads.firstForTimeline.contentType)
-        Assert.assertEquals(dVideo.getDownloadId(), nfa.downloads.firstForTimeline.previewOfDownloadId)
-        Assert.assertEquals(video.uri, nfa.downloads.firstToShare.uri)
-        Assert.assertEquals(MyContentType.VIDEO, nfa.downloads.firstToShare.contentType)
+        Assert.assertEquals(preview.uri, nfa.downloads.getFirstForTimeline().getUri())
+        Assert.assertEquals(MyContentType.IMAGE, nfa.downloads.getFirstForTimeline().getContentType())
+        Assert.assertEquals(dVideo.getDownloadId(), nfa.downloads.getFirstForTimeline().getPreviewOfDownloadId())
+        Assert.assertEquals(video.uri, nfa.downloads.getFirstToShare().getUri())
+        Assert.assertEquals(MyContentType.VIDEO, nfa.downloads.getFirstToShare().getContentType())
     }
 }

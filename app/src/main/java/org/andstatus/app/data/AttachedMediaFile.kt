@@ -32,7 +32,8 @@ class AttachedMediaFile : MediaFile {
     val previewOfDownloadId: Long
     val previewOf: AttachedMediaFile
 
-    private constructor() : super("", MyContentType.UNKNOWN, MediaMetadata.EMPTY, 0, DownloadStatus.ABSENT, RelativeTime.DATETIME_MILLIS_NEVER) {
+    private constructor() : super("", MyContentType.UNKNOWN, MediaMetadata.EMPTY, 0,
+            DownloadStatus.ABSENT, RelativeTime.DATETIME_MILLIS_NEVER, true) {
         uri = Uri.EMPTY
         previewOfDownloadId = 0
         previewOf = EMPTY
@@ -78,7 +79,8 @@ class AttachedMediaFile : MediaFile {
                     previewFile.mediaMetadata,
                     previewFile.downloadId,
                     previewFile.downloadStatus,
-                    previewFile.downloadedDate) {
+                    previewFile.downloadedDate,
+                    false) {
         uri = previewFile.uri
         previewOfDownloadId = previewFile.previewOfDownloadId
         this.previewOf = previewOf

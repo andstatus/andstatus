@@ -207,6 +207,7 @@ open class Origin internal constructor(val myContext: MyContext, val originType:
 
     /** OriginName to be used in [AccountName.getName]  */
     fun getOriginInAccountName(host: String?): String {
+        if (isEmpty) return ""
         val origins = myContext.origins().allFromOriginInAccountNameAndHost(originType.title, host)
         return when (origins.size) {
             0 -> ""

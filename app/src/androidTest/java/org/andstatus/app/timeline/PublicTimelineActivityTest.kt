@@ -23,6 +23,7 @@ import androidx.test.espresso.action.ReplaceTextAction
 import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.matcher.ViewMatchers
 import org.andstatus.app.ActivityTestHelper
+import org.andstatus.app.R
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContextHolder
@@ -33,8 +34,6 @@ import org.andstatus.app.net.social.Visibility
 import org.andstatus.app.note.BaseNoteViewItem
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.service.MyServiceManager
-import org.andstatus.app.timeline.ListScreenTestHelper
-import org.andstatus.app.timeline.TimelineActivity
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.EspressoUtils
 import org.andstatus.app.util.MyLog
@@ -44,12 +43,13 @@ import org.junit.Test
 /**
  * @author yvolk@yurivolkov.com
  */
-class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem?>() {
-    override fun getActivityIntent(): Intent? {
+class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem>() {
+
+    override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
         val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.gnusocialTestOriginName)
-        Assert.assertTrue(origin.toString(), origin.isValid)
+        Assert.assertTrue(origin.toString(), origin.isValid())
         MyLog.i(this, "setUp ended")
         return Intent(Intent.ACTION_VIEW,  MyContextHolder.myContextHolder.getNow().timelines()
                 .get(TimelineType.PUBLIC, Actor.EMPTY, origin).getUri())
@@ -68,13 +68,13 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem?>() {
     }
 
     @Throws(InterruptedException::class)
-    private fun oneSearchTest(method: String?, noteText: String?, internetSearch: Boolean) {
+    private fun oneSearchTest(method: String, noteText: String, internetSearch: Boolean) {
         val menu_id: Int = R.id.search_menu_id
         Assert.assertTrue("MyService is available", MyServiceManager.Companion.isServiceAvailable())
         TestSuite.waitForListLoaded(activity, 2)
-        Assert.assertEquals(TimelineType.PUBLIC, activity.timeline.timelineType)
+        Assert.assertEquals(TimelineType.PUBLIC, activity.getTimeline().timelineType)
         Assert.assertFalse("Screen is locked", TestSuite.isScreenLocked(activity))
-        val helper = ActivityTestHelper<TimelineActivity<*>?>(activity,
+        val helper = ActivityTestHelper<TimelineActivity<*>>(activity,
                 TimelineActivity::class.java)
         helper.clickMenuItem(method, menu_id)
         Espresso.onView(ViewMatchers.withId(R.id.internet_search)).perform(EspressoUtils.setChecked(internetSearch))
@@ -86,10 +86,10 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem?>() {
     }
 
     @Volatile
-    private var stringFound: String? = ""
+    private var stringFound: String = ""
     @Throws(InterruptedException::class)
-    private fun waitForButtonClickedEvidence(timelineActivity: TimelineActivity<*>?, caption: String?,
-                                             queryString: String?) {
+    private fun waitForButtonClickedEvidence(timelineActivity: TimelineActivity<*>, caption: String?,
+                                             queryString: String) {
         val method = "waitForButtonClickedEvidence"
         var found = false
         Assert.assertNotNull("Timeline activity is null", timelineActivity)
@@ -113,7 +113,7 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem?>() {
     }
 
     @Throws(InterruptedException::class)
-    private fun assertNotesArePublic(timelineActivity: TimelineActivity<*>?, publicNoteText: String?) {
+    private fun assertNotesArePublic(timelineActivity: TimelineActivity<*>, publicNoteText: String) {
         val method = "assertNotesArePublic"
         var msgCount = 0
         for (attempt in 0..2) {
@@ -126,21 +126,21 @@ class PublicTimelineActivityTest : TimelineActivityTest<ActivityViewItem?>() {
         Assert.assertTrue("Notes should be found", msgCount > 0)
     }
 
-    private fun oneAttempt(timelineActivity: TimelineActivity<*>?, publicNoteText: String?): Int {
+    private fun oneAttempt(timelineActivity: TimelineActivity<*>, publicNoteText: String): Int {
         val list = timelineActivity.findViewById<ViewGroup?>(android.R.id.list)
         var msgCount = 0
         for (index in 0 until list.childCount) {
             val noteView = list.getChildAt(index)
             val bodyView = noteView.findViewById<TextView?>(R.id.note_body)
-            val viewItem: BaseNoteViewItem<*> = ListScreenTestHelper.Companion.toBaseNoteViewItem(
+            val viewItem: BaseNoteViewItem<*> = ListScreenTestHelper.toBaseNoteViewItem(
                     timelineActivity.getListAdapter().getItem(noteView))
             if (bodyView != null) {
-                Assert.assertTrue("""Note #${viewItem.id} '${viewItem.content}' contains '$publicNoteText'
+                Assert.assertTrue("""Note #${viewItem.getId()} '${viewItem.getContent()}' contains '$publicNoteText'
 $viewItem""",
-                        viewItem.content.toString().contains(publicNoteText))
-                Assert.assertNotEquals("""Note #${viewItem.id} '${viewItem.content}' is private
+                        viewItem.getContent().toString().contains(publicNoteText))
+                Assert.assertNotEquals("""Note #${viewItem.getId()} '${viewItem.getContent()}' is private
 $viewItem""", Visibility.PRIVATE,
-                        Visibility.Companion.fromNoteId(viewItem.id))
+                        Visibility.Companion.fromNoteId(viewItem.getId()))
                 msgCount++
             }
         }

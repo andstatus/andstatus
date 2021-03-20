@@ -20,6 +20,7 @@ import android.view.View
 import android.widget.CheckBox
 import android.widget.ListView
 import org.andstatus.app.ActivityTestHelper
+import org.andstatus.app.R
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
@@ -40,9 +41,6 @@ import org.andstatus.app.service.MyServiceEvent
 import org.andstatus.app.service.MyServiceEventsBroadcaster
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.service.MyServiceState
-import org.andstatus.app.timeline.ListScreenTestHelper
-import org.andstatus.app.timeline.LoadableListPosition
-import org.andstatus.app.timeline.WhichPage
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.view.SelectorDialog
@@ -111,7 +109,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         val timelineData = activity.getListData()
         for (ind in 0 until timelineData.size()) {
             val item = timelineData.getItem(ind)
-            Assert.assertEquals("Origin of the Item $ind $item", ma.origin, item?.origin)
+            Assert.assertEquals("Origin of the Item $ind $item", ma.origin, item.origin)
         }
         val collapseDuplicates = MyPreferences.isCollapseDuplicates()
         Assert.assertEquals(collapseDuplicates, (activity.findViewById<View?>(R.id.collapseDuplicatesToggle) as CheckBox).isChecked)
@@ -129,24 +127,24 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         Assert.assertTrue("Position should be selected: " + getCurrentListPosition(), itemIdOfSelected > 0)
         getCurrentListPosition().logV("$method; after selecting position $position0 itemId=$itemIdOfSelected")
         val pos1 = getCurrentListPosition().logV("$method; stored pos1 before adding new content")
-        val updatedAt1 = activity.listData.updatedAt
+        val updatedAt1 = activity.getListData().updatedAt
         DemoData.demoData.insertPumpIoConversation("p$iterationId")
         broadcastCommandExecuted()
         var pos2 = getCurrentListPosition().logV("$method; just after adding new content")
         var updatedAt2: Long = 0
         for (attempt in 0..9) {
             TestSuite.waitForIdleSync()
-            updatedAt2 = activity.listData.updatedAt
+            updatedAt2 = activity.getListData().updatedAt
             if (updatedAt2 > updatedAt1) break
         }
-        Assert.assertTrue("Timeline data should be updated: " + activity.listData, updatedAt2 > updatedAt1)
+        Assert.assertTrue("Timeline data should be updated: " + activity.getListData(), updatedAt2 > updatedAt1)
         var positionOfItem = -1
         var found = false
         var attempt = 0
         while (attempt < 10 && !found) {
             TestSuite.waitForIdleSync()
             pos2 = getCurrentListPosition().logV("$method; waiting for list reposition $attempt")
-            positionOfItem = activity.listAdapter.getPositionById(pos1.itemId)
+            positionOfItem = activity.getListAdapter().getPositionById(pos1.itemId)
             if (positionOfItem >= pos2.position - 1 && positionOfItem <= pos2.position + 1) {
                 found = true
             }
@@ -159,12 +157,12 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         MyLog.v(this, logText)
         Assert.assertTrue(logText, found)
         Assert.assertEquals(collapseDuplicates, (activity.findViewById<View?>(R.id.collapseDuplicatesToggle) as CheckBox).isChecked)
-        Assert.assertEquals(collapseDuplicates, activity.listData.isCollapseDuplicates)
+        Assert.assertEquals(collapseDuplicates, activity.getListData().isCollapseDuplicates())
         if (collapseDuplicates) {
             found = false
-            for (ind in 0 until activity.listData.size()) {
-                val item: ViewItem<*> = activity.listData.getItem(ind)
-                if (item.isCollapsed) {
+            for (ind in 0 until activity.getListData().size()) {
+                val item: ViewItem<*> = activity.getListData().getItem(ind)
+                if (item.isCollapsed()) {
                     found = true
                     break
                 }
@@ -174,7 +172,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
     }
 
     private fun getCurrentListPosition(): LoadableListPosition<*> {
-        return activity.currentListPosition
+        return activity.getCurrentListPosition()
     }
 
     private fun broadcastCommandExecuted() {
@@ -190,11 +188,11 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
     fun testOpeningAccountSelector() {
         val method = "testOpeningAccountSelector"
         TestSuite.waitForListLoaded(activity, 7)
-        val helper: ListScreenTestHelper<TimelineActivity<*>?> = ListScreenTestHelper.Companion.newForSelectorDialog<TimelineActivity<*>?>(activity, SelectorDialog.Companion.getDialogTag())
+        val helper: ListScreenTestHelper<TimelineActivity<*>> = ListScreenTestHelper.newForSelectorDialog<TimelineActivity<*>>(activity, SelectorDialog.Companion.dialogTag)
         helper.clickView(method, R.id.selectAccountButton)
         val selectorDialog = helper.waitForSelectorDialog(method, 15000)
         DbUtils.waitMs(method, 500)
-        selectorDialog.dismiss()
+        selectorDialog?.dismiss()
     }
 
     @Test
@@ -202,8 +200,8 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
     fun testActAs() {
         val method = "testActAs"
         TestSuite.waitForListLoaded(activity, 2)
-        val helper: ListScreenTestHelper<TimelineActivity<*>?> = ListScreenTestHelper.Companion.newForSelectorDialog<TimelineActivity<*>?>(activity, SelectorDialog.Companion.getDialogTag())
-        val listItemId = helper.listItemIdOfLoadedReply
+        val helper: ListScreenTestHelper<TimelineActivity<*>> = ListScreenTestHelper.newForSelectorDialog<TimelineActivity<*>>(activity, SelectorDialog.Companion.dialogTag)
+        val listItemId = helper.getListItemIdOfLoadedReply()
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId)
         val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
         val origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId))
@@ -216,19 +214,19 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         // This context menu item doesn't exist
         Assert.assertTrue(logMsg, helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper))
-        val account1 = activity.getContextMenu().actingAccount
+        val account1 = activity.getContextMenu()?.getActingAccount() ?: MyAccount.EMPTY
         logMsg = "\nActing account 1: $account1, $logMsg"
         Assert.assertTrue(logMsg, accounts.contains(account1))
         Assert.assertEquals(logMsg, origin, account1.origin)
-        ActivityTestHelper.Companion.closeContextMenu(activity)
+        ActivityTestHelper.closeContextMenu(activity)
         helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.ACT_AS, R.id.note_wrapper)
         val account2 = myContext.accounts().firstOtherSucceededForSameOrigin(origin, account1)
-        logMsg += ", account 2:" + account2.accountName
+        logMsg += ", account 2:" + account2.getAccountName()
         Assert.assertNotSame(logMsg, account1, account2)
         helper.selectIdFromSelectorDialog(logMsg, account2.actorId)
         DbUtils.waitMs(method, 500)
-        val account3 = activity.getContextMenu().selectedActingAccount
-        logMsg += ", actor2Actual:" + account3.accountName
+        val account3 = activity.getContextMenu()?.getSelectedActingAccount() ?: MyAccount.EMPTY
+        logMsg += ", actor2Actual:" + account3.getAccountName()
         Assert.assertEquals(logMsg, account2, account3)
     }
 }

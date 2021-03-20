@@ -10,9 +10,6 @@ import org.andstatus.app.data.MyQuery
 import org.andstatus.app.database.table.NoteTable
 import org.andstatus.app.net.http.SslModeEnum
 import org.andstatus.app.net.social.AActivity
-import org.andstatus.app.origin.Origin
-import org.andstatus.app.origin.OriginConfig
-import org.andstatus.app.origin.OriginType
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -30,7 +27,7 @@ class OriginTest {
         val urlString = "https://github.com/andstatus/andstatus/issues/41"
         val body = ("I set \"Shorten URL with: QTTR_AT\" URL longer than 25 Text longer than 140. Will this be shortened: "
                 + urlString)
-        var origin: Origin? =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.Companion.ORIGIN_TYPE_DEFAULT)
+        var origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.Companion.ORIGIN_TYPE_DEFAULT)
         Assert.assertEquals(OriginType.TWITTER, origin.originType)
         origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
         Assert.assertEquals(OriginType.TWITTER, origin.originType)
@@ -41,22 +38,22 @@ class OriginTest {
         // Depending on number of spans!
         Assert.assertTrue("Characters left $charactersLeft", charactersLeft == 158
                 || charactersLeft == 142)
-        Assert.assertFalse(origin.isMentionAsWebFingerId)
+        Assert.assertFalse(origin.isMentionAsWebFingerId())
         origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.PUMPIO)
-        textLimit = OriginType.Companion.TEXT_LIMIT_MAXIMUM
+        textLimit = TEXT_LIMIT_MAXIMUM
         Assert.assertEquals("Textlimit", textLimit.toLong(), origin.getTextLimit().toLong())
         Assert.assertEquals("Short URL length", 0, origin.shortUrlLength.toLong())
         Assert.assertEquals("Characters left", (
                 origin.getTextLimit() - body.length).toLong(),
                 origin.charactersLeftForNote(body).toLong())
-        Assert.assertTrue(origin.isMentionAsWebFingerId)
+        Assert.assertTrue(origin.isMentionAsWebFingerId())
         origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL)
         textLimit = Origin.Companion.TEXT_LIMIT_FOR_WEBFINGER_ID
         val uploadLimit = 0
         var config: OriginConfig = OriginConfig.Companion.fromTextLimit(textLimit, uploadLimit.toLong())
         origin = Origin.Builder(origin).save(config).build()
         Assert.assertEquals("Textlimit", textLimit.toLong(), origin.getTextLimit().toLong())
-        Assert.assertTrue(origin.isMentionAsWebFingerId)
+        Assert.assertTrue(origin.isMentionAsWebFingerId())
         textLimit = 140
         config = OriginConfig.Companion.fromTextLimit(textLimit, uploadLimit.toLong())
         origin = Origin.Builder(origin).save(config).build()
@@ -64,22 +61,22 @@ class OriginTest {
         Assert.assertEquals("Short URL length", 0, origin.shortUrlLength.toLong())
         Assert.assertEquals("Characters left", (textLimit - body.length).toLong(),
                 origin.charactersLeftForNote(body).toLong())
-        Assert.assertFalse(origin.isMentionAsWebFingerId)
+        Assert.assertFalse(origin.isMentionAsWebFingerId())
         textLimit = 0
         config = OriginConfig.Companion.fromTextLimit(textLimit, uploadLimit.toLong())
         Assert.assertTrue(config.nonEmpty)
         origin = Origin.Builder(origin).save(config).build()
-        Assert.assertEquals("Textlimit", OriginType.Companion.TEXT_LIMIT_MAXIMUM.toLong(), origin.getTextLimit().toLong())
+        Assert.assertEquals("Textlimit", TEXT_LIMIT_MAXIMUM.toLong(), origin.getTextLimit().toLong())
         Assert.assertEquals("Characters left $origin", (
                 origin.getTextLimit() - body.length
                         + if (origin.shortUrlLength > 0) origin.shortUrlLength - urlString.length else 0).toLong(),
                 origin.charactersLeftForNote(body).toLong())
-        Assert.assertTrue(origin.isMentionAsWebFingerId)
+        Assert.assertTrue(origin.isMentionAsWebFingerId())
     }
 
     @Test
     fun testAddDeleteOrigin() {
-        val seed = java.lang.Long.toString(System.nanoTime())
+        val seed = System.nanoTime().toString()
         val originName = "snTest$seed"
         val originType = OriginType.GNUSOCIAL
         val hostOrUrl = "sn$seed.example.org"
@@ -117,7 +114,7 @@ class OriginTest {
         Assert.assertNotEquals(0, noteId)
         val userName = MyQuery.noteIdToUsername(NoteTable.AUTHOR_ID, noteId,
                 ActorInTimeline.USERNAME)
-        val permalink = origin.getNotePermalink(noteId)
+        val permalink = origin.getNotePermalink(noteId) ?: throw IllegalStateException("No permalink")
         val desc = ("Permalink of Twitter note '" + noteOid + "' by '" + userName
                 + "' at " + origin.toString() + " is " + permalink)
         Assert.assertTrue(desc, permalink.contains("$userName/status/$noteOid"))
@@ -144,8 +141,9 @@ class OriginTest {
         checkOneHost("http://o.mrblog.nl", " o.   mrblog. nl ", false)
     }
 
-    private fun checkOneHost(out: String?, `in`: String?, ssl: Boolean) {
-        Assert.assertEquals(out, Origin.Builder( MyContextHolder.myContextHolder.getNow(), OriginType.GNUSOCIAL).setHostOrUrl(`in`).setSsl(ssl).build().url.toExternalForm())
+    private fun checkOneHost(out: String?, inHost: String?, ssl: Boolean) {
+        Assert.assertEquals(out, Origin.Builder( MyContextHolder.myContextHolder.getNow(), OriginType.GNUSOCIAL)
+                .setHostOrUrl(inHost).setSsl(ssl).build().url?.toExternalForm())
     }
 
     @Test
@@ -172,7 +170,7 @@ class OriginTest {
         checkUsernameIsValid(origin, "AndStatus@datamost.com", false)
     }
 
-    private fun checkUsernameIsValid(origin: Origin?, username: String?, valid: Boolean) {
+    private fun checkUsernameIsValid(origin: Origin, username: String?, valid: Boolean) {
         Assert.assertEquals("Username '" + username + "' " + if (valid) "is not valid" else "is valid", valid,
                 origin.isUsernameValid(username))
     }

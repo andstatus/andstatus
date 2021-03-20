@@ -50,21 +50,21 @@ class NoteEditorDataTest {
                 .addToAudience(recipientId)
                 .setReplyToConversationParticipants(replyAll)
                 .setContent("Some text here " + DemoData.demoData.testRunUid, TextMediaType.UNKNOWN)
-        Assert.assertFalse(data.toString(), data.content.contains("@"))
+        Assert.assertFalse(data.toString(), data.getContent().contains("@"))
         data.addMentionsToText()
-        Assert.assertEquals(recipientId, data.activity.getNote().audience().firstNonSpecial.actorId)
+        Assert.assertEquals(recipientId, data.activity.getNote().audience().getFirstNonSpecial().actorId)
         assertMentionedActor(data, inReplyToActorId, true)
         assertMentionedActor(data, memberActorId, replyAll)
-        Assert.assertEquals(data.toString(), AttachedImageFiles.Companion.EMPTY, data.attachedImageFiles)
+        Assert.assertEquals(data.toString(), AttachedImageFiles.Companion.EMPTY, data.getAttachedImageFiles())
     }
 
-    private fun assertMentionedActor(data: NoteEditorData?, mentionedActorId: Long, isMentionedExpected: Boolean) {
+    private fun assertMentionedActor(data: NoteEditorData, mentionedActorId: Long, isMentionedExpected: Boolean) {
         if (mentionedActorId == 0L) {
             return
         }
         val expectedName = MyQuery.actorIdToStringColumnValue(
-                if (data.ma.origin.isMentionAsWebFingerId) ActorTable.WEBFINGER_ID else ActorTable.USERNAME, mentionedActorId)
-        Assert.assertTrue(!expectedName.isNullOrEmpty())
+                if (data.ma.origin.isMentionAsWebFingerId()) ActorTable.WEBFINGER_ID else ActorTable.USERNAME, mentionedActorId)
+        Assert.assertTrue(expectedName.isNotEmpty())
         val isMentioned = data.getContent().contains("@$expectedName")
         Assert.assertEquals(data.toString() + "; expected name:" + expectedName, isMentionedExpected, isMentioned)
     }
@@ -80,7 +80,7 @@ class NoteEditorDataTest {
         val data: NoteEditorData = NoteEditorData.Companion.newReplyTo(noteId, myAccount)
                 .setReplyToMentionedActors(true)
                 .addMentionsToText()
-        MatcherAssert.assertThat(data.content, CoreMatchers.containsString("@second@pump1.example.com "))
-        MatcherAssert.assertThat(data.content, CoreMatchers.not(CoreMatchers.containsString("@t131t")))
+        MatcherAssert.assertThat(data.getContent(), CoreMatchers.containsString("@second@pump1.example.com "))
+        MatcherAssert.assertThat(data.getContent(), CoreMatchers.not(CoreMatchers.containsString("@t131t")))
     }
 }

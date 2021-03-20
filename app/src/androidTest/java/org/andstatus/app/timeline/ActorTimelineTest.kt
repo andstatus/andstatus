@@ -31,8 +31,9 @@ import org.andstatus.app.util.MyLog
 import org.junit.Assert
 import org.junit.Test
 
-class ActorTimelineTest : TimelineActivityTest<ActivityViewItem?>() {
-    override fun getActivityIntent(): Intent? {
+class ActorTimelineTest : TimelineActivityTest<ActivityViewItem>() {
+
+    override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
         val myContext: MyContext =  MyContextHolder.myContextHolder.getBlocking()
@@ -47,7 +48,7 @@ class ActorTimelineTest : TimelineActivityTest<ActivityViewItem?>() {
         Assert.assertFalse("Timeline $timeline", timeline.isCombined)
         timeline.forgetPositionsAndDates()
         MyLog.i(this, "setUp ended, $timeline")
-        return Intent(Intent.ACTION_VIEW, timeline.uri)
+        return Intent(Intent.ACTION_VIEW, timeline.getUri())
     }
 
     @Test
@@ -59,7 +60,7 @@ class ActorTimelineTest : TimelineActivityTest<ActivityViewItem?>() {
     private fun _openSecondAuthorTimeline() {
         val method = "openSecondAuthorTimeline"
         TestSuite.waitForListLoaded(activity, 10)
-        val timelineData = activity.listData
+        val timelineData = activity.getListData()
         var followItem: ActivityViewItem? = ActivityViewItem.Companion.EMPTY
         for (position in 0 until timelineData.size()) {
             val item = timelineData.getItem(position)

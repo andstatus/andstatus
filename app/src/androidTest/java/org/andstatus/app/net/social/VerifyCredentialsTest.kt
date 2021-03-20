@@ -33,32 +33,33 @@ import org.junit.Before
 import org.junit.Test
 import java.io.IOException
 import java.util.*
+import kotlin.properties.Delegates
 
 class VerifyCredentialsTest {
-    private var connection: Connection? = null
-    private var mock: ConnectionMock? = null
+    private var connection: Connection by Delegates.notNull()
+    private var mock: ConnectionMock by Delegates.notNull()
     private var keyStored: String? = null
     private var secretStored: String? = null
     @Before
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        mock = ConnectionMock.Companion.newFor(DemoData.demoData.twitterTestAccountName)
+        mock = ConnectionMock.newFor(DemoData.demoData.twitterTestAccountName)
         connection = mock.connection
         val data = mock.getHttp().data
         data.originUrl = UrlUtils.fromString("https://twitter.com")
         data.oauthClientKeys = OAuthClientKeys.Companion.fromConnectionData(data)
-        keyStored = data.oauthClientKeys.consumerKey
-        secretStored = data.oauthClientKeys.consumerSecret
-        if (!data.oauthClientKeys.areKeysPresent()) {
-            data.oauthClientKeys.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232")
+        keyStored = data.oauthClientKeys?.getConsumerKey()
+        secretStored = data.oauthClientKeys?.getConsumerSecret()
+        if (data.oauthClientKeys?.areKeysPresent() == false) {
+            data.oauthClientKeys?.setConsumerKeyAndSecret("keyForGetTimelineForTw", "thisIsASecret341232")
         }
     }
 
     @After
     fun tearDown() {
         if (!keyStored.isNullOrEmpty()) {
-            mock.getHttp().data.oauthClientKeys.setConsumerKeyAndSecret(keyStored, secretStored)
+            mock.getHttp().data.oauthClientKeys?.setConsumerKeyAndSecret(keyStored, secretStored)
         }
     }
 
@@ -69,12 +70,12 @@ class VerifyCredentialsTest {
         val actor = connection.verifyCredentials(Optional.empty()).get()
         Assert.assertEquals("Actor's oid is actorOid of this account", DemoData.demoData.twitterTestAccountActorOid, actor.oid)
         val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
-        val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(mock.getData().accountName)
+        val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(mock.getData().getAccountName())
         builder.onCredentialsVerified(actor)
-        Assert.assertTrue("Account is persistent", builder.isPersistent)
-        val actorId = builder.account.actorId
+        Assert.assertTrue("Account is persistent", builder.isPersistent())
+        val actorId = builder.getAccount().actorId
         Assert.assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0L)
-        Assert.assertEquals("Account actorOid", builder.account.actorOid, actor.oid)
+        Assert.assertEquals("Account actorOid", builder.getAccount().getActorOid(), actor.oid)
         Assert.assertEquals("Actor in the database for id=$actorId",
                 actor.oid,
                 MyQuery.idToOid( MyContextHolder.myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0))
@@ -86,7 +87,7 @@ class VerifyCredentialsTest {
         Assert.assertEquals("Note permalink at twitter",
                 "https://" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.url)).host
                         + "/"
-                        + builder.account.username + "/status/" + noteOid,
+                        + builder.getAccount().username + "/status/" + noteOid,
                 origin.getNotePermalink(noteId))
     }
 }

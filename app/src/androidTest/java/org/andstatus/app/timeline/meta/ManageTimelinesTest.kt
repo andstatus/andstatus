@@ -25,8 +25,9 @@ import org.junit.Test
 /**
  * @author yvolk@yurivolkov.com
  */
-class ManageTimelinesTest : ActivityTest<ManageTimelines?>() {
-    override fun getActivityClass(): Class<ManageTimelines?>? {
+class ManageTimelinesTest : ActivityTest<ManageTimelines>() {
+
+    override fun getActivityClass(): Class<ManageTimelines> {
         return ManageTimelines::class.java
     }
 

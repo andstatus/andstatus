@@ -22,14 +22,14 @@ import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.Origin
-import org.andstatus.app.timeline.TimelinePositionTest
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.MyLog
 import org.junit.Assert
 import org.junit.Test
 
-class TimelinePositionTest : TimelineActivityTest<ActivityViewItem?>() {
-    override fun getActivityIntent(): Intent? {
+class TimelinePositionTest : TimelineActivityTest<ActivityViewItem>() {
+
+    override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
         MyLog.i(this, "setUp ended")
@@ -59,31 +59,31 @@ class TimelinePositionTest : TimelineActivityTest<ActivityViewItem?>() {
     private fun oneTimelineOpening(iteration: Int) {
         val method = "oneTimelineOpening$iteration"
         TestSuite.waitForListLoaded(activity, 3)
-        val testHelper = ListScreenTestHelper<TimelineActivity<*>?>(activity)
+        val testHelper = ListScreenTestHelper<TimelineActivity<*>>(activity)
         val position1 = getFirstVisibleAdapterPosition()
-        val listAdapter: BaseTimelineAdapter<*> = activity.listAdapter
+        val listAdapter: BaseTimelineAdapter<*> = activity.getListAdapter()
         val item1 = listAdapter.getItem(position1)
-        if (TimelinePositionTest.Companion.previousItem.nonEmpty) {
-            val previousItemPosition = listAdapter.getPositionById(TimelinePositionTest.Companion.previousItem.getId())
-            Assert.assertEquals("""; previous:${TimelinePositionTest.Companion.previousItem}
+        if (previousItem.nonEmpty) {
+            val previousItemPosition = listAdapter.getPositionById(previousItem.getId())
+            Assert.assertEquals("""; previous:$previousItem
   ${if (previousItemPosition >= 0) "at position $previousItemPosition" else "not found now"}
 current:$item1
   at position $position1""",
-                    TimelinePositionTest.Companion.previousItem.getId(), item1.id)
+                    previousItem.getId(), item1.getId())
         }
         val nextPosition = if (position1 + 5 >= listAdapter.count) 0 else position1 + 5
-        testHelper.selectListPosition(method, nextPosition + activity.listView.headerViewsCount)
+        testHelper.selectListPosition(method, nextPosition + (activity.listView?.headerViewsCount ?: 0))
         DbUtils.waitMs(this, 2000)
-        TimelinePositionTest.Companion.previousItem = listAdapter.getItem(getFirstVisibleAdapterPosition())
+        previousItem = listAdapter.getItem(getFirstVisibleAdapterPosition())
     }
 
     private fun getFirstVisibleAdapterPosition(): Int {
-        val headers = activity.listView.headerViewsCount
-        return Integer.max(activity.listView.firstVisiblePosition, headers) - headers
+        val headers = activity.listView?.headerViewsCount ?: 0
+        return Integer.max(activity.listView?.firstVisiblePosition ?: 0, headers) - headers
     }
 
     companion object {
         @Volatile
-        private val previousItem: ViewItem<*>? = EmptyViewItem.EMPTY
+        private var previousItem: ViewItem<*> = EmptyViewItem.EMPTY
     }
 }

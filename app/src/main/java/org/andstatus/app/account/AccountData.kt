@@ -50,7 +50,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         this.myContext = myContext
         data = jso
         this.persistent = persistent
-        val origin = myContext.origins().fromName(getDataString(Origin.KEY_ORIGIN_NAME))
+        val origin = if (myContext.isEmpty) Origin.EMPTY else myContext.origins().fromName(getDataString(Origin.KEY_ORIGIN_NAME))
         accountName = AccountName.fromOriginAndUniqueName(origin, getDataString(MyAccount.KEY_UNIQUE_NAME))
         logMe("new " + accountName.name + " from jso")
     }

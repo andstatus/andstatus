@@ -26,8 +26,6 @@ import org.andstatus.app.data.OidEnum
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.origin.DemoOriginInserter
 import org.andstatus.app.origin.Origin
-import org.andstatus.app.timeline.meta.DisplayedInSelector
-import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.TriState
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
@@ -37,9 +35,11 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import java.util.stream.Collectors
+import kotlin.properties.Delegates
 
 class PersistentTimelinesTest {
-    private var myContext: MyContext? = null
+    private var myContext: MyContext by Delegates.notNull()
+
     @Before
     @Throws(Exception::class)
     fun setUp() {
@@ -84,15 +84,15 @@ class PersistentTimelinesTest {
                 TimelineType.EVERYTHING, Actor.EMPTY, myAccount.origin).collect(Collectors.toList())
         Assert.assertTrue(filtered.size > 0)
         Assert.assertTrue(filtered.stream()
-                .filter { timeline: Timeline? -> timeline.timelineType == TimelineType.EVERYTHING }.count() > 0)
+                .filter { timeline: Timeline -> timeline.timelineType == TimelineType.EVERYTHING }.count() > 0)
     }
 
     private fun ensureAtLeastOneNotDisplayedTimeline() {
         val timelines = myContext.timelines().values()
         var found = false
-        var timeline1: Timeline? = Timeline.EMPTY
+        var timeline1: Timeline = Timeline.EMPTY
         for (timeline in timelines) {
-            if (timeline.isDisplayedInSelector == DisplayedInSelector.NEVER) {
+            if (timeline.isDisplayedInSelector() == DisplayedInSelector.NEVER) {
                 found = true
                 break
             }
@@ -108,20 +108,22 @@ class PersistentTimelinesTest {
 
     @Test
     fun testDefaultTimelinesForAccounts() {
-        DemoAccountInserter(myContext).assertDefaultTimelinesForAccounts()
+        DemoAccountInserter(myContext)
+        DemoAccountInserter.Companion.assertDefaultTimelinesForAccounts()
     }
 
     @Test
     fun testDefaultTimelinesForOrigins() {
-        DemoOriginInserter(myContext).assertDefaultTimelinesForOrigins()
+        DemoOriginInserter(myContext)
+        DemoOriginInserter.Companion.assertDefaultTimelinesForOrigins()
     }
 
     @Test
     fun testDefaultTimeline() {
-        val defaultStored = myContext.timelines().default
+        val defaultStored = myContext.timelines().getDefault()
         myContext.timelines().resetDefaultSelectorOrder()
-        val timeline1 = myContext.timelines().default
-        Assert.assertTrue(timeline1.toString(), timeline1.isValid)
+        val timeline1 = myContext.timelines().getDefault()
+        Assert.assertTrue(timeline1.toString(), timeline1.isValid())
         Assert.assertEquals(timeline1.toString(), TimelineType.HOME, timeline1.timelineType)
         Assert.assertFalse(timeline1.toString(), timeline1.isCombined)
         val origin = myContext.origins().fromName(DemoData.demoData.gnusocialTestOriginName)
@@ -130,9 +132,9 @@ class PersistentTimelinesTest {
         val timeline2 = myContext.timelines()
                 .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.actor,  Origin.EMPTY)
                 .filter { timeline: Timeline? -> timeline !== timeline1 }.findFirst().orElse(Timeline.EMPTY)
-        myContext.timelines().default = timeline2
-        Assert.assertNotEquals(timeline1, myContext.timelines().default)
-        myContext.timelines().default = defaultStored
+        myContext.timelines().setDefault(timeline2)
+        Assert.assertNotEquals(timeline1, myContext.timelines().getDefault())
+        myContext.timelines().setDefault(defaultStored)
     }
 
     @Test
@@ -144,7 +146,7 @@ class PersistentTimelinesTest {
         oneFromIsCombined(myAccount, TimelineType.NOTIFICATIONS)
     }
 
-    private fun oneFromIsCombined(myAccount: MyAccount, timelineType: TimelineType?) {
+    private fun oneFromIsCombined(myAccount: MyAccount, timelineType: TimelineType) {
         val combined = myContext.timelines()
                 .filter(true, TriState.TRUE, timelineType, myAccount.actor,  Origin.EMPTY)
                 .findFirst().orElse(Timeline.EMPTY)
@@ -165,10 +167,10 @@ class PersistentTimelinesTest {
         oneFromMyAccount(myAccount1, myAccount2, TimelineType.NOTIFICATIONS)
     }
 
-    private fun oneFromMyAccount(ma1: MyAccount, ma2: MyAccount, timelineType: TimelineType?) {
+    private fun oneFromMyAccount(ma1: MyAccount, ma2: MyAccount, timelineType: TimelineType) {
         val timeline1 = myContext.timelines()
-                .filter(true, TriState.FALSE, timelineType, ma1.getActor(), ma1.getOrigin())
-                .findFirst().orElseGet { myContext.timelines().get(timelineType, ma1.getActor(), ma1.getOrigin()) }
+                .filter(true, TriState.FALSE, timelineType, ma1.actor, ma1.origin)
+                .findFirst().orElseGet { myContext.timelines().get(timelineType, ma1.actor, ma1.origin) }
         Assert.assertEquals("Should be not combined $timeline1", false, timeline1.isCombined)
         val timeline2 = timeline1.fromMyAccount(myContext, ma2)
         Assert.assertEquals("""
@@ -180,7 +182,7 @@ class PersistentTimelinesTest {
         if (timelineType.isForUser()) {
             Assert.assertEquals("Account should change $timeline2", ma2, timeline2.myAccountToSync)
         } else {
-            Assert.assertEquals("Origin should change $timeline2", ma2.getOrigin(), timeline2.origin)
+            Assert.assertEquals("Origin should change $timeline2", ma2.origin, timeline2.getOrigin())
         }
         val timeline3 = timeline2.fromMyAccount(myContext, ma1)
         Assert.assertEquals(timeline1, timeline3)
@@ -196,7 +198,7 @@ class PersistentTimelinesTest {
         val timeline = myContext.timelines()[TimelineType.SENT, actor, ma.origin]
         Assert.assertEquals("Should not be combined: $timeline", false, timeline.isCombined)
         val timelines: MutableCollection<Timeline?>? = myContext.timelines().stream()
-                .filter { timeline1: Timeline? -> timeline1.getTimelineType() == TimelineType.SENT && timeline1.isCombined() && timeline1.getActorId() != 0L }.collect(Collectors.toList())
+                .filter { timeline1: Timeline -> timeline1.timelineType == TimelineType.SENT && timeline1.isCombined && timeline1.getActorId() != 0L }.collect(Collectors.toList())
         MatcherAssert.assertThat(timelines, Is.`is`(Matchers.empty()))
     }
 
@@ -204,7 +206,7 @@ class PersistentTimelinesTest {
     fun syncForAllAccounts() {
         val combined = myContext.timelines().forUser(TimelineType.NOTIFICATIONS, Actor.EMPTY)
         Assert.assertEquals("Should be combined: $combined", true, combined.isCombined)
-        Assert.assertNotEquals("Should exist: $combined", 0, combined.id)
+        Assert.assertNotEquals("Should exist: $combined", 0, combined.getId())
         Assert.assertEquals("Should not have account: $combined", MyAccount.EMPTY, combined.myAccountToSync)
         val accountsToSync = myContext.accounts().accountsToSync()
         MatcherAssert.assertThat(accountsToSync, Is.`is`(IsNot.not(Matchers.empty())))
@@ -214,7 +216,7 @@ class PersistentTimelinesTest {
             Assert.assertEquals("Should have selected account: $forOneAccount", accountToSync, forOneAccount.myAccountToSync)
             Assert.assertEquals("Timeline type: $forOneAccount", combined.timelineType, forOneAccount.timelineType)
             if (accountToSync.origin.originType.isTimelineTypeSyncable(forOneAccount.timelineType)) {
-                Assert.assertEquals("Should be syncable: $forOneAccount", true, forOneAccount.isSyncable)
+                Assert.assertEquals("Should be syncable: $forOneAccount", true, forOneAccount.isSyncable())
                 syncableFound = true
             }
         }

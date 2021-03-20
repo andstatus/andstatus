@@ -27,10 +27,11 @@ import org.hamcrest.Matcher
  * From https://stackoverflow.com/a/39650813/297710
  */
 object EspressoUtils {
-    fun setChecked(checked: Boolean): ViewAction? {
+    fun setChecked(checked: Boolean): ViewAction {
+
         return object : ViewAction {
-            override fun getConstraints(): Matcher<View?>? {
-                return object : Matcher<View?> {
+            override fun getConstraints(): Matcher<View> {
+                return object : Matcher<View> {
                     override fun matches(item: Any?): Boolean {
                         return CoreMatchers.isA(Checkable::class.java).matches(item)
                     }
@@ -45,10 +46,10 @@ object EspressoUtils {
                 return null
             }
 
-            override fun perform(uiController: UiController?, view: View?) {
-                val checkableView = view as Checkable?
-                if (checkableView.isChecked() != checked) {
-                    checkableView.setChecked(checked)
+            override fun perform(uiController: UiController, view: View) {
+                val checkableView = view as Checkable
+                if (checkableView.isChecked != checked) {
+                    checkableView.isChecked = checked
                 }
             }
         }

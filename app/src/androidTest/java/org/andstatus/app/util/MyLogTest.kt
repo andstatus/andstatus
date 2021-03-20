@@ -20,10 +20,6 @@ import org.andstatus.app.context.TestSuite
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
-import java.util.function.Supplier
-
-import kotlin.jvm.Volatile
-import kotlin.Throws
 
 class MyLogTest {
     @Before
@@ -49,12 +45,12 @@ class MyLogTest {
         val method = "testLogFilename"
         val isLogEnabled = MyLog.isLogToFileEnabled()
         MyLog.setLogToFile(true)
-        Assert.assertFalse(MyLog.getLogFilename().isNullOrEmpty())
+        Assert.assertFalse(MyLog.getLogFilename().isEmpty())
         MyLog.v(this, method)
-        val file = MyLog.getFileInLogDir(MyLog.getLogFilename(), true)
+        val file = MyLog.getFileInLogDir(MyLog.getLogFilename(), true)  ?: throw IllegalStateException("No file")
         Assert.assertTrue(file.exists())
         MyLog.setLogToFile(false)
-        Assert.assertTrue(MyLog.getLogFilename().isNullOrEmpty())
+        Assert.assertTrue(MyLog.getLogFilename().isEmpty())
         Assert.assertTrue(file.delete())
         MyLog.v(this, method)
         Assert.assertEquals(null, MyLog.getLogFilename())
@@ -84,7 +80,7 @@ class MyLogTest {
 
     private class LazyClass {
         override fun toString(): String {
-            MyLogTest.Companion.lazyTest = this.javaClass.simpleName
+            lazyTest = this.javaClass.simpleName
             return "from" + this.javaClass.simpleName
         }
     }
@@ -95,25 +91,25 @@ class MyLogTest {
         try {
             MyLog.setMinLogLevel(Log.DEBUG)
             val unchanged = "unchanged"
-            MyLogTest.Companion.lazyTest = unchanged
-            MyLog.v(this, Supplier<String?> { MyLogTest.Companion.lazyTest = "modified" })
-            Assert.assertEquals(unchanged, MyLogTest.Companion.lazyTest)
+            lazyTest = unchanged
+            MyLog.v(this) { lazyTest = "modified"; "" }
+            Assert.assertEquals(unchanged, lazyTest)
             val lazyObject = LazyClass()
             MyLog.v(this) { "LazyObject: $lazyObject" }
-            Assert.assertEquals(unchanged, MyLogTest.Companion.lazyTest)
+            Assert.assertEquals(unchanged, lazyTest)
             MyLog.setMinLogLevel(Log.VERBOSE)
             val modified = "modified"
-            MyLog.v(this, Supplier<String?> { MyLogTest.Companion.lazyTest = "modified" })
-            Assert.assertEquals(modified, MyLogTest.Companion.lazyTest)
+            MyLog.v(this) { lazyTest = "modified"; "" }
+            Assert.assertEquals(modified, lazyTest)
             MyLog.v(this) { "LazyObject: $lazyObject" }
-            Assert.assertEquals(LazyClass::class.java.simpleName, MyLogTest.Companion.lazyTest)
+            Assert.assertEquals(LazyClass::class.java.simpleName, lazyTest)
         } finally {
-            level1.onSuccess { obj: Int? -> MyLog.setMinLogLevel() }
+            level1.onSuccess { obj: Int -> MyLog.setMinLogLevel(obj) }
         }
     }
 
     companion object {
         @Volatile
-        private val lazyTest: String? = ""
+        private var lazyTest: String = ""
     }
 }

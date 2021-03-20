@@ -15,7 +15,7 @@ import org.junit.Test
 import kotlin.Throws
 
 class ConversationViewLoaderTest : ProgressPublisher {
-    private var origin: Origin? =  Origin.EMPTY
+    private var origin: Origin =  Origin.EMPTY
     private var selectedNoteId: Long = 0
     private var progressCounter: Long = 0
     @Before
@@ -23,9 +23,9 @@ class ConversationViewLoaderTest : ProgressPublisher {
     fun setUp() {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithData(this)
-        origin = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName).getOrigin()
+        origin = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName).origin
         Assert.assertTrue(origin.isValid())
-        selectedNoteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.getId(), DemoData.demoData.conversationEntryNoteOid)
+        selectedNoteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, DemoData.demoData.conversationEntryNoteOid)
         Assert.assertTrue("Selected note exists", selectedNoteId != 0L)
         MyLog.i(this, "setUp ended")
     }
@@ -36,8 +36,8 @@ class ConversationViewLoaderTest : ProgressPublisher {
                 ConversationViewItem.Companion.EMPTY,  MyContextHolder.myContextHolder.getNow(), origin, selectedNoteId, false)
         progressCounter = 0
         loader.load(this)
-        val list = loader.list
-        Assert.assertTrue("List is empty", !list.isEmpty())
+        val list = loader.getList()
+        Assert.assertTrue("List is empty", list.isNotEmpty())
         var indentFound = false
         var orderFound = false
         for (oMsg in list) {

@@ -62,7 +62,7 @@ import java.util.concurrent.TimeUnit
  */
 class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccount>, IsEmpty, TaggedClass {
     var actor: Actor = Actor.EMPTY
-        get() = Actor.load(data.myContext(), actor.actorId, false) { actor }
+        get() = Actor.load(data.myContext(), field.actorId, false) { field }
         private set
 
     @Volatile
@@ -739,7 +739,6 @@ ${MyLog.getStackTrace(Exception())}""")
 
     companion object {
         private val TAG: String = MyAccount::class.java.simpleName
-        val EMPTY: MyAccount = MyAccount(AccountName.getEmpty())
         val KEY_ACCOUNT_NAME: String = "account_name"
 
         /** Username for the account  */
@@ -769,6 +768,8 @@ ${MyLog.getStackTrace(Exception())}""")
          */
         val KEY_IS_SYNCED_AUTOMATICALLY: String = "sync_automatically"
         val KEY_ORDER: String = "order"
+
+        val EMPTY: MyAccount = MyAccount(AccountName.getEmpty())
         fun fromBundle(myContext: MyContext, bundle: Bundle?): MyAccount {
             return if (bundle == null) EMPTY else myContext.accounts().fromAccountName(bundle.getString(IntentExtra.ACCOUNT_NAME.key))
         }

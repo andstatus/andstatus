@@ -36,6 +36,7 @@ class DatabaseCreatorTest {
     fun testTablesCreated() {
         MyLog.v(this, "Starting testTablesCreated")
         val database: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().getDatabase()
+                ?: throw IllegalStateException("No database")
         Assert.assertEquals(true, database.isOpen)
         val originId = MyQuery.conditionToLongColumnValue(database, "", OriginTable.TABLE_NAME,
                 BaseColumns._ID, OriginTable.ORIGIN_NAME + "='Twitter'")

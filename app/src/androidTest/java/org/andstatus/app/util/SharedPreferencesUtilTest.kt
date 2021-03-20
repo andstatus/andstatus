@@ -18,7 +18,6 @@ package org.andstatus.app.util
 import android.preference.PreferenceManager
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
-import org.andstatus.app.util.TriState
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -47,6 +46,7 @@ class SharedPreferencesUtilTest {
         SharedPreferencesUtil.resetHasSetDefaultValues()
         Assert.assertEquals(TriState.FALSE, SharedPreferencesUtil.areDefaultPreferenceValuesSet())
         val sp = SharedPreferencesUtil.getSharedPreferences(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES)
+                ?: throw IllegalStateException("No Shared preferences")
         sp.edit().putBoolean(PreferenceManager.KEY_HAS_SET_DEFAULT_VALUES, true).commit()
         Assert.assertEquals(TriState.TRUE, SharedPreferencesUtil.areDefaultPreferenceValuesSet())
     }

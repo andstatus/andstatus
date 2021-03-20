@@ -220,14 +220,14 @@ object TestSuite {
         MyLog.v(method, "$method: ended")
     }
 
-    fun utcTime(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int): Date? {
+    fun utcTime(year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int): Date {
         val cal = GregorianCalendar(TimeZone.getTimeZone("UTC"))
         cal[year, month, day, hour, minute] = second
         cal[Calendar.MILLISECOND] = 0
         return cal.time
     }
 
-    fun utcTime(millis: Long): Date? {
+    fun utcTime(millis: Long): Date {
         val cal = GregorianCalendar(TimeZone.getTimeZone("UTC"))
         cal.timeInMillis = millis
         return cal.time
