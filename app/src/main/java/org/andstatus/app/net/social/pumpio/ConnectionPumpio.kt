@@ -454,7 +454,7 @@ class ConnectionPumpio : Connection() {
     fun actorOidToUsername(actorId: String?): String {
         return if (actorId.isNullOrEmpty()) ""
         else UriUtils.toOptional(actorId)
-                .map { obj: Uri -> obj.getPath() ?: "" }
+                .map(Uri::getPath)
                 .map(stripBefore("/api"))
                 .map(stripBefore("/"))
                 .orElse(Optional.of(actorId)
@@ -495,23 +495,19 @@ class ConnectionPumpio : Connection() {
         val IMAGE_OBJECT: String = "image"
         val FULL_IMAGE_OBJECT: String = "fullImage"
 
-        fun stripBefore(prefixEnd: String): (String?) -> String {
-            return { value: String? ->
-                if (value.isNullOrEmpty()) ""
-                else {
-                    val index = value.indexOf(prefixEnd)
-                    if (index >= 0) value.substring(index + prefixEnd.length) else value
-                }
+        fun stripBefore(prefixEnd: String): (String?) -> String = { value: String? ->
+            if (value.isNullOrEmpty()) ""
+            else {
+                val index = value.indexOf(prefixEnd)
+                if (index >= 0) value.substring(index + prefixEnd.length) else value
             }
         }
 
-        fun stripAfter(suffixStart: String): (String?) -> String {
-            return { value: String? ->
-                if (value.isNullOrEmpty())  ""
-                else {
-                    val index = value.indexOf(suffixStart)
-                    if (index >= 0) value.substring(0, index) else value
-                }
+        fun stripAfter(suffixStart: String): (String?) -> String = { value: String? ->
+            if (value.isNullOrEmpty())  ""
+            else {
+                val index = value.indexOf(suffixStart)
+                if (index >= 0) value.substring(0, index) else value
             }
         }
     }

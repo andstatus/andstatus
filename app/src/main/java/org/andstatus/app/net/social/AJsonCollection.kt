@@ -40,10 +40,8 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject, propertyNa
     val currentPage: AJsonCollection
     val nextPage: AJsonCollection
     val lastPage: AJsonCollection
-    override val isEmpty: Boolean
-        get() {
-            return type == Type.EMPTY
-        }
+
+    override val isEmpty: Boolean get() = type == Type.EMPTY
 
     fun <T : IsEmpty> mapAll(fromObject: CheckedFunction<JSONObject, T>, fromId: CheckedFunction<String, T>): MutableList<T> {
         if (isEmpty) return mutableListOf()
@@ -93,13 +91,13 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject, propertyNa
 
     companion object {
         val EMPTY = of("")
+
         fun empty(): AJsonCollection {
             return EMPTY
         }
 
         fun of(strRoot: String?): AJsonCollection {
-            val parentObject: JSONObject
-            parentObject = try {
+            val parentObject: JSONObject = try {
                 if (strRoot.isNullOrEmpty()) {
                     JSONObject()
                 } else {
@@ -111,7 +109,6 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject, propertyNa
             return of(parentObject)
         }
 
-        @JvmOverloads
         fun of(parentObject: JSONObject, propertyName: String = ""): AJsonCollection {
             return AJsonCollection(parentObject, propertyName)
         }
@@ -141,10 +138,14 @@ class AJsonCollection private constructor(parentObjectIn: JSONObject, propertyNa
         id = if (objectOrId.id.isPresent) objectOrId.id else parent.flatMap { p: JSONObject -> ObjectOrId.of(p, "id").id }
         type = parent.map { jso: JSONObject -> calcType(jso) }.orElse(Type.EMPTY)
         items = parent.map { p: JSONObject -> calcItems(p, type) }.orElse(ObjectOrId.empty())
-        firstPage = parent.map { p: JSONObject -> of(p, "first") }.orElse(empty())
-        prevPage = parent.map { p: JSONObject -> of(p, "prev") }.orElse(empty())
-        currentPage = parent.map { p: JSONObject -> of(p, "current") }.orElse(empty())
-        nextPage = parent.map { p: JSONObject -> of(p, "next") }.orElse(empty())
-        lastPage = parent.map { p: JSONObject -> of(p, "last") }.orElse(empty())
+        firstPage = calcPage(parent, "first")
+        prevPage = calcPage(parent, "prev")
+        currentPage = calcPage(parent, "current")
+        nextPage = calcPage(parent, "next")
+        lastPage = calcPage(parent, "last")
     }
+
+    private fun calcPage(parent: Optional<JSONObject>, propertyName: String) =
+            if (isEmpty) this
+            else parent.map { p: JSONObject -> of(p, propertyName) }.orElse(empty())
 }

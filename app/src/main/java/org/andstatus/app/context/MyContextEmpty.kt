@@ -47,7 +47,7 @@ class MyContextEmpty: MyContext {
 
     override fun getLastDatabaseError(): String = ""
 
-    override fun getDatabase(): SQLiteDatabase = throwException()
+    override fun getDatabase(): SQLiteDatabase? = null
 
     override fun users(): CachedUsersAndActors = throwException()
 

@@ -182,7 +182,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
             val keys2: OAuthClientKeys = OAuthClientKeys.fromConnectionData(connectionData)
             Assert.assertEquals("Keys are loaded for $myAccount", true, keys2.areKeysPresent())
             Assert.assertEquals(consumerKey, keys2.getConsumerKey())
-            Assert.assertEquals(consumerSecret, keys2.getConsumerKey())
+            Assert.assertEquals(consumerSecret, keys2.getConsumerSecret())
         }
     }
 

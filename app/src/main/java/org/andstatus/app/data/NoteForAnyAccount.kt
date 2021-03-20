@@ -36,7 +36,7 @@ import org.andstatus.app.util.StringUtil
  * @author yvolk@yurivolkov.com
  */
 class NoteForAnyAccount(val myContext: MyContext, activityId: Long, noteId: Long) {
-    val origin: Origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId))
+    val origin: Origin = if (myContext.isEmpty) Origin.EMPTY else myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId))
     val noteId: Long
     private var noteOid: String = ""
     val status: DownloadStatus

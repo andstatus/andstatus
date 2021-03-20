@@ -32,6 +32,7 @@ import org.andstatus.app.util.TriState
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
 import org.junit.Assert
+import org.junit.Assert.assertEquals
 import java.util.*
 
 class DemoConversationInserter {
@@ -50,7 +51,7 @@ class DemoConversationInserter {
     }
 
     private fun insertAndTestConversation() {
-        Assert.assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, DemoData.demoData.conversationOriginType)
+        assertEquals("Only PumpIo supported in this test", OriginType.PUMPIO, DemoData.demoData.conversationOriginType)
         val author2 = buildActorFromOid(DemoData.demoData.conversationAuthorSecondActorOid)
         author2.setAvatarUrl("http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png")
         val author3 = buildActorFromOid(DemoData.demoData.conversationAuthorThirdActorOid)
@@ -83,7 +84,7 @@ class DemoConversationInserter {
         addActivity(privateReply2)
         DemoNoteInserter.assertStoredVisibility(privateReply2, Visibility.PRIVATE)
         DemoNoteInserter.assertInteraction(privateReply2, NotificationEventType.EMPTY, TriState.FALSE)
-        Assert.assertEquals("Should be subscribed $selected", TriState.TRUE,
+        assertEquals("Should be subscribed $selected", TriState.TRUE,
                 MyQuery.activityIdToTriState(ActivityTable.SUBSCRIBED, selected.getId()))
         DemoNoteInserter.assertInteraction(selected, NotificationEventType.HOME, TriState.TRUE)
         val reply3 = buildActivity(getAuthor1(), "Another note title",
@@ -105,7 +106,7 @@ class DemoConversationInserter {
                 if (iteration == 1) DemoData.demoData.conversationMentionsNoteOid else null)
         addActivity(reply5)
         if (iteration == 1) {
-            Assert.assertEquals(reply5.toString(), DemoData.demoData.conversationMentionsNoteOid, reply5.getNote().oid)
+            assertEquals(reply5.toString(), DemoData.demoData.conversationMentionsNoteOid, reply5.getNote().oid)
         }
         MatcherAssert.assertThat("The user '${author3.getUsername()}' should be a recipient ${reply5.getNote()}",
                 reply5.getNote().audience().getNonSpecialActors(), CoreMatchers.hasItem(author3))
@@ -152,7 +153,7 @@ class DemoConversationInserter {
         author3.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
         val reply10 = buildActivity(ma2.actor, author3, "", "Reply 10 to Reply 8", reply8,
                 null, DownloadStatus.LOADED)
-        Assert.assertEquals("The third is a note Author", author3, reply10.getAuthor())
+        assertEquals("The third is a note Author", author3, reply10.getAuthor())
         addActivity(reply10)
         author3.isMyFriend = TriState.UNKNOWN
         author3.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
@@ -244,7 +245,7 @@ class DemoConversationInserter {
     companion object {
         fun assertIfActorIsMyFriend(actor: Actor, isFriendOf: Boolean, ma: MyAccount) {
             val actualIsFriend: Boolean = GroupMembership.isGroupMember(ma.actor, GroupType.FRIENDS, actor.actorId)
-            Assert.assertEquals("Actor $actor is a friend of $ma", isFriendOf, actualIsFriend)
+            assertEquals("Actor $actor is a friend of $ma", isFriendOf, actualIsFriend)
         }
     }
 }

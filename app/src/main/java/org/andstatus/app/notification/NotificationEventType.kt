@@ -30,8 +30,9 @@ enum class NotificationEventType(id: Int, preferenceKey: String?, defaultValue: 
     val preferenceKey: String?
     val defaultValue: Boolean
     val titleResId: Int
+
     fun notificationId(): Int {
-        return id as Int
+        return id.toInt()
     }
 
     fun isEnabled(): Boolean {

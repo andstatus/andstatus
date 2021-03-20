@@ -59,7 +59,6 @@ import org.junit.Test
 import java.io.IOException
 import java.net.URL
 import java.util.*
-import java.util.function.Supplier
 import java.util.stream.Collectors
 import kotlin.properties.Delegates
 
@@ -469,5 +468,12 @@ class ConnectionPumpioTest {
         val reply = note.replies[0].getNote()
         Assert.assertEquals("Reply oid", "https://identi.ca/api/comment/cJdi4cGWQT-Z9Rn3mjr5Bw", reply.oid)
         Assert.assertEquals("Is not a Reply $activity", noteOid, reply.getInReplyTo().getNote().oid)
+    }
+
+    @Test
+    fun testActorOidToUsername() {
+        val connection = ConnectionPumpio()
+        val oid = DemoData.demoData.conversationAuthorSecondActorOid
+        Assert.assertEquals("Username from $oid", "second", connection.actorOidToUsername(oid))
     }
 }

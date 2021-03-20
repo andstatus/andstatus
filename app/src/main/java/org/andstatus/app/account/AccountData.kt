@@ -270,7 +270,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         fun fromAndroidAccount(myContext: MyContext, androidAccount: Account?): AccountData {
             requireNotNull(androidAccount) { "$TAG account is null" }
             val am = AccountManager.get(myContext.context())
-            val jsonString = am.getUserData(androidAccount, AccountUtils.KEY_ACCOUNT)
+            val jsonString: String = am.getUserData(androidAccount, AccountUtils.KEY_ACCOUNT) ?: ""
             val accountData = fromJsonString(myContext, jsonString, true)
             accountData.setDataBoolean(MyAccount.KEY_IS_SYNCABLE,
                     ContentResolver.getIsSyncable(androidAccount, MatchedUri.AUTHORITY) != 0)

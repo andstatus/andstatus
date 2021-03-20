@@ -539,7 +539,7 @@ ${MyLog.getStackTrace(Exception())}""")
                         }
                         .onFailure { e: Throwable ->
                             MyLog.v(this) {
-                                "Failed to save" + this.toString() +
+                                "Failed to save " + this.toString() +
                                         "; Error: " + e.message
                             }
                         }

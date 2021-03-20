@@ -324,11 +324,12 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
             Try.success(Optional.of(MyStorage.getMediaFilesSize()))
         }
         val uiConsumer: (MySettingsFragment?) -> Consumer<Try<Optional<Long>>> = { fragment: MySettingsFragment? ->
-            { size: Try<Optional<Long>> ->
+            Consumer<Try<Optional<Long>>>{ size: Try<Optional<Long>> ->
                 size.onSuccess { optSize ->
                     fragment?.showMaximumSizeOfCachedMedia(optSize)
                 }
-            } as Consumer<Try<Optional<Long>>>
+
+            }
         }
 
         AsyncTaskLauncher.execute<MySettingsFragment, Optional<Long>>(this, backgroundFunc, uiConsumer)

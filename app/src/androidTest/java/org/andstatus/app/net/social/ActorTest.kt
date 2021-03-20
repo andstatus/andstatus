@@ -19,8 +19,10 @@ import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
+import org.andstatus.app.data.DemoNoteInserter
 import org.andstatus.app.origin.Origin
 import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 
@@ -140,6 +142,14 @@ class ActorTest {
         extractOneUsername("peter")
         extractOneUsername("AndStatus")
         extractOneUsername("Jet")
+    }
+
+    @Test
+    fun testWebFingerIdCreation() {
+        val accountActor = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName).actor
+        val author2 = DemoNoteInserter(accountActor).buildActorFromOid(DemoData.demoData.conversationAuthorSecondActorOid)
+        author2.setAvatarUrl("http://png.findicons.com/files/icons/1780/black_and_orange/300/android_orange.png")
+        assertEquals("$author2", "second@pump1.example.com", author2.getWebFingerId())
     }
 
     fun extractOneUsername(username: String?) {

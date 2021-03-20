@@ -40,6 +40,7 @@ import org.andstatus.app.util.TriState
 import java.util.*
 import java.util.function.Function
 
+
 object MyQuery {
     private val TAG: String = MyQuery::class.java.simpleName
     fun usernameField(actorInTimeline: ActorInTimeline?): String {
@@ -62,7 +63,7 @@ object MyQuery {
      * [NoteTable._ID] ). Or 0 if nothing was found.
      */
     fun oidToId(oidEnum: OidEnum?, originId: Long, oid: String?): Long {
-        return oidToId( MyContextHolder.myContextHolder.getNow(), oidEnum, originId, oid)
+        return oidToId(MyContextHolder.myContextHolder.getNow(), oidEnum, originId, oid)
     }
 
     fun oidToId(myContext: MyContext, oidEnum: OidEnum?, originId: Long, oid: String?): Long {
@@ -466,10 +467,25 @@ object MyQuery {
             return ""
         }
         val sql = "SELECT $columnName FROM $tableName WHERE $condition"
-        val columnValue = ""
         require(!(tableName.isEmpty() || columnName.isEmpty())) { "$method tableName or columnName are empty" }
         require(!columnName.isEmpty()) { "columnName is empty: $sql" }
-        return if (columnValue.isEmpty()) "" else columnValue
+
+        var columnValue: String? = ""
+        try {
+            db.compileStatement(sql).use {
+                prog -> columnValue = prog.simpleQueryForString()
+            }
+        } catch (e: SQLiteDoneException) {
+            MyLog.ignored(TAG, e)
+        } catch (e: java.lang.Exception) {
+            MyLog.e(TAG, "$method table='$tableName', column='$columnName'", e)
+            return ""
+        }
+        if (MyLog.isVerboseEnabled()) {
+            MyLog.v(TAG, "$method; '$sql' -> $columnValue")
+        }
+
+        return columnValue ?: ""
     }
 
     fun noteIdToActorId(noteActorIdColumnName: String, systemId: Long): Long {
@@ -637,7 +653,7 @@ object MyQuery {
     }
 
     fun getLongs(sql: String): Set<Long> {
-        return getLongs( MyContextHolder.myContextHolder.getNow(), sql)
+        return getLongs(MyContextHolder.myContextHolder.getNow(), sql)
     }
 
     fun getLongs(myContext: MyContext, sql: String): Set<Long> {

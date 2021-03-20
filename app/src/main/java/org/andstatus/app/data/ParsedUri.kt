@@ -30,7 +30,7 @@ class ParsedUri private constructor(intent: Intent?) {
     private val matchedUri: MatchedUri = MatchedUri.fromUri(uri)
     val searchQuery: String = intent?.getStringExtra(IntentExtra.SEARCH_QUERY.key) ?: ""
         get() {
-            if (searchQuery.isNotEmpty()) {
+            if (field.isNotEmpty()) {
                 return field
             }
             try {
