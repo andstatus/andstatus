@@ -66,11 +66,13 @@ class CommandExecutorStrategyTest {
     fun testSearch() {
         val commandData1: CommandData = CommandData.Companion.newSearch(SearchObjects.NOTES,
                  MyContextHolder.myContextHolder.getNow(),  Origin.EMPTY, DemoData.demoData.globalPublicNoteText)
-        var strategy: CommandExecutorStrategy = CommandExecutorStrategy.Companion.getStrategy(commandData1, null)
-        Assert.assertEquals(CommandExecutorStrategy::class.java, strategy.javaClass)
+        Assert.assertTrue("${commandData1}; myContext:${commandData1.myContext} ", commandData1.myContext.nonEmpty)
+        CommandExecutorStrategy.Companion.getStrategy(commandData1, null)
+
         val commandData2: CommandData = CommandData.Companion.newSearch(SearchObjects.NOTES,
                  MyContextHolder.myContextHolder.getNow(), ma.origin, DemoData.demoData.globalPublicNoteText)
-        strategy = CommandExecutorStrategy.Companion.getStrategy(commandData2, null)
+
+        val strategy = CommandExecutorStrategy.Companion.getStrategy(commandData2, null)
         Assert.assertEquals(TimelineDownloaderOther::class.java, strategy.javaClass)
         strategy.execute()
         Assert.assertTrue("Requested " + commandData2 +

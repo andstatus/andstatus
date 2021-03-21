@@ -16,7 +16,6 @@
 package org.andstatus.app.service
 
 import io.vavr.control.Try
-import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.social.Actor
 import org.andstatus.app.net.social.ApiRoutineEnum
@@ -31,7 +30,7 @@ import org.andstatus.app.util.StopWatch
 import org.andstatus.app.util.TryUtils
 import java.util.concurrent.TimeUnit
 
-open class CommandExecutorStrategy(protected val execContext: CommandExecutionContext) : CommandExecutorParent, IdentifiableInstance {
+open class CommandExecutorStrategy(val execContext: CommandExecutionContext) : CommandExecutorParent, IdentifiableInstance {
     override val instanceId = InstanceId.next()
     private var parent: CommandExecutorParent? = null
     protected var lastProgressBroadcastAt: Long = 0
@@ -61,7 +60,7 @@ open class CommandExecutorStrategy(protected val execContext: CommandExecutionCo
         }
         MyLog.v(this) { "Progress: $progress" }
         lastProgressBroadcastAt = System.currentTimeMillis()
-        MyServiceEventsBroadcaster.newInstance( MyContextHolder.myContextHolder.getNow(), MyServiceState.RUNNING)
+        MyServiceEventsBroadcaster.newInstance(execContext.commandData.myContext, MyServiceState.RUNNING)
                 .setCommandData(execContext.commandData)
                 .setProgress(progress)
                 .setEvent(MyServiceEvent.PROGRESS_EXECUTING_COMMAND).broadcast()
@@ -128,9 +127,10 @@ open class CommandExecutorStrategy(protected val execContext: CommandExecutionCo
     companion object {
         private val TAG: String = CommandExecutorStrategy::class.java.simpleName
         protected const val MIN_PROGRESS_BROADCAST_PERIOD_SECONDS: Long = 1
+
         fun executeCommand(commandData: CommandData, parent: CommandExecutorParent?) {
             val strategy = getStrategy(
-                    CommandExecutionContext(commandData.myAccount.origin.myContext, commandData)).setParent(parent)
+                    CommandExecutionContext(commandData.myContext, commandData)).setParent(parent)
             commandData.getResult().prepareForLaunch()
             logLaunch(strategy)
             // This may cause recursive calls to executors...
@@ -160,7 +160,7 @@ open class CommandExecutorStrategy(protected val execContext: CommandExecutionCo
 
         fun getStrategy(commandData: CommandData, parent: CommandExecutorParent?): CommandExecutorStrategy {
             return getStrategy(
-                    CommandExecutionContext(commandData.myAccount.origin.myContext, commandData)).setParent(parent)
+                    CommandExecutionContext(commandData.myContext, commandData)).setParent(parent)
         }
 
         private fun getStrategy(execContext: CommandExecutionContext): CommandExecutorStrategy {

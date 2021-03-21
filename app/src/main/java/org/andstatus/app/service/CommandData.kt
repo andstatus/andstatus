@@ -70,6 +70,10 @@ class CommandData private constructor(
     private val createdDate: Long = if (createdDate > 0) createdDate else this.commandId
     private var description: String = ""
 
+    val myContext: MyContext
+        get() = commandTimeline.myContext.takeIf { it.nonEmpty }
+                ?: myAccount.actor.origin.myContext.takeIf { it.nonEmpty } ?: MyContextHolder.myContextHolder.getNow()
+
     @Volatile
     private var mInForeground = false
 
@@ -156,7 +160,7 @@ class CommandData private constructor(
             builder.withComma(commandTimeline.toString())
         }
         builder.withComma("itemId", itemId) { itemId != 0L }
-        builder.withComma("created:" + RelativeTime.getDifference( MyContextHolder.myContextHolder.getNow().context(), getCreatedDate()))
+        builder.withComma("created:" + RelativeTime.getDifference(myContext.context(), getCreatedDate()))
         builder.withComma(CommandResult.toString(commandResult))
         return MyStringBuilder.formatKeyValue(this, builder)
     }
@@ -373,19 +377,19 @@ class CommandData private constructor(
         }
 
         fun newFetchAttachment(noteId: Long, downloadDataRowId: Long): CommandData {
-            val commandData = newOriginCommand(CommandEnum.GET_ATTACHMENT,  Origin.EMPTY)
+            val commandData = newOriginCommand(CommandEnum.GET_ATTACHMENT, Origin.EMPTY)
             commandData.itemId = downloadDataRowId
             commandData.setTrimmedNoteContentAsDescription(noteId)
             return commandData
         }
 
         fun newActorCommand(command: CommandEnum, actor: Actor, username: String?): CommandData {
-            return newActorCommandAtOrigin(command, actor, username,  Origin.EMPTY)
+            return newActorCommandAtOrigin(command, actor, username, Origin.EMPTY)
         }
 
         fun newActorCommandAtOrigin(command: CommandEnum, actor: Actor, username: String?, origin: Origin): CommandData {
             val commandData = newTimelineCommand(command,
-                     MyContextHolder.myContextHolder.getNow().timelines().get(
+                    MyContextHolder.myContextHolder.getNow().timelines().get(
                             if (origin.isEmpty) TimelineType.SENT else TimelineType.SENT_AT_ORIGIN, actor, origin))
             commandData.setUsername(username)
             commandData.description = commandData.getUsername()
@@ -393,7 +397,7 @@ class CommandData private constructor(
         }
 
         fun newCommand(command: CommandEnum): CommandData {
-            return newOriginCommand(command,  Origin.EMPTY)
+            return newOriginCommand(command, Origin.EMPTY)
         }
 
         fun newItemCommand(command: CommandEnum, myAccount: MyAccount, itemId: Long): CommandData {
@@ -404,7 +408,7 @@ class CommandData private constructor(
 
         fun actOnActorCommand(command: CommandEnum, myAccount: MyAccount, actor: Actor, username: String?): CommandData {
             if (myAccount.nonValid || actor.isEmpty && username.isNullOrEmpty()) return EMPTY
-            val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.SENT, actor,  Origin.EMPTY)
+            val timeline: Timeline = MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.SENT, actor, Origin.EMPTY)
             val commandData = if (actor.isEmpty) newAccountCommand(command, myAccount)
             else CommandData(0, command, myAccount, CommandTimeline.of(timeline), 0)
             commandData.setUsername(username)
@@ -418,13 +422,13 @@ class CommandData private constructor(
 
         fun newOriginCommand(command: CommandEnum, origin: Origin): CommandData {
             return newTimelineCommand(command, if (origin.isEmpty) Timeline.EMPTY
-            else  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, origin))
+            else MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, origin))
         }
 
         fun newTimelineCommand(command: CommandEnum, myAccount: MyAccount,
                                timelineType: TimelineType): CommandData {
-            return newTimelineCommand(command,  MyContextHolder.myContextHolder.getNow().timelines()
-                    .get(timelineType, myAccount.actor,  Origin.EMPTY))
+            return newTimelineCommand(command, MyContextHolder.myContextHolder.getNow().timelines()
+                    .get(timelineType, myAccount.actor, Origin.EMPTY))
         }
 
         fun newTimelineCommand(command: CommandEnum, timeline: Timeline): CommandData {

@@ -32,7 +32,7 @@ import java.util.*
  * Command data about a Timeline. The timeline is lazily evaluated
  * @author yvolk@yurivolkov.com
  */
-class CommandTimeline(private val myContext: MyContext,
+class CommandTimeline(val myContext: MyContext,
                       val origin: Origin,
                       timelineIn: LazyVal<Timeline>?) {
     val timeline: LazyVal<Timeline> = timelineIn ?: LazyVal.of { evaluateTimeline() }
