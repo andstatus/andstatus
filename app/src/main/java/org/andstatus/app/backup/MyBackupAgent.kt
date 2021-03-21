@@ -121,11 +121,14 @@ class MyBackupAgent : BackupAgent() {
         MyServiceManager.stopService()
         var ind = 0
         while (true) {
-            if (MyServiceManager.getServiceState() == MyServiceState.STOPPED) {
+            val serviceState = MyServiceManager.getServiceState()
+            if (serviceState == MyServiceState.STOPPED) {
                 break
+            } else {
+                MyLog.d(this,"Waiting for MyService stopped $ind currently $serviceState")
             }
             if (ind > 5) {
-                throw FileNotFoundException(getString(R.string.system_is_busy_try_later))
+                throw IOException(getString(R.string.system_is_busy_try_later))
             }
             DbUtils.waitMs("checkAndSetServiceUnavailable", 5000)
             ind++

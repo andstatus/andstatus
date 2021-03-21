@@ -144,6 +144,7 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?) {
         private val ACTION_SUCCEEDED_KEY: String = "action_succeeded"
         private val REQUEST_TOKEN_KEY: String = "request_token"
         private val REQUEST_SECRET_KEY: String = "request_secret"
+
         fun fromStoredState(): StateOfAccountChangeProcess {
             return StateOfAccountChangeProcess(STORED_STATE.get())
         }

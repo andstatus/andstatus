@@ -38,6 +38,7 @@ import org.junit.Test
  */
 class AccountSettingsActivityTest : ActivityTest<AccountSettingsActivity>() {
     private var ma: MyAccount = MyAccount.EMPTY
+
     override fun getActivityClass(): Class<AccountSettingsActivity> {
         return AccountSettingsActivity::class.java
     }

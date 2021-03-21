@@ -81,6 +81,7 @@ class MyBackupAgentTest {
 
     @Throws(Throwable::class)
     private fun testBackup(backupFolder: DocumentFile): DocumentFile {
+        MyLog.i(this,"testBackup started")
         val backupManager = MyBackupManager(null, null)
         backupManager.prepareForBackup(backupFolder)
         val dataFolder = backupManager.getDataFolder() ?: throw IllegalStateException("No dataFolder")
@@ -89,11 +90,11 @@ class MyBackupAgentTest {
         Assert.assertTrue("Descriptor file created: " + existingDescriptorFile.map { obj: DocumentFile -> obj.getUri() },
                 existingDescriptorFile.map { obj: DocumentFile -> obj.exists() }.getOrElse(false))
         backupManager.backup()
-        Assert.assertEquals("Shared preferences backed up", 1, backupManager.getBackupAgent()?.getSharedPreferencesBackedUp())
-        Assert.assertEquals("Media files and logs backed up", 2, backupManager.getBackupAgent()?.getFoldersBackedUp())
-        Assert.assertEquals("Databases backed up", 1, backupManager.getBackupAgent()?.getDatabasesBackedUp())
-        Assert.assertEquals("Accounts backed up", backupManager.getBackupAgent()?.getAccountsBackedUp(),  MyContextHolder.myContextHolder.getNow()
-                .accounts().size().toLong())
+        Assert.assertEquals("Shared preferences backed up", 1L, backupManager.getBackupAgent()?.getSharedPreferencesBackedUp())
+        Assert.assertEquals("Media files and logs backed up", 2L, backupManager.getBackupAgent()?.getFoldersBackedUp())
+        Assert.assertEquals("Databases backed up", 1L, backupManager.getBackupAgent()?.getDatabasesBackedUp())
+        Assert.assertEquals("Accounts backed up", MyContextHolder.myContextHolder.getNow().accounts().size().toLong(),
+                backupManager.getBackupAgent()?.getAccountsBackedUp())
         val descriptorFile2: Try<DocumentFile> = MyBackupManager.Companion.getExistingDescriptorFile(dataFolder)
         var jso = DocumentFileUtils.getJSONObject( MyContextHolder.myContextHolder.getNow().context(), descriptorFile2.get())
         Assert.assertEquals(MyBackupDescriptor.Companion.BACKUP_SCHEMA_VERSION.toLong(), jso.getInt(MyBackupDescriptor.Companion.KEY_BACKUP_SCHEMA_VERSION).toLong())
@@ -157,9 +158,9 @@ class MyBackupAgentTest {
         backupManager.prepareForRestore(dataFolder)
         Assert.assertTrue("Data folder exists: '" + backupManager.getDataFolder()?.uri + "'", backupManager.getDataFolder()?.exists() == true)
         backupManager.restore()
-        Assert.assertEquals("Shared preferences restored", 1, backupManager.getBackupAgent()?.sharedPreferencesRestored)
-        Assert.assertEquals("Downloads and logs restored", 2, backupManager.getBackupAgent()?.foldersRestored)
-        Assert.assertEquals("Databases restored", 1, backupManager.getBackupAgent()?.databasesRestored)
+        Assert.assertEquals("Shared preferences restored", 1L, backupManager.getBackupAgent()?.sharedPreferencesRestored)
+        Assert.assertEquals("Downloads and logs restored", 2L, backupManager.getBackupAgent()?.foldersRestored)
+        Assert.assertEquals("Databases restored", 1L, backupManager.getBackupAgent()?.databasesRestored)
     }
 
     private fun deleteBackup(dataFolder: DocumentFile) {

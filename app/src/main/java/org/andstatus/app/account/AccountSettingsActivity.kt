@@ -224,7 +224,8 @@ class AccountSettingsActivity : MyActivity() {
         if (state.authenticatorResponse != null) {
             message += "; authenticatorResponse"
         }
-        MyLog.v(this, "setState from " + calledFrom + "; " + message + "; intent=" + intent.toUri(0))
+        this.state = state
+        MyLog.v(this, "restoreState from " + calledFrom + "; " + message + "; intent=" + intent.toUri(0))
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -667,7 +668,7 @@ class AccountSettingsActivity : MyActivity() {
         val ma = getMyAccount()
         if (reVerify || ma.getCredentialsVerified() == CredentialsVerificationStatus.NEVER) {
             MyServiceManager.setServiceUnavailable()
-            val state2: MyServiceState? = MyServiceManager.getServiceState()
+            val state2: MyServiceState = MyServiceManager.getServiceState()
             if (state2 != MyServiceState.STOPPED) {
                 MyServiceManager.stopService()
                 if (state2 != MyServiceState.UNKNOWN) {

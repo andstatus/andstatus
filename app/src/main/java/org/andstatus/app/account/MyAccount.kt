@@ -457,7 +457,7 @@ ${MyLog.getStackTrace(Exception())}""")
         }
 
         fun rebuildMyAccount(accountName: AccountName) {
-            val ma = accountName.myContext().accounts().fromAccountName(accountName.name)
+            val ma = myContext().accounts().fromAccountName(accountName.name)
             myAccount = if (ma.isValid) ma else MyAccount(getAccount().data.withAccountName(accountName))
         }
 
@@ -682,7 +682,9 @@ ${MyLog.getStackTrace(Exception())}""")
         }
 
         fun myContext(): MyContext {
-            return myAccount.data.myContext()
+            return myAccount.data.myContext().takeIf { it.nonEmpty }
+                    ?: getOrigin().myContext.takeIf { it.nonEmpty }
+                    ?: MyContextHolder.myContextHolder.getNow()
         }
 
         override fun classTag(): String {

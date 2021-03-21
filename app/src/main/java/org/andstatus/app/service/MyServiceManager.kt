@@ -43,13 +43,12 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
          * @See [here](http://groups.google.com/group/android-developers/browse_thread/thread/8c4bd731681b8331/bf3ae8ef79cad75d)
          */
         @Volatile
-        var stateEnum: MyServiceState? = MyServiceState.UNKNOWN
+        var stateEnum: MyServiceState = MyServiceState.UNKNOWN
 
         /**
-         * [System.nanoTime] when the state was queued or received last time ( 0 - never )
+         * [System.currentTimeMillis] when the state was queued or received last time ( 0 - never )
          */
-        @Volatile
-        var stateQueuedTime: Long = 0
+        val stateQueuedTime: Long = System.currentTimeMillis()
 
         /** If true, we sent state request and are waiting for reply from [MyService]  */
         @Volatile
@@ -62,7 +61,6 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
 
             fun fromIntent(intent: Intent): MyServiceStateInTime {
                 val state = MyServiceStateInTime()
-                state.stateQueuedTime = System.nanoTime()
                 state.stateEnum = MyServiceState.load(intent.getStringExtra(IntentExtra.SERVICE_STATE.key))
                 return state
             }
@@ -78,7 +76,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
             MyAction.SYNC -> SyncInitiator.tryToSync(context)
             MyAction.SERVICE_STATE -> {
                 if (isServiceAvailable()) {
-                     MyContextHolder.myContextHolder.initialize(context, this)
+                    MyContextHolder.myContextHolder.initialize(context, this)
                 }
                 stateInTime = MyServiceStateInTime.fromIntent(intent)
                 MyLog.d(this, "Notification received: Service state=" + stateInTime.stateEnum)
@@ -86,7 +84,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
             MyAction.ACTION_SHUTDOWN -> {
                 setServiceUnavailable()
                 MyLog.d(this, "Stopping service on Shutdown")
-                 MyContextHolder.myContextHolder.onShutDown()
+                MyContextHolder.myContextHolder.onShutDown()
                 stopService()
             }
             else -> {
@@ -138,7 +136,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
                 // Imitate a soft service error
                 commandData.getResult().incrementNumIoExceptions()
                 commandData.getResult().setMessage("Service is not available")
-                MyServiceEventsBroadcaster.newInstance( MyContextHolder.myContextHolder.getNow(), MyServiceState.STOPPED)
+                MyServiceEventsBroadcaster.newInstance(MyContextHolder.myContextHolder.getNow(), MyServiceState.STOPPED)
                         .setCommandData(commandData).setEvent(MyServiceEvent.AFTER_EXECUTING_COMMAND).broadcast()
                 return
             }
@@ -156,7 +154,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
         fun sendCommandIgnoringServiceAvailability(commandData: CommandData) {
             // Using explicit Service intent,
             // see http://stackoverflow.com/questions/18924640/starting-android-service-using-explicit-vs-implicit-intent
-            var serviceIntent = Intent( MyContextHolder.myContextHolder.getNow().context(), MyService::class.java)
+            var serviceIntent = Intent(MyContextHolder.myContextHolder.getNow().context(), MyService::class.java)
             when (commandData.command) {
                 CommandEnum.STOP_SERVICE, CommandEnum.BROADCAST_SERVICE_STATE -> serviceIntent = commandData.toIntent(serviceIntent)
                 CommandEnum.UNKNOWN -> {
@@ -164,13 +162,13 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
                 else -> CommandQueue.addToPreQueue(commandData)
             }
             try {
-                 MyContextHolder.myContextHolder.getNow().context().startService(serviceIntent)
+                MyContextHolder.myContextHolder.getNow().context().startService(serviceIntent)
             } catch (e: IllegalStateException) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     try {
                         // Since Android Oreo TODO: https://developer.android.com/about/versions/oreo/android-8.0-changes.html#back-all
                         // See also https://github.com/evernote/android-job/issues/254
-                         MyContextHolder.myContextHolder.getNow().context().startForegroundService(serviceIntent)
+                        MyContextHolder.myContextHolder.getNow().context().startForegroundService(serviceIntent)
                     } catch (e2: IllegalStateException) {
                         MyLog.e(TAG, "Failed to start MyService in the foreground", e2)
                     }
@@ -187,12 +185,13 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
          */
         @Synchronized
         fun stopService() {
-            if (! MyContextHolder.myContextHolder.getNow().isReady()) {
+            stateInTime = MyServiceStateInTime.getUnknown()
+            if (!MyContextHolder.myContextHolder.getNow().isReady()) {
                 return
             }
             // Don't do "context.stopService", because we may lose some information and (or) get Force Close
             // This is "mild" stopping
-             MyContextHolder.myContextHolder.getNow().context()
+            MyContextHolder.myContextHolder.getNow().context()
                     .sendBroadcast(CommandData.newCommand(CommandEnum.STOP_SERVICE)
                             .toIntent(MyAction.EXECUTE_COMMAND.getIntent()))
         }
@@ -202,10 +201,10 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
          * Doesn't start the service, so absence of the reply will mean that service is stopped
          * @See [here](http://groups.google.com/group/android-developers/browse_thread/thread/8c4bd731681b8331/bf3ae8ef79cad75d)
          */
-        fun getServiceState(): MyServiceState? {
-            val time = System.nanoTime()
+        fun getServiceState(): MyServiceState {
             var state = stateInTime
-            if (state.isWaiting && time - state.stateQueuedTime > TimeUnit.SECONDS.toMillis(STATE_QUERY_TIMEOUT_SECONDS.toLong())) {
+            if (state.isWaiting && (System.currentTimeMillis() - state.stateQueuedTime >
+                            TimeUnit.SECONDS.toMillis(STATE_QUERY_TIMEOUT_SECONDS.toLong()))) {
                 // Timeout expired
                 state = MyServiceStateInTime()
                 state.stateEnum = MyServiceState.STOPPED
@@ -215,9 +214,8 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
                 state = MyServiceStateInTime()
                 state.stateEnum = MyServiceState.UNKNOWN
                 state.isWaiting = true
-                state.stateQueuedTime = time
                 stateInTime = state
-                 MyContextHolder.myContextHolder.getNow().context()
+                MyContextHolder.myContextHolder.getNow().context()
                         .sendBroadcast(CommandData.newCommand(CommandEnum.BROADCAST_SERVICE_STATE)
                                 .toIntent(MyAction.EXECUTE_COMMAND.getIntent()))
             }
@@ -226,14 +224,14 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
 
         private val serviceAvailability: AtomicReference<ServiceAvailability> = AtomicReference(ServiceAvailability.AVAILABLE)
         fun isServiceAvailable(): Boolean {
-            var isAvailable: Boolean =  MyContextHolder.myContextHolder.getNow().isReady()
+            var isAvailable: Boolean = MyContextHolder.myContextHolder.getNow().isReady()
             if (!isAvailable) {
                 val tryToInitialize = serviceAvailability.get().isAvailable()
                 if (tryToInitialize
                         && MyAsyncTask.nonUiThread() // Don't block on UI thread
-                        && ! MyContextHolder.myContextHolder.getNow().initialized()) {
-                     MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
-                    isAvailable =  MyContextHolder.myContextHolder.getNow().isReady()
+                        && !MyContextHolder.myContextHolder.getNow().initialized()) {
+                    MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
+                    isAvailable = MyContextHolder.myContextHolder.getNow().isReady()
                 }
             }
             if (isAvailable) {
