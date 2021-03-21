@@ -53,7 +53,7 @@ class MyLogTest {
         Assert.assertTrue(MyLog.getLogFilename().isEmpty())
         Assert.assertTrue(file.delete())
         MyLog.v(this, method)
-        Assert.assertEquals(null, MyLog.getLogFilename())
+        Assert.assertEquals("", MyLog.getLogFilename())
         Assert.assertFalse(file.exists())
         if (isLogEnabled) {
             MyLog.setLogToFile(true)

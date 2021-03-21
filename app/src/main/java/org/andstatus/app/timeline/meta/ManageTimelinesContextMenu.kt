@@ -31,7 +31,7 @@ class ManageTimelinesContextMenu(listActivity: LoadableListActivity<ManageTimeli
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo?) {
         val method = "onCreateContextMenu"
-        super.onCreateContextMenu(menu, v, menuInfo)
+        saveContextOfSelectedItem(v)
         val viewItem = getViewItem()
         var order = 0
         try {

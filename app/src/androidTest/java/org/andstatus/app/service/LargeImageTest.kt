@@ -66,7 +66,7 @@ import java.io.IOException
         }
         loader.setConnectionMock(connMock.connection)
         loader.load(commandData)
-        Assert.assertEquals("Requested", 1, connMock.getHttpMock().getRequestsCounter().toLong())
+        Assert.assertEquals("Requested", 1, connMock.getHttpMock().getRequestsCounter())
         val data: DownloadData = DownloadData.Companion.fromId(dd.getDownloadId())
         Assert.assertFalse("Loaded " + data.getUri(), commandData.getResult().hasError())
         Assert.assertTrue("File exists " + data.getUri(), data.getFile().existed)

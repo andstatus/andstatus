@@ -31,7 +31,7 @@ import java.util.*
 /**
  * @author yvolk@yurivolkov.com
  */
-open class MyContextMenu(protected val listActivity: LoadableListActivity<*>, val menuGroup: Int) : OnCreateContextMenuListener {
+abstract class MyContextMenu(protected val listActivity: LoadableListActivity<*>, val menuGroup: Int) : OnCreateContextMenuListener {
     private var viewOfTheContext: View? = null
     protected var mViewItem: ViewItem<*> = EmptyViewItem.EMPTY
 
@@ -42,11 +42,7 @@ open class MyContextMenu(protected val listActivity: LoadableListActivity<*>, va
     @Volatile
     private var selectedActingAccount: MyAccount = MyAccount.EMPTY
 
-    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo?) {
-        saveContextOfSelectedItem(v)
-    }
-
-    private fun saveContextOfSelectedItem(v: View) {
+    fun saveContextOfSelectedItem(v: View) {
         viewOfTheContext = v
         val viewItem = if (menuGroup == MENU_GROUP_ACTOR_PROFILE) listActivity.getListData().getActorViewItem()
             else listActivity.saveContextOfSelectedItem(v)

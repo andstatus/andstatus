@@ -52,7 +52,7 @@ class MyServiceTest1 : MyServiceTest() {
         DbUtils.waitMs(this, 5000)
         Assert.assertEquals("Requests were sent while all timelines just synced " +
                 runner.toString() + "; " + mService.getHttp().toString(),
-                0, mService.getHttp()?.getRequestsCounter()?.toLong())
+                0, mService.getHttp()?.getRequestsCounter())
         val myContext2: MyContext =  MyContextHolder.myContextHolder.getNow()
         val timelineToSync: Timeline = DemoAccountInserter.Companion.getAutomaticallySyncableTimeline(myContext2, myAccount)
         timelineToSync.setSyncSucceededDate(0)
@@ -63,7 +63,7 @@ class MyServiceTest1 : MyServiceTest() {
         DbUtils.waitMs(this, 5000)
         Assert.assertEquals("Timeline was not synced: " + timelineToSync + "; " +
                 runner.toString() + "; " + mService.getHttp().toString(),
-                1, mService.getHttp()?.getRequestsCounter()?.toLong())
+                1, mService.getHttp()?.getRequestsCounter())
         Assert.assertTrue("Service stopped", mService.waitForServiceStopped(true))
         MyLog.i(this, "$method ended")
     }
@@ -81,7 +81,7 @@ class MyServiceTest1 : MyServiceTest() {
         Assert.assertTrue("First command ended executing", mService.waitForCommandExecutionEnded(endCount))
         MyLog.i(this, method + "; " + mService.getHttp().toString())
         Assert.assertEquals("connection instance Id", mService.connectionInstanceId, mService.getHttp()?.getInstanceId())
-        Assert.assertEquals(mService.getHttp().toString(), 1, mService.getHttp()?.getRequestsCounter()?.toLong())
+        Assert.assertEquals(mService.getHttp().toString(), 1, mService.getHttp()?.getRequestsCounter())
         Assert.assertTrue("Service stopped", mService.waitForServiceStopped(true))
         MyLog.i(this, "$method ended")
     }

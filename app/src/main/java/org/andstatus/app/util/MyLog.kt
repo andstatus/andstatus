@@ -369,7 +369,7 @@ object MyLog {
 
     fun getFileInLogDir(filename: String?, logged: Boolean): File? {
         val dir1 = MyStorage.getLogsDir(logged)
-        return if (dir1 == null || filename == null) {
+        return if (dir1 == null || filename.isNullOrEmpty()) {
             null
         } else File(dir1, filename)
     }
@@ -425,20 +425,26 @@ object MyLog {
 
     private val logFileWriterLock: Any = Any()
     private fun writeRawStringToLogFile(builder: StringBuilder?) {
-        synchronized(logFileWriterLock) { writeStringToFile(builder.toString(), getMostRecentLogFileName(), true, false) }
+        synchronized(logFileWriterLock) {
+            writeStringToFile(builder.toString(), getMostRecentLogFileName(), true, false)
+        }
     }
 
     private fun getMostRecentLogFileName(): String {
         var filename = getLogFilename()
-        if (!FileUtils.exists(getFileInLogDir(filename, false))) {
-            setNextLogFileName(true)
-            filename = getLogFilename()
+        getFileInLogDir(filename, false)?.let {
+            if (!FileUtils.exists(it)) {
+                setNextLogFileName(true)
+                filename = getLogFilename()
+            }
         }
         return filename
     }
 
     fun getLogFilename(): String {
-        synchronized(logToFileEnabled) { return logFileName ?: "noname" }
+        synchronized(logToFileEnabled) {
+            return logFileName ?: ""
+        }
     }
 
     fun logLevelToString(logLevel: Int): String {

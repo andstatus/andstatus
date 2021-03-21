@@ -16,7 +16,6 @@
 package org.andstatus.app.note
 
 import android.text.SpannableString
-import android.view.ContextMenu
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -205,9 +204,10 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T>>(contextMenu: NoteContext
     private fun setOnButtonClick(viewGroup: View, buttonId: Int, menuItem: NoteContextMenuItem) {
         viewGroup.findViewById<View?>(buttonId).setOnClickListener { view: View ->
             val item = getItem(view)
-            if (item != null && (item.noteStatus == DownloadStatus.LOADED || menuItem.appliedToUnsentNotesAlso)) {
-                contextMenu.onCreateContextMenu(EmptyContextMenu.EMPTY, view, EmptyContextMenu.EMPTY_INFO
-                ) { contextMenu: NoteContextMenu -> contextMenu.onContextItemSelected(menuItem, item.getNoteId()) }
+            if (item.nonEmpty && (item.noteStatus == DownloadStatus.LOADED || menuItem.appliedToUnsentNotesAlso)) {
+                contextMenu.onViewSelected(view) { contextMenu: NoteContextMenu ->
+                    contextMenu.onContextItemSelected(menuItem, item.getNoteId())
+                }
             }
         }
     }

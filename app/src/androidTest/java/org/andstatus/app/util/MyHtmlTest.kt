@@ -17,7 +17,6 @@ package org.andstatus.app.util
 
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.TextMediaType
-import org.andstatus.app.util.MyHtmlTest
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -31,15 +30,15 @@ class MyHtmlTest {
 
     @Test
     fun testPrepareForView() {
-        Assert.assertEquals(MyHtmlTest.Companion.SAMPLE1_FOR_VIEW, MyHtml.prepareForView(MyHtmlTest.Companion.SAMPLE1_HTML))
-        Assert.assertEquals(MyHtmlTest.Companion.SAMPLE2_FOR_VIEW, MyHtml.prepareForView(MyHtmlTest.Companion.SAMPLE2_HTML1))
-        Assert.assertEquals(MyHtmlTest.Companion.SAMPLE2_FOR_VIEW, MyHtml.prepareForView(MyHtmlTest.Companion.SAMPLE2_HTML2))
+        Assert.assertEquals(SAMPLE1_FOR_VIEW, MyHtml.prepareForView(SAMPLE1_HTML))
+        Assert.assertEquals(SAMPLE2_FOR_VIEW, MyHtml.prepareForView(SAMPLE2_HTML1))
+        Assert.assertEquals(SAMPLE2_FOR_VIEW, MyHtml.prepareForView(SAMPLE2_HTML2))
     }
 
     @Test
     fun testHasHtmlMarkup() {
-        Assert.assertFalse(MyHtml.hasHtmlMarkup(MyHtmlTest.Companion.SAMPLE1))
-        Assert.assertTrue(MyHtml.hasHtmlMarkup(MyHtmlTest.Companion.SAMPLE1_HTML))
+        Assert.assertFalse(MyHtml.hasHtmlMarkup(SAMPLE1))
+        Assert.assertTrue(MyHtml.hasHtmlMarkup(SAMPLE1_HTML))
     }
 
     @Test
@@ -98,11 +97,11 @@ class MyHtmlTest {
 
     @Test
     fun testSendingToTwitter() {
-        Assert.assertEquals(MyHtmlTest.Companion.twitterBodyHtml, MyHtml.toContentStored(MyHtmlTest.Companion.twitterBodyTypedPlain, TextMediaType.PLAIN, true))
-        Assert.assertEquals(MyHtmlTest.Companion.twitterBodyTypedPlain, MyHtml.fromContentStored(MyHtmlTest.Companion.twitterBodyHtml, TextMediaType.PLAIN))
-        Assert.assertEquals(MyHtmlTest.Companion.twitterBodyReceived, MyHtml.fromContentStored(MyHtmlTest.Companion.twitterBodyHtml, TextMediaType.PLAIN_ESCAPED))
-        Assert.assertEquals(MyHtmlTest.Companion.twitterBodyHtml, MyHtml.toContentStored(MyHtmlTest.Companion.twitterBodyReceived, TextMediaType.PLAIN_ESCAPED, true))
-        Assert.assertEquals(MyHtmlTest.Companion.twitterBodyHtml, MyHtml.toContentStored(MyHtmlTest.Companion.twitterBodyReceived, TextMediaType.PLAIN_ESCAPED, false))
+        Assert.assertEquals(twitterBodyHtml, MyHtml.toContentStored(twitterBodyTypedPlain, TextMediaType.PLAIN, true))
+        Assert.assertEquals(twitterBodyTypedPlain, MyHtml.fromContentStored(twitterBodyHtml, TextMediaType.PLAIN))
+        Assert.assertEquals(twitterBodyReceived, MyHtml.fromContentStored(twitterBodyHtml, TextMediaType.PLAIN_ESCAPED))
+        Assert.assertEquals(twitterBodyHtml, MyHtml.toContentStored(twitterBodyReceived, TextMediaType.PLAIN_ESCAPED, true))
+        Assert.assertEquals(twitterBodyHtml, MyHtml.toContentStored(twitterBodyReceived, TextMediaType.PLAIN_ESCAPED, false))
     }
 
     @Test
@@ -136,8 +135,8 @@ class MyHtmlTest {
         val expBrBr = "Today's note<br />has <br /><br />linebreaks"
         Assert.assertEquals(expBrBr, MyHtml.toContentStored(textNN, TextMediaType.PLAIN, true))
         Assert.assertEquals(expBrBr, MyHtml.toContentStored(textNN, TextMediaType.PLAIN, false))
-        Assert.assertEquals(MyHtmlTest.Companion.twitterBodyHtml, MyHtml.toContentStored(MyHtmlTest.Companion.twitterBodyReceived, TextMediaType.PLAIN_ESCAPED, true))
-        Assert.assertEquals(MyHtmlTest.Companion.twitterBodyHtml, MyHtml.toContentStored(MyHtmlTest.Companion.twitterBodyReceived, TextMediaType.PLAIN_ESCAPED, false))
+        Assert.assertEquals(twitterBodyHtml, MyHtml.toContentStored(twitterBodyReceived, TextMediaType.PLAIN_ESCAPED, true))
+        Assert.assertEquals(twitterBodyHtml, MyHtml.toContentStored(twitterBodyReceived, TextMediaType.PLAIN_ESCAPED, false))
     }
 
     @Test
@@ -157,7 +156,7 @@ class MyHtmlTest {
                 "Line one &lt; escaped &gt;<br />Line two")
         val oneLineEscaped = "Less &lt; and escaped &amp;lt; greater &gt;"
         assertToPlainEscaped(oneLineEscaped, oneLineEscaped)
-        assertToPlainEscaped(MyHtmlTest.Companion.twitterBodyReceived, MyHtmlTest.Companion.twitterBodyHtml)
+        assertToPlainEscaped(twitterBodyReceived, twitterBodyHtml)
     }
 
     private fun assertToPlainEscaped(expected: String?, textHtml: String?) {
@@ -166,18 +165,14 @@ class MyHtmlTest {
     }
 
     companion object {
-        private val SAMPLE1: String? = "This note\nhas newline"
-        private val SAMPLE1_FOR_VIEW: String? = "This note<br>\nhas newline"
-        private val SAMPLE1_HTML: String? = """
-               <p dir="ltr">${MyHtmlTest.Companion.SAMPLE1_FOR_VIEW}</p>
-               
-               """.trimIndent()
-        private val SAMPLE2_FOR_VIEW: String? = """
-               @auser@example.com This is a link <a href="https://example.com/page1.html#something">https://example.com/page1.html#something</a><br>
-               The second line
-               """.trimIndent()
-        private val SAMPLE2_HTML1: String? = "<p dir=\"ltr\">" + MyHtmlTest.Companion.SAMPLE2_FOR_VIEW + "</p>"
-        private val SAMPLE2_HTML2: String? = MyHtmlTest.Companion.SAMPLE2_HTML1 + "\n"
+        private const val SAMPLE1: String = "This note\nhas newline"
+        private const val SAMPLE1_FOR_VIEW: String = "This note<br>\nhas newline"
+        private const val SAMPLE1_HTML: String = "<p dir=\"ltr\">$SAMPLE1_FOR_VIEW</p>\n"
+        private const val SAMPLE2_FOR_VIEW: String = "@auser@example.com This is a link " +
+                "<a href=\"https://example.com/page1.html#something\">https://example.com/page1.html#something</a><br>\n" +
+                "The second line"
+        private const val SAMPLE2_HTML1: String = "<p dir=\"ltr\">$SAMPLE2_FOR_VIEW</p>"
+        private const val SAMPLE2_HTML2: String = SAMPLE2_HTML1 + "\n"
 
         /* Plain text to manually copy-paste to Note Editor:
 Testing if and what is escaped in a Tweet:
@@ -193,13 +188,13 @@ Testing if and what is escaped in a Tweet:
 3. Ampersand & and escaped: &amp;
 4. Apostrophe '
 5. br HTML tag: <br /> and without "/": <br> ?!"""
-        private val twitterBodyReceived: String? = """Testing if and what is escaped in a Tweet:
+        private val twitterBodyReceived: String = """Testing if and what is escaped in a Tweet:
 1. "less-than" sign &lt;  and escaped: &amp;lt;
 2. "greater-than" sign &gt; and escaped: &amp;gt;
 3. Ampersand &amp; and escaped: &amp;amp;
 4. Apostrophe '
 5. br HTML tag: &lt;br /&gt; and without "/": &lt;br&gt; ?!"""
-        var twitterBodyToPost: String? = MyHtmlTest.Companion.twitterBodyTypedPlain
+        var twitterBodyToPost: String? = twitterBodyTypedPlain
         var twitterBodyHtml: String? = "Testing if and what is escaped in a Tweet:<br />" +
                 "1. \"less-than\" sign &lt;  and escaped: &amp;lt;<br />" +
                 "2. \"greater-than\" sign &gt; and escaped: &amp;gt;<br />" +

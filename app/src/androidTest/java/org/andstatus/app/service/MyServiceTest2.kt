@@ -47,7 +47,7 @@ class MyServiceTest2 : MyServiceTest() {
         mService.assertCommandExecutionStarted("First command should start", startCount, TriState.TRUE)
         Assert.assertTrue("First command should end execution", mService.waitForCommandExecutionEnded(endCount))
         Assert.assertEquals(cd1Home.toString() + " " + mService .getHttp().toString(),
-                1, mService .getHttp()?.getRequestsCounter()?.toLong())
+                1, mService .getHttp()?.getRequestsCounter())
         Assert.assertTrue(TestSuite.setAndWaitForIsInForeground(true))
         MyLog.i(this, "$method; we are in a foreground")
         val cd2Interactions: CommandData = CommandData.Companion.newTimelineCommand(CommandEnum.GET_TIMELINE,
@@ -62,7 +62,7 @@ class MyServiceTest2 : MyServiceTest() {
         Assert.assertTrue("Service should stop", mService.waitForServiceStopped(false))
         MyLog.i(this, "$method; Service stopped after the second command")
         Assert.assertEquals("No new data should be posted while in foreground",
-                1, mService .getHttp()?.getRequestsCounter()?.toLong())
+                1, mService .getHttp()?.getRequestsCounter())
         val queues: CommandQueue =  MyContextHolder.myContextHolder.getBlocking().queues()
         MyLog.i(this, "$method; Queues1:$queues")
         Assert.assertEquals("First command shouldn't be in any queue $queues",

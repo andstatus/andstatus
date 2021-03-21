@@ -122,7 +122,7 @@ object StringUtil {
 
     /** Doesn't throw exceptions  */
     fun format(format: String?, vararg args: Any?): String {
-        if (args.isEmpty() || format == null) {
+        if (args.isEmpty()) {
             return format?: ""
         }
         if (!format.isNullOrEmpty()) {

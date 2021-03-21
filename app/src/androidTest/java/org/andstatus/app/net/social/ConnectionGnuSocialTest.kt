@@ -186,7 +186,7 @@ class ConnectionGnuSocialTest {
         val note = activity.getNote()
         Assert.assertEquals("Note oid$note", NOTE_OID, note.oid)
         Assert.assertEquals("conversationOid", "9118253", note.conversationOid)
-        Assert.assertEquals(1, mock.getHttpMock().getRequestsCounter().toLong())
+        Assert.assertEquals(1, mock.getHttpMock().getRequestsCounter())
         val result = mock.getHttpMock().getResults()[0]
         Assert.assertTrue("URL doesn't contain note oid: " + result.getUrl(), result.getUrl().contains(NOTE_OID))
         Assert.assertEquals("Activity oid; $activity", "10341833", activity.getOid())

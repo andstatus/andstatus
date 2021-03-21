@@ -32,7 +32,7 @@ open class ActorContextMenu(val menuContainer: NoteEditorContainer, menuGroup: I
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenuInfo?) {
         val method = "onCreateContextMenu"
-        super.onCreateContextMenu(menu, v, menuInfo)
+        saveContextOfSelectedItem(v)
         if (getViewItem().isEmpty) {
             return
         }

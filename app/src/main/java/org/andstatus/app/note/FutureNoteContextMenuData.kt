@@ -19,7 +19,6 @@ import android.view.View
 import org.andstatus.app.data.NoteContextMenuData
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.util.MyLog
-import java.util.function.Consumer
 
 class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*>?) {
     enum class StateForSelectedViewItem {
@@ -62,12 +61,13 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
         fun loadAsync(noteContextMenu: NoteContextMenu,
                       view: View?,
                       viewItem: BaseNoteViewItem<*>?,
-                      next: Consumer<NoteContextMenu>) {
+                      next: (NoteContextMenu) -> Unit) {
             val menuContainer = noteContextMenu.menuContainer
             val future = FutureNoteContextMenuData(viewItem)
             if (menuContainer != null && view != null && future.noteId != 0L) {
                 future.loader = object : MyAsyncTask<Void?, Void?, NoteContextMenuData>(
                         TAG + future.noteId, PoolEnum.QUICK_UI) {
+
                     override fun doInBackground2(aVoid: Void?): NoteContextMenuData? {
                         val selectedMyAccount = noteContextMenu.getSelectedActingAccount()
                         val currentMyAccount = menuContainer.getActivity().myContext.accounts().currentAccount
@@ -75,7 +75,11 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
                                 menuContainer.getActivity().myContext, future.activityId,
                                 future.noteId, selectedMyAccount, currentMyAccount)
                         if (MyLog.isVerboseEnabled()) {
-                            MyLog.v(noteContextMenu, """acting:${accountToNote.getMyAccount().getAccountName()}${if (accountToNote.getMyAccount() == selectedMyAccount || selectedMyAccount.nonValid) "" else ", selected:" + selectedMyAccount.getAccountName()}${if (accountToNote.getMyAccount() == currentMyAccount || currentMyAccount.nonValid) "" else ", current:" + currentMyAccount.getAccountName()} $accountToNote""")
+                            MyLog.v(noteContextMenu, "acting:${accountToNote.getMyAccount().getAccountName()}" +
+                                    "${if (accountToNote.getMyAccount() == selectedMyAccount || selectedMyAccount.nonValid) "" 
+                                    else ", selected:" + selectedMyAccount.getAccountName()}" +
+                                    "${if (accountToNote.getMyAccount() == currentMyAccount || currentMyAccount.nonValid) "" 
+                                    else ", current:" + currentMyAccount.getAccountName()} $accountToNote")
                         }
                         return if (accountToNote.getMyAccount().isValid) accountToNote else NoteContextMenuData.EMPTY
                     }
@@ -84,11 +88,7 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
                         future.menuData = menuData ?: NoteContextMenuData.EMPTY
                         noteContextMenu.setFutureData(future)
                         if (future.menuData.noteForAnyAccount.noteId != 0L && noteContextMenu.getViewItem().getNoteId() == future.noteId) {
-                            if (next != null) {
-                                next.accept(noteContextMenu)
-                            } else {
-                                noteContextMenu.showContextMenu()
-                            }
+                            next(noteContextMenu)
                         }
                     }
                 }
