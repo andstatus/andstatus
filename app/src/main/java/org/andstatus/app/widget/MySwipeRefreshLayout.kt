@@ -26,7 +26,7 @@ import org.andstatus.app.util.MyStringBuilder
  */
 class MySwipeRefreshLayout @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
         SwipeRefreshLayout(context, attrs) {
-    private var mCanSwipeRefreshScrollUpCallback: CanSwipeRefreshScrollUpCallback? = null
+    private val mCanSwipeRefreshScrollUpCallback: CanSwipeRefreshScrollUpCallback?
 
     interface CanSwipeRefreshScrollUpCallback {
         fun canSwipeRefreshChildScrollUp(): Boolean
@@ -37,9 +37,9 @@ class MySwipeRefreshLayout @JvmOverloads constructor(context: Context, attrs: At
     }
 
     init {
-        if (context is CanSwipeRefreshScrollUpCallback) {
-            mCanSwipeRefreshScrollUpCallback = context
-            MyLog.v(this) { "Created for " + MyStringBuilder.objToTag(mCanSwipeRefreshScrollUpCallback) }
-        }
+        mCanSwipeRefreshScrollUpCallback = if (context is CanSwipeRefreshScrollUpCallback) {
+            MyLog.v(this) { "Created for " + MyStringBuilder.objToTag(context) }
+            context
+        } else null
     }
 }

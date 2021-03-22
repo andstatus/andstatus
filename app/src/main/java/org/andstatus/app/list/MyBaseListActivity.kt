@@ -41,9 +41,7 @@ abstract class MyBaseListActivity : MyActivity(), CanSwipeRefreshScrollUpCallbac
 
     protected fun findSwipeLayout(): MySwipeRefreshLayout? {
         val view = findViewById<View?>(R.id.swipeRefreshLayout)
-        return if (view != null && MySwipeRefreshLayout::class.java.isAssignableFrom(view.javaClass)) {
-            view as MySwipeRefreshLayout
-        } else null
+        return if (view is MySwipeRefreshLayout) view else null
     }
 
     fun getPositionOfContextMenu(): Int {

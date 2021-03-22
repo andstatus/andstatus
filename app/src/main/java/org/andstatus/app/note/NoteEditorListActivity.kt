@@ -42,7 +42,7 @@ abstract class NoteEditorListActivity<T : ViewItem<T>> : LoadableListActivity<T>
     }
 
     override fun canSwipeRefreshChildScrollUp(): Boolean {
-        return noteEditor?.isVisible() ?: super.canSwipeRefreshChildScrollUp()
+        return noteEditor?.isVisible() == true || super.canSwipeRefreshChildScrollUp()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
