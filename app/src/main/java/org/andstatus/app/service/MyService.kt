@@ -295,8 +295,12 @@ class MyService : Service(), IdentifiableInstance {
     private fun releaseWakeLock() {
         val wakeLock = wakeLockRef.get()
         if (wakeLock != null && wakeLockRef.compareAndSet(wakeLock, null)) {
-            MyLog.v(TAG) { "MyService $instanceId releasing wakelock" }
-            wakeLock.release()
+            if (wakeLock.isHeld) {
+                MyLog.v(TAG) { "MyService $instanceId releasing wakelock: $wakeLock" }
+                wakeLock.release()
+            } else {
+                MyLog.v(TAG) { "MyService $instanceId wakelock is not held: $wakeLock" }
+            }
         }
     }
 
