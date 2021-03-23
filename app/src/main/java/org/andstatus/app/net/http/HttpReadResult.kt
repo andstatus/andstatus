@@ -35,7 +35,6 @@ import java.io.InputStream
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
-import java.util.function.Function
 import java.util.stream.Collector
 import java.util.stream.Collectors
 import java.util.stream.Stream
@@ -58,7 +57,7 @@ class HttpReadResult(val request: HttpRequest) {
         return headers
     }
 
-    fun <T> setHeaders(headers: Stream<T>, keyMapper: Function<T, String>, valueMapper: Function<T, String>): HttpReadResult {
+    fun <T> setHeaders(headers: Stream<T>, keyMapper: (T) -> String?, valueMapper: (T) -> String?): HttpReadResult {
         return setHeaders(headers.collect(toHeaders(keyMapper, valueMapper)))
     }
 
@@ -335,11 +334,11 @@ class HttpReadResult(val request: HttpRequest) {
 
     companion object {
         private fun <T> toHeaders(
-                fieldNameMapper: Function<T, String>,
-                valueMapper: Function<T, String>): Collector<T, *, MutableMap<String, MutableList<String>>> {
+                keyMapper: (T) -> String?,
+                valueMapper: (T) -> String?): Collector<T, *, MutableMap<String, MutableList<String>>> {
             return Collectors.toMap(
-                    fieldNameMapper,
-                    { v: T -> mutableListOf(valueMapper.apply(v)) },
+                    { e: T -> keyMapper(e) ?: "" },
+                    { e: T -> valueMapper(e)?.let { mutableListOf(it) } ?: mutableListOf() },
                     { a: MutableList<String>, b: MutableList<String> ->
                         val out: MutableList<String> = ArrayList(a)
                         out.addAll(b)

@@ -38,16 +38,33 @@ enum class CommandEnum constructor(
     UNKNOWN("unknown"),
 
     /** There is no action  */
-    EMPTY("empty"), GET_TIMELINE("fetch-timeline", 0, 4, ConnectionRequired.SYNC), GET_OLDER_TIMELINE("get-older-timeline", 0, 4, ConnectionRequired.SYNC),
+    EMPTY("empty"),
+    GET_TIMELINE("fetch-timeline", 0, 4, ConnectionRequired.SYNC),
+    GET_OLDER_TIMELINE("get-older-timeline", 0, 4, ConnectionRequired.SYNC),
 
     /** Fetch avatar for the specified actor  */
-    GET_AVATAR("fetch-avatar", R.string.title_command_fetch_avatar, 9, ConnectionRequired.SYNC), GET_ATTACHMENT("fetch-attachment", R.string.title_command_fetch_attachment, 11, ConnectionRequired.DOWNLOAD_ATTACHMENT), LIKE("create-favorite", R.string.menu_item_favorite, 0, ConnectionRequired.SYNC), UNDO_LIKE("destroy-favorite", R.string.menu_item_destroy_favorite, 0, ConnectionRequired.SYNC), GET_ACTOR("get-user", R.string.get_user, -5, ConnectionRequired.SYNC), SEARCH_ACTORS("search-users", R.string.search_users, -5, ConnectionRequired.SYNC), FOLLOW("follow-user", R.string.command_follow_user, 0, ConnectionRequired.SYNC), UNDO_FOLLOW("stop-following-user", R.string.command_stop_following_user, 0, ConnectionRequired.SYNC), GET_FOLLOWERS("get-followers", R.string.get_followers, -5, ConnectionRequired.SYNC), GET_FRIENDS("get-friends", R.string.get_friends, -5, ConnectionRequired.SYNC),
+    GET_AVATAR("fetch-avatar", R.string.title_command_fetch_avatar, 9, ConnectionRequired.SYNC),
+    GET_ATTACHMENT("fetch-attachment", R.string.title_command_fetch_attachment, 11, ConnectionRequired.DOWNLOAD_ATTACHMENT),
+    LIKE("create-favorite", R.string.menu_item_favorite, 0, ConnectionRequired.SYNC),
+    UNDO_LIKE("destroy-favorite", R.string.menu_item_destroy_favorite, 0, ConnectionRequired.SYNC),
+    GET_ACTOR("get-user", R.string.get_user, -5, ConnectionRequired.SYNC),
+    SEARCH_ACTORS("search-users", R.string.search_users, -5, ConnectionRequired.SYNC),
+    FOLLOW("follow-user", R.string.command_follow_user, 0, ConnectionRequired.SYNC),
+    UNDO_FOLLOW("stop-following-user", R.string.command_stop_following_user, 0, ConnectionRequired.SYNC),
+    GET_FOLLOWERS("get-followers", R.string.get_followers, -5, ConnectionRequired.SYNC),
+    GET_FRIENDS("get-friends", R.string.get_friends, -5, ConnectionRequired.SYNC),
 
     /** This command is for sending both public and private notes  */
-    UPDATE_NOTE("update-status", R.string.button_create_message, -10, ConnectionRequired.SYNC), DELETE_NOTE("destroy-status", R.string.menu_item_destroy_status, -3, ConnectionRequired.SYNC), GET_NOTE("get-status", R.string.title_command_get_status, -5, ConnectionRequired.SYNC), GET_CONVERSATION("get-conversation", R.string.get_conversation, -5, ConnectionRequired.SYNC),
+    UPDATE_NOTE("update-status", R.string.button_create_message, -10, ConnectionRequired.SYNC),
+    DELETE_NOTE("destroy-status", R.string.menu_item_destroy_status, -3, ConnectionRequired.SYNC),
+    GET_NOTE("get-status", R.string.title_command_get_status, -5, ConnectionRequired.SYNC),
+    GET_CONVERSATION("get-conversation", R.string.get_conversation, -5, ConnectionRequired.SYNC),
 
     /** see http://gstools.org/api/doc/  */
-    GET_OPEN_INSTANCES("get_open_instances", R.string.get_open_instances_title, -1, ConnectionRequired.SYNC), ANNOUNCE("reblog", R.string.menu_item_reblog, -9, ConnectionRequired.SYNC), UNDO_ANNOUNCE("destroy-reblog", R.string.menu_item_destroy_reblog, -3, ConnectionRequired.SYNC), RATE_LIMIT_STATUS("rate-limit-status", 0, 0, ConnectionRequired.SYNC),
+    GET_OPEN_INSTANCES("get_open_instances", R.string.get_open_instances_title, -1, ConnectionRequired.SYNC),
+    ANNOUNCE("reblog", R.string.menu_item_reblog, -9, ConnectionRequired.SYNC),
+    UNDO_ANNOUNCE("destroy-reblog", R.string.menu_item_destroy_reblog, -3, ConnectionRequired.SYNC),
+    RATE_LIMIT_STATUS("rate-limit-status", 0, 0, ConnectionRequired.SYNC),
 
     /** Stop the service after finishing all asynchronous treads (i.e. not immediately!)  */
     STOP_SERVICE("stop-service"),
