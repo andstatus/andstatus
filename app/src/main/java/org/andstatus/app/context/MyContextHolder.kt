@@ -29,6 +29,7 @@ import org.andstatus.app.data.converter.DatabaseConverterController
 import org.andstatus.app.graphics.ImageCaches
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.UiThreadExecutor
+import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.RelativeTime
@@ -118,6 +119,9 @@ class MyContextHolder private constructor() : TaggedClass {
             MyLog.d(this, "Skipping initialization: upgrade in progress (called by: $calledBy)")
         } else {
             synchronized(CONTEXT_LOCK) { myFutureContext = MyFutureContext.fromPrevious(myFutureContext, calledBy) }
+            myContextHolder.whenSuccessOrPreviousAsync(UiThreadExecutor.INSTANCE) {
+                if (it.nonEmpty) MyServiceManager.registerReceiver(it.context())
+            }
         }
         return this
     }
@@ -136,8 +140,8 @@ class MyContextHolder private constructor() : TaggedClass {
         return this
     }
 
-    fun whenSuccessOrPreviousAsync(consumer: Consumer<MyContext>, executor: Executor): MyContextHolder {
-        synchronized(CONTEXT_LOCK) { myFutureContext = myFutureContext.whenSuccessOrPreviousAsync(consumer, executor) }
+    fun whenSuccessOrPreviousAsync(executor: Executor, consumer: Consumer<MyContext>): MyContextHolder {
+        synchronized(CONTEXT_LOCK) { myFutureContext = myFutureContext.whenSuccessOrPreviousAsync(executor, consumer) }
         return this
     }
 

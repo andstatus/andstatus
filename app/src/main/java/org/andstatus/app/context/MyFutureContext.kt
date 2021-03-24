@@ -78,7 +78,7 @@ class MyFutureContext private constructor(private val previousContext: MyContext
         }
     }
 
-    fun whenSuccessOrPreviousAsync(consumer: Consumer<MyContext>, executor: Executor): MyFutureContext {
+    fun whenSuccessOrPreviousAsync(executor: Executor, consumer: Consumer<MyContext>): MyFutureContext {
         return with { future: CompletableFuture<MyContext> ->
             future.whenCompleteAsync({ myContext: MyContext?, throwable: Throwable? ->
                 consumer.accept(myContext ?: previousContext)

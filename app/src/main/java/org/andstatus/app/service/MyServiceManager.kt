@@ -18,9 +18,11 @@ package org.andstatus.app.service
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Build
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.MyAction
+import org.andstatus.app.appwidget.MyAppWidgetProvider
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.syncadapter.SyncInitiator
@@ -68,6 +70,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        registerReceiver(context, this)
         when (MyAction.fromIntent(intent)) {
             MyAction.BOOT_COMPLETED -> {
                 MyLog.d(this, "Trying to start service on boot")
@@ -87,8 +90,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
                 MyContextHolder.myContextHolder.onShutDown()
                 stopService()
             }
-            else -> {
-            }
+            else -> { }
         }
     }
 
@@ -125,6 +127,29 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
          */
         private const val STATE_QUERY_TIMEOUT_SECONDS = 3
 
+        private val registeredReceiver: AtomicReference<MyServiceManager?> = AtomicReference()
+        fun registerReceiver(contextIn: Context, receiverIn: MyServiceManager? = null) {
+            val oldReceiver = registeredReceiver.get()
+            if(oldReceiver != null && ( receiverIn == null || oldReceiver == receiverIn)) return
+
+            val receiver = receiverIn ?: MyServiceManager()
+            if (registeredReceiver.compareAndSet(oldReceiver, receiver)) {
+                val context = contextIn.applicationContext
+                oldReceiver?.let { context.unregisterReceiver(it) }
+                MyAppWidgetProvider.registerReceiver(context)
+
+                val filter = IntentFilter()
+                filter.addAction(Intent.ACTION_CONFIGURATION_CHANGED)
+                filter.addAction(Intent.ACTION_DREAMING_STOPPED)
+                filter.addAction(MyAction.BOOT_COMPLETED.action)
+                filter.addAction(MyAction.SYNC.action)
+                filter.addAction(MyAction.SERVICE_STATE.action)
+                filter.addAction(MyAction.ACTION_SHUTDOWN.action)
+                context.registerReceiver(receiver, filter)
+                MyLog.i(TAG, "Receivers are registered")
+            }
+        }
+
         /**
          * Starts MyService  asynchronously if it is not already started
          * and send command to it.
@@ -156,7 +181,8 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
             // see http://stackoverflow.com/questions/18924640/starting-android-service-using-explicit-vs-implicit-intent
             var serviceIntent = Intent(MyContextHolder.myContextHolder.getNow().context(), MyService::class.java)
             when (commandData.command) {
-                CommandEnum.STOP_SERVICE, CommandEnum.BROADCAST_SERVICE_STATE -> serviceIntent = commandData.toIntent(serviceIntent)
+                CommandEnum.STOP_SERVICE,
+                CommandEnum.BROADCAST_SERVICE_STATE -> serviceIntent = commandData.toIntent(serviceIntent)
                 CommandEnum.UNKNOWN -> {
                 }
                 else -> CommandQueue.addToPreQueue(commandData)
