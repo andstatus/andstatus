@@ -150,7 +150,6 @@ class MyFutureContext private constructor(private val previousContext: MyContext
 
         private fun release(previousContext: MyContext, reason: Supplier<String>) {
             SyncInitiator.unregister(previousContext)
-            MyServiceManager.setServiceUnavailable()
             TlsSniSocketFactory.forget()
             previousContext.save(reason)
             AsyncTaskLauncher.forget()

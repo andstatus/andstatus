@@ -22,7 +22,6 @@ import android.content.IntentFilter
 import android.os.Build
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.MyAction
-import org.andstatus.app.appwidget.MyAppWidgetProvider
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.os.MyAsyncTask
 import org.andstatus.app.syncadapter.SyncInitiator
@@ -70,6 +69,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        MyLog.v(TAG) { "onReceive $instanceId $intent"}
         registerReceiver(context, this)
         when (MyAction.fromIntent(intent)) {
             MyAction.BOOT_COMPLETED -> {
@@ -103,8 +103,8 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
             return if (timeWhenServiceWillBeAvailable == 0L) 0 else Math.max(timeWhenServiceWillBeAvailable - System.currentTimeMillis(), 0)
         }
 
-        fun checkAndGetNew(): ServiceAvailability {
-            return if (isAvailable()) AVAILABLE else newUnavailable()
+        fun checkAndGet(): ServiceAvailability {
+            return if (isAvailable()) AVAILABLE else this
         }
 
         companion object {
@@ -135,8 +135,10 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
             val receiver = receiverIn ?: MyServiceManager()
             if (registeredReceiver.compareAndSet(oldReceiver, receiver)) {
                 val context = contextIn.applicationContext
-                oldReceiver?.let { context.unregisterReceiver(it) }
-                MyAppWidgetProvider.registerReceiver(context)
+                oldReceiver?.let {
+                    MyLog.i(TAG, "Receiver is unregistered ${it.instanceId}")
+                    context.unregisterReceiver(it)
+                }
 
                 val filter = IntentFilter()
                 filter.addAction(Intent.ACTION_CONFIGURATION_CHANGED)
@@ -146,7 +148,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
                 filter.addAction(MyAction.SERVICE_STATE.action)
                 filter.addAction(MyAction.ACTION_SHUTDOWN.action)
                 context.registerReceiver(receiver, filter)
-                MyLog.i(TAG, "Receivers are registered")
+                MyLog.i(TAG, "Receiver is registered ${receiver.instanceId}")
             }
         }
 
@@ -250,29 +252,29 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
 
         private val serviceAvailability: AtomicReference<ServiceAvailability> = AtomicReference(ServiceAvailability.AVAILABLE)
         fun isServiceAvailable(): Boolean {
-            var isAvailable: Boolean = MyContextHolder.myContextHolder.getNow().isReady()
-            if (!isAvailable) {
+            var myContext = MyContextHolder.myContextHolder.getNow()
+            if (!myContext.isReady()) {
                 val tryToInitialize = serviceAvailability.get().isAvailable()
                 if (tryToInitialize
                         && MyAsyncTask.nonUiThread() // Don't block on UI thread
                         && !MyContextHolder.myContextHolder.getNow().initialized()) {
-                    MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
-                    isAvailable = MyContextHolder.myContextHolder.getNow().isReady()
+                    myContext = MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
                 }
             }
-            if (isAvailable) {
-                val availableInMillis = serviceAvailability.updateAndGet { obj: ServiceAvailability -> obj.checkAndGetNew() }
+            return if (myContext.isReady()) {
+                val availableInMillis = serviceAvailability.updateAndGet { it.checkAndGet() }
                         .willBeAvailableInMillis()
-                isAvailable = availableInMillis == 0L
-                if (!isAvailable && MyLog.isVerboseEnabled()) {
-                    MyLog.v(TAG, "Service will be available in "
-                            + TimeUnit.MILLISECONDS.toSeconds(availableInMillis)
-                            + " seconds")
+                (availableInMillis == 0L).also {
+                    if (!it && MyLog.isVerboseEnabled()) {
+                        MyLog.v(TAG, "Service will be available in "
+                                + TimeUnit.MILLISECONDS.toSeconds(availableInMillis)
+                                + " seconds")
+                    }
                 }
             } else {
-                MyLog.v(TAG, "Service is unavailable: Context is not Ready")
+                MyLog.v(TAG, "Service is unavailable: Context is not Ready: $myContext")
+                false
             }
-            return isAvailable
         }
 
         fun setServiceAvailable() {

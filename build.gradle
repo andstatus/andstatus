@@ -16,7 +16,7 @@ buildscript {
 
         // Lookup the latest here: https://mvnrepository.com/
         acraVersion = '5.5.0'             // https://github.com/ACRA/acra/wiki/AdvancedUsage
-        annotationVersion = '1.1.0'
+        annotationVersion = '1.2.0'
         appCompatVersion = '1.2.0'        // https://mvnrepository.com/artifact/androidx.appcompat/appcompat
         commonsCodecVersion = '20041127.091804'
         commonsLangVersion = '3.10'       // https://mvnrepository.com/artifact/org.apache.commons/commons-lang3

@@ -13,6 +13,6 @@ class NonUiThreadExecutor : Executor {
     }
 
     companion object {
-        val INSTANCE: NonUiThreadExecutor? = NonUiThreadExecutor()
+        val INSTANCE: NonUiThreadExecutor = NonUiThreadExecutor()
     }
 }

@@ -28,6 +28,7 @@ import org.andstatus.app.FirstActivity
 import org.andstatus.app.data.converter.DatabaseConverterController
 import org.andstatus.app.graphics.ImageCaches
 import org.andstatus.app.os.AsyncTaskLauncher
+import org.andstatus.app.os.NonUiThreadExecutor
 import org.andstatus.app.os.UiThreadExecutor
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
@@ -119,7 +120,7 @@ class MyContextHolder private constructor() : TaggedClass {
             MyLog.d(this, "Skipping initialization: upgrade in progress (called by: $calledBy)")
         } else {
             synchronized(CONTEXT_LOCK) { myFutureContext = MyFutureContext.fromPrevious(myFutureContext, calledBy) }
-            myContextHolder.whenSuccessOrPreviousAsync(UiThreadExecutor.INSTANCE) {
+            whenSuccessOrPreviousAsync(NonUiThreadExecutor.INSTANCE) {
                 if (it.nonEmpty) MyServiceManager.registerReceiver(it.context())
             }
         }

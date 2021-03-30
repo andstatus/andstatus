@@ -89,7 +89,7 @@ dependencies {
     implementation "androidx.annotation:annotation:$annotationVersion"
     implementation "androidx.appcompat:appcompat:$appCompatVersion"
     implementation "androidx.documentfile:documentfile:$documentfileVersion"
-    implementation "androidx.preference:preference:$preferenceVersion"
+    implementation "androidx.preference:preference-ktx:$preferenceVersion"
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:$swiperefreshlayoutVersion"
     implementation "ch.acra:acra-dialog:$acraVersion"
     implementation "ch.acra:acra-mail:$acraVersion"

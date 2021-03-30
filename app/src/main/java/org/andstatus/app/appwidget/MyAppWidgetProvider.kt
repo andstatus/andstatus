@@ -19,12 +19,10 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.notification.NotificationEvents
 import org.andstatus.app.util.MyLog
 import java.util.*
-import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Predicate
 
 /**
@@ -37,7 +35,6 @@ class MyAppWidgetProvider : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         MyLog.i(TAG, "onReceive; action=" + intent.action)
-        registerReceiver(context, this)
         MyContextHolder.myContextHolder.initialize(context, TAG).getBlocking()
         super.onReceive(context, intent)
     }
@@ -66,26 +63,6 @@ class MyAppWidgetProvider : AppWidgetProvider() {
         private fun filterIds(appWidgetIds: IntArray): Predicate<MyAppWidgetData> {
             return Predicate { data: MyAppWidgetData -> Arrays.stream(appWidgetIds).boxed()
                     .anyMatch { id: Int -> data.getId() == id } }
-        }
-
-        private val registeredReceiver: AtomicReference<MyAppWidgetProvider?> = AtomicReference()
-        fun registerReceiver(contextIn: Context, receiverIn: MyAppWidgetProvider? = null) {
-            val oldReceiver = registeredReceiver.get()
-            if(oldReceiver != null && ( receiverIn == null || oldReceiver == receiverIn)) return
-
-            val receiver = receiverIn ?: MyAppWidgetProvider()
-            if (registeredReceiver.compareAndSet(oldReceiver, receiver)) {
-                val context = contextIn.applicationContext
-                oldReceiver?.let { context.unregisterReceiver(it) }
-
-                val filter = IntentFilter()
-                filter.addAction("android.appwidget.action.APPWIDGET_DELETED")
-                filter.addAction("android.appwidget.action.APPWIDGET_DISABLED")
-                filter.addAction("android.appwidget.action.APPWIDGET_ENABLED")
-                filter.addAction("android.appwidget.action.APPWIDGET_UPDATE")
-                context.registerReceiver(receiver, filter)
-                MyLog.i(TAG, "Receiver is registered")
-            }
         }
     }
 }

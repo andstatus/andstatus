@@ -210,10 +210,10 @@ object MyLog {
         return i
     }
 
-    fun v(objTag: Any?, supplier: Supplier<String?>): Int {
+    fun v(objTag: Any?, supplier: () -> String?): Int {
         val tag = objToTruncatedTag(objTag)
         if (!isLoggable(tag, Log.VERBOSE)) return 0
-        val msg = supplier.get()
+        val msg = supplier()
         logToFile(VERBOSE, tag, msg, null)
         return Log.v(tag, withOptionalPrefix(msg))
     }
