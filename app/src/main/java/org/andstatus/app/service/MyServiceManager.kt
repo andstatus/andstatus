@@ -69,28 +69,34 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        MyLog.v(TAG) { "onReceive $instanceId $intent"}
         registerReceiver(context, this)
-        when (MyAction.fromIntent(intent)) {
-            MyAction.BOOT_COMPLETED -> {
-                MyLog.d(this, "Trying to start service on boot")
-                sendCommand(CommandData.EMPTY)
-            }
-            MyAction.SYNC -> SyncInitiator.tryToSync(context)
-            MyAction.SERVICE_STATE -> {
-                if (isServiceAvailable()) {
-                    MyContextHolder.myContextHolder.initialize(context, this)
-                }
-                stateInTime = MyServiceStateInTime.fromIntent(intent)
-                MyLog.d(this, "Notification received: Service state=" + stateInTime.stateEnum)
-            }
+        when (val myAction = MyAction.fromIntent(intent)) {
             MyAction.ACTION_SHUTDOWN -> {
+                MyLog.d(this, "onReceive $instanceId ShutDown")
                 setServiceUnavailable()
-                MyLog.d(this, "Stopping service on Shutdown")
                 MyContextHolder.myContextHolder.onShutDown()
                 stopService()
             }
-            else -> { }
+            else -> {
+                if (serviceAvailability.get().isAvailable() && !MyContextHolder.myContextHolder.getNow().isReady()) {
+                    MyContextHolder.myContextHolder.initialize(context, this)
+                }
+                when (myAction) {
+                    MyAction.BOOT_COMPLETED -> {
+                        MyLog.d(this, "Start service on boot $instanceId")
+                        sendCommand(CommandData.EMPTY)
+                    }
+                    MyAction.SYNC -> {
+                        MyLog.v(TAG) { "onReceive $instanceId SYNC"}
+                        SyncInitiator.tryToSync(context)
+                    }
+                    MyAction.SERVICE_STATE -> {
+                        stateInTime = MyServiceStateInTime.fromIntent(intent)
+                        MyLog.d(this, "onReceive $instanceId service:" + stateInTime.stateEnum)
+                    }
+                    else -> MyLog.v(TAG) { "onReceive $instanceId $intent"}
+                }
+            }
         }
     }
 
@@ -211,17 +217,12 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
         /**
          * Stop  [MyService] asynchronously
          */
-        @Synchronized
         fun stopService() {
             stateInTime = MyServiceStateInTime.getUnknown()
-            if (!MyContextHolder.myContextHolder.getNow().isReady()) {
-                return
-            }
-            // Don't do "context.stopService", because we may lose some information and (or) get Force Close
-            // This is "mild" stopping
-            MyContextHolder.myContextHolder.getNow().context()
-                    .sendBroadcast(CommandData.newCommand(CommandEnum.STOP_SERVICE)
-                            .toIntent(MyAction.EXECUTE_COMMAND.getIntent()))
+            MyContextHolder.myContextHolder.getNow().takeIf { it.nonEmpty }?.context()?.sendBroadcast(
+                    CommandData.newCommand(CommandEnum.STOP_SERVICE)
+                            .toIntent(MyAction.EXECUTE_COMMAND.getIntent())
+            )
         }
 
         /**
@@ -254,8 +255,7 @@ class MyServiceManager : BroadcastReceiver(), IdentifiableInstance {
         fun isServiceAvailable(): Boolean {
             var myContext = MyContextHolder.myContextHolder.getNow()
             if (!myContext.isReady()) {
-                val tryToInitialize = serviceAvailability.get().isAvailable()
-                if (tryToInitialize
+                if (serviceAvailability.get().isAvailable()
                         && MyAsyncTask.nonUiThread() // Don't block on UI thread
                         && !MyContextHolder.myContextHolder.getNow().initialized()) {
                     myContext = MyContextHolder.myContextHolder.initialize(null, TAG).getBlocking()
