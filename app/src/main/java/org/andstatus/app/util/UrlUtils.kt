@@ -123,4 +123,25 @@ object UrlUtils {
             TryUtils.failure("Malformed URL, originUrl:'$originUrl', path:'$path'")
         }
     }
+
+    /** @location  - A relative (to the request URL) or absolute URL */
+    fun redirectTo(request: String?, location: String?): Try<URL>  {
+        val requestUrl: URL? = fromString(request)
+        if (location == null) {
+            return requestUrl?.let { Try.success(it) } ?: TryUtils.notFound()
+        }
+        val locationUrl = fromString(location)
+        if (hasHost(locationUrl)) return Try.success(locationUrl)
+        if (requestUrl == null) return TryUtils.notFound()
+
+        if (location.startsWith("/")) {
+            return TryUtils.ofNullable(fromString(
+                    requestUrl.protocol + "://" + requestUrl.host + location
+            ))
+        }
+        val request = requestUrl.toExternalForm()
+        return TryUtils.ofNullable(fromString(
+                request + (if ( request.endsWith("/")) "" else "/") + location
+        ))
+    }
 }

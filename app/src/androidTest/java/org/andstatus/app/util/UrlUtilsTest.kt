@@ -16,7 +16,9 @@
 package org.andstatus.app.util
 
 import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.net.URL
 
 class UrlUtilsTest {
     @Test
@@ -107,5 +109,26 @@ class UrlUtilsTest {
         val url1 = UrlUtils.buildUrl(strUrl, isSsl)
         val strUrl2 = UrlUtils.pathToUrlString(url1, path, false).getOrElse("(failure)")
         Assert.assertEquals(strUrl + (if (addSlash) "/" else "") + path, strUrl2)
+    }
+
+    @Test
+    fun testRedirectTo() {
+        assertOneRedirect("http://andstatus.org/images/andstatus-logo.png",
+                "http://andstatus.org/images/andstatus-logo.png", "/images/andstatus-logo.png")
+        assertOneRedirect("http://andstatus.org/images/andstatus-logo.png",
+                "http://andstatus.org/images/id1.png", "/images/andstatus-logo.png")
+        assertOneRedirect("https://andstatus.org/images/andstatus-logo.png",
+                "https://andstatus.org/images/id1.png", "/images/andstatus-logo.png")
+        assertOneRedirect("https://andstatus.org/id1/images/andstatus-logo.png",
+                "https://andstatus.org/id1", "images/andstatus-logo.png")
+        assertOneRedirect("http://example.org/path/logo.png",
+                "https://andstatus.org/images/id1", "http://example.org/path/logo.png")
+        assertOneRedirect("http://andstatus.org/images/andstatus-logo.png",
+                "http://andstatus.org/images/andstatus-logo.png", null)
+    }
+
+    private fun assertOneRedirect(expected: String?, request: String?, location: String?) {
+        assertEquals("Redirect from '$request' to '$location'", expected,
+                UrlUtils.redirectTo(request, location).map(URL::toExternalForm).getOrElse(null))
     }
 }

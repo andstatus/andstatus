@@ -30,6 +30,7 @@ import org.andstatus.app.util.TryUtils
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UrlUtils
 import org.json.JSONObject
+import java.net.URL
 
 interface HttpConnectionInterface {
 
@@ -152,7 +153,10 @@ interface HttpConnectionInterface {
         result.redirected = true
         return TryUtils.fromOptional(result.getLocation())
                 .mapFailure { ConnectionException(StatusCode.MOVED, "No 'Location' header on MOVED response") }
-                .map { urlIn: String -> result.setUrl(urlIn) }
+                .flatMap { location: String -> UrlUtils.redirectTo(result.getUrl(), location)}
+                .mapFailure { ConnectionException(StatusCode.MOVED, "Invalid redirect from '${result.getUrl()}'" +
+                        " to '${result.getLocation()}'") }
+                .map { redirected: URL -> result.setUrl(redirected.toExternalForm()) }
                 .onFailure { e: Throwable -> result.setException(e) }
                 .onSuccess { result1: HttpReadResult -> logFollowingRedirects(result1) }
                 .isFailure
