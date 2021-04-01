@@ -27,12 +27,9 @@ import org.junit.runner.Description
  * @see org.apache.geode.test.junit.IgnoreCondition
  */
 class DefaultIgnoreCondition constructor(private val ignore: Boolean = DEFAULT_IGNORE) : IgnoreCondition {
-    fun isIgnore(): Boolean {
-        return ignore
-    }
 
     override fun evaluate(testCaseDescription: Description?): Boolean {
-        return isIgnore()
+        return ignore
     }
 
     companion object {

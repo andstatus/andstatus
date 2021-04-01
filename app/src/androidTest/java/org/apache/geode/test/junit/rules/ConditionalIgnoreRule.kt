@@ -57,22 +57,20 @@ class ConditionalIgnoreRule : TestRule, Serializable {
     }
 
     protected fun throwOnIgnoreTest(statement: Statement, description: Description): Statement {
-        if (isTest(description)) {
-            var ignoreTest = false
-            var message = ""
-            val testCaseAnnotation = description.getAnnotation(ConditionalIgnore::class.java)
-            if (testCaseAnnotation != null) {
-                ignoreTest = evaluate(testCaseAnnotation, description)
-                message = testCaseAnnotation.value
-            } else if (description.getTestClass().isAnnotationPresent(ConditionalIgnore::class.java)) {
-                description.getTestClass().getAnnotation(ConditionalIgnore::class.java)?.let { annotation ->
-                    ignoreTest = evaluate(annotation, description)
-                    message = annotation.value
-                }
+        var ignoreTest = false
+        var message = ""
+        val testCaseAnnotation = description.getAnnotation(ConditionalIgnore::class.java)
+        if (testCaseAnnotation != null) {
+            ignoreTest = evaluate(testCaseAnnotation, description)
+            message = testCaseAnnotation.value
+        } else if (description.getTestClass().isAnnotationPresent(ConditionalIgnore::class.java)) {
+            description.getTestClass().getAnnotation(ConditionalIgnore::class.java)?.let { annotation ->
+                ignoreTest = evaluate(annotation, description)
+                message = annotation.value
             }
-            if (ignoreTest) {
-                throw AssumptionViolatedException(format(message, description))
-            }
+        }
+        if (ignoreTest) {
+            throw AssumptionViolatedException(format(message, description))
         }
         return statement
     }
@@ -96,11 +94,10 @@ class ConditionalIgnoreRule : TestRule, Serializable {
     protected fun evaluateCondition(ignoreConditionType: KClass<out IgnoreCondition>,
                                     description: Description?): Boolean {
         return try {
-            ignoreConditionType.javaPrimitiveType?.newInstance()?.evaluate(description) == true
+            ignoreConditionType.javaObjectType.newInstance().evaluate(description)
         } catch (e: Exception) {
             throw IgnoreConditionEvaluationException(
-                    String.format("failed to evaluate IgnoreCondition: %1\$s", ignoreConditionType.qualifiedName),
-                    e)
+                    "failed to evaluate IgnoreCondition: ${ignoreConditionType.qualifiedName}", e)
         }
     }
 

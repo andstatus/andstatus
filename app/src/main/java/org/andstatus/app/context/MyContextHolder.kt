@@ -19,6 +19,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.SystemClock
 import android.provider.Settings
 import io.vavr.control.Try
@@ -245,7 +246,7 @@ class MyContextHolder private constructor() : TaggedClass {
     }
 
     fun isScreenSupported(): Boolean {
-        return getExecutionMode() != ExecutionMode.TRAVIS_TEST
+        return getExecutionMode() != ExecutionMode.TRAVIS_TEST || Build.VERSION.SDK_INT >= 29
     }
 
     fun onShutDown() {

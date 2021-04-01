@@ -38,7 +38,7 @@ class HelpActivityTest : ActivityTest<HelpActivity>() {
     }
 
     override fun getActivityIntent(): Intent {
-        TestSuite.initializeWithData(this)
+        TestSuite.initialize(this)
         val intent = Intent()
         intent.putExtra(HelpActivity.Companion.EXTRA_IS_FIRST_ACTIVITY, true)
         intent.putExtra(HelpActivity.Companion.EXTRA_HELP_PAGE_INDEX, HelpActivity.Companion.PAGE_CHANGELOG)

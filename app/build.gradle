@@ -20,7 +20,7 @@ android {
         testApplicationId "org.andstatus.app.tests"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // To test arguments:
-        // testInstrumentationRunnerArgument "executionMode", "travisTest"
+        testInstrumentationRunnerArgument "executionMode", "travisTest"
         archivesBaseName = "AndStatus-$versionName"
     }
 

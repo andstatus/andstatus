@@ -25,7 +25,7 @@ import org.junit.Test
 class MyAccountsTest {
     @Before
     fun setUp() {
-        TestSuite.initializeWithData(this)
+        TestSuite.initializeWithAccounts(this)
     }
 
     @Test

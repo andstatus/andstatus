@@ -31,6 +31,8 @@ import kotlin.reflect.KClass
  */
 @MustBeDocumented
 @kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
-@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER)
+@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS, AnnotationTarget.FUNCTION,
+        AnnotationTarget.PROPERTY_GETTER, AnnotationTarget.PROPERTY_SETTER)
 @Inherited // Added by yvolk@yurivolkov.com 2017-05-29 - Now the annotation may be set on a superclass.
-annotation class ConditionalIgnore(val condition: KClass<out IgnoreCondition> = DefaultIgnoreCondition::class, val until: String = "1970-01-01", val value: String = "")
+annotation class ConditionalIgnore(val condition: KClass<out IgnoreCondition> =
+        DefaultIgnoreCondition::class, val until: String = "1970-01-01", val value: String = "")

@@ -24,6 +24,6 @@ import org.junit.runner.Description
 class NoScreenSupport : IgnoreCondition {
     override fun evaluate(testCaseDescription: Description?): Boolean {
         TestSuite.initialize(this)
-        return ! MyContextHolder.myContextHolder.isScreenSupported()
+        return !MyContextHolder.myContextHolder.isScreenSupported()
     }
 }
