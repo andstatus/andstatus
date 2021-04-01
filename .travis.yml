@@ -92,7 +92,7 @@ install:
 script:
 - chmod +x gradlew
 - |
-  ./gradlew build assembleAndroidTest
+  ./gradlew build assembleAndroidTest -x lint
   retval=$?
   if [ $retval -ne 0 ]; then
     echo "error on assembling, exit code: "$retval
