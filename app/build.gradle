@@ -1,6 +1,6 @@
 plugins {
     id 'com.android.application'
-    id 'org.sonarqube'
+    id 'org.sonarqube' version '3.1.1'
     id 'com.github.triplet.play' version '2.7.5'
 }
 apply plugin: 'kotlin-android'
@@ -53,12 +53,12 @@ android {
 
 sonarqube {
     // See https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner+for+Gradle
-    // and https://plugins.gradle.org/plugin/org.sonarqube
+    // and https://sonarcloud.io/documentation/analysis/scan/sonarscanner-for-gradle/
     properties {
         property "sonar.organization", "default"
         property "sonar.projectName", "AndStatus"
         property "sonar.projectKey", "andstatus"
-        property "sonar.projectVersion", project.ext.versionName
+        property "sonar.projectVersion", project.android.defaultConfig.versionName
 
         property "sonar.sourceEncoding","UTF-8"
         // See http://docs.sonarqube.org/display/SONAR/Narrowing+the+Focus

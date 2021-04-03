@@ -8,8 +8,8 @@ task dumpAll(type: Zip) {
         println 'dumpAll started'
 
         Project app = rootProject.subprojects.find() { it.name == "app" }
-        println "app archivesBaseName: " + app.ext.get("archivesBaseName")
-        baseName = app.ext.get("archivesBaseName")
+        println "app archivesBaseName: " + app.archivesBaseName
+        baseName = app.archivesBaseName
         version = ""
 
         DirectoryScanner.defaultExcludes.each { DirectoryScanner.removeDefaultExclude it }

@@ -43,8 +43,6 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:4.1.3'
-        // See https://sonarcloud.io/documentation/analysis/scan/sonarscanner-for-gradle/
-        classpath "org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.8"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong
