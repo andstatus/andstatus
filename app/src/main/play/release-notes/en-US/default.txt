@@ -1,2 +1,3 @@
-v.57.07 Fix adding Twitter Account. It appeared that Twitter doesn't like "AndStatus" user agent anymore.
-       This is ID of the app's internal web browser that worked for more than 10 years...
+v.58.00 Fix background syncing on Android 9+.
+Fix downloads (avatars/attachments) with redirects, in which location is relative or absolute path without host and protocol.
+AndStatus fully migrated from Java to Kotlin.

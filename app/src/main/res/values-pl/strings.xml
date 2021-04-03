@@ -36,6 +36,7 @@
   <string name="authentication_never">Nie uwierzytelniono jeszcze</string>
   <string name="authentication_successful">Autoryzacja zakończona pomyślnie!</string>
   <string name="automatic">Automatyczny</string>
+  <string name="backup_downloads">Kopia zapasowa plików multimedialnych: załączniki i awatary</string>
   <string name="backup_log_files">Kopia zapasowa plików dziennika</string>
   <string name="background_color_preference_title">Kolor tła dla ciemnego motywu</string>
   <string name="button_add">Dodaj</string>
@@ -59,6 +60,7 @@
   <string name="category_title_preference_information">Informacje</string>
   <string name="category_title_preference_origin">Sieć społecznościowa</string>
   <string name="category_title_preference_settings">Ustawienia</string>
+  <string name="change_log_summary">Dziennik zmian jest tylko w języku angielskim</string>
   <string name="changed">Zmieniono</string>
   <string name="check_and_fix_data">Sprawdź i napraw dane</string>
   <string name="check_and_fix_data_summary">Użyj tej czynności jeżeli uważasz, że AndStatus jest nie działa poprawnie,     ale nie chcesz go ponownie instalować</string>

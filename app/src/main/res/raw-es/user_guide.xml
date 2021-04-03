@@ -39,7 +39,7 @@
             <home-page>http://www.andstatus.org</home-page>
             <email>andstatus@gmail.com</email>
         </author>
-        <date>2015-08-16</date>
+        <date>2019-03-16</date>
         <id></id>
         <version>2</version>
     </document-info>
@@ -54,6 +54,7 @@ Soporta múltiples protocolos, incluyendo GNU social, Twitter y Pump.io.
 AndStatus combina las cuentas de todas tus redes sociales en una línea temporal y permite leer y publicar incluso estando desconectado.</p>
     <p>Hay un enlace a esta guía en la barra de herramientas-&gt;Ayuda.</p>
     <p>Cambios en la versión, la siguiente página te permitirá ver descripciones y enlaces a discusiones sobre todas las características de AndStatus.</p>
+    <p>.</p>
 </section>
 <section>
     <title>

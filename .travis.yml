@@ -29,11 +29,11 @@ env:
     - UNIT_TEST=FALSE # by default we don't run the unit tests, they are run only in specific builds
     - FINALIZE_COVERAGE=FALSE # by default we don't finalize coverage, it is done in one specific build
   matrix:
-    - API=24
-    - API=25
-    - API=27
-    - API=28
     - API=29
+    - API=28
+    - API=27
+    - API=25
+    - API=24
 
 before_install:
   # This section may run on all platforms, and may run for unit tests or for coverage finalization
