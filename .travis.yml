@@ -34,7 +34,6 @@ env:
     - API=27
     - API=28
     - API=29
-    - API=30
 
 before_install:
   # This section may run on all platforms, and may run for unit tests or for coverage finalization
