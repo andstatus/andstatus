@@ -15,7 +15,6 @@
  */
 package org.andstatus.app.util
 
-import android.os.Build
 import org.andstatus.app.data.DbUtils
 import org.json.JSONArray
 import org.json.JSONException
@@ -228,17 +227,11 @@ object FileUtils {
         }
     }
 
-    fun isFileInsideFolder(file: File, folder: File): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            return file.toPath().normalize().startsWith(folder.toPath())
-        } else {
-            try {
-                return file.getCanonicalPath().startsWith(folder.getCanonicalPath())
-            } catch (e: Exception) {
-                MyLog.d(FileUtils::class.java, "Failed to check path of the file: " + file.getAbsolutePath() +
-                        ". Error message:" + e.message)
-            }
-        }
-        return false
+    fun isFileInsideFolder(file: File, folder: File): Boolean = try {
+        file.canonicalPath.startsWith(folder.canonicalPath)
+    } catch (e: Exception) {
+        MyLog.d(FileUtils::class.java, "Failed to check path of the file: " + file.absolutePath +
+                ". Error message:" + e.message)
+        false
     }
 }
