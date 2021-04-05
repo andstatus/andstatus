@@ -1,51 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<title>AndStatus application</title>
-	<style>
-		@import url(http://fonts.googleapis.com/css?family=Roboto:400,300,700);
-		@import "styles/styles.css"
-	</style>
-	<script>
-	function loadXMLDoc(filename)
-	{
-	if (window.ActiveXObject)
-	  {
-	  xhttp = new ActiveXObject("Msxml2.XMLHTTP");
-	  }
-	else 
-	  {
-	  xhttp = new XMLHttpRequest();
-	  }
-	xhttp.open("GET", filename, false);
-	try {xhttp.responseType = "msxml-document"} catch(err) {} // Helping IE11
-	xhttp.send("");
-	return xhttp.responseXML;
-	}
-	
-	function displayResult()
-	{
-	xml = loadXMLDoc("raw/changes.xml");
-	xsl = loadXMLDoc("raw/changes2html.xsl");
-	// code for IE
-	if (window.ActiveXObject || xhttp.responseType == "msxml-document")
-	  {
-	  ex = xml.transformNode(xsl);
-	  document.getElementById("changes").innerHTML = ex;
-	  }
-	// code for Chrome, Firefox, Opera, etc.
-	else if (document.implementation && document.implementation.createDocument)
-	  {
-	  xsltProcessor = new XSLTProcessor();
-	  xsltProcessor.importStylesheet(xsl);
-	  resultDocument = xsltProcessor.transformToFragment(xml, document);
-	  document.getElementById("changes").appendChild(resultDocument);
-	  }
-	}
-	</script>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>AndStatus application ChangeLog</title>
+    <style>
+        @import url(http://fonts.googleapis.com/css?family=Roboto:400,300,700)
+        @import "styles/styles.css"
+    </style>
+    <script>
+		function loadXMLDoc(xhttp, filename) {
+            xhttp.open("GET", filename, false)
+            xhttp.send("")
+            return xhttp.responseXML
+        }
+
+        let mMessage = "<hr/>"
+        function showMessage(message) {
+		    mMessage =  mMessage + message + "<br/>"
+            document.getElementById("message").innerHTML = mMessage
+        }
+
+        function displayResult() {
+			try {
+                let xhttp = null
+                let xsltProcessor = null
+                let isMsie = window.ActiveXObject
+                if (!isMsie) {
+                    try {
+                        xsltProcessor = new XSLTProcessor()
+                    } catch (e) {
+                        isMsie = true
+                        showMessage(e)
+                    }
+                }
+                if (isMsie) {
+                    xhttp = new ActiveXObject("Msxml2.XMLHTTP")
+                    try {
+                        xhttp.responseType = "msxml-document"
+                    } catch (e) {
+                        // Helping IE11
+                    }
+                } else {
+                    xhttp = new XMLHttpRequest()
+                }
+
+                const xml = loadXMLDoc(xhttp, "raw/changes.xml");
+                if (xml === null) {
+                    showMessage("XML doc is null")
+                    return
+                }
+                const xsl = loadXMLDoc(xhttp, "raw/changes2html.xsl");
+                if (xsl === null) {
+                    showMessage("XSL doc is null")
+                    return
+                }
+
+                if (isMsie) {
+                    const transformed = xml.transformNode(xsl)
+                    document.getElementById("changes").innerHTML = transformed
+                } else if (xsltProcessor != null && document.implementation && document.implementation.createDocument) {
+                    xsltProcessor.importStylesheet(xsl)
+                    const resultDocument = xsltProcessor.transformToFragment(xml, document)
+                    document.getElementById("changes").appendChild(resultDocument)
+                } else {
+                    showMessage("Couldn't transform XML")
+                }
+            } catch (e) {
+                showMessage(e)
+            }
+        }
+    </script>
 </head>
 <body onload="displayResult()">
-	<div id="changes" />
+<div id="changes"></div>
+<div id="message"></div>
 </body>
 </html>
