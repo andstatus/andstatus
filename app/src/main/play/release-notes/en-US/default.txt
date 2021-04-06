@@ -1,3 +1,4 @@
+v.58.01 Fix a Zip Path Traversal Vulnerability.
 v.58.00 Fix background syncing on Android 9+.
 Fix downloads (avatars/attachments) with redirects, in which location is relative or absolute path without host and protocol.
 AndStatus fully migrated from Java to Kotlin.

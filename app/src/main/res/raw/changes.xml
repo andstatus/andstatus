@@ -29,6 +29,26 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="58.01" android:versionCode="340"
+        versionDate="2021-04-06"
+        versionTitle="Background syncing and migration to Kotlin">
+        <changes>
+            <change>Fixed background syncing on Android 9+.</change>
+            <change>Fixed downloads (avatars/attachments) with redirects, in which location is relative
+                or absolute path without host and protocol.</change>
+            <change>AndStatus fully migrated from Java to <a href="https://kotlinlang.org/">Kotlin</a>.</change>
+        </changes>
+    </release>
+    <release android:versionName="57.07" android:versionCode="338"
+        versionDate="2021-01-19"
+        versionTitle="Fix adding Twitter account">
+        <changes>
+            <change>Fix adding Twitter Account. It appeared that Twitter doesn't like "AndStatus" user agent anymore.
+                This is ID of the app's internal web browser that worked for more than 10 years...</change>
+            <change>Fix Chinese Traditional translation.</change>
+            <change>Fix crash on loading video in some devices before Android 10.</change>
+        </changes>
+    </release>
     <release android:versionName="57.04" android:versionCode="335"
         versionDate="2020-07-04"
         versionTitle="Fix adding new account in Pump.io">
