@@ -64,7 +64,7 @@ object MyStorage {
         return getDataFilesDir(type, useExternalStorage, DIRECTORY_LOGS != type)
     }
 
-    fun getDataFilesDir(type: String?, useExternalStorage: TriState, logged: Boolean): File? {
+    private fun getDataFilesDir(type: String?, useExternalStorage: TriState, logged: Boolean): File? {
         val method = "getDataFilesDir"
         var dir: File? = null
         val textToLog = StringBuilder()
@@ -127,7 +127,7 @@ object MyStorage {
         return isStorageExternal(TriState.UNKNOWN)
     }
 
-    fun isStorageExternal(useExternalStorage: TriState): Boolean {
+    private fun isStorageExternal(useExternalStorage: TriState): Boolean {
         return useExternalStorage.toBoolean(
                 SharedPreferencesUtil.getBoolean(MyPreferences.KEY_USE_EXTERNAL_STORAGE, false))
     }

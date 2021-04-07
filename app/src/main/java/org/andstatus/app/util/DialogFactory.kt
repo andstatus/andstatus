@@ -34,6 +34,7 @@ object DialogFactory {
     private val YES_CANCEL_DIALOG_TAG: String = "yes_cancel"
     private val DIALOG_TITLE_KEY: String = "title"
     private val DIALOG_MESSAGE_KEY: String = "message"
+
     fun showOkAlertDialog(method: Any, context: Context, @StringRes titleId: Int, @StringRes summaryId: Int): Dialog {
         return showOkAlertDialog(method, context, titleId, context.getText(summaryId))
     }

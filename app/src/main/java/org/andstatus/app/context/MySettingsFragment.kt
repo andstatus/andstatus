@@ -66,14 +66,13 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
 
 class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeListener {
-    private var storageSwitch: StorageSwitch? = null
+    private val storageSwitch: StorageSwitch = StorageSwitch(this)
     private var onSharedPreferenceChangedIsBusy = false
     private var mIgnorePreferenceChange = false
     private var checkDataIncludeLong = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        storageSwitch = StorageSwitch(this)
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -367,7 +366,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         val activity = activity
         if (activity != null) when (preference.getKey()) {
             MyPreferences.KEY_USE_EXTERNAL_STORAGE_NEW -> if (preference is CheckBoxPreference) {
-                storageSwitch?.showSwitchStorageDialog(ActivityRequestCode.MOVE_DATA_BETWEEN_STORAGES,
+                storageSwitch.showSwitchStorageDialog(ActivityRequestCode.MOVE_DATA_BETWEEN_STORAGES,
                         preference.isChecked())
             }
             KEY_ADD_NEW_ACCOUNT -> AccountSettingsActivity.startAddNewAccount(activity, null, false)
@@ -435,7 +434,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         if (mIgnorePreferenceChange || onSharedPreferenceChangedIsBusy ||
                 !MyContextHolder.myContextHolder.getNow().initialized() ||
-                storageSwitch?.isDataBeingMoved() != false) {
+                storageSwitch.isDataBeingMoved()) {
             return
         }
         onSharedPreferenceChangedIsBusy = true
@@ -493,7 +492,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
             ActivityRequestCode.MOVE_DATA_BETWEEN_STORAGES -> {
                 showUseExternalStorage()
                 if (resultCode == Activity.RESULT_OK) {
-                    storageSwitch?.move()
+                    storageSwitch.move()
                 }
             }
             ActivityRequestCode.CHECK_DATA_INCLUDE_LONG -> {

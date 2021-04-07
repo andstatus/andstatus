@@ -34,10 +34,9 @@ import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.StringUtil
 import org.andstatus.app.util.TriState
 import java.io.File
-import java.util.function.Supplier
 
 class StorageSwitch(private val parentFragment: MySettingsFragment) {
-    private val mContext: Context = parentFragment.getActivity()
+    private val mContext: Context get() = parentFragment.getActivity()
             ?: throw IllegalStateException("No Activity in the parent fragment")
     private var mUseExternalStorageNew = false
 
@@ -49,7 +48,6 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
     }
 
     fun move() {
-        MyServiceManager.setServiceUnavailable()
         AsyncTaskLauncher.execute(this, MoveDataBetweenStoragesTask())
     }
 
@@ -82,25 +80,23 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
      * @author yvolk@yurivolkov.com
      */
     private inner class MoveDataBetweenStoragesTask : MyAsyncTask<Void?, Void?, TaskResult?>(PoolEnum.LONG_UI) {
-        private var dlg: ProgressDialog? = null
-        override fun onPreExecute() {
-            // indeterminate duration, not cancelable
-            dlg = ProgressDialog.show(mContext,
-                    mContext.getText(R.string.dialog_title_external_storage),
-                    mContext.getText(R.string.dialog_summary_external_storage),
-                    true,
-                    false)
-        }
+        // indeterminate duration, not cancelable
+        private val dlg: ProgressDialog = ProgressDialog.show(mContext,
+                mContext.getText(R.string.dialog_title_external_storage),
+                mContext.getText(R.string.dialog_summary_external_storage),
+                true,
+                false)
 
-        override fun doInBackground2(aVoid: Void?): TaskResult? {
+        override fun doInBackground2(params: Void?): TaskResult {
             val result = TaskResult()
-             MyContextHolder.myContextHolder.getBlocking()
-            MyServiceManager.Companion.stopService()
-            for (i in 0..3) {
-                if (MyServiceManager.Companion.getServiceState() == MyServiceState.STOPPED) break
+            MyContextHolder.myContextHolder.getBlocking()
+            MyServiceManager.setServiceUnavailable()
+            MyServiceManager.stopService()
+
+            do {
                 DbUtils.waitMs(this, 500)
-            }
-            if (MyServiceManager.Companion.getServiceState() != MyServiceState.STOPPED) {
+            } while (MyServiceManager.getServiceState() == MyServiceState.UNKNOWN)
+            if (MyServiceManager.getServiceState() != MyServiceState.STOPPED) {
                 result.messageBuilder.append(mContext.getText(R.string.system_is_busy_try_later))
                 return result
             }
@@ -131,7 +127,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
                 return
             }
             try {
-                result.success = moveDatabase(mUseExternalStorageNew, result.messageBuilder, DatabaseHolder.Companion.DATABASE_NAME)
+                result.success = moveDatabase(mUseExternalStorageNew, result.messageBuilder, DatabaseHolder.DATABASE_NAME)
                 if (result.success) {
                     result.moved = true
                     moveFolder(mUseExternalStorageNew, result.messageBuilder, MyStorage.DIRECTORY_DOWNLOADS)
@@ -149,17 +145,14 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
             var succeeded = false
             var done = false
 
-            /**
-             * Did we actually copied database?
-             */
+            /** Did we actually copy database? */
             var copied = false
             var dbFileOld: File? = null
             var dbFileNew: File? = null
             try {
-                dbFileOld = MyContextHolder.myContextHolder.getNow().baseContext()?.getDatabasePath(
+                dbFileOld = MyContextHolder.myContextHolder.getNow().baseContext().getDatabasePath(
                         databaseName)
-                dbFileNew = MyStorage.getDatabasePath(
-                        databaseName, TriState.fromBoolean(useExternalStorageNew))
+                dbFileNew = MyStorage.getDatabasePath(databaseName, TriState.fromBoolean(useExternalStorageNew))
                 if (dbFileOld == null) {
                     messageToAppend.append(" No old database $databaseName")
                     done = true
@@ -189,7 +182,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
                         MyLog.v(this, method + " to: " + dbFileNew.path)
                     }
                     try {
-                         MyContextHolder.myContextHolder.release(Supplier { "moveDatabase" })
+                        MyContextHolder.myContextHolder.release { "moveDatabase" }
                         if (FileUtils.copyFile(this, dbFileOld, dbFileNew)) {
                             copied = true
                             succeeded = true
@@ -239,7 +232,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
                 if (!done) {
                     dirOld = MyStorage.getDataFilesDir(folderType)
                     dirNew = MyStorage.getDataFilesDir(folderType,
-                            TriState.Companion.fromBoolean(useExternalStorageNew))
+                            TriState.fromBoolean(useExternalStorageNew))
                     if (dirOld == null || !dirOld.exists()) {
                         messageToAppend.append(" No old folder. ")
                         done = true
