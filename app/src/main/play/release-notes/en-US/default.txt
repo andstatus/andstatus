@@ -1,3 +1,4 @@
+v.58.02 Fix crash on "Parameter specified as non-null is null". Partially fixed attachments showing.
 v.58.01 Fix a Zip Path Traversal Vulnerability.
 v.58.00 Fix background syncing on Android 9+.
 Fix downloads (avatars/attachments) with redirects, in which location is relative or absolute path without host and protocol.
