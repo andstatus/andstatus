@@ -48,7 +48,7 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
     override fun getActivityIntent(): Intent {
         MyLog.i(this, "setUp started")
         TestSuite.initializeWithAccounts(this)
-        mock = ConnectionMock.Companion.newFor(DemoData.demoData.activityPubTestAccountName)
+        mock = ConnectionMock.newFor(DemoData.demoData.activityPubTestAccountName)
         val ma = mock.getData().getMyAccount()
          MyContextHolder.myContextHolder.getBlocking().accounts().setCurrentAccount(ma)
         Assert.assertTrue("isValidAndSucceeded $ma", ma.isValidAndSucceeded())
@@ -62,15 +62,15 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
     fun sendingPublic() {
         val method = "sendingPublic"
         TestSuite.waitForListLoaded(activity, 2)
-        ActivityTestHelper.Companion.hideEditorAndSaveDraft<ActivityViewItem>(method, activity)
-        ActivityTestHelper.Companion.openEditor<ActivityViewItem>(method, activity)
+        ActivityTestHelper.hideEditorAndSaveDraft(method, activity)
+        ActivityTestHelper.openEditor(method, activity)
         val actorUniqueName = "me" + DemoData.demoData.testRunUid + "@mastodon.example.com"
         val content = "Sending note to the unknown yet Actor @$actorUniqueName"
         // TypeTextAction doesn't work here due to auto-correction
         Espresso.onView(ViewMatchers.withId(org.andstatus.app.R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
         TestSuite.waitForIdleSync()
-        ActivityTestHelper.Companion.clickSendButton<ActivityViewItem>(method, activity)
-        val noteId: Long = ActivityTestHelper.Companion.waitAndGetIdOfStoredNote(method, content)
+        ActivityTestHelper.clickSendButton(method, activity)
+        val noteId: Long = ActivityTestHelper.waitAndGetIdOfStoredNote(method, content)
         val note: Note = Note.Companion.loadContentById(mock.connection.myContext(), noteId)
         Assert.assertEquals("Note $note", DownloadStatus.SENDING, note.getStatus())
         Assert.assertEquals("Visibility $note", Visibility.PUBLIC_AND_TO_FOLLOWERS, note.audience().visibility)
@@ -88,15 +88,17 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
     private fun _sendingSensitive() {
         val method = "sendingSensitive"
         TestSuite.waitForListLoaded(activity, 2)
-        ActivityTestHelper.Companion.hideEditorAndSaveDraft<ActivityViewItem>(method, activity)
-        ActivityTestHelper.Companion.openEditor<ActivityViewItem>(method, activity)
+        ActivityTestHelper.hideEditorAndSaveDraft(method, activity)
+        ActivityTestHelper.openEditor(method, activity)
         val content = "Sending sensitive note " + DemoData.demoData.testRunUid
-        Espresso.onView(ViewMatchers.withId(org.andstatus.app.R.id.is_sensitive)).check(ViewAssertions.matches(ViewMatchers.isNotChecked())).perform(ViewActions.scrollTo(), ViewActions.click())
+        Espresso.onView(ViewMatchers.withId(org.andstatus.app.R.id.is_sensitive))
+                .check(ViewAssertions.matches(ViewMatchers.isNotChecked()))
+                .perform(ViewActions.scrollTo(), ViewActions.click())
         // TypeTextAction doesn't work here due to auto-correction
         Espresso.onView(ViewMatchers.withId(org.andstatus.app.R.id.noteBodyEditText)).perform(ReplaceTextAction(content))
         TestSuite.waitForIdleSync()
-        ActivityTestHelper.Companion.clickSendButton<ActivityViewItem>(method, activity)
-        val noteId: Long = ActivityTestHelper.Companion.waitAndGetIdOfStoredNote(method, content)
+        ActivityTestHelper.clickSendButton(method, activity)
+        val noteId: Long = ActivityTestHelper.waitAndGetIdOfStoredNote(method, content)
         val note: Note = Note.Companion.loadContentById(mock.connection.myContext(), noteId)
         Assert.assertEquals("Note $note", DownloadStatus.SENDING, note.getStatus())
         Assert.assertEquals("Visibility $note", Visibility.PUBLIC_AND_TO_FOLLOWERS, note.audience().visibility)
@@ -114,12 +116,12 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
     @Test
     @Throws(InterruptedException::class)
     fun attachOneImage() {
-        NoteEditorTest.Companion.attachImages(this, 1, 1)
+        NoteEditorTest.attachImages(this, 1, 1)
     }
 
     @Test
     @Throws(InterruptedException::class)
     fun attachTwoImages() {
-        NoteEditorTest.Companion.attachImages(this, 2, 2)
+        NoteEditorTest.attachImages(this, 2, 2)
     }
 }

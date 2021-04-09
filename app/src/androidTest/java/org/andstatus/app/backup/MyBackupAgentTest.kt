@@ -1,12 +1,10 @@
 package org.andstatus.app.backup
 
-import android.Manifest
 import android.accounts.AccountManager
 import android.accounts.AuthenticatorException
 import android.accounts.OperationCanceledException
 import android.content.Context
 import androidx.documentfile.provider.DocumentFile
-import androidx.test.rule.GrantPermissionRule
 import io.vavr.control.Try
 import org.andstatus.app.account.AccountUtils
 import org.andstatus.app.account.MyAccounts
@@ -23,7 +21,6 @@ import org.andstatus.app.util.TriState
 import org.json.JSONException
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import java.io.File
 import java.io.FileNotFoundException
@@ -32,11 +29,6 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 class MyBackupAgentTest {
-    @Rule
-    @JvmField
-    var mRuntimePermissionRule = GrantPermissionRule.grant(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
     @Before
     @Throws(Exception::class)

@@ -16,7 +16,7 @@
 package org.andstatus.app.account
 
 import android.accounts.Account
-import org.andstatus.app.context.DemoData
+import org.andstatus.app.context.DemoData.Companion.demoData
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.data.MyQuery
@@ -38,29 +38,29 @@ import org.junit.Assert
 class DemoAccountInserter(private val myContext: MyContext) {
     private var firstAccountActorOid: String? = null
     fun insert() {
-        addAccount(DemoData.demoData.pumpioTestAccountActorOid, DemoData.demoData.pumpioTestAccountName,
+        addAccount(demoData.pumpioTestAccountActorOid, demoData.pumpioTestAccountName,
                 "", OriginType.PUMPIO)
-        addAccount(DemoData.demoData.twitterTestAccountActorOid, DemoData.demoData.twitterTestAccountName,
+        addAccount(demoData.twitterTestAccountActorOid, demoData.twitterTestAccountName,
                 "", OriginType.TWITTER)
-        addAccount(DemoData.demoData.gnusocialTestAccountActorOid, DemoData.demoData.gnusocialTestAccountName,
-                DemoData.demoData.gnusocialTestAccountAvatarUrl, OriginType.GNUSOCIAL)
-        addAccount(DemoData.demoData.gnusocialTestAccount2ActorOid, DemoData.demoData.gnusocialTestAccount2Name,
+        addAccount(demoData.gnusocialTestAccountActorOid, demoData.gnusocialTestAccountName,
+                demoData.gnusocialTestAccountAvatarUrl, OriginType.GNUSOCIAL)
+        addAccount(demoData.gnusocialTestAccount2ActorOid, demoData.gnusocialTestAccount2Name,
                 "", OriginType.GNUSOCIAL)
-        addAccount(DemoData.demoData.mastodonTestAccountActorOid, DemoData.demoData.mastodonTestAccountName,
-                DemoData.demoData.gnusocialTestAccountAvatarUrl, OriginType.MASTODON)
-        addAccount(DemoData.demoData.conversationAccountActorOid, DemoData.demoData.conversationAccountName,
-                DemoData.demoData.conversationAccountAvatarUrl, DemoData.demoData.conversationOriginType)
-        addAccount(DemoData.demoData.conversationAccountSecondActorOid, DemoData.demoData.conversationAccountSecondName,
-                "", DemoData.demoData.conversationOriginType)
-        addAccount(DemoData.demoData.activityPubTestAccountActorOid, DemoData.demoData.activityPubTestAccountName,
-                "", OriginType.ACTIVITYPUB)
+        addAccount(demoData.mastodonTestAccountActorOid, demoData.mastodonTestAccountName,
+                demoData.gnusocialTestAccountAvatarUrl, OriginType.MASTODON)
+        addAccount(demoData.conversationAccountActorOid, demoData.conversationAccountName,
+                demoData.conversationAccountAvatarUrl, demoData.conversationOriginType)
+        addAccount(demoData.conversationAccountSecondActorOid, demoData.conversationAccountSecondName,
+                "", demoData.conversationOriginType)
+        addAccount(demoData.activityPubTestAccountActorOid, demoData.activityPubTestAccountName,
+                demoData.activityPubTestAccountAvatarUrl, OriginType.ACTIVITYPUB)
     }
 
     private fun addAccount(actorOid: String, accountNameString: String, avatarUrl: String?, originType: OriginType): MyAccount {
         if (firstAccountActorOid == null) {
             firstAccountActorOid = actorOid
         }
-        DemoData.demoData.checkDataPath()
+        demoData.checkDataPath()
         val accountName: AccountName = AccountName.fromAccountName(myContext, accountNameString)
         Assert.assertEquals("Account name created $accountName", accountNameString, accountName.name)
         MyLog.v(this, "Adding account $accountName")

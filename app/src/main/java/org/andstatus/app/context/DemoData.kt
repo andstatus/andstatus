@@ -58,6 +58,7 @@ class DemoData {
     val activityPubTestAccountUniqueName: String = "$activityPubUsername@$activityPubMainHost"
     val activityPubTestAccountName: String = "$activityPubTestAccountUniqueName/$activityPubTestOriginName"
     val activityPubTestAccountActorOid: String = "https://$activityPubMainHost/users/$activityPubUsername"
+    val activityPubTestAccountAvatarUrl: String = "https://cdn.icon-icons.com/icons2/2699/PNG/512/w_activitypub_logo_icon_169246.png"
     val pumpioOriginName: String = "PumpioTest"
     val pumpioMainHost: String = "pump1.$testOriginParentHost"
     val pumpioSecondHost: String = "pump2.$testOriginParentHost"
