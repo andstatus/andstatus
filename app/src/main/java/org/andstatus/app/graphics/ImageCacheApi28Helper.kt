@@ -42,12 +42,12 @@ object ImageCacheApi28Helper {
                     setTargetSize(imageCache, mediaFile, decoder, info.size)
                 }
                 if (drawable is BitmapDrawable) {
-                    imageCache.bitmapToCachedImage(mediaFile, drawable.bitmap)
+                    drawable.bitmap?.let { imageCache.bitmapToCachedImage(mediaFile, it) }
                 } else {
                     if (drawable is Animatable) {
                         (drawable as Animatable).start()
                     }
-                    CachedImage(mediaFile.downloadId, drawable)
+                    CachedImage(mediaFile.id, drawable)
                 }
             }
         } catch (e: Exception) {

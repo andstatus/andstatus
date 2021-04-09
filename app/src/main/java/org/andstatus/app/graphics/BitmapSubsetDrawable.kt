@@ -25,20 +25,18 @@ import android.graphics.drawable.Drawable
 /**
  * @author yvolk@yurivolkov.com
  */
-class BitmapSubsetDrawable(bitmap: Bitmap, srcRect: Rect) : Drawable() {
-    private val bitmap: Bitmap
-    private val scrRect: Rect
+class BitmapSubsetDrawable(val bitmap: Bitmap, val srcRect: Rect) : Drawable() {
 
     override fun getIntrinsicWidth(): Int {
-        return scrRect.width()
+        return srcRect.width()
     }
 
     override fun getIntrinsicHeight(): Int {
-        return scrRect.height()
+        return srcRect.height()
     }
 
     override fun draw(canvas: Canvas) {
-        canvas.drawBitmap(bitmap, scrRect, bounds, null)
+        canvas.drawBitmap(bitmap, srcRect, bounds, null)
     }
 
     override fun setAlpha(alpha: Int) {
@@ -51,14 +49,5 @@ class BitmapSubsetDrawable(bitmap: Bitmap, srcRect: Rect) : Drawable() {
 
     override fun getOpacity(): Int {
         return PixelFormat.OPAQUE
-    }
-
-    fun getBitmap(): Bitmap {
-        return bitmap
-    }
-
-    init {
-        this.bitmap = bitmap
-        scrRect = srcRect
     }
 }

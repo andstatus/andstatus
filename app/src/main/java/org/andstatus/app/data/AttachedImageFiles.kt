@@ -110,13 +110,13 @@ class AttachedImageFiles(val list: MutableList<AttachedMediaFile>) : IsEmpty {
             val toSkip = mediaFiles.stream().map { i: AttachedMediaFile -> i.previewOfDownloadId }.filter { i: Long? -> i != 0L }
                     .collect(Collectors.toList())
             for (mediaFile in mediaFiles) {
-                if (mediaFile.isEmpty || toSkip.contains(mediaFile.downloadId)) continue
+                if (mediaFile.isEmpty || toSkip.contains(mediaFile.id)) continue
                 if (mediaFile.previewOfDownloadId == 0L) {
                     out.add(mediaFile)
                 } else {
                     var fullImage: AttachedMediaFile = AttachedMediaFile.EMPTY
                     for (other in mediaFiles) {
-                        if (other.downloadId == mediaFile.previewOfDownloadId) {
+                        if (other.id == mediaFile.previewOfDownloadId) {
                             fullImage = other
                             break
                         }

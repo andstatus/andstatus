@@ -34,12 +34,10 @@ class AvatarFile private constructor(private val actor: Actor, filename: String,
                                      downloadStatus: DownloadStatus, downloadedDate: Long, isEmpty: Boolean = false) :
         MediaFile(filename, MyContentType.IMAGE, mediaMetadata, 0, downloadStatus, downloadedDate, isEmpty) {
 
-    override fun getId(): Long {
-        return getActor().actorId
-    }
+    override val id: Long get() = getActor().actorId
 
     fun getActor(): Actor {
-        return if(isEmpty) Actor.EMPTY else actor
+        return if (isEmpty) Actor.EMPTY else actor
     }
 
     public override fun getDefaultImage(): CachedImage {
@@ -52,12 +50,7 @@ class AvatarFile private constructor(private val actor: Actor, filename: String,
 
     public override fun requestDownload() {
         if (getActor().actorId == 0L || !getActor().hasAvatar() || !contentType.getDownloadMediaOfThisType()) return
-        MyLog.v(this) {
-            """
-     Requesting download ${getActor()}
-     $this
-     """.trimIndent()
-        }
+        MyLog.v(this) { "Requesting download ${getActor()} $this" }
         MyServiceManager.sendCommand(
                 CommandData.newActorCommandAtOrigin(CommandEnum.GET_AVATAR, getActor(),
                         getActor().getUsername(), getActor().origin))

@@ -69,15 +69,15 @@ class AttachedMediaFile : MediaFile {
     }
 
     override fun requestDownload() {
-        if (downloadId == 0L || uri === Uri.EMPTY || !contentType.getDownloadMediaOfThisType()) return
-        MyServiceManager.sendCommand(CommandData.newFetchAttachment(0, downloadId))
+        if (id == 0L || uri === Uri.EMPTY || !contentType.getDownloadMediaOfThisType()) return
+        MyServiceManager.sendCommand(CommandData.newFetchAttachment(0, id))
     }
 
     internal constructor(previewFile: AttachedMediaFile, previewOf: AttachedMediaFile) :
             super(previewFile.downloadFile.getFilename(),
                     previewFile.contentType,
                     previewFile.mediaMetadata,
-                    previewFile.downloadId,
+                    previewFile.id,
                     previewFile.downloadStatus,
                     previewFile.downloadedDate,
                     false) {
@@ -87,8 +87,7 @@ class AttachedMediaFile : MediaFile {
     }
 
     fun imageOrLinkMayBeShown(): Boolean {
-        return contentType.isImage() &&
-                (super.imageMayBeShown() || uri !== Uri.EMPTY)
+        return contentType.isImage() && (super.imageMayBeShown() || uri !== Uri.EMPTY)
     }
 
     fun intentToView(): Intent {

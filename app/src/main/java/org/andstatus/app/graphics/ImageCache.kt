@@ -86,7 +86,7 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
         return getImage(mediaFile, false)
     }
 
-    override fun entryRemoved(evicted: Boolean, key: String, oldValue: CachedImage, newValue: CachedImage) {
+    override fun entryRemoved(evicted: Boolean, key: String, oldValue: CachedImage, newValue: CachedImage?) {
         if (oldValue.isBitmapRecyclable()) {
             oldValue.makeExpired()
             recycledBitmaps.add(oldValue.getBitmap())
@@ -95,12 +95,14 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
 
     private fun getImage(mediaFile: MediaFile, fromCacheOnly: Boolean): CachedImage? {
         if (mediaFile.getPath().isEmpty()) {
+            MyLog.v(mediaFile, "No path of id:${mediaFile.id}")
             return null
         }
         var image = get(mediaFile.getPath())
         if (image != null) {
             hits.incrementAndGet()
         } else if (brokenBitmaps.contains(mediaFile.getPath())) {
+            MyLog.v(mediaFile, "Known broken id:${mediaFile.id}")
             hits.incrementAndGet()
             return CachedImage.BROKEN
         } else {
@@ -126,45 +128,44 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
                     ImageCacheApi28Helper.animatedFileToCachedImage(this, mediaFile)
                 } else imageFileToCachedImage(mediaFile)
             }
-            MyContentType.VIDEO -> bitmapToCachedImage(mediaFile, videoFileToBitmap(mediaFile))
+            MyContentType.VIDEO -> videoFileToBitmap(mediaFile)?.let { bitmapToCachedImage(mediaFile, it) }
             else -> null
         }
     }
 
     fun imageFileToCachedImage(mediaFile: MediaFile): CachedImage? {
-        return bitmapToCachedImage(mediaFile, imageFileToBitmap(mediaFile))
+        return imageFileToBitmap(mediaFile)?.let { bitmapToCachedImage(mediaFile, it) }
     }
 
-    fun bitmapToCachedImage(mediaFile: MediaFile, bitmap: Bitmap?): CachedImage? {
-        if (bitmap == null) {
-            return null
-        }
+    fun bitmapToCachedImage(mediaFile: MediaFile, bitmap: Bitmap): CachedImage {
         val srcRect = Rect(0, 0, bitmap.width, bitmap.height)
         var background = getSuitableRecycledBitmap(srcRect)
         if (background == null) {
-            MyLog.w(mediaFile, "No suitable bitmap found to cache "
-                    + srcRect.width() + "x" + srcRect.height() + " '" + mediaFile.getPath() + "'")
-            return null
-        }
-        val canvas = Canvas(background)
-        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
-        try {
-            // On Android 8+ this may cause
-            //   java.lang.IllegalArgumentException: Software rendering doesn't support hardware bitmaps
-            // See https://stackoverflow.com/questions/58314397/java-lang-illegalstateexception-software-rendering-doesnt-support-hardware-bit
-            if (rounded) {
-                drawRoundedBitmap(canvas, bitmap)
-            } else {
-                canvas.drawBitmap(bitmap, 0f, 0f, null)
-            }
-            bitmap.recycle()
-        } catch (e: Exception) {
-            // TODO: better approach needed... maybe fail?!
-            MyLog.w(TAG, "Drawing bitmap of $mediaFile", e)
-            recycledBitmaps.add(background)
+            MyLog.w(mediaFile, "No suitable bitmap found to cache id:${mediaFile.id}" +
+                    " ${srcRect.width()}x${srcRect.height()} '${mediaFile.getPath()}'")
+            // TODO: Fix cache!
             background = bitmap
+        } else {
+            val canvas = Canvas(background)
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+            try {
+                // On Android 8+ this may cause
+                //   java.lang.IllegalArgumentException: Software rendering doesn't support hardware bitmaps
+                // See https://stackoverflow.com/questions/58314397/java-lang-illegalstateexception-software-rendering-doesnt-support-hardware-bit
+                if (rounded) {
+                    drawRoundedBitmap(canvas, bitmap)
+                } else {
+                    canvas.drawBitmap(bitmap, 0f, 0f, null)
+                }
+                bitmap.recycle()
+            } catch (e: Exception) {
+                // TODO: better approach needed... maybe fail?!
+                MyLog.w(TAG, "Drawing bitmap of $mediaFile", e)
+                recycledBitmaps.add(background)
+                background = bitmap
+            }
         }
-        return CachedImage(mediaFile.getId(), background, srcRect)
+        return CachedImage(mediaFile.id, background, srcRect)
     }
 
     /**
@@ -186,26 +187,26 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
 
     private fun imageFileToBitmap(mediaFile: MediaFile): Bitmap? {
         return try {
-            val bitmap: Bitmap?
             val options = calculateScaling(mediaFile, mediaFile.getSize())
-            bitmap = if (MyPreferences.isShowDebuggingInfoInUi()) {
+            val bitmap: Bitmap? = if (MyPreferences.isShowDebuggingInfoInUi()) {
                 BitmapFactory.decodeFile(mediaFile.getPath(), options)
             } else {
                 try {
                     BitmapFactory.decodeFile(mediaFile.getPath(), options)
                 } catch (e: OutOfMemoryError) {
-                    MyLog.w(mediaFile, getInfo(), e)
                     evictAll()
+                    MyLog.w(mediaFile, getInfo(), e)
                     return null
                 }
             }
             MyLog.v(mediaFile) {
-                (if (bitmap == null) "Failed to load $name's bitmap" else "Loaded " + name + "'s bitmap " + bitmap.width
-                        + "x" + bitmap.height) + " '" + mediaFile.getPath() + "' inSampleSize:" + options.inSampleSize
+                (if (bitmap == null) "Failed to load $name's bitmap"
+                else "Loaded " + name + "'s bitmap " + bitmap.width + "x" + bitmap.height) +
+                        " id:${mediaFile.id} '" + mediaFile.getPath() + "' inSampleSize:" + options.inSampleSize
             }
             bitmap
         } catch (e: Exception) {
-            MyLog.w(this, "Error loading '" + mediaFile.getPath() + "'", e)
+            MyLog.w(this, "Error loading id:${mediaFile.id} '" + mediaFile.getPath() + "'", e)
             null
         }
     }
