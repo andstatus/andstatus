@@ -56,6 +56,7 @@ open class MyActivity : AppCompatActivity(), IdentifiableInstance {
     @Volatile
     private var mFinishing = false
     private var mOptionsMenu: Menu? = null
+
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(MyLocale.onAttachBaseContext(newBase))
     }
@@ -84,7 +85,7 @@ open class MyActivity : AppCompatActivity(), IdentifiableInstance {
                 if (previousErrorInflatingTime == 0L) {
                     previousErrorInflatingTime = System.currentTimeMillis()
                     finish()
-                     MyContextHolder.myContextHolder.getNow().setExpired { logMsg }
+                    MyContextHolder.myContextHolder.getNow().setExpired { logMsg }
                     FirstActivity.goHome(this)
                 } else {
                     throw IllegalStateException(logMsg, e)
@@ -92,12 +93,12 @@ open class MyActivity : AppCompatActivity(), IdentifiableInstance {
                 return
             }
         }
-        val toolbar = findViewById<Toolbar?>(R.id.my_action_bar)
-        toolbar?.let { setSupportActionBar(it) }
-        val actionBar = supportActionBar
-        if (actionBar != null) {
-            actionBar.setDisplayShowHomeEnabled(true)
-            actionBar.setDisplayHomeAsUpEnabled(true)
+        findViewById<Toolbar?>(R.id.my_action_bar)?.let {
+            setSupportActionBar(it)
+        }
+        supportActionBar?.apply {
+            setDisplayShowHomeEnabled(true)
+            setDisplayHomeAsUpEnabled(true)
         }
     }
 
@@ -111,13 +112,11 @@ open class MyActivity : AppCompatActivity(), IdentifiableInstance {
     }
 
     fun setTitle(title: String?) {
-        val bar = supportActionBar
-        bar?.setTitle(title)
+        supportActionBar?.title = title
     }
 
     fun setSubtitle(subtitle: CharSequence?) {
-        val bar = supportActionBar
-        bar?.setSubtitle(subtitle)
+        supportActionBar?.subtitle = subtitle
     }
 
     fun isMyResumed(): Boolean {
@@ -229,10 +228,9 @@ open class MyActivity : AppCompatActivity(), IdentifiableInstance {
             super.finish()
         }
         when (actionToDo) {
-            OnFinishAction.RESTART_ME ->  MyContextHolder.myContextHolder.initialize(this).thenStartActivity(this.intent)
-            OnFinishAction.RESTART_APP ->  MyContextHolder.myContextHolder.initialize(this).thenStartApp()
-            else -> {
-            }
+            OnFinishAction.RESTART_ME -> MyContextHolder.myContextHolder.initialize(this).thenStartActivity(this.intent)
+            OnFinishAction.RESTART_APP -> MyContextHolder.myContextHolder.initialize(this).thenStartApp()
+            else -> {}
         }
     }
 

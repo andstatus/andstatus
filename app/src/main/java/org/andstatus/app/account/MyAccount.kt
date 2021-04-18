@@ -66,7 +66,8 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         private set
 
     @Volatile
-    private var connection: Connection? = null
+    var connection: Connection = ConnectionEmpty.EMPTY
+        private set
 
     /** Was this account authenticated last time _current_ credentials were verified?
      * CredentialsVerified.NEVER - after changes of "credentials": password/OAuth...
@@ -115,7 +116,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     }
 
     fun getCredentialsPresent(): Boolean {
-        return getConnection().getCredentialsPresent() == true
+        return connection.getCredentialsPresent()
     }
 
     fun getCredentialsVerified(): CredentialsVerificationStatus {
@@ -193,7 +194,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     val isValid: Boolean
         get() {
             return (!deleted
-                    && actor.actorId != 0L && connection != null && data.accountName.isValid
+                    && actor.actorId != 0L && connection.nonEmpty && data.accountName.isValid
                     && actor.oid.isNotEmpty())
         }
 
@@ -228,16 +229,12 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     val origin: Origin get() = data.accountName.origin
     val originId: Long get() = origin.id
 
-    fun getConnection(): Connection {
-        return connection ?: ConnectionEmpty.EMPTY
-    }
-
     fun areClientKeysPresent(): Boolean {
-        return getConnection().areOAuthClientKeysPresent()
+        return connection.areOAuthClientKeysPresent()
     }
 
     fun getOAuthService(): OAuthService? {
-        return getConnection().getOAuthService()
+        return connection.getOAuthService()
     }
 
     fun getOrder(): Int {
@@ -257,7 +254,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     }
 
     fun getPassword(): String {
-        return getConnection().getPassword()
+        return connection.getPassword()
     }
 
     fun isUsernameNeededToStartAddingNewAccount(): Boolean {
@@ -269,7 +266,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     }
 
     fun isSearchSupported(searchObjects: SearchObjects?): Boolean {
-        return getConnection().hasApiEndpoint(if (searchObjects == SearchObjects.NOTES) ApiRoutineEnum.SEARCH_NOTES else ApiRoutineEnum.SEARCH_ACTORS)
+        return connection.hasApiEndpoint(if (searchObjects == SearchObjects.NOTES) ApiRoutineEnum.SEARCH_NOTES else ApiRoutineEnum.SEARCH_ACTORS)
     }
 
     fun requestSync() {
@@ -311,8 +308,8 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
             if (getCredentialsPresent()) {
                 members += "credentialsPresent,"
             }
-            if (connection == null) {
-                members += "connection:null,"
+            if (connection.isEmpty) {
+                members += "connection:empty,"
             }
             if (syncFrequencySeconds > 0) {
                 members += "syncFrequency:$syncFrequencySeconds,"
@@ -637,9 +634,9 @@ ${MyLog.getStackTrace(Exception())}""")
         }
 
         fun getConnection(): Connection {
-            return if (myAccount.getConnection().isEmpty)
+            return if (myAccount.connection.isEmpty)
                 Connection.fromOrigin(myAccount.origin, TriState.fromBoolean(isOAuth()))
-            else myAccount.getConnection()
+            else myAccount.connection
         }
 
         fun setPassword(password: String?) {
@@ -674,7 +671,7 @@ ${MyLog.getStackTrace(Exception())}""")
         }
 
         fun clearClientKeys() {
-            myAccount.connection?.clearClientKeys()
+            myAccount.connection.clearClientKeys()
         }
 
         fun setSyncFrequencySeconds(syncFrequencySeconds: Long) {
@@ -791,7 +788,7 @@ ${MyLog.getStackTrace(Exception())}""")
         isSyncedAutomatically = data.getDataBoolean(KEY_IS_SYNCED_AUTOMATICALLY, true)
         setOAuth(TriState.fromBoolean(data.getDataBoolean(KEY_OAUTH, origin.isOAuthDefault())))
         setConnection()
-        getConnection().setPassword(data.getDataString(Connection.KEY_PASSWORD))
+        connection.setPassword(data.getDataString(Connection.KEY_PASSWORD))
         credentialsVerified = CredentialsVerificationStatus.load(data)
         order = data.getDataInt(KEY_ORDER, 1)
     }

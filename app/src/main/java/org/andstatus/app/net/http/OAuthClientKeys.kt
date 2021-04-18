@@ -40,6 +40,8 @@ import org.andstatus.app.util.MyLog
  */
 class OAuthClientKeys private constructor(private val strategy: OAuthClientKeysStrategy) {
 
+    val areDynamic = strategy is OAuthClientKeysDynamic
+
     fun areKeysPresent(): Boolean {
         return getConsumerKey().isNotEmpty() && !getConsumerSecret().isEmpty()
     }

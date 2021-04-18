@@ -23,6 +23,7 @@ import org.andstatus.app.IntentExtra
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginType
+import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
 import java.util.concurrent.atomic.AtomicReference
 
@@ -32,7 +33,7 @@ import java.util.concurrent.atomic.AtomicReference
  *
  * This class will be close to com.android.email.activity.setup.SetupData
  */
-class StateOfAccountChangeProcess private constructor(bundle: Bundle?) {
+class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty {
     private var accountAction: String? = Intent.ACTION_DEFAULT
 
     @Volatile
@@ -130,8 +131,26 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?) {
         }
     }
 
+    init {
+        if (bundle != null && bundle.containsKey(ACTION_COMPLETED_KEY)) {
+            setAccountAction(bundle.getString(ACCOUNT_ACTION_KEY))
+            actionCompleted = bundle.getBoolean(ACTION_COMPLETED_KEY, true)
+            actionSucceeded = bundle.getBoolean(ACTION_SUCCEEDED_KEY)
+            builder = bundle.getParcelable(ACCOUNT_KEY)
+            authenticatorResponse = bundle.getParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY)
+            setRequestTokenWithSecret(bundle.getString(REQUEST_TOKEN_KEY), bundle.getString(REQUEST_SECRET_KEY))
+            restored = true
+        } else {
+            builder = MyAccount.Builder.fromMyAccount(MyAccount.EMPTY)
+        }
+    }
+
+    override val isEmpty: Boolean
+        get() = this == EMPTY
+
     companion object {
         private val TAG: String = StateOfAccountChangeProcess::class.java.simpleName
+        val EMPTY = StateOfAccountChangeProcess(null)
 
         /** Stored state of the single object of this class
          * It's static so it generally stays intact between the [AccountSettingsActivity]'s instantiations
@@ -214,20 +233,6 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?) {
                 }
             }
             return state
-        }
-    }
-
-    init {
-        if (bundle != null && bundle.containsKey(ACTION_COMPLETED_KEY)) {
-            setAccountAction(bundle.getString(ACCOUNT_ACTION_KEY))
-            actionCompleted = bundle.getBoolean(ACTION_COMPLETED_KEY, true)
-            actionSucceeded = bundle.getBoolean(ACTION_SUCCEEDED_KEY)
-            builder = bundle.getParcelable(ACCOUNT_KEY)
-            authenticatorResponse = bundle.getParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY)
-            setRequestTokenWithSecret(bundle.getString(REQUEST_TOKEN_KEY), bundle.getString(REQUEST_SECRET_KEY))
-            restored = true
-        } else {
-            builder = MyAccount.Builder.fromMyAccount(MyAccount.EMPTY)
         }
     }
 }

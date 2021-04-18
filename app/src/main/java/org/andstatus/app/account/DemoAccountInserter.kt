@@ -201,7 +201,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         fun assertDefaultTimelinesForAccounts() {
             for (myAccount in  MyContextHolder.myContextHolder.getNow().accounts().get()) {
                 for (timelineType in myAccount.actor.getDefaultMyAccountTimelineTypes()) {
-                    if (!myAccount.getConnection().hasApiEndpoint(timelineType.connectionApiRoutine)) continue
+                    if (!myAccount.connection.hasApiEndpoint(timelineType.connectionApiRoutine)) continue
                     var count: Long = 0
                     val logMsg: StringBuilder = StringBuilder(myAccount.toString())
                     MyStringBuilder.appendWithSpace(logMsg, timelineType.toString())

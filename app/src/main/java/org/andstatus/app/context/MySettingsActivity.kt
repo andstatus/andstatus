@@ -35,6 +35,7 @@ class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceSt
         PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
     private val mPreferencesChangedAt = MyPreferences.getPreferencesChangeTime()
     private var resumedOnce = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         resumedOnce = false
         mLayoutId = R.layout.my_settings
@@ -175,8 +176,10 @@ class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceSt
 
     companion object {
         fun goToMySettingsAccounts(activity: Activity) {
-            activity.startActivity(MySettingsGroup.ACCOUNTS.add(Intent(activity.getApplicationContext(), MySettingsActivity::class.java)))
             activity.finish()
+            MyContextHolder.myContextHolder
+            .initialize(activity)
+            .thenStartActivity(MySettingsGroup.ACCOUNTS.addTo(Intent(activity.applicationContext, MySettingsActivity::class.java)))
         }
     }
 }

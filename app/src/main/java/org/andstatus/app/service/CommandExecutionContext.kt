@@ -9,7 +9,7 @@ import org.andstatus.app.timeline.meta.Timeline
 class CommandExecutionContext(val myContext: MyContext, val commandData: CommandData) {
 
     fun getConnection(): Connection {
-        return getMyAccount().getConnection()
+        return getMyAccount().connection
     }
 
     fun getMyAccount(): MyAccount {

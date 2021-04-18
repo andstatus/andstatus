@@ -354,7 +354,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         command.showAfterSave = true
         command.beingEdited = true
         saveData(command)
-        if (data.getMyAccount().getConnection().hasApiEndpoint(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
+        if (data.getMyAccount().connection.hasApiEndpoint(ApiRoutineEnum.ACCOUNT_RATE_LIMIT_STATUS)) {
             MyServiceManager.sendForegroundCommand(
                     CommandData.newAccountCommand(CommandEnum.RATE_LIMIT_STATUS, data.getMyAccount()))
         }

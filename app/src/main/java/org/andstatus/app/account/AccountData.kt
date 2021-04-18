@@ -72,7 +72,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         myAccount.getCredentialsVerified().put(this)
         setDataBoolean(MyAccount.KEY_OAUTH, myAccount.isOAuth())
         setDataLong(MyAccount.KEY_ACTOR_ID, myAccount.actor.actorId)
-        myAccount.getConnection().saveTo(this)
+        myAccount.connection.saveTo(this)
         setPersistent(true)
         setDataBoolean(MyAccount.KEY_IS_SYNCABLE, myAccount.isSyncable)
         setDataBoolean(MyAccount.KEY_IS_SYNCED_AUTOMATICALLY, myAccount.isSyncedAutomatically())

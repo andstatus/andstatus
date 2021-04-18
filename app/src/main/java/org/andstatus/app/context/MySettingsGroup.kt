@@ -25,7 +25,7 @@ import org.andstatus.app.R
 
 enum class MySettingsGroup(
         /** key used in preference headers  */
-        val key: String?, private val titleResId: Int, private val preferencesXmlResId: Int) {
+        val key: String, private val titleResId: Int, private val preferencesXmlResId: Int) {
     UNKNOWN("unknown", R.string.settings_activity_title, R.xml.preference_headers),
     ACCOUNTS("accounts", R.string.header_accounts, R.xml.preferences_accounts),
     APPEARANCE("appearance", R.string.title_preference_appearance, R.xml.preferences_appearance),
@@ -47,7 +47,7 @@ enum class MySettingsGroup(
         return preferencesXmlResId
     }
 
-    fun add(intent: Intent): Intent {
+    fun addTo(intent: Intent): Intent {
         return intent.putExtra(IntentExtra.SETTINGS_GROUP.key, key)
     }
 

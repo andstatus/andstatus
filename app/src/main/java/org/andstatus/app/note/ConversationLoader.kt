@@ -194,7 +194,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem,
             noteId = noteId_in
             conversationOid = MyQuery.noteIdToConversationOid(myContext, noteId)
         }
-        if (ma.getConnection().canGetConversation(conversationOid)) {
+        if (ma.connection.canGetConversation(conversationOid)) {
             conversationSyncRequested = true
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "Conversation oid=" + conversationOid + " for noteId=" + noteId

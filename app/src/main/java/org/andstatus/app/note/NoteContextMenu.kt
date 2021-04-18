@@ -204,7 +204,7 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
             }
             if (menuData.isAuthorSucceededMyAccount()) {
                 if (noteForAnyAccount.isPresentAtServer()) {
-                    if (!menuData.reblogged && getActingAccount().getConnection()
+                    if (!menuData.reblogged && getActingAccount().connection
                                     .hasApiEndpoint(ApiRoutineEnum.DELETE_NOTE)) {
                         NoteContextMenuItem.DELETE_NOTE.addTo(menu, order++,
                                 R.string.menu_item_destroy_status)

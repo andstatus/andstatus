@@ -70,7 +70,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
         val file = fileTemp.getFile()
         val ma = findBestAccountForDownload()
         if (ma.isValidAndSucceeded()) {
-            val connection = connectionMock ?: ma.getConnection()
+            val connection = connectionMock ?: ma.connection
             MyLog.v(this) {
                 ("About to download " + data.toString() + "; connection"
                         + (if (connectionMock == null) "" else " (mocked)")

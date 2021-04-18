@@ -254,6 +254,7 @@ you will not see activity 201 and older ones in a Timeline</string>
   <string name="liked">favorited</string>
   <string name="loading">Loading</string>
   <string name="log_in_to_social_network">Log in to %s</string>
+  <string name="log_out">Log out</string>
   <string name="long_press_to_open_context_menu">Long press to open Context Menu</string>
   <string name="long_press_to_open_context_menu_on">Long press an item to open its Context Menu</string>
   <string name="long_press_to_open_context_menu_off">Tap an item to open its Context Menu</string>

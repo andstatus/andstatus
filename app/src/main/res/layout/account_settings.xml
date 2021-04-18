@@ -149,7 +149,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/title_preference_is_default_account" />
-            </LinearLayout>
+        </LinearLayout>
+        <Button
+            android:id="@+id/log_out"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/log_out" />
+
     </LinearLayout>
 
 </ScrollView>
