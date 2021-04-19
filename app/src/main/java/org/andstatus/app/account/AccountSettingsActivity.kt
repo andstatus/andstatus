@@ -120,7 +120,8 @@ class AccountSettingsActivity : MyActivity() {
 
         constructor(status: ResultStatus?) : this(status, "", Optional.empty<Uri>(), Uri.EMPTY) {}
         constructor(status: ResultStatus?, message: CharSequence?) :
-                this(status, message, Optional.empty<Uri>(), Uri.EMPTY) {}
+                this(status, message, Optional.empty<Uri>(), Uri.EMPTY) {
+        }
 
         fun isSuccess(): Boolean {
             return status == ResultStatus.SUCCESS
@@ -239,10 +240,10 @@ class AccountSettingsActivity : MyActivity() {
 
     private fun onAccountSelected(resultCode: Int, data: Intent) {
         val toFinish: Boolean
-        val builder = state.builder ?: return
+        val builder = state.builder
 
         toFinish = if (resultCode == RESULT_OK) {
-            val accountName: AccountName = AccountName.fromAccountName( MyContextHolder.myContextHolder.getNow(),
+            val accountName: AccountName = AccountName.fromAccountName(MyContextHolder.myContextHolder.getNow(),
                     data.getStringExtra(IntentExtra.ACCOUNT_NAME.key))
             builder.rebuildMyAccount(accountName)
             !builder.isPersistent()
@@ -265,7 +266,7 @@ class AccountSettingsActivity : MyActivity() {
         if (resultCode == RESULT_OK) {
             originType = OriginType.fromCode(data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key))
             if (originType.isSelectable()) {
-                val origins: MutableList<Origin> =  MyContextHolder.myContextHolder.getNow()
+                val origins: MutableList<Origin> = MyContextHolder.myContextHolder.getNow()
                         .origins().originsOfType(originType)
                 when (origins.size) {
                     0 -> originType = OriginType.UNKNOWN
@@ -293,9 +294,9 @@ class AccountSettingsActivity : MyActivity() {
     }
 
     private fun onOriginSelected(resultCode: Int, data: Intent) {
-        var origin: Origin =  Origin.EMPTY
+        var origin: Origin = Origin.EMPTY
         if (resultCode == RESULT_OK) {
-            origin =  MyContextHolder.myContextHolder.getNow().origins()
+            origin = MyContextHolder.myContextHolder.getNow().origins()
                     .fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key))
             if (origin.isPersistent()) {
                 onOriginSelected(origin)
@@ -310,7 +311,7 @@ class AccountSettingsActivity : MyActivity() {
         if (myAccount.origin == origin) return
 
         // If we have changed the System, we should recreate the Account
-        state.builder?.setOrigin(origin)
+        state.builder.setOrigin(origin)
         showFragment(AccountSettingsFragment::class.java, FragmentAction.ON_ORIGIN_SELECTED.toBundle(Bundle()))
     }
 
@@ -403,13 +404,13 @@ class AccountSettingsActivity : MyActivity() {
         val view = findFragmentViewById(R.id.origin_name) as TextView?
         if (view != null) {
             view.text = getText(R.string.title_preference_origin_system)
-                    .toString().replace("{0}", state.builder?.getOrigin()?.name ?: "")
-                    .replace("{1}", state.builder?.getOrigin()?.originType?.title ?: "")
+                    .toString().replace("{0}", state.builder.getOrigin().name)
+                    .replace("{1}", state.builder.getOrigin().originType.title)
         }
     }
 
     private fun showUniqueName() {
-        val origin = state.builder?.getOrigin() ?: Origin.EMPTY
+        val origin = state.builder.getOrigin()
         showTextView(R.id.uniqueName_label, if (origin.hasHost()) R.string.title_preference_username else R.string.username_at_your_server,
                 isMaPersistent() || state.isUsernameNeededToStartAddingNewAccount() == true)
         val nameEditable = findFragmentViewById(R.id.uniqueName) as EditText?
@@ -439,7 +440,7 @@ class AccountSettingsActivity : MyActivity() {
         }
     }
 
-    private fun isMaPersistent() = state.builder?.isPersistent() == true
+    private fun isMaPersistent() = state.builder.isPersistent()
 
     private val textWatcher: TextWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -457,7 +458,7 @@ class AccountSettingsActivity : MyActivity() {
 
     private fun showPassword() {
         val ma = myAccount
-        val isNeeded = state.builder?.getConnection()?.isPasswordNeeded() == true && !ma.isValidAndSucceeded()
+        val isNeeded = state.builder.getConnection().isPasswordNeeded() && !ma.isValidAndSucceeded()
         val labelBuilder = StringBuilder()
         if (isNeeded) {
             labelBuilder.append(getText(R.string.summary_preference_password))
@@ -488,7 +489,7 @@ class AccountSettingsActivity : MyActivity() {
                     StringBuilder(
                             getText(R.string.summary_preference_verify_credentials_failed))
                 } else {
-                    if (state.builder?.isOAuth() == true) {
+                    if (state.builder.isOAuth()) {
                         StringBuilder(
                                 getText(R.string.summary_preference_add_account_oauth))
                     } else {
@@ -520,13 +521,12 @@ class AccountSettingsActivity : MyActivity() {
         var error: CharSequence = ""
         var addAccountEnabled = !state.isUsernameNeededToStartAddingNewAccount() || myAccount.isUsernameValid()
         if (addAccountEnabled) {
-            if (state.builder?.isOAuth() == false && state.builder?.getPassword().isNullOrEmpty()) {
+            if (!state.builder.isOAuth() && state.builder.getPassword().isEmpty()) {
                 addAccountEnabled = false
                 error = getText(R.string.title_preference_password)
             }
         } else {
-            error = getText(state.builder?.getOrigin()
-                    ?.alternativeTermForResourceId(R.string.title_preference_username) ?: R.string.title_preference_username)
+            error = getText(state.builder.getOrigin().alternativeTermForResourceId(R.string.title_preference_username))
         }
         if (addAccountEnabled) {
             verifyCredentials(true)
@@ -560,39 +560,39 @@ class AccountSettingsActivity : MyActivity() {
             else getText(R.string.title_preference_verify_credentials_failed)
         } else {
             String.format(getText(R.string.log_in_to_social_network).toString(),
-                    state.builder?.getOrigin()?.name)
+                    state.builder.getOrigin().name)
         }
         showTextView(
-            R.id.verify_credentials,
-            buttonText,
-            isMaPersistent())
-        ?.setOnClickListener { v: View? ->
-            clearError()
-            updateChangedFields()
-            updateScreen()
-            verifyCredentials(true)
-        }
+                R.id.verify_credentials,
+                buttonText,
+                isMaPersistent())
+                ?.setOnClickListener { v: View? ->
+                    clearError()
+                    updateChangedFields()
+                    updateScreen()
+                    verifyCredentials(true)
+                }
     }
 
     private fun showLogOutButton() {
         showTextView(R.id.log_out,
-            R.string.log_out,
-            myAccount.getCredentialsPresent() ||
-                    myAccount.connection.areOAuthClientKeysPresent() &&
-                    myAccount.connection.http.data.oauthClientKeys?.areDynamic == true)
-        ?.setOnClickListener { v: View? ->
-            state.builder?.let { builder ->
-                builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
-                builder.getAccount().connection.clearClientKeys()
-                builder.save()
-                MyPreferences.onPreferencesChanged()
-                closeAndGoBack()
-            }
-        }
+                R.string.log_out,
+                myAccount.getCredentialsPresent() ||
+                        myAccount.connection.areOAuthClientKeysPresent() &&
+                        myAccount.connection.http.data.oauthClientKeys?.areDynamic == true)
+                ?.setOnClickListener {
+                    with(state.builder) {
+                        setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
+                        getAccount().connection.clearClientKeys()
+                        save()
+                        MyPreferences.onPreferencesChanged()
+                        closeAndGoBack()
+                    }
+                }
     }
 
     private fun showIsDefaultAccount() {
-        val isDefaultAccount = myAccount == state.builder?.myContext()?.accounts()?.getDefaultAccount()
+        val isDefaultAccount = myAccount == state.builder.myContext().accounts().getDefaultAccount()
         val view = findFragmentViewById(R.id.is_default_account)
         if (view != null) {
             view.visibility = if (isDefaultAccount) View.VISIBLE else View.GONE
@@ -601,8 +601,8 @@ class AccountSettingsActivity : MyActivity() {
 
     private fun showIsSyncedAutomatically() {
         MyCheckBox.set(findFragmentViewById(R.id.synced_automatically),
-                state.builder?.getAccount()?.isSyncedAutomatically() == true
-        ) { buttonView: CompoundButton?, isChecked: Boolean -> state.builder?.setSyncedAutomatically(isChecked) }
+                state.builder.getAccount().isSyncedAutomatically()
+        ) { buttonView: CompoundButton?, isChecked: Boolean -> state.builder.setSyncedAutomatically(isChecked) }
     }
 
     private fun showSyncFrequency() {
@@ -614,8 +614,8 @@ class AccountSettingsActivity : MyActivity() {
                             R.array.fetch_frequency_values, R.array.fetch_frequency_entries,
                             R.string.summary_preference_frequency)
             label.text = labelText
-            val value = if (state.builder?.getAccount()?.getSyncFrequencySeconds() ?: 0 <= 0) ""
-                else java.lang.Long.toString(state.builder?.getAccount()?.getSyncFrequencySeconds() ?: 0 / 60)
+            val value = if (state.builder.getAccount().getSyncFrequencySeconds() <= 0) ""
+            else (state.builder.getAccount().getSyncFrequencySeconds() / 60).toString()
             view.setText(value)
             view.hint = labelText
             view.addTextChangedListener(object : TextWatcher {
@@ -628,15 +628,15 @@ class AccountSettingsActivity : MyActivity() {
                 }
 
                 override fun afterTextChanged(s: Editable?) {
-                    val value = StringUtil.toLong(s.toString())
-                    state.builder?.setSyncFrequencySeconds(if (value > 0) value * 60 else 0)
+                    val seconds = s.toString().let { StringUtil.toLong(it) * 60 }.takeIf { it > 0 } ?: 0
+                    state.builder.setSyncFrequencySeconds(seconds)
                 }
             })
         }
     }
 
     private fun showLastSyncSucceededDate() {
-        val lastSyncSucceededDate = myAccount.getLastSyncSucceededDate() ?: 0
+        val lastSyncSucceededDate = myAccount.getLastSyncSucceededDate()
         MyUrlSpan.showText(findFragmentViewById(R.id.last_synced) as TextView?,
                 if (lastSyncSucceededDate == 0L) getText(R.string.never).toString()
                 else RelativeTime.getDifference(this, lastSyncSucceededDate),
@@ -647,16 +647,16 @@ class AccountSettingsActivity : MyActivity() {
             showTextView(textViewId, if (textResourceId == 0) null else getText(textResourceId), isVisible)
 
     fun showTextView(textViewId: Int, text: CharSequence?, isVisible: Boolean): TextView? =
-        (findFragmentViewById(textViewId) as TextView?)?.also {
-            if (!TextUtils.isEmpty(text)) {
-                it.text = text
+            (findFragmentViewById(textViewId) as TextView?)?.also {
+                if (!TextUtils.isEmpty(text)) {
+                    it.text = text
+                }
+                it.visibility = if (isVisible) View.VISIBLE else View.GONE
             }
-            it.visibility = if (isVisible) View.VISIBLE else View.GONE
-        }
 
     override fun onResume() {
         super.onResume()
-         MyContextHolder.myContextHolder.getNow().setInForeground(true)
+        MyContextHolder.myContextHolder.getNow().setInForeground(true)
         if (restartMeIfNeeded()) return
         MyServiceManager.setServiceUnavailable()
         MyServiceManager.stopService()
@@ -701,7 +701,7 @@ class AccountSettingsActivity : MyActivity() {
                 AsyncTaskLauncher.execute(this,
                         VerifyCredentialsTask(ma.actor.getEndpoint(ActorEndpointType.API_PROFILE)))
                         .onFailure { e: Throwable -> appendError(e.message) }
-            } else if (state.builder?.isOAuth() == true && reVerify) {
+            } else if (state.builder.isOAuth() && reVerify) {
                 // Credentials are not present,
                 // so start asynchronous OAuth Authentication process
                 if (!ma.areClientKeysPresent()) {
@@ -722,14 +722,14 @@ class AccountSettingsActivity : MyActivity() {
             if (nameEditable != null) {
                 val uniqueName = nameEditable.text.toString()
                 if (uniqueName.compareTo(myAccount.getOAccountName().getUniqueName()) != 0) {
-                    state.builder?.setUniqueName(uniqueName)
+                    state.builder.setUniqueName(uniqueName)
                 }
             }
         }
         val passwordEditable = findFragmentViewById(R.id.password) as EditText?
         if (passwordEditable != null
                 && myAccount.getPassword().compareTo(passwordEditable.text.toString()) != 0) {
-            state.builder?.setPassword(passwordEditable.text.toString())
+            state.builder.setPassword(passwordEditable.text.toString())
         }
     }
 
@@ -753,7 +753,7 @@ class AccountSettingsActivity : MyActivity() {
     override fun finish() {
         if (resumedOnce || !isMyResumed()) {
             if (activityOnFinish == ActivityOnFinish.NONE) {
-                 MyContextHolder.myContextHolder.initialize(this)
+                MyContextHolder.myContextHolder.initialize(this)
             } else {
                 returnToOurActivity()
             }
@@ -762,16 +762,16 @@ class AccountSettingsActivity : MyActivity() {
     }
 
     private fun returnToOurActivity() {
-         MyContextHolder.myContextHolder
+        MyContextHolder.myContextHolder
                 .initialize(this)
                 .whenSuccessAsync({ myContext: MyContext ->
                     MyLog.v(this, "Returning to $activityOnFinish")
-                    val myAccount = myContext.accounts().fromAccountName(getState()?.getAccount()?.getAccountName())
+                    val myAccount = myContext.accounts().fromAccountName(getState().getAccount().getAccountName())
                     if (myAccount.isValid) {
                         myContext.accounts().setCurrentAccount(myAccount)
                     }
                     if (activityOnFinish == ActivityOnFinish.HOME) {
-                        val home = myContext.timelines()[TimelineType.HOME, myAccount.actor,  Origin.EMPTY]
+                        val home = myContext.timelines()[TimelineType.HOME, myAccount.actor, Origin.EMPTY]
                         TimelineActivity.startForTimeline(myContext, this@AccountSettingsActivity, home, true,
                                 initialSyncNeeded)
                         state.forget()
@@ -817,12 +817,11 @@ class AccountSettingsActivity : MyActivity() {
     }
 
     private fun saveState(): String {
-        val state = this.state
-        if (state == null) return "(no state)"
+        if (state.isEmpty) return "(no state)"
 
         var message = "action=" + state.getAccountAction()
         // Explicitly save MyAccount only on "Back key"
-        state.builder?.save()
+        state.builder.save()
         state.actionCompleted = true
         activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN
         if (state.authenticatorResponse != null) {
@@ -847,7 +846,7 @@ class AccountSettingsActivity : MyActivity() {
         return message
     }
 
-    fun getState(): StateOfAccountChangeProcess? {
+    fun getState(): StateOfAccountChangeProcess {
         return state
     }
 
@@ -870,10 +869,10 @@ class AccountSettingsActivity : MyActivity() {
             var connectionErrorMessage = ""
             try {
                 if (!myAccount.areClientKeysPresent()) {
-                    state.builder?.registerClient()
+                    state.builder.registerClient()
                 }
                 if (myAccount.areClientKeysPresent()) {
-                    state.builder?.getOriginConfig()
+                    state.builder.getOriginConfig()
                     succeeded = true
                 }
             } catch (e: ConnectionException) {
@@ -897,11 +896,11 @@ class AccountSettingsActivity : MyActivity() {
             DialogFactory.dismissSafely(dlg)
             if (result != null && !this@AccountSettingsActivity.isFinishing) {
                 if (result.isSuccess()) {
-                    state.builder?.myContext()?.setExpired { "Client registered" }
-                     MyContextHolder.myContextHolder
+                    state.builder.myContext().setExpired { "Client registered" }
+                    MyContextHolder.myContextHolder
                             .initialize(this@AccountSettingsActivity, this)
                             .whenSuccessAsync({ myContext: MyContext ->
-                                state.builder?.rebuildMyAccount(myContext)
+                                state.builder.rebuildMyAccount(myContext)
                                 updateScreen()
                                 AsyncTaskLauncher.execute(this,
                                         OAuthAcquireRequestTokenTask(this@AccountSettingsActivity))
@@ -910,7 +909,7 @@ class AccountSettingsActivity : MyActivity() {
                             }, UiThreadExecutor.INSTANCE)
                 } else {
                     appendError(result.message)
-                    state.builder?.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
+                    state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
                     updateScreen()
                 }
             }
@@ -956,9 +955,9 @@ class AccountSettingsActivity : MyActivity() {
             var connectionErrorMessage = ""
             var authUri = Uri.EMPTY
             try {
-                val connection = activity.state.builder?.getConnection()
+                val connection = activity.state.builder.getConnection()
                 MyLog.v(this, "Retrieving request token for $connection")
-                val oAuthService = connection?.getOAuthService()
+                val oAuthService = connection.getOAuthService()
                 if (oAuthService == null) {
                     connectionErrorMessage = "No OAuth service for $connection"
                 } else if (!connection.areOAuthClientKeysPresent()) {
@@ -1013,7 +1012,7 @@ class AccountSettingsActivity : MyActivity() {
                     stepErrorMessage += ": $connectionErrorMessage"
                 }
                 MyLog.d(this, stepErrorMessage)
-                activity.state.builder?.clearClientKeys()
+                activity.state.builder.clearClientKeys()
             }
             return TaskResult.withAuthUri(resultStatus, stepErrorMessage, authUri)
         }
@@ -1035,7 +1034,7 @@ class AccountSettingsActivity : MyActivity() {
                     activity.finish()
                 } else {
                     activity.appendError(result.message)
-                    activity.state.builder?.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
+                    activity.state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
                     activity.updateScreen()
                 }
             }
@@ -1080,7 +1079,7 @@ class AccountSettingsActivity : MyActivity() {
                 // We don't need to worry about any saved states: we can reconstruct the state
                 if (params != null && HttpConnectionInterface.CALLBACK_URI.getHost() != null &&
                         HttpConnectionInterface.CALLBACK_URI.getHost() == params.host) {
-                    state.builder?.setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
+                    state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
                     try {
                         if (myAccount.getOAuthService()?.isOAuth2() == true) {
                             val authCode = params.getQueryParameter("code")
@@ -1119,7 +1118,7 @@ class AccountSettingsActivity : MyActivity() {
                         message = e.message ?: ""
                         MyLog.i(this, e)
                     } finally {
-                        state.builder?.setUserTokenWithSecret(accessToken, accessSecret)
+                        state.builder.setUserTokenWithSecret(accessToken, accessSecret)
                         MyLog.d(this, "Access token for " + myAccount.getAccountName() +
                                 ": " + accessToken + ", " + accessSecret)
                     }
@@ -1146,7 +1145,7 @@ class AccountSettingsActivity : MyActivity() {
                             .getString(R.string.acquiring_an_access_token_failed) +
                             if (!result.message.isNullOrEmpty()) ": " + result.message else ""
                     appendError(stepErrorMessage)
-                    state.builder?.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
+                    state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
                     updateScreen()
                 }
             }
@@ -1184,12 +1183,12 @@ class AccountSettingsActivity : MyActivity() {
             return if (skip) TaskResult(ResultStatus.NONE) else Try.success(state.builder)
                     .flatMap { it?.getOriginConfig() }
                     .flatMap { b: MyAccount.Builder -> b.getConnection().verifyCredentials(whoAmI) }
-                    .flatMap { actor: Actor -> state.builder?.onCredentialsVerified(actor ?: Actor.EMPTY) }
+                    .flatMap { actor: Actor -> state.builder.onCredentialsVerified(actor) }
                     .map({ it.getAccount() })
                     .filter { obj: MyAccount -> obj.isValidAndSucceeded() }
                     .onSuccess { myAccount: MyAccount ->
                         state.forget()
-                        val myContext: MyContext =  MyContextHolder.myContextHolder.initialize(this@AccountSettingsActivity, this).getBlocking()
+                        val myContext: MyContext = MyContextHolder.myContextHolder.initialize(this@AccountSettingsActivity, this).getBlocking()
                         FirstActivity.checkAndUpdateLastOpenedAppVersion(this@AccountSettingsActivity, true)
                         val timeline = myContext.timelines().forUser(TimelineType.HOME, myAccount.actor)
                         if (timeline.isTimeToAutoSync()) {
@@ -1199,19 +1198,17 @@ class AccountSettingsActivity : MyActivity() {
                     }
                     .map { ma: MyAccount -> TaskResult(ResultStatus.SUCCESS, "") }
                     .recover(ConnectionException::class.java) { e: ConnectionException ->
-                        val status: ResultStatus
-                        var message: String
-                        status = when (e.getStatusCode()) {
+                        val status: ResultStatus = when (e.getStatusCode()) {
                             StatusCode.AUTHENTICATION_ERROR -> ResultStatus.ACCOUNT_INVALID
                             StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT -> ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT
                             else -> ResultStatus.CONNECTION_EXCEPTION
                         }
-                        message = e.toString()
                         MyLog.v(this, e)
-                        TaskResult(status, message)
+                        TaskResult(status, e.toString())
                     }
                     .recover(NonFatalException::class.java) { e: NonFatalException ->
-                        TaskResult(ResultStatus.CONNECTION_EXCEPTION, e.message) }
+                        TaskResult(ResultStatus.CONNECTION_EXCEPTION, e.message)
+                    }
                     .get()
         }
 

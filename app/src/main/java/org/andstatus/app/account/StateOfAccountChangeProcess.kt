@@ -42,7 +42,7 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
     var authenticatorResponse: AccountAuthenticatorResponse? = null
 
     // And this is what we constructed (maybe unsuccessfully)
-    val builder: MyAccount.Builder?
+    var builder: MyAccount.Builder = MyAccount.Builder.EMPTY
     var useThisState = false
 
     /**
@@ -113,15 +113,10 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
         return accountAction
     }
 
-    fun isUsernameNeededToStartAddingNewAccount(): Boolean {
-        return builder?.let {
-            it.getOrigin().originType.isUsernameNeededToStartAddingNewAccount(it.isOAuth())
-        } ?: false
-    }
+    fun isUsernameNeededToStartAddingNewAccount(): Boolean =
+        builder.getOrigin().originType.isUsernameNeededToStartAddingNewAccount(builder.isOAuth())
 
-    fun getAccount(): MyAccount {
-        return builder?.getAccount() ?: MyAccount.EMPTY
-    }
+    fun getAccount(): MyAccount = builder.getAccount()
 
     fun setAccountAction(accountAction: String?) {
         if (accountAction.isNullOrEmpty()) {
@@ -136,7 +131,7 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
             setAccountAction(bundle.getString(ACCOUNT_ACTION_KEY))
             actionCompleted = bundle.getBoolean(ACTION_COMPLETED_KEY, true)
             actionSucceeded = bundle.getBoolean(ACTION_SUCCEEDED_KEY)
-            builder = bundle.getParcelable(ACCOUNT_KEY)
+            builder = bundle.getParcelable(ACCOUNT_KEY) ?: MyAccount.Builder.EMPTY
             authenticatorResponse = bundle.getParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY)
             setRequestTokenWithSecret(bundle.getString(REQUEST_TOKEN_KEY), bundle.getString(REQUEST_SECRET_KEY))
             restored = true
@@ -156,13 +151,13 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
          * It's static so it generally stays intact between the [AccountSettingsActivity]'s instantiations
          */
         private val STORED_STATE: AtomicReference<Bundle> = AtomicReference()
-        private val ACCOUNT_ACTION_KEY: String = "account_action"
-        private val ACCOUNT_AUTHENTICATOR_RESPONSE_KEY: String = "account_authenticator_response"
-        private val ACCOUNT_KEY: String = "account"
-        private val ACTION_COMPLETED_KEY: String = "action_completed"
-        private val ACTION_SUCCEEDED_KEY: String = "action_succeeded"
-        private val REQUEST_TOKEN_KEY: String = "request_token"
-        private val REQUEST_SECRET_KEY: String = "request_secret"
+        private const val ACCOUNT_ACTION_KEY: String = "account_action"
+        private const val ACCOUNT_AUTHENTICATOR_RESPONSE_KEY: String = "account_authenticator_response"
+        private const val ACCOUNT_KEY: String = "account"
+        private const val ACTION_COMPLETED_KEY: String = "action_completed"
+        private const val ACTION_SUCCEEDED_KEY: String = "action_succeeded"
+        private const val REQUEST_TOKEN_KEY: String = "request_token"
+        private const val REQUEST_SECRET_KEY: String = "request_secret"
 
         fun fromStoredState(): StateOfAccountChangeProcess {
             return StateOfAccountChangeProcess(STORED_STATE.get())
@@ -185,9 +180,9 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
                     // Maybe we received MyAccount name as a parameter?!
                     val accountName = extras.getString(IntentExtra.ACCOUNT_NAME.key)
                     if (!accountName.isNullOrEmpty()) {
-                        state.builder?.rebuildMyAccount(
+                        state.builder.rebuildMyAccount(
                                 AccountName.fromAccountName( MyContextHolder.myContextHolder.getNow(), accountName))
-                        state.useThisState = state.builder?.isPersistent() ?: false
+                        state.useThisState = state.builder.isPersistent()
                     }
                 }
                 if (!state.useThisState) {
@@ -195,8 +190,8 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
                     if (!originName.isNullOrEmpty()) {
                         val origin: Origin =  MyContextHolder.myContextHolder.getBlocking().origins().fromName(originName)
                         if (origin.isPersistent()) {
-                            state.builder?.setOrigin(origin)
-                            state.useThisState = state.builder != null
+                            state.builder.setOrigin(origin)
+                            state.useThisState = state.nonEmpty
                         }
                     }
                 }
@@ -204,7 +199,7 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
             if (state.getAccount().isEmpty && state.getAccountAction() != Intent.ACTION_INSERT) {
                 when ( MyContextHolder.myContextHolder.getNow().accounts().size()) {
                     0 -> state.setAccountAction(Intent.ACTION_INSERT)
-                    1 -> state.builder?.rebuildMyAccount(
+                    1 -> state.builder.rebuildMyAccount(
                              MyContextHolder.myContextHolder.getNow().accounts().currentAccount.getOAccountName())
                     else -> state.accountShouldBeSelected = true
                 }
@@ -214,19 +209,19 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
                     val origin: Origin =  MyContextHolder.myContextHolder.getNow()
                             .origins()
                             .firstOfType(OriginType.UNKNOWN)
-                    state.builder?.rebuildMyAccount(AccountName.fromOriginAndUniqueName(origin, ""))
+                    state.builder.rebuildMyAccount(AccountName.fromOriginAndUniqueName(origin, ""))
                     state.originShouldBeSelected = true
                 } else {
-                    state.builder?.rebuildMyAccount(
+                    state.builder.rebuildMyAccount(
                              MyContextHolder.myContextHolder.getNow().accounts().currentAccount.getOAccountName())
                 }
-                if (state.builder?.isPersistent() == true) {
+                if (state.builder.isPersistent()) {
                     state.setAccountAction(Intent.ACTION_INSERT)
                 } else {
                     state.setAccountAction(Intent.ACTION_VIEW)
                 }
             } else {
-                if (state.builder?.isPersistent() == true) {
+                if (state.builder.isPersistent()) {
                     state.setAccountAction(Intent.ACTION_EDIT)
                 } else {
                     state.setAccountAction(Intent.ACTION_INSERT)

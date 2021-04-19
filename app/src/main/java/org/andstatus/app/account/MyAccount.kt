@@ -425,8 +425,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
             if (myAccount.isValid) {
                 MyLog.v(this) { "$method Loaded $this" }
             } else {
-                MyLog.i(this, """$method Failed to load: Invalid account; $this
-${MyLog.getStackTrace(Exception())}""")
+                MyLog.i(this, "$method Load failed: Invalid account; $this ${MyLog.getStackTrace(Exception())}")
             }
         }
 
@@ -690,6 +689,7 @@ ${MyLog.getStackTrace(Exception())}""")
 
         companion object {
             private val TAG: String = MyAccount.TAG + "." + Builder::class.java.simpleName
+            val EMPTY = Builder(MyAccount.EMPTY)
 
             /**
              * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
@@ -702,7 +702,7 @@ ${MyLog.getStackTrace(Exception())}""")
              * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
              */
             private fun myAccountFromName(accountName: AccountName): MyAccount {
-                if (accountName.myContext().isEmpty) return EMPTY
+                if (accountName.myContext().isEmpty) return MyAccount.EMPTY
                 val persistentAccount = accountName.myContext().accounts().fromAccountName(accountName)
                 return if (persistentAccount.isValid) persistentAccount else MyAccount(accountName)
             }
