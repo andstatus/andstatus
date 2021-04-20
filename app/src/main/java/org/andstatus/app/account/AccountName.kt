@@ -44,12 +44,10 @@ class AccountName private constructor(uniqueName: String,
     }
 
     fun getContext(): Context {
-        return myContext().context()
+        return myContext.context()
     }
 
-    fun myContext(): MyContext {
-        return origin.myContext
-    }
+    val myContext: MyContext get() = origin.myContext
 
     fun getUniqueName(): String {
         return uniqueName

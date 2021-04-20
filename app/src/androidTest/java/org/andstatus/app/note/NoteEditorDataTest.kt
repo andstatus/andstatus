@@ -72,7 +72,7 @@ class NoteEditorDataTest {
     @Test
     fun testAddMentionsWhenNobodyIsMentioned() {
         val myAccount: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
-        val noteId = MyQuery.getLongs(myAccount.origin.myContext, "SELECT " + BaseColumns._ID
+        val noteId = MyQuery.getLongs(myAccount.myContext, "SELECT " + BaseColumns._ID
                 + " FROM " + NoteTable.TABLE_NAME
                 + " WHERE " + NoteTable.ORIGIN_ID + "=" + myAccount.origin.id
                 + " AND " + NoteTable.CONTENT + "='Older one note'").stream()

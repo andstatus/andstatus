@@ -57,8 +57,8 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS, ""))
 
     constructor(ma: MyAccount) : this(CommandExecutionContext(
-            if (ma.origin.myContext.isEmptyOrExpired())  MyContextHolder.myContextHolder.getNow() else ma.origin.myContext,
-            CommandData.Companion.newAccountCommand(CommandEnum.EMPTY, ma)
+            ma.myContext.takeIf { !it.isEmptyOrExpired() } ?: MyContextHolder.myContextHolder.getNow(),
+            CommandData.newAccountCommand(CommandEnum.EMPTY, ma)
     )) {
     }
 
@@ -138,7 +138,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             val updatedDateStored: Long
             val statusStored: DownloadStatus
             if (note.noteId != 0L) {
-                statusStored = DownloadStatus.Companion.load(
+                statusStored = DownloadStatus.load(
                         MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, note.noteId))
                 updatedDateStored = MyQuery.noteIdToLongColumnValue(NoteTable.UPDATED_DATE, note.noteId)
             } else {
@@ -239,8 +239,8 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             }
             if (note.noteId == 0L) {
                 val msgUri = execContext.getContext().contentResolver.insert(
-                        MatchedUri.Companion.getMsgUri(me.actorId, 0), values) ?: Uri.EMPTY
-                note.noteId = ParsedUri.Companion.fromUri(msgUri).getNoteId()
+                        MatchedUri.getMsgUri(me.actorId, 0), values) ?: Uri.EMPTY
+                note.noteId = ParsedUri.fromUri(msgUri).getNoteId()
                 if (note.getConversationId() == 0L) {
                     val values2 = ContentValues()
                     values2.put(NoteTable.CONVERSATION_ID, note.setConversationIdFromMsgId())
@@ -248,10 +248,10 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                 }
                 MyLog.v("Note") { "Added $note" }
                 if (!note.hasSomeContent() && note.getStatus().canBeDownloaded) {
-                    Note.Companion.requestDownload(me, note.noteId, false)
+                    Note.requestDownload(me, note.noteId, false)
                 }
             } else {
-                val msgUri: Uri = MatchedUri.Companion.getMsgUri(me.actorId, note.noteId)
+                val msgUri: Uri = MatchedUri.getMsgUri(me.actorId, note.noteId)
                 execContext.getContext().contentResolver.update(msgUri, values, null, null)
                 MyLog.v("Note") { "Updated $note" }
             }
@@ -403,11 +403,11 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                 values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate())
             }
             actor.saveUser()
-            val actorUri: Uri = MatchedUri.Companion.getActorUri(me.actorId, actor.actorId)
+            val actorUri: Uri = MatchedUri.getActorUri(me.actorId, actor.actorId)
             if (actor.actorId == 0L) {
                 values.put(ActorTable.ORIGIN_ID, actor.origin.id)
                 values.put(ActorTable.USER_ID, actor.user.userId)
-                actor.actorId = ParsedUri.Companion.fromUri(
+                actor.actorId = ParsedUri.fromUri(
                         execContext.getContext().contentResolver.insert(actorUri, values))
                         .getActorId()
             } else if (values.size() > 0) {
@@ -431,8 +431,8 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
 
     private fun updateFriendships(activity: AActivity, me: MyAccount) {
         val actor = activity.getObjActor()
-        GroupMembership.Companion.setAndReload(execContext.myContext, me.actor, actor.isMyFriend, actor)
-        GroupMembership.Companion.setAndReload(execContext.myContext, activity.getActor(), activity.followedByActor(), actor)
+        GroupMembership.setAndReload(execContext.myContext, me.actor, actor.isMyFriend, actor)
+        GroupMembership.setAndReload(execContext.myContext, activity.getActor(), activity.followedByActor(), actor)
     }
 
     private fun fixActorUpdatedDate(activity: AActivity, actor: Actor) {
@@ -444,8 +444,8 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
 
     fun downloadOneNoteBy(actor: Actor): Try<Void> {
         return execContext.getConnection()
-                .getTimeline(true, TimelineType.SENT.connectionApiRoutine, TimelinePosition.Companion.EMPTY,
-                        TimelinePosition.Companion.EMPTY, 1, actor)
+                .getTimeline(true, TimelineType.SENT.connectionApiRoutine, TimelinePosition.EMPTY,
+                        TimelinePosition.EMPTY, 1, actor)
                 .map { page: InputTimelinePage ->
                     for (item in page.items) {
                         onActivity(item, false)

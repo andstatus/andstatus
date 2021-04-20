@@ -83,7 +83,7 @@ class AttachmentDownloaderTest {
             MyLog.i(method, methodExt + ": " + status + ", mockError:" + mockNetworkError
                     + ", uri:" + dataIn.getUri())
             val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
-            val loader: FileDownloader = FileDownloader.Companion.newForDownloadData(ma.origin.myContext, dataIn)
+            val loader: FileDownloader = FileDownloader.Companion.newForDownloadData(ma.myContext, dataIn)
             if (mockNetworkError) {
                 loader.setConnectionMock(ConnectionMock.newFor(ma)
                         .withException(ConnectionException("Mocked IO exception")).connection)

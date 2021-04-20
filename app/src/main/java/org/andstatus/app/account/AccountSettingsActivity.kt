@@ -198,9 +198,9 @@ class AccountSettingsActivity : MyActivity() {
         var message: String
         if (state.isEmpty) {
             state = StateOfAccountChangeProcess.fromStoredState()
-            message = if (state.restored) "Old state restored" else "No previous state"
+            message = if (state.restored) "State restored" else "No previous state"
         } else {
-            message = "State existed and " + if (state.restored) "was restored earlier" else "was not restored earlier"
+            message = "State existed" + if (state.restored) " (was restored earlier)" else ""
         }
         val newState: StateOfAccountChangeProcess = StateOfAccountChangeProcess.fromIntent(intent)
         if (state.actionCompleted || newState.useThisState) {
@@ -257,7 +257,7 @@ class AccountSettingsActivity : MyActivity() {
             finish()
         } else {
             MyLog.v(this, "Switching to the selected account")
-            builder.myContext().accounts().setCurrentAccount(builder.myAccount)
+            builder.myAccount.myContext.accounts().setCurrentAccount(builder.myAccount)
             state.accountAction = Intent.ACTION_EDIT
             updateScreen()
         }
@@ -594,7 +594,7 @@ class AccountSettingsActivity : MyActivity() {
     }
 
     private fun showIsDefaultAccount() {
-        val isDefaultAccount = myAccount == state.builder.myContext().accounts().getDefaultAccount()
+        val isDefaultAccount = myAccount == state.builder.myAccount.myContext.accounts().getDefaultAccount()
         val view = findFragmentViewById(R.id.is_default_account)
         if (view != null) {
             view.visibility = if (isDefaultAccount) View.VISIBLE else View.GONE
@@ -894,7 +894,7 @@ class AccountSettingsActivity : MyActivity() {
             DialogFactory.dismissSafely(dlg)
             if (result != null && !this@AccountSettingsActivity.isFinishing) {
                 if (result.isSuccess()) {
-                    state.builder.myContext().setExpired { "Client registered" }
+                    state.builder.myAccount.myContext.setExpired { "Client registered" }
                     MyContextHolder.myContextHolder
                             .initialize(this@AccountSettingsActivity, this)
                             .whenSuccessAsync({ myContext: MyContext ->

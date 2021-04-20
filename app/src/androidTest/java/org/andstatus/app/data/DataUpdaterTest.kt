@@ -511,7 +511,7 @@ $activity""",
 
     private fun addOneNote4testReplyInContent(ma: MyAccount, buddyUniqueName: String?, content: String?, isReply: Boolean) {
         val actorUniqueName = "somebody" + DemoData.demoData.testRunUid + "@somewhere.net"
-        val actor: Actor = Actor.Companion.fromOid(ma.actor.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + actorUniqueName)
+        val actor: Actor = Actor.Companion.fromOid(ma.origin, OriginPumpio.Companion.ACCOUNT_PREFIX + actorUniqueName)
         actor.withUniqueName(actorUniqueName)
         actor.setProfileUrl("https://somewhere.net/$actorUniqueName")
         val activityIn: AActivity = AActivity.Companion.newPartialNote(ma.actor, actor, System.nanoTime().toString(),

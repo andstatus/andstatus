@@ -58,7 +58,7 @@ import java.io.IOException
         Assert.assertEquals("Image URI stored", activity.getNote().attachments.list[0].uri, dd.getUri())
         val commandData: CommandData = CommandData.Companion.newActorCommand(CommandEnum.GET_AVATAR,
                 Actor.Companion.fromId(ma.origin, 34234), "")
-        val loader = AttachmentDownloader(ma.origin.myContext, dd)
+        val loader = AttachmentDownloader(ma.myContext, dd)
         val connMock: ConnectionMock = ConnectionMock.newFor(DemoData.demoData.gnusocialTestAccountName)
         connMock.getHttpMock().setResponseStreamSupplier {
             InstrumentationRegistry.getInstrumentation().context.resources

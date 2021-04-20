@@ -37,7 +37,7 @@ import org.json.JSONObject
 
 class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
     override val instanceId = InstanceId.next()
-    private val myContext: MyContext
+    private val myContextIn: MyContext
     val accountName: AccountName
 
     @Volatile
@@ -47,7 +47,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
     private var persistent = false
 
     private constructor(myContext: MyContext, jso: JSONObject, persistent: Boolean) {
-        this.myContext = myContext
+        this.myContextIn = myContext
         data = jso
         this.persistent = persistent
         val origin = if (myContext.isEmpty) Origin.EMPTY else myContext.origins().fromName(getDataString(Origin.KEY_ORIGIN_NAME))
@@ -56,7 +56,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
     }
 
     private constructor(accountName: AccountName, jso: JSONObject) {
-        myContext = accountName.myContext()
+        myContextIn = accountName.myContext
         this.accountName = accountName
         data = jso
         updateFromAccountName()
@@ -91,9 +91,8 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         setDataString(Origin.KEY_ORIGIN_NAME, accountName.getOriginName())
     }
 
-    fun myContext(): MyContext {
-        return myContext
-    }
+    val myContext: MyContext get() = myContextIn.takeIf { it.nonEmpty }
+                ?: accountName.origin.myContext
 
     fun isPersistent(): Boolean {
         return persistent

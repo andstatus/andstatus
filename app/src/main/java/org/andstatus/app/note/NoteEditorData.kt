@@ -55,7 +55,7 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
     private var attachedImageFiles: AttachedImageFiles = AttachedImageFiles.EMPTY
     private var replyToConversationParticipants = false
     private var replyToMentionedActors = false
-    val myContext: MyContext
+    val myContext: MyContext get() = ma.myContext
     var timeline: Timeline = Timeline.EMPTY
 
     constructor(myAccount: MyAccount, noteId: Long, initialize: Boolean,
@@ -379,7 +379,7 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
                         ma.actor, noteOid,
                         System.currentTimeMillis(),
                         DownloadStatus.load(MyQuery.noteIdToLongColumnValue(NoteTable.NOTE_STATUS, noteId)))
-                activity.setId(MyQuery.oidToId(ma.origin.myContext, OidEnum.ACTIVITY_OID,
+                activity.setId(MyQuery.oidToId(ma.myContext, OidEnum.ACTIVITY_OID,
                         activity.accountActor.origin.id,
                         activity.getOid()))
                 if (activity.getId() == 0L) {
@@ -416,7 +416,6 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
     }
 
     init {
-        myContext = ma.origin.myContext
         this.activity = activity
     }
 }

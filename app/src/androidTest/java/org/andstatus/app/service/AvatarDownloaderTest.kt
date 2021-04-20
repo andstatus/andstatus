@@ -63,7 +63,7 @@ class AvatarDownloaderTest {
 
     private fun loadForOneMyAccount(ma: MyAccount, urlStringInitial: String?) {
         changeAvatarUrl(ma.actor, urlStringInitial)
-        DownloadData.Companion.deleteAllOfThisActor(ma.origin.myContext, ma.actorId)
+        DownloadData.Companion.deleteAllOfThisActor(ma.myContext, ma.actorId)
         val loader: FileDownloader = AvatarDownloader(ma.actor)
         Assert.assertEquals("Not loaded yet", DownloadStatus.ABSENT, loader.getStatus())
         loadAndAssertStatusForMa(ma, "First loading",
@@ -123,7 +123,7 @@ class AvatarDownloaderTest {
         Assert.assertTrue("Existence of " + data.getFilename(), data.getFile().existed)
         Assert.assertTrue("Is File" + data.getFilename(), data.getFile().getFile()?.isFile == true)
         val avatarFile = data.getFile()
-        DownloadData.Companion.deleteAllOfThisActor(ma.origin.myContext, ma.actorId)
+        DownloadData.Companion.deleteAllOfThisActor(ma.myContext, ma.actorId)
         Assert.assertFalse(avatarFile.existsNow())
         loadAndAssertStatusForMa(ma, "", DownloadStatus.LOADED, DownloadStatus.LOADED, false)
         data = AvatarData.Companion.getCurrentForActor(ma.actor)

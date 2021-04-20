@@ -151,7 +151,7 @@ class CommandDataTest {
         Assert.assertTrue(ma.isValid)
         val actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.origin.id,
                 DemoData.demoData.conversationAuthorThirdActorOid)
-        val actor: Actor = Actor.Companion.load(ma.origin.myContext, actorId)
+        val actor: Actor = Actor.Companion.load(ma.myContext, actorId)
         val data: CommandData = CommandData.Companion.actOnActorCommand(
                 command, DemoData.demoData.getPumpioConversationAccount(), actor, "")
         val summary = data.toCommandSummary( MyContextHolder.myContextHolder.getNow())

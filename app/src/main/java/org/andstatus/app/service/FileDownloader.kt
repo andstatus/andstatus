@@ -134,7 +134,7 @@ abstract class FileDownloader protected constructor(val myContext: MyContext, va
         }
 
         fun load(downloadData: DownloadData, commandData: CommandData): Try<Boolean> {
-            val downloader = newForDownloadData(commandData.myAccount.origin.myContext, downloadData)
+            val downloader = newForDownloadData(commandData.myAccount.myContext, downloadData)
             return downloader.load(commandData)
         }
     }

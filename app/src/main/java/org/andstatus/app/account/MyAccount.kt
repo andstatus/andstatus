@@ -60,8 +60,10 @@ import java.util.concurrent.TimeUnit
  * @author yvolk@yurivolkov.com
  */
 class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccount>, IsEmpty, TaggedClass {
+    val myContext: MyContext get() = data.myContext
+
     var actor: Actor = Actor.EMPTY
-        get() = Actor.load(data.myContext(), field.actorId, false) { field }
+        get() = Actor.load(myContext, field.actorId, false) { field }
         private set
 
     @Volatile
@@ -131,7 +133,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     }
 
     fun isFollowing(thatActor: Actor): Boolean {
-        return data.myContext().users().friendsOfMyActors.entries.stream()
+        return myContext.users().friendsOfMyActors.entries.stream()
                 .filter { entry: MutableMap.MutableEntry<Long, MutableSet<Long>> -> entry.key == thatActor.actorId }
                 .anyMatch { entry: MutableMap.MutableEntry<Long, MutableSet<Long>> -> entry.value.contains(actor.actorId) }
     }
@@ -140,7 +142,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         var uniqueName = getAccountName()
         var found = false
         var possiblyUnique = actor.uniqueName
-        for (persistentAccount in data.myContext().accounts().get()) {
+        for (persistentAccount in myContext.accounts().get()) {
             if (!persistentAccount.toString().equals(toString(), ignoreCase = true)
                     && persistentAccount.actor.uniqueName.equals(possiblyUnique, ignoreCase = true)) {
                 found = true
@@ -152,7 +154,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         }
         if (!found) {
             possiblyUnique = username
-            for (persistentAccount in data.myContext().accounts().get()) {
+            for (persistentAccount in myContext.accounts().get()) {
                 if (!persistentAccount.toString().equals(toString(), ignoreCase = true)
                         && persistentAccount.username.equals(possiblyUnique, ignoreCase = true)) {
                     found = true
@@ -167,7 +169,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
             var indAt = uniqueName.indexOf('@')
             if (indAt > 0) {
                 possiblyUnique = uniqueName.substring(0, indAt)
-                for (persistentAccount in data.myContext().accounts().get()) {
+                for (persistentAccount in myContext.accounts().get()) {
                     if (!persistentAccount.toString().equals(toString(), ignoreCase = true)) {
                         var toCompareWith = persistentAccount.username
                         indAt = toCompareWith.indexOf('@')
@@ -375,7 +377,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     }
 
     fun getLastSyncSucceededDate(): Long {
-        return if (isValid && isPersistent()) data.myContext().timelines()
+        return if (isValid && isPersistent()) myContext.timelines()
                 .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, actor,  Origin.EMPTY)
                 .map { obj: Timeline -> obj.getSyncSucceededDate() }
                 .max { obj: Long, anotherLong: Long -> obj.compareTo(anotherLong) }
@@ -383,7 +385,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     }
 
     fun hasAnyTimelines(): Boolean {
-        for (timeline in data.myContext().timelines().values()) {
+        for (timeline in myContext.timelines().values()) {
             if (timeline.myAccountToSync == this) {
                 return true
             }
@@ -452,7 +454,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         }
 
         fun rebuildMyAccount(accountName: AccountName) {
-            val ma = myContext().accounts().fromAccountName(accountName.name)
+            val ma = myAccount.myContext.accounts().fromAccountName(accountName.name)
             myAccount = if (ma.isValid) ma else MyAccount(myAccount.data.withAccountName(accountName))
         }
 
@@ -501,7 +503,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         }
 
         fun save() {
-            if (saveSilently().getOrElse(false) && myContext().isReady()) {
+            if (saveSilently().getOrElse(false) && myAccount.myContext.isReady()) {
                 MyPreferences.onPreferencesChanged()
             }
         }
@@ -518,9 +520,9 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
                                 (if (result1) " Saved " else " Didn't change ") +
                                         this.toString()
                             }
-                            myContext().accounts().addIfAbsent(myAccount)
-                            if (myContext().isReady() && !myAccount.hasAnyTimelines()) {
-                                TimelineSaver().setAddDefaults(true).setAccount(myAccount).execute(myContext())
+                            myAccount.myContext.accounts().addIfAbsent(myAccount)
+                            if (myAccount.myContext.isReady() && !myAccount.hasAnyTimelines()) {
+                                TimelineSaver().setAddDefaults(true).setAccount(myAccount).execute(myAccount.myContext)
                             }
                         }
                         .onFailure { e: Throwable ->
@@ -590,14 +592,14 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
             }
             save()
             if (credentialsOfOtherAccount) {
-                MyLog.w(this, myContext().context().getText(R.string.error_credentials_of_other_user).toString() + ": " +
+                MyLog.w(this, myAccount.myContext.context().getText(R.string.error_credentials_of_other_user).toString() + ": " +
                         actor.getUniqueNameWithOrigin() +
                         " account name: " + myAccount.getAccountName() +
                         " vs username: " + actor.getUsername())
                 return Try.failure(ConnectionException(StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT, actor.getUniqueNameWithOrigin()))
             }
             if (errorSettingUsername) {
-                val msg = myContext().context().getText(R.string.error_set_username).toString() + " " + actor.getUsername()
+                val msg = myAccount.myContext.context().getText(R.string.error_set_username).toString() + " " + actor.getUsername()
                 MyLog.w(this, msg)
                 return Try.failure(ConnectionException(StatusCode.AUTHENTICATION_ERROR, msg))
             }
@@ -658,12 +660,6 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
             myAccount.syncFrequencySeconds = syncFrequencySeconds
         }
 
-        fun myContext(): MyContext {
-            return myAccount.data.myContext().takeIf { it.nonEmpty }
-                    ?: getOrigin().myContext.takeIf { it.nonEmpty }
-                    ?: MyContextHolder.myContextHolder.getNow()
-        }
-
         override fun classTag(): String {
             return TAG
         }
@@ -685,8 +681,8 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
              * If MyAccount with this name didn't exist yet, new temporary MyAccount will be created.
              */
             private fun myAccountFromName(accountName: AccountName): MyAccount {
-                if (accountName.myContext().isEmpty) return MyAccount.EMPTY
-                val persistentAccount = accountName.myContext().accounts().fromAccountName(accountName)
+                if (accountName.myContext.isEmpty) return MyAccount.EMPTY
+                val persistentAccount = accountName.myContext.accounts().fromAccountName(accountName)
                 return if (persistentAccount.isValid) persistentAccount else MyAccount(accountName)
             }
 
@@ -757,7 +753,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     }
 
     init {
-        actor = Actor.load(data.myContext(), data.getDataLong(KEY_ACTOR_ID, 0L), false
+        actor = Actor.load(myContext, data.getDataLong(KEY_ACTOR_ID, 0L), false
         ) {
             Actor.fromOid(data.accountName.origin, data.getDataString(KEY_ACTOR_OID))
                     .withUniqueName(data.accountName.getUniqueName())

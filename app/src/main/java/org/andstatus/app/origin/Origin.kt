@@ -27,6 +27,7 @@ import org.andstatus.app.account.AccountName
 import org.andstatus.app.actor.GroupType
 import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextEmpty
+import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.data.DbUtils
 import org.andstatus.app.data.MyProvider
@@ -57,7 +58,11 @@ import java.util.regex.Pattern
  *
  * @author yvolk@yurivolkov.com
  */
-open class Origin internal constructor(val myContext: MyContext, val originType: OriginType) : Comparable<Origin>, IsEmpty {
+open class Origin internal constructor(myContextIn: MyContext, val originType: OriginType) : Comparable<Origin>, IsEmpty {
+    val myContext: MyContext = myContextIn
+        get() = field.takeIf { it.nonEmpty }
+                ?: MyContextHolder.myContextHolder.getNow()
+
     val shortUrlLength: Int
     /** the Origin name, unique in the application */
     var name = ""

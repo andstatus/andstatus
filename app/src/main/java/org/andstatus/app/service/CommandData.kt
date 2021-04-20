@@ -72,7 +72,7 @@ class CommandData private constructor(
 
     val myContext: MyContext
         get() = commandTimeline.myContext.takeIf { it.nonEmpty }
-                ?: myAccount.actor.origin.myContext.takeIf { it.nonEmpty } ?: MyContextHolder.myContextHolder.getNow()
+                ?: myAccount.myContext
 
     @Volatile
     private var mInForeground = false
