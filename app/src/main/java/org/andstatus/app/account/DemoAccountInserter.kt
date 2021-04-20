@@ -109,7 +109,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         val aa = AccountUtils.getCurrentAccounts(myContext.context())
         var ma: MyAccount = MyAccount.EMPTY
         for (account in aa) {
-            ma = MyAccount.Builder.loadFromAndroidAccount(myContext, account).getAccount()
+            ma = MyAccount.Builder.loadFromAndroidAccount(myContext, account).myAccount
             if (maExpected.getAccountName() == ma.getAccountName()) {
                 break
             }
@@ -121,19 +121,19 @@ class DemoAccountInserter(private val myContext: MyContext) {
     private fun addAccountFromActor(actor: Actor, accountName: AccountName): MyAccount {
         val builder1: MyAccount.Builder = MyAccount.Builder.fromAccountName(accountName).setOAuth(true)
         if (actor.origin.isOAuthDefault() || actor.origin.canChangeOAuth()) {
-            insertTestClientKeys(builder1.getAccount())
+            insertTestClientKeys(builder1.myAccount)
         }
         val builder: MyAccount.Builder = MyAccount.Builder.fromAccountName(accountName).setOAuth(true)
-        if (builder.getAccount().isOAuth()) {
+        if (builder.myAccount.isOAuth()) {
             builder.setUserTokenWithSecret("sampleUserTokenFor" + actor.uniqueName,
                     "sampleUserSecretFor" + actor.uniqueName)
         } else {
             builder.setPassword("samplePasswordFor" + actor.uniqueName)
         }
-        Assert.assertTrue("Credentials of " + actor + " are present, account: " + builder.getAccount(),
-                builder.getAccount().getCredentialsPresent())
+        Assert.assertTrue("Credentials of " + actor + " are present, account: " + builder.myAccount,
+                builder.myAccount.getCredentialsPresent())
         val tryMyAccount = builder.onCredentialsVerified(actor)
-                .map { it.getAccount() }
+                .map { it.myAccount }
         Assert.assertTrue("Success $tryMyAccount", tryMyAccount.isSuccess)
         val ma = tryMyAccount.get()
         Assert.assertTrue("Account is persistent $ma", builder.isPersistent())

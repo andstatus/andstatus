@@ -73,9 +73,9 @@ class VerifyCredentialsTest {
         val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(mock.getData().getAccountName())
         builder.onCredentialsVerified(actor)
         Assert.assertTrue("Account is persistent", builder.isPersistent())
-        val actorId = builder.getAccount().actorId
+        val actorId = builder.myAccount.actorId
         Assert.assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0L)
-        Assert.assertEquals("Account actorOid", builder.getAccount().getActorOid(), actor.oid)
+        Assert.assertEquals("Account actorOid", builder.myAccount.getActorOid(), actor.oid)
         Assert.assertEquals("Actor in the database for id=$actorId",
                 actor.oid,
                 MyQuery.idToOid( MyContextHolder.myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0))
@@ -87,7 +87,7 @@ class VerifyCredentialsTest {
         Assert.assertEquals("Note permalink at twitter",
                 "https://" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.url)).host
                         + "/"
-                        + builder.getAccount().username + "/status/" + noteOid,
+                        + builder.myAccount.username + "/status/" + noteOid,
                 origin.getNotePermalink(noteId))
     }
 }

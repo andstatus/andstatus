@@ -42,7 +42,7 @@ class VerifyCredentialsActivityPubTest {
         TestSuite.initializeWithAccounts(this)
         val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.activityPubTestOriginName)
         val accountName: AccountName = AccountName.Companion.fromOriginAndUniqueName(origin, UNIQUE_NAME_IN_ORIGIN)
-        mock = ConnectionMock.newFor(MyAccount.Builder.Companion.fromAccountName(accountName).getAccount())
+        mock = ConnectionMock.newFor(MyAccount.Builder.Companion.fromAccountName(accountName).myAccount)
     }
 
     @Test
@@ -54,7 +54,7 @@ class VerifyCredentialsActivityPubTest {
         val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(mock.getData().getAccountName())
         builder.onCredentialsVerified(actor)
         Assert.assertTrue("Account is persistent", builder.isPersistent())
-        val actorId = builder.getAccount().actorId
+        val actorId = builder.myAccount.actorId
         Assert.assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0L)
         Assert.assertEquals("Account actorOid", "https://pleroma.site/users/AndStatus", actor.oid)
         Assert.assertEquals("Actor in the database for id=$actorId",

@@ -48,7 +48,7 @@ class InstanceForNewAccountFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         val activity = activity as AccountSettingsActivity?
         if (activity != null) {
-            origin = activity.getState()?.getAccount()?.origin ?: Origin.EMPTY
+            origin = activity.state.myAccount.origin
             originType = if (origin.nonEmpty) origin.originType else OriginType.fromCode(arguments?.getString(IntentExtra.ORIGIN_TYPE.key))
             prepareScreen(activity)
             activity.updateScreen()
@@ -112,8 +112,8 @@ class InstanceForNewAccountFragment : Fragment() {
 
     private fun onNewOrigin(activity: AccountSettingsActivity, originNew: Origin) {
         if (originNew == origin ||  MyContextHolder.myContextHolder.getNow().isReady()) {
-            if (activity.getState()?.getAccount()?.origin != originNew) {
-                activity.getState()?.builder?.setOrigin(originNew)
+            if (activity.state.myAccount.origin != originNew) {
+                activity.state.builder.setOrigin(originNew)
             }
             activity.verifyCredentials(true)
         } else {

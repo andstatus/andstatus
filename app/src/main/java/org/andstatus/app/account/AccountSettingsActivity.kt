@@ -115,11 +115,11 @@ class AccountSettingsActivity : MyActivity() {
         }
     }
 
-    private class TaskResult private constructor(val status: ResultStatus?, val message: CharSequence?,
+    private class TaskResult private constructor(val status: ResultStatus, val message: CharSequence?,
                                                  val whoAmI: Optional<Uri>, val authUri: Uri) {
 
-        constructor(status: ResultStatus?) : this(status, "", Optional.empty<Uri>(), Uri.EMPTY) {}
-        constructor(status: ResultStatus?, message: CharSequence?) :
+        constructor(status: ResultStatus) : this(status, "", Optional.empty<Uri>(), Uri.EMPTY) {}
+        constructor(status: ResultStatus, message: CharSequence?) :
                 this(status, message, Optional.empty<Uri>(), Uri.EMPTY) {
         }
 
@@ -128,11 +128,11 @@ class AccountSettingsActivity : MyActivity() {
         }
 
         companion object {
-            fun withWhoAmI(status: ResultStatus?, message: CharSequence?, whoAmI: Optional<Uri>): TaskResult {
+            fun withWhoAmI(status: ResultStatus, message: CharSequence?, whoAmI: Optional<Uri>): TaskResult {
                 return TaskResult(status, message, whoAmI, Uri.EMPTY)
             }
 
-            fun withAuthUri(status: ResultStatus?, message: CharSequence?, authUri: Uri): TaskResult {
+            fun withAuthUri(status: ResultStatus, message: CharSequence?, authUri: Uri): TaskResult {
                 return TaskResult(status, message, Optional.empty(), authUri)
             }
         }
@@ -143,14 +143,16 @@ class AccountSettingsActivity : MyActivity() {
     }
 
     @Volatile
-    private var activityOnFinish: ActivityOnFinish? = ActivityOnFinish.NONE
+    private var activityOnFinish: ActivityOnFinish = ActivityOnFinish.NONE
 
     @Volatile
     private var initialSyncNeeded = false
 
     @Volatile
-    private var state: StateOfAccountChangeProcess = StateOfAccountChangeProcess.EMPTY
-    private val mLatestErrorMessage: StringBuilder = StringBuilder()
+    var state: StateOfAccountChangeProcess = StateOfAccountChangeProcess.EMPTY
+        private set
+
+    private val latestErrorMessage: StringBuilder = StringBuilder()
     private var resumedOnce = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -192,7 +194,7 @@ class AccountSettingsActivity : MyActivity() {
      * Restore previous state and set the Activity mode depending on input (Intent).
      * We should decide if we should use the stored state or a newly created one
      */
-    protected fun restoreState(intent: Intent, calledFrom: String?) {
+    protected fun restoreState(intent: Intent, calledFrom: String) {
         var message: String
         if (state.isEmpty) {
             state = StateOfAccountChangeProcess.fromStoredState()
@@ -213,12 +215,12 @@ class AccountSettingsActivity : MyActivity() {
             } else if (state.accountShouldBeSelected) {
                 AccountSelector.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT, 0)
                 message += "; Select account"
-            } else if (state.getAccountAction() == Intent.ACTION_INSERT && myAccount.origin.originType === OriginType.MASTODON) {
+            } else if (state.accountAction == Intent.ACTION_INSERT && myAccount.origin.originType === OriginType.MASTODON) {
                 showFragment(InstanceForNewAccountFragment::class.java, Bundle())
             } else {
                 showFragment(AccountSettingsFragment::class.java, Bundle())
             }
-            message += "; action=" + state.getAccountAction()
+            message += "; action=" + state.accountAction
         } else {
             showFragment(AccountSettingsFragment::class.java, Bundle())
         }
@@ -255,8 +257,8 @@ class AccountSettingsActivity : MyActivity() {
             finish()
         } else {
             MyLog.v(this, "Switching to the selected account")
-            builder.myContext().accounts().setCurrentAccount(builder.getAccount())
-            state.setAccountAction(Intent.ACTION_EDIT)
+            builder.myContext().accounts().setCurrentAccount(builder.myAccount)
+            state.accountAction = Intent.ACTION_EDIT
             updateScreen()
         }
     }
@@ -316,7 +318,7 @@ class AccountSettingsActivity : MyActivity() {
     }
 
     fun goToAddAccount() {
-        if (state.getAccountAction() == Intent.ACTION_INSERT && isInvisibleView(R.id.uniqueName)
+        if (state.accountAction == Intent.ACTION_INSERT && isInvisibleView(R.id.uniqueName)
                 && isInvisibleView(R.id.password)
                 && isVisibleView(R.id.add_account)) {
             val addAccount = findFragmentViewById(R.id.add_account)
@@ -385,7 +387,7 @@ class AccountSettingsActivity : MyActivity() {
 
     fun showTitle() {
         val ma = myAccount
-        if (ma.isValid || state.getAccountAction() != Intent.ACTION_INSERT) {
+        if (ma.isValid || state.accountAction != Intent.ACTION_INSERT) {
             var title = getText(R.string.account_settings_activity_title).toString()
             title += " - " + ma.getAccountName()
             setTitle(title)
@@ -396,8 +398,8 @@ class AccountSettingsActivity : MyActivity() {
 
     fun showErrors() {
         showTextView(R.id.latest_error_label, R.string.latest_error_label,
-                mLatestErrorMessage.length > 0)
-        showTextView(R.id.latest_error, mLatestErrorMessage, mLatestErrorMessage.length > 0)
+                latestErrorMessage.length > 0)
+        showTextView(R.id.latest_error, latestErrorMessage, latestErrorMessage.length > 0)
     }
 
     private fun showOrigin() {
@@ -505,7 +507,7 @@ class AccountSettingsActivity : MyActivity() {
         }
     }
 
-    private val myAccount get() = state.getAccount()
+    private val myAccount get() = state.myAccount
 
     private fun showAddAccountButton() {
         val textView = showTextView(R.id.add_account, null, !isMaPersistent())
@@ -538,8 +540,8 @@ class AccountSettingsActivity : MyActivity() {
     fun clearError() {
         val cookieManager = CookieManager.getInstance()
         cookieManager.removeAllCookie()
-        if (mLatestErrorMessage.length > 0) {
-            mLatestErrorMessage.setLength(0)
+        if (latestErrorMessage.length > 0) {
+            latestErrorMessage.setLength(0)
             showErrors()
         }
     }
@@ -583,7 +585,7 @@ class AccountSettingsActivity : MyActivity() {
                 ?.setOnClickListener {
                     with(state.builder) {
                         setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
-                        getAccount().connection.clearClientKeys()
+                        myAccount.connection.clearClientKeys()
                         save()
                         MyPreferences.onPreferencesChanged()
                         closeAndGoBack()
@@ -601,7 +603,7 @@ class AccountSettingsActivity : MyActivity() {
 
     private fun showIsSyncedAutomatically() {
         MyCheckBox.set(findFragmentViewById(R.id.synced_automatically),
-                state.builder.getAccount().isSyncedAutomatically()
+                state.builder.myAccount.isSyncedAutomatically()
         ) { buttonView: CompoundButton?, isChecked: Boolean -> state.builder.setSyncedAutomatically(isChecked) }
     }
 
@@ -614,8 +616,8 @@ class AccountSettingsActivity : MyActivity() {
                             R.array.fetch_frequency_values, R.array.fetch_frequency_entries,
                             R.string.summary_preference_frequency)
             label.text = labelText
-            val value = if (state.builder.getAccount().getSyncFrequencySeconds() <= 0) ""
-            else (state.builder.getAccount().getSyncFrequencySeconds() / 60).toString()
+            val value = if (state.builder.myAccount.getSyncFrequencySeconds() <= 0) ""
+            else (state.builder.myAccount.getSyncFrequencySeconds() / 60).toString()
             view.setText(value)
             view.hint = labelText
             view.addTextChangedListener(object : TextWatcher {
@@ -737,10 +739,10 @@ class AccountSettingsActivity : MyActivity() {
         if (TextUtils.isEmpty(errorMessage)) {
             return
         }
-        if (mLatestErrorMessage.length > 0) {
-            mLatestErrorMessage.append("/n")
+        if (latestErrorMessage.length > 0) {
+            latestErrorMessage.append("/n")
         }
-        mLatestErrorMessage.append(errorMessage)
+        latestErrorMessage.append(errorMessage)
         showErrors()
     }
 
@@ -766,7 +768,7 @@ class AccountSettingsActivity : MyActivity() {
                 .initialize(this)
                 .whenSuccessAsync({ myContext: MyContext ->
                     MyLog.v(this, "Returning to $activityOnFinish")
-                    val myAccount = myContext.accounts().fromAccountName(getState().getAccount().getAccountName())
+                    val myAccount = myContext.accounts().fromAccountName(state.myAccount.getAccountName())
                     if (myAccount.isValid) {
                         myContext.accounts().setCurrentAccount(myAccount)
                     }
@@ -819,35 +821,31 @@ class AccountSettingsActivity : MyActivity() {
     private fun saveState(): String {
         if (state.isEmpty) return "(no state)"
 
-        var message = "action=" + state.getAccountAction()
+        var message = "action=" + state.accountAction
         // Explicitly save MyAccount only on "Back key"
         state.builder.save()
         state.actionCompleted = true
         activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN
-        if (state.authenticatorResponse != null) {
+        state.authenticatorResponse?.let { authenticatorResponse ->
             // We should return result back to AccountManager
             activityOnFinish = ActivityOnFinish.NONE
             if (state.actionSucceeded) {
                 if (isMaPersistent()) {
-                    // Pass the new/edited account back to the account manager
+                    // Pass the new/edited account back to the AccountManager
                     val result = Bundle()
-                    result.putString(AccountManager.KEY_ACCOUNT_NAME, state.getAccount().getAccountName())
+                    result.putString(AccountManager.KEY_ACCOUNT_NAME, state.myAccount.getAccountName())
                     result.putString(AccountManager.KEY_ACCOUNT_TYPE,
                             AuthenticatorService.ANDROID_ACCOUNT_TYPE)
-                    state.authenticatorResponse?.onResult(result)
-                    message += "; authenticatorResponse; account.name=" + state.getAccount().getAccountName() + "; "
+                    authenticatorResponse.onResult(result)
+                    message += "; authenticatorResponse; account.name=" + state.myAccount.getAccountName() + "; "
                 }
             } else {
-                state.authenticatorResponse?.onError(AccountManager.ERROR_CODE_CANCELED, "canceled")
+                authenticatorResponse.onError(AccountManager.ERROR_CODE_CANCELED, "canceled")
             }
         }
         // Forget old state
         state.forget()
         return message
-    }
-
-    fun getState(): StateOfAccountChangeProcess {
-        return state
     }
 
     /**
@@ -1184,7 +1182,7 @@ class AccountSettingsActivity : MyActivity() {
                     .flatMap { it?.getOriginConfig() }
                     .flatMap { b: MyAccount.Builder -> b.getConnection().verifyCredentials(whoAmI) }
                     .flatMap { actor: Actor -> state.builder.onCredentialsVerified(actor) }
-                    .map({ it.getAccount() })
+                    .map({ it.myAccount })
                     .filter { obj: MyAccount -> obj.isValidAndSucceeded() }
                     .onSuccess { myAccount: MyAccount ->
                         state.forget()
@@ -1242,8 +1240,8 @@ class AccountSettingsActivity : MyActivity() {
                 state.actionSucceeded = resultOut.isSuccess()
                 if (resultOut.isSuccess()) {
                     state.actionCompleted = true
-                    if (state.getAccountAction()?.compareTo(Intent.ACTION_INSERT) == 0) {
-                        state.setAccountAction(Intent.ACTION_EDIT)
+                    if (state.accountAction.compareTo(Intent.ACTION_INSERT) == 0) {
+                        state.accountAction = Intent.ACTION_EDIT
                     }
                 }
                 somethingIsBeingProcessed = false

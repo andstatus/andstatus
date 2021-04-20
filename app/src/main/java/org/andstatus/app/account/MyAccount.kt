@@ -18,8 +18,6 @@ package org.andstatus.app.account
 import android.accounts.Account
 import android.content.ContentResolver
 import android.os.Bundle
-import android.os.Parcel
-import android.os.Parcelable
 import io.vavr.control.Try
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
@@ -45,6 +43,7 @@ import org.andstatus.app.timeline.meta.Timeline
 import org.andstatus.app.timeline.meta.TimelineSaver
 import org.andstatus.app.timeline.meta.TimelineType
 import org.andstatus.app.util.IsEmpty
+import org.andstatus.app.util.JsonUtils
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.StringUtil
@@ -342,16 +341,13 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     }
 
     override fun compareTo(other: MyAccount): Int {
-        if (this === other) {
-            return 0
-        }
-        if (other == null) {
-            return -1
-        }
+        if (this === other) return 0
         if (isValid != other.isValid) {
             return if (isValid) -1 else 1
         }
-        return if (order > other.order) 1 else if (order < other.order) -1 else getAccountName().compareTo(other.getAccountName())
+        return if (order > other.order) 1
+        else if (order < other.order) -1
+        else getAccountName().compareTo(other.getAccountName())
     }
 
     override fun equals(other: Any?): Boolean {
@@ -401,7 +397,10 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     }
 
     /** Companion class used to load/create/change/delete [MyAccount]'s data  */
-    class Builder private constructor(@field:Volatile private var myAccount: MyAccount) : Parcelable, TaggedClass {
+    class Builder private constructor(myAccountIn: MyAccount) : TaggedClass {
+        var myAccount = myAccountIn
+            private set
+
         private fun fixInconsistenciesWithChangedEnvironmentSilently() {
             var changed = false
             if (isPersistent() && myAccount.actor.actorId == 0L) {
@@ -454,7 +453,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
 
         fun rebuildMyAccount(accountName: AccountName) {
             val ma = myContext().accounts().fromAccountName(accountName.name)
-            myAccount = if (ma.isValid) ma else MyAccount(getAccount().data.withAccountName(accountName))
+            myAccount = if (ma.isValid) ma else MyAccount(myAccount.data.withAccountName(accountName))
         }
 
         fun getOrigin(): Origin {
@@ -462,19 +461,15 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         }
 
         fun getUniqueName(): String {
-            return getAccount().getOAccountName().getUniqueName()
+            return myAccount.getOAccountName().getUniqueName()
         }
 
         fun getPassword(): String {
-            return getAccount().getPassword()
+            return myAccount.getPassword()
         }
 
         fun isOAuth(): Boolean {
-            return getAccount().isOAuth()
-        }
-
-        fun getAccount(): MyAccount {
-            return myAccount
+            return myAccount.isOAuth()
         }
 
         /**
@@ -489,13 +484,8 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
          * @return true = success
          */
         fun deleteData(): Boolean {
-            val ok = true
-            if (isPersistent() && myAccount.actor.actorId != 0L) {
-                // TODO: Delete data for this Account ?!
-                myAccount.actor.actorId = 0
-            }
             setAndroidAccountDeleted()
-            return ok
+            return true
         }
 
         private fun setAndroidAccountDeleted() {
@@ -656,15 +646,6 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
             }
         }
 
-        override fun describeContents(): Int {
-            return 0
-        }
-
-        override fun writeToParcel(dest: Parcel, flags: Int) {
-            save()
-            dest.writeParcelable(myAccount.data, flags)
-        }
-
         override fun toString(): String {
             return myAccount.toString()
         }
@@ -686,6 +667,8 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         override fun classTag(): String {
             return TAG
         }
+
+        fun toJsonString(): String = myAccount.toJson().toString()
 
         companion object {
             private val TAG: String = MyAccount.TAG + "." + Builder::class.java.simpleName
@@ -712,6 +695,15 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
                 return loadFromAccountData(AccountData.fromAndroidAccount(myContext, account), "fromAndroidAccount")
             }
 
+            fun fromJsonString(myContext: MyContext, jsonString: String?): Builder =
+                    JsonUtils.toJsonObject(jsonString)
+                            .map { jso ->
+                                if (myContext.isEmpty) EMPTY
+                                else AccountData.fromJson(myContext, jso, false)
+                                    .let { loadFromAccountData(it, "") }
+                            }.getOrElse(EMPTY)
+
+
             fun loadFromAccountData(accountData: AccountData, method: String?): Builder {
                 val myAccount = MyAccount(accountData)
                 val builder = fromMyAccount(myAccount)
@@ -722,17 +714,6 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
 
             fun fromMyAccount(ma: MyAccount): Builder {
                 return Builder(ma)
-            }
-
-            @JvmField
-            val CREATOR: Parcelable.Creator<Builder> = object : Parcelable.Creator<Builder> {
-                override fun createFromParcel(source: Parcel?): Builder {
-                    return loadFromAccountData(AccountData.CREATOR.createFromParcel(source), "createFromParcel")
-                }
-
-                override fun newArray(size: Int): Array<Builder?> {
-                    return arrayOfNulls(size)
-                }
             }
         }
     }

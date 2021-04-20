@@ -267,6 +267,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
     companion object {
         private val TAG: String = AccountData::class.java.simpleName
         val EMPTY: AccountData = AccountData(MyContextEmpty.EMPTY, JSONObject(), false)
+
         fun fromAndroidAccount(myContext: MyContext, androidAccount: Account?): AccountData {
             requireNotNull(androidAccount) { "$TAG account is null" }
             val am = AccountManager.get(myContext.context())

@@ -54,17 +54,17 @@ class MyAccountTest {
         val accountNameString = uniqueName + AccountName.Companion.ORIGIN_SEPARATOR + origin.getOriginInAccountName(host)
         val accountName: AccountName = AccountName.Companion.fromAccountName(myContext, accountNameString)
         val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(accountName)
-        Assert.assertEquals(logMsg, origin, builder.getAccount().origin)
-        Assert.assertEquals(logMsg, accountNameString, builder.getAccount().getAccountName())
-        Assert.assertEquals(logMsg, username, builder.getAccount().username)
+        Assert.assertEquals(logMsg, origin, builder.myAccount.origin)
+        Assert.assertEquals(logMsg, accountNameString, builder.myAccount.getAccountName())
+        Assert.assertEquals(logMsg, username, builder.myAccount.username)
         if (uniqueName.isEmpty()) {
-            Assert.assertEquals(logMsg, "", builder.getAccount().getWebFingerId())
+            Assert.assertEquals(logMsg, "", builder.myAccount.getWebFingerId())
         } else {
-            Assert.assertNotEquals(logMsg, uniqueName, builder.getAccount().username)
+            Assert.assertNotEquals(logMsg, uniqueName, builder.myAccount.username)
             val indexOfAt = uniqueName.lastIndexOf("@")
-            Assert.assertEquals(logMsg, uniqueName, builder.getAccount().username +
+            Assert.assertEquals(logMsg, uniqueName, builder.myAccount.username +
                     "@" + uniqueName.substring(indexOfAt + 1))
-            Assert.assertEquals(logMsg, uniqueName.toLowerCase(), builder.getAccount().actor.getWebFingerId())
+            Assert.assertEquals(logMsg, uniqueName.toLowerCase(), builder.myAccount.actor.getWebFingerId())
         }
     }
 

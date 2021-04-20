@@ -50,7 +50,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
         myAccounts.clear()
         recentAccounts.clear()
         for (account in AccountUtils.getCurrentAccounts(myContext.context())) {
-            val ma: MyAccount = MyAccount.Builder.loadFromAndroidAccount(myContext, account).getAccount()
+            val ma: MyAccount = MyAccount.Builder.loadFromAndroidAccount(myContext, account).myAccount
             if (ma.isValid) {
                 myAccounts.add(ma)
             } else {
@@ -118,7 +118,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
         }
         for (androidAccount in AccountUtils.getCurrentAccounts(myContext.context())) {
             if (accountName.toString() == androidAccount.name) {
-                val myAccount: MyAccount = MyAccount.Builder.loadFromAndroidAccount(myContext, androidAccount).getAccount()
+                val myAccount: MyAccount = MyAccount.Builder.loadFromAndroidAccount(myContext, androidAccount).myAccount
                 if (myAccount.isValid) {
                     myAccounts.add(myAccount)
                 }
@@ -435,9 +435,9 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
                         .onSuccess { jso: JSONObject ->
                             val accountData: AccountData = AccountData.fromJson(myContext, jso, false)
                             val builder: MyAccount.Builder = MyAccount.Builder.loadFromAccountData(accountData, "fromJson")
-                            val verified = builder.getAccount().getCredentialsVerified()
+                            val verified = builder.myAccount.getCredentialsVerified()
                             if (verified != CredentialsVerificationStatus.SUCCEEDED) {
-                                newDescriptor.getLogger().logProgress("Account " + builder.getAccount().getAccountName() +
+                                newDescriptor.getLogger().logProgress("Account " + builder.myAccount.getAccountName() +
                                         " was not successfully verified")
                                 builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.SUCCEEDED)
                             }

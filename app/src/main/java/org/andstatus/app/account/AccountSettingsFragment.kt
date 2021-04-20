@@ -45,10 +45,10 @@ class AccountSettingsFragment : Fragment() {
 
     private fun onRemoveAccount() {
         val accountSettingsActivity = activity as AccountSettingsActivity?
-        val state = accountSettingsActivity?.getState()
+        val state = accountSettingsActivity?.state
         if (state?.builder != null && state.builder.isPersistent()) {
             for (account in AccountUtils.getCurrentAccounts(accountSettingsActivity)) {
-                if (state.getAccount().getAccountName() == account.name) {
+                if (state.myAccount.getAccountName() == account.name) {
                     MyLog.i(this, "Removing account: " + account.name)
                     val am = AccountManager.get(activity)
                     CompletableFuture.supplyAsync({
