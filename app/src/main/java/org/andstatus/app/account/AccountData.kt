@@ -91,7 +91,7 @@ class AccountData : Parcelable, AccountDataWriter, IdentifiableInstance {
         setDataString(Origin.KEY_ORIGIN_NAME, accountName.getOriginName())
     }
 
-    val myContext: MyContext get() = myContextIn.takeIf { it.nonEmpty }
+    val myContext: MyContext get() = myContextIn.takeIf { it.nonEmpty && !it.isExpired }
                 ?: accountName.origin.myContext
 
     fun isPersistent(): Boolean {

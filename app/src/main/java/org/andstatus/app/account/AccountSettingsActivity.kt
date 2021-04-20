@@ -686,8 +686,7 @@ class AccountSettingsActivity : MyActivity() {
      * @param reVerify true - Verify only if we didn't do this yet
      */
     fun verifyCredentials(reVerify: Boolean) {
-        val ma = myAccount
-        if (reVerify || ma.getCredentialsVerified() == CredentialsVerificationStatus.NEVER) {
+        if (reVerify || myAccount.getCredentialsVerified() == CredentialsVerificationStatus.NEVER) {
             MyServiceManager.setServiceUnavailable()
             val state2: MyServiceState = MyServiceManager.getServiceState()
             if (state2 != MyServiceState.STOPPED) {
@@ -697,16 +696,16 @@ class AccountSettingsActivity : MyActivity() {
                     return
                 }
             }
-            if (ma.getCredentialsPresent()) {
+            if (myAccount.getCredentialsPresent()) {
                 // Credentials are present, so we may verify them
                 // This is needed even for OAuth - to know Username
                 AsyncTaskLauncher.execute(this,
-                        VerifyCredentialsTask(ma.actor.getEndpoint(ActorEndpointType.API_PROFILE)))
+                        VerifyCredentialsTask(myAccount.actor.getEndpoint(ActorEndpointType.API_PROFILE)))
                         .onFailure { e: Throwable -> appendError(e.message) }
             } else if (state.builder.isOAuth() && reVerify) {
                 // Credentials are not present,
                 // so start asynchronous OAuth Authentication process
-                if (!ma.areClientKeysPresent()) {
+                if (!myAccount.areClientKeysPresent()) {
                     AsyncTaskLauncher.execute(this, OAuthRegisterClientTask())
                             .onFailure { e: Throwable -> appendError(e.message) }
                 } else {

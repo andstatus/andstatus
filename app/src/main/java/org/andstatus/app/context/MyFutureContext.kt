@@ -25,7 +25,6 @@ import org.andstatus.app.net.http.TlsSniSocketFactory
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.ExceptionsCounter
 import org.andstatus.app.os.NonUiThreadExecutor
-import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.syncadapter.SyncInitiator
 import org.andstatus.app.util.IdentifiableInstance
 import org.andstatus.app.util.InstanceId
@@ -124,7 +123,7 @@ class MyFutureContext private constructor(private val previousContext: MyContext
             return UnaryOperator { previousContext: MyContext ->
                 val reason: String = if (!previousContext.isReady()) {
                     "Context not ready"
-                } else if (previousContext.isExpired()) {
+                } else if (previousContext.isExpired) {
                     "Context expired"
                 } else if (previousContext.isPreferencesChanged()) {
                     "Preferences changed"

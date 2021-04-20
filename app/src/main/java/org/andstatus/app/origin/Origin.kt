@@ -60,7 +60,7 @@ import java.util.regex.Pattern
  */
 open class Origin internal constructor(myContextIn: MyContext, val originType: OriginType) : Comparable<Origin>, IsEmpty {
     val myContext: MyContext = myContextIn
-        get() = field.takeIf { it.nonEmpty }
+        get() = field.takeIf { it.nonEmpty && !it.isExpired }
                 ?: MyContextHolder.myContextHolder.getNow()
 
     val shortUrlLength: Int

@@ -78,7 +78,9 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
     private val commandQueue: CommandQueue = CommandQueue(this)
 
     @Volatile
-    private var expired = false
+    public final override var isExpired = false
+        private set
+
     private val notifier: Notifier = Notifier(this)
 
     private fun calcBaseContextToUse(parent: MyContext, contextIn: Context?): Context {
@@ -192,7 +194,7 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
 
     override fun toString(): String {
         return instanceTag() + " by " + initializedBy + "; state=" + state +
-                (if (isExpired()) "; expired" else "") +
+                (if (this.isExpired) "; expired" else "") +
                 "; " + accounts().size() + " accounts, " +
                 ("context=" + context.javaClass.name)
     }
@@ -226,7 +228,7 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
     }
 
     override fun getDatabase(): SQLiteDatabase? {
-        if (db == null || isExpired()) {
+        if (db == null || this.isExpired) {
             return null
         }
         try {
@@ -264,13 +266,9 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
         return accounts
     }
 
-    override fun isExpired(): Boolean {
-        return expired
-    }
-
     override fun setExpired(reason: Supplier<String>) {
         MyLog.v(this) { "setExpired " + reason.get() }
-        expired = true
+        isExpired = true
         state = MyContextState.EXPIRED
     }
 

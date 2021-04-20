@@ -51,7 +51,7 @@ interface MyContext : IdentifiableInstance, IsEmpty {
     fun putAssertionData(key: String, contentValues: ContentValues) {}
     fun save(reason: Supplier<String>)
     fun release(reason: Supplier<String>)
-    fun isExpired(): Boolean
+    val isExpired: Boolean
     fun setExpired(reason: Supplier<String>)
     fun getConnectionState(): ConnectionState
 
@@ -72,7 +72,7 @@ interface MyContext : IdentifiableInstance, IsEmpty {
     override val isEmpty: Boolean get() = this === MyContextEmpty.EMPTY
 
     fun isEmptyOrExpired(): Boolean {
-        return isEmpty || isExpired()
+        return isEmpty || isExpired
     }
 
     fun isPreferencesChanged(): Boolean {

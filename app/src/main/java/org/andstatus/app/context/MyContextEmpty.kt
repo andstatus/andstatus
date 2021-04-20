@@ -63,7 +63,7 @@ class MyContextEmpty: MyContext {
 
     override fun release(reason: Supplier<String>) {}
 
-    override fun isExpired(): Boolean = false
+    override val isExpired: Boolean get() = false
 
     override fun setExpired(reason: Supplier<String>) {}
 

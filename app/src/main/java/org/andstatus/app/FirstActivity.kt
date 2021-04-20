@@ -95,7 +95,7 @@ class FirstActivity : AppCompatActivity(), IdentifiableInstance {
 
     private val startNextActivity: BiConsumer<MyContext?, Throwable?> = BiConsumer { myContext: MyContext?, throwable: Throwable? ->
         var launched = false
-        if (myContext != null && myContext.isReady() && !myContext.isExpired()) {
+        if (myContext != null && myContext.isReady() && !myContext.isExpired) {
             try {
                 startNextActivitySync(myContext, intent)
                 launched = true
