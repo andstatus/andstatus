@@ -249,11 +249,9 @@ class DragItemRecyclerView : RecyclerView, AutoScrollListener {
     }
 
     private fun updateDragPositionAndScroll() {
-        val view = findChildView(mDragItem?.x ?: 0f, mDragItem?.y ?: 0f)
-        var newPos = getChildLayoutPosition(view!!)
-        if (newPos == NO_POSITION || view == null) {
-            return
-        }
+        val view = findChildView(mDragItem?.x ?: 0f, mDragItem?.y ?: 0f) ?: return
+        var newPos = getChildLayoutPosition(view)
+        if (newPos == NO_POSITION) return
 
         // If using a LinearLayoutManager and the new view has a bigger height we need to check if passing centerY as well.
         // If not doing this extra check the bigger item will move back again when dragging slowly over it.
