@@ -3,6 +3,8 @@ package org.andstatus.app.net.http
 import com.github.scribejava.core.builder.api.DefaultApi20
 import com.github.scribejava.core.extractors.TokenExtractor
 import com.github.scribejava.core.model.OAuth2AccessToken
+import com.github.scribejava.core.oauth2.clientauthentication.ClientAuthentication
+import com.github.scribejava.core.oauth2.clientauthentication.RequestBodyAuthenticationScheme
 import org.andstatus.app.net.social.ApiRoutineEnum
 
 class OAuthApi20(private val http: HttpConnectionOAuth) : DefaultApi20() {
@@ -29,5 +31,9 @@ class OAuthApi20(private val http: HttpConnectionOAuth) : DefaultApi20() {
             }
         }
         return super.getAuthorizationUrl(responseType, apiKey, callback, scope, state, additionalParams2)
+    }
+
+    override fun getClientAuthentication(): ClientAuthentication {
+        return RequestBodyAuthenticationScheme.instance()
     }
 }

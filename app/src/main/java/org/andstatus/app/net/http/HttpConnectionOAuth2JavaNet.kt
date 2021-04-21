@@ -31,6 +31,7 @@ import org.andstatus.app.data.DbUtils
 import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.MyLog
+import org.andstatus.app.util.MyLogVerboseStream
 import org.andstatus.app.util.MyStringBuilder
 import org.json.JSONException
 import org.json.JSONObject
@@ -191,6 +192,9 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
                 .httpClientConfig(clientConfig)
         if (redirect) {
             serviceBuilder.callback(HttpConnectionInterface.CALLBACK_URI.toString())
+        }
+        if (MyPreferences.isLogNetworkLevelMessages() && MyLog.isVerboseEnabled()) {
+            serviceBuilder.debugStream(MyLogVerboseStream("ScribeJava"))
         }
         return serviceBuilder.build(OAuthApi20(this))
     }
