@@ -227,11 +227,7 @@ class ConnectionTwitterTest {
         Assert.assertEquals("No note returned $activity", AObjectType.NOTE, activity.getObjectType())
         val note = activity.getNote()
         Assert.assertEquals("Body of this note", MyHtmlTest.twitterBodyHtml, note.content)
-        Assert.assertEquals("""
-    Body to post is wrong. Try to type:
-    ${MyHtmlTest.twitterBodyTypedPlain}
-    
-    """.trimIndent(),
+        Assert.assertEquals("Body to post is wrong. Try to type:\n${MyHtmlTest.twitterBodyTypedPlain}\n",
                 MyHtmlTest.twitterBodyToPost, note.getContentToPost())
         Assert.assertEquals("Content to Search of this note", contentToSearch, note.getContentToSearch())
         addAsGetNote(activity)

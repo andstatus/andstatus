@@ -84,13 +84,7 @@ class ParsedUriTest {
                  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL), searchQuery)
         val clickUri = timeline.getClickUri()
         val parsedUri: ParsedUri = ParsedUri.Companion.fromUri(clickUri)
-        Assert.assertEquals("""
-    $parsedUri
-    $timeline
-    """.trimIndent(), TimelineType.SEARCH, parsedUri.getTimelineType())
-        Assert.assertEquals("""
-    $parsedUri
-    $timeline
-    """.trimIndent(), searchQuery, parsedUri.searchQuery)
+        Assert.assertEquals("$parsedUri\n$timeline", TimelineType.SEARCH, parsedUri.getTimelineType())
+        Assert.assertEquals("$parsedUri\n$timeline", searchQuery, parsedUri.searchQuery)
     }
 }

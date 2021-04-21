@@ -112,11 +112,10 @@ internal class MyBackupManager(private val activity: Activity?, progressListener
                     MyContextHolder.myContextHolder.getNow().baseContext(), df, progressLogger)
             if (descriptor.getBackupSchemaVersion() != MyBackupDescriptor.BACKUP_SCHEMA_VERSION) {
                 throw FileNotFoundException(
-                        """
-                        Unsupported backup schema version: ${descriptor.getBackupSchemaVersion()}; created with ${descriptor.appVersionNameAndCode()}
-                        Data folder:'${dataFolder.getUri().path}'.
-                        Please use older AndStatus version to restore this backup.
-                        """.trimIndent()
+                        "Unsupported backup schema version: ${descriptor.getBackupSchemaVersion()}" +
+                                "; created with ${descriptor.appVersionNameAndCode()}" +
+                                "\nData folder:'${dataFolder.getUri().path}'." +
+                                "\nPlease use older AndStatus version to restore this backup."
                 )
             }
             descriptor

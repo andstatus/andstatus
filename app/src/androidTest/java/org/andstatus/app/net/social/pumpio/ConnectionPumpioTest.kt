@@ -236,10 +236,9 @@ class ConnectionPumpioTest {
         Assert.assertNotEquals("Is a Reblog $activity", ActivityType.ANNOUNCE, activity.type)
         Assert.assertEquals("Favorited by me $activity", TriState.UNKNOWN, activity.getNote().getFavoritedBy(activity.accountActor))
         val audience = note.audience()
-        Assert.assertEquals("""
-    Should be Public for now. Followers in cc aren't recognized yet as a Followers collection... $activity
-    
-    """.trimIndent(), Visibility.PUBLIC, audience.visibility)
+        Assert.assertEquals("Should be Public for now." +
+                " Followers in cc aren't recognized yet as a Followers collection..." +
+                "\n$activity", Visibility.PUBLIC, audience.visibility)
         Assert.assertFalse("Is to Followers. We shouldn't know this yet?! $audience", audience.isFollowers())
         MatcherAssert.assertThat(audience.getRecipients().toString(),
                 audience.getNonSpecialActors().stream().map { obj: Actor -> obj.getUsername() }.collect(Collectors.toList()),
@@ -338,10 +337,8 @@ class ConnectionPumpioTest {
                 .setName(name).setContentPosted(content)
         val tryActivity = connection.updateNote(note)
         val jsoActivity = mock.getHttpMock().getLatestPostedJSONObject() ?: throw IllegalStateException("No activity")
-        Assert.assertTrue("""
-    Object present $jsoActivity
-    Results: ${mock.getHttpMock().getResults()}
-    """.trimIndent(), jsoActivity.has("object"))
+        Assert.assertTrue("Object present $jsoActivity\nResults: ${mock.getHttpMock().getResults()}",
+                jsoActivity.has("object"))
         val jso = jsoActivity.getJSONObject("object")
         Assert.assertEquals("Note name", name, MyHtml.htmlToPlainText(JsonUtils.optString(jso, "displayName")))
         Assert.assertEquals("Note content", content, MyHtml.htmlToPlainText(jso.getString("content")))

@@ -216,28 +216,15 @@ class HttpConnectionMock : HttpConnection() {
         builder.append("; Data posted " + getPostedCounter() + " times")
         builder.append("\nSent $responsesCounter responses")
         if (results.size > 0) {
-            builder.append("""
-    
-    results:${results.size}
-    """.trimIndent())
+            builder.append("\nresults:${results.size}")
             results.forEach(Consumer { r: HttpReadResult? ->
-                builder.append("""
-    
-    Result: ${r.toString()}
-    """.trimIndent())
+                builder.append("\nResult: ${r.toString()}")
             })
         }
         if (responses.size > 0) {
-            builder.append("""
-    
-    
-    responses:${responses.size}
-    """.trimIndent())
+            builder.append("\n\nresponses:${responses.size}")
             responses.forEach(Consumer { r: String? ->
-                builder.append("""
-    
-    Response: ${r.toString()}
-    """.trimIndent())
+                builder.append("\nResponse: ${r.toString()}")
             })
         }
         if (exception != null) {

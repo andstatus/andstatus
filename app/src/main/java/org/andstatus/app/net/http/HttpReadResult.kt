@@ -132,10 +132,7 @@ class HttpReadResult(val request: HttpRequest) {
                 + (if (retriedWithoutAuthentication) "; retried without auth" else "")
                 + (if (strResponse.isEmpty()) "" else "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
                 + location.map { str: String -> "; location:'$str'" }.orElse("")
-                + (if (exception == null) "" else """
-     ; 
-     exception: ${exception.toString()}
-     """.trimIndent())
+                + (if (exception == null) "" else ";\nexception: $exception")
                 + "\nRequested: " + request)
     }
 

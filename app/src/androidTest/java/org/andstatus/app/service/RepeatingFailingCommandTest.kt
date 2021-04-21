@@ -45,24 +45,16 @@ class RepeatingFailingCommandTest : MyServiceTest() {
         mService.assertCommandExecutionStarted("First command $actor", startCount, TriState.TRUE)
         setAndSendGetAvatarCommand(actor, false)
         Assert.assertTrue("First command didn't end $actor", mService.waitForCommandExecutionEnded(endCount))
-        Assert.assertTrue("""
-    Request for the command wasn't sent: ${mService.getListenedCommand()}
-    ${mService.getHttp()}
-    """.trimIndent(), mService.getHttp()?.getRequestsCounter() ?: 0 > requestsCounter0)
+        Assert.assertTrue("Request for the command wasn't sent:" +
+                " ${mService.getListenedCommand()}\n${mService.getHttp()}",
+                mService.getHttp()?.getRequestsCounter() ?: 0 > requestsCounter0)
         setAndSendGetAvatarCommand(actor, false)
-        mService.assertCommandExecutionStarted("""
-    Duplicated command started ${mService.getListenedCommand()}
-    $actor
-    """.trimIndent(), startCount + 1, TriState.FALSE)
+        mService.assertCommandExecutionStarted("Duplicated command started ${mService.getListenedCommand()}\n$actor",
+                startCount + 1, TriState.FALSE)
         setAndSendGetAvatarCommand(actor, true)
-        mService.assertCommandExecutionStarted("""
-    Manually launched duplicated command didn't start ${mService.getListenedCommand()}
-    $actor
-    """.trimIndent(), startCount + 1, TriState.TRUE)
-        Assert.assertTrue("""
-    The third command didn't end ${mService.getListenedCommand()}
-    $actor
-    """.trimIndent(),
+        mService.assertCommandExecutionStarted("Manually launched duplicated command didn't start" +
+                " ${mService.getListenedCommand()}\n$actor", startCount + 1, TriState.TRUE)
+        Assert.assertTrue("The third command didn't end ${mService.getListenedCommand()}\n$actor",
                 mService.waitForCommandExecutionEnded(endCount + 1))
         Assert.assertTrue("Service didn't stop", mService.waitForServiceStopped(true))
         MyLog.i(this, "$method ended, $actor")

@@ -76,10 +76,7 @@ internal class DatabaseConverter {
                 currentVersion = oneStep.execute(db, currentVersion, progressLogger)
                 if (currentVersion == prevVersion) {
                     lastError = oneStep.getLastError()
-                    MyLog.e(this, """
-     Stuck at version $prevVersion
-     Error: $lastError
-     """.trimIndent())
+                    MyLog.e(this, "Stuck at version $prevVersion\nError: $lastError")
                     oneStep = null
                 }
             } catch (e: ClassNotFoundException) {

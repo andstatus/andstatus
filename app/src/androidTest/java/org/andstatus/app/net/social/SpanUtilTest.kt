@@ -47,10 +47,7 @@ class SpanUtilTest {
         val uniqueName2 = "second@identi.ca"
         addRecipient(ma, audience, uniqueName2, OriginPumpio.Companion.ACCOUNT_PREFIX + uniqueName2)
         val modifier = SpanUtil.spansModifier(audience)
-        val text = """
-            Hello @${ma.actor.getWebFingerId()}. Thank you for noticing.
-            @$uniqueName2
-            """.trimIndent()
+        val text = "Hello @${ma.actor.getWebFingerId()}. Thank you for noticing.\n@$uniqueName2"
         val spannable: Spannable = SpannableString.valueOf(text)
         val modified = modifier.apply(spannable)
         val spans = modified.getSpans(0, modified.length, Any::class.java)
@@ -121,10 +118,7 @@ class SpanUtilTest {
         val onClickUrl = urlSpan.map { obj: MyUrlSpan -> obj.getURL() }.orElse("")
         Assert.assertEquals(message, url, onClickUrl)
         val parsedUri: ParsedUri = ParsedUri.Companion.fromUri(Uri.parse(onClickUrl))
-        Assert.assertEquals("""
-    $parsedUri
-    ${timeline.toString()}
-    """.trimIndent(), hashTag, parsedUri.searchQuery)
+        Assert.assertEquals("$parsedUri\n${timeline.toString()}", hashTag, parsedUri.searchQuery)
     }
 
     @Test

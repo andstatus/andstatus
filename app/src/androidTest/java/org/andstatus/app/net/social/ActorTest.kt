@@ -71,12 +71,8 @@ class ActorTest {
         val actor0 = actors[0]
         Assert.assertEquals(msgLog, USERNAME1, actor0.getUsername())
         Assert.assertFalse(msgLog, actor0.isOidReal())
-        Assert.assertFalse("""
-    $msgLog
-    username:${actor0.getUsername()}
-    tempOid: ${actor0.toTempOid()}
-    altOid:  ${actor0.toAltTempOid()}
-    """.trimIndent(), actor0.hasAltTempOid())
+        Assert.assertFalse("$msgLog\nusername:${actor0.getUsername()}\ntempOid: ${actor0.toTempOid()}" +
+                "\naltOid:  ${actor0.toAltTempOid()}", actor0.hasAltTempOid())
         Assert.assertEquals(msgLog, USERNAME4, actors[1].getUsername())
     }
 

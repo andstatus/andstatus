@@ -117,17 +117,11 @@ class DefaultProgressListener(activity: MyActivity, defaultTitleId: Int, logTag:
     private fun showToast(message: CharSequence?) {
         try {
             Toast.makeText( MyContextHolder.myContextHolder.getNow().context(),
-                    """
-                        ${defaultTitle.toString()}
-                        $versionText
-                        """.trimIndent() +
-                            (if ( MyContextHolder.myContextHolder.getNow().state() == MyContextState.UPGRADING) """
-     
-     $upgradingText
-     """.trimIndent() else "") +
-                            "\n\n" + message,
-                    Toast.LENGTH_LONG)
-                    .show()
+                "${defaultTitle.toString()}\n$versionText" +
+                        (if ( MyContextHolder.myContextHolder.getNow().state() == MyContextState.UPGRADING) "\n$upgradingText" else "") +
+                        "\n\n" + message,
+                Toast.LENGTH_LONG)
+                .show()
         } catch (e2: Exception) {
             MyLog.w(logTag, "Couldn't send toast with the text: $message", e2)
         }

@@ -33,7 +33,10 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UrlUtils
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 
 class DemoAccountInserter(private val myContext: MyContext) {
     private var firstAccountActorOid: String? = null
@@ -62,10 +65,10 @@ class DemoAccountInserter(private val myContext: MyContext) {
         }
         demoData.checkDataPath()
         val accountName: AccountName = AccountName.fromAccountName(myContext, accountNameString)
-        Assert.assertEquals("Account name created $accountName", accountNameString, accountName.name)
+        assertEquals("Account name created $accountName", accountNameString, accountName.name)
         MyLog.v(this, "Adding account $accountName")
-        Assert.assertTrue("Name '$accountNameString' is valid for $originType", accountName.isValid)
-        Assert.assertEquals("Origin for '$accountNameString' account created",
+        assertTrue("Name '$accountNameString' is valid for $originType", accountName.isValid)
+        assertEquals("Origin for '$accountNameString' account created",
                 accountName.origin.originType, originType)
         val accountActorId_existing = MyQuery.oidToId(myContext, OidEnum.ACTOR_OID,
                 accountName.origin.id, actorOid)
@@ -75,7 +78,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
         if (!actor.isWebFingerIdValid() && UrlUtils.hostIsValid(actor.getIdHost())) {
             actor.setWebFingerId(actor.getUsername() + "@" + actor.getIdHost())
         }
-        Assert.assertTrue("No WebfingerId $actor", actor.isWebFingerIdValid())
+        assertTrue("No WebfingerId $actor", actor.isWebFingerIdValid())
         if (actor.origin.originType === OriginType.ACTIVITYPUB) {
             val basePath = "https://" + actor.getConnectionHost() + "/users/" + actor.getUsername()
             actor.endpoints.add(ActorEndpointType.API_INBOX, "$basePath/inbox")
@@ -88,20 +91,20 @@ class DemoAccountInserter(private val myContext: MyContext) {
         val accountActorId = ma.actorId
         val msg = "AccountUserId for '$accountNameString, (first: '$firstAccountActorOid')"
         if (accountActorId_existing == 0L && !actorOid.contains(firstAccountActorOid ?: "")) {
-            Assert.assertTrue("$msg != 1", accountActorId != 1L)
+            assertTrue("$msg != 1", accountActorId != 1L)
         } else {
-            Assert.assertTrue("$msg != 0", accountActorId != 0L)
+            assertTrue("$msg != 0", accountActorId != 0L)
         }
-        Assert.assertTrue("Account $actorOid is persistent", ma.isValid)
-        Assert.assertTrue("Account actorOid", ma.getActorOid().equals(actorOid, ignoreCase = true))
-        Assert.assertEquals("No WebFingerId stored $actor",
+        assertTrue("Account $actorOid is persistent", ma.isValid)
+        assertTrue("Account actorOid", ma.getActorOid().equals(actorOid, ignoreCase = true))
+        assertEquals("No WebFingerId stored $actor",
                 actor.getWebFingerId(), MyQuery.actorIdToWebfingerId(myContext, actor.actorId))
-        Assert.assertEquals("Account is not successfully verified",
+        assertEquals("Account is not successfully verified",
                 CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified())
         assertAccountIsAddedToAccountManager(ma)
-        Assert.assertEquals("Oid: " + ma.actor, actor.oid, ma.actor.oid)
-        Assert.assertTrue("Should be fully defined: " + ma.actor, ma.actor.isFullyDefined())
-        Assert.assertNotEquals(Timeline.EMPTY, getAutomaticallySyncableTimeline(myContext, ma))
+        assertEquals("Oid: " + ma.actor, actor.oid, ma.actor.oid)
+        assertTrue("Should be fully defined: " + ma.actor, ma.actor.isFullyDefined())
+        assertNotEquals(Timeline.EMPTY, getAutomaticallySyncableTimeline(myContext, ma))
         return ma
     }
 
@@ -114,7 +117,7 @@ class DemoAccountInserter(private val myContext: MyContext) {
                 break
             }
         }
-        Assert.assertEquals("MyAccount was not found in AccountManager among " + aa.size + " accounts.",
+        assertEquals("MyAccount was not found in AccountManager among " + aa.size + " accounts.",
                 maExpected, ma)
     }
 
@@ -130,39 +133,39 @@ class DemoAccountInserter(private val myContext: MyContext) {
         } else {
             builder.setPassword("samplePasswordFor" + actor.uniqueName)
         }
-        Assert.assertTrue("Credentials of " + actor + " are present, account: " + builder.myAccount,
+        assertTrue("Credentials of " + actor + " are present, account: " + builder.myAccount,
                 builder.myAccount.getCredentialsPresent())
         val tryMyAccount = builder.onCredentialsVerified(actor)
                 .map { it.myAccount }
-        Assert.assertTrue("Success $tryMyAccount", tryMyAccount.isSuccess)
+        assertTrue("Success $tryMyAccount", tryMyAccount.isSuccess)
         val ma = tryMyAccount.get()
-        Assert.assertTrue("Account is persistent $ma", builder.isPersistent())
-        Assert.assertEquals("Credentials of " + actor.getUniqueNameWithOrigin() + " successfully verified",
+        assertTrue("Account is persistent $ma", builder.isPersistent())
+        assertEquals("Credentials of " + actor.getUniqueNameWithOrigin() + " successfully verified",
                 CredentialsVerificationStatus.SUCCEEDED, ma.getCredentialsVerified())
         val actorId = ma.actorId
-        Assert.assertTrue("Account " + actor.getUniqueNameWithOrigin() + " has ActorId", actorId != 0L)
-        Assert.assertEquals("Account actorOid", ma.getActorOid(), actor.oid)
+        assertTrue("Account " + actor.getUniqueNameWithOrigin() + " has ActorId", actorId != 0L)
+        assertEquals("Account actorOid", ma.getActorOid(), actor.oid)
         val oid = MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId, 0)
         if (oid.isEmpty()) {
             val message = "Couldn't find an Actor in the database for id=" + actorId + " oid=" + actor.oid
             MyLog.v(this, message)
-            Assert.fail(message)
+            fail(message)
         }
-        Assert.assertEquals("Actor in the database for id=$actorId",
+        assertEquals("Actor in the database for id=$actorId",
                 actor.oid,
                 MyQuery.idToOid(myContext, OidEnum.ACTOR_OID, actorId, 0))
-        Assert.assertEquals("Account name calculated",
+        assertEquals("Account name calculated",
                 (if (actor.origin.shouldHaveUrl()) actor.getUsername() + "@" +
                         actor.origin.getAccountNameHost() else actor.uniqueName) +
                         AccountName.ORIGIN_SEPARATOR +
                         actor.origin.getOriginInAccountName(accountName.host), ma.getAccountName())
-        Assert.assertEquals("Account name provided", accountName.name, ma.getAccountName())
+        assertEquals("Account name provided", accountName.name, ma.getAccountName())
         val existingAndroidAccount = AccountUtils.getExistingAndroidAccount(accountName)
-        Assert.assertEquals("Android account name", accountName.name,
+        assertEquals("Android account name", accountName.name,
                 existingAndroidAccount.map { a: Account -> a.name }.getOrElse("(not found)"))
-        Assert.assertEquals("User should be known as this actor $actor", actor.uniqueName, actor.user.getKnownAs())
-        Assert.assertEquals("User is not mine $actor", TriState.TRUE, actor.user.isMyUser())
-        Assert.assertNotEquals("User is not added $actor", 0, actor.user.userId)
+        assertEquals("User should be known as this actor $actor", actor.uniqueName, actor.user.getKnownAs())
+        assertEquals("User is not mine $actor", TriState.TRUE, actor.user.isMyUser())
+        assertNotEquals("User is not added $actor", 0, actor.user.userId)
         MyLog.v(this, ma.getAccountName() + " added, id=" + ma.actorId)
         return ma
     }
@@ -180,9 +183,9 @@ class DemoAccountInserter(private val myContext: MyContext) {
             val consumerSecret = "testConsumerSecret" + java.lang.Long.toString(System.nanoTime())
             keys1.setConsumerKeyAndSecret(consumerKey, consumerSecret)
             val keys2: OAuthClientKeys = OAuthClientKeys.fromConnectionData(connectionData)
-            Assert.assertEquals("Keys are loaded for $myAccount", true, keys2.areKeysPresent())
-            Assert.assertEquals(consumerKey, keys2.getConsumerKey())
-            Assert.assertEquals(consumerSecret, keys2.getConsumerSecret())
+            assertEquals("Keys are loaded for $myAccount", true, keys2.areKeysPresent())
+            assertEquals(consumerKey, keys2.getConsumerKey())
+            assertEquals(consumerSecret, keys2.getConsumerSecret())
         }
     }
 
@@ -191,10 +194,8 @@ class DemoAccountInserter(private val myContext: MyContext) {
             val timelineToSync = myContext.timelines()
                     .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.actor,  Origin.EMPTY)
                     .filter { obj: Timeline -> obj.isSyncedAutomatically() }.findFirst().orElse(Timeline.EMPTY)
-            Assert.assertTrue("""
-    No syncable automatically timeline for $myAccount
-    ${myContext.timelines().values()}
-    """.trimIndent(), timelineToSync.isSyncableAutomatically())
+            assertTrue("No syncable automatically timeline for $myAccount" +
+                    "\n${myContext.timelines().values()}", timelineToSync.isSyncableAutomatically())
             return timelineToSync
         }
 
@@ -212,10 +213,8 @@ class DemoAccountInserter(private val myContext: MyContext) {
                             MyStringBuilder.appendWithSpace(logMsg, timeline.toString())
                         }
                     }
-                    Assert.assertEquals("""
-    $logMsg
-    ${ MyContextHolder.myContextHolder.getNow().timelines().values()}
-    """.trimIndent(), 1, count)
+                    assertEquals("$logMsg\n${MyContextHolder.myContextHolder.getNow().timelines().values()}",
+                            1, count)
                 }
             }
         }

@@ -166,8 +166,8 @@ class HelpActivity : MyActivity() {
             val versionText = parentView.findViewById<TextView?>(R.id.splash_application_version)
             val text: MyStringBuilder = MyStringBuilder.of( MyContextHolder.myContextHolder.getVersionText(context))
             if (! MyContextHolder.myContextHolder.getNow().isReady()) {
-                text.append(""" ${MyContextHolder.myContextHolder.getNow().state()}    """.trimIndent())
-                text.append(""" ${MyContextHolder.myContextHolder.getNow().getLastDatabaseError()}""".trimIndent())
+                text.withSpace(MyContextHolder.myContextHolder.getNow().state().toString())
+                text.withSpace(MyContextHolder.myContextHolder.getNow().getLastDatabaseError())
             }
              MyContextHolder.myContextHolder.tryNow().onFailure({ e: Throwable ->
                 text.append(""" ${e.message} ${MyLog.getStackTrace(e)}""") })

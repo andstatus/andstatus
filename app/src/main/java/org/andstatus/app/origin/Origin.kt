@@ -345,16 +345,10 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
 
     fun assertContext() {
         if (!myContext.isReady()) {
-            Assert.fail("""
-    Origin context should be ready $this
-    context: $myContext
-    """.trimIndent())
+            Assert.fail("Origin context should be ready $this\ncontext: $myContext")
         }
         if (myContext.getDatabase() == null) {
-            Assert.fail("""
-    Origin context should have database $this
-    context: $myContext
-    """.trimIndent())
+            Assert.fail("Origin context should have database $this\ncontext: $myContext")
         }
     }
 

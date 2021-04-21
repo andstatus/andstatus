@@ -53,11 +53,7 @@ class WebViewFragment : Fragment() {
         } catch (e: Throwable) {
             val view = inflater.inflate(R.layout.empty_layout, container, false) as LinearLayout
             val contentView = view.findViewById<TextView?>(R.id.content)
-            val text = """
-                Error initializing WebView: ${e.message}
-                
-                $output
-                """.trimIndent()
+            val text = "Error initializing WebView: ${e.message}\n\n$output"
             contentView.text = text
             MyLog.w(this, text, e)
             view

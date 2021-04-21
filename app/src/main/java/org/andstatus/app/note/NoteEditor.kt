@@ -388,11 +388,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
                 body += " "
             }
             if (!TextUtils.isEmpty(bodyView.getText()) && body.isNotEmpty()) {
-                MyLog.v(NoteEditorData.TAG, """
-     Body updated
-     '${bodyView.getText()}' to 
-     '$body'
-     """.trimIndent(), Exception())
+                MyLog.v(NoteEditorData.TAG, "Body updated\n'${bodyView.getText()}' to \n'$body'", Exception())
             }
             bodyView.setText(body)
             bodyView.setSelection(bodyView.getText().toString().length)

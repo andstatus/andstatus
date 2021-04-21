@@ -194,10 +194,8 @@ class DemoNoteInserter(val accountActor: Actor) {
             ActivityType.LIKE -> {
                 val stargazers = MyQuery.getStargazers(origin.myContext.getDatabase(), accountActor.origin, note.noteId)
                 val found = stargazers.stream().anyMatch { stargazer: Actor -> stargazer.actorId == actor.actorId }
-                Assert.assertTrue("""
-    Actor, who favorited, is not found among stargazers: $activity
-    stargazers: $stargazers
-    """.trimIndent(), found)
+                Assert.assertTrue("Actor, who favorited, is not found among stargazers: $activity" +
+                        "\nstargazers: $stargazers", found)
             }
             ActivityType.ANNOUNCE -> {
                 val rebloggers = MyQuery.getRebloggers(origin.myContext.getDatabase(), accountActor.origin, note.noteId)
@@ -300,11 +298,7 @@ class DemoNoteInserter(val accountActor: Actor) {
                 Assert.assertNotEquals(message, 0, notifiedActorId)
             }
             if (notified.known) {
-                Assert.assertEquals("""
-    Notified TriState
-    $activity
-    
-    """.trimIndent(),
+                Assert.assertEquals("Notified TriState $activity",
                         notified,
                         MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()))
             }

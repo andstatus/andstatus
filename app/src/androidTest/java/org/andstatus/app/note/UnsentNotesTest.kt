@@ -97,10 +97,7 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.waitForIdleSync()
         mService.waitForServiceStopped(false)
         val results = mService.getHttp()?.getResults() ?: emptyList()
-        Assert.assertTrue("""
-    No results in ${mService.getHttp()}
-    $logMsg
-    """.trimIndent(), !results.isEmpty())
+        Assert.assertTrue("No results in ${mService.getHttp()}\n$logMsg", !results.isEmpty())
         val urlFound = results.stream().anyMatch { result: HttpReadResult ->
             result.getUrl().contains("retweet") &&
                     result.getUrl().contains(noteOid)

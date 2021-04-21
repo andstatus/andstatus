@@ -749,10 +749,7 @@ class Actor private constructor(// In our system
         try {
             origin.assertContext()
         } catch (e: Throwable) {
-            Assert.fail("""
-    Failed on $this
-    ${e.message}
-    """.trimIndent())
+            Assert.fail("Failed on $this\n${e.message}")
         }
     }
 

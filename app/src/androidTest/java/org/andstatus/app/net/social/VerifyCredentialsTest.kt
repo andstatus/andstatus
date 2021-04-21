@@ -28,7 +28,8 @@ import org.andstatus.app.origin.OriginType
 import org.andstatus.app.util.UriUtils
 import org.andstatus.app.util.UrlUtils
 import org.junit.After
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.io.IOException
@@ -40,6 +41,7 @@ class VerifyCredentialsTest {
     private var mock: ConnectionMock by Delegates.notNull()
     private var keyStored: String? = null
     private var secretStored: String? = null
+
     @Before
     @Throws(Exception::class)
     fun setUp() {
@@ -68,23 +70,23 @@ class VerifyCredentialsTest {
     fun testVerifyCredentials() {
         mock.addResponse(org.andstatus.app.tests.R.raw.verify_credentials_twitter)
         val actor = connection.verifyCredentials(Optional.empty()).get()
-        Assert.assertEquals("Actor's oid is actorOid of this account", DemoData.demoData.twitterTestAccountActorOid, actor.oid)
+        assertEquals("Actor's oid is actorOid of this account", DemoData.demoData.twitterTestAccountActorOid, actor.oid)
         val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
         val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(mock.getData().getAccountName())
-        builder.onCredentialsVerified(actor)
-        Assert.assertTrue("Account is persistent", builder.isPersistent())
+        builder.onCredentialsVerified(actor).onFailure { e -> AssertionError("Failed: $e" ) }
+        assertTrue("Account is persistent", builder.isPersistent())
         val actorId = builder.myAccount.actorId
-        Assert.assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0L)
-        Assert.assertEquals("Account actorOid", builder.myAccount.getActorOid(), actor.oid)
-        Assert.assertEquals("Actor in the database for id=$actorId",
+        assertTrue("Account " + actor.getUsername() + " has ActorId", actorId != 0L)
+        assertEquals("Account actorOid", builder.myAccount.getActorOid(), actor.oid)
+        assertEquals("Actor in the database for id=$actorId",
                 actor.oid,
                 MyQuery.idToOid( MyContextHolder.myContextHolder.getNow(), OidEnum.ACTOR_OID, actorId, 0))
         val noteOid = "383296535213002752"
         val noteId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, noteOid)
-        Assert.assertTrue("Note not found", noteId != 0L)
+        assertTrue("Note not found", noteId != 0L)
         val actorIdM = MyQuery.noteIdToActorId(NoteTable.AUTHOR_ID, noteId)
-        Assert.assertEquals("Note not by " + actor.getUsername() + " found", actorId, actorIdM)
-        Assert.assertEquals("Note permalink at twitter",
+        assertEquals("Note not by " + actor.getUsername() + " found", actorId, actorIdM)
+        assertEquals("Note permalink at twitter",
                 "https://" + origin.fixUriForPermalink(UriUtils.fromUrl(origin.url)).host
                         + "/"
                         + builder.myAccount.username + "/status/" + noteOid,

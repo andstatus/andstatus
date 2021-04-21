@@ -51,7 +51,7 @@ class AsyncTaskLauncher<Params> {
         } catch (e: Exception) {
             val msgLog = """${asyncTask.toString()} Launching task ${threadPoolInfo()}"""
             MyLog.w(objTag, msgLog, e)
-            Try.failure(Exception(""" ${e.message} $msgLog """.trimIndent(), e))
+            Try.failure(Exception("${e.message} $msgLog", e))
         }
     }
 
@@ -180,10 +180,7 @@ class AsyncTaskLauncher<Params> {
             val builder = getLaunchedTasksInfo()
             builder.append("\nThread pools:")
             for (pool in PoolEnum.values()) {
-                builder.append("""
-    
-    ${pool.name}: ${getExecutor(pool).toString()}
-    """.trimIndent())
+                builder.append("\n${pool.name}: ${getExecutor(pool)}")
             }
             return builder.toString()
         }

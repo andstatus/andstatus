@@ -136,10 +136,8 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
     private fun addProgressMessage(message: CharSequence?) {
         progressCounter++
         val progressLog = findViewById<TextView?>(R.id.progress_log)
-        val log = """
-            ${Integer.toString(progressCounter)}. $message
-            ${progressLog.text}
-            """.trimIndent()
+        val log = "${Integer.toString(progressCounter)}. $message" +
+                "\n${progressLog.text}"
         progressLog.text = log
     }
 

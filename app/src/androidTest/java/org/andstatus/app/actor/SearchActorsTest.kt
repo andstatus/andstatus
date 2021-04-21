@@ -44,14 +44,8 @@ class SearchActorsTest : ActivityTest<ActorsScreen>() {
     fun testSearchActor() {
         TestSuite.waitForListLoaded(activity, 2)
         val listItems = activity.getListLoader().getList()
-        Assert.assertTrue("""
-    Found only ${listItems.size}items
-    $listItems
-    """.trimIndent(), listItems.size > 1)
+        Assert.assertTrue("Found only ${listItems.size}items\n$listItems", listItems.size > 1)
         val actor: Actor = ActorsScreenTest.getByActorOid(listItems, DemoData.demoData.pumpioTestAccountActorOid)
-        Assert.assertEquals("""
-    Actor was not found
-    $listItems
-    """.trimIndent(), DemoData.demoData.pumpioTestAccountActorOid, actor.oid)
+        Assert.assertEquals("Actor was not found\n$listItems", DemoData.demoData.pumpioTestAccountActorOid, actor.oid)
     }
 }

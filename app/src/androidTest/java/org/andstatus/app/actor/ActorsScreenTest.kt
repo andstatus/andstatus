@@ -99,10 +99,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
                 break
             }
         }
-        Assert.assertTrue("""
-    No view item. $logMsg
-    The note was not found in the timeline $timelineData
-    """.trimIndent(), item.nonEmpty)
+        Assert.assertTrue("No view item. $logMsg\nThe note was not found in the timeline $timelineData", item.nonEmpty)
         Assert.assertTrue("Invoked Context menu for $logMsg", helper.invokeContextMenuAction4ListItemId(method,
                 item.getId(), NoteContextMenuItem.ACTORS_OF_NOTE, org.andstatus.app.R.id.note_wrapper))
         val actorsScreen = helper.waitForNextActivity(method, 25000) as ActorsScreen

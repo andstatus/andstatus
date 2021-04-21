@@ -572,10 +572,7 @@ object MyLog {
 
     fun databaseIsNull(message: Supplier<Any?>): String {
         if (!isVerboseEnabled()) return "Database is null"
-        val msgLog = """
-               Database is null. ${message.get()}
-               ${getStackTrace(Exception())}
-               """.trimIndent()
+        val msgLog = "Database is null. ${message.get()}\n${getStackTrace(Exception())}"
         v(TAG, msgLog)
         return msgLog
     }

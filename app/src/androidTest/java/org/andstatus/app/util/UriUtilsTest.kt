@@ -49,10 +49,8 @@ class UriUtilsTest {
     @Test
     @Throws(JSONException::class)
     fun testFromJson() {
-        val jso = JSONObject("""
-    {"profile_image_url":"http://a0.twimg.com/profile_images/36_normal.jpeg",
-    "profile_image_url_https":"https://si0.twimg.com/profile_images/37_normal.jpeg"}
-    """.trimIndent())
+        val jso = JSONObject("{\"profile_image_url\":\"http://a0.twimg.com/profile_images/36_normal.jpeg\"" +
+                ",\n\"profile_image_url_https\":\"https://si0.twimg.com/profile_images/37_normal.jpeg\"}")
         var uri = UriUtils.fromAlternativeTags(jso, "profile_image_url_https", "profile_image_url")
         Assert.assertEquals("https://si0.twimg.com/profile_images/37_normal.jpeg", uri.toString())
         uri = UriUtils.fromAlternativeTags(jso, "profile_image_url", "profile_image_url_https")

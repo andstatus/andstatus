@@ -111,10 +111,7 @@ class ConnectionActivityPub : Connection() {
             ApObjectType.COLLECTION, ApObjectType.ORDERED_COLLECTION -> actorFromCollectionTypeJson(jso)
             ApObjectType.UNKNOWN -> Actor.EMPTY
             else -> {
-                MyLog.w(TAG, """
-     Unexpected object type for Actor: ${ApObjectType.fromJson(jso)}, JSON:
-     $jso
-     """.trimIndent())
+                MyLog.w(TAG, "Unexpected object type for Actor: ${ApObjectType.fromJson(jso)}, JSON:\n$jso")
                 Actor.EMPTY
             }
         }

@@ -63,12 +63,8 @@ class InstanceForNewAccountFragment : Fragment() {
     private fun prepareScreen(activity: AccountSettingsActivity) {
         val instanceTextView = activity.findFragmentViewById(R.id.originInstance) as TextView?
         if (instanceTextView != null) {
-            val hint = """
-                ${getText(R.string.hint_which_instance)}
-                
-                ${getText(if (originType === OriginType.MASTODON) R.string.host_hint_mastodon else R.string.host_hint)}
-                """.trimIndent()
-            instanceTextView.hint = hint
+            instanceTextView.hint = getText(R.string.hint_which_instance).toString() + "\n\n" +
+                getText(if (originType === OriginType.MASTODON) R.string.host_hint_mastodon else R.string.host_hint)
             if (origin.nonEmpty) {
                 instanceTextView.text = origin.getHost()
             }

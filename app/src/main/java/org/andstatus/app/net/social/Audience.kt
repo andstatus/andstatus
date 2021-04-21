@@ -218,11 +218,11 @@ class Audience(val origin: Origin) {
             prevAudience.findSame(actor).onFailure { e: Throwable? -> toAdd.add(actor) }
         }
         if (!toDelete.isEmpty() || !toAdd.isEmpty()) {
-            MyLog.d(TAG, """
-     Audience differs, noteId:$noteId,
-     prev: $prevAudience
-     new: $this${if (!toDelete.isEmpty()) "\ntoDelete: $toDelete" else ""}${if (!toAdd.isEmpty()) "\ntoAdd: $toAdd" else ""}
-     """.trimIndent()
+            MyLog.d(TAG, "Audience differs, noteId:$noteId," +
+                    "\nprev: $prevAudience" +
+                    "\nnew: $this" +
+                    (if (!toDelete.isEmpty()) "\ntoDelete: $toDelete" else "") +
+                    if (!toAdd.isEmpty()) "\ntoAdd: $toAdd" else ""
             )
         }
         if (!countOnly) try {

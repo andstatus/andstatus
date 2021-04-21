@@ -79,10 +79,7 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem>() {
         val invoked = helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper)
         val actor1 = activity.getContextMenu()?.getSelectedActingAccount() ?: MyAccount.EMPTY
-        logMsg += """
-            ;${if (invoked) "" else " failed to invoke context menu 1,"}
-            actor1=$actor1
-            """.trimIndent()
+        logMsg += ";${if (invoked) "" else " failed to invoke context menu 1,"}\nactor1=$actor1"
         if (activity.getListData() !== listData) return false
         Assert.assertTrue("Actor is not valid. $logMsg", actor1.isValid)
         Assert.assertEquals(logMsg, origin, actor1.origin)
@@ -95,10 +92,7 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem>() {
         val invoked2 = helper.invokeContextMenuAction4ListItemId(method, listItemId,
                 NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT, R.id.note_wrapper)
         val actor2 = activity.getContextMenu()?.getSelectedActingAccount()
-        logMsg += """
-            ;${if (invoked2) "" else " failed to invoke context menu 2,"}
-            actor2=$actor2
-            """.trimIndent()
+        logMsg += ";${if (invoked2) "" else " failed to invoke context menu 2,"}\nactor2=$actor2"
         if (activity.getListData() !== listData) return false
         Assert.assertNotEquals(logMsg, actor1, actor2)
         return true

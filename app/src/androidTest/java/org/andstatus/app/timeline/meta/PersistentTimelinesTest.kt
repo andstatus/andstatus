@@ -173,11 +173,7 @@ class PersistentTimelinesTest {
                 .findFirst().orElseGet { myContext.timelines().get(timelineType, ma1.actor, ma1.origin) }
         Assert.assertEquals("Should be not combined $timeline1", false, timeline1.isCombined)
         val timeline2 = timeline1.fromMyAccount(myContext, ma2)
-        Assert.assertEquals("""
-    Should be not combined 
-    ${timeline2}from:
-    $timeline1
-    """.trimIndent(),
+        Assert.assertEquals("Should be not combined \n${timeline2}from:\n$timeline1",
                 false, timeline2.isCombined)
         if (timelineType.isForUser()) {
             Assert.assertEquals("Account should change $timeline2", ma2, timeline2.myAccountToSync)

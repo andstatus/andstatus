@@ -277,10 +277,7 @@ class ConnectionGnuSocialTest {
         val spannable = SpanUtil.textToSpannable(activity.getNote().content, TextMediaType.HTML,
                 activity.audience())
         val spans = spannable.getSpans(0, spannable.length - 1, MyUrlSpan::class.java)
-        Assert.assertEquals("""
-    Link to hashtag ${Arrays.toString(spans)}
-    $activity
-    """.trimIndent(), TimelineType.SEARCH,
+        Assert.assertEquals("Link to hashtag ${Arrays.toString(spans)}\n$activity", TimelineType.SEARCH,
                 Arrays.stream(spans).filter { span: MyUrlSpan -> span.getURL()?.contains("/search/%23Hubzilla") == true }.findAny()
                         .orElse(MyUrlSpan.Companion.EMPTY).data.getTimeline().timelineType)
     }
