@@ -657,9 +657,11 @@ class AccountSettingsActivity : MyActivity() {
             }
 
     override fun onResume() {
+        MyLog.v(TAG) { "onResume: ${state.accountAction}, ${state.builder}" }
         super.onResume()
         MyContextHolder.myContextHolder.getNow().setInForeground(true)
         if (restartMeIfNeeded()) return
+
         MyServiceManager.setServiceUnavailable()
         MyServiceManager.stopService()
         updateScreen()
@@ -1203,8 +1205,8 @@ class AccountSettingsActivity : MyActivity() {
                         MyLog.v(this, e)
                         TaskResult(status, e.toString())
                     }
-                    .recover(NonFatalException::class.java) { e: NonFatalException ->
-                        TaskResult(ResultStatus.CONNECTION_EXCEPTION, e.message)
+                    .recover(Exception::class.java) { e: Exception ->
+                        TaskResult(ResultStatus.CONNECTION_EXCEPTION, "${e.message} (${e.javaClass.name})")
                     }
                     .get()
         }
@@ -1229,21 +1231,21 @@ class AccountSettingsActivity : MyActivity() {
                 else -> {
                 }
             }
-            if (activityOnFinish == ActivityOnFinish.HOME) {
-                finish()
-                return
-            }
             if (!skip) {
                 // Note: MyAccount was already saved inside MyAccount.verifyCredentials
                 // Now we only have to deal with the state
                 state.actionSucceeded = resultOut.isSuccess()
                 if (resultOut.isSuccess()) {
                     state.actionCompleted = true
-                    if (state.accountAction.compareTo(Intent.ACTION_INSERT) == 0) {
+                    if (state.accountAction == Intent.ACTION_INSERT) {
                         state.accountAction = Intent.ACTION_EDIT
                     }
                 }
                 somethingIsBeingProcessed = false
+            }
+            if (activityOnFinish == ActivityOnFinish.HOME) {
+                finish()
+                return
             }
             updateScreen()
             appendError(errorMessage)

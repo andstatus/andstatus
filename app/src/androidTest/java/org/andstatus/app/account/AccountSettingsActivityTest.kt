@@ -23,6 +23,7 @@ import org.andstatus.app.FirstActivity
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.context.ActivityTest
+import org.andstatus.app.context.DemoData
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
 import org.andstatus.app.data.DbUtils
@@ -30,13 +31,19 @@ import org.andstatus.app.origin.OriginType
 import org.andstatus.app.origin.PersistentOriginList
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.MyLog
-import org.junit.Assert
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Test
 
 /**
  * @author yvolk@yurivolkov.com
  */
-class AccountSettingsActivityTest : ActivityTest<AccountSettingsActivity>() {
+open class AccountSettingsActivityTest() : ActivityTest<AccountSettingsActivity>() {
+    open val accountAction: String = Intent.ACTION_EDIT
+    open val accountNameString: String = DemoData.demoData.conversationAccountName
+
     private var ma: MyAccount = MyAccount.EMPTY
 
     override fun getActivityClass(): Class<AccountSettingsActivity> {
@@ -45,23 +52,25 @@ class AccountSettingsActivityTest : ActivityTest<AccountSettingsActivity>() {
 
     override fun getActivityIntent(): Intent {
         TestSuite.initializeWithAccounts(this)
-        val currentAccount = MyContextHolder.myContextHolder.getNow().accounts().currentAccount
-        ma = currentAccount
-        if (currentAccount.nonValid) Assert.fail("No persistent accounts yet")
-        return Intent().putExtra(IntentExtra.ACCOUNT_NAME.key, currentAccount.getAccountName())
+        ma = MyContextHolder.myContextHolder.getNow().accounts().fromAccountName(accountNameString)
+        if (ma.nonValid) fail("No persistent account '$accountNameString'")
+        return Intent().putExtra(IntentExtra.ACCOUNT_NAME.key, accountNameString)
     }
 
     @Test
     @Throws(InterruptedException::class)
     fun test() {
         val method = "test"
-        val addAccountOrVerifyCredentials = activity.findViewById<View?>(R.id.add_account) as Button
-        Assert.assertTrue(addAccountOrVerifyCredentials != null)
+        val addAccountOrVerifyCredentials = activity.findViewById<View?>(R.id.add_account) as Button?
+        assertTrue(addAccountOrVerifyCredentials != null)
         assertUniqueNameTextField(R.id.uniqueName)
         assertUniqueNameTextField(R.id.uniqueName_readonly)
+        assertEquals(accountAction, activity.state.accountAction)
         DbUtils.waitMs(method, 500)
-        Assert.assertEquals("MyService is available", false, MyServiceManager.Companion.isServiceAvailable())
-        openingOriginList()
+        assertEquals("MyService is available", false, MyServiceManager.isServiceAvailable())
+        if (accountNameString == DemoData.demoData.conversationAccountName) {
+            openingOriginList()
+        }
         DbUtils.waitMs(method, 500)
         activity.finish()
         DbUtils.waitMs(method, 500)
@@ -69,10 +78,10 @@ class AccountSettingsActivityTest : ActivityTest<AccountSettingsActivity>() {
         DbUtils.waitMs(method, 500)
     }
 
-    private fun assertUniqueNameTextField(viewId: Int) {
+    open fun assertUniqueNameTextField(viewId: Int) {
         val uniqueNameText = activity.findViewById<View?>(viewId) as TextView?
-        Assert.assertTrue(uniqueNameText != null)
-        Assert.assertEquals("Unique name of selected account $ma", ma.getOAccountName().getUniqueName(), uniqueNameText?.text.toString())
+        assertTrue(uniqueNameText != null)
+        assertEquals("Unique name of selected account $ma", ma.getOAccountName().getUniqueName(), uniqueNameText?.text.toString())
     }
 
     @Throws(InterruptedException::class)
@@ -90,7 +99,7 @@ class AccountSettingsActivityTest : ActivityTest<AccountSettingsActivity>() {
         val nextActivity = getInstrumentation().waitForMonitorWithTimeout(activityMonitor, 15000)
         MyLog.v(this, method + "-Log after waitForMonitor: "
                 + nextActivity)
-        Assert.assertNotNull("Next activity is opened and captured", nextActivity)
+        assertNotNull("Next activity is opened and captured", nextActivity)
         TestSuite.waitForListLoaded(nextActivity, 6)
         DbUtils.waitMs(method, 500)
         nextActivity.finish()
