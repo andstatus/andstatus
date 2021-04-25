@@ -185,8 +185,8 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
 
         So we split clipboard copying functions into two tests
         ...but this doesn't help...
+        Update: This works on 2021-04-25. Many changes done...
     */
-    @Ignore("We see crash in the test...")
     @Test
     @Throws(InterruptedException::class)
     fun testContextMenuWhileEditing1() {
@@ -203,7 +203,6 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
         Assert.assertEquals(logMsg, content, getClipboardText(method))
     }
 
-    @Ignore("We see crash in the test...")
     @Test
     @Throws(InterruptedException::class)
     fun testContextMenuWhileEditing2() {
