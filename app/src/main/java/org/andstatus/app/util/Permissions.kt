@@ -66,8 +66,6 @@ object Permissions {
     }
 
     enum class PermissionType(val manifestPermission: String) {
-        READ_EXTERNAL_STORAGE(Manifest.permission.READ_EXTERNAL_STORAGE),
-        WRITE_EXTERNAL_STORAGE(Manifest.permission.WRITE_EXTERNAL_STORAGE),
         GET_ACCOUNTS(Manifest.permission.GET_ACCOUNTS);
     }
 }

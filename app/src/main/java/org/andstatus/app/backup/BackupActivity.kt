@@ -41,7 +41,6 @@ class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         mLayoutId = R.layout.backup
         super.onCreate(savedInstanceState)
-        Permissions.checkPermissionAndRequestIt(this, PermissionType.WRITE_EXTERNAL_STORAGE)
         findViewById<View?>(R.id.button_backup).setOnClickListener { v: View? -> doBackup(v) }
         findViewById<View?>(R.id.backup_folder).setOnClickListener { v: View? -> selectBackupFolder(v) }
         findViewById<View?>(R.id.button_select_backup_folder).setOnClickListener { v: View? -> selectBackupFolder(v) }

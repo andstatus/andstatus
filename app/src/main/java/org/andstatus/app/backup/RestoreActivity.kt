@@ -42,7 +42,6 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         mLayoutId = R.layout.restore
         super.onCreate(savedInstanceState)
-        Permissions.checkPermissionAndRequestIt(this, PermissionType.READ_EXTERNAL_STORAGE)
         findViewById<View?>(R.id.button_restore).setOnClickListener { v: View? -> doRestore(v) }
         findViewById<View?>(R.id.backup_folder).setOnClickListener { v: View? -> selectBackupFolder(v) }
         findViewById<View?>(R.id.button_select_backup_folder).setOnClickListener { v: View? -> selectBackupFolder(v) }
