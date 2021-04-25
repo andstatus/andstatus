@@ -481,20 +481,16 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
     }
 
     fun reorderAccounts(reorderedItems: MutableList<MyAccount>) {
-        var order = 0
-        var changed = false
-        for (myAccount in reorderedItems) {
-            order++
-            if (myAccount.getOrder() != order) {
-                changed = true
+        var count = 0
+        reorderedItems.mapIndexed { index, myAccount ->
+            if (myAccount.getOrder() != index) {
+                count++
                 val builder: MyAccount.Builder = MyAccount.Builder.fromMyAccount(myAccount)
-                builder.setOrder(order)
+                builder.setOrder(index)
                 builder.save()
             }
         }
-        if (changed) {
-            MyPreferences.onPreferencesChanged()
-        }
+        MyLog.d(this, "Reordered $count accounts")
     }
 
     fun addIfAbsent(myAccount: MyAccount) {

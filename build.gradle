@@ -26,12 +26,12 @@ buildscript {
         httpMimeVersion = '4.5.12'
         httpclientVersion = '4.5.8'       // https://github.com/smarek/httpclient-android
         jcipAnnotationsVersion = '1.0-1'  // http://stephenc.github.io/jcip-annotations/dependency-info.html
-        junitVersion = '4.13'
+        junitVersion = '4.13.2'
         kotlin_version = '1.4.32'
         ktxVersion='1.3.2'
         materialVersion = '1.3.0'         // https://mvnrepository.com/artifact/com.google.android.material/material
         preferenceVersion = '1.1.1'
-        recyclerViewVersion = '1.1.0'
+        recyclerViewVersion = '1.2.0'
         screenshottyVersion = '1.0.2'     // https://github.com/bolteu/screenshotty
         scribejavaCoreVersion = '6.9.0'   // https://github.com/scribejava/scribejava
         signPostVersion = '1.2.1.2'       // https://mvnrepository.com/artifact/oauth.signpost/signpost-core

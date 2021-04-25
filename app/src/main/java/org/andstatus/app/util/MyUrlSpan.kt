@@ -141,28 +141,23 @@ class MyUrlSpan : URLSpan {
             }
         }
 
-        fun showLabel(activity: Activity, @IdRes viewId: Int, @StringRes stringResId: Int) {
+        fun showLabel(activity: Activity, @IdRes viewId: Int, @StringRes stringResId: Int) =
             showText(activity.findViewById(viewId), activity.getText(stringResId).toString(), TextMediaType.UNKNOWN, false, false)
-        }
 
-        fun showAsPlainText(parentView: View, @IdRes viewId: Int, text: String?, showIfEmpty: Boolean) {
+        fun showAsPlainText(parentView: View, @IdRes viewId: Int, text: String?, showIfEmpty: Boolean) =
             showText(parentView, viewId, MyHtml.htmlToCompactPlainText(text), TextMediaType.PLAIN, false, showIfEmpty)
-        }
 
-        fun showText(parentView: View, @IdRes viewId: Int, text: String?, linkify: Boolean, showIfEmpty: Boolean) {
+        fun showText(parentView: View, @IdRes viewId: Int, text: String?, linkify: Boolean, showIfEmpty: Boolean) =
             showText(parentView, viewId, text, TextMediaType.UNKNOWN, linkify, showIfEmpty)
-        }
 
-        fun showText(parentView: View, @IdRes viewId: Int, text: String?, mediaType: TextMediaType?, linkify: Boolean, showIfEmpty: Boolean) {
+        fun showText(parentView: View, @IdRes viewId: Int, text: String?, mediaType: TextMediaType?, linkify: Boolean, showIfEmpty: Boolean) =
             showText(parentView.findViewById(viewId), text, mediaType, linkify, showIfEmpty)
-        }
 
-        fun showText(textView: TextView?, text: String?, mediaType: TextMediaType?, linkify: Boolean, showIfEmpty: Boolean) {
+        fun showText(textView: TextView?, text: String?, mediaType: TextMediaType?, linkify: Boolean, showIfEmpty: Boolean) =
             showSpannable(textView, toSpannable(text, mediaType, linkify), showIfEmpty)
-        }
 
-        fun showSpannable(textView: TextView?, spannable: Spannable, showIfEmpty: Boolean) {
-            if (textView == null) return
+        fun showSpannable(textView: TextView?, spannable: Spannable, showIfEmpty: Boolean): TextView? {
+            if (textView == null) return null
             if (spannable.length == 0) {
                 textView.text = ""
                 ViewUtils.showView(textView, showIfEmpty)
@@ -176,6 +171,7 @@ class MyUrlSpan : URLSpan {
                 }
                 ViewUtils.showView(textView, true)
             }
+            return textView
         }
 
         fun toSpannable(textIn: String?, mediaType: TextMediaType?, linkify: Boolean): Spannable {
