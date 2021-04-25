@@ -59,7 +59,7 @@ class OriginEditor : MyActivity() {
     private var editTextOriginName: EditText? = null
     private var editTextHost: EditText? = null
     private var checkBoxIsSsl: CheckBox? = null
-    private var spinnerSslMode: Spinner? = null
+    internal var spinnerSslMode: Spinner? = null
     private var spinnerMentionAsWebFingerId: Spinner? = null
     private var spinnerUseLegacyHttpProtocol: Spinner? = null
     override fun onCreate(savedInstanceState: Bundle?) {

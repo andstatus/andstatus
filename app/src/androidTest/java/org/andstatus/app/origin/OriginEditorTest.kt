@@ -33,7 +33,7 @@ import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UrlUtils
 import org.junit.After
-import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
@@ -129,27 +129,28 @@ class OriginEditorTest : ActivityTest<OriginEditor>() {
         getInstrumentation().waitForIdleSync()
         DbUtils.waitMs(method, 200)
         val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(originName)
-        Assert.assertEquals("Origin '$originName' added", originName, origin.name)
-        Assert.assertEquals(originType, origin.originType)
+        assertEquals("Origin '$originName' added", originName, origin.name)
+        assertEquals(originType, origin.originType)
         if (hostOrUrl.contains("bad")) {
-            Assert.assertEquals(originOld.url, origin.url)
+            assertEquals(originOld.url, origin.url)
         } else {
             val url2 = UrlUtils.buildUrl(hostOrUrl, isSsl)
             if (url2 != origin.url) {
                 if (!UrlUtils.isHostOnly(url2) && !hostOrUrl.endsWith("/")) {
-                    Assert.assertEquals(UrlUtils.buildUrl("$hostOrUrl/", isSsl), origin.url)
+                    assertEquals(UrlUtils.buildUrl("$hostOrUrl/", isSsl), origin.url)
                 } else {
-                    Assert.assertEquals(UrlUtils.buildUrl(hostOrUrl, isSsl), origin.url)
+                    assertEquals(UrlUtils.buildUrl(hostOrUrl, isSsl), origin.url)
                 }
             }
         }
-        Assert.assertEquals(isSsl, origin.isSsl())
-        Assert.assertEquals(sslMode, origin.getSslMode())
-        Assert.assertEquals(allowHtml, origin.isHtmlContentAllowed())
-        Assert.assertEquals(mentionAsWebFingerId, origin.getMentionAsWebFingerId())
-        Assert.assertEquals(useLegacyHttpProtocol, origin.useLegacyHttpProtocol())
-        Assert.assertEquals(inCombinedGlobalSearch, origin.isInCombinedGlobalSearch())
-        Assert.assertEquals(inCombinedPublicReload, origin.isInCombinedPublicReload())
+        assertEquals(isSsl, origin.isSsl())
+        assertEquals("$origin, Spinner: ${spinnerSslMode.selectedItem}, " +
+                "in activity: ${activity.spinnerSslMode?.selectedItem}", sslMode, origin.getSslMode())
+        assertEquals(allowHtml, origin.isHtmlContentAllowed())
+        assertEquals(mentionAsWebFingerId, origin.getMentionAsWebFingerId())
+        assertEquals(useLegacyHttpProtocol, origin.useLegacyHttpProtocol())
+        assertEquals(inCombinedGlobalSearch, origin.isInCombinedGlobalSearch())
+        assertEquals(inCombinedPublicReload, origin.isInCombinedPublicReload())
     }
 
     @After
