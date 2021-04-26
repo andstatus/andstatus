@@ -87,9 +87,12 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
     }
 
     override fun entryRemoved(evicted: Boolean, key: String, oldValue: CachedImage, newValue: CachedImage?) {
-        if (oldValue.isBitmapRecyclable()) {
-            oldValue.makeExpired()
-            recycledBitmaps.add(oldValue.getBitmap())
+        oldValue.makeExpired()?.let {
+            if (oldValue.foreignBitmap) {
+                it.recycle()
+            } else {
+                recycledBitmaps.add(it)
+            }
         }
     }
 
@@ -139,11 +142,11 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
 
     fun bitmapToCachedImage(mediaFile: MediaFile, bitmap: Bitmap): CachedImage {
         val srcRect = Rect(0, 0, bitmap.width, bitmap.height)
-        var background = getSuitableRecycledBitmap(srcRect)
+        var background = recycledBitmaps.poll()
+        var foreignBitmap: Boolean = background == null
         if (background == null) {
-            MyLog.w(mediaFile, "No suitable bitmap found to cache id:${mediaFile.id}" +
+            MyLog.w(mediaFile, "ForeignBitmap: No bitmap to cache id:${mediaFile.id}" +
                     " ${srcRect.width()}x${srcRect.height()} '${mediaFile.getPath()}'")
-            // TODO: Fix cache!
             background = bitmap
         } else {
             val canvas = Canvas(background)
@@ -159,13 +162,13 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
                 }
                 bitmap.recycle()
             } catch (e: Exception) {
-                // TODO: better approach needed... maybe fail?!
-                MyLog.w(TAG, "Drawing bitmap of $mediaFile", e)
                 recycledBitmaps.add(background)
+                foreignBitmap = true
                 background = bitmap
+                MyLog.w(TAG, "ForeignBitmap: Drawing bitmap of $mediaFile", e)
             }
         }
-        return CachedImage(mediaFile.id, background, srcRect)
+        return CachedImage(mediaFile.id, background, srcRect, foreignBitmap)
     }
 
     /**
@@ -179,10 +182,6 @@ class ImageCache(context: Context, name: CacheName, maxBitmapHeightWidthIn: Int,
         val shader = BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
         paint.shader = shader
         canvas.drawOval(rectF, paint)
-    }
-
-    private fun getSuitableRecycledBitmap(srcRect: Rect?): Bitmap? {
-        return recycledBitmaps.poll()
     }
 
     private fun imageFileToBitmap(mediaFile: MediaFile): Bitmap? {
