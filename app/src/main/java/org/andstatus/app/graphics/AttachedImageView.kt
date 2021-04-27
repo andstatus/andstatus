@@ -42,9 +42,11 @@ class AttachedImageView : IdentifiableImageView {
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val method = "onMeasure"
-        if (heightLocked && heightMeasureSpecStored != 0) {
-            saveMeasureSpec(widthMeasureSpecStored, heightMeasureSpecStored)
-            setMeasuredDimension(widthMeasureSpecStored, heightMeasureSpecStored)
+        val widthStored = MeasureSpec.getSize(widthMeasureSpecStored)
+        val heightStored = MeasureSpec.getSize(heightMeasureSpecStored)
+        if (heightLocked && widthStored > 0 && heightStored > 0) {
+            saveMeasureSpec("1", widthMeasureSpecStored, heightMeasureSpecStored)
+            setMeasuredDimension(widthStored, heightStored)
             return
         }
         if (referencedView == null) {
@@ -52,29 +54,33 @@ class AttachedImageView : IdentifiableImageView {
         }
         if (referencedView == null) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-            saveMeasureSpec(measuredWidthAndState, measuredHeightAndState)
+            saveMeasureSpec("2",
+                    MeasureSpec.makeMeasureSpec(measuredWidth, MeasureSpec.AT_MOST),
+                    MeasureSpec.makeMeasureSpec(measuredHeight, MeasureSpec.AT_MOST)
+            )
             return
         }
-        val refWidthPixels = referencedView?.getMeasuredWidth() ?: 1
-        var height = Math.floor((refWidthPixels * getDrawableHeightToWidthRatio()).toDouble()).toInt()
-        logIt(method, refWidthPixels, widthMeasureSpec, height.toFloat())
-        var mode = MeasureSpec.EXACTLY
-        if (height == 0) {
-            height = MAX_HEIGHT
-            mode = MeasureSpec.AT_MOST
+        val maxWidth = getDisplayWidth()
+        val maxHeight = Math.floor (MAX_ATTACHED_IMAGE_PART * getDisplayHeight()).toInt()
+        var width = referencedView?.measuredWidth ?: 0
+        var height = if (width == 0) 0 else Math.floor((width * getDrawableHeightToWidthRatio()).toDouble()).toInt()
+        logMeasures(method, width, widthMeasureSpec, height)
+        var heightMode = MeasureSpec.EXACTLY
+        if (width <= 0 || width > maxWidth) {
+            width = maxWidth
         }
-        if (height > MAX_ATTACHED_IMAGE_PART * getDisplayHeight()) {
-            height = Math.floor(MAX_ATTACHED_IMAGE_PART
-                    * getDisplayHeight()).toInt()
+        if (height <= 0 || height > maxHeight) {
+            height = maxHeight
+            heightMode = MeasureSpec.AT_MOST
         }
         layoutParams.height = height
-        val widthSpec = MeasureSpec.makeMeasureSpec(refWidthPixels, MeasureSpec.EXACTLY)
-        val heightSpec = MeasureSpec.makeMeasureSpec(height, mode)
-        saveMeasureSpec(widthSpec, heightSpec)
-        setMeasuredDimension(widthSpec, heightSpec)
+        val widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY)
+        val heightSpec = MeasureSpec.makeMeasureSpec(height, heightMode)
+        saveMeasureSpec("3", widthSpec, heightSpec)
+        setMeasuredDimension(width, height)
     }
 
-    private fun logIt(method: String, refWidthPixels: Int?, widthMeasureSpec: Int, height: Float) {
+    private fun logMeasures(method: String, refWidth: Int?, widthMeasureSpec: Int, height: Int) {
         if (isInEditMode || !MyLog.isVerboseEnabled()) {
             return
         }
@@ -83,25 +89,30 @@ class AttachedImageView : IdentifiableImageView {
             MyLog.v(this
             ) {
                 (method + ";"
-                        + (if (heightLocked) "locked" else "      ")
-                        + " height=" + height
-                        + ", widthSpec=" + MeasureSpec.toString(widthMeasureSpec)
-                        + if (refWidthPixels == null) "" else " refWidth=$refWidthPixels,")
+                        + ", width=" + MeasureSpec.toString(widthMeasureSpec)
+                        + (if (refWidth == null) "" else ", refWidth=$refWidth")
+                        + ", height=$height "
+                        + (if (heightLocked) "locked" else "")
+                        )
             }
         } catch (e: Exception) {
             Log.i(AttachedImageView::class.java.simpleName, "$method; MyLog class was not found", e)
         }
     }
 
-    private fun saveMeasureSpec(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val method = "onMeasure"
-        logIt(method, null, widthMeasureSpec, heightMeasureSpec.toFloat())
+    private fun saveMeasureSpec(breadCrumb: String, widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val method = "$breadCrumb-saveMeasure"
+        val height = MeasureSpec.getSize(heightMeasureSpec)
+        logMeasures(method, null, widthMeasureSpec, height)
         if (!heightLocked) {
             widthMeasureSpecStored = MeasureSpec.makeMeasureSpec(
                     MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.AT_MOST)
-            heightMeasureSpecStored = MeasureSpec.makeMeasureSpec(
-                    MeasureSpec.getSize(heightMeasureSpec), MeasureSpec.EXACTLY)
+            heightMeasureSpecStored = MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY)
         }
+    }
+
+    fun getDisplayWidth(): Int {
+        return ImageCaches.getDisplaySize(context).x
     }
 
     fun getDisplayHeight(): Int {
