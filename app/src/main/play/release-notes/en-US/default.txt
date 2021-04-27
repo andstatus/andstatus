@@ -1,1 +1,1 @@
-v.58.03 Add "Log out" button to the "Account" screen.
+v.58.04 Fix image resizing in a timeline. Fix Accounts reordering.
