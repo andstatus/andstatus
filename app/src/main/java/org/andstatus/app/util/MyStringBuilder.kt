@@ -16,24 +16,21 @@
 package org.andstatus.app.util
 
 import java.util.*
-import java.util.function.Predicate
-import java.util.function.Supplier
-import java.util.function.UnaryOperator
 
 /** Adds convenience methods to [StringBuilder]  */
-class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder = StringBuilder()) : CharSequence, IsEmpty {
-    private constructor(text: CharSequence) : this(StringBuilder(text)) {}
+class MyStringBuilder constructor(val builder: StringBuilder = StringBuilder()) : CharSequence, IsEmpty {
+    private constructor(text: CharSequence) : this(StringBuilder(text))
 
     fun <T> withCommaNonEmpty(label: CharSequence?, obj: T?): MyStringBuilder {
         return withComma(label, obj, { it -> nonEmptyObj(it) })
     }
 
-    fun <T> withComma(label: CharSequence?, obj: T?, predicate: Predicate<T>): MyStringBuilder {
-        return if (obj == null || !predicate.test(obj)) this else withComma(label, obj)
+    fun <T> withComma(label: CharSequence?, obj: T?, predicate: (T) -> Boolean): MyStringBuilder {
+        return if (obj == null || !predicate(obj)) this else withComma(label, obj)
     }
 
-    fun withComma(label: CharSequence?, obj: Any?, filter: Supplier<Boolean>): MyStringBuilder {
-        return if (obj == null || !filter.get()) this else withComma(label, obj)
+    fun withComma(label: CharSequence?, obj: Any?, filter: () -> Boolean): MyStringBuilder {
+        return if (obj == null || !filter()) this else withComma(label, obj)
     }
 
     fun withComma(label: CharSequence?, obj: Any?): MyStringBuilder {
@@ -68,7 +65,7 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder = Str
         if (obj == null) return this
         val text = obj.toString()
         if (text.isEmpty()) return this
-        if (builder.length > 0) builder.append(separator)
+        if (builder.isNotEmpty()) builder.append(separator)
         if (!label.isNullOrEmpty()) builder.append(label).append(": ")
         if (quoted) builder.append("\"")
         builder.append(text)
@@ -97,15 +94,15 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder = Str
     }
 
     fun prependWithSeparator(text: CharSequence, separator: String): MyStringBuilder {
-        if (text.length > 0) {
+        if (text.isNotEmpty()) {
             builder.insert(0, separator)
             builder.insert(0, text)
         }
         return this
     }
 
-    fun apply(unaryOperator: UnaryOperator<MyStringBuilder>): MyStringBuilder {
-        return unaryOperator.apply(this)
+    fun apply(unaryOperator: (MyStringBuilder) -> MyStringBuilder): MyStringBuilder {
+        return unaryOperator(this)
     }
 
     override val isEmpty: Boolean
@@ -118,7 +115,7 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder = Str
     }
 
     companion object {
-        val COMMA: String = ","
+        const val COMMA: String = ","
         fun of(text: CharSequence?): MyStringBuilder {
             return MyStringBuilder(text ?: "")
         }
@@ -170,14 +167,16 @@ class MyStringBuilder @JvmOverloads constructor(val builder: StringBuilder = Str
             } else tag
         }
 
-        fun <T> nonEmptyObj(obj: T?): Boolean {
+        private fun <T> nonEmptyObj(obj: T?): Boolean {
             return !isEmptyObj(obj)
         }
 
-        fun <T> isEmptyObj(obj: T?): Boolean {
-            if (obj is IsEmpty) return (obj as IsEmpty).isEmpty
-            if (obj is Number) return (obj as Number).toLong() == 0L
-            return if (obj is String) (obj as String).isEmpty() else obj == null
+        private fun <T> isEmptyObj(obj: T?): Boolean = when (obj) {
+            null -> true
+            is IsEmpty -> obj.isEmpty
+            is Number -> obj.toLong() == 0L
+            is String -> obj.isEmpty()
+            else -> false
         }
 
         fun appendWithSpace(builder: StringBuilder, text: CharSequence?): StringBuilder {

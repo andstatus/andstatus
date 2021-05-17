@@ -10,7 +10,7 @@ buildscript {
 
     ext {
         compileSdkVersion = 29 as int
-        buildToolsVersion = '29.0.3'
+        buildToolsVersion = '30.0.3'
         minSdkVersion = 24 as int
         targetSdkVersion = 29 as int
 
@@ -27,7 +27,7 @@ buildscript {
         httpclientVersion = '4.5.8'       // https://github.com/smarek/httpclient-android
         jcipAnnotationsVersion = '1.0-1'  // http://stephenc.github.io/jcip-annotations/dependency-info.html
         junitVersion = '4.13.2'
-        kotlin_version = '1.4.32'
+        kotlin_version = '1.5.0'
         ktxVersion='1.3.2'
         materialVersion = '1.3.0'         // https://mvnrepository.com/artifact/com.google.android.material/material
         preferenceVersion = '1.1.1'
@@ -42,7 +42,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.3'
+        classpath 'com.android.tools.build:gradle:4.2.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
         // NOTE: Do not place your application dependencies here; they belong
