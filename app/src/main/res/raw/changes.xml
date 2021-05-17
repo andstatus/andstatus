@@ -29,14 +29,16 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
-    <release android:versionName="58.01" android:versionCode="340"
-        versionDate="2021-04-06"
+    <release android:versionName="58.04" android:versionCode="343"
+        versionDate="2021-04-27"
         versionTitle="Background syncing and migration to Kotlin">
         <changes>
             <change>Fixed background syncing on Android 9+.</change>
             <change>Fixed downloads (avatars/attachments) with redirects, in which location is relative
                 or absolute path without host and protocol.</change>
             <change>AndStatus fully migrated from Java to <a href="https://kotlinlang.org/">Kotlin</a>.</change>
+            <change>Add "Log out" button to the "Account" screen.</change>
+            <change>Fix image resizing in a timeline.</change>
         </changes>
     </release>
     <release android:versionName="57.07" android:versionCode="338"
