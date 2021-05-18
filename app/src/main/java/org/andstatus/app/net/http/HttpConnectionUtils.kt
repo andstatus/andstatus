@@ -121,8 +121,8 @@ object HttpConnectionUtils {
             }
             if (size > request.maxSizeBytes) {
                 result.setException(ConnectionException.hardConnectionException(
-                        "File, downloaded from \"" + result.getUrl() + "\", is too large: at least "
-                                + Formatter.formatShortFileSize(request.myContext().context(), size),
+                    "File, downloaded from '${result.url}', is too large: at least " +
+                            Formatter.formatShortFileSize(request.myContext().context(), size),
                         null))
                 return true
             }

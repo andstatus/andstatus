@@ -31,6 +31,8 @@ import org.andstatus.app.util.MyUrlSpan
 import org.andstatus.app.util.RelativeTime
 import org.andstatus.app.util.TriState
 import org.andstatus.app.util.UriUtilsTest
+import org.hamcrest.CoreMatchers.containsString
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -188,7 +190,7 @@ class ConnectionGnuSocialTest {
         Assert.assertEquals("conversationOid", "9118253", note.conversationOid)
         Assert.assertEquals(1, mock.getHttpMock().getRequestsCounter())
         val result = mock.getHttpMock().getResults()[0]
-        Assert.assertTrue("URL doesn't contain note oid: " + result.getUrl(), result.getUrl().contains(NOTE_OID))
+        assertThat(result.url?.toExternalForm() ?: "", containsString(NOTE_OID))
         Assert.assertEquals("Activity oid; $activity", "10341833", activity.getOid())
         Assert.assertEquals("Actor; $activity", "andstatus@loadaverage.org", activity.getActor().getWebFingerId())
         Assert.assertEquals("Author; $activity", "igor@herds.eu", activity.getAuthor().getWebFingerId())

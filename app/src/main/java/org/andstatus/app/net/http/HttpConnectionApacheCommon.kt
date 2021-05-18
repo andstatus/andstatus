@@ -28,12 +28,13 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.util.MyLog
 import org.json.JSONObject
 import java.io.UnsupportedEncodingException
+import java.net.URL
 import java.util.*
 
 class HttpConnectionApacheCommon internal constructor(private val specific: HttpConnectionApacheSpecific, private val data: HttpConnectionData) {
 
     fun postRequest(result: HttpReadResult): HttpReadResult {
-        val httpPost = HttpPost(result.getUrl())
+        val httpPost = HttpPost(result.requiredUrl("POST")?.toExternalForm() ?: return result)
         if (result.request.isLegacyHttpProtocol()) {
             httpPost.protocolVersion = HttpVersion.HTTP_1_0
         }
@@ -70,7 +71,7 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
         try {
             var stop: Boolean
             do {
-                val httpGet = newHttpGet(result.getUrl())
+                val httpGet = newHttpGet(result.requiredUrl("GET") ?: return result)
                 data.optOriginContentType().ifPresent { value: String? -> httpGet.addHeader("Accept", value) }
                 if (result.authenticate()) {
                     specific.httpApacheSetAuthorization(httpGet)
@@ -105,8 +106,8 @@ class HttpConnectionApacheCommon internal constructor(private val specific: Http
         return result
     }
 
-    private fun newHttpGet(url: String): HttpGet {
-        val httpGet = HttpGet(url)
+    private fun newHttpGet(url: URL): HttpGet {
+        val httpGet = HttpGet(url.toExternalForm())
         httpGet.setHeader("User-Agent", HttpConnectionInterface.USER_AGENT)
         return httpGet
     }

@@ -153,10 +153,10 @@ interface HttpConnectionInterface {
         result.redirected = true
         return TryUtils.fromOptional(result.getLocation())
                 .mapFailure { ConnectionException(StatusCode.MOVED, "No 'Location' header on MOVED response") }
-                .flatMap { location: String -> UrlUtils.redirectTo(result.getUrl(), location)}
-                .mapFailure { ConnectionException(StatusCode.MOVED, "Invalid redirect from '${result.getUrl()}'" +
+                .flatMap { location: String -> UrlUtils.redirectTo(result.url, location)}
+                .mapFailure { ConnectionException(StatusCode.MOVED, "Invalid redirect from '${result.url}'" +
                         " to '${result.getLocation()}'") }
-                .map { redirected: URL -> result.setUrl(redirected.toExternalForm()) }
+                .map { redirected: URL -> result.setUrl(redirected) }
                 .onFailure { e: Throwable -> result.setException(e) }
                 .onSuccess { result1: HttpReadResult -> logFollowingRedirects(result1) }
                 .isFailure
@@ -164,7 +164,7 @@ interface HttpConnectionInterface {
 
     fun logFollowingRedirects(result: HttpReadResult) {
         if (MyLog.isVerboseEnabled()) {
-            val builder: MyStringBuilder = MyStringBuilder.of("Following redirect to '" + result.getUrl())
+            val builder: MyStringBuilder = MyStringBuilder.of("Following redirect to '${result.url}'")
             result.appendHeaders(builder)
             MyLog.v(this, builder.toString())
         }

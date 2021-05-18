@@ -111,7 +111,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
 
     override fun postRequest(result: HttpReadResult): HttpReadResult {
         try {
-            val conn = result.getUrlObj()?.openConnection() as HttpURLConnection? ?: return result
+            val conn = result.requiredUrl("PostOAuth")?.openConnection() as HttpURLConnection? ?: return result
             conn.doOutput = true
             conn.doInput = true
             conn.requestMethod = "POST"
@@ -187,7 +187,7 @@ open class HttpConnectionOAuthJavaNet : HttpConnectionOAuth() {
             var redirected = false
             var stop: Boolean
             do {
-                connCopy = result.getUrlObj()?.openConnection() as HttpURLConnection? ?: return result
+                connCopy = result.requiredUrl("GetOAuth")?.openConnection() as HttpURLConnection? ?: return result
                 val conn = connCopy
                 data.optOriginContentType().ifPresent { value: String -> conn.addRequestProperty("Accept", value) }
                 conn.instanceFollowRedirects = false

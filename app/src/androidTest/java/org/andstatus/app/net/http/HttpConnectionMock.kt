@@ -120,8 +120,11 @@ class HttpConnectionMock : HttpConnection() {
             result.readStream("", it)
         }
         results.add(result)
-        MyLog.v(this, method + " num:" + results.size + "; path:'" + result.getUrl()
-                + "', originUrl:'" + data.originUrl + "', instanceId:" + mInstanceId)
+        MyLog.v(
+            this,
+            method + " num:" + results.size + "; path:'" + result.url + "'" +
+                    ", originUrl:'" + data.originUrl + "', instanceId:" + mInstanceId
+        )
         MyLog.v(this, Arrays.toString(Thread.currentThread().stackTrace))
         DbUtils.waitMs("networkDelay", Math.toIntExact(networkDelayMs))
     }
@@ -158,8 +161,9 @@ class HttpConnectionMock : HttpConnection() {
     fun substring2PostedPath(substringToSearch: String): String {
         var found = ""
         for (result in getResults()) {
-            if (result.getUrl().contains(substringToSearch)) {
-                found = result.getUrl()
+            val urlString = result.url?.toExternalForm() ?: ""
+            if (urlString.contains(substringToSearch)) {
+                found = urlString
                 break
             }
         }

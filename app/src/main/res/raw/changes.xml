@@ -29,6 +29,15 @@
             AndStatus Home page is here: <a href="http://andstatus.org">andstatus.org</a>.
         </subtitle>
     </header>
+    <release android:versionName="59.00" android:versionCode="344"
+        versionDate="2021-05-18"
+        versionTitle="Magnet URI as a downloadable object ID">
+        <changes>
+            <change>Support Magnet URI as a "downloadable ID" of an object.
+                Intended for ActivityPub but will work for any Social network.
+                <a href="https://github.com/andstatus/andstatus/issues/535">#535</a></change>
+        </changes>
+    </release>
     <release android:versionName="58.04" android:versionCode="343"
         versionDate="2021-04-27"
         versionTitle="Background syncing and migration to Kotlin">

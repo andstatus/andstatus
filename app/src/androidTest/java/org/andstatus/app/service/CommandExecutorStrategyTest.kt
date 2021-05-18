@@ -75,11 +75,11 @@ class CommandExecutorStrategyTest {
         val strategy = CommandExecutorStrategy.Companion.getStrategy(commandData2, null)
         Assert.assertEquals(TimelineDownloaderOther::class.java, strategy.javaClass)
         strategy.execute()
-        Assert.assertTrue("Requested " + commandData2 +
+        Assert.assertNotNull("Requested " + commandData2 +
                 ", results: '" + httpConnectionMock.getResults() + "'",
-                httpConnectionMock.getResults().stream()
-                        .map { obj: HttpReadResult -> obj.getUrl() }
-                        .anyMatch { url: String -> url.contains(DemoData.demoData.globalPublicNoteText) })
+            httpConnectionMock.getResults()
+                .map { it.url?.toExternalForm() ?: "" }
+                .find { it.contains(DemoData.demoData.globalPublicNoteText) })
     }
 
     @Test

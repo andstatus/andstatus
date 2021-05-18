@@ -125,8 +125,7 @@ object UrlUtils {
     }
 
     /** @location  - A relative (to the request URL) or absolute URL */
-    fun redirectTo(request: String?, location: String?): Try<URL>  {
-        val requestUrl: URL? = fromString(request)
+    fun redirectTo(requestUrl: URL?, location: String?): Try<URL>  {
         if (location == null) {
             return requestUrl?.let { Try.success(it) } ?: TryUtils.notFound()
         }
@@ -136,12 +135,12 @@ object UrlUtils {
 
         if (location.startsWith("/")) {
             return TryUtils.ofNullable(fromString(
-                    requestUrl.protocol + "://" + requestUrl.host + location
+                requestUrl.protocol + "://" + requestUrl.host + location
             ))
         }
         val request = requestUrl.toExternalForm()
         return TryUtils.ofNullable(fromString(
-                request + (if ( request.endsWith("/")) "" else "/") + location
+            request + (if ( request.endsWith("/")) "" else "/") + location
         ))
     }
 }

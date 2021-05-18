@@ -98,11 +98,10 @@ class UnsentNotesTest : TimelineActivityTest<ActivityViewItem>() {
         mService.waitForServiceStopped(false)
         val results = mService.getHttp()?.getResults() ?: emptyList()
         Assert.assertTrue("No results in ${mService.getHttp()}\n$logMsg", !results.isEmpty())
-        val urlFound = results.stream().anyMatch { result: HttpReadResult ->
-            result.getUrl().contains("retweet") &&
-                    result.getUrl().contains(noteOid)
-        }
-        Assert.assertTrue("No URL contain note oid $logMsg\nResults: $results", urlFound)
+        val urlFound = results
+            .map { it.url?.toExternalForm() ?: "" }
+            .find { it.contains("retweet") && it.contains(noteOid) }
+        Assert.assertNotNull("No URL contains note oid $logMsg\nResults: $results", urlFound)
         MyLog.v(this, "$method ended")
     }
 }

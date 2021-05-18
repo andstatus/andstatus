@@ -112,7 +112,7 @@ object UriUtils {
             val scheme = uri.scheme
             if (scheme != null) {
                 when (scheme) {
-                    "http", "https" -> return true
+                    "http", "https", "magnet" -> return true
                     else -> {
                     }
                 }

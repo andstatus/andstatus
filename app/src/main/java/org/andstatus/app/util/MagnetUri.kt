@@ -2,6 +2,7 @@ package org.andstatus.app.util
 
 import android.net.Uri
 import io.vavr.control.Try
+import java.net.URL
 
 /**
  * Magnet URI scheme: https://en.wikipedia.org/wiki/Magnet_URI_scheme
@@ -12,13 +13,18 @@ import io.vavr.control.Try
 data class MagnetUri(val dn: String, val xt: List<Uri>, val xs: Uri) {
 
     companion object {
+        fun Uri.getDownloadableUrl(): URL? = takeIf { UriUtils.isDownloadable(it) }
+            ?.let { uri -> uri.toString().tryMargetUri().map(MagnetUri::xs).getOrElse(uri) }
+            ?.let { URL(it.toString()) }
+
+
         fun String?.tryMargetUri(): Try<MagnetUri> = this?.trim()
             ?.split("magnet:?")
             ?.takeIf { it.size == 2 && it.get(0).isEmpty() }
             ?.get(1)
             ?.let { Try.success(it) }
             ?.flatMap(::parseData)
-            ?: TryUtils.failure("Failed to parse as Magnet URI: '$this'")
+            ?: TryUtils.notFound()
 
         private fun parseData(data: String): Try<MagnetUri> {
             val params = data.split("&")

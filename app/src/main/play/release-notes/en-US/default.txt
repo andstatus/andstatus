@@ -1,1 +1,3 @@
-v.58.04 Fix image resizing in a timeline. Fix Accounts reordering.
+v.59.00 Support Magnet URI as a "downloadable ID" of an object.
+Intended for ActivityPub but will work for any Social network.
+See https://github.com/andstatus/andstatus/issues/535

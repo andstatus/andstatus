@@ -18,7 +18,6 @@ package org.andstatus.app.net.http
 import android.content.res.Resources.NotFoundException
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
-import org.andstatus.app.util.UrlUtils
 import java.io.IOException
 import java.net.URL
 
@@ -62,9 +61,11 @@ class ConnectionException : IOException {
 
     private constructor(result: HttpReadResult) : super(result.logMsg(), result.getException()) {
         statusCode = result.getStatusCode()
-        url = UrlUtils.fromString(result.getUrl())
-        isHardError = isHardFromStatusCode(result.getException() is ConnectionException &&
-                (result.getException() as ConnectionException).isHardError(), statusCode)
+        url = result.url
+        isHardError = isHardFromStatusCode(
+            result.getException() is ConnectionException &&
+                    (result.getException() as ConnectionException).isHardError(), statusCode
+        )
     }
 
     constructor(throwable: Throwable?) : this(null, throwable) {}

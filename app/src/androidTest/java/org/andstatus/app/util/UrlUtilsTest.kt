@@ -129,6 +129,6 @@ class UrlUtilsTest {
 
     private fun assertOneRedirect(expected: String?, request: String?, location: String?) {
         assertEquals("Redirect from '$request' to '$location'", expected,
-                UrlUtils.redirectTo(request, location).map(URL::toExternalForm).getOrElse(null))
+                UrlUtils.redirectTo(UrlUtils.fromString(request), location).map(URL::toExternalForm).getOrElse(null))
     }
 }

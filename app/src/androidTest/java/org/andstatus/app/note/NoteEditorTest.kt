@@ -16,9 +16,6 @@
 package org.andstatus.app.note
 
 import android.app.Activity
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.view.View
@@ -31,6 +28,7 @@ import androidx.test.espresso.matcher.ViewMatchers
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.ActivityTestHelper
 import org.andstatus.app.HelpActivity
+import org.andstatus.app.R
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.activity.ActivityViewItem
 import org.andstatus.app.context.DemoData
@@ -59,16 +57,10 @@ import org.andstatus.app.util.MyHtmlTest
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.ScreenshotOnFailure
 import org.hamcrest.CoreMatchers
-import org.hamcrest.MatcherAssert
 import org.junit.Assert
-import org.junit.Ignore
 import org.junit.Test
 import java.util.concurrent.atomic.AtomicInteger
-
-import kotlin.jvm.Volatile
-import kotlin.Throws
 import kotlin.properties.Delegates
-import org.andstatus.app.R
 
 /**
  * On activity testing: http://developer.android.com/tools/testing/activity_testing.html
@@ -176,78 +168,6 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
         ActivityTestHelper.waitTextInAView(description, textView,
                 MyHtml.fromContentStored(data.getContent(), TextMediaType.PLAIN))
         Assert.assertEquals(description, data.toTestSummary(), editor.getData().toTestSummary())
-    }
-
-    /* We see crash in the test...
-        java.lang.IllegalStateException: beginBroadcast() called while already in a broadcast
-        at android.os.RemoteCallbackList.beginBroadcast(RemoteCallbackList.java:241)
-        at com.android.server.clipboard.ClipboardService.setPrimaryClipInternal(ClipboardService.java:583)
-
-        So we split clipboard copying functions into two tests
-        ...but this doesn't help...
-        Update: This works on 2021-04-25. Many changes done...
-    */
-    @Test
-    @Throws(InterruptedException::class)
-    fun testContextMenuWhileEditing1() {
-        val method = "testContextMenuWhileEditing"
-        TestSuite.waitForListLoaded(activity, 2)
-        ActivityTestHelper.openEditor<ActivityViewItem>(method, activity)
-        val helper = ListScreenTestHelper<TimelineActivity<*>>(activity, ConversationActivity::class.java)
-        val listItemId = helper.getListItemIdOfLoadedReply()
-        var logMsg = "listItemId=$listItemId"
-        val noteId = if (TimelineType.HOME.showsActivities()) MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId) else listItemId
-        logMsg += ", noteId=$noteId"
-        val content = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId)
-        helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_TEXT, R.id.note_wrapper)
-        Assert.assertEquals(logMsg, content, getClipboardText(method))
-    }
-
-    @Test
-    @Throws(InterruptedException::class)
-    fun testContextMenuWhileEditing2() {
-        val method = "testContextMenuWhileEditing"
-        TestSuite.waitForListLoaded(activity, 2)
-        ActivityTestHelper.openEditor<ActivityViewItem>(method, activity)
-        val helper = ListScreenTestHelper<TimelineActivity<*>>(activity, ConversationActivity::class.java)
-        val listItemId = helper.getListItemIdOfLoadedReply()
-        val logMsg = "listItemId=$listItemId"
-        helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.COPY_AUTHOR, R.id.note_wrapper)
-        val text = getClipboardText(method)
-        MatcherAssert.assertThat(text, CoreMatchers.startsWith("@"))
-        Assert.assertTrue("$logMsg; Text: '$text'", text.startsWith("@") && text.lastIndexOf("@") > 1)
-    }
-
-    private fun getClipboardText(methodExt: String): String {
-        val method = "getClipboardText"
-        return try {
-            MyLog.v(methodExt, "$method started")
-            TestSuite.waitForIdleSync()
-            val reader = ClipboardReader()
-            getInstrumentation().runOnMainSync(reader)
-            MyLog.v(methodExt, method + "; clip='" + reader.clip + "'")
-            val clip = reader.clip ?: return ""
-
-            val item = clip.getItemAt(0)
-            val text = (if (item.htmlText.isNullOrEmpty()) item.text else item.htmlText)
-                    .toString()
-            MyLog.v(methodExt, "$method ended. Text: $text")
-            text
-        } catch (e: Exception) {
-            MyLog.e(method, e)
-            "Exception: " + e.message
-        }
-    }
-
-    private class ClipboardReader : Runnable {
-        @Volatile
-        var clip: ClipData? = null
-        override fun run() {
-            // http://developer.android.com/guide/topics/text/copy-paste.html
-            val clipboard =  MyContextHolder.myContextHolder.getNow().context()
-                    .getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            clip = clipboard.primaryClip
-        }
     }
 
     @Test

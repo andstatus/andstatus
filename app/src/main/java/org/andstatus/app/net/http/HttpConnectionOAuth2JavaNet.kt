@@ -91,7 +91,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
     private fun postRequestOauth(result: HttpReadResult): HttpReadResult {
         try {
             val service = getService(false)
-            val request = OAuthRequest(Verb.POST, result.getUrlObj().toString())
+            val request = OAuthRequest(Verb.POST, result.requiredUrl("PostOauth2")?.toExternalForm() ?: return result)
             if (result.request.mediaUri.isPresent) {
                 val bytes = ApacheHttpClientUtils.buildMultipartFormEntityBytes(result.request)
                 request.addHeader(bytes.contentTypeName, bytes.contentTypeValue)
@@ -143,7 +143,7 @@ open class HttpConnectionOAuth2JavaNet : HttpConnectionOAuthJavaNet() {
             var redirected = false
             var stop: Boolean
             do {
-                val request = OAuthRequest(Verb.GET, result.getUrlObj().toString())
+                val request = OAuthRequest(Verb.GET, result.requiredUrl("GetOauth2")?.toExternalForm() ?: return result)
                 data.optOriginContentType().ifPresent { value: String? -> request.addHeader("Accept", value) }
                 if (result.authenticate()) {
                     signRequest(request, service, redirected)

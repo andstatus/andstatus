@@ -23,16 +23,15 @@ import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.net.social.ApiRoutineEnum
 import org.andstatus.app.util.I18n
 import org.andstatus.app.util.JsonUtils
+import org.andstatus.app.util.MagnetUri.Companion.getDownloadableUrl
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.MyStringBuilder
 import org.andstatus.app.util.TryUtils
-import org.andstatus.app.util.UrlUtils
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.io.InputStream
-import java.net.MalformedURLException
 import java.net.URL
 import java.util.*
 import java.util.stream.Collector
@@ -40,8 +39,8 @@ import java.util.stream.Collectors
 import java.util.stream.Stream
 
 class HttpReadResult(val request: HttpRequest) {
-    private var urlString: String = ""
-    private var url: URL? = null
+    var url: URL? = null
+        private set
     private var headers: MutableMap<String, MutableList<String>> = mutableMapOf()
     var redirected = false
     private var location: Optional<String> = Optional.empty()
@@ -52,6 +51,11 @@ class HttpReadResult(val request: HttpRequest) {
     var statusLine: String = ""
     private var intStatusCode = 0
     private var statusCode: StatusCode? = StatusCode.UNKNOWN
+
+    fun requiredUrl(errorMessage: String): URL? = url ?: let {
+        setException(Exception("Mo URL for $errorMessage"))
+        null
+    }
 
     fun getHeaders(): MutableMap<String, MutableList<String>> {
         return headers
@@ -80,14 +84,9 @@ class HttpReadResult(val request: HttpRequest) {
         return location
     }
 
-    fun setUrl(urlIn: String?): HttpReadResult {
-        if (!urlIn.isNullOrEmpty() && !urlString.contentEquals(urlIn)) {
-            urlString = urlIn
-            url = try {
-                URL(urlIn)
-            } catch (e: MalformedURLException) {
-                UrlUtils.MALFORMED
-            }
+    fun setUrl(urlIn: URL?): HttpReadResult {
+        if (urlIn != null && urlIn != url) {
+            url = urlIn
         }
         return this
     }
@@ -99,14 +98,6 @@ class HttpReadResult(val request: HttpRequest) {
 
     fun getStatusCode(): StatusCode? {
         return statusCode
-    }
-
-    fun getUrl(): String {
-        return urlString
-    }
-
-    fun getUrlObj(): URL? {
-        return url
     }
 
     fun appendToLog(chars: CharSequence?) {
@@ -128,7 +119,7 @@ class HttpReadResult(val request: HttpRequest) {
                 + (if (statusCode == StatusCode.OK || statusLine.isEmpty()) "" else "; statusLine:'$statusLine'")
                 + (if (intStatusCode == 0) "" else "; statusCode:$statusCode ($intStatusCode)")
                 + (if (redirected) "; redirected" else "")
-                + "; url:'" + urlString + "'"
+                + "; url:'$url'"
                 + (if (retriedWithoutAuthentication) "; retried without auth" else "")
                 + (if (strResponse.isEmpty()) "" else "; response:'" + I18n.trimTextAt(strResponse, 40) + "'")
                 + location.map { str: String -> "; location:'$str'" }.orElse("")
@@ -259,7 +250,7 @@ class HttpReadResult(val request: HttpRequest) {
         if (isStatusOk()) {
             if (request.isFileTooLarge()) {
                 setException(ConnectionException.hardConnectionException(
-                        "File, downloaded from \"" + urlString + "\", is too large: "
+                        "File, downloaded from '$url', is too large: "
                                 + Formatter.formatShortFileSize( MyContextHolder.myContextHolder.getNow().context(),
                                 request.fileResult?.length() ?: 0),
                         null))
@@ -290,7 +281,7 @@ class HttpReadResult(val request: HttpRequest) {
             val objTag: Any = "response"
             MyLog.logNetworkLevelMessage(objTag, request.getLogName(), strResponse,
                     MyStringBuilder.of("")
-                            .atNewLine("logger-URL", urlString)
+                            .atNewLine("logger-URL", url.toString())
                             .atNewLine("logger-account", request.connectionData().getAccountName().name)
                             .atNewLine("logger-authenticated", java.lang.Boolean.toString(authenticate()))
                             .apply { builder: MyStringBuilder -> appendHeaders(builder) }.toString())
@@ -345,6 +336,6 @@ class HttpReadResult(val request: HttpRequest) {
     }
 
     init {
-        setUrl(request.uri.toString())
+        setUrl(request.uri.getDownloadableUrl())
     }
 }
