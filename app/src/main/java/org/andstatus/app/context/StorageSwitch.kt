@@ -18,7 +18,6 @@ package org.andstatus.app.context
 import android.app.ProgressDialog
 import android.content.Context
 import android.widget.Toast
-import net.jcip.annotations.GuardedBy
 import org.andstatus.app.ActivityRequestCode
 import org.andstatus.app.R
 import org.andstatus.app.data.DbUtils
@@ -52,7 +51,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
     }
 
     private fun checkAndSetDataBeingMoved(): Boolean {
-        synchronized(MOVE_LOCK) {
+        synchronized(moveLock) {
             if (mDataBeingMoved) {
                 return false
             }
@@ -62,7 +61,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
     }
 
     fun isDataBeingMoved(): Boolean {
-        synchronized(MOVE_LOCK) { return mDataBeingMoved }
+        synchronized(moveLock) { return mDataBeingMoved }
     }
 
     private class TaskResult {
@@ -106,7 +105,7 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
             try {
                 moveAll(result)
             } finally {
-                synchronized(MOVE_LOCK) { mDataBeingMoved = false }
+                synchronized(moveLock) { mDataBeingMoved = false }
             }
             result.messageBuilder.insert(0, " Move " + strSucceeded(result.success))
             MyLog.v(this) { result.getMessage() }
@@ -335,15 +334,17 @@ class StorageSwitch(private val parentFragment: MySettingsFragment) {
     }
 
     companion object {
-        val MOVE_LOCK: Any = Any()
 
+        // TODO: Should be one object for atomic updates. start ---
+        private val moveLock: Any = Any()
         /**
          * This semaphore helps to avoid ripple effect: changes in MyAccount cause
          * changes in this activity ...
          */
-        @GuardedBy("moveLock")
         @Volatile
         private var mDataBeingMoved = false
+        // end ---
+
         fun getErrorInfo(e: Throwable): String {
             return (StringUtil.notEmpty(e.message, "(no error message)")
                     + " (" + e.javaClass.canonicalName + ")")

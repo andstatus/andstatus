@@ -23,8 +23,6 @@ import android.os.Build
 import android.os.SystemClock
 import android.provider.Settings
 import io.vavr.control.Try
-import net.jcip.annotations.GuardedBy
-import net.jcip.annotations.ThreadSafe
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.data.converter.DatabaseConverterController
 import org.andstatus.app.graphics.ImageCaches
@@ -47,17 +45,17 @@ import java.util.function.UnaryOperator
  * Holds globally cached state of the application: [MyContext]
  * @author yvolk@yurivolkov.com
  */
-@ThreadSafe
 class MyContextHolder private constructor() : TaggedClass {
     private val appStartedAt = SystemClock.elapsedRealtime()
 
     @Volatile
     private var isShuttingDown = false
-    private val CONTEXT_LOCK: Any = Any()
 
-    @GuardedBy("CONTEXT_LOCK")
+    // TODO: Should be one object for atomic updates. start ---
+    private val contextLock: Any = Any()
     @Volatile
     private var myFutureContext: MyFutureContext = MyFutureContext.completed(MyContextEmpty.EMPTY)
+    // end ---
 
     @Volatile
     private var onRestore = false
@@ -88,7 +86,7 @@ class MyContextHolder private constructor() : TaggedClass {
      * @return true if succeeded
      */
     fun trySetCreator(contextCreatorNew: MyContext): Boolean {
-        synchronized(CONTEXT_LOCK) {
+        synchronized(contextLock) {
             if (!myFutureContext.future.isDone) return false
             myFutureContext.getNow().release { "trySetCreator" }
             myFutureContext = MyFutureContext.completed(contextCreatorNew)
@@ -120,7 +118,7 @@ class MyContextHolder private constructor() : TaggedClass {
         } else if (!duringUpgrade && DatabaseConverterController.isUpgrading()) {
             MyLog.d(this, "Skipping initialization: upgrade in progress (called by: $calledBy)")
         } else {
-            synchronized(CONTEXT_LOCK) { myFutureContext = MyFutureContext.fromPrevious(myFutureContext, calledBy) }
+            synchronized(contextLock) { myFutureContext = MyFutureContext.fromPrevious(myFutureContext, calledBy) }
             whenSuccessOrPreviousAsync(NonUiThreadExecutor.INSTANCE) {
                 if (it.nonEmpty) MyServiceManager.registerReceiver(it.context())
             }
@@ -138,17 +136,17 @@ class MyContextHolder private constructor() : TaggedClass {
     }
 
     fun whenSuccessAsync(consumer: Consumer<MyContext>, executor: Executor): MyContextHolder {
-        synchronized(CONTEXT_LOCK) { myFutureContext = myFutureContext.whenSuccessAsync(consumer, executor) }
+        synchronized(contextLock) { myFutureContext = myFutureContext.whenSuccessAsync(consumer, executor) }
         return this
     }
 
     fun whenSuccessOrPreviousAsync(executor: Executor, consumer: Consumer<MyContext>): MyContextHolder {
-        synchronized(CONTEXT_LOCK) { myFutureContext = myFutureContext.whenSuccessOrPreviousAsync(executor, consumer) }
+        synchronized(contextLock) { myFutureContext = myFutureContext.whenSuccessOrPreviousAsync(executor, consumer) }
         return this
     }
 
     fun with(future: UnaryOperator<CompletableFuture<MyContext>>): MyContextHolder {
-        synchronized(CONTEXT_LOCK) { myFutureContext = myFutureContext.with(future) }
+        synchronized(contextLock) { myFutureContext = myFutureContext.with(future) }
         return this
     }
 
@@ -158,7 +156,7 @@ class MyContextHolder private constructor() : TaggedClass {
      */
     fun storeContextIfNotPresent(context: Context?, calledBy: Any?): MyContextHolder {
         if (context == null || getNow().nonEmpty) return this
-        synchronized(CONTEXT_LOCK) {
+        synchronized(contextLock) {
             if (getNow().isEmpty) {
                 val contextCreator = MyContextImpl(MyContextEmpty.EMPTY, context, calledBy)
                 requireNonNullContext(contextCreator.baseContext(), calledBy, "no compatible context")
@@ -259,7 +257,7 @@ class MyContextHolder private constructor() : TaggedClass {
     }
 
     fun release(reason: Supplier<String>) {
-        synchronized(CONTEXT_LOCK) { myFutureContext = myFutureContext.releaseNow(reason) }
+        synchronized(contextLock) { myFutureContext = myFutureContext.releaseNow(reason) }
     }
 
     override fun classTag(): String {

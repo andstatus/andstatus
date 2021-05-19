@@ -95,7 +95,6 @@ dependencies {
     implementation "ch.acra:acra-dialog:$acraVersion"
     implementation "ch.acra:acra-mail:$acraVersion"
     implementation "com.github.scribejava:scribejava-core:$scribejavaCoreVersion"
-    implementation "com.github.stephenc.jcip:jcip-annotations:$jcipAnnotationsVersion"
     implementation "com.google.android.material:material:$materialVersion"
     implementation "commons-codec:commons-codec:$commonsCodecVersion"
     implementation "cz.msebera.android:httpclient:$httpclientVersion"

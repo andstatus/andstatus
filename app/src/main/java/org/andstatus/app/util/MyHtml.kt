@@ -16,13 +16,13 @@
 package org.andstatus.app.util
 
 import android.text.Html
+import org.andstatus.app.context.MyLocale.MY_DEFAULT_LOCALE
 import org.andstatus.app.data.TextMediaType
 import org.apache.commons.lang3.text.translate.AggregateTranslator
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator
 import org.apache.commons.lang3.text.translate.EntityArrays
 import org.apache.commons.lang3.text.translate.LookupTranslator
 import org.apache.commons.lang3.text.translate.NumericEntityUnescaper
-import java.util.*
 import java.util.regex.Pattern
 
 object MyHtml {
@@ -84,7 +84,7 @@ object MyHtml {
     }
 
     fun getContentToSearch(html: String?): String {
-        return normalizeWordsForSearch(htmlToCompactPlainText(html)).toLowerCase(Locale.ENGLISH)
+        return normalizeWordsForSearch(htmlToCompactPlainText(html)).toLowerCase(MY_DEFAULT_LOCALE)
     }
 
     /** Strips ALL markup from the String, including line breaks. And remove all whiteSpace  */

@@ -19,7 +19,6 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.os.Environment
-import net.jcip.annotations.ThreadSafe
 import org.andstatus.app.ClassInApplicationPackage
 import org.andstatus.app.FirstActivity
 import org.andstatus.app.account.MyAccounts
@@ -50,7 +49,6 @@ import java.util.function.Supplier
  * The objects are effectively immutable
  * @author yvolk@yurivolkov.com
  */
-@ThreadSafe
 open class MyContextImpl internal constructor(parent: MyContext, context: Context, initializer: Any?) : MyContext {
     override val instanceId = InstanceId.next()
 

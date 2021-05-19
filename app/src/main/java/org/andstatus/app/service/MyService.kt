@@ -24,7 +24,6 @@ import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import android.os.PowerManager.WakeLock
-import net.jcip.annotations.GuardedBy
 import org.andstatus.app.MyAction
 import org.andstatus.app.appwidget.AppWidgets
 import org.andstatus.app.context.MyContext
@@ -120,7 +119,6 @@ class MyService : Service(), IdentifiableInstance {
         startForeground(NotificationEventType.SERVICE_RUNNING.notificationId(), myContext.getNotifier().getAndroidNotification(data))
     }
 
-    @GuardedBy("serviceStateLock")
     private val intentReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(arg0: Context?, intent: Intent?) {
             MyLog.v(TAG) { "MyService " + instanceId + " onReceive " + intent.toString() }

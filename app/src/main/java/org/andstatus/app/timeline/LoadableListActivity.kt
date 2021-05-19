@@ -23,7 +23,6 @@ import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
-import net.jcip.annotations.GuardedBy
 import org.andstatus.app.IntentExtra
 import org.andstatus.app.R
 import org.andstatus.app.context.MyContext
@@ -64,16 +63,14 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     var myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
     private var configChangeTime: Long = 0
     var myServiceReceiver: MyServiceEventsReceiver? = null
+
+    // TODO: Should be one object for atomic updates. start ---
     private val loaderLock: Any = Any()
-
-    @GuardedBy("loaderLock")
     private var mCompletedLoader: AsyncLoader = AsyncLoader()
-
-    @GuardedBy("loaderLock")
     private var mWorkingLoader = mCompletedLoader
-
-    @GuardedBy("loaderLock")
     private var loaderIsWorking = false
+    // end ---
+
     var lastLoadedAt: Long = 0
     protected val refreshNeededSince: AtomicLong = AtomicLong(0)
     protected val refreshNeededAfterForegroundCommand: AtomicBoolean = AtomicBoolean(false)

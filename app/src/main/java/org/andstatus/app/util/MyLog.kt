@@ -18,7 +18,7 @@ package org.andstatus.app.util
 import android.text.format.DateFormat
 import android.util.Log
 import io.vavr.control.Try
-import net.jcip.annotations.GuardedBy
+import org.andstatus.app.context.MyLocale.MY_DEFAULT_LOCALE
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.context.MyStorage
 import org.andstatus.app.data.DbUtils
@@ -87,10 +87,12 @@ object MyLog {
      */
     @Volatile
     private var minLogLevel = VERBOSE
-    private val logToFileEnabled: AtomicBoolean = AtomicBoolean(false)
 
-    @GuardedBy("logToFileEnabled")
+    // TODO: Should be one object for atomic updates. start ---
+    private val logToFileEnabled: AtomicBoolean = AtomicBoolean(false)
     private var logFileName: String? = null
+    // end ---
+
     fun logSharedPreferencesValue(objTag: Any?, key: String?) {
         val sp = SharedPreferencesUtil.getDefaultSharedPreferences()
         if (sp == null || !isLoggable(objTag, DEBUG)) {
@@ -458,7 +460,7 @@ object MyLog {
     }
 
     fun currentDateTimeForLogLine(): String {
-        val logDateFormat = SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US)
+        val logDateFormat = SimpleDateFormat("MM-dd HH:mm:ss.SSS", MY_DEFAULT_LOCALE)
         return logDateFormat.format(Date(System.currentTimeMillis()))
     }
 
@@ -538,7 +540,7 @@ object MyLog {
         for (ind in 0..1) {
             // see http://stackoverflow.com/questions/16763968/android-text-format-dateformat-hh-is-not-recognized-like-with-java-text-simple
             val formatString = if (ind == 0) "yyyy-MM-dd-HH-mm-ss-SSS" else "yyyy-MM-dd-kk-mm-ss-SSS"
-            val format = SimpleDateFormat(formatString)
+            val format = SimpleDateFormat(formatString, MY_DEFAULT_LOCALE)
             val buffer = StringBuffer()
             format.format(Date(time), buffer, FieldPosition(0))
             val strTime = buffer.toString()

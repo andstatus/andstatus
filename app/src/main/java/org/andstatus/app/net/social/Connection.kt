@@ -21,6 +21,7 @@ import org.andstatus.app.account.AccountConnectionData
 import org.andstatus.app.account.AccountDataWriter
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContext
+import org.andstatus.app.context.MyLocale.MY_DEFAULT_LOCALE
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.net.http.HttpConnection
@@ -364,7 +365,7 @@ abstract class Connection protected constructor() : IsEmpty {
                     MyLog.ignored(this, e)
                 }
             } else {
-                val dateFormat1: DateFormat = SimpleDateFormat(format, Locale.ENGLISH)
+                val dateFormat1: DateFormat = SimpleDateFormat(format, MY_DEFAULT_LOCALE)
                 try {
                     unixDate = dateFormat1.parse(stringDate)?.time ?: 0L
                 } catch (e: ParseException) {
@@ -396,7 +397,7 @@ abstract class Connection protected constructor() : IsEmpty {
                 stringDate.replace("\\+0([0-9]):00".toRegex(), "+0$100")
             }
             val formatString = if (stringDate.contains(".")) if (stringDate.length - stringDate.lastIndexOf(".") > 4) "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ" else "yyyy-MM-dd'T'HH:mm:ss.SSSZ" else "yyyy-MM-dd'T'HH:mm:ssZ"
-            val iso8601DateFormatSec: DateFormat = SimpleDateFormat(formatString, Locale.GERMANY)
+            val iso8601DateFormatSec: DateFormat = SimpleDateFormat(formatString, MY_DEFAULT_LOCALE)
             try {
                 unixDate = iso8601DateFormatSec.parse(datePrepared)?.time ?: 0L
             } catch (e: ParseException) {

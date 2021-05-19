@@ -30,6 +30,7 @@ import java.util.*
  */
 object MyLocale {
     private val CUSTOM_LOCALE_DEFAULT: String = "default"
+    internal val MY_DEFAULT_LOCALE: Locale = Locale.US
 
     @Volatile
     private var mCustomLocale: Locale? = null

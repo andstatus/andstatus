@@ -17,7 +17,6 @@ package org.andstatus.app.data.converter
 
 import android.app.Activity
 import android.database.sqlite.SQLiteDatabase
-import net.jcip.annotations.GuardedBy
 import org.andstatus.app.MyActivity
 import org.andstatus.app.R
 import org.andstatus.app.backup.DefaultProgressListener
@@ -55,18 +54,18 @@ class DatabaseConverterController {
             var success = false
             var locUpgradeStarted = false
             try {
-                synchronized(UPGRADE_LOCK) { mProgressLogger = progressLogger }
+                synchronized(upgradeLock) { mProgressLogger = progressLogger }
                 MyLog.i(TAG, "Upgrade triggered by " + MyStringBuilder.objToTag(upgradeRequestor))
                 MyServiceManager.setServiceUnavailable()
                  MyContextHolder.myContextHolder.release { "doUpgrade" }
                 // Upgrade will occur inside this call synchronously
                 // TODO: Add completion stage instead of blocking...
                  MyContextHolder.myContextHolder.initializeDuringUpgrade(upgradeRequestor).getBlocking()
-                synchronized(UPGRADE_LOCK) { shouldTriggerDatabaseUpgrade = false }
+                synchronized(upgradeLock) { shouldTriggerDatabaseUpgrade = false }
             } catch (e: Exception) {
                 MyLog.i(TAG, "Failed to trigger database upgrade, will try later", e)
             } finally {
-                synchronized(UPGRADE_LOCK) {
+                synchronized(upgradeLock) {
                     success = upgradeEndedSuccessfully
                     mProgressLogger = ProgressLogger.getEmpty(TAG)
                     locUpgradeStarted = upgradeStarted
@@ -115,14 +114,14 @@ class DatabaseConverterController {
             MyLog.v(this, "onUpgrade - Trigger not set yet")
             throw IllegalStateException("onUpgrade - Trigger not set yet")
         }
-        synchronized(UPGRADE_LOCK) {
+        synchronized(upgradeLock) {
             shouldTriggerDatabaseUpgrade = false
             stillUpgrading()
         }
          MyContextHolder.myContextHolder.getNow().setInForeground(true)
         val databaseConverter = DatabaseConverter()
         val success = databaseConverter.execute(UpgradeParams(mProgressLogger, db, oldVersion, newVersion))
-        synchronized(UPGRADE_LOCK) {
+        synchronized(upgradeLock) {
             upgradeEnded = true
             upgradeEndedSuccessfully = success
         }
@@ -134,31 +133,22 @@ class DatabaseConverterController {
     internal class UpgradeParams(var progressLogger: ProgressLogger, var db: SQLiteDatabase, var oldVersion: Int, var newVersion: Int)
     companion object {
         private val TAG: String = DatabaseConverterController::class.java.simpleName
-        private val UPGRADE_LOCK: Any = Any()
 
-        @GuardedBy("upgradeLock")
+        // TODO: Should be one object for atomic updates. start ---
+        private val upgradeLock: Any = Any()
         @Volatile
         private var shouldTriggerDatabaseUpgrade = false
-
-        /**
-         * Semaphore enabling uninterrupted system upgrade
-         */
-        @GuardedBy("upgradeLock")
+        /** Semaphore enabling uninterrupted system upgrade */
         private var upgradeEndTime = 0L
-
-        @GuardedBy("upgradeLock")
         private var upgradeStarted = false
-
-        @GuardedBy("upgradeLock")
         private var upgradeEnded = false
-
-        @GuardedBy("upgradeLock")
         private var upgradeEndedSuccessfully = false
-
-        @GuardedBy("upgradeLock")
         private var mProgressLogger: ProgressLogger = ProgressLogger.getEmpty(TAG)
-        const val SECONDS_BEFORE_UPGRADE_TRIGGERED = 5L
-        const val UPGRADE_LENGTH_SECONDS_MAX = 90
+        // end ---
+
+        private const val SECONDS_BEFORE_UPGRADE_TRIGGERED = 5L
+        private const val UPGRADE_LENGTH_SECONDS_MAX = 90
+
         fun attemptToTriggerDatabaseUpgrade(upgradeRequestorIn: Activity) {
             val requestorName: String = MyStringBuilder.objToTag(upgradeRequestorIn)
             var skip = false
@@ -184,7 +174,7 @@ class DatabaseConverterController {
 
         private fun acquireUpgradeLock(requestorName: String?): Boolean {
             var skip = false
-            synchronized(UPGRADE_LOCK) {
+            synchronized(upgradeLock) {
                 if (isUpgrading()) {
                     MyLog.v(TAG, "Attempt to trigger database upgrade by " + requestorName
                             + ": already upgrading")
@@ -210,7 +200,7 @@ class DatabaseConverterController {
 
         fun stillUpgrading() {
             var wasStarted: Boolean
-            synchronized(UPGRADE_LOCK) {
+            synchronized(upgradeLock) {
                 wasStarted = upgradeStarted
                 upgradeStarted = true
                 upgradeEndTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(UPGRADE_LENGTH_SECONDS_MAX.toLong())
@@ -219,7 +209,7 @@ class DatabaseConverterController {
         }
 
         fun isUpgradeError(): Boolean {
-            synchronized(UPGRADE_LOCK) {
+            synchronized(upgradeLock) {
                 if (upgradeEnded && !upgradeEndedSuccessfully) {
                     return true
                 }
@@ -228,7 +218,7 @@ class DatabaseConverterController {
         }
 
         fun isUpgrading(): Boolean {
-            synchronized(UPGRADE_LOCK) {
+            synchronized(upgradeLock) {
                 if (upgradeEndTime == 0L) {
                     return false
                 }

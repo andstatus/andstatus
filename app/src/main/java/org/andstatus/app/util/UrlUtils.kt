@@ -17,6 +17,7 @@ package org.andstatus.app.util
 
 import android.net.Uri
 import io.vavr.control.Try
+import org.andstatus.app.context.MyLocale.MY_DEFAULT_LOCALE
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.json.JSONException
@@ -99,7 +100,7 @@ object UrlUtils {
     private fun correctedHostOrUrl(hostOrUrl: String?): String {
         return if (hostOrUrl.isNullOrEmpty()) {
             ""
-        } else hostOrUrl.replace(" ".toRegex(), "").toLowerCase(Locale.ENGLISH)
+        } else hostOrUrl.replace(" ".toRegex(), "").toLowerCase(MY_DEFAULT_LOCALE)
         // Test with: http://www.regexplanet.com/advanced/java/index.html
     }
 
