@@ -1,2 +1,2 @@
-include ':app'
-include ':local'
+rootProject.buildFileName = "build.gradle.kts"
+include(":app")

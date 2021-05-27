@@ -43,7 +43,7 @@ object TamperingDetector {
                 MyStringBuilder.appendWithSpace(builder, signature)
             }
         }
-        ACRA.getErrorReporter().putCustomData("apkSignatures", builder.toString())
+        ACRA.errorReporter.putCustomData("apkSignatures", builder.toString())
     }
 
     private fun getAppSignatures(context: Context): MutableList<String> {

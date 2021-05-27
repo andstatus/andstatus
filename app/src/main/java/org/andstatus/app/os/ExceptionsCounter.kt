@@ -48,7 +48,7 @@ object ExceptionsCounter {
 
     fun logSystemInfo(throwable: Throwable?) {
         val systemInfo: String = MyContextHolder.myContextHolder.getSystemInfo(MyContextHolder.myContextHolder.getNow().context(), true)
-        ACRA.getErrorReporter().putCustomData("systemInfo", systemInfo)
+        ACRA.errorReporter.putCustomData("systemInfo", systemInfo)
         ExceptionsCounter.logError(systemInfo, throwable)
     }
 

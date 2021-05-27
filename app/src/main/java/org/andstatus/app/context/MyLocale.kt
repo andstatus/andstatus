@@ -67,7 +67,7 @@ object MyLocale {
             val config = contextWrapper.getBaseContext().resources.configuration
             config.setLocale(locale)
         }
-        ACRA.getErrorReporter().putCustomData("locale",
+        ACRA.errorReporter.putCustomData("locale",
                 strLocale + ", " + (mCustomLocale?.getDisplayName() ?: "( custom not set)") +
                         ", default=" + getDeviceDefaultLocale().getDisplayName())
     }

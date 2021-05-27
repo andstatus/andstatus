@@ -1,84 +1,90 @@
-apply plugin: 'java'
-
-// With a workaround to include .git files in the dump
-// See https://issues.gradle.org/browse/GRADLE-1883
 import org.apache.tools.ant.DirectoryScanner
-task dumpAll(type: Zip) {
-    doFirst {
-        println 'dumpAll started'
 
-        Project app = rootProject.subprojects.find() { it.name == "app" }
-        println "app archivesBaseName: " + app.archivesBaseName
-        baseName = app.archivesBaseName
-        version = ""
+tasks {
+    // With a workaround to include .git files in the dump, see https://issues.gradle.org/browse/GRADLE-1883
+    // See https://docs.gradle.org/current/userguide/working_with_files.html
+    DirectoryScanner.getDefaultExcludes().forEach { DirectoryScanner.removeDefaultExclude(it) }
+    DirectoryScanner.addDefaultExclude("something has to be in here or everything gets excluded")
 
-        DirectoryScanner.defaultExcludes.each { DirectoryScanner.removeDefaultExclude it }
-        DirectoryScanner.addDefaultExclude 'something has to be in here or everything gets excluded'
+    register<Zip>("dumpAll") {
+        destinationDirectory.set(File("../Archives"))
+        archiveFileName.set("initial.zip")
 
-        destinationDir = new File("../Archives")
+        doFirst {
+            val app: Project = subprojects.find { it.name == "app" } ?: throw kotlin.IllegalStateException("No 'app' subproject")
+            val prefix: String = app.property("archivesBaseName").toString()
 
-        for (int i = 1; i < 1000; i++) {
-            classifier = String.format("%03d%s", i, "-dump")
-            File file = archivePath
-            if (!file.exists()) {
-                println file.getName() + " does not exist"
-                break
+            println("dumpAll started, archivesBaseName: " + prefix)
+
+            for (i in 1 .. 999) {
+                val suffix = String.format("-%03d%s", i, "-dump.zip")
+                val file = File(destinationDirectory.asFile.orNull, prefix + suffix)
+                if (!file.exists()) {
+                    println(file.getName() + " does not exist")
+                    archiveFileName.set(file.absolutePath)
+                    break
+                }
+                println(file.getName() + " exists")
             }
-            println file.getName() + " exists"
+
+            println("On creating " + archiveFileName.get())
         }
 
-        println "On creating " + archiveName + " in " + relativePath(destinationDir)
-    }
+        from(projectDir)
 
-    from projectDir
-    include "*/**"
-    exclude "**/.gradle/**"
-    exclude "**/build/**"
-    exclude "**/temp/**"
+        include("*/**")
+        exclude("**/.gradle/**")
+        exclude("**/build/**")
+        exclude("**/temp/**")
 
-    doLast {
-        DirectoryScanner.resetDefaultExcludes()
-
-        if (archivePath.exists()) {
-            println "Successfully created '" + archiveName + "'"
-        } else {
-            println "ERROR: No dump created '" + archiveName + "'"
+        doLast {
+            if (archiveFile.get().asFile.exists()) {
+                println("Successfully created " + archiveFileName.get())
+            } else {
+                println("ERROR: No dump created " + archiveFileName.get())
+            }
         }
     }
-}
 
-/**
- * This task is for experiments and learning...
- *
- * We could define dependency this way, but we don't need this yet
- * task printInfo(dependsOn: rootProject.subprojects.find() { it.name == "app" }.tasks.find() { it.name == "myDummy"}) {
- */
-task printInfo() {
-    doFirst {
-        println "printInfo.doFist"
-        println "Projects (" + rootProject.getAllprojects().size() + "): " + rootProject.getAllprojects()
-        println "Project 0: \"" + rootProject.getAllprojects().getAt(0) + "\"; " + rootProject.getAllprojects().getAt(0).getProperties()
-        println "Subprojects (" + rootProject.getSubprojects().size() + "): " + rootProject.getSubprojects()
-        println "Configurations (" + configurations.size() + "): " + configurations
+    /**
+     * This task is for experiments and learning...
+     *
+     * We could define dependency this way, but we don't need this yet
+     * task printInfo(dependsOn: rootProject.subprojects.find() { it.name == "app" }.tasks.find() { it.name == "myDummy"}) {
+     */
+    register("printInfo") {
+        doFirst {
+            println("printInfo.doFist")
+            val root: Project = rootProject
+            println("Projects (" + root.allprojects.size + "): " + rootProject.allprojects)
+            println("Subprojects (" + rootProject.subprojects.size + "): " + rootProject.subprojects)
+            println("Configurations (" + configurations.size + "): " + configurations)
 
-        Project app0 = rootProject.subprojects.getAt(0);
-        println "Project 0 \"" + app0 + "\"; " + app0.getProperties()
+            println("Root project tasks " + rootProject.tasks.size + ":\n  " +
+                    rootProject.tasks.names.joinToString("\n  "))
 
-        Project app = rootProject.subprojects.find() { it.name == "app" }
-        println "Project \"" + app + "\"; " + app.getProperties()
+            rootProject.subprojects.find() { it.name == "app" }?.let { app: Project ->
+                println("Project \"" + app + "\"; Properties:" +
+                        app.properties.entries
+                            .map { "\n  " + it.key + ": " + it.value }
+                            .sorted()
+                            .joinToString("")
+                )
 
-        println "Ext: " + app.ext
-        println "archivesBaseName: " + app.ext.get("archivesBaseName")
-        println "version: " + app.ext.get("myVersionName")
+                println("archivesBaseName: " + app.property("archivesBaseName"))
 
-        println "Tasks \"" + app + "\"; " + app.tasks
-        println "Task 0 \"" + app.tasks.getAt(0) + "\"; " + app.tasks.getAt(0).properties
+                println("Tasks \"" + app + "\", " + app.tasks.size + ":\n  " +
+                        app.tasks.names.joinToString("\n  "))
+                println("Task 0 \"" + app.tasks.firstOrNull())
 
-        Task task = app.tasks.find() { it.name == "assembleRelease"}
-        println "Task \"" + task + "\"; " + (( task != null) ? task.properties : "")
-    }
+                app.tasks.find() { it.name == "assembleRelease"}?.let { task: Task ->
+                    println("Task \"" + task + "\"; " + task.inputs)
+                }
+            }
+        }
 
-    doLast {
-        println "printInfo.doLast"
+        doLast {
+            println("printInfo.doLast")
+        }
     }
 }
