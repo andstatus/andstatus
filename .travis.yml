@@ -91,57 +91,20 @@ install:
 
 script:
 - chmod +x gradlew
-- |
-  ./gradlew build assembleAndroidTest -x lint
-  retval=$?
-  if [ $retval -ne 0 ]; then
-    echo "error on assembling, exit code: "$retval
-    exit $retval
-  fi
 
-# See http://stackoverflow.com/questions/21294945/error-unable-to-find-instrumentation-info-for-componentinfo
-# Instead of this (which doesn't give any output during tests execution):
-# - ./gradlew connectedCheck -PdisablePreDex --continue --stacktrace --debug
-# run:
 - |
-  ./gradlew :app:installDebug :app:installDebugAndroidTest
+  ./gradlew :app:createDebugCoverageReport
   retval=$?
   if [ $retval -ne 0 ]; then
     echo "error on install, exit code: "$retval
     exit $retval
   fi
 
-#
-# The below line causes Process crash due to absence of video device
-#- adb shell am instrument -w -r -e debug false org.andstatus.app.tests/android.test.InstrumentationTestRunner
-#
-# Run only tests, marked with a special annotation:
-# See https://developer.android.com/reference/android/test/InstrumentationTestRunner.html
-# For testing one method only:
-# - adb shell am instrument -w -r -e debug false -e class org.andstatus.app.service.CommandExecutorStrategyTest#testSearch org.andstatus.app.tests/androidx.test.runner.AndroidJUnitRunner
-
-# See https://developer.android.com/studio/command-line/adb
-- |
-  adb shell am instrument -w -r -e debug false -e executionMode travisTest org.andstatus.app.tests/androidx.test.runner.AndroidJUnitRunner |& tee build/adb-test.log
-  retval=$?
-  if [ $retval -ne 0 ]; then
-    echo "error in adb, exit code: "$retval
-    exit $retval
-  fi
-
-# adb doesn't propagate exit code from tests, see https://code.google.com/p/android/issues/detail?id=3254
-# So we need to parse saved terminal log
-- |
-  cat build/adb-test.log | grep "INSTRUMENTATION_STATUS: stack=" | grep -v "org.junit.AssumptionViolatedException"
-  if [ $? -eq 0 ]; then
-    echo "Test failure found"
-    exit 1
-  else
-    cat build/adb-test.log | grep "OK ("
-  fi
-
 after_success:
-  - ./gradlew sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.verbose=true
+  - |
+    if [ $API = 29 ]; then
+      ./gradlew sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.verbose=true
+    fi
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock

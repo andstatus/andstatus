@@ -39,6 +39,7 @@ import org.andstatus.app.util.MyLog
 import org.hamcrest.CoreMatchers
 import org.hamcrest.MatcherAssert
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Test
 
 /**
@@ -70,6 +71,7 @@ class NoteEditorContextMenuTest : TimelineActivityTest<ActivityViewItem>() {
           E/ClipboardService: Denying clipboard access to com.android.chrome, application is not in focus nor is it a system service for user 0
         - so maybe WebView was not fully closed yet...
     */
+    @Ignore
     @Test
     @Throws(InterruptedException::class)
     fun testContextMenuWhileEditing1() {
@@ -86,6 +88,7 @@ class NoteEditorContextMenuTest : TimelineActivityTest<ActivityViewItem>() {
         Assert.assertEquals(logMsg, content, getClipboardText(method))
     }
 
+    @Ignore
     @Test
     @Throws(InterruptedException::class)
     fun testContextMenuWhileEditing2() {

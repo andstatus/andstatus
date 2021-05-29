@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
-    id("org.sonarqube").version("3.1.1")
+    id("jacoco")
+    id("org.sonarqube").version("3.2.0")
 // The plugin doesn't work now https://github.com/Triple-T/gradle-play-publisher
 //    id("com.github.triplet.play").version("2.7.5")
     id("kotlin-android")
@@ -29,13 +30,14 @@ android {
         getByName("release") {
             isMinifyEnabled = false
             lintOptions {
-                warning("MissingTranslation","InvalidPackage")
+                warning("MissingTranslation", "InvalidPackage")
             }
         }
         getByName("debug") {
-            isTestCoverageEnabled = if (rootProject.hasProperty("testCoverageEnabled")) {
-                rootProject.property("testCoverageEnabled") == "true"
-            } else false
+            isTestCoverageEnabled = true
+//            if ( rootProject.hasProperty("testCoverageEnabled")) {
+//                rootProject.property("testCoverageEnabled") == "true"
+//            } else false
         }
     }
 
@@ -52,6 +54,52 @@ android {
         exclude("META-INF/NOTICE")
         exclude("META-INF/LICENSE")
     }
+
+    testOptions {
+        jacoco {
+            version = "0.8.7"
+        }
+    }
+
+}
+
+// This doesn't work yet...
+task<JacocoReport>("myJacocoTestReport") {
+    group = "verification"
+
+    val classDirsTree = fileTree(buildDir) {
+        include(
+            "**/classes/**/main/**",
+            "**/intermediates/classes/debug/**",
+            "**/intermediates/javac/debug/*/classes/**",
+            "**/tmp/kotlin-classes/debug/**"
+        )
+
+        exclude(
+            "**/R.class",
+            "**/R\$*.class",
+            "**/BuildConfig.*",
+            "**/Manifest*.*",
+            "**/*Test*.*",
+            "android/**/*.*",
+            "**/*\$Lambda$*.*", // Jacoco can not handle several "$" in class name.
+            "**/*\$inlined$*.*"
+        )
+    }
+    val mainSrc = fileTree(project.buildDir) {
+        include("/src/main/java/**")
+    }
+
+    sourceDirectories.setFrom(files(mainSrc))
+    classDirectories.setFrom(files(classDirsTree))
+    executionData.setFrom(fileTree(buildDir) {
+        include("jacoco/testDebugUnitTest.exec", "outputs/code-coverage/connected/*coverage.ec")
+    })
+
+    reports {
+        xml.isEnabled = true
+        html.isEnabled = true
+    }
 }
 
 sonarqube {
@@ -63,13 +111,14 @@ sonarqube {
         property("sonar.projectKey", "andstatus")
         property("sonar.projectVersion", project.android.defaultConfig.versionName!!)
 
-        property("sonar.sourceEncoding","UTF-8")
+        property("sonar.sourceEncoding", "UTF-8")
         // See http://docs.sonarqube.org/display/SONAR/Narrowing+the+Focus
-        property("sonar.exclusions","build/**,libs/**,**/*.png,**/*.json,**/*.iml,**/*Secret.*")
+        property("sonar.exclusions", "build/**,libs/**,**/*.png,**/*.json,**/*.iml,**/*Secret.*")
 
         property("sonar.import_unknown_files", true)
 
-        property("sonar.android.lint.report", "./build/outputs/lint-results.xml")
+        property("sonar.android.lint.report", "build/reports/lint-results.xml")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/coverage/debug/report.xml")
     }
 }
 
@@ -79,7 +128,7 @@ sonarqube {
 
 configurations {
     all {
-        exclude( group = "org.apache.httpcomponents", module = "httpclient")
+        exclude(group = "org.apache.httpcomponents", module = "httpclient")
     }
 }
 
