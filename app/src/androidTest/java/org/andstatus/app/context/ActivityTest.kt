@@ -21,7 +21,7 @@ import android.content.Intent
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
 import io.vavr.control.CheckedRunnable
-import org.andstatus.app.util.NoScreenSupport
+import org.andstatus.app.util.IgnoreInTravis1
 import org.andstatus.app.util.ScreenshotOnFailure
 import org.apache.geode.test.junit.ConditionalIgnore
 import org.apache.geode.test.junit.rules.ConditionalIgnoreRule
@@ -30,7 +30,7 @@ import org.junit.Rule
 /** Helper for Activity tests, based on https://google.github.io/android-testing-support-library/
  * See https://developer.android.com/training/testing/ui-testing/espresso-testing.html
  */
-@ConditionalIgnore(NoScreenSupport::class)
+@ConditionalIgnore(IgnoreInTravis1::class)
 abstract class ActivityTest<T : Activity> {
     @Rule
     @JvmField

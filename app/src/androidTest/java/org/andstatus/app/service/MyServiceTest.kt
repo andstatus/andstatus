@@ -18,12 +18,13 @@ package org.andstatus.app.service
 import org.andstatus.app.account.MyAccount
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
+import org.andstatus.app.util.IgnoredInTravis2
 import org.andstatus.app.util.MyLog
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
 
-abstract class MyServiceTest {
+abstract class MyServiceTest: IgnoredInTravis2() {
     private var mMService: MyServiceTestHelper? = null
     val mService: MyServiceTestHelper get() = mMService ?: throw IllegalStateException("MyServiceTestHelper is null")
 

@@ -15,6 +15,7 @@ import org.andstatus.app.context.TestSuite
 import org.andstatus.app.service.MyServiceManager
 import org.andstatus.app.util.DocumentFileUtils
 import org.andstatus.app.util.FileUtils
+import org.andstatus.app.util.IgnoredInTravis2
 import org.andstatus.app.util.MyLog
 import org.andstatus.app.util.SharedPreferencesUtil
 import org.andstatus.app.util.TriState
@@ -28,7 +29,7 @@ import java.io.IOException
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class MyBackupAgentTest {
+class MyBackupAgentTest: IgnoredInTravis2() {
 
     @Before
     @Throws(Exception::class)

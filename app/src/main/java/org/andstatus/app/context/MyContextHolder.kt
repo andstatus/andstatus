@@ -250,9 +250,6 @@ class MyContextHolder private constructor() : TaggedClass {
         } else ExecutionMode.DEVICE
     }
 
-    val noScreenSupport: Boolean
-        get() = executionMode == ExecutionMode.TRAVIS_TEST && Build.VERSION.SDK_INT < 29
-
     fun onShutDown() {
         isShuttingDown = true
         release { "onShutDown" }

@@ -30,7 +30,6 @@ import org.andstatus.app.net.social.ConnectionMock
 import org.andstatus.app.origin.DiscoveredOrigins
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.timeline.meta.TimelineType
-import org.andstatus.app.util.IgnoredInTravis
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -38,7 +37,7 @@ import org.junit.Test
 import java.io.IOException
 import kotlin.properties.Delegates
 
-class CommandExecutorStrategyTest: IgnoredInTravis() {
+class CommandExecutorStrategyTest {
     private var mock: ConnectionMock by Delegates.notNull()
     private var httpConnectionMock: HttpConnectionMock by Delegates.notNull()
     private var ma: MyAccount = MyAccount.EMPTY

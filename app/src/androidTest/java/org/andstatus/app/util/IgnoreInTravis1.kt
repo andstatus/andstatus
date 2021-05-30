@@ -15,17 +15,20 @@
  */
 package org.andstatus.app.util
 
+import android.os.Build
+import org.andstatus.app.context.ExecutionMode
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.TestSuite
 import org.apache.geode.test.junit.IgnoreCondition
 import org.junit.runner.Description
 
 /**
+ * All Activity (screen) - related tests are marked with this annotation
  * @author yvolk@yurivolkov.com
  */
-class NoScreenSupport : IgnoreCondition {
+class IgnoreInTravis1 : IgnoreCondition {
     override fun evaluate(testCaseDescription: Description?): Boolean {
         TestSuite.initialize(this)
-        return MyContextHolder.myContextHolder.noScreenSupport
+        return MyContextHolder.myContextHolder.executionMode == ExecutionMode.TRAVIS_TEST && Build.VERSION.SDK_INT != 29
     }
 }

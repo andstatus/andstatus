@@ -5,8 +5,8 @@ import org.apache.geode.test.junit.rules.ConditionalIgnoreRule
 import org.junit.Rule
 
 /** This class and all its subclasses should be ignored in Travis */
-@ConditionalIgnore(IsTravisTest::class)
-open class IgnoredInTravis {
+@ConditionalIgnore(IgnoreInTravis2::class)
+open class IgnoredInTravis2 {
     @Rule
     @JvmField
     var conditionalIgnoreRule: ConditionalIgnoreRule = ConditionalIgnoreRule()
