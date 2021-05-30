@@ -61,7 +61,29 @@ class MyContextHolder private constructor() : TaggedClass {
     private var onRestore = false
 
     @Volatile
-    private var executionMode = ExecutionMode.UNKNOWN
+    var executionMode = ExecutionMode.UNKNOWN
+        get() {
+            if (field == ExecutionMode.UNKNOWN) {
+                val myContext = getNow()
+                if (myContext.nonEmpty) {
+                    if ("true" == Settings.System.getString(myContext.context().contentResolver, "firebase.test.lab")) {
+                        // See https://firebase.google.com/docs/test-lab/android-studio
+                        field = if (myContext.isTestRun()) ExecutionMode.FIREBASE_TEST else ExecutionMode.ROBO_TEST
+                    } else {
+                        field = if (myContext.isTestRun()) ExecutionMode.TEST else ExecutionMode.DEVICE
+                    }
+                }
+            }
+            return field
+        }
+        set(value) {
+            if (field != value) {
+                field = value
+                if (field != ExecutionMode.DEVICE) {
+                    MyLog.i(this, "Executing: " + getVersionText(getNow().context()))
+                }
+            }
+        }
 
     /** Immediately get currently available context, even if it's empty  */
     fun getNow(): MyContext {
@@ -200,7 +222,8 @@ class MyContextHolder private constructor() : TaggedClass {
         if (builder.isEmpty()) {
             builder.append("AndStatus v.?")
         }
-        MyStringBuilder.appendWithSpace(builder, if (getExecutionMode() == ExecutionMode.DEVICE) "" else getExecutionMode().code)
+        MyStringBuilder.appendWithSpace(builder,
+            if (executionMode == ExecutionMode.DEVICE) "" else executionMode.code)
         MyStringBuilder.appendWithSpace(builder, TamperingDetector.getAppSignatureInfo())
         return builder.toString()
     }
@@ -212,22 +235,6 @@ class MyContextHolder private constructor() : TaggedClass {
 
     fun isOnRestore(): Boolean {
         return onRestore
-    }
-
-    fun setExecutionMode(executionMode: ExecutionMode) {
-        if (this.executionMode != executionMode) {
-            this.executionMode = executionMode
-            if (executionMode != ExecutionMode.DEVICE) {
-                MyLog.i(this, "Executing: " + getVersionText(getNow().context()))
-            }
-        }
-    }
-
-    fun getExecutionMode(): ExecutionMode {
-        if (executionMode == ExecutionMode.UNKNOWN) {
-            setExecutionMode(calculateExecutionMode())
-        }
-        return executionMode
     }
 
     private fun calculateExecutionMode(): ExecutionMode {
@@ -243,9 +250,8 @@ class MyContextHolder private constructor() : TaggedClass {
         } else ExecutionMode.DEVICE
     }
 
-    fun isScreenSupported(): Boolean {
-        return getExecutionMode() != ExecutionMode.TRAVIS_TEST || Build.VERSION.SDK_INT >= 29
-    }
+    val noScreenSupport: Boolean
+        get() = executionMode == ExecutionMode.TRAVIS_TEST && Build.VERSION.SDK_INT < 29
 
     fun onShutDown() {
         isShuttingDown = true

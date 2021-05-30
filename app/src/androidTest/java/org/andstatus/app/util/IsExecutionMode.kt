@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 yvolk (Yuri Volkov), http://yurivolkov.com
+ * Copyright (C) 2021 yvolk (Yuri Volkov), http://yurivolkov.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.andstatus.app.context
+package org.andstatus.app.util
 
+import org.andstatus.app.context.ExecutionMode
+import org.andstatus.app.context.MyContextHolder
+import org.andstatus.app.context.TestSuite
 import org.apache.geode.test.junit.IgnoreCondition
 import org.junit.runner.Description
 
 /**
  * @author yvolk@yurivolkov.com
  */
-class NoScreenSupport : IgnoreCondition {
+open class IsExecutionMode(private val executionMode: ExecutionMode) : IgnoreCondition {
     override fun evaluate(testCaseDescription: Description?): Boolean {
         TestSuite.initialize(this)
-        return !MyContextHolder.myContextHolder.isScreenSupported()
+        MyLog.i(this, "Execution mode: " + MyContextHolder.myContextHolder.executionMode)
+        return true // MyContextHolder.myContextHolder.executionMode == executionMode
     }
 }
+
+class IsTravisTest: IsExecutionMode(ExecutionMode.TRAVIS_TEST)

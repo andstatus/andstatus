@@ -71,8 +71,8 @@ class HelpActivity : MyActivity() {
         if (intent.hasExtra(EXTRA_IS_FIRST_ACTIVITY)) {
             mIsFirstActivity = intent.getBooleanExtra(EXTRA_IS_FIRST_ACTIVITY, mIsFirstActivity)
         }
-        if ( MyContextHolder.myContextHolder.getNow().accounts().currentAccount.nonValid
-                &&  MyContextHolder.myContextHolder.getExecutionMode() == ExecutionMode.ROBO_TEST && !generatingDemoData) {
+        if (MyContextHolder.myContextHolder.getNow().accounts().currentAccount.nonValid
+            && MyContextHolder.myContextHolder.executionMode == ExecutionMode.ROBO_TEST && !generatingDemoData) {
             progressListener.cancel()
             generatingDemoData = true
             progressListener = DefaultProgressListener(this, R.string.app_name, "GenerateDemoData")
@@ -153,7 +153,7 @@ class HelpActivity : MyActivity() {
             val view = inflater.inflate(R.layout.splash, container, false)
             showVersionText(inflater.context, view)
             ViewUtils.showView(view, R.id.system_info_section, MyPreferences.isShowDebuggingInfoInUi()
-                    ||  MyContextHolder.myContextHolder.getExecutionMode() != ExecutionMode.DEVICE)
+                    || MyContextHolder.myContextHolder.executionMode != ExecutionMode.DEVICE)
             if (MyPreferences.isShowDebuggingInfoInUi()) {
                 MyUrlSpan.showText(view, R.id.system_info,
                          MyContextHolder.myContextHolder.getSystemInfo(inflater.context, false),

@@ -25,12 +25,12 @@ import org.andstatus.app.data.DownloadStatus
 import org.andstatus.app.net.http.ConnectionException
 import org.andstatus.app.net.http.ConnectionException.StatusCode
 import org.andstatus.app.net.http.HttpConnectionMock
-import org.andstatus.app.net.http.HttpReadResult
 import org.andstatus.app.net.social.AActivity
 import org.andstatus.app.net.social.ConnectionMock
 import org.andstatus.app.origin.DiscoveredOrigins
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.timeline.meta.TimelineType
+import org.andstatus.app.util.IgnoredInTravis
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -38,7 +38,7 @@ import org.junit.Test
 import java.io.IOException
 import kotlin.properties.Delegates
 
-class CommandExecutorStrategyTest {
+class CommandExecutorStrategyTest: IgnoredInTravis() {
     private var mock: ConnectionMock by Delegates.notNull()
     private var httpConnectionMock: HttpConnectionMock by Delegates.notNull()
     private var ma: MyAccount = MyAccount.EMPTY

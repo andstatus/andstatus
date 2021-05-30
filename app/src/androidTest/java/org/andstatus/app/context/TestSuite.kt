@@ -62,7 +62,9 @@ object TestSuite {
 
     fun initializeWithAccounts(testCase: Any?): Context {
         initialize(testCase)
-        if ( MyContextHolder.myContextHolder.getBlocking().accounts().fromAccountName(DemoData.demoData.activityPubTestAccountName).isEmpty) {
+        if (MyContextHolder.myContextHolder.getBlocking().accounts()
+                .fromAccountName(DemoData.demoData.activityPubTestAccountName).isEmpty
+        ) {
             ensureDataAdded()
         }
         return getMyContextForTest().context()
@@ -78,7 +80,7 @@ object TestSuite {
     fun initialize(testCase: Any?): Context {
         val method = "initialize"
         if (initialized) return context
-                ?: throw IllegalStateException("Context is null for initialised TestSuite")
+            ?: throw IllegalStateException("Context is null for initialised TestSuite")
         var creatorSet = false
         MyLog.setMinLogLevel(MyLog.VERBOSE)
         for (iter in 1..5) {
@@ -99,13 +101,14 @@ object TestSuite {
             context = co
             MyLog.i(TAG, "Before myContextHolder.initialize $iter")
             try {
-                if (creatorSet ||  MyContextHolder.myContextHolder
-                                .trySetCreator(MyContextTestImpl(MyContextHolder.myContextHolder.getNow(), co, testCase))) {
+                if (creatorSet || MyContextHolder.myContextHolder
+                        .trySetCreator(MyContextTestImpl(MyContextHolder.myContextHolder.getNow(), co, testCase))
+                ) {
                     creatorSet = true
                     FirstActivity.Companion.startMeAsync(co, MyAction.INITIALIZE_APP)
                     DbUtils.waitMs(method, 3000)
-                    if ( MyContextHolder.myContextHolder.getFuture().future.isDone()) {
-                        val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
+                    if (MyContextHolder.myContextHolder.getFuture().future.isDone()) {
+                        val myContext: MyContext = MyContextHolder.myContextHolder.getNow()
                         MyLog.i(TAG, "After starting FirstActivity $iter $myContext")
                         if (myContext.state() == MyContextState.READY) break
                     } else {
@@ -118,9 +121,9 @@ object TestSuite {
             DbUtils.waitMs(method, 3000)
         }
         MyLog.i(TAG, "After Initializing Test Suite loop")
-         MyContextHolder.myContextHolder.setExecutionMode(
-                ExecutionMode.Companion.load(InstrumentationRegistry.getArguments().getString("executionMode")))
-        val myContext: MyContext =  MyContextHolder.myContextHolder.getBlocking()
+        MyContextHolder.myContextHolder.executionMode =
+            ExecutionMode.Companion.load(InstrumentationRegistry.getArguments().getString("executionMode"))
+        val myContext: MyContext = MyContextHolder.myContextHolder.getBlocking()
         Assert.assertNotEquals("MyContext state $myContext", MyContextState.EMPTY, myContext.state())
         val logLevel = MyLog.VERBOSE
         MyLog.setMinLogLevel(logLevel)
@@ -133,20 +136,28 @@ object TestSuite {
         MyLog.forget()
         Assert.assertTrue("Level $logLevel should be loggable", MyLog.isLoggable(TAG, logLevel))
         MyServiceManager.Companion.setServiceUnavailable()
-        if ( MyContextHolder.myContextHolder.getBlocking().state() != MyContextState.READY) {
-            MyLog.d(TAG, "MyContext is not ready: " +  MyContextHolder.myContextHolder.getNow().state())
-            if ( MyContextHolder.myContextHolder.getNow().state() == MyContextState.NO_PERMISSIONS) {
+        if (MyContextHolder.myContextHolder.getBlocking().state() != MyContextState.READY) {
+            MyLog.d(TAG, "MyContext is not ready: " + MyContextHolder.myContextHolder.getNow().state())
+            if (MyContextHolder.myContextHolder.getNow().state() == MyContextState.NO_PERMISSIONS) {
                 Permissions.setAllGranted(true)
             }
             waitUntilContextIsReady()
         }
-        MyLog.d(TAG, "Before check isReady " +  MyContextHolder.myContextHolder.getNow())
-        initialized =  MyContextHolder.myContextHolder.getNow().isReady()
-        Assert.assertTrue("Test Suite initialized, MyContext state=" +  MyContextHolder.myContextHolder.getNow().state(), initialized)
-        dataPath =  MyContextHolder.myContextHolder.getNow().context().getDatabasePath("andstatus").getPath()
-        MyLog.v("TestSuite", "Test Suite initialized, MyContext state=" +  MyContextHolder.myContextHolder.getNow().state()
-                + "; databasePath=" + dataPath)
-        if (FirstActivity.Companion.checkAndUpdateLastOpenedAppVersion( MyContextHolder.myContextHolder.getNow().context(), true)) {
+        MyLog.d(TAG, "Before check isReady " + MyContextHolder.myContextHolder.getNow())
+        initialized = MyContextHolder.myContextHolder.getNow().isReady()
+        Assert.assertTrue(
+            "Test Suite initialized, MyContext state=" + MyContextHolder.myContextHolder.getNow().state(),
+            initialized
+        )
+        dataPath = MyContextHolder.myContextHolder.getNow().context().getDatabasePath("andstatus").getPath()
+        MyLog.v(
+            "TestSuite", "Test Suite initialized, MyContext state=" + MyContextHolder.myContextHolder.getNow().state()
+                    + "; databasePath=" + dataPath
+        )
+        if (FirstActivity.Companion.checkAndUpdateLastOpenedAppVersion(
+                MyContextHolder.myContextHolder.getNow().context(), true
+            )
+        ) {
             MyLog.i(TAG, "New version of application is running")
         }
         return context ?: throw IllegalStateException("Failed to initialize context")
@@ -155,32 +166,32 @@ object TestSuite {
     @Synchronized
     fun forget() {
         MyLog.d(TAG, "Before forget")
-         MyContextHolder.myContextHolder.release { "forget" }
+        MyContextHolder.myContextHolder.release { "forget" }
         context = null
         initialized = false
     }
 
     fun waitUntilContextIsReady() {
         val method = "waitUntilContextIsReady"
-        var intent = Intent( MyContextHolder.myContextHolder.getNow().context(), HelpActivity::class.java)
+        var intent = Intent(MyContextHolder.myContextHolder.getNow().context(), HelpActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-         MyContextHolder.myContextHolder.getNow().context().startActivity(intent)
+        MyContextHolder.myContextHolder.getNow().context().startActivity(intent)
         var i = 100
         while (i > 0) {
             DbUtils.waitMs(method, 2000)
-            MyLog.d(TAG, "Waiting for context " + i + " " +  MyContextHolder.myContextHolder.getNow().state())
-            when ( MyContextHolder.myContextHolder.getNow().state()) {
+            MyLog.d(TAG, "Waiting for context " + i + " " + MyContextHolder.myContextHolder.getNow().state())
+            when (MyContextHolder.myContextHolder.getNow().state()) {
                 MyContextState.READY, MyContextState.ERROR -> i = 0
                 else -> {
                 }
             }
             i--
         }
-        Assert.assertEquals("Is Not ready", MyContextState.READY,  MyContextHolder.myContextHolder.getNow().state())
-        intent = Intent( MyContextHolder.myContextHolder.getNow().context(), HelpActivity::class.java)
+        Assert.assertEquals("Is Not ready", MyContextState.READY, MyContextHolder.myContextHolder.getNow().state())
+        intent = Intent(MyContextHolder.myContextHolder.getNow().context(), HelpActivity::class.java)
         intent.putExtra(HelpActivity.Companion.EXTRA_CLOSE_ME, true)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-         MyContextHolder.myContextHolder.getNow().context().startActivity(intent)
+        MyContextHolder.myContextHolder.getNow().context().startActivity(intent)
         DbUtils.waitMs(method, 2000)
     }
 
@@ -189,11 +200,11 @@ object TestSuite {
     }
 
     fun getMyContextForTest(): MyContextTestImpl {
-        val myContext: MyContext =  MyContextHolder.myContextHolder.getBlocking()
+        val myContext: MyContext = MyContextHolder.myContextHolder.getBlocking()
         if (myContext !is MyContextTestImpl) {
             Assert.fail("Wrong type of current context: " + (myContext.javaClass.name))
         }
-        return  MyContextHolder.myContextHolder.getBlocking() as MyContextTestImpl
+        return MyContextHolder.myContextHolder.getBlocking() as MyContextTestImpl
     }
 
     fun setHttpConnectionMockClass(httpConnectionMockClass: Class<out HttpConnection?>?) {
@@ -236,7 +247,7 @@ object TestSuite {
     @Throws(InterruptedException::class)
     fun waitForListLoaded(activity: Activity, minCount: Int): Int {
         val method = "waitForListLoaded"
-        val list = activity.findViewById<View?>(android.R.id.list) as ViewGroup ?
+        val list = activity.findViewById<View?>(android.R.id.list) as ViewGroup?
         Assert.assertTrue(list != null)
         var itemsCount = 0
         for (ind in 0..39) {
@@ -249,9 +260,11 @@ object TestSuite {
             }
             itemsCount = itemsCountNew
         }
-        Assert.assertTrue("There are " + itemsCount + " items (min=" + minCount + ")" +
-                " in the list of " + activity.javaClass.simpleName,
-                itemsCount >= minCount)
+        Assert.assertTrue(
+            "There are " + itemsCount + " items (min=" + minCount + ")" +
+                    " in the list of " + activity.javaClass.simpleName,
+            itemsCount >= minCount
+        )
         return itemsCount
     }
 
@@ -270,9 +283,9 @@ object TestSuite {
 
     fun setAndWaitForIsInForeground(isInForeground: Boolean): Boolean {
         val method = "setAndWaitForIsInForeground"
-         MyContextHolder.myContextHolder.getNow().setInForeground(isInForeground)
+        MyContextHolder.myContextHolder.getNow().setInForeground(isInForeground)
         for (pass in 0..299) {
-            if ( MyContextHolder.myContextHolder.getNow().isInForeground() == isInForeground) {
+            if (MyContextHolder.myContextHolder.getNow().isInForeground() == isInForeground) {
                 return true
             }
             if (DbUtils.waitMs(method, 100)) {
@@ -285,6 +298,7 @@ object TestSuite {
     fun clearHttpMocks() {
         setHttpConnectionMockClass(null)
         setHttpConnectionMockInstance(null)
-         MyContextHolder.myContextHolder.getBlocking().accounts().get().forEach(Consumer { obj: MyAccount -> obj.setConnection() })
+        MyContextHolder.myContextHolder.getBlocking().accounts().get()
+            .forEach(Consumer { obj: MyAccount -> obj.setConnection() })
     }
 }

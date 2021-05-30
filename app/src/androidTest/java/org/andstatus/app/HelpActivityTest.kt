@@ -62,8 +62,10 @@ class HelpActivityTest : ActivityTest<HelpActivity>() {
         Assert.assertEquals("At User Guide", HelpActivity.Companion.PAGE_USER_GUIDE.toLong(), mFlipper.currentItem.toLong())
         Espresso.onView(ViewMatchers.withId(R.id.button_help_learn_more)).perform(ViewActions.click())
         Assert.assertEquals("At Logo page", HelpActivity.Companion.PAGE_LOGO.toLong(), mFlipper.currentItem.toLong())
-        Espresso.onView(ViewMatchers.withId(R.id.splash_application_version)).check(ViewAssertions.matches(ViewMatchers.withText(CoreMatchers.containsString( MyContextHolder.myContextHolder
-                .getExecutionMode().code))))
+        Espresso.onView(ViewMatchers.withId(R.id.splash_application_version)).check(ViewAssertions.matches(ViewMatchers.withText(CoreMatchers.containsString(
+            MyContextHolder.myContextHolder
+                .executionMode.code
+        ))))
         DbUtils.waitMs("test", 500)
         val helper = ActivityTestHelper(mActivityRule.activity,
                 MySettingsActivity::class.java)

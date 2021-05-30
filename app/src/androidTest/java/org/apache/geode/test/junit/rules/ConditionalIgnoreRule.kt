@@ -46,52 +46,46 @@ class ConditionalIgnoreRule : TestRule, Serializable {
         return object : Statement() {
             @Throws(Throwable::class)
             override fun evaluate() {
-                this@ConditionalIgnoreRule.evaluate(base, description)
+                passOrThrowAssumptionViolation(base, description).evaluate()
             }
         }
     }
 
-    @Throws(Throwable::class)
-    fun evaluate(statement: Statement, description: Description) {
-        throwOnIgnoreTest(statement, description).evaluate()
-    }
-
-    protected fun throwOnIgnoreTest(statement: Statement, description: Description): Statement {
-        var ignoreTest = false
+    private fun passOrThrowAssumptionViolation(statement: Statement, description: Description): Statement {
+        var skipTest = false
         var message = ""
         val testCaseAnnotation = description.getAnnotation(ConditionalIgnore::class.java)
         if (testCaseAnnotation != null) {
-            ignoreTest = evaluate(testCaseAnnotation, description)
+            skipTest = evaluateAnnotation(testCaseAnnotation, description)
             message = testCaseAnnotation.value
         } else if (description.getTestClass().isAnnotationPresent(ConditionalIgnore::class.java)) {
             description.getTestClass().getAnnotation(ConditionalIgnore::class.java)?.let { annotation ->
-                ignoreTest = evaluate(annotation, description)
+                skipTest = evaluateAnnotation(annotation, description)
                 message = annotation.value
             }
         }
-        if (ignoreTest) {
+        if (skipTest) {
             throw AssumptionViolatedException(format(message, description))
         }
         return statement
     }
 
-    protected fun isTest(description: Description): Boolean {
-        return description.isSuite() || description.isTest()
+    private fun isTest(description: Description): Boolean {
+        return description.isSuite || description.isTest
     }
 
-    protected fun format(message: String, description: Description): String {
-        var message = message
-        message = if (!message.isEmpty()) message else DEFAULT_MESSAGE
-        return String.format(message, description.getMethodName(), description.getClassName())
+    private fun format(message: String, description: Description): String {
+        val msgOut = if (!message.isEmpty()) message else DEFAULT_MESSAGE
+        return String.format(msgOut, description.methodName, description.className)
     }
 
-    protected fun evaluate(conditionalIgnoreAnnotation: ConditionalIgnore,
-                           description: Description): Boolean {
+    private fun evaluateAnnotation(conditionalIgnoreAnnotation: ConditionalIgnore,
+                                   description: Description): Boolean {
         return (evaluateCondition(conditionalIgnoreAnnotation.condition, description)
                 || evaluateUntil(conditionalIgnoreAnnotation.until))
     }
 
-    protected fun evaluateCondition(ignoreConditionType: KClass<out IgnoreCondition>,
+    private fun evaluateCondition(ignoreConditionType: KClass<out IgnoreCondition>,
                                     description: Description?): Boolean {
         return try {
             ignoreConditionType.javaObjectType.newInstance().evaluate(description)
@@ -101,7 +95,7 @@ class ConditionalIgnoreRule : TestRule, Serializable {
         }
     }
 
-    protected fun evaluateUntil(timestamp: String): Boolean {
+    private fun evaluateUntil(timestamp: String): Boolean {
         return try {
             DATE_FORMAT.parse(timestamp)?.after(Calendar.getInstance().time) == true
         } catch (e: ParseException) {
@@ -110,8 +104,8 @@ class ConditionalIgnoreRule : TestRule, Serializable {
     }
 
     companion object {
-        protected val DATE_FORMAT_PATTERN: String = "yyyy-MM-dd"
-        protected val DEFAULT_MESSAGE: String = "Ignoring test case (%1\$s) of test class (%2\$s)!"
-        protected val DATE_FORMAT: DateFormat = SimpleDateFormat(DATE_FORMAT_PATTERN)
+        private const val DATE_FORMAT_PATTERN: String = "yyyy-MM-dd"
+        private const val DEFAULT_MESSAGE: String = "Ignoring test case (%1\$s) of test class (%2\$s)!"
+        private val DATE_FORMAT: DateFormat = SimpleDateFormat(DATE_FORMAT_PATTERN)
     }
 }
