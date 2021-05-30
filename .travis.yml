@@ -93,7 +93,7 @@ script:
 - chmod +x gradlew
 
 - |
-  travis_wait 30 ./gradlew -Pandroid.testInstrumentationRunnerArguments.executionMode=travisTest :app:createDebugCoverageReport
+  travis_wait 40 ./gradlew -Pandroid.testInstrumentationRunnerArguments.executionMode=travisTest :app:createDebugCoverageReport
   retval=$?
   if [ $retval -ne 0 ]; then
     echo "error on install, exit code: "$retval

@@ -11,7 +11,7 @@ and it allows you to read and post even when you are offline.
 For Android v.7.0+ devices.
 Under Free/Libre and Open Source License.
 
-[![Build status](https://api.travis-ci.org/andstatus/andstatus.svg?branch=master)](https://travis-ci.org/andstatus/andstatus) 
+[![Build status](https://travis-ci.com/andstatus/andstatus.svg?branch=master)](https://travis-ci.com/github/andstatus/andstatus)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=andstatus&metric=alert_status)](https://sonarcloud.io/dashboard?id=andstatus)
 
 See the [Change Log](http://andstatus.org/changelog.html) for descriptions of all the features of AndStatus
