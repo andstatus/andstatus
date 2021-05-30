@@ -29,6 +29,6 @@ import org.junit.runner.Description
 class IgnoreInTravis2 : IgnoreCondition {
     override fun evaluate(testCaseDescription: Description?): Boolean {
         TestSuite.initialize(this)
-        return MyContextHolder.myContextHolder.executionMode == ExecutionMode.TRAVIS_TEST && Build.VERSION.SDK_INT == 29
+        return false // effectively turn off this condition for now
     }
 }
