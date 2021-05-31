@@ -54,7 +54,8 @@
 			android:exported="false" />
 		<provider android:name="org.andstatus.app.data.FileProvider"
 			android:authorities="org.andstatus.app.data.FileProvider" 
-			android:exported="true" />
+			android:exported="true"
+            android:permission="android.permission.READ_EXTERNAL_STORAGE"/>
 				
 		<service android:name="org.andstatus.app.service.MyService"
 		    android:exported="false" />
@@ -72,7 +73,8 @@
         </service>
         <service
             android:name="org.andstatus.app.syncadapter.SyncService"
-            android:exported="true">
+            android:exported="true"
+            android:permission="android.permission.READ_SYNC_SETTINGS">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
@@ -126,7 +128,8 @@
         <activity android:name=".timeline.TimelineActivity"
                   android:label="@string/app_name"
                   android:screenOrientation="user"
-                  android:windowSoftInputMode="adjustResize">
+                  android:windowSoftInputMode="adjustResize"
+                  android:permission="">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <action android:name="android.intent.action.PICK"/>
@@ -147,7 +150,8 @@
         </activity>
         <activity android:name=".note.ConversationActivity"
                   android:label="@string/label_conversation"
-                  android:screenOrientation="user">
+                  android:screenOrientation="user"
+                  android:permission="">
             <!--
     mimeType attribute is required for intent-filter of .ConversationActivity
     as it has both custom action and Uri present in Intent,
@@ -163,7 +167,8 @@
         <activity android:name=".actor.ActorsScreen"
                   android:label="@string/user_list"
                   android:screenOrientation="user"
-                  android:parentActivityName=".timeline.TimelineActivity">
+                  android:parentActivityName=".timeline.TimelineActivity"
+                  android:permission="">
             <intent-filter>
                 <action android:name="org.andstatus.app.action.VIEW_ACTORS" />
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -176,7 +181,8 @@
         <activity android:name=".actor.FollowersScreen"
                   android:label="@string/followers"
                   android:screenOrientation="user"
-                  android:parentActivityName=".timeline.TimelineActivity">
+                  android:parentActivityName=".timeline.TimelineActivity"
+                  android:permission="">
             <intent-filter>
                 <action android:name="org.andstatus.app.action.VIEW_FOLLOWERS" />
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -202,7 +208,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".appwidget.MyAppWidgetConfigure"
-                  android:screenOrientation="user">
+                  android:screenOrientation="user"
+                  android:permission="">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
@@ -212,7 +219,8 @@
                   android:screenOrientation="user"
                   android:alwaysRetainTaskState="true"
                   android:launchMode="singleTask"
-                  android:parentActivityName=".context.MySettingsActivity">
+                  android:parentActivityName=".context.MySettingsActivity"
+                  android:permission="">
             <intent-filter>
                 <action
                     android:name="org.andstatus.app.ACCOUNT_MANAGER_ENTRY" />
@@ -271,6 +279,7 @@
                   android:label="@string/commands_in_a_queue"
                   android:screenOrientation="user"
                   android:exported="true"
+                  android:permission=""
                   android:parentActivityName=".timeline.TimelineActivity">
         </activity>
         <activity android:name=".timeline.meta.ManageTimelines"
