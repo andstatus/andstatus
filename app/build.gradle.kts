@@ -63,8 +63,11 @@ android {
 
 }
 
-// This doesn't work yet...
-task<JacocoReport>("myJacocoTestReport") {
+jacoco {
+    toolVersion = "0.8.7"
+}
+
+task<JacocoReport>("jacocoTestReport") {
     group = "verification"
 
     val classDirsTree = fileTree(buildDir) {
@@ -118,7 +121,8 @@ sonarqube {
         property("sonar.import_unknown_files", true)
 
         property("sonar.android.lint.report", "build/reports/lint-results.xml")
-        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/coverage/debug/report.xml")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/coverage/debug/report.xml" +
+                ",build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
     }
 }
 

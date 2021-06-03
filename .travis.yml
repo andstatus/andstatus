@@ -93,6 +93,7 @@ script:
 - chmod +x gradlew
 
 - |
+  ./gradlew :app:testDebugUnitTest
   travis_wait 45 ./gradlew -Pandroid.testInstrumentationRunnerArguments.executionMode=travisTest :app:createDebugCoverageReport
   retval=$?
   if [ $retval -ne 0 ]; then
@@ -103,6 +104,7 @@ script:
 after_success:
   - |
     if [ $API = 29 ]; then
+      ./gradlew :app:jacocoTestReport
       ./gradlew sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.verbose=true
     fi
 
