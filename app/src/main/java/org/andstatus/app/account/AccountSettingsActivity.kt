@@ -37,7 +37,6 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.IdRes
-import io.vavr.control.NonFatalException
 import io.vavr.control.Try
 import oauth.signpost.OAuth
 import oauth.signpost.exception.OAuthCommunicationException
@@ -198,9 +197,9 @@ class AccountSettingsActivity : MyActivity() {
         var message: String
         if (state.isEmpty) {
             state = StateOfAccountChangeProcess.fromStoredState()
-            message = if (state.restored) "State restored" else "No previous state"
+            message = if (state.theStateWasRestored) "State restored" else "No previous state"
         } else {
-            message = "State existed" + if (state.restored) " (was restored earlier)" else ""
+            message = "State existed" + if (state.theStateWasRestored) " (was restored earlier)" else ""
         }
         val newState: StateOfAccountChangeProcess = StateOfAccountChangeProcess.fromIntent(intent)
         if (state.actionCompleted || newState.useThisState) {
@@ -917,6 +916,12 @@ class AccountSettingsActivity : MyActivity() {
     }
 
     /**
+     * For OAuth2:
+     *    Create Authorization Request as per https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.1
+     *
+     * -----------------------
+     * For OAuth:
+     *
      * Task 2 of 3 required for OAuth Authentication.
      * See http://www.snipe.net/2009/07/writing-your-first-twitter-application-with-oauth/
      * for good OAuth Authentication flow explanation.
@@ -964,7 +969,7 @@ class AccountSettingsActivity : MyActivity() {
                 } else {
                     if (oAuthService.isOAuth2()) {
                         oAuthService.getService(true)?.let { service ->
-                            authUri = UriUtils.fromString(service.authorizationUrl)
+                            authUri = UriUtils.fromString(service.getAuthorizationUrl(activity.state.oauthStateParameter))
                         }
                     } else {
                         val consumer = oAuthService.getConsumer()
@@ -1044,16 +1049,20 @@ class AccountSettingsActivity : MyActivity() {
     /**
      * Task 3 of 3 required for OAuth Authentication.
      *
+     * For OAuth2:
+     *    1. Receive Authorization Response as per https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.2
+     *    2. Make Access Token Request https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.3
+     *    3. Get Access Token Response https://datatracker.ietf.org/doc/html/rfc6749#section-4.1.4
+     *       and store the access token for the future use.
+     *
+     * -----------------------
+     * For OAuth:
+     *
      * During this task:
      * 1. AndStatus ("Consumer") exchanges "Request Token",
      * obtained earlier from Twitter ("Service provider"),
      * for "Access Token".
      * 2. Stores the Access token for all future interactions with Twitter.
-     *
-     * @author yvolk@yurivolkov.com This code is based on "BLOA" example,
-     * http://github.com/brione/Brion-Learns-OAuth yvolk: I had to move
-     * this code from OAuthActivity here in order to be able to show
-     * ProgressDialog and to get rid of any "Black blank screens"
      */
     private inner class OAuthAcquireAccessTokenTask() : MyAsyncTask<Uri?, Void?, TaskResult?>(PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
@@ -1081,13 +1090,21 @@ class AccountSettingsActivity : MyActivity() {
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
                     try {
                         if (myAccount.getOAuthService()?.isOAuth2() == true) {
-                            val authCode = params.getQueryParameter("code")
-                            MyLog.d(this, "Auth code is: $authCode")
-                            val service = myAccount.getOAuthService()?.getService(true)
-                            val token = service?.getAccessToken(authCode)
-                            accessToken = token?.accessToken ?: ""
-                            accessSecret = token?.rawResponse ?: ""
-                            whoAmI = MyOAuth2AccessTokenJsonExtractor.extractWhoAmI(accessSecret)
+                            val authorizationCode = params.getQueryParameter("code")
+                            val stateParameter = params.getQueryParameter("state")
+                            MyLog.d(this, "Auth response, code:$authorizationCode, state:$stateParameter")
+                            val stateIsCorrect = state.oauthStateParameter.equals(stateParameter)
+                            if (stateIsCorrect) {
+                                val service = myAccount.getOAuthService()?.getService(true)
+                                val token = service?.getAccessToken(authorizationCode)
+                                accessToken = token?.accessToken ?: ""
+                                accessSecret = token?.rawResponse ?: ""
+                                whoAmI = MyOAuth2AccessTokenJsonExtractor.extractWhoAmI(accessSecret)
+                            } else {
+                                message = "Incorrect state parameter in Authorization Response." +
+                                        " Expected: '${state.oauthStateParameter}'"  +
+                                        ", Actual: '$stateParameter'"
+                            }
                         } else {
                             val requestToken = state.getRequestToken()
                             val requestSecret = state.getRequestSecret()

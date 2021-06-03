@@ -24,6 +24,7 @@ import org.andstatus.app.context.MyContext
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.origin.Origin
 import org.andstatus.app.origin.OriginType
+import org.andstatus.app.util.InstanceId
 import org.andstatus.app.util.IsEmpty
 import org.andstatus.app.util.MyLog
 import java.util.concurrent.atomic.AtomicReference
@@ -37,10 +38,10 @@ import java.util.concurrent.atomic.AtomicReference
 class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty {
     var accountAction: String = Intent.ACTION_DEFAULT
         set(accountAction) {
-            if (accountAction.isEmpty()) {
-                field = Intent.ACTION_DEFAULT
+            field = if (accountAction.isEmpty()) {
+                Intent.ACTION_DEFAULT
             } else {
-                field = accountAction
+                accountAction
             }
         }
 
@@ -54,10 +55,8 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
     var builder: MyAccount.Builder = MyAccount.Builder.EMPTY
     var useThisState = false
 
-    /**
-     * The state was restored
-     */
-    var restored = false
+    val oauthStateParameter: String
+    val theStateWasRestored: Boolean
     var accountShouldBeSelected = false
     var originShouldBeSelected = false
 
@@ -66,6 +65,24 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
 
     @Volatile
     private var requestSecret: String? = null
+
+    init {
+        if (bundle != null && bundle.containsKey(ACTION_COMPLETED_KEY)) {
+            accountAction = bundle.getString(ACCOUNT_ACTION_KEY) ?: ""
+            actionCompleted = bundle.getBoolean(ACTION_COMPLETED_KEY, true)
+            actionSucceeded = bundle.getBoolean(ACTION_SUCCEEDED_KEY)
+            builder = MyAccount.Builder.fromJsonString(MyContextHolder.myContextHolder.getNow(), bundle.getString(ACCOUNT_KEY))
+            authenticatorResponse = bundle.getParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY)
+            setRequestTokenWithSecret(bundle.getString(REQUEST_TOKEN_KEY), bundle.getString(REQUEST_SECRET_KEY))
+            oauthStateParameter = bundle.getString(OAUTH_STATE_PARAMETER) ?: ""
+            theStateWasRestored = true
+        } else {
+            builder = MyAccount.Builder.EMPTY
+            oauthStateParameter = "state_" + InstanceId.next() + "_" + System.currentTimeMillis()
+            theStateWasRestored = false
+        }
+    }
+
     fun getRequestToken(): String? {
         return requestToken
     }
@@ -107,6 +124,7 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
                 bundle.putParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY, authenticatorResponse)
                 bundle.putString(REQUEST_TOKEN_KEY, requestToken)
                 bundle.putString(REQUEST_SECRET_KEY, requestSecret)
+                bundle.putString(OAUTH_STATE_PARAMETER, oauthStateParameter)
                 bundle
             }
             MyLog.v(this, "State saved")
@@ -123,20 +141,6 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
 
     val myAccount: MyAccount get() = builder.myAccount
     val myContext: MyContext get() = builder.myAccount.myContext
-
-    init {
-        if (bundle != null && bundle.containsKey(ACTION_COMPLETED_KEY)) {
-            accountAction = bundle.getString(ACCOUNT_ACTION_KEY) ?: ""
-            actionCompleted = bundle.getBoolean(ACTION_COMPLETED_KEY, true)
-            actionSucceeded = bundle.getBoolean(ACTION_SUCCEEDED_KEY)
-            builder = MyAccount.Builder.fromJsonString(MyContextHolder.myContextHolder.getNow(), bundle.getString(ACCOUNT_KEY))
-            authenticatorResponse = bundle.getParcelable(ACCOUNT_AUTHENTICATOR_RESPONSE_KEY)
-            setRequestTokenWithSecret(bundle.getString(REQUEST_TOKEN_KEY), bundle.getString(REQUEST_SECRET_KEY))
-            restored = true
-        } else {
-            builder = MyAccount.Builder.EMPTY
-        }
-    }
 
     override val isEmpty: Boolean
         get() = this == EMPTY
@@ -156,6 +160,7 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
         private const val ACTION_SUCCEEDED_KEY: String = "action_succeeded"
         private const val REQUEST_TOKEN_KEY: String = "request_token"
         private const val REQUEST_SECRET_KEY: String = "request_secret"
+        private const val OAUTH_STATE_PARAMETER = "oauth_state_parameter"
 
         fun fromStoredState(): StateOfAccountChangeProcess {
             return StateOfAccountChangeProcess(storedState.get())
