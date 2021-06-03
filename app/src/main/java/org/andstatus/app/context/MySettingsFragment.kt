@@ -369,7 +369,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
                 storageSwitch.showSwitchStorageDialog(ActivityRequestCode.MOVE_DATA_BETWEEN_STORAGES,
                         preference.isChecked())
             }
-            KEY_ADD_NEW_ACCOUNT -> AccountSettingsActivity.startAddNewAccount(activity, null, false)
+            KEY_ADD_NEW_ACCOUNT -> AccountSettingsActivity.startAddingNewAccount(activity, null, false)
             KEY_DELETE_OLD_DATA -> DialogFactory.showOkCancelDialog(activity, getText(R.string.delete_old_data), "")
                                     { doLaunch: Boolean -> launchDataPruner(doLaunch) }
             KEY_MANAGE_ACCOUNTS -> startActivity(Intent(activity, ManageAccountsActivity::class.java))

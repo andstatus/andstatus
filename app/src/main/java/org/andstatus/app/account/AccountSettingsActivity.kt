@@ -1093,8 +1093,7 @@ class AccountSettingsActivity : MyActivity() {
                             val authorizationCode = params.getQueryParameter("code")
                             val stateParameter = params.getQueryParameter("state")
                             MyLog.d(this, "Auth response, code:$authorizationCode, state:$stateParameter")
-                            val stateIsCorrect = state.oauthStateParameter.equals(stateParameter)
-                            if (stateIsCorrect) {
+                            if (state.oauthStateParameter == stateParameter) {
                                 val service = myAccount.getOAuthService()?.getService(true)
                                 val token = service?.getAccessToken(authorizationCode)
                                 accessToken = token?.accessToken ?: ""
@@ -1102,7 +1101,7 @@ class AccountSettingsActivity : MyActivity() {
                                 whoAmI = MyOAuth2AccessTokenJsonExtractor.extractWhoAmI(accessSecret)
                             } else {
                                 message = "Incorrect state parameter in Authorization Response." +
-                                        " Expected: '${state.oauthStateParameter}'"  +
+                                        " Expected: '${state.oauthStateParameter}'" +
                                         ", Actual: '$stateParameter'"
                             }
                         } else {
@@ -1279,12 +1278,9 @@ class AccountSettingsActivity : MyActivity() {
 
     companion object {
         private val TAG: String = AccountSettingsActivity::class.java.simpleName
-        fun startAddNewAccount(context: Context, originName: String?, clearTask: Boolean) {
-            val intent: Intent
-            intent = Intent(context, AccountSettingsActivity::class.java)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK +
-                    if (clearTask) Intent.FLAG_ACTIVITY_CLEAR_TASK else 0
-            )
+        fun startAddingNewAccount(context: Context, originName: String?, clearTask: Boolean) {
+            val intent: Intent = Intent(context, AccountSettingsActivity::class.java)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK + if (clearTask) Intent.FLAG_ACTIVITY_CLEAR_TASK else 0)
             intent.action = Intent.ACTION_INSERT
             if (!originName.isNullOrEmpty()) {
                 intent.putExtra(IntentExtra.ORIGIN_NAME.key, originName)
