@@ -57,14 +57,14 @@ android {
 
     testOptions {
         jacoco {
-            version = "0.8.7"
+            version = rootProject.extra["jacocoToolVersion"] as String
         }
     }
 
 }
 
 jacoco {
-    toolVersion = "0.8.7"
+    toolVersion = rootProject.extra["jacocoToolVersion"] as String
 }
 
 task<JacocoReport>("jacocoUnitTestReport") {
