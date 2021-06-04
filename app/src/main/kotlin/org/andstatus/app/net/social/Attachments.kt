@@ -113,7 +113,7 @@ class Attachments private constructor(isEmpty: Boolean) : IsEmpty {
         val EMPTY: Attachments = Attachments(true)
 
         fun load(myContext: MyContext, noteId: Long): Attachments {
-            if (myContext.isEmptyOrExpired() || noteId == 0L) return EMPTY
+            if (myContext.isEmptyOrExpired || noteId == 0L) return EMPTY
             val downloads: NoteDownloads = NoteDownloads.fromNoteId(myContext, noteId)
             if (downloads.isEmpty) return EMPTY
             val map: MutableMap<Long, Attachment> = HashMap()

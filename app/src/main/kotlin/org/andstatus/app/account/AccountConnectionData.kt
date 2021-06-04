@@ -69,7 +69,7 @@ class AccountConnectionData private constructor(private val myAccount: MyAccount
     }
 
     fun newHttpConnection(): HttpConnection {
-        val http = origin.myContext.getHttpConnectionMock()
+        val http = origin.myContext.httpConnectionMock
         return http
                 ?: try {
                     httpConnectionClass.newInstance() ?: HttpConnection.EMPTY

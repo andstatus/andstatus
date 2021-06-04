@@ -125,7 +125,7 @@ class MyFutureContext private constructor(private val previousContext: MyContext
                     "Context not ready"
                 } else if (previousContext.isExpired) {
                     "Context expired"
-                } else if (previousContext.isPreferencesChanged()) {
+                } else if (previousContext.isPreferencesChanged) {
                     "Preferences changed"
                 } else {
                     ""

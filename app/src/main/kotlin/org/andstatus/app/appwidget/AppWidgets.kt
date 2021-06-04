@@ -92,7 +92,7 @@ class AppWidgets private constructor(val events: NotificationEvents) {
 
     companion object {
         fun of(myContext: MyContext): AppWidgets {
-            return of(myContext.getNotifier().getEvents())
+            return of(myContext.notifier.getEvents())
         }
 
         fun of(events: NotificationEvents): AppWidgets {

@@ -30,8 +30,6 @@ import org.andstatus.app.R
 import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
-import org.andstatus.app.util.Permissions
-import org.andstatus.app.util.Permissions.PermissionType
 import org.andstatus.app.util.UriUtils
 
 class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
@@ -52,8 +50,8 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
         if (asyncTask?.completedBackgroundWork() ?: true) {
             resetProgress()
             asyncTask = (RestoreTask(this@RestoreActivity)
-                    .setMaxCommandExecutionSeconds(MAX_RESTORE_SECONDS.toLong())
-                    .setCancelable(false) as RestoreTask).also {
+                .setMaxCommandExecutionSeconds(MAX_RESTORE_SECONDS.toLong())
+                .setCancelable(false) as RestoreTask).also {
                 AsyncTaskLauncher<DocumentFile?>().execute(this, it, getDataFolder())
             }
         }
@@ -97,9 +95,11 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
         }
         val descriptorFile: Try<DocumentFile> = MyBackupManager.getExistingDescriptorFile(selectedFolder)
         if (descriptorFile.isFailure) {
-            addProgressMessage("This is not an AndStatus backup folder." +
-                    " Descriptor file " + MyBackupManager.DESCRIPTOR_FILE_NAME +
-                    " doesn't exist in: '" + selectedFolder.uri.path + "'")
+            addProgressMessage(
+                "This is not an AndStatus backup folder." +
+                        " Descriptor file " + MyBackupManager.DESCRIPTOR_FILE_NAME +
+                        " doesn't exist in: '" + selectedFolder.uri.path + "'"
+            )
             return
         }
         dataFolder = selectedFolder
@@ -116,7 +116,7 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     private class RestoreTask(private val activity: RestoreActivity) :
-            MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.thatCannotBeShutDown()) {
+        MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.thatCannotBeShutDown()) {
 
         override fun doInBackground2(dataFolder: DocumentFile?): Void? {
             dataFolder?.let {
@@ -141,13 +141,13 @@ class RestoreActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     override fun onResume() {
-         MyContextHolder.myContextHolder.getNow().setInForeground(true)
+        MyContextHolder.myContextHolder.getNow().isInForeground = true
         super.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-         MyContextHolder.myContextHolder.getNow().setInForeground(false)
+        MyContextHolder.myContextHolder.getNow().isInForeground = false
     }
 
     override fun onProgressMessage(message: CharSequence) {

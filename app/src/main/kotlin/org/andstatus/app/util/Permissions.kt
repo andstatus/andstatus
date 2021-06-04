@@ -47,7 +47,7 @@ object Permissions {
             "The activity " + activity.javaClass.name +
                     " should implement OnRequestPermissionsResultCallback"
         }
-        if (MyContextHolder.myContextHolder.getNow().isTestRun()) {
+        if (MyContextHolder.myContextHolder.getNow().isTestRun) {
             MyLog.i(activity, "Skipped requesting permission during a Test run: $permissionType")
         } else {
             MyLog.i(activity, "Requesting permission: $permissionType")

@@ -30,8 +30,6 @@ import org.andstatus.app.context.MyContextHolder
 import org.andstatus.app.context.MyPreferences
 import org.andstatus.app.os.AsyncTaskLauncher
 import org.andstatus.app.os.MyAsyncTask
-import org.andstatus.app.util.Permissions
-import org.andstatus.app.util.Permissions.PermissionType
 
 class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
     private var backupFolder: DocumentFile? = null
@@ -104,7 +102,8 @@ class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
         }
     }
 
-    private class BackupTask(private val activity: BackupActivity) : MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.LONG_UI) {
+    private class BackupTask(private val activity: BackupActivity) :
+        MyAsyncTask<DocumentFile?, CharSequence?, Void?>(PoolEnum.LONG_UI) {
         override fun doInBackground2(file: DocumentFile?): Void? {
             file?.let {
                 MyBackupManager.backupInteractively(file, activity, activity)
@@ -127,13 +126,13 @@ class BackupActivity : MyActivity(), ProgressLogger.ProgressListener {
     }
 
     override fun onResume() {
-         MyContextHolder.myContextHolder.getNow().setInForeground(true)
+        MyContextHolder.myContextHolder.getNow().isInForeground = true
         super.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-         MyContextHolder.myContextHolder.getNow().setInForeground(false)
+        MyContextHolder.myContextHolder.getNow().isInForeground = false
     }
 
     override fun onProgressMessage(message: CharSequence) {

@@ -367,7 +367,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
         interactionEventType = newNotificationEventType
         notifiedActor = calculateNotifiedActor(myContext, newNotificationEventType)
         if (isNotified().toBoolean(true)) {
-            notified = TriState.fromBoolean(myContext.getNotifier().isEnabled(newNotificationEventType))
+            notified = TriState.fromBoolean(myContext.notifier.isEnabled(newNotificationEventType))
         }
         if (isNotified().isTrue) {
             MyLog.i("NewNotification", newNotificationEventType.name +

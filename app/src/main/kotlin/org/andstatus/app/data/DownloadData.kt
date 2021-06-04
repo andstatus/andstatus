@@ -453,7 +453,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
         }
 
         fun fromNoteId(myContext: MyContext, noteId: Long): List<DownloadData> {
-            if (myContext.isEmptyOrExpired() || noteId == 0L) return emptyList()
+            if (myContext.isEmptyOrExpired || noteId == 0L) return emptyList()
             val sql = ("SELECT *"
                     + " FROM " + DownloadTable.TABLE_NAME
                     + " WHERE " + DownloadTable.NOTE_ID + "=" + noteId

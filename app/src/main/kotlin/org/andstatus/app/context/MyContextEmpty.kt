@@ -68,11 +68,11 @@ class MyContextEmpty: MyContext {
 
     override val connectionState: ConnectionState = ConnectionState.UNKNOWN
 
-    override fun isInForeground(): Boolean = false
+    override var isInForeground: Boolean
+        get() = false
+        set(_) {}
 
-    override fun setInForeground(inForeground: Boolean) {}
-
-    override fun getNotifier(): Notifier = throwException()
+    override val notifier: Notifier get() = throwException()
 
     private fun throwException(): Nothing {
         throw IllegalStateException("This is empty implementation")

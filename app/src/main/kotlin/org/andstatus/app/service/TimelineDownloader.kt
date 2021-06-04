@@ -57,7 +57,7 @@ internal abstract class TimelineDownloader(execContext: CommandExecutionContext)
                 DataPruner(execContext.myContext).prune()
             }
             MyLog.v(this, "Notifying of timeline changes")
-            execContext.myContext.getNotifier().update()
+            execContext.myContext.notifier.update()
         }
     }
 

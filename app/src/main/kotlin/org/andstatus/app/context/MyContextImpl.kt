@@ -83,7 +83,7 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
     public final override var isExpired = false
         private set
 
-    private val notifier: Notifier = Notifier(this)
+    override val notifier: Notifier = Notifier(this)
 
     private fun calcBaseContextToUse(parent: MyContext, contextIn: Context): Context {
         val contextToUse: Context = contextIn.applicationContext
@@ -237,21 +237,11 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
 
     override val connectionState: ConnectionState get() = UriUtils.getConnectionState(context)
 
-    override fun isInForeground(): Boolean {
-        return if (!inForeground
-                && !RelativeTime.moreSecondsAgoThan(inForegroundChangedAt,
-                        CONSIDER_IN_BACKGROUND_AFTER_SECONDS)) {
-            true
-        } else inForeground
-    }
-
-    override fun setInForeground(inForeground: Boolean) {
-        setInForegroundStatic(inForeground)
-    }
-
-    override fun getNotifier(): Notifier {
-        return notifier
-    }
+    override var isInForeground: Boolean
+      get() = inForeground
+      set(value) {
+          inForeground = value
+      }
 
     override fun notify(data: NotificationData) {
         notifier.notifyAndroid(data)
@@ -270,19 +260,19 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
 
         @Volatile
         private var inForeground = false
+            get() = if (!field &&
+                !RelativeTime.moreSecondsAgoThan(inForegroundChangedAt, CONSIDER_IN_BACKGROUND_AFTER_SECONDS)
+            ) true
+            else field
+            private set(value) {
+                if (field != value) {
+                    inForegroundChangedAt = System.currentTimeMillis()
+                    field = value
+                }
+            }
 
         @Volatile
         private var inForegroundChangedAt: Long = 0
         private const val CONSIDER_IN_BACKGROUND_AFTER_SECONDS: Long = 20
-
-        /** To avoid "Write to static field" warning
-         * On static members in interfaces: http://stackoverflow.com/questions/512877/why-cant-i-define-a-static-method-in-a-java-interface
-         */
-        private fun setInForegroundStatic(inForeground: Boolean) {
-            if (Companion.inForeground != inForeground) {
-                inForegroundChangedAt = System.currentTimeMillis()
-            }
-            Companion.inForeground = inForeground
-        }
     }
 }

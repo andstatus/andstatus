@@ -429,7 +429,7 @@ class Timeline : Comparable<Timeline?>, IsEmpty {
         }
         val contentValues = ContentValues()
         toContentValues(contentValues)
-        if (myContext.isTestRun()) {
+        if (myContext.isTestRun) {
             MyLog.v(this) { "Saving $this" }
         }
         if (getId() == 0L) {

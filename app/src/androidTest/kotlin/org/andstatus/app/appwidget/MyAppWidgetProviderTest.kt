@@ -111,14 +111,14 @@ class MyAppWidgetProviderTest {
     fun testReceiver() {
         val method = "testReceiver"
         MyLog.i(this, "$method; started")
-        myContext.getNotifier().clearAll()
+        myContext.notifier.clearAll()
         val dateSinceMin = System.currentTimeMillis()
         // To set dateSince and dateChecked correctly!
         updateWidgets(AppWidgets.Companion.of(myContext), NotificationEventType.ANNOUNCE, 1)
         DbUtils.waitMs(method, 2000)
         val dateSinceMax = System.currentTimeMillis()
         DbUtils.waitMs(method, 2000)
-        myContext.getNotifier().clearAll()
+        myContext.notifier.clearAll()
         val appWidgets: AppWidgets = AppWidgets.Companion.of(myContext)
         checkDateChecked(appWidgets, dateSinceMin, dateSinceMax)
         checkDateSince(appWidgets, dateSinceMin, dateSinceMax)
@@ -140,7 +140,7 @@ class MyAppWidgetProviderTest {
     }
 
     private fun checkEvents(numMentions: Long, numPrivate: Long, numReblogs: Long) {
-        val events = myContext.getNotifier().getEvents()
+        val events = myContext.notifier.getEvents()
         Assert.assertEquals("Mentions", numMentions, events.getCount(NotificationEventType.MENTION))
         Assert.assertEquals("Private", numPrivate, events.getCount(NotificationEventType.PRIVATE))
         Assert.assertEquals("Reblogs", numReblogs, events.getCount(NotificationEventType.ANNOUNCE))

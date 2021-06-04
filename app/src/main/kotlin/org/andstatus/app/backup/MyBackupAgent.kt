@@ -68,7 +68,7 @@ class MyBackupAgent : BackupAgent() {
     @Throws(IOException::class)
     override fun onBackup(oldState: ParcelFileDescriptor?, data: BackupDataOutput?,
                           newState: ParcelFileDescriptor) {
-        if ( MyContextHolder.myContextHolder.getNow().isTestRun()) {
+        if ( MyContextHolder.myContextHolder.getNow().isTestRun) {
             val logmsg = "onBackup; skipped due to test run"
             MyLog.i(this, logmsg)
             throw IOException(logmsg)

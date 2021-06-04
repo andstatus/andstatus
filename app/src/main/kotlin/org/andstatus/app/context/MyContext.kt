@@ -55,27 +55,19 @@ interface MyContext : IdentifiableInstance, IsEmpty {
     val connectionState: ConnectionState
 
     /** Is our application in Foreground now?  */
-    fun isInForeground(): Boolean
-    fun setInForeground(inForeground: Boolean)
-    fun getNotifier(): Notifier
+    var isInForeground: Boolean
+    val notifier: Notifier
     fun notify(data: NotificationData)
     fun clearNotifications(timeline: Timeline)
-    fun isTestRun(): Boolean {
-        return false
-    }
+    val isTestRun: Boolean get() = false
 
-    fun getHttpConnectionMock(): HttpConnection? {
-        return null
-    }
+    val httpConnectionMock: HttpConnection? get() = null
 
     override val isEmpty: Boolean get() = this === MyContextEmpty.EMPTY
 
-    fun isEmptyOrExpired(): Boolean {
-        return isEmpty || isExpired
-    }
+    val isEmptyOrExpired: Boolean get() = isEmpty || isExpired
 
-    fun isPreferencesChanged(): Boolean {
-        return initialized && preferencesChangeTime != MyPreferences.getPreferencesChangeTime()
-    }
+    val isPreferencesChanged: Boolean
+        get() = initialized && preferencesChangeTime != MyPreferences.getPreferencesChangeTime()
 
 }

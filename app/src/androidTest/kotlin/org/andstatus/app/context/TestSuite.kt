@@ -283,9 +283,9 @@ object TestSuite {
 
     fun setAndWaitForIsInForeground(isInForeground: Boolean): Boolean {
         val method = "setAndWaitForIsInForeground"
-        MyContextHolder.myContextHolder.getNow().setInForeground(isInForeground)
+        MyContextHolder.myContextHolder.getNow().isInForeground = isInForeground
         for (pass in 0..299) {
-            if (MyContextHolder.myContextHolder.getNow().isInForeground() == isInForeground) {
+            if (MyContextHolder.myContextHolder.getNow().isInForeground == isInForeground) {
                 return true
             }
             if (DbUtils.waitMs(method, 100)) {

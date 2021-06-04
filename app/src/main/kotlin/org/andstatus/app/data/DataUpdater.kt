@@ -57,7 +57,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             SharedPreferencesUtil.getString(MyPreferences.KEY_FILTER_HIDE_NOTES_BASED_ON_KEYWORDS, ""))
 
     constructor(ma: MyAccount) : this(CommandExecutionContext(
-            ma.myContext.takeIf { !it.isEmptyOrExpired() } ?: MyContextHolder.myContextHolder.getNow(),
+            ma.myContext.takeIf { !it.isEmptyOrExpired } ?: MyContextHolder.myContextHolder.getNow(),
             CommandData.newAccountCommand(CommandEnum.EMPTY, ma)
     )) {
     }
@@ -234,7 +234,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                             + if (isNewerThanInDatabase) " newer, updated at " + Date(note.updatedDate) + ";" else "")
                 }
             }
-            if ( MyContextHolder.myContextHolder.getNow().isTestRun()) {
+            if ( MyContextHolder.myContextHolder.getNow().isTestRun) {
                  MyContextHolder.myContextHolder.getNow().putAssertionData(MSG_ASSERTION_KEY, values)
             }
             if (note.noteId == 0L) {

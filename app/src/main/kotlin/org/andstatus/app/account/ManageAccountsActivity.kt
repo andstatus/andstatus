@@ -165,7 +165,7 @@ private class MyRecyclerViewAdapter(val activity: ManageAccountsActivity):
             MyUrlSpan.showText(itemView, R.id.visible_name, visibleName, false, true)
                     ?.setOnClickListener {
                         activity.reorderAccounts()
-                        if (ma.myContext.isPreferencesChanged()) {
+                        if (ma.myContext.isPreferencesChanged) {
                             activity.finish()
                         }
                         val intent = Intent(activity, AccountSettingsActivity::class.java)

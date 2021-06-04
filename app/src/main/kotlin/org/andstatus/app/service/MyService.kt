@@ -115,8 +115,8 @@ class MyService : Service(), IdentifiableInstance {
         if (Math.abs(currentTimeMillis - startedForegrounLastTime) < 1000) return
         startedForegrounLastTime = currentTimeMillis
         val data = NotificationData(NotificationEventType.SERVICE_RUNNING, Actor.EMPTY, currentTimeMillis)
-        myContext.getNotifier().createNotificationChannel(data)
-        startForeground(NotificationEventType.SERVICE_RUNNING.notificationId(), myContext.getNotifier().getAndroidNotification(data))
+        myContext.notifier.createNotificationChannel(data)
+        startForeground(NotificationEventType.SERVICE_RUNNING.notificationId(), myContext.notifier.getAndroidNotification(data))
     }
 
     private val intentReceiver: BroadcastReceiver = object : BroadcastReceiver() {
@@ -285,7 +285,7 @@ class MyService : Service(), IdentifiableInstance {
         AsyncTaskLauncher.cancelPoolTasks(PoolEnum.SYNC)
         releaseWakeLock()
         stopSelf()
-        myContext.getNotifier().clearAndroidNotification(NotificationEventType.SERVICE_RUNNING)
+        myContext.notifier.clearAndroidNotification(NotificationEventType.SERVICE_RUNNING)
         MyLog.i(TAG, "MyService " + instanceId + " stopped, myServiceWorkMs:" + (System.currentTimeMillis() - initializedTime))
         isStopping.set(false)
     }

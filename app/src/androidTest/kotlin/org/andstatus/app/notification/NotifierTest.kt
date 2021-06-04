@@ -31,7 +31,7 @@ class NotifierTest {
     @Test
     fun testCreateNotification() {
         val myContext: MyContext = TestSuite.getMyContextForTest()
-        val notifier = myContext.getNotifier()
+        val notifier = myContext.notifier
         notifier.clearAll()
         Assert.assertTrue("Events should be empty " + notifier.getEvents(), notifier.getEvents().isEmpty())
         addNotificationEvent(myContext, NotificationEventType.PRIVATE)
@@ -73,7 +73,7 @@ class NotifierTest {
                     ", " + ActivityTable.NOTIFIED + "=" + TriState.TRUE.id +
                     ", " + ActivityTable.NOTIFIED_ACTOR_ID + "=" + ActivityTable.ACTOR_ID +
                     " WHERE " + BaseColumns._ID + "=" + activityId)
-            myContext.getNotifier().update()
+            myContext.notifier.update()
         }
 
         private fun eventTypeToActivityType(eventType: NotificationEventType?): ActivityType {

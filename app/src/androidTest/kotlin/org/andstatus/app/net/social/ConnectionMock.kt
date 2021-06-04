@@ -66,7 +66,7 @@ class ConnectionMock private constructor(val connection: Connection) {
                 return http as HttpConnectionMock
             }
             checkNotNull(http) { "http is null" }
-             MyContextHolder.myContextHolder.getNow().getHttpConnectionMock()
+             MyContextHolder.myContextHolder.getNow().httpConnectionMock
             throw IllegalStateException("http is " + http.javaClass.name + ", " +  MyContextHolder.myContextHolder.getNow().toString())
         }
     }

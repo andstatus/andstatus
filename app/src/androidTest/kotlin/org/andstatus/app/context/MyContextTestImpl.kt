@@ -62,9 +62,7 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
         return MyContextTestImpl(this, context, initializer).initialize()
     }
 
-    override fun isTestRun(): Boolean {
-        return true
-    }
+    override val isTestRun: Boolean = true
 
     override fun release(reason: Supplier<String>) {
         super.release(reason)
@@ -86,19 +84,20 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
         return assertionData.getOrDefault(key, AssertionData.getEmpty(key))
     }
 
-    override fun getHttpConnectionMock(): HttpConnection? {
-        if (httpConnectionMockInstance != null) return httpConnectionMockInstance
-        return httpConnectionMockClass?.let { mockClass ->
-            try {
-                return mockClass.newInstance()
-            } catch (e: InstantiationException) {
-                MyLog.e(this, e)
-            } catch (e: IllegalAccessException) {
-                MyLog.e(this, e)
+    override val httpConnectionMock: HttpConnection?
+        get() {
+            if (httpConnectionMockInstance != null) return httpConnectionMockInstance
+            return httpConnectionMockClass?.let { mockClass ->
+                try {
+                    return mockClass.newInstance()
+                } catch (e: InstantiationException) {
+                    MyLog.e(this, e)
+                } catch (e: IllegalAccessException) {
+                    MyLog.e(this, e)
+                }
+                null
             }
-            null
         }
-    }
 
     override fun notify(data: NotificationData) {
         super.notify(data)
@@ -115,7 +114,7 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
     }
 
     override fun toString(): String {
-        return (instanceTag() + " http=" + getHttpConnectionMock() + ", "
+        return (instanceTag() + " http=" + httpConnectionMock + ", "
                 + super.toString())
     }
 

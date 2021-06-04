@@ -212,7 +212,7 @@ Pruned ${pruned2.consumedCount} avatar files, ${I18n.formatBytes(pruned2.consume
     }
 
     private fun mayPruneNow(): Boolean {
-        return if (pruneNow) true else !myContext.isInForeground() &&
+        return if (pruneNow) true else !myContext.isInForeground &&
                 RelativeTime.moreSecondsAgoThan(
                         SharedPreferencesUtil.getLong(MyPreferences.KEY_DATA_PRUNED_DATE),
                         TimeUnit.DAYS.toSeconds(PRUNE_MIN_PERIOD_DAYS))

@@ -123,7 +123,7 @@ class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceSt
             }
         }
         if (isRootScreen()) {
-             MyContextHolder.myContextHolder.getNow().setInForeground(true)
+            MyContextHolder.myContextHolder.getNow().isInForeground = true
             MyServiceManager.setServiceUnavailable()
             MyServiceManager.stopService()
         }
@@ -134,7 +134,7 @@ class MySettingsActivity : MyActivity(), PreferenceFragmentCompat.OnPreferenceSt
         super.onPause()
         logEvent("onPause", "")
         if (isRootScreen()) {
-             MyContextHolder.myContextHolder.getNow().setInForeground(false)
+            MyContextHolder.myContextHolder.getNow().isInForeground = false
         }
     }
 

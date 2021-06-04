@@ -266,7 +266,7 @@ object MyPreferences {
     }
 
     fun isLogEverythingToFile(): Boolean {
-        return SharedPreferencesUtil.getBoolean(KEY_LOG_EVERYTHING_TO_FILE,  MyContextHolder.myContextHolder.getNow().isTestRun())
+        return SharedPreferencesUtil.getBoolean(KEY_LOG_EVERYTHING_TO_FILE,  MyContextHolder.myContextHolder.getNow().isTestRun)
     }
 
     fun isRefreshTimelineAutomatically(): Boolean {

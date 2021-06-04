@@ -60,7 +60,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     private var onRefreshHandled = false
     var parsedUri: ParsedUri = ParsedUri.fromUri(Uri.EMPTY)
         private set
-    var myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
+    var myContext: MyContext = MyContextHolder.myContextHolder.getNow()
     private var configChangeTime: Long = 0
     var myServiceReceiver: MyServiceEventsReceiver? = null
 
@@ -82,14 +82,15 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     protected var centralItemId: Long = 0
     protected var searchView: MySearchView? = null
     override fun onCreate(savedInstanceState: Bundle?) {
-        myContext =  MyContextHolder.myContextHolder.getNow()
+        myContext = MyContextHolder.myContextHolder.getNow()
         super.onCreate(savedInstanceState)
         if (restartMeIfNeeded()) return
         textualSyncIndicator = findViewById(R.id.sync_indicator)
         configChangeTime = myContext.preferencesChangeTime
         if (MyLog.isDebugEnabled()) {
-            MyLog.d(this, "onCreate, config changed " + RelativeTime.secondsAgo(configChangeTime) + " seconds ago"
-                    + if ( MyContextHolder.myContextHolder.getNow().isReady) "" else ", MyContext is not ready"
+            MyLog.d(
+                this, "onCreate, config changed " + RelativeTime.secondsAgo(configChangeTime) + " seconds ago"
+                        + if (MyContextHolder.myContextHolder.getNow().isReady) "" else ", MyContext is not ready"
             )
         }
         if (myContext.isReady) {
@@ -111,9 +112,11 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     protected fun showList(args: Bundle?) {
         val whichPage: WhichPage = WhichPage.load(args)
         val chainedRequest: TriState = TriState.fromBundle(args, IntentExtra.CHAINED_REQUEST)
-        val msgLog = StringBuilder("showList" + (if (chainedRequest == TriState.TRUE) ", chained" else "")
-                + ", " + whichPage + " page"
-                + if (centralItemId == 0L) "" else ", center:$centralItemId")
+        val msgLog = StringBuilder(
+            "showList" + (if (chainedRequest == TriState.TRUE) ", chained" else "")
+                    + ", " + whichPage + " page"
+                    + if (centralItemId == 0L) "" else ", center:$centralItemId"
+        )
         if (whichPage == WhichPage.EMPTY) {
             MyLog.v(this) { "Ignored Empty page request: $msgLog" }
         } else {
@@ -147,14 +150,16 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
             }
         }
         if (reset) {
-            MyLog.d(this, "WorkingLoader finished but didn't reset loaderIsWorking flag "
-                    + mWorkingLoader)
+            MyLog.d(
+                this, "WorkingLoader finished but didn't reset loaderIsWorking flag "
+                        + mWorkingLoader
+            )
         }
         return loaderIsWorking
     }
 
     protected fun isContextNeedsUpdate(): Boolean {
-        val myContextNew: MyContext =  MyContextHolder.myContextHolder.getNow()
+        val myContextNew: MyContext = MyContextHolder.myContextHolder.getNow()
         return !myContext.isReady || myContext !== myContextNew || configChangeTime != myContextNew.preferencesChangeTime
     }
 
@@ -197,7 +202,8 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
 
         override fun doInBackground2(params: Bundle?): SyncLoader<*> {
             publishProgress("...")
-            val loader: SyncLoader<*> = newSyncLoader(BundleUtils.toBundle(params, IntentExtra.INSTANCE_ID.key, instanceId))
+            val loader: SyncLoader<*> =
+                newSyncLoader(BundleUtils.toBundle(params, IntentExtra.INSTANCE_ID.key, instanceId))
             loader.allowLoadingFromInternet()
             loader.load(this)
             return loader
@@ -237,7 +243,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
             val timeTotal = endedAt - createdAt
             MyLog.v(this) {
                 ("Load completed, " +
-                        ( mSyncLoader?.size()?.toString() ?: "?") + " items, " +
+                        (mSyncLoader?.size()?.toString() ?: "?") + " items, " +
                         timeTotal + "ms total, " +
                         (endedAt - backgroundEndedAt) + "ms on UI thread")
             }
@@ -272,7 +278,11 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
         updateList(getCurrentListPosition(), viewParameters, false)
     }
 
-    private fun updateList(pos: LoadableListPosition<*>, viewParameters: LoadableListViewParameters, newAdapter: Boolean) {
+    private fun updateList(
+        pos: LoadableListPosition<*>,
+        viewParameters: LoadableListViewParameters,
+        newAdapter: Boolean
+    ) {
         val method = "updateList"
         val list = listView ?: return
 
@@ -331,7 +341,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
         MyLog.v(this) { method + if (isFinishing) ", and finishing" else "" }
         if (!isFinishing) {
             myServiceReceiver?.registerReceiver(this)
-            myContext.setInForeground(true)
+            myContext.isInForeground = true
             if (!isLoading()) {
                 showList(WhichPage.ANY)
             }
@@ -348,7 +358,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
     override fun onPause() {
         super.onPause()
         myServiceReceiver?.unregisterReceiver(this)
-        MyContextHolder.myContextHolder.getNow().setInForeground(false)
+        MyContextHolder.myContextHolder.getNow().isInForeground = false
         getListAdapter().setPositionRestored(false)
     }
 
@@ -358,7 +368,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
                 showSyncing(commandData)
             }
             MyServiceEvent.PROGRESS_EXECUTING_COMMAND -> if (isCommandToShowInSyncIndicator(commandData)) {
-                showSyncing("Show Progress", commandData.toCommandProgress( MyContextHolder.myContextHolder.getNow()))
+                showSyncing("Show Progress", commandData.toCommandProgress(MyContextHolder.myContextHolder.getNow()))
             }
             MyServiceEvent.AFTER_EXECUTING_COMMAND -> onReceiveAfterExecutingCommand(commandData)
             MyServiceEvent.ON_STOP -> hideSyncing("onReceive STOP")
@@ -375,20 +385,23 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
 
     private fun showSyncing(commandData: CommandData) {
         AsyncTaskLauncher<CommandData>().execute(this,
-                object : MyAsyncTask<CommandData?, Void?, String?>("ShowSyncing" + instanceId, PoolEnum.QUICK_UI) {
-                    override fun doInBackground2(commandData: CommandData?): String? {
-                        return commandData?.toCommandSummary(myContext)
-                    }
+            object : MyAsyncTask<CommandData?, Void?, String?>("ShowSyncing" + instanceId, PoolEnum.QUICK_UI) {
+                override fun doInBackground2(commandData: CommandData?): String? {
+                    return commandData?.toCommandSummary(myContext)
+                }
 
-                    override fun onPostExecute2(result: String?) {
-                        showSyncing("Show " + commandData?.command,
-                                getText(R.string.title_preference_syncing).toString() + ": " + result)
-                    }
+                override fun onPostExecute2(result: String?) {
+                    showSyncing(
+                        "Show " + commandData?.command,
+                        getText(R.string.title_preference_syncing).toString() + ": " + result
+                    )
+                }
 
-                    override fun toString(): String {
-                        return "ShowSyncing " + super.toString()
-                    }
-                }, commandData)
+                override fun toString(): String {
+                    return "ShowSyncing " + super.toString()
+                }
+            }, commandData
+        )
     }
 
     protected open fun isCommandToShowInSyncIndicator(commandData: CommandData): Boolean {
@@ -406,16 +419,16 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
      * @return true if needed, false means "don't know"
      */
     protected open fun isRefreshNeededAfterExecuting(commandData: CommandData): Boolean =
-            when (commandData.command) {
-                CommandEnum.GET_NOTE, CommandEnum.GET_CONVERSATION,
-                CommandEnum.GET_FOLLOWERS, CommandEnum.GET_FRIENDS ->
-                    commandData.getResult().getDownloadedCount() > 0
-                CommandEnum.GET_ACTOR, CommandEnum.UPDATE_NOTE, CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW,
-                CommandEnum.LIKE, CommandEnum.UNDO_LIKE, CommandEnum.ANNOUNCE, CommandEnum.UNDO_ANNOUNCE,
-                CommandEnum.DELETE_NOTE, CommandEnum.GET_ATTACHMENT, CommandEnum.GET_AVATAR ->
-                    !commandData.getResult().hasError()
-                else -> false
-            }
+        when (commandData.command) {
+            CommandEnum.GET_NOTE, CommandEnum.GET_CONVERSATION,
+            CommandEnum.GET_FOLLOWERS, CommandEnum.GET_FRIENDS ->
+                commandData.getResult().getDownloadedCount() > 0
+            CommandEnum.GET_ACTOR, CommandEnum.UPDATE_NOTE, CommandEnum.FOLLOW, CommandEnum.UNDO_FOLLOW,
+            CommandEnum.LIKE, CommandEnum.UNDO_LIKE, CommandEnum.ANNOUNCE, CommandEnum.UNDO_ANNOUNCE,
+            CommandEnum.DELETE_NOTE, CommandEnum.GET_ATTACHMENT, CommandEnum.GET_AVATAR ->
+                !commandData.getResult().hasError()
+            else -> false
+        }
 
     protected open fun isAutoRefreshNow(onStop: Boolean): Boolean {
         if (refreshNeededSince.get() == 0L) {
@@ -426,7 +439,8 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
             }
             return false
         } else if (!onStop && !refreshNeededAfterForegroundCommand.get() &&
-                !RelativeTime.wasButMoreSecondsAgoThan(lastLoadedAt, NO_AUTO_REFRESH_AFTER_LOAD_SECONDS)) {
+            !RelativeTime.wasButMoreSecondsAgoThan(lastLoadedAt, NO_AUTO_REFRESH_AFTER_LOAD_SECONDS)
+        ) {
             if (MyLog.isVerboseEnabled()) {
                 MyLog.v(this, "Ignoring background content change - loaded recently")
             }
@@ -443,7 +457,13 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.getItemId()) {
-            R.id.sync_menu_item -> showList(BundleUtils.toBundle(WhichPage.CURRENT.toBundle(), IntentExtra.SYNC.key, 1L))
+            R.id.sync_menu_item -> showList(
+                BundleUtils.toBundle(
+                    WhichPage.CURRENT.toBundle(),
+                    IntentExtra.SYNC.key,
+                    1L
+                )
+            )
             R.id.refresh_menu_item -> showList(WhichPage.CURRENT)
             else -> return super.onOptionsItemSelected(item)
         }
@@ -486,7 +506,7 @@ abstract class LoadableListActivity<T : ViewItem<T>> : MyBaseListActivity(), MyS
             val isVisible = (!TextUtils.isEmpty(loadingText) || !TextUtils.isEmpty(syncingText)) && !isEditorVisible()
             if (isVisible) {
                 (findViewById<View?>(R.id.sync_text) as TextView).text =
-                        if (TextUtils.isEmpty(loadingText)) syncingText else loadingText
+                    if (TextUtils.isEmpty(loadingText)) syncingText else loadingText
             }
             if (if (isVisible) indicator.visibility != View.VISIBLE else indicator.visibility == View.VISIBLE) {
                 MyLog.v(this) { "$source set textual Sync indicator to $isVisible" }

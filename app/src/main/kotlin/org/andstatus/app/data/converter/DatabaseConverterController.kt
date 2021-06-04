@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit
 
 class DatabaseConverterController {
     private class AsyncUpgrade(val upgradeRequestor: Activity, val isRestoring: Boolean) :
-            MyAsyncTask<Void?, Void?, Void?>(PoolEnum.LONG_UI) {
+        MyAsyncTask<Void?, Void?, Void?>(PoolEnum.LONG_UI) {
         var progressLogger: ProgressLogger = ProgressLogger.getEmpty(TAG)
 
         override fun doInBackground2(aVoid: Void?): Void? {
@@ -57,10 +57,10 @@ class DatabaseConverterController {
                 synchronized(upgradeLock) { mProgressLogger = progressLogger }
                 MyLog.i(TAG, "Upgrade triggered by " + MyStringBuilder.objToTag(upgradeRequestor))
                 MyServiceManager.setServiceUnavailable()
-                 MyContextHolder.myContextHolder.release { "doUpgrade" }
+                MyContextHolder.myContextHolder.release { "doUpgrade" }
                 // Upgrade will occur inside this call synchronously
                 // TODO: Add completion stage instead of blocking...
-                 MyContextHolder.myContextHolder.initializeDuringUpgrade(upgradeRequestor).getBlocking()
+                MyContextHolder.myContextHolder.initializeDuringUpgrade(upgradeRequestor).getBlocking()
                 synchronized(upgradeLock) { shouldTriggerDatabaseUpgrade = false }
             } catch (e: Exception) {
                 MyLog.i(TAG, "Failed to trigger database upgrade, will try later", e)
@@ -77,7 +77,7 @@ class DatabaseConverterController {
                 MyLog.v(TAG, "Upgrade didn't start")
             }
             if (success) {
-                MyLog.i(TAG, "success " +  MyContextHolder.myContextHolder.getNow().state)
+                MyLog.i(TAG, "success " + MyContextHolder.myContextHolder.getNow().state)
                 onUpgradeSucceeded()
             }
             return success
@@ -85,15 +85,15 @@ class DatabaseConverterController {
 
         private fun onUpgradeSucceeded() {
             MyServiceManager.setServiceUnavailable()
-            if (! MyContextHolder.myContextHolder.getNow().isReady) {
-                 MyContextHolder.myContextHolder.release { "onUpgradeSucceeded1" }
+            if (!MyContextHolder.myContextHolder.getNow().isReady) {
+                MyContextHolder.myContextHolder.release { "onUpgradeSucceeded1" }
                 MyContextHolder.myContextHolder.initialize(upgradeRequestor).getBlocking()
             }
             MyServiceManager.setServiceUnavailable()
             MyServiceManager.stopService()
             if (isRestoring) return
             DataChecker.fixData(progressLogger, false, false)
-             MyContextHolder.myContextHolder.release { "onUpgradeSucceeded2" }
+            MyContextHolder.myContextHolder.release { "onUpgradeSucceeded2" }
             MyContextHolder.myContextHolder.initialize(upgradeRequestor).getBlocking()
             MyServiceManager.setServiceAvailable()
         }
@@ -101,7 +101,7 @@ class DatabaseConverterController {
         init {
             progressLogger = if (upgradeRequestor is MyActivity) {
                 val progressListener: ProgressLogger.ProgressListener =
-                        DefaultProgressListener(upgradeRequestor, R.string.label_upgrading, "ConvertDatabase")
+                    DefaultProgressListener(upgradeRequestor, R.string.label_upgrading, "ConvertDatabase")
                 ProgressLogger(progressListener)
             } else {
                 ProgressLogger.getEmpty("ConvertDatabase")
@@ -118,7 +118,7 @@ class DatabaseConverterController {
             shouldTriggerDatabaseUpgrade = false
             stillUpgrading()
         }
-         MyContextHolder.myContextHolder.getNow().setInForeground(true)
+        MyContextHolder.myContextHolder.getNow().isInForeground = true
         val databaseConverter = DatabaseConverter()
         val success = databaseConverter.execute(UpgradeParams(mProgressLogger, db, oldVersion, newVersion))
         synchronized(upgradeLock) {
@@ -130,14 +130,22 @@ class DatabaseConverterController {
         }
     }
 
-    internal class UpgradeParams(var progressLogger: ProgressLogger, var db: SQLiteDatabase, var oldVersion: Int, var newVersion: Int)
+    internal class UpgradeParams(
+        var progressLogger: ProgressLogger,
+        var db: SQLiteDatabase,
+        var oldVersion: Int,
+        var newVersion: Int
+    )
+
     companion object {
         private val TAG: String = DatabaseConverterController::class.java.simpleName
 
         // TODO: Should be one object for atomic updates. start ---
         private val upgradeLock: Any = Any()
+
         @Volatile
         private var shouldTriggerDatabaseUpgrade = false
+
         /** Semaphore enabling uninterrupted system upgrade */
         private var upgradeEndTime = 0L
         private var upgradeStarted = false
@@ -153,18 +161,22 @@ class DatabaseConverterController {
             val requestorName: String = MyStringBuilder.objToTag(upgradeRequestorIn)
             var skip = false
             if (isUpgrading()) {
-                MyLog.v(TAG, "Attempt to trigger database upgrade by " + requestorName
-                        + ": already upgrading")
+                MyLog.v(
+                    TAG, "Attempt to trigger database upgrade by " + requestorName
+                            + ": already upgrading"
+                )
                 skip = true
             }
-            if (!skip && ! MyContextHolder.myContextHolder.getNow().initialized) {
-                MyLog.v(TAG, "Attempt to trigger database upgrade by " + requestorName
-                        + ": not initialized yet")
+            if (!skip && !MyContextHolder.myContextHolder.getNow().initialized) {
+                MyLog.v(
+                    TAG, "Attempt to trigger database upgrade by " + requestorName
+                            + ": not initialized yet"
+                )
                 skip = true
             }
             if (!skip && acquireUpgradeLock(requestorName)) {
-                val asyncUpgrade = AsyncUpgrade(upgradeRequestorIn,  MyContextHolder.myContextHolder.isOnRestore())
-                if ( MyContextHolder.myContextHolder.isOnRestore()) {
+                val asyncUpgrade = AsyncUpgrade(upgradeRequestorIn, MyContextHolder.myContextHolder.isOnRestore())
+                if (MyContextHolder.myContextHolder.isOnRestore()) {
                     asyncUpgrade.syncUpgrade()
                 } else {
                     AsyncTaskLauncher.execute(TAG, asyncUpgrade)
@@ -176,13 +188,17 @@ class DatabaseConverterController {
             var skip = false
             synchronized(upgradeLock) {
                 if (isUpgrading()) {
-                    MyLog.v(TAG, "Attempt to trigger database upgrade by " + requestorName
-                            + ": already upgrading")
+                    MyLog.v(
+                        TAG, "Attempt to trigger database upgrade by " + requestorName
+                                + ": already upgrading"
+                    )
                     skip = true
                 }
                 if (!skip && upgradeEnded) {
-                    MyLog.v(TAG, "Attempt to trigger database upgrade by " + requestorName
-                            + ": already completed " + if (upgradeEndedSuccessfully) " successfully" else "(failed)")
+                    MyLog.v(
+                        TAG, "Attempt to trigger database upgrade by " + requestorName
+                                + ": already completed " + if (upgradeEndedSuccessfully) " successfully" else "(failed)"
+                    )
                     skip = true
                     if (!upgradeEndedSuccessfully) {
                         upgradeEnded = false
@@ -203,9 +219,13 @@ class DatabaseConverterController {
             synchronized(upgradeLock) {
                 wasStarted = upgradeStarted
                 upgradeStarted = true
-                upgradeEndTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(UPGRADE_LENGTH_SECONDS_MAX.toLong())
+                upgradeEndTime =
+                    System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(UPGRADE_LENGTH_SECONDS_MAX.toLong())
             }
-            MyLog.w(TAG, (if (wasStarted) "Still upgrading" else "Upgrade started") + ". Wait " + UPGRADE_LENGTH_SECONDS_MAX + " seconds")
+            MyLog.w(
+                TAG,
+                (if (wasStarted) "Still upgrading" else "Upgrade started") + ". Wait " + UPGRADE_LENGTH_SECONDS_MAX + " seconds"
+            )
         }
 
         fun isUpgradeError(): Boolean {

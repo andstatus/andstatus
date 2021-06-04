@@ -68,9 +68,9 @@ class MyContextHolder private constructor() : TaggedClass {
                 if (myContext.nonEmpty) {
                     if ("true" == Settings.System.getString(myContext.context.contentResolver, "firebase.test.lab")) {
                         // See https://firebase.google.com/docs/test-lab/android-studio
-                        field = if (myContext.isTestRun()) ExecutionMode.FIREBASE_TEST else ExecutionMode.ROBO_TEST
+                        field = if (myContext.isTestRun) ExecutionMode.FIREBASE_TEST else ExecutionMode.ROBO_TEST
                     } else {
-                        field = if (myContext.isTestRun()) ExecutionMode.TEST else ExecutionMode.DEVICE
+                        field = if (myContext.isTestRun) ExecutionMode.TEST else ExecutionMode.DEVICE
                     }
                 }
             }
@@ -243,9 +243,9 @@ class MyContextHolder private constructor() : TaggedClass {
 
         if ("true" == Settings.System.getString(myContext.context.contentResolver, "firebase.test.lab")) {
             // See https://firebase.google.com/docs/test-lab/android-studio
-            return if (myContext.isTestRun()) ExecutionMode.FIREBASE_TEST else ExecutionMode.ROBO_TEST
+            return if (myContext.isTestRun) ExecutionMode.FIREBASE_TEST else ExecutionMode.ROBO_TEST
         }
-        return if (myContext.isTestRun()) {
+        return if (myContext.isTestRun) {
             ExecutionMode.TEST
         } else ExecutionMode.DEVICE
     }

@@ -114,8 +114,10 @@ class AccountSettingsActivity : MyActivity() {
         }
     }
 
-    private class TaskResult private constructor(val status: ResultStatus, val message: CharSequence?,
-                                                 val whoAmI: Optional<Uri>, val authUri: Uri) {
+    private class TaskResult private constructor(
+        val status: ResultStatus, val message: CharSequence?,
+        val whoAmI: Optional<Uri>, val authUri: Uri
+    ) {
 
         constructor(status: ResultStatus) : this(status, "", Optional.empty<Uri>(), Uri.EMPTY) {}
         constructor(status: ResultStatus, message: CharSequence?) :
@@ -210,7 +212,7 @@ class AccountSettingsActivity : MyActivity() {
             state = newState
             if (state.originShouldBeSelected) {
                 EnumSelector.newInstance<OriginType>(ActivityRequestCode.SELECT_ORIGIN_TYPE, OriginType::class.java)
-                        .show(this)
+                    .show(this)
             } else if (state.accountShouldBeSelected) {
                 AccountSelector.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT, 0)
                 message += "; Select account"
@@ -244,8 +246,10 @@ class AccountSettingsActivity : MyActivity() {
         val builder = state.builder
 
         toFinish = if (resultCode == RESULT_OK) {
-            val accountName: AccountName = AccountName.fromAccountName(MyContextHolder.myContextHolder.getNow(),
-                    data.getStringExtra(IntentExtra.ACCOUNT_NAME.key))
+            val accountName: AccountName = AccountName.fromAccountName(
+                MyContextHolder.myContextHolder.getNow(),
+                data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)
+            )
             builder.rebuildMyAccount(accountName)
             !builder.isPersistent()
         } else {
@@ -268,7 +272,7 @@ class AccountSettingsActivity : MyActivity() {
             originType = OriginType.fromCode(data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key))
             if (originType.isSelectable()) {
                 val origins: MutableList<Origin> = MyContextHolder.myContextHolder.getNow()
-                        .origins.originsOfType(originType)
+                    .origins.originsOfType(originType)
                 when (origins.size) {
                     0 -> originType = OriginType.UNKNOWN
                     1 -> onOriginSelected(origins[0])
@@ -298,7 +302,7 @@ class AccountSettingsActivity : MyActivity() {
         var origin: Origin = Origin.EMPTY
         if (resultCode == RESULT_OK) {
             origin = MyContextHolder.myContextHolder.getNow().origins
-                    .fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key))
+                .fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key))
             if (origin.isPersistent()) {
                 onOriginSelected(origin)
             }
@@ -318,8 +322,9 @@ class AccountSettingsActivity : MyActivity() {
 
     fun goToAddAccount() {
         if (state.accountAction == Intent.ACTION_INSERT && isInvisibleView(R.id.uniqueName)
-                && isInvisibleView(R.id.password)
-                && isVisibleView(R.id.add_account)) {
+            && isInvisibleView(R.id.password)
+            && isVisibleView(R.id.add_account)
+        ) {
             val addAccount = findFragmentViewById(R.id.add_account)
             addAccount?.performClick()
         }
@@ -347,10 +352,11 @@ class AccountSettingsActivity : MyActivity() {
             }
             R.id.preferences_menu_id -> startMyPreferenceActivity()
             R.id.remove_account_menu_id -> DialogFactory.showOkCancelDialog(
-                    supportFragmentManager.findFragmentById(R.id.fragmentOne),
-                    R.string.remove_account_dialog_title,
-                    R.string.remove_account_dialog_text,
-                    ActivityRequestCode.REMOVE_ACCOUNT)
+                supportFragmentManager.findFragmentById(R.id.fragmentOne),
+                R.string.remove_account_dialog_title,
+                R.string.remove_account_dialog_text,
+                ActivityRequestCode.REMOVE_ACCOUNT
+            )
             else -> {
             }
         }
@@ -396,8 +402,10 @@ class AccountSettingsActivity : MyActivity() {
     }
 
     fun showErrors() {
-        showTextView(R.id.latest_error_label, R.string.latest_error_label,
-                latestErrorMessage.length > 0)
+        showTextView(
+            R.id.latest_error_label, R.string.latest_error_label,
+            latestErrorMessage.length > 0
+        )
         showTextView(R.id.latest_error, latestErrorMessage, latestErrorMessage.length > 0)
     }
 
@@ -405,25 +413,29 @@ class AccountSettingsActivity : MyActivity() {
         val view = findFragmentViewById(R.id.origin_name) as TextView?
         if (view != null) {
             view.text = getText(R.string.title_preference_origin_system)
-                    .toString().replace("{0}", state.builder.getOrigin().name)
-                    .replace("{1}", state.builder.getOrigin().originType.title)
+                .toString().replace("{0}", state.builder.getOrigin().name)
+                .replace("{1}", state.builder.getOrigin().originType.title)
         }
     }
 
     private fun showUniqueName() {
         val origin = state.builder.getOrigin()
-        showTextView(R.id.uniqueName_label, if (origin.hasHost()) R.string.title_preference_username else R.string.username_at_your_server,
-                isMaPersistent() || state.isUsernameNeededToStartAddingNewAccount() == true)
+        showTextView(
+            R.id.uniqueName_label,
+            if (origin.hasHost()) R.string.title_preference_username else R.string.username_at_your_server,
+            isMaPersistent() || state.isUsernameNeededToStartAddingNewAccount() == true
+        )
         val nameEditable = findFragmentViewById(R.id.uniqueName) as EditText?
         if (nameEditable != null) {
             if (isMaPersistent() || state.isUsernameNeededToStartAddingNewAccount() == false) {
                 nameEditable.visibility = View.GONE
             } else {
                 nameEditable.visibility = View.VISIBLE
-                nameEditable.hint = StringUtil.format(this,
-                        if (origin.hasHost()) R.string.summary_preference_username else R.string.summary_preference_username_webfinger_id,
-                        origin.name,
-                        if (origin.hasHost()) SIMPLE_USERNAME_EXAMPLES else origin.originType.uniqueNameExamples
+                nameEditable.hint = StringUtil.format(
+                    this,
+                    if (origin.hasHost()) R.string.summary_preference_username else R.string.summary_preference_username_webfinger_id,
+                    origin.name,
+                    if (origin.hasHost()) SIMPLE_USERNAME_EXAMPLES else origin.originType.uniqueNameExamples
                 )
                 nameEditable.addTextChangedListener(textWatcher)
                 if (nameEditable.text.isEmpty()) {
@@ -485,17 +497,21 @@ class AccountSettingsActivity : MyActivity() {
         if (isMaPersistent()) {
             summary = when (ma.getCredentialsVerified()) {
                 CredentialsVerificationStatus.SUCCEEDED -> StringBuilder(
-                        getText(R.string.summary_preference_verify_credentials))
+                    getText(R.string.summary_preference_verify_credentials)
+                )
                 else -> if (isMaPersistent()) {
                     StringBuilder(
-                            getText(R.string.summary_preference_verify_credentials_failed))
+                        getText(R.string.summary_preference_verify_credentials_failed)
+                    )
                 } else {
                     if (state.builder.isOAuth()) {
                         StringBuilder(
-                                getText(R.string.summary_preference_add_account_oauth))
+                            getText(R.string.summary_preference_add_account_oauth)
+                        )
                     } else {
                         StringBuilder(
-                                getText(R.string.summary_preference_add_account_basic))
+                            getText(R.string.summary_preference_add_account_basic)
+                        )
                     }
                 }
             }
@@ -547,7 +563,8 @@ class AccountSettingsActivity : MyActivity() {
 
     private fun showHomeTimelineButton() {
         val textView = showTextView(
-                R.id.home_timeline, R.string.options_menu_home_timeline, isMaPersistent())
+            R.id.home_timeline, R.string.options_menu_home_timeline, isMaPersistent()
+        )
         textView?.setOnClickListener { v: View? ->
             updateChangedFields()
             activityOnFinish = ActivityOnFinish.HOME
@@ -560,36 +577,41 @@ class AccountSettingsActivity : MyActivity() {
             if (myAccount.isValidAndSucceeded()) getText(R.string.title_preference_verify_credentials)
             else getText(R.string.title_preference_verify_credentials_failed)
         } else {
-            String.format(getText(R.string.log_in_to_social_network).toString(),
-                    state.builder.getOrigin().name)
+            String.format(
+                getText(R.string.log_in_to_social_network).toString(),
+                state.builder.getOrigin().name
+            )
         }
         showTextView(
-                R.id.verify_credentials,
-                buttonText,
-                isMaPersistent())
-                ?.setOnClickListener { v: View? ->
-                    clearError()
-                    updateChangedFields()
-                    updateScreen()
-                    verifyCredentials(true)
-                }
+            R.id.verify_credentials,
+            buttonText,
+            isMaPersistent()
+        )
+            ?.setOnClickListener { v: View? ->
+                clearError()
+                updateChangedFields()
+                updateScreen()
+                verifyCredentials(true)
+            }
     }
 
     private fun showLogOutButton() {
-        showTextView(R.id.log_out,
-                R.string.log_out,
-                myAccount.getCredentialsPresent() ||
-                        myAccount.connection.areOAuthClientKeysPresent() &&
-                        myAccount.connection.http.data.oauthClientKeys?.areDynamic == true)
-                ?.setOnClickListener {
-                    with(state.builder) {
-                        setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
-                        myAccount.connection.clearClientKeys()
-                        save()
-                        MyPreferences.onPreferencesChanged()
-                        closeAndGoBack()
-                    }
+        showTextView(
+            R.id.log_out,
+            R.string.log_out,
+            myAccount.getCredentialsPresent() ||
+                    myAccount.connection.areOAuthClientKeysPresent() &&
+                    myAccount.connection.http.data.oauthClientKeys?.areDynamic == true
+        )
+            ?.setOnClickListener {
+                with(state.builder) {
+                    setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
+                    myAccount.connection.clearClientKeys()
+                    save()
+                    MyPreferences.onPreferencesChanged()
+                    closeAndGoBack()
                 }
+            }
     }
 
     private fun showIsDefaultAccount() {
@@ -601,8 +623,9 @@ class AccountSettingsActivity : MyActivity() {
     }
 
     private fun showIsSyncedAutomatically() {
-        MyCheckBox.set(findFragmentViewById(R.id.synced_automatically),
-                state.builder.myAccount.isSyncedAutomatically()
+        MyCheckBox.set(
+            findFragmentViewById(R.id.synced_automatically),
+            state.builder.myAccount.isSyncedAutomatically()
         ) { buttonView: CompoundButton?, isChecked: Boolean -> state.builder.setSyncedAutomatically(isChecked) }
     }
 
@@ -611,9 +634,11 @@ class AccountSettingsActivity : MyActivity() {
         val view = findFragmentViewById(R.id.sync_frequency) as EditText?
         if (label != null && view != null) {
             val labelText = getText(R.string.sync_frequency_minutes).toString() + " " +
-                    SharedPreferencesUtil.getSummaryForListPreference(this, java.lang.Long.toString(MyPreferences.getSyncFrequencySeconds()),
-                            R.array.fetch_frequency_values, R.array.fetch_frequency_entries,
-                            R.string.summary_preference_frequency)
+                    SharedPreferencesUtil.getSummaryForListPreference(
+                        this, java.lang.Long.toString(MyPreferences.getSyncFrequencySeconds()),
+                        R.array.fetch_frequency_values, R.array.fetch_frequency_entries,
+                        R.string.summary_preference_frequency
+                    )
             label.text = labelText
             val value = if (state.builder.myAccount.getSyncFrequencySeconds() <= 0) ""
             else (state.builder.myAccount.getSyncFrequencySeconds() / 60).toString()
@@ -638,27 +663,29 @@ class AccountSettingsActivity : MyActivity() {
 
     private fun showLastSyncSucceededDate() {
         val lastSyncSucceededDate = myAccount.getLastSyncSucceededDate()
-        MyUrlSpan.showText(findFragmentViewById(R.id.last_synced) as TextView?,
-                if (lastSyncSucceededDate == 0L) getText(R.string.never).toString()
-                else RelativeTime.getDifference(this, lastSyncSucceededDate),
-                TextMediaType.UNKNOWN, false, false)
+        MyUrlSpan.showText(
+            findFragmentViewById(R.id.last_synced) as TextView?,
+            if (lastSyncSucceededDate == 0L) getText(R.string.never).toString()
+            else RelativeTime.getDifference(this, lastSyncSucceededDate),
+            TextMediaType.UNKNOWN, false, false
+        )
     }
 
     private fun showTextView(textViewId: Int, textResourceId: Int, isVisible: Boolean): TextView? =
-            showTextView(textViewId, if (textResourceId == 0) null else getText(textResourceId), isVisible)
+        showTextView(textViewId, if (textResourceId == 0) null else getText(textResourceId), isVisible)
 
     fun showTextView(textViewId: Int, text: CharSequence?, isVisible: Boolean): TextView? =
-            (findFragmentViewById(textViewId) as TextView?)?.also {
-                if (!TextUtils.isEmpty(text)) {
-                    it.text = text
-                }
-                it.visibility = if (isVisible) View.VISIBLE else View.GONE
+        (findFragmentViewById(textViewId) as TextView?)?.also {
+            if (!TextUtils.isEmpty(text)) {
+                it.text = text
             }
+            it.visibility = if (isVisible) View.VISIBLE else View.GONE
+        }
 
     override fun onResume() {
         MyLog.v(TAG) { "onResume: ${state.accountAction}, ${state.builder}" }
         super.onResume()
-        MyContextHolder.myContextHolder.getNow().setInForeground(true)
+        MyContextHolder.myContextHolder.getNow().isInForeground = true
         if (restartMeIfNeeded()) return
 
         MyServiceManager.setServiceUnavailable()
@@ -700,18 +727,20 @@ class AccountSettingsActivity : MyActivity() {
             if (myAccount.getCredentialsPresent()) {
                 // Credentials are present, so we may verify them
                 // This is needed even for OAuth - to know Username
-                AsyncTaskLauncher.execute(this,
-                        VerifyCredentialsTask(myAccount.actor.getEndpoint(ActorEndpointType.API_PROFILE)))
-                        .onFailure { e: Throwable -> appendError(e.message) }
+                AsyncTaskLauncher.execute(
+                    this,
+                    VerifyCredentialsTask(myAccount.actor.getEndpoint(ActorEndpointType.API_PROFILE))
+                )
+                    .onFailure { e: Throwable -> appendError(e.message) }
             } else if (state.builder.isOAuth() && reVerify) {
                 // Credentials are not present,
                 // so start asynchronous OAuth Authentication process
                 if (!myAccount.areClientKeysPresent()) {
                     AsyncTaskLauncher.execute(this, OAuthRegisterClientTask())
-                            .onFailure { e: Throwable -> appendError(e.message) }
+                        .onFailure { e: Throwable -> appendError(e.message) }
                 } else {
                     AsyncTaskLauncher.execute(this, OAuthAcquireRequestTokenTask(this))
-                            .onFailure { e: Throwable -> appendError(e.message) }
+                        .onFailure { e: Throwable -> appendError(e.message) }
                     activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN
                 }
             }
@@ -730,7 +759,8 @@ class AccountSettingsActivity : MyActivity() {
         }
         val passwordEditable = findFragmentViewById(R.id.password) as EditText?
         if (passwordEditable != null
-                && myAccount.getPassword().compareTo(passwordEditable.text.toString()) != 0) {
+            && myAccount.getPassword().compareTo(passwordEditable.text.toString()) != 0
+        ) {
             state.builder.setPassword(passwordEditable.text.toString())
         }
     }
@@ -749,7 +779,7 @@ class AccountSettingsActivity : MyActivity() {
     override fun onPause() {
         super.onPause()
         state.save()
-        MyContextHolder.myContextHolder.getNow().setInForeground(false)
+        MyContextHolder.myContextHolder.getNow().isInForeground = false
     }
 
     override fun finish() {
@@ -765,29 +795,31 @@ class AccountSettingsActivity : MyActivity() {
 
     private fun returnToOurActivity() {
         MyContextHolder.myContextHolder
-                .initialize(this)
-                .whenSuccessAsync({ myContext: MyContext ->
-                    MyLog.v(this, "Returning to $activityOnFinish")
-                    val myAccount = myContext.accounts.fromAccountName(state.myAccount.getAccountName())
-                    if (myAccount.isValid) {
-                        myContext.accounts.setCurrentAccount(myAccount)
-                    }
-                    if (activityOnFinish == ActivityOnFinish.HOME) {
-                        val home = myContext.timelines[TimelineType.HOME, myAccount.actor, Origin.EMPTY]
-                        TimelineActivity.startForTimeline(myContext, this@AccountSettingsActivity, home, true,
-                                initialSyncNeeded)
-                        state.forget()
+            .initialize(this)
+            .whenSuccessAsync({ myContext: MyContext ->
+                MyLog.v(this, "Returning to $activityOnFinish")
+                val myAccount = myContext.accounts.fromAccountName(state.myAccount.getAccountName())
+                if (myAccount.isValid) {
+                    myContext.accounts.setCurrentAccount(myAccount)
+                }
+                if (activityOnFinish == ActivityOnFinish.HOME) {
+                    val home = myContext.timelines[TimelineType.HOME, myAccount.actor, Origin.EMPTY]
+                    TimelineActivity.startForTimeline(
+                        myContext, this@AccountSettingsActivity, home, true,
+                        initialSyncNeeded
+                    )
+                    state.forget()
+                } else {
+                    if (myContext.accounts.size() > 1) {
+                        val intent = Intent(myContext.context, MySettingsActivity::class.java)
+                        // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
+                        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                        startActivity(intent)
                     } else {
-                        if (myContext.accounts.size() > 1) {
-                            val intent = Intent(myContext.context, MySettingsActivity::class.java)
-                            // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
-                            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                            startActivity(intent)
-                        } else {
-                            FirstActivity.goHome(this@AccountSettingsActivity)
-                        }
+                        FirstActivity.goHome(this@AccountSettingsActivity)
                     }
-                }, AsyncTask.THREAD_POOL_EXECUTOR)
+                }
+            }, AsyncTask.THREAD_POOL_EXECUTOR)
     }
 
     /**
@@ -834,8 +866,10 @@ class AccountSettingsActivity : MyActivity() {
                     // Pass the new/edited account back to the AccountManager
                     val result = Bundle()
                     result.putString(AccountManager.KEY_ACCOUNT_NAME, state.myAccount.getAccountName())
-                    result.putString(AccountManager.KEY_ACCOUNT_TYPE,
-                            AuthenticatorService.ANDROID_ACCOUNT_TYPE)
+                    result.putString(
+                        AccountManager.KEY_ACCOUNT_TYPE,
+                        AuthenticatorService.ANDROID_ACCOUNT_TYPE
+                    )
                     authenticatorResponse.onResult(result)
                     message += "; authenticatorResponse; account.name=" + state.myAccount.getAccountName() + "; "
                 }
@@ -852,14 +886,17 @@ class AccountSettingsActivity : MyActivity() {
      * Step 1 of 3 of the OAuth Authentication
      * Needed in a case we don't have the AndStatus Client keys for this Microblogging system
      */
-    private inner class OAuthRegisterClientTask() : MyAsyncTask<Void?, Void?, TaskResult?>("OAuthRegisterClientTask", PoolEnum.QUICK_UI) {
+    private inner class OAuthRegisterClientTask() :
+        MyAsyncTask<Void?, Void?, TaskResult?>("OAuthRegisterClientTask", PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override fun onPreExecute() {
-            dlg = ProgressDialog.show(this@AccountSettingsActivity,
-                    getText(R.string.dialog_title_registering_client),
-                    getText(R.string.dialog_summary_registering_client),  // duration indeterminate
-                    true,  // not cancelable
-                    false)
+            dlg = ProgressDialog.show(
+                this@AccountSettingsActivity,
+                getText(R.string.dialog_title_registering_client),
+                getText(R.string.dialog_summary_registering_client),  // duration indeterminate
+                true,  // not cancelable
+                false
+            )
         }
 
         override fun doInBackground2(params: Void?): TaskResult {
@@ -880,7 +917,7 @@ class AccountSettingsActivity : MyActivity() {
             var stepErrorMessage = ""
             if (!succeeded) {
                 stepErrorMessage = this@AccountSettingsActivity
-                        .getString(R.string.client_registration_failed)
+                    .getString(R.string.client_registration_failed)
                 if (!connectionErrorMessage.isEmpty()) {
                     stepErrorMessage += ": $connectionErrorMessage"
                 }
@@ -896,15 +933,17 @@ class AccountSettingsActivity : MyActivity() {
                 if (result.isSuccess()) {
                     state.builder.myAccount.myContext.setExpired { "Client registered" }
                     MyContextHolder.myContextHolder
-                            .initialize(this@AccountSettingsActivity, this)
-                            .whenSuccessAsync({ myContext: MyContext ->
-                                state.builder.rebuildMyAccount(myContext)
-                                updateScreen()
-                                AsyncTaskLauncher.execute(this,
-                                        OAuthAcquireRequestTokenTask(this@AccountSettingsActivity))
-                                        .onFailure({ e: Throwable -> appendError(e.message) })
-                                activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN
-                            }, UiThreadExecutor.INSTANCE)
+                        .initialize(this@AccountSettingsActivity, this)
+                        .whenSuccessAsync({ myContext: MyContext ->
+                            state.builder.rebuildMyAccount(myContext)
+                            updateScreen()
+                            AsyncTaskLauncher.execute(
+                                this,
+                                OAuthAcquireRequestTokenTask(this@AccountSettingsActivity)
+                            )
+                                .onFailure({ e: Throwable -> appendError(e.message) })
+                            activityOnFinish = ActivityOnFinish.OUR_DEFAULT_SCREEN
+                        }, UiThreadExecutor.INSTANCE)
                 } else {
                     appendError(result.message)
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
@@ -943,14 +982,16 @@ class AccountSettingsActivity : MyActivity() {
      * this code from OAuthActivity here in order to be able to show
      * ProgressDialog and to get rid of any "Black blank screens"
      */
-    private class OAuthAcquireRequestTokenTask(private val activity: AccountSettingsActivity) : MyAsyncTask<Void?, Void?, TaskResult?>(PoolEnum.QUICK_UI) {
+    private class OAuthAcquireRequestTokenTask(private val activity: AccountSettingsActivity) :
+        MyAsyncTask<Void?, Void?, TaskResult?>(PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override fun onPreExecute() {
-            dlg = ProgressDialog.show(activity,
-                    activity.getText(R.string.dialog_title_acquiring_a_request_token),
-                    activity.getText(R.string.dialog_summary_acquiring_a_request_token),  // indeterminate duration
-                    true,  // not cancelable
-                    false
+            dlg = ProgressDialog.show(
+                activity,
+                activity.getText(R.string.dialog_title_acquiring_a_request_token),
+                activity.getText(R.string.dialog_summary_acquiring_a_request_token),  // indeterminate duration
+                true,  // not cancelable
+                false
             )
         }
 
@@ -969,7 +1010,8 @@ class AccountSettingsActivity : MyActivity() {
                 } else {
                     if (oAuthService.isOAuth2()) {
                         oAuthService.getService(true)?.let { service ->
-                            authUri = UriUtils.fromString(service.getAuthorizationUrl(activity.state.oauthStateParameter))
+                            authUri =
+                                UriUtils.fromString(service.getAuthorizationUrl(activity.state.oauthStateParameter))
                         }
                     } else {
                         val consumer = oAuthService.getConsumer()
@@ -979,8 +1021,10 @@ class AccountSettingsActivity : MyActivity() {
                         // like I registered when I wrote this example, you need to send
                         // null as the callback Uri in this function call. Then
                         // Twitter will correctly process your callback redirection
-                        authUri = UriUtils.fromString(oAuthService.getProvider()
-                                ?.retrieveRequestToken(consumer, HttpConnectionInterface.CALLBACK_URI.toString()))
+                        authUri = UriUtils.fromString(
+                            oAuthService.getProvider()
+                                ?.retrieveRequestToken(consumer, HttpConnectionInterface.CALLBACK_URI.toString())
+                        )
                         activity.state.setRequestTokenWithSecret(consumer?.token, consumer?.tokenSecret)
                     }
 
@@ -1009,7 +1053,8 @@ class AccountSettingsActivity : MyActivity() {
                 MyLog.i(this, e)
                 authUri = Uri.EMPTY
             }
-            val resultStatus = if (UriUtils.isDownloadable(authUri)) ResultStatus.SUCCESS else ResultStatus.CONNECTION_EXCEPTION
+            val resultStatus =
+                if (UriUtils.isDownloadable(authUri)) ResultStatus.SUCCESS else ResultStatus.CONNECTION_EXCEPTION
             if (resultStatus != ResultStatus.SUCCESS) {
                 stepErrorMessage = activity.getString(R.string.acquiring_a_request_token_failed)
                 if (!connectionErrorMessage.isEmpty()) {
@@ -1067,11 +1112,12 @@ class AccountSettingsActivity : MyActivity() {
     private inner class OAuthAcquireAccessTokenTask() : MyAsyncTask<Uri?, Void?, TaskResult?>(PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
         override fun onPreExecute() {
-            dlg = ProgressDialog.show(this@AccountSettingsActivity,
-                    getText(R.string.dialog_title_acquiring_an_access_token),
-                    getText(R.string.dialog_summary_acquiring_an_access_token),  // indeterminate duration
-                    true,  // not cancelable
-                    false
+            dlg = ProgressDialog.show(
+                this@AccountSettingsActivity,
+                getText(R.string.dialog_title_acquiring_an_access_token),
+                getText(R.string.dialog_summary_acquiring_an_access_token),  // indeterminate duration
+                true,  // not cancelable
+                false
             )
         }
 
@@ -1086,7 +1132,8 @@ class AccountSettingsActivity : MyActivity() {
             } else {
                 // We don't need to worry about any saved states: we can reconstruct the state
                 if (params != null && HttpConnectionInterface.CALLBACK_URI.getHost() != null &&
-                        HttpConnectionInterface.CALLBACK_URI.getHost() == params.host) {
+                    HttpConnectionInterface.CALLBACK_URI.getHost() == params.host
+                ) {
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.NEVER)
                     try {
                         if (myAccount.getOAuthService()?.isOAuth2() == true) {
@@ -1123,7 +1170,7 @@ class AccountSettingsActivity : MyActivity() {
                              * Assert :-)
                              */if (oauthToken != null || consumer?.token != null) {
                                 myAccount.getOAuthService()?.getProvider()
-                                        ?.retrieveAccessToken(consumer, verifier)
+                                    ?.retrieveAccessToken(consumer, verifier)
                                 // Now we can retrieve the goodies
                                 accessToken = consumer?.token ?: ""
                                 accessSecret = consumer?.tokenSecret ?: ""
@@ -1134,15 +1181,17 @@ class AccountSettingsActivity : MyActivity() {
                         MyLog.i(this, e)
                     } finally {
                         state.builder.setUserTokenWithSecret(accessToken, accessSecret)
-                        MyLog.d(this, "Access token for " + myAccount.getAccountName() +
-                                ": " + accessToken + ", " + accessSecret)
+                        MyLog.d(
+                            this, "Access token for " + myAccount.getAccountName() +
+                                    ": " + accessToken + ", " + accessSecret
+                        )
                     }
                 }
             }
             return TaskResult.withWhoAmI(
-                    if (!accessToken.isEmpty() && !accessSecret.isEmpty()) ResultStatus.SUCCESS else ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT,
-                    message,
-                    whoAmI
+                if (!accessToken.isEmpty() && !accessSecret.isEmpty()) ResultStatus.SUCCESS else ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT,
+                message,
+                whoAmI
             )
         }
 
@@ -1154,10 +1203,10 @@ class AccountSettingsActivity : MyActivity() {
                     // Credentials are present, so we may verify them
                     // This is needed even for OAuth - to know Twitter Username
                     AsyncTaskLauncher.execute(this, VerifyCredentialsTask(result.whoAmI))
-                            .onFailure { e: Throwable -> appendError(e.message) }
+                        .onFailure { e: Throwable -> appendError(e.message) }
                 } else {
                     val stepErrorMessage = this@AccountSettingsActivity
-                            .getString(R.string.acquiring_an_access_token_failed) +
+                        .getString(R.string.acquiring_an_access_token_failed) +
                             if (!result.message.isNullOrEmpty()) ": " + result.message else ""
                     appendError(stepErrorMessage)
                     state.builder.setCredentialsVerificationStatus(CredentialsVerificationStatus.FAILED)
@@ -1172,18 +1221,20 @@ class AccountSettingsActivity : MyActivity() {
      * Assuming we already have credentials to verify, verify them
      * @author yvolk@yurivolkov.com
      */
-    private inner class VerifyCredentialsTask(private val whoAmI: Optional<Uri>) : MyAsyncTask<Void?, Void?, TaskResult?>(PoolEnum.QUICK_UI) {
+    private inner class VerifyCredentialsTask(private val whoAmI: Optional<Uri>) :
+        MyAsyncTask<Void?, Void?, TaskResult?>(PoolEnum.QUICK_UI) {
         private var dlg: ProgressDialog? = null
 
         @Volatile
         private var skip = false
         override fun onPreExecute() {
             activityOnFinish = ActivityOnFinish.NONE
-            dlg = ProgressDialog.show(this@AccountSettingsActivity,
-                    getText(R.string.dialog_title_checking_credentials),
-                    getText(R.string.dialog_summary_checking_credentials),  // indeterminate duration
-                    true,  // not cancelable
-                    false
+            dlg = ProgressDialog.show(
+                this@AccountSettingsActivity,
+                getText(R.string.dialog_title_checking_credentials),
+                getText(R.string.dialog_summary_checking_credentials),  // indeterminate duration
+                true,  // not cancelable
+                false
             )
             synchronized(this@AccountSettingsActivity) {
                 if (somethingIsBeingProcessed) {
@@ -1196,35 +1247,36 @@ class AccountSettingsActivity : MyActivity() {
 
         override fun doInBackground2(params: Void?): TaskResult? {
             return if (skip) TaskResult(ResultStatus.NONE) else Try.success(state.builder)
-                    .flatMap { it?.getOriginConfig() }
-                    .flatMap { b: MyAccount.Builder -> b.getConnection().verifyCredentials(whoAmI) }
-                    .flatMap { actor: Actor -> state.builder.onCredentialsVerified(actor) }
-                    .map({ it.myAccount })
-                    .filter { obj: MyAccount -> obj.isValidAndSucceeded() }
-                    .onSuccess { myAccount: MyAccount ->
-                        state.forget()
-                        val myContext: MyContext = MyContextHolder.myContextHolder.initialize(this@AccountSettingsActivity, this).getBlocking()
-                        FirstActivity.checkAndUpdateLastOpenedAppVersion(this@AccountSettingsActivity, true)
-                        val timeline = myContext.timelines.forUser(TimelineType.HOME, myAccount.actor)
-                        if (timeline.isTimeToAutoSync()) {
-                            initialSyncNeeded = true
-                            activityOnFinish = ActivityOnFinish.HOME
-                        }
+                .flatMap { it?.getOriginConfig() }
+                .flatMap { b: MyAccount.Builder -> b.getConnection().verifyCredentials(whoAmI) }
+                .flatMap { actor: Actor -> state.builder.onCredentialsVerified(actor) }
+                .map({ it.myAccount })
+                .filter { obj: MyAccount -> obj.isValidAndSucceeded() }
+                .onSuccess { myAccount: MyAccount ->
+                    state.forget()
+                    val myContext: MyContext =
+                        MyContextHolder.myContextHolder.initialize(this@AccountSettingsActivity, this).getBlocking()
+                    FirstActivity.checkAndUpdateLastOpenedAppVersion(this@AccountSettingsActivity, true)
+                    val timeline = myContext.timelines.forUser(TimelineType.HOME, myAccount.actor)
+                    if (timeline.isTimeToAutoSync()) {
+                        initialSyncNeeded = true
+                        activityOnFinish = ActivityOnFinish.HOME
                     }
-                    .map { ma: MyAccount -> TaskResult(ResultStatus.SUCCESS, "") }
-                    .recover(ConnectionException::class.java) { e: ConnectionException ->
-                        val status: ResultStatus = when (e.getStatusCode()) {
-                            StatusCode.AUTHENTICATION_ERROR -> ResultStatus.ACCOUNT_INVALID
-                            StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT -> ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT
-                            else -> ResultStatus.CONNECTION_EXCEPTION
-                        }
-                        MyLog.v(this, e)
-                        TaskResult(status, e.toString())
+                }
+                .map { ma: MyAccount -> TaskResult(ResultStatus.SUCCESS, "") }
+                .recover(ConnectionException::class.java) { e: ConnectionException ->
+                    val status: ResultStatus = when (e.getStatusCode()) {
+                        StatusCode.AUTHENTICATION_ERROR -> ResultStatus.ACCOUNT_INVALID
+                        StatusCode.CREDENTIALS_OF_OTHER_ACCOUNT -> ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT
+                        else -> ResultStatus.CONNECTION_EXCEPTION
                     }
-                    .recover(Exception::class.java) { e: Exception ->
-                        TaskResult(ResultStatus.CONNECTION_EXCEPTION, "${e.message} (${e.javaClass.name})")
-                    }
-                    .get()
+                    MyLog.v(this, e)
+                    TaskResult(status, e.toString())
+                }
+                .recover(Exception::class.java) { e: Exception ->
+                    TaskResult(ResultStatus.CONNECTION_EXCEPTION, "${e.message} (${e.javaClass.name})")
+                }
+                .get()
         }
 
         /**
@@ -1236,10 +1288,13 @@ class AccountSettingsActivity : MyActivity() {
             val resultOut = result ?: TaskResult(ResultStatus.NONE)
             var errorMessage: CharSequence = ""
             when (resultOut.status) {
-                ResultStatus.SUCCESS -> Toast.makeText(this@AccountSettingsActivity, R.string.authentication_successful,
-                        Toast.LENGTH_SHORT).show()
+                ResultStatus.SUCCESS -> Toast.makeText(
+                    this@AccountSettingsActivity, R.string.authentication_successful,
+                    Toast.LENGTH_SHORT
+                ).show()
                 ResultStatus.ACCOUNT_INVALID -> errorMessage = getText(R.string.dialog_summary_authentication_failed)
-                ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT -> errorMessage = getText(R.string.error_credentials_of_other_user)
+                ResultStatus.CREDENTIALS_OF_OTHER_ACCOUNT -> errorMessage =
+                    getText(R.string.error_credentials_of_other_user)
                 ResultStatus.CONNECTION_EXCEPTION -> {
                     errorMessage = "${getText(R.string.error_connection_error)} ${resultOut.message}"
                     MyLog.i(this, errorMessage.toString())

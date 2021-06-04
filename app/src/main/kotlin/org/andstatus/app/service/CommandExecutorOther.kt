@@ -329,7 +329,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
                         execContext.getResult().setItemId(noteId)
                         true
                     }
-                            .onFailure { e: Throwable? -> execContext.myContext.getNotifier().onUnsentActivity(activityId) }
+                            .onFailure { e: Throwable? -> execContext.myContext.notifier.onUnsentActivity(activityId) }
                 }
     }
 

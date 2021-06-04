@@ -223,7 +223,7 @@ class CommandQueue(private val myContext: MyContext) {
                         if (MyLog.isVerboseEnabled() && (count < 6 || cd.command == CommandEnum.UPDATE_NOTE)) {
                             MyLog.v(TAG, method + "; " + count + ": " + cd.toString())
                         }
-                        if (myContext.isTestRun() && queue.contains(cd)) {
+                        if (myContext.isTestRun && queue.contains(cd)) {
                             MyLog.e(TAG, method + "; Duplicated command in a queue:" + count + " " + cd.toString())
                         }
                     }
@@ -385,7 +385,7 @@ class CommandQueue(private val myContext: MyContext) {
                 }
             } while (commandData == null || commandData == CommandData.EMPTY)
             MyLog.v(TAG, "Polled $accessorType in "
-                    + (if (cq.myContext.isInForeground()) "foreground "
+                    + (if (cq.myContext.isInForeground) "foreground "
                     + if (MyPreferences.isSyncWhileUsingApplicationEnabled()) "enabled" else "disabled" else "background")
                     + if (commandData == null) " (no command)" else " $commandData")
             if (commandData != null) {
@@ -397,7 +397,7 @@ class CommandQueue(private val myContext: MyContext) {
 
         private fun skip(commandData: CommandData?): Boolean {
             if (commandData == null || commandData == CommandData.EMPTY) return false
-            if (!commandData.isInForeground() && cq.myContext.isInForeground()
+            if (!commandData.isInForeground() && cq.myContext.isInForeground
                     && !MyPreferences.isSyncWhileUsingApplicationEnabled()) {
                 return true
             }
