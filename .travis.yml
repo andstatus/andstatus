@@ -104,7 +104,7 @@ script:
 after_success:
   - |
     if [ $API = 29 ]; then
-      ./gradlew :app:jacocoTestReport
+      ./gradlew :app:jacocoUnitTestReport
       ./gradlew sonarqube -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN -Dsonar.verbose=true
     fi
 

@@ -67,15 +67,18 @@ jacoco {
     toolVersion = "0.8.7"
 }
 
-task<JacocoReport>("jacocoTestReport") {
+task<JacocoReport>("jacocoUnitTestReport") {
     group = "verification"
 
-    val classDirsTree = fileTree(buildDir) {
+    sourceDirectories.setFrom(fileTree(projectDir) {
+        include("/src/main/java/**")
+    })
+    classDirectories.setFrom(fileTree(buildDir) {
         include(
-            "**/classes/**/main/**",
-            "**/intermediates/classes/debug/**",
+            "**/intermediates/app_classes/debug/**",
             "**/intermediates/javac/debug/*/classes/**",
-            "**/tmp/kotlin-classes/debug/**"
+            "**/tmp/kotlin-classes/debug/**",
+            "**/tmp/kotlin-classes/debugUnitTest/**"
         )
 
         exclude(
@@ -85,23 +88,19 @@ task<JacocoReport>("jacocoTestReport") {
             "**/Manifest*.*",
             "**/*Test*.*",
             "android/**/*.*",
-            "**/*\$Lambda$*.*", // Jacoco can not handle several "$" in class name.
+            "**/*\$Lambda$*.*", // Jacoco can not handle several "$" in class name?
             "**/*\$inlined$*.*"
         )
-    }
-    val mainSrc = fileTree(project.buildDir) {
-        include("/src/main/java/**")
-    }
-
-    sourceDirectories.setFrom(files(mainSrc))
-    classDirectories.setFrom(files(classDirsTree))
+    })
     executionData.setFrom(fileTree(buildDir) {
-        include("jacoco/testDebugUnitTest.exec", "outputs/code-coverage/connected/*coverage.ec")
+        include("jacoco/testDebugUnitTest.exec")
     })
 
     reports {
         xml.isEnabled = true
+        xml.destination = file("$buildDir/reports/coverage/debugUnitTest/report.xml")
         html.isEnabled = true
+        html.destination = file("$buildDir/reports/coverage/debugUnitTest/html")
     }
 }
 
@@ -121,8 +120,7 @@ sonarqube {
         property("sonar.import_unknown_files", true)
 
         property("sonar.android.lint.report", "build/reports/lint-results.xml")
-        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/coverage/debug/report.xml" +
-                ",build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/coverage/debug*/report.xml")
     }
 }
 
