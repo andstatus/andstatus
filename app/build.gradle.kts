@@ -162,3 +162,9 @@ dependencies {
     implementation("androidx.core:core-ktx:${rootProject.extra["ktxVersion"]}")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.extra["kotlinVersion"]}")
 }
+
+// This is needed until AndroidSourceSet starts supporting Kotlin directly
+// See https://stackoverflow.com/a/61162647/297710
+android.sourceSets.all {
+    java.srcDir("src/$name/kotlin")
+}
