@@ -41,7 +41,7 @@ class GroupMembership private constructor(private val parentActor: Actor,
      */
     private fun save(myContext: MyContext?) {
         if (isMember.unknown || group.actorId == 0L || memberId == 0L || myContext == null ||
-                myContext.getDatabase() == null) return
+                myContext.database == null) return
         for (pass in 0..4) {
             try {
                 tryToUpdate(myContext, isMember.toBoolean(false))
@@ -56,7 +56,7 @@ class GroupMembership private constructor(private val parentActor: Actor,
     }
 
     private fun tryToUpdate(myContext: MyContext, isMember: Boolean) {
-        val db = myContext.getDatabase() ?: return
+        val db = myContext.database ?: return
         val isMemberOld = isGroupMember(myContext, group.actorId, memberId)
         if (isMemberOld == isMember) return
         if (isMemberOld) {
@@ -89,7 +89,7 @@ class GroupMembership private constructor(private val parentActor: Actor,
                         + friend.getUniqueNameWithOrigin())
             }
             setMember(myContext, follower, GroupType.FRIENDS, follows, friend)
-            myContext.users().reload(follower)
+            myContext.users.reload(follower)
             MyLog.v(TAG
             ) {
                 ("Actor " + friend.getUniqueNameWithOrigin() + " "
@@ -97,7 +97,7 @@ class GroupMembership private constructor(private val parentActor: Actor,
                         + follower.getUniqueNameWithOrigin() + " (indirect info)")
             }
             setMember(myContext, friend, GroupType.FOLLOWERS, follows, follower)
-            myContext.users().reload(friend)
+            myContext.users.reload(friend)
         }
 
         fun setMember(myContext: MyContext, parentActor: Actor, groupType: GroupType, isMember: TriState, member: Actor) {
@@ -124,7 +124,7 @@ class GroupMembership private constructor(private val parentActor: Actor,
         }
 
         private fun isGroupMember(myContext: MyContext, groupId: Long, memberId: Long): Boolean {
-            return myContext.getDatabase()?.let { MyQuery.dExists(it, selectMembership(groupId, memberId))} ?: false
+            return myContext.database?.let { MyQuery.dExists(it, selectMembership(groupId, memberId))} ?: false
         }
 
         private fun selectMembership(groupId: Long, memberId: Long): String {

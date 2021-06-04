@@ -19,7 +19,7 @@ class AccountSettingsActivityTestAdd() : AccountSettingsActivityTest() {
 
     override fun getActivityIntent(): Intent {
         TestSuite.initializeWithAccounts(this)
-        val ma = MyContextHolder.myContextHolder.getNow().accounts().fromAccountName(accountNameString)
+        val ma = MyContextHolder.myContextHolder.getNow().accounts.fromAccountName(accountNameString)
         if (ma.isValid) Assert.fail("Found persistent account '$accountNameString'")
         return Intent(accountAction).putExtra(IntentExtra.ACCOUNT_NAME.key, accountNameString)
     }

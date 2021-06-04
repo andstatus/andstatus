@@ -46,7 +46,7 @@ class ManageTimelinesContextMenu(listActivity: LoadableListActivity<ManageTimeli
             if (!viewItem.timeline.isRequired()) {
                 ManageTimelinesContextMenuItem.DELETE.addTo(menu, ++order, R.string.button_delete)
             }
-            if (getMyContext().timelines().getDefault() != viewItem.timeline) {
+            if (getMyContext().timelines.getDefault() != viewItem.timeline) {
                 ManageTimelinesContextMenuItem.MAKE_DEFAULT.addTo(menu, ++order, R.string.set_as_default_timeline)
             }
             ManageTimelinesContextMenuItem.FORGET_SYNC_EVENTS.addTo(menu, ++order, R.string.forget_sync_events)

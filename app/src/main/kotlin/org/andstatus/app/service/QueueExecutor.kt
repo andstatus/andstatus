@@ -27,7 +27,7 @@ class QueueExecutor(myService: MyService, accessorType: AccessorType) : MyAsyncT
             MyLog.v(this) { "Didn't start, no reference to MyService" }
             return true
         }
-        val accessor = myService.myContext.queues().getAccessor(accessorType)
+        val accessor = myService.myContext.queues.getAccessor(accessorType)
         accessor.moveCommandsFromSkippedToMainQueue()
         MyLog.v(this) { "Started, " + accessor.countToExecuteNow() + " commands to process" }
         val breakReason: String
@@ -59,16 +59,16 @@ class QueueExecutor(myService: MyService, accessorType: AccessorType) : MyAsyncT
             myService.broadcastBeforeExecutingCommand(commandData)
             CommandExecutorStrategy.executeCommand(commandData, this)
             if (commandData.getResult().shouldWeRetry()) {
-                myService.myContext.queues().addToQueue(QueueType.RETRY, commandData)
+                myService.myContext.queues.addToQueue(QueueType.RETRY, commandData)
             } else if (commandData.getResult().hasError()) {
-                myService.myContext.queues().addToQueue(QueueType.ERROR, commandData)
+                myService.myContext.queues.addToQueue(QueueType.ERROR, commandData)
             } else {
                 addSyncAfterNoteWasSent(myService, commandData)
             }
             myService.broadcastAfterExecutingCommand(commandData)
         } while (true)
         MyLog.v(this) { "Ended, " + executedCounter.get() + " commands executed, " + accessor.countToExecuteNow() + " left" }
-        myService.myContext.queues().save()
+        myService.myContext.queues.save()
         currentlyExecutingSince = 0
         currentlyExecutingDescription = breakReason
         return true
@@ -80,7 +80,7 @@ class QueueExecutor(myService: MyService, accessorType: AccessorType) : MyAsyncT
                         MyPreferences.KEY_SYNC_AFTER_NOTE_WAS_SENT, false)) {
             return
         }
-        myService.myContext.queues().addToQueue(QueueType.CURRENT, CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
+        myService.myContext.queues.addToQueue(QueueType.CURRENT, CommandData.newTimelineCommand(CommandEnum.GET_TIMELINE,
                 commandDataExecuted.getTimeline().myAccountToSync, TimelineType.SENT)
                 .setInForeground(commandDataExecuted.isInForeground()))
     }

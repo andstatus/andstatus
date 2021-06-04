@@ -60,7 +60,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
             startForTimeline(
                     params.menu.getActivity().myContext,
                     params.menu.getActivity(),
-                    params.menu.getActivity().myContext.timelines()
+                    params.menu.getActivity().myContext.timelines
                             .forUserAtHomeOrigin(TimelineType.SENT, params.menu.getViewItem().actor)
             )
             return super.executeAsync(params)
@@ -71,7 +71,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
             startForTimeline(
                     params.menu.getActivity().myContext,
                     params.menu.getActivity(),
-                    params.menu.getActivity().myContext.timelines()
+                    params.menu.getActivity().myContext.timelines
                             .forUserAtHomeOrigin(TimelineType.GROUP, params.menu.getViewItem().actor)
             )
             return super.executeAsync(params)
@@ -89,7 +89,7 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
     },
     ACT_AS_FIRST_OTHER_ACCOUNT {
         override fun executeOnUiThread(menu: ActorContextMenu, editorData: NoteEditorData) {
-            menu.setSelectedActingAccount(menu.getMyContext().accounts()
+            menu.setSelectedActingAccount(menu.getMyContext().accounts
                     .firstOtherSucceededForSameUser(menu.getViewItem().actor, menu.getActingAccount()))
             menu.showContextMenu()
         }
@@ -186,10 +186,10 @@ enum class ActorContextMenuItem constructor(private val mIsAsync: Boolean = fals
             return
         }
         if (params.menu.getActingAccount().nonValid || params.menu.getActingAccount().origin != origin) {
-            params.menu.setSelectedActingAccount(params.menu.getMyContext().accounts()
+            params.menu.setSelectedActingAccount(params.menu.getMyContext().accounts
                     .fromActorOfSameOrigin(actor))
             if (params.menu.getActingAccount().nonValid) {
-                params.menu.setSelectedActingAccount(params.menu.getMyContext().accounts().getFirstPreferablySucceededForOrigin(origin))
+                params.menu.setSelectedActingAccount(params.menu.getMyContext().accounts.getFirstPreferablySucceededForOrigin(origin))
             }
         }
     }

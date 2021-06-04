@@ -80,7 +80,7 @@ class HtmlContentTester {
     }
 
     init {
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.conversationOriginName)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(DemoData.demoData.conversationOriginName)
         Assert.assertTrue(DemoData.demoData.conversationOriginName + " exists",
                 origin.originType !== OriginType.UNKNOWN)
         ma = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)

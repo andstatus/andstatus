@@ -128,7 +128,7 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>() {
     override fun newSyncLoader(args: Bundle?): SyncLoader<ManageTimelinesViewItem> {
         return object : SyncLoader<ManageTimelinesViewItem>() {
             override fun load(publisher: ProgressPublisher?) {
-                items = myContext.timelines()
+                items = myContext.timelines
                         .stream()
                         .map { timeline: Timeline ->
                             ManageTimelinesViewItem(myContext, timeline,
@@ -146,9 +146,9 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>() {
 
     override fun newListAdapter(): BaseTimelineAdapter<ManageTimelinesViewItem> {
         return object : BaseTimelineAdapter<ManageTimelinesViewItem>(myContext,
-                myContext.timelines()[TimelineType.MANAGE_TIMELINES, Actor.EMPTY,  Origin.EMPTY],
+                myContext.timelines[TimelineType.MANAGE_TIMELINES, Actor.EMPTY,  Origin.EMPTY],
                 getLoaded().getList() as MutableList<ManageTimelinesViewItem>) {
-            var defaultTimeline: Timeline? = myContext.timelines().getDefault()
+            var defaultTimeline: Timeline? = myContext.timelines.getDefault()
 
             override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
                 val view = convertView ?: newView()
@@ -234,12 +234,12 @@ class ManageTimelines : LoadableListActivity<ManageTimelinesViewItem>() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.getItemId()) {
             R.id.reset_counters_menu_item -> {
-                myContext.timelines().resetCounters(isTotal)
-                myContext.timelines().saveChanged().thenRun { showList(WhichPage.CURRENT) }
+                myContext.timelines.resetCounters(isTotal)
+                myContext.timelines.saveChanged().thenRun { showList(WhichPage.CURRENT) }
             }
             R.id.reset_timelines_order -> {
-                myContext.timelines().resetDefaultSelectorOrder()
-                myContext.timelines().saveChanged().thenRun { sortBy(R.id.displayedInSelector, true) }
+                myContext.timelines.resetDefaultSelectorOrder()
+                myContext.timelines.saveChanged().thenRun { sortBy(R.id.displayedInSelector, true) }
             }
             R.id.total_counters -> {
                 isTotal = !isTotal

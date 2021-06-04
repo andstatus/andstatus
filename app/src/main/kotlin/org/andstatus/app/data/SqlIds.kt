@@ -100,7 +100,7 @@ class SqlIds : IsEmpty {
         }
 
         fun myActorsIds(): SqlIds {
-            return fromIds( MyContextHolder.myContextHolder.getNow().users().myActors.keys)
+            return fromIds( MyContextHolder.myContextHolder.getNow().users.myActors.keys)
         }
 
         fun actorIdsOfTimelineAccount(timeline: Timeline): SqlIds {

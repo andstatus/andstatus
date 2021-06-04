@@ -111,7 +111,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
     }
 
     fun isMyActorOrAuthor(myContext: MyContext): Boolean {
-        return myContext.users().isMe(getActor()) || myContext.users().isMe(getAuthor())
+        return myContext.users.isMe(getActor()) || myContext.users.isMe(getAuthor())
     }
 
     fun getNotifiedActor(): Actor {
@@ -311,7 +311,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
             findExisting(myContext)
         }
         storedUpdatedDate = MyQuery.idToLongColumnValue(
-                myContext.getDatabase(), ActivityTable.TABLE_NAME, ActivityTable.UPDATED_DATE, id)
+                myContext.database, ActivityTable.TABLE_NAME, ActivityTable.UPDATED_DATE, id)
         if (getId() != 0L) {
             if (updatedDate <= storedUpdatedDate) {
                 MyLog.v(this) { "Skipped as not younger $this" }
@@ -319,7 +319,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
             }
             when (type) {
                 ActivityType.LIKE, ActivityType.UNDO_LIKE -> {
-                    val favAndType = MyQuery.noteIdToLastFavoriting(myContext.getDatabase(),
+                    val favAndType = MyQuery.noteIdToLastFavoriting(myContext.database,
                             getNote().noteId, accountActor.actorId)
                     if (favAndType.second == ActivityType.LIKE && type == ActivityType.LIKE
                             || favAndType.second == ActivityType.UNDO_LIKE && type == ActivityType.UNDO_LIKE) {
@@ -328,7 +328,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
                     }
                 }
                 ActivityType.ANNOUNCE, ActivityType.UNDO_ANNOUNCE -> {
-                    val reblAndType = MyQuery.noteIdToLastReblogging(myContext.getDatabase(),
+                    val reblAndType = MyQuery.noteIdToLastReblogging(myContext.database,
                             getNote().noteId, accountActor.actorId)
                     if (reblAndType.second == ActivityType.ANNOUNCE && type == ActivityType.ANNOUNCE
                             || reblAndType.second == ActivityType.UNDO_ANNOUNCE && type == ActivityType.UNDO_ANNOUNCE) {
@@ -355,7 +355,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
             return
         }
         if (getNote().noteId != 0L && (type == ActivityType.UPDATE || type == ActivityType.CREATE)) {
-            id = MyQuery.conditionToLongColumnValue(myContext.getDatabase(), "", ActivityTable.TABLE_NAME,
+            id = MyQuery.conditionToLongColumnValue(myContext.database, "", ActivityTable.TABLE_NAME,
                     BaseColumns._ID, ActivityTable.NOTE_ID + "=" + getNote().noteId + " AND "
                     + ActivityTable.ACTIVITY_TYPE + "=" + type.id)
         }
@@ -382,17 +382,17 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
     }
 
     private fun calculateNotificationEventType(myContext: MyContext): NotificationEventType {
-        if (myContext.users().isMe(getActor())) return NotificationEventType.EMPTY
+        if (myContext.users.isMe(getActor())) return NotificationEventType.EMPTY
         if (getNote().audience().isMeInAudience() && !isMyActorOrAuthor(myContext)) {
             return if (getNote().audience().visibility.isPrivate) NotificationEventType.PRIVATE else NotificationEventType.MENTION
         }
-        return if (type == ActivityType.ANNOUNCE && myContext.users().isMe(getAuthor())) {
+        return if (type == ActivityType.ANNOUNCE && myContext.users.isMe(getAuthor())) {
             NotificationEventType.ANNOUNCE
         } else if ((type == ActivityType.LIKE || type == ActivityType.UNDO_LIKE)
-                && myContext.users().isMe(getAuthor())) {
+                && myContext.users.isMe(getAuthor())) {
             NotificationEventType.LIKE
         } else if ((type == ActivityType.FOLLOW || type == ActivityType.UNDO_FOLLOW)
-                && myContext.users().isMe(getObjActor())) {
+                && myContext.users.isMe(getObjActor())) {
             NotificationEventType.FOLLOW
         } else if (isSubscribedByMe().isTrue) {
             NotificationEventType.HOME
@@ -403,11 +403,11 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
 
     private fun calculateNotifiedActor(myContext: MyContext, event: NotificationEventType): Actor {
         return when (event) {
-            NotificationEventType.MENTION, NotificationEventType.PRIVATE -> myContext.users().myActors.values.stream()
+            NotificationEventType.MENTION, NotificationEventType.PRIVATE -> myContext.users.myActors.values.stream()
                     .filter { actor: Actor -> getNote().audience().findSame(actor).isSuccess }
                     .findFirst()
                     .orElse(
-                            myContext.users().myActors.values.stream()
+                            myContext.users.myActors.values.stream()
                                     .filter { a: Actor -> a.origin == accountActor.origin }
                                     .findFirst()
                                     .orElse(Actor.EMPTY)
@@ -463,7 +463,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
     private fun afterSave(myContext: MyContext) {
         when (type) {
             ActivityType.LIKE, ActivityType.UNDO_LIKE -> {
-                val myActorAccount = myContext.accounts().fromActorOfAnyOrigin(actor)
+                val myActorAccount = myContext.accounts.fromActorOfAnyOrigin(actor)
                 if (myActorAccount.isValid) {
                     MyLog.v(this) {
                         (myActorAccount.toString() + " " + type
@@ -524,7 +524,7 @@ class AActivity private constructor(accountActor: Actor, type: ActivityType?) : 
 
         fun fromCursor(myContext: MyContext, cursor: Cursor): AActivity {
             val activity = from(
-                    myContext.accounts().fromActorId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID)).actor,
+                    myContext.accounts.fromActorId(DbUtils.getLong(cursor, ActivityTable.ACCOUNT_ID)).actor,
                     ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE)))
             activity.id = DbUtils.getLong(cursor, BaseColumns._ID)
             activity.setOid(DbUtils.getString(cursor, ActivityTable.ACTIVITY_OID))

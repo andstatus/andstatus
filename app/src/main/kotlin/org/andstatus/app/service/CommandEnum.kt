@@ -87,7 +87,7 @@ enum class CommandEnum constructor(
             return this.code
         }
         var resId = titleResId
-        val ma = myContext.accounts().fromAccountName(accountName)
+        val ma = myContext.accounts.fromAccountName(accountName)
         if (ma.isValid) {
             resId = ma.origin.alternativeTermForResourceId(titleResId)
         }

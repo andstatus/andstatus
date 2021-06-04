@@ -124,7 +124,7 @@ class OriginEditor : MyActivity() {
             buttonSave?.setOnClickListener(SaveOrigin())
             spinnerOriginType?.setEnabled(false)
             editTextOriginName?.setEnabled(false)
-            val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(
+            val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(
                     intentNew.getStringExtra(IntentExtra.ORIGIN_NAME.key))
             builder = Origin.Builder(origin)
         }
@@ -257,7 +257,7 @@ class OriginEditor : MyActivity() {
                 .save()
         MyLog.v(TAG) { (if (builder.isSaved()) "Saved" else "Not saved") + ": " + builder.build().toString() }
         if (builder.isSaved()) {
-            builder.getMyContext().origins().initialize()
+            builder.getMyContext().origins.initialize()
             setResult(RESULT_OK)
             finish()
         } else {

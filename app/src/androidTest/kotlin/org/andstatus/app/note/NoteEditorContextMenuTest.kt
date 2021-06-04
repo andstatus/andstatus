@@ -52,8 +52,8 @@ class NoteEditorContextMenuTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.initialize(this)
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
-        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.actor,  Origin.EMPTY)
+         MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
+        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.HOME, ma.actor,  Origin.EMPTY)
         MyLog.i(this, "setUp ended, $timeline")
         return Intent(Intent.ACTION_VIEW, timeline.getUri())
     }

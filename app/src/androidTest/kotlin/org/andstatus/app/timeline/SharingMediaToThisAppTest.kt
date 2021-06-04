@@ -40,7 +40,7 @@ class SharingMediaToThisAppTest : TimelineActivityTest<ActivityViewItem>() {
         mService.setUp(DemoData.demoData.gnusocialTestAccountName)
         ma = DemoData.demoData.getGnuSocialAccount()
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getBlocking().accounts().setCurrentAccount(ma)
+         MyContextHolder.myContextHolder.getBlocking().accounts.setCurrentAccount(ma)
         val intent = Intent(Intent.ACTION_SEND)
         intent.type = "image/png"
         val mediaUri: Uri = DemoData.demoData.localImageTestUri2

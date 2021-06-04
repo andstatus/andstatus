@@ -191,29 +191,29 @@ class DemoAccountInserter(private val myContext: MyContext) {
 
     companion object {
         fun getAutomaticallySyncableTimeline(myContext: MyContext, myAccount: MyAccount): Timeline {
-            val timelineToSync = myContext.timelines()
+            val timelineToSync = myContext.timelines
                     .filter(false, TriState.FALSE, TimelineType.UNKNOWN, myAccount.actor,  Origin.EMPTY)
                     .filter { obj: Timeline -> obj.isSyncedAutomatically() }.findFirst().orElse(Timeline.EMPTY)
             assertTrue("No syncable automatically timeline for $myAccount" +
-                    "\n${myContext.timelines().values()}", timelineToSync.isSyncableAutomatically())
+                    "\n${myContext.timelines.values()}", timelineToSync.isSyncableAutomatically())
             return timelineToSync
         }
 
         fun assertDefaultTimelinesForAccounts() {
-            for (myAccount in  MyContextHolder.myContextHolder.getNow().accounts().get()) {
+            for (myAccount in  MyContextHolder.myContextHolder.getNow().accounts.get()) {
                 for (timelineType in myAccount.actor.getDefaultMyAccountTimelineTypes()) {
                     if (!myAccount.connection.hasApiEndpoint(timelineType.connectionApiRoutine)) continue
                     var count: Long = 0
                     val logMsg: StringBuilder = StringBuilder(myAccount.toString())
                     MyStringBuilder.appendWithSpace(logMsg, timelineType.toString())
-                    for (timeline in  MyContextHolder.myContextHolder.getNow().timelines().values()) {
+                    for (timeline in  MyContextHolder.myContextHolder.getNow().timelines.values()) {
                         if (timeline.getActorId() == myAccount.actorId && timeline.timelineType == timelineType &&
                                 !timeline.hasSearchQuery()) {
                             count++
                             MyStringBuilder.appendWithSpace(logMsg, timeline.toString())
                         }
                     }
-                    assertEquals("$logMsg\n${MyContextHolder.myContextHolder.getNow().timelines().values()}",
+                    assertEquals("$logMsg\n${MyContextHolder.myContextHolder.getNow().timelines.values()}",
                             1, count)
                 }
             }

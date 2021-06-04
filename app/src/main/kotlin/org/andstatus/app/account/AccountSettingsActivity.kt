@@ -256,7 +256,7 @@ class AccountSettingsActivity : MyActivity() {
             finish()
         } else {
             MyLog.v(this, "Switching to the selected account")
-            builder.myAccount.myContext.accounts().setCurrentAccount(builder.myAccount)
+            builder.myAccount.myContext.accounts.setCurrentAccount(builder.myAccount)
             state.accountAction = Intent.ACTION_EDIT
             updateScreen()
         }
@@ -268,7 +268,7 @@ class AccountSettingsActivity : MyActivity() {
             originType = OriginType.fromCode(data.getStringExtra(IntentExtra.SELECTABLE_ENUM.key))
             if (originType.isSelectable()) {
                 val origins: MutableList<Origin> = MyContextHolder.myContextHolder.getNow()
-                        .origins().originsOfType(originType)
+                        .origins.originsOfType(originType)
                 when (origins.size) {
                     0 -> originType = OriginType.UNKNOWN
                     1 -> onOriginSelected(origins[0])
@@ -297,7 +297,7 @@ class AccountSettingsActivity : MyActivity() {
     private fun onOriginSelected(resultCode: Int, data: Intent) {
         var origin: Origin = Origin.EMPTY
         if (resultCode == RESULT_OK) {
-            origin = MyContextHolder.myContextHolder.getNow().origins()
+            origin = MyContextHolder.myContextHolder.getNow().origins
                     .fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key))
             if (origin.isPersistent()) {
                 onOriginSelected(origin)
@@ -593,7 +593,7 @@ class AccountSettingsActivity : MyActivity() {
     }
 
     private fun showIsDefaultAccount() {
-        val isDefaultAccount = myAccount == state.builder.myAccount.myContext.accounts().getDefaultAccount()
+        val isDefaultAccount = myAccount == state.builder.myAccount.myContext.accounts.getDefaultAccount()
         val view = findFragmentViewById(R.id.is_default_account)
         if (view != null) {
             view.visibility = if (isDefaultAccount) View.VISIBLE else View.GONE
@@ -768,17 +768,17 @@ class AccountSettingsActivity : MyActivity() {
                 .initialize(this)
                 .whenSuccessAsync({ myContext: MyContext ->
                     MyLog.v(this, "Returning to $activityOnFinish")
-                    val myAccount = myContext.accounts().fromAccountName(state.myAccount.getAccountName())
+                    val myAccount = myContext.accounts.fromAccountName(state.myAccount.getAccountName())
                     if (myAccount.isValid) {
-                        myContext.accounts().setCurrentAccount(myAccount)
+                        myContext.accounts.setCurrentAccount(myAccount)
                     }
                     if (activityOnFinish == ActivityOnFinish.HOME) {
-                        val home = myContext.timelines()[TimelineType.HOME, myAccount.actor, Origin.EMPTY]
+                        val home = myContext.timelines[TimelineType.HOME, myAccount.actor, Origin.EMPTY]
                         TimelineActivity.startForTimeline(myContext, this@AccountSettingsActivity, home, true,
                                 initialSyncNeeded)
                         state.forget()
                     } else {
-                        if (myContext.accounts().size() > 1) {
+                        if (myContext.accounts.size() > 1) {
                             val intent = Intent(myContext.context, MySettingsActivity::class.java)
                             // On modifying activity back stack see http://stackoverflow.com/questions/11366700/modification-of-the-back-stack-in-android
                             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -1205,7 +1205,7 @@ class AccountSettingsActivity : MyActivity() {
                         state.forget()
                         val myContext: MyContext = MyContextHolder.myContextHolder.initialize(this@AccountSettingsActivity, this).getBlocking()
                         FirstActivity.checkAndUpdateLastOpenedAppVersion(this@AccountSettingsActivity, true)
-                        val timeline = myContext.timelines().forUser(TimelineType.HOME, myAccount.actor)
+                        val timeline = myContext.timelines.forUser(TimelineType.HOME, myAccount.actor)
                         if (timeline.isTimeToAutoSync()) {
                             initialSyncNeeded = true
                             activityOnFinish = ActivityOnFinish.HOME

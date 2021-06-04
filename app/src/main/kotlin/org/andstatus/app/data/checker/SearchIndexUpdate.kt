@@ -38,7 +38,7 @@ internal class SearchIndexUpdate : DataChecker() {
         val notesToFix: MutableList<Note> = ArrayList()
         val counter = AtomicInteger()
         try {
-            myContext.getDatabase()?.rawQuery(sql, null)?.use { cursor ->
+            myContext.database?.rawQuery(sql, null)?.use { cursor ->
                 while (cursor.moveToNext()) {
                     if (logger.isCancelled) break
                     counter.incrementAndGet()
@@ -73,7 +73,7 @@ internal class SearchIndexUpdate : DataChecker() {
                     + " SET "
                     + NoteTable.CONTENT_TO_SEARCH + "=" + MyQuery.quoteIfNotQuoted(note.getContentToSearch())
                     + " WHERE " + BaseColumns._ID + "=" + note.noteId)
-            myContext.getDatabase()?.execSQL(sql)
+            myContext.database?.execSQL(sql)
             logger.logProgressIfLongProcess {
                 "Updating search index for " +
                         I18n.trimTextAt(note.getContentToSearch(), 120) +

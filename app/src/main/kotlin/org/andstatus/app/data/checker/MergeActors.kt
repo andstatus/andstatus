@@ -63,11 +63,11 @@ internal class MergeActors : DataChecker() {
                 + " ORDER BY " + ActorTable.ORIGIN_ID
                 + ", " + ActorTable.ACTOR_OID)
         var rowsCount: Long = 0
-        myContext.getDatabase()?.rawQuery(sql, null)?.use { c ->
+        myContext.database?.rawQuery(sql, null)?.use { c ->
             var prev: Actor = Actor.EMPTY
             while (c.moveToNext()) {
                 rowsCount++
-                val actor: Actor = Actor.fromOid(myContext.origins().fromId(c.getLong(1)),
+                val actor: Actor = Actor.fromOid(myContext.origins.fromId(c.getLong(1)),
                         c.getString(2))
                 actor.actorId = c.getLong(0)
                 actor.setWebFingerId(c.getString(3))
@@ -98,7 +98,7 @@ internal class MergeActors : DataChecker() {
         val activity: AActivity = AActivity.from(Actor.EMPTY, ActivityType.UPDATE)
         activity.setObjActor(actor)
         var mergeWith = prev
-        if (myContext.accounts().fromActorId(actor.actorId).isValid) {
+        if (myContext.accounts.fromActorId(actor.actorId).isValid) {
             mergeWith = actor
             activity.setObjActor(prev)
         }
@@ -126,7 +126,7 @@ internal class MergeActors : DataChecker() {
                     + column + "=" + activity.getActor().actorId
                     + " WHERE "
                     + column + "=" + activity.getObjActor().actorId)
-            myContext.getDatabase()?.execSQL(sql)
+            myContext.database?.execSQL(sql)
         } catch (e: Exception) {
             if (!ignoreError) {
                 logger.logProgress("Error: " + e.message + ", SQL:" + sql)

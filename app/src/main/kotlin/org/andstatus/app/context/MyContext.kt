@@ -41,18 +41,18 @@ interface MyContext : IdentifiableInstance, IsEmpty {
     val baseContext: Context
     val preferencesChangeTime: Long
     val lastDatabaseError: String
-    fun getDatabase(): SQLiteDatabase?
-    fun users(): CachedUsersAndActors
-    fun accounts(): MyAccounts
-    fun origins(): PersistentOrigins
-    fun timelines(): PersistentTimelines
-    fun queues(): CommandQueue
+    val database: SQLiteDatabase?
+    val users: CachedUsersAndActors
+    val accounts: MyAccounts
+    val origins: PersistentOrigins
+    val timelines: PersistentTimelines
+    val queues: CommandQueue
     fun putAssertionData(key: String, contentValues: ContentValues) {}
     fun save(reason: Supplier<String>)
     fun release(reason: Supplier<String>)
     val isExpired: Boolean
     fun setExpired(reason: Supplier<String>)
-    fun getConnectionState(): ConnectionState
+    val connectionState: ConnectionState
 
     /** Is our application in Foreground now?  */
     fun isInForeground(): Boolean

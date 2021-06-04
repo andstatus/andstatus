@@ -70,7 +70,7 @@ class FutureNoteContextMenuData private constructor(viewItem: BaseNoteViewItem<*
 
                     override fun doInBackground2(aVoid: Void?): NoteContextMenuData? {
                         val selectedMyAccount = noteContextMenu.getSelectedActingAccount()
-                        val currentMyAccount = menuContainer.getActivity().myContext.accounts().currentAccount
+                        val currentMyAccount = menuContainer.getActivity().myContext.accounts.currentAccount
                         val accountToNote: NoteContextMenuData = NoteContextMenuData.getAccountToActOnNote(
                                 menuContainer.getActivity().myContext, future.activityId,
                                 future.noteId, selectedMyAccount, currentMyAccount)

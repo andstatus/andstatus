@@ -34,7 +34,7 @@ class TimelinePositionTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.initializeWithData(this)
         MyLog.i(this, "setUp ended")
         return Intent(Intent.ACTION_VIEW,
-                 MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.HOME, Actor.EMPTY,  Origin.EMPTY).getUri())
+                 MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.HOME, Actor.EMPTY,  Origin.EMPTY).getUri())
     }
 
     @Test

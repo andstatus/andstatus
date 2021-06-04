@@ -71,7 +71,7 @@ class HelpActivity : MyActivity() {
         if (intent.hasExtra(EXTRA_IS_FIRST_ACTIVITY)) {
             mIsFirstActivity = intent.getBooleanExtra(EXTRA_IS_FIRST_ACTIVITY, mIsFirstActivity)
         }
-        if (MyContextHolder.myContextHolder.getNow().accounts().currentAccount.nonValid
+        if (MyContextHolder.myContextHolder.getNow().accounts.currentAccount.nonValid
             && MyContextHolder.myContextHolder.executionMode == ExecutionMode.ROBO_TEST && !generatingDemoData) {
             progressListener.cancel()
             generatingDemoData = true
@@ -102,7 +102,7 @@ class HelpActivity : MyActivity() {
     private fun showRestoreButton() {
         val restoreButton = findViewById<Button?>(R.id.button_restore)
         if (!generatingDemoData
-                &&  MyContextHolder.myContextHolder.getNow().isReady &&  MyContextHolder.myContextHolder.getNow().accounts().isEmpty) {
+                &&  MyContextHolder.myContextHolder.getNow().isReady &&  MyContextHolder.myContextHolder.getNow().accounts.isEmpty) {
             restoreButton.setOnClickListener { v: View? ->
                 startActivity(Intent(this@HelpActivity, RestoreActivity::class.java))
                 finish()
@@ -124,7 +124,7 @@ class HelpActivity : MyActivity() {
             when ( MyContextHolder.myContextHolder.getNow().state) {
                 MyContextState.READY -> {
                     FirstActivity.checkAndUpdateLastOpenedAppVersion(this@HelpActivity, true)
-                    if ( MyContextHolder.myContextHolder.getNow().accounts().currentAccount.isValid) {
+                    if ( MyContextHolder.myContextHolder.getNow().accounts.currentAccount.isValid) {
                         startActivity(Intent(this@HelpActivity, TimelineActivity::class.java))
                     } else {
                         startActivity(Intent(this@HelpActivity, AccountSettingsActivity::class.java))
@@ -142,7 +142,7 @@ class HelpActivity : MyActivity() {
                         R.string.app_name, R.string.loading)
             }
         }
-        if ( MyContextHolder.myContextHolder.getNow().accounts().currentAccount.isValid) {
+        if ( MyContextHolder.myContextHolder.getNow().accounts.currentAccount.isValid) {
             getStarted.setText(R.string.button_skip)
         }
     }
@@ -240,7 +240,7 @@ class HelpActivity : MyActivity() {
         super.onResume()
          MyContextHolder.myContextHolder.upgradeIfNeeded(this)
         if (wasPaused && mIsFirstActivity
-                &&  MyContextHolder.myContextHolder.getNow().accounts().currentAccount.isValid) {
+                &&  MyContextHolder.myContextHolder.getNow().accounts.currentAccount.isValid) {
             // We assume that user pressed back after adding first account
             val intent = Intent(this, TimelineActivity::class.java)
             startActivity(intent)

@@ -82,7 +82,7 @@ class OriginEditorTest : ActivityTest<OriginEditor>() {
                              useLegacyHttpProtocol: TriState,
                              inCombinedGlobalSearch: Boolean, inCombinedPublicReload: Boolean) {
         val method = "OriginEditorTest"
-        val originOld: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(originName)
+        val originOld: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(originName)
         val intent = Intent()
         if (originOld.isPersistent()) {
             intent.action = Intent.ACTION_EDIT
@@ -128,7 +128,7 @@ class OriginEditorTest : ActivityTest<OriginEditor>() {
         activity.runOnUiThread(clicker)
         getInstrumentation().waitForIdleSync()
         DbUtils.waitMs(method, 200)
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(originName)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(originName)
         assertEquals("Origin '$originName' added", originName, origin.name)
         assertEquals(originType, origin.originType)
         if (hostOrUrl.contains("bad")) {

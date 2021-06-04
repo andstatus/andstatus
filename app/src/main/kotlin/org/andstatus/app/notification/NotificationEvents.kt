@@ -88,7 +88,7 @@ class NotificationEvents private constructor(val myContext: MyContext,
                         foldEvent(
                                 map1,
                                 NotificationEventType.fromId(DbUtils.getLong(cursor, ActivityTable.NEW_NOTIFICATION_EVENT)),
-                                myContext.users().load(DbUtils.getLong(cursor, ActivityTable.NOTIFIED_ACTOR_ID)),
+                                myContext.users.load(DbUtils.getLong(cursor, ActivityTable.NOTIFIED_ACTOR_ID)),
                                 Math.max(DbUtils.getLong(cursor, ActivityTable.INS_DATE), DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE))
                         )
                     }

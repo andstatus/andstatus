@@ -25,7 +25,7 @@ object Group {
         if (groupId == 0L) {
             groupId = addActorsGroup(actor.origin.myContext, actor, groupType, oid)
         }
-        val group = actor.origin.myContext.users().load(groupId)
+        val group = actor.origin.myContext.users.load(groupId)
         return if (groupTypeNeedsCorrection(group.groupType, groupType)) correctGroupType(actor, group, groupType) else group
     }
 
@@ -36,7 +36,7 @@ object Group {
             MyLog.w(TAG, msg.prependWithSeparator("Failed, actorId==0", ". ").toString())
             return group
         }
-        val db = actor.origin.myContext.getDatabase()
+        val db = actor.origin.myContext.database
         if (db == null) {
             MyLog.databaseIsNull { msg }
             return group
@@ -51,7 +51,7 @@ object Group {
                 optOid.map { oid: String? -> ", " + ActorTable.ACTOR_OID + "='" + oid + "'" }.orElse("") +
                 " WHERE " + BaseColumns._ID + "=" + group.actorId
         )
-        return actor.origin.myContext.users().reload(group)
+        return actor.origin.myContext.users.reload(group)
     }
 
     private fun optOidFromEndpoint(actor: Actor, groupType: GroupType): Optional<String> {
@@ -94,7 +94,7 @@ object Group {
 
     private fun addActorsGroup(myContext: MyContext, parentActor: Actor, newType: GroupType, oidIn: String): Long {
         val originId = MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID, parentActor.actorId)
-        val origin = myContext.origins().fromId(originId)
+        val origin = myContext.origins.fromId(originId)
         val parentUsername = MyQuery.actorIdToStringColumnValue(ActorTable.USERNAME, parentActor.actorId)
         val groupUsername = newType.name + ".of." + parentUsername + "." + parentActor.actorId
         val oid = if (StringUtil.nonEmptyNonTemp(oidIn)) oidIn else parentActor.getEndpoint(ActorEndpointType.from(newType))
@@ -103,7 +103,7 @@ object Group {
         val group: Actor = Actor.fromTwoIds(origin, newType, 0, oid)
         group.setUsername(groupUsername)
         group.setParentActorId(myContext, parentActor.actorId)
-        val myAccount = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
+        val myAccount = myContext.accounts.getFirstPreferablySucceededForOrigin(origin)
         val activity = myAccount.actor.update(group)
         DataUpdater(myAccount).updateObjActor(activity, 0)
         if (group.actorId == 0L) {

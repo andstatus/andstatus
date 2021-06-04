@@ -31,7 +31,7 @@ class NoteEditorDataTest {
     @Test
     fun noteEditorDataConversation() {
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.conversationOriginName)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(DemoData.demoData.conversationOriginName)
         Assert.assertEquals(origin, ma.origin)
         val entryMsgId = MyQuery.oidToId(OidEnum.NOTE_OID, origin.id, DemoData.demoData.conversationEntryNoteOid)
         val entryActorId = MyQuery.oidToId(OidEnum.ACTOR_OID, origin.id, DemoData.demoData.conversationEntryAuthorOid)

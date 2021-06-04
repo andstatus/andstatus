@@ -169,7 +169,7 @@ class DemoData {
             originInserter.insert()
             val accountInserter = DemoAccountInserter(myContext)
             accountInserter.insert()
-            myContext.timelines().saveChanged()
+            myContext.timelines.saveChanged()
             MyLog.v(logTag, "Before initialize 2")
              MyContextHolder.myContextHolder.initialize(null, logTag).getBlocking()
             MyLog.v(logTag, "After initialize 2")
@@ -178,14 +178,14 @@ class DemoData {
             DbUtils.waitMs(logTag, 500)
             Assert.assertTrue("Context is not ready " +  MyContextHolder.myContextHolder.getNow(),  MyContextHolder.myContextHolder.getNow().isReady)
             demoData.checkDataPath()
-            val size: Int =  MyContextHolder.myContextHolder.getNow().accounts().size()
-            Assert.assertTrue("Only " + size + " accounts added: " +  MyContextHolder.myContextHolder.getNow().accounts(),
+            val size: Int =  MyContextHolder.myContextHolder.getNow().accounts.size()
+            Assert.assertTrue("Only " + size + " accounts added: " +  MyContextHolder.myContextHolder.getNow().accounts,
                     size > 5)
-            Assert.assertEquals("No WebfingerId", Optional.empty<Any?>(), MyContextHolder.myContextHolder.getNow().accounts()
+            Assert.assertEquals("No WebfingerId", Optional.empty<Any?>(), MyContextHolder.myContextHolder.getNow().accounts
                     .get().stream().filter { ma: MyAccount -> !ma.actor.isWebFingerIdValid() }.findFirst())
-            val size2: Int =  MyContextHolder.myContextHolder.getNow().users().size()
-            Assert.assertTrue("""Only $size2 users added: ${ MyContextHolder.myContextHolder.getNow().users()}
-Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts()}""",
+            val size2: Int =  MyContextHolder.myContextHolder.getNow().users.size()
+            Assert.assertTrue("""Only $size2 users added: ${ MyContextHolder.myContextHolder.getNow().users}
+Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts}""",
                     size2 >= size)
             assertOriginsContext()
             DemoOriginInserter.assertDefaultTimelinesForOrigins()
@@ -194,16 +194,16 @@ Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts()}""",
             DemoGnuSocialConversationInserter().insertConversation()
             progressListener.onProgressMessage("Demo notes added...")
             DbUtils.waitMs(logTag, 500)
-            if ( MyContextHolder.myContextHolder.getNow().accounts().size() == 0) {
+            if ( MyContextHolder.myContextHolder.getNow().accounts.size() == 0) {
                 Assert.fail("No persistent accounts")
             }
             demoData.setSuccessfulAccountAsCurrent()
-            val defaultTimeline: Timeline = MyContextHolder.myContextHolder.getNow().timelines().filter(
+            val defaultTimeline: Timeline = MyContextHolder.myContextHolder.getNow().timelines.filter(
                     false, TriState.TRUE, TimelineType.EVERYTHING, Actor.EMPTY,
-                    MyContextHolder.myContextHolder.getNow().accounts().currentAccount.origin)
+                    MyContextHolder.myContextHolder.getNow().accounts.currentAccount.origin)
                     .findFirst().orElse(Timeline.EMPTY)
             MatcherAssert.assertThat(defaultTimeline.timelineType, CoreMatchers.`is`(TimelineType.EVERYTHING))
-             MyContextHolder.myContextHolder.getNow().timelines().setDefault(defaultTimeline)
+             MyContextHolder.myContextHolder.getNow().timelines.setDefault(defaultTimeline)
             MyLog.v(logTag, "Before initialize 3")
              MyContextHolder.myContextHolder.initialize(null, logTag).getBlocking()
             MyLog.v(logTag, "After initialize 3")
@@ -246,21 +246,21 @@ Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts()}""",
     }
 
     private fun setSuccessfulAccountAsCurrent() {
-        MyLog.i(TAG, "Persistent accounts: " +  MyContextHolder.myContextHolder.getNow().accounts().size())
-        var found = ( MyContextHolder.myContextHolder.getNow().accounts().currentAccount.getCredentialsVerified()
+        MyLog.i(TAG, "Persistent accounts: " +  MyContextHolder.myContextHolder.getNow().accounts.size())
+        var found = ( MyContextHolder.myContextHolder.getNow().accounts.currentAccount.getCredentialsVerified()
                 == CredentialsVerificationStatus.SUCCEEDED)
         if (!found) {
-            for (ma in  MyContextHolder.myContextHolder.getNow().accounts().get()) {
+            for (ma in  MyContextHolder.myContextHolder.getNow().accounts.get()) {
                 MyLog.i(TAG, ma.toString())
                 if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
                     found = true
-                     MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
+                     MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
                     break
                 }
             }
         }
         Assert.assertTrue("Found account, which is successfully verified", found)
-        Assert.assertTrue("Current account is successfully verified",  MyContextHolder.myContextHolder.getNow().accounts().currentAccount.getCredentialsVerified()
+        Assert.assertTrue("Current account is successfully verified",  MyContextHolder.myContextHolder.getNow().accounts.currentAccount.getCredentialsVerified()
                 == CredentialsVerificationStatus.SUCCEEDED)
     }
 
@@ -280,14 +280,14 @@ Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts()}""",
     }
 
     fun getMyAccount(accountName: String?): MyAccount {
-        val ma: MyAccount =  MyContextHolder.myContextHolder.getBlocking().accounts().fromAccountName(accountName)
+        val ma: MyAccount =  MyContextHolder.myContextHolder.getBlocking().accounts.fromAccountName(accountName)
         Assert.assertTrue("$accountName exists", ma.isValid)
         Assert.assertTrue("Origin for $accountName doesn't exist", ma.origin.isValid())
         return ma
     }
 
     fun getAccountActorByOid(actorOid: String?): Actor {
-        for (ma in  MyContextHolder.myContextHolder.getBlocking().accounts().get()) {
+        for (ma in  MyContextHolder.myContextHolder.getBlocking().accounts.get()) {
             if (ma.getActorOid() == actorOid) {
                 return ma.actor
             }
@@ -316,7 +316,7 @@ Accounts: ${ MyContextHolder.myContextHolder.getNow().accounts()}""",
         }
 
         private fun assertOriginsContext() {
-            MyContextHolder.myContextHolder.getNow().origins().collection().forEach(Consumer { obj: Origin -> obj.assertContext() })
+            MyContextHolder.myContextHolder.getNow().origins.collection().forEach(Consumer { obj: Origin -> obj.assertContext() })
         }
     }
 }

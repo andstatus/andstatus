@@ -37,7 +37,7 @@ class MyServiceCommandsRunner(private val myContext: MyContext) {
             MyLog.d(this, "$method; Credentials failed, skipping")
             return
         }
-        val timelines = myContext.timelines().toAutoSyncForAccount(ma)
+        val timelines = myContext.timelines.toAutoSyncForAccount(ma)
         if (timelines.isEmpty()) {
             MyLog.d(this, "$method; No timelines to sync")
             return

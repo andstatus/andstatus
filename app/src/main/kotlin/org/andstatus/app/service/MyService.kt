@@ -239,7 +239,7 @@ class MyService : Service(), IdentifiableInstance {
     }
 
     private fun isAnythingToExecuteNow(): Boolean {
-        return myContext.queues().isAnythingToExecuteNow() || executors.isReallyWorking()
+        return myContext.queues.isAnythingToExecuteNow() || executors.isReallyWorking()
     }
 
     override fun onDestroy() {

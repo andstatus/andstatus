@@ -42,22 +42,21 @@ class MyContextEmpty: MyContext {
 
     override val baseContext: Context get() = throwException()
 
-    override val preferencesChangeTime: Long
-        get() = 0
+    override val preferencesChangeTime: Long = 0
 
     override val lastDatabaseError: String = ""
 
-    override fun getDatabase(): SQLiteDatabase? = null
+    override val database: SQLiteDatabase? = null
 
-    override fun users(): CachedUsersAndActors = throwException()
+    override val users: CachedUsersAndActors get() = throwException()
 
-    override fun accounts(): MyAccounts = throwException()
+    override val accounts: MyAccounts get() = throwException()
 
-    override fun origins(): PersistentOrigins = throwException()
+    override val origins: PersistentOrigins get() = throwException()
 
-    override fun timelines(): PersistentTimelines = throwException()
+    override val timelines: PersistentTimelines get() = throwException()
 
-    override fun queues(): CommandQueue = throwException()
+    override val queues: CommandQueue get() = throwException()
 
     override fun save(reason: Supplier<String>) {}
 
@@ -67,7 +66,7 @@ class MyContextEmpty: MyContext {
 
     override fun setExpired(reason: Supplier<String>) {}
 
-    override fun getConnectionState(): ConnectionState = ConnectionState.UNKNOWN
+    override val connectionState: ConnectionState = ConnectionState.UNKNOWN
 
     override fun isInForeground(): Boolean = false
 

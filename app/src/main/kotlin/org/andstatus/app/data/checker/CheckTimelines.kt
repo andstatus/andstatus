@@ -35,7 +35,7 @@ internal class CheckTimelines : DataChecker() {
 
     private fun deleteInvalidTimelines(): Long {
         logger.logProgress("Checking if invalid timelines are present")
-        val size1 = myContext.timelines().values().size.toLong()
+        val size1 = myContext.timelines.values().size.toLong()
         val toDelete: MutableSet<Timeline> = HashSet()
         var deletedCount: Long = 0
         try {
@@ -50,7 +50,7 @@ internal class CheckTimelines : DataChecker() {
             })
             deletedCount = toDelete.size.toLong()
             if (!countOnly) {
-                toDelete.forEach(Consumer { timeline: Timeline -> myContext.timelines().delete(timeline) })
+                toDelete.forEach(Consumer { timeline: Timeline -> myContext.timelines.delete(timeline) })
             }
         } catch (e: Exception) {
             val logMsg = "Error: " + e.message
@@ -58,7 +58,7 @@ internal class CheckTimelines : DataChecker() {
             DbUtils.waitMs(this, 5000)
             MyLog.e(this, logMsg, e)
         }
-        myContext.timelines().saveChanged()
+        myContext.timelines.saveChanged()
         logger.logProgress(if (deletedCount == 0L) "No invalid timelines found"
         else (if (countOnly) "To delete " else "Deleted ") + deletedCount + " invalid timelines. Valid timelines: " + size1)
         DbUtils.waitMs(this, if (deletedCount == 0L) 1000 else 3000)
@@ -67,10 +67,10 @@ internal class CheckTimelines : DataChecker() {
 
     private fun addDefaultTimelines(): Long {
         logger.logProgress("Checking if all default timelines are present")
-        val size1 = myContext.timelines().values().size.toLong()
+        val size1 = myContext.timelines.values().size.toLong()
         try {
             TimelineSaver().addDefaultCombined(myContext)
-            for (myAccount in myContext.accounts().get()) {
+            for (myAccount in myContext.accounts.get()) {
                 TimelineSaver().addDefaultForMyAccount(myContext, myAccount)
             }
         } catch (e: Exception) {
@@ -78,8 +78,8 @@ internal class CheckTimelines : DataChecker() {
             logger.logProgress(logMsg)
             MyLog.e(this, logMsg, e)
         }
-        myContext.timelines().saveChanged()
-        val size2 = myContext.timelines().values().size
+        myContext.timelines.saveChanged()
+        val size2 = myContext.timelines.values().size
         val addedCount = size2 - size1
         logger.logProgress(if (addedCount == 0L) "No new timelines were added. $size2 timelines" else "Added $addedCount of $size2 timelines")
         DbUtils.waitMs(this, if (addedCount == 0L) 1000 else 3000)
@@ -88,24 +88,24 @@ internal class CheckTimelines : DataChecker() {
 
     private fun removeDuplicatedTimelines(): Long {
         logger.logProgress("Checking if duplicated timelines are present")
-        val size1 = myContext.timelines().values().size.toLong()
+        val size1 = myContext.timelines.values().size.toLong()
         val toDelete: MutableSet<Timeline> = HashSet()
         try {
-            for (timeline1 in myContext.timelines().values()) {
-                for (timeline2 in myContext.timelines().values()) {
+            for (timeline1 in myContext.timelines.values()) {
+                for (timeline2 in myContext.timelines.values()) {
                     if (timeline2.duplicates(timeline1)) toDelete.add(timeline2)
                 }
             }
             if (!countOnly) {
-                toDelete.forEach(Consumer { timeline: Timeline -> myContext.timelines().delete(timeline) })
+                toDelete.forEach(Consumer { timeline: Timeline -> myContext.timelines.delete(timeline) })
             }
         } catch (e: Exception) {
             val logMsg = "Error: " + e.message
             logger.logProgress(logMsg)
             MyLog.e(this, logMsg, e)
         }
-        myContext.timelines().saveChanged()
-        val size2 = myContext.timelines().values().size
+        myContext.timelines.saveChanged()
+        val size2 = myContext.timelines.values().size
         val deletedCount = if (countOnly) toDelete.size else size1 - size2
         logger.logProgress(if (deletedCount == 0L) "No duplicated timelines found. $size2 timelines" else (if (countOnly) "To delete " else "Deleted ") + deletedCount +
                 " duplicates of " + size1 + " timelines")

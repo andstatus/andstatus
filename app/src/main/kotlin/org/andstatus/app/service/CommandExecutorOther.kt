@@ -248,7 +248,7 @@ internal class CommandExecutorOther(execContext: CommandExecutionContext) : Comm
         val method = "destroyReblog"
         val actorId = execContext.getMyAccount().actorId
         val reblogAndType = MyQuery.noteIdToLastReblogging(
-                execContext.myContext.getDatabase(), noteId, actorId)
+                execContext.myContext.database, noteId, actorId)
         if (reblogAndType.second != ActivityType.ANNOUNCE) {
             return logExecutionError(true, "No local Reblog of "
                     + MyQuery.noteInfoForLog(execContext.myContext, noteId) +

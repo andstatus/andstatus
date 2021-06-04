@@ -50,7 +50,7 @@ class MyAccountTest {
         val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
         val logMsg = "Creating account '$uniqueName' for '$originType'"
         MyLog.v(this, logMsg)
-        val origin = myContext.origins().fromOriginInAccountNameAndHost(originType.title, host)
+        val origin = myContext.origins.fromOriginInAccountNameAndHost(originType.title, host)
         val accountNameString = uniqueName + AccountName.Companion.ORIGIN_SEPARATOR + origin.getOriginInAccountName(host)
         val accountName: AccountName = AccountName.Companion.fromAccountName(myContext, accountNameString)
         val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(accountName)
@@ -78,13 +78,13 @@ class MyAccountTest {
 
     companion object {
         fun fixPersistentAccounts(myContext: MyContext) {
-            for (ma in myContext.accounts().get()) {
+            for (ma in myContext.accounts.get()) {
                 fixAccountByName(myContext, ma.getAccountName())
             }
         }
 
         private fun fixAccountByName(myContext: MyContext, accountName: String?) {
-            val ma = myContext.accounts().fromAccountName(accountName)
+            val ma = myContext.accounts.fromAccountName(accountName)
             Assert.assertTrue("Account $accountName is valid", ma.isValid)
             if (ma.getCredentialsVerified() == CredentialsVerificationStatus.SUCCEEDED) {
                 return

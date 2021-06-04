@@ -127,7 +127,7 @@ object HttpConnectionUtils {
                 return true
             }
             if (request.connectionRequired != ConnectionRequired.ANY && stopWatch.hasPassed(5000)) {
-                val connectionState = request.myContext().getConnectionState()
+                val connectionState = request.myContext().connectionState
                 if (!request.connectionRequired.isConnectionStateOk(connectionState)) {
                     result.setException(
                             ConnectionException("Expected '" + request.connectionRequired +

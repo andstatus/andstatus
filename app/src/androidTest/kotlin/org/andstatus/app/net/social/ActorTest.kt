@@ -35,7 +35,7 @@ class ActorTest {
 
     @Test
     fun testFromBodyText1() {
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.gnusocialTestOriginName)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(DemoData.demoData.gnusocialTestOriginName)
         val anotherUser2 = "anotherUser@somedomain.org"
         val shortUsername3 = "shortusername"
         val groupname1 = "gnusocial"
@@ -59,7 +59,7 @@ class ActorTest {
         val SKIPPED_USERNAME2 = "rocuhdjekrt"
         val SKIPPED_USERNAME3 = "kauiwoeieurt"
         val USERNAME4 = "djjerekwerwewer"
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.twitterTestOriginName)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(DemoData.demoData.twitterTestOriginName)
         val body = "Starting post @ #ThisIsTagofsome-event-and entertainment by @" +
                 USERNAME1 + " @@" + SKIPPED_USERNAME2 + " @#" + SKIPPED_USERNAME3 +
                 " &amp; @" + USERNAME4 +
@@ -99,7 +99,7 @@ class ActorTest {
 
     @Test
     fun testEquals() {
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromId(18)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromId(18)
         val actor1: Actor = Actor.Companion.fromOid(origin, "acct:fourthWithoutAvatar@pump.example.com")
         actor1.actorId = 11
         actor1.setUsername( "fourthWithoutAvatar@pump.example.com")

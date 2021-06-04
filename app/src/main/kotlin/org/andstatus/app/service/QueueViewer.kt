@@ -46,7 +46,7 @@ class QueueViewer : LoadableListActivity<QueueData>() {
             override fun load(publisher: ProgressPublisher?) {
                 val queueTypes = arrayOf<QueueType>(QueueType.CURRENT, QueueType.SKIPPED, QueueType.RETRY, QueueType.ERROR)
                 for (queueType in queueTypes) {
-                    val oneQueue = myContext.queues()[queueType]
+                    val oneQueue = myContext.queues[queueType]
                     for (commandData in oneQueue.queue) {
                         items.add(QueueData.getNew(queueType, commandData))
                     }
@@ -69,7 +69,7 @@ class QueueViewer : LoadableListActivity<QueueData>() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.getItemId()) {
             R.id.clear_the_queue -> AsyncTaskLauncher.execute<QueueViewer?, Void>(this,
-                    { activity: QueueViewer? ->  MyContextHolder.myContextHolder.getBlocking().queues().clear() },
+                    { activity: QueueViewer? ->  MyContextHolder.myContextHolder.getBlocking().queues.clear() },
                     { activity: QueueViewer? -> Consumer { r: Try<Void> -> activity?.showList(WhichPage.CURRENT) } })
             else -> return super.onOptionsItemSelected(item)
         }
@@ -100,7 +100,7 @@ class QueueViewer : LoadableListActivity<QueueData>() {
             R.id.menuItemDelete -> {
                 AsyncTaskLauncher.execute<QueueViewer?, Void>(this,
                         { activity: QueueViewer? ->
-                            MyContextHolder.myContextHolder.getBlocking().queues().deleteCommand(data.commandData)
+                            MyContextHolder.myContextHolder.getBlocking().queues.deleteCommand(data.commandData)
                         },
                         { activity: QueueViewer? -> Consumer { r: Try<Void> -> activity?.showList(WhichPage.CURRENT) } })
                 true

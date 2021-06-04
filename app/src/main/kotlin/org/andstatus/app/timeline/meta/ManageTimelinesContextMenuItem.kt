@@ -39,14 +39,14 @@ import org.andstatus.app.timeline.WhichPage
     },
     DELETE {
         override fun execute(menu: ManageTimelinesContextMenu, viewItem: ManageTimelinesViewItem): Boolean {
-            menu.getActivity().myContext.timelines().delete(viewItem.timeline)
+            menu.getActivity().myContext.timelines.delete(viewItem.timeline)
             saveAndShowList(menu)
             return true
         }
     },
     MAKE_DEFAULT {
         override fun execute(menu: ManageTimelinesContextMenu, viewItem: ManageTimelinesViewItem): Boolean {
-            menu.getActivity().myContext.timelines().setDefault(viewItem.timeline)
+            menu.getActivity().myContext.timelines.setDefault(viewItem.timeline)
             saveAndShowList(menu)
             return true
         }
@@ -75,7 +75,7 @@ import org.andstatus.app.timeline.WhichPage
 
     companion object {
         private fun saveAndShowList(menu: ManageTimelinesContextMenu) {
-            menu.getActivity().myContext.timelines().saveChanged()
+            menu.getActivity().myContext.timelines.saveChanged()
                     .thenRun { menu.getActivity().showList(WhichPage.CURRENT) }
         }
 

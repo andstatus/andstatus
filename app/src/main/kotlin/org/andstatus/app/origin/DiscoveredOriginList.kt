@@ -49,7 +49,7 @@ class DiscoveredOriginList : OriginList(), MyServiceEventsListener {
         MyServiceManager.setServiceAvailable()
         MyServiceManager.sendForegroundCommand(
                 CommandData.newOriginCommand(CommandEnum.GET_OPEN_INSTANCES,
-                         MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL)
+                         MyContextHolder.myContextHolder.getNow().origins.firstOfType(OriginType.GNUSOCIAL)
                 ))
     }
 

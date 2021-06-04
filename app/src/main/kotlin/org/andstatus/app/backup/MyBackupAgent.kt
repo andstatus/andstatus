@@ -98,7 +98,7 @@ class MyBackupAgent : BackupAgent() {
                 throw FileNotFoundException("No BackupDataOutput")
             } else if (! MyContextHolder.myContextHolder.getNow().isReady) {
                 throw FileNotFoundException("Application context is not initialized")
-            } else if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty) {
+            } else if ( MyContextHolder.myContextHolder.getNow().accounts.isEmpty) {
                 throw FileNotFoundException("Nothing to backup - No accounts yet")
             } else {
                 val isServiceAvailableStored = checkAndSetServiceUnavailable()
@@ -156,7 +156,7 @@ class MyBackupAgent : BackupAgent() {
                 foldersBackedUp += backupFolder(data, LOG_FILES_KEY, folder)
             }
         }
-        accountsBackedUp =  MyContextHolder.myContextHolder.getNow().accounts().onBackup(data, backupDescriptor!!)
+        accountsBackedUp =  MyContextHolder.myContextHolder.getNow().accounts.onBackup(data, backupDescriptor!!)
     }
 
     private fun backupFolder(data: MyBackupDataOutput, key: String, sourceFolder: File): Long {
@@ -268,7 +268,7 @@ class MyBackupAgent : BackupAgent() {
          MyContextHolder.myContextHolder.initialize(this).getBlocking()
         if (! MyContextHolder.myContextHolder.getNow().isReady) {
             throw FileNotFoundException("Application context is not initialized")
-        } else if ( MyContextHolder.myContextHolder.getNow().accounts().nonEmpty) {
+        } else if ( MyContextHolder.myContextHolder.getNow().accounts.nonEmpty) {
             throw FileNotFoundException("Cannot restore: AndStatus accounts are present. Please reinstall application before restore")
         }
         MyServiceManager.setServiceUnavailable()
@@ -303,7 +303,7 @@ class MyBackupAgent : BackupAgent() {
         DataPruner.setDataPrunedNow()
         data.setMyContext( MyContextHolder.myContextHolder.getNow())
         assertNextHeader(data, KEY_ACCOUNT)
-        accountsRestored += data.getMyContext().accounts().onRestore(data, backupDescriptor!!)
+        accountsRestored += data.getMyContext().accounts.onRestore(data, backupDescriptor!!)
          MyContextHolder.myContextHolder.release { "doRestore, accounts restored" }
         MyContextHolder.myContextHolder.setOnRestore(false)
          MyContextHolder.myContextHolder.initialize(this).getBlocking()

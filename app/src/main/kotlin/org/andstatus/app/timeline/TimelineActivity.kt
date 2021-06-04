@@ -181,7 +181,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
                 Uri.parse(savedInstanceState.getString(IntentExtra.MATCHED_URI.key, "")))
         val timeline: Timeline = Timeline.fromParsedUri(myContext, parsedUri, "")
         val params = TimelineParameters(myContext,
-                if (timeline.isEmpty) myContext.timelines().getDefault() else timeline, WhichPage.CURRENT)
+                if (timeline.isEmpty) myContext.timelines.getDefault() else timeline, WhichPage.CURRENT)
         setParamsNew(params)
         if (timeline.nonEmpty) {
             contextMenu?.note?.loadState(savedInstanceState)
@@ -190,7 +190,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
                 TriState.fromBoolean(savedInstanceState.getBoolean(
                         IntentExtra.COLLAPSE_DUPLICATES.key, MyPreferences.isCollapseDuplicates())),
                 0,
-                Optional.of(myContext.origins().fromId(savedInstanceState.getLong(
+                Optional.of(myContext.origins.fromId(savedInstanceState.getLong(
                         IntentExtra.ORIGIN_ID.key)))
         )
         getListData().updateView(viewParameters)
@@ -249,12 +249,12 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
 
     fun onTimelineTypeButtonClick(item: View?) {
         TimelineSelector.selectTimeline(this, ActivityRequestCode.SELECT_TIMELINE,
-                getParamsNew().timeline, myContext.accounts().currentAccount)
+                getParamsNew().timeline, myContext.accounts.currentAccount)
         closeDrawer()
     }
 
     fun onSelectAccountButtonClick(item: View?) {
-        if (myContext.accounts().size() > 1) {
+        if (myContext.accounts.size() > 1) {
             AccountSelector.selectAccountOfOrigin(this, ActivityRequestCode.SELECT_ACCOUNT, 0)
         }
         closeDrawer()
@@ -279,7 +279,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
     override fun onResume() {
         val method = "onResume"
         if (!isFinishing) {
-            if (myContext.accounts().currentAccount.isValid) {
+            if (myContext.accounts.currentAccount.isValid) {
                 if (isContextNeedsUpdate()) {
                     MyLog.v(this) { "$method; Restarting this Activity to apply all new changes of configuration" }
                     finish()
@@ -303,7 +303,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
             getNoteEditor()?.getData()?.getContent()?.startsWith("Crash me on pause 2015-04-10") ?: false
         }
         saveTimelinePosition()
-        myContext.timelines().saveChanged()
+        myContext.timelines.saveChanged()
         super.onPause()
     }
 
@@ -363,7 +363,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         menu ?: return false
 
-        val ma = myContext.accounts().currentAccount
+        val ma = myContext.accounts.currentAccount
         val enableSync = ((getParamsLoaded().timeline.isCombined || ma.isValidAndSucceeded())
                 && getParamsLoaded().timeline.isSynableSomehow())
         val item = menu.findItem(R.id.sync_menu_item)
@@ -435,12 +435,12 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
     }
 
     fun onItemClick(item: NoteViewItem) {
-        val ma = myContext.accounts().getAccountForThisNote(item.getOrigin(),
+        val ma = myContext.accounts.getAccountForThisNote(item.getOrigin(),
                 getParamsNew().getMyAccount(), item.getLinkedMyAccount(), false)
         MyLog.v(this) { "onItemClick, " + item + "; " + item + " account=" + ma.getAccountName() }
         if (item.getNoteId() <= 0) return
         val uri: Uri = MatchedUri.getTimelineItemUri(
-                myContext.timelines()[TimelineType.EVERYTHING, Actor.EMPTY, item.getOrigin()],
+                myContext.timelines[TimelineType.EVERYTHING, Actor.EMPTY, item.getOrigin()],
                 item.getNoteId())
         val action = intent.action
         if (Intent.ACTION_PICK == action || Intent.ACTION_GET_CONTENT == action) {
@@ -487,7 +487,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
 
     private fun updateAccountButtonText(drawerView: View) {
         val textView = drawerView.findViewById<TextView?>(R.id.selectAccountButton) ?: return
-        val accountButtonText = myContext.accounts().currentAccount.toAccountButtonText()
+        val accountButtonText = myContext.accounts.currentAccount.toAccountButtonText()
         textView.text = accountButtonText
     }
 
@@ -531,7 +531,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
         val parsedUri: ParsedUri = ParsedUri.fromUri(intentNew.getData())
         val timeline: Timeline = Timeline.fromParsedUri(myContext, parsedUri, searchQuery)
         setParamsNew(TimelineParameters(myContext,
-                if (timeline.isEmpty) myContext.timelines().getDefault() else timeline,
+                if (timeline.isEmpty) myContext.timelines.getDefault() else timeline,
                 whichPage))
         actorProfileViewer?.ensureView(getParamsNew().timeline.hasActorProfile())
         if (Intent.ACTION_SEND == intentNew.getAction()) {
@@ -550,7 +550,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
         updateTitle(mRateLimitText)
         mDrawerToggle?.setDrawerIndicatorEnabled(!getParamsLoaded().isAtHome())
         if (getParamsLoaded().isAtHome()) {
-            myContext.accounts().currentAccount.actor.avatarFile
+            myContext.accounts.currentAccount.actor.avatarFile
                     .loadDrawable({ drawable: Drawable? -> scaleDrawableForToolbar(drawable) })
                     { indicator: Drawable? -> mDrawerToggle?.setHomeAsUpIndicator(indicator) }
         } else {
@@ -581,7 +581,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
     }
 
     private fun showRecentAccounts() {
-        val recentAccounts: MutableList<MyAccount> = ArrayList(myContext.accounts().recentAccounts)
+        val recentAccounts: MutableList<MyAccount> = ArrayList(myContext.accounts.recentAccounts)
         for (ind in 0..2) {
             val ma = if (recentAccounts.size > ind) recentAccounts[ind] else MyAccount.EMPTY
             val avatarView = findViewById<AvatarView?>(if (ind == 0) R.id.current_account_avatar_image else if (ind == 1) R.id.account_avatar_image_1 else R.id.account_avatar_image_2)
@@ -600,7 +600,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
             avatarView.setOnClickListener(if (ind == 0) View.OnClickListener { v: View? ->
                 startForTimeline(
                         myContext, this,
-                        myContext.timelines().forUser(TimelineType.SENT, ma.actor))
+                        myContext.timelines.forUser(TimelineType.SENT, ma.actor))
                 closeDrawer()
             } else View.OnClickListener { v: View? ->
                 onAccountSelected(ma)
@@ -791,7 +791,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
             disableHeaderSyncButton(R.string.not_syncable)
             return
         }
-        val stats: SyncStats = SyncStats.fromYoungestDates(myContext.timelines().toTimelinesToSync(getParamsLoaded().timeline))
+        val stats: SyncStats = SyncStats.fromYoungestDates(myContext.timelines.toTimelinesToSync(getParamsLoaded().timeline))
         val format = getText(if (stats.itemDate > RelativeTime.SOME_TIME_AGO) R.string.sync_younger_messages
         else R.string.options_menu_sync).toString()
         syncYoungerView?.let { view ->
@@ -825,7 +825,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
             disableFooterButton(R.string.no_more_messages)
             return
         }
-        val stats: SyncStats = SyncStats.fromOldestDates(myContext.timelines().toTimelinesToSync(getParamsLoaded().timeline))
+        val stats: SyncStats = SyncStats.fromOldestDates(myContext.timelines.toTimelinesToSync(getParamsLoaded().timeline))
         syncOlderView?.let { view ->
             MyUrlSpan.showText(view, R.id.sync_older_button,
                     StringUtil.format(this, if (stats.itemDate > RelativeTime.SOME_TIME_AGO) R.string.sync_older_messages
@@ -863,7 +863,7 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
     }
 
     protected fun syncWithInternet(timelineToSync: Timeline, syncYounger: Boolean, manuallyLaunched: Boolean) {
-        myContext.timelines().toTimelinesToSync(timelineToSync)
+        myContext.timelines.toTimelinesToSync(timelineToSync)
                 .forEach { timeline: Timeline -> syncOneTimeline(timeline, syncYounger, manuallyLaunched) }
     }
 
@@ -912,11 +912,11 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
             ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS -> setSelectedActingAccount(data)
             ActivityRequestCode.SELECT_ACCOUNT_TO_SHARE_VIA -> sharedNote.ifPresent { shared: SharedNote ->
                 getNoteEditor()?.startEditingSharedData(
-                        myContext.accounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)),
+                        myContext.accounts.fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)),
                         shared)
             }
             ActivityRequestCode.SELECT_TIMELINE -> {
-                val timeline = myContext.timelines()
+                val timeline = myContext.timelines
                         .fromId(data.getLongExtra(IntentExtra.TIMELINE_ID.key, 0))
                 if (timeline.isValid()) {
                     switchView(timeline)
@@ -928,25 +928,25 @@ class TimelineActivity<T : ViewItem<T>> : NoteEditorListActivity<T>(), NoteConte
     }
 
     private fun onAccountSelected(data: Intent) {
-        onAccountSelected(myContext.accounts().fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)))
+        onAccountSelected(myContext.accounts.fromAccountName(data.getStringExtra(IntentExtra.ACCOUNT_NAME.key)))
     }
 
     private fun onAccountSelected(ma: MyAccount) {
         if (ma.isValid) {
-            myContext.accounts().setCurrentAccount(ma)
+            myContext.accounts.setCurrentAccount(ma)
             switchView(if (getParamsLoaded().timeline.isCombined) getParamsLoaded().timeline else getParamsLoaded().timeline.fromMyAccount(myContext, ma))
         }
     }
 
     private fun onOriginSelected(data: Intent) {
-        val origin = myContext.origins().fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key))
+        val origin = myContext.origins.fromName(data.getStringExtra(IntentExtra.ORIGIN_NAME.key))
         if (origin.isValid() && getParamsLoaded().timeline.hasActorProfile()) {
             updateList(LoadableListViewParameters.fromOrigin(origin))
         }
     }
 
     private fun setSelectedActingAccount(data: Intent) {
-        val ma = myContext.accounts().fromAccountName(
+        val ma = myContext.accounts.fromAccountName(
                 data.getStringExtra(IntentExtra.ACCOUNT_NAME.key))
         if (ma.isValid) {
             val contextMenu = getContextMenu(

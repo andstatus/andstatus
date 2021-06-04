@@ -63,7 +63,7 @@ class MyServiceTest2 : MyServiceTest() {
         MyLog.i(this, "$method; Service stopped after the second command")
         Assert.assertEquals("No new data should be posted while in foreground",
                 1, mService .getHttp()?.getRequestsCounter())
-        val queues: CommandQueue =  MyContextHolder.myContextHolder.getBlocking().queues()
+        val queues: CommandQueue =  MyContextHolder.myContextHolder.getBlocking().queues
         MyLog.i(this, "$method; Queues1:$queues")
         Assert.assertEquals("First command shouldn't be in any queue $queues",
                 Optional.empty<Any?>(), queues.inWhichQueue(cd1Home).map { q: OneQueue -> q.queueType })
@@ -92,6 +92,6 @@ class MyServiceTest2 : MyServiceTest() {
         Assert.assertEquals("command id $cd2FromQueue", cd2Interactions.getCommandId(), cd2FromQueue.getCommandId())
         Assert.assertTrue("command id $cd2FromQueue", cd2FromQueue.getCommandId() >= 0)
         MyLog.i(this, "$method ended")
-         MyContextHolder.myContextHolder.getNow().queues().clear()
+         MyContextHolder.myContextHolder.getNow().queues.clear()
     }
 }

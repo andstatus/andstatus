@@ -42,7 +42,7 @@ class CommandExecutorGetOpenInstances(execContext: CommandExecutionContext) : Co
                     .setHostOrUrl(mbOrigin.urlString)
                     .build()
             if (origin.isValid()
-                    && ! MyContextHolder.myContextHolder.getNow().origins().fromName(origin.name)
+                    && ! MyContextHolder.myContextHolder.getNow().origins.fromName(origin.name)
                             .isValid()
                     && !haveOriginsWithThisHostName(origin.url)) {
                 newOrigins.add(origin)
@@ -58,7 +58,7 @@ class CommandExecutorGetOpenInstances(execContext: CommandExecutionContext) : Co
         if (url == null) {
             return true
         }
-        for (origin in  MyContextHolder.myContextHolder.getNow().origins().collection()) {
+        for (origin in  MyContextHolder.myContextHolder.getNow().origins.collection()) {
             origin.url?.let {
                 if (it.host == url.host) return true
             }

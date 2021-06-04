@@ -50,11 +50,11 @@ class NoteEditorActivityPubTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.initializeWithAccounts(this)
         mock = ConnectionMock.newFor(DemoData.demoData.activityPubTestAccountName)
         val ma = mock.getData().getMyAccount()
-         MyContextHolder.myContextHolder.getBlocking().accounts().setCurrentAccount(ma)
+         MyContextHolder.myContextHolder.getBlocking().accounts.setCurrentAccount(ma)
         Assert.assertTrue("isValidAndSucceeded $ma", ma.isValidAndSucceeded())
         MyLog.i(this, "setUp ended")
         return Intent(Intent.ACTION_VIEW,
-                 MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.actor,  Origin.EMPTY).getUri())
+                 MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.HOME, ma.actor,  Origin.EMPTY).getUri())
     }
 
     @Test

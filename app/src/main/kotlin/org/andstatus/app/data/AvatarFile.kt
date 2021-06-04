@@ -61,7 +61,7 @@ class AvatarFile private constructor(private val actor: Actor, filename: String,
     }
 
     fun resetAvatarErrors(myContext: MyContext) {
-        val db = myContext.getDatabase()
+        val db = myContext.database
         if (getActor().actorId == 0L || db == null) return
         db.execSQL("UPDATE " + DownloadTable.TABLE_NAME +
                 " SET " + DownloadTable.DOWNLOAD_STATUS + "=" + DownloadStatus.ABSENT.save() +

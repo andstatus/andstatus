@@ -50,7 +50,7 @@ import java.util.function.Function
  * old Notes, log files...
  */
 class DataPruner(private val myContext: MyContext) {
-    private val db: SQLiteDatabase? = myContext.getDatabase()
+    private val db: SQLiteDatabase? = myContext.database
     private val mContentResolver: ContentResolver = myContext.context.contentResolver
     private var pruneNow = false
     private var logger: ProgressLogger = ProgressLogger.getEmpty(TAG)
@@ -205,7 +205,7 @@ Pruned ${pruned2.consumedCount} avatar files, ${I18n.formatBytes(pruned2.consume
     }
 
     private fun pruneTimelines(latestTimestamp: Long) {
-        myContext.timelines().stream().filter { t: Timeline ->
+        myContext.timelines.stream().filter { t: Timeline ->
             (!t.isRequired()
                     && t.isDisplayedInSelector() == DisplayedInSelector.NEVER && t.getLastChangedDate() < latestTimestamp)
         }.forEach { t: Timeline -> t.delete(myContext) }

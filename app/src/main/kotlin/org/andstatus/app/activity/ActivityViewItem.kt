@@ -60,7 +60,7 @@ class ActivityViewItem : ViewItem<ActivityViewItem>, Comparable<ActivityViewItem
     protected constructor(myContext: MyContext, cursor: Cursor) :
             super(false, DbUtils.getLong(cursor, ActivityTable.UPDATED_DATE)) {
         id = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID)
-        origin = myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID))
+        origin = myContext.origins.fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID))
         activityType = ActivityType.fromId(DbUtils.getLong(cursor, ActivityTable.ACTIVITY_TYPE))
         insertedDate = DbUtils.getLong(cursor, ActivityTable.INS_DATE)
         actor = ActorViewItem.fromActor(Actor.fromId(origin, DbUtils.getLong(cursor, ActivityTable.ACTOR_ID)))

@@ -163,7 +163,7 @@ open class ActorsScreen : NoteEditorListActivity<ActorViewItem>() {
     }
 
     private fun accountToActAsSelected(data: Intent) {
-        val ma = myContext.accounts().fromAccountName(
+        val ma = myContext.accounts.fromAccountName(
                 data.getStringExtra(IntentExtra.ACCOUNT_NAME.key))
         if (ma.isValid) {
             contextMenu?.setSelectedActingAccount(ma)

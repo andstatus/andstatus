@@ -109,7 +109,7 @@ class ActivityAdapter(private val contextMenu: ActivityContextMenu, listData: Ti
         return if (item.noteViewItem.getId() == 0L) {
             if (item.getObjActorItem().getId() == 0L) {
                 LayoutType.ACTOR
-            } else if (myContext.users().isMe(item.getObjActorItem().actor)) {
+            } else if (myContext.users.isMe(item.getObjActorItem().actor)) {
                 LayoutType.ACTOR_ACTOR
             } else {
                 LayoutType.ACTOR_OBJACTOR

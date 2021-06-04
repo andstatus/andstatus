@@ -115,7 +115,7 @@ class User(userId: Long, knownAs: String, isMyUser: TriState, actorIds: Set<Long
     companion object {
         val EMPTY: User = User(0, "(empty)", TriState.UNKNOWN, emptySet<Long>())
         fun load(myContext: MyContext, actorId: Long): User {
-            return myContext.users().userFromActorId(actorId) { loadInternal(myContext, actorId) }
+            return myContext.users.userFromActorId(actorId) { loadInternal(myContext, actorId) }
         }
 
         private fun loadInternal(myContext: MyContext, actorId: Long): User {
@@ -129,7 +129,7 @@ class User(userId: Long, knownAs: String, isMyUser: TriState, actorIds: Set<Long
 
         fun fromCursor(myContext: MyContext, cursor: Cursor, useCache: Boolean): User {
             val userId = DbUtils.getLong(cursor, ActorTable.USER_ID)
-            val user1 = if (useCache) myContext.users().users.getOrDefault(userId, EMPTY) else EMPTY
+            val user1 = if (useCache) myContext.users.users.getOrDefault(userId, EMPTY) else EMPTY
             return if (user1.nonEmpty) user1 else User(userId, DbUtils.getString(cursor, UserTable.KNOWN_AS),
                     DbUtils.getTriState(cursor, UserTable.IS_MY),
                     loadActors(myContext, userId))

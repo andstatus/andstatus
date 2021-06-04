@@ -106,7 +106,7 @@ class ManageAccountsActivity : MyActivity() {
     fun reorderAccounts() {
         findViewById<RecyclerView>(android.R.id.list)?.let { recyclerView ->
             val adapter = recyclerView.adapter as MyRecyclerViewAdapter
-            MyContextHolder.myContextHolder.getNow().accounts().reorderAccounts(adapter.accounts)
+            MyContextHolder.myContextHolder.getNow().accounts.reorderAccounts(adapter.accounts)
         }
     }
 
@@ -126,7 +126,7 @@ class ManageAccountsActivity : MyActivity() {
 
 private class MyRecyclerViewAdapter(val activity: ManageAccountsActivity):
         RecyclerView.Adapter<MyRecyclerViewAdapter.MyRecyclerViewHolder>() {
-    val accounts = CopyOnWriteArrayList(MyContextHolder.myContextHolder.getNow().accounts().get())
+    val accounts = CopyOnWriteArrayList(MyContextHolder.myContextHolder.getNow().accounts.get())
             .toMutableList()
     val syncedText = activity.getText(R.string.synced_abbreviated).toString()
 

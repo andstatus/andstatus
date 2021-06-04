@@ -56,11 +56,11 @@ class MyUrlSpan : URLSpan {
 
         fun getTimeline(): Timeline {
             return searchQuery.map({ s: String? ->
-                MyContextHolder.myContextHolder.getNow().timelines()
+                MyContextHolder.myContextHolder.getNow().timelines
                         .get(TimelineType.SEARCH, Actor.EMPTY, Origin.EMPTY, s)
             })
                     .orElse(actor.map({ a: Actor ->
-                        MyContextHolder.myContextHolder.getNow().timelines().forUserAtHomeOrigin(TimelineType.SENT, a)
+                        MyContextHolder.myContextHolder.getNow().timelines.forUserAtHomeOrigin(TimelineType.SENT, a)
                     })
                             .orElse(Timeline.EMPTY))
         }

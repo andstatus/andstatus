@@ -27,7 +27,7 @@ import org.andstatus.app.util.MyUrlSpan
 
 internal class QueueViewerAdapter(private val container: QueueViewer, items: MutableList<QueueData>) :
         BaseTimelineAdapter<QueueData>(container.myContext,
-        container.myContext.timelines()[TimelineType.COMMANDS_QUEUE, Actor.EMPTY,  Origin.EMPTY],
+        container.myContext.timelines[TimelineType.COMMANDS_QUEUE, Actor.EMPTY,  Origin.EMPTY],
         items) {
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {

@@ -117,10 +117,10 @@ class ActorViewItem private constructor(val actor: Actor, isEmpty: Boolean) : Vi
     }
 
     fun getMyActorsFollowingTheActor(myContext: MyContext): Stream<Actor> {
-        return NullUtil.getOrDefault<Long, MutableSet<Long>>(myContext.users().friendsOfMyActors, actor.actorId,
+        return NullUtil.getOrDefault<Long, MutableSet<Long>>(myContext.users.friendsOfMyActors, actor.actorId,
                 mutableSetOf<Long>()).stream()
                 .filter { id: Long -> id != myActorFollowingToHide.actorId }
-                .map { id: Long -> NullUtil.getOrDefault(myContext.users().actors, id, Actor.EMPTY) }
+                .map { id: Long -> NullUtil.getOrDefault(myContext.users.actors, id, Actor.EMPTY) }
                 .filter { obj: Actor -> obj.nonEmpty }
     }
 
@@ -129,9 +129,9 @@ class ActorViewItem private constructor(val actor: Actor, isEmpty: Boolean) : Vi
     }
 
     fun getMyActorsFollowedByTheActor(myContext: MyContext): Stream<Actor> {
-        return NullUtil.getOrDefault<Long, MutableSet<Long>>(myContext.users().followersOfMyActors, actor.actorId, mutableSetOf<Long>()).stream()
+        return NullUtil.getOrDefault<Long, MutableSet<Long>>(myContext.users.followersOfMyActors, actor.actorId, mutableSetOf<Long>()).stream()
                 .filter { id: Long -> id != myActorFollowedToHide.actorId }
-                .map { id: Long -> NullUtil.getOrDefault(myContext.users().actors, id, Actor.EMPTY) }
+                .map { id: Long -> NullUtil.getOrDefault(myContext.users.actors, id, Actor.EMPTY) }
                 .filter { obj: Actor -> obj.nonEmpty }
     }
 

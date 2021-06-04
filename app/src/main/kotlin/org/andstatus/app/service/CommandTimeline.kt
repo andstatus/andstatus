@@ -42,9 +42,9 @@ class CommandTimeline(val myContext: MyContext,
     var searchQuery: String? = null
 
     private fun evaluateTimeline(): Timeline {
-        if (id != 0L) return myContext.timelines().fromId(id)
+        if (id != 0L) return myContext.timelines.fromId(id)
         val actor: Actor = Actor.load(myContext, actorId)
-        return myContext.timelines().get(id, timelineType, actor, origin, searchQuery)
+        return myContext.timelines.get(id, timelineType, actor, origin, searchQuery)
     }
 
     fun toContentValues(values: ContentValues) {
@@ -112,7 +112,7 @@ class CommandTimeline(val myContext: MyContext,
 
         fun fromCursor(myContext: MyContext, cursor: Cursor): CommandTimeline {
             val data = CommandTimeline(myContext,
-                    myContext.origins().fromId(DbUtils.getLong(cursor, CommandTable.ORIGIN_ID)),
+                    myContext.origins.fromId(DbUtils.getLong(cursor, CommandTable.ORIGIN_ID)),
                     null)
             data.id = DbUtils.getLong(cursor, CommandTable.TIMELINE_ID)
             data.timelineType = TimelineType.load(DbUtils.getString(cursor, CommandTable.TIMELINE_TYPE))

@@ -33,14 +33,14 @@ class ConnectionStateTest {
 
     @Test
     fun testIsConnectionStateOkFor() {
-        TestSuite.getMyContextForTest().setConnectionState(ConnectionState.OFFLINE)
-        Assert.assertEquals(ConnectionState.OFFLINE,  MyContextHolder.myContextHolder.getNow().getConnectionState())
+        TestSuite.getMyContextForTest().connectionState = ConnectionState.OFFLINE
+        Assert.assertEquals(ConnectionState.OFFLINE, MyContextHolder.myContextHolder.getNow().connectionState)
         assertTrueFor(ConnectionRequired.OFFLINE)
         assertTrueFor(ConnectionRequired.ANY)
         assertFalseFor(ConnectionRequired.SYNC)
         assertFalseFor(ConnectionRequired.DOWNLOAD_ATTACHMENT)
-        TestSuite.getMyContextForTest().setConnectionState(ConnectionState.ONLINE)
-        Assert.assertEquals(ConnectionState.ONLINE,  MyContextHolder.myContextHolder.getNow().getConnectionState())
+        TestSuite.getMyContextForTest().connectionState = ConnectionState.ONLINE
+        Assert.assertEquals(ConnectionState.ONLINE, MyContextHolder.myContextHolder.getNow().connectionState)
         assertFalseFor(ConnectionRequired.OFFLINE)
         assertTrueFor(ConnectionRequired.ANY)
         MyPreferences.setDownloadAttachmentsOverWiFiOnly(false)
@@ -53,7 +53,7 @@ class ConnectionStateTest {
         MyPreferences.setDownloadAttachmentsOverWiFiOnly(true)
         assertTrueFor(ConnectionRequired.SYNC)
         assertFalseFor(ConnectionRequired.DOWNLOAD_ATTACHMENT)
-        TestSuite.getMyContextForTest().setConnectionState(ConnectionState.WIFI)
+        TestSuite.getMyContextForTest().connectionState = ConnectionState.WIFI
         assertFalseFor(ConnectionRequired.OFFLINE)
         assertTrueFor(ConnectionRequired.ANY)
         assertTrueFor(ConnectionRequired.SYNC)
@@ -69,6 +69,6 @@ class ConnectionStateTest {
     }
 
     private fun isConnectionStateOkFor(connectionRequired: ConnectionRequired): Boolean {
-        return connectionRequired.isConnectionStateOk( MyContextHolder.myContextHolder.getNow().getConnectionState())
+        return connectionRequired.isConnectionStateOk(MyContextHolder.myContextHolder.getNow().connectionState)
     }
 }

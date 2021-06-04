@@ -61,9 +61,9 @@ class TimeLineActivityLayoutToggleTest : TimelineActivityTest<ActivityViewItem>(
         logStartStop("setUp started")
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
+         MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
         logStartStop("setUp ended")
-        return Intent(Intent.ACTION_VIEW,  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.actor,
+        return Intent(Intent.ACTION_VIEW,  MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.HOME, ma.actor,
                  Origin.EMPTY).getUri())
     }
 

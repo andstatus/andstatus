@@ -156,7 +156,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
     private fun fromMyActors(other: Actor, sameOriginOnly: Boolean): MyAccount {
         return myAccounts.stream().filter { ma: MyAccount ->
             ((!sameOriginOnly || ma.origin == other.origin)
-                    && myContext.users().myActors.values.stream()
+                    && myContext.users.myActors.values.stream()
                     .filter { actor: Actor -> actor.user.userId == ma.actor.user.userId }
                     .anyMatch { actor: Actor -> actor.isSame(other, sameOriginOnly) })
         }
@@ -175,8 +175,8 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
 
     private fun forRelatedActor(relatedActor: Actor, sameOriginOnly: Boolean, succeededOnly: Boolean): Optional<MyAccount> {
         val forFriend = forFriendOfFollower(relatedActor, sameOriginOnly, succeededOnly,
-                myContext.users().friendsOfMyActors)
-        return if (forFriend.isPresent()) forFriend else forFriendOfFollower(relatedActor, sameOriginOnly, succeededOnly, myContext.users().followersOfMyActors)
+                myContext.users.friendsOfMyActors)
+        return if (forFriend.isPresent()) forFriend else forFriendOfFollower(relatedActor, sameOriginOnly, succeededOnly, myContext.users.followersOfMyActors)
     }
 
     private fun forFriendOfFollower(friend: Actor, sameOriginOnly: Boolean, succeededOnly: Boolean,
@@ -495,7 +495,7 @@ class MyAccounts private constructor(private val myContext: MyContext) : IsEmpty
 
     fun addIfAbsent(myAccount: MyAccount) {
         if (!myAccounts.contains(myAccount)) myAccounts.add(myAccount)
-        myContext.users().updateCache(myAccount.actor)
+        myContext.users.updateCache(myAccount.actor)
     }
 
     companion object {

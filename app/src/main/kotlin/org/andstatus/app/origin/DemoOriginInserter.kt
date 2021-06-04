@@ -30,7 +30,7 @@ class DemoOriginInserter(private val myContext: MyContext) {
         createOneOrigin(OriginType.ACTIVITYPUB, DemoData.demoData.activityPubTestOriginName,
                 "",
                 true, SslModeEnum.SECURE, true, true, true)
-        myContext.origins().initialize()
+        myContext.origins.initialize()
     }
 
     fun createOneOrigin(originType: OriginType,
@@ -48,8 +48,8 @@ class DemoOriginInserter(private val myContext: MyContext) {
         val origin = builder.build()
         checkAttributes(origin, originName, hostOrUrl, isSsl, sslMode, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload)
-        myContext.origins().initialize()
-        val origin2 = myContext.origins().fromId(origin.id)
+        myContext.origins.initialize()
+        val origin2 = myContext.origins.fromId(origin.id)
         checkAttributes(origin2, originName, hostOrUrl, isSsl, sslMode, allowHtml,
                 inCombinedGlobalSearch, inCombinedPublicReload)
         return origin
@@ -81,11 +81,11 @@ class DemoOriginInserter(private val myContext: MyContext) {
     companion object {
         fun assertDefaultTimelinesForOrigins() {
             val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
-            for (origin in myContext.origins().collection()) {
-                val myAccount = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
+            for (origin in myContext.origins.collection()) {
+                val myAccount = myContext.accounts.getFirstPreferablySucceededForOrigin(origin)
                 for (timelineType in TimelineType.getDefaultOriginTimelineTypes()) {
                     var count = 0
-                    for (timeline in myContext.timelines().values()) {
+                    for (timeline in myContext.timelines.values()) {
                         if (timeline.getOrigin() == origin && timeline.timelineType == timelineType &&
                                 timeline.getSearchQuery().isEmpty()) {
                             count++
@@ -93,7 +93,7 @@ class DemoOriginInserter(private val myContext: MyContext) {
                     }
                     if (myAccount.isValid && origin.originType.isTimelineTypeSyncable(timelineType)) {
                         Assert.assertTrue("""No $timelineType at $origin
-${myContext.timelines().values()}""", count > 0)
+${myContext.timelines.values()}""", count > 0)
                     }
                 }
             }

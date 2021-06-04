@@ -119,7 +119,7 @@ class CheckConversations : DataChecker() {
         var cursor: Cursor? = null
         var rowsCount: Long = 0
         try {
-            cursor = myContext.getDatabase()?.rawQuery(sql, null)
+            cursor = myContext.database?.rawQuery(sql, null)
             while (cursor?.moveToNext() == true) {
                 rowsCount++
                 val item = NoteItem()
@@ -231,7 +231,7 @@ class CheckConversations : DataChecker() {
                                 + (if (item.isInReplyToIdChanged() && item.isConversationIdChanged()) ", " else "")
                                 + (if (item.isConversationIdChanged()) NoteTable.CONVERSATION_ID + "=" + DbUtils.sqlZeroToNull(item.conversationId) else "")
                                 + " WHERE " + BaseColumns._ID + "=" + item.id)
-                        myContext.getDatabase()?.execSQL(sql)
+                        myContext.database?.execSQL(sql)
                     }
                     counter.incrementAndGet()
                     logger.logProgressIfLongProcess { "Saved changes for $counter notes" }

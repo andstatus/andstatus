@@ -77,9 +77,9 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
         }
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
+         MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
         data = getStaticData(ma)
-        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.actor,  Origin.EMPTY)
+        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.HOME, ma.actor,  Origin.EMPTY)
         MyLog.i(this, "setUp ended, $timeline")
         return Intent(Intent.ACTION_VIEW, timeline.getUri())
     }
@@ -342,7 +342,7 @@ class NoteEditorTest : TimelineActivityTest<ActivityViewItem>() {
             val editor = test.activity.getNoteEditor()
             Assert.assertTrue("Editor is not null", editor != null)
             Assert.assertEquals(NoteEditorData.Companion.newEmpty(
-                    test.activity.myContext.accounts().currentAccount).toTestSummary(),
+                    test.activity.myContext.accounts.currentAccount).toTestSummary(),
                     editor?.getData()?.toTestSummary())
         }
     }

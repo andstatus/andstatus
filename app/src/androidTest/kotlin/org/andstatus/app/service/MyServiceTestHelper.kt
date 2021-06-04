@@ -34,7 +34,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
 
     @Volatile
     var serviceStopped = false
-    private var myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
+    private var myContext: MyContext = MyContextHolder.myContextHolder.getNow()
 
     fun setUp(accountName: String?) {
         MyLog.i(this, "setUp started")
@@ -46,19 +46,19 @@ class MyServiceTestHelper : MyServiceEventsListener {
             if (isSingleMockedInstance) {
                 httpConnectionMock = HttpConnectionMock()
                 TestSuite.setHttpConnectionMockInstance(httpConnectionMock)
-                 MyContextHolder.myContextHolder.getBlocking().setExpired { this.javaClass.simpleName + " setUp" }
+                MyContextHolder.myContextHolder.getBlocking().setExpired { this.javaClass.simpleName + " setUp" }
             }
-            myContext =  MyContextHolder.myContextHolder.initialize(myContext.context, this).getBlocking()
+            myContext = MyContextHolder.myContextHolder.initialize(myContext.context, this).getBlocking()
             if (!myContext.isReady) {
                 val msg = "Context is not ready after the initialization, repeating... $myContext"
                 MyLog.w(this, msg)
                 myContext.setExpired { this.javaClass.simpleName + msg }
-                myContext =  MyContextHolder.myContextHolder.initialize(myContext.context, this).getBlocking()
+                myContext = MyContextHolder.myContextHolder.initialize(myContext.context, this).getBlocking()
                 Assert.assertEquals("Context should be ready", true, myContext.isReady)
             }
             MyServiceManager.Companion.setServiceUnavailable()
             MyServiceManager.Companion.stopService()
-            TestSuite.getMyContextForTest().setConnectionState(ConnectionState.WIFI)
+            TestSuite.getMyContextForTest().connectionState = ConnectionState.WIFI
             if (!isSingleMockedInstance) {
                 httpConnectionMock = ConnectionMock.newFor(accountName).getHttpMock()
             }
@@ -78,7 +78,7 @@ class MyServiceTestHelper : MyServiceEventsListener {
     }
 
     private fun dropQueues() {
-        myContext.queues().clear()
+        myContext.queues.clear()
     }
 
     fun sendListenedCommand() {
@@ -91,9 +91,10 @@ class MyServiceTestHelper : MyServiceEventsListener {
         val method = ("waitForCommandExecutionStart " + getListenedCommand().getTimelineType() + " "
                 + logMsg + "; " + getListenedCommand().command.save())
         val criteria = expectStarted.select(
-                "check if count > $count0",
-                "check for no new execution, count0 = $count0",
-                "just waiting, count0 = $count0")
+            "check if count > $count0",
+            "check for no new execution, count0 = $count0",
+            "just waiting, count0 = $count0"
+        )
         MyLog.v(this, "$method started, count=$executionStartCount, $criteria")
         var found = false
         var locEvent = "none"
@@ -131,8 +132,10 @@ class MyServiceTestHelper : MyServiceEventsListener {
                 break
             }
         }
-        MyLog.v(this, method + " ended " + getListenedCommand().command.save()
-                + " " + found + ", event:" + locEvent + ", count0=" + count0)
+        MyLog.v(
+            this, method + " ended " + getListenedCommand().command.save()
+                    + " " + found + ", event:" + locEvent + ", count0=" + count0
+        )
         return found
     }
 
@@ -181,8 +184,10 @@ class MyServiceTestHelper : MyServiceEventsListener {
             else -> {
             }
         }
-        MyLog.v(this, "onReceive; " + locEvent + ", " + commandData + ", event:" + myServiceEvent +
-                ", requestsCounter:" + httpConnectionMock?.getRequestsCounter())
+        MyLog.v(
+            this, "onReceive; " + locEvent + ", " + commandData + ", event:" + myServiceEvent +
+                    ", requestsCounter:" + httpConnectionMock?.getRequestsCounter()
+        )
     }
 
     fun tearDown() {
@@ -191,9 +196,9 @@ class MyServiceTestHelper : MyServiceEventsListener {
         SharedPreferencesUtil.putBoolean(MyPreferences.KEY_SYNC_WHILE_USING_APPLICATION, true)
         serviceConnector?.unregisterReceiver(myContext.context)
         TestSuite.clearHttpMocks()
-        TestSuite.getMyContextForTest().setConnectionState(ConnectionState.UNKNOWN)
-         MyContextHolder.myContextHolder.getBlocking().accounts().initialize()
-         MyContextHolder.myContextHolder.getBlocking().timelines().initialize()
+        TestSuite.getMyContextForTest().connectionState = ConnectionState.UNKNOWN
+        MyContextHolder.myContextHolder.getBlocking().accounts.initialize()
+        MyContextHolder.myContextHolder.getBlocking().timelines.initialize()
         MyServiceManager.Companion.setServiceAvailable()
         MyLog.v(this, "tearDown ended")
     }

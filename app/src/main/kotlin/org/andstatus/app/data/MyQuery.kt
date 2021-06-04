@@ -83,12 +83,12 @@ object MyQuery {
                     "=" + quoteIfNotQuoted(oid)
             else -> throw IllegalArgumentException("$msgLog; Unknown oidEnum")
         }
-        return sqlToLong(myContext.getDatabase(), msgLog, sql)
+        return sqlToLong(myContext.database, msgLog, sql)
     }
 
     fun sqlToLong(databaseIn: SQLiteDatabase?, msgLogIn: String?, sql: String?): Long {
         val msgLog = StringUtil.notNull(msgLogIn)
-        val db = databaseIn ?:  MyContextHolder.myContextHolder.getNow().getDatabase()
+        val db = databaseIn ?:  MyContextHolder.myContextHolder.getNow().database
         if (db == null) {
             MyLog.databaseIsNull { msgLog }
             return 0
@@ -151,7 +151,7 @@ object MyQuery {
      */
     fun idToOid(myContext: MyContext, oe: OidEnum, entityId: Long, rebloggerActorId: Long): String {
         if (entityId == 0L) return ""
-        val db = myContext.getDatabase()
+        val db = myContext.database
         return if (db == null) {
             MyLog.databaseIsNull { "idToOid, oe=$oe id=$entityId" }
             ""
@@ -306,7 +306,7 @@ object MyQuery {
         var favoriteFound = false
         var reblogFound = false
         val actorToNote = ActorToNote()
-        val db = myContext.getDatabase()
+        val db = myContext.database
         if (db == null || noteId == 0L || actorId == 0L) {
             return actorToNote
         }
@@ -362,7 +362,7 @@ object MyQuery {
                 } else {
                     throw IllegalArgumentException("$method; Unknown name \"$actorIdColumnName\"")
                 }
-                val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().getDatabase()
+                val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().database
                 if (db == null) {
                     MyLog.databaseIsNull { method }
                     return ""
@@ -390,7 +390,7 @@ object MyQuery {
     }
 
     fun actorIdToName(myContext: MyContext, actorId: Long, actorInTimeline: ActorInTimeline?): String {
-        return idToStringColumnValue(myContext.getDatabase(), ActorTable.TABLE_NAME, usernameField(actorInTimeline), actorId)
+        return idToStringColumnValue(myContext.database, ActorTable.TABLE_NAME, usernameField(actorInTimeline), actorId)
     }
 
     /**
@@ -461,7 +461,7 @@ object MyQuery {
 
     fun conditionToStringColumnValue(dbIn: SQLiteDatabase?, tableName: String, columnName: String, condition: String): String {
         val method = "cond2str"
-        val db = dbIn ?:  MyContextHolder.myContextHolder.getNow().getDatabase()
+        val db = dbIn ?:  MyContextHolder.myContextHolder.getNow().database
         if (db == null) {
             MyLog.databaseIsNull { method }
             return ""
@@ -601,7 +601,7 @@ object MyQuery {
     private fun actorColumnValueToId(myContext: MyContext, originId: Long, columnName: String, columnValue: String,
                                      checkOid: Boolean): Long {
         val method = "actor" + columnName + "ToId"
-        val db = myContext.getDatabase()
+        val db = myContext.database
         if (db == null) {
             MyLog.databaseIsNull { method }
             return 0
@@ -697,7 +697,7 @@ object MyQuery {
      */
     fun <U> foldLeft(myContext: MyContext, sql: String, identity: U,
                      f: Function<U, Function<Cursor, U>>): U {
-        return foldLeft(myContext.getDatabase(), sql, identity, f)
+        return foldLeft(myContext.database, sql, identity, f)
     }
 
     /**
@@ -733,7 +733,7 @@ object MyQuery {
         builder.withCommaQuoted("oid", if (oid.isEmpty()) "empty" else oid, oid.isNotEmpty())
         val content = MyHtml.htmlToCompactPlainText(noteIdToStringColumnValue(NoteTable.CONTENT, noteId))
         builder.withCommaQuoted("content", content, true)
-        val origin = myContext.origins().fromId(noteIdToLongColumnValue(NoteTable.ORIGIN_ID, noteId))
+        val origin = myContext.origins.fromId(noteIdToLongColumnValue(NoteTable.ORIGIN_ID, noteId))
         builder.atNewLine(origin.toString())
         return builder.toString()
     }

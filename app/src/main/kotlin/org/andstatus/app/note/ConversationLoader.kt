@@ -47,7 +47,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem,
                                   private val selectedNoteId: Long,
                                   sync: Boolean) :
         SyncLoader<ConversationViewItem>() {
-    protected val ma: MyAccount = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
+    protected val ma: MyAccount = myContext.accounts.getFirstPreferablySucceededForOrigin(origin)
     var conversationIds: MutableSet<Long> = HashSet()
     var fixConversation = false
     private val sync: Boolean = sync || MyPreferences.isSyncWhileUsingApplicationEnabled()
@@ -147,7 +147,7 @@ abstract class ConversationLoader(private val emptyItem: ConversationViewItem,
             return cachedItem
         }
         val uri: Uri = MatchedUri.getTimelineItemUri(
-                myContext.timelines()[TimelineType.EVERYTHING, Actor.EMPTY, ma.origin], item.getNoteId())
+                myContext.timelines[TimelineType.EVERYTHING, Actor.EMPTY, ma.origin], item.getNoteId())
         myContext.context.contentResolver
                 .query(uri, item.getProjection().toTypedArray(), null, null, null).use { cursor ->
                     if (cursor != null && cursor.moveToFirst()) {

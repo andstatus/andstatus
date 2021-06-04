@@ -92,7 +92,7 @@ class SpanUtilTest {
         val region = regions.get(index)
         val urlSpan = region.urlSpan
         val actor = urlSpan.flatMap { u: MyUrlSpan -> u.data.actor }
-        val accountToSync = actor.map { a: Actor -> a.origin.myContext.accounts().toSyncThatActor(a) }
+        val accountToSync = actor.map { a: Actor -> a.origin.myContext.accounts.toSyncThatActor(a) }
         Assert.assertTrue("Region $index should be a mention $region\n$message", actor.isPresent)
         Assert.assertEquals("Region $index $message",
                 "content://timeline.app.andstatus.org/note/" +

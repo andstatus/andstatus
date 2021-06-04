@@ -94,7 +94,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
                         || activity.getNote().audience().containsMe(execContext.myContext))) {
             activity.setSubscribedByMe(TriState.TRUE)
         }
-        if (activity.isNotified().unknown && execContext.myContext.users().isMe(activity.getActor()) &&
+        if (activity.isNotified().unknown && execContext.myContext.users.isMe(activity.getActor()) &&
                 activity.getNote().getStatus().isPresentAtServer() &&
                 MyQuery.activityIdToTriState(ActivityTable.NOTIFIED, activity.getId()).isTrue) {
             activity.setNotified(TriState.FALSE)
@@ -121,7 +121,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
         val method = "updateNote1"
         val note = activity.getNote()
         try {
-            val me = execContext.myContext.accounts().fromActorOfSameOrigin(activity.accountActor)
+            val me = execContext.myContext.accounts.fromActorOfSameOrigin(activity.accountActor)
             if (me.nonValid) {
                 MyLog.w(this, "$method; my account is invalid, skipping: $activity")
                 return
@@ -303,7 +303,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             MyLog.v(this) { method + "; don't store: " + objActor.uniqueName }
             return
         }
-        val me = execContext.myContext.accounts().fromActorOfSameOrigin(activity.accountActor)
+        val me = execContext.myContext.accounts.fromActorOfSameOrigin(activity.accountActor)
         if (me.nonValid) {
             if (activity.accountActor == objActor) {
                 MyLog.d(this, method + "; adding my account " + activity.accountActor)
@@ -324,7 +324,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             updateObjActor2(activity, recursing, me)
         } else {
             updateFriendships(activity, me)
-            execContext.myContext.users().reload(objActor)
+            execContext.myContext.users.reload(objActor)
         }
         MyLog.v(this) { "$method; $objActor" }
     }
@@ -416,7 +416,7 @@ class DataUpdater(private val execContext: CommandExecutionContext) {
             actor.endpoints.save(actor.actorId)
             updateFriendships(activity, me)
             actor.avatarFile.resetAvatarErrors(execContext.myContext)
-            execContext.myContext.users().reload(actor)
+            execContext.myContext.users.reload(actor)
             if (actor.isNotFullyDefined() && actor.canGetActor()) {
                 actor.requestDownload(false)
             }

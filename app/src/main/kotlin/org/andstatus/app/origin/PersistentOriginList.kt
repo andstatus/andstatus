@@ -26,7 +26,7 @@ import org.andstatus.app.util.MyLog
 
 class PersistentOriginList : OriginList() {
     override fun getOrigins(): Iterable<Origin> {
-        return  MyContextHolder.myContextHolder.getNow().origins().collection()
+        return  MyContextHolder.myContextHolder.getNow().origins.collection()
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {

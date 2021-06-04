@@ -401,7 +401,7 @@ class NoteEditorData private constructor(val ma: MyAccount, activity: AActivity)
 
         fun load(myContext: MyContext, noteId: Long): NoteEditorData {
             val authorId = MyQuery.noteIdToLongColumnValue(NoteTable.AUTHOR_ID, noteId)
-            val ma = myContext.accounts().fromActorId(authorId).getValidOrCurrent(myContext)
+            val ma = myContext.accounts.fromActorId(authorId).getValidOrCurrent(myContext)
             return NoteEditorData(ma, noteId, false, 0, true)
         }
 

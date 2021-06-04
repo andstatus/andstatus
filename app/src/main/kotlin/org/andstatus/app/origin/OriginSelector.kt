@@ -51,7 +51,7 @@ class OriginSelector : SelectorDialog() {
         setListAdapter(newListAdapter(listData))
         listView?.onItemClickListener = OnItemClickListener { parent: AdapterView<*>, view: View, position: Int, id: Long ->
             val selectedId = (view.findViewById<View>(R.id.id) as TextView).text.toString().toLong()
-            returnSelectedItem( MyContextHolder.myContextHolder.getNow().origins().fromId(selectedId))
+            returnSelectedItem( MyContextHolder.myContextHolder.getNow().origins.fromId(selectedId))
         }
     }
 

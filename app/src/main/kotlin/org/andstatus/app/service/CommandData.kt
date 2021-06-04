@@ -234,7 +234,7 @@ class CommandData private constructor(
             CommandEnum.GET_AVATAR -> {
                 builder.withSpace(ListScope.USER.timelinePreposition(myContext))
                 builder.withSpace(getTimeline().actor.getWebFingerId())
-                if (myContext.accounts().getDistinctOriginsCount() > 1) {
+                if (myContext.accounts.getDistinctOriginsCount() > 1) {
                     builder.withSpace(ListScope.ORIGIN.timelinePreposition(myContext))
                     builder.withSpace(commandTimeline.origin.name)
                 }
@@ -361,7 +361,7 @@ class CommandData private constructor(
         fun newSearch(searchObjects: SearchObjects?,
                       myContext: MyContext, origin: Origin, queryString: String?): CommandData {
             return if (searchObjects == SearchObjects.NOTES) {
-                val timeline = myContext.timelines().get(TimelineType.SEARCH, Actor.EMPTY, origin, queryString)
+                val timeline = myContext.timelines.get(TimelineType.SEARCH, Actor.EMPTY, origin, queryString)
                 CommandData(0, CommandEnum.GET_TIMELINE, timeline.myAccountToSync,
                         CommandTimeline.of(timeline), 0)
             } else {
@@ -389,7 +389,7 @@ class CommandData private constructor(
 
         fun newActorCommandAtOrigin(command: CommandEnum, actor: Actor, username: String?, origin: Origin): CommandData {
             val commandData = newTimelineCommand(command,
-                    MyContextHolder.myContextHolder.getNow().timelines().get(
+                    MyContextHolder.myContextHolder.getNow().timelines.get(
                             if (origin.isEmpty) TimelineType.SENT else TimelineType.SENT_AT_ORIGIN, actor, origin))
             commandData.setUsername(username)
             commandData.description = commandData.getUsername()
@@ -408,7 +408,7 @@ class CommandData private constructor(
 
         fun actOnActorCommand(command: CommandEnum, myAccount: MyAccount, actor: Actor, username: String?): CommandData {
             if (myAccount.nonValid || actor.isEmpty && username.isNullOrEmpty()) return EMPTY
-            val timeline: Timeline = MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.SENT, actor, Origin.EMPTY)
+            val timeline: Timeline = MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.SENT, actor, Origin.EMPTY)
             val commandData = if (actor.isEmpty) newAccountCommand(command, myAccount)
             else CommandData(0, command, myAccount, CommandTimeline.of(timeline), 0)
             commandData.setUsername(username)
@@ -422,12 +422,12 @@ class CommandData private constructor(
 
         fun newOriginCommand(command: CommandEnum, origin: Origin): CommandData {
             return newTimelineCommand(command, if (origin.isEmpty) Timeline.EMPTY
-            else MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, origin))
+            else MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.EVERYTHING, Actor.EMPTY, origin))
         }
 
         fun newTimelineCommand(command: CommandEnum, myAccount: MyAccount,
                                timelineType: TimelineType): CommandData {
-            return newTimelineCommand(command, MyContextHolder.myContextHolder.getNow().timelines()
+            return newTimelineCommand(command, MyContextHolder.myContextHolder.getNow().timelines
                     .get(timelineType, myAccount.actor, Origin.EMPTY))
         }
 
@@ -471,7 +471,7 @@ class CommandData private constructor(
             val commandData = CommandData(
                     DbUtils.getLong(cursor, BaseColumns._ID),
                     command,
-                    myContext.accounts().fromActorId(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID)),
+                    myContext.accounts.fromActorId(DbUtils.getLong(cursor, CommandTable.ACCOUNT_ID)),
                     CommandTimeline.fromCursor(myContext, cursor),
                     DbUtils.getLong(cursor, CommandTable.CREATED_DATE))
             commandData.description = DbUtils.getString(cursor, CommandTable.DESCRIPTION)

@@ -75,8 +75,8 @@ class SyncInitiator : BroadcastReceiver() {
         val connectionState = UriUtils.getConnectionState(myContext.context)
         MyLog.v(this) { "syncIfNeeded " + UriUtils.getConnectionState(myContext.context) }
         if (!ConnectionRequired.SYNC.isConnectionStateOk(connectionState)) return false
-        for (myAccount in myContext.accounts().accountsToSync()) {
-            if (myContext.timelines().toAutoSyncForAccount(myAccount).isNotEmpty()) {
+        for (myAccount in myContext.accounts.accountsToSync()) {
+            if (myContext.timelines.toAutoSyncForAccount(myAccount).isNotEmpty()) {
                 myAccount.requestSync()
             }
         }
@@ -100,7 +100,7 @@ class SyncInitiator : BroadcastReceiver() {
         }
 
         private fun scheduleRepeatingAlarm(myContext: MyContext) {
-            val minSyncIntervalMillis = myContext.accounts().minSyncIntervalMillis()
+            val minSyncIntervalMillis = myContext.accounts.minSyncIntervalMillis()
             if (minSyncIntervalMillis > 0) {
                 val alarmManager = myContext.context.getSystemService(AlarmManager::class.java)
                 if (alarmManager == null) {
@@ -119,7 +119,7 @@ class SyncInitiator : BroadcastReceiver() {
         }
 
         private fun registerBroadcastReceiver(myContext: MyContext?) {
-            if (myContext != null && myContext.accounts().hasSyncedAutomatically()) myContext.context
+            if (myContext != null && myContext.accounts.hasSyncedAutomatically()) myContext.context
                     .registerReceiver(BROADCAST_RECEIVER, IntentFilter(PowerManager.ACTION_DEVICE_IDLE_MODE_CHANGED))
         }
 

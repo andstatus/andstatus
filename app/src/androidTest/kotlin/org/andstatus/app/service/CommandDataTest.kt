@@ -47,7 +47,7 @@ class CommandDataTest {
         val time0 = System.currentTimeMillis()
         var commandData: CommandData = CommandData.Companion.newUpdateStatus(DemoData.demoData.getPumpioConversationAccount(), 1, 4)
         testQueueOneCommandData(commandData, time0)
-        val noteId = MyQuery.oidToId(OidEnum.NOTE_OID,  MyContextHolder.myContextHolder.getNow().origins()
+        val noteId = MyQuery.oidToId(OidEnum.NOTE_OID,  MyContextHolder.myContextHolder.getNow().origins
                 .fromName(DemoData.demoData.conversationOriginName).id,
                 DemoData.demoData.conversationEntryNoteOid)
         val downloadDataRowId: Long = 23
@@ -73,7 +73,7 @@ class CommandDataTest {
         Assert.assertEquals((CommandResult.Companion.INITIAL_NUMBER_OF_RETRIES - 1).toLong(), commandData.getResult().getRetriesLeft().toLong())
         Assert.assertEquals(hasSoftError, commandData.getResult().hasSoftError())
         Assert.assertFalse(commandData.getResult().hasHardError())
-        val queues: CommandQueue =  MyContextHolder.myContextHolder.getNow().queues()
+        val queues: CommandQueue =  MyContextHolder.myContextHolder.getNow().queues
         queues.clear()
         queues[QueueType.ERROR].addToQueue(commandData)
         queues.save()

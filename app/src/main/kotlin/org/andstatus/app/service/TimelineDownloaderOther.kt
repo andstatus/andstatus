@@ -91,7 +91,7 @@ internal class TimelineDownloaderOther(execContext: CommandExecutionContext) : T
                             activity.getNextTimelinePosition())
                     if (activity.isSubscribedByMe() != TriState.FALSE
                             && activity.getUpdatedDate() > 0 && execContext.getTimeline().timelineType.isSubscribedByMe()
-                            && execContext.myContext.users().isMe(execContext.getTimeline().actor)) {
+                            && execContext.myContext.users.isMe(execContext.getTimeline().actor)) {
                         activity.setSubscribedByMe(TriState.TRUE)
                     }
                     dataUpdater.onActivity(activity, false)

@@ -138,10 +138,10 @@ class AvatarDownloaderTest {
         val values = ContentValues()
         values.put(DownloadTable.DOWNLOAD_STATUS, status.save())
         values.put(DownloadTable.DOWNLOADED_DATE, MyLog.uniqueCurrentTimeMS())
-         MyContextHolder.myContextHolder.getNow().getDatabase()
+         MyContextHolder.myContextHolder.getNow().database
                  ?.update(DownloadTable.TABLE_NAME, values, DownloadTable.ACTOR_ID + "=" + actor.actorId
                         + " AND " + DownloadTable.URL + "=" + MyQuery.quoteIfNotQuoted(actor.getAvatarUrl()), null)
-        val actor2: Actor =  MyContextHolder.myContextHolder.getNow().users().reload(actor)
+        val actor2: Actor =  MyContextHolder.myContextHolder.getNow().users.reload(actor)
         val avatarData: AvatarData = AvatarData.Companion.getCurrentForActor(actor)
         Assert.assertEquals("Download status for $actor2", status, avatarData.getStatus())
     }
@@ -186,9 +186,9 @@ class AvatarDownloaderTest {
             actor.setUpdatedDate(MyLog.uniqueCurrentTimeMS())
             values.put(ActorTable.AVATAR_URL, urlString)
             values.put(ActorTable.UPDATED_DATE, actor.getUpdatedDate())
-             MyContextHolder.myContextHolder.getNow().getDatabase()
+             MyContextHolder.myContextHolder.getNow().database
                     ?.update(ActorTable.TABLE_NAME, values, BaseColumns._ID + "=" + actor.actorId, null)
-             MyContextHolder.myContextHolder.getNow().users().reload(actor)
+             MyContextHolder.myContextHolder.getNow().users.reload(actor)
             Assert.assertEquals("""URL should change for $actor
  reloaded: ${Actor.Companion.load( MyContextHolder.myContextHolder.getNow(), actor.actorId)}""",
                     urlString, MyQuery.actorIdToStringColumnValue(ActorTable.AVATAR_URL, actor.actorId))

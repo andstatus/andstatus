@@ -174,8 +174,8 @@ abstract class BaseNoteAdapter<T : BaseNoteViewItem<T>>(contextMenu: NoteContext
     }
 
     private fun showMarkRepliesToMe(view: ViewGroup, item: T) {
-        if (myContext.users().isMe(item.inReplyToActor.actor) &&
-                !myContext.users().isMe(item.author.actor)) {
+        if (myContext.users.isMe(item.inReplyToActor.actor) &&
+                !myContext.users.isMe(item.author.actor)) {
             val referencedView = view.findViewById<View?>(R.id.note_indented)
             val replyToMeMarkerView: ImageView = ConversationIndentImageView(myContext.context, referencedView, dpToPixes(6),
                     R.drawable.reply_timeline_marker_light, R.drawable.reply_timeline_marker)

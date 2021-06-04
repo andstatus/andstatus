@@ -57,11 +57,11 @@ class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem>() {
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.twitterTestAccountName)
         Assert.assertTrue(ma.isValid)
         Assert.assertEquals("Account should be in Twitter: $ma", OriginType.TWITTER, ma.origin.originType)
-         MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
+         MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
         data = getStaticData(ma)
         MyLog.i(this, "setUp ended")
         return Intent(Intent.ACTION_VIEW,
-                 MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.HOME, ma.actor,  Origin.EMPTY).getUri())
+                 MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.HOME, ma.actor,  Origin.EMPTY).getUri())
     }
 
     private fun getStaticData(ma: MyAccount): NoteEditorData {
@@ -136,7 +136,7 @@ class NoteEditorTwitterTest : TimelineActivityTest<ActivityViewItem>() {
     private fun assertTextCleared() {
         val editor = activity.getNoteEditor() ?: throw IllegalStateException("No editor")
         Assert.assertEquals(NoteEditorData.Companion.newEmpty(
-                activity.myContext.accounts().currentAccount).toTestSummary(),
+                activity.myContext.accounts.currentAccount).toTestSummary(),
                 editor.getData().toTestSummary())
     }
 

@@ -33,10 +33,10 @@ class NotificationsTimelineTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.initializeWithData(this)
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
+         MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
         MyLog.i(this, "setUp ended")
         return Intent(Intent.ACTION_VIEW,
-                 MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.NOTIFICATIONS, ma.actor, ma.origin).getUri())
+                 MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.NOTIFICATIONS, ma.actor, ma.origin).getUri())
     }
 
     @Test

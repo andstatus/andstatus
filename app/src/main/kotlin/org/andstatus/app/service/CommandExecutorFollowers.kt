@@ -162,7 +162,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
             GroupMembership.setMember(execContext.myContext, getActor(), groupType,
                     TriState.FALSE, Actor.load(execContext.myContext, actorIdOld))
         }
-        execContext.myContext.users().reload(getActor())
+        execContext.myContext.users.reload(getActor())
     }
 
     private fun areAllNotesLoaded(actorsNew: List<Actor>): Boolean {
@@ -204,7 +204,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
             }
             var lastActivityId = MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, actor.actorId)
             if (lastActivityId == 0L) {
-                lastActivityId = MyQuery.conditionToLongColumnValue(execContext.myContext.getDatabase(),
+                lastActivityId = MyQuery.conditionToLongColumnValue(execContext.myContext.database,
                         "getLatestActivity",
                         ActivityTable.TABLE_NAME,
                         BaseColumns._ID,
@@ -221,7 +221,7 @@ class CommandExecutorFollowers(execContext: CommandExecutionContext) : CommandEx
                             + actor.getUniqueNameWithOrigin(), exception)
                 } else {
                     val updatedDate = MyQuery.idToLongColumnValue(
-                            execContext.myContext.getDatabase(),
+                            execContext.myContext.database,
                             ActivityTable.TABLE_NAME,
                             ActivityTable.UPDATED_DATE,
                             lastActivityId)

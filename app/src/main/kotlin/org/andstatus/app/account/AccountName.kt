@@ -104,7 +104,7 @@ class AccountName private constructor(uniqueName: String,
             val originInAccountName = if (indSeparator >= 0 && indSeparator < accountNameFixed.length - 1)
                     accountNameFixed.substring(indSeparator + 1).trim { it <= ' ' }
                 else ""
-            return myContext.origins().fromOriginInAccountNameAndHost(fixOriginName(originInAccountName), host)
+            return myContext.origins.fromOriginInAccountNameAndHost(fixOriginName(originInAccountName), host)
         }
 
         fun accountNameToHost(accountName: String?): String {

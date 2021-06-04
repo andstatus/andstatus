@@ -70,7 +70,7 @@ class ConnectionMastodonTest {
         val note = activity.getNote()
         Assert.assertEquals("Activity oid", "22", activity.getOid())
         Assert.assertEquals("Note Oid", "22", note.oid)
-        Assert.assertEquals("Account unknown $activity", true,  MyContextHolder.myContextHolder.getNow().accounts()
+        Assert.assertEquals("Account unknown $activity", true,  MyContextHolder.myContextHolder.getNow().accounts
                 .fromActorOfSameOrigin(activity.accountActor).isValid)
         Assert.assertEquals("Is not a note $activity", AObjectType.NOTE, activity.getObjectType())
         Assert.assertEquals("Favorited $activity", TriState.UNKNOWN, note.getFavoritedBy(activity.accountActor))
@@ -116,7 +116,7 @@ class ConnectionMastodonTest {
         val activity3 = timeline[3] ?: throw IllegalStateException("No activity")
         val note3 = activity3.getNote()
         Assert.assertEquals("Activity oid", "104114771989428879", activity3.getOid())
-        Assert.assertEquals("Account unknown $activity3", true,  MyContextHolder.myContextHolder.getNow().accounts()
+        Assert.assertEquals("Account unknown $activity3", true,  MyContextHolder.myContextHolder.getNow().accounts
                 .fromActorOfSameOrigin(activity3.accountActor).isValid)
         Assert.assertEquals("Is not a note $activity3", AObjectType.NOTE, activity3.getObjectType())
         Assert.assertEquals("Favorited $activity3", TriState.UNKNOWN, note3.getFavoritedBy(activity3.accountActor))

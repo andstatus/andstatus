@@ -44,10 +44,10 @@ class NotificationData(val event: NotificationEventType, val myActor: Actor, upd
     fun getPendingIntent(myContext: MyContext): PendingIntent {
         val timelineType: TimelineType = TimelineType.from(event)
         // When clicking on notifications, always open Combine timeline for Unread notifications
-        val timeline = myContext.timelines()[timelineType,
+        val timeline = myContext.timelines[timelineType,
                 if (timelineType == TimelineType.UNREAD_NOTIFICATIONS) Actor.EMPTY
                 else myActor, Origin.EMPTY]
-                .orElse(myContext.timelines().getDefault())
+                .orElse(myContext.timelines.getDefault())
         val intent = Intent(myContext.context, FirstActivity::class.java)
         // "rnd" is necessary to actually bring Extra to the target intent
         // see http://stackoverflow.com/questions/1198558/how-to-send-parameters-from-a-notification-click-to-an-activity

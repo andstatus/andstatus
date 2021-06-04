@@ -68,7 +68,7 @@ class NotifierTest {
             Assert.assertTrue("No data for '$where'", iterator.hasNext())
             val activityId = iterator.next()
             Assert.assertNotEquals("No activity for '$where'", 0L, activityId)
-            myContext.getDatabase()?.execSQL("UPDATE " + ActivityTable.TABLE_NAME +
+            myContext.database?.execSQL("UPDATE " + ActivityTable.TABLE_NAME +
                     " SET " + ActivityTable.NEW_NOTIFICATION_EVENT + "=" + eventType.id +
                     ", " + ActivityTable.NOTIFIED + "=" + TriState.TRUE.id +
                     ", " + ActivityTable.NOTIFIED_ACTOR_ID + "=" + ActivityTable.ACTOR_ID +

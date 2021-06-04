@@ -62,7 +62,7 @@ internal class CheckUsers : DataChecker() {
                         ActorTable.USERNAME + "='" + groupUsername + "', " +
                         ActorTable.ACTOR_OID + "='" + groupTempOid + "'" +
                         " WHERE " + BaseColumns._ID + "=" + actor.actorId
-                myContext.getDatabase()?.execSQL(sql)
+                myContext.database?.execSQL(sql)
                 changedCount++
             } else {
                 MyLog.w(this, "Couldn't fix origin for $actor")
@@ -71,7 +71,7 @@ internal class CheckUsers : DataChecker() {
         for (actor in results.actorsToFixWebFingerId) {
             val sql = ("UPDATE " + ActorTable.TABLE_NAME + " SET " + ActorTable.WEBFINGER_ID + "='"
                     + actor.getWebFingerId() + "' WHERE " + BaseColumns._ID + "=" + actor.actorId)
-            myContext.getDatabase()?.execSQL(sql)
+            myContext.database?.execSQL(sql)
             changedCount++
         }
         for (actor1 in results.actorsWithoutUsers) {
@@ -79,7 +79,7 @@ internal class CheckUsers : DataChecker() {
             actor.saveUser()
             val sql = ("UPDATE " + ActorTable.TABLE_NAME + " SET " + ActorTable.USER_ID + "="
                     + actor.user.userId + " WHERE " + BaseColumns._ID + "=" + actor.actorId)
-            myContext.getDatabase()?.execSQL(sql)
+            myContext.database?.execSQL(sql)
             changedCount++
         }
         return changedCount
@@ -103,7 +103,7 @@ internal class CheckUsers : DataChecker() {
                 + " ORDER BY " + ActorTable.WEBFINGER_ID + " COLLATE NOCASE")
         var rowsCount: Long = 0
         MyLog.v(this) { sql }
-        myContext.getDatabase()?.rawQuery(sql, null).use { c ->
+        myContext.database?.rawQuery(sql, null).use { c ->
             var key = ""
             var actors: MutableSet<Actor> = HashSet()
             while (c?.moveToNext() == true) {
@@ -114,7 +114,7 @@ internal class CheckUsers : DataChecker() {
                     results.actorsToFixWebFingerId.add(actor)
                     results.problems.add("Fix webfingerId: '$webFingerId' $actor")
                 }
-                if (myContext.accounts().fromWebFingerId(actor.getWebFingerId()).isValid
+                if (myContext.accounts.fromWebFingerId(actor.getWebFingerId()).isValid
                         && actor.user.isMyUser().untrue) {
                     actor.user.setIsMyUser(TriState.TRUE)
                     results.usersToSave.add(actor.user)

@@ -87,7 +87,7 @@ class MyProvider : ContentProvider() {
         val rowId: Long
         var newUri: Uri? = null
         try {
-            val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().getDatabase()
+            val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().database
             if (db == null) {
                 MyLog.databaseIsNull { "insert" }
                 return null
@@ -140,7 +140,7 @@ class MyProvider : ContentProvider() {
                        sortOrderIn: String?): Cursor? {
         if (projection == null) return null
 
-        val db: SQLiteDatabase = MyContextHolder.myContextHolder.getNow().getDatabase() ?: kotlin.run {
+        val db: SQLiteDatabase = MyContextHolder.myContextHolder.getNow().database ?: kotlin.run {
             MyLog.databaseIsNull {}
             return null
         }
@@ -301,7 +301,7 @@ class MyProvider : ContentProvider() {
      */
     override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<String>?): Int {
         if (values == null) return 0
-        val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().getDatabase() ?: kotlin.run {
+        val db: SQLiteDatabase =  MyContextHolder.myContextHolder.getNow().database ?: kotlin.run {
             MyLog.databaseIsNull { "update" }
             return 0
         }
@@ -341,7 +341,7 @@ class MyProvider : ContentProvider() {
         }
 
         fun deleteActivities(myContext: MyContext, selection: String?, selectionArgs: Array<String>?, inTransaction: Boolean): Int {
-            val db = myContext.getDatabase()
+            val db = myContext.database
             if (db == null) {
                 MyLog.databaseIsNull { "deleteActivities" }
                 return 0
@@ -412,14 +412,14 @@ class MyProvider : ContentProvider() {
                         }
                 ).forEach(Consumer { childActorId: Long -> deleteActor(myContext, childActorId, recursionLevel + 1) })
             }
-            val userId = MyQuery.idToLongColumnValue(myContext.getDatabase(), ActorTable.TABLE_NAME, ActorTable.USER_ID, actorId)
+            val userId = MyQuery.idToLongColumnValue(myContext.database, ActorTable.TABLE_NAME, ActorTable.USER_ID, actorId)
             delete(myContext, AudienceTable.TABLE_NAME, AudienceTable.ACTOR_ID, actorId)
             delete(myContext, GroupMembersTable.TABLE_NAME, GroupMembersTable.GROUP_ID, actorId)
             delete(myContext, GroupMembersTable.TABLE_NAME, GroupMembersTable.MEMBER_ID, actorId)
             DownloadData.deleteAllOfThisActor(myContext, actorId)
             delete(myContext, ActorEndpointTable.TABLE_NAME, ActorEndpointTable.ACTOR_ID, actorId)
             delete(myContext, ActorTable.TABLE_NAME, BaseColumns._ID, actorId)
-            if (!MyQuery.dExists(myContext.getDatabase(), "SELECT * FROM " + ActorTable.TABLE_NAME
+            if (!MyQuery.dExists(myContext.database, "SELECT * FROM " + ActorTable.TABLE_NAME
                             + " WHERE " + ActorTable.USER_ID + "=" + userId)) {
                 delete(myContext, UserTable.TABLE_NAME, BaseColumns._ID, userId)
             }
@@ -432,7 +432,7 @@ class MyProvider : ContentProvider() {
 
         fun delete(myContext: MyContext, tableName: String, where: String?): Int {
             val method = "delete"
-            val db = myContext.getDatabase() ?: kotlin.run {
+            val db = myContext.database ?: kotlin.run {
                 MyLog.databaseIsNull { method }
                 return 0
             }
@@ -446,13 +446,13 @@ class MyProvider : ContentProvider() {
 
         // TODO: return Try<Long>
         fun deleteActivity(myContext: MyContext, activityId: Long, noteId: Long, inTransaction: Boolean): Long {
-            val db = myContext.getDatabase() ?: kotlin.run {
+            val db = myContext.database ?: kotlin.run {
                 MyLog.databaseIsNull { "deleteActivity" }
                 return 0
             }
             val originId = MyQuery.activityIdToLongColumnValue(ActivityTable.ORIGIN_ID, activityId)
             if (originId == 0L) return 0
-            val origin = myContext.origins().fromId(originId)
+            val origin = myContext.origins.fromId(originId)
             // Was this the last activity for this note?
             val activityId2 = MyQuery.conditionToLongColumnValue(db, null, ActivityTable.TABLE_NAME,
                     BaseColumns._ID, ActivityTable.NOTE_ID + "=" + noteId +
@@ -473,7 +473,7 @@ class MyProvider : ContentProvider() {
 
         fun updateNoteReblogged(myContext: MyContext, origin: Origin, noteId: Long) {
             val reblogged: TriState = TriState.fromBoolean(
-                    myContext.users().containsMe(MyQuery.getRebloggers(myContext.getDatabase(), origin, noteId))
+                    myContext.users.containsMe(MyQuery.getRebloggers(myContext.database, origin, noteId))
             )
             update(myContext, NoteTable.TABLE_NAME,
                     NoteTable.REBLOGGED + "=" + reblogged.id,
@@ -482,7 +482,7 @@ class MyProvider : ContentProvider() {
 
         fun updateNoteFavorited(myContext: MyContext, origin: Origin, noteId: Long) {
             val favorited: TriState = TriState.fromBoolean(
-                    myContext.users().containsMe(MyQuery.getStargazers(myContext.getDatabase(), origin, noteId))
+                    myContext.users.containsMe(MyQuery.getStargazers(myContext.database, origin, noteId))
             )
             update(myContext, NoteTable.TABLE_NAME,
                     NoteTable.FAVORITED + "=" + favorited.id,
@@ -512,7 +512,7 @@ class MyProvider : ContentProvider() {
 
         fun update(myContext: MyContext, tableName: String, set: String, where: String?) {
             val method = "update"
-            val db = myContext.getDatabase()?: kotlin.run {
+            val db = myContext.database ?: kotlin.run {
                 MyLog.databaseIsNull { method }
                 return
             }
@@ -525,7 +525,7 @@ class MyProvider : ContentProvider() {
         }
 
         fun insert(myContext: MyContext, tableName: String, values: ContentValues): Long {
-            val db = myContext.getDatabase()
+            val db = myContext.database
             if (db == null || values.size() == 0) return -1
             val rowId = db.insert(tableName, null, values)
             if (rowId == -1L) {

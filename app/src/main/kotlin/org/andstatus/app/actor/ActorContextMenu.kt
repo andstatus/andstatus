@@ -37,9 +37,9 @@ open class ActorContextMenu(val menuContainer: NoteEditorContainer, menuGroup: I
             return
         }
         val actor = getViewItem().actor
-        if (!getMyContext().accounts().succeededForSameUser(actor).contains(getSelectedActingAccount())) {
+        if (!getMyContext().accounts.succeededForSameUser(actor).contains(getSelectedActingAccount())) {
             setSelectedActingAccount(
-                    getMyContext().accounts().firstOtherSucceededForSameUser(actor, getActingAccount())
+                    getMyContext().accounts.firstOtherSucceededForSameUser(actor, getActingAccount())
             )
         }
         var order = 0
@@ -72,13 +72,13 @@ open class ActorContextMenu(val menuContainer: NoteEditorContainer, menuGroup: I
                                 StringUtil.format(getActivity(), R.string.post_to, shortName))
                     }
                 }
-                when (getMyContext().accounts().succeededForSameUser(actor).size) {
+                when (getMyContext().accounts.succeededForSameUser(actor).size) {
                     0, 1 -> {
                     }
                     2 -> ActorContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT.addTo(menu, menuGroup, order++,
                             StringUtil.format(
                                     getActivity(), R.string.menu_item_act_as_user,
-                                    getMyContext().accounts()
+                                    getMyContext().accounts
                                             .firstOtherSucceededForSameUser(actor, getActingAccount())
                                             .getShortestUniqueAccountName()))
                     else -> ActorContextMenuItem.ACT_AS.addTo(menu, menuGroup, order++, R.string.menu_item_act_as)

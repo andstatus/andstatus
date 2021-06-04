@@ -144,7 +144,7 @@ class ParsedUri private constructor(intent: Intent?) {
     }
 
     fun getOrigin(myContext: MyContext): Origin {
-        return myContext.origins().fromId(getOriginId())
+        return myContext.origins.fromId(getOriginId())
     }
 
     fun getNoteId(): Long {

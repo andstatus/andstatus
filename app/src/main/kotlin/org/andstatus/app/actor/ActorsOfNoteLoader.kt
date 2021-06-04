@@ -41,7 +41,7 @@ class ActorsOfNoteLoader(myContext: MyContext, actorsScreenType: ActorsScreenTyp
         addActorIdToList(originOfSelectedNote, MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, selectedNoteId))
         fromNoteId(originOfSelectedNote, selectedNoteId).getNonSpecialActors()
                 .forEach { actor: Actor -> addActorToList(actor) }
-        MyQuery.getRebloggers( MyContextHolder.myContextHolder.getNow().getDatabase(), origin, selectedNoteId)
+        MyQuery.getRebloggers( MyContextHolder.myContextHolder.getNow().database, origin, selectedNoteId)
                 .forEach { actor: Actor -> addActorToList(actor) }
     }
 
@@ -51,7 +51,7 @@ class ActorsOfNoteLoader(myContext: MyContext, actorsScreenType: ActorsScreenTyp
 
     init {
         noteContent = MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, selectedNoteId)
-        originOfSelectedNote =  MyContextHolder.myContextHolder.getNow().origins().fromId(
+        originOfSelectedNote =  MyContextHolder.myContextHolder.getNow().origins.fromId(
                 MyQuery.noteIdToOriginId(selectedNoteId))
     }
 }

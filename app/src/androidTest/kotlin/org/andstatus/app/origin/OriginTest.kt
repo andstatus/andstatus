@@ -27,9 +27,9 @@ class OriginTest {
         val urlString = "https://github.com/andstatus/andstatus/issues/41"
         val body = ("I set \"Shorten URL with: QTTR_AT\" URL longer than 25 Text longer than 140. Will this be shortened: "
                 + urlString)
-        var origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.Companion.ORIGIN_TYPE_DEFAULT)
+        var origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.firstOfType(OriginType.Companion.ORIGIN_TYPE_DEFAULT)
         Assert.assertEquals(OriginType.TWITTER, origin.originType)
-        origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
+        origin =  MyContextHolder.myContextHolder.getNow().origins.firstOfType(OriginType.TWITTER)
         Assert.assertEquals(OriginType.TWITTER, origin.originType)
         var textLimit = 280
         Assert.assertEquals("Textlimit", textLimit.toLong(), origin.getTextLimit().toLong())
@@ -39,7 +39,7 @@ class OriginTest {
         Assert.assertTrue("Characters left $charactersLeft", charactersLeft == 158
                 || charactersLeft == 142)
         Assert.assertFalse(origin.isMentionAsWebFingerId())
-        origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.PUMPIO)
+        origin =  MyContextHolder.myContextHolder.getNow().origins.firstOfType(OriginType.PUMPIO)
         textLimit = TEXT_LIMIT_MAXIMUM
         Assert.assertEquals("Textlimit", textLimit.toLong(), origin.getTextLimit().toLong())
         Assert.assertEquals("Short URL length", 0, origin.shortUrlLength.toLong())
@@ -47,7 +47,7 @@ class OriginTest {
                 origin.getTextLimit() - body.length).toLong(),
                 origin.charactersLeftForNote(body).toLong())
         Assert.assertTrue(origin.isMentionAsWebFingerId())
-        origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.GNUSOCIAL)
+        origin =  MyContextHolder.myContextHolder.getNow().origins.firstOfType(OriginType.GNUSOCIAL)
         textLimit = Origin.Companion.TEXT_LIMIT_FOR_WEBFINGER_ID
         val uploadLimit = 0
         var config: OriginConfig = OriginConfig.Companion.fromTextLimit(textLimit, uploadLimit.toLong())
@@ -103,7 +103,7 @@ class OriginTest {
 
     @Test
     fun testPermalink() {
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.firstOfType(OriginType.TWITTER)
         Assert.assertEquals(OriginType.TWITTER, origin.originType)
         val body = "Posting to Twitter " + DemoData.demoData.testRunUid
         val noteOid = "2578909845023" + DemoData.demoData.testRunUid
@@ -148,7 +148,7 @@ class OriginTest {
 
     @Test
     fun testUsernameIsValid() {
-        var origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.gnusocialTestOriginName)
+        var origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(DemoData.demoData.gnusocialTestOriginName)
         checkUsernameIsValid(origin, "", false)
         checkUsernameIsValid(origin, "someUser.", false)
         checkUsernameIsValid(origin, "someUser ", false)
@@ -156,7 +156,7 @@ class OriginTest {
         checkUsernameIsValid(origin, "some.user", true)
         checkUsernameIsValid(origin, "some.user/GnuSocial", false)
         checkUsernameIsValid(origin, "some@user", false)
-        origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.pumpioOriginName)
+        origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(DemoData.demoData.pumpioOriginName)
         checkUsernameIsValid(origin, "", false)
         checkUsernameIsValid(origin, "someUser.", false)
         checkUsernameIsValid(origin, "someUser ", false)

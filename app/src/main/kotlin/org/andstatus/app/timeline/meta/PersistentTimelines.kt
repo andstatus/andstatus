@@ -126,12 +126,12 @@ class PersistentTimelines private constructor(private val myContext: MyContext) 
     fun toTimelinesToSync(timelineToSync: Timeline): Stream<Timeline> {
         return when {
             timelineToSync.isSyncableForOrigins() -> {
-                myContext.origins().originsToSync(
+                myContext.origins.originsToSync(
                         timelineToSync.myAccountToSync.origin, true, timelineToSync.hasSearchQuery())
                         .stream().map { origin: Origin -> timelineToSync.cloneForOrigin(myContext, origin) }
             }
             timelineToSync.isSyncableForAccounts() -> {
-                myContext.accounts().accountsToSync()
+                myContext.accounts.accountsToSync()
                         .stream().map { account: MyAccount -> timelineToSync.cloneForAccount(myContext, account) }
             }
             timelineToSync.isSyncable() -> {

@@ -25,7 +25,7 @@ open class ActorsLoader(val myContext: MyContext,
                         protected val origin: Origin,
                         protected val centralActorId: Long,
                         private val searchQuery: String) : SyncLoader<ActorViewItem>() {
-    protected val ma: MyAccount = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
+    protected val ma: MyAccount = myContext.accounts.getFirstPreferablySucceededForOrigin(origin)
     protected var mAllowLoadingFromInternet = false
 
     @Volatile

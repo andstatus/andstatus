@@ -17,7 +17,7 @@ class CommandExecutionContextTest {
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithData(this)
-        ma =  MyContextHolder.myContextHolder.getNow().accounts().getFirstSucceeded()
+        ma =  MyContextHolder.myContextHolder.getNow().accounts.getFirstSucceeded()
     }
 
     @Test

@@ -45,7 +45,7 @@ class CommandExecutorStrategyTest {
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        ma =  MyContextHolder.myContextHolder.getNow().accounts().getFirstPreferablySucceededForOrigin(DemoData.demoData.getGnuSocialOrigin())
+        ma =  MyContextHolder.myContextHolder.getNow().accounts.getFirstPreferablySucceededForOrigin(DemoData.demoData.getGnuSocialOrigin())
         mock = ConnectionMock.newFor(ma)
         httpConnectionMock = mock.getHttpMock()
         Assert.assertTrue(ma.toString(), ma.isValidAndSucceeded())
@@ -166,6 +166,6 @@ class CommandExecutorStrategyTest {
     @After
     fun tearDown() {
         TestSuite.clearHttpMocks()
-         MyContextHolder.myContextHolder.getBlocking().accounts().initialize()
+         MyContextHolder.myContextHolder.getBlocking().accounts.initialize()
     }
 }

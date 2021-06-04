@@ -39,12 +39,12 @@ class ActorTimelineTest : TimelineActivityTest<ActivityViewItem>() {
         val myContext: MyContext =  MyContextHolder.myContextHolder.getBlocking()
         val ma: MyAccount = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
-        myContext.accounts().setCurrentAccount(ma)
+        myContext.accounts.setCurrentAccount(ma)
         val actorId = MyQuery.oidToId(OidEnum.ACTOR_OID, ma.originId, DemoData.demoData.conversationAuthorSecondActorOid)
         val actor: Actor = Actor.Companion.fromId(ma.origin, actorId)
         Assert.assertNotEquals("Actor " + DemoData.demoData.conversationAuthorSecondActorOid + " id=" + actorId + " -> "
                 + actor, 0, actor.actorId)
-        val timeline = myContext.timelines()[TimelineType.SENT, actor, ma.origin]
+        val timeline = myContext.timelines[TimelineType.SENT, actor, ma.origin]
         Assert.assertFalse("Timeline $timeline", timeline.isCombined)
         timeline.forgetPositionsAndDates()
         MyLog.i(this, "setUp ended, $timeline")

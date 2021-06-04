@@ -105,13 +105,13 @@ class AuthenticatorService : Service() {
                         .getFuture()
                         .tryBlocking()
                         .map { myContext: MyContext ->
-                            myContext.accounts()
+                            myContext.accounts
                                     .fromAccountName(account.name)
                         }
                         .filter { obj: MyAccount -> obj.isValid }
                         .map { ma: MyAccount ->
                             MyLog.i(this, "Removing $ma")
-                            MyContextHolder.myContextHolder.getNow().timelines().onAccountDelete(ma)
+                            MyContextHolder.myContextHolder.getNow().timelines.onAccountDelete(ma)
                             MyPreferences.onPreferencesChanged()
                             true
                         }

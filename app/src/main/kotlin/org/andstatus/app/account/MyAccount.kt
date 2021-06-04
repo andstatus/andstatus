@@ -86,7 +86,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     internal constructor(accountName: AccountName) : this(AccountData.fromAccountName(accountName)) {}
 
     fun getValidOrCurrent(myContext: MyContext): MyAccount {
-        return if (isValid) this else myContext.accounts().currentAccount
+        return if (isValid) this else myContext.accounts.currentAccount
     }
 
     fun getOAccountName(): AccountName {
@@ -133,7 +133,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     }
 
     fun isFollowing(thatActor: Actor): Boolean {
-        return myContext.users().friendsOfMyActors.entries.stream()
+        return myContext.users.friendsOfMyActors.entries.stream()
                 .filter { entry: MutableMap.MutableEntry<Long, MutableSet<Long>> -> entry.key == thatActor.actorId }
                 .anyMatch { entry: MutableMap.MutableEntry<Long, MutableSet<Long>> -> entry.value.contains(actor.actorId) }
     }
@@ -142,7 +142,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         var uniqueName = getAccountName()
         var found = false
         var possiblyUnique = actor.uniqueName
-        for (persistentAccount in myContext.accounts().get()) {
+        for (persistentAccount in myContext.accounts.get()) {
             if (!persistentAccount.toString().equals(toString(), ignoreCase = true)
                     && persistentAccount.actor.uniqueName.equals(possiblyUnique, ignoreCase = true)) {
                 found = true
@@ -154,7 +154,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         }
         if (!found) {
             possiblyUnique = username
-            for (persistentAccount in myContext.accounts().get()) {
+            for (persistentAccount in myContext.accounts.get()) {
                 if (!persistentAccount.toString().equals(toString(), ignoreCase = true)
                         && persistentAccount.username.equals(possiblyUnique, ignoreCase = true)) {
                     found = true
@@ -169,7 +169,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
             var indAt = uniqueName.indexOf('@')
             if (indAt > 0) {
                 possiblyUnique = uniqueName.substring(0, indAt)
-                for (persistentAccount in myContext.accounts().get()) {
+                for (persistentAccount in myContext.accounts.get()) {
                     if (!persistentAccount.toString().equals(toString(), ignoreCase = true)) {
                         var toCompareWith = persistentAccount.username
                         indAt = toCompareWith.indexOf('@')
@@ -377,7 +377,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     }
 
     fun getLastSyncSucceededDate(): Long {
-        return if (isValid && isPersistent()) myContext.timelines()
+        return if (isValid && isPersistent()) myContext.timelines
                 .filter(false, TriState.UNKNOWN, TimelineType.UNKNOWN, actor,  Origin.EMPTY)
                 .map { obj: Timeline -> obj.getSyncSucceededDate() }
                 .max { obj: Long, anotherLong: Long -> obj.compareTo(anotherLong) }
@@ -385,7 +385,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
     }
 
     fun hasAnyTimelines(): Boolean {
-        for (timeline in myContext.timelines().values()) {
+        for (timeline in myContext.timelines.values()) {
             if (timeline.myAccountToSync == this) {
                 return true
             }
@@ -446,7 +446,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         }
 
         fun rebuildMyAccount(myContext: MyContext) {
-            rebuildMyAccount(myContext.origins().fromName(myAccount.origin.name), getUniqueName())
+            rebuildMyAccount(myContext.origins.fromName(myAccount.origin.name), getUniqueName())
         }
 
         private fun rebuildMyAccount(origin: Origin, uniqueName: String) {
@@ -454,7 +454,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
         }
 
         fun rebuildMyAccount(accountName: AccountName) {
-            val ma = myAccount.myContext.accounts().fromAccountName(accountName.name)
+            val ma = myAccount.myContext.accounts.fromAccountName(accountName.name)
             myAccount = if (ma.isValid) ma else MyAccount(myAccount.data.withAccountName(accountName))
         }
 
@@ -520,7 +520,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
                                 (if (result1) " Saved " else " Didn't change ") +
                                         this.toString()
                             }
-                            myAccount.myContext.accounts().addIfAbsent(myAccount)
+                            myAccount.myContext.accounts.addIfAbsent(myAccount)
                             if (myAccount.myContext.isReady && !myAccount.hasAnyTimelines()) {
                                 TimelineSaver().setAddDefaults(true).setAccount(myAccount).execute(myAccount.myContext)
                             }
@@ -682,7 +682,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
              */
             private fun myAccountFromName(accountName: AccountName): MyAccount {
                 if (accountName.myContext.isEmpty) return MyAccount.EMPTY
-                val persistentAccount = accountName.myContext.accounts().fromAccountName(accountName)
+                val persistentAccount = accountName.myContext.accounts.fromAccountName(accountName)
                 return if (persistentAccount.isValid) persistentAccount else MyAccount(accountName)
             }
 
@@ -748,7 +748,7 @@ class MyAccount internal constructor(val data: AccountData) : Comparable<MyAccou
 
         val EMPTY: MyAccount = MyAccount(AccountName.getEmpty())
         fun fromBundle(myContext: MyContext, bundle: Bundle?): MyAccount {
-            return if (bundle == null) EMPTY else myContext.accounts().fromAccountName(bundle.getString(IntentExtra.ACCOUNT_NAME.key))
+            return if (bundle == null) EMPTY else myContext.accounts.fromAccountName(bundle.getString(IntentExtra.ACCOUNT_NAME.key))
         }
     }
 

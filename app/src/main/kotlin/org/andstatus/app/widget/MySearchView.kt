@@ -152,7 +152,7 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
         val myContext = parentActivity?.myContext ?: return
         if (myContext.isEmpty) return
 
-        for (origin in myContext.origins().originsForInternetSearch(
+        for (origin in myContext.origins.originsForInternetSearch(
                 getSearchObjects(), getOrigin(), isCombined())) {
             MyServiceManager.sendManualForegroundCommand(
                     CommandData.newSearch(getSearchObjects(), myContext, origin, query))
@@ -175,7 +175,7 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
         intent.putExtra(IntentExtra.SEARCH_QUERY.key, query)
         if (timeline?.hasSearchQuery() == true
                 && getSearchObjects() == SearchObjects.NOTES &&
-                parentActivity?.myContext?.timelines()?.getDefault() != timeline) {
+                parentActivity?.myContext?.timelines?.getDefault() != timeline) {
             // Send intent to existing activity
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -184,7 +184,7 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
 
     private fun onSearchContextChanged() {
         isInternetSearchEnabled = parentActivity?.myContext
-                ?.origins()?.isSearchSupported(
+                ?.origins?.isSearchSupported(
                         getSearchObjects(), getOrigin(), isCombined()) ?: false
         internetSearch?.setEnabled(isInternetSearchEnabled)
         if (!isInternetSearchEnabled && internetSearch?.isChecked() == true) {
@@ -209,7 +209,7 @@ class MySearchView(context: Context?, attrs: AttributeSet?) : LinearLayout(conte
 
     private fun getOrigin(): Origin {
         return if (timeline?.getOrigin()?.isValid() == true) timeline?.getOrigin() ?: Origin.EMPTY
-            else parentActivity?.myContext?.accounts()?.currentAccount?.origin ?: Origin.EMPTY
+            else parentActivity?.myContext?.accounts?.currentAccount?.origin ?: Origin.EMPTY
     }
 
     private fun isInternetSearch(): Boolean {

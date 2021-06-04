@@ -15,7 +15,7 @@ class CommandExecutionContext(val myContext: MyContext, val commandData: Command
     fun getMyAccount(): MyAccount {
         if (commandData.myAccount.isValid) return commandData.myAccount
         return if (getTimeline().myAccountToSync.isValid) getTimeline().myAccountToSync
-        else myContext.accounts().getFirstSucceeded()
+        else myContext.accounts.getFirstSucceeded()
     }
 
     fun getContext(): Context {

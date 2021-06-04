@@ -50,7 +50,7 @@ internal class Convert15 : ConvertOneStep() {
             try {
                 MyLog.i(TAG, "Accounts upgrading step from version $oldVersion to version $versionTo")
                 val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
-                myContext.origins().initialize(db)
+                myContext.origins.initialize(db)
                 val am = AccountManager.get(myContext.context)
                 val accountsToRemove: MutableCollection<Account> = ArrayList()
                 for (androidAccount in AccountUtils.getAllAccounts(myContext.context)) {
@@ -70,7 +70,7 @@ internal class Convert15 : ConvertOneStep() {
                         androidAccountData.moveStringKeyTo(Origin.KEY_ORIGIN_NAME, accountData)
                         androidAccountData.moveStringKeyTo(MyAccount.KEY_ACTOR_OID, accountData)
                         androidAccountData.moveLongKeyTo(MyAccount.KEY_ACTOR_ID, accountData)
-                        val origin = myContext.origins().fromName(
+                        val origin = myContext.origins.fromName(
                                 accountData.getDataString(Origin.KEY_ORIGIN_NAME))
                         val isOauth = androidAccountData.getDataBoolean(MyAccount.KEY_OAUTH, origin.isOAuthDefault())
                         accountData.setDataBoolean(MyAccount.KEY_OAUTH, isOauth)

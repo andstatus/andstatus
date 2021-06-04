@@ -46,7 +46,7 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
         noteId = MyQuery.oidToId(OidEnum.NOTE_OID, DemoData.demoData.getPumpioConversationOrigin().id,
                 DemoData.demoData.conversationMentionsNoteOid)
         Assert.assertNotEquals("No note with oid " + DemoData.demoData.conversationMentionsNoteOid, 0, noteId)
-        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING,
+        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.EVERYTHING,
                 Actor.EMPTY,  Origin.EMPTY)
         val updatedDate = MyQuery.noteIdToLongColumnValue(NoteTable.UPDATED_DATE, noteId)
         timeline.setVisibleItemId(noteId)
@@ -75,11 +75,11 @@ class ActorsScreenTest : TimelineActivityTest<ActivityViewItem>() {
                 .getOrElseThrow { detailMessage: Throwable? -> AssertionError(detailMessage) }
         val listItems = actorsScreen.getListLoader().getList()
         Assert.assertEquals(listItems.toString(), 5, listItems.size.toLong())
-        val actorE: Actor =  MyContextHolder.myContextHolder.getNow().users().actors.values.stream()
+        val actorE: Actor =  MyContextHolder.myContextHolder.getNow().users.actors.values.stream()
                 .filter { actor: Actor -> actor.oid == DemoData.demoData.conversationAuthorThirdActorOid }
                 .findAny().orElse(Actor.EMPTY)
         Assert.assertTrue("Found " + DemoData.demoData.conversationAuthorThirdActorOid
-                + " cached " +  MyContextHolder.myContextHolder.getNow().users().actors, actorE.nonEmpty)
+                + " cached " +  MyContextHolder.myContextHolder.getNow().users.actors, actorE.nonEmpty)
         val actorA: Actor = getByActorOid(listItems, DemoData.demoData.conversationAuthorThirdActorOid)
         Assert.assertTrue("Not found " + DemoData.demoData.conversationAuthorThirdActorOid + ", " + logMsg, actorA.nonEmpty)
         compareAttributes(actorE, actorA, false)

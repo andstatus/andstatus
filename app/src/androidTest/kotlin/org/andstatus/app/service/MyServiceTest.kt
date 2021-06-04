@@ -44,7 +44,7 @@ abstract class MyServiceTest: IgnoredInTravis2() {
             TestSuite.initializeWithData(this)
             mMService = MyServiceTestHelper().also {
                 it.setUp(null)
-                mMa =  MyContextHolder.myContextHolder.getNow().accounts().getFirstSucceeded().also { myAccount ->
+                mMa =  MyContextHolder.myContextHolder.getNow().accounts.getFirstSucceeded().also { myAccount ->
                     Assert.assertTrue("No successfully verified accounts", myAccount.isValidAndSucceeded())
                 }
                 it.waitForServiceStopped(true)

@@ -73,11 +73,11 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
     @Volatile
     final override var lastDatabaseError: String = if (parent.nonEmpty) parent.lastDatabaseError else ""
         private set
-    private val users: CachedUsersAndActors = CachedUsersAndActors.newEmpty(this)
-    private val accounts: MyAccounts = MyAccounts.newEmpty(this)
-    private val origins: PersistentOrigins = PersistentOrigins.newEmpty(this)
-    private val timelines: PersistentTimelines = PersistentTimelines.newEmpty(this)
-    private val commandQueue: CommandQueue = CommandQueue(this)
+    override val users: CachedUsersAndActors = CachedUsersAndActors.newEmpty(this)
+    override val accounts: MyAccounts = MyAccounts.newEmpty(this)
+    override val origins: PersistentOrigins = PersistentOrigins.newEmpty(this)
+    override val timelines: PersistentTimelines = PersistentTimelines.newEmpty(this)
+    override val queues: CommandQueue = CommandQueue(this)
 
     @Volatile
     public final override var isExpired = false
@@ -136,7 +136,7 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
                 accounts.initialize()
                 timelines.initialize()
                 ImageCaches.initialize(context)
-                commandQueue.load()
+                this.queues.load()
                 MyContextState.READY
             }
             else -> {
@@ -189,7 +189,7 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
     override fun toString(): String {
         return instanceTag() + " by " + initializedBy + "; state=" + state +
                 (if (this.isExpired) "; expired" else "") +
-                "; " + accounts().size() + " accounts, " +
+                "; " + accounts.size() + " accounts, " +
                 ("context=" + context.javaClass.name)
     }
 
@@ -197,20 +197,21 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
 
     override val isReady: Boolean get() = state == MyContextState.READY && !DatabaseConverterController.isUpgrading()
 
-    override fun getDatabase(): SQLiteDatabase? {
-        if (db == null || this.isExpired) {
+    override val database: SQLiteDatabase?
+        get() {
+            if (db == null || this.isExpired) {
+                return null
+            }
+            try {
+                return db?.getWritableDatabase()
+            } catch (e: Exception) {
+                MyLog.e(this, "getDatabase", e)
+            }
             return null
         }
-        try {
-            return db?.getWritableDatabase()
-        } catch (e: Exception) {
-            MyLog.e(this, "getDatabase", e)
-        }
-        return null
-    }
 
     override fun save(reason: Supplier<String>) {
-        commandQueue.save()
+        queues.save()
     }
 
     /**
@@ -228,35 +229,13 @@ open class MyContextImpl internal constructor(parent: MyContext, context: Contex
         }
     }
 
-    override fun users(): CachedUsersAndActors {
-        return users
-    }
-
-    override fun accounts(): MyAccounts {
-        return accounts
-    }
-
     override fun setExpired(reason: Supplier<String>) {
         MyLog.v(this) { "setExpired " + reason.get() }
         isExpired = true
         state = MyContextState.EXPIRED
     }
 
-    override fun origins(): PersistentOrigins {
-        return origins
-    }
-
-    override fun timelines(): PersistentTimelines {
-        return timelines
-    }
-
-    override fun queues(): CommandQueue {
-        return commandQueue
-    }
-
-    override fun getConnectionState(): ConnectionState {
-        return UriUtils.getConnectionState(context)
-    }
+    override val connectionState: ConnectionState get() = UriUtils.getConnectionState(context)
 
     override fun isInForeground(): Boolean {
         return if (!inForeground

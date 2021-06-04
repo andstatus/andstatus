@@ -137,7 +137,7 @@ class ActorActivity {
             sql += ", " + ActorTable.ACTOR_ACTIVITY_DATE + "=" + lastActivityDate
             sql = ("UPDATE " + ActorTable.TABLE_NAME + " SET " + sql
                     + " WHERE " + BaseColumns._ID + "=" + actorId)
-            val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().getDatabase()
+            val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().database
             if (db == null) {
                 MyLog.databaseIsNull { "Save $this" }
                 return false

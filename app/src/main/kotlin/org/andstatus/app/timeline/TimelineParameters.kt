@@ -78,7 +78,7 @@ class TimelineParameters(private val myContext: MyContext, val timeline: Timelin
     }
 
     fun isAtHome(): Boolean {
-        return timeline == myContext.timelines().getDefault()
+        return timeline == myContext.timelines.getDefault()
     }
 
     override fun toString(): String {

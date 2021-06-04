@@ -115,11 +115,11 @@ class NoteContextMenuData(val noteForAnyAccount: NoteForAnyAccount, myAccount: M
                     bestFit = menuData
                 }
             }
-            return if (bestFit == EMPTY) myContext.accounts().getFirstPreferablySucceededForOrigin(noteForAnyAccount.origin) else bestFit.myAccount
+            return if (bestFit == EMPTY) myContext.accounts.getFirstPreferablySucceededForOrigin(noteForAnyAccount.origin) else bestFit.myAccount
         }
 
         private fun getMenuData(myContext: MyContext, noteForAnyAccount: NoteForAnyAccount): MutableList<NoteContextMenuData> {
-            return myContext.accounts().succeededForSameOrigin(noteForAnyAccount.origin).stream()
+            return myContext.accounts.succeededForSameOrigin(noteForAnyAccount.origin).stream()
                     .map { a: MyAccount -> NoteContextMenuData(noteForAnyAccount, a) }.collect(Collectors.toList())
         }
 

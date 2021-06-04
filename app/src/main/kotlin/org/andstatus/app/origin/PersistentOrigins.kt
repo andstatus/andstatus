@@ -32,7 +32,7 @@ class PersistentOrigins private constructor(val myContext: MyContextImpl) {
     private val mOrigins: MutableMap<String, Origin> = ConcurrentHashMap()
 
     @JvmOverloads
-    fun initialize(db: SQLiteDatabase? = myContext.getDatabase()): Boolean {
+    fun initialize(db: SQLiteDatabase? = myContext.database): Boolean {
         if (db == null) return true
 
         val sql = "SELECT * FROM " + OriginTable.TABLE_NAME
@@ -177,7 +177,7 @@ class PersistentOrigins private constructor(val myContext: MyContextImpl) {
     fun originsForInternetSearch(searchObjects: SearchObjects?, originIn: Origin?, forAllOrigins: Boolean): MutableList<Origin> {
         val origins: MutableList<Origin> = ArrayList()
         if (forAllOrigins) {
-            for (account in myContext.accounts().get()) {
+            for (account in myContext.accounts.get()) {
                 if (account.origin.isInCombinedGlobalSearch() &&
                         account.isValidAndSucceeded() && account.isSearchSupported(searchObjects)
                         && !origins.contains(account.origin)) {
@@ -185,7 +185,7 @@ class PersistentOrigins private constructor(val myContext: MyContextImpl) {
                 }
             }
         } else if (originIn != null && originIn.isValid()) {
-            val account = myContext.accounts().getFirstPreferablySucceededForOrigin(originIn)
+            val account = myContext.accounts.getFirstPreferablySucceededForOrigin(originIn)
             if (account.isValidAndSucceeded() && account.isSearchSupported(searchObjects)) {
                 origins.add(originIn)
             }

@@ -30,7 +30,7 @@ class MyAccountsTest {
 
     @Test
     fun test() {
-        val accounts: MyAccounts =  MyContextHolder.myContextHolder.getNow().accounts()
+        val accounts: MyAccounts =  MyContextHolder.myContextHolder.getNow().accounts
         Assert.assertNotEquals(accounts.toString(), MyAccount.EMPTY,
                 accounts.fromWebFingerId(DemoData.demoData.pumpioTestAccountUniqueName.toLowerCase()))
         Assert.assertNotEquals(accounts.toString(), MyAccount.EMPTY,

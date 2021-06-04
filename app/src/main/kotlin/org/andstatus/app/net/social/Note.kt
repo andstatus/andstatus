@@ -320,7 +320,7 @@ class Note : AObject {
             }
             TriState.UNKNOWN
         } else {
-            val favAndType = MyQuery.noteIdToLastFavoriting( MyContextHolder.myContextHolder.getNow().getDatabase(),
+            val favAndType = MyQuery.noteIdToLastFavoriting( MyContextHolder.myContextHolder.getNow().database,
                     noteId, accountActor.actorId)
             when (favAndType.second) {
                 ActivityType.LIKE -> TriState.TRUE
@@ -411,7 +411,7 @@ class Note : AObject {
         }
 
         fun contentFromCursor(myContext: MyContext, cursor: Cursor): Note {
-            val note = fromOriginAndOid(myContext.origins().fromId(DbUtils.getLong(cursor, NoteTable.ORIGIN_ID)),
+            val note = fromOriginAndOid(myContext.origins.fromId(DbUtils.getLong(cursor, NoteTable.ORIGIN_ID)),
                     DbUtils.getString(cursor, NoteTable.NOTE_OID),
                     DownloadStatus.load(DbUtils.getLong(cursor, NoteTable.NOTE_STATUS)))
             note.noteId = DbUtils.getLong(cursor, BaseColumns._ID)

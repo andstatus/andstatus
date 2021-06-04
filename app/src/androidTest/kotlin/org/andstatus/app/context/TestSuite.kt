@@ -62,7 +62,7 @@ object TestSuite {
 
     fun initializeWithAccounts(testCase: Any?): Context {
         initialize(testCase)
-        if (MyContextHolder.myContextHolder.getBlocking().accounts()
+        if (MyContextHolder.myContextHolder.getBlocking().accounts
                 .fromAccountName(DemoData.demoData.activityPubTestAccountName).isEmpty
         ) {
             ensureDataAdded()
@@ -298,7 +298,7 @@ object TestSuite {
     fun clearHttpMocks() {
         setHttpConnectionMockClass(null)
         setHttpConnectionMockInstance(null)
-        MyContextHolder.myContextHolder.getBlocking().accounts().get()
+        MyContextHolder.myContextHolder.getBlocking().accounts.get()
             .forEach(Consumer { obj: MyAccount -> obj.setConnection() })
     }
 }

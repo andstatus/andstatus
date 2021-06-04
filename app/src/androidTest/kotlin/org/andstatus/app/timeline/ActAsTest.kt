@@ -46,9 +46,9 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.initializeWithData(this)
         val ma: MyAccount = DemoData.demoData.getGnuSocialAccount()
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
+         MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
         MyLog.i(this, "setUp ended")
-        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, ma.origin)
+        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines.get(TimelineType.EVERYTHING, Actor.EMPTY, ma.origin)
         timeline.forgetPositionsAndDates()
         return Intent(Intent.ACTION_VIEW, timeline.getUri())
     }
@@ -72,7 +72,7 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem>() {
         val listItemId = helper.getListItemIdOfLoadedReply()
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId)
         val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
-        val origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId))
+        val origin = myContext.origins.fromId(MyQuery.noteIdToOriginId(noteId))
         var logMsg = ("attempt=" + attempt + ", itemId=" + listItemId + ", noteId=" + noteId
                 + ", origin=" + origin.name
                 + ", text='" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'")
@@ -85,7 +85,7 @@ class ActAsTest : TimelineActivityTest<ActivityViewItem>() {
         Assert.assertEquals(logMsg, origin, actor1.origin)
         ActivityTestHelper.closeContextMenu(activity)
         logMsg += "\nMyContext: $myContext"
-        val firstOtherActor = myContext.accounts().firstOtherSucceededForSameOrigin(origin, actor1)
+        val firstOtherActor = myContext.accounts.firstOtherSucceededForSameOrigin(origin, actor1)
         logMsg += "\nfirstOtherActor=$firstOtherActor"
         if (activity.getListData() !== listData) return false
         Assert.assertNotEquals(logMsg, actor1, firstOtherActor)

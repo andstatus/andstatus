@@ -134,11 +134,11 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         val preference = findPreference<Preference>(KEY_MANAGE_ACCOUNTS)
         if (preference != null) {
             val summary: CharSequence
-            summary = if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty) {
+            summary = if ( MyContextHolder.myContextHolder.getNow().accounts.isEmpty) {
                 getText(R.string.summary_preference_accounts_absent)
             } else {
                 (getText(R.string.summary_preference_accounts_present).toString() + ": "
-                        +  MyContextHolder.myContextHolder.getNow().accounts().size())
+                        +  MyContextHolder.myContextHolder.getNow().accounts.size())
             }
             preference.summary = summary
         }
@@ -237,7 +237,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
         val preference = findPreference<Preference?>(KEY_BACKUP_RESTORE)
         if (preference != null) {
             val title: CharSequence
-            title = if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty) {
+            title = if ( MyContextHolder.myContextHolder.getNow().accounts.isEmpty) {
                 getText(R.string.label_restore)
             } else {
                 getText(R.string.label_backup)
@@ -293,7 +293,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
     }
 
     private fun showManageTimelines() {
-        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines().getDefault()
+        val timeline: Timeline =  MyContextHolder.myContextHolder.getNow().timelines.getDefault()
         val preference = findPreference<Preference?>(KEY_MANAGE_TIMELINES)
         if (preference != null) {
             preference.summary = StringUtil.format(context, R.string.default_timeline_summary,
@@ -383,7 +383,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
                 intent.putExtra(Settings.EXTRA_AUTHORITIES, arrayOf<String?>(MatchedUri.AUTHORITY))
                 startActivity(intent)
             }
-            KEY_BACKUP_RESTORE -> if ( MyContextHolder.myContextHolder.getNow().accounts().isEmpty) {
+            KEY_BACKUP_RESTORE -> if ( MyContextHolder.myContextHolder.getNow().accounts.isEmpty) {
                 startActivity(Intent(activity, RestoreActivity::class.java))
             } else {
                 startActivity(Intent(activity, BackupActivity::class.java))
@@ -462,7 +462,7 @@ class MySettingsFragment : PreferenceFragmentCompat(), OnSharedPreferenceChangeL
                 }
                 MyPreferences.KEY_DONT_SYNCHRONIZE_OLD_NOTES -> showDontSynchronizeOldNotes()
                 MyPreferences.KEY_SYNC_FREQUENCY_SECONDS -> {
-                     MyContextHolder.myContextHolder.getNow().accounts().onDefaultSyncFrequencyChanged()
+                     MyContextHolder.myContextHolder.getNow().accounts.onDefaultSyncFrequencyChanged()
                     showFrequency()
                 }
                 MyPreferences.KEY_CONNECTION_TIMEOUT_SECONDS -> showConnectionTimeout()

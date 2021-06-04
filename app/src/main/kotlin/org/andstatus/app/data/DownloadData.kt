@@ -50,7 +50,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
     private fun loadOtherFields() {
         if (checkHardErrorBeforeLoad()) return
         val sql = "SELECT * FROM " + DownloadTable.TABLE_NAME + getWhere().getWhere()
-        val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().getDatabase()
+        val db: SQLiteDatabase? =  MyContextHolder.myContextHolder.getNow().database
         if (db == null) {
             MyLog.databaseIsNull { this }
             softError = true
@@ -475,7 +475,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
             val method = "deleteOtherOfThisActor actorId=" + actorId + if (rowId != 0L) ", downloadId=$rowId" else ""
             val where = (DownloadTable.ACTOR_ID + "=" + actorId
                     + if (rowId == 0L) "" else " AND " + BaseColumns._ID + "<>" + rowId)
-            deleteSelected(method, myContext.getDatabase(), where)
+            deleteSelected(method, myContext.database, where)
         }
 
         private fun deleteSelected(method: String?, db: SQLiteDatabase?, where: String?) {
@@ -522,7 +522,7 @@ open class DownloadData protected constructor(cursor: Cursor?, downloadId: Long,
             val method = "deleteOtherOfThisNote noteId=" + noteId + ", rowIds:" + toSqlList(downloadIds)
             val where = (DownloadTable.NOTE_ID + "=" + noteId
                     + " AND " + BaseColumns._ID + " NOT IN(" + toSqlList(downloadIds) + ")")
-            deleteSelected(method, myContext.getDatabase(), where)
+            deleteSelected(method, myContext.database, where)
         }
 
         fun toSqlList(longs: MutableList<Long>?): String {

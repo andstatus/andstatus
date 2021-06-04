@@ -71,7 +71,7 @@ class VerifyCredentialsTest {
         mock.addResponse(org.andstatus.app.tests.R.raw.verify_credentials_twitter)
         val actor = connection.verifyCredentials(Optional.empty()).get()
         assertEquals("Actor's oid is actorOid of this account", DemoData.demoData.twitterTestAccountActorOid, actor.oid)
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.TWITTER)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.firstOfType(OriginType.TWITTER)
         val builder: MyAccount.Builder = MyAccount.Builder.Companion.fromAccountName(mock.getData().getAccountName())
         builder.onCredentialsVerified(actor).onFailure { e -> AssertionError("Failed: $e" ) }
         assertTrue("Account is persistent", builder.isPersistent())

@@ -127,11 +127,11 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
     fun usernameToId(username: String?): Long {
         if (username.isNullOrEmpty()) return 0
         val key = "$id;$username"
-        val cachedId = myContext.users().originIdAndUsernameToActorId[key]
+        val cachedId = myContext.users.originIdAndUsernameToActorId[key]
         if (cachedId != null) return cachedId
         val storedId = MyQuery.usernameToId(myContext, id, username, true)
         if (storedId != 0L) {
-            myContext.users().originIdAndUsernameToActorId[key] = storedId
+            myContext.users.originIdAndUsernameToActorId[key] = storedId
         }
         return storedId
     }
@@ -213,7 +213,7 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
     /** OriginName to be used in [AccountName.getName]  */
     fun getOriginInAccountName(host: String?): String {
         if (isEmpty) return ""
-        val origins = myContext.origins().allFromOriginInAccountNameAndHost(originType.title, host)
+        val origins = myContext.origins.allFromOriginInAccountNameAndHost(originType.title, host)
         return when (origins.size) {
             0 -> ""
             1 -> originType.title // No ambiguity, so we can use OriginType here
@@ -292,12 +292,12 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
     }
 
     fun hasAccounts(): Boolean {
-        return if (isEmpty) false else myContext.accounts().getFirstPreferablySucceededForOrigin(this).isValid
+        return if (isEmpty) false else myContext.accounts.getFirstPreferablySucceededForOrigin(this).isValid
     }
 
     fun hasNotes(): Boolean {
         if (isEmpty) return false
-        val db = myContext.getDatabase()
+        val db = myContext.database
         if (db == null) {
             MyLog.databaseIsNull { "Origin hasChildren" }
             return true
@@ -347,7 +347,7 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
         if (!myContext.isReady) {
             Assert.fail("Origin context should be ready $this\ncontext: $myContext")
         }
-        if (myContext.getDatabase() == null) {
+        if (myContext.database == null) {
             Assert.fail("Origin context should have database $this\ncontext: $myContext")
         }
     }
@@ -565,7 +565,7 @@ open class Origin internal constructor(myContextIn: MyContext, val originType: O
                 return this
             }
             if (origin.id == 0L) {
-                val existing = origin.myContext.origins()
+                val existing = origin.myContext.origins
                         .fromName(origin.name)
                 if (existing.isPersistent()) {
                     if (origin.originType !== existing.originType) {

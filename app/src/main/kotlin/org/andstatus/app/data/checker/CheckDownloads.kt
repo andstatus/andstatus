@@ -45,7 +45,7 @@ internal class CheckDownloads : DataChecker() {
                     ", " + DownloadTable.FILE_NAME + "=null" +
                     ", " + DownloadTable.FILE_SIZE + "=0" +
                     " WHERE " + BaseColumns._ID + "=" + result.downloadId
-            myContext.getDatabase()?.execSQL(sql)
+            myContext.database?.execSQL(sql)
             fixedCount.incrementAndGet()
         })
         return fixedCount.get()

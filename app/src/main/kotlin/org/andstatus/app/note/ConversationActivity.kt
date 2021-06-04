@@ -93,7 +93,7 @@ class ConversationActivity : NoteEditorListActivity<ConversationViewItem>(), Not
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (ActivityRequestCode.fromId(requestCode)) {
             ActivityRequestCode.SELECT_ACCOUNT_TO_ACT_AS -> if (resultCode == RESULT_OK) {
-                val myAccount: MyAccount =  MyContextHolder.myContextHolder.getNow().accounts().fromAccountName(
+                val myAccount: MyAccount =  MyContextHolder.myContextHolder.getNow().accounts.fromAccountName(
                         data?.getStringExtra(IntentExtra.ACCOUNT_NAME.key))
                 if (myAccount.isValid) {
                     mContextMenu?.setSelectedActingAccount(myAccount)
@@ -165,7 +165,7 @@ class ConversationActivity : NoteEditorListActivity<ConversationViewItem>(), Not
     }
 
     override fun getTimeline(): Timeline {
-        return myContext.timelines().get(TimelineType.EVERYTHING, Actor.EMPTY, origin)
+        return myContext.timelines.get(TimelineType.EVERYTHING, Actor.EMPTY, origin)
     }
 
     private fun getListLoader(): ConversationLoader {

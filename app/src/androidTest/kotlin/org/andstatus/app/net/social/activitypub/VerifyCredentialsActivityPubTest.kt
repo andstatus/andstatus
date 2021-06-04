@@ -40,7 +40,7 @@ class VerifyCredentialsActivityPubTest {
     @Throws(Exception::class)
     fun setUp() {
         TestSuite.initializeWithAccounts(this)
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromName(DemoData.demoData.activityPubTestOriginName)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromName(DemoData.demoData.activityPubTestOriginName)
         val accountName: AccountName = AccountName.Companion.fromOriginAndUniqueName(origin, UNIQUE_NAME_IN_ORIGIN)
         mock = ConnectionMock.newFor(MyAccount.Builder.Companion.fromAccountName(accountName).myAccount)
     }

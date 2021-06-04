@@ -175,7 +175,7 @@ class Audience(val origin: Origin) {
     }
 
     fun containsMe(myContext: MyContext): Boolean {
-        return myContext.users().containsMe(actors)
+        return myContext.users.containsMe(actors)
     }
 
     fun findSame(other: Actor): Try<Actor> {
@@ -287,7 +287,7 @@ class Audience(val origin: Origin) {
     }
 
     fun isMeInAudience(): Boolean {
-        return origin.nonEmpty && origin.myContext.users().containsMe(getNonSpecialActors())
+        return origin.nonEmpty && origin.myContext.users.containsMe(getNonSpecialActors())
     }
 
     companion object {

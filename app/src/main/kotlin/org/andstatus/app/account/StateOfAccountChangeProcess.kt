@@ -192,7 +192,7 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
                 if (!state.useThisState) {
                     val originName = extras.getString(IntentExtra.ORIGIN_NAME.key)
                     if (!originName.isNullOrEmpty()) {
-                        val origin: Origin =  state.myContext.origins().fromName(originName)
+                        val origin: Origin =  state.myContext.origins.fromName(originName)
                         if (origin.isPersistent()) {
                             state.builder.setOrigin(origin)
                             state.useThisState = state.nonEmpty
@@ -201,12 +201,12 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
                 }
             }
             if (state.myAccount.isEmpty && state.accountAction != Intent.ACTION_INSERT) {
-                when (state.myContext.accounts().size()) {
+                when (state.myContext.accounts.size()) {
                     0 -> {
                         state.accountAction = Intent.ACTION_INSERT
                     }
                     1 -> state.builder = MyAccount.Builder.fromAccountName(
-                            state.myContext.accounts().currentAccount.getOAccountName()
+                            state.myContext.accounts.currentAccount.getOAccountName()
                     )
                     else -> state.accountShouldBeSelected = true
                 }
@@ -214,7 +214,7 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
             if (state.myAccount.isEmpty) {
                 if (state.accountAction == Intent.ACTION_INSERT) {
                     val origin: Origin =  state.myContext
-                            .origins()
+                            .origins
                             .firstOfType(OriginType.UNKNOWN)
                     state.builder = MyAccount.Builder.fromAccountName(
                             AccountName.fromOriginAndUniqueName(origin, "")
@@ -222,7 +222,7 @@ class StateOfAccountChangeProcess private constructor(bundle: Bundle?): IsEmpty 
                     state.originShouldBeSelected = true
                 } else {
                     state.builder = MyAccount.Builder.fromAccountName(
-                            state.myContext.accounts().currentAccount.getOAccountName()
+                            state.myContext.accounts.currentAccount.getOAccountName()
                     )
                 }
                 if (state.builder.isPersistent()) {

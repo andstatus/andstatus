@@ -45,7 +45,7 @@ internal class Convert47 : ConvertOneStep() {
         val accountsConverted = AtomicInteger()
         progressLogger.logProgress("$stepTitle: Converting accounts")
         val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
-        myContext.origins().initialize(db)
+        myContext.origins.initialize(db)
         val am = AccountManager.get(myContext.context)
         val accountsToRemove: MutableCollection<Account> = ArrayList()
         for (accountIn in AccountUtils.getAllAccounts(myContext.context)) {
@@ -104,7 +104,7 @@ internal class Convert47 : ConvertOneStep() {
         fun convertJson16(myContext: MyContext, jsonIn: JSONObject, isPersistent: Boolean): Try<JSONObject> {
             val versionTo = 48
             val originName = JsonUtils.optString(jsonIn, Origin.KEY_ORIGIN_NAME)
-            val origin = myContext.origins().fromName(originName)
+            val origin = myContext.origins.fromName(originName)
             if (origin.isEmpty) return Try.failure(NoSuchElementException("Origin wan't found for $jsonIn"))
             val oldName = JsonUtils.optString(jsonIn, MyAccount.KEY_USERNAME).trim { it <= ' ' }
             var newUserName = oldName

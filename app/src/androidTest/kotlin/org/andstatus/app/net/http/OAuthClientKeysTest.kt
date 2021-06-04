@@ -36,8 +36,8 @@ class OAuthClientKeysTest {
     @Test
     fun testKeysSave() {
         val connectionData: HttpConnectionData = HttpConnectionData.Companion.fromAccountConnectionData(
-                AccountConnectionData.Companion.fromMyAccount( MyContextHolder.myContextHolder.getNow().accounts().getFirstPreferablySucceededForOrigin(
-                         MyContextHolder.myContextHolder.getNow().origins().firstOfType(OriginType.PUMPIO)), TriState.UNKNOWN)
+                AccountConnectionData.Companion.fromMyAccount( MyContextHolder.myContextHolder.getNow().accounts.getFirstPreferablySucceededForOrigin(
+                         MyContextHolder.myContextHolder.getNow().origins.firstOfType(OriginType.PUMPIO)), TriState.UNKNOWN)
         )
         val consumerKey = "testConsumerKey" + System.nanoTime().toString()
         val consumerSecret = "testConsumerSecret" + System.nanoTime().toString()

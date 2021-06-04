@@ -30,14 +30,14 @@ class AvatarDownloader(myContext: MyContext, data: DownloadData) : FileDownloade
     constructor(actor: Actor) : this(actor.origin.myContext, AvatarData.getCurrentForActor(actor)) {}
 
     override fun findBestAccountForDownload(): MyAccount {
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromId(
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromId(
                 MyQuery.actorIdToLongColumnValue(ActorTable.ORIGIN_ID, data.actorId))
-        return  MyContextHolder.myContextHolder.getNow().accounts().getFirstPreferablySucceededForOrigin(origin)
+        return  MyContextHolder.myContextHolder.getNow().accounts.getFirstPreferablySucceededForOrigin(origin)
     }
 
     override fun onSuccessfulLoad() {
         data.deleteOtherOfThisActor( MyContextHolder.myContextHolder.getNow())
-         MyContextHolder.myContextHolder.getNow().users().load(data.actorId, true)
+         MyContextHolder.myContextHolder.getNow().users.load(data.actorId, true)
         MyLog.v(this) { "Loaded avatar actorId:" + data.actorId + "; uri:'" + data.getUri() + "'" }
     }
 }

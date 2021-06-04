@@ -138,7 +138,7 @@ class CommandQueue(private val myContext: MyContext) {
         val oneQueue = get(queueType)
         val queue = oneQueue.queue
         var count = 0
-        val db = myContext.getDatabase()
+        val db = myContext.database
         if (db == null) {
             MyLog.d(TAG, "$method; Database is unavailable")
             return 0
@@ -178,7 +178,7 @@ class CommandQueue(private val myContext: MyContext) {
             MyLog.v(TAG) { "save; Nothing to save. changed:" + changed + "; preQueueIsEmpty:" + preQueue.isEmpty() }
             return
         }
-        val db = myContext.getDatabase()
+        val db = myContext.database
         if (db == null) {
             MyLog.d(TAG, "save; Database is unavailable")
             return
@@ -402,7 +402,7 @@ class CommandQueue(private val myContext: MyContext) {
                 return true
             }
             return if (!commandData.command.getConnectionRequired()
-                            .isConnectionStateOk(cq.myContext.getConnectionState())) {
+                            .isConnectionStateOk(cq.myContext.connectionState)) {
                 true
             } else false
         }

@@ -183,7 +183,7 @@ class CachedUsersAndActors private constructor(private val myContext: MyContext)
         val groupTypeCached = actorGroupTypes.get(actorId)
         if (groupTypeCached != null) return groupTypeCached
         val groupTypeStored: GroupType = GroupType.fromId(MyQuery.idToLongColumnValue(
-                myContext.getDatabase(), ActorTable.TABLE_NAME, ActorTable.GROUP_TYPE, actorId))
+                myContext.database, ActorTable.TABLE_NAME, ActorTable.GROUP_TYPE, actorId))
         actorGroupTypes[actorId] = groupTypeStored
         return groupTypeStored
     }

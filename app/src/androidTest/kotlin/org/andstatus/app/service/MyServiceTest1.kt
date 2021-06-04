@@ -38,10 +38,10 @@ class MyServiceTest1 : MyServiceTest() {
     fun testAccountSync() {
         val method = "testAccountSync"
         MyLog.i(this, "$method started")
-        val myAccount: MyAccount =  MyContextHolder.myContextHolder.getNow().accounts().getFirstSucceeded()
+        val myAccount: MyAccount =  MyContextHolder.myContextHolder.getNow().accounts.getFirstSucceeded()
         Assert.assertTrue("No successful account", myAccount.isValidAndSucceeded())
         val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
-        myContext.timelines().filter(false, TriState.FALSE,
+        myContext.timelines.filter(false, TriState.FALSE,
                 TimelineType.UNKNOWN, Actor.EMPTY,  Origin.EMPTY)
                 .filter { obj: Timeline -> obj.isSyncedAutomatically() }
                 .forEach { timeline: Timeline -> timeline.onSyncEnded(myContext, CommandResult()) }

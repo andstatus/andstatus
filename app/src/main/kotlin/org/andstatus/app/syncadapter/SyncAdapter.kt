@@ -38,7 +38,7 @@ class SyncAdapter(private val mContext: Context, autoInitialize: Boolean) : Abst
         }
         val myContext: MyContext =  MyContextHolder.myContextHolder.initialize(mContext, this).getBlocking()
         MyServiceCommandsRunner(myContext).autoSyncAccount(
-                myContext.accounts().fromAccountName(account.name), syncResult)
+                myContext.accounts.fromAccountName(account.name), syncResult)
     }
 
     init {

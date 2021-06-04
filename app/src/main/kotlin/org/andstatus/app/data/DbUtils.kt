@@ -49,7 +49,7 @@ object DbUtils {
     fun addRowWithRetry(myContext: MyContext, tableName: String?, values: ContentValues?, nRetries: Int): Try<Long> {
         val method = "addRowWithRetry"
         var rowId: Long = -1
-        val db = myContext.getDatabase()
+        val db = myContext.database
         if (db == null) {
             MyLog.databaseIsNull { method }
             return TryUtils.failure("Database is null")
@@ -80,7 +80,7 @@ object DbUtils {
     fun updateRowWithRetry(myContext: MyContext, tableName: String?, rowId: Long, values: ContentValues?, nRetries: Int): Try<Void> {
         val method = "updateRowWithRetry"
         var rowsUpdated = 0
-        val db = myContext.getDatabase()
+        val db = myContext.database
         if (db == null) {
             MyLog.databaseIsNull { method }
             return TryUtils.failure("Database is null")

@@ -40,7 +40,7 @@ import java.util.function.Function
  */
 internal class CheckAudience : DataChecker() {
     override fun fixInternal(): Long {
-        return myContext.origins().collection().map { o: Origin -> fixOneOrigin(o, countOnly) }.sum().toLong()
+        return myContext.origins.collection().map { o: Origin -> fixOneOrigin(o, countOnly) }.sum().toLong()
     }
 
     private class FixSummary {
@@ -50,7 +50,7 @@ internal class CheckAudience : DataChecker() {
 
     private fun fixOneOrigin(origin: Origin, countOnly: Boolean): Int {
         if (logger.isCancelled) return 0
-        val ma = myContext.accounts().getFirstPreferablySucceededForOrigin(origin)
+        val ma = myContext.accounts.getFirstPreferablySucceededForOrigin(origin)
         if (ma.isEmpty) return 0
         val dataUpdater = DataUpdater(ma)
         val sql = "SELECT " + BaseColumns._ID + ", " +
@@ -126,7 +126,7 @@ ${RelativeTime.getDifference(myContext.context, insDate)}, ${I18n.trimTextAt(MyH
                     + " SET "
                     + NoteTable.VISIBILITY + "=" + audience.visibility.id
                     + " WHERE " + BaseColumns._ID + "=" + noteId)
-            myContext.getDatabase()?.execSQL(sql)
+            myContext.database?.execSQL(sql)
         }
     }
 

@@ -54,18 +54,18 @@ class AccountSelector : SelectorDialog() {
         setListAdapter(newListAdapter(listData))
         listView?.onItemClickListener = OnItemClickListener { _: AdapterView<*>?, view: View, _: Int, _: Long ->
             val actorId = (view.findViewById<View?>(R.id.id) as TextView).text.toString().toLong()
-            returnSelectedAccount( MyContextHolder.myContextHolder.getNow().accounts().fromActorId(actorId))
+            returnSelectedAccount( MyContextHolder.myContextHolder.getNow().accounts.fromActorId(actorId))
         }
     }
 
     private fun newListData(): MutableList<MyAccount> {
         val originId = Optional.ofNullable(arguments)
                 .map { bundle: Bundle -> bundle.getLong(IntentExtra.ORIGIN_ID.key) }.orElse(0L)
-        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins().fromId(originId)
+        val origin: Origin =  MyContextHolder.myContextHolder.getNow().origins.fromId(originId)
         val origins: MutableList<Origin> = if (origin.isValid()) mutableListOf(origin) else getOriginsForActor()
         val predicate = if (origins.isEmpty()) Predicate { true } else
             Predicate { ma: MyAccount -> origins.contains(ma.origin) }
-        return  MyContextHolder.myContextHolder.getNow().accounts().get().stream()
+        return  MyContextHolder.myContextHolder.getNow().accounts.get().stream()
                 .filter(predicate)
                 .collect(Collectors.toList())
     }

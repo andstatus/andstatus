@@ -238,7 +238,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
         return if (isVisible()) {
             editorData.getMyAccount()
         } else {
-            editorContainer.getActivity().myContext.accounts().currentAccount
+            editorContainer.getActivity().myContext.accounts.currentAccount
         }
     }
 
@@ -433,7 +433,7 @@ class NoteEditor(private val editorContainer: NoteEditorContainer) {
     }
 
     private fun shouldShowAccountName(): Boolean {
-        return getActivity().myContext.accounts().size() > 1
+        return getActivity().myContext.accounts.size() > 1
     }
 
     private fun showAttachedImages() {

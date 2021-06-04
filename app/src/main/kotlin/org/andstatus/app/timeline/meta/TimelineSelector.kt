@@ -43,15 +43,15 @@ class TimelineSelector : SelectorDialog() {
         super.onActivityCreated(savedInstanceState)
         val arguments = requireArguments()
         setTitle(R.string.dialog_title_select_timeline)
-        val currentTimeline = myContext.timelines().fromId(arguments.getLong(IntentExtra.TIMELINE_ID.key, 0))
-        val currentMyAccount = myContext.accounts().fromAccountName(
+        val currentTimeline = myContext.timelines.fromId(arguments.getLong(IntentExtra.TIMELINE_ID.key, 0))
+        val currentMyAccount = myContext.accounts.fromAccountName(
                 arguments.getString(IntentExtra.ACCOUNT_NAME.key))
-        val timelines = myContext.timelines().filter(
+        val timelines = myContext.timelines.filter(
                 true,
                 TriState.fromBoolean(currentTimeline.isCombined),
                 TimelineType.UNKNOWN, currentMyAccount.actor,  Origin.EMPTY).collect(Collectors.toSet())
         if (!currentTimeline.isCombined && currentMyAccount.isValid) {
-            timelines.addAll(myContext.timelines().filter(
+            timelines.addAll(myContext.timelines.filter(
                     true,
                     TriState.fromBoolean(currentTimeline.isCombined),
                     TimelineType.UNKNOWN, Actor.EMPTY, currentMyAccount.origin).collect(Collectors.toSet()))
@@ -66,7 +66,7 @@ class TimelineSelector : SelectorDialog() {
         val viewItems: MutableList<ManageTimelinesViewItem> = ArrayList()
         for (timeline2 in timelines) {
             val viewItem = ManageTimelinesViewItem(myContext, timeline2,
-                    myContext.accounts().currentAccount, true)
+                    myContext.accounts.currentAccount, true)
             viewItems.add(viewItem)
         }
         viewItems.sortWith(ManageTimelinesViewItemComparator(R.id.displayedInSelector, sortDefault = true, isTotal = false))
@@ -74,7 +74,7 @@ class TimelineSelector : SelectorDialog() {
         setListAdapter(newListAdapter(viewItems))
         listView?.onItemClickListener = OnItemClickListener { _: AdapterView<*>?, view: View, _: Int, _: Long ->
             val timelineId = (view.findViewById<View?>(R.id.id) as TextView).text.toString().toLong()
-            returnSelectedTimeline(myContext.timelines().fromId(timelineId))
+            returnSelectedTimeline(myContext.timelines.fromId(timelineId))
         }
     }
 

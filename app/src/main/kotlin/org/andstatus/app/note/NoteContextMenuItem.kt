@@ -73,7 +73,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
     },
     RESEND(true, false) {
         override fun executeAsync(menu: NoteContextMenu): NoteEditorData {
-            val ma = menu.getMyContext().accounts().fromActorId(
+            val ma = menu.getMyContext().accounts.fromActorId(
                     MyQuery.noteIdToLongColumnValue(ActivityTable.ACTOR_ID, menu.getNoteId()))
             val activityId = MyQuery.noteIdToLongColumnValue(ActivityTable.LAST_UPDATE_ID, menu.getNoteId())
             val commandData: CommandData = CommandData.newUpdateStatus(ma, activityId, menu.getNoteId())
@@ -160,7 +160,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
     NOTES_BY_ACTOR(true, true) {
         override fun executeAsync(menu: NoteContextMenu): NoteEditorData {
             return NoteEditorData.newEmpty(MyAccount.EMPTY)
-                    .setTimeline(menu.getMyContext().timelines()
+                    .setTimeline(menu.getMyContext().timelines
                             .forUserAtHomeOrigin(TimelineType.SENT, menu.getActor()))
         }
 
@@ -171,7 +171,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
     NOTES_BY_AUTHOR(true, true) {
         override fun executeAsync(menu: NoteContextMenu): NoteEditorData {
             return NoteEditorData.newEmpty(MyAccount.EMPTY)
-                    .setTimeline(menu.getMyContext().timelines()
+                    .setTimeline(menu.getMyContext().timelines
                             .forUserAtHomeOrigin(TimelineType.SENT, menu.getAuthor()))
         }
 
@@ -204,7 +204,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
             val actingAccount = menu.getActingAccount()
             if (actingAccount.isValid) {
                 menu.setSelectedActingAccount(
-                        menu.getMyContext().accounts()
+                        menu.getMyContext().accounts
                                 .firstOtherSucceededForSameOrigin(menu.getOrigin(), actingAccount)
                 )
                 menu.showContextMenu()
@@ -234,7 +234,7 @@ enum class NoteContextMenuItem constructor(private val mIsAsync: Boolean = false
     OPEN_CONVERSATION(false, true) {
         override fun executeOnUiThread(menu: NoteContextMenu, editorData: NoteEditorData) {
             val uri: Uri = MatchedUri.getTimelineItemUri(
-                    menu.getMyContext().timelines()[TimelineType.EVERYTHING, Actor.EMPTY, menu.getOrigin()],
+                    menu.getMyContext().timelines[TimelineType.EVERYTHING, Actor.EMPTY, menu.getOrigin()],
                     menu.getNoteId())
             val action = menu.getActivity().intent.action
             if (Intent.ACTION_PICK == action || Intent.ACTION_GET_CONTENT == action) {

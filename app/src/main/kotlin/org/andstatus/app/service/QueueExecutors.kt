@@ -45,7 +45,7 @@ class QueueExecutors(private val myService: MyService) {
             replace = true
         }
         if (replace) {
-            val accessor = myService.myContext.queues().getAccessor(accessorType)
+            val accessor = myService.myContext.queues.getAccessor(accessorType)
             val current = if (accessor.isAnythingToExecuteNow()) QueueExecutor(myService, accessorType) else null
             if (current == null && previous == null) {
                 logMessageBuilder.withComma("Nothing to execute")

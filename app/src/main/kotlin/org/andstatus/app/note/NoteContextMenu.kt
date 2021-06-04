@@ -187,13 +187,13 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
                 NoteContextMenuItem.OPEN_NOTE_PERMALINK.addTo(menu, order++, R.string.menu_item_open_message_permalink)
             }
             if (noteForAnyAccount.isLoaded()) {
-                when (getMyContext().accounts().succeededForSameOrigin(noteForAnyAccount.origin).size) {
+                when (getMyContext().accounts.succeededForSameOrigin(noteForAnyAccount.origin).size) {
                     0, 1 -> {
                     }
                     2 -> NoteContextMenuItem.ACT_AS_FIRST_OTHER_ACCOUNT.addTo(menu, order++,
                             StringUtil.format(
                                     getActivity(), R.string.menu_item_act_as_user,
-                                    getMyContext().accounts()
+                                    getMyContext().accounts
                                             .firstOtherSucceededForSameOrigin(noteForAnyAccount.origin, getActingAccount())
                                             .getShortestUniqueAccountName()))
                     else -> NoteContextMenuItem.ACT_AS.addTo(menu, order++, R.string.menu_item_act_as)
@@ -292,9 +292,9 @@ class NoteContextMenu(val menuContainer: NoteContextMenuContainer) : MyContextMe
 
     fun loadState(savedInstanceState: Bundle?) {
         if (savedInstanceState != null && savedInstanceState.containsKey(IntentExtra.ACCOUNT_NAME.key)) {
-            setSelectedActingAccount(menuContainer.getActivity().myContext.accounts().fromAccountName(
+            setSelectedActingAccount(menuContainer.getActivity().myContext.accounts.fromAccountName(
                     savedInstanceState.getString(IntentExtra.ACCOUNT_NAME.key,
-                            menuContainer.getActivity().myContext.accounts().currentAccount.getAccountName())))
+                            menuContainer.getActivity().myContext.accounts.currentAccount.getAccountName())))
         }
     }
 

@@ -92,7 +92,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
     internal constructor(myContext: MyContext, cursor: Cursor?) : super(false, DbUtils.getLong(cursor, NoteTable.UPDATED_DATE)) {
         activityId = DbUtils.getLong(cursor, ActivityTable.ACTIVITY_ID)
         setNoteId(DbUtils.getLong(cursor, ActivityTable.NOTE_ID))
-        setOrigin(myContext.origins().fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)))
+        setOrigin(myContext.origins.fromId(DbUtils.getLong(cursor, ActivityTable.ORIGIN_ID)))
         isSensitive = DbUtils.getBoolean(cursor, NoteTable.SENSITIVE)
         likesCount = DbUtils.getLong(cursor, NoteTable.LIKES_COUNT)
         reblogsCount = DbUtils.getLong(cursor, NoteTable.REBLOGS_COUNT)
@@ -122,7 +122,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
         if (!via.isEmpty()) {
             noteSource = Html.fromHtml(via).toString().trim { it <= ' ' }
         }
-        for (actor in MyQuery.getRebloggers( MyContextHolder.myContextHolder.getNow().getDatabase(), getOrigin(), getNoteId())) {
+        for (actor in MyQuery.getRebloggers( MyContextHolder.myContextHolder.getNow().database, getOrigin(), getNoteId())) {
             rebloggers[actor.actorId] = actor.getWebFingerId()
         }
     }
@@ -148,7 +148,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
     }
 
     fun setLinkedAccount(linkedActorId: Long) {
-        linkedMyAccount = myContext.accounts().fromActorId(linkedActorId)
+        linkedMyAccount = myContext.accounts.fromActorId(linkedActorId)
     }
 
     fun getLinkedMyAccount(): MyAccount {
@@ -293,7 +293,7 @@ abstract class BaseNoteViewItem<T : BaseNoteViewItem<T>> : ViewItem<T> {
         }
         return (!filter.hideRepliesNotToMeOrFriends
                 || inReplyToActor.isEmpty
-                ||  MyContextHolder.myContextHolder.getNow().users().isMeOrMyFriend(inReplyToActor.actor))
+                ||  MyContextHolder.myContextHolder.getNow().users.isMeOrMyFriend(inReplyToActor.actor))
     }
 
     override fun toString(): String {

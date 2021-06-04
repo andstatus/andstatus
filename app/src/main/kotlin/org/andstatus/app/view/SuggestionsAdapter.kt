@@ -138,7 +138,7 @@ class SuggestionsAdapter(activity: LoadableListActivity<*>,
     }
 
     init {
-        for (timeline in activity.myContext.timelines().values()) {
+        for (timeline in activity.myContext.timelines.values()) {
             if (timeline.hasSearchQuery() && !notesSuggestions.contains(timeline.getSearchQuery())) {
                 notesSuggestions.add(timeline.getSearchQuery())
             }

@@ -42,7 +42,12 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
     private var httpConnectionMockInstance: HttpConnection? = null
 
     @Volatile
-    private var mockedConnectionState: ConnectionState = ConnectionState.UNKNOWN
+    override var connectionState: ConnectionState = parent.connectionState
+        get() = when (field) {
+            ConnectionState.UNKNOWN -> super.connectionState
+            else -> field
+        }
+
     private val androidNotifications: MutableMap<NotificationEventType, NotificationData> = ConcurrentHashMap()
 
     fun setHttpConnectionMockClass(httpConnectionMockClass: Class<out HttpConnection?>?) {
@@ -95,17 +100,6 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
         }
     }
 
-    override fun getConnectionState(): ConnectionState {
-        return when (mockedConnectionState) {
-            ConnectionState.UNKNOWN -> super.getConnectionState()
-            else -> mockedConnectionState
-        }
-    }
-
-    fun setConnectionState(connectionState: ConnectionState) {
-        mockedConnectionState = connectionState
-    }
-
     override fun notify(data: NotificationData) {
         super.notify(data)
         androidNotifications[data.event] = data
@@ -138,7 +132,6 @@ class MyContextTestImpl internal constructor(parent: MyContext, context: Context
             assertionData.putAll(parent.assertionData)
             httpConnectionMockClass = parent.httpConnectionMockClass
             httpConnectionMockInstance = parent.httpConnectionMockInstance
-            mockedConnectionState = parent.mockedConnectionState
             androidNotifications.putAll(parent.androidNotifications)
         }
     }

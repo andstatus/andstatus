@@ -59,9 +59,9 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         TestSuite.initializeWithData(this)
         ma = DemoData.demoData.getMyAccount(DemoData.demoData.conversationAccountName)
         Assert.assertTrue(ma.isValid)
-         MyContextHolder.myContextHolder.getNow().accounts().setCurrentAccount(ma)
+         MyContextHolder.myContextHolder.getNow().accounts.setCurrentAccount(ma)
         MyLog.i(this, "setUp ended")
-        return Intent(Intent.ACTION_VIEW,  MyContextHolder.myContextHolder.getNow().timelines()
+        return Intent(Intent.ACTION_VIEW,  MyContextHolder.myContextHolder.getNow().timelines
                 .get(TimelineType.HOME, ma.actor,  Origin.EMPTY).getUri())
     }
 
@@ -204,8 +204,8 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         val listItemId = helper.getListItemIdOfLoadedReply()
         val noteId = MyQuery.activityIdToLongColumnValue(ActivityTable.NOTE_ID, listItemId)
         val myContext: MyContext =  MyContextHolder.myContextHolder.getNow()
-        val origin = myContext.origins().fromId(MyQuery.noteIdToOriginId(noteId))
-        val accounts = myContext.accounts().succeededForSameOrigin(origin)
+        val origin = myContext.origins.fromId(MyQuery.noteIdToOriginId(noteId))
+        val accounts = myContext.accounts.succeededForSameOrigin(origin)
         var logMsg = ("itemId=" + listItemId + ", noteId=" + noteId
                 + ", origin=" + origin.name
                 + ", text='" + MyQuery.noteIdToStringColumnValue(NoteTable.CONTENT, noteId) + "'"
@@ -220,7 +220,7 @@ class TimelineActivityTest1 : TimelineActivityTest<ActivityViewItem>() {
         Assert.assertEquals(logMsg, origin, account1.origin)
         ActivityTestHelper.closeContextMenu(activity)
         helper.invokeContextMenuAction4ListItemId(method, listItemId, NoteContextMenuItem.ACT_AS, R.id.note_wrapper)
-        val account2 = myContext.accounts().firstOtherSucceededForSameOrigin(origin, account1)
+        val account2 = myContext.accounts.firstOtherSucceededForSameOrigin(origin, account1)
         logMsg += ", account 2:" + account2.getAccountName()
         Assert.assertNotSame(logMsg, account1, account2)
         helper.selectIdFromSelectorDialog(logMsg, account2.actorId)

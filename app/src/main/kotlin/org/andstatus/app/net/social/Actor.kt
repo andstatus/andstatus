@@ -411,7 +411,7 @@ class Actor private constructor(// In our system
                     if (UriUtils.isRealOid(oid2)) skip2 = !oid.equals(oid2, ignoreCase = true)
                 }
                 if (actorId == 0L && !skip2 && groupType != GroupType.UNKNOWN) {
-                    val groupTypeStored = origin.myContext.users().idToGroupType(actorId2)
+                    val groupTypeStored = origin.myContext.users.idToGroupType(actorId2)
                     if (Group.groupTypeNeedsCorrection(groupTypeStored, groupType)) {
                         val updatedDateStored = MyQuery.actorIdToLongColumnValue(ActorTable.UPDATED_DATE, actorId)
                         if (getUpdatedDate() <= updatedDateStored) {
@@ -448,7 +448,7 @@ class Actor private constructor(// In our system
      * Returns the same Actor, if not found  */
     fun toHomeOrigin(): Actor {
         return if (origin.getHost() == getIdHost()) this else user.actorIds.stream()
-                .map { id: Long -> NullUtil.getOrDefault(origin.myContext.users().actors, id, EMPTY) }
+                .map { id: Long -> NullUtil.getOrDefault(origin.myContext.users.actors, id, EMPTY) }
                 .filter { a: Actor -> a.nonEmpty && a.origin.getHost() == getIdHost() }
                 .findAny().orElse(this)
     }
@@ -669,11 +669,11 @@ class Actor private constructor(// In our system
     }
 
     fun lookupUser(): Actor {
-        return if(isEmpty) this else origin.myContext.users().lookupUser(this)
+        return if(isEmpty) this else origin.myContext.users.lookupUser(this)
     }
 
     fun saveUser() {
-        if (user.isMyUser().unknown && origin.myContext.users().isMe(this)) {
+        if (user.isMyUser().unknown && origin.myContext.users.isMe(this)) {
             user.setIsMyUser(TriState.TRUE)
         }
         if (user.userId == 0L) user.setKnownAs(uniqueName)
@@ -792,7 +792,7 @@ class Actor private constructor(// In our system
 
         fun load(myContext: MyContext, actorId: Long, reloadFirst: Boolean, supplier: Supplier<Actor>): Actor {
             if (actorId == 0L) return supplier.get()
-            val cached = myContext.users().actors.getOrDefault(actorId, EMPTY)
+            val cached = myContext.users.actors.getOrDefault(actorId, EMPTY)
             return if (MyAsyncTask.nonUiThread() && (reloadFirst || cached.isNotFullyDefined()))
                     loadFromDatabase(myContext, actorId, supplier, true).betterToCache(cached)
                 else cached
@@ -811,7 +811,7 @@ class Actor private constructor(// In our system
         fun fromCursor(myContext: MyContext, cursor: Cursor, useCache: Boolean): Actor {
             val updatedDate = DbUtils.getLong(cursor, ActorTable.UPDATED_DATE)
             val actor = fromTwoIds(
-                    myContext.origins().fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
+                    myContext.origins.fromId(DbUtils.getLong(cursor, ActorTable.ORIGIN_ID)),
                     GroupType.fromId(DbUtils.getLong(cursor, ActorTable.GROUP_TYPE)),
                     DbUtils.getLong(cursor, ActorTable.ACTOR_ID),
                     DbUtils.getString(cursor, ActorTable.ACTOR_OID))
@@ -833,9 +833,9 @@ class Actor private constructor(// In our system
             actor.user = User.fromCursor(myContext, cursor, useCache)
             actor.avatarFile = AvatarFile.fromCursor(actor, cursor)
             return if (useCache) {
-                val cachedActor = myContext.users().actors.getOrDefault(actor.actorId, EMPTY)
+                val cachedActor = myContext.users.actors.getOrDefault(actor.actorId, EMPTY)
                 if (actor.isBetterToCacheThan(cachedActor)) {
-                    myContext.users().updateCache(actor)
+                    myContext.users.updateCache(actor)
                     return actor
                 }
                 cachedActor

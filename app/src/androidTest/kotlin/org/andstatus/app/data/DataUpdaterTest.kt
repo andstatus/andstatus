@@ -121,7 +121,7 @@ class DataUpdaterTest {
         Assert.assertEquals("Url of the author " + somebody.getUsername(), somebody.getProfileUrl(), url)
         Assert.assertEquals("Latest activity of $somebody", activity.getId(),
                 MyQuery.actorIdToLongColumnValue(ActorTable.ACTOR_ACTIVITY_ID, somebody.actorId))
-        val contentUri = myContext.timelines()[TimelineType.FRIENDS, ma.actor,  Origin.EMPTY].getUri()
+        val contentUri = myContext.timelines[TimelineType.FRIENDS, ma.actor,  Origin.EMPTY].getUri()
         val sa = SelectionAndArgs()
         val sortOrder = ActivityTable.getTimelineSortOrder(TimelineType.FRIENDS, false)
         sa.addSelection(ActivityTable.ACTOR_ID + "=?", java.lang.Long.toString(somebody.actorId))
@@ -197,7 +197,7 @@ class DataUpdaterTest {
         Assert.assertNotEquals("Note added", 0, noteId)
         Assert.assertNotEquals("First activity added", 0, activity.getId())
         Assert.assertNotEquals("LIKE activity added", 0, likeActivity.getId())
-        val stargazers = MyQuery.getStargazers(myContext.getDatabase(), accountActor.origin, note.noteId)
+        val stargazers = MyQuery.getStargazers(myContext.database, accountActor.origin, note.noteId)
         var favoritedByOtherActor = false
         for (actor in stargazers) {
             if (actor == accountActor) {
@@ -224,7 +224,7 @@ class DataUpdaterTest {
         DemoNoteInserter.Companion.assertVisibility(audience, Visibility.PUBLIC_AND_TO_FOLLOWERS)
 
         // TODO: Below is actually a timeline query test, so maybe expand / move...
-        val contentUri = myContext.timelines()[TimelineType.EVERYTHING, Actor.EMPTY, ma.origin].getUri()
+        val contentUri = myContext.timelines[TimelineType.EVERYTHING, Actor.EMPTY, ma.origin].getUri()
         val sa = SelectionAndArgs()
         val sortOrder = ActivityTable.getTimelineSortOrder(TimelineType.EVERYTHING, false)
         sa.addSelection(NoteTable.NOTE_ID + " = ?", java.lang.Long.toString(noteId))
@@ -287,7 +287,7 @@ class DataUpdaterTest {
             Assert.assertNotEquals("In reply to note added " + inReplyTo.getNote(), 0, inReplyTo.getNote().noteId)
             Assert.assertNotEquals("In reply to activity added $inReplyTo", 0, inReplyTo.getId())
         }
-        val stargazers = MyQuery.getStargazers(myContext.getDatabase(), accountActor.origin, note.noteId)
+        val stargazers = MyQuery.getStargazers(myContext.database, accountActor.origin, note.noteId)
         var favoritedByMe = false
         for (actor in stargazers) {
             if (actor == accountActor) {
@@ -324,7 +324,7 @@ $activity""",
     fun testNoteWithAttachment() {
         val activity: AActivity = ConnectionGnuSocialTest.getNoteWithAttachment(
                 InstrumentationRegistry.getInstrumentation().context)
-        val ma = myContext.accounts().getFirstPreferablySucceededForOrigin(activity.getActor().origin)
+        val ma = myContext.accounts.getFirstPreferablySucceededForOrigin(activity.getActor().origin)
         Assert.assertTrue("Account is valid $ma", ma.isValid)
         val noteId = DataUpdater(ma).onActivity(activity)?.getNote()?.noteId ?: 0
         Assert.assertNotEquals("Note added " + activity.getNote(), 0, noteId)
@@ -336,7 +336,7 @@ $activity""",
     @Test
     fun testUnsentNoteWithAttachment() {
         val method = "testUnsentNoteWithAttachment"
-        val ma = myContext.accounts().getFirstSucceeded()
+        val ma = myContext.accounts.getFirstSucceeded()
         val accountActor = ma.actor
         val activity: AActivity = AActivity.Companion.newPartialNote(accountActor, accountActor, "",
                 System.currentTimeMillis(), DownloadStatus.SENDING)

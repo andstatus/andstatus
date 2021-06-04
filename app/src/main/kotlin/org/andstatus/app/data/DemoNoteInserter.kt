@@ -135,7 +135,7 @@ class DemoNoteInserter(val accountActor: Actor) {
 
     fun onActivity(activity: AActivity) {
         NoteEditorData.recreateKnownAudience(activity)
-        val ma = origin.myContext.accounts().fromActorId(accountActor.actorId)
+        val ma = origin.myContext.accounts.fromActorId(accountActor.actorId)
         Assert.assertTrue("Persistent account exists for $accountActor $activity", ma.isValid)
         val timelineType = if (activity.getNote().audience().visibility.isPrivate) TimelineType.PRIVATE else TimelineType.HOME
         val execContext = CommandExecutionContext(origin.myContext,
@@ -192,13 +192,13 @@ class DemoNoteInserter(val accountActor: Actor) {
         }
         when (activity.type) {
             ActivityType.LIKE -> {
-                val stargazers = MyQuery.getStargazers(origin.myContext.getDatabase(), accountActor.origin, note.noteId)
+                val stargazers = MyQuery.getStargazers(origin.myContext.database, accountActor.origin, note.noteId)
                 val found = stargazers.stream().anyMatch { stargazer: Actor -> stargazer.actorId == actor.actorId }
                 Assert.assertTrue("Actor, who favorited, is not found among stargazers: $activity" +
                         "\nstargazers: $stargazers", found)
             }
             ActivityType.ANNOUNCE -> {
-                val rebloggers = MyQuery.getRebloggers(origin.myContext.getDatabase(), accountActor.origin, note.noteId)
+                val rebloggers = MyQuery.getRebloggers(origin.myContext.database, accountActor.origin, note.noteId)
                 Assert.assertTrue("Reblogger is not found among rebloggers: $activity rebloggers: $rebloggers",
                         rebloggers.stream().anyMatch { a: Actor -> a.actorId == actor.actorId })
             }
